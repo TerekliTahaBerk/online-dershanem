@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { blogPosts, siteUrl } from "@/lib/content";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   const blogEntries = blogPosts.map((post) => ({
