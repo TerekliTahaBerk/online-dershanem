@@ -135,7 +135,8 @@ export function MultiStepLeadForm() {
     const payload = {
       ...formData,
       source,
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      submissionId: `od-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     };
 
     try {
@@ -149,15 +150,25 @@ export function MultiStepLeadForm() {
         supportType: payload.supportType,
         parentPhone: payload.parentPhone,
         source: payload.source,
-        submittedAt: payload.submittedAt
+        submittedAt: payload.submittedAt,
+        submissionId: payload.submissionId
       }).toString();
+
+      const url = `${leadWebhookUrl}?${query}&_ts=${Date.now()}`;
+
+      await fetch(url, {
+        method: "GET",
+        mode: "no-cors",
+        cache: "no-store",
+        keepalive: true
+      }).catch(() => undefined);
 
       await new Promise<void>((resolve) => {
         const img = new Image();
         const cleanup = () => resolve();
         img.onload = cleanup;
         img.onerror = cleanup;
-        img.src = `${leadWebhookUrl}?${query}&_ts=${Date.now()}`;
+        img.src = url;
         setTimeout(resolve, 1500);
       });
     } catch {
