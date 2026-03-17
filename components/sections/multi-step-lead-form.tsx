@@ -152,10 +152,13 @@ export function MultiStepLeadForm() {
         submittedAt: payload.submittedAt
       }).toString();
 
-      await fetch(`${leadWebhookUrl}?${query}`, {
-        method: "GET",
-        mode: "no-cors",
-        cache: "no-store"
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        const cleanup = () => resolve();
+        img.onload = cleanup;
+        img.onerror = cleanup;
+        img.src = `${leadWebhookUrl}?${query}&_ts=${Date.now()}`;
+        setTimeout(resolve, 1500);
       });
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya bizi telefonla ara.");
