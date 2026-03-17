@@ -33,7 +33,7 @@ const initialData: FormData = {
 const totalSteps = 4;
 const leadWebhookUrl =
   process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
-  "https://script.google.com/macros/s/AKfycbwCwBQSIwCTMSIyL22asBQBdXbrzkbATMHJWS9wiqq2_sWzy_8fmBHkPbcx28ZMv_PsbQ/exec";
+  "https://script.google.com/macros/s/AKfycbwHv15cbaZ0IqTkQtSUqcPMgTiZ0hz7qF8PKboDmHlqUhvSI6ChRguvRne2Jh8FzJrEXQ/exec";
 
 export function MultiStepLeadForm() {
   const [isOpen, setIsOpen] = useState(false);
