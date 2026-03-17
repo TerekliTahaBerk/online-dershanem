@@ -3,6 +3,7 @@ import Link from "next/link";
 import { contact } from "@/lib/content";
 import { Container } from "@/components/ui/container";
 import { ContactLink } from "@/components/ui/contact-link";
+import footerLogo from "@/public/logo.png";
 
 export function Footer() {
   return (
@@ -10,7 +11,7 @@ export function Footer() {
       <Container className="flex flex-col gap-6 text-sm sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link href="/" className="inline-flex items-center" aria-label="Online Dershanem Ana Sayfa">
-            <Image src="/logo.png" alt="Online Dershanem" width={220} height={52} className="h-10 w-auto rounded-md" unoptimized />
+            <Image src={footerLogo} alt="Online Dershanem" width={220} height={52} className="h-10 w-auto rounded-md" />
           </Link>
           <p className="mt-2">
             İletişim:{" "}
