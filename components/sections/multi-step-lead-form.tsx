@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, PhoneCall, X } from "lucide-react";
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { ContactLink } from "@/components/ui/contact-link";
 import { contact } from "@/lib/content";
@@ -17,6 +18,7 @@ type FormData = {
   currentNet: string;
   supportType: string;
   parentPhone: string;
+  kvkkConsent: boolean;
 };
 
 const initialData: FormData = {
@@ -27,7 +29,8 @@ const initialData: FormData = {
   targetGoal: "",
   currentNet: "",
   supportType: "",
-  parentPhone: ""
+  parentPhone: "",
+  kvkkConsent: false
 };
 
 const totalSteps = 4;
@@ -81,7 +84,7 @@ export function MultiStepLeadForm() {
 
   const progress = useMemo(() => (step / totalSteps) * 100, [step]);
 
-  const updateField = (key: keyof FormData, value: string) => {
+  const updateField = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     setError(null);
   };
@@ -110,6 +113,11 @@ export function MultiStepLeadForm() {
 
     if (step === 4 && !formData.supportType) {
       setError("Lütfen destek tercihleri arasından seçim yap.");
+      return false;
+    }
+
+    if (step === 4 && !formData.kvkkConsent) {
+      setError("Devam etmek için KVKK metnini okuyup onaylamalısın.");
       return false;
     }
 
@@ -148,6 +156,7 @@ export function MultiStepLeadForm() {
         currentNet: payload.currentNet,
         supportType: payload.supportType,
         parentPhone: payload.parentPhone,
+        kvkkConsent: payload.kvkkConsent ? "true" : "false",
         source: payload.source,
         submittedAt: payload.submittedAt
       }).toString();
@@ -375,6 +384,21 @@ export function MultiStepLeadForm() {
                           className="mt-1.5 w-full rounded-xl border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
                           placeholder="05xx xxx xx xx"
                         />
+                      </label>
+
+                      <label className="flex items-start gap-2 rounded-xl border border-line bg-white px-3 py-2 text-xs text-muted">
+                        <input
+                          type="checkbox"
+                          checked={formData.kvkkConsent}
+                          onChange={(event) => updateField("kvkkConsent", event.target.checked)}
+                          className="mt-0.5 h-4 w-4 accent-brand"
+                        />
+                        <span>
+                          <Link href="/kvkk" target="_blank" className="font-semibold text-brand underline">
+                            KVKK Aydınlatma Metni
+                          </Link>{" "}
+                          ve kişisel veri işleme bilgilendirmesini okudum, onaylıyorum.
+                        </span>
                       </label>
                     </div>
                   ) : null}
