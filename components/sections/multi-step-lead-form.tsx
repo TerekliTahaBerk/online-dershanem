@@ -139,7 +139,7 @@ export function MultiStepLeadForm() {
     };
 
     try {
-      const body = new URLSearchParams({
+      const query = new URLSearchParams({
         fullName: payload.fullName,
         phone: payload.phone,
         classLevel: payload.classLevel,
@@ -152,13 +152,10 @@ export function MultiStepLeadForm() {
         submittedAt: payload.submittedAt
       }).toString();
 
-      await fetch(leadWebhookUrl, {
-        method: "POST",
+      await fetch(`${leadWebhookUrl}?${query}`, {
+        method: "GET",
         mode: "no-cors",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-        },
-        body
+        cache: "no-store"
       });
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya bizi telefonla ara.");
