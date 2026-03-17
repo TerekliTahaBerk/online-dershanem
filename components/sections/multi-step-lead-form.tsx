@@ -135,8 +135,7 @@ export function MultiStepLeadForm() {
     const payload = {
       ...formData,
       source,
-      submittedAt: new Date().toISOString(),
-      submissionId: `od-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      submittedAt: new Date().toISOString()
     };
 
     try {
@@ -150,18 +149,10 @@ export function MultiStepLeadForm() {
         supportType: payload.supportType,
         parentPhone: payload.parentPhone,
         source: payload.source,
-        submittedAt: payload.submittedAt,
-        submissionId: payload.submissionId
+        submittedAt: payload.submittedAt
       }).toString();
 
       const url = `${leadWebhookUrl}?${query}&_ts=${Date.now()}`;
-
-      await fetch(url, {
-        method: "GET",
-        mode: "no-cors",
-        cache: "no-store",
-        keepalive: true
-      }).catch(() => undefined);
 
       await new Promise<void>((resolve) => {
         const img = new Image();
@@ -376,17 +367,15 @@ export function MultiStepLeadForm() {
                         ))}
                       </div>
 
-                      {formData.examType === "LGS" ? (
-                        <label className="text-sm font-medium text-ink">
-                          Veli Telefonu (Opsiyonel)
-                          <input
-                            value={formData.parentPhone}
-                            onChange={(event) => updateField("parentPhone", event.target.value)}
-                            className="mt-1.5 w-full rounded-xl border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
-                            placeholder="05xx xxx xx xx"
-                          />
-                        </label>
-                      ) : null}
+                      <label className="text-sm font-medium text-ink">
+                        Veli Telefonu (Opsiyonel)
+                        <input
+                          value={formData.parentPhone}
+                          onChange={(event) => updateField("parentPhone", event.target.value)}
+                          className="mt-1.5 w-full rounded-xl border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+                          placeholder="05xx xxx xx xx"
+                        />
+                      </label>
                     </div>
                   ) : null}
 
