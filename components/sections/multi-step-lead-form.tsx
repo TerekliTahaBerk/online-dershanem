@@ -139,32 +139,31 @@ export function MultiStepLeadForm() {
     };
 
     try {
-      const response = await fetch(leadWebhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+      const body = new URLSearchParams({
+        fullName: payload.fullName,
+        phone: payload.phone,
+        classLevel: payload.classLevel,
+        examType: payload.examType,
+        targetGoal: payload.targetGoal,
+        currentNet: payload.currentNet,
+        supportType: payload.supportType,
+        parentPhone: payload.parentPhone,
+        source: payload.source,
+        submittedAt: payload.submittedAt
+      }).toString();
 
-      if (!response.ok) {
-        throw new Error("primary_request_failed");
-      }
+      await fetch(leadWebhookUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        body
+      });
     } catch {
-      try {
-        await fetch(leadWebhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(payload)
-        });
-      } catch {
-        setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya bizi telefonla ara.");
-        setIsSubmitting(false);
-        return;
-      }
+      setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya bizi telefonla ara.");
+      setIsSubmitting(false);
+      return;
     }
 
     trackConversionEvent("lead_funnel_complete", {
