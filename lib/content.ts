@@ -576,6 +576,18 @@ export const contact = {
 };
 
 export const seoKeywords = [
+  "online dershanem",
+  "online dershane",
+  "özel ders",
+  "online özel ders",
+  "yks hazırlık",
+  "yks özel ders",
+  "tyt hazırlık",
+  "tyt özel ders",
+  "ayt hazırlık",
+  "ayt özel ders",
+  "lgs hazırlık",
+  "lgs özel ders",
   "grup özel ders",
   "lgs online kurs",
   "tyt grup özel ders",
