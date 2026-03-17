@@ -31,6 +31,9 @@ const initialData: FormData = {
 };
 
 const totalSteps = 4;
+const leadWebhookUrl =
+  process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
+  "https://script.google.com/macros/s/AKfycbwCwBQSIwCTMSIyL22asBQBdXbrzkbATMHJWS9wiqq2_sWzy_8fmBHkPbcx28ZMv_PsbQ/exec";
 
 export function MultiStepLeadForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,6 +41,7 @@ export function MultiStepLeadForm() {
   const [source, setSource] = useState("unknown");
   const [formData, setFormData] = useState<FormData>(initialData);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -121,9 +125,47 @@ export function MultiStepLeadForm() {
     if (step > 1) setStep((prev) => prev - 1);
   };
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validateStep()) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    const payload = {
+      ...formData,
+      source,
+      submittedAt: new Date().toISOString()
+    };
+
+    try {
+      const response = await fetch(leadWebhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("primary_request_failed");
+      }
+    } catch {
+      try {
+        await fetch(leadWebhookUrl, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch {
+        setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya bizi telefonla ara.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     trackConversionEvent("lead_funnel_complete", {
       source,
@@ -134,6 +176,7 @@ export function MultiStepLeadForm() {
 
     setIsSubmitted(true);
     setFormData(initialData);
+    setIsSubmitting(false);
   };
 
   return (
@@ -343,7 +386,7 @@ export function MultiStepLeadForm() {
                     <button
                       type="button"
                       onClick={prevStep}
-                      disabled={step === 1}
+                      disabled={step === 1 || isSubmitting}
                       className="inline-flex rounded-full border border-line-strong px-5 py-2.5 text-xs font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40"
                       data-analytics-id="lead_funnel_prev"
                     >
@@ -354,6 +397,7 @@ export function MultiStepLeadForm() {
                       <button
                         type="button"
                         onClick={nextStep}
+                        disabled={isSubmitting}
                         className="inline-flex rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white"
                         data-analytics-id="lead_funnel_next"
                       >
@@ -362,10 +406,11 @@ export function MultiStepLeadForm() {
                     ) : (
                       <button
                         type="submit"
+                        disabled={isSubmitting}
                         className="inline-flex rounded-full bg-brand px-5 py-2.5 text-xs font-semibold text-white"
                         data-analytics-id="lead_funnel_submit"
                       >
-                        Ücretsiz Denemeyi Başlat
+                        {isSubmitting ? "Gönderiliyor..." : "Ücretsiz Denemeyi Başlat"}
                       </button>
                     )}
                   </div>
