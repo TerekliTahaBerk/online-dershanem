@@ -29,6 +29,11 @@ export const metadata: Metadata = {
     title: "Online Dershanem",
     description: "TYT-AYT ve LGS için ders bazlı küçük grup özel ders deneyimi."
   },
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png"
+  },
   robots: {
     index: true,
     follow: true
