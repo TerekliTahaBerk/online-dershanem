@@ -541,11 +541,11 @@ export const blogPosts = [
 export const faq = [
   {
     q: "Bu sistem tüm dersleri içeren klasik bir online paket mi?",
-    a: "Hayır. Online Dershanem artık ders bazlı Grup Özel Ders modeliyle çalışır. Öğrenci tüm dersleri tek pakette almak zorunda değildir; ihtiyaç duyduğu ders paketlerini ayrı ayrı seçebilir."
+    a: "Hayır. Sistem klasik paket mantığında ilerlemez. Dersler grup özel ders modeliyle yürütülür. Öğrenci tüm dersleri almak zorunda değildir; yalnızca ihtiyaç duyduğu dersleri seçerek kendi programını oluşturabilir."
   },
   {
     q: "Gruplar kaç kişilik oluyor?",
-    a: "Dersler küçük gruplarla yürütülür. Birçok pakette maksimum 4 kişilik grup yapısı hedeflenir. Bu sayede derste daha fazla bireysel ilgi, daha hızlı geri bildirim ve daha verimli ders süresi sağlanır."
+    a: "Evet. Öğrenciler mevcut seviyelerine ve hedeflerine göre uygun gruplara yerleştirilir. Bu sayede derslerin temposu dengeli ilerler ve sınıf içi verim artar."
   },
   {
     q: "Seviyeye göre gruplandırma yapılıyor mu?",
@@ -553,19 +553,19 @@ export const faq = [
   },
   {
     q: "Sadece ihtiyacım olan dersi alabilir miyim?",
-    a: "Evet. Sistem ders bazlıdır. Örneğin sadece TYT-AYT Matematik ya da sadece LGS Fen Bilimleri paketi seçebilirsin. İstersen süreç içinde farklı bir ders paketi eklenebilir."
+    a: "Evet. Sistem ders bazlı ilerler. İster sadece TYT-AYT Matematik ister yalnızca LGS Fen Bilimleri dersi alınabilir. Süreç içinde ihtiyaç doğrultusunda farklı dersler de eklenebilir."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. TYT-AYT ve LGS paketlerinde ders akışı konu anlatımı + soru çözüm + takip odaklıdır. Amaç sadece dersi bitirmek değil, öğrencinin sınav performansına doğrudan katkı üretmektir."
+    a: "Evet. Dersler konu anlatımı, soru çözümü ve düzenli takip şeklinde ilerler. Amaç yalnızca konuyu tamamlamak değil, öğrencinin sınav performansını doğrudan artırmaktır."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
-    a: "Evet. Özellikle LGS tarafında veliler için süreç bilgilendirmesi yapılır. Öğrencinin ders devamı, genel ilerleme durumu ve ihtiyaç duyduğu destek alanları düzenli olarak paylaşılır."
+    a: "Evet. Özellikle LGS sürecinde velilere düzenli bilgilendirme yapılır. Öğrencinin derslere katılımı, genel ilerlemesi ve ihtiyaç duyduğu destek alanları belirli aralıklarla paylaşılır."
   },
   {
     q: "Paket seçimi konusunda kararsızsam ne yapmalıyım?",
-    a: "Kısa bir ön görüşme ile öğrencinin seviyesi ve hedefi değerlendirilir. Buna göre önce hangi ders paketiyle başlanmasının en doğru olacağı net biçimde önerilir."
+    a: "Kısa bir ön görüşme ile öğrencinin seviyesi ve hedefi belirlenir. Buna göre en uygun ders planı önerilir ve sürece doğru bir başlangıç yapılır."
   }
 ];
 
