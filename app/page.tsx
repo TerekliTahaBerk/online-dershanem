@@ -17,9 +17,9 @@ import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
 
 export const metadata: Metadata = {
-  title: "TYT, AYT ve LGS İçin Online Dershane Sistemi",
+  title: "Online Dershane ve Özel Ders | YKS, TYT, AYT, LGS Hazırlık",
   description:
-    "TYT-AYT ve LGS için ders bazlı Grup Özel Ders paketleri: küçük grup, seviyeye göre yerleşim ve odaklı canlı ders modeli.",
+    "YKS, TYT, AYT ve LGS için online dershane ve ders bazlı grup özel ders paketleri: canlı ders, seviyeye göre grup ve düzenli takip sistemi.",
   alternates: {
     canonical: "/"
   }
@@ -51,10 +51,20 @@ export default function HomePage() {
     }
   };
 
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Online Dershanem",
+    url: siteUrl,
+    inLanguage: "tr-TR",
+    keywords: "online dershanem, online dershane, özel ders, yks, tyt, ayt, lgs"
+  };
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
       <Navbar />
       <main>
         <ConversionHeroSection />
