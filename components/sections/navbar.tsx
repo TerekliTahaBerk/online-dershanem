@@ -5,6 +5,7 @@ import { navLinks } from "@/lib/content";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { ComingSoonButton } from "@/components/ui/coming-soon-button";
+import navbarLogo from "@/public/onlinedershanem_.png";
 
 export function Navbar() {
   const packageLinks = [
@@ -17,12 +18,11 @@ export function Navbar() {
       <Container className="flex h-20 items-center justify-between">
         <Link href="/" className="inline-flex items-center" aria-label="Online Dershanem Ana Sayfa">
           <Image
-            src="/onlinedershanem_.png"
+            src={navbarLogo}
             alt="Online Dershanem"
             width={300}
             height={52}
             className="h-9 w-[220px] object-contain object-left"
-            unoptimized
             priority
           />
         </Link>
