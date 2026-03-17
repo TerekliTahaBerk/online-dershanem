@@ -1,5 +1,2 @@
-import { permanentRedirect } from "next/navigation";
-
-export default function AYTPageRedirect() {
-  permanentRedirect("/tyt");
-}
+export { metadata } from "../tyt/page";
+export { default } from "../tyt/page";
