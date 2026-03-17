@@ -8,6 +8,7 @@ import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 import navbarLogo from "@/public/onlinedershanem_.png";
 
 export function Navbar() {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const packageLinks = [
     { label: "TYT-AYT", href: "/tyt" },
     { label: "LGS", href: "/lgs" }
@@ -48,9 +49,15 @@ export function Navbar() {
                 </div>
               </div>
             ) : (
-              <Link key={item.label} href={item.href} className="text-sm text-muted transition-colors hover:text-brand">
-                {item.label}
-              </Link>
+              item.href.startsWith("/#") ? (
+                <a key={item.label} href={`${basePath}${item.href}`} className="text-sm text-muted transition-colors hover:text-brand">
+                  {item.label}
+                </a>
+              ) : (
+                <Link key={item.label} href={item.href} className="text-sm text-muted transition-colors hover:text-brand">
+                  {item.label}
+                </Link>
+              )
             )
           )}
         </nav>
