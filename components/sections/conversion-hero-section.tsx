@@ -17,7 +17,7 @@ export function ConversionHeroSection() {
       <Container>
         <div className="max-w-5xl">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl">
-            Tüm dersleri tek pakette değil, ihtiyacına göre seçtiğin Grup Özel Ders sistemi
+            Sabit paketlere bağlı kalma; sadece ihtiyacın olan derslerle, sana özel grup verimliliğini yaşa.
           </h1>
           <p className="mt-5 max-w-4xl text-base leading-relaxed text-muted sm:text-lg">
             Online Dershanem klasik toplu paket yapısı sunmaz. Öğrenci ihtiyacına göre TYT-AYT veya LGS ders paketlerini ayrı ayrı
