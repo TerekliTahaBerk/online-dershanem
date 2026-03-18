@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   title: "Gizlilik Politikası",
   description: "Online Dershanem gizlilik politikası, veri güvenliği ve kullanıcı hakları.",
   alternates: {
-    canonical: "/gizlilik"
+    canonical: "/gizlilik/"
   },
   openGraph: {
     title: "Gizlilik Politikası | Online Dershanem",
     description: "Site kullanımında toplanan veriler, çerezler ve güvenlik yaklaşımı hakkında bilgi.",
-    url: `${siteUrl}/gizlilik`
+    url: `${siteUrl}/gizlilik/`
   }
 };
 
