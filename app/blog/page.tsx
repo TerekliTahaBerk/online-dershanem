@@ -8,7 +8,10 @@ import { blogPosts } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Blog",
-  description: "TYT-AYT ve LGS için ders bazlı hazırlık stratejileri, çalışma planları ve sınav içerikleri."
+  description: "TYT-AYT ve LGS için ders bazlı hazırlık stratejileri, çalışma planları ve sınav içerikleri.",
+  alternates: {
+    canonical: "/blog/"
+  }
 };
 
 export default function BlogPage() {
