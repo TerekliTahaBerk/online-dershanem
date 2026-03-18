@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   title: "KVKK Aydınlatma Metni",
   description: "Online Dershanem KVKK aydınlatma metni ve kişisel veri işleme esasları.",
   alternates: {
-    canonical: "/kvkk"
+    canonical: "/kvkk/"
   },
   openGraph: {
     title: "KVKK Aydınlatma Metni | Online Dershanem",
     description: "Kişisel verilerin işlenmesi, saklanması ve haklarınıza ilişkin bilgilendirme metni.",
-    url: `${siteUrl}/kvkk`
+    url: `${siteUrl}/kvkk/`
   }
 };
 
