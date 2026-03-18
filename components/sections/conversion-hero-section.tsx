@@ -17,7 +17,7 @@ export function ConversionHeroSection() {
       <Container>
         <div className="max-w-5xl">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl">
-            Sabit paketlere bağlı kalma; sadece ihtiyacın olan derslerle, sana özel grup verimliliğini yaşa.
+            Tüm dersleri tek pakette değil, ihtiyacına göre seçtiğin Grup Özel Ders sistemi
           </h1>
           <p className="mt-5 max-w-4xl text-base leading-relaxed text-muted sm:text-lg">
             Online Dershanem klasik toplu paket yapısı sunmaz. Öğrenci ihtiyacına göre TYT-AYT veya LGS ders paketlerini ayrı ayrı
@@ -44,7 +44,7 @@ export function ConversionHeroSection() {
           <p className="mt-3 text-xs text-muted">Gizli ücret yok. Form 1 dakikadan kısa sürer. Seviyene en uygun ders paketini birlikte belirliyoruz.</p>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link href="/tyt" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
+            <Link href="/yks" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
               TYT-AYT Paketleri
             </Link>
             <Link href="/lgs" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
