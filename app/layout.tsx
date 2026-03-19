@@ -20,22 +20,33 @@ export const metadata: Metadata = {
     title: "TYT-AYT ve LGS Online Dershane | Küçük Grup Özel Ders",
     description:
       "Seviyene uygun küçük grupla canlı derse katıl, haftalık takip ve net odaklı planla düzenli ilerle.",
-    url: siteUrl,
+    url: `${siteUrl}/`,
     siteName: "Online Dershanem",
     locale: "tr_TR",
-    type: "website"
+    type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Online Dershanem"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "Online Dershanem",
-    description: "TYT-AYT ve LGS için küçük grup canlı ders, haftalık takip ve ders bazlı özel ders planı."
+    description: "TYT-AYT ve LGS için küçük grup canlı ders, haftalık takip ve ders bazlı özel ders planı.",
+    images: ["/logo.png"]
   },
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
       { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
       { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }
     ],
-    shortcut: ["/favicon-48x48.png"],
+    shortcut: ["/favicon.ico"],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }]
   },
   robots: {
