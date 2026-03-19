@@ -13,10 +13,10 @@ type ProgramTarget = {
 
 function getProgramTarget(programName: string): ProgramTarget {
   if (programName.includes("LGS")) {
-    return { href: "/lgs", label: "LGS özel landing sayfasına git" };
+    return { href: "/lgs/", label: "LGS özel landing sayfasına git" };
   }
   if (programName.includes("TYT-AYT")) {
-    return { href: "/tyt", label: "TYT-AYT özel sayfalarına git" };
+    return { href: "/yks/", label: "TYT-AYT özel sayfalarına git" };
   }
   return { href: "/#paket-karsilastirma", label: "Ders bazlı paketleri incele" };
 }
