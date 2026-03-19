@@ -5,6 +5,7 @@ import { Pixels } from "@/components/analytics/pixels";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  manifest: "/manifest.webmanifest",
   title: {
     default: "TYT-AYT ve LGS Online Dershane | Küçük Grup Özel Ders",
     template: "%s | Online Dershanem"
@@ -30,9 +31,12 @@ export const metadata: Metadata = {
     description: "TYT-AYT ve LGS için küçük grup canlı ders, haftalık takip ve ders bazlı özel ders planı."
   },
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png"
+    icon: [
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" }
+    ],
+    shortcut: ["/favicon-48x48.png"],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }]
   },
   robots: {
     index: true,
