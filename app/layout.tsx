@@ -6,19 +6,19 @@ import { Pixels } from "@/components/analytics/pixels";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Online Dershanem | Online Dershane, TYT-AYT-LGS Özel Ders",
+    default: "TYT-AYT ve LGS Online Dershane | Küçük Grup Özel Ders",
     template: "%s | Online Dershanem"
   },
   description:
-    "Online Dershanem: TYT, AYT, LGS ve YKS için ders bazlı grup özel ders modeli. Küçük gruplar, seviyeye göre yerleşim, canlı ders ve düzenli takip.",
+    "TYT-AYT ve LGS için küçük grup online özel ders. Seviyene uygun sınıf, canlı ders, haftalık takip ve net odaklı çalışma planı.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"
   },
   openGraph: {
-    title: "Online Dershanem | Online Dershane, TYT-AYT-LGS Özel Ders",
+    title: "TYT-AYT ve LGS Online Dershane | Küçük Grup Özel Ders",
     description:
-      "TYT, AYT, LGS ve YKS için online dershane ve grup özel ders modeli: canlı ders, koçluk, takip ve net artışı odaklı yapı.",
+      "Seviyene uygun küçük grupla canlı derse katıl, haftalık takip ve net odaklı planla düzenli ilerle.",
     url: siteUrl,
     siteName: "Online Dershanem",
     locale: "tr_TR",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Online Dershanem",
-    description: "Online dershane ve TYT-AYT-LGS-YKS özel ders modeliyle hedef odaklı sınav hazırlığı."
+    description: "TYT-AYT ve LGS için küçük grup canlı ders, haftalık takip ve ders bazlı özel ders planı."
   },
   icons: {
     icon: "/logo.png",
