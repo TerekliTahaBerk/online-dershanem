@@ -7,8 +7,9 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: "/"
+      allow: ["/", "/favicon.ico", "/favicon.png", "/apple-touch-icon.png"]
     },
+    host: siteUrl,
     sitemap: `${siteUrl}/sitemap.xml`
   };
 }
