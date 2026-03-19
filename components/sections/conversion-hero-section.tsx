@@ -44,10 +44,10 @@ export function ConversionHeroSection() {
           <p className="mt-3 text-xs text-muted">Gizli ücret yok. Başvuru 1 dakikadan kısa sürer. Kısa ön görüşmeyle sana uygun grup planını netleştiriyoruz.</p>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link href="/yks" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
+            <Link href="/yks/" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
               TYT-AYT Paketleri
             </Link>
-            <Link href="/lgs" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
+            <Link href="/lgs/" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
               LGS Paketleri
             </Link>
           </div>
