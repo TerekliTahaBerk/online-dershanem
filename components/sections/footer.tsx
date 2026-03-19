@@ -26,9 +26,9 @@ export function Footer() {
           </p>
         </div>
         <div className="flex gap-5">
-          <Link href="/kvkk" className="hover:text-mint">KVKK</Link>
-          <Link href="/gizlilik" className="hover:text-mint">Gizlilik</Link>
-          <Link href="/iade" className="hover:text-mint">İade Politikası</Link>
+          <Link href="/kvkk/" className="hover:text-mint">KVKK</Link>
+          <Link href="/gizlilik/" className="hover:text-mint">Gizlilik</Link>
+          <Link href="/iade/" className="hover:text-mint">İade Politikası</Link>
         </div>
       </Container>
     </footer>
