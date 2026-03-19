@@ -41,9 +41,10 @@ export default function HomePage() {
 
   const orgJsonLd = {
     "@context": "https://schema.org",
-    "@type": "EducationalOrganization",
+    "@type": "Organization",
     name: "Online Dershanem",
     url: siteUrl,
+    logo: `${siteUrl}/logo.png`,
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
@@ -55,6 +56,7 @@ export default function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Online Dershanem",
+    alternateName: "Online Dershanem Grup Ozel Ders",
     url: siteUrl,
     inLanguage: "tr-TR",
     keywords: "online dershanem, online dershane, özel ders, yks, tyt, ayt, lgs"
