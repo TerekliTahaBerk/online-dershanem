@@ -4,13 +4,18 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { Container } from "@/components/ui/container";
 import { FadeIn } from "@/components/ui/fade-in";
-import { blogPosts } from "@/lib/content";
+import { blogPosts, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Blog",
   description: "TYT-AYT ve LGS için ders bazlı hazırlık stratejileri, çalışma planları ve sınav içerikleri.",
   alternates: {
     canonical: "/blog/"
+  },
+  openGraph: {
+    title: "Blog | Online Dershanem",
+    description: "TYT-AYT ve LGS için ders bazlı hazırlık stratejileri, çalışma planları ve sınav içerikleri.",
+    url: `${siteUrl}/blog/`
   }
 };
 
@@ -35,7 +40,7 @@ export default function BlogPage() {
                   <h2 className="mt-2 text-xl font-semibold text-ink">{post.title}</h2>
                   <p className="mt-3 text-sm leading-relaxed text-muted">{post.excerpt}</p>
                   <Link
-                    href={`/blog/${post.slug}`}
+                    href={`/blog/${post.slug}/`}
                     className="mt-5 inline-flex rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
                   >
                     Yazıyı Oku
