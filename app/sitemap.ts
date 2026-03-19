@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   return [
-    { url: siteUrl, lastModified, changeFrequency: "weekly", priority: 1 },
+    { url: `${siteUrl}/`, lastModified, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/yks/`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/lgs/`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/paketler/`, lastModified, changeFrequency: "weekly", priority: 0.8 },
