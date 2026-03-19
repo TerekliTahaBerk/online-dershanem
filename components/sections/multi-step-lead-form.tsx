@@ -394,7 +394,7 @@ export function MultiStepLeadForm() {
                           className="mt-0.5 h-4 w-4 accent-brand"
                         />
                         <span>
-                          <Link href="/kvkk" target="_blank" className="font-semibold text-brand underline">
+                          <Link href="/kvkk/" target="_blank" className="font-semibold text-brand underline">
                             KVKK Aydınlatma Metni
                           </Link>{" "}
                           ve kişisel veri işleme bilgilendirmesini okudum, onaylıyorum.
