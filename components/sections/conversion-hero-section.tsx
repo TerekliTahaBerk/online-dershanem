@@ -17,11 +17,11 @@ export function ConversionHeroSection() {
       <Container>
         <div className="max-w-5xl">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl">
-            Tüm dersleri tek pakette değil, ihtiyacına göre seçtiğin Grup Özel Ders sistemi
+            YKS ve LGS'de ihtiyacın olan dersi seç, küçük grupta daha hızlı ilerle
           </h1>
           <p className="mt-5 max-w-4xl text-base leading-relaxed text-muted sm:text-lg">
-            Online Dershanem klasik toplu paket yapısı sunmaz. Öğrenci ihtiyacına göre TYT-AYT veya LGS ders paketlerini ayrı ayrı
-            seçer; küçük grup, seviyeye göre yerleşim ve odaklı ders akışı ile daha verimli ilerler.
+            Toplu paket zorunluluğu yok. TYT-AYT ve LGS derslerini ihtiyacına göre tek tek seçersin; seviyene uygun küçük grupta
+            canlı derse girer, haftalık takip ile düzenli ilerlersin.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
@@ -30,18 +30,18 @@ export function ConversionHeroSection() {
               eventName="hero_cta_click"
               className="inline-flex items-center justify-center rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-pine"
             >
-              Ücretsiz Denemeyi Başlat
+              Ücretsiz Deneme Dersi Al
             </LeadFunnelTrigger>
             <a
               href="#paket-karsilastirma"
               className="inline-flex items-center justify-center rounded-full border border-line-strong bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-soft"
               data-analytics-id="hero_view_programs"
             >
-              Ders Paketlerini Gör
+              Paketleri ve Fiyatları Gör
             </a>
           </div>
 
-          <p className="mt-3 text-xs text-muted">Gizli ücret yok. Form 1 dakikadan kısa sürer. Seviyene en uygun ders paketini birlikte belirliyoruz.</p>
+          <p className="mt-3 text-xs text-muted">Gizli ücret yok. Başvuru 1 dakikadan kısa sürer. Kısa ön görüşmeyle sana uygun grup planını netleştiriyoruz.</p>
 
           <div className="mt-6 flex flex-wrap gap-2">
             <Link href="/yks" className="rounded-full border border-line-strong bg-white px-4 py-1.5 text-xs font-semibold text-ink transition hover:bg-soft">
