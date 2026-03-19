@@ -15,8 +15,8 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const packageLinks = [
-    { label: "TYT-AYT", href: "/yks" },
-    { label: "LGS", href: "/lgs" }
+    { label: "TYT-AYT", href: "/yks/" },
+    { label: "LGS", href: "/lgs/" }
   ];
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export function Navbar() {
             {navLinks.map((item) =>
               item.label === "Paketler" ? (
                 <div key={item.label} className="group relative">
-                  <Link href="/paketler" className="inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-brand">
+                  <Link href="/paketler/" className="inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-brand">
                     Paketler <ChevronDown className="h-4 w-4" />
                   </Link>
                   <div className="absolute left-0 top-full z-50 w-44 pt-2">
@@ -108,7 +108,7 @@ export function Navbar() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="space-y-1">
-              <Link href="/paketler" className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink hover:bg-soft">
+              <Link href="/paketler/" className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink hover:bg-soft">
                 Paketler
               </Link>
               {packageLinks.map((pkg) => (
@@ -116,7 +116,7 @@ export function Navbar() {
                   {pkg.label}
                 </Link>
               ))}
-              <Link href="/blog" className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink hover:bg-soft">
+              <Link href="/blog/" className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink hover:bg-soft">
                 Blog
               </Link>
             </div>
