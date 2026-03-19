@@ -17,9 +17,9 @@ import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
 
 export const metadata: Metadata = {
-  title: "Online Dershane ve Özel Ders | YKS, TYT, AYT, LGS Hazırlık",
+  title: "TYT-AYT ve LGS için Küçük Grup Online Özel Ders",
   description:
-    "YKS, TYT, AYT ve LGS için online dershane ve ders bazlı grup özel ders paketleri: canlı ders, seviyeye göre grup ve düzenli takip sistemi.",
+    "Toplu paket zorunluluğu olmadan ihtiyacın olan dersi seç. TYT-AYT ve LGS için küçük gruplarda canlı ders, haftalık takip ve düzenli ilerleme.",
   alternates: {
     canonical: "/"
   }
