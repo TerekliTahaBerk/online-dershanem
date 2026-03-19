@@ -3,14 +3,22 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { Container } from "@/components/ui/container";
 import { FadeIn } from "@/components/ui/fade-in";
-import { contact, subjectPackageGroups } from "@/lib/content";
+import { contact, siteUrl, subjectPackageGroups } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { Check, MessageCircleMore, PhoneCall } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Ders Bazlı Grup Özel Ders Paketleri",
-  description: "TYT-AYT ve LGS için ders bazlı Grup Özel Ders paketlerini inceleyin."
+  description: "TYT-AYT ve LGS için ders bazlı Grup Özel Ders paketlerini inceleyin.",
+  alternates: {
+    canonical: "/paketler/"
+  },
+  openGraph: {
+    title: "Ders Bazlı Grup Özel Ders Paketleri | Online Dershanem",
+    description: "TYT-AYT ve LGS için ders bazlı Grup Özel Ders paketlerini inceleyin.",
+    url: `${siteUrl}/paketler/`
+  }
 };
 
 export default function PackagesPage() {
