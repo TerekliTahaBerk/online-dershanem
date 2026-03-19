@@ -11,12 +11,15 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CUSTOM_DOMAIN: onlinedershanem.com
     steps:
       - name: Checkout
         uses: actions/checkout@v4
