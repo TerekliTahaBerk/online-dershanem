@@ -505,56 +505,271 @@ export const weeklyStudyFlow = [
 
 export const blogPosts = [
   {
-    slug: "lgs-net-artirma-plani",
-    category: "LGS",
-    title: "LGS'de Net Artırmak İçin 8 Haftalık Gerçekçi Plan",
+    slug: "online-dershane-nedir",
+    category: "Online Dershane",
+    title: "Online Dershane Nedir? LGS ve YKS İçin Nasıl Seçilir?",
+    seoTitle: "Online Dershane Nedir? LGS ve YKS Rehberi",
+    metaDescription:
+      "Online dershane seçerken sınıf mevcudu, haftalık takip ve ders bazlı model neden kritik? LGS ve YKS öğrencileri için net artıran rehber.",
     excerpt:
-      "Dağınık çalışmayı bırakıp haftalık hedeflerle ilerleyen öğrencilerin net artışını hızlandıran, uygulanabilir bir LGS çalışma planı.",
-    content: [
-      "LGS sürecinde en sık yapılan hata, çok kaynak arasında kaybolup düzenli ölçüm yapmadan çalışmak. Oysa net artışı için temel prensip: kısa döngülerle çalışmak, düzenli deneme yapmak ve yanlışları konu bazlı değil neden bazlı analiz etmek.",
-      "İlk 2 haftada öğrencinin temel seviyesi netleştirilir. Özellikle Türkçe paragraf ve matematik problem alanlarında süre kullanımını ölçmek kritik. Bu dönemde amaç yüksek soru sayısı değil, doğru çözüm alışkanlığı oluşturmaktır.",
-      "3-5. haftalar arasında mini deneme rutini başlar. Haftada en az 1 deneme, sonrasında 1 analiz oturumu yapılır. Analizde yalnızca yanlış sayısı değil, dikkat hatası mı bilgi açığı mı olduğu ayrıştırılır. Bu ayrım sonraki haftanın planını belirler.",
-      "6-8. haftalarda sınav simülasyonu yoğunluğu artırılır. Öğrenci zaman baskısı altında soru seçim disiplini geliştirir. Bu evrede net artışı genellikle daha görünür olur çünkü önceki haftalarda kurulan temel artık ölçülebilir performansa dönüşür."
-    ]
+      "Online dershane ararken en büyük hata sadece fiyat karşılaştırmak. Bu rehberde ders bazlı seçim, küçük grup ve takip sistemiyle doğru modeli anlatıyoruz.",
+    cardSnippet: "Kalabalık sınıf mı, küçük grup mu? Online dershanede doğru seçim rehberi.",
+    featured: true,
+    sections: [
+      {
+        h2: "Online dershane seçerken neden çoğu öğrenci yanlış karar veriyor?",
+        paragraphs: [
+          "Birçok öğrenci ve veli, online dershane seçiminde sadece paket fiyatına bakıyor. Fakat net artışını belirleyen ana faktör fiyat değil, ders içi etkileşim ve düzenli takip sistemi.",
+          "Sınıf 20-30 kişiye çıktığında öğrenci derste görünmez hale gelir. Özellikle TYT ve LGS gibi süreçlerde bu durum, düzenli çalışan öğrencinin bile performansını düşürür."
+        ],
+        bullets: [
+          "Kalabalık sınıfta bireysel geri bildirim azalır",
+          "Ders sonrası hata analizi yapılmazsa yanlışlar tekrar eder",
+          "Takipsiz programlarda çalışma disiplini kısa sürede bozulur"
+        ]
+      },
+      {
+        h2: "Net artıran online dershane modelinde hangi 3 kriter olmalı?",
+        paragraphs: ["Online dershane modelinin işe yarayıp yaramadığını aşağıdaki üç kritere bakarak hızlıca anlayabilirsin."],
+        bullets: [
+          "Maksimum 4 kişilik küçük grup: Derste soru sorabilmek ve bireysel dönüş alabilmek için.",
+          "Ders bazlı seçim: Sadece ihtiyaç olan derse yatırım yaparak verimi artırmak için.",
+          "Haftalık takip sistemi: Deneme analizi, ödev kontrolü ve net hedef takibi için."
+        ]
+      },
+      {
+        h2: "Online dershane mi online özel ders mi? Kararı nasıl verilir?",
+        paragraphs: [
+          "Eğer öğrenci tüm derslerde temel problemi yaşıyorsa yapılandırılmış bir online dershane sistemi daha sağlıklı olur. Sadece belirli bir derste tıkanma varsa online özel ders daha hızlı sonuç verebilir.",
+          "En iyi sonuç, dershane düzeni + gerektiğinde ders bazlı özel destek modelidir."
+        ],
+        links: [
+          { label: "Online özel ders modeli nasıl çalışıyor? Detaylı incele", href: "/online-ozel-ders/" },
+          { label: "Ders bazlı küçük grup sistemini gör", href: "/online-dershane/" }
+        ]
+      }
+    ],
+    cta: {
+      title: "Ücretsiz deneme dersiyle seviyeni netleştir",
+      text: "Tek başına çalışırken nerede takıldığını görmek zor. Ücretsiz deneme ile hangi dersten başlaman gerektiğini birlikte belirleyelim.",
+      buttonLabel: "Ücretsiz Denemeye Başla"
+    },
+    relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
   },
   {
-    slug: "yks-tyt-ayt-zaman-yonetimi",
+    slug: "online-ozel-ders-mi-dershane-mi",
+    category: "Online Özel Ders",
+    title: "Online Dershane mi Özel Ders mi?",
+    seoTitle: "Online Dershane mi Özel Ders mi? Hangisi Daha Etkili?",
+    metaDescription:
+      "Online dershane mi özel ders mi daha etkili? Avantajlar, maliyet ve sürdürülebilirlik açısından küçük grup modelini karşılaştırmalı incele.",
+    excerpt:
+      "En çok sorulan soru: online dershane mi, özel ders mi almalıyım? Cevap öğrencinin ihtiyacına bağlı ve bu yazıda net karşılaştırma var.",
+    cardSnippet: "Online dershane ve özel ders karşılaştırması: hangisi daha etkili?",
+    featured: true,
+    sections: [
+      {
+        h2: "Özel Ders Avantajları",
+        bullets: ["Birebir ilgi", "Hızlı ilerleme", "Esnek ders planı"],
+        paragraphs: [
+          "Özel ders doğru öğretmenle çok hızlı sonuç verebilir.",
+          "Ancak çoğu öğrenci için maliyet nedeniyle uzun vadede sürdürülebilir değildir."
+        ]
+      },
+      {
+        h2: "Online Dershane Avantajları",
+        bullets: ["Sistemli ilerleme", "Daha uygun fiyat", "Düzenli takip"],
+        paragraphs: [
+          "Online dershane modelinde haftalık plan, deneme analizi ve takip birlikte yürütülür.",
+          "Özellikle uzun sınav maratonlarında bu düzenli sistem motivasyonu korur."
+        ]
+      },
+      {
+        h2: "En İyi Model: Küçük Grup",
+        bullets: ["4 kişilik gruplar", "Birebir gibi ilgi", "Dershane gibi sistem"],
+        paragraphs: [
+          "Küçük grup modelinde öğrenci ne kalabalıkta kaybolur ne de maliyet baskısıyla ders bırakır.",
+          "Bu yapı hem verimli hem sürdürülebilir bir ilerleme sunar."
+        ],
+        links: [{ label: "Online dershane sistemini incele", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "Küçük grup modelini ücretsiz denemek ister misin?",
+      text: "Öğrencinin seviyesine göre en doğru modeli birlikte belirleyelim.",
+      buttonLabel: "Online Dershane Sistemini İncele"
+    },
+    relatedSlugs: ["online-dershane-nedir", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
+  },
+  {
+    slug: "yks-online-ders-calisma-plani",
     category: "YKS",
-    title: "YKS'de TYT ve AYT Zaman Yönetimini Birlikte Kurma Rehberi",
+    title: "TYT ve AYT Aynı Anda Nasıl Çalışılır?",
+    seoTitle: "TYT ve AYT Aynı Anda Nasıl Çalışılır? (Net Artıran Sistem)",
+    metaDescription:
+      "TYT ve AYT birlikte nasıl çalışılır? Zaman yönetimi, deneme analizi ve haftalık plan ile netlerini artır.",
     excerpt:
-      "Sadece çok çalışarak değil, TYT ve AYT dengesini doğru kurarak sıralama yükseltmek isteyenler için pratik bir yol haritası.",
-    content: [
-      "YKS öğrencilerinin büyük bölümü TYT ve AYT arasında doğru denge kuramadığı için potansiyelinin altında kalıyor. TYT'de hız, AYT'de derinlik gerekir; bu iki beceri aynı haftada birlikte planlanmadığında verim düşer.",
-      "Haftalık planın ilk adımı, TYT için süre odaklı kısa bloklar, AYT için konu derinliği odaklı uzun bloklar oluşturmaktır. Her blok sonunda mini ölçme yapılmalı; aksi halde çalışma hissi artar ama performans verisi oluşmaz.",
-      "Deneme sonrası analizde en kritik soru: hangi branşta süre kaybettim ve neden? Bu soruya net cevap üretilmezse öğrenci aynı hatayı tekrar eder. Bu yüzden haftalık plan mutlaka deneme raporuna göre güncellenmelidir.",
-      "Sınava yaklaşıldıkça TYT tekrar sıklığı artırılır, AYT'de ise zayıf konu kümeleri hedeflenir. Bu model hem süre yönetimini hem de toplam net artışını birlikte optimize eder."
-    ]
+      "YKS’de en büyük sorun TYT mi AYT mi çalışacağını bilememek. Yanlış denge düşük sıralamaya yol açar.",
+    cardSnippet: "TYT + AYT dengesini kurup net artıran haftalık çalışma sistemi.",
+    featured: false,
+    sections: [
+      {
+        h2: "TYT ve AYT Arasındaki Fark",
+        bullets: ["TYT: hız", "AYT: derinlik", "İkisi farklı çalışma sistemi ister"],
+        paragraphs: [
+          "TYT ve AYT aynı mantıkla çalışıldığında süre yönetimi bozulur.",
+          "Doğru plan, iki alanı aynı hafta içinde dengeli yürütmektir."
+        ]
+      },
+      {
+        h2: "Haftalık Plan Nasıl Kurulmalı?",
+        bullets: [
+          "TYT için kısa ve hızlı bloklar",
+          "AYT için uzun ve derin odak blokları",
+          "Her blok sonrası mini test"
+        ],
+        paragraphs: [
+          "Mini test olmadan yapılan çalışma ölçülmez. Ölçülmeyen plan da sürdürülemez."
+        ]
+      },
+      {
+        h2: "Deneme Analizi Nasıl Yapılır?",
+        paragraphs: [
+          "En kritik soru şudur: Nerede süre kaybettim?",
+          "Bu soruya net cevap verilmeyen analizlerde ilerleme görünmez."
+        ],
+        bullets: ["Süre kaybedilen branşları ayır", "Yanlış türüne göre tekrar planı yap", "Bir sonraki haftayı buna göre düzenle"]
+      },
+      {
+        h2: "Sınava Yaklaştıkça Ne Yapılmalı?",
+        bullets: ["TYT tekrarını artır", "AYT’de zayıf konulara odaklan", "Deneme ritmini koru"]
+      },
+      {
+        h2: "En Büyük Sorun: Takipsizlik",
+        paragraphs: [
+          "Öğrenciler plan yapıyor ama uygulayamıyor. Çünkü sistemli takip olmadığı zaman program kısa sürede dağılıyor."
+        ],
+        links: [{ label: "Online özel ders sistemimizi incele", href: "/online-ozel-ders/" }]
+      }
+    ],
+    cta: {
+      title: "TYT + AYT dengesini birlikte kuralım",
+      text: "Tek başına denge kurmak zor geliyorsa ücretsiz deneme görüşmesinde kişisel planını çıkaralım.",
+      buttonLabel: "Online Özel Ders Sistemini İncele"
+    },
+    relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
   {
-    slug: "kpss-calisirken-hazirlik",
-    category: "KPSS",
-    title: "Çalışırken KPSS'ye Hazırlanmak: Sürdürülebilir Program Modeli",
+    slug: "lgs-online-ders-net-artirma",
+    category: "LGS",
+    title: "LGS Net Nasıl Artırılır? (8 Haftalık Gerçekçi Plan)",
+    seoTitle: "LGS Net Nasıl Artırılır? (8 Haftalık Kanıtlanmış Plan)",
+    metaDescription:
+      "LGS’de netlerini artırmak için uygulanabilir 8 haftalık plan. Düzenli çalışma, deneme analizi ve doğru sistemle hızlı ilerle.",
     excerpt:
-      "Yoğun iş temposunda KPSS hazırlığını bırakmadan ilerlemek isteyen adaylar için gerçek hayata uygun bir çalışma düzeni.",
-    content: [
-      "Çalışan adayların en büyük sorunu motivasyon değil sürekliliktir. Bu nedenle KPSS planı uzun ve yorucu bloklar yerine kısa, tekrar eden ve takip edilebilir parçalardan oluşmalıdır.",
-      "Hafta içi odak, konu + kısa soru pratiği; hafta sonu odak ise deneme + analiz olmalıdır. Bu ritim korunursa sınırlı zamanla bile puan artışı mümkün hale gelir.",
-      "Denemelerde düşük gelen branşlarda hemen kaynak değiştirmek yerine, aynı kaynaktan hedefli tekrar yapmak çoğu zaman daha iyi sonuç üretir. Önemli olan kaynak sayısı değil, hata dönüşüm hızıdır.",
-      "Her hafta sonunda bir performans notu çıkarıldığında, aday neyi doğru yaptığını ve nerede zorlandığını net görür. Bu şeffaflık, süreci psikolojik olarak da sürdürülebilir kılar."
-    ]
+      "LGS’de netlerini artırmak istiyorsan en büyük hata plansız ve dağınık çalışmak. Bu yazıda 8 haftalık net artırma sistemini adım adım göreceksin.",
+    cardSnippet: "LGS net artırmak için 8 haftalık uygulanabilir plan ve analiz sistemi.",
+    featured: false,
+    sections: [
+      {
+        h2: "LGS’de Net Artmamasının 3 Sebebi",
+        paragraphs: [
+          "LGS’de çoğu öğrenci çok çalışmasına rağmen ilerleyemiyor. Bunun temel sebebi plansız çalışma, deneme analizinin yapılmaması ve çok kaynak arasında kaybolmak.",
+          "Net artışı için formül net: ölçüm + analiz + tekrar."
+        ],
+        bullets: ["Plansız çalışma", "Deneme analizinin yapılmaması", "Çok kaynak, az tekrar"]
+      },
+      {
+        h2: "1-2. Hafta: Temel Kurma",
+        paragraphs: [
+          "İlk iki haftada öğrencinin mevcut seviyesini netleştirmek gerekir. Seviye belirleme denemesi yapıp özellikle Türkçe paragraf ve matematik problem sürelerini ölçmek kritik.",
+          "Bu aşamada hedef hız değil, doğru çözüm alışkanlığıdır."
+        ]
+      },
+      {
+        h2: "3-5. Hafta: Deneme Sistemi Kurma",
+        paragraphs: [
+          "Bu dönemde haftada en az bir deneme zorunlu olmalı. Deneme sonrası analiz yapılmadan yeni konuya geçmek verimi düşürür.",
+          "Analizde şu ayrım mutlaka yapılmalı: dikkat hatası mı, bilgi eksikliği mi? Bu ayrım sonraki haftanın planını belirler."
+        ],
+        bullets: ["Haftada en az 1 deneme", "Deneme sonrası analiz", "Dikkat hatası ve bilgi eksikliği ayrımı"]
+      },
+      {
+        h2: "6-8. Hafta: Sınav Simülasyonu",
+        paragraphs: [
+          "Son aşamada süre baskısı altında çözüm pratiği ve soru seçme stratejisi öne çıkar.",
+          "Net artışı genellikle bu dönemde görünür hale gelir; çünkü önceki haftalarda kurulan sistem sonuç üretmeye başlar."
+        ],
+        bullets: ["Süre baskısı altında çözüm", "Soru seçme stratejisi geliştirme", "Net artışını görünür hale getirme"]
+      },
+      {
+        h2: "Tek Başına Çalışmak Neden Zor?",
+        paragraphs: [
+          "Planı bilmek tek başına yetmez. Asıl sorun, öğrencinin bu planı düzenli uygulayamaması.",
+          "Disiplin, takip ve kontrol olmadığı zaman sistem kısa sürede dağılır."
+        ],
+        bullets: ["Disiplin eksikliği", "Takip eksikliği", "Kontrol eksikliği"]
+      },
+      {
+        h2: "Daha Hızlı Net Artışı İçin Sistem",
+        paragraphs: [
+          "Bu yüzden birçok öğrenci küçük grup online ders sistemine geçiyor. Bu modelde haftalık takip, deneme analizi ve seviyeye göre plan birlikte yürütülür.",
+          "Yani öğrenci sadece çalışmaz, aynı zamanda süreç profesyonel şekilde yönetilir."
+        ],
+        links: [
+          { label: "Online dershane sistemini keşfet", href: "/online-dershane/" },
+          { label: "Online özel ders modelini incele", href: "/online-ozel-ders/" }
+        ]
+      }
+    ],
+    cta: {
+      title: "Ücretsiz deneme dersiyle net artış planını çıkar",
+      text: "Bu sistemi tek başına uygulamak zor geliyorsa öğrencinin seviyesine göre haftalık planı birlikte hazırlayalım.",
+      buttonLabel: "Ücretsiz Deneme Dersi Başlat"
+    },
+    relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
   {
-    slug: "ales-mantik-hiz-teknikleri",
-    category: "ALES",
-    title: "ALES Mantık Sorularında Hızlanmak İçin Uygulanabilir Teknikler",
+    slug: "online-dershane-fiyatlari-2026",
+    category: "Online Dershane",
+    title: "Online Dershane Fiyatları 2026",
+    seoTitle: "Online Dershane Fiyatları 2026: Ne Kadar Ödemelisin?",
+    metaDescription:
+      "Online dershane fiyatları 2026 yılında neye göre değişiyor? Grup ders ücretleri, değer analizi ve net artıran sistem seçimi rehberi.",
     excerpt:
-      "Doğruluğu korurken süreyi kısaltmak isteyen adaylar için ALES mantık sorularında karar hızını artıran yöntemler.",
-    content: [
-      "ALES'te çoğu aday konuyu biliyor ancak soruya yaklaşım süresi uzun olduğu için puan kaybediyor. Bu yüzden hedef yalnızca doğru yapmak değil, doğruyu hızlı üretmek olmalı.",
-      "İlk adım, soru kalıbı tanımaktır. Benzer mantık sorularını gruplayıp hangi kalıpta hangi çözüm şablonunun çalıştığını görmek hız kazanımını ciddi biçimde artırır.",
-      "İkinci adım, eşik süre belirlemektir. Bir soruda belirlenen sürenin üstüne çıkıldığında inatlaşmadan soru bırakma disiplini geliştirilir. Bu alışkanlık sınavın genel akışını korur.",
-      "Haftalık sprint oturumlarıyla tempo çalışması yapıldığında, adayın hem doğruluk oranı hem toplam çözüm hızı dengeli şekilde yükselir."
-    ]
+      "Online dershane fiyatları çok değişken. Peki gerçek değer ne? Bu yazıda fiyatı değil sonucu nasıl ölçmen gerektiğini anlatıyoruz.",
+    cardSnippet: "Online dershane fiyatları 2026: ucuz mu, değerli mi?",
+    featured: false,
+    sections: [
+      {
+        h2: "Ortalama Fiyatlar",
+        bullets: ["Grup ders: 1000–2500 TL", "Özel ders: çok daha yüksek"],
+        paragraphs: [
+          "Fiyat aralığı geniş olabilir. Bu yüzden karar verirken sadece rakama değil sistemin gücüne bakmak gerekir."
+        ]
+      },
+      {
+        h2: "Fiyatı Belirleyen Faktörler",
+        bullets: ["Sınıf mevcudu", "Öğretmen kalitesi", "Takip sistemi"],
+        paragraphs: [
+          "Küçük grup ve haftalık takip maliyeti etkiler ama sonuç üretme ihtimalini de yükseltir."
+        ]
+      },
+      {
+        h2: "Ucuz mu, Değerli mi?",
+        bullets: ["Ucuz ≠ iyi", "Önemli olan net artışı + sistem"],
+        paragraphs: [
+          "En doğru tercih, öğrencinin düzenli ilerlemesini ve ölçülebilir net artışını sağlayan modeldir."
+        ],
+        links: [{ label: "Online dershane sistemimizi incele", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "Küçük grup + takip sistemli modeli dene",
+      text: "Öğrencinin seviyesine göre ders planını çıkarıp ücretsiz deneme dersiyle doğru başlangıcı yap.",
+      buttonLabel: "Hemen Deneme Dersine Katıl"
+    },
+    relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani"]
   }
 ];
 
