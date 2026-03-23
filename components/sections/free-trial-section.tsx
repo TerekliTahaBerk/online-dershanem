@@ -3,10 +3,10 @@ import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 
 const trialItems = [
-  "Sınav türüne göre seviye analizi ve hedef net planı",
-  "7 günlük örnek çalışma akışı + ders bazlı öneri",
-  "Koçluk görüşmesi ile sürdürülebilir tempo kurulumu",
-  "Hangi ders paketiyle daha hızlı sonuç alacağını net öneri"
+  "Kişiye Özel Seviye ve Hedef Net Analizi",
+  "7 Günlük Kişiselleştirilmiş Başarı Planı",
+  "Uzman Koçlarla Birebir Motivasyon ve Strateji Seansı",
+  "Sana En Hızlı Net Artışı Sağlayacak Paket Önerisi"
 ];
 
 export function FreeTrialSection() {
@@ -15,11 +15,13 @@ export function FreeTrialSection() {
       <Container>
         <div className="grid gap-6 rounded-3xl border border-line bg-white p-6 shadow-soft sm:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Ücretsiz Deneme / Demo Akışı</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">Önce sistemi dene, sonra karar ver</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Sıfır Risk, Maksimum Verim</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              Başarı Stratejini Birlikte Çizelim, İlk Adımı Ücretsiz At
+            </h2>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-              Uzun formlar veya belirsiz kayıt süreçleri yok. Kısa bir başvuru ile seviyene göre hangi ders paketinden başlaman
-              gerektiğini, örnek haftalık akışı ve demo adımlarını ücretsiz gör.
+              Dakikalarca form doldurma devri bitti. Sadece 1 dakikada seviyeni belirle, sana özel haftalık çalışma planını ve demo
+              derslerini anında keşfet.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <LeadFunnelTrigger
@@ -28,7 +30,7 @@ export function FreeTrialSection() {
                 className="inline-flex items-center justify-center rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white transition hover:bg-pine"
                 analyticsId="trial_section_start"
               >
-                Ücretsiz Denemeyi Başlat
+                Ücretsiz Yol Haritamı Oluştur
               </LeadFunnelTrigger>
               <LeadFunnelTrigger
                 source="trial_section_demo"
@@ -36,7 +38,7 @@ export function FreeTrialSection() {
                 className="inline-flex items-center justify-center rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink transition hover:bg-soft"
                 analyticsId="trial_section_demo"
               >
-                Demo Ders Talep Et
+                Canlı Dersi Deneyimle
               </LeadFunnelTrigger>
             </div>
           </div>
@@ -52,7 +54,7 @@ export function FreeTrialSection() {
               ))}
             </ul>
             <p className="mt-4 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-muted/80">
-              Gizli ücret yok • 1 dakikada tamamlanır • Sana uygun ders paketini birlikte seçiyoruz
+              Kredi kartı gerekmez • %100 Ücretsiz • Sadece 60 saniyede geleceğini planlamaya başla
             </p>
           </div>
         </div>
