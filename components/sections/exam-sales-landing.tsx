@@ -94,6 +94,9 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
 
                   <div className="mt-4 rounded-2xl border border-line bg-soft p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand">{pkg.discountLabel}</p>
+                    <p className="mt-1 inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-semibold text-rose-700">
+                      {pkg.quota}
+                    </p>
                     <p className="mt-1 text-sm font-medium text-muted line-through">{pkg.oldPrice}</p>
                     <p className="mt-1 text-2xl font-bold text-anchor">{pkg.discountedPrice}</p>
                     <p className="mt-1 text-xs font-semibold text-muted">{pkg.perLessonPrice}</p>
