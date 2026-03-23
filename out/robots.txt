@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Allow: /favicon.ico
+Allow: /favicon.png
+Allow: /apple-touch-icon.png
+
+Host: https://onlinedershanem.com
+Sitemap: https://onlinedershanem.com/sitemap.xml

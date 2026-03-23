@@ -3,6 +3,7 @@ import Link from "next/link";
 import { contact } from "@/lib/content";
 import { Container } from "@/components/ui/container";
 import { ContactLink } from "@/components/ui/contact-link";
+import { PaymentTrustStrip } from "@/components/sections/payment-trust-strip";
 import footerLogo from "@/public/logo.png";
 
 export function Footer() {
@@ -30,6 +31,9 @@ export function Footer() {
           <Link href="/gizlilik/" className="hover:text-mint">Gizlilik</Link>
           <Link href="/iade/" className="hover:text-mint">İade Politikası</Link>
         </div>
+      </Container>
+      <Container className="mt-4">
+        <PaymentTrustStrip />
       </Container>
     </footer>
   );
