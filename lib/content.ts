@@ -254,13 +254,19 @@ export const subjectPackageGroups = [
       {
         subject: "Matematik",
         category: "TYT-AYT",
-        badge: "En çok tercih edilen",
+        badge: "EN POPÜLER SEÇİM",
         quota: "Son 2 kontenjan",
         oldPrice: "₺2.800,00",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺2.000,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺500,00",
-        features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Maks. 4 Kişilik Sınıf", "Seviyeye Göre Gruplandırma"],
+        features: [
+          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
+          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
+          "Sadece 4 Kişilik Butik Gruplarda VIP Eğitim (Özel Ders Verimi)",
+          "Kendi Seviyendeki Akranlarınla Maksimum Odak",
+          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+        ],
         cta: "Satın Al"
       },
       {
@@ -272,31 +278,49 @@ export const subjectPackageGroups = [
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺2.000,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺500,00",
-        features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Soru Çözüm Saati", "Konu Tarama Takibi"],
+        features: [
+          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
+          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
+          "Anlık Geri Bildirim ve Başarı Ölçümü",
+          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
+          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+        ],
         cta: "Satın Al"
       },
       {
         subject: "Kimya",
         category: "TYT-AYT",
-        badge: "",
+        badge: "NET ARTIRMA GARANTİLİ",
         quota: "Son 3 kontenjan",
         oldPrice: "₺2.400,00",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
-        features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Deneysel Konu Özetleri", "Ödev Kontrol Desteği"],
+        features: [
+          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
+          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
+          "Görsel Hafıza Destekli Özet ve Materyaller",
+          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
+          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+        ],
         cta: "Satın Al"
       },
       {
         subject: "Biyoloji",
         category: "TYT-AYT",
-        badge: "",
+        badge: "NET ARTIRMA GARANTİLİ",
         quota: "Son 2 kontenjan",
         oldPrice: "₺2.400,00",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
-        features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Kavram Haritaları", "Düzenli Mini Quiz"],
+        features: [
+          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
+          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
+          "Görsel Hafıza Destekli Özet ve Materyaller",
+          "Anlık Geri Bildirim ve Başarı Ölçümü",
+          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+        ],
         cta: "Satın Al"
       }
     ]
@@ -309,13 +333,19 @@ export const subjectPackageGroups = [
       {
         subject: "Matematik",
         category: "LGS",
-        badge: "LGS indirimi",
+        badge: "ERKEN KAYIT AVANTAJI",
         quota: "Son 1 kontenjan",
         oldPrice: "₺2.400,00",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
-        features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Maks. 4 Kişilik Sınıf", "Kazanım Bazlı Takip"],
+        features: [
+          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
+          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
+          "Sadece 4 Kişilik Butik Gruplarda VIP Eğitim (Özel Ders Verimi)",
+          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
+          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+        ],
         cta: "Satın Al"
       },
       {
@@ -327,7 +357,13 @@ export const subjectPackageGroups = [
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
-        features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Konu Tarama Takibi", "Düzenli Mini Quiz"],
+        features: [
+          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
+          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
+          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
+          "Anlık Geri Bildirim ve Başarı Ölçümü",
+          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+        ],
         cta: "Satın Al"
       }
     ]

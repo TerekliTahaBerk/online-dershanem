@@ -8,13 +8,13 @@ export function PricingComparisonSection() {
     <section id="paket-karsilastirma" className="scroll-mt-24 py-16 sm:py-20">
       <Container>
         <div className="max-w-4xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Ders Bazlı Paketler</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Kişiselleştirilmiş Öğrenme</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            Tüm dersleri tek pakette değil, ihtiyacına göre ders ders seç
+            Zayıf Olduğun Halkayı Güçlendir, Başarıyı Garantile
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
-            Aşağıdaki paketler klasik toplu dershane paketi değildir. Her kart bir dersi temsil eder. Öğrenci TYT-AYT veya LGS
-            kategorisinde ihtiyaç duyduğu dersi ayrı seçerek küçük gruplu Grup Özel Ders modeline dahil olur.
+            İyi olduğun dersler için zaman ve para harcama. Sadece eksik olduğun dersi seç, 4 kişilik özel gruplarda seviyene uygun,
+            butik bir eğitim al.
           </p>
         </div>
 
@@ -77,7 +77,8 @@ export function PricingComparisonSection() {
         </div>
 
         <p className="mt-6 text-xs text-muted">
-          Paketler ders bazlıdır; öğrenci ihtiyacına göre bir veya birden fazla ders seçebilir. Grup yerleşimleri seviyeye göre yapılır.
+          Özgürlük elinde: İster tek bir zayıf konuna odaklan, ister kendi özel müfredatını oluştur. Tüm yerleşimler öğrencinin
+          güncel seviyesine göre titizlikle yapılır.
         </p>
       </Container>
     </section>
