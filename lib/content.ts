@@ -1101,23 +1101,23 @@ export const blogPosts = [
 export const faq = [
   {
     q: "Bu sistem tüm dersleri içeren klasik bir online paket mi?",
-    a: "Hayır. Online Dershanem artık ders bazlı Grup Özel Ders modeliyle çalışır. Öğrenci tüm dersleri tek pakette almak zorunda değildir; ihtiyaç duyduğu ders paketlerini ayrı ayrı seçebilir."
+    a: "Hayır, çok daha fazlası. Klasik dershanelerin aksine, bizde gereksiz ders yükü yok. Sadece eksik olduğun dersleri seçerek kendi özel müfredatını oluşturabilir, zamanını ve bütçeni en verimli şekilde yönetebilirsin."
   },
   {
     q: "Gruplar kaç kişilik oluyor?",
-    a: "Dersler küçük gruplarla yürütülür. Birçok pakette maksimum 4 kişilik grup yapısı hedeflenir. Bu sayede derste daha fazla bireysel ilgi, daha hızlı geri bildirim ve daha verimli ders süresi sağlanır."
+    a: "Maksimum 4 kişi. Kalabalık sınıflarda kaybolmana izin vermiyoruz. 4 kişilik butik gruplarımız sayesinde öğretmenlerinle birebir etkileşim kurabilir, her an soru sorabilir ve özel ders kalitesinde eğitim alırsın."
   },
   {
     q: "Seviyeye göre gruplandırma yapılıyor mu?",
-    a: "Evet. Öğrenciler seçtikleri ders için mevcut seviyelerine ve hedeflerine göre uygun gruba alınır. Böylece ders temposu daha dengeli olur ve sınıf içi verim artar."
+    a: "Kesinlikle. Kayıt öncesi yapılan analizlerle seninle aynı seviyedeki ve aynı hedeflere sahip arkadaşlarınla eşleşirsin. Bu sayede ders temposu tam sana göre ayarlanır; ne geri kalırsın ne de yavaşlarsın."
   },
   {
     q: "Sadece ihtiyacım olan dersi alabilir miyim?",
-    a: "Evet. Sistem ders bazlıdır. Örneğin sadece TYT-AYT Matematik ya da sadece LGS Fen Bilimleri paketi seçebilirsin. İstersen süreç içinde farklı bir ders paketi eklenebilir."
+    a: "Evet, özgürlük sende. İster sadece TYT Matematik, ister sadece LGS Fen Bilimleri... İhtiyacına göre tek bir ders seçebilir, ilerleyen süreçte performansına göre farklı paketleri sepetine ekleyebilirsin."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. TYT-AYT ve LGS paketlerinde ders akışı konu anlatımı + soru çözüm + takip odaklıdır. Amaç sadece dersi bitirmek değil, öğrencinin sınav performansına doğrudan katkı üretmektir."
+    a: "Tamamen sonuç odaklı. Amacımız sadece konu bitirmek değil, sınavda netlerini artırmaktır. Müfredat; konu anlatımı, yeni nesil soru çözümleri ve stratejik takip üzerine kuruludur."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
@@ -1125,7 +1125,7 @@ export const faq = [
   },
   {
     q: "Paket seçimi konusunda kararsızsam ne yapmalıyım?",
-    a: "Kısa bir ön görüşme ile öğrencinin seviyesi ve hedefi değerlendirilir. Buna göre önce hangi ders paketiyle başlanmasının en doğru olacağı net biçimde önerilir."
+    a: "Endişelenme, yanındayız. Ücretsiz ön görüşmemizle senin seviyeni ve hedeflerini birlikte analiz ediyoruz. Başarıya giden en kısa yolu ve sana en uygun ders kombinasyonunu uzman rehberliğinde netleştiriyoruz."
   }
 ];
 
