@@ -259,7 +259,7 @@ export const subjectPackageGroups = [
         discountedPrice: "₺2.800,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺700,00",
         features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Maks. 4 Kişilik Sınıf", "Seviyeye Göre Gruplandırma"],
-        cta: "Bu paket ile ilgili daha fazla bilgi al"
+        cta: "Satın Al"
       },
       {
         subject: "Fizik",
@@ -270,7 +270,7 @@ export const subjectPackageGroups = [
         discountedPrice: "₺2.800,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺700,00",
         features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Soru Çözüm Saati", "Konu Tarama Takibi"],
-        cta: "Bu paket ile ilgili daha fazla bilgi al"
+        cta: "Satın Al"
       },
       {
         subject: "Kimya",
@@ -281,7 +281,7 @@ export const subjectPackageGroups = [
         discountedPrice: "₺2.400,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺600,00",
         features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Deneysel Konu Özetleri", "Ödev Kontrol Desteği"],
-        cta: "Bu paket ile ilgili daha fazla bilgi al"
+        cta: "Satın Al"
       },
       {
         subject: "Biyoloji",
@@ -292,7 +292,7 @@ export const subjectPackageGroups = [
         discountedPrice: "₺2.400,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺600,00",
         features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Kavram Haritaları", "Düzenli Mini Quiz"],
-        cta: "Bu paket ile ilgili daha fazla bilgi al"
+        cta: "Satın Al"
       }
     ]
   },
@@ -310,7 +310,7 @@ export const subjectPackageGroups = [
         discountedPrice: "₺2.400,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺600,00",
         features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Maks. 4 Kişilik Sınıf", "Kazanım Bazlı Takip"],
-        cta: "Bu paket ile ilgili daha fazla bilgi al"
+        cta: "Satın Al"
       },
       {
         subject: "Fen Bilimleri",
@@ -321,11 +321,25 @@ export const subjectPackageGroups = [
         discountedPrice: "₺2.000,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺500,00",
         features: ["Haftada 1 Ders", "90 Dakika Blok Ders", "Konu Tarama Takibi", "Düzenli Mini Quiz"],
-        cta: "Bu paket ile ilgili daha fazla bilgi al"
+        cta: "Satın Al"
       }
     ]
   }
 ] as const;
+
+export const packagePaymentLinks = {
+  "TYT-AYT:Matematik": "https://www.paytr.com/link/Y4PCm3L",
+  "TYT-AYT:Fizik": "https://www.paytr.com/link/O0tKPpt",
+  "TYT-AYT:Kimya": "https://www.paytr.com/link/H7AopnH",
+  "TYT-AYT:Biyoloji": "https://www.paytr.com/link/SSKgXWn",
+  "LGS:Matematik": "https://www.paytr.com/link/JWN7y0f",
+  "LGS:Fen Bilimleri": "https://www.paytr.com/link/FaZ0Tuv"
+} as const;
+
+export function getPackagePaymentLink(category: string, subject: string) {
+  const key = `${category}:${subject}` as keyof typeof packagePaymentLinks;
+  return packagePaymentLinks[key] ?? null;
+}
 
 export const pricing = [
   {

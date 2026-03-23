@@ -15,6 +15,7 @@ import { FinalConversionCTA } from "@/components/sections/final-conversion-cta";
 import { Footer } from "@/components/sections/footer";
 import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
+import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 
 export const metadata: Metadata = {
   title: "TYT-AYT ve LGS için Küçük Grup Online Özel Ders",
@@ -82,6 +83,7 @@ export default function HomePage() {
         <FinalConversionCTA />
       </main>
       <MultiStepLeadForm />
+      <PurchaseIntentForm />
       <Footer />
       <StickyContactBar />
     </>

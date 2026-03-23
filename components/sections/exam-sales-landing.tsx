@@ -3,10 +3,12 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
+import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
+import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { ContactLink } from "@/components/ui/contact-link";
-import { contact, subjectPackageGroups } from "@/lib/content";
+import { contact, getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 
 type PackageGroupKey = "TYT-AYT" | "LGS";
 
@@ -106,14 +108,15 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                     ))}
                   </ul>
 
-                  <LeadFunnelTrigger
+                  <PurchaseFunnelTrigger
                     source={`${data.examKey.toLowerCase()}_${pkg.subject}_package_cta`}
-                    eventName="pricing_cta_click"
+                    packageName={`${pkg.category} ${pkg.subject}`}
+                    paymentLink={getPackagePaymentLink(pkg.category, pkg.subject) ?? ""}
                     className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-pine"
                     analyticsId={`${data.examKey.toLowerCase()}_${pkg.subject}_package_cta`}
                   >
                     {pkg.cta}
-                  </LeadFunnelTrigger>
+                  </PurchaseFunnelTrigger>
                 </article>
               ))}
             </div>
@@ -163,6 +166,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
         </section>
       </main>
       <MultiStepLeadForm />
+      <PurchaseIntentForm />
       <Footer />
       <StickyContactBar />
     </>

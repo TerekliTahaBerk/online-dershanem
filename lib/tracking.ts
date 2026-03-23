@@ -18,9 +18,13 @@ export type ConversionEventName =
   | "pricing_cta_click"
   | "sticky_cta_click"
   | "landing_cta_click"
+  | "purchase_cta_click"
   | "lead_funnel_open"
   | "lead_funnel_step"
-  | "lead_funnel_complete";
+  | "lead_funnel_complete"
+  | "purchase_funnel_open"
+  | "purchase_funnel_step"
+  | "purchase_funnel_complete";
 
 export function trackConversionEvent(eventName: ConversionEventName, payload: Record<string, unknown> = {}) {
   if (typeof window === "undefined") {

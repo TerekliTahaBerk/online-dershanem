@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
+import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 import { Container } from "@/components/ui/container";
 import { FadeIn } from "@/components/ui/fade-in";
-import { contact, siteUrl, subjectPackageGroups } from "@/lib/content";
+import { contact, getPackagePaymentLink, siteUrl, subjectPackageGroups } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
-import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
+import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { Check, MessageCircleMore, PhoneCall } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -71,14 +72,15 @@ export default function PackagesPage() {
                           ))}
                         </ul>
 
-                        <LeadFunnelTrigger
+                        <PurchaseFunnelTrigger
                           source={`packages_page_${group.key}_${pkg.subject}`}
-                          eventName="pricing_cta_click"
+                          packageName={`${pkg.category} ${pkg.subject}`}
+                          paymentLink={getPackagePaymentLink(pkg.category, pkg.subject) ?? ""}
                           className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-pine"
                           analyticsId={`packages_page_${group.key}_${pkg.subject}`}
                         >
                           {pkg.cta}
-                        </LeadFunnelTrigger>
+                        </PurchaseFunnelTrigger>
                       </article>
                     ))}
                   </div>
@@ -115,6 +117,7 @@ export default function PackagesPage() {
           </div>
         </Container>
       </main>
+      <PurchaseIntentForm />
       <Footer />
     </>
   );

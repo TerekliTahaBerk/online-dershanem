@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
-import { subjectPackageGroups } from "@/lib/content";
+import { getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 import { Container } from "@/components/ui/container";
-import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
+import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 
 export function PricingComparisonSection() {
   return (
@@ -57,14 +57,15 @@ export function PricingComparisonSection() {
                       ))}
                     </ul>
 
-                    <LeadFunnelTrigger
+                    <PurchaseFunnelTrigger
                       source={`subject_package_${group.key}_${pkg.subject}`}
-                      eventName="pricing_cta_click"
+                      packageName={`${pkg.category} ${pkg.subject}`}
+                      paymentLink={getPackagePaymentLink(pkg.category, pkg.subject) ?? ""}
                       className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-pine"
                       analyticsId={`subject_package_${group.key}_${pkg.subject}`}
                     >
                       {pkg.cta}
-                    </LeadFunnelTrigger>
+                    </PurchaseFunnelTrigger>
                   </article>
                 ))}
               </div>
