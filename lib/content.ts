@@ -770,6 +770,294 @@ export const blogPosts = [
       buttonLabel: "Hemen Deneme Dersine Katıl"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani"]
+  },
+  {
+    slug: "e-dershane-nedir",
+    category: "e Dershane",
+    title: "e Dershane Nedir? Kimler İçin Gerçekten Verimli?",
+    seoTitle: "e Dershane Nedir? LGS ve YKS İçin Kılavuz",
+    metaDescription:
+      "e dershane nedir, online dershaneden farkı var mı? LGS-YKS öğrencileri için verimli e dershane seçme rehberi.",
+    excerpt:
+      "e dershane arayan öğrenciler için en kritik konu sistemli ilerleme. Hangi model gerçekten işe yarıyor bu yazıda netleşiyor.",
+    cardSnippet: "e dershane seçerken bakman gereken 3 kritik kriter.",
+    featured: false,
+    sections: [
+      {
+        h2: "e dershane ile online dershane aynı mı?",
+        paragraphs: [
+          "Piyasada e dershane ve online dershane terimleri çoğu zaman aynı anlamda kullanılıyor.",
+          "Asıl fark isimde değil, öğrencinin haftalık olarak takip edilip edilmediğinde ortaya çıkıyor."
+        ]
+      },
+      {
+        h2: "Verimli e dershane modelinde olmazsa olmazlar",
+        bullets: ["Küçük grup dersi", "Haftalık deneme analizi", "Ders bazlı seçim esnekliği"],
+        paragraphs: [
+          "Bu üç yapı yoksa e dershane sadece video arşivine dönüşür ve öğrenci kısa sürede kopar."
+        ]
+      },
+      {
+        h2: "Kimler e dershane modelinden daha hızlı sonuç alır?",
+        bullets: ["Takip ile çalışan öğrenciler", "Planı tek başına sürdüremeyenler", "Ders bazlı destek isteyenler"],
+        links: [{ label: "Online dershane sistemini detaylı incele", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "e dershane modelini ücretsiz dene",
+      text: "Öğrencinin seviyesine göre hangi dersten başlaman gerektiğini birlikte belirleyelim.",
+      buttonLabel: "Ücretsiz Denemeye Başla"
+    },
+    relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
+  },
+  {
+    slug: "online-ders-calisma-programi",
+    category: "Online Ders",
+    title: "Online Ders Çalışma Programı Nasıl Hazırlanır?",
+    seoTitle: "Online Ders Çalışma Programı: Uygulanabilir Plan",
+    metaDescription:
+      "Online ders sürecinde dağılmadan çalışmak için haftalık program nasıl hazırlanır? Uygulanabilir plan ve takip modeli burada.",
+    excerpt:
+      "Online ders alırken asıl sorun planı sürdürmek. Bu yazıda uygulanabilir haftalık programı adım adım kuruyoruz.",
+    cardSnippet: "Online ders programı nasıl sürdürülebilir hale getirilir?",
+    featured: false,
+    sections: [
+      {
+        h2: "Program neden ilk haftadan bozuluyor?",
+        bullets: ["Gerçekçi olmayan hedefler", "Ölçümsüz çalışma", "Tekrar bloğu olmaması"]
+      },
+      {
+        h2: "Haftalık online ders planı şablonu",
+        bullets: [
+          "2 gün konu + kısa test",
+          "2 gün soru çözüm ve hız",
+          "1 gün deneme + analiz",
+          "1 gün eksik kapatma"
+        ],
+        paragraphs: ["Plan mutlaka her hafta deneme sonucuna göre güncellenmelidir."]
+      },
+      {
+        h2: "Programın sürdürülebilir olması için takip sistemi",
+        paragraphs: ["Öğrenci planı yazmakta zorlanmaz, uygulamada zorlanır. Bu noktada öğretmen ve koçluk takibi kritik fark yaratır."],
+        links: [{ label: "Online özel ders sistemiyle planını netleştir", href: "/online-ozel-ders/" }]
+      }
+    ],
+    cta: {
+      title: "Kişisel online ders programını birlikte oluşturalım",
+      text: "Ücretsiz deneme görüşmesinde haftalık planını seviyene göre çıkaralım.",
+      buttonLabel: "Programımı Oluştur"
+    },
+    relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "lgs-online-ders-net-artirma"]
+  },
+  {
+    slug: "ozel-ders-mi-kucuk-grup-mu",
+    category: "Özel Ders",
+    title: "Özel Ders mi Küçük Grup mu? Hangi Seçim Daha Mantıklı?",
+    seoTitle: "Özel Ders mi Küçük Grup mu? Karar Rehberi",
+    metaDescription:
+      "Özel ders ve küçük grup online ders modeli arasında karar veremiyor musun? Maliyet, verim ve sürdürülebilirlik karşılaştırması.",
+    excerpt:
+      "Özel ders her zaman en iyi seçenek değildir. Küçük grup modeli bazı öğrenciler için daha verimli ve sürdürülebilir olabilir.",
+    cardSnippet: "Özel ders vs küçük grup: maliyet ve sonuç kıyası.",
+    featured: false,
+    sections: [
+      {
+        h2: "Özel dersin güçlü tarafı",
+        bullets: ["Birebir tempo", "Anlık geri bildirim", "Kısa vadede hızlı toparlama"]
+      },
+      {
+        h2: "Küçük grubun güçlü tarafı",
+        bullets: ["Daha sürdürülebilir maliyet", "Sistemli haftalık takip", "Akran motivasyonu"],
+        paragraphs: ["Uzun sınav dönemlerinde sürdürülebilirlik, kısa vadeli hızdan daha belirleyici olur."]
+      },
+      {
+        h2: "Hangi durumda hangi model seçilmeli?",
+        bullets: ["Tek ders krizi varsa: özel ders", "Genel dağınıklık varsa: küçük grup + takip"],
+        links: [{ label: "Küçük grup online dershaneyi incele", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "Doğru modeli birlikte belirleyelim",
+      text: "Öğrencinin seviyesine göre özel ders mi küçük grup mu daha verimli, ücretsiz görüşmede netleştirelim.",
+      buttonLabel: "Modelimi Belirle"
+    },
+    relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
+  },
+  {
+    slug: "yks-matematik-net-artirma",
+    category: "YKS",
+    title: "YKS Matematik Neti Nasıl Artar? Uygulanabilir Yol Haritası",
+    seoTitle: "YKS Matematik Net Artırma Rehberi",
+    metaDescription:
+      "YKS matematik neti artırmak için soru analizi, süre yönetimi ve haftalık çalışma planı nasıl kurulmalı? Adım adım öğren.",
+    excerpt:
+      "YKS matematikte net artırmak için çok soru çözmek tek başına yetmez. Doğru analiz ve doğru sıra gerekir.",
+    cardSnippet: "YKS matematikte net artıran sistemli çalışma adımları.",
+    featured: false,
+    sections: [
+      {
+        h2: "Neden net artmıyor?",
+        bullets: ["Soru tipi analizi yapılmıyor", "Süre yönetimi ihmal ediliyor", "Tekrar planı zayıf kalıyor"]
+      },
+      {
+        h2: "Haftalık matematik planı",
+        bullets: ["2 gün konu tekrar", "2 gün yeni nesil soru", "1 gün zamanlı deneme", "1 gün yanlış dönüşü"],
+        paragraphs: ["Yanlış dönüşü yapılmayan programda net artışı kısa sürede durur."]
+      },
+      {
+        h2: "Süre yönetimi nasıl geliştirilir?",
+        paragraphs: ["Soru başına eşik süre belirlemek ve takılma süresini sınırlamak, toplam neti doğrudan etkiler."],
+        links: [{ label: "YKS için online özel ders desteğini incele", href: "/online-ozel-ders/" }]
+      }
+    ],
+    cta: {
+      title: "Matematik netini birlikte yükseltelim",
+      text: "Ücretsiz deneme dersinde mevcut matematik seviyeni analiz edip ilk 4 haftalık planı çıkaralım.",
+      buttonLabel: "YKS Matematik Deneme Dersi"
+    },
+    relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
+  },
+  {
+    slug: "lgs-matematikte-zorlananlar-icin",
+    category: "LGS",
+    title: "LGS Matematikte Zorlananlar İçin Kurtarma Planı",
+    seoTitle: "LGS Matematikte Net Artırma Planı",
+    metaDescription:
+      "LGS matematikte zorlanan öğrenciler için adım adım net artırma planı. Problem çözme, deneme analizi ve haftalık tekrar sistemi.",
+    excerpt:
+      "LGS matematikte zorlanıyorsan konu bilmek yetmez; soru refleksi ve analiz disiplini kurman gerekir.",
+    cardSnippet: "LGS matematikte tıkanmayı kıran haftalık plan.",
+    featured: false,
+    sections: [
+      {
+        h2: "En yaygın matematik hataları",
+        bullets: ["Soruyu eksik okumak", "Uzun soruda panik", "Yanlıştan ders çıkarmamak"]
+      },
+      {
+        h2: "4 haftalık toparlama planı",
+        bullets: ["Temel konu tekrar", "Günlük problem seti", "Haftalık mini deneme", "Yanlış defteri takibi"]
+      },
+      {
+        h2: "Küçük grup desteği ne kazandırır?",
+        paragraphs: ["Maksimum 4 kişilik sınıfta öğretmen öğrencinin işlem hatasını hızlı fark eder ve anında müdahale eder."],
+        links: [{ label: "LGS için online dershane modelini gör", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "LGS matematik için ücretsiz deneme yap",
+      text: "Öğrencinin matematik seviyesini ölçüp hangi konudan başlaman gerektiğini belirleyelim.",
+      buttonLabel: "LGS Matematik Denemesi"
+    },
+    relatedSlugs: ["lgs-online-ders-net-artirma", "online-dershane-nedir", "online-ozel-ders-mi-dershane-mi"]
+  },
+  {
+    slug: "deneme-analizi-nasil-yapilir",
+    category: "Sınav Stratejisi",
+    title: "Deneme Analizi Nasıl Yapılır? Net Artıran Yöntem",
+    seoTitle: "Deneme Analizi Nasıl Yapılır? Net Artışı İçin Rehber",
+    metaDescription:
+      "Deneme analizi nasıl yapılır? Yanlışları doğru sınıflandırıp bir sonraki haftaya plan çıkarmanın net artıran sistemini öğren.",
+    excerpt:
+      "Deneme çözmek tek başına yeterli değil. Net artışı, deneme sonrası yapılan doğru analizle başlar.",
+    cardSnippet: "Net artırmak isteyenler için deneme analiz sistemi.",
+    featured: false,
+    sections: [
+      {
+        h2: "Deneme sonrası ilk 3 soru",
+        bullets: [
+          "Nerede süre kaybettim?",
+          "Yanlışın nedeni bilgi mi dikkat mi?",
+          "Hangi konudan tekrar çıkmalı?"
+        ]
+      },
+      {
+        h2: "Yanlış sınıflandırma şablonu",
+        bullets: ["Bilgi eksiği", "Dikkat hatası", "Süre baskısı", "Yanlış soru seçimi"],
+        paragraphs: ["Bu ayrım yapılmadan deneme çözmek, aynı hataların tekrarıyla sonuçlanır."]
+      },
+      {
+        h2: "Analizden plana geçiş",
+        paragraphs: ["Analiz sonuçları bir sonraki haftanın konu ve soru dağılımını belirlemeli."],
+        links: [{ label: "Haftalık takipli online dershane modeli", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "Deneme analizini profesyonel takip ile yap",
+      text: "Ücretsiz deneme sonrası öğrencinin analiz raporunu birlikte çıkaralım.",
+      buttonLabel: "Deneme Analizi Al"
+    },
+    relatedSlugs: ["yks-online-ders-calisma-plani", "lgs-online-ders-net-artirma", "online-dershane-nedir"]
+  },
+  {
+    slug: "online-dershane-secim-rehberi-2026",
+    category: "Online Dershane",
+    title: "Online Dershane Seçim Rehberi 2026",
+    seoTitle: "Online Dershane Seçim Rehberi 2026",
+    metaDescription:
+      "2026’da online dershane seçerken dikkat edilmesi gereken kriterler: sınıf mevcudu, takip sistemi, ders bazlı model ve öğretmen kalitesi.",
+    excerpt:
+      "Online dershane seçerken sadece reklama bakmak yerine ölçülebilir kriterlerle karar vermek gerekir.",
+    cardSnippet: "2026 için online dershane seçme checklist’i.",
+    featured: false,
+    sections: [
+      {
+        h2: "Kayıt öncesi kontrol listesi",
+        bullets: ["Sınıf mevcudu kaç?", "Haftalık takip var mı?", "Deneme analizi düzenli mi?", "Ders bazlı seçim var mı?"]
+      },
+      {
+        h2: "Öğretmen ve sistem dengesi",
+        paragraphs: [
+          "İyi öğretmen tek başına yeterli değildir; doğru sistem olmadan öğrenci ilerlemesi sürdürülebilir olmaz."
+        ]
+      },
+      {
+        h2: "Yanlış seçim maliyeti nasıl artar?",
+        paragraphs: [
+          "Yanlış modelde geçen aylar hem zaman hem motivasyon kaybettirir. Bu yüzden başlangıç seçimi kritik bir yatırım kararıdır."
+        ],
+        links: [{ label: "Online dershane modelimizi detaylı incele", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "Doğru online dershane seçimi için ücretsiz görüşme",
+      text: "Öğrencinin seviyesine göre en doğru başlangıç modelini birlikte belirleyelim.",
+      buttonLabel: "Ücretsiz Ön Görüşme Al"
+    },
+    relatedSlugs: ["online-dershane-nedir", "online-dershane-fiyatlari-2026", "online-ozel-ders-mi-dershane-mi"]
+  },
+  {
+    slug: "online-ders-disiplini-nasil-kurulur",
+    category: "Online Ders",
+    title: "Online Ders Disiplini Nasıl Kurulur?",
+    seoTitle: "Online Ders Disiplini Kurma Rehberi",
+    metaDescription:
+      "Online ders sürecinde disiplin nasıl kurulur? Ertelemeyi azaltan, sürdürülebilir çalışma alışkanlığı oluşturan pratik sistem.",
+    excerpt:
+      "Online dersin en kritik noktası süreklilik. Disiplin kurulamayan programlarda sonuç almak zorlaşır.",
+    cardSnippet: "Online derslerde istikrar sağlayan disiplin modeli.",
+    featured: false,
+    sections: [
+      {
+        h2: "Disiplin neden bozulur?",
+        bullets: ["Belirsiz hedefler", "Takip mekanizması olmaması", "Aşırı yoğun program denemeleri"]
+      },
+      {
+        h2: "Sürdürülebilir sistem nasıl kurulur?",
+        bullets: ["Kısa günlük bloklar", "Haftalık sabit deneme saati", "Geri bildirim döngüsü"],
+        paragraphs: ["Az ama düzenli çalışma, yoğun ama dağınık çalışmadan daha hızlı sonuç üretir."]
+      },
+      {
+        h2: "Takip sistemiyle disiplin kalıcı hale gelir",
+        paragraphs: ["Öğrenci tek başına kaldığında planı esnetir; dış takip disiplini korumanın en etkili yoludur."],
+        links: [{ label: "Haftalık takipli online ders modelini incele", href: "/online-dershane/" }]
+      }
+    ],
+    cta: {
+      title: "Online ders disiplinini birlikte kuralım",
+      text: "Ücretsiz deneme görüşmesinde öğrencinin haftalık çalışma düzenini seviyesine göre tasarlayalım.",
+      buttonLabel: "Disiplin Planımı Oluştur"
+    },
+    relatedSlugs: ["online-ders-calisma-programi", "deneme-analizi-nasil-yapilir", "online-dershane-nedir"]
   }
 ];
 

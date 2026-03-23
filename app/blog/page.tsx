@@ -32,8 +32,9 @@ export default function BlogPage() {
           <FadeIn>
             <h1 className="text-4xl font-bold tracking-tight text-ink sm:text-5xl">Online Dershane Blog</h1>
             <p className="mt-3 max-w-4xl text-sm leading-relaxed text-muted sm:text-base">
-              Online dershane, e dershane, online ders ve özel ders aramalarında doğru karar vermek için hazırlanmış uygulamalı içerikler.
-              Bu blogdaki yazılar sadece bilgi vermez; öğrenciyi küçük grup online ders modeline yönlendirir ve ücretsiz deneme adımına taşır.
+              Online dershane, e dershane, online ders ve özel ders aramalarında karar vermeni kolaylaştıran uygulamalı içerikler
+              paylaşıyoruz. Yazılarda yalnızca bilgi vermekle kalmıyor; küçük gruplu online ders modelini net biçimde anlatıyor ve
+              ücretsiz deneme dersiyle doğru başlangıcı nasıl yapabileceğini adım adım gösteriyoruz.
             </p>
           </FadeIn>
 
