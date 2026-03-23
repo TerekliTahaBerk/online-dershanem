@@ -7,7 +7,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navLinks } from "@/lib/content";
 import { Container } from "@/components/ui/container";
-import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 import navbarLogo from "@/public/onlinedershanem_.png";
 
@@ -78,13 +77,6 @@ export function Navbar() {
           </nav>
           <div className="hidden items-center gap-2 md:flex">
             <ComingSoonButton />
-            <LeadFunnelTrigger
-              source="navbar_primary"
-              eventName="trial_cta_click"
-              className="inline-flex items-center justify-center rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-pine"
-            >
-              Ücretsiz Denemeyi Başlat
-            </LeadFunnelTrigger>
           </div>
           <button
             type="button"
@@ -116,6 +108,9 @@ export function Navbar() {
                   {pkg.label}
                 </Link>
               ))}
+              <Link href="/kamplar/" className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink hover:bg-soft">
+                Kamplar
+              </Link>
               <Link href="/blog/" className="block rounded-xl px-3 py-2 text-sm font-semibold text-ink hover:bg-soft">
                 Blog
               </Link>
@@ -123,13 +118,6 @@ export function Navbar() {
 
             <div className="mt-4 flex flex-col gap-2">
               <ComingSoonButton />
-              <LeadFunnelTrigger
-                source="navbar_mobile_primary"
-                eventName="trial_cta_click"
-                className="inline-flex items-center justify-center rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-pine"
-              >
-                Ücretsiz Denemeyi Başlat
-              </LeadFunnelTrigger>
             </div>
           </nav>
         </div>

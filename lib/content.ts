@@ -2,6 +2,7 @@ export const siteUrl = "https://onlinedershanem.com";
 
 export const navLinks = [
   { label: "Paketler", href: "/#paket-karsilastirma" },
+  { label: "Kamplar", href: "/kamplar/" },
   { label: "Blog", href: "/blog/" }
 ];
 
