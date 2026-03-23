@@ -7,10 +7,10 @@ export function WhyUsSection() {
     <section className="py-16 sm:py-20">
       <Container>
         <FadeIn>
-          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Neden Online Dershanem?</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Klasik Dershane Kalıplarını Yıkıyoruz.</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
-            Öğrencinin dikkatini yakalayan, motive eden ve sonuç üreten bir sistem için yalnızca kaliteli içerik yetmez. Süreç
-            tasarımı, öğretmen disiplini ve düzenli performans takibi birlikte çalışmalıdır.
+            Toplu paket zorunluluğunu kaldırdık. Sadece ihtiyacın olan dersleri seçer, butik gruplarda düzenli takip sistemiyle
+            hedefe odaklı ilerlersin.
           </p>
         </FadeIn>
         <div className="mt-10 grid gap-5 md:grid-cols-3">

@@ -110,19 +110,19 @@ export const teachers = [
 
 export const whyUs = [
   {
-    title: "Kalabalık Sınıf Değil, Grup Özel Ders",
+    title: "Sadece İhtiyacın Kadar Öde",
     content:
-      "Modelimiz klasik online dershane mantığıyla tüm dersleri tek pakete yığmaz. Her ders, küçük gruplu özel ders kurgusuyla ayrı yönetilir ve öğrencinin gerçek ihtiyacına odaklanır."
+      "Anladığın dersler için ödeme yapmak zorunda değilsin. Sadece eksiklerini seç, bütçeni ve zamanını koru."
   },
   {
-    title: "Seviyeye Göre Grup, Daha Fazla Bireysel İlgi",
+    title: "Butik Gruplar, Gerçek İlgi",
     content:
-      "Maksimum 4 kişilik sınıf yapısı sayesinde öğretmen öğrenciyi daha yakından izler, soru çözüm alışkanlığını ve konu eksiklerini çok daha hızlı fark eder."
+      "Kalabalık sınıflarda kaybolma. 4-6 kişilik interaktif sınıflarda öğretmenine dilediğin an soru sor."
   },
   {
-    title: "İhtiyaca Göre Ders Seçimi, Net Paket Mantığı",
+    title: "Şeffaf Süreç, Tam Takip",
     content:
-      "Öğrenci yalnızca ihtiyaç duyduğu dersi seçer. Böylece gereksiz toplu paket maliyeti oluşmaz; ders bazlı, hedef odaklı ve şeffaf bir plan ortaya çıkar."
+      "Haftalık gelişim raporları ve kayıtlı derslerle eksik konu bırakma. Veliler için tam denetim, öğrenciler için düzenli disiplin."
   }
 ];
 

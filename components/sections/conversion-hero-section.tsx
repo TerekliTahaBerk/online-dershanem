@@ -4,10 +4,10 @@ import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 
 const trustItems = [
-  { value: "1.200+", label: "Öğrenci" },
-  { value: "50+", label: "Uzman Eğitmen" },
-  { value: "%98", label: "Memnuniyet" },
-  { value: "30.000+", label: "Canlı Ders Saati" }
+  { value: "1.200+", label: "Başarı yolculuğuna eşlik ettiğimiz öğrenci" },
+  { value: "50+", label: "Sektörün en iyisi uzman eğitmen kadrosu" },
+  { value: "%98", label: "Öğrenci ve veli memnuniyet oranı" },
+  { value: "30.000+", label: "Tecrübeyle sabit canlı ders deneyimi" }
 ];
 
 export function ConversionHeroSection() {
@@ -17,11 +17,11 @@ export function ConversionHeroSection() {
       <Container>
         <div className="max-w-5xl">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl">
-            YKS ve LGS'de ihtiyacın olan dersi seç, küçük grupta daha hızlı ilerle
+            Sadece İhtiyacın Olan Derse Odaklan, Hedefindeki Üniversiteyi/Liseyi Şansa Bırakma.
           </h1>
           <p className="mt-5 max-w-4xl text-base leading-relaxed text-muted sm:text-lg">
-            Toplu paket zorunluluğu yok. TYT-AYT ve LGS derslerini ihtiyacına göre tek tek seçersin; seviyene uygun küçük grupta
-            canlı derse girer, haftalık takip ile düzenli ilerlersin.
+            Toplu paket zorunluluğunu kaldırdık. TYT-AYT ve LGS yolculuğunda sadece eksik olduğun dersleri seç; seviyene uygun butik
+            gruplarda, uzman eğitmenlerle başarıya ulaş.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
@@ -30,14 +30,14 @@ export function ConversionHeroSection() {
               eventName="hero_cta_click"
               className="inline-flex items-center justify-center rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-pine"
             >
-              Ücretsiz Deneme Dersi Al
+              Hemen Formu Doldur Seni Arayalım!
             </LeadFunnelTrigger>
             <a
               href="#paket-karsilastirma"
               className="inline-flex items-center justify-center rounded-full border border-line-strong bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-soft"
               data-analytics-id="hero_view_programs"
             >
-              Paketleri ve Fiyatları Gör
+              Sana Özel Programı Oluştur
             </a>
           </div>
 
@@ -53,17 +53,18 @@ export function ConversionHeroSection() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-3 rounded-3xl border border-line bg-white p-4 shadow-soft sm:grid-cols-4 sm:p-6">
+        <div className="mt-8 grid gap-3 rounded-3xl border border-line bg-white p-4 shadow-soft sm:grid-cols-2 lg:grid-cols-4 sm:p-6">
           {trustItems.map((item) => (
             <article key={item.label} className="rounded-2xl border border-line-soft bg-soft px-4 py-3 text-center">
               <p className="text-2xl font-bold tracking-tight text-ink">{item.value}</p>
-              <p className="mt-1 text-xs font-semibold text-muted/80">{item.label}</p>
+              <p className="mt-1 text-xs font-semibold leading-relaxed text-muted/80">{item.label}</p>
             </article>
           ))}
         </div>
 
         <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-mint px-3 py-1 text-[11px] font-semibold text-pine">
-          <ShieldCheck className="h-3.5 w-3.5" /> Öğrenci-veli süreci düzenli raporlanır ve ders kayıtları panelde saklanır.
+          <ShieldCheck className="h-3.5 w-3.5" /> Süreçten kopma! Detaylı öğrenci-veli raporlama sistemi ve geçmiş ders kayıtlarına
+          7/24 erişim imkanıyla her şey kontrolün altında.
         </div>
       </Container>
     </section>
