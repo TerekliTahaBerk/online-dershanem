@@ -265,7 +265,7 @@ export const subjectPackageGroups = [
           "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
           "Sadece 4 Kişilik Butik Gruplarda VIP Eğitim (Özel Ders Verimi)",
           "Kendi Seviyendeki Akranlarınla Maksimum Odak",
-          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
         ],
         cta: "Satın Al"
       },
@@ -283,7 +283,7 @@ export const subjectPackageGroups = [
           "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
           "Anlık Geri Bildirim ve Başarı Ölçümü",
           "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
-          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
         ],
         cta: "Satın Al"
       },
@@ -301,7 +301,7 @@ export const subjectPackageGroups = [
           "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
           "Görsel Hafıza Destekli Özet ve Materyaller",
           "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
-          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
         ],
         cta: "Satın Al"
       },
@@ -319,7 +319,7 @@ export const subjectPackageGroups = [
           "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
           "Görsel Hafıza Destekli Özet ve Materyaller",
           "Anlık Geri Bildirim ve Başarı Ölçümü",
-          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
         ],
         cta: "Satın Al"
       }
@@ -344,7 +344,7 @@ export const subjectPackageGroups = [
           "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
           "Sadece 4 Kişilik Butik Gruplarda VIP Eğitim (Özel Ders Verimi)",
           "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
-          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
         ],
         cta: "Satın Al"
       },
@@ -362,7 +362,7 @@ export const subjectPackageGroups = [
           "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
           "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
           "Anlık Geri Bildirim ve Başarı Ölçümü",
-          "Gelişmiş Veli-Öğrenci Paneli ile Haftalık Performans Raporu"
+          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
         ],
         cta: "Satın Al"
       }
