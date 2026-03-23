@@ -32,14 +32,6 @@ export function FreeTrialSection() {
               >
                 Ücretsiz Yol Haritamı Oluştur
               </LeadFunnelTrigger>
-              <LeadFunnelTrigger
-                source="trial_section_demo"
-                eventName="trial_cta_click"
-                className="inline-flex items-center justify-center rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink transition hover:bg-soft"
-                analyticsId="trial_section_demo"
-              >
-                Canlı Dersi Deneyimle
-              </LeadFunnelTrigger>
             </div>
           </div>
 
