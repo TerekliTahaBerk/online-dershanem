@@ -3,21 +3,35 @@ import { Check } from "lucide-react";
 import { getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 import { Container } from "@/components/ui/container";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import ataturkSignature from "@/download.png";
+import ataturkSignature from "@/Signature_of_Mustafa_Kemal_Atatürk.png";
 
 export function PricingComparisonSection() {
   return (
     <section id="paket-karsilastirma" className="scroll-mt-24 py-16 sm:py-20">
       <Container>
-        <div className="mb-8 rounded-3xl border border-mint/50 bg-gradient-to-r from-soft via-white to-mint/40 p-6 shadow-soft sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">İlham Veren Söz</p>
-          <blockquote className="mt-3 max-w-4xl text-sm leading-relaxed text-ink sm:text-base">
-            “Bu millete gideceği yolu gösterirken Dünya&apos;nın her türlü ilminden, keşfiyatından, terakkiyatından istifade edelim,
-            lâkin unutmayalım ki, asıl temeli kendi içimizden çıkarmak mecburiyetindeyiz.”
-          </blockquote>
-          <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-            <p className="text-xs font-semibold tracking-[0.08em] text-muted">Gazi Mustafa Kemal Atatürk</p>
-            <Image src={ataturkSignature} alt="Gazi Mustafa Kemal Atatürk İmzası" width={220} height={80} className="h-12 w-auto sm:h-14" />
+        <div className="relative mb-10 overflow-hidden rounded-3xl border border-line-strong bg-white p-6 shadow-soft sm:p-9">
+          <div className="pointer-events-none absolute -left-16 -top-20 h-48 w-48 rounded-full bg-mint/40 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-soft blur-2xl" />
+
+          <div className="relative">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">Milli Eğitim Vizyonu</p>
+            <blockquote className="mt-4 border-l-4 border-brand/70 pl-4 text-sm leading-relaxed text-ink sm:text-base">
+              “Bu millete gideceği yolu gösterirken Dünya&apos;nın her türlü ilminden, keşfiyatından, terakkiyatından istifade edelim,
+              lâkin unutmayalım ki, asıl temeli kendi içimizden çıkarmak mecburiyetindeyiz.”
+            </blockquote>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <p className="text-xs font-semibold tracking-[0.1em] text-muted">Gazi Mustafa Kemal Atatürk</p>
+              <div className="rounded-xl border border-line bg-soft/60 px-3 py-2">
+                <Image
+                  src={ataturkSignature}
+                  alt="Gazi Mustafa Kemal Atatürk İmzası"
+                  width={260}
+                  height={90}
+                  className="h-12 w-auto object-contain sm:h-14"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
