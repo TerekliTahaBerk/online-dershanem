@@ -23,6 +23,7 @@ export function Footer() {
             </ContactLink>
           </p>
           <p>E-posta: {contact.email}</p>
+          <p>Adres: {contact.address}</p>
           <p className="mt-1 max-w-md text-xs leading-relaxed text-mint">
             Butik sınıf yapısı, canlı ders disiplini ve düzenli analiz sistemiyle öğrencinin performansını sürdürülebilir biçimde
             yükseltmeyi hedefler.
