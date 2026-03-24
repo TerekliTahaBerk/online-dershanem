@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 
@@ -13,7 +14,7 @@ export function FinalConversionCTA() {
             Sadece 30 saniyeni ayırıp formu doldur; eğitim danışmanımız seni arasın. Hedeflerini dinleyelim ve sana en hızlı net
             artışını sağlayacak stratejik programı birlikte kurgulayalım.
           </p>
-          <div className="mt-7 flex">
+          <div className="mt-7 flex flex-wrap gap-3">
             <LeadFunnelTrigger
               source="final_cta_primary"
               eventName="trial_cta_click"
@@ -22,6 +23,14 @@ export function FinalConversionCTA() {
             >
               Formu Doldur, Seni Arayalım <ArrowRight className="ml-2 h-4 w-4" />
             </LeadFunnelTrigger>
+            <Link
+              href="https://drive.google.com/file/d/164x3itpg_6l1-piwnCrevWM5Hz-SVhW5/view?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-full border border-line-strong bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-soft"
+            >
+              Neden Buradayız?
+            </Link>
           </div>
           <p className="mt-3 text-xs text-muted">
             Ücretsiz strateji görüşmesi için sınırlı kontenjan! Kaydın alındıktan sonra uzman ekibimiz tarafından 24 saat içinde

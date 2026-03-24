@@ -7,7 +7,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navLinks } from "@/lib/content";
 import { Container } from "@/components/ui/container";
-import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 import navbarLogo from "@/public/onlinedershanem_.png";
 
 export function Navbar() {
@@ -76,7 +75,14 @@ export function Navbar() {
             )}
           </nav>
           <div className="hidden items-center gap-2 md:flex">
-            <ComingSoonButton />
+            <Link
+              href="https://drive.google.com/file/d/164x3itpg_6l1-piwnCrevWM5Hz-SVhW5/view?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-full border border-line-strong bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-soft"
+            >
+              Neden Buradayız?
+            </Link>
           </div>
           <button
             type="button"
@@ -117,7 +123,14 @@ export function Navbar() {
             </div>
 
             <div className="mt-4 flex flex-col gap-2">
-              <ComingSoonButton />
+              <Link
+                href="https://drive.google.com/file/d/164x3itpg_6l1-piwnCrevWM5Hz-SVhW5/view?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-line-strong bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-soft"
+              >
+                Neden Buradayız?
+              </Link>
             </div>
           </nav>
         </div>
