@@ -19,42 +19,51 @@ export default function KVKKPage() {
   return (
     <LegalPageTemplate
       pageTitle="KVKK Aydınlatma Metni"
-      intro="Online Dershanem olarak kişisel verilerin korunmasına önem veriyoruz. Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında veri işleme süreçlerimize dair genel bilgilendirme sunar."
+      intro="6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, kişisel verileriniz veri sorumlusu sıfatıyla Online Dershanem (Platform) tarafından aşağıda açıklanan kapsamda işlenebilecektir."
       effectiveDate="16 Mart 2026"
       sections={[
         {
           title: "1. Veri Sorumlusu",
           paragraphs: [
-            "Bu aydınlatma metni kapsamında veri sorumlusu Online Dershanem'dir.",
-            "Soru ve talepleriniz için iletisim@onlinedershanem.com adresi üzerinden bizimle iletişime geçebilirsiniz."
+            "KVKK uyarınca veri sorumlusu Online Dershanem'dir (Platform).",
+            "Kişisel verilerinizin işlenmesine ilişkin tüm soru ve talepleriniz için iletisim@onlinedershanem.com adresinden bizimle iletişime geçebilirsiniz."
           ]
         },
         {
-          title: "2. İşlenen Kişisel Veriler",
+          title: "2. İşlenen Kişisel Veriler ve İşleme Amaçları",
           paragraphs: [
-            "Ad-soyad, telefon numarası, e-posta adresi, öğrenci seviyesi, sınav türü ve başvuru formunda paylaşılan diğer bilgiler işlenebilir.",
-            "Site kullanımına ilişkin teknik veriler (cihaz bilgisi, çerez verileri, temel analiz verileri) hizmet kalitesini artırmak amacıyla sınırlı olarak işlenebilir."
+            "Platform tarafından kimlik (ad-soyad), iletişim (telefon, e-posta), eğitim verileri (öğrenci seviyesi, sınav türü, hedef verileri) ve işlem güvenliği bilgileri (IP adresi, çerez kayıtları) işlenebilmektedir.",
+            "Bu veriler; eğitim danışmanlığı süreçlerinin yürütülmesi, öğrenciye uygun ders paketinin belirlenmesi, başvuru taleplerinin yanıtlanması, iletişim faaliyetlerinin sürdürülmesi, hizmetlerin iyileştirilmesi, analiz ve raporlama faaliyetlerinin yürütülmesi ile mevzuattan kaynaklanan yükümlülüklerin yerine getirilmesi amaçlarıyla işlenir."
           ]
         },
         {
-          title: "3. Veri İşleme Amaçları",
+          title: "3. Kişisel Veri Toplamanın Yöntemi ve Hukuki Sebebi",
           paragraphs: [
-            "Başvuru süreçlerini yürütmek, öğrenciye uygun ders paketini belirlemek ve iletişim taleplerini yanıtlamak.",
-            "Eğitim ve destek süreçlerini planlamak, hizmet kalitesini geliştirmek ve yasal yükümlülükleri yerine getirmek."
+            "Kişisel verileriniz; internet sitemizdeki başvuru formları, çerezler ve dijital iletişim kanalları aracılığıyla tamamen veya kısmen otomatik yollarla toplanmaktadır.",
+            "Veri işleme faaliyetleri KVKK Madde 5/2 kapsamındaki hukuki sebeplere, özellikle bir sözleşmenin kurulması veya ifası, veri sorumlusunun hukuki yükümlülüğünün yerine getirilmesi ve ilgili kişinin temel hak ve özgürlüklerine zarar vermemek kaydıyla veri sorumlusunun meşru menfaatine dayanmaktadır.",
+            "Özel nitelikli kişisel verilerin işlenmesi gereken hallerde KVKK Madde 6 hükümlerine uygun hareket edilir."
           ]
         },
         {
-          title: "4. Veri Aktarımı ve Saklama",
+          title: "4. İşlenen Kişisel Verilerin Aktarımı",
           paragraphs: [
-            "Kişisel veriler, yasal zorunluluklar dışında üçüncü kişilerle paylaşılmaz; paylaşım gerektiğinde yalnızca mevzuata uygun şekilde yapılır.",
-            "Veriler, işleme amacı için gerekli süre boyunca ve ilgili mevzuattaki saklama sürelerine uygun olarak korunur."
+            "Kişisel verileriniz; yukarıda belirtilen amaçların gerçekleştirilmesi doğrultusunda, sınırlı ve ölçülü olmak kaydıyla iş ortaklarımıza (bulut bilişim ve altyapı sağlayıcıları), hizmet alınan tedarikçilere ve yasal zorunluluk halinde yetkili kamu kurum ve kuruluşlarına aktarılabilir.",
+            "Aktarım faaliyetleri KVKK'nın 8. ve 9. maddelerine uygun olarak yürütülür."
           ]
         },
         {
-          title: "5. KVKK Kapsamındaki Haklarınız",
+          title: "5. Veri Saklama Süresi ve İmha",
           paragraphs: [
-            "KVKK'nın 11. maddesi kapsamındaki başvuru haklarınızı (bilgi talebi, düzeltme, silme, itiraz vb.) kullanabilirsiniz.",
-            "Hak taleplerinizi kimlik doğrulamanıza imkan verecek şekilde iletisim@onlinedershanem.com adresine iletebilirsiniz."
+            "Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve ilgili mevzuatta öngörülen zamanaşımı süreleri dikkate alınarak saklanır.",
+            "Türk Borçlar Kanunu ve Türk Ticaret Kanunu kapsamında öngörülen saklama yükümlülükleri doğrultusunda veriler genel olarak 10 yıla kadar saklanabilmektedir.",
+            "Saklama süresi sonunda kişisel verileriniz, Platform'un imha politikası doğrultusunda KVKK'ya uygun şekilde silinir, yok edilir veya anonim hale getirilir."
+          ]
+        },
+        {
+          title: "6. İlgili Kişinin Hakları (KVKK Madde 11)",
+          paragraphs: [
+            "Kişisel veri sahibi olarak; verilerinizin işlenip işlenmediğini öğrenme, düzeltilmesini talep etme, silinmesini veya yok edilmesini isteme ve işleme faaliyetlerine itiraz etme haklarına sahipsiniz.",
+            "KVKK Madde 11 kapsamındaki tüm taleplerinizi kimlik doğrulamanıza imkan sağlayacak şekilde iletisim@onlinedershanem.com adresine iletebilirsiniz."
           ]
         }
       ]}

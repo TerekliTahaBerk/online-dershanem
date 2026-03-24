@@ -19,41 +19,53 @@ export default function PrivacyPolicyPage() {
   return (
     <LegalPageTemplate
       pageTitle="Gizlilik Politikası"
-      intro="Bu politika, Online Dershanem web sitesi ve başvuru akışları sırasında toplanan bilgilerin hangi amaçlarla kullanıldığını ve nasıl korunduğunu açıklar."
+      intro="Online Dershanem (Platform), kullanıcılarının gizliliğine en yüksek düzeyde önem verir. Bu metin, kişisel verilerin hangi ilkelere göre toplandığını, işlendiğini, korunduğunu ve hangi amaçlarla kullanıldığını açıklar."
       effectiveDate="16 Mart 2026"
       sections={[
         {
-          title: "1. Toplanan Bilgiler",
+          title: "1. Veri Toplama ve İşleme İlkeleri",
           paragraphs: [
-            "Başvuru formlarında paylaştığınız iletişim ve eğitim süreci bilgileri toplanabilir.",
-            "Performans ve kullanıcı deneyimi takibi için sınırlı teknik kullanım verileri ve çerez verileri işlenebilir."
+            "Platform, toplanan tüm kişisel ve teknik verileri dürüstlük kurallarına uygun, şeffaf, sınırlı ve ölçülü şekilde işler.",
+            "Veri işleme süreçlerinde hukuka uygunluk, veri minimizasyonu, amaçla sınırlılık ve güncellik ilkeleri esas alınır."
           ]
         },
         {
-          title: "2. Bilgilerin Kullanım Amaçları",
+          title: "2. Toplanan Bilgi Kategorileri",
           paragraphs: [
-            "Sizinle iletişime geçmek, talep ettiğiniz ders paketleri hakkında bilgi sağlamak ve uygun yönlendirme yapmak.",
-            "Hizmetlerin güvenliğini sağlamak, site performansını iyileştirmek ve kullanıcı deneyimini geliştirmek."
+            "İletişim ve Eğitim Bilgileri: Başvuru formları aracılığıyla paylaşılan ad-soyad, e-posta, telefon numarası, sınıf seviyesi ve hedef sınav türü gibi bilgiler.",
+            "Teknik ve Analitik Veriler: IP adresi, cihaz türü, tarayıcı bilgileri, site içi navigasyon hareketleri ve kullanıcı tercihlerini içeren çerez verileri."
           ]
         },
         {
-          title: "3. Çerez Kullanımı",
+          title: "3. Bilgilerin Kullanım Amaçları",
           paragraphs: [
-            "Web sitemizde temel işlevsellik, analiz ve performans ölçümü amacıyla çerezler kullanılabilir.",
-            "Tarayıcı ayarlarınızdan çerez tercihlerinizi yönetebilir, bazı çerezleri devre dışı bırakabilirsiniz."
+            "Kişiselleştirilmiş eğitim planı ve ders paketi önerileri sunmak.",
+            "Başvuru taleplerini yanıtlamak ve eğitim danışmanlığı süreçlerini başlatmak.",
+            "Web sitesi performansını optimize etmek, kullanıcı deneyimini iyileştirmek ve platform güvenliğini sağlamak.",
+            "Yasal yükümlülükleri yerine getirmek ve yetkili mercilerin taleplerini karşılamak."
           ]
         },
         {
-          title: "4. Güvenlik",
+          title: "4. Çerez (Cookie) ve İzleme Teknolojileri",
           paragraphs: [
-            "Kişisel verilerinizin yetkisiz erişim, kayıp veya kötüye kullanım riskine karşı uygun teknik ve idari önlemler uygulanır.",
-            "Yine de internet üzerinden yapılan veri iletimlerinde mutlak güvenlik garanti edilemeyeceğini önemle belirtiriz."
+            "Platform; temel işlevsellik, performans analizi ve kullanıcı tercihlerini hatırlamak amacıyla çerezler kullanır.",
+            "Zorunlu Çerezler: Sitenin güvenli ve doğru çalışması için gereklidir.",
+            "Performans ve Analiz Çerezleri: Kullanıcı trafiğini anlamamıza ve hizmet kalitesini artırmamıza yardımcı olur.",
+            "Kullanıcılar, tarayıcı ayarları üzerinden çerez tercihlerini yönetebilir veya çerezleri devre dışı bırakabilir. Ancak bu durumda sitenin bazı özellikleri kısıtlı çalışabilir."
           ]
         },
         {
-          title: "5. İletişim",
+          title: "5. Veri Güvenliği ve Koruma Önlemleri",
           paragraphs: [
-            "Gizlilik uygulamalarımızla ilgili tüm sorularınız için iletisim@onlinedershanem.com adresinden bizimle iletişime geçebilirsiniz."
+            "Veriler; yetkisiz erişim, kayıp, değişiklik veya ifşaya karşı SSL sertifikaları, şifreleme yöntemleri ve güvenli sunucu altyapıları dahil olmak üzere güncel teknik ve idari tedbirlerle korunur.",
+            "Platform'un veri güvenliği politikaları düzenli olarak gözden geçirilir ve gerekli iyileştirmeler planlı olarak uygulanır."
+          ]
+        },
+        {
+          title: "6. Değişiklikler ve İletişim",
+          paragraphs: [
+            "Bu Gizlilik Politikası, hizmetlerdeki gelişmeler veya yasal düzenlemelerdeki değişiklikler doğrultusunda güncellenebilir. Güncel metin her zaman bu sayfada yayımlanır.",
+            "Gizlilik uygulamalarımıza ilişkin tüm soru ve talepleriniz için iletisim@onlinedershanem.com adresinden Platform ile iletişime geçebilirsiniz."
           ]
         }
       ]}
