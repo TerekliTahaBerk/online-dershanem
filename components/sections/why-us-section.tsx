@@ -7,10 +7,10 @@ export function WhyUsSection() {
     <section className="py-16 sm:py-20">
       <Container>
         <FadeIn>
-          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Klasik Dershane Kalıplarını Yıkıyoruz.</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Eski Nesil Dershane Kalıplarını Yıkıyoruz</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
-            Toplu paket zorunluluğunu kaldırdık. Sadece ihtiyacın olan dersleri seçer, butik gruplarda düzenli takip sistemiyle
-            hedefe odaklı ilerlersin.
+            Toplu paket dayatmasına son verdik. Sadece ihtiyacın olan derslerle, seviyene uygun butik bir grupta hedef odaklı
+            ilerlemeni sağlıyoruz.
           </p>
         </FadeIn>
         <div className="mt-10 grid gap-5 md:grid-cols-3">

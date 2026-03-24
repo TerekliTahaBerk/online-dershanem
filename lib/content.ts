@@ -111,19 +111,19 @@ export const teachers = [
 
 export const whyUs = [
   {
-    title: "Sadece İhtiyacın Kadar Öde",
+    title: "Akıllı Ekonomi, Maksimum Verim",
     content:
-      "Anladığın dersler için ödeme yapmak zorunda değilsin. Sadece eksiklerini seç, bütçeni ve zamanını koru."
+      "Zaten bildiğin konular için ödeme yapmak zorunda değilsin. Sadece eksik olduğun dersleri seçerek bütçeni ve zamanını en stratejik şekilde yönet."
   },
   {
-    title: "Butik Gruplar, Gerçek İlgi",
+    title: "4-6 Kişilik VIP Sınıf Deneyimi",
     content:
-      "Kalabalık sınıflarda kaybolma. 4-6 kişilik interaktif sınıflarda öğretmenine dilediğin an soru sor."
+      "Kalabalık sınıflarda görünmez olmayı bırak. Öğretmenine dilediğin an soru sorabildiğin interaktif gruplarda, özel ders verimini her an hisset."
   },
   {
-    title: "Şeffaf Süreç, Tam Takip",
+    title: "Dijital Takip ile %100 Disiplin",
     content:
-      "Haftalık gelişim raporları ve kayıtlı derslerle eksik konu bırakma. Veliler için tam denetim, öğrenciler için düzenli disiplin."
+      "Sürprizlere yer yok. Haftalık gelişim raporları ve kayıtlı derslerle eksiksiz ilerle. Veli denetimi ve öğrenci disiplinini tek bir panelde birleştiriyoruz."
   }
 ];
 
