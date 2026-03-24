@@ -17,7 +17,7 @@ export function TeacherSection() {
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {teachers.map((teacher, i) => (
             <FadeIn key={teacher.name} delay={i * 0.08}>
-              <article className="rounded-3xl border border-line bg-white p-6 shadow-soft">
+              <article className="flex h-full flex-col rounded-3xl border border-line bg-white p-6 shadow-soft">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-mint">
                   <GraduationCap className="h-6 w-6 text-ink" />
                 </div>
@@ -25,7 +25,7 @@ export function TeacherSection() {
                 <p className="mt-1 text-sm text-muted">{teacher.branch} • {teacher.uni}</p>
                 <p className="mt-1 text-xs text-muted">Tecrübe: {teacher.exp}</p>
                 <p className="mt-4 text-sm italic leading-relaxed text-muted">"{teacher.quote}"</p>
-                <p className="mt-5 text-xs font-semibold text-brand">{teacher.tag}</p>
+                <p className="mt-5 text-xs font-semibold text-brand md:mt-auto md:pt-4">{teacher.tag}</p>
               </article>
             </FadeIn>
           ))}

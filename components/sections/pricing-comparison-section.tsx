@@ -7,7 +7,7 @@ export function PricingComparisonSection() {
   return (
     <section id="paket-karsilastirma" className="scroll-mt-24 py-16 sm:py-20">
       <Container>
-        <blockquote className="mb-8 border-l-2 border-brand/60 pl-4 text-sm leading-relaxed text-ink sm:mb-10 sm:text-base">
+        <blockquote className="mb-8 max-w-5xl border-l-2 border-brand/60 pl-4 text-sm leading-relaxed text-ink sm:mb-10 sm:text-base">
           “Bu millete gideceği yolu gösterirken Dünya&apos;nın her türlü ilminden, keşfiyatından, terakkiyatından istifade edelim,
           lâkin unutmayalım ki, asıl temeli kendi içimizden çıkarmak mecburiyetindeyiz.”
           <span className="mt-3 block text-xs font-semibold tracking-[0.08em] text-muted">Gazi Mustafa Kemal Atatürk</span>

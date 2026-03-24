@@ -16,7 +16,7 @@ export function WhyUsSection() {
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {whyUs.map((item, i) => (
             <FadeIn key={item.title} delay={i * 0.08}>
-              <article className="h-full rounded-3xl border border-line bg-white p-6 shadow-soft">
+              <article className="flex h-full flex-col rounded-3xl border border-line bg-white p-6 shadow-soft">
                 <h3 className="text-lg font-semibold text-ink">{item.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted">{item.content}</p>
               </article>

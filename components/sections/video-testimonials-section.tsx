@@ -30,20 +30,18 @@ export function VideoTestimonialsSection() {
   return (
     <section id="video-yorumlar" className="py-16 sm:py-20">
       <Container>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Video Yorumlar</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">Başarıya Giden Yolda Bize Güvenenlerin Hikayeleri</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
-              Sadece ders anlatmıyoruz; her öğrencimizin potansiyelini keşfediyor ve hedeflerine ulaşmalarına eşlik ediyoruz.
-            </p>
-          </div>
+        <div className="max-w-4xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Video Yorumlar</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">Başarıya Giden Yolda Bize Güvenenlerin Hikayeleri</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
+            Sadece ders anlatmıyoruz; her öğrencimizin potansiyelini keşfediyor ve hedeflerine ulaşmalarına eşlik ediyoruz.
+          </p>
         </div>
 
         <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {videoTestimonials.map((item) => (
-            <article key={item.title} className="rounded-3xl border border-line bg-white p-5 shadow-soft">
-              <div>
+            <article key={item.title} className="flex h-full flex-col rounded-3xl border border-line bg-white p-5 shadow-soft">
+              <div className="h-full">
                 <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted/70">{item.exam}</p>
                 <h3 className="mt-1 text-base font-semibold text-ink">{item.title}</h3>
                 <p className="mt-1 text-xs font-semibold text-brand">{item.result}</p>
@@ -63,7 +61,7 @@ export function VideoTestimonialsSection() {
           </p>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-line bg-soft p-4">
+        <div className="mt-6 rounded-2xl border border-line bg-soft p-4 text-center">
           <LeadFunnelTrigger
             source="video_testimonial_section"
             eventName="trial_cta_click"

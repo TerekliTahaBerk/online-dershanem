@@ -62,9 +62,9 @@ export function ConversionHeroSection() {
           ))}
         </div>
 
-        <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-mint px-3 py-1 text-[11px] font-semibold text-pine">
-          <ShieldCheck className="h-3.5 w-3.5" /> Süreçten kopma! Detaylı öğrenci-veli raporlama sistemi ve geçmiş ders kayıtlarına
-          7/24 erişim imkanıyla her şey kontrolün altında.
+        <div className="mt-3 flex w-full items-start gap-2 rounded-2xl bg-mint px-3 py-2 text-[11px] font-semibold text-pine sm:w-auto sm:items-center sm:rounded-full sm:py-1">
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 sm:mt-0" /> Süreçten kopma! Detaylı öğrenci-veli raporlama sistemi ve
+          geçmiş ders kayıtlarına 7/24 erişim imkanıyla her şey kontrolün altında.
         </div>
       </Container>
     </section>

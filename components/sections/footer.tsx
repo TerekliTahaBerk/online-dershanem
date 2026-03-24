@@ -11,8 +11,8 @@ import tiktokLogo from "@/tik-tok-removebg-preview.png";
 export function Footer() {
   return (
     <footer className="border-t border-mint/20 bg-anchor py-10 text-paper">
-      <Container className="flex flex-col gap-6 text-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <Container className="flex flex-col gap-6 text-sm sm:flex-row sm:items-start sm:justify-between">
+        <div className="max-w-lg">
           <Link href="/" className="inline-flex items-center" aria-label="Online Dershanem Ana Sayfa">
             <Image src={footerLogo} alt="Online Dershanem" width={220} height={52} className="h-10 w-auto rounded-md" />
           </Link>
@@ -49,7 +49,7 @@ export function Footer() {
             </Link>
           </div>
         </div>
-        <div className="flex gap-5">
+        <div className="flex flex-wrap gap-5 sm:self-start">
           <Link href="/kvkk/" className="hover:text-mint">KVKK</Link>
           <Link href="/gizlilik/" className="hover:text-mint">Gizlilik</Link>
           <Link href="/iade/" className="hover:text-mint">İade Politikası</Link>

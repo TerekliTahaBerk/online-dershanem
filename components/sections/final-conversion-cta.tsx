@@ -14,7 +14,7 @@ export function FinalConversionCTA() {
             Sadece 30 saniyeni ayırıp formu doldur; eğitim danışmanımız seni arasın. Hedeflerini dinleyelim ve sana en hızlı net
             artışını sağlayacak stratejik programı birlikte kurgulayalım.
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap justify-center gap-3 sm:justify-start">
             <LeadFunnelTrigger
               source="final_cta_primary"
               eventName="trial_cta_click"
