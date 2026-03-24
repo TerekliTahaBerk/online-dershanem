@@ -3,7 +3,6 @@ import { Check } from "lucide-react";
 import { getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 import { Container } from "@/components/ui/container";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import ataturkSignature from "@/Signature_of_Mustafa_Kemal_Atatürk.png";
 
 export function PricingComparisonSection() {
   return (
@@ -24,7 +23,7 @@ export function PricingComparisonSection() {
               <p className="text-xs font-semibold tracking-[0.1em] text-muted">Gazi Mustafa Kemal Atatürk</p>
               <div className="rounded-xl border border-line bg-soft/60 px-3 py-2">
                 <Image
-                  src={ataturkSignature}
+                  src="/ataturk-signature.png"
                   alt="Gazi Mustafa Kemal Atatürk İmzası"
                   width={260}
                   height={90}
