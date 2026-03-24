@@ -59,7 +59,7 @@ export function VideoTestimonialsSection() {
         <div className="mt-6 rounded-2xl border border-mint/40 bg-mint/40 p-4">
           <p className="text-center text-sm font-semibold text-ink">
             <span className="mr-2 tracking-wide text-amber-500">★★★★★</span>
-            Google üzerinden %98 Öğrenci Memnuniyet Oranı
+            Sosyal Medya Üzerinden %98 Öğrenci Memnuniyet Oranı
           </p>
         </div>
 
