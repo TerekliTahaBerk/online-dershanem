@@ -32,13 +32,15 @@ export function ConversionHeroSection() {
             >
               Hemen Formu Doldur Seni Arayalım!
             </LeadFunnelTrigger>
-            <a
-              href="#paket-karsilastirma"
+            <Link
+              href="https://drive.google.com/file/d/164x3itpg_6l1-piwnCrevWM5Hz-SVhW5/view?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center rounded-full border border-line-strong bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-soft"
               data-analytics-id="hero_view_programs"
             >
-              Sana Özel Programı Oluştur
-            </a>
+              Neden Buradayız?
+            </Link>
           </div>
 
           <p className="mt-3 text-xs text-muted">Gizli ücret yok. Başvuru 1 dakikadan kısa sürer. Kısa ön görüşmeyle sana uygun grup planını netleştiriyoruz.</p>
