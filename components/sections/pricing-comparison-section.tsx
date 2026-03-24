@@ -1,12 +1,26 @@
+import Image from "next/image";
 import { Check } from "lucide-react";
 import { getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 import { Container } from "@/components/ui/container";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
+import ataturkSignature from "@/download.png";
 
 export function PricingComparisonSection() {
   return (
     <section id="paket-karsilastirma" className="scroll-mt-24 py-16 sm:py-20">
       <Container>
+        <div className="mb-8 rounded-3xl border border-mint/50 bg-gradient-to-r from-soft via-white to-mint/40 p-6 shadow-soft sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">İlham Veren Söz</p>
+          <blockquote className="mt-3 max-w-4xl text-sm leading-relaxed text-ink sm:text-base">
+            “Bu millete gideceği yolu gösterirken Dünya&apos;nın her türlü ilminden, keşfiyatından, terakkiyatından istifade edelim,
+            lâkin unutmayalım ki, asıl temeli kendi içimizden çıkarmak mecburiyetindeyiz.”
+          </blockquote>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+            <p className="text-xs font-semibold tracking-[0.08em] text-muted">Gazi Mustafa Kemal Atatürk</p>
+            <Image src={ataturkSignature} alt="Gazi Mustafa Kemal Atatürk İmzası" width={220} height={80} className="h-12 w-auto sm:h-14" />
+          </div>
+        </div>
+
         <div className="max-w-4xl">
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Kişiselleştirilmiş Öğrenme</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
