@@ -8,11 +8,10 @@ export function TeacherSection() {
     <section id="egitmenler" className="py-16 sm:py-20">
       <Container>
         <FadeIn>
-          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Türkiye'nin Seçkin Eğitimci Kadrosu</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Geleceğini Teslim Edeceğin "Yıldız" Kadromuz</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
-            Öğretmen seçimi, öğrencinin kaderini belirleyen en kritik faktörlerden biri. Bu yüzden sadece akademik bilgiye değil;
-            anlatım gücüne, öğrenci psikolojisini yönetebilme becerisine ve ölçme-değerlendirme disiplinine odaklanan bir kadroyla
-            çalışıyoruz.
+            Öğretmen seçimi bir şans oyunu değildir. Akademik başarısını kanıtlamış, anlatım gücü yüksek ve sınav kazandırma
+            deneyimine sahip uzmanlarla çalışıyoruz.
           </p>
         </FadeIn>
         <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -26,7 +25,7 @@ export function TeacherSection() {
                 <p className="mt-1 text-sm text-muted">{teacher.branch} • {teacher.uni}</p>
                 <p className="mt-1 text-xs text-muted">Tecrübe: {teacher.exp}</p>
                 <p className="mt-4 text-sm italic leading-relaxed text-muted">"{teacher.quote}"</p>
-                <p className="mt-5 text-xs font-semibold text-brand">Yakın takip odaklı butik sınıf yaklaşımı</p>
+                <p className="mt-5 text-xs font-semibold text-brand">{teacher.tag}</p>
               </article>
             </FadeIn>
           ))}

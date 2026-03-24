@@ -86,26 +86,29 @@ export const teachers = [
   {
     name: "Merve Yılmaz",
     branch: "Matematik",
-    uni: "Boğaziçi Üniversitesi",
-    exp: "12 yıl",
+    uni: "Boğaziçi Üniversitesi (YKS Derecesi)",
+    exp: "12+ Yıl Tecrübe | 500+ Derece Çıkaran Öğrenci",
     quote:
-      "Matematikte kalıcı başarı, öğrencinin hangi adımda takıldığını doğru görmekle başlar. Benim yaklaşımım; ezber kalıp değil, soru düşünme biçimini öğrenciye kazandırmak."
+      "Matematik, ezber kalıpların değil, doğru düşünme biçiminin inşasıdır. Yaklaşımım; öğrencinin takıldığı noktayı tespit edip, kalıcı başarıyı yakalamasını sağlamaktır.",
+    tag: "Butik Gruplarda Birebir Takip & Motivasyon"
   },
   {
     name: "Can Demir",
-    branch: "Türkçe",
-    uni: "Marmara Üniversitesi",
-    exp: "10 yıl",
+    branch: "Türkçe/Edebiyat",
+    uni: "Marmara Üniversitesi (Edebiyat Fakültesi)",
+    exp: "10+ Yıl Tecrübe | Hızlı Okuma & Net Artırma Uzmanı",
     quote:
-      "Paragraf ve dil bilgisi netleri tesadüf değildir. Doğru okuma tekniği, düzenli tekrar ve analizli deneme rutini ile öğrencinin performansı kalıcı şekilde yükselir."
+      "Paragraf netleri tesadüf değildir. Doğru okuma teknikleri ve analizli deneme rutini ile öğrencinin sadece netlerini değil, soru çözüm hızını da kalıcı şekilde artırıyoruz.",
+    tag: "LGS/YKS Odaklı Hızlı Net Artışı"
   },
   {
     name: "Ece Aydın",
-    branch: "Fen Bilimleri",
-    uni: "ODTÜ",
-    exp: "9 yıl",
+    branch: "Fen Bilimleri/Fizik",
+    uni: "ODTÜ (Eğitim Fakültesi)",
+    exp: "9+ Yıl Tecrübe | Pratik Soru Çözüm Taktikleri",
     quote:
-      "Fen derslerinde fark yaratan nokta sadece konu bilmek değil, soruda neyin sorulduğunu hızla çözümleyebilmektir. Bu refleksi adım adım inşa ediyoruz."
+      "Fen derslerinde fark yaratan nokta; soruda neyin sorulduğunu saniyeler içinde analiz edebilmektir. Bu refleksi adım adım inşa ediyoruz.",
+    tag: "Konu Anlama Garantili Pratik Çözüm"
   }
 ];
 
@@ -116,7 +119,7 @@ export const whyUs = [
       "Zaten bildiğin konular için ödeme yapmak zorunda değilsin. Sadece eksik olduğun dersleri seçerek bütçeni ve zamanını en stratejik şekilde yönet."
   },
   {
-    title: "4-6 Kişilik VIP Sınıf Deneyimi",
+    title: "Maksimum 4 Kişilik VIP Sınıf Deneyimi",
     content:
       "Kalabalık sınıflarda görünmez olmayı bırak. Öğretmenine dilediğin an soru sorabildiğin interaktif gruplarda, özel ders verimini her an hisset."
   },
