@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { faq, siteUrl } from "@/lib/content";
 import { Navbar } from "@/components/sections/navbar";
 import { ConversionHeroSection } from "@/components/sections/conversion-hero-section";
-import { ProgramsSection } from "@/components/sections/programs-section";
 import { FreeTrialSection } from "@/components/sections/free-trial-section";
-import { DashboardPreviewSection } from "@/components/sections/dashboard-preview-section";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { WhyUsSection } from "@/components/sections/why-us-section";
 import { TeacherSection } from "@/components/sections/teacher-section";
@@ -73,8 +71,6 @@ export default function HomePage() {
         <ConversionHeroSection />
         <FreeTrialSection />
         <PricingComparisonSection />
-        <DashboardPreviewSection />
-        <ProgramsSection />
         <HowItWorks />
         <WhyUsSection />
         <TeacherSection />
