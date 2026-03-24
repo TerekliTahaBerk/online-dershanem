@@ -16,7 +16,6 @@ type FormData = {
   examType: string;
   targetGoal: string;
   currentNet: string;
-  supportType: string;
   parentPhone: string;
   kvkkConsent: boolean;
 };
@@ -28,7 +27,6 @@ const initialData: FormData = {
   examType: "",
   targetGoal: "",
   currentNet: "",
-  supportType: "",
   parentPhone: "",
   kvkkConsent: false
 };
@@ -111,11 +109,6 @@ export function MultiStepLeadForm() {
       }
     }
 
-    if (step === 4 && !formData.supportType) {
-      setError("Lütfen destek tercihleri arasından seçim yap.");
-      return false;
-    }
-
     if (step === 4 && !formData.kvkkConsent) {
       setError("Devam etmek için KVKK metnini okuyup onaylamalısın.");
       return false;
@@ -154,7 +147,6 @@ export function MultiStepLeadForm() {
         examType: payload.examType,
         targetGoal: payload.targetGoal,
         currentNet: payload.currentNet,
-        supportType: payload.supportType,
         parentPhone: payload.parentPhone,
         kvkkConsent: payload.kvkkConsent ? "true" : "false",
         source: payload.source,
@@ -180,8 +172,7 @@ export function MultiStepLeadForm() {
     trackConversionEvent("lead_funnel_complete", {
       source,
       examType: formData.examType,
-      classLevel: formData.classLevel,
-      supportType: formData.supportType
+      classLevel: formData.classLevel
     });
 
     setIsSubmitted(true);
@@ -358,24 +349,6 @@ export function MultiStepLeadForm() {
 
                   {step === 4 ? (
                     <div className="space-y-4">
-                      <p className="text-sm font-medium text-ink">Tercih ettiğin destek modeli</p>
-                      <div className="grid gap-3 sm:grid-cols-3">
-                        {["Ücretsiz deneme", "Demo ders", "Koçluk görüşmesi"].map((option) => (
-                          <button
-                            type="button"
-                            key={option}
-                            onClick={() => updateField("supportType", option)}
-                            className={`rounded-2xl border px-3 py-3 text-xs font-semibold transition ${
-                              formData.supportType === option
-                                ? "border-brand bg-mint text-brand"
-                                : "border-line bg-white text-muted hover:bg-soft"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-
                       <label className="text-sm font-medium text-ink">
                         Veli Telefonu (Opsiyonel)
                         <input
