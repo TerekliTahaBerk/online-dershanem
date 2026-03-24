@@ -61,24 +61,24 @@ export const programs = [
 
 export const howItWorks = [
   {
-    title: "Ders ihtiyacını netleştir",
-    desc: "Ön görüşmede öğrencinin hedefi ve mevcut seviyesi değerlendirilir; hangi ders(ler)e ihtiyaç olduğu netleştirilir."
+    title: "Ücretsiz Strateji Analizi",
+    desc: "Ön görüşmede hedeflerini ve mevcut seviyeni mercek altına alıyoruz. Sana en hızlı net artışını getirecek dersleri birlikte netleştiriyoruz."
   },
   {
-    title: "Seviyeye göre küçük gruba yerleş",
-    desc: "Öğrenci, seçtiği ders için seviyesine uygun küçük gruba alınır. Böylece ders içi tempo ve etkileşim dengesi korunur."
+    title: "Kişiye Özel VIP Yerleşim",
+    desc: "Seçtiğin derslerde, seninle aynı seviyedeki akranlarınla butik bir gruba yerleşirsin. Öğrenme hızını maksimuma çıkarırsın."
   },
   {
-    title: "Haftalık blok derse katıl",
-    desc: "Her ders paketi haftada 1 kez, 90 dakikalık blok oturumla ilerler. Derste aktif katılım ve soru çözüm odağı korunur."
+    title: "İnteraktif Derin Öğrenme",
+    desc: "Haftalık 90 dakikalık blok oturumlarda sadece dinlemezsin; aktif katılım ve soru-cevap odaklı sistemle konuyu derste bitirirsin."
   },
   {
-    title: "Konu ve soru takibini sürdür",
-    desc: "Ödev kontrolü, mini quiz, soru çözüm saati ve kazanım takibi ile öğrenci sadece dinlemez, gerçek ilerleme üretir."
+    title: "Kesintisiz Takip & Feedback",
+    desc: "Ödev kontrolleri ve mini quizlerle gelişimin 7/24 izlenir. Gerçek ilerlemeyi anlık raporlarla somut olarak görürsün."
   },
   {
-    title: "Gerekli dersi ekleyerek büyüt",
-    desc: "Sistem toplu paket zorunluluğu içermez. Öğrenci ihtiyacına göre yeni ders paketi ekleyerek yoluna devam eder."
+    title: "Esnek Gelişim ve Büyüme",
+    desc: "Zorunluluk yok, özgürlük var! İhtiyaç duydukça yeni dersleri ekleyebilir, yolculuğunu kendi temponda genişletebilirsin."
   }
 ];
 

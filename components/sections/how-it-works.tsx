@@ -7,10 +7,10 @@ export function HowItWorks() {
     <section id="nasil-calisir" className="bg-soft/70 py-16 sm:py-20">
       <Container>
         <FadeIn>
-          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Süreç Nasıl İlerliyor?</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Başarıya Giden 5 Adımlı Yol Haritan</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
-            Öğrencinin motivasyonunu bir hafta yüksek tutup sonraki hafta kaybettiği klasik modele karşı, süreci adım adım planlanmış
-            bir yapıyla yönetiyoruz. Her aşamanın net bir amacı, çıktısı ve takip noktası var.
+            Saman alevi gibi sönen motivasyonlara son! Her aşaması titizlikle planlanmış, ölçülebilir ve sürdürülebilir bir sistemle
+            hedefine adım adım yürüyoruz.
           </p>
         </FadeIn>
         <div className="mt-10 grid gap-4 md:grid-cols-5">
