@@ -279,7 +279,7 @@ export const subjectPackageGroups = [
         quota: "Son 1 kontenjan",
         oldPrice: "₺2.800,00",
         discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺2.000,00 / Ay",
+        discountedPrice: "2000₺ / Ay",
         perLessonPrice: "Ders başı ücret: ₺500,00",
         features: [
           "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
