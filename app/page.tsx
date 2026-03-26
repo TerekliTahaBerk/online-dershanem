@@ -6,6 +6,7 @@ import { HowItWorks } from "@/components/sections/how-it-works";
 import { WhyUsSection } from "@/components/sections/why-us-section";
 import { TeacherSection } from "@/components/sections/teacher-section";
 import { PricingComparisonSection } from "@/components/sections/pricing-comparison-section";
+import { CampsPreviewSection } from "@/components/sections/camps-preview-section";
 import { VideoTestimonialsSection } from "@/components/sections/video-testimonials-section";
 import { FAQSection } from "@/components/sections/faq-section";
 import { FinalConversionCTA } from "@/components/sections/final-conversion-cta";
@@ -69,6 +70,7 @@ export default function HomePage() {
       <main>
         <ConversionHeroSection />
         <PricingComparisonSection />
+        <CampsPreviewSection />
         <HowItWorks />
         <WhyUsSection />
         <TeacherSection />
