@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, MessageCircleMore, PhoneCall, X } from "lucide-react";
+import { Check, PhoneCall, X } from "lucide-react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { contact, packageFilters, pricing } from "@/lib/content";
@@ -11,11 +11,6 @@ import { ContactLink } from "@/components/ui/contact-link";
 
 type Plan = (typeof pricing)[number];
 type FilterKey = (typeof packageFilters)[number]["key"];
-
-function getWhatsappLink(planTitle: string) {
-  const text = encodeURIComponent(`Merhaba, ${planTitle} hakkında detaylı bilgi almak istiyorum.`);
-  return `https://wa.me/${contact.whatsapp.replace(/\D/g, "")}?text=${text}`;
-}
 
 export function PricingSection() {
   const [activePlanTitle, setActivePlanTitle] = useState<string | null>(null);
@@ -136,14 +131,6 @@ export function PricingSection() {
                 >
                   <PhoneCall className="mr-2 h-3.5 w-3.5" /> {smartPlan.title} İçin Ara
                 </ContactLink>
-                <ContactLink
-                  href={getWhatsappLink(smartPlan.title)}
-                  channel="whatsapp"
-                  placement={`pricing_${smartPlan.title}`}
-                  className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
-                >
-                  <MessageCircleMore className="mr-2 h-3.5 w-3.5" /> {smartPlan.title} İçin WhatsApp
-                </ContactLink>
               </div>
             </div>
           </div>
@@ -198,14 +185,6 @@ function PlanCard({ plan, onOpenDetail }: { plan: Plan; onOpenDetail: () => void
           className="inline-flex items-center rounded-full bg-anchor px-4 py-2 text-xs font-semibold text-white"
         >
           <PhoneCall className="mr-2 h-3.5 w-3.5" /> Ara
-        </ContactLink>
-        <ContactLink
-          href={getWhatsappLink(plan.title)}
-          channel="whatsapp"
-          placement={`plan_card_${plan.title}`}
-          className="inline-flex items-center rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-ink"
-        >
-          <MessageCircleMore className="mr-2 h-3.5 w-3.5" /> WhatsApp
         </ContactLink>
       </div>
 
@@ -282,14 +261,6 @@ function PlanModal({ plan, onClose }: { plan: Plan; onClose: () => void }) {
             className="inline-flex items-center rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white"
           >
             <PhoneCall className="mr-2 h-4 w-4" /> {plan.title} İçin Ara
-          </ContactLink>
-          <ContactLink
-            href={getWhatsappLink(plan.title)}
-            channel="whatsapp"
-            placement={`plan_modal_${plan.title}`}
-            className="inline-flex items-center rounded-full border border-line-strong px-5 py-2.5 text-xs font-semibold text-ink"
-          >
-            <MessageCircleMore className="mr-2 h-4 w-4" /> {plan.title} İçin WhatsApp
           </ContactLink>
         </div>
       </motion.div>

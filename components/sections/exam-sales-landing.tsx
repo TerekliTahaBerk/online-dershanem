@@ -7,8 +7,7 @@ import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { ContactLink } from "@/components/ui/contact-link";
-import { contact, getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
+import { getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 
 type PackageGroupKey = "TYT-AYT" | "LGS";
 
@@ -155,14 +154,6 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                 >
                   Hemen Başvur
                 </LeadFunnelTrigger>
-                <ContactLink
-                  href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`}
-                  channel="whatsapp"
-                  placement={`${data.examKey.toLowerCase()}_landing_whatsapp`}
-                  className="inline-flex rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink"
-                >
-                  WhatsApp'tan Bilgi Al
-                </ContactLink>
               </div>
             </div>
           </Container>

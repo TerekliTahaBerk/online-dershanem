@@ -6,8 +6,6 @@ import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
-import { ContactLink } from "@/components/ui/contact-link";
-import { contact } from "@/lib/content";
 
 export type ExamLandingData = {
   examKey: "TYT" | "AYT" | "TYT-AYT" | "LGS";
@@ -158,14 +156,6 @@ export function ExamLandingTemplate({ data }: { data: ExamLandingData }) {
                 >
                   Ücretsiz Denemeyi Başlat
                 </LeadFunnelTrigger>
-                <ContactLink
-                  href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`}
-                  channel="whatsapp"
-                  placement={`${data.examKey.toLowerCase()}_landing_whatsapp`}
-                  className="inline-flex rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink"
-                >
-                  WhatsApp'tan Yaz
-                </ContactLink>
                 <Link href="/" className="inline-flex rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink">
                   Ana Sayfaya Dön
                 </Link>

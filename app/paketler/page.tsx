@@ -7,7 +7,7 @@ import { FadeIn } from "@/components/ui/fade-in";
 import { contact, getPackagePaymentLink, siteUrl, subjectPackageGroups } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { Check, MessageCircleMore, PhoneCall } from "lucide-react";
+import { Check, PhoneCall } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Ders Bazlı Grup Özel Ders Paketleri",
@@ -105,14 +105,6 @@ export default function PackagesPage() {
                     className="inline-flex items-center justify-center rounded-xl bg-anchor px-4 py-2 text-xs font-semibold text-white transition hover:bg-pine"
                   >
                     <PhoneCall className="mr-2 h-3.5 w-3.5" /> Hemen Ara
-                  </ContactLink>
-                  <ContactLink
-                    href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`}
-                    channel="whatsapp"
-                    placement="packages_page"
-                    className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
-                  >
-                    <MessageCircleMore className="mr-2 h-3.5 w-3.5" /> WhatsApp'tan Yaz
                   </ContactLink>
                 </div>
               </div>
