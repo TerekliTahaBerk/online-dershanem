@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BadgeCheck, Check, Users } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 
@@ -80,7 +81,9 @@ export function CampsPreviewSection() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Kamplar</p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">Kamp Programlarını Ana Ekrandan İncele</h2>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+                Net Artıran Kamp Programlarıyla Sınava Avantajlı Başla
+              </h2>
             </div>
             <Link
               href="/kamplar/"
@@ -105,48 +108,63 @@ export function CampsPreviewSection() {
             ))}
           </div>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {camps.map((camp) => (
-              <article key={camp.name} className="flex h-full flex-col rounded-2xl border border-line bg-white p-4">
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-soft px-2.5 py-1 text-[11px] font-semibold text-ink">
-                    <Users className="h-3.5 w-3.5 text-brand" /> Max 8
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-semibold text-rose-700">
-                    Kontenjan: {camp.quota}
-                  </span>
-                </div>
-
-                <h3 className="mt-3 text-base font-semibold text-ink">{camp.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{camp.detail}</p>
-
-                <ul className="mt-3 space-y-1.5 text-xs text-muted">
-                  {sharedFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-3 rounded-xl border border-line bg-soft p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand">Kamp Fiyatı</p>
-                  <p className="mt-1 text-xs font-medium text-muted line-through">{oldPrice}</p>
-                  <p className="mt-1 text-xl font-bold text-anchor">{discountedPrice}</p>
-                </div>
-
-                <PurchaseFunnelTrigger
-                  source={`home_camp_${activeCategory}_${camp.name}_purchase`}
-                  packageName={`${camp.name} Kampı`}
-                  paymentLink={campPaymentLink}
-                  className="mt-4 inline-flex w-fit rounded-full bg-anchor px-4 py-2 text-xs font-semibold text-white transition hover:bg-pine"
-                  analyticsId={`home_camp_${activeCategory}_${camp.name}_purchase`}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeCategory}
+              className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
+            >
+              {camps.map((camp) => (
+                <motion.article
+                  key={camp.name}
+                  className="flex h-full flex-col rounded-2xl border border-line bg-white p-4 transition duration-300 hover:-translate-y-1 hover:shadow-soft"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
                 >
-                  <BadgeCheck className="mr-1.5 h-3.5 w-3.5" /> {discountedPrice} ile Katıl
-                </PurchaseFunnelTrigger>
-              </article>
-            ))}
-          </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-soft px-2.5 py-1 text-[11px] font-semibold text-ink">
+                      <Users className="h-3.5 w-3.5 text-brand" /> Max 8
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-semibold text-rose-700">
+                      Kontenjan: {camp.quota}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-3 text-base font-semibold text-ink">{camp.name}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{camp.detail}</p>
+
+                  <ul className="mt-3 space-y-1.5 text-xs text-muted">
+                    {sharedFeatures.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-3 rounded-xl border border-line bg-soft p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-brand">Kamp Fiyatı</p>
+                    <p className="mt-1 text-xs font-medium text-muted line-through">{oldPrice}</p>
+                    <p className="mt-1 text-xl font-bold text-anchor">{discountedPrice}</p>
+                  </div>
+
+                  <PurchaseFunnelTrigger
+                    source={`home_camp_${activeCategory}_${camp.name}_purchase`}
+                    packageName={`${camp.name} Kampı`}
+                    paymentLink={campPaymentLink}
+                    className="mt-4 inline-flex w-fit rounded-full bg-anchor px-4 py-2 text-xs font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-pine"
+                    analyticsId={`home_camp_${activeCategory}_${camp.name}_purchase`}
+                  >
+                    <BadgeCheck className="mr-1.5 h-3.5 w-3.5" /> {discountedPrice} ile Katıl
+                  </PurchaseFunnelTrigger>
+                </motion.article>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </Container>
     </section>

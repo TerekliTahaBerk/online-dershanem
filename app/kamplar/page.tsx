@@ -6,6 +6,7 @@ import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
 import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 import { Container } from "@/components/ui/container";
+import { FadeIn } from "@/components/ui/fade-in";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { siteUrl } from "@/lib/content";
@@ -99,43 +100,50 @@ export default function CampsPage() {
       <Navbar />
       <main className="py-14 sm:py-20">
         <Container>
-          <section className="rounded-3xl border border-line bg-gradient-to-br from-white via-paper to-mint p-7 shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Kamplar</p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-              Geleceğin Başarı Planı: Butik Kamplarımız
-            </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
-              Müfredatın en kritik konularını 8 kişilik özel gruplarda, uzman eğitmenlerle derinlemesine bitiriyoruz. Açılacak
-              kampları inceleyin, ön başvurunuzu yapın.
-            </p>
-          </section>
-
-          <section className="mt-8 rounded-3xl border border-line bg-white p-4 shadow-soft sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Takvim</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink">Kamplar Takvimi</h2>
-            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-              <p className="text-sm font-semibold text-amber-800">
-                Kamplarımızın başlaması için kontenjanların dolması beklenmektedir. Kamplarımız en geç 18 Nisan tarihinde başlayacaktır.
+          <FadeIn>
+            <section className="rounded-3xl border border-line bg-gradient-to-br from-white via-paper to-mint p-7 shadow-soft sm:p-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Kamplar</p>
+              <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+                Geleceğin Başarı Planı: Butik Kamplarımız
+              </h1>
+              <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
+                Müfredatın en kritik konularını 8 kişilik özel gruplarda, uzman eğitmenlerle derinlemesine bitiriyoruz. Açılacak
+                kampları inceleyin, ön başvurunuzu yapın.
               </p>
-            </div>
-            <div className="mt-4 overflow-hidden rounded-2xl border border-line">
-              <iframe
-                src="https://calendar.google.com/calendar/embed?src=c7e9bc8f3695d608c263a450c1402dba131bc20a71b86ece44737de9115d9772%40group.calendar.google.com&ctz=Europe%2FIstanbul"
-                style={{ border: 0 }}
-                width="100%"
-                height="600"
-                frameBorder="0"
-                scrolling="no"
-                title="Kamplar Takvimi"
-              />
-            </div>
-          </section>
+            </section>
+          </FadeIn>
+
+          <FadeIn delay={0.06}>
+            <section className="mt-8 rounded-3xl border border-line bg-white p-4 shadow-soft sm:p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Takvim</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink">Kamplar Takvimi</h2>
+              <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <p className="text-sm font-semibold text-amber-800">
+                  Kamplarımızın başlaması için kontenjanların dolması beklenmektedir. Kamplarımız en geç 18 Nisan tarihinde başlayacaktır.
+                </p>
+              </div>
+              <div className="mt-4 overflow-hidden rounded-2xl border border-line">
+                <iframe
+                  src="https://calendar.google.com/calendar/embed?src=c7e9bc8f3695d608c263a450c1402dba131bc20a71b86ece44737de9115d9772%40group.calendar.google.com&ctz=Europe%2FIstanbul"
+                  style={{ border: 0 }}
+                  width="100%"
+                  height="600"
+                  frameBorder="0"
+                  scrolling="no"
+                  title="Kamplar Takvimi"
+                />
+              </div>
+            </section>
+          </FadeIn>
 
           <section className="mt-10">
-            <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">AYT Matematik Kampları</h2>
+            <FadeIn>
+              <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">AYT Matematik Kampları</h2>
+            </FadeIn>
             <div className="mt-6 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {aytCamps.map((camp) => (
-                <article key={camp.name} className="group relative flex h-full flex-col rounded-3xl border border-line bg-white p-5 shadow-soft">
+              {aytCamps.map((camp, index) => (
+                <FadeIn key={camp.name} delay={index * 0.06}>
+                  <article className="group relative flex h-full flex-col rounded-3xl border border-line bg-white p-5 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex flex-1 flex-col">
                     <div className="flex flex-wrap gap-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink">
@@ -168,25 +176,29 @@ export default function CampsPage() {
                     </div>
                   </div>
 
-                  <PurchaseFunnelTrigger
-                    source={`camp_${camp.name}_purchase`}
-                    packageName={`${camp.name} Kampı`}
-                    paymentLink={campPaymentLink}
-                    className="mt-5 inline-flex w-fit shrink-0 rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-pine"
-                    analyticsId={`camp_${camp.name}_purchase`}
-                  >
-                    ₺2.000,00 ile Kampa Katıl
-                  </PurchaseFunnelTrigger>
-                </article>
+                    <PurchaseFunnelTrigger
+                      source={`camp_${camp.name}_purchase`}
+                      packageName={`${camp.name} Kampı`}
+                      paymentLink={campPaymentLink}
+                      className="mt-5 inline-flex w-fit shrink-0 rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-pine"
+                      analyticsId={`camp_${camp.name}_purchase`}
+                    >
+                      ₺2.000,00 ile Kampa Katıl
+                    </PurchaseFunnelTrigger>
+                  </article>
+                </FadeIn>
               ))}
             </div>
           </section>
 
           <section className="mt-12">
-            <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">TYT Matematik Kampları</h2>
+            <FadeIn>
+              <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">TYT Matematik Kampları</h2>
+            </FadeIn>
             <div className="mt-6 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {tytCamps.map((camp) => (
-                <article key={camp.name} className="group relative flex h-full flex-col rounded-3xl border border-line bg-white p-5 shadow-soft">
+              {tytCamps.map((camp, index) => (
+                <FadeIn key={camp.name} delay={index * 0.06}>
+                  <article className="group relative flex h-full flex-col rounded-3xl border border-line bg-white p-5 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex flex-1 flex-col">
                     <div className="flex flex-wrap gap-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink">
@@ -219,25 +231,29 @@ export default function CampsPage() {
                     </div>
                   </div>
 
-                  <PurchaseFunnelTrigger
-                    source={`camp_${camp.name}_purchase`}
-                    packageName={`${camp.name} Kampı`}
-                    paymentLink={campPaymentLink}
-                    className="mt-5 inline-flex w-fit shrink-0 rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-pine"
-                    analyticsId={`camp_${camp.name}_purchase`}
-                  >
-                    ₺2.000,00 ile Kampa Katıl
-                  </PurchaseFunnelTrigger>
-                </article>
+                    <PurchaseFunnelTrigger
+                      source={`camp_${camp.name}_purchase`}
+                      packageName={`${camp.name} Kampı`}
+                      paymentLink={campPaymentLink}
+                      className="mt-5 inline-flex w-fit shrink-0 rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-pine"
+                      analyticsId={`camp_${camp.name}_purchase`}
+                    >
+                      ₺2.000,00 ile Kampa Katıl
+                    </PurchaseFunnelTrigger>
+                  </article>
+                </FadeIn>
               ))}
             </div>
           </section>
 
           <section className="mt-12">
-            <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">LGS Kampları</h2>
+            <FadeIn>
+              <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">LGS Kampları</h2>
+            </FadeIn>
             <div className="mt-6 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {lgsCamps.map((camp) => (
-                <article key={camp.name} className="group relative flex h-full flex-col rounded-3xl border border-line bg-white p-5 shadow-soft">
+              {lgsCamps.map((camp, index) => (
+                <FadeIn key={camp.name} delay={index * 0.06}>
+                  <article className="group relative flex h-full flex-col rounded-3xl border border-line bg-white p-5 shadow-soft transition duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex flex-1 flex-col">
                     <div className="flex flex-wrap gap-2">
                       <span className="inline-flex items-center gap-1 rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink">
@@ -270,21 +286,23 @@ export default function CampsPage() {
                     </div>
                   </div>
 
-                  <PurchaseFunnelTrigger
-                    source={`camp_${camp.name}_purchase`}
-                    packageName={`${camp.name} Kampı`}
-                    paymentLink={campPaymentLink}
-                    className="mt-5 inline-flex w-fit shrink-0 rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-pine"
-                    analyticsId={`camp_${camp.name}_purchase`}
-                  >
-                    ₺2.000,00 ile Kampa Katıl
-                  </PurchaseFunnelTrigger>
-                </article>
+                    <PurchaseFunnelTrigger
+                      source={`camp_${camp.name}_purchase`}
+                      packageName={`${camp.name} Kampı`}
+                      paymentLink={campPaymentLink}
+                      className="mt-5 inline-flex w-fit shrink-0 rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:bg-pine"
+                      analyticsId={`camp_${camp.name}_purchase`}
+                    >
+                      ₺2.000,00 ile Kampa Katıl
+                    </PurchaseFunnelTrigger>
+                  </article>
+                </FadeIn>
               ))}
             </div>
           </section>
 
-          <section className="mt-12 rounded-3xl border border-line bg-soft p-6 sm:p-8">
+          <FadeIn delay={0.1}>
+            <section className="mt-12 rounded-3xl border border-line bg-soft p-6 sm:p-8">
             <h2 className="text-xl font-bold text-ink sm:text-2xl">Aradığınız konu listede yok mu?</h2>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
               4-8 kişilik kendi grubunuzu kurun, size özel kampı biz başlatalım!
@@ -297,7 +315,8 @@ export default function CampsPage() {
             >
               Özel Grup Talebi - Ön Başvuru Yap
             </LeadFunnelTrigger>
-          </section>
+            </section>
+          </FadeIn>
         </Container>
       </main>
       <MultiStepLeadForm />

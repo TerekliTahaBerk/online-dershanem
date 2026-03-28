@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 
 const trustItems = [
   { value: "1.200+", label: "Başarı yolculuğuna eşlik ettiğimiz öğrenci" },
@@ -25,13 +24,12 @@ export function ConversionHeroSection() {
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <LeadFunnelTrigger
-              source="hero_primary"
-              eventName="hero_cta_click"
+            <Link
+              href="#seni-arayalim-formu"
               className="inline-flex items-center justify-center rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-pine"
             >
               Hemen Formu Doldur Seni Arayalım!
-            </LeadFunnelTrigger>
+            </Link>
             <Link
               href="https://drive.google.com/file/d/164x3itpg_6l1-piwnCrevWM5Hz-SVhW5/view?usp=sharing"
               target="_blank"
