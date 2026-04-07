@@ -119,7 +119,7 @@ export default function CampsPage() {
               <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink">Kamplar Takvimi</h2>
               <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
                 <p className="text-sm font-semibold text-amber-800">
-                  Kamplarımızın başlaması için kontenjanların dolması beklenmektedir. Kamplarımız en geç 18 Nisan tarihinde başlayacaktır.
+                  Kamplarımızın başlaması için kontenjanların dolması beklenmektedir. Kamplarımız en geç 1 Mayıs tarihinde başlayacaktır.
                 </p>
               </div>
               <div className="mt-4 overflow-hidden rounded-2xl border border-line">
