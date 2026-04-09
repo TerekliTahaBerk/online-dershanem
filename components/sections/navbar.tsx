@@ -75,7 +75,13 @@ export function Navbar() {
               )
             )}
           </nav>
-          <div className="hidden items-center md:flex">
+          <div className="hidden items-center gap-3 md:flex">
+            <Link
+              href="/giris/"
+              className="inline-flex items-center justify-center rounded-full border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition-all duration-300 hover:-translate-y-0.5 hover:border-brand hover:text-brand"
+            >
+              Giriş
+            </Link>
             <ComingSoonButton />
           </div>
           <button
@@ -117,6 +123,12 @@ export function Navbar() {
             </div>
 
             <div className="mt-4 flex flex-col gap-2">
+              <Link
+                href="/giris/"
+                className="inline-flex items-center justify-center rounded-full border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition hover:border-brand hover:text-brand"
+              >
+                Giriş
+              </Link>
               <ComingSoonButton />
             </div>
           </nav>

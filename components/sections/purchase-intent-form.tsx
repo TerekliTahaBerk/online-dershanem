@@ -68,10 +68,6 @@ const initialFormData: PurchaseFormData = {
 };
 
 const totalSteps = 4;
-const purchaseWebhookUrl =
-  process.env.NEXT_PUBLIC_PURCHASE_WEBHOOK_URL ??
-  process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
-  "https://script.google.com/macros/s/AKfycbwHv15cbaZ0IqTkQtSUqcPMgTiZ0hz7qF8PKboDmHlqUhvSI6ChRguvRne2Jh8FzJrEXQ/exec";
 
 export function PurchaseIntentForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -80,6 +76,7 @@ export function PurchaseIntentForm() {
   const [packageName, setPackageName] = useState("");
   const [paymentLink, setPaymentLink] = useState("");
   const [formData, setFormData] = useState<PurchaseFormData>(initialFormData);
+  const [purchaseIntentId, setPurchaseIntentId] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +96,7 @@ export function PurchaseIntentForm() {
       setIsOpen(true);
       setIsSubmitted(false);
       setError(null);
+      setPurchaseIntentId(null);
       setStep(1);
       setFormData(initialFormData);
       trackConversionEvent("purchase_funnel_open", {
@@ -197,7 +195,12 @@ export function PurchaseIntentForm() {
     const noteParts = [formData.notes.trim(), `Paket: ${packageName}`, `Kanal: ${source}`].filter(Boolean);
 
     try {
-      const query = new URLSearchParams({
+      const response = await fetch("/api/purchase-intents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
         submittedAt,
         studentFullName: formData.studentFullName,
         studentPhone: formData.studentPhone,
@@ -220,19 +223,20 @@ export function PurchaseIntentForm() {
         parentPhone: formData.parentPhone,
         parentEmail: formData.parentEmail,
         notes: noteParts.join(" | "),
-        source: "form2"
-      }).toString();
-
-      const url = `${purchaseWebhookUrl}?${query}&_ts=${Date.now()}`;
-
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        const cleanup = () => resolve();
-        img.onload = cleanup;
-        img.onerror = cleanup;
-        img.src = url;
-        setTimeout(resolve, 1700);
+        source,
+        packageName,
+        paymentLink,
+        kvkkConsent: formData.kvkkConsent,
+        paymentConsent: formData.paymentConsent
+        })
       });
+
+      if (!response.ok) {
+        throw new Error("purchase-submit-failed");
+      }
+
+      const result = (await response.json()) as { id: string };
+      setPurchaseIntentId(result.id);
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya telefonla bize ulaş.");
       setIsSubmitting(false);
@@ -249,6 +253,33 @@ export function PurchaseIntentForm() {
     setIsSubmitted(true);
     setIsSubmitting(false);
     setFormData(initialFormData);
+  };
+
+  const handlePaymentClick = async () => {
+    if (!paymentLink) {
+      return;
+    }
+
+    try {
+      await fetch("/api/purchase-events", {
+        method: "POST",
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          purchaseIntentId,
+          eventType: "PAYMENT_LINK_OPENED",
+          source,
+          packageName,
+          paymentLink
+        })
+      });
+    } catch {
+      // Payment yönlendirmesini kayıt hatası yüzünden bloklamıyoruz.
+    }
+
+    window.open(paymentLink, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -316,15 +347,14 @@ export function PurchaseIntentForm() {
                   </p>
                   <div className="mt-5 flex flex-wrap gap-2">
                     {paymentLink ? (
-                      <a
-                        href={paymentLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={handlePaymentClick}
                         className="inline-flex items-center gap-2 rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white"
                         data-analytics-id="purchase_funnel_go_payment"
                       >
                         <CreditCard className="h-3.5 w-3.5" /> Ödeme Linkine Git
-                      </a>
+                      </button>
                     ) : null}
                     <button
                       type="button"
