@@ -12,10 +12,6 @@ type InlineLeadCaptureCardProps = {
   id?: string;
 };
 
-const leadWebhookUrl =
-  process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
-  "https://script.google.com/macros/s/AKfycbwHv15cbaZ0IqTkQtSUqcPMgTiZ0hz7qF8PKboDmHlqUhvSI6ChRguvRne2Jh8FzJrEXQ/exec";
-
 export function InlineLeadCaptureCard({
   source,
   title = "Formu Doldur, Seni Arayalım",
@@ -42,7 +38,12 @@ export function InlineLeadCaptureCard({
     setError(null);
 
     try {
-      const query = new URLSearchParams({
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
         fullName: fullName.trim(),
         phone: phone.trim(),
         classLevel,
@@ -53,17 +54,12 @@ export function InlineLeadCaptureCard({
         kvkkConsent: "true",
         source,
         submittedAt: new Date().toISOString()
-      }).toString();
-
-      const url = `${leadWebhookUrl}?${query}&_ts=${Date.now()}`;
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        const cleanup = () => resolve();
-        img.onload = cleanup;
-        img.onerror = cleanup;
-        img.src = url;
-        setTimeout(resolve, 1500);
+        })
       });
+
+      if (!response.ok) {
+        throw new Error("lead-submit-failed");
+      }
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene.");
       setIsSubmitting(false);

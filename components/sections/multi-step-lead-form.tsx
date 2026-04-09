@@ -32,9 +32,6 @@ const initialData: FormData = {
 };
 
 const totalSteps = 4;
-const leadWebhookUrl =
-  process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
-  "https://script.google.com/macros/s/AKfycbwHv15cbaZ0IqTkQtSUqcPMgTiZ0hz7qF8PKboDmHlqUhvSI6ChRguvRne2Jh8FzJrEXQ/exec";
 
 export function MultiStepLeadForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -140,29 +137,17 @@ export function MultiStepLeadForm() {
     };
 
     try {
-      const query = new URLSearchParams({
-        fullName: payload.fullName,
-        phone: payload.phone,
-        classLevel: payload.classLevel,
-        examType: payload.examType,
-        targetGoal: payload.targetGoal,
-        currentNet: payload.currentNet,
-        parentPhone: payload.parentPhone,
-        kvkkConsent: payload.kvkkConsent ? "true" : "false",
-        source: payload.source,
-        submittedAt: payload.submittedAt
-      }).toString();
-
-      const url = `${leadWebhookUrl}?${query}&_ts=${Date.now()}`;
-
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        const cleanup = () => resolve();
-        img.onload = cleanup;
-        img.onerror = cleanup;
-        img.src = url;
-        setTimeout(resolve, 1500);
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
+
+      if (!response.ok) {
+        throw new Error("lead-submit-failed");
+      }
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya bizi telefonla ara.");
       setIsSubmitting(false);
