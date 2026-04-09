@@ -1,4 +1,4 @@
-import { LeadFormType, PurchaseStatus } from "@prisma/client";
+import { PurchaseStatus } from "@prisma/client";
 import { z } from "zod";
 
 const trimmedString = z.string().trim().min(1);
@@ -23,7 +23,7 @@ export const leadSubmissionSchema = z.object({
   parentPhone: optionalTrimmedString,
   kvkkConsent: z.literal(true),
   source: trimmedString,
-  formType: z.nativeEnum(LeadFormType),
+  formType: z.enum(["FUNNEL", "INLINE"]),
   notes: optionalTrimmedString,
   submittedAt: z.string().datetime()
 });
@@ -67,10 +67,14 @@ export const purchaseSubmissionSchema = z.object({
 export const purchaseWebhookSchema = z.object({
   purchaseId: z.string().trim().optional(),
   provider: trimmedString,
-  eventType: trimmedString,
+  eventType: z.enum([
+    "FORM_SUBMITTED",
+    "PAYMENT_LINK_OPENED",
+    "CALLBACK_RECEIVED",
+    "PAYMENT_CONFIRMED",
+    "PAYMENT_FAILED"
+  ]),
   status: z.nativeEnum(PurchaseStatus),
   providerReference: optionalTrimmedString,
-  amount: z.number().int().positive().optional(),
-  currency: optionalTrimmedString,
   payload: z.record(z.string(), z.unknown()).optional()
 });

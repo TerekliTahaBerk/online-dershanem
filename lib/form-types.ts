@@ -1,4 +1,4 @@
-import type { LeadFormType, PurchaseStatus } from "@prisma/client";
+import type { PurchaseStatus } from "@prisma/client";
 
 export type LeadSubmissionInput = {
   fullName: string;
@@ -10,7 +10,7 @@ export type LeadSubmissionInput = {
   parentPhone?: string;
   kvkkConsent: boolean;
   source: string;
-  formType: LeadFormType;
+  formType: "FUNNEL" | "INLINE";
   notes?: string;
   submittedAt: string;
 };

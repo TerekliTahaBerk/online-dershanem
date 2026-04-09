@@ -1,24 +1,15 @@
 import { redirect } from "next/navigation";
-import { LeadStatus, PurchaseStatus } from "@prisma/client";
+import { PurchaseStatus } from "@prisma/client";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { Container } from "@/components/ui/container";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-const leadStatusLabels: Record<LeadStatus, string> = {
-  NEW: "Yeni",
-  CONTACTED: "İletişime Geçildi",
-  QUALIFIED: "Uygun",
-  CLOSED: "Kapandı"
-};
-
 const purchaseStatusLabels: Record<PurchaseStatus, string> = {
-  INTENT: "Talep",
-  PENDING_PAYMENT: "Ödeme Bekliyor",
-  COMPLETED: "Tamamlandı",
-  FAILED: "Başarısız",
-  CANCELLED: "İptal"
+  PENDING: "Bekliyor",
+  PAID: "Ödendi",
+  FAILED: "Başarısız"
 };
 
 function formatDate(date: Date) {
@@ -37,18 +28,18 @@ export default async function AdminPage() {
 
   const [leadCount, purchaseCount, latestLeads, latestPurchases] = await Promise.all([
     prisma.leadSubmission.count(),
-    prisma.purchaseSubmission.count(),
+    prisma.purchaseIntent.count(),
     prisma.leadSubmission.findMany({
       orderBy: { submittedAt: "desc" },
       take: 10
     }),
-    prisma.purchaseSubmission.findMany({
+    prisma.purchaseIntent.findMany({
       orderBy: { submittedAt: "desc" },
       take: 10
     })
   ]);
 
-  const completedPurchaseCount = latestPurchases.filter((item) => item.status === "COMPLETED").length;
+  const completedPurchaseCount = latestPurchases.filter((item) => item.status === "PAID").length;
 
   return (
     <>
@@ -116,9 +107,7 @@ export default async function AdminPage() {
                         </td>
                         <td className="px-3 py-3 text-muted">{lead.source}</td>
                         <td className="px-3 py-3">
-                          <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink">
-                            {leadStatusLabels[lead.status]}
-                          </span>
+                          <span className="rounded-full bg-soft px-3 py-1 text-xs font-semibold text-ink">Yeni</span>
                         </td>
                         <td className="px-3 py-3 text-muted">{formatDate(lead.submittedAt)}</td>
                       </tr>

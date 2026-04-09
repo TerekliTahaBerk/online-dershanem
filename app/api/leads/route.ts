@@ -11,9 +11,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Geçersiz form verisi." }, { status: 400 });
     }
 
+    const { formType: _formType, notes: _notes, ...leadData } = parsed.data;
     const submission = await prisma.leadSubmission.create({
       data: {
-        ...parsed.data,
+        ...leadData,
         submittedAt: new Date(parsed.data.submittedAt)
       }
     });

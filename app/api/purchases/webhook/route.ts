@@ -30,39 +30,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Geçersiz webhook verisi." }, { status: 400 });
     }
 
-    const purchase =
-      parsed.data.purchaseId
-        ? await prisma.purchaseSubmission.findUnique({
-            where: { id: parsed.data.purchaseId }
+    const existingEvent = parsed.data.providerReference
+      ? await prisma.purchaseEvent.findFirst({
+          where: { providerReference: parsed.data.providerReference },
+          orderBy: { createdAt: "desc" }
+        })
+      : null;
+
+    const purchase = parsed.data.purchaseId
+      ? await prisma.purchaseIntent.findUnique({
+          where: { id: parsed.data.purchaseId }
+        })
+      : existingEvent
+        ? await prisma.purchaseIntent.findUnique({
+            where: { id: existingEvent.purchaseIntentId }
           })
-        : parsed.data.providerReference
-          ? await prisma.purchaseSubmission.findUnique({
-              where: { providerReference: parsed.data.providerReference }
-            })
-          : null;
+        : null;
 
     if (!purchase) {
       return NextResponse.json({ error: "Satın alma kaydı bulunamadı." }, { status: 404 });
     }
 
     await prisma.$transaction([
-      prisma.purchaseSubmission.update({
+      prisma.purchaseIntent.update({
         where: { id: purchase.id },
         data: {
-          status: parsed.data.status,
-          provider: parsed.data.provider,
-          providerReference: parsed.data.providerReference ?? purchase.providerReference
+          status: parsed.data.status
         }
       }),
-      prisma.purchaseWebhookEvent.create({
+      prisma.purchaseEvent.create({
         data: {
-          purchaseId: purchase.id,
-          provider: parsed.data.provider,
+          purchaseIntentId: purchase.id,
           eventType: parsed.data.eventType,
           status: parsed.data.status,
+          source: purchase.source,
+          packageName: purchase.packageName,
+          paymentLink: purchase.paymentLink,
+          provider: parsed.data.provider,
           providerReference: parsed.data.providerReference,
-          amount: parsed.data.amount,
-          currency: parsed.data.currency,
           payload: parsed.data.payload as Prisma.InputJsonValue | undefined
         }
       })

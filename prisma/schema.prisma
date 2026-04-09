@@ -12,24 +12,18 @@ enum UserRole {
   ADMIN
 }
 
-enum LeadStatus {
-  NEW
-  CONTACTED
-  QUALIFIED
-  CLOSED
-}
-
-enum LeadFormType {
-  FUNNEL
-  INLINE
-}
-
 enum PurchaseStatus {
-  INTENT
-  PENDING_PAYMENT
-  COMPLETED
+  PENDING
+  PAID
   FAILED
-  CANCELLED
+}
+
+enum PurchaseEventType {
+  FORM_SUBMITTED
+  PAYMENT_LINK_OPENED
+  CALLBACK_RECEIVED
+  PAYMENT_CONFIRMED
+  PAYMENT_FAILED
 }
 
 model User {
@@ -53,16 +47,16 @@ model LeadSubmission {
   parentPhone   String?
   kvkkConsent   Boolean
   source        String
-  formType      LeadFormType
-  status        LeadStatus   @default(NEW)
-  notes         String?
   submittedAt   DateTime
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 }
 
-model PurchaseSubmission {
+model PurchaseIntent {
   id                String           @id @default(cuid())
+  source            String
+  packageName       String
+  paymentLink       String?
   studentFullName   String
   studentPhone      String
   studentEmail      String
@@ -83,33 +77,29 @@ model PurchaseSubmission {
   parentFullName    String?
   parentPhone       String?
   parentEmail       String?
-  packageName       String
-  paymentLink       String?
-  source            String
   notes             String?
   kvkkConsent       Boolean
   paymentConsent    Boolean
-  status            PurchaseStatus   @default(INTENT)
-  provider          String?
-  providerReference String?          @unique
+  status            PurchaseStatus   @default(PENDING)
   submittedAt       DateTime
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  webhookEvents     PurchaseWebhookEvent[]
+  events            PurchaseEvent[]
 }
 
-model PurchaseWebhookEvent {
+model PurchaseEvent {
   id               String            @id @default(cuid())
-  purchaseId       String
-  provider         String
-  eventType        String
+  purchaseIntentId String
+  eventType        PurchaseEventType
   status           PurchaseStatus
+  source           String
+  packageName      String
+  paymentLink      String?
+  provider         String?
   providerReference String?
-  amount           Int?
-  currency         String?
   payload          Json?
-  receivedAt       DateTime          @default(now())
-  purchase         PurchaseSubmission @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  createdAt        DateTime          @default(now())
+  purchaseIntent   PurchaseIntent    @relation(fields: [purchaseIntentId], references: [id], onDelete: Cascade)
 
-  @@index([purchaseId, receivedAt])
+  @@index([purchaseIntentId, createdAt])
 }
