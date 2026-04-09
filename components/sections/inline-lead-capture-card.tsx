@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import { submitLeadSubmission } from "@/lib/form-submission";
 import { trackConversionEvent } from "@/lib/tracking";
 
 type InlineLeadCaptureCardProps = {
@@ -11,10 +12,6 @@ type InlineLeadCaptureCardProps = {
   description?: string;
   id?: string;
 };
-
-const leadWebhookUrl =
-  process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
-  "https://script.google.com/macros/s/AKfycbwHv15cbaZ0IqTkQtSUqcPMgTiZ0hz7qF8PKboDmHlqUhvSI6ChRguvRne2Jh8FzJrEXQ/exec";
 
 export function InlineLeadCaptureCard({
   source,
@@ -42,27 +39,18 @@ export function InlineLeadCaptureCard({
     setError(null);
 
     try {
-      const query = new URLSearchParams({
+      await submitLeadSubmission({
         fullName: fullName.trim(),
         phone: phone.trim(),
         classLevel,
         examType,
         targetGoal: "Inline kısa form",
         currentNet: "Belirtilmedi",
-        parentPhone: "",
-        kvkkConsent: "true",
+        parentPhone: undefined,
+        kvkkConsent: true,
         source,
+        formType: "INLINE",
         submittedAt: new Date().toISOString()
-      }).toString();
-
-      const url = `${leadWebhookUrl}?${query}&_ts=${Date.now()}`;
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        const cleanup = () => resolve();
-        img.onload = cleanup;
-        img.onerror = cleanup;
-        img.src = url;
-        setTimeout(resolve, 1500);
       });
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene.");

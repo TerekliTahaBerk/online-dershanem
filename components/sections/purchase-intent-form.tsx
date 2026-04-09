@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, CreditCard, PhoneCall, X } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ContactLink } from "@/components/ui/contact-link";
+import { submitPurchaseSubmission } from "@/lib/form-submission";
 import { contact } from "@/lib/content";
 import { trackConversionEvent } from "@/lib/tracking";
 
@@ -68,10 +69,6 @@ const initialFormData: PurchaseFormData = {
 };
 
 const totalSteps = 4;
-const purchaseWebhookUrl =
-  process.env.NEXT_PUBLIC_PURCHASE_WEBHOOK_URL ??
-  process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
-  "https://script.google.com/macros/s/AKfycbwHv15cbaZ0IqTkQtSUqcPMgTiZ0hz7qF8PKboDmHlqUhvSI6ChRguvRne2Jh8FzJrEXQ/exec";
 
 export function PurchaseIntentForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -197,7 +194,7 @@ export function PurchaseIntentForm() {
     const noteParts = [formData.notes.trim(), `Paket: ${packageName}`, `Kanal: ${source}`].filter(Boolean);
 
     try {
-      const query = new URLSearchParams({
+      await submitPurchaseSubmission({
         submittedAt,
         studentFullName: formData.studentFullName,
         studentPhone: formData.studentPhone,
@@ -219,19 +216,12 @@ export function PurchaseIntentForm() {
         parentFullName: formData.parentFullName,
         parentPhone: formData.parentPhone,
         parentEmail: formData.parentEmail,
+        packageName,
+        paymentLink,
         notes: noteParts.join(" | "),
-        source: "form2"
-      }).toString();
-
-      const url = `${purchaseWebhookUrl}?${query}&_ts=${Date.now()}`;
-
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        const cleanup = () => resolve();
-        img.onload = cleanup;
-        img.onerror = cleanup;
-        img.src = url;
-        setTimeout(resolve, 1700);
+        source,
+        kvkkConsent: formData.kvkkConsent,
+        paymentConsent: formData.paymentConsent
       });
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya telefonla bize ulaş.");

@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CLOSED
+}
+
+enum LeadFormType {
+  FUNNEL
+  INLINE
+}
+
+enum PurchaseStatus {
+  INTENT
+  PENDING_PAYMENT
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model LeadSubmission {
+  id            String       @id @default(cuid())
+  fullName      String
+  phone         String
+  classLevel    String
+  examType      String
+  targetGoal    String
+  currentNet    String
+  parentPhone   String?
+  kvkkConsent   Boolean
+  source        String
+  formType      LeadFormType
+  status        LeadStatus   @default(NEW)
+  notes         String?
+  submittedAt   DateTime
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model PurchaseSubmission {
+  id                String           @id @default(cuid())
+  studentFullName   String
+  studentPhone      String
+  studentEmail      String
+  schoolName        String
+  city              String
+  district          String
+  classLevel        String
+  department        String?
+  examType          String
+  targetRanking     String
+  currentLevel      String
+  currentNet        String
+  weakLessons       String
+  strongLessons     String?
+  needType          String
+  studyStatus       String
+  weeklyStudyHours  String
+  parentFullName    String?
+  parentPhone       String?
+  parentEmail       String?
+  packageName       String
+  paymentLink       String?
+  source            String
+  notes             String?
+  kvkkConsent       Boolean
+  paymentConsent    Boolean
+  status            PurchaseStatus   @default(INTENT)
+  provider          String?
+  providerReference String?          @unique
+  submittedAt       DateTime
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  webhookEvents     PurchaseWebhookEvent[]
+}
+
+model PurchaseWebhookEvent {
+  id               String            @id @default(cuid())
+  purchaseId       String
+  provider         String
+  eventType        String
+  status           PurchaseStatus
+  providerReference String?
+  amount           Int?
+  currency         String?
+  payload          Json?
+  receivedAt       DateTime          @default(now())
+  purchase         PurchaseSubmission @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseId, receivedAt])
+}
