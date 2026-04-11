@@ -1,10 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, CalendarDays, Package, User, LogOut,
-  GraduationCap, Calendar, CreditCard, Menu, X,
+  Calendar, CreditCard, Menu, X,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
@@ -46,6 +47,21 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
   );
 }
 
+function LogoBlock() {
+  return (
+    <Link href="/panel" aria-label="Online Dershanem">
+      <Image
+        src="/logo.png"
+        alt="Online Dershanem"
+        width={160}
+        height={38}
+        className="h-8 w-auto"
+        priority
+      />
+    </Link>
+  );
+}
+
 export function PanelSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -54,12 +70,7 @@ export function PanelSidebar() {
     <>
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-30 bg-[#091413] border-b border-white/10 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center">
-            <GraduationCap className="w-3.5 h-3.5 text-white" />
-          </div>
-          <span className="text-sm font-semibold text-white">Öğrenci Paneli</span>
-        </div>
+        <LogoBlock />
         <button
           onClick={() => setMobileOpen((o) => !o)}
           className="text-stone-400 hover:text-white p-1 rounded transition"
@@ -81,9 +92,8 @@ export function PanelSidebar() {
       <div className={`lg:hidden fixed top-0 left-0 bottom-0 z-30 w-56 bg-[#091413] flex flex-col transform transition-transform duration-200 ${
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
-        <div className="px-5 py-5 border-b border-white/10 flex items-center gap-2.5 mt-12">
-          <GraduationCap className="w-4 h-4 text-emerald-400" />
-          <span className="text-sm font-semibold text-white">Menü</span>
+        <div className="px-5 py-4 border-b border-white/10 mt-12">
+          <LogoBlock />
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           <NavLinks pathname={pathname} onNavigate={() => setMobileOpen(false)} />
@@ -101,13 +111,8 @@ export function PanelSidebar() {
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-56 shrink-0 bg-[#091413] flex-col min-h-screen sticky top-0">
-        <div className="px-5 py-6 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-emerald-500 flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-white">Öğrenci Paneli</span>
-          </div>
+        <div className="px-5 py-5 border-b border-white/10">
+          <LogoBlock />
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           <NavLinks pathname={pathname} />

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -28,19 +29,23 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-60 min-h-screen bg-[#091413] flex flex-col shrink-0">
-      {/* Logo / Brand */}
-      <div className="px-6 py-5 border-b border-white/10">
-        <span className="text-[#B0E4CC] font-bold text-lg tracking-tight">
-          Dershane Admin
-        </span>
+    <aside className="w-56 min-h-screen bg-[#091413] flex flex-col shrink-0 sticky top-0">
+      {/* Logo */}
+      <div className="px-5 py-5 border-b border-white/10">
+        <Link href="/admin" aria-label="Admin Panel">
+          <Image
+            src="/logo.png"
+            alt="Online Dershanem"
+            width={160}
+            height={38}
+            className="h-8 w-auto"
+            priority
+          />
+        </Link>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        <p className="text-[#B0E4CC]/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
-          Ana Menü
-        </p>
         {navItems.map(({ href, label, icon: Icon, exact }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href);
           return (
@@ -49,8 +54,8 @@ export function AdminSidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-[#285A48] text-[#B0E4CC]"
-                  : "text-[#B0E4CC]/60 hover:bg-white/5 hover:text-[#B0E4CC]"
+                  ? "bg-emerald-600 text-white"
+                  : "text-stone-400 hover:text-white hover:bg-white/10"
               }`}
             >
               <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
@@ -62,7 +67,7 @@ export function AdminSidebar() {
 
       {/* Footer */}
       <div className="px-3 py-4 border-t border-white/10">
-        <p className="text-[#B0E4CC]/30 text-xs text-center">v1.0 · {new Date().getFullYear()}</p>
+        <p className="text-stone-600 text-xs text-center">Admin · {new Date().getFullYear()}</p>
       </div>
     </aside>
   );

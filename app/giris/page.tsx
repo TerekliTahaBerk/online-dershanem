@@ -1,7 +1,8 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { getServerAuthSession } from "@/lib/auth";
-import { GraduationCap, BookOpen, CalendarDays, CreditCard } from "lucide-react";
+import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -29,11 +30,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {/* Left — Brand panel */}
           <div className="bg-[#091413] text-white p-10 sm:p-14 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-12">
-                <div className="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center">
-                  <GraduationCap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-base font-semibold tracking-tight text-white">Online Dershanem</span>
+              <div className="mb-12">
+                <Image
+                  src="/logo.png"
+                  alt="Online Dershanem"
+                  width={180}
+                  height={42}
+                  className="h-10 w-auto"
+                  priority
+                />
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white">
@@ -50,7 +55,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 { icon: CalendarDays, label: "Ders takvimi", desc: "Yaklaşan dersleriniz" },
                 { icon: BookOpen, label: "Google Meet", desc: "Tek tıkla derse katılın" },
                 { icon: CreditCard, label: "Ödemeler", desc: "Paket geçmişiniz" },
-                { icon: GraduationCap, label: "İlerleme", desc: "Tamamlanan dersler" },
+                { icon: TrendingUp, label: "İlerleme", desc: "Tamamlanan dersler" },
               ].map(({ icon: Icon, label, desc }) => (
                 <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
                   <Icon className="w-4 h-4 text-emerald-400 mb-2" />
