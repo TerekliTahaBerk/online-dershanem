@@ -32,7 +32,7 @@ export async function updateStudentAction(formData: FormData) {
   const notes = readString(formData, "notes");
   const taskLabel = readString(formData, "taskLabel");
   const nextActionAt = readOptionalDate(formData, "nextActionAt");
-  const returnTo = readString(formData, "returnTo") || "/admin?section=students";
+  const returnTo = readString(formData, "returnTo") || "/admin/ogrenciler";
 
   if (!studentId || !Object.values(StudentStatus).includes(status)) {
     redirect(withFlash(returnTo, "student-error"));
@@ -49,6 +49,7 @@ export async function updateStudentAction(formData: FormData) {
     }
   });
 
+  revalidatePath("/admin/ogrenciler");
   revalidatePath("/admin");
   redirect(withFlash(returnTo, "student"));
 }
@@ -59,7 +60,7 @@ export async function updateLeadAction(formData: FormData) {
   const adminNotes = readString(formData, "adminNotes");
   const taskLabel = readString(formData, "taskLabel");
   const nextActionAt = readOptionalDate(formData, "nextActionAt");
-  const returnTo = readString(formData, "returnTo") || "/admin?section=forms";
+  const returnTo = readString(formData, "returnTo") || "/admin/formlar";
 
   if (!leadId || !Object.values(IntakeStatus).includes(intakeStatus)) {
     redirect(withFlash(returnTo, "lead-error"));
@@ -75,6 +76,7 @@ export async function updateLeadAction(formData: FormData) {
     }
   });
 
+  revalidatePath("/admin/formlar");
   revalidatePath("/admin");
   redirect(withFlash(returnTo, "lead"));
 }
@@ -88,7 +90,7 @@ export async function updatePurchaseAction(formData: FormData) {
   const taskLabel = readString(formData, "taskLabel");
   const nextActionAt = readOptionalDate(formData, "nextActionAt");
   const linkedStudentId = readString(formData, "linkedStudentId");
-  const returnTo = readString(formData, "returnTo") || "/admin?section=forms";
+  const returnTo = readString(formData, "returnTo") || "/admin/odemeler";
 
   if (
     !purchaseId ||
@@ -119,6 +121,7 @@ export async function updatePurchaseAction(formData: FormData) {
     });
   }
 
+  revalidatePath("/admin/odemeler");
   revalidatePath("/admin");
   redirect(withFlash(returnTo, "purchase"));
 }

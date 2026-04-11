@@ -1,0 +1,93 @@
+import Link from "next/link";
+import { createPackageAction } from "../actions";
+
+type Props = {
+  searchParams?: Promise<{ error?: string }>;
+};
+
+export default async function YeniPaketPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const error = params?.error;
+
+  return (
+    <div className="p-6 max-w-2xl">
+      <div className="mb-6">
+        <Link href="/admin/paketler" className="text-sm text-gray-500 hover:text-gray-700">← Paketlere Dön</Link>
+        <h1 className="text-2xl font-bold text-[#091413] mt-2">Yeni Paket Oluştur</h1>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg mb-4">
+          {error === "missing" ? "Lütfen zorunlu alanları doldurun." : "Geçersiz değer. Fiyat ve ders sayısı sayısal olmalıdır."}
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <form action={createPackageAction} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Name */}
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">Paket Adı *</label>
+              <input type="text" name="name" required placeholder="Örn: TYT Matematik - 10 Ders Paketi"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">Açıklama</label>
+              <textarea name="description" rows={2} placeholder="Paket hakkında kısa açıklama..."
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71] resize-none" />
+            </div>
+
+            {/* Price */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Fiyat (₺) *</label>
+              <input type="number" name="price" required min="0" step="0.01" placeholder="599.00"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+            </div>
+
+            {/* Lesson Count */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Ders Sayısı *</label>
+              <input type="number" name="lessonCount" required min="1" placeholder="10"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+            </div>
+
+            {/* Subjects */}
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">Dersler / Konular *</label>
+              <input type="text" name="subjects" required placeholder="Örn: TYT Matematik, Geometri"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+            </div>
+
+            {/* PayTR Link */}
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">PayTR Ödeme Linki</label>
+              <input type="url" name="paytrLink" placeholder="https://www.paytr.com/link/..."
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+              <p className="text-xs text-gray-400">PayTR panelinden aldığınız ödeme linkini buraya yapıştırın.</p>
+            </div>
+
+            {/* Active */}
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" name="isActive" defaultChecked className="w-4 h-4 accent-[#408A71] rounded" />
+                <span className="text-sm font-medium text-gray-700">Aktif (web sitesinde görünür)</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="submit"
+              className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
+              Paketi Kaydet
+            </button>
+            <Link href="/admin/paketler" className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2.5">
+              İptal
+            </Link>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

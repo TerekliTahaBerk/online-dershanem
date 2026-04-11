@@ -157,6 +157,7 @@ model Student {
   updatedAt        DateTime         @updatedAt
   leadSubmissions  LeadSubmission[]
   purchaseIntents  PurchaseIntent[]
+  lessons          Lesson[]
 
   @@index([status, updatedAt])
 }
@@ -176,4 +177,67 @@ model PurchaseEvent {
   purchaseIntent   PurchaseIntent    @relation(fields: [purchaseIntentId], references: [id], onDelete: Cascade)
 
   @@index([purchaseIntentId, createdAt])
+}
+
+enum TeacherStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LessonStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model Teacher {
+  id        String        @id @default(cuid())
+  fullName  String
+  email     String?       @unique
+  phone     String?
+  subjects  String
+  bio       String?
+  status    TeacherStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  lessons   Lesson[]
+
+  @@index([status])
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Int
+  paytrLink   String?
+  lessonCount Int
+  subjects    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lessons     Lesson[]
+
+  @@index([isActive])
+}
+
+model Lesson {
+  id             String       @id @default(cuid())
+  studentId      String
+  teacherId      String
+  packageId      String?
+  scheduledAt    DateTime
+  duration       Int          @default(60)
+  googleMeetLink String?
+  status         LessonStatus @default(SCHEDULED)
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher        Teacher      @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  package        Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, scheduledAt])
+  @@index([teacherId, scheduledAt])
+  @@index([status, scheduledAt])
 }
