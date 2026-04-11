@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { Prisma } from "@prisma/client";
+import { IntakeStatus, Prisma, PurchaseStatus, StudentStatus } from "@prisma/client";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { getServerAuthSession } from "@/lib/auth";
 import {
   buildWhatsAppLink,
   formatDateTime,
+  formatDateTimeLocalInput,
   intakeStatusLabels,
   intakeStatusOptions,
   purchaseStatusLabels,
@@ -22,58 +23,118 @@ type AdminPageProps = {
     q?: string;
     updated?: string;
     section?: string;
+    studentStatus?: string;
+    intakeStatus?: string;
+    purchaseStatus?: string;
+    tasks?: string;
   }>;
 };
 
-function buildReturnTo(query: string, section: string) {
+type AdminFilters = {
+  q: string;
+  section: string;
+  studentStatus: string;
+  intakeStatus: string;
+  purchaseStatus: string;
+  tasks: string;
+};
+
+function buildReturnTo(filters: AdminFilters, section: string) {
   const params = new URLSearchParams();
-  if (query) params.set("q", query);
+  if (filters.q) params.set("q", filters.q);
+  if (filters.studentStatus) params.set("studentStatus", filters.studentStatus);
+  if (filters.intakeStatus) params.set("intakeStatus", filters.intakeStatus);
+  if (filters.purchaseStatus) params.set("purchaseStatus", filters.purchaseStatus);
+  if (filters.tasks === "1") params.set("tasks", "1");
   params.set("section", section);
   return `/admin?${params.toString()}`;
 }
 
-function buildStudentWhere(query: string): Prisma.StudentWhereInput | undefined {
-  if (!query) return undefined;
+function buildStudentWhere(filters: AdminFilters): Prisma.StudentWhereInput | undefined {
+  const conditions: Prisma.StudentWhereInput[] = [];
 
-  return {
-    OR: [
-      { fullName: { contains: query, mode: "insensitive" } },
-      { phone: { contains: query, mode: "insensitive" } },
-      { email: { contains: query, mode: "insensitive" } },
-      { schoolName: { contains: query, mode: "insensitive" } },
-      { examType: { contains: query, mode: "insensitive" } },
-      { activePackage: { contains: query, mode: "insensitive" } }
-    ]
-  };
+  if (filters.q) {
+    conditions.push({
+      OR: [
+        { fullName: { contains: filters.q, mode: "insensitive" } },
+        { phone: { contains: filters.q, mode: "insensitive" } },
+        { email: { contains: filters.q, mode: "insensitive" } },
+        { schoolName: { contains: filters.q, mode: "insensitive" } },
+        { examType: { contains: filters.q, mode: "insensitive" } },
+        { activePackage: { contains: filters.q, mode: "insensitive" } }
+      ]
+    });
+  }
+
+  if (filters.studentStatus) {
+    conditions.push({ status: filters.studentStatus as StudentStatus });
+  }
+
+  if (filters.tasks === "1") {
+    conditions.push({ nextActionAt: { not: null } });
+  }
+
+  if (conditions.length === 0) return undefined;
+  return conditions.length === 1 ? conditions[0] : { AND: conditions };
 }
 
-function buildLeadWhere(query: string): Prisma.LeadSubmissionWhereInput | undefined {
-  if (!query) return undefined;
+function buildLeadWhere(filters: AdminFilters): Prisma.LeadSubmissionWhereInput | undefined {
+  const conditions: Prisma.LeadSubmissionWhereInput[] = [];
 
-  return {
-    OR: [
-      { fullName: { contains: query, mode: "insensitive" } },
-      { phone: { contains: query, mode: "insensitive" } },
-      { classLevel: { contains: query, mode: "insensitive" } },
-      { examType: { contains: query, mode: "insensitive" } },
-      { source: { contains: query, mode: "insensitive" } }
-    ]
-  };
+  if (filters.q) {
+    conditions.push({
+      OR: [
+        { fullName: { contains: filters.q, mode: "insensitive" } },
+        { phone: { contains: filters.q, mode: "insensitive" } },
+        { classLevel: { contains: filters.q, mode: "insensitive" } },
+        { examType: { contains: filters.q, mode: "insensitive" } },
+        { source: { contains: filters.q, mode: "insensitive" } }
+      ]
+    });
+  }
+
+  if (filters.intakeStatus) {
+    conditions.push({ intakeStatus: filters.intakeStatus as IntakeStatus });
+  }
+
+  if (filters.tasks === "1") {
+    conditions.push({ nextActionAt: { not: null } });
+  }
+
+  if (conditions.length === 0) return undefined;
+  return conditions.length === 1 ? conditions[0] : { AND: conditions };
 }
 
-function buildPurchaseWhere(query: string): Prisma.PurchaseIntentWhereInput | undefined {
-  if (!query) return undefined;
+function buildPurchaseWhere(filters: AdminFilters): Prisma.PurchaseIntentWhereInput | undefined {
+  const conditions: Prisma.PurchaseIntentWhereInput[] = [];
 
-  return {
-    OR: [
-      { studentFullName: { contains: query, mode: "insensitive" } },
-      { studentPhone: { contains: query, mode: "insensitive" } },
-      { studentEmail: { contains: query, mode: "insensitive" } },
-      { schoolName: { contains: query, mode: "insensitive" } },
-      { packageName: { contains: query, mode: "insensitive" } },
-      { source: { contains: query, mode: "insensitive" } }
-    ]
-  };
+  if (filters.q) {
+    conditions.push({
+      OR: [
+        { studentFullName: { contains: filters.q, mode: "insensitive" } },
+        { studentPhone: { contains: filters.q, mode: "insensitive" } },
+        { studentEmail: { contains: filters.q, mode: "insensitive" } },
+        { schoolName: { contains: filters.q, mode: "insensitive" } },
+        { packageName: { contains: filters.q, mode: "insensitive" } },
+        { source: { contains: filters.q, mode: "insensitive" } }
+      ]
+    });
+  }
+
+  if (filters.intakeStatus) {
+    conditions.push({ intakeStatus: filters.intakeStatus as IntakeStatus });
+  }
+
+  if (filters.purchaseStatus) {
+    conditions.push({ status: filters.purchaseStatus as PurchaseStatus });
+  }
+
+  if (filters.tasks === "1") {
+    conditions.push({ nextActionAt: { not: null } });
+  }
+
+  if (conditions.length === 0) return undefined;
+  return conditions.length === 1 ? conditions[0] : { AND: conditions };
 }
 
 function getFlashMessage(updated?: string) {
@@ -133,6 +194,23 @@ function DetailItem({ label, value }: { label: string; value?: string | null }) 
   );
 }
 
+function TaskSummary({
+  taskLabel,
+  nextActionAt
+}: {
+  taskLabel?: string | null;
+  nextActionAt?: Date | string | null;
+}) {
+  if (!taskLabel && !nextActionAt) return null;
+
+  return (
+    <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+      <p className="font-medium">{taskLabel || "Planlı aksiyon"}</p>
+      {nextActionAt ? <p className="mt-1 text-xs text-amber-800">Sonraki adım: {formatDateTime(nextActionAt)}</p> : null}
+    </div>
+  );
+}
+
 function ContactLinks({
   phone,
   email
@@ -175,17 +253,24 @@ function ContactLinks({
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const session = await getServerAuthSession();
   const params = await searchParams;
-  const query = params?.q?.trim() ?? "";
+  const filters: AdminFilters = {
+    q: params?.q?.trim() ?? "",
+    section: params?.section || "students",
+    studentStatus: params?.studentStatus ?? "",
+    intakeStatus: params?.intakeStatus ?? "",
+    purchaseStatus: params?.purchaseStatus ?? "",
+    tasks: params?.tasks === "1" ? "1" : ""
+  };
   const flashMessage = getFlashMessage(params?.updated);
 
   if (session?.user?.role !== "ADMIN") {
     redirect("/giris?callbackUrl=/admin");
   }
 
-  const [leadCount, purchaseCount, studentCount, newLeadCount, newPurchaseCount, activeStudentCount, students, latestLeads, latestPurchases] =
+  const [leadCount, purchaseCount, studentCount, newLeadCount, newPurchaseCount, activeStudentCount, taskQueueCount, students, latestLeads, latestPurchases] =
     await Promise.all([
-    prisma.leadSubmission.count(),
-    prisma.purchaseIntent.count(),
+      prisma.leadSubmission.count(),
+      prisma.purchaseIntent.count(),
       prisma.student.count(),
       prisma.leadSubmission.count({
         where: { intakeStatus: "NEW" }
@@ -200,19 +285,25 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           }
         }
       }),
+      prisma.student.count({ where: { nextActionAt: { not: null } } }).then(
+        async (studentTasks) =>
+          studentTasks +
+          (await prisma.leadSubmission.count({ where: { nextActionAt: { not: null } } })) +
+          (await prisma.purchaseIntent.count({ where: { nextActionAt: { not: null } } }))
+      ),
       prisma.student.findMany({
-        where: buildStudentWhere(query),
-        orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+        where: buildStudentWhere(filters),
+        orderBy: [{ nextActionAt: "asc" }, { status: "asc" }, { updatedAt: "desc" }],
         take: 40
       }),
       prisma.leadSubmission.findMany({
-        where: buildLeadWhere(query),
-        orderBy: { submittedAt: "desc" },
+        where: buildLeadWhere(filters),
+        orderBy: [{ nextActionAt: "asc" }, { submittedAt: "desc" }],
         take: 25
       }),
       prisma.purchaseIntent.findMany({
-        where: buildPurchaseWhere(query),
-        orderBy: { submittedAt: "desc" },
+        where: buildPurchaseWhere(filters),
+        orderBy: [{ nextActionAt: "asc" }, { submittedAt: "desc" }],
         take: 25
       })
     ]);
@@ -239,18 +330,67 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             </div>
           </div>
 
-          <form className="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <form className="mt-6 grid gap-3 lg:grid-cols-6">
             <label className="text-sm font-medium text-slate-800">
               Panel içinde ara
               <input
                 type="search"
                 name="q"
-                defaultValue={query}
+                defaultValue={filters.q}
                 placeholder="Öğrenci, telefon, e-posta, okul, paket..."
                 className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               />
             </label>
-            <input type="hidden" name="section" value={params?.section || "students"} />
+            <label className="text-sm font-medium text-slate-800">
+              Öğrenci durumu
+              <select
+                name="studentStatus"
+                defaultValue={filters.studentStatus}
+                className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              >
+                <option value="">Tümü</option>
+                {studentStatusOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {studentStatusLabels[option]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium text-slate-800">
+              Form durumu
+              <select
+                name="intakeStatus"
+                defaultValue={filters.intakeStatus}
+                className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              >
+                <option value="">Tümü</option>
+                {intakeStatusOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {intakeStatusLabels[option]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium text-slate-800">
+              Ödeme durumu
+              <select
+                name="purchaseStatus"
+                defaultValue={filters.purchaseStatus}
+                className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              >
+                <option value="">Tümü</option>
+                {purchaseStatusOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {purchaseStatusLabels[option]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2 self-end rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800">
+              <input type="checkbox" name="tasks" value="1" defaultChecked={filters.tasks === "1"} className="h-4 w-4 rounded" />
+              Sadece görevli kayıtlar
+            </label>
+            <input type="hidden" name="section" value={filters.section} />
             <button
               type="submit"
               className="self-end rounded-md bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
@@ -259,7 +399,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             </button>
             <Link
               href="/admin"
-              className="self-end rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 lg:col-span-6 lg:justify-self-start"
             >
               Filtreyi Temizle
             </Link>
@@ -289,9 +429,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <MetricCard label="Lead Formları" value={leadCount} detail={`${newLeadCount} kayıt ilk temas bekliyor`} />
           <MetricCard label="Detaylı Formlar" value={purchaseCount} detail={`${newPurchaseCount} kayıt işlem bekliyor`} />
           <MetricCard
-            label="Operasyon Durumu"
-            value={newLeadCount + newPurchaseCount}
-            detail="Yeni gelen kayıtlar aynı panelden öğrenciye bağlanır ve güncellenir"
+            label="Görev Kuyruğu"
+            value={taskQueueCount}
+            detail="Tarih atanmış geri dönüş ve takip işleri öne çekiliyor"
           />
         </section>
 
@@ -308,7 +448,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           <div className="grid gap-4 xl:grid-cols-2">
             {students.map((student) => {
-              const returnTo = buildReturnTo(query, "students");
+              const returnTo = buildReturnTo(filters, "students");
 
               return (
                 <article key={student.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -324,6 +464,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         {student.schoolName ? ` • ${student.schoolName}` : ""}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">Son güncelleme: {formatDateTime(student.updatedAt)}</p>
+                      <div className="mt-3">
+                        <TaskSummary taskLabel={student.taskLabel} nextActionAt={student.nextActionAt} />
+                      </div>
                     </div>
                     <ContactLinks phone={student.phone} email={student.email} />
                   </div>
@@ -373,6 +516,26 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         />
                       </label>
                     </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-slate-800">
+                        Görev Başlığı
+                        <input
+                          name="taskLabel"
+                          defaultValue={student.taskLabel ?? ""}
+                          className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          placeholder="Örn: Veli ile tekrar görüş"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-slate-800">
+                        Sonraki Aksiyon
+                        <input
+                          type="datetime-local"
+                          name="nextActionAt"
+                          defaultValue={formatDateTimeLocalInput(student.nextActionAt)}
+                          className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        />
+                      </label>
+                    </div>
                     <label className="text-sm font-medium text-slate-800">
                       İç Notlar
                       <textarea
@@ -412,7 +575,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           <div className="grid gap-4 xl:grid-cols-2">
             {latestLeads.map((lead) => {
-              const returnTo = buildReturnTo(query, "forms");
+              const returnTo = buildReturnTo(filters, "forms");
 
               return (
                 <article key={lead.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -427,6 +590,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         {lead.classLevel} • {lead.examType} • {lead.source}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">{formatDateTime(lead.submittedAt)}</p>
+                      <div className="mt-3">
+                        <TaskSummary taskLabel={lead.taskLabel} nextActionAt={lead.nextActionAt} />
+                      </div>
                     </div>
                     <ContactLinks phone={lead.phone} />
                   </div>
@@ -455,6 +621,26 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         ))}
                       </select>
                     </label>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-slate-800">
+                        Görev Başlığı
+                        <input
+                          name="taskLabel"
+                          defaultValue={lead.taskLabel ?? ""}
+                          className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          placeholder="Örn: Akşam tekrar ara"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-slate-800">
+                        Sonraki Aksiyon
+                        <input
+                          type="datetime-local"
+                          name="nextActionAt"
+                          defaultValue={formatDateTimeLocalInput(lead.nextActionAt)}
+                          className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        />
+                      </label>
+                    </div>
                     <label className="text-sm font-medium text-slate-800">
                       Operasyon Notu
                       <textarea
@@ -490,7 +676,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           <div className="grid gap-4">
             {latestPurchases.map((purchase) => {
-              const returnTo = buildReturnTo(query, "purchase-forms");
+              const returnTo = buildReturnTo(filters, "purchase-forms");
 
               return (
                 <article key={purchase.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -506,6 +692,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         {purchase.packageName} • {purchase.classLevel} • {purchase.examType} • {purchase.source}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">{formatDateTime(purchase.submittedAt)}</p>
+                      <div className="mt-3">
+                        <TaskSummary taskLabel={purchase.taskLabel} nextActionAt={purchase.nextActionAt} />
+                      </div>
                     </div>
                     <ContactLinks phone={purchase.studentPhone} email={purchase.studentEmail} />
                   </div>
@@ -570,6 +759,26 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                         <input
                           name="packageName"
                           defaultValue={purchase.packageName}
+                          className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        />
+                      </label>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className="text-sm font-medium text-slate-800">
+                        Görev Başlığı
+                        <input
+                          name="taskLabel"
+                          defaultValue={purchase.taskLabel ?? ""}
+                          className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                          placeholder="Örn: Ödeme linki sonrası geri ara"
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-slate-800">
+                        Sonraki Aksiyon
+                        <input
+                          type="datetime-local"
+                          name="nextActionAt"
+                          defaultValue={formatDateTimeLocalInput(purchase.nextActionAt)}
                           className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                         />
                       </label>

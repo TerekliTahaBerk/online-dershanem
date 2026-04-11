@@ -10,6 +10,14 @@ function readString(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function readOptionalDate(formData: FormData, key: string) {
+  const value = readString(formData, key);
+  if (!value) return null;
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function withFlash(returnTo: string, updated: string) {
   const [pathname, queryString = ""] = returnTo.split("?");
   const params = new URLSearchParams(queryString);
@@ -22,6 +30,8 @@ export async function updateStudentAction(formData: FormData) {
   const status = readString(formData, "status") as StudentStatus;
   const activePackage = readString(formData, "activePackage");
   const notes = readString(formData, "notes");
+  const taskLabel = readString(formData, "taskLabel");
+  const nextActionAt = readOptionalDate(formData, "nextActionAt");
   const returnTo = readString(formData, "returnTo") || "/admin?section=students";
 
   if (!studentId || !Object.values(StudentStatus).includes(status)) {
@@ -33,7 +43,9 @@ export async function updateStudentAction(formData: FormData) {
     data: {
       status,
       activePackage: activePackage || null,
-      notes: notes || null
+      notes: notes || null,
+      taskLabel: taskLabel || null,
+      nextActionAt
     }
   });
 
@@ -45,6 +57,8 @@ export async function updateLeadAction(formData: FormData) {
   const leadId = readString(formData, "leadId");
   const intakeStatus = readString(formData, "intakeStatus") as IntakeStatus;
   const adminNotes = readString(formData, "adminNotes");
+  const taskLabel = readString(formData, "taskLabel");
+  const nextActionAt = readOptionalDate(formData, "nextActionAt");
   const returnTo = readString(formData, "returnTo") || "/admin?section=forms";
 
   if (!leadId || !Object.values(IntakeStatus).includes(intakeStatus)) {
@@ -55,7 +69,9 @@ export async function updateLeadAction(formData: FormData) {
     where: { id: leadId },
     data: {
       intakeStatus,
-      adminNotes: adminNotes || null
+      adminNotes: adminNotes || null,
+      taskLabel: taskLabel || null,
+      nextActionAt
     }
   });
 
@@ -69,6 +85,8 @@ export async function updatePurchaseAction(formData: FormData) {
   const status = readString(formData, "status") as PurchaseStatus;
   const packageName = readString(formData, "packageName");
   const adminNotes = readString(formData, "adminNotes");
+  const taskLabel = readString(formData, "taskLabel");
+  const nextActionAt = readOptionalDate(formData, "nextActionAt");
   const linkedStudentId = readString(formData, "linkedStudentId");
   const returnTo = readString(formData, "returnTo") || "/admin?section=forms";
 
@@ -86,7 +104,9 @@ export async function updatePurchaseAction(formData: FormData) {
       intakeStatus,
       status,
       packageName,
-      adminNotes: adminNotes || null
+      adminNotes: adminNotes || null,
+      taskLabel: taskLabel || null,
+      nextActionAt
     }
   });
 

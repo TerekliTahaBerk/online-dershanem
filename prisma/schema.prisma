@@ -66,6 +66,8 @@ model LeadSubmission {
   source        String
   intakeStatus  IntakeStatus @default(NEW)
   adminNotes    String?
+  taskLabel     String?
+  nextActionAt  DateTime?
   studentId     String?
   submittedAt   DateTime
   createdAt     DateTime     @default(now())
@@ -107,6 +109,8 @@ model PurchaseIntent {
   status            PurchaseStatus   @default(PENDING)
   intakeStatus      IntakeStatus     @default(NEW)
   adminNotes        String?
+  taskLabel         String?
+  nextActionAt      DateTime?
   studentId         String?
   submittedAt       DateTime
   createdAt         DateTime         @default(now())
@@ -146,6 +150,8 @@ model Student {
   activePackage    String?
   status           StudentStatus    @default(NEW)
   notes            String?
+  taskLabel        String?
+  nextActionAt     DateTime?
   submittedAt      DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt

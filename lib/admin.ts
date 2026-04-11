@@ -36,6 +36,17 @@ export function formatDateTime(date: Date | string) {
   }).format(value);
 }
 
+export function formatDateTimeLocalInput(date?: Date | string | null) {
+  if (!date) return "";
+
+  const value = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(value.getTime())) return "";
+
+  const offset = value.getTimezoneOffset();
+  const localDate = new Date(value.getTime() - offset * 60_000);
+  return localDate.toISOString().slice(0, 16);
+}
+
 export function normalizePhone(value: string) {
   return value.replace(/\D/g, "");
 }
