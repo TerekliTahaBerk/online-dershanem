@@ -1,7 +1,8 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import { Container } from "@/components/ui/container";
 import { LoginForm } from "@/components/auth/login-form";
 import { getServerAuthSession } from "@/lib/auth";
+import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -12,49 +13,73 @@ type LoginPageProps = {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getServerAuthSession();
   const params = await searchParams;
-  const callbackUrl = params?.callbackUrl || "/admin";
 
   if (session?.user?.role === "ADMIN") {
-    redirect(callbackUrl);
+    redirect(params?.callbackUrl || "/admin");
+  }
+
+  if (session?.user?.role === "STUDENT") {
+    redirect(params?.callbackUrl || "/panel");
   }
 
   return (
-    <main className="min-h-screen bg-white py-12">
-      <Container>
-        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="rounded-lg border border-slate-200 bg-slate-50 p-8 sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Yönetim Girişi</p>
-            <h1 className="mt-3 max-w-xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              Admin paneli için sade ve doğrudan giriş
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
-              Form yanıtları, öğrenci havuzu, paket takibi ve operasyon notları bu panelde tutulur. Public site görünümünden ayrı
-              çalışır; amaç hızlı işlem almak ve tek yerden yönetmektir.
-            </p>
+    <main className="min-h-screen bg-[#F7F5F0] flex items-center justify-center p-4">
+      <div className="w-full max-w-5xl">
+        <div className="grid gap-0 lg:grid-cols-[1fr_420px] rounded-2xl overflow-hidden shadow-xl border border-stone-200">
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          {/* Left — Brand panel */}
+          <div className="bg-[#091413] text-white p-10 sm:p-14 flex flex-col justify-between">
+            <div>
+              <div className="mb-12">
+                <Image
+                  src="/logo.png"
+                  alt="Online Dershanem"
+                  width={180}
+                  height={42}
+                  className="h-10 w-auto"
+                  priority
+                />
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white">
+                Panelinize<br />
+                <span className="text-emerald-400">hoş geldiniz.</span>
+              </h1>
+              <p className="mt-4 text-stone-400 text-sm leading-relaxed max-w-xs">
+                Derslerinizi takip edin, öğretmenlerinizle iletişimde kalın ve ilerlemenizi görün.
+              </p>
+            </div>
+
+            <div className="mt-12 grid grid-cols-2 gap-3">
               {[
-                "Kısa ve detaylı formlar tek panelde görünür",
-                "Öğrenci kaydına paket ve durum işlenir",
-                "Telefon, WhatsApp ve e-posta aksiyonları hazırdır",
-                "Admin oturumu ile korunur"
-              ].map((item) => (
-                <div key={item} className="rounded-md border border-slate-200 bg-white px-4 py-4 text-sm font-medium text-slate-800">
-                  {item}
+                { icon: CalendarDays, label: "Ders takvimi", desc: "Yaklaşan dersleriniz" },
+                { icon: BookOpen, label: "Google Meet", desc: "Tek tıkla derse katılın" },
+                { icon: CreditCard, label: "Ödemeler", desc: "Paket geçmişiniz" },
+                { icon: TrendingUp, label: "İlerleme", desc: "Tamamlanan dersler" },
+              ].map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <Icon className="w-4 h-4 text-emerald-400 mb-2" />
+                  <p className="text-xs font-semibold text-white">{label}</p>
+                  <p className="text-xs text-stone-500 mt-0.5">{desc}</p>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
-            <p className="text-sm font-semibold text-slate-950">Admin hesabı</p>
-            <p className="mt-2 text-sm text-slate-600">
-              `ADMIN_EMAIL` ve `ADMIN_PASSWORD` ile seed edilen kullanıcı hesabı üzerinden giriş yapın.
-            </p>
-            <LoginForm callbackUrl={callbackUrl} />
-          </section>
+          {/* Right — Login form */}
+          <div className="bg-white p-8 sm:p-10 flex flex-col justify-center">
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-stone-900">Giriş Yap</h2>
+              <p className="mt-1.5 text-sm text-stone-500">
+                E-posta adresiniz ve şifrenizle devam edin.
+              </p>
+            </div>
+
+            <LoginForm />
+          </div>
+
         </div>
-      </Container>
+      </div>
     </main>
   );
 }

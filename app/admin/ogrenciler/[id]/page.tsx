@@ -13,14 +13,15 @@ import {
   purchaseStatusLabels
 } from "@/lib/admin";
 import { updateStudentAction } from "@/app/admin/actions";
+import { createStudentAccountAction } from "@/app/admin/ogrenciler/actions";
 import {
   User, Phone, Mail, MapPin, School, BookOpen, Target, CalendarDays,
-  ExternalLink, ChevronLeft, Plus, MessageCircle, TrendingUp, CheckCircle2
+  ExternalLink, ChevronLeft, Plus, MessageCircle, KeyRound, CheckCircle
 } from "lucide-react";
-import { updateLessonAction } from "@/app/admin/dersler/actions";
 
 type StudentFull = Prisma.StudentGetPayload<{
   include: {
+    user: { select: { email: true } };
     lessons: {
       include: {
         teacher: { select: { id: true; fullName: true } };
@@ -61,6 +62,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
   const student = await prisma.student.findUnique({
     where: { id },
     include: {
+      user: { select: { email: true } },
       lessons: {
         include: {
           teacher: { select: { id: true, fullName: true } },
@@ -74,7 +76,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       },
       leadSubmissions: { orderBy: { submittedAt: "desc" } }
     }
-  }) as StudentFull | null;
+  }) as unknown as StudentFull | null;
 
   if (!student) notFound();
 
@@ -103,6 +105,26 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       {updated === "student" && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
           Öğrenci güncellendi.
+        </div>
+      )}
+      {updated === "account-created" && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+          Öğrenci hesabı oluşturuldu. Artık panele giriş yapabilir.
+        </div>
+      )}
+      {updated === "account-exists" && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2.5 rounded-lg">
+          Bu öğrencinin zaten bir hesabı var.
+        </div>
+      )}
+      {updated === "email-taken" && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
+          Bu e-posta adresi başka bir hesap tarafından kullanılıyor.
+        </div>
+      )}
+      {updated === "account-error" && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
+          Hesap oluşturulurken hata oluştu. Tüm alanları doldurun (min. 6 karakter şifre).
         </div>
       )}
 
@@ -421,6 +443,65 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
               <div className="pt-3 border-t border-gray-100">
                 <p className="text-xs text-gray-400 mb-1">Notlar</p>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{student.notes}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Portal access card */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5 lg:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <KeyRound size={16} className="text-[#408A71]" />
+              <h2 className="font-semibold text-[#091413]">Panel Erişimi</h2>
+            </div>
+            {student.userId ? (
+              <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
+                <CheckCircle size={16} className="text-emerald-600 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-emerald-800">Hesap mevcut</p>
+                  {student.user?.email && (
+                    <p className="text-xs text-emerald-700 mt-0.5">{student.user.email} adresiyle giriş yapabilir.</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Bu öğrenci için bir panel hesabı oluşturun. Öğrenci e-posta ve şifresini kullanarak{" "}
+                  <strong>/panel</strong> adresinden giriş yapabilir.
+                </p>
+                <form action={createStudentAccountAction} className="grid gap-3 sm:grid-cols-3">
+                  <input type="hidden" name="studentId" value={student.id} />
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-gray-600">E-posta</label>
+                    <input
+                      type="email"
+                      name="email"
+                      defaultValue={student.email ?? ""}
+                      placeholder="ogrenci@email.com"
+                      required
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-gray-600">Şifre (min. 6 karakter)</label>
+                    <input
+                      type="text"
+                      name="password"
+                      placeholder="••••••••"
+                      minLength={6}
+                      required
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="submit"
+                      className="w-full bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
+                    >
+                      Hesap Oluştur
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
           </div>

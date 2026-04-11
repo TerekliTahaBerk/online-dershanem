@@ -1,5 +1,6 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -63,4 +64,48 @@ export async function createStudentAction(formData: FormData) {
   revalidatePath("/admin/ogrenciler");
   revalidatePath("/admin");
   redirect(`/admin/ogrenciler/${student.id}?updated=created`);
+}
+
+export async function createStudentAccountAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const email = readString(formData, "email").toLowerCase();
+  const password = readString(formData, "password");
+
+  if (!studentId || !email || !password || password.length < 6) {
+    redirect(`/admin/ogrenciler/${studentId}?updated=account-error`);
+  }
+
+  const student = await prisma.student.findUnique({ where: { id: studentId } });
+  if (!student) redirect("/admin/ogrenciler");
+
+  // Check if student already has an account
+  if (student.userId) {
+    redirect(`/admin/ogrenciler/${studentId}?updated=account-exists`);
+  }
+
+  // Check if email is already taken
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    redirect(`/admin/ogrenciler/${studentId}?updated=email-taken`);
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      name: student.fullName,
+      passwordHash,
+      role: "STUDENT",
+      student: { connect: { id: studentId } },
+    },
+  });
+
+  await prisma.student.update({
+    where: { id: studentId },
+    data: { userId: user.id },
+  });
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+  redirect(`/admin/ogrenciler/${studentId}?updated=account-created`);
 }

@@ -10,6 +10,7 @@ datasource db {
 
 enum UserRole {
   ADMIN
+  STUDENT
 }
 
 enum PurchaseStatus {
@@ -51,6 +52,7 @@ model User {
   role         UserRole @default(ADMIN)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  student      Student?
 }
 
 model LeadSubmission {
@@ -155,6 +157,8 @@ model Student {
   submittedAt      DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
+  userId           String?          @unique
+  user             User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   leadSubmissions  LeadSubmission[]
   purchaseIntents  PurchaseIntent[]
   lessons          Lesson[]
@@ -190,6 +194,12 @@ enum LessonStatus {
   CANCELLED
 }
 
+enum CampCategory {
+  AYT
+  TYT
+  LGS
+}
+
 model Teacher {
   id        String        @id @default(cuid())
   fullName  String
@@ -219,6 +229,24 @@ model Package {
   lessons     Lesson[]
 
   @@index([isActive])
+}
+
+model Camp {
+  id            String       @id @default(cuid())
+  name          String
+  detail        String
+  category      CampCategory
+  quota         Int          @default(8)
+  price         Int          @default(200000)
+  originalPrice Int          @default(500000)
+  paytrLink     String?
+  isActive      Boolean      @default(true)
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([category, isActive])
 }
 
 model Lesson {
