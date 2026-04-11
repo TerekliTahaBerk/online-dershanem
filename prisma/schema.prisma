@@ -194,6 +194,12 @@ enum LessonStatus {
   CANCELLED
 }
 
+enum CampCategory {
+  AYT
+  TYT
+  LGS
+}
+
 model Teacher {
   id        String        @id @default(cuid())
   fullName  String
@@ -223,6 +229,24 @@ model Package {
   lessons     Lesson[]
 
   @@index([isActive])
+}
+
+model Camp {
+  id            String       @id @default(cuid())
+  name          String
+  detail        String
+  category      CampCategory
+  quota         Int          @default(8)
+  price         Int          @default(200000)
+  originalPrice Int          @default(500000)
+  paytrLink     String?
+  isActive      Boolean      @default(true)
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([category, isActive])
 }
 
 model Lesson {

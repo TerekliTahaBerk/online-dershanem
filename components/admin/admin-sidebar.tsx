@@ -11,7 +11,8 @@ import {
   Package,
   GraduationCap,
   FileText,
-  BarChart2
+  BarChart2,
+  Tent
 } from "lucide-react";
 
 const navItems = [
@@ -20,6 +21,7 @@ const navItems = [
   { href: "/admin/odemeler", label: "Ödemeler", icon: CreditCard },
   { href: "/admin/dersler", label: "Dersler", icon: CalendarDays },
   { href: "/admin/paketler", label: "Paketler", icon: Package },
+  { href: "/admin/kamplar", label: "Kamplar", icon: Tent },
   { href: "/admin/hocalar", label: "Hocalar", icon: GraduationCap },
   { href: "/admin/formlar", label: "Formlar", icon: FileText },
   { href: "/admin/istatistikler", label: "İstatistikler", icon: BarChart2 }
