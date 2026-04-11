@@ -8,6 +8,16 @@ type LessonWithRelations = Prisma.LessonGetPayload<{
   include: { teacher: true; package: true };
 }>;
 
+type UserWithStudent = Prisma.UserGetPayload<{
+  include: {
+    student: {
+      include: {
+        lessons: { include: { teacher: true; package: true } };
+      };
+    };
+  };
+}>;
+
 const statusConfig = {
   SCHEDULED: { label: "Planlandı", icon: Clock, cls: "bg-blue-50 text-blue-700 border-blue-100" },
   COMPLETED: { label: "Tamamlandı", icon: CheckCircle, cls: "bg-emerald-50 text-emerald-700 border-emerald-100" },
@@ -40,7 +50,7 @@ export default async function PanelDerslerPage() {
         },
       },
     },
-  });
+  }) as unknown as UserWithStudent | null;
 
   const student = user?.student;
   if (!student) redirect("/panel");

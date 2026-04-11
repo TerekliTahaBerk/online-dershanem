@@ -2,6 +2,11 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { User, Phone, Mail, MapPin, School, BookOpen } from "lucide-react";
+import type { Prisma } from "@prisma/client";
+
+type UserWithStudent = Prisma.UserGetPayload<{
+  include: { student: true };
+}>;
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
@@ -20,7 +25,7 @@ export default async function PanelProfilPage() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: { student: true },
-  });
+  }) as unknown as UserWithStudent | null;
 
   const student = user?.student;
   if (!student) redirect("/panel");

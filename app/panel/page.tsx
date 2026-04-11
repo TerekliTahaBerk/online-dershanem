@@ -9,6 +9,16 @@ type LessonWithRelations = Prisma.LessonGetPayload<{
   include: { teacher: true; package: true };
 }>;
 
+type UserWithStudent = Prisma.UserGetPayload<{
+  include: {
+    student: {
+      include: {
+        lessons: { include: { teacher: true; package: true } };
+      };
+    };
+  };
+}>;
+
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("tr-TR", {
     day: "numeric",
@@ -50,7 +60,7 @@ export default async function PanelDashboardPage() {
         },
       },
     },
-  });
+  }) as unknown as UserWithStudent | null;
 
   const student = user?.student;
   if (!student) {

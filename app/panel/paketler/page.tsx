@@ -6,6 +6,10 @@ import type { Prisma } from "@prisma/client";
 
 type PackageRow = Prisma.PackageGetPayload<Record<string, never>>;
 
+type UserWithStudent = Prisma.UserGetPayload<{
+  include: { student: true };
+}>;
+
 function formatPrice(kurus: number) {
   return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(
     kurus / 100
@@ -19,7 +23,7 @@ export default async function PanelPaketlerPage() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: { student: true },
-  });
+  }) as unknown as UserWithStudent | null;
 
   if (!user?.student) redirect("/panel");
 
