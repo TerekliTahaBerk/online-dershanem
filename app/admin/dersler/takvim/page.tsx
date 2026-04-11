@@ -117,18 +117,6 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
           <h1 className="text-xl font-bold text-[#091413] mt-1">{weekLabel}</h1>
         </div>
         <div className="flex items-center gap-2">
-          {teacherIdFilter && (
-            <select
-              defaultValue={teacherIdFilter}
-              onChange={() => {}}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none"
-            >
-              <option value="">Tüm Hocalar</option>
-              {teachers.map((t) => (
-                <option key={t.id} value={t.id}>{t.fullName}</option>
-              ))}
-            </select>
-          )}
           <Link href={prevWeekParam} className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
             <ChevronLeft size={16} className="text-gray-600" />
           </Link>
