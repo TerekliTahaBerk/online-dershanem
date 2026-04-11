@@ -114,13 +114,21 @@ export default async function DerslerPage({ searchParams }: Props) {
           <h1 className="text-2xl font-bold text-[#091413]">Dersler</h1>
           <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString("tr-TR")} ders bulundu</p>
         </div>
-        <Link
-          href="/admin/dersler/yeni"
-          className="flex items-center gap-2 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Plus size={15} />
-          Yeni Ders
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/dersler/takvim"
+            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          >
+            Takvim
+          </Link>
+          <Link
+            href="/admin/dersler/yeni"
+            className="flex items-center gap-2 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          >
+            <Plus size={15} />
+            Yeni Ders
+          </Link>
+        </div>
       </div>
 
       {/* Flash */}

@@ -112,6 +112,12 @@ export default async function OgrencilerPage({ searchParams }: Props) {
           <h1 className="text-2xl font-bold text-[#091413]">Öğrenciler</h1>
           <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString("tr-TR")} öğrenci bulundu</p>
         </div>
+        <Link
+          href="/admin/ogrenciler/yeni"
+          className="flex items-center gap-2 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+        >
+          + Yeni Öğrenci
+        </Link>
       </div>
 
       {/* Flash message */}
@@ -198,7 +204,9 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                             {student.fullName.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-medium text-[#091413]">{student.fullName}</p>
+                            <Link href={`/admin/ogrenciler/${student.id}`} className="font-medium text-[#091413] hover:text-[#408A71] hover:underline">
+                              {student.fullName}
+                            </Link>
                             {student.city && <p className="text-xs text-gray-400">{student.city}</p>}
                           </div>
                         </div>

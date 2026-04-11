@@ -9,7 +9,8 @@ import {
   CalendarDays,
   Package,
   GraduationCap,
-  FileText
+  FileText,
+  BarChart2
 } from "lucide-react";
 
 const navItems = [
@@ -19,7 +20,8 @@ const navItems = [
   { href: "/admin/dersler", label: "Dersler", icon: CalendarDays },
   { href: "/admin/paketler", label: "Paketler", icon: Package },
   { href: "/admin/hocalar", label: "Hocalar", icon: GraduationCap },
-  { href: "/admin/formlar", label: "Formlar", icon: FileText }
+  { href: "/admin/formlar", label: "Formlar", icon: FileText },
+  { href: "/admin/istatistikler", label: "İstatistikler", icon: BarChart2 }
 ];
 
 export function AdminSidebar() {
