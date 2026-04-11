@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, CalendarDays, Package, User, LogOut,
-  Calendar, CreditCard, Menu, X,
+  Calendar, CreditCard, Menu, X, GraduationCap,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
@@ -14,6 +14,7 @@ const navItems = [
   { href: "/panel", label: "Genel Bakış", icon: LayoutDashboard, exact: true },
   { href: "/panel/dersler", label: "Derslerim", icon: CalendarDays, exact: false },
   { href: "/panel/takvim", label: "Takvim", icon: Calendar, exact: false },
+  { href: "/panel/ogretmenlerim", label: "Öğretmenlerim", icon: GraduationCap, exact: false },
   { href: "/panel/odemeler", label: "Ödemelerim", icon: CreditCard, exact: false },
   { href: "/panel/paketler", label: "Paketler", icon: Package, exact: false },
   { href: "/panel/profil", label: "Profilim", icon: User, exact: false },
