@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { syncStudentFromLeadSubmission } from "@/lib/student-sync";
 import { leadSubmissionSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -18,6 +19,8 @@ export async function POST(request: Request) {
         submittedAt: new Date(parsed.data.submittedAt)
       }
     });
+
+    void syncStudentFromLeadSubmission(submission.id);
 
     return NextResponse.json({ id: submission.id }, { status: 201 });
   } catch {

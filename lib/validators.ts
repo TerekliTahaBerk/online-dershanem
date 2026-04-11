@@ -38,6 +38,7 @@ export const purchaseSubmissionSchema = z.object({
   classLevel: trimmedString,
   department: optionalTrimmedString,
   examType: trimmedString,
+  targetSchool: optionalTrimmedString,
   targetRanking: trimmedString,
   currentLevel: trimmedString,
   currentNet: trimmedString,

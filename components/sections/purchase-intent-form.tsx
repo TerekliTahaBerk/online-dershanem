@@ -20,6 +20,7 @@ type PurchaseFormData = {
   classLevel: string;
   department: string;
   examType: string;
+  targetSchool: string;
   targetRanking: string;
   currentLevel: string;
   currentNet: string;
@@ -52,6 +53,7 @@ const initialFormData: PurchaseFormData = {
   classLevel: "",
   department: "",
   examType: "",
+  targetSchool: "",
   targetRanking: "",
   currentLevel: "",
   currentNet: "",
@@ -205,6 +207,7 @@ export function PurchaseIntentForm() {
         classLevel: formData.classLevel,
         department: formData.department,
         examType: formData.examType,
+        targetSchool: formData.targetSchool,
         targetRanking: formData.targetRanking,
         currentLevel: formData.currentLevel,
         currentNet: formData.currentNet,
@@ -468,6 +471,15 @@ export function PurchaseIntentForm() {
                             onChange={(event) => updateField("targetRanking", event.target.value)}
                             className="mt-1.5 w-full rounded-xl border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
                             placeholder="Örn: İlk 20K / Fen Lisesi"
+                          />
+                        </label>
+                        <label className="text-sm font-medium text-ink">
+                          Hedef Okul / Bölüm (Opsiyonel)
+                          <input
+                            value={formData.targetSchool}
+                            onChange={(event) => updateField("targetSchool", event.target.value)}
+                            className="mt-1.5 w-full rounded-xl border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+                            placeholder="Örn: Tıp Fakültesi / Fen Lisesi"
                           />
                         </label>
                         <label className="text-sm font-medium text-ink">

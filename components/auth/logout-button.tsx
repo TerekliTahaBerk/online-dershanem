@@ -11,7 +11,7 @@ export function LogoutButton({ className = "" }: LogoutButtonProps) {
     <button
       type="button"
       onClick={() => signOut({ callbackUrl: "/" })}
-      className={`inline-flex rounded-full border border-line px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft ${className}`.trim()}
+      className={`inline-flex rounded-md border border-line px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft ${className}`.trim()}
     >
       Çıkış Yap
     </button>

@@ -1,6 +1,7 @@
 import { PurchaseStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { syncStudentFromPurchaseIntent } from "@/lib/student-sync";
 import { purchaseSubmissionSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
         provider: "form"
       }
     });
+
+    void syncStudentFromPurchaseIntent(submission.id);
 
     return NextResponse.json({ id: submission.id }, { status: 201 });
   } catch {

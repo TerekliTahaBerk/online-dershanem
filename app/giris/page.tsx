@@ -1,6 +1,4 @@
 import { redirect } from "next/navigation";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
 import { Container } from "@/components/ui/container";
 import { LoginForm } from "@/components/auth/login-form";
 import { getServerAuthSession } from "@/lib/auth";
@@ -21,48 +19,42 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <>
-      <Navbar />
-      <main className="py-14 sm:py-20">
-        <Container>
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <section className="rounded-[2rem] border border-line bg-white p-8 shadow-soft sm:p-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">Yönetim Girişi</p>
-              <h1 className="mt-3 max-w-xl text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-                Operasyon paneline güvenli giriş
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
-                Form başvuruları, satın alma niyetleri ve ileride bağlanacak ödeme bildirimleri tek panelde tutulacak. Bu ekran
-                yalnızca yönetim erişimi içindir.
-              </p>
+    <main className="min-h-screen bg-white py-12">
+      <Container>
+        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="rounded-lg border border-slate-200 bg-slate-50 p-8 sm:p-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Yönetim Girişi</p>
+            <h1 className="mt-3 max-w-xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+              Admin paneli için sade ve doğrudan giriş
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
+              Form yanıtları, öğrenci havuzu, paket takibi ve operasyon notları bu panelde tutulur. Public site görünümünden ayrı
+              çalışır; amaç hızlı işlem almak ve tek yerden yönetmektir.
+            </p>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {[
-                  "Lead formları veritabanında tutulur",
-                  "Satın alma kayıtları ve durumları izlenir",
-                  "Admin erişimi oturum tabanlı korunur",
-                  "Vercel + Prisma dağıtımına hazır kurgu"
-                ].map((item) => (
-                  <div key={item} className="rounded-2xl border border-line bg-soft px-4 py-4 text-sm font-medium text-ink">
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </section>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {[
+                "Kısa ve detaylı formlar tek panelde görünür",
+                "Öğrenci kaydına paket ve durum işlenir",
+                "Telefon, WhatsApp ve e-posta aksiyonları hazırdır",
+                "Admin oturumu ile korunur"
+              ].map((item) => (
+                <div key={item} className="rounded-md border border-slate-200 bg-white px-4 py-4 text-sm font-medium text-slate-800">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </section>
 
-            <section className="rounded-[2rem] border border-line bg-paper/90 p-8 shadow-soft sm:p-10">
-              <div className="rounded-3xl border border-line bg-white p-6 sm:p-7">
-                <p className="text-sm font-semibold text-ink">Admin Girişi</p>
-                <p className="mt-2 text-sm text-muted">
-                  `ADMIN_EMAIL` ve `ADMIN_PASSWORD` ile seed edilen kullanıcı hesabı üzerinden giriş yapın.
-                </p>
-                <LoginForm callbackUrl={callbackUrl} />
-              </div>
-            </section>
-          </div>
-        </Container>
-      </main>
-      <Footer />
-    </>
+          <section className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm sm:p-10">
+            <p className="text-sm font-semibold text-slate-950">Admin hesabı</p>
+            <p className="mt-2 text-sm text-slate-600">
+              `ADMIN_EMAIL` ve `ADMIN_PASSWORD` ile seed edilen kullanıcı hesabı üzerinden giriş yapın.
+            </p>
+            <LoginForm callbackUrl={callbackUrl} />
+          </section>
+        </div>
+      </Container>
+    </main>
   );
 }

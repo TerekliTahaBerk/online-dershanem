@@ -25,6 +25,7 @@ export type PurchaseSubmissionInput = {
   classLevel: string;
   department?: string;
   examType: string;
+  targetSchool?: string;
   targetRanking: string;
   currentLevel: string;
   currentNet: string;
