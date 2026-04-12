@@ -15,7 +15,9 @@ cp .env.example .env.local
 - `DIRECT_URL`
 - `NEXTAUTH_URL`
 - `NEXTAUTH_SECRET`
+- `RESEND_API_KEY`
 - `ADMIN_EMAIL`
+- `LEAD_NOTIFICATION_EMAILS` (opsiyonel, virgulle birden fazla adres verebilirsiniz)
 - `ADMIN_PASSWORD`
 - `ADMIN_NAME`
 - `PAYMENT_WEBHOOK_SECRET`
@@ -48,6 +50,7 @@ Kullanılabilir ekranlar:
 ## Form ve Satın Alma Akışı
 
 - Lead funnel ve inline formlar artık `/api/leads` endpoint’ine yazılır.
+- Yeni bir `LeadSubmission` kaydı düştüğünde `LEAD_NOTIFICATION_EMAILS` tanımlıysa bu adreslere, yoksa `ADMIN_EMAIL` adresine bildirim maili gönderilir.
 - Satın alma ön bilgi formu `/api/purchases` endpoint’ine yazılır.
 - Ödeme sağlayıcısı callback’leri için `/api/purchases/webhook` zemini hazırdır.
 
@@ -61,7 +64,9 @@ Deploy öncesi Vercel tarafında aynı env değişkenlerini tanımlayın:
 - `DIRECT_URL`
 - `NEXTAUTH_URL`
 - `NEXTAUTH_SECRET`
+- `RESEND_API_KEY`
 - `ADMIN_EMAIL`
+- `LEAD_NOTIFICATION_EMAILS`
 - `ADMIN_PASSWORD`
 - `ADMIN_NAME`
 - `PAYMENT_WEBHOOK_SECRET`

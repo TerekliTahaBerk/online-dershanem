@@ -2,6 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "Online Dershanem <noreply@onlinedershanem.com>";
+const APP_URL = (process.env.NEXTAUTH_URL || "https://onlinedershanem.com").replace(/\/$/, "");
 
 // ─── Base template wrapper ───────────────────────────────────────────────────
 
@@ -58,6 +59,15 @@ function paragraph(text: string): string {
   return `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#4a4640;">${text}</p>`;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function infoBox(rows: { label: string; value: string }[]): string {
   const items = rows
     .map(
@@ -112,7 +122,7 @@ async function sendEmail({
   subject,
   html,
 }: {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
 }) {
@@ -122,6 +132,14 @@ async function sendEmail({
   } catch (err) {
     console.error("[email] send failed:", err);
   }
+}
+
+function getLeadNotificationRecipients(): string[] {
+  const raw = process.env.LEAD_NOTIFICATION_EMAILS || process.env.ADMIN_EMAIL || "";
+  return raw
+    .split(/[;,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 // ─── Email functions ─────────────────────────────────────────────────────────
@@ -357,6 +375,72 @@ export async function sendLessonCompleted({
   await sendEmail({
     to: studentEmail,
     subject: `Ders Tamamlandı – ${dateStr}`,
+    html,
+  });
+}
+
+/** Sent to admin recipients when a new lead form is submitted */
+export async function sendLeadSubmissionNotification({
+  fullName,
+  phone,
+  classLevel,
+  examType,
+  targetGoal,
+  currentNet,
+  parentPhone,
+  source,
+  submittedAt,
+}: {
+  fullName: string;
+  phone: string;
+  classLevel: string;
+  examType: string;
+  targetGoal: string;
+  currentNet: string;
+  parentPhone?: string | null;
+  source: string;
+  submittedAt: Date;
+}) {
+  const recipients = getLeadNotificationRecipients();
+  if (recipients.length === 0) return;
+
+  const safeName = escapeHtml(fullName);
+  const safePhone = escapeHtml(phone);
+  const safeClassLevel = escapeHtml(classLevel);
+  const safeExamType = escapeHtml(examType);
+  const safeTargetGoal = escapeHtml(targetGoal);
+  const safeCurrentNet = escapeHtml(currentNet);
+  const safeSource = escapeHtml(source);
+  const safeParentPhone = parentPhone ? escapeHtml(parentPhone) : null;
+  const dateStr = new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Istanbul",
+  }).format(new Date(submittedAt));
+
+  const html = baseTemplate(`
+    ${heading("Yeni Form Başvurusu")}
+    ${paragraph(`<strong>${safeName}</strong> adına yeni bir lead kaydı oluşturuldu.`)}
+    ${infoBox([
+      { label: "Ad Soyad", value: safeName },
+      { label: "Telefon", value: safePhone },
+      { label: "Sınıf", value: safeClassLevel },
+      { label: "Sınav", value: safeExamType },
+      { label: "Hedef", value: safeTargetGoal },
+      { label: "Net", value: safeCurrentNet },
+      ...(safeParentPhone ? [{ label: "Veli Telefonu", value: safeParentPhone }] : []),
+      { label: "Kaynak", value: safeSource },
+      { label: "Tarih", value: dateStr },
+    ])}
+    ${ctaButton("Admin Panelinde Aç", `${APP_URL}/admin/formlar`)}
+  `);
+
+  await sendEmail({
+    to: recipients,
+    subject: `Yeni Form Başvurusu – ${fullName}`,
     html,
   });
 }

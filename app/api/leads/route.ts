@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { syncStudentFromLeadSubmission } from "@/lib/student-sync";
+import { sendLeadSubmissionNotification } from "@/lib/email";
 import { leadSubmissionSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -18,6 +19,18 @@ export async function POST(request: Request) {
         ...leadData,
         submittedAt: new Date(parsed.data.submittedAt)
       }
+    });
+
+    await sendLeadSubmissionNotification({
+      fullName: submission.fullName,
+      phone: submission.phone,
+      classLevel: submission.classLevel,
+      examType: submission.examType,
+      targetGoal: submission.targetGoal,
+      currentNet: submission.currentNet,
+      parentPhone: submission.parentPhone,
+      source: submission.source,
+      submittedAt: submission.submittedAt,
     });
 
     void syncStudentFromLeadSubmission(submission.id);
