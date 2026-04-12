@@ -43,18 +43,17 @@ export function PaymentTrustStrip() {
         href="https://yula.co"
         target="_blank"
         rel="noopener noreferrer"
-        className="group shrink-0 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 hover:bg-white/10 hover:border-white/20 transition-all duration-200"
+        className="group shrink-0 flex items-center gap-2.5"
         aria-label="yula.co"
       >
-        <span className="text-lg leading-none group-hover:scale-110 transition-transform duration-200 inline-block">❤️</span>
-        <div className="flex flex-col leading-tight">
-          <span className="text-[10px] font-medium text-white/40 group-hover:text-white/60 transition uppercase tracking-widest">
-            Made with love by
-          </span>
-          <span className="text-sm font-bold tracking-tight text-white/70 group-hover:text-white transition">
+        <span className="text-base leading-none select-none">❤️</span>
+        <span className="text-xs text-white/40 group-hover:text-white/60 transition-colors duration-200">
+          Online Dershanem bir{" "}
+          <span className="font-semibold text-white/60 group-hover:text-white/90 transition-colors duration-200">
             yula.co
-          </span>
-        </div>
+          </span>{" "}
+          markasıdır
+        </span>
       </a>
     </div>
   );
