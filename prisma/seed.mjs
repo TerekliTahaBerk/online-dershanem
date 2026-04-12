@@ -31,6 +31,46 @@ async function main() {
 
   console.log(`Admin kullanıcısı hazır: ${adminEmail}`);
 
+  // Seed test teacher account
+  const teacherEmail = "ogretmen@onlinedershanem.com";
+  const teacherPassword = "ogretmen123";
+  const teacherName = "Test Öğretmen";
+
+  const existingTeacherUser = await prisma.user.findUnique({ where: { email: teacherEmail } });
+  if (!existingTeacherUser) {
+    const teacherHash = await bcrypt.hash(teacherPassword, 12);
+
+    // Find or create a teacher record to link
+    let teacher = await prisma.teacher.findFirst({ where: { userId: null, status: "ACTIVE" } });
+    if (!teacher) {
+      teacher = await prisma.teacher.create({
+        data: {
+          fullName: teacherName,
+          email: teacherEmail,
+          subjects: "Matematik",
+          bio: "Test öğretmen hesabı.",
+          status: "ACTIVE",
+        },
+      });
+    }
+
+    const teacherUser = await prisma.user.create({
+      data: {
+        email: teacherEmail,
+        name: teacherName,
+        passwordHash: teacherHash,
+        role: "TEACHER",
+      },
+    });
+    await prisma.teacher.update({
+      where: { id: teacher.id },
+      data: { userId: teacherUser.id },
+    });
+    console.log(`Test öğretmen hesabı oluşturuldu: ${teacherEmail} / ${teacherPassword}`);
+  } else {
+    console.log(`Test öğretmen hesabı zaten mevcut: ${teacherEmail}`);
+  }
+
   // Seed camps if none exist
   const campCount = await prisma.camp.count();
   if (campCount === 0) {

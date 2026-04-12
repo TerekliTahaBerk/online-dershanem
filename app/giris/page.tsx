@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { getServerAuthSession } from "@/lib/auth";
@@ -7,6 +8,7 @@ import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
 type LoginPageProps = {
   searchParams?: Promise<{
     callbackUrl?: string;
+    registered?: string;
   }>;
 };
 
@@ -21,6 +23,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   if (session?.user?.role === "STUDENT") {
     redirect(params?.callbackUrl || "/panel");
   }
+
+  const justRegistered = params?.registered === "1";
 
   return (
     <main className="min-h-screen bg-[#F7F5F0] flex items-center justify-center p-4">
@@ -75,7 +79,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </p>
             </div>
 
+            {justRegistered && (
+              <div className="mb-5 rounded-lg bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm font-medium text-emerald-700">
+                Hesabınız oluşturuldu! Giriş yapabilirsiniz.
+              </div>
+            )}
+
             <LoginForm />
+
+            <p className="mt-6 text-center text-sm text-stone-500">
+              Hesabınız yok mu?{" "}
+              <Link href="/kayit" className="font-semibold text-emerald-700 hover:text-emerald-800">
+                Kayıt Ol
+              </Link>
+            </p>
           </div>
 
         </div>

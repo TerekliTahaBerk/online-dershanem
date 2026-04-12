@@ -31,7 +31,7 @@ export function ComingSoonButton() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center justify-center rounded-full bg-mint px-5 py-3 text-sm font-semibold text-pine transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand hover:text-paper"
+        className="inline-flex items-center justify-center rounded-full bg-mint px-4 py-2 text-sm font-semibold text-pine transition-all duration-200 hover:bg-brand hover:text-paper"
       >
         Deneme Kulübüne Katıl
       </button>

@@ -86,7 +86,7 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
   const weekLabel = `${new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" }).format(weekStart)} – ${new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(addDays(weekStart, 6))}`;
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

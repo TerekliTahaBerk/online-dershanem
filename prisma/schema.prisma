@@ -11,6 +11,7 @@ datasource db {
 enum UserRole {
   ADMIN
   STUDENT
+  TEACHER
 }
 
 enum PurchaseStatus {
@@ -53,6 +54,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   student      Student?
+  teacher      Teacher?
 }
 
 model LeadSubmission {
@@ -210,6 +212,8 @@ model Teacher {
   status    TeacherStatus @default(ACTIVE)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  userId    String?       @unique
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   lessons   Lesson[]
 
   @@index([status])

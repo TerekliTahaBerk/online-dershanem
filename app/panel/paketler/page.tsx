@@ -35,7 +35,7 @@ export default async function PanelPaketlerPage() {
   const activePackageName = user.student.activePackage;
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Paketler</h1>
         <p className="mt-1 text-sm text-stone-500">

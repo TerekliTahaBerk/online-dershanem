@@ -2,13 +2,14 @@ import Link from "next/link";
 import { TeacherStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { teacherStatusLabels, teacherStatusOptions } from "@/lib/admin";
-import { updateTeacherAction, toggleTeacherStatusAction } from "./actions";
-import { Plus, GraduationCap, CalendarDays } from "lucide-react";
+import { updateTeacherAction, toggleTeacherStatusAction, createTeacherAccountAction } from "./actions";
+import { Plus, GraduationCap, CalendarDays, ShieldCheck } from "lucide-react";
 
 type TeacherWithRelations = Prisma.TeacherGetPayload<{
   include: {
     _count: { select: { lessons: true } };
     lessons: { take: 1 };
+    user: { select: { email: true } };
   };
 }>;
 
@@ -19,6 +20,7 @@ type Props = {
     updated?: string;
     edit?: string;
     status?: string;
+    teacher?: string;
   }>;
 };
 
@@ -27,6 +29,7 @@ export default async function HocalarPage({ searchParams }: Props) {
   const updated = params?.updated ?? "";
   const editId = params?.edit ?? "";
   const statusFilter = params?.status ?? "";
+  const highlightTeacherId = params?.teacher ?? "";
 
   const teachers = await prisma.teacher.findMany({
     where: statusFilter ? { status: statusFilter as TeacherStatus } : undefined,
@@ -37,7 +40,8 @@ export default async function HocalarPage({ searchParams }: Props) {
         where: { status: "SCHEDULED", scheduledAt: { gte: new Date() } },
         orderBy: { scheduledAt: "asc" },
         take: 1
-      }
+      },
+      user: { select: { email: true } },
     }
   }) as unknown as TeacherWithRelations[];
 
@@ -68,9 +72,14 @@ export default async function HocalarPage({ searchParams }: Props) {
       </div>
 
       {/* Flash */}
-      {(updated === "created" || updated === "teacher" || updated === "toggle") && (
+      {(updated === "created" || updated === "teacher" || updated === "toggle" || updated === "account-created") && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
-          {updated === "created" ? "Hoca eklendi." : updated === "toggle" ? "Hoca durumu güncellendi." : "Hoca güncellendi."}
+          {updated === "created" ? "Hoca eklendi." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : "Hoca güncellendi."}
+        </div>
+      )}
+      {(updated === "account-exists" || updated === "email-taken" || updated === "account-error") && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
+          {updated === "account-exists" ? "Bu hoca zaten bir panele bağlı." : updated === "email-taken" ? "Bu e-posta adresi zaten kullanılıyor." : "Hesap oluşturulurken bir hata oluştu."}
         </div>
       )}
 
@@ -187,60 +196,98 @@ export default async function HocalarPage({ searchParams }: Props) {
                       {isEditing && (
                         <tr key={`${teacher.id}-edit`}>
                           <td colSpan={7} className="px-4 py-4 bg-[#B0E4CC]/5 border-b border-[#B0E4CC]/30">
-                            <form action={updateTeacherAction} className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                              <input type="hidden" name="teacherId" value={teacher.id} />
-                              <input type="hidden" name="returnTo" value={buildUrl({ edit: teacher.id })} />
+                            <div className="space-y-5">
+                              <form action={updateTeacherAction} className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <input type="hidden" name="teacherId" value={teacher.id} />
+                                <input type="hidden" name="returnTo" value={buildUrl({ edit: teacher.id })} />
 
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Ad Soyad</label>
-                                <input type="text" name="fullName" required defaultValue={teacher.fullName}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
-                              </div>
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium text-gray-600">Ad Soyad</label>
+                                  <input type="text" name="fullName" required defaultValue={teacher.fullName}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                </div>
 
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">E-posta</label>
-                                <input type="email" name="email" defaultValue={teacher.email ?? ""}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
-                              </div>
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium text-gray-600">E-posta</label>
+                                  <input type="email" name="email" defaultValue={teacher.email ?? ""}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                </div>
 
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Telefon</label>
-                                <input type="tel" name="phone" defaultValue={teacher.phone ?? ""}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
-                              </div>
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium text-gray-600">Telefon</label>
+                                  <input type="tel" name="phone" defaultValue={teacher.phone ?? ""}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                </div>
 
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Branşlar</label>
-                                <input type="text" name="subjects" required defaultValue={teacher.subjects}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
-                              </div>
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium text-gray-600">Branşlar</label>
+                                  <input type="text" name="subjects" required defaultValue={teacher.subjects}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                </div>
 
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Durum</label>
-                                <select name="status" defaultValue={teacher.status}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30">
-                                  {teacherStatusOptions.map((s) => (
-                                    <option key={s} value={s}>{teacherStatusLabels[s]}</option>
-                                  ))}
-                                </select>
-                              </div>
+                                <div className="space-y-1">
+                                  <label className="text-xs font-medium text-gray-600">Durum</label>
+                                  <select name="status" defaultValue={teacher.status}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30">
+                                    {teacherStatusOptions.map((s) => (
+                                      <option key={s} value={s}>{teacherStatusLabels[s]}</option>
+                                    ))}
+                                  </select>
+                                </div>
 
-                              <div className="space-y-1 col-span-2 md:col-span-3">
-                                <label className="text-xs font-medium text-gray-600">Bio / Açıklama</label>
-                                <textarea name="bio" rows={2} defaultValue={teacher.bio ?? ""}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 resize-none" />
-                              </div>
+                                <div className="space-y-1 col-span-2 md:col-span-3">
+                                  <label className="text-xs font-medium text-gray-600">Bio / Açıklama</label>
+                                  <textarea name="bio" rows={2} defaultValue={teacher.bio ?? ""}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 resize-none" />
+                                </div>
 
-                              <div className="col-span-2 md:col-span-3 flex gap-3">
-                                <button type="submit"
-                                  className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                                  Kaydet
-                                </button>
-                                <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">
-                                  İptal
-                                </Link>
+                                <div className="col-span-2 md:col-span-3 flex gap-3">
+                                  <button type="submit"
+                                    className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                                    Kaydet
+                                  </button>
+                                  <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">
+                                    İptal
+                                  </Link>
+                                </div>
+                              </form>
+
+                              {/* Panel access */}
+                              <div className="border-t border-[#B0E4CC]/40 pt-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <ShieldCheck size={14} className="text-[#408A71]" />
+                                  <span className="text-xs font-semibold text-gray-700">Öğretmen Paneli Erişimi</span>
+                                </div>
+                                {teacher.user ? (
+                                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                                    <ShieldCheck size={14} />
+                                    Panel hesabı mevcut: <strong>{teacher.user.email}</strong>
+                                  </div>
+                                ) : (
+                                  <form action={createTeacherAccountAction} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <input type="hidden" name="teacherId" value={teacher.id} />
+                                    <input type="hidden" name="name" value={teacher.fullName} />
+                                    <div className="space-y-1">
+                                      <label className="text-xs font-medium text-gray-600">Giriş E-postası</label>
+                                      <input type="email" name="email" required defaultValue={teacher.email ?? ""}
+                                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+                                        placeholder="hoca@email.com" />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-xs font-medium text-gray-600">Şifre</label>
+                                      <input type="text" name="password" required minLength={6}
+                                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+                                        placeholder="En az 6 karakter" />
+                                    </div>
+                                    <div className="flex items-end">
+                                      <button type="submit" className="w-full bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                                        Hesap Oluştur
+                                      </button>
+                                    </div>
+                                  </form>
+                                )}
                               </div>
-                            </form>
+                            </div>
                           </td>
                         </tr>
                       )}
