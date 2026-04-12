@@ -45,19 +45,19 @@ export default async function KayitPage({ searchParams }: Props) {
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white">
-                Hemen başla,<br />
-                <span className="text-emerald-400">ilerlemeye devam et.</span>
+                Öğrenci hesabını<br />
+                <span className="text-emerald-400">oluştur.</span>
               </h1>
               <p className="mt-4 text-stone-400 text-sm leading-relaxed max-w-xs">
-                Ücretsiz hesap oluştur, derslerini takip et ve öğretmenlerinle iletişimde kal.
+                Hesabın açıldığında ders programını, öğretmen notlarını ve ödeme sürecini tek yerden takip edebilirsin.
               </p>
             </div>
 
             <div className="mt-12 grid grid-cols-2 gap-3">
               {[
-                { icon: CalendarDays, label: "Ders takvimi", desc: "Yaklaşan dersleriniz" },
-                { icon: BookOpen, label: "Google Meet", desc: "Tek tıkla derse katılın" },
-                { icon: CreditCard, label: "Ödemeler", desc: "Paket geçmişiniz" },
+                { icon: CalendarDays, label: "Ders takvimi", desc: "Haftalık planın" },
+                { icon: BookOpen, label: "Ders bağlantısı", desc: "Saatinde katıl" },
+                { icon: CreditCard, label: "Ödemeler", desc: "İşlem geçmişin" },
                 { icon: TrendingUp, label: "İlerleme", desc: "Tamamlanan dersler" },
               ].map(({ icon: Icon, label, desc }) => (
                 <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
@@ -72,9 +72,9 @@ export default async function KayitPage({ searchParams }: Props) {
           {/* Right — Register form */}
           <div className="bg-white p-8 sm:p-10 flex flex-col justify-center">
             <div className="mb-7">
-              <h2 className="text-xl font-semibold text-stone-900">Hesap Oluştur</h2>
+              <h2 className="text-xl font-semibold text-stone-900">Öğrenci Hesabı Oluştur</h2>
               <p className="mt-1.5 text-sm text-stone-500">
-                Öğrenci olarak ücretsiz kaydolun.
+                Panel erişiminizi başlatmak için bilgilerinizi girin.
               </p>
             </div>
 
@@ -93,7 +93,7 @@ export default async function KayitPage({ searchParams }: Props) {
                   autoComplete="name"
                   required
                   className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  placeholder="Adınız Soyadınız"
+                  placeholder="Adınız ve soyadınız"
                 />
               </label>
 
@@ -130,7 +130,7 @@ export default async function KayitPage({ searchParams }: Props) {
                   required
                   minLength={6}
                   className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  placeholder="En az 6 karakter"
+                  placeholder="En az 6 karakter girin"
                 />
               </label>
 
@@ -150,7 +150,7 @@ export default async function KayitPage({ searchParams }: Props) {
                 type="submit"
                 className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
               >
-                Hesap Oluştur
+                Hesabı Oluştur
               </button>
             </form>
 

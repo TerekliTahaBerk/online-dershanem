@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { User, Phone, Mail, MapPin, School, BookOpen, Lock } from "lucide-react";
+import { User, Phone, Mail, School, BookOpen, Lock } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 import { changePasswordAction } from "@/app/panel/actions";
 
@@ -57,7 +57,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl space-y-5">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Profilim</h1>
-        <p className="mt-1 text-sm text-stone-500">Kişisel bilgilerinizi görüntüleyin.</p>
+        <p className="mt-1 text-sm text-stone-500">Kayıt bilgilerinizi ve hesap güvenliğinizi buradan takip edin.</p>
       </div>
 
       {/* Avatar + name */}
@@ -85,7 +85,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
       {/* Contact info */}
       <div className="rounded-xl bg-white border border-stone-200 p-5">
         <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-          <Phone className="w-4 h-4 text-stone-400" /> İletişim
+          <Phone className="w-4 h-4 text-stone-400" /> İletişim Bilgileri
         </h3>
         <dl className="grid gap-4 sm:grid-cols-2">
           <Field label="Telefon" value={student.phone} />
@@ -98,7 +98,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
       {/* Academic info */}
       <div className="rounded-xl bg-white border border-stone-200 p-5">
         <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-          <School className="w-4 h-4 text-stone-400" /> Akademik
+          <School className="w-4 h-4 text-stone-400" /> Akademik Bilgiler
         </h3>
         <dl className="grid gap-4 sm:grid-cols-2">
           <Field label="Okul" value={student.schoolName} />
@@ -116,7 +116,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
       {(student.parentFullName || student.parentPhone) && (
         <div className="rounded-xl bg-white border border-stone-200 p-5">
           <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-            <User className="w-4 h-4 text-stone-400" /> Veli
+            <User className="w-4 h-4 text-stone-400" /> Veli Bilgileri
           </h3>
           <dl className="grid gap-4 sm:grid-cols-2">
             <Field label="Veli Adı" value={student.parentFullName} />
@@ -129,12 +129,12 @@ export default async function PanelProfilPage({ searchParams }: Props) {
       {/* Password change */}
       <div className="rounded-xl bg-white border border-stone-200 p-5">
         <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-          <Lock className="w-4 h-4 text-stone-400" /> Şifre Değiştir
+          <Lock className="w-4 h-4 text-stone-400" /> Şifre Güncelle
         </h3>
 
         {successKey === "password" && (
           <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-3">
-            Şifreniz başarıyla güncellendi.
+            Şifreniz güncellendi.
           </div>
         )}
         {errorKey && errorMessages[errorKey] && (
@@ -182,7 +182,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
             type="submit"
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2.5 rounded-lg transition"
           >
-            Şifreyi Güncelle
+            Şifreyi Kaydet
           </button>
         </form>
       </div>

@@ -102,13 +102,13 @@ export default async function OgretmenOgrencilerimPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Öğrencilerim</h1>
-        <p className="mt-1 text-sm text-stone-500">{students.length} öğrenci</p>
+        <p className="mt-1 text-sm text-stone-500">{students.length} öğrenci · ders verdiğiniz kayıtlar</p>
       </div>
 
       {students.length === 0 ? (
         <div className="rounded-xl border border-stone-200 bg-white py-16 text-center">
           <Users className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm text-stone-500">Henüz öğrenciniz bulunmuyor</p>
+          <p className="text-sm text-stone-500">Henüz size atanmış öğrenci görünmüyor</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -149,13 +149,13 @@ export default async function OgretmenOgrencilerimPage() {
                       )}
                       {student.weakLessons && (
                         <div className="rounded-lg bg-red-50 border border-red-100 px-2.5 py-1.5">
-                          <p className="text-xs font-semibold text-red-600 mb-0.5">Zayıf Konular</p>
+                          <p className="text-xs font-semibold text-red-600 mb-0.5">Geliştirilmesi Gereken Dersler</p>
                           <p className="text-xs text-red-800 line-clamp-2">{student.weakLessons}</p>
                         </div>
                       )}
                       {student.strongLessons && (
                         <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-2.5 py-1.5">
-                          <p className="text-xs font-semibold text-emerald-600 mb-0.5">Güçlü Konular</p>
+                          <p className="text-xs font-semibold text-emerald-600 mb-0.5">Güçlü Dersler</p>
                           <p className="text-xs text-emerald-800 line-clamp-2">{student.strongLessons}</p>
                         </div>
                       )}
@@ -193,7 +193,7 @@ export default async function OgretmenOgrencilerimPage() {
                   {nextLesson && (
                     <div className="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2">
                       <div>
-                        <p className="text-xs font-semibold text-emerald-700">Yaklaşan Ders</p>
+                        <p className="text-xs font-semibold text-emerald-700">Sıradaki Ders</p>
                         <p className="text-xs text-emerald-600 mt-0.5">
                           {fmt.format(new Date(nextLesson.scheduledAt))} · {fmtTime.format(new Date(nextLesson.scheduledAt))} · {nextLesson.duration} dk
                         </p>
@@ -206,7 +206,7 @@ export default async function OgretmenOgrencilerimPage() {
                           className="inline-flex items-center gap-1 text-xs bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-emerald-700 transition"
                         >
                           <ExternalLink className="w-3 h-3" />
-                          Meet
+                          Bağlan
                         </a>
                       )}
                     </div>
@@ -216,7 +216,7 @@ export default async function OgretmenOgrencilerimPage() {
                   {lastLesson && (
                     <div className="mt-2">
                       <p className="text-xs text-stone-400">
-                        Son Tamamlanan:{" "}
+                        Son işlenen ders:{" "}
                         <span className="text-stone-600 font-medium">
                           {fmt.format(new Date(lastLesson.scheduledAt))}
                         </span>

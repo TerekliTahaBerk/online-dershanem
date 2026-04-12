@@ -45,7 +45,7 @@ export default async function OgretmenDashboardPage() {
   if (!teacher) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-stone-500 text-sm">Öğretmen profili bulunamadı. Lütfen yönetici ile iletişime geçin.</p>
+        <p className="text-stone-500 text-sm">Öğretmen kaydınız görünmüyor. Lütfen yönetim ekibiyle iletişime geçin.</p>
       </div>
     );
   }
@@ -81,12 +81,12 @@ export default async function OgretmenDashboardPage() {
       {/* Greeting */}
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">
-          Merhaba, {teacher.fullName.split(" ")[0]} 👋
+          Merhaba, {teacher.fullName.split(" ")[0]}
         </h1>
         <p className="mt-1 text-sm text-stone-500">
           {today.length > 0
-            ? `Bugün ${today.length} dersiniz var.`
-            : "Bugün planlanmış dersiniz bulunmuyor."}
+            ? `Bugün ${today.length} ders planınız var.`
+            : "Bugün için planlı ders görünmüyor."}
         </p>
       </div>
 
@@ -94,7 +94,7 @@ export default async function OgretmenDashboardPage() {
       {nextLesson && (
         <div className="rounded-xl bg-[#091413] text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">Yaklaşan Ders</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">Sıradaki Ders</p>
             <p className="mt-1 text-lg font-semibold">{nextLesson.student.fullName}</p>
             <p className="text-sm text-stone-300 mt-0.5">
               {fmt.format(new Date(nextLesson.scheduledAt))} · {fmtTime.format(new Date(nextLesson.scheduledAt))} · {nextLesson.duration} dk
@@ -111,7 +111,7 @@ export default async function OgretmenDashboardPage() {
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition shrink-0"
             >
               <ExternalLink className="w-4 h-4" />
-              Google Meet
+              Meet'e Git
             </a>
           )}
         </div>
@@ -140,15 +140,15 @@ export default async function OgretmenDashboardPage() {
       {/* This week */}
       <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
         <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-stone-800">Bu Haftaki Dersler</h2>
+          <h2 className="text-sm font-semibold text-stone-800">Bu Haftaki Program</h2>
           <Link href="/ogretmen/dersler" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium">
-            Tümünü gör →
+            Tüm dersler →
           </Link>
         </div>
         {thisWeek.length === 0 ? (
           <div className="py-10 text-center">
             <BookOpen className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-            <p className="text-sm text-stone-500">Bu hafta ders yok</p>
+            <p className="text-sm text-stone-500">Bu hafta planlı ders görünmüyor</p>
           </div>
         ) : (
           <div className="divide-y divide-stone-50">

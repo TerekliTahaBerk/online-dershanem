@@ -21,7 +21,7 @@ export function LoginForm() {
     });
 
     if (!result || result.error) {
-      setError("E-posta veya şifre hatalı.");
+      setError("E-posta adresi veya şifre eşleşmedi.");
       setIsSubmitting(false);
       return;
     }
@@ -79,7 +79,7 @@ export function LoginForm() {
         disabled={isSubmitting}
         className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
+        {isSubmitting ? "Bilgiler kontrol ediliyor..." : "Giriş Yap"}
       </button>
     </form>
   );

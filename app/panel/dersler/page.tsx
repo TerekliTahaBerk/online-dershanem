@@ -91,14 +91,14 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
         <div>
           <h1 className="text-2xl font-semibold text-stone-900">Derslerim</h1>
           <p className="mt-1 text-sm text-stone-500">
-            {allLessons.length} toplam · {completedLessons.length} tamamlandı · {totalHours} saat
+            {allLessons.length} ders kaydı · {completedLessons.length} tamamlandı · {totalHours} saat işlendi
           </p>
         </div>
         <Link
           href="/panel/takvim"
           className="hidden sm:flex items-center gap-2 text-sm font-medium text-stone-600 bg-white border border-stone-200 hover:bg-stone-50 px-4 py-2 rounded-lg transition shrink-0"
         >
-          <CalendarDays className="w-4 h-4" /> Takvim
+          <CalendarDays className="w-4 h-4" /> Takvime Git
         </Link>
       </div>
 
@@ -147,7 +147,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
       {visibleLessons.length === 0 ? (
         <div className="text-center py-16 rounded-xl bg-white border border-stone-200">
           <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Bu kategoride ders yok</p>
+          <p className="text-sm font-medium text-stone-600">Bu filtrede ders görünmüyor</p>
         </div>
       ) : activeTab === "upcoming" ? (
         <div className="space-y-3">
@@ -190,7 +190,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                   </a>
                 ) : (
                   <span className="shrink-0 flex items-center gap-1.5 text-xs text-stone-400 bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg">
-                    <Clock className="w-3.5 h-3.5" /> Link bekleniyor
+                    <Clock className="w-3.5 h-3.5" /> Meet linki bekleniyor
                   </span>
                 )}
               </div>
@@ -238,7 +238,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                   <div className="mt-3 pl-[52px]">
                     <div className={`border rounded-lg px-4 py-2.5 ${isCompleted ? "bg-amber-50 border-amber-100" : "bg-stone-50 border-stone-200"}`}>
                       <p className={`text-xs font-semibold mb-1 ${isCompleted ? "text-amber-700" : "text-stone-600"}`}>
-                        {isCompleted ? "Ders Notu" : "Not"}
+                        {isCompleted ? "Paylaşılan Not" : "Not"}
                       </p>
                       <p className={`text-xs leading-relaxed ${isCompleted ? "text-amber-800" : "text-stone-700"}`}>{lesson.notes}</p>
                     </div>

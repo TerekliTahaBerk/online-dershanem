@@ -115,7 +115,7 @@ export default async function AdminDashboardPage() {
             className="flex items-center gap-2 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-100 transition-colors"
           >
             <ClipboardList size={15} />
-            {overdueTaskCount} bekleyen görev
+            {overdueTaskCount} işlem bekleyen görev
           </Link>
         )}
       </div>
@@ -150,7 +150,7 @@ export default async function AdminDashboardPage() {
         {/* Upcoming Lessons */}
         <div className="xl:col-span-3 bg-white rounded-xl border border-gray-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-[#091413]">Yaklaşan Dersler</h2>
+            <h2 className="font-semibold text-[#091413]">Sıradaki Dersler</h2>
             <Link
               href="/admin/dersler"
               className="text-xs text-[#408A71] font-medium hover:underline flex items-center gap-1"
@@ -160,7 +160,7 @@ export default async function AdminDashboardPage() {
           </div>
           {upcomingLessons.length === 0 ? (
             <div className="px-5 py-10 text-center text-sm text-gray-400">
-              Planlanmış ders yok
+              Planlı ders görünmüyor
             </div>
           ) : (
             <div className="divide-y divide-gray-50">
@@ -207,7 +207,7 @@ export default async function AdminDashboardPage() {
               href="/admin/dersler/yeni"
               className="w-full flex items-center justify-center gap-2 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium py-2 rounded-lg transition-colors"
             >
-              + Yeni Ders Ekle
+              + Yeni Ders Planla
             </Link>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default async function AdminDashboardPage() {
         {/* Recent Students */}
         <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-[#091413]">Son Öğrenciler</h2>
+            <h2 className="font-semibold text-[#091413]">Son Eklenen Öğrenciler</h2>
             <Link
               href="/admin/ogrenciler"
               className="text-xs text-[#408A71] font-medium hover:underline flex items-center gap-1"
@@ -225,7 +225,7 @@ export default async function AdminDashboardPage() {
           </div>
           {recentStudents.length === 0 ? (
             <div className="px-5 py-10 text-center text-sm text-gray-400">
-              Öğrenci yok
+              Henüz öğrenci kaydı yok
             </div>
           ) : (
             <div className="divide-y divide-gray-50">
