@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, CreditCard, PhoneCall, X } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ContactLink } from "@/components/ui/contact-link";
+import { submitPurchaseSubmission } from "@/lib/form-submission";
 import { contact } from "@/lib/content";
 import { trackConversionEvent } from "@/lib/tracking";
 
@@ -19,6 +20,7 @@ type PurchaseFormData = {
   classLevel: string;
   department: string;
   examType: string;
+  targetSchool: string;
   targetRanking: string;
   currentLevel: string;
   currentNet: string;
@@ -51,6 +53,7 @@ const initialFormData: PurchaseFormData = {
   classLevel: "",
   department: "",
   examType: "",
+  targetSchool: "",
   targetRanking: "",
   currentLevel: "",
   currentNet: "",
@@ -68,10 +71,6 @@ const initialFormData: PurchaseFormData = {
 };
 
 const totalSteps = 4;
-const purchaseWebhookUrl =
-  process.env.NEXT_PUBLIC_PURCHASE_WEBHOOK_URL ??
-  process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL ??
-  "https://script.google.com/macros/s/AKfycbwHv15cbaZ0IqTkQtSUqcPMgTiZ0hz7qF8PKboDmHlqUhvSI6ChRguvRne2Jh8FzJrEXQ/exec";
 
 export function PurchaseIntentForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -197,7 +196,7 @@ export function PurchaseIntentForm() {
     const noteParts = [formData.notes.trim(), `Paket: ${packageName}`, `Kanal: ${source}`].filter(Boolean);
 
     try {
-      const query = new URLSearchParams({
+      await submitPurchaseSubmission({
         submittedAt,
         studentFullName: formData.studentFullName,
         studentPhone: formData.studentPhone,
@@ -208,6 +207,7 @@ export function PurchaseIntentForm() {
         classLevel: formData.classLevel,
         department: formData.department,
         examType: formData.examType,
+        targetSchool: formData.targetSchool,
         targetRanking: formData.targetRanking,
         currentLevel: formData.currentLevel,
         currentNet: formData.currentNet,
@@ -219,19 +219,12 @@ export function PurchaseIntentForm() {
         parentFullName: formData.parentFullName,
         parentPhone: formData.parentPhone,
         parentEmail: formData.parentEmail,
+        packageName,
+        paymentLink,
         notes: noteParts.join(" | "),
-        source: "form2"
-      }).toString();
-
-      const url = `${purchaseWebhookUrl}?${query}&_ts=${Date.now()}`;
-
-      await new Promise<void>((resolve) => {
-        const img = new Image();
-        const cleanup = () => resolve();
-        img.onload = cleanup;
-        img.onerror = cleanup;
-        img.src = url;
-        setTimeout(resolve, 1700);
+        source,
+        kvkkConsent: formData.kvkkConsent,
+        paymentConsent: formData.paymentConsent
       });
     } catch {
       setError("Gönderim sırasında bir sorun oluştu. Lütfen tekrar dene veya telefonla bize ulaş.");
@@ -478,6 +471,15 @@ export function PurchaseIntentForm() {
                             onChange={(event) => updateField("targetRanking", event.target.value)}
                             className="mt-1.5 w-full rounded-xl border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
                             placeholder="Örn: İlk 20K / Fen Lisesi"
+                          />
+                        </label>
+                        <label className="text-sm font-medium text-ink">
+                          Hedef Okul / Bölüm (Opsiyonel)
+                          <input
+                            value={formData.targetSchool}
+                            onChange={(event) => updateField("targetSchool", event.target.value)}
+                            className="mt-1.5 w-full rounded-xl border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30"
+                            placeholder="Örn: Tıp Fakültesi / Fen Lisesi"
                           />
                         </label>
                         <label className="text-sm font-medium text-ink">

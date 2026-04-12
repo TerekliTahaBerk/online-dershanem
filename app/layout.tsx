@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/content";
 import { Pixels } from "@/components/analytics/pixels";
+import { AuthSessionProvider } from "@/components/providers/session-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -59,8 +60,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr">
       <body>
-        <Pixels />
-        {children}
+        <AuthSessionProvider>
+          <Pixels />
+          {children}
+        </AuthSessionProvider>
       </body>
     </html>
   );

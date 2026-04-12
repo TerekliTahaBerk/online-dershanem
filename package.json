@@ -4,16 +4,32 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma db push --accept-data-loss && prisma generate && node prisma/seed-test-accounts.mjs && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "@prisma/extension-accelerate": "^3.0.1",
+    "bcryptjs": "^3.0.3",
     "framer-motion": "^11.11.9",
     "lucide-react": "^0.460.0",
     "next": "15.0.7",
+    "next-auth": "^4.24.13",
+    "prisma": "^6.15.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "resend": "^6.10.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

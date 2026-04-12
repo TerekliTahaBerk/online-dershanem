@@ -5,8 +5,6 @@ import { Container } from "@/components/ui/container";
 import { ContactLink } from "@/components/ui/contact-link";
 import { PaymentTrustStrip } from "@/components/sections/payment-trust-strip";
 import footerLogo from "@/public/logo.png";
-import instagramLogo from "@/instagram-removebg-preview.png";
-import tiktokLogo from "@/tik-tok-removebg-preview.png";
 
 export function Footer() {
   return (
@@ -28,26 +26,6 @@ export function Footer() {
             Butik sınıf yapısı, canlı ders disiplini ve düzenli analiz sistemiyle öğrencinin performansını sürdürülebilir biçimde
             yükseltmeyi hedefler.
           </p>
-          <div className="mt-4 flex items-center gap-3">
-            <Link
-              href="https://www.instagram.com/onlinedershanem.tr/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Online Dershanem Instagram"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/5 transition hover:bg-white/10"
-            >
-              <Image src={instagramLogo} alt="Instagram" width={24} height={24} className="h-5 w-5 object-contain" />
-            </Link>
-            <Link
-              href="https://www.tiktok.com/@onlinedershanem.tr"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Online Dershanem TikTok"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/5 transition hover:bg-white/10"
-            >
-              <Image src={tiktokLogo} alt="TikTok" width={24} height={24} className="h-5 w-5 object-contain" />
-            </Link>
-          </div>
         </div>
         <div className="flex flex-wrap gap-5 sm:self-start">
           <Link href="/kvkk/" className="hover:text-mint">KVKK</Link>
@@ -55,7 +33,7 @@ export function Footer() {
           <Link href="/iade/" className="hover:text-mint">İade Politikası</Link>
         </div>
       </Container>
-      <Container className="mt-4">
+      <Container className="mt-6">
         <PaymentTrustStrip />
       </Container>
     </footer>

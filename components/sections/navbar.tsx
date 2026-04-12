@@ -5,14 +5,17 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { navLinks } from "@/lib/content";
 import { Container } from "@/components/ui/container";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 import navbarLogo from "@/public/onlinedershanem_.png";
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const packageLinks = [
     { label: "TYT-AYT", href: "/yks/" },
     { label: "LGS", href: "/lgs/" }
@@ -75,8 +78,40 @@ export function Navbar() {
               )
             )}
           </nav>
-          <div className="hidden items-center md:flex">
+          <div className="hidden items-center gap-2 md:flex">
             <ComingSoonButton />
+            {status === "loading" ? null : status === "authenticated" ? (
+              <>
+                <Link
+                  href={
+                    session?.user?.role === "ADMIN" ? "/admin" :
+                    session?.user?.role === "TEACHER" ? "/ogretmen" :
+                    "/panel"
+                  }
+                  className="inline-flex rounded-full border border-line-strong px-4 py-2 text-sm font-semibold text-ink transition hover:bg-soft"
+                >
+                  {session?.user?.role === "ADMIN" ? "Admin Paneli" :
+                   session?.user?.role === "TEACHER" ? "Öğretmen Paneli" :
+                   "Panelim"}
+                </Link>
+                <LogoutButton />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/kayit"
+                  className="inline-flex rounded-full border border-line-strong px-4 py-2 text-sm font-semibold text-ink transition hover:bg-soft"
+                >
+                  Kayıt Ol
+                </Link>
+                <Link
+                  href="/giris"
+                  className="inline-flex rounded-full bg-anchor px-4 py-2 text-sm font-semibold text-white transition hover:bg-pine"
+                >
+                  Giriş Yap
+                </Link>
+              </>
+            )}
           </div>
           <button
             type="button"
@@ -118,6 +153,38 @@ export function Navbar() {
 
             <div className="mt-4 flex flex-col gap-2">
               <ComingSoonButton />
+              {status === "loading" ? null : status === "authenticated" ? (
+                <>
+                  <Link
+                    href={
+                      session?.user?.role === "ADMIN" ? "/admin" :
+                      session?.user?.role === "TEACHER" ? "/ogretmen" :
+                      "/panel"
+                    }
+                    className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-soft"
+                  >
+                    {session?.user?.role === "ADMIN" ? "Admin Paneli" :
+                     session?.user?.role === "TEACHER" ? "Öğretmen Paneli" :
+                     "Panelim"}
+                  </Link>
+                  <LogoutButton className="w-full justify-center" />
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/kayit"
+                    className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-soft"
+                  >
+                    Kayıt Ol
+                  </Link>
+                  <Link
+                    href="/giris"
+                    className="inline-flex items-center justify-center rounded-xl bg-anchor px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pine"
+                  >
+                    Giriş Yap
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

@@ -1,0 +1,275 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STUDENT
+  TEACHER
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum IntakeStatus {
+  NEW
+  REVIEWING
+  CONTACTED
+  ENROLLED
+  ARCHIVED
+}
+
+enum PurchaseEventType {
+  FORM_SUBMITTED
+  PAYMENT_LINK_OPENED
+  CALLBACK_RECEIVED
+  PAYMENT_CONFIRMED
+  PAYMENT_FAILED
+}
+
+enum StudentStatus {
+  NEW
+  FOLLOW_UP
+  ACTIVE
+  AT_RISK
+  COMPLETED
+  INACTIVE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  student      Student?
+  teacher      Teacher?
+}
+
+model LeadSubmission {
+  id            String       @id @default(cuid())
+  fullName      String
+  phone         String
+  classLevel    String
+  examType      String
+  targetGoal    String
+  currentNet    String
+  parentPhone   String?
+  kvkkConsent   Boolean
+  source        String
+  intakeStatus  IntakeStatus @default(NEW)
+  adminNotes    String?
+  taskLabel     String?
+  nextActionAt  DateTime?
+  studentId     String?
+  submittedAt   DateTime
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  student       Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  @@index([intakeStatus, submittedAt])
+}
+
+model PurchaseIntent {
+  id                String           @id @default(cuid())
+  source            String
+  packageName       String
+  paymentLink       String?
+  studentFullName   String
+  studentPhone      String
+  studentEmail      String
+  schoolName        String
+  city              String
+  district          String
+  classLevel        String
+  department        String?
+  examType          String
+  targetSchool      String?
+  targetRanking     String
+  currentLevel      String
+  currentNet        String
+  weakLessons       String
+  strongLessons     String?
+  needType          String
+  studyStatus       String
+  weeklyStudyHours  String
+  parentFullName    String?
+  parentPhone       String?
+  parentEmail       String?
+  notes             String?
+  kvkkConsent       Boolean
+  paymentConsent    Boolean
+  status            PurchaseStatus   @default(PENDING)
+  intakeStatus      IntakeStatus     @default(NEW)
+  adminNotes        String?
+  taskLabel         String?
+  nextActionAt      DateTime?
+  studentId         String?
+  submittedAt       DateTime
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  events            PurchaseEvent[]
+  student           Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  @@index([intakeStatus, submittedAt])
+}
+
+model Student {
+  id               String           @id @default(cuid())
+  fullName         String
+  phone            String
+  phoneKey         String           @unique
+  email            String?
+  city             String?
+  district         String?
+  schoolName       String?
+  classLevel       String?
+  department       String?
+  examType         String?
+  currentLevel     String?
+  currentNet       String?
+  targetGoal       String?
+  targetSchool     String?
+  targetRanking    String?
+  strongLessons    String?
+  weakLessons      String?
+  needType         String?
+  studyStatus      String?
+  weeklyStudyHours String?
+  parentFullName   String?
+  parentPhone      String?
+  parentEmail      String?
+  source           String?
+  activePackage    String?
+  status           StudentStatus    @default(NEW)
+  notes            String?
+  taskLabel        String?
+  nextActionAt     DateTime?
+  submittedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  userId           String?          @unique
+  user             User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  leadSubmissions  LeadSubmission[]
+  purchaseIntents  PurchaseIntent[]
+  lessons          Lesson[]
+
+  @@index([status, updatedAt])
+}
+
+model PurchaseEvent {
+  id               String            @id @default(cuid())
+  purchaseIntentId String
+  eventType        PurchaseEventType
+  status           PurchaseStatus
+  source           String
+  packageName      String
+  paymentLink      String?
+  provider         String?
+  providerReference String?
+  payload          Json?
+  createdAt        DateTime          @default(now())
+  purchaseIntent   PurchaseIntent    @relation(fields: [purchaseIntentId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseIntentId, createdAt])
+}
+
+enum TeacherStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum LessonStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum CampCategory {
+  AYT
+  TYT
+  LGS
+}
+
+model Teacher {
+  id        String        @id @default(cuid())
+  fullName  String
+  email     String?       @unique
+  phone     String?
+  subjects  String
+  bio       String?
+  status    TeacherStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  userId    String?       @unique
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  lessons   Lesson[]
+
+  @@index([status])
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Int
+  paytrLink   String?
+  lessonCount Int
+  subjects    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lessons     Lesson[]
+
+  @@index([isActive])
+}
+
+model Camp {
+  id            String       @id @default(cuid())
+  name          String
+  detail        String
+  category      CampCategory
+  quota         Int          @default(8)
+  price         Int          @default(200000)
+  originalPrice Int          @default(500000)
+  paytrLink     String?
+  isActive      Boolean      @default(true)
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([category, isActive])
+}
+
+model Lesson {
+  id             String       @id @default(cuid())
+  studentId      String
+  teacherId      String
+  packageId      String?
+  scheduledAt    DateTime
+  duration       Int          @default(60)
+  googleMeetLink String?
+  status         LessonStatus @default(SCHEDULED)
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher        Teacher      @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  package        Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, scheduledAt])
+  @@index([teacherId, scheduledAt])
+  @@index([status, scheduledAt])
+}
