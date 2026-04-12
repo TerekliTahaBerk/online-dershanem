@@ -31,7 +31,7 @@ const tabLabels: Record<Tab, string> = {
 const statusColors: Record<string, string> = {
   SCHEDULED: "bg-blue-50 text-blue-700",
   COMPLETED: "bg-emerald-50 text-emerald-700",
-  CANCELLED: "bg-stone-100 text-stone-500",
+  CANCELLED: "bg-stone-100 text-stone-400 line-through",
 };
 
 const statusLabels: Record<string, string> = {
@@ -40,7 +40,7 @@ const statusLabels: Record<string, string> = {
   CANCELLED: "İptal",
 };
 
-const fmt = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
+const fmt = new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", year: "numeric" });
 const fmtTime = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
 
 export default async function OgretmenDerslerPage({
@@ -90,7 +90,8 @@ export default async function OgretmenDerslerPage({
   };
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-5">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Derslerim</h1>
         <p className="mt-1 text-sm text-stone-500">{allLessons.length} toplam ders</p>
@@ -112,132 +113,171 @@ export default async function OgretmenDerslerPage({
         ))}
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="rounded-xl border border-stone-200 bg-white py-16 text-center">
-          <BookOpen className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-          <p className="text-sm text-stone-500">Bu kategoride ders yok</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((lesson) => {
-            const isEditing = editId === lesson.id;
-            const isPast = new Date(lesson.scheduledAt) < now;
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+        {filtered.length === 0 ? (
+          <div className="py-16 text-center">
+            <BookOpen className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+            <p className="text-sm text-stone-500">Bu kategoride ders yok</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-100 bg-stone-50">
+                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Tarih / Saat</th>
+                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Öğrenci</th>
+                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Paket</th>
+                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Süre</th>
+                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Meet</th>
+                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Durum</th>
+                  <th className="text-right px-4 py-3 font-semibold text-stone-600">İşlem</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-50">
+                {filtered.map((lesson) => {
+                  const isEditing = editId === lesson.id;
+                  const isPast = new Date(lesson.scheduledAt) < now;
+                  const isOverdue = isPast && lesson.status === "SCHEDULED";
 
-            return (
-              <div key={lesson.id} className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-                <div className="p-4 flex flex-col sm:flex-row sm:items-start gap-4">
-                  {/* Student */}
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0">
-                      {lesson.student.fullName.charAt(0)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-stone-900">{lesson.student.fullName}</p>
-                      <p className="text-xs text-stone-400">{lesson.package?.name ?? "Paket yok"}</p>
-                    </div>
-                  </div>
-
-                  {/* Date/time */}
-                  <div className="shrink-0 text-sm">
-                    <p className="font-medium text-stone-800">{fmt.format(new Date(lesson.scheduledAt))}</p>
-                    <p className="text-stone-400 text-xs">{fmtTime.format(new Date(lesson.scheduledAt))} · {lesson.duration} dk</p>
-                  </div>
-
-                  {/* Status badge */}
-                  <span className={`shrink-0 inline-flex text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[lesson.status]}`}>
-                    {statusLabels[lesson.status]}
-                  </span>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    {lesson.googleMeetLink && lesson.status === "SCHEDULED" && (
-                      <a
-                        href={lesson.googleMeetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-lg font-medium hover:bg-emerald-100 transition"
+                  return (
+                    <>
+                      <tr
+                        key={lesson.id}
+                        className={`hover:bg-stone-50 transition-colors ${isEditing ? "bg-emerald-50/30" : ""} ${lesson.status === "CANCELLED" ? "opacity-50" : ""}`}
                       >
-                        <ExternalLink className="w-3 h-3" />
-                        Meet
-                      </a>
-                    )}
-                    {lesson.status === "SCHEDULED" && (
-                      <a
-                        href={`/ogretmen/dersler?tab=${tab}&edit=${isEditing ? "" : lesson.id}`}
-                        className="text-xs text-stone-500 hover:text-stone-800 border border-stone-200 px-2.5 py-1.5 rounded-lg font-medium transition"
-                      >
-                        {isEditing ? "Kapat" : "Düzenle"}
-                      </a>
-                    )}
-                  </div>
-                </div>
+                        <td className="px-4 py-3">
+                          <p className={`font-medium ${isOverdue ? "text-amber-600" : "text-stone-800"}`}>
+                            {fmt.format(new Date(lesson.scheduledAt))}
+                          </p>
+                          <p className="text-xs text-stone-400">
+                            {fmtTime.format(new Date(lesson.scheduledAt))}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs shrink-0">
+                              {lesson.student.fullName.charAt(0)}
+                            </div>
+                            <span className="font-medium text-stone-900">{lesson.student.fullName}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-stone-500 text-xs">
+                          {lesson.package?.name ?? <span className="text-stone-300">—</span>}
+                        </td>
+                        <td className="px-4 py-3 text-stone-500">{lesson.duration} dk</td>
+                        <td className="px-4 py-3">
+                          {lesson.googleMeetLink ? (
+                            <a
+                              href={lesson.googleMeetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-lg font-medium hover:bg-emerald-100 transition"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Meet
+                            </a>
+                          ) : (
+                            <span className="text-stone-300 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[lesson.status]}`}>
+                            {statusLabels[lesson.status]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {lesson.status === "SCHEDULED" && (
+                            <a
+                              href={`/ogretmen/dersler?tab=${tab}&edit=${isEditing ? "" : lesson.id}`}
+                              className="text-xs text-emerald-700 hover:text-emerald-900 border border-emerald-200 rounded-lg px-2.5 py-1.5 hover:bg-emerald-50 transition font-medium"
+                            >
+                              {isEditing ? "Kapat" : "Düzenle"}
+                            </a>
+                          )}
+                        </td>
+                      </tr>
 
-                {/* Completed notes display */}
-                {lesson.status === "COMPLETED" && lesson.notes && (
-                  <div className="px-4 pb-4">
-                    <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2">
-                      <p className="text-xs font-semibold text-amber-700 mb-1">Ders Notu</p>
-                      <p className="text-xs text-amber-800 leading-relaxed">{lesson.notes}</p>
-                    </div>
-                  </div>
-                )}
+                      {/* Completed notes row */}
+                      {lesson.notes && !isEditing && (
+                        <tr key={`${lesson.id}-notes`} className={lesson.status === "CANCELLED" ? "opacity-50" : ""}>
+                          <td colSpan={7} className="px-4 pb-3 pt-0">
+                            <div className={`rounded-lg px-3 py-2 text-xs ${
+                              lesson.status === "COMPLETED"
+                                ? "bg-amber-50 border border-amber-100 text-amber-800"
+                                : "bg-stone-50 border border-stone-100 text-stone-600"
+                            }`}>
+                              <span className="font-semibold mr-1">Not:</span>
+                              {lesson.notes}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
 
-                {/* Inline edit panel */}
-                {isEditing && (
-                  <div className="border-t border-stone-100 bg-stone-50 p-4 space-y-3">
-                    {/* Add/update notes */}
-                    <form action={updateLessonNotesAction} className="space-y-2">
-                      <input type="hidden" name="lessonId" value={lesson.id} />
-                      <input type="hidden" name="tab" value={tab} />
-                      <label className="block text-xs font-semibold text-stone-700">Ders Notu</label>
-                      <textarea
-                        name="notes"
-                        rows={3}
-                        defaultValue={lesson.notes ?? ""}
-                        placeholder="Bu derse ait notlar..."
-                        className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                      />
-                      <button type="submit" className="text-xs bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-1.5 rounded-lg font-medium transition">
-                        Notu Kaydet
-                      </button>
-                    </form>
+                      {/* Inline edit panel */}
+                      {isEditing && (
+                        <tr key={`${lesson.id}-edit`}>
+                          <td colSpan={7} className="px-4 py-4 bg-stone-50 border-b border-stone-100">
+                            <div className="space-y-4">
+                              {/* Notes */}
+                              <form action={updateLessonNotesAction} className="space-y-2">
+                                <input type="hidden" name="lessonId" value={lesson.id} />
+                                <input type="hidden" name="tab" value={tab} />
+                                <label className="block text-xs font-semibold text-stone-700">Ders Notu</label>
+                                <div className="flex gap-2">
+                                  <textarea
+                                    name="notes"
+                                    rows={2}
+                                    defaultValue={lesson.notes ?? ""}
+                                    placeholder="Bu derse ait notlar (öğrenciye de görünür)..."
+                                    className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                                  />
+                                  <button type="submit" className="shrink-0 text-xs bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-2 rounded-lg font-medium transition self-end">
+                                    Kaydet
+                                  </button>
+                                </div>
+                              </form>
 
-                    {/* Complete lesson */}
-                    {isPast && (
-                      <form action={completeLessonAction} className="flex items-end gap-2">
-                        <input type="hidden" name="lessonId" value={lesson.id} />
-                        <input type="hidden" name="tab" value={tab} />
-                        <div className="flex-1 space-y-1">
-                          <label className="text-xs font-semibold text-stone-700">Tamamlandı olarak işaretle</label>
-                          <textarea
-                            name="notes"
-                            rows={2}
-                            defaultValue={lesson.notes ?? ""}
-                            placeholder="Ders notu ekleyebilirsiniz..."
-                            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                          />
-                        </div>
-                        <button type="submit" className="shrink-0 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition">
-                          Tamamlandı
-                        </button>
-                      </form>
-                    )}
+                              {/* Mark complete */}
+                              {isPast && (
+                                <form action={completeLessonAction} className="space-y-2">
+                                  <input type="hidden" name="lessonId" value={lesson.id} />
+                                  <input type="hidden" name="tab" value={tab} />
+                                  <div className="flex gap-2">
+                                    <textarea
+                                      name="notes"
+                                      rows={2}
+                                      defaultValue={lesson.notes ?? ""}
+                                      placeholder="Son ders notu (opsiyonel)..."
+                                      className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                                    />
+                                    <button type="submit" className="shrink-0 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg font-semibold transition self-end">
+                                      Tamamlandı ✓
+                                    </button>
+                                  </div>
+                                </form>
+                              )}
 
-                    {/* Cancel lesson */}
-                    <form action={cancelLessonAction}>
-                      <input type="hidden" name="lessonId" value={lesson.id} />
-                      <input type="hidden" name="tab" value={tab} />
-                      <button type="submit" className="text-xs text-red-600 hover:text-red-800 font-medium transition">
-                        Dersi İptal Et
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+                              {/* Cancel */}
+                              <form action={cancelLessonAction}>
+                                <input type="hidden" name="lessonId" value={lesson.id} />
+                                <input type="hidden" name="tab" value={tab} />
+                                <button type="submit" className="text-xs text-red-500 hover:text-red-700 font-medium transition">
+                                  Dersi İptal Et
+                                </button>
+                              </form>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

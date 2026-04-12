@@ -57,7 +57,7 @@ export default async function PanelOdemelerPage() {
   const pendingCount = purchases.filter((p) => p.status === "PENDING").length;
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Ödemelerim</h1>
         <p className="mt-1 text-sm text-stone-500">

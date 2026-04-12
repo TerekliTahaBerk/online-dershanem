@@ -83,7 +83,7 @@ export default async function OgretmenTakvimPage({
   const nextWeek = weekOffset + 1;
 
   return (
-    <div className="space-y-4">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-stone-900">Takvim</h1>

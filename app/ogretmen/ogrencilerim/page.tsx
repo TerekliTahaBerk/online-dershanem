@@ -99,7 +99,7 @@ export default async function OgretmenOgrencilerimPage() {
   });
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Öğrencilerim</h1>
         <p className="mt-1 text-sm text-stone-500">{students.length} öğrenci</p>
@@ -130,12 +130,37 @@ export default async function OgretmenOgrencilerimPage() {
                     )}
                   </div>
 
-                  {/* Contact */}
+                  {/* Contact + metadata */}
                   <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-stone-400">
                     {student.phone && <span>{student.phone}</span>}
                     {student.email && <span>{student.email}</span>}
-                    {student.classLevel && <span>{student.classLevel}</span>}
+                    {student.classLevel && <span className="font-medium text-stone-600">{student.classLevel}</span>}
+                    {student.examType && <span className="font-medium text-stone-600">{student.examType}</span>}
                   </div>
+
+                  {/* Academic profile */}
+                  {(student.targetGoal || student.weakLessons || student.strongLessons) && (
+                    <div className="mt-2 grid sm:grid-cols-3 gap-2">
+                      {student.targetGoal && (
+                        <div className="rounded-lg bg-blue-50 border border-blue-100 px-2.5 py-1.5">
+                          <p className="text-xs font-semibold text-blue-600 mb-0.5">Hedef</p>
+                          <p className="text-xs text-blue-800 truncate">{student.targetGoal}</p>
+                        </div>
+                      )}
+                      {student.weakLessons && (
+                        <div className="rounded-lg bg-red-50 border border-red-100 px-2.5 py-1.5">
+                          <p className="text-xs font-semibold text-red-600 mb-0.5">Zayıf Konular</p>
+                          <p className="text-xs text-red-800 line-clamp-2">{student.weakLessons}</p>
+                        </div>
+                      )}
+                      {student.strongLessons && (
+                        <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-2.5 py-1.5">
+                          <p className="text-xs font-semibold text-emerald-600 mb-0.5">Güçlü Konular</p>
+                          <p className="text-xs text-emerald-800 line-clamp-2">{student.strongLessons}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Packages */}
                   {packages.size > 0 && (

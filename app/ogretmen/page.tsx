@@ -77,7 +77,7 @@ export default async function OgretmenDashboardPage() {
   const nextLesson = upcoming[0] ?? null;
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Greeting */}
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">

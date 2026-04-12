@@ -42,7 +42,7 @@ export default async function OgretmenProfilPage({
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Profilim</h1>
         <p className="mt-1 text-sm text-stone-500">Kişisel bilgilerinizi ve şifrenizi yönetin.</p>

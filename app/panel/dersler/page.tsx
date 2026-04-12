@@ -85,7 +85,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
   const visibleLessons = tabData[activeTab] ?? upcomingLessons;
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -233,12 +233,14 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                     {isCompleted ? "Tamamlandı" : isCancelled ? "İptal" : "Planlandı"}
                   </span>
                 </div>
-                {/* Notes prominently shown for completed lessons */}
-                {isCompleted && lesson.notes && (
-                  <div className="mt-3 ml-13 pl-[52px]">
-                    <div className="bg-amber-50 border border-amber-100 rounded-lg px-4 py-2.5">
-                      <p className="text-xs font-semibold text-amber-700 mb-1">Ders Notu</p>
-                      <p className="text-xs text-amber-800 leading-relaxed">{lesson.notes}</p>
+                {/* Notes shown for any lesson that has them */}
+                {lesson.notes && (
+                  <div className="mt-3 pl-[52px]">
+                    <div className={`border rounded-lg px-4 py-2.5 ${isCompleted ? "bg-amber-50 border-amber-100" : "bg-stone-50 border-stone-200"}`}>
+                      <p className={`text-xs font-semibold mb-1 ${isCompleted ? "text-amber-700" : "text-stone-600"}`}>
+                        {isCompleted ? "Ders Notu" : "Not"}
+                      </p>
+                      <p className={`text-xs leading-relaxed ${isCompleted ? "text-amber-800" : "text-stone-700"}`}>{lesson.notes}</p>
                     </div>
                   </div>
                 )}
