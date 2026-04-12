@@ -3,6 +3,7 @@ import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/content";
 import { Pixels } from "@/components/analytics/pixels";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthSessionProvider>
           <Pixels />
           {children}
+          <Analytics />
         </AuthSessionProvider>
       </body>
     </html>
