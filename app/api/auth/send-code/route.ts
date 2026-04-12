@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     });
 
     const code = generateCode();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
 
     await prisma.verificationCode.create({
       data: {
