@@ -14,6 +14,11 @@ enum UserRole {
   TEACHER
 }
 
+enum VerificationCodeType {
+  REGISTER
+  PASSWORD_RESET
+}
+
 enum PurchaseStatus {
   PENDING
   PAID
@@ -43,6 +48,18 @@ enum StudentStatus {
   AT_RISK
   COMPLETED
   INACTIVE
+}
+
+model VerificationCode {
+  id        String               @id @default(cuid())
+  email     String
+  code      String
+  type      VerificationCodeType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime             @default(now())
+
+  @@index([email, type])
 }
 
 model User {

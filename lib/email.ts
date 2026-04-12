@@ -379,6 +379,37 @@ export async function sendLessonCompleted({
   });
 }
 
+/** Sent to user for email verification (registration or password reset) */
+export async function sendVerificationCode({
+  to,
+  code,
+  type,
+}: {
+  to: string;
+  code: string;
+  type: "REGISTER" | "PASSWORD_RESET";
+}) {
+  const isReset = type === "PASSWORD_RESET";
+  const subject = isReset ? "Şifre Sıfırlama Kodunuz" : "E-posta Doğrulama Kodunuz";
+  const title = isReset ? "Şifre Sıfırlama" : "E-posta Doğrulaması";
+  const description = isReset
+    ? "Şifrenizi sıfırlamak için aşağıdaki 6 haneli kodu girin. Kod <strong>10 dakika</strong> geçerlidir."
+    : "Online Dershanem hesabınızı oluşturmak için aşağıdaki 6 haneli doğrulama kodunu girin. Kod <strong>10 dakika</strong> geçerlidir.";
+
+  const html = baseTemplate(`
+    ${heading(title)}
+    ${paragraph(description)}
+    <div style="text-align:center;margin:28px 0;">
+      <div style="display:inline-block;background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;padding:18px 36px;">
+        <span style="font-size:38px;font-weight:800;letter-spacing:12px;color:#091413;font-family:monospace;">${code}</span>
+      </div>
+    </div>
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Bu işlemi siz gerçekleştirmediyseniz bu e-postayı görmezden gelebilirsiniz.</span>')}
+  `);
+
+  await sendEmail({ to, subject, html });
+}
+
 /** Sent to admin recipients when a new lead form is submitted */
 export async function sendLeadSubmissionNotification({
   fullName,

@@ -2,28 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
-import { registerAction } from "./actions";
+import { RegisterForm } from "@/components/auth/register-form";
 import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
 
-const errorMessages: Record<string, string> = {
-  missing: "Lütfen tüm zorunlu alanları doldurun.",
-  "password-short": "Şifre en az 6 karakter olmalıdır.",
-  "password-mismatch": "Şifreler eşleşmiyor.",
-  "email-taken": "Bu e-posta adresi zaten kullanılıyor.",
-};
-
-type Props = {
-  searchParams?: Promise<{ error?: string }>;
-};
-
-export default async function KayitPage({ searchParams }: Props) {
+export default async function KayitPage() {
   const session = await getServerAuthSession();
   if (session?.user?.role === "STUDENT") redirect("/panel");
   if (session?.user?.role === "TEACHER") redirect("/ogretmen");
   if (session?.user?.role === "ADMIN") redirect("/admin");
-
-  const params = await searchParams;
-  const errorMsg = params?.error ? errorMessages[params.error] ?? "Bir hata oluştu." : null;
 
   return (
     <main className="min-h-screen bg-[#F7F5F0] flex items-center justify-center p-4">
@@ -45,7 +31,7 @@ export default async function KayitPage({ searchParams }: Props) {
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white">
-                Online Dershanem'e<br />
+                Online Dershanem&apos;e<br />
                 <span className="text-emerald-400">katıl.</span>
               </h1>
               <p className="mt-4 text-stone-400 text-sm leading-relaxed max-w-xs">
@@ -71,88 +57,7 @@ export default async function KayitPage({ searchParams }: Props) {
 
           {/* Right — Register form */}
           <div className="bg-white p-8 sm:p-10 flex flex-col justify-center">
-            <div className="mb-7">
-              <h2 className="text-xl font-semibold text-stone-900">Hesabını Oluştur</h2>
-              <p className="mt-1.5 text-sm text-stone-500">
-                Bilgilerini gir, hesabını birkaç adımda tamamla.
-              </p>
-            </div>
-
-            {errorMsg && (
-              <div className="mb-5 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm font-medium text-red-700">
-                {errorMsg}
-              </div>
-            )}
-
-            <form action={registerAction} className="space-y-4">
-              <label className="block text-sm font-medium text-stone-700">
-                Ad Soyad <span className="text-red-400">*</span>
-                <input
-                  type="text"
-                  name="fullName"
-                  autoComplete="name"
-                  required
-                  className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  placeholder="Adınız ve soyadınız"
-                />
-              </label>
-
-              <label className="block text-sm font-medium text-stone-700">
-                Telefon <span className="text-red-400">*</span>
-                <input
-                  type="tel"
-                  name="phone"
-                  autoComplete="tel"
-                  required
-                  className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  placeholder="05xx xxx xx xx"
-                />
-              </label>
-
-              <label className="block text-sm font-medium text-stone-700">
-                E-posta <span className="text-red-400">*</span>
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  required
-                  className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  placeholder="ornek@email.com"
-                />
-              </label>
-
-              <label className="block text-sm font-medium text-stone-700">
-                Şifre <span className="text-red-400">*</span>
-                <input
-                  type="password"
-                  name="password"
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  placeholder="En az 6 karakter girin"
-                />
-              </label>
-
-              <label className="block text-sm font-medium text-stone-700">
-                Şifre Tekrar <span className="text-red-400">*</span>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  autoComplete="new-password"
-                  required
-                  className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
-                  placeholder="Şifrenizi tekrar girin"
-                />
-              </label>
-
-              <button
-                type="submit"
-                className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                Kaydı Tamamla
-              </button>
-            </form>
+            <RegisterForm />
 
             <p className="mt-6 text-center text-sm text-stone-500">
               Zaten hesabınız var mı?{" "}
