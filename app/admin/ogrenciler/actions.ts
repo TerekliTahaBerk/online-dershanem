@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
+import { sendStudentWelcome } from "@/lib/email";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -105,6 +106,8 @@ export async function createStudentAccountAction(formData: FormData) {
     where: { id: studentId },
     data: { userId: user.id },
   });
+
+  await sendStudentWelcome({ to: email, name: student.fullName, email, password });
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
   redirect(`/admin/ogrenciler/${studentId}?updated=account-created`);

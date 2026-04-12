@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import { sendLessonCompleted, sendLessonCancelled } from "@/lib/email";
 
 async function requireTeacher() {
   const session = await getServerAuthSession();
@@ -45,14 +46,27 @@ export async function completeLessonAction(formData: FormData) {
 
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
-    include: { teacher: { select: { userId: true } } },
+    include: {
+      teacher: { select: { userId: true, fullName: true } },
+      student: { select: { fullName: true, email: true } },
+    },
   });
 
   if (!lesson || lesson.teacher.userId !== userId) redirect("/ogretmen/dersler");
 
+  const finalNotes = notes.trim() || lesson.notes || null;
+
   await prisma.lesson.update({
     where: { id: lessonId },
-    data: { status: "COMPLETED", notes: notes.trim() || lesson.notes || null },
+    data: { status: "COMPLETED", notes: finalNotes },
+  });
+
+  await sendLessonCompleted({
+    studentEmail: lesson.student.email,
+    studentName: lesson.student.fullName,
+    teacherName: lesson.teacher.fullName,
+    scheduledAt: lesson.scheduledAt,
+    notes: finalNotes,
   });
 
   revalidatePath("/ogretmen/dersler");
@@ -67,7 +81,10 @@ export async function cancelLessonAction(formData: FormData) {
 
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
-    include: { teacher: { select: { userId: true } } },
+    include: {
+      teacher: { select: { userId: true, fullName: true, email: true } },
+      student: { select: { fullName: true, email: true } },
+    },
   });
 
   if (!lesson || lesson.teacher.userId !== userId) redirect("/ogretmen/dersler");
@@ -75,6 +92,14 @@ export async function cancelLessonAction(formData: FormData) {
   await prisma.lesson.update({
     where: { id: lessonId },
     data: { status: "CANCELLED" },
+  });
+
+  await sendLessonCancelled({
+    studentEmail: lesson.student.email,
+    studentName: lesson.student.fullName,
+    teacherEmail: lesson.teacher.email,
+    teacherName: lesson.teacher.fullName,
+    scheduledAt: lesson.scheduledAt,
   });
 
   revalidatePath("/ogretmen/dersler");

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { sendTeacherWelcome } from "@/lib/email";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -86,6 +87,8 @@ export async function createTeacherAccountAction(formData: FormData) {
       where: { id: teacherId },
       data: { userId: user.id },
     });
+
+    await sendTeacherWelcome({ to: email, name: name || teacher.fullName, email, password });
   } catch {
     redirect(`/admin/hocalar?updated=account-error&teacher=${teacherId}`);
   }
