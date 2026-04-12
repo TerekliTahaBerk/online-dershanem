@@ -39,7 +39,7 @@ export default async function PanelPaketlerPage() {
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Paketler</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Yayındaki paketleri ve ödeme bağlantılarını buradan görün.
+          Size özel paketleri ve ödeme detaylarını keşfedin.
         </p>
       </div>
 
@@ -49,7 +49,7 @@ export default async function PanelPaketlerPage() {
             <BookOpen className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-emerald-800">Kayıtlı aktif paketiniz</p>
+            <p className="text-sm font-semibold text-emerald-800">Seçili paketiniz</p>
             <p className="text-sm text-emerald-700">{activePackageName}</p>
           </div>
         </div>
@@ -58,7 +58,7 @@ export default async function PanelPaketlerPage() {
       {packages.length === 0 ? (
         <div className="text-center py-16">
           <Package className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Şu anda yayında paket görünmüyor</p>
+          <p className="text-sm font-medium text-stone-600">Şu anda yeni paket bulunmuyor</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">

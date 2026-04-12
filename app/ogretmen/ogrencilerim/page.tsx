@@ -102,13 +102,13 @@ export default async function OgretmenOgrencilerimPage() {
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Öğrencilerim</h1>
-        <p className="mt-1 text-sm text-stone-500">{students.length} öğrenci · ders verdiğiniz kayıtlar</p>
+        <p className="mt-1 text-sm text-stone-500">{students.length} öğrenci</p>
       </div>
 
       {students.length === 0 ? (
         <div className="rounded-xl border border-stone-200 bg-white py-16 text-center">
           <Users className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm text-stone-500">Henüz size atanmış öğrenci görünmüyor</p>
+          <p className="text-sm text-stone-500">Henüz öğrenciniz bulunmuyor</p>
         </div>
       ) : (
         <div className="space-y-4">

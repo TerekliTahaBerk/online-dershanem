@@ -115,7 +115,7 @@ export default async function AdminDashboardPage() {
             className="flex items-center gap-2 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-100 transition-colors"
           >
             <ClipboardList size={15} />
-            {overdueTaskCount} işlem bekleyen görev
+            {overdueTaskCount} takip bekleyen görev
           </Link>
         )}
       </div>

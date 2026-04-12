@@ -61,7 +61,7 @@ export default async function PanelOdemelerPage() {
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Ödemelerim</h1>
         <p className="mt-1 text-sm text-stone-500">
-          {purchases.length} kayıt · {paidCount} tamamlandı · {pendingCount} beklemede
+          {purchases.length} ödeme · {paidCount} tamamlandı · {pendingCount} beklemede
         </p>
       </div>
 
@@ -87,8 +87,8 @@ export default async function PanelOdemelerPage() {
       {purchases.length === 0 ? (
         <div className="text-center py-16 rounded-xl bg-white border border-stone-200">
           <CreditCard className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Henüz ödeme kaydı görünmüyor</p>
-          <p className="text-xs text-stone-400 mt-1">Paket veya kamp işleminiz oluştuğunda burada listelenecek.</p>
+          <p className="text-sm font-medium text-stone-600">Henüz ödeme hareketiniz yok</p>
+          <p className="text-xs text-stone-400 mt-1">Satın alma detaylarınız burada yer alacak.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -134,7 +134,7 @@ export default async function PanelOdemelerPage() {
                 {/* Event timeline */}
                 {purchase.events.length > 0 && (
                   <div className="border-t border-stone-100 bg-stone-50 px-5 py-3">
-                    <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">İşlem Geçmişi</p>
+                    <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Ödeme Geçmişi</p>
                     <div className="space-y-1.5">
                       {purchase.events.map((event) => (
                         <div key={event.id} className="flex items-center gap-3">

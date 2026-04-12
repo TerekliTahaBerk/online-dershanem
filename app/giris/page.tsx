@@ -46,19 +46,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white">
-                Takibini buradan<br />
-                <span className="text-emerald-400">sürdür.</span>
+                Ritmini yeniden<br />
+                <span className="text-emerald-400">yakala.</span>
               </h1>
               <p className="mt-4 text-stone-400 text-sm leading-relaxed max-w-xs">
-                Ders takviminizi, öğretmen notlarını ve ödeme geçmişinizi tek panelden görün.
+                Ders programın, öğretmen notların ve ödeme detayların tek yerde.
               </p>
             </div>
 
             <div className="mt-12 grid grid-cols-2 gap-3">
               {[
-                { icon: CalendarDays, label: "Ders takvimi", desc: "Haftalık planınız" },
-                { icon: BookOpen, label: "Ders bağlantısı", desc: "Saatinde katılın" },
-                { icon: CreditCard, label: "Ödemeler", desc: "İşlem durumunuz" },
+                { icon: CalendarDays, label: "Ders takvimi", desc: "Haftalık programın" },
+                { icon: BookOpen, label: "Canlı ders", desc: "Anında katıl" },
+                { icon: CreditCard, label: "Ödemeler", desc: "Güncel detaylar" },
                 { icon: TrendingUp, label: "İlerleme", desc: "Tamamlanan dersler" },
               ].map(({ icon: Icon, label, desc }) => (
                 <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
@@ -75,13 +75,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-stone-900">Giriş Yap</h2>
               <p className="mt-1.5 text-sm text-stone-500">
-                Öğrenci, öğretmen ve yönetici hesapları bu ekranı kullanır.
+                Hesabınızla devam edin.
               </p>
             </div>
 
             {justRegistered && (
               <div className="mb-5 rounded-lg bg-emerald-50 border border-emerald-100 px-4 py-3 text-sm font-medium text-emerald-700">
-                Hesabınız hazır. Şimdi giriş yapabilirsiniz.
+                Hesabınız açıldı. Devam edebilirsiniz.
               </div>
             )}
 

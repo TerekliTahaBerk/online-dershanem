@@ -63,9 +63,9 @@ export default async function PanelDashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <CalendarDays className="w-12 h-12 text-stone-300 mb-4" />
-        <h2 className="text-lg font-semibold text-stone-700">Profil henüz oluşturulmadı</h2>
+        <h2 className="text-lg font-semibold text-stone-700">Profiliniz hazırlanıyor</h2>
         <p className="mt-2 text-sm text-stone-500">
-          Öğrenci profiliniz yönetici tarafından oluşturulduğunda burası aktif olacak.
+          Hesabınız kısa süre içinde tamamlanacak.
         </p>
       </div>
     );
@@ -145,7 +145,7 @@ export default async function PanelDashboardPage() {
               <div className={`shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium ${
                 isNearby ? "bg-white/20 text-white" : "bg-stone-100 text-stone-400"
               }`}>
-                <Clock className="w-4 h-4" /> Link bekleniyor
+                <Clock className="w-4 h-4" /> Bağlantı yakında paylaşılacak
               </div>
             )}
           </div>
@@ -153,8 +153,8 @@ export default async function PanelDashboardPage() {
       ) : (
         <div className="rounded-2xl bg-white border border-stone-200 p-6 text-center">
           <CalendarDays className="w-8 h-8 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Yaklaşan ders görünmüyor</p>
-          <p className="text-xs text-stone-400 mt-1">Yeni ders planlandığında burada listelenecek.</p>
+          <p className="text-sm font-medium text-stone-600">Sıradaki dersiniz henüz planlanmadı</p>
+          <p className="text-xs text-stone-400 mt-1">Programınız netleştiğinde burada yer alacak.</p>
         </div>
       )}
 
@@ -218,7 +218,7 @@ export default async function PanelDashboardPage() {
               )}
             </div>
           ) : (
-            <p className="text-xs text-stone-400">Henüz işlenmiş ders görünmüyor.</p>
+            <p className="text-xs text-stone-400">Henüz tamamlanmış dersiniz yok.</p>
           )}
         </div>
       </div>

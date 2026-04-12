@@ -45,7 +45,7 @@ export default async function OgretmenDashboardPage() {
   if (!teacher) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <p className="text-stone-500 text-sm">Öğretmen kaydınız görünmüyor. Lütfen yönetim ekibiyle iletişime geçin.</p>
+        <p className="text-stone-500 text-sm">Profiliniz henüz tamamlanmadı. Yönetim ekibimizle iletişime geçebilirsiniz.</p>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export default async function OgretmenDashboardPage() {
         <p className="mt-1 text-sm text-stone-500">
           {today.length > 0
             ? `Bugün ${today.length} ders planınız var.`
-            : "Bugün için planlı ders görünmüyor."}
+            : "Bugün dersiniz bulunmuyor."}
         </p>
       </div>
 
@@ -148,7 +148,7 @@ export default async function OgretmenDashboardPage() {
         {thisWeek.length === 0 ? (
           <div className="py-10 text-center">
             <BookOpen className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-            <p className="text-sm text-stone-500">Bu hafta planlı ders görünmüyor</p>
+            <p className="text-sm text-stone-500">Bu hafta için ders planınız bulunmuyor</p>
           </div>
         ) : (
           <div className="divide-y divide-stone-50">

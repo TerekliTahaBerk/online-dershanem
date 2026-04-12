@@ -45,19 +45,19 @@ export default async function KayitPage({ searchParams }: Props) {
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white">
-                Öğrenci hesabını<br />
-                <span className="text-emerald-400">oluştur.</span>
+                Online Dershanem'e<br />
+                <span className="text-emerald-400">katıl.</span>
               </h1>
               <p className="mt-4 text-stone-400 text-sm leading-relaxed max-w-xs">
-                Hesabın açıldığında ders programını, öğretmen notlarını ve ödeme sürecini tek yerden takip edebilirsin.
+                Ders programın, öğretmenlerin ve tüm sürecin tek yerde olsun.
               </p>
             </div>
 
             <div className="mt-12 grid grid-cols-2 gap-3">
               {[
-                { icon: CalendarDays, label: "Ders takvimi", desc: "Haftalık planın" },
-                { icon: BookOpen, label: "Ders bağlantısı", desc: "Saatinde katıl" },
-                { icon: CreditCard, label: "Ödemeler", desc: "İşlem geçmişin" },
+                { icon: CalendarDays, label: "Ders takvimi", desc: "Haftalık programın" },
+                { icon: BookOpen, label: "Canlı ders", desc: "Anında katıl" },
+                { icon: CreditCard, label: "Ödemeler", desc: "Tüm detaylar" },
                 { icon: TrendingUp, label: "İlerleme", desc: "Tamamlanan dersler" },
               ].map(({ icon: Icon, label, desc }) => (
                 <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
@@ -72,9 +72,9 @@ export default async function KayitPage({ searchParams }: Props) {
           {/* Right — Register form */}
           <div className="bg-white p-8 sm:p-10 flex flex-col justify-center">
             <div className="mb-7">
-              <h2 className="text-xl font-semibold text-stone-900">Öğrenci Hesabı Oluştur</h2>
+              <h2 className="text-xl font-semibold text-stone-900">Hesabını Oluştur</h2>
               <p className="mt-1.5 text-sm text-stone-500">
-                Panel erişiminizi başlatmak için bilgilerinizi girin.
+                Bilgilerini gir, hesabını birkaç adımda tamamla.
               </p>
             </div>
 
@@ -150,7 +150,7 @@ export default async function KayitPage({ searchParams }: Props) {
                 type="submit"
                 className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
               >
-                Hesabı Oluştur
+                Kaydı Tamamla
               </button>
             </form>
 

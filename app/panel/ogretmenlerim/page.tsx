@@ -111,8 +111,8 @@ export default async function PanelOgretmenlerimPage() {
       {teachers.length === 0 ? (
         <div className="rounded-xl bg-white border border-stone-200 py-16 text-center">
           <User className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Henüz öğretmen ataması görünmüyor</p>
-          <p className="text-xs text-stone-400 mt-1">İlk ders planlandığında öğretmen bilgisi burada yer alacak.</p>
+          <p className="text-sm font-medium text-stone-600">Öğretmen eşleşmeniz yakında paylaşılacak</p>
+          <p className="text-xs text-stone-400 mt-1">İlk dersiniz planlandığında burada yer alacak.</p>
         </div>
       ) : (
         <div className="space-y-4">
