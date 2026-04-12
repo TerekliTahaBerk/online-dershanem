@@ -87,7 +87,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
             <LoginForm />
 
-            <p className="mt-6 text-center text-sm text-stone-500">
+            <p className="mt-4 text-center text-sm">
+              <Link href="/sifremi-unuttum" className="text-stone-500 hover:text-emerald-700">
+                Şifremi unuttum
+              </Link>
+            </p>
+
+            <p className="mt-4 text-center text-sm text-stone-500">
               Henüz hesabınız yok mu?{" "}
               <Link href="/kayit" className="font-semibold text-emerald-700 hover:text-emerald-800">
                 Kayıt Ol
