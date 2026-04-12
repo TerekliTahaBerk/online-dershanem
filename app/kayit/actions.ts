@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
-import { sendStudentWelcome } from "@/lib/email";
+import { sendSelfRegistrationWelcome } from "@/lib/email";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -59,7 +59,7 @@ export async function registerAction(formData: FormData) {
       where: { id: existingStudent.id },
       data: { email, userId: user.id },
     });
-    await sendStudentWelcome({ to: email, name: fullName, email, password });
+    await sendSelfRegistrationWelcome({ to: email, name: fullName });
     redirect("/giris?registered=1");
   }
 
@@ -92,7 +92,7 @@ export async function registerAction(formData: FormData) {
     data: { userId: user.id },
   });
 
-  await sendStudentWelcome({ to: email, name: fullName, email, password });
+  await sendSelfRegistrationWelcome({ to: email, name: fullName });
 
   redirect("/giris?registered=1");
 }

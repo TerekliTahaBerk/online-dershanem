@@ -14,33 +14,49 @@ function baseTemplate(content: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Online Dershanem</title>
 </head>
-<body style="margin:0;padding:0;background:#f5f3ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3ef;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#edeae4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#edeae4;padding:44px 16px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+      <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
 
-        <!-- Logo bar -->
+        <!-- Header -->
         <tr>
-          <td style="background:#091413;border-radius:12px 12px 0 0;padding:20px 28px;">
-            <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.3px;">Online Dershanem</span>
+          <td style="background:#091413;border-radius:16px 16px 0 0;padding:22px 32px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <span style="color:#ffffff;font-size:19px;font-weight:800;letter-spacing:-0.4px;">Online Dershanem</span>
+                </td>
+                <td align="right">
+                  <a href="https://onlinedershanem.com" style="color:#408A71;font-size:12px;font-weight:500;text-decoration:none;">onlinedershanem.com</a>
+                </td>
+              </tr>
+            </table>
           </td>
+        </tr>
+
+        <!-- Accent bar -->
+        <tr>
+          <td style="background:#408A71;height:3px;font-size:0;line-height:0;">&nbsp;</td>
         </tr>
 
         <!-- Content -->
         <tr>
-          <td style="background:#ffffff;padding:32px 28px;border-left:1px solid #e7e5e0;border-right:1px solid #e7e5e0;">
+          <td style="background:#ffffff;padding:40px 32px;border-left:1px solid #e2dfd9;border-right:1px solid #e2dfd9;">
             ${content}
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="background:#f0ede8;border-radius:0 0 12px 12px;border:1px solid #e7e5e0;border-top:none;padding:16px 28px;">
-            <p style="margin:0;font-size:11px;color:#9c9589;line-height:1.5;">
-              Bu e-posta Online Dershanem tarafından gönderilmiştir.<br/>
-              Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;">destek@onlinedershanem.com</a> adresine yazabilirsiniz.
+          <td style="background:#f5f2ed;border-radius:0 0 16px 16px;border:1px solid #e2dfd9;border-top:none;padding:22px 32px;">
+            <p style="margin:0 0 6px;font-size:12px;color:#7a766d;line-height:1.7;">
+              Bu e-posta <strong style="color:#4a4640;">Online Dershanem</strong> tarafından otomatik olarak gönderilmiştir.<br/>
+              Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresine yazabilirsiniz.
             </p>
-            <p style="margin:8px 0 0;font-size:10px;color:#b8b3aa;">Online Dershanem, bir <a href="https://yula.co" style="color:#b8b3aa;text-decoration:none;">yula.co</a> markasıdır.</p>
+            <p style="margin:10px 0 0;font-size:11px;color:#ada89f;">
+              © 2026 Online Dershanem &nbsp;·&nbsp; Bir <a href="https://yula.co" style="color:#ada89f;text-decoration:underline;font-weight:500;">yula.co</a> markasıdır.
+            </p>
           </td>
         </tr>
 
@@ -51,12 +67,46 @@ function baseTemplate(content: string): string {
 </html>`;
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 function heading(text: string): string {
-  return `<h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#091413;letter-spacing:-0.3px;">${text}</h1>`;
+  return `<h1 style="margin:0 0 10px;font-size:24px;font-weight:800;color:#091413;letter-spacing:-0.4px;line-height:1.2;">${text}</h1>`;
+}
+
+function subheading(text: string): string {
+  return `<h2 style="margin:28px 0 10px;font-size:14px;font-weight:700;color:#091413;text-transform:uppercase;letter-spacing:0.08em;">${text}</h2>`;
 }
 
 function paragraph(text: string): string {
-  return `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#4a4640;">${text}</p>`;
+  return `<p style="margin:0 0 18px;font-size:14px;line-height:1.75;color:#4a4640;">${text}</p>`;
+}
+
+function divider(): string {
+  return `<hr style="border:none;border-top:1px solid #f0ede8;margin:28px 0;" />`;
+}
+
+function bulletList(items: string[]): string {
+  const rows = items.map(
+    (item) =>
+      `<tr>
+        <td style="padding:5px 0;vertical-align:top;width:20px;">
+          <span style="color:#408A71;font-size:14px;font-weight:700;">·</span>
+        </td>
+        <td style="padding:5px 0 5px 8px;font-size:14px;line-height:1.6;color:#4a4640;">${item}</td>
+      </tr>`
+  ).join("");
+  return `<table cellpadding="0" cellspacing="0" style="margin:12px 0 20px;">${rows}</table>`;
+}
+
+function signature(name = "Online Dershanem Ekibi"): string {
+  return `<table cellpadding="0" cellspacing="0" style="margin-top:32px;">
+    <tr>
+      <td style="border-left:3px solid #408A71;padding:4px 14px;">
+        <p style="margin:0 0 2px;font-size:13px;font-weight:700;color:#091413;">Sevgiyle,</p>
+        <p style="margin:0;font-size:13px;color:#6b6560;">${name}</p>
+      </td>
+    </tr>
+  </table>`;
 }
 
 function escapeHtml(value: string): string {
@@ -73,43 +123,43 @@ function infoBox(rows: { label: string; value: string }[]): string {
     .map(
       ({ label, value }) =>
         `<tr>
-          <td style="padding:8px 12px;font-size:12px;font-weight:600;color:#6b6560;white-space:nowrap;width:1%;">${label}</td>
-          <td style="padding:8px 12px;font-size:13px;color:#091413;font-weight:500;">${value}</td>
+          <td style="padding:9px 14px;font-size:12px;font-weight:600;color:#6b6560;white-space:nowrap;width:1%;text-transform:uppercase;letter-spacing:0.05em;">${label}</td>
+          <td style="padding:9px 14px;font-size:13px;color:#091413;font-weight:500;">${value}</td>
         </tr>`
     )
-    .join('<tr><td colspan="2" style="padding:0 12px;"><hr style="border:none;border-top:1px solid #f0ede8;margin:0;" /></td></tr>');
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f6f2;border:1px solid #e7e5e0;border-radius:8px;margin:16px 0;overflow:hidden;">${items}</table>`;
+    .join('<tr><td colspan="2" style="padding:0 14px;"><hr style="border:none;border-top:1px solid #f0ede8;margin:0;" /></td></tr>');
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f6f2;border:1px solid #e7e5e0;border-radius:10px;margin:18px 0;overflow:hidden;">${items}</table>`;
 }
 
 function ctaButton(text: string, href: string): string {
-  return `<div style="margin:20px 0;">
-    <a href="${href}" style="display:inline-block;background:#408A71;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 22px;border-radius:8px;letter-spacing:0.1px;">${text}</a>
+  return `<div style="margin:24px 0;">
+    <a href="${href}" style="display:inline-block;background:#408A71;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:13px 26px;border-radius:9px;letter-spacing:0.1px;">${text}</a>
   </div>`;
 }
 
 function noteBox(text: string): string {
-  return `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin:16px 0;">
-    <p style="margin:0;font-size:13px;color:#92400e;line-height:1.5;"><strong>Ders Notu:</strong> ${text}</p>
+  return `<div style="background:#f0fdf8;border:1px solid #a7f3d0;border-radius:10px;padding:14px 18px;margin:18px 0;">
+    <p style="margin:0;font-size:13px;color:#065f46;line-height:1.6;"><strong>Ders Notu:</strong> ${text}</p>
   </div>`;
 }
 
 function credentialBox(email: string, password: string): string {
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="background:#091413;border-radius:8px;margin:16px 0;overflow:hidden;">
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="background:#091413;border-radius:10px;margin:18px 0;overflow:hidden;">
     <tr>
-      <td style="padding:14px 16px 4px;">
-        <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6ee7b7;">Giriş Bilgileriniz</p>
+      <td style="padding:16px 18px 6px;">
+        <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#6ee7b7;">Giriş Bilgileriniz</p>
       </td>
     </tr>
     <tr>
-      <td style="padding:4px 16px;">
-        <p style="margin:0;font-size:12px;color:#a8a29e;">E-posta</p>
-        <p style="margin:2px 0 10px;font-size:14px;font-weight:600;color:#ffffff;">${email}</p>
+      <td style="padding:6px 18px;">
+        <p style="margin:0;font-size:11px;color:#78716c;text-transform:uppercase;letter-spacing:0.06em;">E-posta</p>
+        <p style="margin:3px 0 12px;font-size:14px;font-weight:600;color:#ffffff;">${email}</p>
       </td>
     </tr>
     <tr>
-      <td style="padding:4px 16px 14px;">
-        <p style="margin:0;font-size:12px;color:#a8a29e;">Şifre</p>
-        <p style="margin:2px 0;font-size:14px;font-weight:600;color:#6ee7b7;font-family:monospace;">${password}</p>
+      <td style="padding:6px 18px 16px;">
+        <p style="margin:0;font-size:11px;color:#78716c;text-transform:uppercase;letter-spacing:0.06em;">Şifre</p>
+        <p style="margin:3px 0;font-size:15px;font-weight:700;color:#6ee7b7;font-family:monospace;letter-spacing:0.05em;">${password}</p>
       </td>
     </tr>
   </table>`;
@@ -144,6 +194,42 @@ function getLeadNotificationRecipients(): string[] {
 
 // ─── Email functions ─────────────────────────────────────────────────────────
 
+/** Sent to self-registered students after completing registration */
+export async function sendSelfRegistrationWelcome({
+  to,
+  name,
+}: {
+  to: string;
+  name: string;
+}) {
+  const firstName = name.split(" ")[0];
+
+  const html = baseTemplate(`
+    ${heading(`Hoş geldin, ${firstName}! 🎉`)}
+    ${paragraph(`<strong>${name}</strong>, Online Dershanem ailesine katıldığın için gerçekten çok mutluyuz. Bu adımı atmak kolay değil — ve bunu yaptığın için seni tebrik ediyoruz.`)}
+    ${paragraph("Bundan böyle hedeflerine ulaşmak için ihtiyacın olan her şey bir tık uzağında. Deneyimli öğretmenlerimiz, sana özel ders planları ve sürekli güncellenen içeriklerimizle bu yolculukta her adımda yanındayız.")}
+    ${divider()}
+    ${subheading("Seni neler bekliyor?")}
+    ${bulletList([
+      "<strong>Bire bir online dersler</strong> — Alanında uzman öğretmenlerle, kendi programına göre.",
+      "<strong>Kişiselleştirilmiş takip</strong> — Her dersin ardından notlar ve ilerleme özeti.",
+      "<strong>Esnek çalışma özgürlüğü</strong> — İstediğin saatten, istediğin yerden.",
+      "<strong>7/24 destek</strong> — Sorularında her zaman buradayız.",
+    ])}
+    ${divider()}
+    ${paragraph("Hesabın hazır. Paneline giriş yaparak öğretmenlerinle tanışabilir, ders programını inceleyebilir ve ilk adımını atabilirsin.")}
+    ${ctaButton("Panelime Giriş Yap →", `${APP_URL}/giris`)}
+    ${paragraph('<span style="font-size:13px;color:#9c9589;">Herhangi bir sorun yaşarsan <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresinden bize ulaşabilirsin. Seni duymaktan her zaman mutluluk duyarız.</span>')}
+    ${signature()}
+  `);
+
+  await sendEmail({
+    to,
+    subject: `Hoş geldin, ${firstName}! Online Dershanem'e kaydın tamamlandı.`,
+    html,
+  });
+}
+
 /** Sent when admin creates a student panel account */
 export async function sendStudentWelcome({
   to,
@@ -156,17 +242,23 @@ export async function sendStudentWelcome({
   email: string;
   password: string;
 }) {
+  const firstName = name.split(" ")[0];
+
   const html = baseTemplate(`
-    ${heading(`Hoş geldin, ${name.split(" ")[0]}! 👋`)}
-    ${paragraph("Online Dershanem öğrenci paneliniz hazır. Aşağıdaki bilgilerle giriş yapabilirsiniz.")}
+    ${heading(`Hoş geldin, ${firstName}! 🎓`)}
+    ${paragraph(`Merhaba <strong>${name}</strong>, Online Dershanem öğrenci paneliniz hazırlandı. Aşağıdaki giriş bilgilerinizi kullanarak platforma erişebilirsiniz.`)}
     ${credentialBox(email, password)}
-    ${ctaButton("Panele Giriş Yap", "https://onlinedershanem.com/giris")}
-    ${paragraph('<span style="font-size:12px;color:#9c9589;">Şifrenizi giriş yaptıktan sonra Profilim sayfasından değiştirebilirsiniz.</span>')}
+    ${paragraph("Panele giriş yaptıktan sonra ders programınızı inceleyebilir, öğretmeninizle iletişime geçebilir ve tüm ders materyallerinize ulaşabilirsiniz.")}
+    ${ctaButton("Panelime Giriş Yap →", `${APP_URL}/giris`)}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Güvenliğiniz için giriş yaptıktan sonra şifrenizi <a href="' + APP_URL + '/panel/profil" style="color:#408A71;text-decoration:none;">Profil sayfanızdan</a> değiştirmenizi öneririz.</span>')}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Herhangi bir sorunuz olursa <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresinden bize yazabilirsiniz.</span>')}
+    ${signature()}
   `);
 
   await sendEmail({
     to,
-    subject: "Online Dershanem Öğrenci Paneliniz Hazır",
+    subject: `Hoş geldin, ${firstName}! Öğrenci paneliniz hazır.`,
     html,
   });
 }
@@ -183,17 +275,23 @@ export async function sendTeacherWelcome({
   email: string;
   password: string;
 }) {
+  const firstName = name.split(" ")[0];
+
   const html = baseTemplate(`
-    ${heading(`Merhaba, ${name.split(" ")[0]}! 🎓`)}
-    ${paragraph("Online Dershanem öğretmen paneliniz oluşturuldu. Aşağıdaki bilgilerle giriş yapabilirsiniz.")}
+    ${heading(`Merhaba, ${firstName}! 👋`)}
+    ${paragraph(`<strong>${name}</strong>, Online Dershanem öğretmen paneliniz oluşturuldu. Platforma aşağıdaki bilgilerle giriş yapabilirsiniz.`)}
     ${credentialBox(email, password)}
-    ${ctaButton("Panele Giriş Yap", "https://onlinedershanem.com/giris")}
-    ${paragraph('<span style="font-size:12px;color:#9c9589;">Şifrenizi giriş yaptıktan sonra Profilim sayfasından değiştirebilirsiniz.</span>')}
+    ${paragraph("Panele giriş yaptıktan sonra size atanan öğrencileri görebilir, ders notlarınızı ekleyebilir ve ders programınızı yönetebilirsiniz.")}
+    ${ctaButton("Panelime Giriş Yap →", `${APP_URL}/giris`)}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Güvenliğiniz için giriş yaptıktan sonra şifrenizi <a href="' + APP_URL + '/panel/profil" style="color:#408A71;text-decoration:none;">Profil sayfanızdan</a> değiştirmenizi öneririz.</span>')}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Herhangi bir sorunuz olursa <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresinden bize yazabilirsiniz.</span>')}
+    ${signature()}
   `);
 
   await sendEmail({
     to,
-    subject: "Online Dershanem Öğretmen Paneliniz Hazır",
+    subject: `Hoş geldiniz, ${firstName}! Öğretmen paneliniz hazır.`,
     html,
   });
 }
@@ -234,14 +332,16 @@ export async function sendLessonScheduled({
   if (studentEmail) {
     const html = baseTemplate(`
       ${heading("Yeni Ders Planlandı 📅")}
-      ${paragraph(`Merhaba <strong>${studentName}</strong>, yeni bir dersiniz planlandı.`)}
+      ${paragraph(`Merhaba <strong>${studentName}</strong>, harika bir haber! Yeni bir dersiniz planlandı ve sizi bekliyoruz.`)}
       ${infoBox(rows)}
       ${googleMeetLink
-        ? ctaButton("Google Meet ile Derse Katıl", googleMeetLink)
-        : paragraph('<span style="font-size:12px;color:#9c9589;">Google Meet linki yakında eklenecektir.</span>')
+        ? `${paragraph("Derse katılmak için aşağıdaki butona tıklayabilirsiniz. Ders saatinden birkaç dakika önce bağlanmaya hazır olmanızı öneririz.")}${ctaButton("Google Meet ile Derse Katıl →", googleMeetLink)}`
+        : paragraph('<span style="font-size:13px;color:#9c9589;">Google Meet bağlantısı eklenir eklemez size ayrıca bildirim gönderilecektir.</span>')
       }
+      ${divider()}
+      ${paragraph('<span style="font-size:13px;color:#6b6560;">Derse katılamayacaksanız lütfen önceden <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> üzerinden bize bildirin.</span>')}
     `);
-    await sendEmail({ to: studentEmail, subject: `Ders Planlandı – ${dateStr}`, html });
+    await sendEmail({ to: studentEmail, subject: `Dersiniz Planlandı – ${dateStr}`, html });
   }
 
   // To teacher
@@ -256,9 +356,11 @@ export async function sendLessonScheduled({
       ${heading("Yeni Ders Atandı 📅")}
       ${paragraph(`Merhaba <strong>${teacherName}</strong>, size yeni bir ders atandı.`)}
       ${infoBox(teacherRows)}
-      ${googleMeetLink ? ctaButton("Google Meet Linki", googleMeetLink) : ""}
+      ${googleMeetLink ? ctaButton("Google Meet Linkine Git →", googleMeetLink) : ""}
+      ${divider()}
+      ${paragraph('<span style="font-size:13px;color:#6b6560;">Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresine yazabilirsiniz.</span>')}
     `);
-    await sendEmail({ to: teacherEmail, subject: `Yeni Ders Atandı – ${studentName}`, html });
+    await sendEmail({ to: teacherEmail, subject: `Yeni Ders Atandı – ${studentName} (${dateStr})`, html });
   }
 }
 
@@ -284,18 +386,21 @@ export async function sendMeetLinkUpdated({
   }).format(new Date(scheduledAt));
 
   const html = baseTemplate(`
-    ${heading("Google Meet Linkiniz Hazır 🎥")}
-    ${paragraph(`Merhaba <strong>${studentName}</strong>, <strong>${dateStr}</strong> tarihli dersinizin Google Meet linki eklendi.`)}
+    ${heading("Ders Bağlantınız Hazır 🎥")}
+    ${paragraph(`Merhaba <strong>${studentName}</strong>, <strong>${dateStr}</strong> tarihli dersinizin Google Meet bağlantısı eklendi. Artık derse katılmaya hazırsınız!`)}
     ${infoBox([
       { label: "Öğretmen", value: teacherName },
       { label: "Tarih", value: dateStr },
     ])}
-    ${ctaButton("Derse Katıl", googleMeetLink)}
+    ${paragraph("Ders saatinden 5 dakika önce bağlantıya tıklayarak hazır olmanızı öneririz.")}
+    ${ctaButton("Derse Katıl →", googleMeetLink)}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Teknik bir sorun yaşarsanız <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresinden bize ulaşabilirsiniz.</span>')}
   `);
 
   await sendEmail({
     to: studentEmail,
-    subject: `Meet Linki Hazır – ${dateStr}`,
+    subject: `Ders Bağlantınız Hazır – ${dateStr}`,
     html,
   });
 }
@@ -321,13 +426,14 @@ export async function sendLessonCancelled({
 
   if (studentEmail) {
     const html = baseTemplate(`
-      ${heading("Ders İptal Edildi")}
-      ${paragraph(`Merhaba <strong>${studentName}</strong>, <strong>${dateStr}</strong> tarihli dersiniz iptal edildi.`)}
+      ${heading("Dersiniz İptal Edildi")}
+      ${paragraph(`Merhaba <strong>${studentName}</strong>, <strong>${dateStr}</strong> tarihli dersinizin iptal edildiğini bildirmek istiyoruz.`)}
       ${infoBox([
         { label: "Öğretmen", value: teacherName },
         { label: "Tarih", value: dateStr },
       ])}
-      ${paragraph("Yeni bir ders planlanması durumunda bilgilendirileceksiniz. Sorularınız için bizimle iletişime geçebilirsiniz.")}
+      ${paragraph("Yeni bir ders planlanması durumunda e-posta ile bilgilendirileceksiniz. Bu durum sizi olumsuz etkilediyse özür dileriz — sizin için en kısa sürede yeni bir ders ayarlamak istiyoruz.")}
+      ${ctaButton("Destek ile İletişime Geç →", "mailto:destek@onlinedershanem.com")}
     `);
     await sendEmail({ to: studentEmail, subject: `Ders İptal Edildi – ${dateStr}`, html });
   }
@@ -335,7 +441,12 @@ export async function sendLessonCancelled({
   if (teacherEmail) {
     const html = baseTemplate(`
       ${heading("Ders İptal Edildi")}
-      ${paragraph(`Merhaba <strong>${teacherName}</strong>, <strong>${studentName}</strong> ile <strong>${dateStr}</strong> tarihli ders iptal edildi.`)}
+      ${paragraph(`Merhaba <strong>${teacherName}</strong>, <strong>${studentName}</strong> ile <strong>${dateStr}</strong> tarihinde planlanan ders iptal edildi.`)}
+      ${infoBox([
+        { label: "Öğrenci", value: studentName },
+        { label: "Tarih", value: dateStr },
+      ])}
+      ${paragraph('<span style="font-size:13px;color:#6b6560;">Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresine yazabilirsiniz.</span>')}
     `);
     await sendEmail({ to: teacherEmail, subject: `Ders İptal – ${studentName} (${dateStr})`, html });
   }
@@ -363,13 +474,16 @@ export async function sendLessonCompleted({
 
   const html = baseTemplate(`
     ${heading("Ders Tamamlandı ✅")}
-    ${paragraph(`Merhaba <strong>${studentName}</strong>, <strong>${dateStr}</strong> tarihli dersiniz tamamlandı.`)}
+    ${paragraph(`Tebrikler <strong>${studentName}</strong>! <strong>${dateStr}</strong> tarihli dersiniz başarıyla tamamlandı. Her ders, hedefe bir adım daha yaklaşmak demek.`)}
     ${infoBox([
       { label: "Öğretmen", value: teacherName },
       { label: "Tarih", value: dateStr },
     ])}
     ${notes ? noteBox(notes) : ""}
-    ${ctaButton("Ders Geçmişini Görüntüle", "https://onlinedershanem.com/panel/dersler?tab=completed")}
+    ${paragraph("Ders geçmişinizi ve öğretmeninizin notlarını panelinizden istediğiniz zaman inceleyebilirsiniz.")}
+    ${ctaButton("Ders Geçmişimi Görüntüle →", `${APP_URL}/panel/dersler?tab=completed`)}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Dersle ilgili bir sorunuz mu var? <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresinden bize yazabilirsiniz.</span>')}
   `);
 
   await sendEmail({
@@ -393,18 +507,18 @@ export async function sendVerificationCode({
   const subject = isReset ? "Şifre Sıfırlama Kodunuz" : "E-posta Doğrulama Kodunuz";
   const title = isReset ? "Şifre Sıfırlama" : "E-posta Doğrulaması";
   const description = isReset
-    ? "Şifrenizi sıfırlamak için aşağıdaki 6 haneli kodu girin. Kod <strong>10 dakika</strong> geçerlidir."
-    : "Online Dershanem hesabınızı oluşturmak için aşağıdaki 6 haneli doğrulama kodunu girin. Kod <strong>10 dakika</strong> geçerlidir.";
+    ? "Şifrenizi sıfırlamak için aşağıdaki 6 haneli kodu kullanın. Kod yalnızca <strong>2 dakika</strong> geçerlidir."
+    : "Online Dershanem hesabınızı doğrulamak için aşağıdaki 6 haneli kodu girin. Kod yalnızca <strong>2 dakika</strong> geçerlidir.";
 
   const html = baseTemplate(`
     ${heading(title)}
     ${paragraph(description)}
-    <div style="text-align:center;margin:28px 0;">
-      <div style="display:inline-block;background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;padding:18px 36px;">
-        <span style="font-size:38px;font-weight:800;letter-spacing:12px;color:#091413;font-family:monospace;">${code}</span>
+    <div style="text-align:center;margin:32px 0;">
+      <div style="display:inline-block;background:#f0fdf8;border:2px solid #6ee7b7;border-radius:14px;padding:20px 40px;">
+        <span style="font-size:40px;font-weight:800;letter-spacing:14px;color:#091413;font-family:monospace;">${code}</span>
       </div>
     </div>
-    ${paragraph('<span style="font-size:12px;color:#9c9589;">Bu işlemi siz gerçekleştirmediyseniz bu e-postayı görmezden gelebilirsiniz.</span>')}
+    ${paragraph('<span style="font-size:13px;color:#9c9589;">Bu işlemi siz başlatmadıysanız bu e-postayı güvenle görmezden gelebilirsiniz. Hesabınızın güvenliği tehlikede değildir.</span>')}
   `);
 
   await sendEmail({ to, subject, html });
@@ -466,7 +580,7 @@ export async function sendLeadSubmissionNotification({
       { label: "Kaynak", value: safeSource },
       { label: "Tarih", value: dateStr },
     ])}
-    ${ctaButton("Admin Panelinde Aç", `${APP_URL}/admin/formlar`)}
+    ${ctaButton("Admin Panelinde Aç →", `${APP_URL}/admin/formlar`)}
   `);
 
   await sendEmail({

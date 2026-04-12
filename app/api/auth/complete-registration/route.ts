@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
-import { sendStudentWelcome } from "@/lib/email";
+import { sendSelfRegistrationWelcome } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       });
     }
 
-    await sendStudentWelcome({ to: normalizedEmail, name: fullName, email: normalizedEmail, password });
+    await sendSelfRegistrationWelcome({ to: normalizedEmail, name: fullName });
 
     return NextResponse.json({ ok: true });
   } catch {
