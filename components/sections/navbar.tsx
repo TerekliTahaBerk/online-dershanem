@@ -78,25 +78,39 @@ export function Navbar() {
               )
             )}
           </nav>
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-2 md:flex">
             <ComingSoonButton />
-            {status === "authenticated" && session?.user?.role === "ADMIN" ? (
+            {status === "loading" ? null : status === "authenticated" ? (
               <>
                 <Link
-                  href="/admin"
-                  className="inline-flex rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
+                  href={
+                    session?.user?.role === "ADMIN" ? "/admin" :
+                    session?.user?.role === "TEACHER" ? "/ogretmen" :
+                    "/panel"
+                  }
+                  className="inline-flex rounded-full border border-line-strong px-4 py-2 text-sm font-semibold text-ink transition hover:bg-soft"
                 >
-                  Admin Paneli
+                  {session?.user?.role === "ADMIN" ? "Admin Paneli" :
+                   session?.user?.role === "TEACHER" ? "Öğretmen Paneli" :
+                   "Panelim"}
                 </Link>
                 <LogoutButton />
               </>
             ) : (
-              <Link
-                href="/giris"
-                className="inline-flex rounded-full bg-anchor px-4 py-2 text-xs font-semibold text-white transition hover:bg-pine"
-              >
-                Giriş Yap
-              </Link>
+              <>
+                <Link
+                  href="/kayit"
+                  className="inline-flex rounded-full border border-line-strong px-4 py-2 text-sm font-semibold text-ink transition hover:bg-soft"
+                >
+                  Kayıt Ol
+                </Link>
+                <Link
+                  href="/giris"
+                  className="inline-flex rounded-full bg-anchor px-4 py-2 text-sm font-semibold text-white transition hover:bg-pine"
+                >
+                  Giriş Yap
+                </Link>
+              </>
             )}
           </div>
           <button
@@ -139,23 +153,37 @@ export function Navbar() {
 
             <div className="mt-4 flex flex-col gap-2">
               <ComingSoonButton />
-              {status === "authenticated" && session?.user?.role === "ADMIN" ? (
+              {status === "loading" ? null : status === "authenticated" ? (
                 <>
                   <Link
-                    href="/admin"
-                    className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
+                    href={
+                      session?.user?.role === "ADMIN" ? "/admin" :
+                      session?.user?.role === "TEACHER" ? "/ogretmen" :
+                      "/panel"
+                    }
+                    className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-soft"
                   >
-                    Admin Paneli
+                    {session?.user?.role === "ADMIN" ? "Admin Paneli" :
+                     session?.user?.role === "TEACHER" ? "Öğretmen Paneli" :
+                     "Panelim"}
                   </Link>
                   <LogoutButton className="w-full justify-center" />
                 </>
               ) : (
-                <Link
-                  href="/giris"
-                  className="inline-flex items-center justify-center rounded-xl bg-anchor px-4 py-2 text-xs font-semibold text-white transition hover:bg-pine"
-                >
-                  Giriş Yap
-                </Link>
+                <>
+                  <Link
+                    href="/kayit"
+                    className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-soft"
+                  >
+                    Kayıt Ol
+                  </Link>
+                  <Link
+                    href="/giris"
+                    className="inline-flex items-center justify-center rounded-xl bg-anchor px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pine"
+                  >
+                    Giriş Yap
+                  </Link>
+                </>
               )}
             </div>
           </nav>
