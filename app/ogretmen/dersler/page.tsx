@@ -94,7 +94,7 @@ export default async function OgretmenDerslerPage({
       {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Derslerim</h1>
-        <p className="mt-1 text-sm text-stone-500">{allLessons.length} toplam ders</p>
+        <p className="mt-1 text-sm text-stone-500">{allLessons.length} ders kaydı</p>
       </div>
 
       {/* Tabs */}
@@ -118,7 +118,7 @@ export default async function OgretmenDerslerPage({
         {filtered.length === 0 ? (
           <div className="py-16 text-center">
             <BookOpen className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-            <p className="text-sm text-stone-500">Bu kategoride ders yok</p>
+            <p className="text-sm text-stone-500">Bu filtrede ders görünmüyor</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -129,7 +129,7 @@ export default async function OgretmenDerslerPage({
                   <th className="text-left px-4 py-3 font-semibold text-stone-600">Öğrenci</th>
                   <th className="text-left px-4 py-3 font-semibold text-stone-600">Paket</th>
                   <th className="text-left px-4 py-3 font-semibold text-stone-600">Süre</th>
-                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Meet</th>
+                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Bağlantı</th>
                   <th className="text-left px-4 py-3 font-semibold text-stone-600">Durum</th>
                   <th className="text-right px-4 py-3 font-semibold text-stone-600">İşlem</th>
                 </tr>
@@ -229,7 +229,7 @@ export default async function OgretmenDerslerPage({
                                     name="notes"
                                     rows={2}
                                     defaultValue={lesson.notes ?? ""}
-                                    placeholder="Bu derse ait notlar (öğrenciye de görünür)..."
+                                    placeholder="Öğrenciyle paylaşılacak kısa not"
                                     className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                                   />
                                   <button type="submit" className="shrink-0 text-xs bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-2 rounded-lg font-medium transition self-end">
@@ -248,11 +248,11 @@ export default async function OgretmenDerslerPage({
                                       name="notes"
                                       rows={2}
                                       defaultValue={lesson.notes ?? ""}
-                                      placeholder="Son ders notu (opsiyonel)..."
+                                      placeholder="Kapanış notu ekleyebilirsiniz"
                                       className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                                     />
                                     <button type="submit" className="shrink-0 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg font-semibold transition self-end">
-                                      Tamamlandı ✓
+                                      Dersi Tamamla
                                     </button>
                                   </div>
                                 </form>
@@ -263,7 +263,7 @@ export default async function OgretmenDerslerPage({
                                 <input type="hidden" name="lessonId" value={lesson.id} />
                                 <input type="hidden" name="tab" value={tab} />
                                 <button type="submit" className="text-xs text-red-500 hover:text-red-700 font-medium transition">
-                                  Dersi İptal Et
+                                  Dersi iptal et
                                 </button>
                               </form>
                             </div>

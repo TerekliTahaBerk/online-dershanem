@@ -104,15 +104,15 @@ export default async function PanelOgretmenlerimPage() {
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Öğretmenlerim</h1>
         <p className="mt-1 text-sm text-stone-500">
-          {teachers.length} öğretmen · derslerinizden atanan
+          {teachers.length} öğretmen · ders programınıza göre atanmış
         </p>
       </div>
 
       {teachers.length === 0 ? (
         <div className="rounded-xl bg-white border border-stone-200 py-16 text-center">
           <User className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Henüz öğretmen atanmadı</p>
-          <p className="text-xs text-stone-400 mt-1">Ders planlandıkça öğretmenleriniz burada görünecek.</p>
+          <p className="text-sm font-medium text-stone-600">Öğretmen eşleşmeniz yakında paylaşılacak</p>
+          <p className="text-xs text-stone-400 mt-1">İlk dersiniz planlandığında burada yer alacak.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -187,7 +187,7 @@ export default async function PanelOgretmenlerimPage() {
                         <div className="flex items-center gap-3">
                           <CalendarDays className="w-4 h-4 text-emerald-600 shrink-0" />
                           <div>
-                            <p className="text-xs font-semibold text-emerald-700">Yaklaşan Ders</p>
+                            <p className="text-xs font-semibold text-emerald-700">Sıradaki Ders</p>
                             <p className="text-xs text-stone-600 mt-0.5">
                               {new Intl.DateTimeFormat("tr-TR", {
                                 day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
@@ -214,7 +214,7 @@ export default async function PanelOgretmenlerimPage() {
                       <div className="px-5 py-3 flex items-center gap-3">
                         <CheckCircle className="w-4 h-4 text-stone-400 shrink-0" />
                         <div>
-                          <p className="text-xs font-semibold text-stone-500">Son Tamamlanan</p>
+                          <p className="text-xs font-semibold text-stone-500">Son İşlenen Ders</p>
                           <p className="text-xs text-stone-400 mt-0.5">
                             {new Intl.DateTimeFormat("tr-TR", {
                               day: "numeric", month: "long", year: "numeric",

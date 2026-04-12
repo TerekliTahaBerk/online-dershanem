@@ -86,7 +86,7 @@ export default async function OgretmenTakvimPage({
     <div className="p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-stone-900">Takvim</h1>
+          <h1 className="text-2xl font-semibold text-stone-900">Haftalık Takvim</h1>
           <p className="text-sm text-stone-500 mt-0.5">
             {fmtDay.format(weekStart)} – {fmtDay.format(new Date(weekEnd.getTime() - 86400000))}
           </p>
@@ -102,7 +102,7 @@ export default async function OgretmenTakvimPage({
             href="/ogretmen/takvim"
             className="px-3 py-1.5 text-sm font-medium rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 transition"
           >
-            Bugün
+            Bu Hafta
           </Link>
           <Link
             href={`/ogretmen/takvim?week=${nextWeek}`}
@@ -169,7 +169,7 @@ export default async function OgretmenTakvimPage({
                                 className="inline-flex items-center gap-0.5 text-emerald-600 hover:text-emerald-800 font-medium"
                               >
                                 <ExternalLink className="w-2.5 h-2.5" />
-                                Meet
+                                Bağlan
                               </a>
                             )}
                           </div>

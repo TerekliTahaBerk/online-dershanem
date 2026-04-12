@@ -63,9 +63,9 @@ export default async function PanelDashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <CalendarDays className="w-12 h-12 text-stone-300 mb-4" />
-        <h2 className="text-lg font-semibold text-stone-700">Profil henüz oluşturulmadı</h2>
+        <h2 className="text-lg font-semibold text-stone-700">Profiliniz hazırlanıyor</h2>
         <p className="mt-2 text-sm text-stone-500">
-          Öğrenci profiliniz yönetici tarafından oluşturulduğunda burası aktif olacak.
+          Hesabınız kısa süre içinde tamamlanacak.
         </p>
       </div>
     );
@@ -95,7 +95,7 @@ export default async function PanelDashboardPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-stone-900">
-            Merhaba, {student.fullName.split(" ")[0]} 👋
+            Merhaba, {student.fullName.split(" ")[0]}
           </h1>
           <p className="mt-1 text-sm text-stone-500">
             {new Intl.DateTimeFormat("tr-TR", { weekday: "long", day: "numeric", month: "long" }).format(now)}
@@ -105,7 +105,7 @@ export default async function PanelDashboardPage() {
           href="/panel/takvim"
           className="hidden sm:flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 px-4 py-2 rounded-lg transition"
         >
-          <CalendarDays className="w-4 h-4" /> Takvimi Aç
+          <CalendarDays className="w-4 h-4" /> Takvime Git
         </Link>
       </div>
 
@@ -126,7 +126,7 @@ export default async function PanelDashboardPage() {
               </p>
               {nextLesson.notes && (
                 <p className={`mt-2 text-xs italic ${isNearby ? "text-emerald-200" : "text-stone-400"}`}>
-                  Not: {nextLesson.notes}
+                  Öğretmen notu: {nextLesson.notes}
                 </p>
               )}
             </div>
@@ -145,7 +145,7 @@ export default async function PanelDashboardPage() {
               <div className={`shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium ${
                 isNearby ? "bg-white/20 text-white" : "bg-stone-100 text-stone-400"
               }`}>
-                <Clock className="w-4 h-4" /> Link bekleniyor
+                <Clock className="w-4 h-4" /> Bağlantı yakında paylaşılacak
               </div>
             )}
           </div>
@@ -153,8 +153,8 @@ export default async function PanelDashboardPage() {
       ) : (
         <div className="rounded-2xl bg-white border border-stone-200 p-6 text-center">
           <CalendarDays className="w-8 h-8 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Yaklaşan ders bulunmuyor</p>
-          <p className="text-xs text-stone-400 mt-1">Yeni ders planlandığında burada görünecek.</p>
+          <p className="text-sm font-medium text-stone-600">Sıradaki dersiniz henüz planlanmadı</p>
+          <p className="text-xs text-stone-400 mt-1">Programınız netleştiğinde burada yer alacak.</p>
         </div>
       )}
 
@@ -184,7 +184,7 @@ export default async function PanelDashboardPage() {
         {/* Progress */}
         <div className="rounded-xl bg-white border border-stone-200 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-stone-800">İlerleme</h3>
+            <h3 className="text-sm font-semibold text-stone-800">Ders İlerlemesi</h3>
             <span className="text-xs font-bold text-emerald-700">{progressPct}%</span>
           </div>
           <div className="w-full bg-stone-100 rounded-full h-2.5 mb-3">
@@ -194,14 +194,14 @@ export default async function PanelDashboardPage() {
             />
           </div>
           <p className="text-xs text-stone-500">
-            {completed.length} tamamlandı / {total} toplam ders
+            {completed.length} ders tamamlandı / {total} ders planlandı
             {totalHours > 0 && ` · ${totalHours} saat`}
           </p>
         </div>
 
         {/* Last completed lesson */}
         <div className="rounded-xl bg-white border border-stone-200 p-5">
-          <h3 className="text-sm font-semibold text-stone-800 mb-3">Son Tamamlanan Ders</h3>
+          <h3 className="text-sm font-semibold text-stone-800 mb-3">Son İşlenen Ders</h3>
           {lastCompleted ? (
             <div>
               <p className="text-sm font-medium text-stone-800">{lastCompleted.teacher.fullName}</p>
@@ -214,11 +214,11 @@ export default async function PanelDashboardPage() {
                   "{lastCompleted.notes}"
                 </p>
               ) : (
-                <p className="mt-2 text-xs text-stone-400">Ders notu yok.</p>
+                <p className="mt-2 text-xs text-stone-400">Bu ders için paylaşılmış not yok.</p>
               )}
             </div>
           ) : (
-            <p className="text-xs text-stone-400">Henüz tamamlanan ders yok.</p>
+            <p className="text-xs text-stone-400">Henüz tamamlanmış dersiniz yok.</p>
           )}
         </div>
       </div>
@@ -227,12 +227,12 @@ export default async function PanelDashboardPage() {
       {weekLessons.length > 0 && (
         <div className="rounded-xl bg-white border border-stone-200">
           <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-            <h3 className="text-sm font-semibold text-stone-800">Bu Haftaki Dersler</h3>
+            <h3 className="text-sm font-semibold text-stone-800">Bu Haftaki Program</h3>
             <Link
               href="/panel/takvim"
               className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
             >
-              Takvim <ArrowRight className="w-3 h-3" />
+              Takvimde Gör <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           <div className="divide-y divide-stone-100">

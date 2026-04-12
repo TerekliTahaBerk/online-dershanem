@@ -90,7 +90,7 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-stone-900">Ders Takvimi</h1>
+          <h1 className="text-2xl font-semibold text-stone-900">Haftalık Takvim</h1>
           <p className="text-sm text-stone-500 mt-0.5">{weekLabel}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -109,8 +109,8 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
       {lessonsRaw.length === 0 ? (
         <div className="rounded-2xl bg-white border border-stone-200 py-20 text-center">
           <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Bu haftada ders bulunmuyor</p>
-          <p className="text-xs text-stone-400 mt-1">Dersler planlandığında burada görünecek.</p>
+          <p className="text-sm font-medium text-stone-600">Bu hafta planlı ders görünmüyor</p>
+          <p className="text-xs text-stone-400 mt-1">Yeni ders eklendiğinde takvimde yer alacak.</p>
         </div>
       ) : (
         <div className="rounded-xl bg-white border border-stone-200 overflow-hidden">
@@ -192,7 +192,7 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
       {/* Legend */}
       <div className="flex items-center gap-2 text-xs text-stone-500">
         <span className="inline-block w-3 h-3 rounded bg-[#B0E4CC]/60 border border-[#408A71]/40" />
-        Planlanmış ders
+        Planlı ders
       </div>
     </div>
   );

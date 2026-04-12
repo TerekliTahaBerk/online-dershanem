@@ -22,7 +22,7 @@ type UserWithStudent = Prisma.UserGetPayload<{
 
 const statusConfig = {
   PAID: { label: "Ödendi", icon: CheckCircle, cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  PENDING: { label: "Bekliyor", icon: Clock, cls: "bg-amber-50 text-amber-700 border-amber-200" },
+  PENDING: { label: "Beklemede", icon: Clock, cls: "bg-amber-50 text-amber-700 border-amber-200" },
   FAILED: { label: "Başarısız", icon: XCircle, cls: "bg-red-50 text-red-600 border-red-200" },
 } as const;
 
@@ -61,7 +61,7 @@ export default async function PanelOdemelerPage() {
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Ödemelerim</h1>
         <p className="mt-1 text-sm text-stone-500">
-          {purchases.length} kayıt · {paidCount} ödendi · {pendingCount} bekliyor
+          {purchases.length} ödeme · {paidCount} tamamlandı · {pendingCount} beklemede
         </p>
       </div>
 
@@ -87,8 +87,8 @@ export default async function PanelOdemelerPage() {
       {purchases.length === 0 ? (
         <div className="text-center py-16 rounded-xl bg-white border border-stone-200">
           <CreditCard className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Kayıtlı ödeme bulunmuyor</p>
-          <p className="text-xs text-stone-400 mt-1">Paket satın aldığınızda burada görünecek.</p>
+          <p className="text-sm font-medium text-stone-600">Henüz ödeme hareketiniz yok</p>
+          <p className="text-xs text-stone-400 mt-1">Satın alma detaylarınız burada yer alacak.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -125,7 +125,7 @@ export default async function PanelOdemelerPage() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition"
                       >
-                        Ödemeyi Tamamla <ExternalLink className="w-3 h-3" />
+                        Ödemeye Git <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
                   </div>
@@ -134,7 +134,7 @@ export default async function PanelOdemelerPage() {
                 {/* Event timeline */}
                 {purchase.events.length > 0 && (
                   <div className="border-t border-stone-100 bg-stone-50 px-5 py-3">
-                    <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Geçmiş</p>
+                    <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Ödeme Geçmişi</p>
                     <div className="space-y-1.5">
                       {purchase.events.map((event) => (
                         <div key={event.id} className="flex items-center gap-3">

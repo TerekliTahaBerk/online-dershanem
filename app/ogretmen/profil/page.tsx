@@ -30,8 +30,8 @@ export default async function OgretmenProfilPage({
   if (!teacher) redirect("/ogretmen");
 
   const successMsg: Record<string, string> = {
-    profile: "Profil bilgileri güncellendi.",
-    password: "Şifre başarıyla değiştirildi.",
+    profile: "Profil bilgileriniz kaydedildi.",
+    password: "Şifreniz güncellendi.",
   };
   const errorMsg: Record<string, string> = {
     "wrong-password": "Mevcut şifreniz hatalı.",
@@ -45,7 +45,7 @@ export default async function OgretmenProfilPage({
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Profilim</h1>
-        <p className="mt-1 text-sm text-stone-500">Kişisel bilgilerinizi ve şifrenizi yönetin.</p>
+        <p className="mt-1 text-sm text-stone-500">Hesap bilgilerinizi ve güvenlik ayarlarınızı buradan yönetin.</p>
       </div>
 
       {params.success && successMsg[params.success] && (
@@ -110,13 +110,13 @@ export default async function OgretmenProfilPage({
                 rows={3}
                 defaultValue={teacher.bio ?? ""}
                 className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                placeholder="Kendinizden kısaca bahsedin..."
+                placeholder="Branşınızı ve çalışma yaklaşımınızı kısaca yazın"
               />
             </div>
           </div>
           <div className="flex justify-end pt-2 border-t border-stone-100">
             <button type="submit" className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition">
-              Kaydet
+              Bilgileri Kaydet
             </button>
           </div>
         </form>
@@ -162,7 +162,7 @@ export default async function OgretmenProfilPage({
           </div>
           <div className="flex justify-end pt-2 border-t border-stone-100">
             <button type="submit" className="rounded-lg bg-stone-800 px-5 py-2 text-sm font-semibold text-white hover:bg-stone-900 transition">
-              Şifreyi Değiştir
+              Şifreyi Kaydet
             </button>
           </div>
         </form>

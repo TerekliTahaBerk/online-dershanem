@@ -66,7 +66,7 @@ export default async function PanelKamplarPage({
       <div>
         <h1 className="text-2xl font-semibold text-stone-900">Kamplar</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Butik kamp programlarımızı inceleyin ve kayıt olun.
+          Açık kamp programlarını inceleyip size uygun olanı seçin.
         </p>
       </div>
 
@@ -90,8 +90,8 @@ export default async function PanelKamplarPage({
       {camps.length === 0 ? (
         <div className="rounded-xl border border-stone-200 bg-white py-16 text-center">
           <Tent className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Bu kategoride aktif kamp yok</p>
-          <p className="text-xs text-stone-400 mt-1">Yeni kamplar açıldıkça burada görünecek.</p>
+          <p className="text-sm font-medium text-stone-600">Bu kategoride açık kamp görünmüyor</p>
+          <p className="text-xs text-stone-400 mt-1">Yeni kamp açıldığında burada yayınlanacak.</p>
         </div>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -146,11 +146,11 @@ export default async function PanelKamplarPage({
                     className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Kampa Kaydol
+                    Kayıt Ol
                   </a>
                 ) : (
                   <div className="rounded-lg bg-stone-100 px-4 py-2.5 text-center text-sm font-medium text-stone-500">
-                    Yakında Açılacak
+                    Başvuru Yakında Açılacak
                   </div>
                 )}
               </div>
@@ -162,8 +162,8 @@ export default async function PanelKamplarPage({
       {/* Calendar section */}
       <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-3">
         <div>
-          <h2 className="text-base font-semibold text-stone-900">Kamplar Takvimi</h2>
-          <p className="text-sm text-stone-500 mt-0.5">Kamplarımız en geç 1 Mayıs tarihinde başlayacaktır.</p>
+          <h2 className="text-base font-semibold text-stone-900">Kamp Takvimi</h2>
+          <p className="text-sm text-stone-500 mt-0.5">Kamplar en geç 1 Mayıs tarihinde başlar.</p>
         </div>
         <div className="rounded-lg overflow-hidden border border-stone-100">
           <iframe
