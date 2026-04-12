@@ -3,6 +3,7 @@
 import { TeacherStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 function readString(formData: FormData, key: string) {
@@ -50,6 +51,47 @@ export async function updateTeacherAction(formData: FormData) {
 
   revalidatePath("/admin/hocalar");
   redirect(`${returnTo}&updated=teacher`);
+}
+
+export async function createTeacherAccountAction(formData: FormData) {
+  const teacherId = readString(formData, "teacherId");
+  const email = readString(formData, "email").toLowerCase();
+  const password = readString(formData, "password");
+  const name = readString(formData, "name");
+
+  if (!teacherId || !email || !password) {
+    redirect(`/admin/hocalar?error=missing&teacher=${teacherId}`);
+  }
+
+  // Check if teacher already has an account
+  const teacher = await prisma.teacher.findUnique({ where: { id: teacherId } });
+  if (!teacher) redirect("/admin/hocalar");
+  if (teacher.userId) redirect(`/admin/hocalar?updated=account-exists&teacher=${teacherId}`);
+
+  // Check email not taken
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) redirect(`/admin/hocalar?updated=email-taken&teacher=${teacherId}`);
+
+  try {
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name: name || teacher.fullName,
+        passwordHash,
+        role: "TEACHER",
+      },
+    });
+    await prisma.teacher.update({
+      where: { id: teacherId },
+      data: { userId: user.id },
+    });
+  } catch {
+    redirect(`/admin/hocalar?updated=account-error&teacher=${teacherId}`);
+  }
+
+  revalidatePath("/admin/hocalar");
+  redirect(`/admin/hocalar?updated=account-created&teacher=${teacherId}`);
 }
 
 export async function toggleTeacherStatusAction(formData: FormData) {

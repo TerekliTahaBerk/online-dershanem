@@ -33,6 +33,8 @@ export function LoginForm() {
 
     if (role === "STUDENT") {
       window.location.href = "/panel";
+    } else if (role === "TEACHER") {
+      window.location.href = "/ogretmen";
     } else {
       window.location.href = result.url ?? "/admin";
     }
