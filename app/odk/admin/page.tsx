@@ -2,8 +2,17 @@ import Link from "next/link";
 import { FileText, Package, Users, Tag, TrendingUp, Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
+type RecentAttempt = {
+  id: string;
+  status: string;
+  startedAt: Date;
+  score: unknown;
+  exam: { title: string; cadenceFamily: string };
+  user: { name: string | null; email: string };
+};
+
 async function getStats() {
-  const [totalExams, publishedExams, totalPackages, activePackages, totalStudents, recentAttempts] =
+  const [totalExams, publishedExams, totalPackages, activePackages, totalStudents, rawAttempts] =
     await Promise.all([
       prisma.odkExam.count(),
       prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
@@ -24,6 +33,7 @@ async function getStats() {
       }),
     ]);
 
+  const recentAttempts = rawAttempts as unknown as RecentAttempt[];
   return { totalExams, publishedExams, totalPackages, activePackages, totalStudents, recentAttempts };
 }
 
