@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { UserRole } from "@prisma/client";
 
 type LinkStatus = "linked" | "already-linked" | "not-found" | "conflict";
 
@@ -86,4 +87,43 @@ export async function linkStudentToExistingUserByEmail(studentId: string, email?
   });
 
   return { status: "linked" as LinkStatus, user: existingUser };
+}
+
+export async function ensureUserAccessLinksByEmail(userId: string, email?: string | null, role?: UserRole | null) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return;
+
+  if (role === "STUDENT") {
+    const student = await prisma.student.findFirst({
+      where: {
+        email: normalizedEmail,
+        OR: [{ userId: null }, { userId }]
+      },
+      select: { id: true, userId: true }
+    });
+
+    if (student && student.userId !== userId) {
+      await prisma.student.update({
+        where: { id: student.id },
+        data: { userId }
+      });
+    }
+
+    return;
+  }
+
+  const teacher = await prisma.teacher.findFirst({
+    where: {
+      email: normalizedEmail,
+      OR: [{ userId: null }, { userId }]
+    },
+    select: { id: true, userId: true }
+  });
+
+  if (teacher && teacher.userId !== userId) {
+    await prisma.teacher.update({
+      where: { id: teacher.id },
+      data: { userId }
+    });
+  }
 }
