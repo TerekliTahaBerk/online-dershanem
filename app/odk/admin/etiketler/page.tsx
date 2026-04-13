@@ -5,7 +5,12 @@ import { Tag } from "lucide-react";
 async function getAccessTags() {
   return prisma.odkAccessTag.findMany({
     orderBy: { createdAt: "desc" },
-    include: {
+    select: {
+      id: true,
+      key: true,
+      title: true,
+      description: true,
+      isActive: true,
       _count: { select: { userTags: true, examTags: true, packageTags: true } },
     },
   });
