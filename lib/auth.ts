@@ -3,6 +3,7 @@ import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
+import { ensureUserAccessLinksByEmail } from "@/lib/user-links";
 import { credentialsSchema } from "@/lib/validators";
 
 export const authOptions: NextAuthOptions = {
@@ -40,6 +41,8 @@ export const authOptions: NextAuthOptions = {
         if (!isPasswordValid) {
           return null;
         }
+
+        await ensureUserAccessLinksByEmail(user.id, user.email, user.role);
 
         return {
           id: user.id,
