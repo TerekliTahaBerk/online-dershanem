@@ -1,20 +1,18 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelAccess } from "@/lib/panel-access";
 import { PanelSidebar } from "@/components/panel/panel-sidebar";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession();
+  const access = getPanelAccess(session?.user);
 
   if (!session) {
     redirect("/giris");
   }
 
-  if (session.user?.role === "ADMIN") {
-    redirect("/admin");
-  }
-
-  if (session.user?.role !== "STUDENT") {
-    redirect("/giris");
+  if (!access.hasStudentPanel) {
+    redirect(access.defaultPanel ? (access.defaultPanel === "teacher" ? "/ogretmen" : "/admin") : "/giris");
   }
 
   return (

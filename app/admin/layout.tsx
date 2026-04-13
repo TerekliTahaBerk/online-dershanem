@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelAccess } from "@/lib/panel-access";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { LogoutButton } from "@/components/auth/logout-button";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await getServerAuthSession();
-  if (!session || session.user?.role !== "ADMIN") {
+  const access = getPanelAccess(session?.user);
+
+  if (!session || !access.hasAdminPanel) {
     redirect("/giris");
   }
 

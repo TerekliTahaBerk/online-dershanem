@@ -2,8 +2,13 @@
 
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
+import { getPanelDestination } from "@/lib/panel-access";
 
-export function LoginForm() {
+type LoginFormProps = {
+  callbackUrl?: string;
+};
+
+export function LoginForm({ callbackUrl }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +23,7 @@ export function LoginForm() {
       email,
       password,
       redirect: false,
+      callbackUrl
     });
 
     if (!result || result.error) {
@@ -29,15 +35,7 @@ export function LoginForm() {
     // Fetch session to determine role-based redirect
     const sessionRes = await fetch("/api/auth/session");
     const session = await sessionRes.json();
-    const role = session?.user?.role;
-
-    if (role === "STUDENT") {
-      window.location.href = "/panel";
-    } else if (role === "TEACHER") {
-      window.location.href = "/ogretmen";
-    } else {
-      window.location.href = result.url ?? "/admin";
-    }
+    window.location.href = getPanelDestination(session?.user, callbackUrl ?? result.url);
   };
 
   return (

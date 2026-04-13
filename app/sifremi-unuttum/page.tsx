@@ -1,13 +1,12 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelDestination } from "@/lib/panel-access";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 export default async function SifremiUnuttumPage() {
   const session = await getServerAuthSession();
-  if (session?.user?.role === "STUDENT") redirect("/panel");
-  if (session?.user?.role === "TEACHER") redirect("/ogretmen");
-  if (session?.user?.role === "ADMIN") redirect("/admin");
+  if (session?.user) redirect(getPanelDestination(session.user));
 
   return (
     <main className="min-h-screen bg-[#F7F5F0] flex items-center justify-center p-4">

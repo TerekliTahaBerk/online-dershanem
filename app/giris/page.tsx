@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelDestination } from "@/lib/panel-access";
 import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
 
 type LoginPageProps = {
@@ -16,12 +17,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getServerAuthSession();
   const params = await searchParams;
 
-  if (session?.user?.role === "ADMIN") {
-    redirect(params?.callbackUrl || "/admin");
-  }
-
-  if (session?.user?.role === "STUDENT") {
-    redirect(params?.callbackUrl || "/panel");
+  if (session?.user) {
+    redirect(getPanelDestination(session.user, params?.callbackUrl));
   }
 
   const justRegistered = params?.registered === "1";
@@ -85,7 +82,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </div>
             )}
 
-            <LoginForm />
+            <LoginForm callbackUrl={params?.callbackUrl} />
 
             <p className="mt-4 text-center text-sm">
               <Link href="/sifremi-unuttum" className="text-stone-500 hover:text-emerald-700">

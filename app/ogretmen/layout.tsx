@@ -1,14 +1,16 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelAccess } from "@/lib/panel-access";
 import { OgretmenSidebar } from "@/components/ogretmen/ogretmen-sidebar";
 
 export default async function OgretmenLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession();
+  const access = getPanelAccess(session?.user);
 
   if (!session) redirect("/giris");
-  if (session.user?.role === "ADMIN") redirect("/admin");
-  if (session.user?.role === "STUDENT") redirect("/panel");
-  if (session.user?.role !== "TEACHER") redirect("/giris");
+  if (!access.hasTeacherPanel) {
+    redirect(access.defaultPanel ? (access.defaultPanel === "student" ? "/panel" : "/admin") : "/giris");
+  }
 
   return (
     <div className="flex min-h-screen bg-[#F7F5F0]">

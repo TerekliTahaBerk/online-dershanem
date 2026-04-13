@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { navLinks } from "@/lib/content";
+import { buildPanelChoiceHref, getPanelAccess, getPanelHref } from "@/lib/panel-access";
 import { Container } from "@/components/ui/container";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { ComingSoonButton } from "@/components/ui/coming-soon-button";
@@ -17,6 +18,19 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const panelAccess = getPanelAccess(session?.user);
+  const panelHref = panelAccess.requiresPanelChoice
+    ? buildPanelChoiceHref()
+    : panelAccess.defaultPanel
+      ? getPanelHref(panelAccess.defaultPanel)
+      : "/panel";
+  const panelLabel = panelAccess.requiresPanelChoice
+    ? "Panel Seç"
+    : panelAccess.defaultPanel === "admin"
+      ? "Admin Paneli"
+      : panelAccess.defaultPanel === "teacher"
+        ? "Öğretmen Paneli"
+        : "Panelim";
   const packageLinks = [
     { label: "TYT-AYT Paketleri", href: "/yks/" },
     { label: "LGS Paketleri", href: "/lgs/" }
@@ -117,16 +131,10 @@ export function Navbar() {
             {status === "loading" ? null : status === "authenticated" ? (
               <>
                 <Link
-                  href={
-                    session?.user?.role === "ADMIN" ? "/admin" :
-                    session?.user?.role === "TEACHER" ? "/ogretmen" :
-                    "/panel"
-                  }
+                  href={panelHref}
                   className="inline-flex rounded-full border border-line-strong px-4 py-2 text-sm font-semibold text-ink transition hover:bg-soft"
                 >
-                  {session?.user?.role === "ADMIN" ? "Admin Paneli" :
-                   session?.user?.role === "TEACHER" ? "Öğretmen Paneli" :
-                   "Panelim"}
+                  {panelLabel}
                 </Link>
                 <LogoutButton />
               </>
@@ -194,16 +202,10 @@ export function Navbar() {
               {status === "loading" ? null : status === "authenticated" ? (
                 <>
                   <Link
-                    href={
-                      session?.user?.role === "ADMIN" ? "/admin" :
-                      session?.user?.role === "TEACHER" ? "/ogretmen" :
-                      "/panel"
-                    }
+                    href={panelHref}
                     className="inline-flex items-center justify-center rounded-xl border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-soft"
                   >
-                    {session?.user?.role === "ADMIN" ? "Admin Paneli" :
-                     session?.user?.role === "TEACHER" ? "Öğretmen Paneli" :
-                     "Panelim"}
+                    {panelLabel}
                   </Link>
                   <LogoutButton className="w-full justify-center" />
                 </>
