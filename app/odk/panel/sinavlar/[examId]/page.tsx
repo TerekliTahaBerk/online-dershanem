@@ -9,8 +9,33 @@ const familyLabels: Record<string, string> = {
   TYT: "TYT", AYT: "AYT", LGS: "LGS", KPSS: "KPSS", ALES: "ALES",
 };
 
+type ExamWithSections = {
+  id: string;
+  title: string;
+  cadenceFamily: string;
+  durationMinutes: number;
+  sections: Array<{
+    id: string;
+    title: string;
+    questionCount: number;
+    orderIndex: number;
+    officialAnswers: Array<{ id: string; questionNumber: number; correctOption: string }>;
+  }>;
+  files: Array<{ id: string; fileType: string; publicUrl: string }>;
+};
+
+type AttemptWithOptical = {
+  id: string;
+  status: string;
+  score: unknown;
+  correctCount: number;
+  wrongCount: number;
+  blankCount: number;
+  opticalAnswers: Array<{ sectionId: string; questionNumber: number; selectedOption: string }>;
+};
+
 async function getExamData(examId: string, userId: string) {
-  const exam = await prisma.odkExam.findFirst({
+  const rawExam = await prisma.odkExam.findFirst({
     where: { id: examId, status: "PUBLISHED" },
     include: {
       sections: {
@@ -21,12 +46,14 @@ async function getExamData(examId: string, userId: string) {
     },
   });
 
-  if (!exam) return null;
+  if (!rawExam) return null;
+  const exam = rawExam as unknown as ExamWithSections;
 
-  const attempt = await prisma.odkExamAttempt.findFirst({
+  const rawAttempt = await prisma.odkExamAttempt.findFirst({
     where: { userId, examId },
     include: { opticalAnswers: true },
   });
+  const attempt = rawAttempt as unknown as AttemptWithOptical | null;
 
   return { exam, attempt };
 }

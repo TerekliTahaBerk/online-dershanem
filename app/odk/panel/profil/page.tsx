@@ -2,13 +2,24 @@ import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CheckCircle2, Tag } from "lucide-react";
 
+type UserTagRow = {
+  id: string;
+  accessTagId: string;
+  source: string;
+  expiresAt: Date | null;
+  revokedAt: Date | null;
+  createdAt: Date;
+  accessTag: { title: string };
+};
+
 async function getUserAccessInfo(userId: string) {
   const now = new Date();
-  const tags = await prisma.odkUserAccessTag.findMany({
+  const rawTags = await prisma.odkUserAccessTag.findMany({
     where: { userId },
     include: { accessTag: true },
     orderBy: { createdAt: "desc" },
   });
+  const tags = rawTags as unknown as UserTagRow[];
 
   return tags.map((t) => {
     const isActive =
