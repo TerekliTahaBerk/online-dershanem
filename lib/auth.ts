@@ -64,7 +64,6 @@ export const authOptions: NextAuthOptions = {
         where: { id: token.sub },
         select: {
           role: true,
-          isAdmin: true,
           name: true,
           student: { select: { id: true } },
           teacher: { select: { id: true } }
@@ -77,7 +76,7 @@ export const authOptions: NextAuthOptions = {
 
       token.role = currentUser.role;
       token.name = currentUser.name ?? token.name;
-      token.isAdmin = Boolean(currentUser.isAdmin) || currentUser.role === "ADMIN";
+      token.isAdmin = currentUser.role === "ADMIN";
       token.hasStudentAccess = Boolean(currentUser.student);
       token.hasTeacherAccess = Boolean(currentUser.teacher);
 

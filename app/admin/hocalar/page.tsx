@@ -9,7 +9,7 @@ type TeacherWithRelations = Prisma.TeacherGetPayload<{
   include: {
     _count: { select: { lessons: true } };
     lessons: { take: 1 };
-    user: { select: { id: true; email: true; isAdmin: true; role: true } };
+    user: { select: { id: true; email: true; role: true } };
   };
 }>;
 
@@ -265,15 +265,15 @@ export default async function HocalarPage({ searchParams }: Props) {
                                       Panel hesabı mevcut: <strong>{teacher.user.email}</strong>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2">
-                                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "bg-[#091413] text-white" : "bg-white text-gray-600 border border-gray-200"}`}>
-                                        {teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "Admin erişimi açık" : "Sadece öğretmen erişimi"}
+                                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${teacher.user.role === "ADMIN" ? "bg-[#091413] text-white" : "bg-white text-gray-600 border border-gray-200"}`}>
+                                        {teacher.user.role === "ADMIN" ? "Admin erişimi açık" : "Sadece öğretmen erişimi"}
                                       </span>
                                       <form action={toggleTeacherAdminAccessAction}>
                                         <input type="hidden" name="teacherId" value={teacher.id} />
                                         <input type="hidden" name="userId" value={teacher.user.id} />
-                                        <input type="hidden" name="currentValue" value={teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "true" : "false"} />
+                                        <input type="hidden" name="currentValue" value={teacher.user.role === "ADMIN" ? "true" : "false"} />
                                         <button type="submit" className="rounded-lg border border-[#408A71]/30 bg-white px-3 py-1.5 text-xs font-medium text-[#285A48] transition-colors hover:bg-[#B0E4CC]/20">
-                                          {teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "Admin erişimini kapat" : "Admin erişimi ver"}
+                                          {teacher.user.role === "ADMIN" ? "Admin erişimini kapat" : "Admin erişimi ver"}
                                         </button>
                                       </form>
                                     </div>

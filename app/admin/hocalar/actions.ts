@@ -101,8 +101,7 @@ export async function createTeacherAccountAction(formData: FormData) {
     await prisma.user.update({
       where: { id: existing.id },
       data: {
-        name: existing.name ?? name ?? teacher.fullName,
-        isAdmin: existing.isAdmin || grantAdminAccess
+        name: existing.name ?? name ?? teacher.fullName
       }
     });
 
@@ -126,8 +125,7 @@ export async function createTeacherAccountAction(formData: FormData) {
         email,
         name: name || teacher.fullName,
         passwordHash,
-        role: "TEACHER",
-        isAdmin: grantAdminAccess
+        role: grantAdminAccess ? "ADMIN" : "TEACHER"
       },
     });
     await prisma.teacher.update({
@@ -157,7 +155,7 @@ export async function toggleTeacherAdminAccessAction(formData: FormData) {
 
   await prisma.user.update({
     where: { id: userId },
-    data: { isAdmin: currentValue !== "true" }
+    data: { role: currentValue === "true" ? "TEACHER" : "ADMIN" }
   });
 
   revalidatePath("/admin/hocalar");
