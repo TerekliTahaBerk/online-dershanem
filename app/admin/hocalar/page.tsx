@@ -41,7 +41,7 @@ export default async function HocalarPage({ searchParams }: Props) {
         orderBy: { scheduledAt: "asc" },
         take: 1
       },
-      user: { select: { email: true } },
+      user: { select: { id: true, email: true, role: true } },
     }
   }) as unknown as TeacherWithRelations[];
 
@@ -72,9 +72,9 @@ export default async function HocalarPage({ searchParams }: Props) {
       </div>
 
       {/* Flash */}
-      {(updated === "created" || updated === "teacher" || updated === "toggle" || updated === "account-created" || updated === "account-linked" || updated === "admin-access") && (
+      {(updated === "created" || updated === "created-linked" || updated === "teacher" || updated === "toggle" || updated === "account-created" || updated === "account-linked" || updated === "admin-access") && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
-          {updated === "created" ? "Hoca eklendi." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : updated === "account-linked" ? "Mevcut kullanıcı öğretmen kaydına bağlandı." : updated === "admin-access" ? "Admin erişimi güncellendi." : "Hoca güncellendi."}
+          {updated === "created" ? "Hoca eklendi." : updated === "created-linked" ? "Hoca eklendi ve mevcut kullanıcıya bağlandı." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : updated === "account-linked" ? "Mevcut kullanıcı öğretmen kaydına bağlandı." : updated === "admin-access" ? "Admin erişimi güncellendi." : "Hoca güncellendi."}
         </div>
       )}
       {(updated === "account-exists" || updated === "email-taken" || updated === "account-error" || updated === "password-short") && (

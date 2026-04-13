@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeOptional, normalizePhone } from "@/lib/admin";
+import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 
 type StudentSyncPayload = {
   fullName: string;
@@ -70,7 +71,7 @@ async function upsertStudent(payload: StudentSyncPayload) {
 
   const data = buildStudentData(payload);
 
-  return prisma.student.upsert({
+  const student = await prisma.student.upsert({
     where: { phoneKey },
     update: {
       ...data,
@@ -78,6 +79,12 @@ async function upsertStudent(payload: StudentSyncPayload) {
     },
     create: data
   });
+
+  if (!student.userId && payload.email) {
+    await linkStudentToExistingUserByEmail(student.id, payload.email);
+  }
+
+  return student;
 }
 
 export async function syncStudentFromLeadSubmission(leadId: string) {
