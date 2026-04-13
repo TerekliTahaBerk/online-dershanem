@@ -159,6 +159,7 @@ export async function changeTeacherPasswordAction(formData: FormData) {
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) redirect("/giris");
+  if (!user.passwordHash) redirect("/ogretmen/profil?error=wrong-password");
 
   const valid = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!valid) redirect("/ogretmen/profil?error=wrong-password");
