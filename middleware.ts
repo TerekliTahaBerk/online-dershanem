@@ -5,10 +5,18 @@ export default withAuth({
     signIn: "/giris"
   },
   callbacks: {
-    authorized: ({ token }) => Boolean(token?.isAdmin)
+    authorized: ({ token, req }) => {
+      const pathname = req.nextUrl.pathname;
+
+      if (pathname.startsWith("/admin") || pathname.startsWith("/odk/admin")) {
+        return Boolean(token?.isAdmin);
+      }
+
+      return true;
+    }
   }
 });
 
 export const config = {
-  matcher: ["/admin/:path*"]
+  matcher: ["/admin/:path*", "/odk/admin/:path*"]
 };
