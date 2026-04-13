@@ -4,6 +4,7 @@ import { IntakeStatus, PurchaseStatus, StudentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { normalizePhone } from "@/lib/admin";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -51,6 +52,57 @@ export async function updateStudentAction(formData: FormData) {
 
   revalidatePath("/admin/ogrenciler");
   revalidatePath("/admin");
+  redirect(withFlash(returnTo, "student"));
+}
+
+export async function updateStudentInfoAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const returnTo = readString(formData, "returnTo") || "/admin/ogrenciler";
+
+  if (!studentId) redirect(withFlash(returnTo, "student-error"));
+
+  const get = (key: string) => readString(formData, key) || null;
+
+  const fullName = readString(formData, "fullName");
+  if (!fullName) redirect(withFlash(returnTo, "student-error"));
+
+  const phone = readString(formData, "phone");
+  const phoneKey = phone ? normalizePhone(phone) : undefined;
+
+  // If phone changed, check for duplicate
+  if (phoneKey) {
+    const existing = await prisma.student.findUnique({ where: { phoneKey } });
+    if (existing && existing.id !== studentId) {
+      redirect(withFlash(returnTo, "phone-taken"));
+    }
+  }
+
+  await prisma.student.update({
+    where: { id: studentId },
+    data: {
+      fullName,
+      ...(phone && { phone, phoneKey }),
+      email:         get("email"),
+      city:          get("city"),
+      district:      get("district"),
+      schoolName:    get("schoolName"),
+      classLevel:    get("classLevel"),
+      examType:      get("examType"),
+      department:    get("department"),
+      targetGoal:    get("targetGoal"),
+      targetSchool:  get("targetSchool"),
+      targetRanking: get("targetRanking"),
+      currentNet:    get("currentNet"),
+      strongLessons: get("strongLessons"),
+      weakLessons:   get("weakLessons"),
+      parentFullName: get("parentFullName"),
+      parentPhone:    get("parentPhone"),
+      parentEmail:    get("parentEmail"),
+    },
+  });
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+  revalidatePath("/admin/ogrenciler");
   redirect(withFlash(returnTo, "student"));
 }
 
