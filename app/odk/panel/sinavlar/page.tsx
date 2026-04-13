@@ -31,7 +31,6 @@ async function getAccessibleExams(userId: string) {
       },
       include: {
         sections: { select: { questionCount: true } },
-        _count: { select: { attempts: true } },
       },
       orderBy: { startsAt: "desc" },
     }),
@@ -43,7 +42,6 @@ async function getAccessibleExams(userId: string) {
           },
           include: {
             sections: { select: { questionCount: true } },
-            _count: { select: { attempts: true } },
           },
           orderBy: { startsAt: "desc" },
         })

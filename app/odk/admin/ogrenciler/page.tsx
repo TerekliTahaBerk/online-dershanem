@@ -3,23 +3,40 @@ import { GrantAccessForm } from "@/components/odk/admin/grant-access-form";
 import { revokeUserAccessTag } from "@/app/odk/admin/actions";
 import { Users } from "lucide-react";
 
+type Student = {
+  id: string;
+  name: string | null;
+  email: string;
+  odkUserAccessTags: Array<{
+    id: string;
+    accessTagId: string;
+    revokedAt: Date | null;
+    createdAt: Date;
+    accessTag: { title: string };
+  }>;
+};
+
 async function getData() {
   const [students, accessTags] = await Promise.all([
     prisma.user.findMany({
-      where: {
-        odkUserAccessTags: { some: {} },
-      },
+      where: { odkUserAccessTags: { some: {} } },
       select: {
         id: true,
         name: true,
         email: true,
         odkUserAccessTags: {
-          include: { accessTag: true },
+          select: {
+            id: true,
+            accessTagId: true,
+            revokedAt: true,
+            createdAt: true,
+            accessTag: { select: { title: true } },
+          },
           orderBy: { createdAt: "desc" },
         },
       },
       orderBy: { createdAt: "desc" },
-    }),
+    }) as unknown as Promise<Student[]>,
     prisma.odkAccessTag.findMany({ where: { isActive: true }, orderBy: { title: "asc" } }),
   ]);
   return { students, accessTags };
@@ -33,7 +50,7 @@ export default async function OgrencilerPage() {
       <div>
         <h1 className="text-xl font-semibold text-stone-900">Öğrenci Erişimi</h1>
         <p className="text-sm text-stone-500 mt-0.5">
-          ODK'ya erişimi olan {students.length} öğrenci
+          ODK&apos;ya erişimi olan {students.length} öğrenci
         </p>
       </div>
 
