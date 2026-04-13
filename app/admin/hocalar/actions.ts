@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
+import { linkTeacherToExistingUserByEmail } from "@/lib/user-links";
 import { sendTeacherWelcome } from "@/lib/email";
 
 function readString(formData: FormData, key: string) {
@@ -34,12 +35,14 @@ export async function createTeacherAction(formData: FormData) {
     redirect("/admin/hocalar/yeni?error=missing");
   }
 
-  await prisma.teacher.create({
+  const teacher = await prisma.teacher.create({
     data: { fullName, email: email || undefined, phone, subjects, bio, status: "ACTIVE" }
   });
 
+  const linkResult = await linkTeacherToExistingUserByEmail(teacher.id, email);
+
   revalidatePath("/admin/hocalar");
-  redirect("/admin/hocalar?updated=created");
+  redirect(`/admin/hocalar?updated=${linkResult.status === "linked" ? "created-linked" : "created"}`);
 }
 
 export async function updateTeacherAction(formData: FormData) {
@@ -62,6 +65,15 @@ export async function updateTeacherAction(formData: FormData) {
     where: { id: teacherId },
     data: { fullName, email: email || undefined, phone, subjects, bio, status }
   });
+
+  const teacher = await prisma.teacher.findUnique({
+    where: { id: teacherId },
+    select: { userId: true, email: true }
+  });
+
+  if (teacher && !teacher.userId) {
+    await linkTeacherToExistingUserByEmail(teacherId, teacher.email);
+  }
 
   revalidatePath("/admin/hocalar");
   redirect(`${returnTo}&updated=teacher`);
@@ -87,31 +99,28 @@ export async function createTeacherAccountAction(formData: FormData) {
 
   const existing = await prisma.user.findUnique({
     where: { email },
-    include: {
-      teacher: { select: { id: true } },
-      student: { select: { id: true } }
-    }
+    select: { id: true, role: true, name: true }
   });
 
   if (existing) {
-    if (existing.teacher || existing.student) {
-      redirect(`/admin/hocalar?updated=email-taken&teacher=${teacherId}`);
+    const linkResult = await linkTeacherToExistingUserByEmail(teacherId, email);
+
+    if (linkResult.status === "linked" || linkResult.status === "already-linked") {
+      if ((existing.role === "TEACHER" && grantAdminAccess) || !existing.name) {
+        await prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            name: existing.name ?? name ?? teacher.fullName,
+            ...(existing.role === "TEACHER" && grantAdminAccess ? { role: "ADMIN" } : {})
+          }
+        });
+      }
+
+      revalidatePath("/admin/hocalar");
+      redirect(`/admin/hocalar?updated=account-linked&teacher=${teacherId}`);
     }
 
-    await prisma.user.update({
-      where: { id: existing.id },
-      data: {
-        name: existing.name ?? name ?? teacher.fullName
-      }
-    });
-
-    await prisma.teacher.update({
-      where: { id: teacherId },
-      data: { userId: existing.id }
-    });
-
-    revalidatePath("/admin/hocalar");
-    redirect(`/admin/hocalar?updated=account-linked&teacher=${teacherId}`);
+    redirect(`/admin/hocalar?updated=email-taken&teacher=${teacherId}`);
   }
 
   if (!password || password.length < 6) {

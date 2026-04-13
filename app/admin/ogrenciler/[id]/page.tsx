@@ -112,6 +112,16 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
           Öğrenci hesabı oluşturuldu. Artık panele giriş yapabilir.
         </div>
       )}
+      {updated === "account-linked" && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+          Mevcut kullanıcı öğrenci kaydına bağlandı. Aynı hesapla giriş yapabilir.
+        </div>
+      )}
+      {updated === "created-linked" && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+          Öğrenci oluşturuldu ve mevcut kullanıcıyla eşleştirildi.
+        </div>
+      )}
       {updated === "account-exists" && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2.5 rounded-lg">
           Bu öğrencinin zaten bir hesabı var.

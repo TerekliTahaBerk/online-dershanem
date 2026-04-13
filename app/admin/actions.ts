@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
+import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -77,7 +78,7 @@ export async function updateStudentInfoAction(formData: FormData) {
     }
   }
 
-  await prisma.student.update({
+  const updatedStudent = await prisma.student.update({
     where: { id: studentId },
     data: {
       fullName,
@@ -99,7 +100,15 @@ export async function updateStudentInfoAction(formData: FormData) {
       parentPhone:    get("parentPhone"),
       parentEmail:    get("parentEmail"),
     },
+    select: {
+      email: true,
+      userId: true
+    }
   });
+
+  if (!updatedStudent.userId) {
+    await linkStudentToExistingUserByEmail(studentId, updatedStudent.email);
+  }
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
   revalidatePath("/admin/ogrenciler");

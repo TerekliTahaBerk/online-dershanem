@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
+import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 import { sendStudentWelcome } from "@/lib/email";
 
 function readString(formData: FormData, key: string) {
@@ -62,9 +63,11 @@ export async function createStudentAction(formData: FormData) {
     }
   });
 
+  const linkResult = await linkStudentToExistingUserByEmail(student.id, email);
+
   revalidatePath("/admin/ogrenciler");
   revalidatePath("/admin");
-  redirect(`/admin/ogrenciler/${student.id}?updated=created`);
+  redirect(`/admin/ogrenciler/${student.id}?updated=${linkResult.status === "linked" ? "created-linked" : "created"}`);
 }
 
 export async function createStudentAccountAction(formData: FormData) {
@@ -84,9 +87,13 @@ export async function createStudentAccountAction(formData: FormData) {
     redirect(`/admin/ogrenciler/${studentId}?updated=account-exists`);
   }
 
-  // Check if email is already taken
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) {
+  const linkResult = await linkStudentToExistingUserByEmail(studentId, email);
+  if (linkResult.status === "linked" || linkResult.status === "already-linked") {
+    revalidatePath(`/admin/ogrenciler/${studentId}`);
+    redirect(`/admin/ogrenciler/${studentId}?updated=account-linked`);
+  }
+
+  if (linkResult.status === "conflict") {
     redirect(`/admin/ogrenciler/${studentId}?updated=email-taken`);
   }
 
