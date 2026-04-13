@@ -171,6 +171,46 @@ export async function toggleTeacherAdminAccessAction(formData: FormData) {
   redirect(`/admin/hocalar?updated=admin-access&teacher=${teacherId}`);
 }
 
+export async function deleteTeacherAction(formData: FormData) {
+  await requireAdmin();
+
+  const teacherId = readString(formData, "teacherId");
+
+  if (!teacherId) {
+    redirect("/admin/hocalar");
+  }
+
+  const teacher = await prisma.teacher.findUnique({
+    where: { id: teacherId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          role: true
+        }
+      }
+    }
+  });
+
+  if (!teacher) {
+    redirect("/admin/hocalar");
+  }
+
+  await prisma.teacher.delete({
+    where: { id: teacherId }
+  });
+
+  if (teacher.user && teacher.user.role === "TEACHER") {
+    await prisma.user.delete({
+      where: { id: teacher.user.id }
+    });
+  }
+
+  revalidatePath("/admin/hocalar");
+  revalidatePath("/ogretmen");
+  redirect("/admin/hocalar?updated=deleted");
+}
+
 export async function toggleTeacherStatusAction(formData: FormData) {
   await requireAdmin();
 

@@ -2,8 +2,9 @@ import Link from "next/link";
 import { TeacherStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { teacherStatusLabels, teacherStatusOptions } from "@/lib/admin";
-import { updateTeacherAction, toggleTeacherStatusAction, createTeacherAccountAction, toggleTeacherAdminAccessAction } from "./actions";
-import { Plus, GraduationCap, CalendarDays, ShieldCheck } from "lucide-react";
+import { updateTeacherAction, toggleTeacherStatusAction, createTeacherAccountAction, toggleTeacherAdminAccessAction, deleteTeacherAction } from "./actions";
+import { ConfirmFormButton } from "@/components/ui/confirm-form-button";
+import { Plus, GraduationCap, CalendarDays, ShieldCheck, Trash2 } from "lucide-react";
 
 type TeacherWithRelations = Prisma.TeacherGetPayload<{
   include: {
@@ -72,9 +73,9 @@ export default async function HocalarPage({ searchParams }: Props) {
       </div>
 
       {/* Flash */}
-      {(updated === "created" || updated === "created-linked" || updated === "teacher" || updated === "toggle" || updated === "account-created" || updated === "account-linked" || updated === "admin-access") && (
+      {(updated === "created" || updated === "created-linked" || updated === "teacher" || updated === "toggle" || updated === "account-created" || updated === "account-linked" || updated === "admin-access" || updated === "deleted") && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
-          {updated === "created" ? "Hoca eklendi." : updated === "created-linked" ? "Hoca eklendi ve mevcut kullanıcıya bağlandı." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : updated === "account-linked" ? "Mevcut kullanıcı öğretmen kaydına bağlandı." : updated === "admin-access" ? "Admin erişimi güncellendi." : "Hoca güncellendi."}
+          {updated === "created" ? "Hoca eklendi." : updated === "created-linked" ? "Hoca eklendi ve mevcut kullanıcıya bağlandı." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : updated === "account-linked" ? "Mevcut kullanıcı öğretmen kaydına bağlandı." : updated === "admin-access" ? "Admin erişimi güncellendi." : updated === "deleted" ? "Hoca silindi." : "Hoca güncellendi."}
         </div>
       )}
       {(updated === "account-exists" || updated === "email-taken" || updated === "account-error" || updated === "password-short") && (
@@ -142,7 +143,14 @@ export default async function HocalarPage({ searchParams }: Props) {
                             <div className="w-9 h-9 rounded-full bg-[#285A48]/10 flex items-center justify-center text-[#285A48] font-semibold text-sm shrink-0">
                               {teacher.fullName.charAt(0)}
                             </div>
-                            <p className="font-medium text-[#091413]">{teacher.fullName}</p>
+                            <div className="min-w-0">
+                              <p className="font-medium text-[#091413]">{teacher.fullName}</p>
+                              {teacher.user?.role === "ADMIN" && (
+                                <span className="mt-1 inline-flex rounded-full bg-[#091413] px-2 py-0.5 text-[10px] font-semibold text-white">
+                                  Admin + Öğretmen
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-600">
@@ -251,6 +259,21 @@ export default async function HocalarPage({ searchParams }: Props) {
                                   </Link>
                                 </div>
                               </form>
+
+                              <div className="flex justify-end border-t border-[#B0E4CC]/40 pt-4">
+                                <ConfirmFormButton
+                                  action={deleteTeacherAction}
+                                  title="Hocayı sil"
+                                  description={`${teacher.fullName} kaydını silersen öğretmen profili kaldırılır. Bu işlem geri alınamaz.`}
+                                  confirmLabel="Hocayı sil"
+                                  cancelLabel="Vazgeç"
+                                  hiddenFields={[{ name: "teacherId", value: teacher.id }]}
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
+                                >
+                                  <Trash2 size={14} />
+                                  Sil
+                                </ConfirmFormButton>
+                              </div>
 
                               {/* Panel access */}
                               <div className="border-t border-[#B0E4CC]/40 pt-4">

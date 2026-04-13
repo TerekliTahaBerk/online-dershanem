@@ -45,8 +45,8 @@ export function getPanelLabel(panel: PanelKey) {
 }
 
 export function getPanelAccess(user?: SessionPanelUser | null) {
-  const hasStudentPanel = Boolean(user?.hasStudentAccess) || user?.role === "STUDENT";
-  const hasTeacherPanel = Boolean(user?.hasTeacherAccess) || user?.role === "TEACHER";
+  const hasStudentPanel = Boolean(user?.hasStudentAccess);
+  const hasTeacherPanel = Boolean(user?.hasTeacherAccess);
   const hasAdminPanel = Boolean(user?.isAdmin) || user?.role === "ADMIN";
 
   const panels: PanelKey[] = [];
