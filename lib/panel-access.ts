@@ -88,10 +88,26 @@ export function buildPanelChoiceHref(callbackUrl?: string | null) {
   return `/panel-secimi?${params.toString()}`;
 }
 
+// Returns the destination within Online Dershanem (skips service selection layer).
+export function getOdPanelDestination(user?: SessionPanelUser | null) {
+  const access = getPanelAccess(user);
+
+  if (access.requiresPanelChoice) {
+    return buildPanelChoiceHref();
+  }
+
+  if (access.defaultPanel) {
+    return getPanelHref(access.defaultPanel);
+  }
+
+  return "/giris";
+}
+
 export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?: string | null) {
   const access = getPanelAccess(user);
   const callbackPath = normalizeCallbackPath(callbackUrl);
 
+  // Respect a valid callback URL for an accessible panel (bypass service selection)
   if (callbackPath) {
     const callbackPanel = getPanelFromPath(new URL(callbackPath, "http://localhost").pathname);
     if (callbackPanel && access.panels.includes(callbackPanel)) {
@@ -99,12 +115,14 @@ export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?
     }
   }
 
-  if (access.requiresPanelChoice) {
-    return buildPanelChoiceHref(callbackPath);
+  // Admins and students go through service selection
+  if (access.hasAdminPanel || access.hasStudentPanel) {
+    return "/servis-secimi";
   }
 
-  if (access.defaultPanel) {
-    return getPanelHref(access.defaultPanel);
+  // Pure teacher: go directly to teacher panel
+  if (access.hasTeacherPanel) {
+    return getPanelHref("teacher");
   }
 
   return "/giris";
