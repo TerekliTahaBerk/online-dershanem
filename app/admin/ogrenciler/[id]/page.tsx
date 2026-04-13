@@ -12,7 +12,7 @@ import {
   intakeStatusLabels,
   purchaseStatusLabels
 } from "@/lib/admin";
-import { updateStudentAction } from "@/app/admin/actions";
+import { updateStudentAction, updateStudentInfoAction } from "@/app/admin/actions";
 import { createStudentAccountAction } from "@/app/admin/ogrenciler/actions";
 import {
   User, Phone, Mail, MapPin, School, BookOpen, Target, CalendarDays,
@@ -125,6 +125,11 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       {updated === "account-error" && (
         <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
           Hesap oluşturulurken hata oluştu. Tüm alanları doldurun (min. 6 karakter şifre).
+        </div>
+      )}
+      {updated === "phone-taken" && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
+          Bu telefon numarası başka bir öğrenciye ait.
         </div>
       )}
 
@@ -406,154 +411,265 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       )}
 
       {activeTab === "profil" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* Student info display */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-            <h2 className="font-semibold text-[#091413]">Öğrenci Bilgileri</h2>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-              {[
-                { label: "Tam Ad", value: student.fullName },
-                { label: "Telefon", value: student.phone },
-                { label: "E-posta", value: student.email },
-                { label: "Şehir", value: student.city },
-                { label: "İlçe", value: student.district },
-                { label: "Okul", value: student.schoolName },
-                { label: "Sınıf", value: student.classLevel },
-                { label: "Bölüm", value: student.department },
-                { label: "Sınav Türü", value: student.examType },
-                { label: "Mevcut Net", value: student.currentNet },
-                { label: "Hedef", value: student.targetGoal },
-                { label: "Hedef Okul", value: student.targetSchool },
-                { label: "Hedef Sıralama", value: student.targetRanking },
-                { label: "Zayıf Dersler", value: student.weakLessons },
-                { label: "Güçlü Dersler", value: student.strongLessons },
-                { label: "Veli Ad", value: student.parentFullName },
-                { label: "Veli Tel", value: student.parentPhone },
-                { label: "Kaynak", value: student.source },
-              ].map(({ label, value }) =>
-                value ? (
-                  <div key={label}>
-                    <dt className="text-xs text-gray-400">{label}</dt>
-                    <dd className="text-gray-700 font-medium mt-0.5">{value}</dd>
-                  </div>
-                ) : null
-              )}
-            </dl>
-            {student.notes && (
-              <div className="pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-400 mb-1">Notlar</p>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{student.notes}</p>
-              </div>
-            )}
-          </div>
+        <div className="space-y-5">
+          {/* Full profile edit form */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h2 className="font-semibold text-[#091413] mb-5">Profil Bilgilerini Düzenle</h2>
+            <form action={updateStudentInfoAction} className="space-y-6">
+              <input type="hidden" name="studentId" value={student.id} />
+              <input type="hidden" name="returnTo" value={`${returnTo}?tab=profil`} />
 
-          {/* Portal access card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <KeyRound size={16} className="text-[#408A71]" />
-              <h2 className="font-semibold text-[#091413]">Panel Erişimi</h2>
-            </div>
-            {student.userId ? (
-              <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
-                <CheckCircle size={16} className="text-emerald-600 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-emerald-800">Hesap mevcut</p>
-                  {student.user?.email && (
-                    <p className="text-xs text-emerald-700 mt-0.5">{student.user.email} adresiyle giriş yapabilir.</p>
-                  )}
+              {/* Basic */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Temel Bilgiler</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Ad Soyad *</label>
+                    <input name="fullName" required defaultValue={student.fullName}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Telefon</label>
+                    <input name="phone" defaultValue={student.phone ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="05xx xxx xx xx" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">E-posta</label>
+                    <input type="email" name="email" defaultValue={student.email ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="ogrenci@email.com" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Şehir</label>
+                    <input name="city" defaultValue={student.city ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="İstanbul" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">İlçe</label>
+                    <input name="district" defaultValue={student.district ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Kadıköy" />
+                  </div>
                 </div>
               </div>
-            ) : (
+
+              {/* Academic */}
               <div>
-                <p className="text-sm text-gray-500 mb-4">
-                  Bu öğrenci için bir panel hesabı oluşturun. Öğrenci e-posta ve şifresini kullanarak{" "}
-                  <strong>/panel</strong> adresinden giriş yapabilir.
-                </p>
-                <form action={createStudentAccountAction} className="grid gap-3 sm:grid-cols-3">
-                  <input type="hidden" name="studentId" value={student.id} />
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">E-posta</label>
-                    <input
-                      type="email"
-                      name="email"
-                      defaultValue={student.email ?? ""}
-                      placeholder="ogrenci@email.com"
-                      required
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
-                    />
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Akademik Bilgiler</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Sınav Türü</label>
+                    <select name="examType" defaultValue={student.examType ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]">
+                      <option value="">Seçiniz</option>
+                      <option value="YKS">YKS</option>
+                      <option value="LGS">LGS</option>
+                    </select>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Şifre (min. 6 karakter)</label>
-                    <input
-                      type="text"
-                      name="password"
-                      placeholder="••••••••"
-                      minLength={6}
-                      required
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Sınıf</label>
+                    <select name="classLevel" defaultValue={student.classLevel ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]">
+                      <option value="">Seçiniz</option>
+                      {["8. Sınıf","9. Sınıf","10. Sınıf","11. Sınıf","12. Sınıf","Mezun"].map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="flex items-end">
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Okul Adı</label>
+                    <input name="schoolName" defaultValue={student.schoolName ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Okul adı" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Hedef Okul / Üniversite</label>
+                    <input name="targetSchool" defaultValue={student.targetSchool ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Hedef okul veya üniversite" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Hedef (Puan / Sıralama)</label>
+                    <input name="targetGoal" defaultValue={student.targetGoal ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Örn: 450 puan, ilk 10.000" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Hedef Bölüm <span className="text-gray-400 font-normal">(YKS)</span></label>
+                    <input name="department" defaultValue={student.department ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Tıp, Hukuk..." />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Hedef Sıralama <span className="text-gray-400 font-normal">(YKS)</span></label>
+                    <input name="targetRanking" defaultValue={student.targetRanking ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Örn: 5000" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Mevcut Net</label>
+                    <input name="currentNet" defaultValue={student.currentNet ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Örn: TYT 80 net" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Güçlü Dersler</label>
+                    <input name="strongLessons" defaultValue={student.strongLessons ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Matematik, Fizik..." />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Zayıf Dersler</label>
+                    <input name="weakLessons" defaultValue={student.weakLessons ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Kimya, Biyoloji..." />
+                  </div>
+                </div>
+              </div>
+
+              {/* Parent */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Veli Bilgileri</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Veli Adı Soyadı</label>
+                    <input name="parentFullName" defaultValue={student.parentFullName ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="Ad Soyad" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Veli Telefonu</label>
+                    <input name="parentPhone" defaultValue={student.parentPhone ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="05xx xxx xx xx" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-gray-600">Veli E-postası</label>
+                    <input type="email" name="parentEmail" defaultValue={student.parentEmail ?? ""}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      placeholder="veli@email.com" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-gray-100">
+                <button type="submit"
+                  className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
+                  Profili Kaydet
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Admin quick-update */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <h2 className="font-semibold text-[#091413] mb-4">Yönetim Bilgileri</h2>
+              <form action={updateStudentAction} className="space-y-4">
+                <input type="hidden" name="studentId" value={student.id} />
+                <input type="hidden" name="returnTo" value={`${returnTo}?tab=profil`} />
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">Durum</label>
+                  <select name="status" defaultValue={student.status}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]">
+                    {studentStatusOptions.map((s) => (
+                      <option key={s} value={s}>{studentStatusLabels[s]}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">Aktif Paket</label>
+                  <input type="text" name="activePackage" defaultValue={student.activePackage ?? ""}
+                    placeholder="Paket adı..."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">Görev Etiketi</label>
+                  <input type="text" name="taskLabel" defaultValue={student.taskLabel ?? ""}
+                    placeholder="Görev açıklaması..."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">Sonraki Eylem</label>
+                  <input type="datetime-local" name="nextActionAt" defaultValue={formatDateTimeLocalInput(student.nextActionAt)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">Notlar</label>
+                  <textarea name="notes" defaultValue={student.notes ?? ""} rows={4}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71] resize-none" />
+                </div>
+
+                <button type="submit"
+                  className="w-full bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
+                  Kaydet
+                </button>
+              </form>
+            </div>
+
+            {/* Portal access card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <KeyRound size={16} className="text-[#408A71]" />
+                <h2 className="font-semibold text-[#091413]">Panel Erişimi</h2>
+              </div>
+              {student.userId ? (
+                <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
+                  <CheckCircle size={16} className="text-emerald-600 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-emerald-800">Hesap mevcut</p>
+                    {student.user?.email && (
+                      <p className="text-xs text-emerald-700 mt-0.5">{student.user.email} adresiyle giriş yapabilir.</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Bu öğrenci için bir panel hesabı oluşturun. Öğrenci e-posta ve şifresini kullanarak{" "}
+                    <strong>/panel</strong> adresinden giriş yapabilir.
+                  </p>
+                  <form action={createStudentAccountAction} className="space-y-3">
+                    <input type="hidden" name="studentId" value={student.id} />
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600">E-posta</label>
+                      <input
+                        type="email"
+                        name="email"
+                        defaultValue={student.email ?? ""}
+                        placeholder="ogrenci@email.com"
+                        required
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600">Şifre (min. 6 karakter)</label>
+                      <input
+                        type="text"
+                        name="password"
+                        placeholder="••••••••"
+                        minLength={6}
+                        required
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+                      />
+                    </div>
                     <button
                       type="submit"
                       className="w-full bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
                     >
                       Hesap Oluştur
                     </button>
-                  </div>
-                </form>
-              </div>
-            )}
-          </div>
-
-          {/* Edit form */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="font-semibold text-[#091413] mb-4">Hızlı Güncelleme</h2>
-            <form action={updateStudentAction} className="space-y-4">
-              <input type="hidden" name="studentId" value={student.id} />
-              <input type="hidden" name="returnTo" value={`${returnTo}?tab=profil`} />
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">Durum</label>
-                <select name="status" defaultValue={student.status}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]">
-                  {studentStatusOptions.map((s) => (
-                    <option key={s} value={s}>{studentStatusLabels[s]}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">Aktif Paket</label>
-                <input type="text" name="activePackage" defaultValue={student.activePackage ?? ""}
-                  placeholder="Paket adı..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">Görev Etiketi</label>
-                <input type="text" name="taskLabel" defaultValue={student.taskLabel ?? ""}
-                  placeholder="Görev açıklaması..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">Sonraki Eylem</label>
-                <input type="datetime-local" name="nextActionAt" defaultValue={formatDateTimeLocalInput(student.nextActionAt)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-gray-600">Notlar</label>
-                <textarea name="notes" defaultValue={student.notes ?? ""} rows={4}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71] resize-none" />
-              </div>
-
-              <button type="submit"
-                className="w-full bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
-                Kaydet
-              </button>
-            </form>
+                  </form>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
