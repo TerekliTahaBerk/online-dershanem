@@ -5,12 +5,13 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelAccess } from "@/lib/panel-access";
 import { sendLessonCompleted, sendLessonCancelled } from "@/lib/email";
 
 async function requireTeacher() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) redirect("/giris");
-  if (session.user.role !== "TEACHER") redirect("/giris");
+  if (!getPanelAccess(session.user).hasTeacherPanel) redirect("/giris");
   return session.user.id;
 }
 

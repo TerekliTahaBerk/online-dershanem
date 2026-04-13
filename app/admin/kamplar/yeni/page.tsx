@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelAccess } from "@/lib/panel-access";
 import { createCampAction } from "../actions";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -8,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminKampYeniPage() {
   const session = await getServerAuthSession();
-  if (session?.user?.role !== "ADMIN") redirect("/giris");
+  if (!getPanelAccess(session?.user).hasAdminPanel) redirect("/giris");
 
   return (
     <div className="max-w-2xl space-y-6">

@@ -3,10 +3,11 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelAccess } from "@/lib/panel-access";
 
 async function requireAdmin() {
   const session = await getServerAuthSession();
-  if (session?.user?.role !== "ADMIN") redirect("/giris");
+  if (!getPanelAccess(session?.user).hasAdminPanel) redirect("/giris");
 }
 
 export async function createCampAction(formData: FormData) {

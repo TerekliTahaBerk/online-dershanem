@@ -54,9 +54,31 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
-        token.role = user.role;
-        token.name = user.name;
       }
+
+      if (!token.sub) {
+        return token;
+      }
+
+      const currentUser = await prisma.user.findUnique({
+        where: { id: token.sub },
+        select: {
+          role: true,
+          name: true,
+          student: { select: { id: true } },
+          teacher: { select: { id: true } }
+        }
+      });
+
+      if (!currentUser) {
+        return token;
+      }
+
+      token.role = currentUser.role;
+      token.name = currentUser.name ?? token.name;
+      token.isAdmin = currentUser.role === "ADMIN";
+      token.hasStudentAccess = Boolean(currentUser.student);
+      token.hasTeacherAccess = Boolean(currentUser.teacher);
 
       return token;
     },
@@ -65,6 +87,9 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub ?? "";
         session.user.role = (token.role as "ADMIN" | "STUDENT" | "TEACHER") ?? "ADMIN";
         session.user.name = token.name ?? session.user.name;
+        session.user.isAdmin = Boolean(token.isAdmin);
+        session.user.hasStudentAccess = Boolean(token.hasStudentAccess);
+        session.user.hasTeacherAccess = Boolean(token.hasTeacherAccess);
       }
 
       return session;

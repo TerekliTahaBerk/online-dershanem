@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
+import { getPanelAccess } from "@/lib/panel-access";
 import { prisma } from "@/lib/prisma";
 import { Plus, Pencil, Tent, ToggleLeft, ToggleRight } from "lucide-react";
 
@@ -24,7 +25,7 @@ function formatPrice(kurus: number) {
 
 export default async function AdminKamplarPage() {
   const session = await getServerAuthSession();
-  if (session?.user?.role !== "ADMIN") redirect("/giris");
+  if (!getPanelAccess(session?.user).hasAdminPanel) redirect("/giris");
 
   const camps = await prisma.camp.findMany({
     orderBy: [{ category: "asc" }, { createdAt: "asc" }],

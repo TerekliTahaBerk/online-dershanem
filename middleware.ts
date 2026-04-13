@@ -5,7 +5,7 @@ export default withAuth({
     signIn: "/giris"
   },
   callbacks: {
-    authorized: ({ token }) => token?.role === "ADMIN"
+    authorized: ({ token }) => Boolean(token?.isAdmin)
   }
 });
 
