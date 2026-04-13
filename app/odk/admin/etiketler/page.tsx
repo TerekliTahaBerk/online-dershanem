@@ -2,8 +2,17 @@ import { prisma } from "@/lib/prisma";
 import { AccessTagCreateForm } from "@/components/odk/admin/access-tag-create-form";
 import { Tag } from "lucide-react";
 
-async function getAccessTags() {
-  return prisma.odkAccessTag.findMany({
+type TagRow = {
+  id: string;
+  key: string;
+  title: string;
+  description: string | null;
+  isActive: boolean;
+  _count: { userTags: number; examTags: number; packageTags: number };
+};
+
+async function getAccessTags(): Promise<TagRow[]> {
+  const rows = await prisma.odkAccessTag.findMany({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -14,6 +23,7 @@ async function getAccessTags() {
       _count: { select: { userTags: true, examTags: true, packageTags: true } },
     },
   });
+  return rows as TagRow[];
 }
 
 export default async function EtiketlerPage() {
