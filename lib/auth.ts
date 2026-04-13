@@ -91,7 +91,15 @@ export const authOptions: NextAuthOptions = {
           role: true,
           name: true,
           student: { select: { id: true } },
-          teacher: { select: { id: true } }
+          teacher: { select: { id: true } },
+          odkUserAccessTags: {
+            where: {
+              revokedAt: null,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+            },
+            select: { id: true },
+            take: 1
+          }
         }
       });
 
@@ -104,6 +112,7 @@ export const authOptions: NextAuthOptions = {
       token.isAdmin = currentUser.role === "ADMIN";
       token.hasStudentAccess = Boolean(currentUser.student);
       token.hasTeacherAccess = Boolean(currentUser.teacher);
+      token.hasOdkAccess = currentUser.odkUserAccessTags.length > 0;
 
       return token;
     },
@@ -115,6 +124,7 @@ export const authOptions: NextAuthOptions = {
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.hasStudentAccess = Boolean(token.hasStudentAccess);
         session.user.hasTeacherAccess = Boolean(token.hasTeacherAccess);
+        session.user.hasOdkAccess = Boolean(token.hasOdkAccess);
       }
 
       return session;
