@@ -7,8 +7,25 @@ const familyLabels: Record<string, string> = {
   TYT: "TYT", AYT: "AYT", LGS: "LGS", KPSS: "KPSS", ALES: "ALES",
 };
 
-async function getAttempts(userId: string) {
-  return prisma.odkExamAttempt.findMany({
+type AttemptRow = {
+  id: string;
+  status: string;
+  startedAt: Date;
+  score: unknown;
+  correctCount: number;
+  wrongCount: number;
+  blankCount: number;
+  exam: {
+    id: string;
+    title: string;
+    cadenceFamily: string;
+    durationMinutes: number;
+    sections: Array<{ questionCount: number }>;
+  };
+};
+
+async function getAttempts(userId: string): Promise<AttemptRow[]> {
+  const rows = await prisma.odkExamAttempt.findMany({
     where: { userId },
     orderBy: { startedAt: "desc" },
     include: {
@@ -23,6 +40,7 @@ async function getAttempts(userId: string) {
       },
     },
   });
+  return rows as unknown as AttemptRow[];
 }
 
 const statusConfig: Record<string, { label: string; cls: string }> = {

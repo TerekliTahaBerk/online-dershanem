@@ -11,8 +11,26 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   ARCHIVED:  { label: "Arşiv",   className: "bg-amber-50 text-amber-700" },
 };
 
-async function getExam(examId: string) {
-  return prisma.odkExam.findUnique({
+type ExamDetail = {
+  id: string;
+  title: string;
+  status: string;
+  cadenceFamily: string;
+  durationMinutes: number;
+  sections: Array<{
+    id: string;
+    title: string;
+    questionCount: number;
+    orderIndex: number;
+    officialAnswers: Array<{ id: string; questionNumber: number; correctOption: string }>;
+  }>;
+  files: Array<{ id: string; fileType: string; publicUrl: string }>;
+  examAccessTags: Array<{ accessTag: { id: string; title: string } }>;
+  _count: { attempts: number };
+};
+
+async function getExam(examId: string): Promise<ExamDetail | null> {
+  const row = await prisma.odkExam.findUnique({
     where: { id: examId },
     include: {
       sections: {
@@ -26,6 +44,7 @@ async function getExam(examId: string) {
       _count: { select: { attempts: true } },
     },
   });
+  return row as unknown as ExamDetail | null;
 }
 
 export default async function ExamDetailPage({ params }: { params: Promise<{ examId: string }> }) {

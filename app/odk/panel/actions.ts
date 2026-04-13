@@ -41,6 +41,18 @@ export async function submitAttempt(
   const session = await requireOdkUser();
   const userId = session.user.id;
 
+  type AttemptWithExam = {
+    id: string;
+    examId: string;
+    startedAt: Date;
+    exam: {
+      sections: Array<{
+        id: string;
+        officialAnswers: Array<{ questionNumber: number; correctOption: string }>;
+      }>;
+    };
+  };
+
   const attempt = await prisma.odkExamAttempt.findFirst({
     where: { id: attemptId, userId, status: "IN_PROGRESS" },
     include: {
@@ -52,7 +64,7 @@ export async function submitAttempt(
         },
       },
     },
-  });
+  }) as unknown as AttemptWithExam | null;
 
   if (!attempt) throw new Error("Girişim bulunamadı");
 

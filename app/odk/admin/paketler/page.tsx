@@ -3,13 +3,27 @@ import { PackageCreateForm } from "@/components/odk/admin/package-create-form";
 import { togglePackageStatus } from "@/app/odk/admin/actions";
 import { Package } from "lucide-react";
 
-async function getPackages() {
-  return prisma.odkPackage.findMany({
+type PackageRow = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  priceCents: number;
+  durationDays: number | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  _count: { packageExams: number; orders: number; entitlements: number };
+};
+
+async function getPackages(): Promise<PackageRow[]> {
+  const rows = await prisma.odkPackage.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { packageExams: true, orders: true, entitlements: true } },
     },
   });
+  return rows as unknown as PackageRow[];
 }
 
 function formatPrice(cents: number) {

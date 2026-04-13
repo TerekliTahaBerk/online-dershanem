@@ -13,8 +13,19 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   ARCHIVED:  { label: "Arşiv",   className: "bg-amber-50 text-amber-700" },
 };
 
-async function getExams() {
-  return prisma.odkExam.findMany({
+type ExamRow = {
+  id: string;
+  title: string;
+  cadenceFamily: string;
+  status: string;
+  durationMinutes: number;
+  startsAt: Date | null;
+  createdAt: Date;
+  _count: { sections: number; attempts: number };
+};
+
+async function getExams(): Promise<ExamRow[]> {
+  const rows = await prisma.odkExam.findMany({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -27,6 +38,7 @@ async function getExams() {
       _count: { select: { sections: true, attempts: true } },
     },
   });
+  return rows as unknown as ExamRow[];
 }
 
 export default async function OdkSinavlarPage() {

@@ -3,11 +3,21 @@ import { FileText, BarChart2, CheckCircle2, Clock } from "lucide-react";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+type PanelAttempt = {
+  id: string;
+  status: string;
+  startedAt: Date;
+  score: unknown;
+  correctCount: number;
+  wrongCount: number;
+  blankCount: number;
+  exam: { title: string; cadenceFamily: string };
+};
+
 async function getStudentData(userId: string) {
   const now = new Date();
 
-  const [accessTags, recentAttempts, availableExams] = await Promise.all([
-    // Active access tags for this user
+  const [accessTags, rawAttempts, availableExams] = await Promise.all([
     prisma.odkUserAccessTag.findMany({
       where: {
         userId,
@@ -17,7 +27,6 @@ async function getStudentData(userId: string) {
       select: { accessTagId: true },
     }),
 
-    // Recent attempts
     prisma.odkExamAttempt.findMany({
       where: { userId },
       orderBy: { startedAt: "desc" },
@@ -34,10 +43,10 @@ async function getStudentData(userId: string) {
       },
     }),
 
-    // Count of published exams (accessible)
     prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
   ]);
 
+  const recentAttempts = rawAttempts as unknown as PanelAttempt[];
   const completedCount = recentAttempts.filter((a) => a.status === "SUBMITTED").length;
 
   return { accessTags: accessTags.length, recentAttempts, availableExams, completedCount };

@@ -7,6 +7,14 @@ const familyLabels: Record<string, string> = {
   TYT: "TYT", AYT: "AYT", LGS: "LGS", KPSS: "KPSS", ALES: "ALES",
 };
 
+type ExamForList = {
+  id: string;
+  title: string;
+  cadenceFamily: string;
+  durationMinutes: number;
+  sections: Array<{ questionCount: number }>;
+};
+
 async function getAccessibleExams(userId: string) {
   const now = new Date();
 
@@ -23,7 +31,7 @@ async function getAccessibleExams(userId: string) {
   const tagIds = userTags.map((t) => t.accessTagId);
 
   // Get published exams that either have no access tags (open) or match user's tags
-  const [openExams, taggedExams] = await Promise.all([
+  const [rawOpen, rawTagged] = await Promise.all([
     prisma.odkExam.findMany({
       where: {
         status: "PUBLISHED",
@@ -31,7 +39,6 @@ async function getAccessibleExams(userId: string) {
       },
       include: {
         sections: { select: { questionCount: true } },
-        _count: { select: { attempts: true } },
       },
       orderBy: { startsAt: "desc" },
     }),
@@ -43,12 +50,14 @@ async function getAccessibleExams(userId: string) {
           },
           include: {
             sections: { select: { questionCount: true } },
-            _count: { select: { attempts: true } },
           },
           orderBy: { startsAt: "desc" },
         })
       : Promise.resolve([]),
   ]);
+
+  const openExams = rawOpen as unknown as ExamForList[];
+  const taggedExams = rawTagged as unknown as ExamForList[];
 
   // Merge and deduplicate
   const seen = new Set<string>();
