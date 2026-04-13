@@ -63,15 +63,20 @@ model VerificationCode {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  passwordHash String?
-  role         UserRole @default(ADMIN)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  student      Student?
-  teacher      Teacher?
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  passwordHash      String?
+  role              UserRole           @default(ADMIN)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  student           Student?
+  teacher           Teacher?
+  odkCreatedExams   OdkExam[]          @relation("OdkExamCreator")
+  odkUserAccessTags OdkUserAccessTag[]
+  odkOrders         OdkOrder[]
+  odkEntitlements   OdkEntitlement[]
+  odkAttempts       OdkExamAttempt[]
 }
 
 model LeadSubmission {
@@ -289,4 +294,346 @@ model Lesson {
   @@index([studentId, scheduledAt])
   @@index([teacherId, scheduledAt])
   @@index([status, scheduledAt])
+}
+
+// ─── ODK Enums ────────────────────────────────────────────────────────────────
+
+enum OdkExamStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OdkExamCadenceFamily {
+  TYT
+  AYT
+  LGS
+  KPSS
+  ALES
+}
+
+enum OdkExamFileType {
+  BOOKLET_PDF
+  ANSWER_KEY_PDF
+}
+
+enum OdkAccessTagGrantSource {
+  PURCHASE
+  MANUAL
+}
+
+enum OdkOrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum OdkPaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum OdkPaymentProvider {
+  MANUAL
+  IYZICO
+  BANK_TRANSFER
+}
+
+enum OdkEntitlementStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum OdkAttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  ABANDONED
+}
+
+// ─── ODK Models ───────────────────────────────────────────────────────────────
+
+model OdkExamSeries {
+  id            String               @id @default(cuid())
+  name          String
+  slug          String               @unique
+  cadenceFamily OdkExamCadenceFamily @map("cadence_family")
+  isActive      Boolean              @default(true) @map("is_active")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  exams         OdkExam[]
+
+  @@index([cadenceFamily, isActive])
+  @@map("odk_exam_series")
+}
+
+model OdkExam {
+  id                  String               @id @default(cuid())
+  title               String
+  slug                String               @unique
+  description         String?
+  cadenceFamily       OdkExamCadenceFamily @map("cadence_family")
+  examSeriesId        String?              @map("exam_series_id")
+  status              OdkExamStatus        @default(DRAFT)
+  durationMinutes     Int                  @default(120) @map("duration_minutes")
+  startsAt            DateTime?            @map("starts_at")
+  endsAt              DateTime?            @map("ends_at")
+  answerKeyReleasedAt DateTime?            @map("answer_key_released_at")
+  createdById         String?              @map("created_by_id")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  examSeries          OdkExamSeries?       @relation(fields: [examSeriesId], references: [id], onDelete: SetNull)
+  creator             User?                @relation("OdkExamCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  sections            OdkExamSection[]
+  files               OdkExamFile[]
+  attempts            OdkExamAttempt[]
+  examAccessTags      OdkExamAccessTag[]
+  packageExams        OdkPackageExam[]
+
+  @@index([status])
+  @@index([cadenceFamily, status])
+  @@map("odk_exams")
+}
+
+model OdkExamSection {
+  id              String                    @id @default(cuid())
+  examId          String                    @map("exam_id")
+  title           String
+  questionCount   Int                       @map("question_count")
+  orderIndex      Int                       @default(0) @map("order_index")
+  createdAt       DateTime                  @default(now()) @map("created_at")
+  updatedAt       DateTime                  @updatedAt @map("updated_at")
+  exam            OdkExam                   @relation(fields: [examId], references: [id], onDelete: Cascade)
+  officialAnswers OdkExamOfficialAnswer[]
+  opticalAnswers  OdkAttemptOpticalAnswer[]
+
+  @@unique([examId, orderIndex])
+  @@index([examId])
+  @@map("odk_exam_sections")
+}
+
+model OdkExamOfficialAnswer {
+  id             String         @id @default(cuid())
+  examId         String         @map("exam_id")
+  sectionId      String         @map("section_id")
+  questionNumber Int            @map("question_number")
+  correctOption  String         @map("correct_option")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  section        OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, questionNumber])
+  @@index([examId])
+  @@map("odk_exam_official_answers")
+}
+
+model OdkExamFile {
+  id               String          @id @default(cuid())
+  examId           String          @map("exam_id")
+  fileType         OdkExamFileType @map("file_type")
+  originalFileName String          @map("original_file_name")
+  publicUrl        String          @map("public_url")
+  byteSize         Int             @default(0) @map("byte_size")
+  uploadedById     String?         @map("uploaded_by_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  exam             OdkExam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, fileType])
+  @@index([examId])
+  @@map("odk_exam_files")
+}
+
+model OdkAccessTag {
+  id          String                @id @default(cuid())
+  key         String                @unique
+  title       String
+  description String?
+  isActive    Boolean               @default(true) @map("is_active")
+  createdAt   DateTime              @default(now()) @map("created_at")
+  updatedAt   DateTime              @updatedAt @map("updated_at")
+  userTags    OdkUserAccessTag[]
+  examTags    OdkExamAccessTag[]
+  packageTags OdkPackageAccessTag[]
+
+  @@index([isActive])
+  @@map("odk_access_tags")
+}
+
+model OdkUserAccessTag {
+  id            String                  @id @default(cuid())
+  userId        String                  @map("user_id")
+  accessTagId   String                  @map("access_tag_id")
+  source        OdkAccessTagGrantSource @default(MANUAL)
+  grantedById   String?                 @map("granted_by_id")
+  entitlementId String?                 @map("entitlement_id")
+  expiresAt     DateTime?               @map("expires_at")
+  revokedAt     DateTime?               @map("revoked_at")
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessTag     OdkAccessTag            @relation(fields: [accessTagId], references: [id], onDelete: Cascade)
+  entitlement   OdkEntitlement?         @relation(fields: [entitlementId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, accessTagId])
+  @@index([userId, revokedAt, expiresAt])
+  @@index([accessTagId])
+  @@map("odk_user_access_tags")
+}
+
+model OdkExamAccessTag {
+  examId      String       @map("exam_id")
+  accessTagId String       @map("access_tag_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  exam        OdkExam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  accessTag   OdkAccessTag @relation(fields: [accessTagId], references: [id], onDelete: Cascade)
+
+  @@id([examId, accessTagId])
+  @@index([accessTagId])
+  @@map("odk_exam_access_tags")
+}
+
+model OdkPackage {
+  id                String                @id @default(cuid())
+  title             String
+  slug              String                @unique
+  description       String?
+  priceCents        Int                   @map("price_cents")
+  durationDays      Int?                  @map("duration_days")
+  isActive          Boolean               @default(true) @map("is_active")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  packageExams      OdkPackageExam[]
+  packageAccessTags OdkPackageAccessTag[]
+  orders            OdkOrder[]
+  entitlements      OdkEntitlement[]
+
+  @@index([isActive])
+  @@map("odk_packages")
+}
+
+model OdkPackageExam {
+  packageId String     @map("package_id")
+  examId    String     @map("exam_id")
+  sortOrder Int        @default(0) @map("sort_order")
+  createdAt DateTime   @default(now()) @map("created_at")
+  package   OdkPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  exam      OdkExam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@id([packageId, examId])
+  @@index([examId])
+  @@map("odk_package_exams")
+}
+
+model OdkPackageAccessTag {
+  packageId   String       @map("package_id")
+  accessTagId String       @map("access_tag_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  package     OdkPackage   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  accessTag   OdkAccessTag @relation(fields: [accessTagId], references: [id], onDelete: Cascade)
+
+  @@id([packageId, accessTagId])
+  @@index([accessTagId])
+  @@map("odk_package_access_tags")
+}
+
+model OdkOrder {
+  id            String         @id @default(cuid())
+  userId        String         @map("user_id")
+  packageId     String         @map("package_id")
+  status        OdkOrderStatus @default(PENDING)
+  subtotalCents Int            @map("subtotal_cents")
+  discountCents Int            @default(0) @map("discount_cents")
+  totalCents    Int            @map("total_cents")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  package       OdkPackage     @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  payments      OdkPayment[]
+  entitlements  OdkEntitlement[]
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@map("odk_orders")
+}
+
+model OdkPayment {
+  id            String             @id @default(cuid())
+  orderId       String             @map("order_id")
+  provider      OdkPaymentProvider @default(MANUAL)
+  providerRef   String?            @map("provider_ref")
+  status        OdkPaymentStatus   @default(PENDING)
+  amountCents   Int                @map("amount_cents")
+  paidAt        DateTime?          @map("paid_at")
+  failureReason String?            @map("failure_reason")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  order         OdkOrder           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@map("odk_payments")
+}
+
+model OdkEntitlement {
+  id             String               @id @default(cuid())
+  userId         String               @map("user_id")
+  packageId      String               @map("package_id")
+  orderId        String?              @unique @map("order_id")
+  status         OdkEntitlementStatus @default(ACTIVE)
+  startsAt       DateTime             @default(now()) @map("starts_at")
+  expiresAt      DateTime?            @map("expires_at")
+  revokedAt      DateTime?            @map("revoked_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package        OdkPackage           @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  order          OdkOrder?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  userAccessTags OdkUserAccessTag[]
+  attempts       OdkExamAttempt[]
+
+  @@index([userId, status])
+  @@map("odk_entitlements")
+}
+
+model OdkExamAttempt {
+  id              String                    @id @default(cuid())
+  userId          String                    @map("user_id")
+  examId          String                    @map("exam_id")
+  entitlementId   String?                   @map("entitlement_id")
+  status          OdkAttemptStatus          @default(IN_PROGRESS)
+  startedAt       DateTime                  @default(now()) @map("started_at")
+  submittedAt     DateTime?                 @map("submitted_at")
+  score           Decimal?                  @db.Decimal(6, 2)
+  correctCount    Int                       @default(0) @map("correct_count")
+  wrongCount      Int                       @default(0) @map("wrong_count")
+  blankCount      Int                       @default(0) @map("blank_count")
+  resultPayload   Json?                     @map("result_payload")
+  durationSeconds Int?                      @map("duration_seconds")
+  createdAt       DateTime                  @default(now()) @map("created_at")
+  updatedAt       DateTime                  @updatedAt @map("updated_at")
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam            OdkExam                   @relation(fields: [examId], references: [id], onDelete: Cascade)
+  entitlement     OdkEntitlement?           @relation(fields: [entitlementId], references: [id], onDelete: SetNull)
+  opticalAnswers  OdkAttemptOpticalAnswer[]
+
+  @@index([userId, examId])
+  @@index([userId, status])
+  @@map("odk_exam_attempts")
+}
+
+model OdkAttemptOpticalAnswer {
+  id             String         @id @default(cuid())
+  attemptId      String         @map("attempt_id")
+  sectionId      String         @map("section_id")
+  questionNumber Int            @map("question_number")
+  selectedOption String         @map("selected_option")
+  answeredAt     DateTime       @default(now()) @map("answered_at")
+  attempt        OdkExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  section        OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, sectionId, questionNumber])
+  @@index([attemptId])
+  @@map("odk_attempt_optical_answers")
 }
