@@ -1,15 +1,24 @@
 import { PrismaClient } from "@prisma/client";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
-const createPrismaClient = () =>
-  new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"]
-  }).$extends(withAccelerate());
+const databaseUrl = process.env.DATABASE_URL;
+const directUrl = process.env.DIRECT_URL;
+const isAccelerateUrl = databaseUrl?.startsWith("prisma://") ?? false;
+const shouldUseDirectConnection = process.env.VERCEL !== "1" && Boolean(directUrl);
 
-type ExtendedPrismaClient = ReturnType<typeof createPrismaClient>;
+const createPrismaClient = (): PrismaClient => {
+  const client = new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    ...(shouldUseDirectConnection && directUrl ? { datasourceUrl: directUrl } : {})
+  });
+
+  return isAccelerateUrl && !shouldUseDirectConnection
+    ? (client.$extends(withAccelerate()) as unknown as PrismaClient)
+    : client;
+};
 
 const globalForPrisma = globalThis as unknown as {
-  prisma?: ExtendedPrismaClient;
+  prisma?: PrismaClient;
 };
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();

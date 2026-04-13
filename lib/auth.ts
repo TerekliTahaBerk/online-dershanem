@@ -70,6 +70,9 @@ export const authOptions: NextAuthOptions = {
             data: {
               email,
               name: user.name ?? null,
+              // Keep OAuth-only users compatible with environments where the
+              // generated Prisma client still expects a non-null passwordHash.
+              passwordHash: "",
               role: "STUDENT"
             }
           });
@@ -102,7 +105,7 @@ export const authOptions: NextAuthOptions = {
       token.role = currentUser.role;
       token.name = currentUser.name ?? token.name;
       token.isAdmin = currentUser.role === "ADMIN";
-      token.hasStudentAccess = Boolean(currentUser.student);
+      token.hasStudentAccess = currentUser.role === "STUDENT" || Boolean(currentUser.student);
       token.hasTeacherAccess = Boolean(currentUser.teacher);
 
       // Query ODK access separately — table may not exist yet before db push
