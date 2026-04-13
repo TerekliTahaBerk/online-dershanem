@@ -92,14 +92,6 @@ export const authOptions: NextAuthOptions = {
           name: true,
           student: { select: { id: true } },
           teacher: { select: { id: true } },
-          odkUserAccessTags: {
-            where: {
-              revokedAt: null,
-              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-            },
-            select: { id: true },
-            take: 1
-          }
         }
       });
 
@@ -112,7 +104,23 @@ export const authOptions: NextAuthOptions = {
       token.isAdmin = currentUser.role === "ADMIN";
       token.hasStudentAccess = Boolean(currentUser.student);
       token.hasTeacherAccess = Boolean(currentUser.teacher);
-      token.hasOdkAccess = currentUser.odkUserAccessTags.length > 0;
+
+      // Query ODK access separately — table may not exist yet before db push
+      let hasOdkAccess = false;
+      try {
+        const odkTag = await prisma.odkUserAccessTag.findFirst({
+          where: {
+            userId: token.sub,
+            revokedAt: null,
+            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
+          },
+          select: { id: true }
+        });
+        hasOdkAccess = Boolean(odkTag);
+      } catch {
+        // Table doesn't exist yet — treat as no access
+      }
+      token.hasOdkAccess = hasOdkAccess;
 
       return token;
     },
