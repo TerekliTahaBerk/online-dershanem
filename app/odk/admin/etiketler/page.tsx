@@ -23,7 +23,7 @@ async function getAccessTags(): Promise<TagRow[]> {
       _count: { select: { userTags: true, examTags: true, packageTags: true } },
     },
   });
-  return rows as TagRow[];
+  return rows as unknown as TagRow[];
 }
 
 export default async function EtiketlerPage() {
