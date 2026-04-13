@@ -2,14 +2,14 @@ import Link from "next/link";
 import { TeacherStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { teacherStatusLabels, teacherStatusOptions } from "@/lib/admin";
-import { updateTeacherAction, toggleTeacherStatusAction, createTeacherAccountAction } from "./actions";
+import { updateTeacherAction, toggleTeacherStatusAction, createTeacherAccountAction, toggleTeacherAdminAccessAction } from "./actions";
 import { Plus, GraduationCap, CalendarDays, ShieldCheck } from "lucide-react";
 
 type TeacherWithRelations = Prisma.TeacherGetPayload<{
   include: {
     _count: { select: { lessons: true } };
     lessons: { take: 1 };
-    user: { select: { email: true } };
+    user: { select: { id: true; email: true; isAdmin: true; role: true } };
   };
 }>;
 
@@ -72,14 +72,14 @@ export default async function HocalarPage({ searchParams }: Props) {
       </div>
 
       {/* Flash */}
-      {(updated === "created" || updated === "teacher" || updated === "toggle" || updated === "account-created") && (
+      {(updated === "created" || updated === "teacher" || updated === "toggle" || updated === "account-created" || updated === "account-linked" || updated === "admin-access") && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
-          {updated === "created" ? "Hoca eklendi." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : "Hoca güncellendi."}
+          {updated === "created" ? "Hoca eklendi." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : updated === "account-linked" ? "Mevcut kullanıcı öğretmen kaydına bağlandı." : updated === "admin-access" ? "Admin erişimi güncellendi." : "Hoca güncellendi."}
         </div>
       )}
-      {(updated === "account-exists" || updated === "email-taken" || updated === "account-error") && (
+      {(updated === "account-exists" || updated === "email-taken" || updated === "account-error" || updated === "password-short") && (
         <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
-          {updated === "account-exists" ? "Bu hoca zaten bir panele bağlı." : updated === "email-taken" ? "Bu e-posta adresi zaten kullanılıyor." : "Hesap oluşturulurken bir hata oluştu."}
+          {updated === "account-exists" ? "Bu hoca zaten bir panele bağlı." : updated === "email-taken" ? "Bu e-posta adresi başka bir kullanıcıda kullanılıyor." : updated === "password-short" ? "Yeni hesap için en az 6 karakterlik şifre girin." : "Hesap oluşturulurken bir hata oluştu."}
         </div>
       )}
 
@@ -259,12 +259,27 @@ export default async function HocalarPage({ searchParams }: Props) {
                                   <span className="text-xs font-semibold text-gray-700">Öğretmen Paneli Erişimi</span>
                                 </div>
                                 {teacher.user ? (
-                                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-                                    <ShieldCheck size={14} />
-                                    Panel hesabı mevcut: <strong>{teacher.user.email}</strong>
+                                  <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-3">
+                                    <div className="flex items-center gap-2 text-sm text-emerald-700">
+                                      <ShieldCheck size={14} />
+                                      Panel hesabı mevcut: <strong>{teacher.user.email}</strong>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "bg-[#091413] text-white" : "bg-white text-gray-600 border border-gray-200"}`}>
+                                        {teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "Admin erişimi açık" : "Sadece öğretmen erişimi"}
+                                      </span>
+                                      <form action={toggleTeacherAdminAccessAction}>
+                                        <input type="hidden" name="teacherId" value={teacher.id} />
+                                        <input type="hidden" name="userId" value={teacher.user.id} />
+                                        <input type="hidden" name="currentValue" value={teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "true" : "false"} />
+                                        <button type="submit" className="rounded-lg border border-[#408A71]/30 bg-white px-3 py-1.5 text-xs font-medium text-[#285A48] transition-colors hover:bg-[#B0E4CC]/20">
+                                          {teacher.user.isAdmin || teacher.user.role === "ADMIN" ? "Admin erişimini kapat" : "Admin erişimi ver"}
+                                        </button>
+                                      </form>
+                                    </div>
                                   </div>
                                 ) : (
-                                  <form action={createTeacherAccountAction} className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                  <form action={createTeacherAccountAction} className="grid grid-cols-1 gap-3 md:grid-cols-4">
                                     <input type="hidden" name="teacherId" value={teacher.id} />
                                     <input type="hidden" name="name" value={teacher.fullName} />
                                     <div className="space-y-1">
@@ -275,15 +290,22 @@ export default async function HocalarPage({ searchParams }: Props) {
                                     </div>
                                     <div className="space-y-1">
                                       <label className="text-xs font-medium text-gray-600">Şifre</label>
-                                      <input type="text" name="password" required minLength={6}
+                                      <input type="text" name="password" minLength={6}
                                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
-                                        placeholder="En az 6 karakter" />
+                                        placeholder="Yeni hesapta gerekli" />
                                     </div>
+                                    <label className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 md:mt-6">
+                                      <input type="checkbox" name="grantAdminAccess" className="h-4 w-4 rounded border-gray-300 text-[#408A71] focus:ring-[#408A71]/30" />
+                                      <span>Admin erişimi de ver</span>
+                                    </label>
                                     <div className="flex items-end">
                                       <button type="submit" className="w-full bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                                         Hesap Oluştur
                                       </button>
                                     </div>
+                                    <p className="text-xs text-gray-500 md:col-span-4">
+                                      Bu e-posta mevcut bir admin hesabına aitse yeni kullanıcı açılmaz, öğretmen kaydı o hesaba bağlanır.
+                                    </p>
                                   </form>
                                 )}
                               </div>
