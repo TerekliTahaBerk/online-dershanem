@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, BarChart2, User, Trophy } from "lucide-react";
+import { LayoutDashboard, FileText, BarChart2, User, Trophy, Package } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 
 const navItems = [
   { href: "/odk/panel", label: "Ana Sayfa", icon: LayoutDashboard, exact: true },
   { href: "/odk/panel/sinavlar", label: "Sınavlarım", icon: FileText },
   { href: "/odk/panel/sonuclar", label: "Sonuçlarım", icon: BarChart2 },
+  { href: "/odk/panel/paketim", label: "Paketim", icon: Package },
   { href: "/odk/panel/profil", label: "Profil", icon: User },
 ];
 
