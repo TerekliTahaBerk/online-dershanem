@@ -17,7 +17,7 @@ type Student = {
 };
 
 async function getData() {
-  const [students, accessTags] = await Promise.all([
+  const [students, accessTags, allStudentUsers] = await Promise.all([
     prisma.user.findMany({
       where: { odkUserAccessTags: { some: {} } },
       select: {
@@ -38,12 +38,20 @@ async function getData() {
       orderBy: { createdAt: "desc" },
     }) as unknown as Promise<Student[]>,
     prisma.odkAccessTag.findMany({ where: { isActive: true }, orderBy: { title: "asc" } }),
+    prisma.user.findMany({
+      where: {
+        role: { not: "ADMIN" },
+        OR: [{ role: "STUDENT" }, { student: { isNot: null } }],
+      },
+      select: { id: true, name: true, email: true },
+      orderBy: [{ name: "asc" }, { email: "asc" }],
+    }),
   ]);
-  return { students, accessTags };
+  return { students, accessTags, allStudentUsers };
 }
 
 export default async function OgrencilerPage() {
-  const { students, accessTags } = await getData();
+  const { students, accessTags, allStudentUsers } = await getData();
 
   return (
     <div className="p-6 space-y-5">
@@ -97,7 +105,7 @@ export default async function OgrencilerPage() {
 
         {/* Grant access form */}
         <div>
-          <GrantAccessForm accessTags={accessTags} />
+          <GrantAccessForm accessTags={accessTags} allStudentUsers={allStudentUsers} />
         </div>
       </div>
     </div>
