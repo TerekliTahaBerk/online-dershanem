@@ -524,6 +524,39 @@ export async function sendVerificationCode({
   await sendEmail({ to, subject, html });
 }
 
+/** Sent to students when exam results are released by admin */
+export async function sendOdkResultsReleased({
+  to,
+  name,
+  examTitle,
+  score,
+  examUrl,
+}: {
+  to: string;
+  name: string;
+  examTitle: string;
+  score: number | null;
+  examUrl: string;
+}) {
+  const firstName = name.split(" ")[0];
+  const html = baseTemplate(`
+    ${heading("Sınav Sonuçların Açıklandı! 🎉")}
+    ${paragraph(`Merhaba <strong>${firstName}</strong>, <strong>${escapeHtml(examTitle)}</strong> sınavına ait sonuçlar artık görüntülenebilir.`)}
+    ${score != null ? infoBox([{ label: "Netiniz", value: score.toFixed(2) }]) : ""}
+    ${paragraph("Panelinize girerek bölüm bazlı analizinizi, doğru/yanlış dağılımınızı ve sıralama tablonuzu görebilirsiniz.")}
+    ${ctaButton("Sonuçlarımı Gör →", `${APP_URL}${examUrl}`)}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresine yazabilirsiniz.</span>')}
+    ${signature()}
+  `);
+
+  await sendEmail({
+    to,
+    subject: `Sınav Sonuçların Açıklandı – ${examTitle}`,
+    html,
+  });
+}
+
 /** Sent to admin recipients when a new lead form is submitted */
 export async function sendLeadSubmissionNotification({
   fullName,

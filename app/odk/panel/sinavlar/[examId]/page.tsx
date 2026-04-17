@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ExternalLink, Clock, FileText, CheckCircle2, AlertCircle } from "lucide-react";
+import { ExternalLink, Clock, FileText, CheckCircle2, AlertCircle, Trophy } from "lucide-react";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ExamProctor } from "@/components/odk/student/exam-proctor";
@@ -91,6 +91,35 @@ export default async function ExamDetailPage({
   const isSubmitted = attempt?.status === "SUBMITTED";
   const isInProgress = attempt?.status === "IN_PROGRESS";
 
+  const rawExamMeta = exam as unknown as {
+    resultsReleasedAt?: Date | null;
+    answerKeyReleasedAt?: Date | null;
+    googleMeetLink?: string | null;
+  };
+  const resultsReleased = rawExamMeta.resultsReleasedAt != null &&
+    new Date(rawExamMeta.resultsReleasedAt) <= new Date();
+  const answerKeyReleased = rawExamMeta.answerKeyReleasedAt != null &&
+    new Date(rawExamMeta.answerKeyReleasedAt) <= new Date();
+
+  // Submitted but results not yet released
+  if (isSubmitted && !resultsReleased) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+        <div className="rounded-full bg-emerald-100 p-5 mb-4">
+          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+        </div>
+        <h1 className="text-xl font-bold text-stone-900">Sınav Tamamlandı!</h1>
+        <p className="text-stone-500 mt-2 max-w-sm">
+          Cevapların başarıyla kaydedildi. Sonuçlar öğretmenler tarafından kontrol edildikten sonra
+          sana e-posta ile bildirim gönderilecek.
+        </p>
+        <Link href="/odk/panel/sinavlar" className="mt-6 text-xs text-emerald-600 hover:underline">
+          ← Sınavlara dön
+        </Link>
+      </div>
+    );
+  }
+
   // Active exam — render fullscreen proctor
   if (!isSubmitted) {
     return (
@@ -157,8 +186,19 @@ export default async function ExamDetailPage({
         </Link>
       </div>
 
+      {/* Leaderboard link */}
+      {isSubmitted && resultsReleased && (
+        <Link
+          href={`/odk/panel/sinavlar/${examId}/siralama`}
+          className="inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:border-emerald-200 hover:text-emerald-700 transition"
+        >
+          <Trophy className="h-3.5 w-3.5" />
+          Sıralamayı Gör
+        </Link>
+      )}
+
       {/* PDF links */}
-      {(booklet || (answerKey && isSubmitted)) && (
+      {(booklet || (answerKey && isSubmitted && answerKeyReleased)) && (
         <div className="flex flex-wrap gap-3">
           {booklet && (
             <a
@@ -171,7 +211,7 @@ export default async function ExamDetailPage({
               Sınav Kitapçığı
             </a>
           )}
-          {answerKey && isSubmitted && (
+          {answerKey && isSubmitted && answerKeyReleased && (
             <a
               href={answerKey.publicUrl}
               target="_blank"

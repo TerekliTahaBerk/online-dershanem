@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { updateExamStatus } from "@/app/odk/admin/actions";
+import { updateExamStatus, releaseExamResults, releaseAnswerKey } from "@/app/odk/admin/actions";
 import { AnswerKeyEditor, ExamFilesEditor, ExamMeetLinkEditor } from "@/components/odk/admin/exam-detail-editor";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -18,6 +18,8 @@ type ExamDetail = {
   cadenceFamily: string;
   durationMinutes: number;
   googleMeetLink: string | null;
+  resultsReleasedAt: Date | null;
+  answerKeyReleasedAt: Date | null;
   sections: Array<{
     id: string;
     title: string;
@@ -130,6 +132,55 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
             <p className="mt-1 text-xl font-bold text-stone-900">{value}</p>
           </div>
         ))}
+      </div>
+
+      {/* Results & Answer Key Release */}
+      <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <h2 className="text-sm font-semibold text-stone-900 mb-4">Sonuç & Cevap Anahtarı Yayını</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Results */}
+          <div className="rounded-lg border border-stone-100 bg-stone-50 p-4">
+            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">Sonuçlar</p>
+            {exam.resultsReleasedAt ? (
+              <p className="text-sm text-emerald-700 font-medium">
+                ✓ {new Date(exam.resultsReleasedAt).toLocaleString("tr-TR")} tarihinde yayınlandı
+              </p>
+            ) : (
+              <>
+                <p className="text-xs text-stone-400 mb-3">Öğrenciler henüz sonuçlarını göremiyor.</p>
+                <form action={async () => { "use server"; await releaseExamResults(examId); }}>
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition"
+                  >
+                    Sonuçları Yayınla & E-posta Gönder
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+          {/* Answer key */}
+          <div className="rounded-lg border border-stone-100 bg-stone-50 p-4">
+            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">Cevap Anahtarı</p>
+            {exam.answerKeyReleasedAt ? (
+              <p className="text-sm text-emerald-700 font-medium">
+                ✓ {new Date(exam.answerKeyReleasedAt).toLocaleString("tr-TR")} tarihinde yayınlandı
+              </p>
+            ) : (
+              <>
+                <p className="text-xs text-stone-400 mb-3">Cevap anahtarı PDF&apos;i öğrencilere kapalı.</p>
+                <form action={async () => { "use server"; await releaseAnswerKey(examId); }}>
+                  <button
+                    type="submit"
+                    className="rounded-lg border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-stone-100 transition"
+                  >
+                    Cevap Anahtarını Aç
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* PDF Files */}

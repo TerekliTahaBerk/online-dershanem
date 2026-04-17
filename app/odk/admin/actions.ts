@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
+import { sendOdkResultsReleased } from "@/lib/email";
 
 async function requireOdkAdmin() {
   const session = await getServerAuthSession();
@@ -69,6 +70,50 @@ export async function createExam(data: {
 
   revalidatePath("/odk/admin/sinavlar");
   redirect(`/odk/admin/sinavlar/${exam.id}`);
+}
+
+export async function releaseExamResults(examId: string) {
+  await requireOdkAdmin();
+
+  const exam = await prisma.odkExam.update({
+    where: { id: examId },
+    data: { resultsReleasedAt: new Date() },
+    select: { id: true, title: true, resultsReleasedAt: true },
+  });
+
+  // Notify all students who completed the exam
+  const attempts = await prisma.odkExamAttempt.findMany({
+    where: { examId, status: "SUBMITTED" },
+    select: {
+      score: true,
+      user: { select: { email: true, name: true } },
+    },
+  });
+
+  await Promise.allSettled(
+    attempts.map((a) =>
+      sendOdkResultsReleased({
+        to: a.user.email,
+        name: a.user.name ?? a.user.email,
+        examTitle: exam.title,
+        score: a.score != null ? Number(a.score) : null,
+        examUrl: `/odk/panel/sinavlar/${examId}`,
+      }),
+    ),
+  );
+
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+  revalidatePath(`/odk/panel/sinavlar/${examId}`);
+}
+
+export async function releaseAnswerKey(examId: string) {
+  await requireOdkAdmin();
+  await prisma.odkExam.update({
+    where: { id: examId },
+    data: { answerKeyReleasedAt: new Date() },
+  });
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+  revalidatePath(`/odk/panel/sinavlar/${examId}`);
 }
 
 export async function updateExamMeetLink(examId: string, googleMeetLink: string | null) {

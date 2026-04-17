@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowLeft, AlertTriangle, TrendingDown, TrendingUp, Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 type SectionScore = {
@@ -92,8 +92,19 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
           <ArrowLeft className="h-4 w-4" />
           Sınav detayına dön
         </Link>
-        <h1 className="text-xl font-semibold text-stone-900">{exam.title}</h1>
-        <p className="text-sm text-stone-500 mt-0.5">İstatistikler & Analiz</p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-semibold text-stone-900">{exam.title}</h1>
+            <p className="text-sm text-stone-500 mt-0.5">İstatistikler & Analiz</p>
+          </div>
+          <a
+            href={`/api/odk/admin/exams/${examId}/export-csv`}
+            className="inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition"
+          >
+            <Download className="h-3.5 w-3.5" />
+            CSV İndir
+          </a>
+        </div>
       </div>
 
       {/* Summary */}

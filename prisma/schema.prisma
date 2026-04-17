@@ -382,6 +382,7 @@ model OdkExam {
   startsAt            DateTime?            @map("starts_at")
   endsAt              DateTime?            @map("ends_at")
   answerKeyReleasedAt DateTime?            @map("answer_key_released_at")
+  resultsReleasedAt   DateTime?            @map("results_released_at")
   googleMeetLink      String?              @map("google_meet_link")
   createdById         String?              @map("created_by_id")
   createdAt           DateTime             @default(now()) @map("created_at")
