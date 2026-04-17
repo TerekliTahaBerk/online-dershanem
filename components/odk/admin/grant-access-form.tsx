@@ -1,29 +1,58 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { grantUserAccessTag } from "@/app/odk/admin/actions";
 import { Check, AlertCircle } from "lucide-react";
 
 type AccessTag = { id: string; key: string; title: string };
+type StudentUser = { id: string; name: string | null; email: string };
 
 const inputCls = "w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100";
 
 type BulkResult = { email: string; ok: boolean; message: string };
 
-export function GrantAccessForm({ accessTags }: { accessTags: AccessTag[] }) {
+export function GrantAccessForm({
+  accessTags,
+  allStudentUsers,
+}: {
+  accessTags: AccessTag[];
+  allStudentUsers: StudentUser[];
+}) {
   const [isPending, startTransition] = useTransition();
   const [mode, setMode] = useState<"single" | "bulk">("single");
 
-  // Single
-  const [email, setEmail] = useState("");
+  // Single — search state
+  const [query, setQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<StudentUser | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [tagId, setTagId] = useState(accessTags[0]?.id ?? "");
   const [singleError, setSingleError] = useState<string | null>(null);
   const [singleSuccess, setSingleSuccess] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Bulk
   const [bulkEmails, setBulkEmails] = useState("");
   const [bulkTagId, setBulkTagId] = useState(accessTags[0]?.id ?? "");
   const [bulkResults, setBulkResults] = useState<BulkResult[]>([]);
+
+  const filtered = query.trim().length > 0
+    ? allStudentUsers.filter((u) => {
+        const q = query.toLowerCase();
+        return u.email.toLowerCase().includes(q) || u.name?.toLowerCase().includes(q);
+      }).slice(0, 8)
+    : [];
+
+  const handleSelect = (u: StudentUser) => {
+    setSelectedUser(u);
+    setQuery(u.name ? `${u.name} — ${u.email}` : u.email);
+    setShowDropdown(false);
+  };
+
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setSelectedUser(null);
+    setShowDropdown(true);
+  };
 
   async function findUserId(email: string): Promise<string | null> {
     const res = await fetch("/api/odk/admin/find-user", {
@@ -38,14 +67,20 @@ export function GrantAccessForm({ accessTags }: { accessTags: AccessTag[] }) {
   const handleSingle = async (e: React.FormEvent) => {
     e.preventDefault();
     setSingleError(null);
-    if (!email.trim() || !tagId) { setSingleError("E-posta ve etiket seçimi zorunludur."); return; }
+
+    const email = selectedUser?.email ?? query.trim();
+    if (!email || !tagId) {
+      setSingleError("Öğrenci seçimi ve etiket zorunludur.");
+      return;
+    }
 
     startTransition(async () => {
       try {
         const userId = await findUserId(email);
         if (!userId) { setSingleError("Kullanıcı bulunamadı."); return; }
         await grantUserAccessTag(userId, tagId);
-        setEmail("");
+        setQuery("");
+        setSelectedUser(null);
         setSingleSuccess(true);
         setTimeout(() => setSingleSuccess(false), 2500);
       } catch {
@@ -125,17 +160,48 @@ export function GrantAccessForm({ accessTags }: { accessTags: AccessTag[] }) {
             </div>
           )}
           <form onSubmit={handleSingle} className="space-y-4">
-            <label className="block text-sm font-medium text-stone-700">
-              Öğrenci E-postası <span className="text-red-400">*</span>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`mt-1.5 ${inputCls}`}
-                placeholder="ogrenci@email.com"
-              />
-            </label>
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                Öğrenci <span className="text-red-400">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={handleQueryChange}
+                  onFocus={() => query.trim() && setShowDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                  className={inputCls}
+                  placeholder="İsim veya e-posta ile ara..."
+                  autoComplete="off"
+                />
+                {showDropdown && filtered.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-stone-200 bg-white shadow-lg overflow-hidden">
+                    {filtered.map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onMouseDown={() => handleSelect(u)}
+                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-stone-50 flex flex-col"
+                      >
+                        <span className="font-medium text-stone-900">{u.name ?? u.email}</span>
+                        {u.name && <span className="text-xs text-stone-400">{u.email}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {showDropdown && query.trim().length > 0 && filtered.length === 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-stone-200 bg-white shadow-lg px-4 py-3 text-sm text-stone-400">
+                    Öğrenci bulunamadı
+                  </div>
+                )}
+              </div>
+              {selectedUser && (
+                <p className="mt-1.5 text-xs text-emerald-600 font-medium">✓ {selectedUser.email}</p>
+              )}
+            </div>
+
             <label className="block text-sm font-medium text-stone-700">
               Erişim Etiketi <span className="text-red-400">*</span>
               <select value={tagId} onChange={(e) => setTagId(e.target.value)} className={`mt-1.5 ${inputCls}`}>
@@ -144,6 +210,7 @@ export function GrantAccessForm({ accessTags }: { accessTags: AccessTag[] }) {
                 ))}
               </select>
             </label>
+
             <button
               type="submit"
               disabled={isPending}
