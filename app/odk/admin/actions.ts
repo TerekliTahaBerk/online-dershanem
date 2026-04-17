@@ -71,6 +71,15 @@ export async function createExam(data: {
   redirect(`/odk/admin/sinavlar/${exam.id}`);
 }
 
+export async function updateExamMeetLink(examId: string, googleMeetLink: string | null) {
+  await requireOdkAdmin();
+  await prisma.odkExam.update({
+    where: { id: examId },
+    data: { googleMeetLink: googleMeetLink || null },
+  });
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+}
+
 export async function updateExamStatus(examId: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED") {
   await requireOdkAdmin();
   await prisma.odkExam.update({ where: { id: examId }, data: { status } });

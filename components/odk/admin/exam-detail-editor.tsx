@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Check, Save } from "lucide-react";
-import { saveOfficialAnswers, updateExamFiles } from "@/app/odk/admin/actions";
+import { saveOfficialAnswers, updateExamFiles, updateExamMeetLink } from "@/app/odk/admin/actions";
 
 type Section = {
   id: string;
@@ -14,6 +14,55 @@ type Section = {
 
 const OPTIONS = ["A", "B", "C", "D", "E"];
 const inputCls = "w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100";
+
+export function ExamMeetLinkEditor({ examId, currentLink }: { examId: string; currentLink: string }) {
+  const [isPending, startTransition] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const [link, setLink] = useState(currentLink);
+
+  const handleSave = () => {
+    startTransition(async () => {
+      await updateExamMeetLink(examId, link || null);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-sm font-medium text-stone-700">
+        Google Meet Linki
+        <input
+          type="url"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          className={`mt-1.5 ${inputCls}`}
+          placeholder="https://meet.google.com/xxx-yyyy-zzz"
+        />
+      </label>
+      <p className="text-xs text-stone-400">
+        Öğrenciler sınava başlamadan önce bu linke katılıp kamera açmak zorunda kalacak.
+        Boş bırakırsanız zorunluluk olmaz.
+      </p>
+      <div className="flex items-center justify-end gap-3">
+        {saved && (
+          <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+            <Check className="h-3.5 w-3.5" /> Kaydedildi
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
+        >
+          <Save className="h-3.5 w-3.5" />
+          {isPending ? "Kaydediliyor..." : "Kaydet"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function AnswerKeyEditor({ section }: { section: Section }) {
   const [isPending, startTransition] = useTransition();

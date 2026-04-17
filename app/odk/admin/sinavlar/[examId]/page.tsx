@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { updateExamStatus } from "@/app/odk/admin/actions";
-import { AnswerKeyEditor, ExamFilesEditor } from "@/components/odk/admin/exam-detail-editor";
+import { AnswerKeyEditor, ExamFilesEditor, ExamMeetLinkEditor } from "@/components/odk/admin/exam-detail-editor";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   DRAFT:     { label: "Taslak",  className: "bg-stone-100 text-stone-600" },
@@ -17,6 +17,7 @@ type ExamDetail = {
   status: string;
   cadenceFamily: string;
   durationMinutes: number;
+  googleMeetLink: string | null;
   sections: Array<{
     id: string;
     title: string;
@@ -83,6 +84,12 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href={`/odk/admin/sinavlar/${examId}/istatistikler`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50 transition"
+            >
+              <BarChart2 className="h-3.5 w-3.5" /> İstatistikler
+            </Link>
             {exam.status === "DRAFT" && (
               <form action={async () => { "use server"; await updateExamStatus(examId, "PUBLISHED"); }}>
                 <button
@@ -132,6 +139,15 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
           examId={examId}
           bookletUrl={bookletFile?.publicUrl ?? ""}
           answerKeyUrl={answerKeyFile?.publicUrl ?? ""}
+        />
+      </div>
+
+      {/* Google Meet link */}
+      <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <h2 className="text-sm font-semibold text-stone-900 mb-4">Gözetim (Proctoring)</h2>
+        <ExamMeetLinkEditor
+          examId={examId}
+          currentLink={exam.googleMeetLink ?? ""}
         />
       </div>
 

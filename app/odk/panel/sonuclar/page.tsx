@@ -1,10 +1,20 @@
 import Link from "next/link";
-import { BarChart2, ArrowRight } from "lucide-react";
+import { BarChart2, ArrowRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const familyLabels: Record<string, string> = {
   TYT: "TYT", AYT: "AYT", LGS: "LGS", KPSS: "KPSS", ALES: "ALES",
+};
+
+type SectionScore = {
+  sectionId: string;
+  title: string;
+  questionCount: number;
+  correct: number;
+  wrong: number;
+  blank: number;
+  net: number;
 };
 
 type AttemptRow = {
@@ -15,6 +25,8 @@ type AttemptRow = {
   correctCount: number;
   wrongCount: number;
   blankCount: number;
+  sectionScores: SectionScore[] | null;
+  tabSwitchCount: number;
   exam: {
     id: string;
     title: string;
@@ -43,6 +55,31 @@ async function getAttempts(userId: string): Promise<AttemptRow[]> {
   return rows as unknown as AttemptRow[];
 }
 
+// Aggregate topic performance across all attempts
+function aggregateTopics(attempts: AttemptRow[]) {
+  const map: Record<string, { correct: number; total: number; wrong: number }> = {};
+
+  for (const attempt of attempts) {
+    if (attempt.status !== "SUBMITTED" || !attempt.sectionScores) continue;
+    for (const sec of attempt.sectionScores) {
+      if (!map[sec.title]) map[sec.title] = { correct: 0, total: 0, wrong: 0 };
+      map[sec.title].correct += sec.correct;
+      map[sec.title].total += sec.questionCount;
+      map[sec.title].wrong += sec.wrong;
+    }
+  }
+
+  return Object.entries(map)
+    .map(([title, v]) => ({
+      title,
+      correct: v.correct,
+      wrong: v.wrong,
+      total: v.total,
+      pct: v.total > 0 ? Math.round((v.correct / v.total) * 100) : 0,
+    }))
+    .sort((a, b) => a.pct - b.pct);
+}
+
 const statusConfig: Record<string, { label: string; cls: string }> = {
   SUBMITTED:   { label: "Tamamlandı",   cls: "bg-emerald-50 text-emerald-700" },
   IN_PROGRESS: { label: "Devam ediyor", cls: "bg-amber-50 text-amber-700" },
@@ -54,7 +91,6 @@ export default async function OdkSonuclarPage() {
   const attempts = await getAttempts(session!.user.id);
 
   const submitted = attempts.filter((a) => a.status === "SUBMITTED");
-  const inProgress = attempts.filter((a) => a.status === "IN_PROGRESS");
 
   const avgScore =
     submitted.length > 0
@@ -68,10 +104,14 @@ export default async function OdkSonuclarPage() {
         )
       : null;
 
+  const topics = aggregateTopics(attempts);
+  const weakTopics = topics.filter((t) => t.pct < 50);
+  const strongTopics = [...topics].reverse().filter((t) => t.pct >= 70);
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-xl font-semibold text-stone-900">Sonuçlarım</h1>
+        <h1 className="text-xl font-semibold text-stone-900">Sonuçlarım & Analiz</h1>
         <p className="text-sm text-stone-500 mt-0.5">
           {submitted.length} tamamlanan sınav
         </p>
@@ -96,6 +136,92 @@ export default async function OdkSonuclarPage() {
               {bestAttempt ? Number(bestAttempt.score).toFixed(2) : "—"}
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Topic analysis */}
+      {topics.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Weak topics */}
+          {weakTopics.length > 0 && (
+            <div className="rounded-xl border border-red-100 bg-red-50 p-5">
+              <h2 className="text-sm font-semibold text-red-900 flex items-center gap-2 mb-4">
+                <TrendingDown className="h-4 w-4" /> Zayıf Konular
+              </h2>
+              <div className="space-y-2.5">
+                {weakTopics.slice(0, 6).map((t) => (
+                  <div key={t.title}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-medium text-stone-700 truncate">{t.title}</span>
+                      <span className="shrink-0 text-red-600 font-semibold ml-2">{t.pct}%</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-red-100">
+                      <div
+                        className="h-full rounded-full bg-red-400 transition-all"
+                        style={{ width: `${t.pct}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      {t.correct}/{t.total} doğru · {t.wrong} yanlış
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Strong topics */}
+          {strongTopics.length > 0 && (
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-5">
+              <h2 className="text-sm font-semibold text-emerald-900 flex items-center gap-2 mb-4">
+                <TrendingUp className="h-4 w-4" /> Güçlü Konular
+              </h2>
+              <div className="space-y-2.5">
+                {strongTopics.slice(0, 6).map((t) => (
+                  <div key={t.title}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-medium text-stone-700 truncate">{t.title}</span>
+                      <span className="shrink-0 text-emerald-600 font-semibold ml-2">{t.pct}%</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-emerald-100">
+                      <div
+                        className="h-full rounded-full bg-emerald-500 transition-all"
+                        style={{ width: `${t.pct}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-stone-400 mt-0.5">
+                      {t.correct}/{t.total} doğru
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* All topics if only one panel would show */}
+          {weakTopics.length === 0 && strongTopics.length === 0 && topics.length > 0 && (
+            <div className="rounded-xl border border-stone-200 bg-white p-5 md:col-span-2">
+              <h2 className="text-sm font-semibold text-stone-900 flex items-center gap-2 mb-4">
+                <Minus className="h-4 w-4" /> Konu Performansı
+              </h2>
+              <div className="space-y-2.5">
+                {topics.map((t) => (
+                  <div key={t.title}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="font-medium text-stone-700">{t.title}</span>
+                      <span className="text-stone-600 font-semibold">{t.pct}%</span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-stone-100">
+                      <div
+                        className={`h-full rounded-full transition-all ${t.pct >= 70 ? "bg-emerald-500" : t.pct >= 40 ? "bg-amber-400" : "bg-red-400"}`}
+                        style={{ width: `${t.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
