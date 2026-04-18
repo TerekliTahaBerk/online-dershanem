@@ -552,8 +552,8 @@ model OdkOrder {
   totalCents    Int            @map("total_cents")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
-  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
-  package       OdkPackage     @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package       OdkPackage     @relation(fields: [packageId], references: [id], onDelete: Cascade)
   payments      OdkPayment[]
   entitlements  OdkEntitlement[]
 
@@ -592,7 +592,7 @@ model OdkEntitlement {
   createdAt      DateTime             @default(now()) @map("created_at")
   updatedAt      DateTime             @updatedAt @map("updated_at")
   user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package        OdkPackage           @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  package        OdkPackage           @relation(fields: [packageId], references: [id], onDelete: Cascade)
   order          OdkOrder?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
   userAccessTags OdkUserAccessTag[]
   attempts       OdkExamAttempt[]

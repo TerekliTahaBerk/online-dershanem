@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
@@ -8,7 +9,6 @@ import {
   FileText,
   BarChart2,
   User,
-  Trophy,
   Package,
   Menu,
   X,
@@ -25,13 +25,9 @@ const navItems = [
 
 function Brand() {
   return (
-    <Link href="/odk/panel" className="flex items-center gap-2.5">
-      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600">
-        <Trophy className="h-4 w-4 text-white" />
-      </div>
-      <div className="leading-tight">
-        <p className="text-xs font-bold text-white">Online Deneme</p>
-        <p className="text-xs font-bold text-emerald-400">Kulübü</p>
+    <Link href="/odk/panel" className="flex items-center">
+      <div className="rounded-lg bg-white px-2 py-1">
+        <Image src="/odklogo2.jpeg" alt="Online Deneme Kulübü" width={160} height={38} className="h-6 w-auto object-contain" />
       </div>
     </Link>
   );

@@ -277,7 +277,7 @@ export default async function PackageDetailPage({
       <div className="rounded-xl border border-red-100 bg-red-50 p-5 space-y-3">
         <h2 className="text-sm font-semibold text-red-800">Tehlikeli İşlemler</h2>
         <p className="text-xs text-red-600">
-          Paketi silmek geri alınamaz. Siparişi veya yetkilendirmesi olan paketler silinemez.
+          Paketi silmek geri alınamaz. Tüm ilişkili sipariş ve yetkilendirmeler de silinir.
         </p>
         <DeletePackageButton packageId={packageId} />
       </div>

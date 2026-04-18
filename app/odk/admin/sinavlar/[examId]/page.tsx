@@ -376,7 +376,7 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
       <div className="rounded-xl border border-red-100 bg-red-50 p-5 space-y-3">
         <h2 className="text-sm font-semibold text-red-800">Tehlikeli İşlemler</h2>
         <p className="text-xs text-red-600">
-          Sınavı silmek geri alınamaz. Katılım kaydı olan sınavlar silinemez — önce arşivleyin.
+          Sınavı silmek geri alınamaz. Tüm katılım kayıtları ve cevaplar da silinir.
         </p>
         <DeleteExamButton examId={examId} />
       </div>
