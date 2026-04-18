@@ -557,6 +557,34 @@ export async function sendOdkResultsReleased({
   });
 }
 
+/** Sent to a student when an admin manually grants ODK access */
+export async function sendOdkAccessGranted({
+  to,
+  name,
+  tagTitle,
+}: {
+  to: string;
+  name: string;
+  tagTitle: string;
+}) {
+  const firstName = name.split(" ")[0];
+  const html = baseTemplate(`
+    ${heading("ODK Erişimin Açıldı! 🎉")}
+    ${paragraph(`Merhaba <strong>${escapeHtml(firstName)}</strong>, <strong>${escapeHtml(tagTitle)}</strong> paketine erişimin tanımlandı.`)}
+    ${paragraph("Artık Online Deneme Kulübü paneline giriş yaparak erişimine tanımlı sınavlara katılabilirsin.")}
+    ${ctaButton("Sınavlara Git →", `${APP_URL}/odk/panel/sinavlar`)}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#408A71;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresine yazabilirsiniz.</span>')}
+    ${signature()}
+  `);
+
+  await sendEmail({
+    to,
+    subject: "ODK Erişimin Açıldı – Online Deneme Kulübü",
+    html,
+  });
+}
+
 /** Sent to admin recipients when a new lead form is submitted */
 export async function sendLeadSubmissionNotification({
   fullName,

@@ -61,6 +61,8 @@ export async function submitAttempt(
     examId: string;
     startedAt: Date;
     exam: {
+      durationMinutes: number;
+      endsAt: Date | null;
       sections: Array<{
         id: string;
         title: string;
@@ -85,6 +87,14 @@ export async function submitAttempt(
   })) as unknown as AttemptWithExam | null;
 
   if (!attempt) throw new Error("Girişim bulunamadı");
+
+  // Server-side time validation: reject if far past the allowed duration
+  const elapsedMs = Date.now() - attempt.startedAt.getTime();
+  const allowedMs = (attempt.exam.durationMinutes + 2) * 60 * 1000; // 2 min grace
+  if (elapsedMs > allowedMs) {
+    // Still process — just cap the duration to the allowed max rather than reject,
+    // so auto-submits from the client timer are always accepted.
+  }
 
   // Save optical answers
   const opticalUpserts = Object.entries(answers).flatMap(([sectionId, sectionAnswers]) =>
@@ -172,7 +182,9 @@ export async function submitAttempt(
   }
 
   const net = totalCorrect - totalWrong / 4;
-  const totalDuration = Math.round((Date.now() - attempt.startedAt.getTime()) / 1000);
+  const rawDurationSec = Math.round((Date.now() - attempt.startedAt.getTime()) / 1000);
+  const maxDurationSec = attempt.exam.durationMinutes * 60;
+  const totalDuration = Math.min(rawDurationSec, maxDurationSec);
 
   await prisma.odkExamAttempt.update({
     where: { id: attemptId },

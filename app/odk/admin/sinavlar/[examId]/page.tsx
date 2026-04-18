@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { updateExamStatus, releaseExamResults, releaseAnswerKey } from "@/app/odk/admin/actions";
+import { updateExamStatus, releaseExamResults, releaseAnswerKey, addExamAccessTag, removeExamAccessTag } from "@/app/odk/admin/actions";
 import { AnswerKeyEditor, ExamFilesEditor, ExamMeetLinkEditor } from "@/components/odk/admin/exam-detail-editor";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -32,35 +32,46 @@ type ExamDetail = {
   _count: { attempts: number };
 };
 
-async function getExam(examId: string): Promise<ExamDetail | null> {
-  const row = await prisma.odkExam.findUnique({
-    where: { id: examId },
-    include: {
-      sections: {
-        orderBy: { orderIndex: "asc" },
-        include: {
-          officialAnswers: { orderBy: { questionNumber: "asc" } },
+async function getExam(examId: string) {
+  const [row, allTags] = await Promise.all([
+    prisma.odkExam.findUnique({
+      where: { id: examId },
+      include: {
+        sections: {
+          orderBy: { orderIndex: "asc" },
+          include: {
+            officialAnswers: { orderBy: { questionNumber: "asc" } },
+          },
         },
+        files: true,
+        examAccessTags: { include: { accessTag: true } },
+        _count: { select: { attempts: true } },
       },
-      files: true,
-      examAccessTags: { include: { accessTag: true } },
-      _count: { select: { attempts: true } },
-    },
-  });
-  return row as unknown as ExamDetail | null;
+    }),
+    prisma.odkAccessTag.findMany({
+      where: { isActive: true },
+      select: { id: true, title: true },
+      orderBy: { title: "asc" },
+    }),
+  ]);
+  if (!row) return null;
+  return { exam: row as unknown as ExamDetail, allTags };
 }
 
 export default async function ExamDetailPage({ params }: { params: Promise<{ examId: string }> }) {
   const { examId } = await params;
-  const exam = await getExam(examId);
-  if (!exam) notFound();
+  const data = await getExam(examId);
+  if (!data) notFound();
 
+  const { exam, allTags } = data;
   const status = statusConfig[exam.status] ?? statusConfig.DRAFT;
   const bookletFile = exam.files.find((f) => f.fileType === "BOOKLET_PDF");
   const answerKeyFile = exam.files.find((f) => f.fileType === "ANSWER_KEY_PDF");
 
   const totalQuestions = exam.sections.reduce((s, sec) => s + sec.questionCount, 0);
   const answeredQuestions = exam.sections.reduce((s, sec) => s + sec.officialAnswers.length, 0);
+  const linkedTagIds = new Set(exam.examAccessTags.map((et) => et.accessTag.id));
+  const availableTags = allTags.filter((t) => !linkedTagIds.has(t.id));
 
   return (
     <div className="p-6 max-w-4xl space-y-6">
@@ -232,26 +243,60 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
       </div>
 
       {/* Access Tags */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5">
-        <h2 className="text-sm font-semibold text-stone-900 mb-3">Erişim Etiketleri</h2>
-        {exam.examAccessTags.length === 0 ? (
-          <p className="text-sm text-stone-400">
-            Bu sınav herhangi bir erişim etiketiyle ilişkilendirilmemiş.{" "}
-            <Link href="/odk/admin/etiketler" className="text-emerald-600 hover:underline">
-              Etiketleri yönet →
-            </Link>
+      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-stone-900">Erişim Etiketleri</h2>
+          <p className="text-xs text-stone-400 mt-0.5">
+            Yalnızca bu etiketlere sahip öğrenciler sınavı görebilir. Etiket yoksa herkese açık.
           </p>
+        </div>
+
+        {exam.examAccessTags.length === 0 ? (
+          <p className="text-sm text-stone-400">Henüz etiket eklenmemiş — sınav herkese açık.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {exam.examAccessTags.map(({ accessTag }) => (
-              <span
-                key={accessTag.id}
-                className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700"
-              >
-                {accessTag.title}
-              </span>
+              <div key={accessTag.id} className="flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 pl-3 pr-1.5 py-1">
+                <span className="text-xs font-medium text-emerald-700">{accessTag.title}</span>
+                <form action={async () => { "use server"; await removeExamAccessTag(examId, accessTag.id); }}>
+                  <button
+                    type="submit"
+                    className="rounded-full h-4 w-4 flex items-center justify-center text-emerald-500 hover:bg-emerald-200 hover:text-emerald-800 transition text-xs font-bold"
+                  >
+                    ×
+                  </button>
+                </form>
+              </div>
             ))}
           </div>
+        )}
+
+        {availableTags.length > 0 && (
+          <form
+            action={async (fd: FormData) => {
+              "use server";
+              const tagId = fd.get("tagId") as string;
+              if (tagId) await addExamAccessTag(examId, tagId);
+            }}
+            className="flex items-center gap-2 pt-2 border-t border-stone-100"
+          >
+            <select
+              name="tagId"
+              defaultValue=""
+              className="flex-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            >
+              <option value="" disabled>Etiket seç…</option>
+              {availableTags.map((t) => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition shrink-0"
+            >
+              Ekle
+            </button>
+          </form>
         )}
       </div>
     </div>

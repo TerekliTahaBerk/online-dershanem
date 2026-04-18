@@ -181,9 +181,9 @@ function ViolationOverlay({
             <AlertTriangle className="h-8 w-8 text-red-600" />
           </div>
         </div>
-        <h2 className="text-lg font-bold text-stone-900">Sekme Değişikliği Tespit Edildi!</h2>
+        <h2 className="text-lg font-bold text-stone-900">Sınav İhlali Tespit Edildi!</h2>
         <p className="text-sm text-stone-600">
-          Başka sekmeye veya uygulamaya geçtiğin tespit edildi.{" "}
+          Başka sekmeye geçildi veya tam ekrandan çıkıldı.{" "}
           <span className="font-semibold text-red-600">Toplam ihlal: {count}</span>
         </p>
         <p className="text-xs text-stone-400">
@@ -277,6 +277,21 @@ export function ExamProctor({
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
   }, []);
+
+  const handleFullscreenChange = useCallback(() => {
+    if (!document.fullscreenElement && phase === "exam" && attemptId) {
+      violationRef.current += 1;
+      setViolationCount(violationRef.current);
+      setShowViolation(true);
+      startTransition(() => recordTabSwitch(attemptId, violationRef.current));
+    }
+  }, [phase, attemptId]);
+
+  useEffect(() => {
+    if (phase !== "exam") return;
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [phase, handleFullscreenChange]);
 
   // ── Auto-submit on timer expire ────────────────────────────────────────────
 
