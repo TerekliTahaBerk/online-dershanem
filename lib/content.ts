@@ -3,6 +3,7 @@ export const siteUrl = "https://onlinedershanem.com";
 export const navLinks = [
   { label: "Paketler", href: "/#paket-karsilastirma" },
   { label: "Kamplar", href: "/kamplar/" },
+  { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
   { label: "Blog", href: "/blog/" }
 ];
 
