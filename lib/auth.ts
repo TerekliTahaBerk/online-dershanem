@@ -7,6 +7,14 @@ import { prisma } from "@/lib/prisma";
 import { ensureUserAccessLinksByEmail } from "@/lib/user-links";
 import { credentialsSchema } from "@/lib/validators";
 
+async function syncUserPanelLinks(userId: string, email?: string | null, role?: "ADMIN" | "STUDENT" | "TEACHER" | null) {
+  try {
+    await ensureUserAccessLinksByEmail(userId, email, role);
+  } catch (error) {
+    console.error("[auth] failed to sync panel links", { userId, email, role, error });
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt"
@@ -47,7 +55,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        await ensureUserAccessLinksByEmail(user.id, user.email, user.role);
+        await syncUserPanelLinks(user.id, user.email, user.role);
 
         return {
           id: user.id,
@@ -78,7 +86,7 @@ export const authOptions: NextAuthOptions = {
           });
         }
 
-        await ensureUserAccessLinksByEmail(dbUser.id, dbUser.email, dbUser.role);
+        await syncUserPanelLinks(dbUser.id, dbUser.email, dbUser.role);
         token.sub = dbUser.id;
       } else if (user) {
         token.sub = user.id;
