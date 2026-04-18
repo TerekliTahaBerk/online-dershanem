@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { Prisma, IntakeStatus } from "@prisma/client";
 
 type LeadWithStudent = Prisma.LeadSubmissionGetPayload<{
@@ -229,17 +230,14 @@ export default async function FormlarPage({ searchParams }: Props) {
                                 Kaydet
                               </button>
                               <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">İptal</Link>
-                              <form action={deleteLeadAction} className="ml-auto">
-                                <input type="hidden" name="leadId" value={lead.id} />
-                                <input type="hidden" name="returnTo" value={buildUrl({ edit: "" })} />
-                                <button
-                                  type="submit"
-                                  onClick={(e) => { if (!confirm("Bu formu kalıcı olarak silmek istediğinizden emin misiniz?")) e.preventDefault(); }}
-                                  className="text-xs font-medium border border-red-200 text-red-700 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors"
-                                >
-                                  Formu Sil
-                                </button>
-                              </form>
+                              <ConfirmDeleteButton
+                                action={deleteLeadAction}
+                                hiddenFields={{ leadId: lead.id, returnTo: buildUrl({ edit: "" }) }}
+                                message="Bu formu kalıcı olarak silmek istediğinizden emin misiniz?"
+                                className="text-xs font-medium border border-red-200 text-red-700 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors ml-auto"
+                              >
+                                Formu Sil
+                              </ConfirmDeleteButton>
                             </div>
                           </form>
                         </td>

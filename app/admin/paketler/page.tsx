@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/admin";
 import { togglePackageAction, deletePackageAction } from "./actions";
+import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { Plus, ExternalLink, BookOpen, CheckCircle, XCircle } from "lucide-react";
 
 type PackageWithCount = Prisma.PackageGetPayload<{
@@ -147,16 +148,14 @@ export default async function PaketlerPage({ searchParams }: Props) {
                       </button>
                     </form>
 
-                    <form action={deletePackageAction}>
-                      <input type="hidden" name="packageId" value={pkg.id} />
-                      <button
-                        type="submit"
-                        onClick={(e) => { if (!confirm(`"${pkg.name}" paketini kalıcı olarak silmek istediğinizden emin misiniz?`)) e.preventDefault(); }}
-                        className="text-xs font-medium border border-red-200 text-red-700 rounded-lg px-2.5 py-1.5 hover:bg-red-50 transition-colors"
-                      >
-                        Sil
-                      </button>
-                    </form>
+                    <ConfirmDeleteButton
+                      action={deletePackageAction}
+                      hiddenFields={{ packageId: pkg.id }}
+                      message={`"${pkg.name}" paketini kalıcı olarak silmek istediğinizden emin misiniz?`}
+                      className="text-xs font-medium border border-red-200 text-red-700 rounded-lg px-2.5 py-1.5 hover:bg-red-50 transition-colors"
+                    >
+                      Sil
+                    </ConfirmDeleteButton>
                   </div>
                 </div>
               </div>

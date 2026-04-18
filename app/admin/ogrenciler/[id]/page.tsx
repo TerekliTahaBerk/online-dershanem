@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import {
   buildWhatsAppLink,
   formatDateTime,
@@ -690,20 +691,14 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
         <p className="text-xs text-red-600">
           Öğrenciyi silmek geri alınamaz. Tüm dersler, ödemeler ve ilişkili veriler de silinir.
         </p>
-        <form
+        <ConfirmDeleteButton
           action={deleteStudentAction}
-          onSubmit={(e) => {
-            if (!confirm("Bu öğrenciyi kalıcı olarak silmek istediğinizden emin misiniz?")) e.preventDefault();
-          }}
+          hiddenFields={{ studentId: student.id }}
+          message="Bu öğrenciyi kalıcı olarak silmek istediğinizden emin misiniz?"
+          className="rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition"
         >
-          <input type="hidden" name="studentId" value={student.id} />
-          <button
-            type="submit"
-            className="rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition"
-          >
-            Öğrenciyi Sil
-          </button>
-        </form>
+          Öğrenciyi Sil
+        </ConfirmDeleteButton>
       </div>
     </div>
   );
