@@ -3,6 +3,7 @@ import { Prisma, LessonStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatDateTimeLocalInput, lessonStatusLabels, lessonStatusOptions } from "@/lib/admin";
 import { updateLessonAction, cancelLessonAction, deleteLessonAction } from "./actions";
+import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { ExternalLink, Plus } from "lucide-react";
 
 type LessonWithRelations = Prisma.LessonGetPayload<{
@@ -311,15 +312,14 @@ export default async function DerslerPage({ searchParams }: Props) {
                                 </button>
                               </form>
                             )}
-                            <form action={deleteLessonAction}>
-                              <input type="hidden" name="lessonId" value={lesson.id} />
-                              <input type="hidden" name="returnTo" value={buildUrl({ edit: "" })} />
-                              <button type="submit"
-                                onClick={(e) => { if (!confirm("Bu dersi kalıcı olarak silmek istediğinizden emin misiniz?")) e.preventDefault(); }}
-                                className="text-xs text-red-700 hover:text-red-900 border border-red-300 bg-red-50 rounded-lg px-3 py-1.5 hover:bg-red-100 transition-colors">
-                                Dersi Sil
-                              </button>
-                            </form>
+                            <ConfirmDeleteButton
+                              action={deleteLessonAction}
+                              hiddenFields={{ lessonId: lesson.id, returnTo: buildUrl({ edit: "" }) }}
+                              message="Bu dersi kalıcı olarak silmek istediğinizden emin misiniz?"
+                              className="text-xs text-red-700 hover:text-red-900 border border-red-300 bg-red-50 rounded-lg px-3 py-1.5 hover:bg-red-100 transition-colors"
+                            >
+                              Dersi Sil
+                            </ConfirmDeleteButton>
                           </div>
                         </td>
                       </tr>
