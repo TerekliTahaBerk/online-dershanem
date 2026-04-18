@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { withAccelerate } from "@prisma/extension-accelerate";
+import { normalizePrismaEnv } from "@/lib/prisma-env";
 
-const databaseUrl = process.env.DATABASE_URL;
-const directUrl = process.env.DIRECT_URL;
+const { databaseUrl, directUrl } = normalizePrismaEnv();
 const isAccelerateUrl = databaseUrl?.startsWith("prisma://") ?? false;
 const shouldUseDirectConnection = process.env.VERCEL !== "1" && Boolean(directUrl);
 
