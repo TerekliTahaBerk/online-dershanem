@@ -136,13 +136,6 @@ export async function updateExamMeetLink(examId: string, googleMeetLink: string 
 
 export async function deleteExam(examId: string) {
   await requireOdkAdmin();
-  const exam = await prisma.odkExam.findUnique({
-    where: { id: examId },
-    select: { _count: { select: { attempts: true } } },
-  });
-  if ((exam?._count.attempts ?? 0) > 0) {
-    throw new Error("Bu sınavda katılım kaydı olduğu için silinemez. Önce arşivleyin.");
-  }
   await prisma.odkExam.delete({ where: { id: examId } });
   revalidatePath("/odk/admin/sinavlar");
   redirect("/odk/admin/sinavlar");
@@ -299,13 +292,6 @@ export async function createPackage(data: {
 
 export async function deletePackage(packageId: string) {
   await requireOdkAdmin();
-  const pkg = await prisma.odkPackage.findUnique({
-    where: { id: packageId },
-    select: { _count: { select: { orders: true, entitlements: true } } },
-  });
-  if ((pkg?._count.orders ?? 0) > 0 || (pkg?._count.entitlements ?? 0) > 0) {
-    throw new Error("Bu pakete ait sipariş veya yetkilendirme kaydı olduğu için silinemez.");
-  }
   await prisma.odkPackage.delete({ where: { id: packageId } });
   revalidatePath("/odk/admin/paketler");
   redirect("/odk/admin/paketler");
@@ -374,12 +360,6 @@ export async function toggleAccessTag(tagId: string, isActive: boolean) {
 
 export async function deleteAccessTag(tagId: string) {
   await requireOdkAdmin();
-  const counts = await prisma.odkAccessTag.findUnique({
-    where: { id: tagId },
-    select: { _count: { select: { userTags: true, examTags: true, packageTags: true } } },
-  });
-  const total = (counts?._count.userTags ?? 0) + (counts?._count.examTags ?? 0) + (counts?._count.packageTags ?? 0);
-  if (total > 0) throw new Error("Bu etiket kullanımda olduğu için silinemez.");
   await prisma.odkAccessTag.delete({ where: { id: tagId } });
   revalidatePath("/odk/admin/etiketler");
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
@@ -9,7 +10,6 @@ import {
   Package,
   Users,
   Tag,
-  Trophy,
   Menu,
   X,
 } from "lucide-react";
@@ -24,14 +24,11 @@ const navItems = [
 
 function Brand() {
   return (
-    <Link href="/odk/admin" className="flex items-center gap-2.5">
-      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600">
-        <Trophy className="h-4 w-4 text-white" />
+    <Link href="/odk/admin" className="flex items-center gap-2">
+      <div className="rounded-lg bg-white p-1 flex items-center justify-center">
+        <Image src="/odklogo1.png" alt="odk." width={40} height={40} className="h-7 w-7 object-contain" />
       </div>
-      <div className="leading-tight">
-        <p className="text-xs font-bold text-white">Online Deneme</p>
-        <p className="text-xs font-bold text-emerald-400">Kulübü · Admin</p>
-      </div>
+      <p className="text-xs font-bold text-stone-300">Admin</p>
     </Link>
   );
 }

@@ -12,7 +12,7 @@ import {
   intakeStatusOptions,
   buildWhatsAppLink
 } from "@/lib/admin";
-import { updateLeadAction } from "@/app/admin/actions";
+import { updateLeadAction, deleteLeadAction } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -224,11 +224,22 @@ export default async function FormlarPage({ searchParams }: Props) {
                                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 resize-none" />
                             </div>
 
-                            <div className="col-span-2 md:col-span-4 flex gap-3">
+                            <div className="col-span-2 md:col-span-4 flex gap-3 items-center flex-wrap">
                               <button type="submit" className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                                 Kaydet
                               </button>
                               <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">İptal</Link>
+                              <form action={deleteLeadAction} className="ml-auto">
+                                <input type="hidden" name="leadId" value={lead.id} />
+                                <input type="hidden" name="returnTo" value={buildUrl({ edit: "" })} />
+                                <button
+                                  type="submit"
+                                  onClick={(e) => { if (!confirm("Bu formu kalıcı olarak silmek istediğinizden emin misiniz?")) e.preventDefault(); }}
+                                  className="text-xs font-medium border border-red-200 text-red-700 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors"
+                                >
+                                  Formu Sil
+                                </button>
+                              </form>
                             </div>
                           </form>
                         </td>
