@@ -44,7 +44,14 @@ export function ExamCreateForm() {
 
     startTransition(async () => {
       try {
-        await createExam({ title: title.trim(), cadenceFamily, durationMinutes, startsAt: startsAt || undefined, endsAt: endsAt || undefined, sections });
+        await createExam({
+          title: title.trim(),
+          cadenceFamily,
+          durationMinutes,
+          startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
+          endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
+          sections,
+        });
       } catch {
         setError("Sınav oluşturulamadı. Lütfen tekrar deneyin.");
       }
