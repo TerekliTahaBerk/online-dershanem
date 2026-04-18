@@ -96,9 +96,9 @@ export default async function OdkSinavlarimPage() {
   const ended = exams.filter((e) => !e.myAttempt && e.ended);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-stone-900">Sınavlarım</h1>
+        <h1 className="text-lg md:text-xl font-semibold text-stone-900">Sınavlarım</h1>
         <p className="text-sm text-stone-500 mt-0.5">
           {exams.length} sınava erişimin var · {completed.length} tamamlandı
         </p>
@@ -172,12 +172,12 @@ function ExamGroup({ title, exams, badge }: { title: string; exams: ExamItem[]; 
           return (
             <div
               key={exam.id}
-              className={`flex items-center justify-between rounded-xl border bg-white px-5 py-4 transition ${
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border bg-white px-4 sm:px-5 py-4 transition ${
                 isLocked ? "border-stone-100 opacity-75" : "border-stone-200 hover:border-emerald-200"
               }`}
             >
               <div className="min-w-0">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 flex-wrap">
                   {isLocked && <Lock className="h-3.5 w-3.5 text-stone-400 shrink-0" />}
                   <p className="font-medium text-stone-900 truncate">{exam.title}</p>
                   <span className="rounded-md bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600 shrink-0">
@@ -197,7 +197,7 @@ function ExamGroup({ title, exams, badge }: { title: string; exams: ExamItem[]; 
                   )}
                 </p>
               </div>
-              <div className="flex items-center gap-3 ml-4 shrink-0">
+              <div className="flex items-center gap-3 sm:ml-4 shrink-0">
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeStyles[badge]}`}>
                   {badge === "in-progress" ? "Devam ediyor" : badge === "completed" ? "Tamamlandı" : ""}
                 </span>

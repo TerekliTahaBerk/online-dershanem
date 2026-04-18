@@ -68,10 +68,10 @@ export default async function OdkPanelPage() {
   const greeting = hour < 12 ? "Günaydın" : hour < 18 ? "İyi günler" : "İyi akşamlar";
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-xl font-semibold text-stone-900">{greeting}, {firstName}!</h1>
+        <h1 className="text-lg md:text-xl font-semibold text-stone-900">{greeting}, {firstName}!</h1>
         <p className="text-sm text-stone-500 mt-0.5">
           {new Date().toLocaleDateString("tr-TR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
         </p>
