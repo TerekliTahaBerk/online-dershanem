@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import {
+  hasOdkExamAttemptSectionScoresColumn,
+  hasOdkExamAttemptTabSwitchCountColumn,
+} from "@/lib/odk-exam-schema";
 
 async function requireOdkUser() {
   const session = await getServerAuthSession();
@@ -42,6 +46,9 @@ export async function startExam(
 export async function recordTabSwitch(attemptId: string, newCount: number) {
   const session = await requireOdkUser();
   const userId = session.user.id;
+  const hasTabSwitchCountColumn = await hasOdkExamAttemptTabSwitchCountColumn();
+
+  if (!hasTabSwitchCountColumn) return;
 
   await prisma.odkExamAttempt.updateMany({
     where: { id: attemptId, userId, status: "IN_PROGRESS" },
@@ -55,6 +62,7 @@ export async function submitAttempt(
 ) {
   const session = await requireOdkUser();
   const userId = session.user.id;
+  const hasSectionScoresColumn = await hasOdkExamAttemptSectionScoresColumn();
 
   type AttemptWithExam = {
     id: string;
@@ -74,12 +82,22 @@ export async function submitAttempt(
 
   const attempt = (await prisma.odkExamAttempt.findFirst({
     where: { id: attemptId, userId, status: "IN_PROGRESS" },
-    include: {
+    select: {
+      id: true,
+      examId: true,
+      startedAt: true,
       exam: {
-        include: {
+        select: {
+          durationMinutes: true,
+          endsAt: true,
           sections: {
             orderBy: { orderIndex: "asc" },
-            include: { officialAnswers: true },
+            select: {
+              id: true,
+              title: true,
+              questionCount: true,
+              officialAnswers: true,
+            },
           },
         },
       },
@@ -196,7 +214,7 @@ export async function submitAttempt(
       wrongCount: totalWrong,
       blankCount: totalBlank,
       durationSeconds: totalDuration,
-      sectionScores: sectionScores as unknown as never,
+      ...(hasSectionScoresColumn ? { sectionScores: sectionScores as unknown as never } : {}),
     },
   });
 

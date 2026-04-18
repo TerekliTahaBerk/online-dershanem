@@ -6,6 +6,11 @@ import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
 import { sendOdkResultsReleased, sendOdkAccessGranted } from "@/lib/email";
+import {
+  requireOdkExamAnswerKeyReleasedAtColumn,
+  requireOdkExamGoogleMeetLinkColumn,
+  requireOdkExamResultsReleasedAtColumn,
+} from "@/lib/odk-exam-schema";
 
 async function requireOdkAdmin() {
   const session = await getServerAuthSession();
@@ -66,6 +71,7 @@ export async function createExam(data: {
         })),
       },
     },
+    select: { id: true },
   });
 
   revalidatePath("/odk/admin/sinavlar");
@@ -74,6 +80,7 @@ export async function createExam(data: {
 
 export async function releaseExamResults(examId: string) {
   await requireOdkAdmin();
+  await requireOdkExamResultsReleasedAtColumn();
 
   const exam = await prisma.odkExam.update({
     where: { id: examId },
@@ -108,6 +115,7 @@ export async function releaseExamResults(examId: string) {
 
 export async function releaseAnswerKey(examId: string) {
   await requireOdkAdmin();
+  await requireOdkExamAnswerKeyReleasedAtColumn();
   await prisma.odkExam.update({
     where: { id: examId },
     data: { answerKeyReleasedAt: new Date() },
@@ -118,6 +126,7 @@ export async function releaseAnswerKey(examId: string) {
 
 export async function updateExamMeetLink(examId: string, googleMeetLink: string | null) {
   await requireOdkAdmin();
+  await requireOdkExamGoogleMeetLinkColumn();
   await prisma.odkExam.update({
     where: { id: examId },
     data: { googleMeetLink: googleMeetLink || null },

@@ -2,6 +2,10 @@ import Link from "next/link";
 import { BarChart2, ArrowRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  hasOdkExamAttemptSectionScoresColumn,
+  hasOdkExamAttemptTabSwitchCountColumn,
+} from "@/lib/odk-exam-schema";
 
 const familyLabels: Record<string, string> = {
   TYT: "TYT", AYT: "AYT", LGS: "LGS", KPSS: "KPSS", ALES: "ALES",
@@ -37,10 +41,24 @@ type AttemptRow = {
 };
 
 async function getAttempts(userId: string): Promise<AttemptRow[]> {
+  const [hasSectionScoresColumn, hasTabSwitchCountColumn] = await Promise.all([
+    hasOdkExamAttemptSectionScoresColumn(),
+    hasOdkExamAttemptTabSwitchCountColumn(),
+  ]);
+
   const rows = await prisma.odkExamAttempt.findMany({
     where: { userId },
     orderBy: { startedAt: "desc" },
-    include: {
+    select: {
+      id: true,
+      status: true,
+      startedAt: true,
+      score: true,
+      correctCount: true,
+      wrongCount: true,
+      blankCount: true,
+      ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
+      ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
       exam: {
         select: {
           id: true,
@@ -52,7 +70,11 @@ async function getAttempts(userId: string): Promise<AttemptRow[]> {
       },
     },
   });
-  return rows as unknown as AttemptRow[];
+  return rows.map((row) => ({
+    ...row,
+    sectionScores: "sectionScores" in row ? (row.sectionScores as SectionScore[] | null) ?? null : null,
+    tabSwitchCount: "tabSwitchCount" in row ? row.tabSwitchCount ?? 0 : 0,
+  })) as AttemptRow[];
 }
 
 // Aggregate topic performance across all attempts

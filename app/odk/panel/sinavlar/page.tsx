@@ -34,7 +34,15 @@ async function getAccessibleExams(userId: string) {
   const [rawOpen, rawTagged] = await Promise.all([
     prisma.odkExam.findMany({
       where: { status: "PUBLISHED", examAccessTags: { none: {} } },
-      include: { sections: { select: { questionCount: true } } },
+      select: {
+        id: true,
+        title: true,
+        cadenceFamily: true,
+        durationMinutes: true,
+        startsAt: true,
+        endsAt: true,
+        sections: { select: { questionCount: true } },
+      },
       orderBy: { createdAt: "desc" },
     }),
     tagIds.length > 0
@@ -43,7 +51,15 @@ async function getAccessibleExams(userId: string) {
             status: "PUBLISHED",
             examAccessTags: { some: { accessTagId: { in: tagIds } } },
           },
-          include: { sections: { select: { questionCount: true } } },
+          select: {
+            id: true,
+            title: true,
+            cadenceFamily: true,
+            durationMinutes: true,
+            startsAt: true,
+            endsAt: true,
+            sections: { select: { questionCount: true } },
+          },
           orderBy: { createdAt: "desc" },
         })
       : Promise.resolve([]),

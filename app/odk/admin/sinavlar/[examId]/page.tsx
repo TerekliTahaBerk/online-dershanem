@@ -4,6 +4,11 @@ import { ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { updateExamStatus, releaseExamResults, releaseAnswerKey, addExamAccessTag, removeExamAccessTag } from "@/app/odk/admin/actions";
 import { AnswerKeyEditor, ExamFilesEditor, ExamMeetLinkEditor } from "@/components/odk/admin/exam-detail-editor";
+import {
+  hasOdkExamAnswerKeyReleasedAtColumn,
+  hasOdkExamGoogleMeetLinkColumn,
+  hasOdkExamResultsReleasedAtColumn,
+} from "@/lib/odk-exam-schema";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   DRAFT:     { label: "Taslak",  className: "bg-stone-100 text-stone-600" },
@@ -33,17 +38,39 @@ type ExamDetail = {
 };
 
 async function getExam(examId: string) {
+  const [
+    hasResultsReleasedAtColumn,
+    hasAnswerKeyReleasedAtColumn,
+    hasGoogleMeetLinkColumn,
+  ] = await Promise.all([
+    hasOdkExamResultsReleasedAtColumn(),
+    hasOdkExamAnswerKeyReleasedAtColumn(),
+    hasOdkExamGoogleMeetLinkColumn(),
+  ]);
+
   const [row, allTags] = await Promise.all([
     prisma.odkExam.findUnique({
       where: { id: examId },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        cadenceFamily: true,
+        durationMinutes: true,
+        ...(hasGoogleMeetLinkColumn ? { googleMeetLink: true } : {}),
+        ...(hasAnswerKeyReleasedAtColumn ? { answerKeyReleasedAt: true } : {}),
+        ...(hasResultsReleasedAtColumn ? { resultsReleasedAt: true } : {}),
         sections: {
           orderBy: { orderIndex: "asc" },
-          include: {
+          select: {
+            id: true,
+            title: true,
+            questionCount: true,
+            orderIndex: true,
             officialAnswers: { orderBy: { questionNumber: "asc" } },
           },
         },
-        files: true,
+        files: { select: { id: true, fileType: true, publicUrl: true } },
         examAccessTags: { include: { accessTag: true } },
         _count: { select: { attempts: true } },
       },
@@ -55,7 +82,18 @@ async function getExam(examId: string) {
     }),
   ]);
   if (!row) return null;
-  return { exam: row as unknown as ExamDetail, allTags };
+  return {
+    exam: {
+      ...row,
+      googleMeetLink: "googleMeetLink" in row ? row.googleMeetLink ?? null : null,
+      answerKeyReleasedAt: "answerKeyReleasedAt" in row ? row.answerKeyReleasedAt ?? null : null,
+      resultsReleasedAt: "resultsReleasedAt" in row ? row.resultsReleasedAt ?? null : null,
+    } as ExamDetail,
+    allTags,
+    hasAnswerKeyReleasedAtColumn,
+    hasGoogleMeetLinkColumn,
+    hasResultsReleasedAtColumn,
+  };
 }
 
 export default async function ExamDetailPage({ params }: { params: Promise<{ examId: string }> }) {
@@ -63,7 +101,13 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
   const data = await getExam(examId);
   if (!data) notFound();
 
-  const { exam, allTags } = data;
+  const {
+    exam,
+    allTags,
+    hasAnswerKeyReleasedAtColumn,
+    hasGoogleMeetLinkColumn,
+    hasResultsReleasedAtColumn,
+  } = data;
   const status = statusConfig[exam.status] ?? statusConfig.DRAFT;
   const bookletFile = exam.files.find((f) => f.fileType === "BOOKLET_PDF");
   const answerKeyFile = exam.files.find((f) => f.fileType === "ANSWER_KEY_PDF");
@@ -156,6 +200,12 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
               <p className="text-sm text-emerald-700 font-medium">
                 ✓ {new Date(exam.resultsReleasedAt).toLocaleString("tr-TR")} tarihinde yayınlandı
               </p>
+            ) : !hasResultsReleasedAtColumn ? (
+              <p className="text-xs text-amber-700">
+                Sonuc yayinlama ozelligi gecici olarak kapali. Veritabaninda
+                <code className="mx-1 rounded bg-amber-100 px-1 py-0.5 text-[11px]">odk_exams.results_released_at</code>
+                kolonu eksik.
+              </p>
             ) : (
               <>
                 <p className="text-xs text-stone-400 mb-3">Öğrenciler henüz sonuçlarını göremiyor.</p>
@@ -176,6 +226,12 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
             {exam.answerKeyReleasedAt ? (
               <p className="text-sm text-emerald-700 font-medium">
                 ✓ {new Date(exam.answerKeyReleasedAt).toLocaleString("tr-TR")} tarihinde yayınlandı
+              </p>
+            ) : !hasAnswerKeyReleasedAtColumn ? (
+              <p className="text-xs text-amber-700">
+                Cevap anahtari yayini gecici olarak kapali. Veritabaninda
+                <code className="mx-1 rounded bg-amber-100 px-1 py-0.5 text-[11px]">odk_exams.answer_key_released_at</code>
+                kolonu eksik.
               </p>
             ) : (
               <>
@@ -207,10 +263,18 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
       {/* Google Meet link */}
       <div className="rounded-xl border border-stone-200 bg-white p-5">
         <h2 className="text-sm font-semibold text-stone-900 mb-4">Gözetim (Proctoring)</h2>
-        <ExamMeetLinkEditor
-          examId={examId}
-          currentLink={exam.googleMeetLink ?? ""}
-        />
+        {hasGoogleMeetLinkColumn ? (
+          <ExamMeetLinkEditor
+            examId={examId}
+            currentLink={exam.googleMeetLink ?? ""}
+          />
+        ) : (
+          <p className="text-xs text-amber-700">
+            Google Meet alani bu veritabaninda henuz yok.
+            <code className="mx-1 rounded bg-amber-100 px-1 py-0.5 text-[11px]">odk_exams.google_meet_link</code>
+            kolonu eklendiginde bu alan kullanilabilir.
+          </p>
+        )}
       </div>
 
       {/* Sections + Answer Keys */}

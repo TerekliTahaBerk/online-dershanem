@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
 import { prisma } from "@/lib/prisma";
+import {
+  hasOdkExamAttemptSectionScoresColumn,
+  hasOdkExamAttemptTabSwitchCountColumn,
+} from "@/lib/odk-exam-schema";
 
 type SectionScore = {
   title: string;
@@ -22,6 +26,10 @@ export async function GET(
   }
 
   const { examId } = await params;
+  const [hasSectionScoresColumn, hasTabSwitchCountColumn] = await Promise.all([
+    hasOdkExamAttemptSectionScoresColumn(),
+    hasOdkExamAttemptTabSwitchCountColumn(),
+  ]);
 
   const exam = await prisma.odkExam.findUnique({
     where: { id: examId },
@@ -37,8 +45,8 @@ export async function GET(
       wrongCount: true,
       blankCount: true,
       durationSeconds: true,
-      tabSwitchCount: true,
-      sectionScores: true,
+      ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
+      ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
       submittedAt: true,
       user: { select: { name: true, email: true } },
     },
@@ -62,7 +70,7 @@ export async function GET(
   ];
 
   const rows = attempts.map((a) => {
-    const sections = (a.sectionScores as SectionScore[] | null) ?? [];
+    const sections = ("sectionScores" in a ? (a.sectionScores as SectionScore[] | null) : null) ?? [];
     const secMap = new Map(sections.map((s) => [s.title, s]));
 
     const base = [
@@ -73,7 +81,7 @@ export async function GET(
       String(a.wrongCount),
       String(a.blankCount),
       a.durationSeconds ? String(Math.round(a.durationSeconds / 60)) : "",
-      String(a.tabSwitchCount ?? 0),
+      String("tabSwitchCount" in a ? (a.tabSwitchCount ?? 0) : 0),
       a.submittedAt ? new Date(a.submittedAt).toLocaleString("tr-TR") : "",
     ];
 

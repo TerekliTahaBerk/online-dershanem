@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, AlertTriangle, TrendingDown, TrendingUp, Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import {
+  hasOdkExamAttemptSectionScoresColumn,
+  hasOdkExamAttemptTabSwitchCountColumn,
+} from "@/lib/odk-exam-schema";
 
 type SectionScore = {
   sectionId: string;
@@ -14,6 +18,11 @@ type SectionScore = {
 };
 
 async function getExamStats(examId: string) {
+  const [hasSectionScoresColumn, hasTabSwitchCountColumn] = await Promise.all([
+    hasOdkExamAttemptSectionScoresColumn(),
+    hasOdkExamAttemptTabSwitchCountColumn(),
+  ]);
+
   const exam = await prisma.odkExam.findUnique({
     where: { id: examId },
     select: { id: true, title: true, cadenceFamily: true, sections: { select: { id: true, title: true, questionCount: true } } },
@@ -29,8 +38,8 @@ async function getExamStats(examId: string) {
       wrongCount: true,
       blankCount: true,
       durationSeconds: true,
-      tabSwitchCount: true,
-      sectionScores: true,
+      ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
+      ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
       submittedAt: true,
       user: { select: { id: true, name: true, email: true } },
     },
@@ -41,7 +50,15 @@ async function getExamStats(examId: string) {
     where: { examId, status: "IN_PROGRESS" },
   });
 
-  return { exam, attempts: attempts as unknown as typeof attempts, inProgressCount };
+  return {
+    exam,
+    attempts: attempts.map((attempt) => ({
+      ...attempt,
+      sectionScores: "sectionScores" in attempt ? attempt.sectionScores : null,
+      tabSwitchCount: "tabSwitchCount" in attempt ? attempt.tabSwitchCount : 0,
+    })) as unknown as typeof attempts,
+    inProgressCount,
+  };
 }
 
 function aggregateSections(attempts: { sectionScores: unknown }[]) {

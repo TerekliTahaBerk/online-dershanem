@@ -4,18 +4,51 @@ import { ExternalLink, Clock, FileText, CheckCircle2, AlertCircle, Trophy } from
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ExamProctor } from "@/components/odk/student/exam-proctor";
+import {
+  hasOdkExamAnswerKeyReleasedAtColumn,
+  hasOdkExamAttemptSectionScoresColumn,
+  hasOdkExamGoogleMeetLinkColumn,
+  hasOdkExamResultsReleasedAtColumn,
+} from "@/lib/odk-exam-schema";
 
 const familyLabels: Record<string, string> = {
   TYT: "TYT", AYT: "AYT", LGS: "LGS", KPSS: "KPSS", ALES: "ALES",
 };
 
 async function getExamData(examId: string, userId: string) {
+  const [
+    hasResultsReleasedAtColumn,
+    hasAnswerKeyReleasedAtColumn,
+    hasGoogleMeetLinkColumn,
+    hasSectionScoresColumn,
+  ] = await Promise.all([
+    hasOdkExamResultsReleasedAtColumn(),
+    hasOdkExamAnswerKeyReleasedAtColumn(),
+    hasOdkExamGoogleMeetLinkColumn(),
+    hasOdkExamAttemptSectionScoresColumn(),
+  ]);
+
   const rawExam = await prisma.odkExam.findFirst({
     where: { id: examId, status: "PUBLISHED" },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      cadenceFamily: true,
+      durationMinutes: true,
+      startsAt: true,
+      endsAt: true,
+      ...(hasAnswerKeyReleasedAtColumn ? { answerKeyReleasedAt: true } : {}),
+      ...(hasGoogleMeetLinkColumn ? { googleMeetLink: true } : {}),
+      ...(hasResultsReleasedAtColumn ? { resultsReleasedAt: true } : {}),
       sections: {
         orderBy: { orderIndex: "asc" },
-        include: { officialAnswers: true },
+        select: {
+          id: true,
+          title: true,
+          questionCount: true,
+          orderIndex: true,
+          officialAnswers: true,
+        },
       },
       files: true,
     },
@@ -25,10 +58,35 @@ async function getExamData(examId: string, userId: string) {
 
   const rawAttempt = await prisma.odkExamAttempt.findFirst({
     where: { userId, examId },
-    include: { opticalAnswers: true },
+    select: {
+      id: true,
+      status: true,
+      startedAt: true,
+      submittedAt: true,
+      score: true,
+      correctCount: true,
+      wrongCount: true,
+      blankCount: true,
+      durationSeconds: true,
+      ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
+      opticalAnswers: true,
+    },
   });
 
-  return { exam: rawExam, attempt: rawAttempt };
+  return {
+    exam: {
+      ...rawExam,
+      answerKeyReleasedAt: "answerKeyReleasedAt" in rawExam ? rawExam.answerKeyReleasedAt ?? null : null,
+      googleMeetLink: "googleMeetLink" in rawExam ? rawExam.googleMeetLink ?? null : null,
+      resultsReleasedAt: "resultsReleasedAt" in rawExam ? rawExam.resultsReleasedAt ?? null : null,
+    },
+    attempt: rawAttempt
+      ? {
+          ...rawAttempt,
+          sectionScores: "sectionScores" in rawAttempt ? rawAttempt.sectionScores ?? null : null,
+        }
+      : null,
+  };
 }
 
 export default async function ExamDetailPage({

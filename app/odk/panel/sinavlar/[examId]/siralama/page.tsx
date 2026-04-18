@@ -3,22 +3,26 @@ import Link from "next/link";
 import { ArrowLeft, Trophy, Medal } from "lucide-react";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hasOdkExamResultsReleasedAtColumn } from "@/lib/odk-exam-schema";
 
 async function getLeaderboard(examId: string, userId: string) {
+  const hasResultsReleasedAtColumn = await hasOdkExamResultsReleasedAtColumn();
   const exam = await prisma.odkExam.findFirst({
     where: { id: examId, status: "PUBLISHED" },
     select: {
       id: true,
       title: true,
       cadenceFamily: true,
-      resultsReleasedAt: true,
+      ...(hasResultsReleasedAtColumn ? { resultsReleasedAt: true } : {}),
     },
   });
 
   if (!exam) return null;
 
   // Only show if results released
-  const released = exam.resultsReleasedAt && new Date(exam.resultsReleasedAt) <= new Date();
+  const resultsReleasedAt =
+    "resultsReleasedAt" in exam ? exam.resultsReleasedAt ?? null : null;
+  const released = resultsReleasedAt && new Date(resultsReleasedAt) <= new Date();
   if (!released) return { exam, released: false, rows: [], myRank: null };
 
   const attempts = await prisma.odkExamAttempt.findMany({
