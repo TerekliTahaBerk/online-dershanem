@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
-import { sendOdkResultsReleased } from "@/lib/email";
+import { sendOdkResultsReleased, sendOdkAccessGranted } from "@/lib/email";
 
 async function requireOdkAdmin() {
   const session = await getServerAuthSession();
@@ -218,6 +218,45 @@ export async function togglePackageStatus(packageId: string, isActive: boolean) 
   await requireOdkAdmin();
   await prisma.odkPackage.update({ where: { id: packageId }, data: { isActive } });
   revalidatePath("/odk/admin/paketler");
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+}
+
+export async function addExamToPackage(packageId: string, examId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageExam.upsert({
+    where: { packageId_examId: { packageId, examId } },
+    create: { packageId, examId },
+    update: {},
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+  revalidatePath("/odk/admin/paketler");
+}
+
+export async function removeExamFromPackage(packageId: string, examId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageExam.delete({
+    where: { packageId_examId: { packageId, examId } },
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+  revalidatePath("/odk/admin/paketler");
+}
+
+export async function addPackageAccessTag(packageId: string, accessTagId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageAccessTag.upsert({
+    where: { packageId_accessTagId: { packageId, accessTagId } },
+    create: { packageId, accessTagId },
+    update: {},
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+}
+
+export async function removePackageAccessTag(packageId: string, accessTagId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageAccessTag.delete({
+    where: { packageId_accessTagId: { packageId, accessTagId } },
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
 }
 
 // ── Access Tags ───────────────────────────────────────────────────────────────
@@ -230,13 +269,47 @@ export async function createAccessTag(data: { key: string; title: string; descri
   revalidatePath("/odk/admin/etiketler");
 }
 
+export async function toggleAccessTag(tagId: string, isActive: boolean) {
+  await requireOdkAdmin();
+  await prisma.odkAccessTag.update({ where: { id: tagId }, data: { isActive } });
+  revalidatePath("/odk/admin/etiketler");
+}
+
+export async function deleteAccessTag(tagId: string) {
+  await requireOdkAdmin();
+  const counts = await prisma.odkAccessTag.findUnique({
+    where: { id: tagId },
+    select: { _count: { select: { userTags: true, examTags: true, packageTags: true } } },
+  });
+  const total = (counts?._count.userTags ?? 0) + (counts?._count.examTags ?? 0) + (counts?._count.packageTags ?? 0);
+  if (total > 0) throw new Error("Bu etiket kullanımda olduğu için silinemez.");
+  await prisma.odkAccessTag.delete({ where: { id: tagId } });
+  revalidatePath("/odk/admin/etiketler");
+}
+
 export async function grantUserAccessTag(userId: string, accessTagId: string) {
   await requireOdkAdmin();
+
+  const [user, tag] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } }),
+    prisma.odkAccessTag.findUnique({ where: { id: accessTagId }, select: { title: true } }),
+  ]);
+
   await prisma.odkUserAccessTag.upsert({
     where: { userId_accessTagId: { userId, accessTagId } },
     create: { userId, accessTagId, source: "MANUAL" },
     update: { revokedAt: null },
   });
+
+  // Send welcome/access granted email (fire-and-forget)
+  if (user && tag) {
+    sendOdkAccessGranted({
+      to: user.email,
+      name: user.name ?? user.email,
+      tagTitle: tag.title,
+    }).catch(() => {});
+  }
+
   revalidatePath("/odk/admin/ogrenciler");
 }
 

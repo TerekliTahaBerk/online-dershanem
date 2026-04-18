@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PackageCreateForm } from "@/components/odk/admin/package-create-form";
 import { togglePackageStatus } from "@/app/odk/admin/actions";
@@ -83,14 +84,22 @@ export default async function PaketlerPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <form action={async () => { "use server"; await togglePackageStatus(pkg.id, !pkg.isActive); }}>
-                        <button
-                          type="submit"
-                          className="rounded-md px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 hover:border-stone-300 hover:bg-stone-50 transition"
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/odk/admin/paketler/${pkg.id}`}
+                          className="rounded-md px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 hover:border-emerald-300 hover:text-emerald-700 transition"
                         >
-                          {pkg.isActive ? "Pasifleştir" : "Aktifleştir"}
-                        </button>
-                      </form>
+                          Düzenle
+                        </Link>
+                        <form action={async () => { "use server"; await togglePackageStatus(pkg.id, !pkg.isActive); }}>
+                          <button
+                            type="submit"
+                            className="rounded-md px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 hover:border-stone-300 hover:bg-stone-50 transition"
+                          >
+                            {pkg.isActive ? "Pasifleştir" : "Aktifleştir"}
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 ))}
