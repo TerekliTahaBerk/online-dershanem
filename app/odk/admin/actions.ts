@@ -134,6 +134,20 @@ export async function updateExamMeetLink(examId: string, googleMeetLink: string 
   revalidatePath(`/odk/admin/sinavlar/${examId}`);
 }
 
+export async function deleteExam(examId: string) {
+  await requireOdkAdmin();
+  const exam = await prisma.odkExam.findUnique({
+    where: { id: examId },
+    select: { _count: { select: { attempts: true } } },
+  });
+  if ((exam?._count.attempts ?? 0) > 0) {
+    throw new Error("Bu sınavda katılım kaydı olduğu için silinemez. Önce arşivleyin.");
+  }
+  await prisma.odkExam.delete({ where: { id: examId } });
+  revalidatePath("/odk/admin/sinavlar");
+  redirect("/odk/admin/sinavlar");
+}
+
 export async function updateExamStatus(examId: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED") {
   await requireOdkAdmin();
   await prisma.odkExam.update({ where: { id: examId }, data: { status } });
@@ -184,6 +198,66 @@ export async function saveOfficialAnswers(sectionId: string, answers: Record<num
   revalidatePath(`/odk/admin/sinavlar/${section.examId}`);
 }
 
+type OutcomesJson = { konu: string; kazanim: string; altKazanim?: string };
+
+export async function importAnswerKeyJson(
+  examId: string,
+  json: Record<string, Record<string, string>>,
+) {
+  await requireOdkAdmin();
+
+  const sections = await prisma.odkExamSection.findMany({
+    where: { examId },
+    select: { id: true, title: true },
+  });
+
+  const sectionMap = new Map(sections.map((s) => [s.title, s.id]));
+
+  const upserts = Object.entries(json).flatMap(([sectionTitle, answers]) => {
+    const sectionId = sectionMap.get(sectionTitle);
+    if (!sectionId) return [];
+    return Object.entries(answers).map(([num, option]) =>
+      prisma.odkExamOfficialAnswer.upsert({
+        where: { sectionId_questionNumber: { sectionId, questionNumber: Number(num) } },
+        create: { examId, sectionId, questionNumber: Number(num), correctOption: option },
+        update: { correctOption: option },
+      })
+    );
+  });
+
+  await prisma.$transaction(upserts);
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+}
+
+export async function importOutcomesJson(
+  examId: string,
+  json: Record<string, Record<string, OutcomesJson>>,
+) {
+  await requireOdkAdmin();
+
+  const sections = await prisma.odkExamSection.findMany({
+    where: { examId },
+    select: { id: true, title: true },
+  });
+
+  const sectionMap = new Map(sections.map((s) => [s.title, s.id]));
+
+  const upserts = Object.entries(json).flatMap(([sectionTitle, questions]) => {
+    const sectionId = sectionMap.get(sectionTitle);
+    if (!sectionId) return [];
+    return Object.entries(questions).map(([num, outcomes]) =>
+      prisma.odkExamOfficialAnswer.upsert({
+        where: { sectionId_questionNumber: { sectionId, questionNumber: Number(num) } },
+        create: { examId, sectionId, questionNumber: Number(num), correctOption: "", outcomes },
+        update: { outcomes },
+      })
+    );
+  });
+
+  await prisma.$transaction(upserts);
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+}
+
 export async function addExamAccessTag(examId: string, accessTagId: string) {
   await requireOdkAdmin();
   await prisma.odkExamAccessTag.upsert({
@@ -221,6 +295,20 @@ export async function createPackage(data: {
     },
   });
   revalidatePath("/odk/admin/paketler");
+}
+
+export async function deletePackage(packageId: string) {
+  await requireOdkAdmin();
+  const pkg = await prisma.odkPackage.findUnique({
+    where: { id: packageId },
+    select: { _count: { select: { orders: true, entitlements: true } } },
+  });
+  if ((pkg?._count.orders ?? 0) > 0 || (pkg?._count.entitlements ?? 0) > 0) {
+    throw new Error("Bu pakete ait sipariş veya yetkilendirme kaydı olduğu için silinemez.");
+  }
+  await prisma.odkPackage.delete({ where: { id: packageId } });
+  revalidatePath("/odk/admin/paketler");
+  redirect("/odk/admin/paketler");
 }
 
 export async function togglePackageStatus(packageId: string, isActive: boolean) {

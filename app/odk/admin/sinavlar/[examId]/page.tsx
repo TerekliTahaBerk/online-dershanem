@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { updateExamStatus, releaseExamResults, releaseAnswerKey, addExamAccessTag, removeExamAccessTag } from "@/app/odk/admin/actions";
-import { AnswerKeyEditor, ExamFilesEditor, ExamMeetLinkEditor } from "@/components/odk/admin/exam-detail-editor";
+import { AnswerKeyEditor, AnswerKeyJsonImporter, DeleteExamButton, ExamFilesEditor, ExamMeetLinkEditor, OutcomesJsonImporter } from "@/components/odk/admin/exam-detail-editor";
 import {
   hasOdkExamAnswerKeyReleasedAtColumn,
   hasOdkExamGoogleMeetLinkColumn,
@@ -306,6 +306,15 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
         ))}
       </div>
 
+      {/* JSON Import */}
+      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-6">
+        <h2 className="text-sm font-semibold text-stone-900">JSON İçe Aktarma</h2>
+        <AnswerKeyJsonImporter examId={examId} />
+        <div className="border-t border-stone-100 pt-6">
+          <OutcomesJsonImporter examId={examId} />
+        </div>
+      </div>
+
       {/* Access Tags */}
       <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
         <div>
@@ -362,6 +371,14 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
             </button>
           </form>
         )}
+      </div>
+      {/* Danger zone */}
+      <div className="rounded-xl border border-red-100 bg-red-50 p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-red-800">Tehlikeli İşlemler</h2>
+        <p className="text-xs text-red-600">
+          Sınavı silmek geri alınamaz. Katılım kaydı olan sınavlar silinemez — önce arşivleyin.
+        </p>
+        <DeleteExamButton examId={examId} />
       </div>
     </div>
   );

@@ -423,6 +423,8 @@ model OdkExamOfficialAnswer {
   sectionId      String         @map("section_id")
   questionNumber Int            @map("question_number")
   correctOption  String         @map("correct_option")
+  /// JSON: { konu: string, kazanim: string, altKazanim?: string }
+  outcomes       Json?
   createdAt      DateTime       @default(now()) @map("created_at")
   section        OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 

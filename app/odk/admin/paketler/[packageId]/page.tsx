@@ -9,6 +9,7 @@ import {
   removePackageAccessTag,
   togglePackageStatus,
 } from "@/app/odk/admin/actions";
+import { DeletePackageButton } from "@/components/odk/admin/exam-detail-editor";
 
 function formatPrice(cents: number) {
   return (cents / 100).toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
@@ -270,6 +271,15 @@ export default async function PackageDetailPage({
             </button>
           </form>
         )}
+      </div>
+
+      {/* Danger zone */}
+      <div className="rounded-xl border border-red-100 bg-red-50 p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-red-800">Tehlikeli İşlemler</h2>
+        <p className="text-xs text-red-600">
+          Paketi silmek geri alınamaz. Siparişi veya yetkilendirmesi olan paketler silinemez.
+        </p>
+        <DeletePackageButton packageId={packageId} />
       </div>
     </div>
   );
