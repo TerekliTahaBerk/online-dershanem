@@ -16,8 +16,8 @@ export default async function OdkAdminLayout({ children }: { children: ReactNode
   return (
     <div className="flex min-h-screen bg-[#F7F5F0]">
       <OdkAdminSidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
+      <div className="flex-1 flex flex-col min-w-0 pt-12 lg:pt-0">
+        <header className="hidden lg:flex h-16 bg-white border-b border-gray-200 items-center justify-between px-6 shrink-0 sticky top-0 z-10">
           <div />
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 font-medium">
