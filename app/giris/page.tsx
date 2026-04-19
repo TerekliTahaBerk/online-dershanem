@@ -24,9 +24,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const justRegistered = params?.registered === "1";
 
   return (
-    <main className="min-h-screen bg-[#f6f1e8] px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] bg-[#f8f4ec] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
-        <section className="flex flex-col justify-between rounded-[24px] bg-[#f8f4ec] px-2 py-2 sm:px-4">
+    <main className="min-h-screen bg-[#f7f5f0] px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] bg-[#fbfaf7] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
+        <section className="flex flex-col justify-between rounded-[24px] bg-[#fbfaf7] px-2 py-2 sm:px-4">
           <div>
             <div className="inline-flex items-center gap-3">
               <Image src="/logo.png" alt="Online Dershanem" width={42} height={42} className="h-9 w-9 object-contain" priority />
@@ -78,8 +78,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         </section>
 
-        <section className="hidden rounded-[28px] bg-[#f1ece2] p-6 lg:block">
-          <div className="relative h-full min-h-[720px] overflow-hidden rounded-[24px] bg-[#f3eee5] p-6">
+        <section className="hidden rounded-[28px] bg-[#f3f0ea] p-6 lg:block">
+          <div className="relative h-full min-h-[720px] overflow-hidden rounded-[24px] bg-[#f7f4ee] p-6">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,43,33,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,43,33,0.035)_1px,transparent_1px)] bg-[size:34px_34px]" />
 
             <div className="relative h-full">
@@ -91,7 +91,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </div>
 
               <div className="absolute left-24 top-40 w-[300px] rounded-[26px] bg-white p-8 shadow-[0_18px_50px_-28px_rgba(80,61,45,0.45)]">
-                <div className="inline-flex h-16 w-16 items-center justify-center rounded-[18px] bg-[#f8f1e6] text-[#c86d43]">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-[18px] bg-[#f4efe8] text-[#c86d43]">
                   <Sparkles className="h-8 w-8" />
                 </div>
                 <h3 className="mt-6 text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">Net, sade ve odaklı.</h3>
