@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight, BookOpen, GraduationCap, NotebookPen, Sparkles, Target } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { Container } from "@/components/ui/container";
@@ -21,8 +22,36 @@ export const metadata: Metadata = {
   }
 };
 
+type BlogPost = (typeof blogPosts)[number];
+
+function getReadMinutes(post: BlogPost) {
+  const content = [
+    post.title,
+    post.excerpt,
+    post.cardSnippet,
+    ...post.sections.flatMap((section) => [section.h2, ...(section.paragraphs ?? []), ...(section.bullets ?? [])])
+  ].join(" ");
+
+  const words = content.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(3, Math.round(words / 180));
+}
+
+function getCategoryTheme(category: string) {
+  switch (category) {
+    case "YKS":
+      return { icon: Target, cover: "bg-[#eef8f1]", chip: "bg-emerald-50 text-emerald-700" };
+    case "LGS":
+      return { icon: GraduationCap, cover: "bg-[#eef5fb]", chip: "bg-sky-50 text-sky-700" };
+    case "Online Özel Ders":
+      return { icon: Sparkles, cover: "bg-[#fcf5ea]", chip: "bg-amber-50 text-amber-700" };
+    default:
+      return { icon: BookOpen, cover: "bg-[#f3f7f5]", chip: "bg-[#eef4f1] text-[#166534]" };
+  }
+}
+
 export default function BlogPage() {
   const featuredPosts = blogPosts.filter((post) => post.featured).slice(0, 2);
+  const restPosts = blogPosts.filter((post) => !post.featured);
 
   return (
     <>
@@ -30,58 +59,112 @@ export default function BlogPage() {
       <main className="py-14 sm:py-20">
         <Container>
           <FadeIn>
-            <h1 className="text-4xl font-bold tracking-tight text-ink sm:text-5xl">Online Dershane Blog</h1>
-            <p className="mt-3 max-w-4xl text-sm leading-relaxed text-muted sm:text-base">
-              Online dershane, e dershane, online ders ve özel ders aramalarında karar vermeni kolaylaştıran uygulamalı içerikler
-              paylaşıyoruz. Yazılarda yalnızca bilgi vermekle kalmıyor; küçük gruplu online ders modelini net biçimde anlatıyor ve
-              ücretsiz deneme dersiyle doğru başlangıcı nasıl yapabileceğini adım adım gösteriyoruz.
-            </p>
+            <section className="rounded-[24px] border border-line bg-[#f5f7f6] px-6 py-10 text-center sm:px-8 sm:py-14">
+              <span className="pd-eyebrow justify-center">Blog</span>
+              <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-ink sm:text-5xl">Sınav rehberi ve öğrenme metodu.</h1>
+              <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-muted sm:text-base">
+                LGS ve YKS için haftalık yazılar, deneme analizi ipuçları, sınava hazırlık stratejileri ve doğru çalışma modeli
+                üzerine net içerikler.
+              </p>
+            </section>
           </FadeIn>
 
-          <section className="mt-8 rounded-3xl border border-line bg-white p-6 shadow-soft">
-            <h2 className="text-xl font-bold tracking-tight text-ink">En Popüler Yazılar</h2>
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {featuredPosts.map((post) => (
-                <Link key={post.slug} href={`/blog/${post.slug}/`} className="rounded-2xl border border-line bg-soft p-4 transition hover:bg-mint">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-brand">{post.category}</p>
-                  <h3 className="mt-2 text-base font-semibold text-ink">{post.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">{post.cardSnippet}</p>
-                </Link>
-              ))}
+          <section className="mt-10">
+            <div className="grid gap-5 lg:grid-cols-2">
+              {featuredPosts.map((post, index) => {
+                const theme = getCategoryTheme(post.category);
+                const Icon = theme.icon;
+
+                return (
+                  <FadeIn key={post.slug} delay={index * 0.05}>
+                    <Link
+                      href={`/blog/${post.slug}/`}
+                      className="group overflow-hidden rounded-[22px] border border-line bg-white shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <div className={`flex h-40 items-center justify-center ${theme.cover}`}>
+                        <Icon className="h-14 w-14 text-ink/50" />
+                      </div>
+                      <div className="px-6 py-6">
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${theme.chip}`}>{post.category}</span>
+                        <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-ink">{post.title}</h2>
+                        <p className="mt-3 text-sm leading-7 text-muted">{post.excerpt}</p>
+                        <div className="mt-4 flex items-center gap-2 text-xs text-muted">
+                          <span>{getReadMinutes(post)} dk okuma</span>
+                          <span className="text-line-strong">·</span>
+                          <span>{post.sections.length} bölüm</span>
+                        </div>
+                      </div>
+                    </Link>
+                  </FadeIn>
+                );
+              })}
             </div>
           </section>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            {blogPosts.map((post, index) => (
-              <FadeIn key={post.slug} delay={index * 0.06}>
-                <article className="h-full rounded-3xl border border-line bg-white p-6 shadow-soft">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-brand">{post.category}</p>
-                  <h2 className="mt-2 text-xl font-semibold text-ink">{post.title}</h2>
-                  <p className="mt-3 text-sm leading-relaxed text-muted">{post.cardSnippet}</p>
-                  <div className="mt-5 flex flex-wrap gap-2">
+          <section className="mt-10">
+            <FadeIn>
+              <h2 className="text-xl font-semibold tracking-[-0.02em] text-ink">Son yazılar</h2>
+            </FadeIn>
+
+            <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {restPosts.map((post, index) => {
+                const theme = getCategoryTheme(post.category);
+                const Icon = theme.icon;
+
+                return (
+                  <FadeIn key={post.slug} delay={index * 0.04}>
                     <Link
                       href={`/blog/${post.slug}/`}
-                      className="inline-flex rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
+                      className="group flex h-full flex-col rounded-[20px] border border-line bg-white p-5 shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
                     >
-                      Yazıyı Oku
+                      <div className={`mb-5 flex h-28 items-center justify-center rounded-[18px] ${theme.cover}`}>
+                        <Icon className="h-10 w-10 text-ink/45" />
+                      </div>
+                      <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${theme.chip}`}>{post.category}</span>
+                      <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-ink">{post.title}</h3>
+                      <p className="mt-3 flex-1 text-sm leading-7 text-muted">{post.excerpt}</p>
+                      <div className="mt-5 flex items-center gap-2 text-xs text-muted">
+                        <span>{getReadMinutes(post)} dk okuma</span>
+                        <span className="text-line-strong">·</span>
+                        <span>{post.sections.length} bölüm</span>
+                        <span className="ml-auto inline-flex items-center font-semibold text-ink">
+                          Oku
+                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </span>
+                      </div>
                     </Link>
+                  </FadeIn>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="mt-10 rounded-[22px] border border-line bg-white p-6 shadow-soft sm:p-8">
+            <FadeIn>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  { href: "/online-dershane/", label: "Online Dershane", icon: NotebookPen },
+                  { href: "/online-ozel-ders/", label: "Online Özel Ders", icon: Sparkles },
+                  { href: "/deneme-kulubu/", label: "Deneme Kulübü", icon: Target }
+                ].map((item) => {
+                  const Icon = item.icon;
+
+                  return (
                     <Link
-                      href="/online-dershane/"
-                      className="inline-flex rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center gap-3 rounded-[18px] border border-line bg-[#f8faf9] px-5 py-5 text-sm font-semibold text-ink transition hover:bg-soft"
                     >
-                      Online Dershane
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand shadow-soft">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      {item.label}
                     </Link>
-                    <Link
-                      href="/online-ozel-ders/"
-                      className="inline-flex rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-ink transition hover:bg-soft"
-                    >
-                      Online Özel Ders
-                    </Link>
-                  </div>
-                </article>
-              </FadeIn>
-            ))}
-          </div>
+                  );
+                })}
+              </div>
+            </FadeIn>
+          </section>
         </Container>
       </main>
       <Footer />

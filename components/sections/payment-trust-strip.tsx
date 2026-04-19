@@ -2,15 +2,15 @@ import Image from "next/image";
 
 export function PaymentTrustStrip() {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-white/10 pt-5">
+    <div className="flex flex-col gap-4 border-t border-[var(--pd-line)] pt-5 sm:flex-row sm:items-center sm:justify-between">
       {/* Label + badges */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-mint/70 shrink-0">
+        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--pd-muted)]">
           Güvenli Ödeme
         </span>
-        <div className="h-3.5 w-px bg-white/15 hidden sm:block" />
+        <div className="hidden h-3.5 w-px bg-[var(--pd-line)] sm:block" />
         {/* PayTR */}
-        <div className="flex h-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 hover:bg-white/10 transition">
+        <div className="flex h-9 items-center justify-center rounded-lg border border-[var(--pd-line)] bg-[var(--pd-bg-elevated)] px-3 transition hover:border-[var(--pd-line-2)]">
           <Image
             src="/paytr-logo-color.png"
             alt="PayTR"
@@ -20,7 +20,7 @@ export function PaymentTrustStrip() {
           />
         </div>
         {/* Card logos */}
-        <div className="flex h-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 px-3 hover:bg-white/10 transition">
+        <div className="flex h-9 items-center justify-center rounded-lg border border-[var(--pd-line)] bg-[var(--pd-bg-elevated)] px-3 transition hover:border-[var(--pd-line-2)]">
           <Image
             src="/mc-visa-troy.png"
             alt="Mastercard · Visa · Troy"
@@ -30,11 +30,11 @@ export function PaymentTrustStrip() {
           />
         </div>
         {/* SSL badge */}
-        <div className="flex h-9 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3">
-          <svg className="w-3.5 h-3.5 text-mint/80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="flex h-9 items-center gap-1.5 rounded-lg border border-[var(--pd-line)] bg-[var(--pd-bg-elevated)] px-3">
+          <svg className="h-3.5 w-3.5 shrink-0 text-[var(--pd-accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
-          <span className="text-[11px] font-semibold text-mint/80 whitespace-nowrap">256-bit SSL</span>
+          <span className="whitespace-nowrap text-[11px] font-semibold text-[var(--pd-ink-3)]">256-bit SSL</span>
         </div>
       </div>
 
@@ -47,9 +47,9 @@ export function PaymentTrustStrip() {
         aria-label="yula.co"
       >
         <span className="text-base leading-none select-none">❤️</span>
-        <span className="text-xs text-white/40 group-hover:text-white/60 transition-colors duration-200">
+        <span className="text-xs text-[var(--pd-muted)] transition-colors duration-200 group-hover:text-[var(--pd-ink-3)]">
           Online Dershanem bir{" "}
-          <span className="font-semibold text-white/60 group-hover:text-white/90 transition-colors duration-200">
+          <span className="font-semibold text-[var(--pd-ink-3)] transition-colors duration-200 group-hover:text-[var(--pd-ink)]">
             yula.co
           </span>{" "}
           markasıdır

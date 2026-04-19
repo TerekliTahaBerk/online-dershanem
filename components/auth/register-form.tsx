@@ -3,18 +3,6 @@
 import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
-import { signIn } from "next-auth/react";
-
-function GoogleIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24">
-      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
-      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-    </svg>
-  );
-}
 
 type Step = "form" | "verify";
 
@@ -155,8 +143,8 @@ export function RegisterForm() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
         <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-        <p className="text-base font-semibold text-stone-900">Hesabınız oluşturuldu!</p>
-        <p className="text-sm text-stone-500">Giriş sayfasına yönlendiriliyorsunuz...</p>
+        <p className="text-base font-semibold text-[#201a17]">Hesabın oluşturuldu.</p>
+        <p className="text-sm text-[#6a6058]">Giriş sayfasına yönlendiriliyorsun...</p>
       </div>
     );
   }
@@ -165,15 +153,15 @@ export function RegisterForm() {
     return (
       <div>
         <div className="mb-7">
-          <h2 className="text-xl font-semibold text-stone-900">E-postanı Doğrula</h2>
-          <p className="mt-1.5 text-sm text-stone-500">
+          <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">Kodunu gir.</h2>
+          <p className="mt-2 text-sm leading-7 text-[#6a6058]">
             <strong>{email}</strong> adresine 6 haneli bir kod gönderdik.
           </p>
         </div>
 
         <form onSubmit={onVerifySubmit} className="space-y-5">
           <div>
-            <p className="mb-3 text-sm font-medium text-stone-700">Doğrulama Kodu</p>
+            <p className="mb-3 text-sm font-medium text-[#3f342d]">Doğrulama kodu</p>
             <div className="flex gap-2">
               {code.map((digit, i) => (
                 <input
@@ -186,14 +174,14 @@ export function RegisterForm() {
                   onChange={(e) => onCodeInput(i, e.target.value)}
                   onKeyDown={(e) => onCodeKeyDown(i, e)}
                   onPaste={i === 0 ? onCodePaste : undefined}
-                  className="h-12 w-full rounded-lg border border-stone-200 bg-stone-50 text-center text-lg font-bold text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="h-12 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] text-center text-lg font-bold text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
                 />
               ))}
             </div>
           </div>
 
           {error ? (
-            <p className="rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm font-medium text-red-700">
+            <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
               {error}
             </p>
           ) : null}
@@ -201,24 +189,24 @@ export function RegisterForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-[#201a17] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#312823] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? "Doğrulanıyor..." : "Hesabı Onayla"}
           </button>
         </form>
 
-        <div className="mt-5 flex items-center justify-between text-sm text-stone-500">
+        <div className="mt-5 flex items-center justify-between text-sm text-[#6a6058]">
           <button
             type="button"
             onClick={() => { setStep("form"); setError(null); setCode(["", "", "", "", "", ""]); }}
-            className="hover:text-stone-700 underline"
+            className="underline transition hover:text-[#201a17]"
           >
             Geri dön
           </button>
           <button
             type="button"
             onClick={resendCode}
-            className="hover:text-stone-700 underline"
+            className="underline transition hover:text-[#201a17]"
           >
             Kodu tekrar gönder
           </button>
@@ -230,35 +218,24 @@ export function RegisterForm() {
   return (
     <div>
       <div className="mb-7">
-        <h2 className="text-xl font-semibold text-stone-900">Hesabını Oluştur</h2>
-        <p className="mt-1.5 text-sm text-stone-500">
-          Bilgilerini gir, e-posta doğrulamasıyla tamamla.
+        <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">Bilgilerini bırak.</h2>
+        <p className="mt-2 text-sm leading-7 text-[#6a6058]">
+          Bilgilerini gir, doğrulama kodunu onayla ve hesabını tamamla.
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={() => signIn("google", { callbackUrl: "/panel" })}
-        className="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-stone-200 bg-white px-5 py-3 text-sm font-medium text-stone-700 transition hover:bg-stone-50"
-      >
-        <GoogleIcon />
-        Google ile Kayıt Ol
-      </button>
-
-      <div className="relative my-5 flex items-center">
-        <div className="flex-1 border-t border-stone-200" />
-        <span className="mx-3 text-xs text-stone-400">veya e-posta ile</span>
-        <div className="flex-1 border-t border-stone-200" />
-      </div>
-
       {error ? (
-        <div className="mb-5 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm font-medium text-red-700">
+        <div className="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
           {error}
         </div>
       ) : null}
 
+      <div className="mb-5 rounded-[16px] border border-[#e2d9ca] bg-[#f3eee5] px-4 py-3 text-xs leading-6 text-[#6a6058]">
+        Kayıt sonrası e-posta adresine doğrulama kodu gönderilir. Hesap, bu onayla tamamlanır.
+      </div>
+
       <form onSubmit={onFormSubmit} className="space-y-4">
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           Ad Soyad <span className="text-red-400">*</span>
           <input
             type="text"
@@ -266,12 +243,12 @@ export function RegisterForm() {
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="Adınız ve soyadınız"
           />
         </label>
 
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           Telefon <span className="text-red-400">*</span>
           <input
             type="tel"
@@ -279,12 +256,12 @@ export function RegisterForm() {
             required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="05xx xxx xx xx"
           />
         </label>
 
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           E-posta <span className="text-red-400">*</span>
           <input
             type="email"
@@ -292,12 +269,12 @@ export function RegisterForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="ornek@email.com"
           />
         </label>
 
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           Şifre <span className="text-red-400">*</span>
           <input
             type="password"
@@ -306,12 +283,12 @@ export function RegisterForm() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="En az 6 karakter girin"
           />
         </label>
 
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           Şifre Tekrar <span className="text-red-400">*</span>
           <input
             type="password"
@@ -319,7 +296,7 @@ export function RegisterForm() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="Şifrenizi tekrar girin"
           />
         </label>
@@ -327,7 +304,7 @@ export function RegisterForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-[#201a17] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#312823] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Kod gönderiliyor..." : "Devam Et"}
         </button>
