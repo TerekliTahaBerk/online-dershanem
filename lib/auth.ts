@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 import { ensureUserAccessLinksByEmail } from "@/lib/user-links";
 import { credentialsSchema } from "@/lib/validators";
@@ -23,10 +22,6 @@ export const authOptions: NextAuthOptions = {
     signIn: "/giris"
   },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!
-    }),
     CredentialsProvider({
       name: "Yonetici Girisi",
       credentials: {
@@ -67,28 +62,8 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
-      // Google OAuth: find or create user in DB, set token.sub to our DB ID
-      if (account?.provider === "google" && user?.email) {
-        const email = user.email.toLowerCase();
-        let dbUser = await prisma.user.findUnique({ where: { email } });
-
-        if (!dbUser) {
-          dbUser = await prisma.user.create({
-            data: {
-              email,
-              name: user.name ?? null,
-              // Keep OAuth-only users compatible with environments where the
-              // generated Prisma client still expects a non-null passwordHash.
-              passwordHash: "",
-              role: "STUDENT"
-            }
-          });
-        }
-
-        await syncUserPanelLinks(dbUser.id, dbUser.email, dbUser.role);
-        token.sub = dbUser.id;
-      } else if (user) {
+    async jwt({ token, user }) {
+      if (user) {
         token.sub = user.id;
       }
 

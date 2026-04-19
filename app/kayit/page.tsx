@@ -1,72 +1,68 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelDestination } from "@/lib/panel-access";
 import { RegisterForm } from "@/components/auth/register-form";
-import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
 
 export default async function KayitPage() {
   const session = await getServerAuthSession();
   if (session?.user) redirect(getPanelDestination(session.user));
 
   return (
-    <main className="min-h-screen bg-[#F7F5F0] flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl">
-        <div className="grid gap-0 lg:grid-cols-[1fr_420px] rounded-2xl overflow-hidden shadow-xl border border-stone-200">
+    <main className="min-h-screen bg-[#f7f5f0] px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="rounded-[24px] border border-line bg-[#f5f7f6] p-8 sm:p-10 lg:p-12">
+          <div className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+            Kayıt
+          </div>
 
-          {/* Left — Brand panel */}
-          <div className="bg-[#091413] text-white p-10 sm:p-14 flex flex-col justify-between">
-            <div>
-              <div className="mb-12">
-                <Image
-                  src="/logo.png"
-                  alt="Online Dershanem"
-                  width={180}
-                  height={42}
-                  className="h-10 w-auto"
-                  priority
-                />
+          <Image
+            src="/onlinedershanem_.png"
+            alt="Online Dershanem"
+            width={520}
+            height={84}
+            className="mt-6 h-10 w-auto object-contain"
+            priority
+          />
+
+          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-ink sm:text-5xl">
+            Hesabını oluştur,
+            <br className="hidden sm:block" /> paneline yerleş.
+          </h1>
+
+          <p className="mt-5 max-w-xl text-sm leading-7 text-muted sm:text-base">
+            Öğrenci sürecini, ders programını, öğretmenlerini ve tüm panel erişimlerini tek hesapta topla. Kayıt e-posta
+            doğrulaması ile tamamlanır.
+          </p>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            {[
+              { icon: CalendarDays, label: "Takvim", desc: "Programını tek yerden gör" },
+              { icon: BookOpen, label: "Ders erişimi", desc: "Süreç ve içerikler aynı panelde" },
+              { icon: CreditCard, label: "Ödeme takibi", desc: "Tüm detaylar görünür" },
+              { icon: TrendingUp, label: "İlerleme", desc: "Düzenli takip alanı" }
+            ].map(({ icon: Icon, label, desc }) => (
+              <div key={label} className="rounded-[18px] border border-line bg-white p-4 shadow-soft">
+                <Icon className="h-4 w-4 text-brand" />
+                <p className="mt-3 text-sm font-semibold text-ink">{label}</p>
+                <p className="mt-1 text-xs leading-6 text-muted">{desc}</p>
               </div>
-
-              <h1 className="text-3xl sm:text-4xl font-semibold leading-tight text-white">
-                Online Dershanem&apos;e<br />
-                <span className="text-emerald-400">katıl.</span>
-              </h1>
-              <p className="mt-4 text-stone-400 text-sm leading-relaxed max-w-xs">
-                Ders programın, öğretmenlerin ve tüm sürecin tek yerde olsun.
-              </p>
-            </div>
-
-            <div className="mt-12 grid grid-cols-2 gap-3">
-              {[
-                { icon: CalendarDays, label: "Ders takvimi", desc: "Haftalık programın" },
-                { icon: BookOpen, label: "Canlı ders", desc: "Anında katıl" },
-                { icon: CreditCard, label: "Ödemeler", desc: "Tüm detaylar" },
-                { icon: TrendingUp, label: "İlerleme", desc: "Tamamlanan dersler" },
-              ].map(({ icon: Icon, label, desc }) => (
-                <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <Icon className="w-4 h-4 text-emerald-400 mb-2" />
-                  <p className="text-xs font-semibold text-white">{label}</p>
-                  <p className="text-xs text-stone-500 mt-0.5">{desc}</p>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
+        </section>
 
-          {/* Right — Register form */}
-          <div className="bg-white p-8 sm:p-10 flex flex-col justify-center">
-            <RegisterForm />
+        <section className="rounded-[24px] border border-line bg-white p-8 shadow-soft sm:p-10 lg:p-12">
+          <RegisterForm />
 
-            <p className="mt-6 text-center text-sm text-stone-500">
-              Zaten hesabınız var mı?{" "}
-              <Link href="/giris" className="font-semibold text-emerald-700 hover:text-emerald-800">
-                Giriş Yap
-              </Link>
-            </p>
-          </div>
-
-        </div>
+          <p className="mt-6 text-center text-sm text-stone-500">
+            Zaten hesabın var mı?{" "}
+            <Link href="/giris" className="font-semibold text-emerald-700 hover:text-emerald-800">
+              Giriş Yap
+            </Link>
+          </p>
+        </section>
       </div>
     </main>
   );
