@@ -15,9 +15,8 @@ export default async function SifremiUnuttumPage() {
       <div className="mx-auto grid min-h-[calc(100vh-2rem)] w-full max-w-7xl gap-6 rounded-[24px] border border-[#e4e2de] bg-[#f4f2ee] p-4 sm:gap-8 sm:rounded-[28px] sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
         <section className="flex flex-col justify-between rounded-[20px] bg-[#f4f2ee] px-1 py-1 sm:rounded-[24px] sm:px-4">
           <div>
-            <div className="inline-flex items-center gap-3">
-              <Image src="/logo.png" alt="Online Dershanem" width={42} height={42} className="h-9 w-9 object-contain" priority />
-              <Image src="/onlinedershanem_.png" alt="Online Dershanem" width={360} height={58} className="h-8 w-auto object-contain" priority />
+            <div className="inline-flex items-center">
+              <Image src="/onlinedershanem_.png" alt="Online Dershanem" width={360} height={58} className="h-9 w-auto object-contain" priority />
             </div>
 
             <h1 className="mt-8 max-w-md font-serif text-4xl leading-[0.94] tracking-[-0.05em] text-[#201a17] sm:mt-10 sm:text-5xl lg:text-6xl">

@@ -45,7 +45,6 @@ export function Navbar() {
     <>
       <header className="pd-mnav">
         <Link href="/" className="pd-mnav-brand" aria-label="Online Dershanem Ana Sayfa">
-          <Image src="/logo.png" alt="od." width={96} height={96} className="pd-brand-mark" priority />
           <Image src="/onlinedershanem_.png" alt="Online Dershanem" width={1050} height={200} className="pd-brand-wordmark" priority />
         </Link>
 
