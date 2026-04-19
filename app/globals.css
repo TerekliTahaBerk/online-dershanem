@@ -8,20 +8,20 @@
   --color-secondary-dark-green: #435633;
   --color-primary-green: #546B41;
   --color-light-mint: #DCCCAC;
-  --color-off-white: #f6f5f2;
+  --color-off-white: #f4f2ee;
   --color-text-black: #111111;
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
   /* Premium design tokens (Pine palette) */
-  --pd-bg: #f6f5f2;
+  --pd-bg: #f4f2ee;
   --pd-bg-elevated: #ffffff;
-  --pd-bg-subtle: #eeedea;
-  --pd-bg-muted: #e5e3de;
-  --pd-bg-dark: #0a0b0a;
-  --pd-ink: #0a0b0a;
-  --pd-ink-2: #1c1d1c;
-  --pd-ink-3: #3a3c3a;
+  --pd-bg-subtle: #eceae6;
+  --pd-bg-muted: #e4e1dc;
+  --pd-bg-dark: #1a1917;
+  --pd-ink: #1a1917;
+  --pd-ink-2: #242220;
+  --pd-ink-3: #3c3a38;
   --pd-muted: #6a6c69;
   --pd-muted-2: #9a9c98;
   --pd-line: #ddd5c7;

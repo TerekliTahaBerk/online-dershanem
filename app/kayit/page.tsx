@@ -11,9 +11,9 @@ export default async function KayitPage() {
   if (session?.user) redirect(getPanelDestination(session.user));
 
   return (
-    <main className="min-h-screen bg-[#f6f5f2] px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] border border-[#e4e2de] bg-[#f6f5f2] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
-        <section className="flex flex-col justify-between rounded-[24px] bg-[#f6f5f2] px-2 py-2 sm:px-4">
+    <main className="min-h-screen bg-[#f4f2ee] px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] border border-[#e4e2de] bg-[#f4f2ee] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
+        <section className="flex flex-col justify-between rounded-[24px] bg-[#f4f2ee] px-2 py-2 sm:px-4">
           <div>
             <div className="inline-flex items-center gap-3">
               <Image src="/logo.png" alt="Online Dershanem" width={42} height={42} className="h-9 w-9 object-contain" priority />
@@ -75,7 +75,7 @@ export default async function KayitPage() {
                 </p>
               </div>
 
-              <div className="absolute bottom-20 left-14 right-10 rounded-[28px] border border-[#d8e2e9] bg-[#d6e7f1] p-6 shadow-[0_18px_50px_-32px_rgba(67,52,40,0.16)]">
+              <div className="absolute bottom-20 left-14 right-10 rounded-[28px] border border-[#2e2d2a] bg-[#1c1b18] p-6 shadow-[0_18px_50px_-32px_rgba(0,0,0,0.28)]">
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     { icon: MailCheck, title: "Kod doğrulama", text: "E-posta onayı ile hesap tamamlanır." },
@@ -83,10 +83,10 @@ export default async function KayitPage() {
                     { icon: NotebookTabs, title: "Tek görünüm", text: "Ders, program ve duyurular aynı yerde toplanır." },
                     { icon: Sparkles, title: "Hızlı başlangıç", text: "Bekletmeyen sade bir kayıt deneyimi." }
                   ].map(({ icon: Icon, title, text }) => (
-                    <div key={title} className="rounded-[20px] border border-white/30 bg-[#f4f2ee]/85 p-5">
-                      <Icon className="h-4 w-4 text-[#204052]" />
-                      <h4 className="mt-4 text-sm font-semibold text-[#203139]">{title}</h4>
-                      <p className="mt-2 text-sm leading-6 text-[#415862]">{text}</p>
+                    <div key={title} className="rounded-[20px] border border-white/10 bg-[#2d2c29]/85 p-5">
+                      <Icon className="h-4 w-4 text-[#a8a5a0]" />
+                      <h4 className="mt-4 text-sm font-semibold text-[#e6e3de]">{title}</h4>
+                      <p className="mt-2 text-sm leading-6 text-[#c0bdb8]">{text}</p>
                     </div>
                   ))}
                 </div>

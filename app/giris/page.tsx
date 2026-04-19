@@ -24,9 +24,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const justRegistered = params?.registered === "1";
 
   return (
-    <main className="min-h-screen bg-[#f6f5f2] px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] border border-[#e4e2de] bg-[#f6f5f2] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
-        <section className="flex flex-col justify-between rounded-[24px] bg-[#f6f5f2] px-2 py-2 sm:px-4">
+    <main className="min-h-screen bg-[#f4f2ee] px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] border border-[#e4e2de] bg-[#f4f2ee] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
+        <section className="flex flex-col justify-between rounded-[24px] bg-[#f4f2ee] px-2 py-2 sm:px-4">
           <div>
             <div className="inline-flex items-center gap-3">
               <Image src="/logo.png" alt="Online Dershanem" width={42} height={42} className="h-9 w-9 object-contain" priority />
@@ -100,25 +100,25 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 </p>
               </div>
 
-              <div className="absolute bottom-20 left-14 right-10 rounded-[28px] border border-[#d8e2e9] bg-[#d6e7f1] p-6 shadow-[0_18px_50px_-32px_rgba(67,52,40,0.16)]">
+              <div className="absolute bottom-20 left-14 right-10 rounded-[28px] border border-[#2e2d2a] bg-[#1c1b18] p-6 shadow-[0_18px_50px_-32px_rgba(0,0,0,0.28)]">
                 <div className="grid grid-cols-[1.1fr_0.9fr] gap-5">
-                      <div className="rounded-[20px] border border-white/30 bg-[#f4f2ee]/85 p-5">
-                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#4b5a63]">
+                      <div className="rounded-[20px] border border-white/10 bg-[#2d2c29]/85 p-5">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#a8a5a0]">
                       <LineChart className="h-4 w-4" />
                       Haftalık görünüm
                     </div>
                     <div className="mt-5 space-y-4">
                       {[
                         { label: "Matematik", value: 78, tone: "bg-[#d16641]" },
-                        { label: "Paragraf", value: 54, tone: "bg-[#2d4a59]" },
+                        { label: "Paragraf", value: 54, tone: "bg-[#3a3835]" },
                         { label: "Fen", value: 66, tone: "bg-[#546B41]" }
                       ].map((item) => (
                         <div key={item.label}>
-                          <div className="flex items-center justify-between text-sm text-[#203139]">
+                          <div className="flex items-center justify-between text-sm text-[#e6e3de]">
                             <span>{item.label}</span>
                             <span>%{item.value}</span>
                           </div>
-                          <div className="mt-2 h-2 rounded-full bg-white/70">
+                          <div className="mt-2 h-2 rounded-full bg-white/12">
                             <div className={`h-full rounded-full ${item.tone}`} style={{ width: `${item.value}%` }} />
                           </div>
                         </div>
@@ -126,7 +126,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     </div>
                   </div>
 
-                    <div className="rounded-[20px] bg-[#a6cde7] p-5 text-[#153447]">
+                    <div className="rounded-[20px] bg-[#2a2926] p-5 text-[#e6e3de]">
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em]">
                       <CalendarDays className="h-4 w-4" />
                       Sıradaki akış
@@ -137,7 +137,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                         "Hafta sonu genel deneme",
                         "Eksik konu listesi güncellendi"
                       ].map((item) => (
-                        <div key={item} className="rounded-[16px] border border-white/30 bg-[#f3ede4]/80 px-4 py-3 text-sm leading-6">
+                        <div key={item} className="rounded-[16px] border border-white/10 bg-[#38362f]/70 px-4 py-3 text-sm leading-6 text-[#e6e3de]">
                           {item}
                         </div>
                       ))}
