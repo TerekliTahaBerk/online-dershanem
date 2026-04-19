@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -38,8 +39,22 @@ export function Navbar() {
   return (
     <header className="pd-mnav">
       <Link href="/" className="pd-mnav-brand" aria-label="Online Dershanem Ana Sayfa">
-        <span className="pd-mnav-logo">OD</span>
-        <span>onlinedershanem.com</span>
+        <Image
+          src="/logo.png"
+          alt="od."
+          width={96}
+          height={96}
+          className="pd-brand-mark"
+          priority
+        />
+        <Image
+          src="/onlinedershanem_.png"
+          alt="Online Dershanem"
+          width={1050}
+          height={200}
+          className="pd-brand-wordmark"
+          priority
+        />
       </Link>
 
       <nav className="pd-mnav-links">

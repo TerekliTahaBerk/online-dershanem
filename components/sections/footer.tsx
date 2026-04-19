@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { contact } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
@@ -27,10 +28,22 @@ export function Footer() {
     <footer className="pd-footer">
       <div className="pd-footer-inner">
         <div className="pd-footer-brand">
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className="pd-mnav-logo">OD</div>
-            <strong>Online Dershanem</strong>
-          </div>
+          <Link href="/" className="pd-footer-brand-lockup" aria-label="Online Dershanem Ana Sayfa">
+            <Image
+              src="/logo.png"
+              alt="od."
+              width={96}
+              height={96}
+              className="pd-brand-mark"
+            />
+            <Image
+              src="/onlinedershanem_.png"
+              alt="Online Dershanem"
+              width={1050}
+              height={200}
+              className="pd-brand-wordmark"
+            />
+          </Link>
           <p>
             Butik sınıf online dershane. Sadece ihtiyacın olan dersi seç, küçük grupta odaklı ilerle.
           </p>
