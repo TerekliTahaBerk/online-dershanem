@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F7F5F0]">
+    <div className="flex min-h-screen bg-[var(--pd-bg)]">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0 pt-12 lg:pt-0">
         {/* Top Header */}

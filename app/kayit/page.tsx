@@ -11,16 +11,16 @@ export default async function KayitPage() {
   if (session?.user) redirect(getPanelDestination(session.user));
 
   return (
-    <main className="min-h-screen bg-[#f4f2ee] px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] border border-[#e4e2de] bg-[#f4f2ee] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
-        <section className="flex flex-col justify-between rounded-[24px] bg-[#f4f2ee] px-2 py-2 sm:px-4">
+    <main className="min-h-screen bg-[#f4f2ee] px-3 py-4 sm:px-6 sm:py-8">
+      <div className="mx-auto grid min-h-[calc(100vh-2rem)] w-full max-w-7xl gap-6 rounded-[24px] border border-[#e4e2de] bg-[#f4f2ee] p-4 sm:gap-8 sm:rounded-[28px] sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
+        <section className="flex flex-col justify-between rounded-[20px] bg-[#f4f2ee] px-1 py-1 sm:rounded-[24px] sm:px-4">
           <div>
             <div className="inline-flex items-center gap-3">
               <Image src="/logo.png" alt="Online Dershanem" width={42} height={42} className="h-9 w-9 object-contain" priority />
               <Image src="/onlinedershanem_.png" alt="Online Dershanem" width={360} height={58} className="h-8 w-auto object-contain" priority />
             </div>
 
-            <h1 className="mt-10 max-w-md font-serif text-5xl leading-[0.94] tracking-[-0.05em] text-[#201a17] sm:text-6xl">
+            <h1 className="mt-8 max-w-md font-serif text-4xl leading-[0.94] tracking-[-0.05em] text-[#201a17] sm:mt-10 sm:text-5xl lg:text-6xl">
               Düzeni kur,
               <br />
               hesabını aç.
@@ -30,7 +30,7 @@ export default async function KayitPage() {
               Dersler, paketler, öğretmen notları ve süreç takibi için giriş noktanı birkaç adımda tamamla.
             </p>
 
-            <div className="mt-10 max-w-md rounded-[28px] border border-[#e4e2de] bg-white p-6 shadow-[0_18px_40px_-30px_rgba(67,52,40,0.10)]">
+            <div className="mt-8 max-w-md rounded-[24px] border border-[#e4e2de] bg-white p-5 shadow-[0_18px_40px_-30px_rgba(67,52,40,0.10)] sm:mt-10 sm:rounded-[28px] sm:p-6">
               <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">✨ Başlayalım.</h2>
               <p className="mt-2 text-sm leading-7 text-[#6a6058]">Bilgilerini gir, kodu doğrula ve hesabını tamamla.</p>
 
