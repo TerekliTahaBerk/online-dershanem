@@ -41,34 +41,34 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   return (
     <div className="space-y-4">
       <form onSubmit={onSubmit} className="space-y-4">
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           E-posta
           <input
             type="email"
             autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f0e9dd] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f5efe5] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="ornek@email.com"
             required
           />
         </label>
 
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           Şifre
           <input
             type="password"
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f0e9dd] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f5efe5] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="••••••••"
             required
           />
         </label>
 
         {error ? (
-          <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700 border border-red-100">
+          <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {error}
           </p>
         ) : null}
@@ -76,7 +76,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-[#201a17] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#312823] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Bilgiler kontrol ediliyor..." : "Giriş Yap"}
         </button>

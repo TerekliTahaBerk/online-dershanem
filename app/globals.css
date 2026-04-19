@@ -8,24 +8,24 @@
   --color-secondary-dark-green: #285a48;
   --color-primary-green: #408a71;
   --color-light-mint: #b0e4cc;
-  --color-off-white: #f6f3ec;
+  --color-off-white: #f2eee6;
   --color-text-black: #111111;
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
   /* Premium design tokens (Pine palette) */
-  --pd-bg: #f6f3ec;
-  --pd-bg-elevated: #f8f5ef;
-  --pd-bg-subtle: #f2eee6;
-  --pd-bg-muted: #ebe4d9;
+  --pd-bg: #f2eee6;
+  --pd-bg-elevated: #f5f1e8;
+  --pd-bg-subtle: #eee8dd;
+  --pd-bg-muted: #e5ddcf;
   --pd-bg-dark: #0a0b0a;
   --pd-ink: #0a0b0a;
   --pd-ink-2: #1c1d1c;
   --pd-ink-3: #3a3c3a;
   --pd-muted: #6a6c69;
   --pd-muted-2: #9a9c98;
-  --pd-line: #e3ddd2;
-  --pd-line-2: #d6cec1;
+  --pd-line: #ddd5c7;
+  --pd-line-2: #cfc5b6;
   --pd-line-strong: #18191a;
   --pd-accent: #0d5c3d;
   --pd-accent-hover: #0a4a31;
