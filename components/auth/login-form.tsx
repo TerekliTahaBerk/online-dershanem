@@ -67,10 +67,6 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
           />
         </label>
 
-        <p className="rounded-[14px] border border-stone-200 bg-stone-50 px-4 py-3 text-xs leading-6 text-stone-500">
-          Panele atanmış e-posta adresin ve şifren ile giriş yapabilirsin.
-        </p>
-
         {error ? (
           <p className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700 border border-red-100">
             {error}
