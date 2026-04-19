@@ -8,16 +8,16 @@
   --color-secondary-dark-green: #285a48;
   --color-primary-green: #408a71;
   --color-light-mint: #b0e4cc;
-  --color-off-white: #f5f3ef;
+  --color-off-white: #f6f5f2;
   --color-text-black: #111111;
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
   /* Premium design tokens (Pine palette) */
-  --pd-bg: #f5f3ef;
-  --pd-bg-elevated: #fefcf9;
-  --pd-bg-subtle: #edeae4;
-  --pd-bg-muted: #e3dfd8;
+  --pd-bg: #f6f5f2;
+  --pd-bg-elevated: #ffffff;
+  --pd-bg-subtle: #eeedea;
+  --pd-bg-muted: #e5e3de;
   --pd-bg-dark: #0a0b0a;
   --pd-ink: #0a0b0a;
   --pd-ink-2: #1c1d1c;
@@ -90,7 +90,7 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   display: flex; align-items: center; gap: 24px;
   padding: 14px 40px;
   border-bottom: 1px solid var(--pd-line);
-  background: rgba(250, 250, 249, 0.85);
+  background: rgba(252, 252, 251, 0.88);
   position: sticky; top: 0; z-index: 50;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

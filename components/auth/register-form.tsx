@@ -174,7 +174,7 @@ export function RegisterForm() {
                   onChange={(e) => onCodeInput(i, e.target.value)}
                   onKeyDown={(e) => onCodeKeyDown(i, e)}
                   onPaste={i === 0 ? onCodePaste : undefined}
-                  className="h-12 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] text-center text-lg font-bold text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+                  className="h-12 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] text-center text-lg font-bold text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
                 />
               ))}
             </div>
@@ -230,7 +230,7 @@ export function RegisterForm() {
         </div>
       ) : null}
 
-      <div className="mb-5 rounded-[16px] border border-[#e2d9ca] bg-[#f3eee5] px-4 py-3 text-xs leading-6 text-[#6a6058]">
+      <div className="mb-5 rounded-[16px] border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-xs leading-6 text-[#6a6058]">
         Kayıt sonrası e-posta adresine doğrulama kodu gönderilir. Hesap, bu onayla tamamlanır.
       </div>
 
@@ -243,7 +243,7 @@ export function RegisterForm() {
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="Adınız ve soyadınız"
           />
         </label>
@@ -256,7 +256,7 @@ export function RegisterForm() {
             required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="05xx xxx xx xx"
           />
         </label>
@@ -269,7 +269,7 @@ export function RegisterForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="ornek@email.com"
           />
         </label>
@@ -283,7 +283,7 @@ export function RegisterForm() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="En az 6 karakter girin"
           />
         </label>
@@ -296,7 +296,7 @@ export function RegisterForm() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="Şifrenizi tekrar girin"
           />
         </label>
