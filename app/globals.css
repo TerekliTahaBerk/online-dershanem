@@ -8,16 +8,16 @@
   --color-secondary-dark-green: #285a48;
   --color-primary-green: #408a71;
   --color-light-mint: #b0e4cc;
-  --color-off-white: #f2eee6;
+  --color-off-white: #f5f3ef;
   --color-text-black: #111111;
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
   /* Premium design tokens (Pine palette) */
-  --pd-bg: #f2eee6;
-  --pd-bg-elevated: #f5f1e8;
-  --pd-bg-subtle: #eee8dd;
-  --pd-bg-muted: #e5ddcf;
+  --pd-bg: #f5f3ef;
+  --pd-bg-elevated: #fefcf9;
+  --pd-bg-subtle: #edeae4;
+  --pd-bg-muted: #e3dfd8;
   --pd-bg-dark: #0a0b0a;
   --pd-ink: #0a0b0a;
   --pd-ink-2: #1c1d1c;

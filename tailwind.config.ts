@@ -14,7 +14,7 @@ const config: Config = {
         pine: "#285A48",
         brand: "#408A71",
         mint: "#B0E4CC",
-        paper: "#F7F5F0",
+        paper: "#F5F3EF",
         muted: "#2C3734",
         soft: "#EEF3EF",
         line: {
