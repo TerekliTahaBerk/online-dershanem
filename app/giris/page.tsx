@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, CalendarDays, CreditCard, TrendingUp } from "lucide-react";
+import { CalendarDays, FileText, LineChart, Sparkles } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelDestination } from "@/lib/panel-access";
@@ -24,79 +24,143 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const justRegistered = params?.registered === "1";
 
   return (
-    <main className="min-h-screen bg-[#f7f5f0] px-4 py-8 sm:px-6 sm:py-10">
-      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="overflow-hidden rounded-[24px] border border-[#1f2f2b] bg-[#0b1211] p-8 text-white shadow-soft sm:p-10 lg:p-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/60">
-            Online Dershanem
-          </div>
+    <main className="min-h-screen bg-[#f6f1e8] px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl gap-8 rounded-[28px] bg-[#f8f4ec] p-6 sm:p-8 lg:grid-cols-[0.92fr_1.08fr] lg:p-10">
+        <section className="flex flex-col justify-between rounded-[24px] bg-[#f8f4ec] px-2 py-2 sm:px-4">
+          <div>
+            <div className="inline-flex items-center gap-3">
+              <Image src="/logo.png" alt="Online Dershanem" width={42} height={42} className="h-9 w-9 object-contain" priority />
+              <Image src="/onlinedershanem_.png" alt="Online Dershanem" width={360} height={58} className="h-8 w-auto object-contain" priority />
+            </div>
 
-          <div className="mt-6 inline-flex rounded-[16px] border border-white/10 bg-white px-4 py-3 shadow-soft">
-            <Image
-              src="/onlinedershanem_.png"
-              alt="Online Dershanem"
-              width={520}
-              height={84}
-              className="h-10 w-auto object-contain"
-              priority
-            />
-          </div>
+            <h1 className="mt-10 max-w-md font-serif text-5xl leading-[0.94] tracking-[-0.05em] text-[#201a17] sm:text-6xl">
+              Çalışma akışına
+              <br />
+              yeniden dön.
+            </h1>
 
-          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-white sm:text-5xl">
-            Düzenin bozulmasın.
-            <br className="hidden sm:block" /> Akışın sende kalsın.
-          </h1>
+            <p className="mt-6 max-w-md text-[15px] leading-7 text-[#5f554d]">
+              Derslerin, notların, takvimin ve tüm öğrenci akışın tek yerde. Sakin, hızlı ve net bir giriş deneyimiyle devam et.
+            </p>
 
-          <p className="mt-5 max-w-xl text-sm leading-7 text-white/68 sm:text-base">
-            Takvim, dersler, ödemeler ve sürecin tek ekranda. Kaldığın yerden temiz, hızlı ve net biçimde devam et.
-          </p>
+            <div className="mt-10 max-w-md rounded-[28px] border border-[#ded4c6] bg-[#fbf8f2] p-6 shadow-[0_18px_40px_-28px_rgba(80,61,45,0.35)]">
+              <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">Hoş geldin.</h2>
+              <p className="mt-2 text-sm leading-7 text-[#6a6058]">Hesabınla devam et.</p>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            {[
-              { icon: CalendarDays, label: "Takvim", desc: "Haftalık akış görünür" },
-              { icon: BookOpen, label: "Dersler", desc: "Tüm içerik tek yerde" },
-              { icon: CreditCard, label: "Ödemeler", desc: "Güncel detaylar hazır" },
-              { icon: TrendingUp, label: "İlerleme", desc: "Süreç net biçimde izlenir" }
-            ].map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="rounded-[18px] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                <Icon className="h-4 w-4 text-emerald-300" />
-                <p className="mt-3 text-sm font-semibold text-white">{label}</p>
-                <p className="mt-1 text-xs leading-6 text-white/55">{desc}</p>
+              {justRegistered ? (
+                <div className="mt-5 rounded-[16px] border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                  Hesabın açıldı. Şimdi giriş yapabilirsin.
+                </div>
+              ) : null}
+
+              <div className="mt-6">
+                <LoginForm callbackUrl={params?.callbackUrl} />
               </div>
-            ))}
+
+              <p className="mt-5 text-center text-sm text-[#6a6058]">
+                <Link href="/sifremi-unuttum" className="transition hover:text-[#201a17]">
+                  Şifremi unuttum
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-center justify-between gap-4 px-1 text-sm text-[#6a6058]">
+            <p>
+              Henüz hesabın yok mu?{" "}
+              <Link href="/kayit" className="font-semibold text-[#201a17]">
+                Kayıt Ol
+              </Link>
+            </p>
+            <Link href="/" className="font-medium text-[#201a17]">
+              Ana sayfa
+            </Link>
           </div>
         </section>
 
-        <section className="rounded-[24px] border border-line bg-white p-8 shadow-soft sm:p-10 lg:p-12">
-          <div className="mb-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-line bg-[#f8faf9] px-3 py-1.5 text-xs font-semibold tracking-[0.01em] text-ink">
-              <span>👋</span>
-              <span>Hoş geldin</span>
+        <section className="hidden rounded-[28px] bg-[#f1ece2] p-6 lg:block">
+          <div className="relative h-full min-h-[720px] overflow-hidden rounded-[24px] bg-[#f3eee5] p-6">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(59,43,33,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,43,33,0.035)_1px,transparent_1px)] bg-[size:34px_34px]" />
+
+            <div className="relative h-full">
+              <div className="absolute left-8 top-8 max-w-[280px] rounded-[22px] bg-white px-5 py-4 shadow-[0_12px_40px_-24px_rgba(80,61,45,0.45)]">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 text-lg text-[#6e4d3c]">“</span>
+                  <p className="text-[15px] leading-7 text-[#3f342d]">Bu hafta hangi konulara dönmem gerektiğini tek bakışta görmek istiyorum.</p>
+                </div>
+              </div>
+
+              <div className="absolute left-24 top-40 w-[300px] rounded-[26px] bg-white p-8 shadow-[0_18px_50px_-28px_rgba(80,61,45,0.45)]">
+                <div className="inline-flex h-16 w-16 items-center justify-center rounded-[18px] bg-[#f8f1e6] text-[#c86d43]">
+                  <Sparkles className="h-8 w-8" />
+                </div>
+                <h3 className="mt-6 text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">Net, sade ve odaklı.</h3>
+                <p className="mt-3 text-sm leading-7 text-[#6a6058]">
+                  Günün akışı, yaklaşan dersler ve ihtiyaç duyduğun her şey tek görünümde.
+                </p>
+              </div>
+
+              <div className="absolute bottom-20 left-14 right-10 rounded-[28px] bg-[#c7e2f3] p-6 shadow-[0_18px_50px_-28px_rgba(80,61,45,0.35)]">
+                <div className="grid grid-cols-[1.1fr_0.9fr] gap-5">
+                  <div className="rounded-[20px] bg-white/70 p-5">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#4b5a63]">
+                      <LineChart className="h-4 w-4" />
+                      Haftalık görünüm
+                    </div>
+                    <div className="mt-5 space-y-4">
+                      {[
+                        { label: "Matematik", value: 78, tone: "bg-[#d16641]" },
+                        { label: "Paragraf", value: 54, tone: "bg-[#2d4a59]" },
+                        { label: "Fen", value: 66, tone: "bg-[#4b7f6d]" }
+                      ].map((item) => (
+                        <div key={item.label}>
+                          <div className="flex items-center justify-between text-sm text-[#203139]">
+                            <span>{item.label}</span>
+                            <span>%{item.value}</span>
+                          </div>
+                          <div className="mt-2 h-2 rounded-full bg-white/80">
+                            <div className={`h-full rounded-full ${item.tone}`} style={{ width: `${item.value}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[20px] bg-[#8fbfe3] p-5 text-[#153447]">
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em]">
+                      <CalendarDays className="h-4 w-4" />
+                      Sıradaki akış
+                    </div>
+                    <div className="mt-5 space-y-3">
+                      {[
+                        "Yarın 19.00 Matematik dersi",
+                        "Hafta sonu genel deneme",
+                        "Eksik konu listesi güncellendi"
+                      ].map((item) => (
+                        <div key={item} className="rounded-[16px] bg-white/70 px-4 py-3 text-sm leading-6">
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute bottom-8 right-8 max-w-[280px] rounded-[22px] bg-white px-5 py-4 shadow-[0_12px_40px_-24px_rgba(80,61,45,0.45)]">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 text-lg text-[#6e4d3c]">“</span>
+                  <p className="text-[15px] leading-7 text-[#3f342d]">Takvimimi, derslerimi ve ilerlememi tek yerden takip etmek istiyorum.</p>
+                </div>
+              </div>
+
+              <div className="absolute right-16 top-20 rounded-[20px] bg-white px-5 py-4 shadow-[0_12px_40px_-24px_rgba(80,61,45,0.45)]">
+                <div className="flex items-center gap-2 text-sm font-medium text-[#3f342d]">
+                  <FileText className="h-4 w-4 text-[#c86d43]" />
+                  Tüm süreç tek görünümde
+                </div>
+              </div>
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-ink">Devam etmeye hazırsın.</h2>
-            <p className="mt-2 text-sm leading-7 text-muted">Hesabınla giriş yap ve akışına kaldığın yerden dön.</p>
           </div>
-
-          {justRegistered ? (
-            <div className="mb-5 rounded-[16px] border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              Hesabın açıldı. Şimdi giriş yapabilirsin.
-            </div>
-          ) : null}
-
-          <LoginForm callbackUrl={params?.callbackUrl} />
-
-          <p className="mt-5 text-center text-sm">
-            <Link href="/sifremi-unuttum" className="text-stone-500 hover:text-emerald-700">
-              Şifremi unuttum
-            </Link>
-          </p>
-
-          <p className="mt-5 text-center text-sm text-stone-500">
-            Henüz hesabın yok mu?{" "}
-            <Link href="/kayit" className="font-semibold text-emerald-700 hover:text-emerald-800">
-              Kayıt Ol
-            </Link>
-          </p>
         </section>
       </div>
     </main>
