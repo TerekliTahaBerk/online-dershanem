@@ -202,9 +202,9 @@ export function ExamClubPageContent() {
           </FadeIn>
 
           <FadeIn delay={0.08}>
-            <div className="rounded-[22px] border border-line bg-[#0f172a] p-6 text-white shadow-soft">
+            <div className="rounded-[22px] border border-[#2e2d2a] bg-[#1c1b18] p-6 text-white shadow-soft">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
-                <FileText className="h-4 w-4 text-emerald-300" />
+                <FileText className="h-4 w-4 text-[#a8a5a0]" />
                 Deneme sonrası çıktı
               </div>
               <div className="mt-5 space-y-3">
@@ -215,7 +215,7 @@ export function ExamClubPageContent() {
                   "Gerekli öğrenci/veli bilgilendirmesi"
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-2.5 text-sm text-white/80">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#a8a5a0]" />
                     {item}
                   </div>
                 ))}
@@ -321,7 +321,7 @@ export function ExamClubPageContent() {
         </div>
       </section>
 
-      <section className="mt-10 overflow-hidden rounded-[24px] bg-[#0f172a] px-6 py-10 text-white sm:px-8 sm:py-12">
+      <section className="mt-10 overflow-hidden rounded-[24px] border border-[#2e2d2a] bg-[#1c1b18] px-6 py-10 text-white sm:px-8 sm:py-12">
         <FadeIn>
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
             <div>
@@ -336,7 +336,7 @@ export function ExamClubPageContent() {
                 <LeadFunnelTrigger
                   source="exam_club_final_cta"
                   eventName="landing_cta_click"
-                  className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#0f172a] transition hover:bg-white/92"
+                  className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#1c1b18] transition hover:bg-white/92"
                   analyticsId="exam_club_final_cta"
                 >
                   Ön kayıt bırak
@@ -350,7 +350,7 @@ export function ExamClubPageContent() {
 
             <div className="rounded-[20px] border border-white/10 bg-white/5 p-6">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
-                <Clock3 className="h-4 w-4 text-emerald-300" />
+                <Clock3 className="h-4 w-4 text-[#a8a5a0]" />
                 Ön kayıtta ne kazanırsın
               </div>
               <div className="mt-5 space-y-3">
@@ -361,7 +361,7 @@ export function ExamClubPageContent() {
                   "Süreci plansız değil, hazırlıklı başlatırsın"
                 ].map((item) => (
                   <div key={item} className="flex items-start gap-2.5 text-sm text-white/80">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#a8a5a0]" />
                     {item}
                   </div>
                 ))}

@@ -57,7 +57,7 @@ export default async function YeniDersPage({ searchParams }: Props) {
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Öğrenci *</label>
               <select name="studentId" defaultValue={prefilledStudentId} required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]">
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
                 <option value="">Öğrenci seçin...</option>
                 {students.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -71,7 +71,7 @@ export default async function YeniDersPage({ searchParams }: Props) {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Hoca *</label>
               <select name="teacherId" required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]">
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
                 <option value="">Hoca seçin...</option>
                 {teachers.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -91,7 +91,7 @@ export default async function YeniDersPage({ searchParams }: Props) {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Paket (opsiyonel)</label>
               <select name="packageId"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]">
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
                 <option value="">Paketsiz</option>
                 {packages.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -103,21 +103,21 @@ export default async function YeniDersPage({ searchParams }: Props) {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Tarih ve Saat *</label>
               <input type="datetime-local" name="scheduledAt" defaultValue={defaultScheduledAt} required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
             </div>
 
             {/* Duration */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Süre (dakika)</label>
               <input type="number" name="duration" defaultValue="60" min="15" max="240" step="15"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
             </div>
 
             {/* Google Meet Link */}
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Google Meet Linki</label>
               <input type="url" name="googleMeetLink" placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
               <p className="text-xs text-gray-400">Dersi oluşturduktan sonra da ekleyebilirsiniz.</p>
             </div>
 
@@ -125,13 +125,13 @@ export default async function YeniDersPage({ searchParams }: Props) {
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Notlar</label>
               <textarea name="notes" rows={3} placeholder="Ders konusu, özel notlar..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71] resize-none" />
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41] resize-none" />
             </div>
           </div>
 
           <div className="flex gap-3 pt-2">
             <button type="submit"
-              className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
+              className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
               Dersi Kaydet
             </button>
             <Link href="/admin/dersler"

@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F7F5F0]">
+    <div className="flex min-h-screen bg-[var(--pd-bg)]">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0 pt-12 lg:pt-0">
         {/* Top Header */}
@@ -36,7 +36,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               <input
                 type="text"
                 placeholder="Ara..."
-                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71] w-64"
+                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41] w-64"
                 readOnly
               />
             </div>

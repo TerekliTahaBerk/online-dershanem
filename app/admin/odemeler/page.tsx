@@ -127,12 +127,12 @@ export default async function OdemelerPage({ searchParams }: Props) {
           name="q"
           defaultValue={q}
           placeholder="İsim, telefon, paket..."
-          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
         />
         <select
           name="intakeStatus"
           defaultValue={intakeStatus}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
         >
           <option value="">Tüm Süreç</option>
           {intakeStatusOptions.map((s) => (
@@ -142,7 +142,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
         <select
           name="purchaseStatus"
           defaultValue={purchaseStatus}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
         >
           <option value="">Tüm Ödeme Durumu</option>
           {purchaseStatusOptions.map((s) => (
@@ -150,12 +150,12 @@ export default async function OdemelerPage({ searchParams }: Props) {
           ))}
         </select>
         <label className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white cursor-pointer">
-          <input type="checkbox" name="tasks" value="1" defaultChecked={tasks === "1"} className="accent-[#408A71]" />
+          <input type="checkbox" name="tasks" value="1" defaultChecked={tasks === "1"} className="accent-[#546B41]" />
           Görevli
         </label>
         <button
           type="submit"
-          className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           Filtrele
         </button>
@@ -194,11 +194,11 @@ export default async function OdemelerPage({ searchParams }: Props) {
                 const waLink = buildWhatsAppLink(purchase.studentPhone);
                 return (
                   <>
-                    <tr key={purchase.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#B0E4CC]/10" : ""}`}>
+                    <tr key={purchase.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#DCCCAC]/10" : ""}`}>
                       <td className="px-4 py-3">
                         <p className="font-medium text-[#091413]">{purchase.studentFullName}</p>
                         {waLink ? (
-                          <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-xs text-[#408A71] hover:underline">
+                          <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-xs text-[#546B41] hover:underline">
                             {purchase.studentPhone}
                           </a>
                         ) : (
@@ -244,7 +244,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
                       <td className="px-4 py-3 text-right">
                         <Link
                           href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: purchase.id })}
-                          className="text-xs text-[#408A71] hover:text-[#285A48] font-medium border border-[#408A71]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors"
+                          className="text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
                         >
                           {isEditing ? "Kapat" : "Düzenle"}
                         </Link>
@@ -254,7 +254,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
                     {/* Inline edit */}
                     {isEditing && (
                       <tr key={`${purchase.id}-edit`}>
-                        <td colSpan={7} className="px-4 py-4 bg-[#B0E4CC]/5 border-b border-[#B0E4CC]/30">
+                        <td colSpan={7} className="px-4 py-4 bg-[#DCCCAC]/5 border-b border-[#DCCCAC]/30">
                           <form action={updatePurchaseAction} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <input type="hidden" name="purchaseId" value={purchase.id} />
                             <input type="hidden" name="linkedStudentId" value={purchase.student?.id ?? ""} />
@@ -263,7 +263,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-gray-600">Süreç Durumu</label>
                               <select name="intakeStatus" defaultValue={purchase.intakeStatus}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30">
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
                                 {intakeStatusOptions.map((s) => (
                                   <option key={s} value={s}>{intakeStatusLabels[s]}</option>
                                 ))}
@@ -273,7 +273,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-gray-600">Ödeme Durumu</label>
                               <select name="status" defaultValue={purchase.status}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30">
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
                                 {purchaseStatusOptions.map((s) => (
                                   <option key={s} value={s}>{purchaseStatusLabels[s]}</option>
                                 ))}
@@ -283,30 +283,30 @@ export default async function OdemelerPage({ searchParams }: Props) {
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-gray-600">Paket Adı</label>
                               <input type="text" name="packageName" defaultValue={purchase.packageName}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
                             </div>
 
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-gray-600">Görev Etiketi</label>
                               <input type="text" name="taskLabel" defaultValue={purchase.taskLabel ?? ""}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
                             </div>
 
                             <div className="space-y-1">
                               <label className="text-xs font-medium text-gray-600">Sonraki Eylem</label>
                               <input type="datetime-local" name="nextActionAt" defaultValue={formatDateTimeLocalInput(purchase.nextActionAt)}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
                             </div>
 
                             <div className="space-y-1 col-span-2 md:col-span-3">
                               <label className="text-xs font-medium text-gray-600">Admin Notları</label>
                               <textarea name="adminNotes" defaultValue={purchase.adminNotes ?? ""} rows={2}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 resize-none" />
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 resize-none" />
                             </div>
 
                             <div className="col-span-2 md:col-span-3 lg:col-span-4 flex gap-3">
                               <button type="submit"
-                                className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                                className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                                 Kaydet
                               </button>
                               <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">
@@ -317,7 +317,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
 
                           {/* Event log */}
                           {purchase.events.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-[#B0E4CC]/30">
+                            <div className="mt-4 pt-4 border-t border-[#DCCCAC]/30">
                               <p className="text-xs font-semibold text-gray-500 mb-2">Son Olaylar</p>
                               <div className="space-y-1.5">
                                 {purchase.events.map((event) => (
@@ -352,12 +352,12 @@ export default async function OdemelerPage({ searchParams }: Props) {
             </span>
             <div className="flex gap-2">
               {page > 0 && (
-                <Link href={buildUrl({ page: String(page - 1) })} className="text-xs text-[#408A71] border border-[#408A71]/30 rounded-lg px-3 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors">
+                <Link href={buildUrl({ page: String(page - 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
                   Önceki
                 </Link>
               )}
               {(page + 1) * PAGE_SIZE < total && (
-                <Link href={buildUrl({ page: String(page + 1) })} className="text-xs text-[#408A71] border border-[#408A71]/30 rounded-lg px-3 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors">
+                <Link href={buildUrl({ page: String(page + 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
                   Sonraki
                 </Link>
               )}

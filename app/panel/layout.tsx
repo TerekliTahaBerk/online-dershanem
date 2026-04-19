@@ -16,7 +16,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F7F5F0]">
+    <div className="flex min-h-screen bg-[var(--pd-bg)]">
       <PanelSidebar />
       <div className="flex-1 flex flex-col min-w-0 pt-12 lg:pt-0">
         <header className="hidden lg:flex bg-white border-b border-stone-200 px-8 py-4 items-center justify-between sticky top-0 z-10">

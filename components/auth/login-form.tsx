@@ -48,7 +48,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             autoComplete="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f0e9dd] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f5efe5] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="ornek@email.com"
             required
           />
@@ -61,7 +61,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f0e9dd] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f5efe5] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="••••••••"
             required
           />

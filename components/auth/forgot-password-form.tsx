@@ -171,7 +171,7 @@ export function ForgotPasswordForm() {
                   onChange={(e) => onCodeInput(i, e.target.value)}
                   onKeyDown={(e) => onCodeKeyDown(i, e)}
                   onPaste={i === 0 ? onCodePaste : undefined}
-                  className="h-12 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] text-center text-lg font-bold text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+                  className="h-12 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] text-center text-lg font-bold text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
                 />
               ))}
             </div>
@@ -186,7 +186,7 @@ export function ForgotPasswordForm() {
               minLength={6}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+              className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
               placeholder="En az 6 karakter"
             />
           </label>
@@ -199,7 +199,7 @@ export function ForgotPasswordForm() {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+              className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
               placeholder="Şifrenizi tekrar girin"
             />
           </label>
@@ -263,7 +263,7 @@ export function ForgotPasswordForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
+            className="mt-1.5 w-full rounded-xl border border-[#dedcd7] bg-[#f3f2ef] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#f8f7f4] focus:ring-2 focus:ring-[#e2deda]"
             placeholder="ornek@email.com"
           />
         </label>

@@ -36,7 +36,7 @@ function addDays(date: Date, days: number): Date {
 }
 
 const TEACHER_COLORS = [
-  "bg-[#B0E4CC]/60 border-[#408A71]/40 text-[#285A48]",
+  "bg-[#DCCCAC]/60 border-[#546B41]/40 text-[#435633]",
   "bg-blue-100 border-blue-300 text-blue-800",
   "bg-violet-100 border-violet-300 text-violet-800",
   "bg-amber-100 border-amber-300 text-amber-800",
@@ -121,7 +121,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
             <ChevronLeft size={16} className="text-gray-600" />
           </Link>
           {weekOffset !== 0 && (
-            <Link href={todayParam} className="text-xs text-[#408A71] border border-[#408A71]/30 rounded-lg px-3 py-2 hover:bg-[#B0E4CC]/20 transition-colors font-medium">
+            <Link href={todayParam} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-2 hover:bg-[#DCCCAC]/20 transition-colors font-medium">
               Bu Hafta
             </Link>
           )}
@@ -129,7 +129,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
             <ChevronRight size={16} className="text-gray-600" />
           </Link>
           <Link href="/admin/dersler/yeni"
-            className="flex items-center gap-1.5 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors">
+            className="flex items-center gap-1.5 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors">
             <Plus size={14} /> Ders Ekle
           </Link>
         </div>
@@ -140,7 +140,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
         <Link
           href={`?week=${weekOffset}`}
           className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-            !teacherIdFilter ? "bg-[#408A71] text-white border-[#408A71]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+            !teacherIdFilter ? "bg-[#546B41] text-white border-[#546B41]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
           }`}
         >
           Tüm Hocalar
@@ -153,7 +153,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
               key={t.id}
               href={`?week=${weekOffset}&teacherId=${t.id}`}
               className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                isActive ? "bg-[#408A71] text-white border-[#408A71]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                isActive ? "bg-[#546B41] text-white border-[#546B41]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
               }`}
             >
               {t.fullName}
@@ -172,9 +172,9 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
               {weekDays.map((day, i) => {
                 const isToday = day.getTime() === today.getTime();
                 return (
-                  <div key={i} className={`py-3 text-center border-l border-gray-100 ${isToday ? "bg-[#B0E4CC]/10" : ""}`}>
-                    <p className={`text-xs font-semibold ${isToday ? "text-[#408A71]" : "text-gray-600"}`}>{DAYS[i]}</p>
-                    <p className={`text-sm font-bold mt-0.5 ${isToday ? "text-[#408A71]" : "text-gray-800"}`}>
+                  <div key={i} className={`py-3 text-center border-l border-gray-100 ${isToday ? "bg-[#DCCCAC]/10" : ""}`}>
+                    <p className={`text-xs font-semibold ${isToday ? "text-[#546B41]" : "text-gray-600"}`}>{DAYS[i]}</p>
+                    <p className={`text-sm font-bold mt-0.5 ${isToday ? "text-[#546B41]" : "text-gray-800"}`}>
                       {new Intl.DateTimeFormat("tr-TR", { day: "numeric" }).format(day)}
                     </p>
                   </div>
@@ -193,7 +193,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
                   const key = `${dayIdx}-${hour}`;
                   const slotLessons = lessonsByDayHour.get(key) ?? [];
                   return (
-                    <div key={dayIdx} className={`border-l border-gray-100 p-1 space-y-1 ${isToday ? "bg-[#B0E4CC]/5" : ""}`}>
+                    <div key={dayIdx} className={`border-l border-gray-100 p-1 space-y-1 ${isToday ? "bg-[#DCCCAC]/5" : ""}`}>
                       {slotLessons.map((lesson) => {
                         const colorIdx = teacherColorMap.get(lesson.teacher.fullName) ?? 0;
                         const colorClass = TEACHER_COLORS[colorIdx];

@@ -10,7 +10,7 @@ type GroupByExamType = { examType: string | null; _count: number }[];
 
 export const dynamic = "force-dynamic";
 
-function BarChart({ data, colorClass = "bg-[#408A71]" }: {
+function BarChart({ data, colorClass = "bg-[#546B41]" }: {
   data: { label: string; value: number; total: number }[];
   colorClass?: string;
 }) {
@@ -228,16 +228,16 @@ export default async function IstatistiklerPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-[#091413]">Öğrenci Durumu</h2>
-            <Link href="/admin/ogrenciler" className="text-xs text-[#408A71] hover:underline">Tümü →</Link>
+            <Link href="/admin/ogrenciler" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
           </div>
-          <BarChart data={studentStatusData} colorClass="bg-[#408A71]" />
+          <BarChart data={studentStatusData} colorClass="bg-[#546B41]" />
         </div>
 
         {/* Lesson by Status */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-[#091413]">Ders Durumu</h2>
-            <Link href="/admin/dersler" className="text-xs text-[#408A71] hover:underline">Tümü →</Link>
+            <Link href="/admin/dersler" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
           </div>
           <BarChart data={lessonStatusData} colorClass="bg-blue-400" />
         </div>
@@ -246,7 +246,7 @@ export default async function IstatistiklerPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-[#091413]">Ödeme Durumu</h2>
-            <Link href="/admin/odemeler" className="text-xs text-[#408A71] hover:underline">Tümü →</Link>
+            <Link href="/admin/odemeler" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
           </div>
           <BarChart data={purchaseStatusData} colorClass="bg-violet-400" />
         </div>
@@ -255,7 +255,7 @@ export default async function IstatistiklerPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-[#091413]">Form Başvuru Süreci</h2>
-            <Link href="/admin/formlar" className="text-xs text-[#408A71] hover:underline">Tümü →</Link>
+            <Link href="/admin/formlar" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
           </div>
           <BarChart data={leadStatusData} colorClass="bg-amber-400" />
         </div>
@@ -272,10 +272,10 @@ export default async function IstatistiklerPage() {
               <Link
                 key={label}
                 href={`/admin/ogrenciler?q=${label}`}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-[#B0E4CC]/20 transition-colors"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-[#DCCCAC]/20 transition-colors"
               >
                 <span className="text-sm font-medium text-gray-700">{label}</span>
-                <span className="text-sm font-bold text-[#408A71]">{value}</span>
+                <span className="text-sm font-bold text-[#546B41]">{value}</span>
               </Link>
             ))}
           </div>
@@ -286,12 +286,12 @@ export default async function IstatistiklerPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-[#091413]">Bu Ay Form Başvuruları</h2>
-          <span className="text-2xl font-bold text-[#408A71]">{leadsThisMonth}</span>
+          <span className="text-2xl font-bold text-[#546B41]">{leadsThisMonth}</span>
         </div>
         <p className="text-sm text-gray-500">
           Web sitesinden gelen form başvurularının {leadsThisMonth} tanesi bu ay geldi.
         </p>
-        <Link href="/admin/formlar" className="mt-3 inline-block text-xs text-[#408A71] hover:underline">
+        <Link href="/admin/formlar" className="mt-3 inline-block text-xs text-[#546B41] hover:underline">
           Tüm formlara git →
         </Link>
       </div>

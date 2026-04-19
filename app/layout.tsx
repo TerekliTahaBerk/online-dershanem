@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/content";
@@ -14,6 +14,13 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#f4f2ee"
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

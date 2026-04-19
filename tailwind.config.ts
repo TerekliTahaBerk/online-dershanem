@@ -11,10 +11,10 @@ const config: Config = {
       colors: {
         anchor: "#091413",
         ink: "#111111",
-        pine: "#285A48",
-        brand: "#408A71",
-        mint: "#B0E4CC",
-        paper: "#F7F5F0",
+        pine: "#435633",
+        brand: "#546B41",
+        mint: "#DCCCAC",
+        paper: "#F4F2EE",
         muted: "#2C3734",
         soft: "#EEF3EF",
         line: {

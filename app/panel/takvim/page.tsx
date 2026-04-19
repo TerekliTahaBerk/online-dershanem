@@ -158,7 +158,7 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
                           {cellLessons.map((lesson) => (
                             <div
                               key={lesson.id}
-                              className="rounded-md border bg-[#B0E4CC]/60 border-[#408A71]/40 text-[#285A48] p-1.5 text-xs mb-0.5 leading-tight"
+                              className="rounded-md border bg-[#DCCCAC]/60 border-[#546B41]/40 text-[#435633] p-1.5 text-xs mb-0.5 leading-tight"
                             >
                               <p className="font-semibold truncate">{lesson.teacher.fullName}</p>
                               <p className="text-[10px] opacity-80 mt-0.5">
@@ -191,7 +191,7 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
 
       {/* Legend */}
       <div className="flex items-center gap-2 text-xs text-stone-500">
-        <span className="inline-block w-3 h-3 rounded bg-[#B0E4CC]/60 border border-[#408A71]/40" />
+        <span className="inline-block w-3 h-3 rounded bg-[#DCCCAC]/60 border border-[#546B41]/40" />
         Planlı ders
       </div>
     </div>
