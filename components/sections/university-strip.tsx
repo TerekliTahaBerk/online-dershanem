@@ -9,27 +9,23 @@ const universityLogos = [
 ] as const;
 
 export function UniversityStrip() {
-  const marqueeItems = [...universityLogos, ...universityLogos];
-
   return (
     <section className="pd-logo-strip" aria-label="Öğretmen kadrosu üniversiteleri">
       <div className="pd-logo-strip-copy">
         <span className="pd-logo-strip-label">Öğretmenlerimiz Türkiye&apos;nin lider üniversitelerinden</span>
       </div>
-      <div className="pd-logo-marquee" aria-hidden="true">
-        <div className="pd-logo-marquee-track">
-          {marqueeItems.map((logo, index) => (
-            <div key={`${logo.shortName}-${index}`} className="pd-logo-marquee-item">
-              <Image
-                src={logo.src}
-                alt={logo.name}
-                width={logo.width}
-                height={logo.height}
-                className="pd-logo-marquee-image"
-              />
-            </div>
-          ))}
-        </div>
+      <div className="pd-logo-strip-grid">
+        {universityLogos.map((logo) => (
+          <div key={logo.shortName} className="pd-logo-strip-item">
+            <Image
+              src={logo.src}
+              alt={logo.name}
+              width={logo.width}
+              height={logo.height}
+              className="pd-logo-strip-image"
+            />
+          </div>
+        ))}
       </div>
     </section>
   );
