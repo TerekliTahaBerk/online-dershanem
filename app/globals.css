@@ -363,6 +363,8 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   padding: 28px 24px;
   border-right: 1px solid var(--pd-line);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 .pd-home-pricing-col:last-child { border-right: 0; }
 .pd-home-pricing-col.featured {
@@ -416,6 +418,7 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1;
 }
 .pd-home-pricing-feat {
   font-size: 13px;
@@ -432,7 +435,10 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 }
 .pd-home-pricing-col.featured .pd-home-pricing-feat { color: rgba(255,255,255,0.76); }
 .pd-home-pricing-col.featured .pd-home-pricing-feat::before { color: #9bd9ba; }
-.pd-home-pricing-cta { width: 100%; }
+.pd-home-pricing-cta {
+  width: 100%;
+  margin-top: auto;
+}
 .pd-home-pricing-cta-featured {
   background: #fff;
   color: var(--pd-ink);
