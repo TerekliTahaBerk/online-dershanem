@@ -119,13 +119,6 @@ export function ExamClubPageContent() {
       <FadeIn>
         <section className="rounded-[24px] border border-line bg-[#f5f7f6] px-6 py-10 text-center sm:px-8 sm:py-14">
           <span className="pd-eyebrow justify-center">Deneme Kulübü</span>
-          <Image
-            src="/odklogo2.jpeg"
-            alt="Online Deneme Kulübü"
-            width={340}
-            height={80}
-            className="mx-auto mt-6 h-10 w-auto object-contain"
-          />
           <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-ink sm:text-5xl">
             Denemeyi ölçümden çıkar,
             <br className="hidden sm:block" /> pakete dönüştür.

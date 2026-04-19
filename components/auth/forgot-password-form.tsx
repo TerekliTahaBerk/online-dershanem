@@ -134,11 +134,11 @@ export function ForgotPasswordForm() {
     return (
       <div className="flex flex-col items-center gap-4 py-4 text-center">
         <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-        <p className="text-base font-semibold text-stone-900">Şifreniz güncellendi!</p>
-        <p className="text-sm text-stone-500">Yeni şifrenizle giriş yapabilirsiniz.</p>
+        <p className="text-base font-semibold text-[#201a17]">Şifren güncellendi.</p>
+        <p className="text-sm text-[#6a6058]">Yeni şifrenle giriş yapabilirsin.</p>
         <Link
           href="/giris"
-          className="mt-2 inline-flex items-center justify-center rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          className="mt-2 inline-flex items-center justify-center rounded-xl bg-[#201a17] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#312823]"
         >
           Giriş Yap
         </Link>
@@ -150,15 +150,15 @@ export function ForgotPasswordForm() {
     return (
       <div>
         <div className="mb-7">
-          <h2 className="text-xl font-semibold text-stone-900">Kodu Girin</h2>
-          <p className="mt-1.5 text-sm text-stone-500">
-            <strong>{email}</strong> adresine 6 haneli bir kod gönderdik. Kodu girin ve yeni şifrenizi belirleyin.
+          <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">Kodunu gir.</h2>
+          <p className="mt-2 text-sm leading-7 text-[#6a6058]">
+            <strong>{email}</strong> adresine 6 haneli bir kod gönderdik. Kodu gir ve yeni şifreni belirle.
           </p>
         </div>
 
         <form onSubmit={onVerifySubmit} className="space-y-5">
           <div>
-            <p className="mb-3 text-sm font-medium text-stone-700">Doğrulama Kodu</p>
+            <p className="mb-3 text-sm font-medium text-[#3f342d]">Doğrulama kodu</p>
             <div className="flex gap-2">
               {code.map((digit, i) => (
                 <input
@@ -171,13 +171,13 @@ export function ForgotPasswordForm() {
                   onChange={(e) => onCodeInput(i, e.target.value)}
                   onKeyDown={(e) => onCodeKeyDown(i, e)}
                   onPaste={i === 0 ? onCodePaste : undefined}
-                  className="h-12 w-full rounded-lg border border-stone-200 bg-stone-50 text-center text-lg font-bold text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="h-12 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] text-center text-lg font-bold text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
                 />
               ))}
             </div>
           </div>
 
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block text-sm font-medium text-[#3f342d]">
             Yeni Şifre
             <input
               type="password"
@@ -186,12 +186,12 @@ export function ForgotPasswordForm() {
               minLength={6}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
               placeholder="En az 6 karakter"
             />
           </label>
 
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block text-sm font-medium text-[#3f342d]">
             Yeni Şifre Tekrar
             <input
               type="password"
@@ -199,13 +199,13 @@ export function ForgotPasswordForm() {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+              className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
               placeholder="Şifrenizi tekrar girin"
             />
           </label>
 
           {error ? (
-            <p className="rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm font-medium text-red-700">
+            <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
               {error}
             </p>
           ) : null}
@@ -213,24 +213,24 @@ export function ForgotPasswordForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-[#201a17] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#312823] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? "Şifre güncelleniyor..." : "Şifremi Güncelle"}
           </button>
         </form>
 
-        <div className="mt-5 flex items-center justify-between text-sm text-stone-500">
+        <div className="mt-5 flex items-center justify-between text-sm text-[#6a6058]">
           <button
             type="button"
             onClick={() => { setStep("email"); setError(null); setCode(["", "", "", "", "", ""]); }}
-            className="hover:text-stone-700 underline"
+            className="underline transition hover:text-[#201a17]"
           >
             Geri dön
           </button>
           <button
             type="button"
             onClick={resendCode}
-            className="hover:text-stone-700 underline"
+            className="underline transition hover:text-[#201a17]"
           >
             Kodu tekrar gönder
           </button>
@@ -242,20 +242,20 @@ export function ForgotPasswordForm() {
   return (
     <div>
       <div className="mb-7">
-        <h2 className="text-xl font-semibold text-stone-900">Şifremi Unuttum</h2>
-        <p className="mt-1.5 text-sm text-stone-500">
-          Hesabınızla ilişkili e-posta adresini girin. Sıfırlama kodunu göndereceğiz.
+        <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">E-postanı bırak.</h2>
+        <p className="mt-2 text-sm leading-7 text-[#6a6058]">
+          Hesabınla ilişkili e-posta adresini gir. Sıfırlama kodunu göndereceğiz.
         </p>
       </div>
 
       {error ? (
-        <div className="mb-5 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm font-medium text-red-700">
+        <div className="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
           {error}
         </div>
       ) : null}
 
       <form onSubmit={onEmailSubmit} className="space-y-4">
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-[#3f342d]">
           E-posta
           <input
             type="email"
@@ -263,7 +263,7 @@ export function ForgotPasswordForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            className="mt-1.5 w-full rounded-xl border border-[#ddd3c4] bg-[#f6f1e8] px-4 py-3 text-sm text-[#201a17] outline-none transition focus:border-[#b96641] focus:bg-[#faf7f2] focus:ring-2 focus:ring-[#ead7c8]"
             placeholder="ornek@email.com"
           />
         </label>
@@ -271,15 +271,15 @@ export function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-[#201a17] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#312823] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Kod gönderiliyor..." : "Kod Gönder"}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-stone-500">
-        Şifrenizi hatırladınız mı?{" "}
-        <Link href="/giris" className="font-semibold text-emerald-700 hover:text-emerald-800">
+      <p className="mt-6 text-center text-sm text-[#6a6058]">
+        Şifreni hatırladın mı?{" "}
+        <Link href="/giris" className="font-semibold text-[#201a17] transition hover:text-[#312823]">
           Giriş Yap
         </Link>
       </p>
