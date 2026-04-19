@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { faq, siteUrl } from "@/lib/content";
 import { Navbar } from "@/components/sections/navbar";
 import { ConversionHeroSection } from "@/components/sections/conversion-hero-section";
+import { UniversityStrip } from "@/components/sections/university-strip";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { WhyUsSection } from "@/components/sections/why-us-section";
 import { TeacherSection } from "@/components/sections/teacher-section";
@@ -69,6 +70,7 @@ export default function HomePage() {
       <Navbar />
       <main>
         <ConversionHeroSection />
+        <UniversityStrip />
         <PricingComparisonSection />
         <CampsPreviewSection />
         <HowItWorks />

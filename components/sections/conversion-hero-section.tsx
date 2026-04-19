@@ -40,11 +40,11 @@ export function ConversionHeroSection() {
           </p>
 
           <div className="pd-hero-cta">
-            <Link href="#seni-arayalim-formu" className="pd-btn pd-btn-primary pd-btn-lg">
-              Formu Doldur, Seni Arayalım <ArrowRight size={16} />
+            <Link href="/paketler/" className="pd-btn pd-btn-primary pd-btn-lg">
+              Paketleri Gör <ArrowRight size={16} />
             </Link>
-            <Link href="/paketler/" className="pd-btn pd-btn-ghost pd-btn-lg">
-              Paketleri Gör
+            <Link href="/kamplar/" className="pd-btn pd-btn-ghost pd-btn-lg">
+              Kampları İncele
             </Link>
           </div>
 
