@@ -44,7 +44,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </p>
 
             <div className="mt-10 max-w-md rounded-[28px] border border-[#ded4c6] bg-[#fbf8f2] p-6 shadow-[0_18px_40px_-28px_rgba(80,61,45,0.35)]">
-              <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">Hoş geldin.</h2>
+              <h2 className="text-[28px] font-medium tracking-[-0.03em] text-[#201a17]">👋🏻 Hoş geldin.</h2>
               <p className="mt-2 text-sm leading-7 text-[#6a6058]">Hesabınla devam et.</p>
 
               {justRegistered ? (

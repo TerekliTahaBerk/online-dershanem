@@ -14,10 +14,10 @@
   --grid: rgba(9, 20, 19, 0.06);
 
   /* Premium design tokens (Pine palette) */
-  --pd-bg: #fafaf9;
+  --pd-bg: #f6f1e8;
   --pd-bg-elevated: #ffffff;
-  --pd-bg-subtle: #f4f4f2;
-  --pd-bg-muted: #ededea;
+  --pd-bg-subtle: #f1ebe2;
+  --pd-bg-muted: #e8e1d7;
   --pd-bg-dark: #0a0b0a;
   --pd-ink: #0a0b0a;
   --pd-ink-2: #1c1d1c;
@@ -58,7 +58,7 @@ html {
 body {
   background-color: var(--pd-bg);
   color: var(--pd-ink);
-  font-family: var(--font-geist), Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.011em;
