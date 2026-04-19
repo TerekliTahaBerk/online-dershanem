@@ -136,32 +136,6 @@ export function CampsPageContent() {
         </section>
       </FadeIn>
 
-      <FadeIn delay={0.05}>
-        <section className="mt-8 rounded-[20px] border border-line bg-white p-5 shadow-soft sm:p-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Takvim</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-ink">Kamplar Takvimi</h2>
-            </div>
-            <p className="max-w-2xl text-sm leading-6 text-muted">
-              Kamplarımızın başlaması için kontenjanların dolması beklenmektedir. Kamplarımız en geç 1 Mayıs tarihinde başlayacaktır.
-            </p>
-          </div>
-
-          <div className="mt-5 overflow-hidden rounded-2xl border border-line">
-            <iframe
-              src="https://calendar.google.com/calendar/embed?src=c7e9bc8f3695d608c263a450c1402dba131bc20a71b86ece44737de9115d9772%40group.calendar.google.com&ctz=Europe%2FIstanbul"
-              style={{ border: 0 }}
-              width="100%"
-              height="600"
-              frameBorder="0"
-              scrolling="no"
-              title="Kamplar Takvimi"
-            />
-          </div>
-        </section>
-      </FadeIn>
-
       <section id="kamp-listesi" className="mt-10">
         <FadeIn>
           <div className="mb-8 max-w-3xl">
