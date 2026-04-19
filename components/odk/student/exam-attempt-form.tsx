@@ -61,15 +61,14 @@ export function ExamAttemptForm({ examId, attemptId, sections, durationMinutes }
 
   if (!attemptId) {
     return (
-      <form action={async () => { startTransition(() => startExam(examId)); }}>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
-        >
-          {pending ? "Başlatılıyor..." : "Sınava Başla"}
-        </button>
-      </form>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => startTransition(async () => { await startExam(examId); })}
+        className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
+      >
+        {pending ? "Başlatılıyor..." : "Sınava Başla"}
+      </button>
     );
   }
 

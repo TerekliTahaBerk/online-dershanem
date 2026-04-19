@@ -17,11 +17,13 @@ export default async function ServisSecimiPage() {
   // Pure teacher or no access — redirect appropriately
   if (!access.hasAdminPanel && !access.hasStudentPanel) {
     if (access.hasTeacherPanel) redirect("/ogretmen");
+    else if (access.hasOdkPanel) redirect("/odk/panel");
     else redirect("/giris");
   }
 
   const odHref = getOdPanelDestination(session.user);
   const isAdmin = access.hasAdminPanel;
+  const hasOdkPanel = access.hasOdkPanel;
 
   return (
     <main className="min-h-screen bg-[#F7F5F0] px-4 py-10 sm:px-6 lg:px-8">
@@ -91,9 +93,9 @@ export default async function ServisSecimiPage() {
               </Link>
 
               {/* Online Deneme Kulübü */}
-              {isAdmin ? (
+              {isAdmin || hasOdkPanel ? (
                 <Link
-                  href="/odk/admin"
+                  href={isAdmin ? "/odk/admin" : "/odk/panel"}
                   className="group flex h-full flex-col justify-between rounded-2xl border border-stone-200 bg-stone-50 p-6 transition hover:border-emerald-300 hover:bg-white hover:shadow-lg"
                 >
                   <div>
@@ -105,7 +107,9 @@ export default async function ServisSecimiPage() {
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold text-stone-900">Online Deneme Kulübü</h2>
                     <p className="mt-3 max-w-sm text-sm leading-6 text-stone-600">
-                      Deneme sınavlarını yönet, sonuçları analiz et, öğrenci performansını takip et.
+                      {isAdmin
+                        ? "Deneme sınavlarını yönet, sonuçları analiz et, öğrenci performansını takip et."
+                        : "Deneme sınavlarına katıl, sonuçlarını incele ve performansını takip et."}
                     </p>
                   </div>
                   <div className="mt-8 flex items-center justify-between border-t border-stone-200 pt-5 text-sm font-semibold text-stone-900">

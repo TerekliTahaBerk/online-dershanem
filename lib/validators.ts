@@ -10,7 +10,7 @@ const optionalTrimmedString = z
 
 export const credentialsSchema = z.object({
   email: z.string().trim().email(),
-  password: z.string().min(8)
+  password: z.string().min(1)
 });
 
 export const leadSubmissionSchema = z.object({

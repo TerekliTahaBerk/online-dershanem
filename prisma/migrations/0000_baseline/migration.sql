@@ -1,0 +1,3 @@
+-- Baseline: schema was previously managed with prisma db push.
+-- This migration is intentionally empty — it establishes the migration
+-- history starting point without touching existing tables.

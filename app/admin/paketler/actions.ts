@@ -85,3 +85,13 @@ export async function togglePackageAction(formData: FormData) {
   revalidatePath("/admin/paketler");
   redirect("/admin/paketler?updated=toggle");
 }
+
+export async function deletePackageAction(formData: FormData) {
+  const packageId = readString(formData, "packageId");
+  if (!packageId) redirect("/admin/paketler");
+
+  await prisma.package.delete({ where: { id: packageId } });
+
+  revalidatePath("/admin/paketler");
+  redirect("/admin/paketler?updated=deleted");
+}

@@ -22,6 +22,26 @@ cp .env.example .env.local
 - `ADMIN_NAME`
 - `PAYMENT_WEBHOOK_SECRET`
 
+## Vercel Prisma Postgres
+
+Prisma Postgres'i Vercel Storage uzerinden kullanacaksaniz repo artik
+`STORAGE_DATABASE_URL`, `STORAGE_PRISMA_DATABASE_URL` ve `STORAGE_POSTGRES_URL`
+degiskenlerini otomatik olarak `DATABASE_URL` / `DIRECT_URL` yerine kabul eder.
+
+Onerilen kurulum:
+
+```bash
+vercel link
+vercel env pull .env.local --yes
+```
+
+Ardindan migrasyon ve seed:
+
+```bash
+npx prisma migrate dev --name init
+npx prisma db seed
+```
+
 ## Veritabanı
 
 ```bash
@@ -58,10 +78,14 @@ Kullanılabilir ekranlar:
 
 Repo, Vercel üzerindeki `online-dershanem` projesine linklendi.
 
-Deploy öncesi Vercel tarafında aynı env değişkenlerini tanımlayın:
+Deploy öncesi Vercel tarafında ya klasik Prisma degiskenlerini ya da Vercel
+Storage'in otomatik ekledigi `STORAGE_*` degiskenlerini tanimlayin:
 
 - `DATABASE_URL`
 - `DIRECT_URL`
+- `STORAGE_DATABASE_URL`
+- `STORAGE_PRISMA_DATABASE_URL`
+- `STORAGE_POSTGRES_URL`
 - `NEXTAUTH_URL`
 - `NEXTAUTH_SECRET`
 - `RESEND_API_KEY`

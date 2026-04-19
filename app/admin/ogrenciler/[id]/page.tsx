@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import {
   buildWhatsAppLink,
   formatDateTime,
@@ -13,7 +14,7 @@ import {
   purchaseStatusLabels
 } from "@/lib/admin";
 import { updateStudentAction, updateStudentInfoAction } from "@/app/admin/actions";
-import { createStudentAccountAction } from "@/app/admin/ogrenciler/actions";
+import { createStudentAccountAction, deleteStudentAction } from "@/app/admin/ogrenciler/actions";
 import {
   User, Phone, Mail, MapPin, School, BookOpen, Target, CalendarDays,
   ExternalLink, ChevronLeft, Plus, MessageCircle, KeyRound, CheckCircle
@@ -683,6 +684,22 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
           </div>
         </div>
       )}
+
+      {/* Danger zone */}
+      <div className="rounded-xl border border-red-100 bg-red-50 p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-red-800">Tehlikeli İşlemler</h2>
+        <p className="text-xs text-red-600">
+          Öğrenciyi silmek geri alınamaz. Tüm dersler, ödemeler ve ilişkili veriler de silinir.
+        </p>
+        <ConfirmDeleteButton
+          action={deleteStudentAction}
+          hiddenFields={{ studentId: student.id }}
+          message="Bu öğrenciyi kalıcı olarak silmek istediğinizden emin misiniz?"
+          className="rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition"
+        >
+          Öğrenciyi Sil
+        </ConfirmDeleteButton>
+      </div>
     </div>
   );
 }

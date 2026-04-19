@@ -162,3 +162,15 @@ export async function cancelLessonAction(formData: FormData) {
   revalidatePath("/admin");
   redirect(`${returnTo}&updated=cancelled`);
 }
+
+export async function deleteLessonAction(formData: FormData) {
+  const lessonId = readString(formData, "lessonId");
+  const returnTo = readString(formData, "returnTo") || "/admin/dersler";
+  if (!lessonId) redirect("/admin/dersler");
+
+  await prisma.lesson.delete({ where: { id: lessonId } });
+
+  revalidatePath("/admin/dersler");
+  revalidatePath("/admin");
+  redirect(`${returnTo}?updated=deleted`);
+}

@@ -119,3 +119,23 @@ export async function createStudentAccountAction(formData: FormData) {
   revalidatePath(`/admin/ogrenciler/${studentId}`);
   redirect(`/admin/ogrenciler/${studentId}?updated=account-created`);
 }
+
+export async function deleteStudentAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  if (!studentId) redirect("/admin/ogrenciler");
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { userId: true },
+  });
+
+  await prisma.student.delete({ where: { id: studentId } });
+
+  if (student?.userId) {
+    await prisma.user.delete({ where: { id: student.userId } }).catch(() => {});
+  }
+
+  revalidatePath("/admin/ogrenciler");
+  revalidatePath("/admin");
+  redirect("/admin/ogrenciler?updated=deleted");
+}

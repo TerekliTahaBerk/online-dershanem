@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { AccessTagCreateForm } from "@/components/odk/admin/access-tag-create-form";
+import { toggleAccessTag, deleteAccessTag } from "@/app/odk/admin/actions";
 import { Tag } from "lucide-react";
 
 type TagRow = {
@@ -53,32 +54,58 @@ export default async function EtiketlerPage() {
                 <tr className="border-b border-stone-100 bg-stone-50">
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Etiket</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Anahtar</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Öğrenciler</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Sınavlar</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Paketler</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Öğrenci</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Sınav</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Paket</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Durum</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
-                {tags.map((tag) => (
-                  <tr key={tag.id} className="hover:bg-stone-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-stone-900">{tag.title}</p>
-                      {tag.description && <p className="text-xs text-stone-400 mt-0.5">{tag.description}</p>}
-                    </td>
-                    <td className="px-4 py-3">
-                      <code className="rounded bg-stone-100 px-2 py-0.5 text-xs font-mono text-stone-600">{tag.key}</code>
-                    </td>
-                    <td className="px-4 py-3 text-stone-600">{tag._count.userTags}</td>
-                    <td className="px-4 py-3 text-stone-600">{tag._count.examTags}</td>
-                    <td className="px-4 py-3 text-stone-600">{tag._count.packageTags}</td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tag.isActive ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>
-                        {tag.isActive ? "Aktif" : "Pasif"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {tags.map((tag) => {
+                  const isUsed = tag._count.userTags > 0 || tag._count.examTags > 0 || tag._count.packageTags > 0;
+                  return (
+                    <tr key={tag.id} className="hover:bg-stone-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-stone-900">{tag.title}</p>
+                        {tag.description && <p className="text-xs text-stone-400 mt-0.5">{tag.description}</p>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <code className="rounded bg-stone-100 px-2 py-0.5 text-xs font-mono text-stone-600">{tag.key}</code>
+                      </td>
+                      <td className="px-4 py-3 text-stone-600">{tag._count.userTags}</td>
+                      <td className="px-4 py-3 text-stone-600">{tag._count.examTags}</td>
+                      <td className="px-4 py-3 text-stone-600">{tag._count.packageTags}</td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tag.isActive ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>
+                          {tag.isActive ? "Aktif" : "Pasif"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 justify-end">
+                          <form action={async () => { "use server"; await toggleAccessTag(tag.id, !tag.isActive); }}>
+                            <button
+                              type="submit"
+                              className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-600 border border-stone-200 hover:bg-stone-50 transition"
+                            >
+                              {tag.isActive ? "Pasifleştir" : "Aktifleştir"}
+                            </button>
+                          </form>
+                          {!isUsed && (
+                            <form action={async () => { "use server"; await deleteAccessTag(tag.id); }}>
+                              <button
+                                type="submit"
+                                className="rounded-md px-2.5 py-1 text-xs font-medium text-red-600 border border-red-200 hover:bg-red-50 transition"
+                              >
+                                Sil
+                              </button>
+                            </form>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}

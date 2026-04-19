@@ -186,3 +186,15 @@ export async function updatePurchaseAction(formData: FormData) {
   revalidatePath("/admin");
   redirect(withFlash(returnTo, "purchase"));
 }
+
+export async function deleteLeadAction(formData: FormData) {
+  const leadId = readString(formData, "leadId");
+  const returnTo = readString(formData, "returnTo") || "/admin/formlar";
+  if (!leadId) redirect("/admin/formlar");
+
+  await prisma.leadSubmission.delete({ where: { id: leadId } });
+
+  revalidatePath("/admin/formlar");
+  revalidatePath("/admin");
+  redirect(`${returnTo}?updated=deleted`);
+}

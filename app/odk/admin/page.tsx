@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Package, Users, Tag, TrendingUp, Plus } from "lucide-react";
+import { FileText, Package, Users, Tag, TrendingUp, Plus, Calendar } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 type RecentAttempt = {
@@ -11,14 +11,28 @@ type RecentAttempt = {
   user: { name: string | null; email: string };
 };
 
+type UpcomingExam = {
+  id: string;
+  title: string;
+  cadenceFamily: string;
+  startsAt: Date;
+  endsAt: Date | null;
+};
+
 async function getStats() {
-  const [totalExams, publishedExams, totalPackages, activePackages, totalStudents, rawAttempts] =
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const now = new Date();
+
+  const [totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, rawAttempts, rawUpcoming] =
     await Promise.all([
       prisma.odkExam.count(),
       prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
       prisma.odkPackage.count(),
       prisma.odkPackage.count({ where: { isActive: true } }),
-      prisma.odkUserAccessTag.count({ where: { revokedAt: null } }),
+      prisma.odkUserAccessTag.count({
+        where: { revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+      }),
+      prisma.odkExamAttempt.count({ where: { startedAt: { gte: thirtyDaysAgo } } }),
       prisma.odkExamAttempt.findMany({
         take: 8,
         orderBy: { startedAt: "desc" },
@@ -31,10 +45,17 @@ async function getStats() {
           user: { select: { name: true, email: true } },
         },
       }),
+      prisma.odkExam.findMany({
+        where: { status: "PUBLISHED", startsAt: { gte: now } },
+        orderBy: { startsAt: "asc" },
+        take: 5,
+        select: { id: true, title: true, cadenceFamily: true, startsAt: true, endsAt: true },
+      }),
     ]);
 
   const recentAttempts = rawAttempts as unknown as RecentAttempt[];
-  return { totalExams, publishedExams, totalPackages, activePackages, totalStudents, recentAttempts };
+  const upcomingExams = rawUpcoming as unknown as UpcomingExam[];
+  return { totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, recentAttempts, upcomingExams };
 }
 
 const statusLabels: Record<string, { label: string; className: string }> = {
@@ -44,14 +65,14 @@ const statusLabels: Record<string, { label: string; className: string }> = {
 };
 
 export default async function OdkAdminDashboard() {
-  const { totalExams, publishedExams, totalPackages, activePackages, totalStudents, recentAttempts } =
+  const { totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, recentAttempts, upcomingExams } =
     await getStats();
 
   const stats = [
     { label: "Toplam Sınav", value: totalExams, sub: `${publishedExams} yayında`, icon: FileText, href: "/odk/admin/sinavlar" },
     { label: "Paketler", value: totalPackages, sub: `${activePackages} aktif`, icon: Package, href: "/odk/admin/paketler" },
-    { label: "Erişimli Öğrenci", value: totalStudents, sub: "aktif etiket", icon: Users, href: "/odk/admin/ogrenciler" },
-    { label: "Son 30 Gün Çözüm", value: recentAttempts.length, sub: "deneme girişimi", icon: TrendingUp, href: "/odk/admin/sinavlar" },
+    { label: "Aktif Öğrenci", value: activeStudents, sub: "aktif erişim", icon: Users, href: "/odk/admin/ogrenciler" },
+    { label: "Son 30 Gün Çözüm", value: attemptsLast30d, sub: "deneme girişimi", icon: TrendingUp, href: "/odk/admin/sinavlar" },
   ];
 
   return (
@@ -130,6 +151,43 @@ export default async function OdkAdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Upcoming exams */}
+      {upcomingExams.length > 0 && (
+        <div className="rounded-xl border border-stone-200 bg-white">
+          <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+            <h2 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-emerald-600" /> Yaklaşan Sınavlar
+            </h2>
+            <Link href="/odk/admin/sinavlar" className="text-xs text-emerald-600 hover:text-emerald-700">
+              Tümünü gör →
+            </Link>
+          </div>
+          <div className="divide-y divide-stone-100">
+            {upcomingExams.map((exam) => (
+              <div key={exam.id} className="flex items-center justify-between px-5 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-stone-900">{exam.title}</p>
+                  <p className="text-xs text-stone-400">
+                    {new Date(exam.startsAt).toLocaleString("tr-TR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-4">
+                  <span className="rounded-md bg-stone-100 px-2 py-0.5 text-xs font-semibold text-stone-600">
+                    {exam.cadenceFamily}
+                  </span>
+                  <Link
+                    href={`/odk/admin/sinavlar/${exam.id}`}
+                    className="rounded-md px-2.5 py-1 text-xs font-medium text-stone-600 border border-stone-200 hover:border-emerald-300 hover:text-emerald-700 transition"
+                  >
+                    Düzenle
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quick links */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

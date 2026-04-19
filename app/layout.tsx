@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/content";
+import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -69,6 +71,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthSessionProvider>
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
           <Pixels />
           {children}
           <Analytics />

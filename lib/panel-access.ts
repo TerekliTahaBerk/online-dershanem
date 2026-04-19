@@ -7,6 +7,7 @@ type SessionPanelUser = {
   isAdmin?: boolean | null;
   hasStudentAccess?: boolean | null;
   hasTeacherAccess?: boolean | null;
+  hasOdkAccess?: boolean | null;
 };
 
 const PANEL_CONFIG: Record<PanelKey, { href: string; label: string }> = {
@@ -48,6 +49,7 @@ export function getPanelAccess(user?: SessionPanelUser | null) {
   const hasStudentPanel = Boolean(user?.hasStudentAccess);
   const hasTeacherPanel = Boolean(user?.hasTeacherAccess);
   const hasAdminPanel = Boolean(user?.isAdmin) || user?.role === "ADMIN";
+  const hasOdkPanel = Boolean(user?.hasOdkAccess);
 
   const panels: PanelKey[] = [];
 
@@ -71,6 +73,7 @@ export function getPanelAccess(user?: SessionPanelUser | null) {
     hasStudentPanel,
     hasTeacherPanel,
     hasAdminPanel,
+    hasOdkPanel,
     panels,
     requiresPanelChoice,
     defaultPanel
@@ -115,9 +118,14 @@ export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?
     }
   }
 
-  // Admins and students go through service selection
+  // Admins and OD students go through service selection
   if (access.hasAdminPanel || access.hasStudentPanel) {
     return "/servis-secimi";
+  }
+
+  // ODK-only students go directly to ODK panel
+  if (access.hasOdkPanel) {
+    return "/odk/panel";
   }
 
   // Pure teacher: go directly to teacher panel

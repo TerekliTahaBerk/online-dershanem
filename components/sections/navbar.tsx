@@ -10,7 +10,6 @@ import { navLinks } from "@/lib/content";
 import { buildPanelChoiceHref, getPanelAccess, getPanelHref } from "@/lib/panel-access";
 import { Container } from "@/components/ui/container";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { ComingSoonButton } from "@/components/ui/coming-soon-button";
 import navbarLogo from "@/public/onlinedershanem_.png";
 
 export function Navbar() {
@@ -127,7 +126,6 @@ export function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="hidden items-center gap-2 md:flex">
-            <ComingSoonButton />
             {status === "loading" ? null : status === "authenticated" ? (
               <>
                 <Link
@@ -192,13 +190,15 @@ export function Navbar() {
               <Link href="/kamplar/" className="flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-soft">
                 Kamplar
               </Link>
+              <Link href="/deneme-kulubu/" className="flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-soft">
+                Deneme Kulübü
+              </Link>
               <Link href="/blog/" className="flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold text-ink hover:bg-soft">
                 Blog
               </Link>
             </div>
 
             <div className="mt-3 border-t border-line-soft pt-3 flex flex-col gap-2">
-              <ComingSoonButton />
               {status === "loading" ? null : status === "authenticated" ? (
                 <>
                   <Link

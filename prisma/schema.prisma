@@ -382,6 +382,8 @@ model OdkExam {
   startsAt            DateTime?            @map("starts_at")
   endsAt              DateTime?            @map("ends_at")
   answerKeyReleasedAt DateTime?            @map("answer_key_released_at")
+  resultsReleasedAt   DateTime?            @map("results_released_at")
+  googleMeetLink      String?              @map("google_meet_link")
   createdById         String?              @map("created_by_id")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
@@ -421,6 +423,8 @@ model OdkExamOfficialAnswer {
   sectionId      String         @map("section_id")
   questionNumber Int            @map("question_number")
   correctOption  String         @map("correct_option")
+  /// JSON: { konu: string, kazanim: string, altKazanim?: string }
+  outcomes       Json?
   createdAt      DateTime       @default(now()) @map("created_at")
   section        OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
@@ -548,8 +552,8 @@ model OdkOrder {
   totalCents    Int            @map("total_cents")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
-  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
-  package       OdkPackage     @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package       OdkPackage     @relation(fields: [packageId], references: [id], onDelete: Cascade)
   payments      OdkPayment[]
   entitlements  OdkEntitlement[]
 
@@ -588,7 +592,7 @@ model OdkEntitlement {
   createdAt      DateTime             @default(now()) @map("created_at")
   updatedAt      DateTime             @updatedAt @map("updated_at")
   user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package        OdkPackage           @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  package        OdkPackage           @relation(fields: [packageId], references: [id], onDelete: Cascade)
   order          OdkOrder?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
   userAccessTags OdkUserAccessTag[]
   attempts       OdkExamAttempt[]
@@ -610,6 +614,8 @@ model OdkExamAttempt {
   wrongCount      Int                       @default(0) @map("wrong_count")
   blankCount      Int                       @default(0) @map("blank_count")
   resultPayload   Json?                     @map("result_payload")
+  sectionScores   Json?                     @map("section_scores")
+  tabSwitchCount  Int                       @default(0) @map("tab_switch_count")
   durationSeconds Int?                      @map("duration_seconds")
   createdAt       DateTime                  @default(now()) @map("created_at")
   updatedAt       DateTime                  @updatedAt @map("updated_at")

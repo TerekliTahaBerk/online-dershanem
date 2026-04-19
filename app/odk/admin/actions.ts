@@ -5,6 +5,12 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
+import { sendOdkResultsReleased, sendOdkAccessGranted } from "@/lib/email";
+import {
+  requireOdkExamAnswerKeyReleasedAtColumn,
+  requireOdkExamGoogleMeetLinkColumn,
+  requireOdkExamResultsReleasedAtColumn,
+} from "@/lib/odk-exam-schema";
 
 async function requireOdkAdmin() {
   const session = await getServerAuthSession();
@@ -65,10 +71,74 @@ export async function createExam(data: {
         })),
       },
     },
+    select: { id: true },
   });
 
   revalidatePath("/odk/admin/sinavlar");
   redirect(`/odk/admin/sinavlar/${exam.id}`);
+}
+
+export async function releaseExamResults(examId: string) {
+  await requireOdkAdmin();
+  await requireOdkExamResultsReleasedAtColumn();
+
+  const exam = await prisma.odkExam.update({
+    where: { id: examId },
+    data: { resultsReleasedAt: new Date() },
+    select: { id: true, title: true, resultsReleasedAt: true },
+  });
+
+  // Notify all students who completed the exam
+  const attempts = await prisma.odkExamAttempt.findMany({
+    where: { examId, status: "SUBMITTED" },
+    select: {
+      score: true,
+      user: { select: { email: true, name: true } },
+    },
+  });
+
+  await Promise.allSettled(
+    attempts.map((a) =>
+      sendOdkResultsReleased({
+        to: a.user.email,
+        name: a.user.name ?? a.user.email,
+        examTitle: exam.title,
+        score: a.score != null ? Number(a.score) : null,
+        examUrl: `/odk/panel/sinavlar/${examId}`,
+      }),
+    ),
+  );
+
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+  revalidatePath(`/odk/panel/sinavlar/${examId}`);
+}
+
+export async function releaseAnswerKey(examId: string) {
+  await requireOdkAdmin();
+  await requireOdkExamAnswerKeyReleasedAtColumn();
+  await prisma.odkExam.update({
+    where: { id: examId },
+    data: { answerKeyReleasedAt: new Date() },
+  });
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+  revalidatePath(`/odk/panel/sinavlar/${examId}`);
+}
+
+export async function updateExamMeetLink(examId: string, googleMeetLink: string | null) {
+  await requireOdkAdmin();
+  await requireOdkExamGoogleMeetLinkColumn();
+  await prisma.odkExam.update({
+    where: { id: examId },
+    data: { googleMeetLink: googleMeetLink || null },
+  });
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+}
+
+export async function deleteExam(examId: string) {
+  await requireOdkAdmin();
+  await prisma.odkExam.delete({ where: { id: examId } });
+  revalidatePath("/odk/admin/sinavlar");
+  redirect("/odk/admin/sinavlar");
 }
 
 export async function updateExamStatus(examId: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED") {
@@ -121,6 +191,66 @@ export async function saveOfficialAnswers(sectionId: string, answers: Record<num
   revalidatePath(`/odk/admin/sinavlar/${section.examId}`);
 }
 
+type OutcomesJson = { konu: string; kazanim: string; altKazanim?: string };
+
+export async function importAnswerKeyJson(
+  examId: string,
+  json: Record<string, Record<string, string>>,
+) {
+  await requireOdkAdmin();
+
+  const sections = await prisma.odkExamSection.findMany({
+    where: { examId },
+    select: { id: true, title: true },
+  });
+
+  const sectionMap = new Map(sections.map((s) => [s.title, s.id]));
+
+  const upserts = Object.entries(json).flatMap(([sectionTitle, answers]) => {
+    const sectionId = sectionMap.get(sectionTitle);
+    if (!sectionId) return [];
+    return Object.entries(answers).map(([num, option]) =>
+      prisma.odkExamOfficialAnswer.upsert({
+        where: { sectionId_questionNumber: { sectionId, questionNumber: Number(num) } },
+        create: { examId, sectionId, questionNumber: Number(num), correctOption: option },
+        update: { correctOption: option },
+      })
+    );
+  });
+
+  await prisma.$transaction(upserts);
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+}
+
+export async function importOutcomesJson(
+  examId: string,
+  json: Record<string, Record<string, OutcomesJson>>,
+) {
+  await requireOdkAdmin();
+
+  const sections = await prisma.odkExamSection.findMany({
+    where: { examId },
+    select: { id: true, title: true },
+  });
+
+  const sectionMap = new Map(sections.map((s) => [s.title, s.id]));
+
+  const upserts = Object.entries(json).flatMap(([sectionTitle, questions]) => {
+    const sectionId = sectionMap.get(sectionTitle);
+    if (!sectionId) return [];
+    return Object.entries(questions).map(([num, outcomes]) =>
+      prisma.odkExamOfficialAnswer.upsert({
+        where: { sectionId_questionNumber: { sectionId, questionNumber: Number(num) } },
+        create: { examId, sectionId, questionNumber: Number(num), correctOption: "", outcomes },
+        update: { outcomes },
+      })
+    );
+  });
+
+  await prisma.$transaction(upserts);
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+}
+
 export async function addExamAccessTag(examId: string, accessTagId: string) {
   await requireOdkAdmin();
   await prisma.odkExamAccessTag.upsert({
@@ -160,10 +290,56 @@ export async function createPackage(data: {
   revalidatePath("/odk/admin/paketler");
 }
 
+export async function deletePackage(packageId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackage.delete({ where: { id: packageId } });
+  revalidatePath("/odk/admin/paketler");
+  redirect("/odk/admin/paketler");
+}
+
 export async function togglePackageStatus(packageId: string, isActive: boolean) {
   await requireOdkAdmin();
   await prisma.odkPackage.update({ where: { id: packageId }, data: { isActive } });
   revalidatePath("/odk/admin/paketler");
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+}
+
+export async function addExamToPackage(packageId: string, examId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageExam.upsert({
+    where: { packageId_examId: { packageId, examId } },
+    create: { packageId, examId },
+    update: {},
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+  revalidatePath("/odk/admin/paketler");
+}
+
+export async function removeExamFromPackage(packageId: string, examId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageExam.delete({
+    where: { packageId_examId: { packageId, examId } },
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+  revalidatePath("/odk/admin/paketler");
+}
+
+export async function addPackageAccessTag(packageId: string, accessTagId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageAccessTag.upsert({
+    where: { packageId_accessTagId: { packageId, accessTagId } },
+    create: { packageId, accessTagId },
+    update: {},
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+}
+
+export async function removePackageAccessTag(packageId: string, accessTagId: string) {
+  await requireOdkAdmin();
+  await prisma.odkPackageAccessTag.delete({
+    where: { packageId_accessTagId: { packageId, accessTagId } },
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
 }
 
 // ── Access Tags ───────────────────────────────────────────────────────────────
@@ -176,13 +352,41 @@ export async function createAccessTag(data: { key: string; title: string; descri
   revalidatePath("/odk/admin/etiketler");
 }
 
+export async function toggleAccessTag(tagId: string, isActive: boolean) {
+  await requireOdkAdmin();
+  await prisma.odkAccessTag.update({ where: { id: tagId }, data: { isActive } });
+  revalidatePath("/odk/admin/etiketler");
+}
+
+export async function deleteAccessTag(tagId: string) {
+  await requireOdkAdmin();
+  await prisma.odkAccessTag.delete({ where: { id: tagId } });
+  revalidatePath("/odk/admin/etiketler");
+}
+
 export async function grantUserAccessTag(userId: string, accessTagId: string) {
   await requireOdkAdmin();
+
+  const [user, tag] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } }),
+    prisma.odkAccessTag.findUnique({ where: { id: accessTagId }, select: { title: true } }),
+  ]);
+
   await prisma.odkUserAccessTag.upsert({
     where: { userId_accessTagId: { userId, accessTagId } },
     create: { userId, accessTagId, source: "MANUAL" },
     update: { revokedAt: null },
   });
+
+  // Send welcome/access granted email (fire-and-forget)
+  if (user && tag) {
+    sendOdkAccessGranted({
+      to: user.email,
+      name: user.name ?? user.email,
+      tagTitle: tag.title,
+    }).catch(() => {});
+  }
+
   revalidatePath("/odk/admin/ogrenciler");
 }
 
