@@ -111,7 +111,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                       {[
                         { label: "Matematik", value: 78, tone: "bg-[#d16641]" },
                         { label: "Paragraf", value: 54, tone: "bg-[#2d4a59]" },
-                        { label: "Fen", value: 66, tone: "bg-[#4b7f6d]" }
+                        { label: "Fen", value: 66, tone: "bg-[#546B41]" }
                       ].map((item) => (
                         <div key={item.label}>
                           <div className="flex items-center justify-between text-sm text-[#203139]">

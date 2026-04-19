@@ -11,9 +11,9 @@ const config: Config = {
       colors: {
         anchor: "#091413",
         ink: "#111111",
-        pine: "#285A48",
-        brand: "#408A71",
-        mint: "#B0E4CC",
+        pine: "#435633",
+        brand: "#546B41",
+        mint: "#DCCCAC",
         paper: "#F6F5F2",
         muted: "#2C3734",
         soft: "#EEF3EF",

@@ -153,7 +153,7 @@ export default async function AdminDashboardPage() {
             <h2 className="font-semibold text-[#091413]">Sıradaki Dersler</h2>
             <Link
               href="/admin/dersler"
-              className="text-xs text-[#408A71] font-medium hover:underline flex items-center gap-1"
+              className="text-xs text-[#546B41] font-medium hover:underline flex items-center gap-1"
             >
               Tümü <ArrowRight size={11} />
             </Link>
@@ -169,7 +169,7 @@ export default async function AdminDashboardPage() {
                 return (
                   <div key={lesson.id} className="px-5 py-3 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-[#B0E4CC]/40 flex items-center justify-center shrink-0 text-[#285A48] font-semibold text-sm">
+                      <div className="w-9 h-9 rounded-full bg-[#DCCCAC]/40 flex items-center justify-center shrink-0 text-[#435633] font-semibold text-sm">
                         {lesson.student.fullName.charAt(0)}
                       </div>
                       <div className="min-w-0">
@@ -205,7 +205,7 @@ export default async function AdminDashboardPage() {
           <div className="px-5 py-3 border-t border-gray-100">
             <Link
               href="/admin/dersler/yeni"
-              className="w-full flex items-center justify-center gap-2 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium py-2 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium py-2 rounded-lg transition-colors"
             >
               + Yeni Ders Planla
             </Link>
@@ -218,7 +218,7 @@ export default async function AdminDashboardPage() {
             <h2 className="font-semibold text-[#091413]">Son Eklenen Öğrenciler</h2>
             <Link
               href="/admin/ogrenciler"
-              className="text-xs text-[#408A71] font-medium hover:underline flex items-center gap-1"
+              className="text-xs text-[#546B41] font-medium hover:underline flex items-center gap-1"
             >
               Tümü <ArrowRight size={11} />
             </Link>
@@ -245,7 +245,7 @@ export default async function AdminDashboardPage() {
                     className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-[#B0E4CC]/40 flex items-center justify-center shrink-0 text-[#285A48] font-semibold text-xs">
+                      <div className="w-8 h-8 rounded-full bg-[#DCCCAC]/40 flex items-center justify-center shrink-0 text-[#435633] font-semibold text-xs">
                         {student.fullName.charAt(0)}
                       </div>
                       <div className="min-w-0">

@@ -124,7 +124,7 @@ export default async function DerslerPage({ searchParams }: Props) {
           </Link>
           <Link
             href="/admin/dersler/yeni"
-            className="flex items-center gap-2 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={15} />
             Yeni Ders
@@ -147,27 +147,27 @@ export default async function DerslerPage({ searchParams }: Props) {
       {/* Filters */}
       <form method="GET" action="/admin/dersler" className="flex flex-wrap gap-3">
         <input type="text" name="q" defaultValue={q} placeholder="Öğrenci veya hoca adı..."
-          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]" />
+          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
         <select name="status" defaultValue={status}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30">
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
           <option value="">Tüm Durumlar</option>
           {lessonStatusOptions.map((s) => (
             <option key={s} value={s}>{lessonStatusLabels[s]}</option>
           ))}
         </select>
         <select name="teacherId" defaultValue={teacherId}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30">
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
           <option value="">Tüm Hocalar</option>
           {teachers.map((t) => (
             <option key={t.id} value={t.id}>{t.fullName}</option>
           ))}
         </select>
         <input type="date" name="from" defaultValue={from}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
         <input type="date" name="to" defaultValue={to}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
         <button type="submit"
-          className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
           Filtrele
         </button>
         {(q || status || teacherId || from || to) && (
@@ -196,7 +196,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
                     Ders bulunamadı.{" "}
-                    <Link href="/admin/dersler/yeni" className="text-[#408A71] hover:underline">Yeni ders ekle →</Link>
+                    <Link href="/admin/dersler/yeni" className="text-[#546B41] hover:underline">Yeni ders ekle →</Link>
                   </td>
                 </tr>
               )}
@@ -205,7 +205,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                 const isPast = new Date(lesson.scheduledAt) < new Date();
                 return (
                   <>
-                    <tr key={lesson.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#B0E4CC]/10" : ""} ${lesson.status === "CANCELLED" ? "opacity-60" : ""}`}>
+                    <tr key={lesson.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#DCCCAC]/10" : ""} ${lesson.status === "CANCELLED" ? "opacity-60" : ""}`}>
                       <td className="px-4 py-3">
                         <p className={`font-medium ${isPast && lesson.status === "SCHEDULED" ? "text-amber-600" : "text-[#091413]"}`}>
                           {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(lesson.scheduledAt))}
@@ -215,7 +215,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                         </p>
                       </td>
                       <td className="px-4 py-3">
-                        <Link href={`/admin/ogrenciler?edit=${lesson.student.id}`} className="font-medium text-[#091413] hover:text-[#408A71]">
+                        <Link href={`/admin/ogrenciler?edit=${lesson.student.id}`} className="font-medium text-[#091413] hover:text-[#546B41]">
                           {lesson.student.fullName}
                         </Link>
                       </td>
@@ -245,7 +245,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                         {lesson.status !== "CANCELLED" && (
                           <Link
                             href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: lesson.id })}
-                            className="text-xs text-[#408A71] hover:text-[#285A48] font-medium border border-[#408A71]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors"
+                            className="text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
                           >
                             {isEditing ? "Kapat" : "Düzenle"}
                           </Link>
@@ -256,7 +256,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                     {/* Inline edit */}
                     {isEditing && (
                       <tr key={`${lesson.id}-edit`}>
-                        <td colSpan={8} className="px-4 py-4 bg-[#B0E4CC]/5 border-b border-[#B0E4CC]/30">
+                        <td colSpan={8} className="px-4 py-4 bg-[#DCCCAC]/5 border-b border-[#DCCCAC]/30">
                           <div className="flex flex-col gap-4">
                             <form action={updateLessonAction} className="grid grid-cols-2 md:grid-cols-4 gap-4">
                               <input type="hidden" name="lessonId" value={lesson.id} />
@@ -265,7 +265,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-gray-600">Durum</label>
                                 <select name="status" defaultValue={lesson.status}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30">
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
                                   {lessonStatusOptions.map((s) => (
                                     <option key={s} value={s}>{lessonStatusLabels[s]}</option>
                                   ))}
@@ -275,25 +275,25 @@ export default async function DerslerPage({ searchParams }: Props) {
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-gray-600">Tarih / Saat</label>
                                 <input type="datetime-local" name="scheduledAt" defaultValue={formatDateTimeLocalInput(lesson.scheduledAt)}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
                               </div>
 
                               <div className="space-y-1 col-span-2">
                                 <label className="text-xs font-medium text-gray-600">Google Meet Linki</label>
                                 <input type="url" name="googleMeetLink" defaultValue={lesson.googleMeetLink ?? ""}
                                   placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30" />
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
                               </div>
 
                               <div className="space-y-1 col-span-2 md:col-span-4">
                                 <label className="text-xs font-medium text-gray-600">Notlar</label>
                                 <textarea name="notes" defaultValue={lesson.notes ?? ""} rows={2}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 resize-none" />
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 resize-none" />
                               </div>
 
                               <div className="col-span-2 md:col-span-4 flex gap-3">
                                 <button type="submit"
-                                  className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                                  className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                                   Kaydet
                                 </button>
                                 <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">
@@ -337,12 +337,12 @@ export default async function DerslerPage({ searchParams }: Props) {
             <span className="text-xs text-gray-500">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} / {total}</span>
             <div className="flex gap-2">
               {page > 0 && (
-                <Link href={buildUrl({ page: String(page - 1) })} className="text-xs text-[#408A71] border border-[#408A71]/30 rounded-lg px-3 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors">
+                <Link href={buildUrl({ page: String(page - 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
                   Önceki
                 </Link>
               )}
               {(page + 1) * PAGE_SIZE < total && (
-                <Link href={buildUrl({ page: String(page + 1) })} className="text-xs text-[#408A71] border border-[#408A71]/30 rounded-lg px-3 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors">
+                <Link href={buildUrl({ page: String(page + 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
                   Sonraki
                 </Link>
               )}

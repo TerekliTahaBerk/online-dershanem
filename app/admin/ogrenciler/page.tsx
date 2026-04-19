@@ -114,7 +114,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
         </div>
         <Link
           href="/admin/ogrenciler/yeni"
-          className="flex items-center gap-2 bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
         >
           + Yeni Öğrenci
         </Link>
@@ -139,12 +139,12 @@ export default async function OgrencilerPage({ searchParams }: Props) {
           name="q"
           defaultValue={q}
           placeholder="İsim, telefon, okul..."
-          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 focus:border-[#408A71]"
+          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
         />
         <select
           name="studentStatus"
           defaultValue={studentStatus}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
         >
           <option value="">Tüm Durumlar</option>
           {studentStatusOptions.map((s) => (
@@ -152,12 +152,12 @@ export default async function OgrencilerPage({ searchParams }: Props) {
           ))}
         </select>
         <label className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white cursor-pointer">
-          <input type="checkbox" name="tasks" value="1" defaultChecked={tasks === "1"} className="accent-[#408A71]" />
+          <input type="checkbox" name="tasks" value="1" defaultChecked={tasks === "1"} className="accent-[#546B41]" />
           Görevli
         </label>
         <button
           type="submit"
-          className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           Filtrele
         </button>
@@ -197,14 +197,14 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                 const isEditing = editId === student.id;
                 return (
                   <>
-                    <tr key={student.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#B0E4CC]/10" : ""}`}>
+                    <tr key={student.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#DCCCAC]/10" : ""}`}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#B0E4CC]/40 flex items-center justify-center text-[#285A48] font-semibold text-xs shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-[#DCCCAC]/40 flex items-center justify-center text-[#435633] font-semibold text-xs shrink-0">
                             {student.fullName.charAt(0)}
                           </div>
                           <div>
-                            <Link href={`/admin/ogrenciler/${student.id}`} className="font-medium text-[#091413] hover:text-[#408A71] hover:underline">
+                            <Link href={`/admin/ogrenciler/${student.id}`} className="font-medium text-[#091413] hover:text-[#546B41] hover:underline">
                               {student.fullName}
                             </Link>
                             {student.city && <p className="text-xs text-gray-400">{student.city}</p>}
@@ -213,7 +213,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                       </td>
                       <td className="px-4 py-3">
                         {waLink ? (
-                          <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-[#408A71] hover:underline">
+                          <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-[#546B41] hover:underline">
                             {student.phone}
                           </a>
                         ) : (
@@ -248,7 +248,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                       <td className="px-4 py-3 text-right">
                         <Link
                           href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: student.id })}
-                          className="text-xs text-[#408A71] hover:text-[#285A48] font-medium border border-[#408A71]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors"
+                          className="text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
                         >
                           {isEditing ? "Kapat" : "Düzenle"}
                         </Link>
@@ -258,7 +258,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                     {/* Inline edit row */}
                     {isEditing && (
                       <tr key={`${student.id}-edit`}>
-                        <td colSpan={7} className="px-4 py-4 bg-[#B0E4CC]/5 border-b border-[#B0E4CC]/30">
+                        <td colSpan={7} className="px-4 py-4 bg-[#DCCCAC]/5 border-b border-[#DCCCAC]/30">
                           <form action={updateStudentAction} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <input type="hidden" name="studentId" value={student.id} />
                             <input type="hidden" name="returnTo" value={buildUrl({ edit: student.id })} />
@@ -268,7 +268,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                               <select
                                 name="status"
                                 defaultValue={student.status}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
                               >
                                 {studentStatusOptions.map((s) => (
                                   <option key={s} value={s}>{studentStatusLabels[s]}</option>
@@ -283,7 +283,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                                 name="activePackage"
                                 defaultValue={student.activePackage ?? ""}
                                 placeholder="Paket adı..."
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
                               />
                             </div>
 
@@ -294,7 +294,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                                 name="taskLabel"
                                 defaultValue={student.taskLabel ?? ""}
                                 placeholder="Görev açıklaması..."
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
                               />
                             </div>
 
@@ -304,7 +304,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                                 type="datetime-local"
                                 name="nextActionAt"
                                 defaultValue={formatDateTimeLocalInput(student.nextActionAt)}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
                               />
                             </div>
 
@@ -315,14 +315,14 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                                 defaultValue={student.notes ?? ""}
                                 placeholder="Notlar..."
                                 rows={2}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#408A71]/30 resize-none"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 resize-none"
                               />
                             </div>
 
                             <div className="col-span-2 md:col-span-3 lg:col-span-4 flex gap-3">
                               <button
                                 type="submit"
-                                className="bg-[#408A71] hover:bg-[#285A48] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                                className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                               >
                                 Kaydet
                               </button>
@@ -354,7 +354,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
               {page > 0 && (
                 <Link
                   href={buildUrl({ page: String(page - 1) })}
-                  className="text-xs text-[#408A71] border border-[#408A71]/30 rounded-lg px-3 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors"
+                  className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
                 >
                   Önceki
                 </Link>
@@ -362,7 +362,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
               {(page + 1) * PAGE_SIZE < total && (
                 <Link
                   href={buildUrl({ page: String(page + 1) })}
-                  className="text-xs text-[#408A71] border border-[#408A71]/30 rounded-lg px-3 py-1.5 hover:bg-[#B0E4CC]/20 transition-colors"
+                  className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
                 >
                   Sonraki
                 </Link>
