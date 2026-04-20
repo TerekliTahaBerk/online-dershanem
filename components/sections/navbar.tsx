@@ -114,7 +114,7 @@ export function Navbar() {
       {open && (
         <>
           <div className="fixed inset-0 top-[52px] z-[39] lg:hidden" onClick={() => setOpen(false)} />
-          <div className="fixed inset-x-0 top-[52px] z-40 border-b border-[var(--pd-line)] bg-[var(--pd-bg-elevated)] shadow-[0_12px_40px_-8px_rgba(0,0,0,0.1)] lg:hidden">
+          <div className="fixed inset-x-0 top-[52px] z-40 max-h-[calc(100dvh-52px)] overflow-y-auto border-b border-[var(--pd-line)] bg-[var(--pd-bg-elevated)] shadow-[0_12px_40px_-8px_rgba(0,0,0,0.1)] lg:hidden">
             <nav className="flex flex-col gap-0.5 px-4 pt-3 pb-2">
               {links.map((l) => (
                 <Link
