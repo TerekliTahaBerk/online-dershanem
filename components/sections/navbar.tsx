@@ -78,8 +78,16 @@ export function Navbar() {
           </div>
         )}
 
-        {/* Mobile: CTA + hamburger */}
+        {/* Mobile: auth + hamburger */}
         <div className="ml-auto flex items-center gap-2 lg:hidden">
+          {status === "unauthenticated" && (
+            <Link
+              href="/giris"
+              className="whitespace-nowrap text-sm font-medium text-[var(--pd-ink-3)] transition-colors hover:text-[var(--pd-ink)]"
+            >
+              Giriş Yap
+            </Link>
+          )}
           {status !== "loading" && (
             status === "authenticated" ? (
               <Link href={panelHref} className="pd-btn pd-btn-primary pd-btn-sm">

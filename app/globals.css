@@ -111,6 +111,10 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   .pd-brand-mark { width: 28px; height: 28px; }
   .pd-brand-wordmark { height: 26px; }
 }
+@media (max-width: 400px) {
+  .pd-mnav { padding: 10px 12px; gap: 8px; }
+  .pd-brand-wordmark { height: 22px; }
+}
 
 /* Buttons */
 .pd-btn {
