@@ -116,6 +116,11 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   .pd-brand-wordmark { height: 22px; }
 }
 
+/* Mobile drawer: dvh fallback for older browsers */
+@supports not (max-height: 100dvh) {
+  .pd-mobile-drawer { max-height: calc(100vh - 52px); }
+}
+
 /* Buttons */
 .pd-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
