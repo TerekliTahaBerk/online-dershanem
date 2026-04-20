@@ -98,7 +98,7 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 .pd-mnav-brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex-shrink: 0; }
 .pd-brand-mark { width: 30px; height: 30px; flex-shrink: 0; object-fit: contain; }
 .pd-brand-wordmark { width: auto; height: 32px; flex-shrink: 1; object-fit: contain; }
-.pd-mnav-links { display: flex; align-items: center; gap: 4px; margin-left: 20px; }
+.pd-mnav-links { align-items: center; gap: 4px; margin-left: 20px; }
 .pd-mnav-link {
   padding: 6px 10px; border-radius: 8px; font-size: 13.5px; color: var(--pd-ink-3);
   cursor: pointer; transition: all 120ms ease;
