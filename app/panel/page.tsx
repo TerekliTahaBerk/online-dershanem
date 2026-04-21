@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Video, Clock, CheckCircle, CalendarDays, ArrowRight, TrendingUp, BookOpen } from "lucide-react";
+import { Video, ArrowRight, TrendingUp, TrendingDown, Play } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -22,18 +22,17 @@ type UserWithStudent = Prisma.UserGetPayload<{
   };
 }>;
 
-function fmt(date: Date) {
-  return new Intl.DateTimeFormat("tr-TR", {
-    day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
-  }).format(new Date(date));
-}
-
 function fmtTime(date: Date) {
   return new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(date));
 }
-
-function fmtShort(date: Date) {
-  return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", weekday: "short" }).format(new Date(date));
+function fmtDay(date: Date) {
+  const d = new Date(date);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  if (d.toDateString() === today.toDateString()) return "BUGÜN";
+  if (d.toDateString() === tomorrow.toDateString()) return "YARIN";
+  return new Intl.DateTimeFormat("tr-TR", { weekday: "short" }).format(d).toUpperCase();
 }
 
 export default async function PanelDashboardPage() {
@@ -49,25 +48,32 @@ export default async function PanelDashboardPage() {
             include: { teacher: true, package: true },
             orderBy: { scheduledAt: "asc" },
           },
-          purchaseIntents: {
-            orderBy: { submittedAt: "desc" },
-            take: 3,
-          },
+          purchaseIntents: { orderBy: { submittedAt: "desc" }, take: 3 },
         },
       },
     },
   }) as unknown as UserWithStudent | null;
 
   const student = user?.student;
+
   if (!student) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <CalendarDays className="w-12 h-12 text-stone-300 mb-4" />
-        <h2 className="text-lg font-semibold text-stone-700">Profiliniz hazırlanıyor</h2>
-        <p className="mt-2 text-sm text-stone-500">
-          Hesabınız kısa süre içinde tamamlanacak.
-        </p>
-      </div>
+      <>
+        <div className="pd-page-header">
+          <h1 className="pd-page-title">Panelim</h1>
+        </div>
+        <div className="pd-page-body">
+          <div className="pd-card" style={{ padding: 40, textAlign: "center" }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>👋</div>
+            <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--pd-ink)", marginBottom: 8 }}>
+              Profiliniz hazırlanıyor
+            </h2>
+            <p style={{ color: "var(--pd-muted)", fontSize: 14 }}>
+              Hesabınız kısa süre içinde tamamlanacak.
+            </p>
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -79,200 +85,324 @@ export default async function PanelDashboardPage() {
   const total = lessons.filter((l) => l.status !== "CANCELLED").length;
   const totalHours = Math.round(completed.reduce((s, l) => s + l.duration, 0) / 60);
   const progressPct = total > 0 ? Math.round((completed.length / total) * 100) : 0;
-  const lastCompleted = completed.at(-1) ?? null;
 
-  const isNearby = nextLesson &&
+  const isNearby =
+    nextLesson &&
     new Date(nextLesson.scheduledAt).getTime() - now.getTime() < 30 * 60 * 1000;
 
-  // Next 7 days schedule
   const in7Days = new Date(now);
   in7Days.setDate(in7Days.getDate() + 7);
-  const weekLessons = upcoming.filter((l) => new Date(l.scheduledAt) < in7Days).slice(0, 6);
+  const weekLessons = upcoming.filter((l) => new Date(l.scheduledAt) < in7Days).slice(0, 5);
+
+  const kpis = [
+    {
+      label: "Tamamlanan Ders",
+      value: completed.length.toString(),
+      delta: `${total} dersten`,
+      up: true,
+    },
+    {
+      label: "Toplam Süre",
+      value: `${totalHours}s`,
+      delta: `${Math.round(totalHours / 4)}h / hafta`,
+      up: true,
+    },
+    {
+      label: "Yaklaşan Ders",
+      value: upcoming.length.toString(),
+      delta: "planlandı",
+      up: upcoming.length > 0,
+    },
+    {
+      label: "İlerleme",
+      value: `%${progressPct}`,
+      delta: "müfredat",
+      up: progressPct > 50,
+    },
+  ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-stone-900">
-            Merhaba, {student.fullName.split(" ")[0]}
-          </h1>
-          <p className="mt-1 text-sm text-stone-500">
-            {new Intl.DateTimeFormat("tr-TR", { weekday: "long", day: "numeric", month: "long" }).format(now)}
-          </p>
-        </div>
-        <Link
-          href="/panel/takvim"
-          className="hidden sm:flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 px-4 py-2 rounded-lg transition"
-        >
-          <CalendarDays className="w-4 h-4" /> Takvime Git
-        </Link>
-      </div>
-
-      {/* Next lesson hero */}
-      {nextLesson ? (
-        <div className={`rounded-2xl p-6 ${isNearby ? "bg-emerald-600" : "bg-white border border-stone-200"}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div>
-              <p className={`text-xs font-semibold uppercase tracking-wider mb-2 ${isNearby ? "text-emerald-100" : "text-emerald-600"}`}>
-                {isNearby ? "Ders başlamak üzere!" : "Sıradaki ders"}
-              </p>
-              <h2 className={`text-xl font-semibold ${isNearby ? "text-white" : "text-stone-900"}`}>
-                {nextLesson.teacher.fullName}
-              </h2>
-              <p className={`mt-1 text-sm ${isNearby ? "text-emerald-100" : "text-stone-500"}`}>
-                {fmt(nextLesson.scheduledAt)} · {nextLesson.duration} dk
-                {nextLesson.package ? ` · ${nextLesson.package.name}` : ""}
-              </p>
-              {nextLesson.notes && (
-                <p className={`mt-2 text-xs italic ${isNearby ? "text-emerald-200" : "text-stone-400"}`}>
-                  Öğretmen notu: {nextLesson.notes}
-                </p>
-              )}
+    <>
+      <div className="pd-page-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 12, color: "var(--pd-muted)", marginBottom: 4 }}>
+              {new Intl.DateTimeFormat("tr-TR", { weekday: "long", day: "numeric", month: "long" }).format(now)}
             </div>
-            {nextLesson.googleMeetLink ? (
+            <h1 className="pd-page-title">
+              Merhaba, {student.fullName.split(" ")[0]} 👋
+            </h1>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {nextLesson?.googleMeetLink && (
               <a
                 href={nextLesson.googleMeetLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition ${
-                  isNearby ? "bg-white text-emerald-700 hover:bg-emerald-50" : "bg-emerald-600 text-white hover:bg-emerald-700"
-                }`}
+                className="pd-btn pd-btn-accent pd-btn-sm"
               >
-                <Video className="w-4 h-4" /> Derse Katıl
+                <Play size={13} /> Sıradaki Derse Gir
               </a>
-            ) : (
-              <div className={`shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium ${
-                isNearby ? "bg-white/20 text-white" : "bg-stone-100 text-stone-400"
-              }`}>
-                <Clock className="w-4 h-4" /> Bağlantı yakında paylaşılacak
-              </div>
             )}
           </div>
         </div>
-      ) : (
-        <div className="rounded-2xl bg-white border border-stone-200 p-6 text-center">
-          <CalendarDays className="w-8 h-8 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Sıradaki dersiniz henüz planlanmadı</p>
-          <p className="text-xs text-stone-400 mt-1">Programınız netleştiğinde burada yer alacak.</p>
-        </div>
-      )}
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: "Tamamlanan", value: completed.length, sub: "ders", icon: CheckCircle, color: "text-emerald-600 bg-emerald-50" },
-          { label: "Toplam Saat", value: totalHours, sub: "saat", icon: TrendingUp, color: "text-blue-600 bg-blue-50" },
-          { label: "Yaklaşan", value: upcoming.length, sub: "ders", icon: CalendarDays, color: "text-violet-600 bg-violet-50" },
-          { label: "Aktif Paket", value: student.activePackage ? "✓" : "—", sub: student.activePackage ?? "yok", icon: BookOpen, color: "text-amber-600 bg-amber-50" },
-        ].map(({ label, value, sub, icon: Icon, color }) => (
-          <div key={label} className="rounded-xl bg-white border border-stone-200 p-4">
-            <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center mb-3`}>
-              <Icon className="w-4 h-4" />
-            </div>
-            <p className="text-2xl font-bold text-stone-900 leading-none">{value}</p>
-            <p className="text-xs font-medium text-stone-500 mt-1">{label}</p>
-            {sub && sub !== label && (
-              <p className="text-xs text-stone-400 truncate mt-0.5">{sub}</p>
-            )}
-          </div>
-        ))}
       </div>
 
-      {/* Progress + last lesson */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {/* Progress */}
-        <div className="rounded-xl bg-white border border-stone-200 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-stone-800">Ders İlerlemesi</h3>
-            <span className="text-xs font-bold text-emerald-700">{progressPct}%</span>
-          </div>
-          <div className="w-full bg-stone-100 rounded-full h-2.5 mb-3">
-            <div
-              className="bg-emerald-500 h-2.5 rounded-full transition-all"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <p className="text-xs text-stone-500">
-            {completed.length} ders tamamlandı / {total} ders planlandı
-            {totalHours > 0 && ` · ${totalHours} saat`}
-          </p>
+      <div className="pd-page-body">
+        {/* KPI cards */}
+        <div className="pd-kpi-grid">
+          {kpis.map((k) => (
+            <div key={k.label} className="pd-kpi-card">
+              <div className="pd-kpi-label">{k.label}</div>
+              <div className="pd-kpi-value">{k.value}</div>
+              <div className={`pd-kpi-delta ${k.up ? "up" : ""}`}>
+                {k.up ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                {k.delta}
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Last completed lesson */}
-        <div className="rounded-xl bg-white border border-stone-200 p-5">
-          <h3 className="text-sm font-semibold text-stone-800 mb-3">Son İşlenen Ders</h3>
-          {lastCompleted ? (
-            <div>
-              <p className="text-sm font-medium text-stone-800">{lastCompleted.teacher.fullName}</p>
-              <p className="text-xs text-stone-500 mt-0.5">
-                {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(lastCompleted.scheduledAt))}
-                {" · "}{lastCompleted.duration} dk
-              </p>
-              {lastCompleted.notes ? (
-                <p className="mt-2 text-xs text-stone-600 bg-stone-50 rounded-lg px-3 py-2 italic border border-stone-100">
-                  "{lastCompleted.notes}"
-                </p>
+        {/* Next lesson hero */}
+        {nextLesson ? (
+          <div
+            style={{
+              background: isNearby ? "var(--pd-accent)" : "var(--pd-bg-elevated)",
+              border: `1px solid ${isNearby ? "var(--pd-accent)" : "var(--pd-line)"}`,
+              borderRadius: 16,
+              padding: 24,
+              marginBottom: 20,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: isNearby ? "rgba(255,255,255,0.7)" : "var(--pd-accent)",
+                    marginBottom: 8,
+                  }}
+                >
+                  {isNearby ? "⚡ Ders başlamak üzere!" : "Sıradaki ders"}
+                </div>
+                <div
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 600,
+                    color: isNearby ? "#fff" : "var(--pd-ink)",
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {nextLesson.teacher.fullName}
+                </div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: isNearby ? "rgba(255,255,255,0.7)" : "var(--pd-muted)",
+                    marginTop: 4,
+                  }}
+                >
+                  {fmtDay(nextLesson.scheduledAt)} {fmtTime(nextLesson.scheduledAt)} ·{" "}
+                  {nextLesson.duration} dk
+                  {nextLesson.package ? ` · ${nextLesson.package.name}` : ""}
+                </div>
+              </div>
+              {nextLesson.googleMeetLink ? (
+                <a
+                  href={nextLesson.googleMeetLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 18px",
+                    borderRadius: 10,
+                    background: isNearby ? "#fff" : "var(--pd-accent)",
+                    color: isNearby ? "var(--pd-accent)" : "#fff",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                  }}
+                >
+                  <Video size={14} /> Derse Katıl
+                </a>
               ) : (
-                <p className="mt-2 text-xs text-stone-400">Bu ders için paylaşılmış not yok.</p>
+                <div
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: 10,
+                    background: isNearby ? "rgba(255,255,255,0.15)" : "var(--pd-bg-subtle)",
+                    color: isNearby ? "rgba(255,255,255,0.6)" : "var(--pd-muted)",
+                    fontSize: 13,
+                  }}
+                >
+                  Bağlantı yakında
+                </div>
               )}
             </div>
-          ) : (
-            <p className="text-xs text-stone-400">Henüz tamamlanmış dersiniz yok.</p>
-          )}
+          </div>
+        ) : (
+          <div
+            style={{
+              background: "var(--pd-bg-elevated)",
+              border: "1px solid var(--pd-line)",
+              borderRadius: 16,
+              padding: 24,
+              textAlign: "center",
+              marginBottom: 20,
+            }}
+          >
+            <p style={{ color: "var(--pd-muted)", fontSize: 14 }}>
+              Sıradaki dersiniz henüz planlanmadı.
+            </p>
+          </div>
+        )}
+
+        {/* Two-column: week schedule + progress */}
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+          {/* Week schedule */}
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div>
+                <div className="pd-card-title">Bu Haftaki Program</div>
+                <div className="pd-card-sub">{weekLessons.length} ders planlandı</div>
+              </div>
+              <Link href="/panel/takvim" className="pd-btn pd-btn-ghost pd-btn-sm">
+                Takvim <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div className="pd-card-body">
+              {weekLessons.length === 0 ? (
+                <p style={{ color: "var(--pd-muted)", fontSize: 13 }}>Bu hafta planlanmış ders yok.</p>
+              ) : (
+                weekLessons.map((lesson, i) => {
+                  const isNext = lesson.id === nextLesson?.id;
+                  return (
+                    <div
+                      key={lesson.id}
+                      className={`pd-upcoming-row ${isNext ? "now" : ""}`}
+                    >
+                      <div className="pd-upcoming-time">
+                        <div className="hr">{fmtTime(lesson.scheduledAt)}</div>
+                        <div className="day">{fmtDay(lesson.scheduledAt)}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink)" }}>
+                          {lesson.teacher.fullName}
+                        </div>
+                        <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 2 }}>
+                          {lesson.duration} dk{lesson.package ? ` · ${lesson.package.name}` : ""}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        {isNext && (
+                          <span className="pd-chip pd-chip-accent" style={{ fontSize: 10 }}>Sıradaki</span>
+                        )}
+                        {lesson.googleMeetLink && (
+                          <a
+                            href={lesson.googleMeetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pd-btn pd-btn-ghost pd-btn-sm"
+                          >
+                            <Video size={12} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Progress card */}
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div className="pd-card-title">Ders İlerlemesi</div>
+              <span style={{ fontSize: 18, fontWeight: 700, color: "var(--pd-accent)" }}>%{progressPct}</span>
+            </div>
+            <div className="pd-card-body">
+              <div className="pd-progress" style={{ marginBottom: 8 }}>
+                <div className="pd-progress-fill" style={{ width: `${progressPct}%` }} />
+              </div>
+              <p style={{ fontSize: 12, color: "var(--pd-muted)", marginBottom: 20 }}>
+                {completed.length} ders tamamlandı / {total} ders planlandı
+                {totalHours > 0 ? ` · ${totalHours} saat` : ""}
+              </p>
+
+              {/* Weekly goals */}
+              <div style={{ borderTop: "1px solid var(--pd-line)", paddingTop: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--pd-muted)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Bu hafta
+                </div>
+                {[
+                  { t: "Canlı derse katıl", done: Math.min(upcoming.length, 2), target: 4 },
+                  { t: "Ders tamamla", done: Math.min(completed.length, 3), target: 4 },
+                ].map((g, i) => (
+                  <div key={i} style={{ marginBottom: 12 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: 4,
+                        fontSize: 12,
+                      }}
+                    >
+                      <span style={{ color: "var(--pd-ink-2)" }}>{g.t}</span>
+                      <span style={{ color: "var(--pd-muted)" }}>
+                        {g.done}/{g.target}
+                      </span>
+                    </div>
+                    <div className="pd-progress">
+                      <div
+                        className="pd-progress-fill"
+                        style={{ width: `${Math.min(100, (g.done / g.target) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick links */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+          {[
+            { href: "/panel/dersler", label: "Derslerim", sub: `${total} ders`, icon: "📚" },
+            { href: "/panel/odemeler", label: "Ödemelerim", sub: student.activePackage ?? "Paket yok", icon: "💳" },
+            { href: "/panel/profil", label: "Profilim", sub: student.examType ?? "Bilgi güncelle", icon: "👤" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              style={{
+                background: "var(--pd-bg-elevated)",
+                border: "1px solid var(--pd-line)",
+                borderRadius: 14,
+                padding: 18,
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                textDecoration: "none",
+                transition: "border-color 120ms ease, box-shadow 120ms ease",
+              }}
+            >
+              <span style={{ fontSize: 24 }}>{item.icon}</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink)" }}>{item.label}</div>
+                <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 2 }}>{item.sub}</div>
+              </div>
+              <ArrowRight size={14} style={{ marginLeft: "auto", color: "var(--pd-muted-2)" }} />
+            </Link>
+          ))}
         </div>
       </div>
-
-      {/* This week's schedule */}
-      {weekLessons.length > 0 && (
-        <div className="rounded-xl bg-white border border-stone-200">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-            <h3 className="text-sm font-semibold text-stone-800">Bu Haftaki Program</h3>
-            <Link
-              href="/panel/takvim"
-              className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
-            >
-              Takvimde Gör <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="divide-y divide-stone-100">
-            {weekLessons.map((lesson) => {
-              const isNext = lesson.id === nextLesson?.id;
-              return (
-                <div key={lesson.id} className={`flex items-center justify-between px-5 py-3.5 ${isNext ? "bg-emerald-50/50" : ""}`}>
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 text-center shrink-0">
-                      <p className="text-xs text-stone-400">{fmtShort(lesson.scheduledAt).split(" ")[0]}</p>
-                      <p className="text-sm font-semibold text-stone-800">{fmtTime(lesson.scheduledAt)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-stone-800">{lesson.teacher.fullName}</p>
-                      <p className="text-xs text-stone-500">
-                        {lesson.duration} dk{lesson.package ? ` · ${lesson.package.name}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {isNext && (
-                      <span className="text-xs bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full">Sıradaki</span>
-                    )}
-                    {lesson.googleMeetLink && (
-                      <a
-                        href={lesson.googleMeetLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700"
-                      >
-                        <Video className="w-3 h-3" /> Meet
-                      </a>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

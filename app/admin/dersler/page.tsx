@@ -108,44 +108,37 @@ export default async function DerslerPage({ searchParams }: Props) {
   };
 
   return (
-    <div className="p-6 space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#091413]">Dersler</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString("tr-TR")} ders bulundu</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin/dersler/takvim"
-            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-          >
-            Takvim
-          </Link>
-          <Link
-            href="/admin/dersler/yeni"
-            className="flex items-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-          >
-            <Plus size={15} />
-            Yeni Ders
-          </Link>
+    <>
+      <div className="pd-page-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h1 className="pd-page-title">Dersler</h1>
+            <p className="pd-page-sub">{total.toLocaleString("tr-TR")} ders</p>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/admin/dersler/takvim" className="pd-btn pd-btn-ghost pd-btn-sm">Takvim</Link>
+            <Link href="/admin/dersler/yeni" className="pd-btn pd-btn-accent pd-btn-sm">
+              <Plus size={13} /> Yeni Ders
+            </Link>
+          </div>
         </div>
       </div>
 
+      <div className="pd-page-body">
       {/* Flash */}
       {updated === "lesson" && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+        <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
           Ders güncellendi.
         </div>
       )}
       {updated === "cancelled" && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2.5 rounded-lg">
+        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
           Ders iptal edildi.
         </div>
       )}
 
       {/* Filters */}
-      <form method="GET" action="/admin/dersler" className="flex flex-wrap gap-3">
+      <form method="GET" action="/admin/dersler" className="flex flex-wrap gap-3" style={{ marginBottom: 16 }}>
         <input type="text" name="q" defaultValue={q} placeholder="Öğrenci veya hoca adı..."
           className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
         <select name="status" defaultValue={status}
@@ -350,6 +343,7 @@ export default async function DerslerPage({ searchParams }: Props) {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

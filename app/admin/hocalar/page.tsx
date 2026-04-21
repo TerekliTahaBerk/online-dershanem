@@ -2,9 +2,9 @@ import Link from "next/link";
 import { TeacherStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { teacherStatusLabels, teacherStatusOptions } from "@/lib/admin";
-import { updateTeacherAction, toggleTeacherStatusAction, createTeacherAccountAction, toggleTeacherAdminAccessAction, deleteTeacherAction } from "./actions";
+import { updateTeacherAction, createTeacherAccountAction, toggleTeacherAdminAccessAction, deleteTeacherAction } from "./actions";
 import { ConfirmFormButton } from "@/components/ui/confirm-form-button";
-import { Plus, GraduationCap, CalendarDays, ShieldCheck, Trash2 } from "lucide-react";
+import { Plus, CalendarDays, ShieldCheck, Trash2, GraduationCap } from "lucide-react";
 
 type TeacherWithRelations = Prisma.TeacherGetPayload<{
   include: {
@@ -21,7 +21,6 @@ type Props = {
     updated?: string;
     edit?: string;
     status?: string;
-    teacher?: string;
   }>;
 };
 
@@ -30,7 +29,6 @@ export default async function HocalarPage({ searchParams }: Props) {
   const updated = params?.updated ?? "";
   const editId = params?.edit ?? "";
   const statusFilter = params?.status ?? "";
-  const highlightTeacherId = params?.teacher ?? "";
 
   const teachers = await prisma.teacher.findMany({
     where: statusFilter ? { status: statusFilter as TeacherStatus } : undefined,
@@ -53,297 +51,282 @@ export default async function HocalarPage({ searchParams }: Props) {
     return `/admin/hocalar?${p.toString()}`;
   };
 
+  const successMessages: Record<string, string> = {
+    created: "Hoca eklendi.",
+    "created-linked": "Hoca eklendi ve mevcut kullanıcıya bağlandı.",
+    teacher: "Hoca güncellendi.",
+    toggle: "Hoca durumu güncellendi.",
+    "account-created": "Öğretmen paneli hesabı oluşturuldu.",
+    "account-linked": "Mevcut kullanıcı öğretmen kaydına bağlandı.",
+    "admin-access": "Admin erişimi güncellendi.",
+    deleted: "Hoca silindi.",
+  };
+
+  const errorMessages: Record<string, string> = {
+    "account-exists": "Bu hoca zaten bir panele bağlı.",
+    "email-taken": "Bu e-posta adresi başka bir kullanıcıda kullanılıyor.",
+    "account-error": "Hesap oluşturulurken bir hata oluştu.",
+    "password-short": "Yeni hesap için en az 6 karakterlik şifre girin.",
+  };
+
   return (
-    <div className="p-6 space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#091413]">Hocalar</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {teachers.length} hoca · {teachers.filter((t) => t.status === "ACTIVE").length} aktif
-          </p>
-        </div>
-        <Link
-          href="/admin/hocalar/yeni"
-          className="flex items-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Plus size={15} />
-          Yeni Hoca
-        </Link>
-      </div>
-
-      {/* Flash */}
-      {(updated === "created" || updated === "created-linked" || updated === "teacher" || updated === "toggle" || updated === "account-created" || updated === "account-linked" || updated === "admin-access" || updated === "deleted") && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
-          {updated === "created" ? "Hoca eklendi." : updated === "created-linked" ? "Hoca eklendi ve mevcut kullanıcıya bağlandı." : updated === "toggle" ? "Hoca durumu güncellendi." : updated === "account-created" ? "Öğretmen paneli hesabı oluşturuldu." : updated === "account-linked" ? "Mevcut kullanıcı öğretmen kaydına bağlandı." : updated === "admin-access" ? "Admin erişimi güncellendi." : updated === "deleted" ? "Hoca silindi." : "Hoca güncellendi."}
-        </div>
-      )}
-      {(updated === "account-exists" || updated === "email-taken" || updated === "account-error" || updated === "password-short") && (
-        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
-          {updated === "account-exists" ? "Bu hoca zaten bir panele bağlı." : updated === "email-taken" ? "Bu e-posta adresi başka bir kullanıcıda kullanılıyor." : updated === "password-short" ? "Yeni hesap için en az 6 karakterlik şifre girin." : "Hesap oluşturulurken bir hata oluştu."}
-        </div>
-      )}
-
-      {/* Filter */}
-      <div className="flex gap-2">
-        <Link
-          href="/admin/hocalar"
-          className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
-            !statusFilter ? "bg-[#546B41] text-white border-[#546B41]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-          }`}
-        >
-          Tümü
-        </Link>
-        {teacherStatusOptions.map((s) => (
-          <Link
-            key={s}
-            href={buildUrl({ status: s })}
-            className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
-              statusFilter === s ? "bg-[#546B41] text-white border-[#546B41]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            {teacherStatusLabels[s]}
-          </Link>
-        ))}
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {teachers.length === 0 ? (
-          <div className="py-16 text-center">
-            <GraduationCap size={40} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500 font-medium">Hoca bulunamadı</p>
-            <Link href="/admin/hocalar/yeni" className="mt-3 inline-block text-sm text-[#546B41] hover:underline">
-              İlk hocayı ekle →
+    <>
+      <div className="pd-page-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h1 className="pd-page-title">Hocalar</h1>
+            <p className="pd-page-sub">
+              {teachers.length} hoca · {teachers.filter((t) => t.status === "ACTIVE").length} aktif
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 4 }}>
+              <Link
+                href="/admin/hocalar"
+                className={`pd-btn pd-btn-sm ${!statusFilter ? "pd-btn-accent" : "pd-btn-ghost"}`}
+              >
+                Tümü
+              </Link>
+              {teacherStatusOptions.map((s) => (
+                <Link
+                  key={s}
+                  href={buildUrl({ status: s })}
+                  className={`pd-btn pd-btn-sm ${statusFilter === s ? "pd-btn-accent" : "pd-btn-ghost"}`}
+                >
+                  {teacherStatusLabels[s]}
+                </Link>
+              ))}
+            </div>
+            <Link href="/admin/hocalar/yeni" className="pd-btn pd-btn-accent pd-btn-sm">
+              <Plus size={13} /> Yeni Hoca
             </Link>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Hoca</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">İletişim</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Branşlar</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Toplam Ders</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Sonraki Ders</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Durum</th>
-                  <th className="text-right px-4 py-3 font-semibold text-gray-600">İşlem</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {teachers.map((teacher) => {
-                  const isEditing = editId === teacher.id;
-                  const nextLesson = teacher.lessons[0];
-                  return (
-                    <>
-                      <tr key={teacher.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#DCCCAC]/10" : ""}`}>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-[#435633]/10 flex items-center justify-center text-[#435633] font-semibold text-sm shrink-0">
-                              {teacher.fullName.charAt(0)}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-medium text-[#091413]">{teacher.fullName}</p>
-                              {teacher.user?.role === "ADMIN" && (
-                                <span className="mt-1 inline-flex rounded-full bg-[#091413] px-2 py-0.5 text-[10px] font-semibold text-white">
-                                  Admin + Öğretmen
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {teacher.email && <p className="text-sm">{teacher.email}</p>}
-                          {teacher.phone && <p className="text-xs text-gray-400">{teacher.phone}</p>}
-                          {!teacher.email && !teacher.phone && <span className="text-gray-300">—</span>}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs bg-[#DCCCAC]/30 text-[#435633] px-2 py-0.5 rounded-full font-medium">
-                            {teacher.subjects}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5 text-gray-600">
-                            <CalendarDays size={13} className="text-gray-400" />
-                            {teacher._count.lessons}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-gray-500">
-                          {nextLesson ? (
-                            <>
-                              <p className="font-medium text-gray-700">
-                                {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(new Date(nextLesson.scheduledAt))}
-                              </p>
-                              <p className="text-gray-400">
-                                {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(nextLesson.scheduledAt))}
-                              </p>
-                            </>
-                          ) : (
-                            <span className="text-gray-300">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full ${
-                            teacher.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-400"
-                          }`}>
-                            {teacherStatusLabels[teacher.status]}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Link
-                            href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: teacher.id })}
-                            className="text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
-                          >
-                            {isEditing ? "Kapat" : "Düzenle"}
-                          </Link>
-                        </td>
-                      </tr>
+        </div>
+      </div>
 
-                      {/* Inline edit */}
-                      {isEditing && (
-                        <tr key={`${teacher.id}-edit`}>
-                          <td colSpan={7} className="px-4 py-4 bg-[#DCCCAC]/5 border-b border-[#DCCCAC]/30">
-                            <div className="space-y-5">
-                              <form action={updateTeacherAction} className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <input type="hidden" name="teacherId" value={teacher.id} />
-                                <input type="hidden" name="returnTo" value={buildUrl({ edit: teacher.id })} />
+      <div className="pd-page-body">
+        {successMessages[updated] && (
+          <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+            {successMessages[updated]}
+          </div>
+        )}
+        {errorMessages[updated] && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+            {errorMessages[updated]}
+          </div>
+        )}
 
-                                <div className="space-y-1">
-                                  <label className="text-xs font-medium text-gray-600">Ad Soyad</label>
-                                  <input type="text" name="fullName" required defaultValue={teacher.fullName}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
-                                </div>
-
-                                <div className="space-y-1">
-                                  <label className="text-xs font-medium text-gray-600">E-posta</label>
-                                  <input type="email" name="email" defaultValue={teacher.email ?? ""}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
-                                </div>
-
-                                <div className="space-y-1">
-                                  <label className="text-xs font-medium text-gray-600">Telefon</label>
-                                  <input type="tel" name="phone" defaultValue={teacher.phone ?? ""}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
-                                </div>
-
-                                <div className="space-y-1">
-                                  <label className="text-xs font-medium text-gray-600">Branşlar</label>
-                                  <input type="text" name="subjects" required defaultValue={teacher.subjects}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
-                                </div>
-
-                                <div className="space-y-1">
-                                  <label className="text-xs font-medium text-gray-600">Durum</label>
-                                  <select name="status" defaultValue={teacher.status}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
-                                    {teacherStatusOptions.map((s) => (
-                                      <option key={s} value={s}>{teacherStatusLabels[s]}</option>
-                                    ))}
-                                  </select>
-                                </div>
-
-                                <div className="space-y-1 col-span-2 md:col-span-3">
-                                  <label className="text-xs font-medium text-gray-600">Bio / Açıklama</label>
-                                  <textarea name="bio" rows={2} defaultValue={teacher.bio ?? ""}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 resize-none" />
-                                </div>
-
-                                <div className="col-span-2 md:col-span-3 flex gap-3">
-                                  <button type="submit"
-                                    className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                                    Kaydet
-                                  </button>
-                                  <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">
-                                    İptal
-                                  </Link>
-                                </div>
-                              </form>
-
-                              <div className="flex justify-end border-t border-[#DCCCAC]/40 pt-4">
-                                <ConfirmFormButton
-                                  action={deleteTeacherAction}
-                                  title="Hocayı sil"
-                                  description={`${teacher.fullName} kaydını silersen öğretmen profili kaldırılır. Bu işlem geri alınamaz.`}
-                                  confirmLabel="Hocayı sil"
-                                  cancelLabel="Vazgeç"
-                                  hiddenFields={[{ name: "teacherId", value: teacher.id }]}
-                                  className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100"
-                                >
-                                  <Trash2 size={14} />
-                                  Sil
-                                </ConfirmFormButton>
-                              </div>
-
-                              {/* Panel access */}
-                              <div className="border-t border-[#DCCCAC]/40 pt-4">
-                                <div className="flex items-center gap-2 mb-3">
-                                  <ShieldCheck size={14} className="text-[#546B41]" />
-                                  <span className="text-xs font-semibold text-gray-700">Öğretmen Paneli Erişimi</span>
-                                </div>
-                                {teacher.user ? (
-                                  <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-3">
-                                    <div className="flex items-center gap-2 text-sm text-emerald-700">
-                                      <ShieldCheck size={14} />
-                                      Panel hesabı mevcut: <strong>{teacher.user.email}</strong>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${teacher.user.role === "ADMIN" ? "bg-[#091413] text-white" : "bg-white text-gray-600 border border-gray-200"}`}>
-                                        {teacher.user.role === "ADMIN" ? "Admin erişimi açık" : "Sadece öğretmen erişimi"}
-                                      </span>
-                                      <form action={toggleTeacherAdminAccessAction}>
-                                        <input type="hidden" name="teacherId" value={teacher.id} />
-                                        <input type="hidden" name="userId" value={teacher.user.id} />
-                                        <input type="hidden" name="currentValue" value={teacher.user.role === "ADMIN" ? "true" : "false"} />
-                                        <button type="submit" className="rounded-lg border border-[#546B41]/30 bg-white px-3 py-1.5 text-xs font-medium text-[#435633] transition-colors hover:bg-[#DCCCAC]/20">
-                                          {teacher.user.role === "ADMIN" ? "Admin erişimini kapat" : "Admin erişimi ver"}
-                                        </button>
-                                      </form>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <form action={createTeacherAccountAction} className="grid grid-cols-1 gap-3 md:grid-cols-4">
-                                    <input type="hidden" name="teacherId" value={teacher.id} />
-                                    <input type="hidden" name="name" value={teacher.fullName} />
-                                    <div className="space-y-1">
-                                      <label className="text-xs font-medium text-gray-600">Giriş E-postası</label>
-                                      <input type="email" name="email" required defaultValue={teacher.email ?? ""}
-                                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
-                                        placeholder="hoca@email.com" />
-                                    </div>
-                                    <div className="space-y-1">
-                                      <label className="text-xs font-medium text-gray-600">Şifre</label>
-                                      <input type="text" name="password" minLength={6}
-                                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
-                                        placeholder="Yeni hesapta gerekli" />
-                                    </div>
-                                    <label className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 md:mt-6">
-                                      <input type="checkbox" name="grantAdminAccess" className="h-4 w-4 rounded border-gray-300 text-[#546B41] focus:ring-[#546B41]/30" />
-                                      <span>Admin erişimi de ver</span>
-                                    </label>
-                                    <div className="flex items-end">
-                                      <button type="submit" className="w-full bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                                        Hesap Oluştur
-                                      </button>
-                                    </div>
-                                    <p className="text-xs text-gray-500 md:col-span-4">
-                                      Bu e-posta mevcut bir admin hesabına aitse yeni kullanıcı açılmaz, öğretmen kaydı o hesaba bağlanır.
-                                    </p>
-                                  </form>
+        <div className="pd-card" style={{ overflow: "hidden" }}>
+          {teachers.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 24px" }}>
+              <GraduationCap size={40} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
+              <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-muted)" }}>Hoca bulunamadı</p>
+              <Link href="/admin/hocalar/yeni" style={{ fontSize: 13, color: "var(--pd-accent)", display: "inline-block", marginTop: 8 }}>
+                İlk hocayı ekle →
+              </Link>
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table className="pd-table">
+                <thead>
+                  <tr>
+                    <th>Hoca</th>
+                    <th>İletişim</th>
+                    <th>Branşlar</th>
+                    <th>Ders</th>
+                    <th>Sonraki Ders</th>
+                    <th>Durum</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teachers.map((teacher) => {
+                    const isEditing = editId === teacher.id;
+                    const nextLesson = teacher.lessons[0];
+                    return (
+                      <>
+                        <tr key={teacher.id} style={{ background: isEditing ? "var(--pd-accent-soft)" : undefined }}>
+                          <td>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <div className="pd-avatar pd-avatar-sm">{teacher.fullName[0]}</div>
+                              <div>
+                                <div style={{ fontWeight: 500, color: "var(--pd-ink)" }}>{teacher.fullName}</div>
+                                {teacher.user?.role === "ADMIN" && (
+                                  <span className="pd-chip" style={{ fontSize: 10, marginTop: 2, display: "inline-flex" }}>
+                                    Admin + Öğretmen
+                                  </span>
                                 )}
                               </div>
                             </div>
                           </td>
+                          <td>
+                            {teacher.email && <div style={{ fontSize: 13, color: "var(--pd-ink-2)" }}>{teacher.email}</div>}
+                            {teacher.phone && <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>{teacher.phone}</div>}
+                            {!teacher.email && !teacher.phone && <span style={{ color: "var(--pd-muted-2)" }}>—</span>}
+                          </td>
+                          <td>
+                            <span className="pd-chip">{teacher.subjects}</span>
+                          </td>
+                          <td>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--pd-ink-2)" }}>
+                              <CalendarDays size={13} style={{ color: "var(--pd-muted)" }} />
+                              {teacher._count.lessons}
+                            </div>
+                          </td>
+                          <td style={{ fontSize: 12, color: "var(--pd-muted)" }}>
+                            {nextLesson ? (
+                              <>
+                                <div style={{ fontWeight: 500, color: "var(--pd-ink-2)" }}>
+                                  {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(new Date(nextLesson.scheduledAt))}
+                                </div>
+                                <div>
+                                  {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(nextLesson.scheduledAt))}
+                                </div>
+                              </>
+                            ) : (
+                              <span style={{ color: "var(--pd-muted-2)" }}>—</span>
+                            )}
+                          </td>
+                          <td>
+                            <span className={teacher.status === "ACTIVE" ? "pd-tag pd-tag-success" : "pd-tag"}>
+                              {teacherStatusLabels[teacher.status]}
+                            </span>
+                          </td>
+                          <td>
+                            <Link
+                              href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: teacher.id })}
+                              className="pd-btn pd-btn-ghost pd-btn-sm"
+                            >
+                              {isEditing ? "Kapat" : "Düzenle"}
+                            </Link>
+                          </td>
                         </tr>
-                      )}
-                    </>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+
+                        {isEditing && (
+                          <tr key={`${teacher.id}-edit`}>
+                            <td colSpan={7} style={{ padding: 16, background: "var(--pd-bg-subtle)", borderBottom: "1px solid var(--pd-line)" }}>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                                {/* Edit form */}
+                                <form action={updateTeacherAction} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                                  <input type="hidden" name="teacherId" value={teacher.id} />
+                                  <input type="hidden" name="returnTo" value={buildUrl({ edit: teacher.id })} />
+
+                                  {[
+                                    { label: "Ad Soyad", name: "fullName", type: "text", value: teacher.fullName, required: true },
+                                    { label: "E-posta", name: "email", type: "email", value: teacher.email ?? "" },
+                                    { label: "Telefon", name: "phone", type: "tel", value: teacher.phone ?? "" },
+                                    { label: "Branşlar", name: "subjects", type: "text", value: teacher.subjects, required: true },
+                                  ].map((field) => (
+                                    <div key={field.name}>
+                                      <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>{field.label}</label>
+                                      <input
+                                        type={field.type}
+                                        name={field.name}
+                                        defaultValue={field.value}
+                                        required={field.required}
+                                        style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }}
+                                      />
+                                    </div>
+                                  ))}
+
+                                  <div>
+                                    <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Durum</label>
+                                    <select name="status" defaultValue={teacher.status}
+                                      style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }}>
+                                      {teacherStatusOptions.map((s) => <option key={s} value={s}>{teacherStatusLabels[s]}</option>)}
+                                    </select>
+                                  </div>
+
+                                  <div style={{ gridColumn: "1 / -1" }}>
+                                    <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Bio / Açıklama</label>
+                                    <textarea name="bio" rows={2} defaultValue={teacher.bio ?? ""}
+                                      style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)", resize: "none" }} />
+                                  </div>
+
+                                  <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8, alignItems: "center" }}>
+                                    <button type="submit" className="pd-btn pd-btn-accent pd-btn-sm">Kaydet</button>
+                                    <Link href={buildUrl({ edit: "" })} className="pd-btn pd-btn-ghost pd-btn-sm">İptal</Link>
+                                    <div style={{ marginLeft: "auto" }}>
+                                      <ConfirmFormButton
+                                        action={deleteTeacherAction}
+                                        title="Hocayı sil"
+                                        description={`${teacher.fullName} kaydını silersen öğretmen profili kaldırılır. Bu işlem geri alınamaz.`}
+                                        confirmLabel="Hocayı sil"
+                                        cancelLabel="Vazgeç"
+                                        hiddenFields={[{ name: "teacherId", value: teacher.id }]}
+                                        className="pd-btn pd-btn-sm"
+                                        style={{ background: "var(--pd-bg-elevated)", border: "1px solid #fca5a5", color: "#b42318" }}
+                                      >
+                                        <Trash2 size={13} /> Sil
+                                      </ConfirmFormButton>
+                                    </div>
+                                  </div>
+                                </form>
+
+                                {/* Panel access */}
+                                <div style={{ borderTop: "1px solid var(--pd-line)", paddingTop: 16 }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                                    <ShieldCheck size={14} style={{ color: "var(--pd-accent)" }} />
+                                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--pd-ink-2)" }}>Öğretmen Paneli Erişimi</span>
+                                  </div>
+                                  {teacher.user ? (
+                                    <div style={{ background: "var(--pd-accent-soft)", border: "1px solid var(--pd-accent)", borderRadius: 10, padding: "12px 14px" }}>
+                                      <div style={{ fontSize: 13, color: "var(--pd-accent)", marginBottom: 8 }}>
+                                        Panel hesabı mevcut: <strong>{teacher.user.email}</strong>
+                                      </div>
+                                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                        <span className={teacher.user.role === "ADMIN" ? "pd-chip pd-chip-accent" : "pd-chip"}>
+                                          {teacher.user.role === "ADMIN" ? "Admin erişimi açık" : "Sadece öğretmen"}
+                                        </span>
+                                        <form action={toggleTeacherAdminAccessAction} style={{ display: "inline" }}>
+                                          <input type="hidden" name="teacherId" value={teacher.id} />
+                                          <input type="hidden" name="userId" value={teacher.user.id} />
+                                          <input type="hidden" name="currentValue" value={teacher.user.role === "ADMIN" ? "true" : "false"} />
+                                          <button type="submit" className="pd-btn pd-btn-ghost pd-btn-sm">
+                                            {teacher.user.role === "ADMIN" ? "Admin erişimini kapat" : "Admin erişimi ver"}
+                                          </button>
+                                        </form>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <form action={createTeacherAccountAction} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+                                      <input type="hidden" name="teacherId" value={teacher.id} />
+                                      <input type="hidden" name="name" value={teacher.fullName} />
+                                      <div>
+                                        <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Giriş E-postası</label>
+                                        <input type="email" name="email" required defaultValue={teacher.email ?? ""}
+                                          style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }} />
+                                      </div>
+                                      <div>
+                                        <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Şifre</label>
+                                        <input type="text" name="password" minLength={6}
+                                          style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }} />
+                                      </div>
+                                      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--pd-ink-2)", alignSelf: "end", paddingBottom: 8 }}>
+                                        <input type="checkbox" name="grantAdminAccess" style={{ accentColor: "var(--pd-accent)" }} />
+                                        Admin erişimi ver
+                                      </label>
+                                      <div style={{ alignSelf: "end" }}>
+                                        <button type="submit" className="pd-btn pd-btn-accent pd-btn-sm" style={{ width: "100%" }}>
+                                          Hesap Oluştur
+                                        </button>
+                                      </div>
+                                    </form>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

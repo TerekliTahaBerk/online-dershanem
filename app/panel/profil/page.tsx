@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { BookOpen, Lock, School, User } from "lucide-react";
+import { BookOpen, Lock, User } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 import { changePasswordAction, updateStudentProfileAction } from "@/app/panel/actions";
 
@@ -13,10 +13,8 @@ type UserWithStudent = Prisma.UserGetPayload<{
 
 type Props = { searchParams?: Promise<{ error?: string; success?: string }> };
 
-const inputClass =
-  "w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500";
-
-const labelClass = "block text-xs font-medium text-stone-600 mb-1.5";
+const CLASS_LEVELS = ["8. Sınıf", "9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf", "Mezun"];
+const EXAM_TYPES = ["YKS", "LGS"];
 
 const passwordErrors: Record<string, string> = {
   missing: "Lütfen tüm alanları doldurun.",
@@ -25,8 +23,38 @@ const passwordErrors: Record<string, string> = {
   wrong: "Mevcut şifreniz hatalı.",
 };
 
-const CLASS_LEVELS = ["8. Sınıf", "9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf", "Mezun"];
-const EXAM_TYPES = ["YKS", "LGS"];
+const fieldStyle = {
+  width: "100%",
+  border: "1px solid var(--pd-line)",
+  borderRadius: 8,
+  padding: "9px 12px",
+  fontSize: 13,
+  background: "var(--pd-bg-elevated)",
+  color: "var(--pd-ink)",
+  outline: "none",
+} as const;
+
+const labelStyle = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: "var(--pd-muted)",
+  display: "block",
+  marginBottom: 5,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.04em",
+} as const;
+
+function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="pd-card">
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--pd-line)", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ color: "var(--pd-accent)" }}>{icon}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--pd-ink)" }}>{title}</span>
+      </div>
+      <div style={{ padding: 20 }}>{children}</div>
+    </div>
+  );
+}
 
 export default async function PanelProfilPage({ searchParams }: Props) {
   const session = await getServerAuthSession();
@@ -46,214 +74,169 @@ export default async function PanelProfilPage({ searchParams }: Props) {
 
   const initials = student.fullName
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold text-stone-900">Profilim</h1>
-        <p className="mt-1 text-sm text-stone-500">Kişisel bilgilerinizi ve hesap güvenliğinizi buradan yönetin.</p>
+    <>
+      <div className="pd-page-header">
+        <h1 className="pd-page-title">Profilim</h1>
+        <p className="pd-page-sub">Kişisel bilgilerinizi ve hesap güvenliğinizi yönetin.</p>
       </div>
 
-      {/* Avatar card */}
-      <div className="rounded-xl bg-white border border-stone-200 p-5 flex items-center gap-5">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white text-xl font-bold shrink-0">
-          {initials}
+      <div className="pd-page-body" style={{ maxWidth: 680 }}>
+        {/* Avatar card */}
+        <div className="pd-card" style={{ marginBottom: 16 }}>
+          <div style={{ padding: "20px", display: "flex", alignItems: "center", gap: 16 }}>
+            <div className="pd-avatar" style={{ width: 60, height: 60, fontSize: 20, borderRadius: 16 }}>
+              {initials}
+            </div>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: "var(--pd-ink)" }}>{student.fullName}</div>
+              {user?.email && <div style={{ fontSize: 13, color: "var(--pd-muted)", marginTop: 3 }}>{user.email}</div>}
+              {student.activePackage && (
+                <span className="pd-chip pd-chip-accent" style={{ display: "inline-flex", marginTop: 8 }}>
+                  <BookOpen size={11} /> {student.activePackage}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-        <div>
-          <h2 className="text-lg font-semibold text-stone-900">{student.fullName}</h2>
-          {user?.email && (
-            <p className="text-sm text-stone-500 mt-0.5">{user.email}</p>
+
+        {/* Profile edit */}
+        <Section title="Kişisel Bilgiler" icon={<User size={15} />}>
+          {successKey === "profile" && (
+            <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+              Bilgileriniz kaydedildi.
+            </div>
           )}
-          {student.activePackage && (
-            <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 py-0.5">
-              <BookOpen className="w-3 h-3" />
-              {student.activePackage}
-            </span>
-          )}
+          <form action={updateStudentProfileAction} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            {/* Contact section */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>İletişim</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>Telefon</label>
+                  <input name="phone" defaultValue={student.phone ?? ""} style={fieldStyle} placeholder="05xx xxx xx xx" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Şehir</label>
+                  <input name="city" defaultValue={student.city ?? ""} style={fieldStyle} placeholder="İstanbul" />
+                </div>
+                <div>
+                  <label style={labelStyle}>İlçe</label>
+                  <input name="district" defaultValue={student.district ?? ""} style={fieldStyle} placeholder="Kadıköy" />
+                </div>
+              </div>
+            </div>
+
+            {/* Academic section */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Akademik Bilgiler</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>Sınav Türü</label>
+                  <select name="examType" defaultValue={student.examType ?? ""} style={fieldStyle}>
+                    <option value="">Seçiniz</option>
+                    {EXAM_TYPES.map((e) => <option key={e} value={e}>{e}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle}>Sınıf</label>
+                  <select name="classLevel" defaultValue={student.classLevel ?? ""} style={fieldStyle}>
+                    <option value="">Seçiniz</option>
+                    {CLASS_LEVELS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={labelStyle}>Okul Adı</label>
+                  <input name="schoolName" defaultValue={student.schoolName ?? ""} style={fieldStyle} placeholder="Okul adınızı girin" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Hedef Okul / Üniversite</label>
+                  <input name="targetSchool" defaultValue={student.targetSchool ?? ""} style={fieldStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Hedef (Puan / Sıralama)</label>
+                  <input name="targetGoal" defaultValue={student.targetGoal ?? ""} style={fieldStyle} placeholder="Örn: 450 puan" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Hedef Bölüm</label>
+                  <input name="department" defaultValue={student.department ?? ""} style={fieldStyle} placeholder="Örn: Tıp, Hukuk" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Mevcut Net</label>
+                  <input name="currentNet" defaultValue={student.currentNet ?? ""} style={fieldStyle} placeholder="Örn: TYT 80 net" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Güçlü Dersler</label>
+                  <input name="strongLessons" defaultValue={student.strongLessons ?? ""} style={fieldStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Zayıf Dersler</label>
+                  <input name="weakLessons" defaultValue={student.weakLessons ?? ""} style={fieldStyle} />
+                </div>
+              </div>
+            </div>
+
+            {/* Parent section */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Veli Bilgileri</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>Veli Adı Soyadı</label>
+                  <input name="parentFullName" defaultValue={student.parentFullName ?? ""} style={fieldStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Veli Telefonu</label>
+                  <input name="parentPhone" defaultValue={student.parentPhone ?? ""} style={fieldStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Veli E-postası</label>
+                  <input type="email" name="parentEmail" defaultValue={student.parentEmail ?? ""} style={fieldStyle} />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="pd-btn pd-btn-accent" style={{ width: "100%", justifyContent: "center", padding: "10px 0" }}>
+              Bilgileri Kaydet
+            </button>
+          </form>
+        </Section>
+
+        {/* Password change */}
+        <div style={{ marginTop: 16 }}>
+          <Section title="Şifre Güncelle" icon={<Lock size={15} />}>
+            {successKey === "password" && (
+              <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+                Şifreniz güncellendi.
+              </div>
+            )}
+            {errorKey && passwordErrors[errorKey] && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+                {passwordErrors[errorKey]}
+              </div>
+            )}
+            <form action={changePasswordAction} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[
+                { name: "currentPassword", label: "Mevcut Şifre", autocomplete: "current-password" },
+                { name: "newPassword", label: "Yeni Şifre", autocomplete: "new-password" },
+                { name: "confirmPassword", label: "Yeni Şifre (Tekrar)", autocomplete: "new-password" },
+              ].map((f) => (
+                <div key={f.name}>
+                  <label style={labelStyle}>{f.label}</label>
+                  <input type="password" name={f.name} autoComplete={f.autocomplete} required style={fieldStyle} placeholder="••••••••" />
+                </div>
+              ))}
+              <button type="submit" className="pd-btn pd-btn-ghost" style={{ width: "100%", justifyContent: "center", padding: "10px 0", marginTop: 4 }}>
+                Şifreyi Kaydet
+              </button>
+            </form>
+          </Section>
         </div>
       </div>
-
-      {/* Profile edit form */}
-      <div className="rounded-xl bg-white border border-stone-200 p-5">
-        <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-          <User className="w-4 h-4 text-stone-400" /> Kişisel Bilgiler
-        </h3>
-
-        {successKey === "profile" && (
-          <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-3">
-            Bilgileriniz kaydedildi.
-          </div>
-        )}
-
-        <form action={updateStudentProfileAction} className="space-y-5">
-          {/* Contact */}
-          <div>
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">İletişim</p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClass}>Telefon</label>
-                <input name="phone" defaultValue={student.phone ?? ""} className={inputClass} placeholder="05xx xxx xx xx" />
-              </div>
-              <div>
-                <label className={labelClass}>Şehir</label>
-                <input name="city" defaultValue={student.city ?? ""} className={inputClass} placeholder="İstanbul" />
-              </div>
-              <div>
-                <label className={labelClass}>İlçe</label>
-                <input name="district" defaultValue={student.district ?? ""} className={inputClass} placeholder="Kadıköy" />
-              </div>
-            </div>
-          </div>
-
-          {/* Academic */}
-          <div>
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Akademik Bilgiler</p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClass}>Sınav Türü</label>
-                <select name="examType" defaultValue={student.examType ?? ""} className={inputClass}>
-                  <option value="">Seçiniz</option>
-                  {EXAM_TYPES.map((e) => (
-                    <option key={e} value={e}>{e}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelClass}>Sınıf</label>
-                <select name="classLevel" defaultValue={student.classLevel ?? ""} className={inputClass}>
-                  <option value="">Seçiniz</option>
-                  {CLASS_LEVELS.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelClass}>Okul Adı</label>
-                <input name="schoolName" defaultValue={student.schoolName ?? ""} className={inputClass} placeholder="Okul adınızı girin" />
-              </div>
-              <div>
-                <label className={labelClass}>Hedef Okul / Üniversite</label>
-                <input name="targetSchool" defaultValue={student.targetSchool ?? ""} className={inputClass} placeholder="Hedef okul veya üniversite" />
-              </div>
-              <div>
-                <label className={labelClass}>Hedef (Puan / Sıralama)</label>
-                <input name="targetGoal" defaultValue={student.targetGoal ?? ""} className={inputClass} placeholder="Örn: 450 puan, ilk 10.000" />
-              </div>
-              <div>
-                <label className={labelClass}>Hedef Bölüm <span className="text-stone-400 font-normal">(YKS)</span></label>
-                <input name="department" defaultValue={student.department ?? ""} className={inputClass} placeholder="Örn: Tıp, Hukuk" />
-              </div>
-              <div>
-                <label className={labelClass}>Hedef Sıralama <span className="text-stone-400 font-normal">(YKS)</span></label>
-                <input name="targetRanking" defaultValue={student.targetRanking ?? ""} className={inputClass} placeholder="Örn: 5000" />
-              </div>
-              <div>
-                <label className={labelClass}>Mevcut Net</label>
-                <input name="currentNet" defaultValue={student.currentNet ?? ""} className={inputClass} placeholder="Örn: TYT 80 net" />
-              </div>
-              <div>
-                <label className={labelClass}>Güçlü Dersler</label>
-                <input name="strongLessons" defaultValue={student.strongLessons ?? ""} className={inputClass} placeholder="Örn: Matematik, Fizik" />
-              </div>
-              <div>
-                <label className={labelClass}>Zayıf Dersler</label>
-                <input name="weakLessons" defaultValue={student.weakLessons ?? ""} className={inputClass} placeholder="Örn: Kimya, Biyoloji" />
-              </div>
-            </div>
-          </div>
-
-          {/* Parent */}
-          <div>
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Veli Bilgileri</p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClass}>Veli Adı Soyadı</label>
-                <input name="parentFullName" defaultValue={student.parentFullName ?? ""} className={inputClass} placeholder="Ad Soyad" />
-              </div>
-              <div>
-                <label className={labelClass}>Veli Telefonu</label>
-                <input name="parentPhone" defaultValue={student.parentPhone ?? ""} className={inputClass} placeholder="05xx xxx xx xx" />
-              </div>
-              <div>
-                <label className={labelClass}>Veli E-postası</label>
-                <input type="email" name="parentEmail" defaultValue={student.parentEmail ?? ""} className={inputClass} placeholder="veli@email.com" />
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold py-2.5 rounded-lg transition"
-          >
-            Bilgileri Kaydet
-          </button>
-        </form>
-      </div>
-
-      {/* Password change */}
-      <div className="rounded-xl bg-white border border-stone-200 p-5">
-        <h3 className="text-sm font-semibold text-stone-700 mb-4 flex items-center gap-2">
-          <Lock className="w-4 h-4 text-stone-400" /> Şifre Güncelle
-        </h3>
-
-        {successKey === "password" && (
-          <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-3">
-            Şifreniz güncellendi.
-          </div>
-        )}
-        {errorKey && passwordErrors[errorKey] && (
-          <div className="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">
-            {passwordErrors[errorKey]}
-          </div>
-        )}
-
-        <form action={changePasswordAction} className="space-y-4">
-          <div>
-            <label className={labelClass}>Mevcut Şifre</label>
-            <input
-              type="password"
-              name="currentPassword"
-              autoComplete="current-password"
-              required
-              className={inputClass}
-              placeholder="••••••••"
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Yeni Şifre</label>
-            <input
-              type="password"
-              name="newPassword"
-              autoComplete="new-password"
-              required
-              minLength={6}
-              className={inputClass}
-              placeholder="En az 6 karakter"
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Yeni Şifre (Tekrar)</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              autoComplete="new-password"
-              required
-              className={inputClass}
-              placeholder="Aynı şifreyi girin"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-stone-800 hover:bg-stone-900 text-white text-sm font-semibold py-2.5 rounded-lg transition"
-          >
-            Şifreyi Kaydet
-          </button>
-        </form>
-      </div>
-    </div>
+    </>
   );
 }

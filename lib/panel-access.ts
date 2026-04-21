@@ -110,7 +110,7 @@ export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?
   const access = getPanelAccess(user);
   const callbackPath = normalizeCallbackPath(callbackUrl);
 
-  // Respect a valid callback URL for an accessible panel (bypass service selection)
+  // Respect a valid callback URL for an accessible panel
   if (callbackPath) {
     const callbackPanel = getPanelFromPath(new URL(callbackPath, "http://localhost").pathname);
     if (callbackPanel && access.panels.includes(callbackPanel)) {
@@ -118,9 +118,14 @@ export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?
     }
   }
 
-  // Admins and OD students go through service selection
-  if (access.hasAdminPanel || access.hasStudentPanel) {
-    return "/servis-secimi";
+  // Admin takes priority over all else
+  if (access.hasAdminPanel) {
+    return getPanelHref("admin");
+  }
+
+  // OD student panel (includes ODK access via sidebar if applicable)
+  if (access.hasStudentPanel) {
+    return getPanelHref("student");
   }
 
   // ODK-only students go directly to ODK panel
@@ -128,7 +133,7 @@ export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?
     return "/odk/panel";
   }
 
-  // Pure teacher: go directly to teacher panel
+  // Teacher panel
   if (access.hasTeacherPanel) {
     return getPanelHref("teacher");
   }

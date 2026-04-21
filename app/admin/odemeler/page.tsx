@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Prisma, IntakeStatus, PurchaseStatus } from "@prisma/client";
+import { Filter } from "lucide-react";
 
 type PurchaseWithRelations = Prisma.PurchaseIntentGetPayload<{
   include: {
@@ -35,7 +36,6 @@ type Props = {
 
 function buildWhere(f: { q: string; intakeStatus: string; purchaseStatus: string; tasks: string }): Prisma.PurchaseIntentWhereInput | undefined {
   const conditions: Prisma.PurchaseIntentWhereInput[] = [];
-
   if (f.q) {
     conditions.push({
       OR: [
@@ -48,23 +48,22 @@ function buildWhere(f: { q: string; intakeStatus: string; purchaseStatus: string
   if (f.intakeStatus) conditions.push({ intakeStatus: f.intakeStatus as IntakeStatus });
   if (f.purchaseStatus) conditions.push({ status: f.purchaseStatus as PurchaseStatus });
   if (f.tasks === "1") conditions.push({ nextActionAt: { not: null } });
-
   if (conditions.length === 0) return undefined;
   return conditions.length === 1 ? conditions[0] : { AND: conditions };
 }
 
-const PURCHASE_STATUS_COLORS: Record<PurchaseStatus, string> = {
-  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
-  PAID: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  FAILED: "bg-red-50 text-red-700 border-red-200"
+const PURCHASE_STYLE: Record<PurchaseStatus, string> = {
+  PENDING: "pd-tag pd-tag-warning",
+  PAID: "pd-tag pd-tag-success",
+  FAILED: "pd-tag pd-tag-danger",
 };
 
-const INTAKE_STATUS_COLORS: Record<IntakeStatus, string> = {
-  NEW: "bg-gray-100 text-gray-600",
-  REVIEWING: "bg-blue-50 text-blue-700",
-  CONTACTED: "bg-violet-50 text-violet-700",
-  ENROLLED: "bg-emerald-50 text-emerald-700",
-  ARCHIVED: "bg-gray-100 text-gray-400"
+const INTAKE_STYLE: Record<IntakeStatus, string> = {
+  NEW: "pd-tag",
+  REVIEWING: "pd-tag pd-tag-info",
+  CONTACTED: "pd-tag pd-tag-warning",
+  ENROLLED: "pd-tag pd-tag-success",
+  ARCHIVED: "pd-tag",
 };
 
 export default async function OdemelerPage({ searchParams }: Props) {
@@ -106,265 +105,208 @@ export default async function OdemelerPage({ searchParams }: Props) {
   };
 
   return (
-    <div className="p-6 space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-[#091413]">Ödemeler</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString("tr-TR")} kayıt bulundu</p>
+    <>
+      <div className="pd-page-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h1 className="pd-page-title">Ödemeler</h1>
+            <p className="pd-page-sub">{total.toLocaleString("tr-TR")} kayıt</p>
+          </div>
+          <form method="GET" action="/admin/odemeler" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div className="pd-input-search">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--pd-muted-2)", flexShrink: 0 }}>
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+              <input type="text" name="q" defaultValue={q} placeholder="İsim, telefon, paket..." />
+            </div>
+            <select name="intakeStatus" defaultValue={intakeStatus}
+              style={{ border: "1px solid var(--pd-line)", borderRadius: 8, padding: "7px 10px", fontSize: 13, background: "var(--pd-bg-elevated)", color: "var(--pd-ink-2)" }}>
+              <option value="">Tüm Süreç</option>
+              {intakeStatusOptions.map((s) => <option key={s} value={s}>{intakeStatusLabels[s]}</option>)}
+            </select>
+            <select name="purchaseStatus" defaultValue={purchaseStatus}
+              style={{ border: "1px solid var(--pd-line)", borderRadius: 8, padding: "7px 10px", fontSize: 13, background: "var(--pd-bg-elevated)", color: "var(--pd-ink-2)" }}>
+              <option value="">Tüm Ödeme</option>
+              {purchaseStatusOptions.map((s) => <option key={s} value={s}>{purchaseStatusLabels[s]}</option>)}
+            </select>
+            <button type="submit" className="pd-btn pd-btn-ghost pd-btn-sm">
+              <Filter size={13} /> Filtrele
+            </button>
+            {(q || intakeStatus || purchaseStatus || tasks) && (
+              <Link href="/admin/odemeler" className="pd-btn pd-btn-ghost pd-btn-sm">Temizle</Link>
+            )}
+          </form>
+        </div>
       </div>
 
-      {/* Flash */}
-      {updated === "purchase" && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
-          Ödeme kaydı güncellendi.
-        </div>
-      )}
-
-      {/* Filters */}
-      <form method="GET" action="/admin/odemeler" className="flex flex-wrap gap-3">
-        <input
-          type="text"
-          name="q"
-          defaultValue={q}
-          placeholder="İsim, telefon, paket..."
-          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
-        />
-        <select
-          name="intakeStatus"
-          defaultValue={intakeStatus}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
-        >
-          <option value="">Tüm Süreç</option>
-          {intakeStatusOptions.map((s) => (
-            <option key={s} value={s}>{intakeStatusLabels[s]}</option>
-          ))}
-        </select>
-        <select
-          name="purchaseStatus"
-          defaultValue={purchaseStatus}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30"
-        >
-          <option value="">Tüm Ödeme Durumu</option>
-          {purchaseStatusOptions.map((s) => (
-            <option key={s} value={s}>{purchaseStatusLabels[s]}</option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white cursor-pointer">
-          <input type="checkbox" name="tasks" value="1" defaultChecked={tasks === "1"} className="accent-[#546B41]" />
-          Görevli
-        </label>
-        <button
-          type="submit"
-          className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          Filtrele
-        </button>
-        {(q || intakeStatus || purchaseStatus || tasks) && (
-          <Link href="/admin/odemeler" className="text-sm text-gray-500 hover:text-gray-700 px-2 py-2">
-            Temizle
-          </Link>
-        )}
-      </form>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Öğrenci</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Paket</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Süreç</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Ödeme</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Tarih</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Görev</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-600">İşlem</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {purchases.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
-                    Kayıt bulunamadı.
-                  </td>
-                </tr>
-              )}
-              {purchases.map((purchase) => {
-                const isEditing = editId === purchase.id;
-                const waLink = buildWhatsAppLink(purchase.studentPhone);
-                return (
-                  <>
-                    <tr key={purchase.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#DCCCAC]/10" : ""}`}>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-[#091413]">{purchase.studentFullName}</p>
-                        {waLink ? (
-                          <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-xs text-[#546B41] hover:underline">
-                            {purchase.studentPhone}
-                          </a>
-                        ) : (
-                          <p className="text-xs text-gray-400">{purchase.studentPhone}</p>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-gray-700">{purchase.packageName}</p>
-                        {purchase.paymentLink && (
-                          <a
-                            href={purchase.paymentLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-blue-600 hover:underline"
-                          >
-                            Ödeme Linki ↗
-                          </a>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex text-xs font-medium px-2 py-0.5 rounded-full ${INTAKE_STATUS_COLORS[purchase.intakeStatus]}`}>
-                          {intakeStatusLabels[purchase.intakeStatus]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full border ${PURCHASE_STATUS_COLORS[purchase.status]}`}>
-                          {purchaseStatusLabels[purchase.status]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-gray-500">
-                        {formatDateTime(purchase.submittedAt)}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-gray-500">
-                        {purchase.taskLabel && <p className="font-medium text-gray-700 mb-0.5">{purchase.taskLabel}</p>}
-                        {purchase.nextActionAt ? (
-                          <span className={new Date(purchase.nextActionAt) < new Date() ? "text-red-600 font-medium" : ""}>
-                            {formatDateTime(purchase.nextActionAt)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-300">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Link
-                          href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: purchase.id })}
-                          className="text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
-                        >
-                          {isEditing ? "Kapat" : "Düzenle"}
-                        </Link>
-                      </td>
-                    </tr>
-
-                    {/* Inline edit */}
-                    {isEditing && (
-                      <tr key={`${purchase.id}-edit`}>
-                        <td colSpan={7} className="px-4 py-4 bg-[#DCCCAC]/5 border-b border-[#DCCCAC]/30">
-                          <form action={updatePurchaseAction} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            <input type="hidden" name="purchaseId" value={purchase.id} />
-                            <input type="hidden" name="linkedStudentId" value={purchase.student?.id ?? ""} />
-                            <input type="hidden" name="returnTo" value={buildUrl({ edit: purchase.id })} />
-
-                            <div className="space-y-1">
-                              <label className="text-xs font-medium text-gray-600">Süreç Durumu</label>
-                              <select name="intakeStatus" defaultValue={purchase.intakeStatus}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
-                                {intakeStatusOptions.map((s) => (
-                                  <option key={s} value={s}>{intakeStatusLabels[s]}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-xs font-medium text-gray-600">Ödeme Durumu</label>
-                              <select name="status" defaultValue={purchase.status}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
-                                {purchaseStatusOptions.map((s) => (
-                                  <option key={s} value={s}>{purchaseStatusLabels[s]}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-xs font-medium text-gray-600">Paket Adı</label>
-                              <input type="text" name="packageName" defaultValue={purchase.packageName}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-xs font-medium text-gray-600">Görev Etiketi</label>
-                              <input type="text" name="taskLabel" defaultValue={purchase.taskLabel ?? ""}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-xs font-medium text-gray-600">Sonraki Eylem</label>
-                              <input type="datetime-local" name="nextActionAt" defaultValue={formatDateTimeLocalInput(purchase.nextActionAt)}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
-                            </div>
-
-                            <div className="space-y-1 col-span-2 md:col-span-3">
-                              <label className="text-xs font-medium text-gray-600">Admin Notları</label>
-                              <textarea name="adminNotes" defaultValue={purchase.adminNotes ?? ""} rows={2}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 resize-none" />
-                            </div>
-
-                            <div className="col-span-2 md:col-span-3 lg:col-span-4 flex gap-3">
-                              <button type="submit"
-                                className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                                Kaydet
-                              </button>
-                              <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">
-                                İptal
-                              </Link>
-                            </div>
-                          </form>
-
-                          {/* Event log */}
-                          {purchase.events.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-[#DCCCAC]/30">
-                              <p className="text-xs font-semibold text-gray-500 mb-2">Son Olaylar</p>
-                              <div className="space-y-1.5">
-                                {purchase.events.map((event) => (
-                                  <div key={event.id} className="flex items-center gap-3 text-xs text-gray-600">
-                                    <span className="text-gray-400">{formatDateTime(event.createdAt)}</span>
-                                    <span>{event.eventType.replace(/_/g, " ")}</span>
-                                    <span className={`px-1.5 py-0.5 rounded text-xs ${
-                                      event.status === "PAID" ? "bg-emerald-50 text-emerald-700" :
-                                      event.status === "FAILED" ? "bg-red-50 text-red-700" :
-                                      "bg-gray-100 text-gray-600"
-                                    }`}>{event.status}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {total > PAGE_SIZE && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <span className="text-xs text-gray-500">
-              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} / {total}
-            </span>
-            <div className="flex gap-2">
-              {page > 0 && (
-                <Link href={buildUrl({ page: String(page - 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
-                  Önceki
-                </Link>
-              )}
-              {(page + 1) * PAGE_SIZE < total && (
-                <Link href={buildUrl({ page: String(page + 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
-                  Sonraki
-                </Link>
-              )}
-            </div>
+      <div className="pd-page-body">
+        {updated === "purchase" && (
+          <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+            Ödeme kaydı güncellendi.
           </div>
         )}
+
+        <div className="pd-card" style={{ overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table className="pd-table">
+              <thead>
+                <tr>
+                  <th>Öğrenci</th>
+                  <th>Paket</th>
+                  <th>Süreç</th>
+                  <th>Ödeme</th>
+                  <th>Tarih</th>
+                  <th>Görev</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {purchases.length === 0 && (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: "center", padding: "40px 16px", color: "var(--pd-muted)" }}>
+                      Kayıt bulunamadı.
+                    </td>
+                  </tr>
+                )}
+                {purchases.map((purchase) => {
+                  const isEditing = editId === purchase.id;
+                  const waLink = buildWhatsAppLink(purchase.studentPhone);
+                  const isOverdue = purchase.nextActionAt && new Date(purchase.nextActionAt) < new Date();
+                  return (
+                    <>
+                      <tr key={purchase.id} style={{ background: isEditing ? "var(--pd-accent-soft)" : undefined }}>
+                        <td>
+                          <div style={{ fontWeight: 500, color: "var(--pd-ink)" }}>{purchase.studentFullName}</div>
+                          {waLink ? (
+                            <a href={waLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "var(--pd-accent)" }}>
+                              {purchase.studentPhone}
+                            </a>
+                          ) : (
+                            <span style={{ fontSize: 12, color: "var(--pd-muted)" }}>{purchase.studentPhone}</span>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pd-ink-2)" }}>{purchase.packageName}</div>
+                          {purchase.paymentLink && (
+                            <a href={purchase.paymentLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: "var(--pd-accent)" }}>
+                              Ödeme Linki ↗
+                            </a>
+                          )}
+                        </td>
+                        <td><span className={INTAKE_STYLE[purchase.intakeStatus]}>{intakeStatusLabels[purchase.intakeStatus]}</span></td>
+                        <td><span className={PURCHASE_STYLE[purchase.status]}>{purchaseStatusLabels[purchase.status]}</span></td>
+                        <td style={{ fontSize: 12, color: "var(--pd-muted)" }}>{formatDateTime(purchase.submittedAt)}</td>
+                        <td style={{ fontSize: 12 }}>
+                          {purchase.taskLabel && <div style={{ fontWeight: 500, color: "var(--pd-ink-2)", marginBottom: 2 }}>{purchase.taskLabel}</div>}
+                          {purchase.nextActionAt ? (
+                            <span style={{ color: isOverdue ? "#b91c1c" : "var(--pd-muted)", fontWeight: isOverdue ? 600 : undefined }}>
+                              {formatDateTime(purchase.nextActionAt)}
+                            </span>
+                          ) : (
+                            <span style={{ color: "var(--pd-muted-2)" }}>—</span>
+                          )}
+                        </td>
+                        <td>
+                          <Link
+                            href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: purchase.id })}
+                            className="pd-btn pd-btn-ghost pd-btn-sm"
+                          >
+                            {isEditing ? "Kapat" : "Düzenle"}
+                          </Link>
+                        </td>
+                      </tr>
+
+                      {isEditing && (
+                        <tr key={`${purchase.id}-edit`}>
+                          <td colSpan={7} style={{ padding: 16, background: "var(--pd-bg-subtle)", borderBottom: "1px solid var(--pd-line)" }}>
+                            <form action={updatePurchaseAction} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+                              <input type="hidden" name="purchaseId" value={purchase.id} />
+                              <input type="hidden" name="linkedStudentId" value={purchase.student?.id ?? ""} />
+                              <input type="hidden" name="returnTo" value={buildUrl({ edit: purchase.id })} />
+
+                              <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Süreç Durumu</label>
+                                <select name="intakeStatus" defaultValue={purchase.intakeStatus}
+                                  style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }}>
+                                  {intakeStatusOptions.map((s) => <option key={s} value={s}>{intakeStatusLabels[s]}</option>)}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Ödeme Durumu</label>
+                                <select name="status" defaultValue={purchase.status}
+                                  style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }}>
+                                  {purchaseStatusOptions.map((s) => <option key={s} value={s}>{purchaseStatusLabels[s]}</option>)}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Paket Adı</label>
+                                <input type="text" name="packageName" defaultValue={purchase.packageName}
+                                  style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }} />
+                              </div>
+
+                              <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Görev Etiketi</label>
+                                <input type="text" name="taskLabel" defaultValue={purchase.taskLabel ?? ""}
+                                  style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }} />
+                              </div>
+
+                              <div>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Sonraki Eylem</label>
+                                <input type="datetime-local" name="nextActionAt" defaultValue={formatDateTimeLocalInput(purchase.nextActionAt)}
+                                  style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)" }} />
+                              </div>
+
+                              <div style={{ gridColumn: "2 / -1" }}>
+                                <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", display: "block", marginBottom: 5 }}>Admin Notları</label>
+                                <textarea name="adminNotes" defaultValue={purchase.adminNotes ?? ""} rows={2}
+                                  style={{ width: "100%", border: "1px solid var(--pd-line)", borderRadius: 8, padding: "8px 10px", fontSize: 13, background: "var(--pd-bg-elevated)", resize: "none" }} />
+                              </div>
+
+                              <div style={{ gridColumn: "1 / -1", display: "flex", gap: 8 }}>
+                                <button type="submit" className="pd-btn pd-btn-accent pd-btn-sm">Kaydet</button>
+                                <Link href={buildUrl({ edit: "" })} className="pd-btn pd-btn-ghost pd-btn-sm">İptal</Link>
+                              </div>
+                            </form>
+
+                            {purchase.events.length > 0 && (
+                              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--pd-line)" }}>
+                                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", marginBottom: 8 }}>Son Olaylar</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                  {purchase.events.map((event) => (
+                                    <div key={event.id} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
+                                      <span style={{ color: "var(--pd-muted)" }}>{formatDateTime(event.createdAt)}</span>
+                                      <span style={{ color: "var(--pd-ink-2)" }}>{event.eventType.replace(/_/g, " ")}</span>
+                                      <span className={event.status === "PAID" ? "pd-tag pd-tag-success" : event.status === "FAILED" ? "pd-tag pd-tag-danger" : "pd-tag"} style={{ fontSize: 10 }}>
+                                        {event.status}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {total > PAGE_SIZE && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderTop: "1px solid var(--pd-line)", fontSize: 12, color: "var(--pd-muted)" }}>
+              <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} / {total}</span>
+              <div style={{ display: "flex", gap: 6 }}>
+                {page > 0 && <Link href={buildUrl({ page: String(page - 1) })} className="pd-btn pd-btn-ghost pd-btn-sm">Önceki</Link>}
+                {(page + 1) * PAGE_SIZE < total && <Link href={buildUrl({ page: String(page + 1) })} className="pd-btn pd-btn-ghost pd-btn-sm">Sonraki</Link>}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
