@@ -86,28 +86,24 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
   const weekLabel = `${new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" }).format(weekStart)} – ${new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(addDays(weekStart, 6))}`;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-stone-900">Haftalık Takvim</h1>
-          <p className="text-sm text-stone-500 mt-0.5">{weekLabel}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href={prevWeek} className="p-2 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 transition">
-            <ChevronLeft className="w-4 h-4 text-stone-600" />
-          </Link>
-          <Link href={todayLink} className="px-3 py-2 rounded-lg border border-stone-200 bg-white text-xs font-medium text-stone-600 hover:bg-stone-50 transition">
-            Bu Hafta
-          </Link>
-          <Link href={nextWeek} className="p-2 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 transition">
-            <ChevronRight className="w-4 h-4 text-stone-600" />
-          </Link>
+    <>
+      <div className="pd-page-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h1 className="pd-page-title">Haftalık Takvim</h1>
+            <p className="pd-page-sub">{weekLabel}</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Link href={prevWeek} className="pd-btn pd-btn-ghost pd-btn-sm"><ChevronLeft size={14} /></Link>
+            <Link href={todayLink} className="pd-btn pd-btn-ghost pd-btn-sm">Bu Hafta</Link>
+            <Link href={nextWeek} className="pd-btn pd-btn-ghost pd-btn-sm"><ChevronRight size={14} /></Link>
+          </div>
         </div>
       </div>
 
+      <div className="pd-page-body">
       {lessonsRaw.length === 0 ? (
-        <div className="rounded-2xl bg-white border border-stone-200 py-20 text-center">
+        <div style={{ background: "var(--pd-bg-elevated)", border: "1px solid var(--pd-line)", borderRadius: 16, padding: "60px 24px", textAlign: "center" }}>
           <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
           <p className="text-sm font-medium text-stone-600">Bu hafta planlı ders görünmüyor</p>
           <p className="text-xs text-stone-400 mt-1">Yeni ders eklendiğinde takvimde yer alacak.</p>
@@ -190,10 +186,11 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
       )}
 
       {/* Legend */}
-      <div className="flex items-center gap-2 text-xs text-stone-500">
-        <span className="inline-block w-3 h-3 rounded bg-[#DCCCAC]/60 border border-[#546B41]/40" />
+      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--pd-muted)", marginTop: 8 }}>
+        <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 3, background: "var(--pd-accent-soft)", border: "1px solid var(--pd-accent)" }} />
         Planlı ders
       </div>
-    </div>
+      </div>
+    </>
   );
 }

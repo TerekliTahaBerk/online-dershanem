@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Video, Clock, CheckCircle, XCircle, CalendarDays, TrendingUp } from "lucide-react";
+import { Video, Clock, CheckCircle, XCircle, CalendarDays } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +59,6 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
 
   const sp = await searchParams;
   const activeTab = sp?.tab ?? "upcoming";
-
   const now = new Date();
   const allLessons = student.lessons as unknown as LessonWithRelations[];
 
@@ -68,187 +67,271 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
     .reverse();
   const completedLessons = allLessons.filter((l) => l.status === "COMPLETED");
   const cancelledLessons = allLessons.filter((l) => l.status === "CANCELLED");
-
-  const totalHours = Math.round(
-    completedLessons.reduce((s, l) => s + l.duration, 0) / 60
-  );
+  const totalHours = Math.round(completedLessons.reduce((s, l) => s + l.duration, 0) / 60);
 
   const tabData: Record<string, LessonWithRelations[]> = {
     upcoming: upcomingLessons,
     completed: completedLessons,
     cancelled: cancelledLessons,
-    all: [...allLessons].sort((a, b) =>
-      new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()
-    ),
+    all: [...allLessons].sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime()),
   };
 
   const visibleLessons = tabData[activeTab] ?? upcomingLessons;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-stone-900">Derslerim</h1>
-          <p className="mt-1 text-sm text-stone-500">
-            {allLessons.length} ders kaydı · {completedLessons.length} tamamlandı · {totalHours} saat işlendi
-          </p>
+    <>
+      <div className="pd-page-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <h1 className="pd-page-title">Derslerim</h1>
+            <p className="pd-page-sub">
+              {allLessons.length} ders · {completedLessons.length} tamamlandı · {totalHours} saat
+            </p>
+          </div>
+          <Link href="/panel/takvim" className="pd-btn pd-btn-ghost pd-btn-sm">
+            <CalendarDays size={13} /> Takvim
+          </Link>
         </div>
-        <Link
-          href="/panel/takvim"
-          className="hidden sm:flex items-center gap-2 text-sm font-medium text-stone-600 bg-white border border-stone-200 hover:bg-stone-50 px-4 py-2 rounded-lg transition shrink-0"
-        >
-          <CalendarDays className="w-4 h-4" /> Takvime Git
-        </Link>
       </div>
 
-      {/* Stats strip */}
-      {completedLessons.length > 0 && (
-        <div className="flex gap-3 overflow-x-auto pb-1">
+      <div className="pd-page-body">
+        {/* Stats strip */}
+        <div className="pd-kpi-grid" style={{ marginBottom: 16 }}>
           {[
-            { label: "Tamamlanan", value: completedLessons.length, color: "text-emerald-700 bg-emerald-50 border-emerald-100" },
-            { label: "Yaklaşan", value: upcomingLessons.length, color: "text-blue-700 bg-blue-50 border-blue-100" },
-            { label: "Toplam Saat", value: `${totalHours}s`, color: "text-violet-700 bg-violet-50 border-violet-100" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className={`flex items-center gap-2 shrink-0 px-3 py-2 rounded-lg border text-xs font-semibold ${color}`}>
-              <TrendingUp className="w-3 h-3" />
-              {value} {label}
+            { label: "Tamamlanan", value: completedLessons.length.toString(), up: completedLessons.length > 0 },
+            { label: "Yaklaşan", value: upcomingLessons.length.toString(), up: upcomingLessons.length > 0 },
+            { label: "Toplam Saat", value: `${totalHours}s`, up: totalHours > 0 },
+            { label: "İptal", value: cancelledLessons.length.toString(), up: false },
+          ].map((k) => (
+            <div key={k.label} className="pd-kpi-card">
+              <div className="pd-kpi-label">{k.label}</div>
+              <div className="pd-kpi-value">{k.value}</div>
             </div>
           ))}
         </div>
-      )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-stone-100 p-1 rounded-xl w-fit">
-        {TABS.map((tab) => {
-          const count = tabData[tab.id]?.length ?? 0;
-          return (
-            <Link
-              key={tab.id}
-              href={`/panel/dersler?tab=${tab.id}`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-                activeTab === tab.id
-                  ? "bg-white text-stone-900 shadow-sm"
-                  : "text-stone-500 hover:text-stone-700"
-              }`}
-            >
-              {tab.label}
-              <span className={`text-xs px-1.5 rounded-full ${
-                activeTab === tab.id ? "bg-emerald-100 text-emerald-700" : "bg-stone-200 text-stone-400"
-              }`}>
-                {count}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Lesson list */}
-      {visibleLessons.length === 0 ? (
-        <div className="text-center py-16 rounded-xl bg-white border border-stone-200">
-          <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Bu filtrede ders görünmüyor</p>
-        </div>
-      ) : activeTab === "upcoming" ? (
-        <div className="space-y-3">
-          {visibleLessons.map((lesson) => {
-            const isNearby = new Date(lesson.scheduledAt).getTime() - now.getTime() < 30 * 60 * 1000;
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, background: "var(--pd-bg-subtle)", padding: 4, borderRadius: 12, width: "fit-content", marginBottom: 16 }}>
+          {TABS.map((tab) => {
+            const count = tabData[tab.id]?.length ?? 0;
+            const isActive = activeTab === tab.id;
             return (
-              <div
-                key={lesson.id}
-                className={`rounded-xl border p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                  isNearby ? "bg-emerald-50 border-emerald-200" : "bg-white border-stone-200"
-                }`}
+              <Link
+                key={tab.id}
+                href={`/panel/dersler?tab=${tab.id}`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  textDecoration: "none",
+                  background: isActive ? "var(--pd-bg-elevated)" : "transparent",
+                  color: isActive ? "var(--pd-ink)" : "var(--pd-muted)",
+                  boxShadow: isActive ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 120ms ease",
+                }}
               >
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${isNearby ? "bg-emerald-600" : "bg-stone-100"}`}>
-                    <CalendarDays className={`w-5 h-5 ${isNearby ? "text-white" : "text-stone-500"}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-stone-900">{lesson.teacher.fullName}</p>
-                    <p className="text-xs text-stone-500 mt-0.5">
-                      {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
-                      {lesson.package ? ` · ${lesson.package.name}` : ""}
-                    </p>
-                    {lesson.notes && (
-                      <p className="mt-1.5 text-xs text-stone-600 bg-white/80 border border-stone-100 rounded-lg px-3 py-1.5 italic">
-                        {lesson.notes}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                {lesson.googleMeetLink ? (
-                  <a
-                    href={lesson.googleMeetLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
-                      isNearby ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-stone-900 text-white hover:bg-stone-700"
-                    }`}
-                  >
-                    <Video className="w-4 h-4" /> Derse Katıl
-                  </a>
-                ) : (
-                  <span className="shrink-0 flex items-center gap-1.5 text-xs text-stone-400 bg-stone-50 border border-stone-200 px-3 py-2 rounded-lg">
-                    <Clock className="w-3.5 h-3.5" /> Meet linki bekleniyor
-                  </span>
-                )}
-              </div>
+                {tab.label}
+                <span
+                  style={{
+                    fontSize: 11,
+                    padding: "1px 6px",
+                    borderRadius: 999,
+                    background: isActive ? "var(--pd-accent-soft)" : "var(--pd-bg-elevated)",
+                    color: isActive ? "var(--pd-accent)" : "var(--pd-muted)",
+                  }}
+                >
+                  {count}
+                </span>
+              </Link>
             );
           })}
         </div>
-      ) : (
-        <div className="rounded-xl border border-stone-200 bg-white divide-y divide-stone-100 overflow-hidden">
-          {visibleLessons.map((lesson) => {
-            const isCompleted = lesson.status === "COMPLETED";
-            const isCancelled = lesson.status === "CANCELLED";
-            return (
-              <div key={lesson.id} className={`px-5 py-4 ${isCancelled ? "opacity-60" : ""}`}>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 min-w-0">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                      isCompleted ? "bg-emerald-50" : isCancelled ? "bg-red-50" : "bg-blue-50"
-                    }`}>
-                      {isCompleted ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
-                      ) : isCancelled ? (
-                        <XCircle className="w-4 h-4 text-red-400" />
-                      ) : (
-                        <Clock className="w-4 h-4 text-blue-600" />
-                      )}
+
+        {/* Lesson list */}
+        {visibleLessons.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 24px",
+              background: "var(--pd-bg-elevated)",
+              border: "1px solid var(--pd-line)",
+              borderRadius: 16,
+            }}
+          >
+            <CalendarDays size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
+            <p style={{ fontSize: 14, color: "var(--pd-muted)" }}>Bu filtrede ders görünmüyor.</p>
+          </div>
+        ) : activeTab === "upcoming" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {visibleLessons.map((lesson) => {
+              const isNearby = new Date(lesson.scheduledAt).getTime() - now.getTime() < 30 * 60 * 1000;
+              return (
+                <div
+                  key={lesson.id}
+                  style={{
+                    background: isNearby ? "var(--pd-accent)" : "var(--pd-bg-elevated)",
+                    border: `1px solid ${isNearby ? "var(--pd-accent)" : "var(--pd-line)"}`,
+                    borderRadius: 14,
+                    padding: "18px 20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 16,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        background: isNearby ? "rgba(255,255,255,0.2)" : "var(--pd-bg-subtle)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <CalendarDays size={18} style={{ color: isNearby ? "#fff" : "var(--pd-muted)" }} />
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-stone-900">{lesson.teacher.fullName}</p>
-                      <p className="text-xs text-stone-500 mt-0.5">
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: isNearby ? "#fff" : "var(--pd-ink)" }}>
+                        {lesson.teacher.fullName}
+                      </div>
+                      <div style={{ fontSize: 12, color: isNearby ? "rgba(255,255,255,0.7)" : "var(--pd-muted)", marginTop: 3 }}>
                         {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
                         {lesson.package ? ` · ${lesson.package.name}` : ""}
-                      </p>
+                      </div>
+                      {lesson.notes && (
+                        <div style={{ marginTop: 8, fontSize: 12, color: isNearby ? "rgba(255,255,255,0.8)" : "var(--pd-ink-2)", fontStyle: "italic" }}>
+                          {lesson.notes}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <span className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full border ${
-                    isCompleted ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                    isCancelled ? "bg-red-50 text-red-600 border-red-100" :
-                    "bg-blue-50 text-blue-700 border-blue-100"
-                  }`}>
-                    {isCompleted ? "Tamamlandı" : isCancelled ? "İptal" : "Planlandı"}
-                  </span>
+                  {lesson.googleMeetLink ? (
+                    <a
+                      href={lesson.googleMeetLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "9px 16px",
+                        borderRadius: 10,
+                        background: isNearby ? "#fff" : "var(--pd-accent)",
+                        color: isNearby ? "var(--pd-accent)" : "#fff",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        textDecoration: "none",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Video size={14} /> Derse Katıl
+                    </a>
+                  ) : (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 12,
+                        color: isNearby ? "rgba(255,255,255,0.5)" : "var(--pd-muted)",
+                        background: isNearby ? "rgba(255,255,255,0.1)" : "var(--pd-bg-subtle)",
+                        padding: "8px 14px",
+                        borderRadius: 8,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Clock size={13} /> Bağlantı bekleniyor
+                    </span>
+                  )}
                 </div>
-                {/* Notes shown for any lesson that has them */}
-                {lesson.notes && (
-                  <div className="mt-3 pl-[52px]">
-                    <div className={`border rounded-lg px-4 py-2.5 ${isCompleted ? "bg-amber-50 border-amber-100" : "bg-stone-50 border-stone-200"}`}>
-                      <p className={`text-xs font-semibold mb-1 ${isCompleted ? "text-amber-700" : "text-stone-600"}`}>
-                        {isCompleted ? "Paylaşılan Not" : "Not"}
-                      </p>
-                      <p className={`text-xs leading-relaxed ${isCompleted ? "text-amber-800" : "text-stone-700"}`}>{lesson.notes}</p>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="pd-card" style={{ overflow: "hidden" }}>
+            {visibleLessons.map((lesson, i) => {
+              const isCompleted = lesson.status === "COMPLETED";
+              const isCancelled = lesson.status === "CANCELLED";
+              return (
+                <div
+                  key={lesson.id}
+                  style={{
+                    padding: "16px 20px",
+                    borderBottom: i < visibleLessons.length - 1 ? "1px solid var(--pd-line)" : "none",
+                    opacity: isCancelled ? 0.6 : 1,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 9,
+                          background: isCompleted ? "var(--pd-accent-soft)" : isCancelled ? "#fef2f2" : "var(--pd-bg-subtle)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {isCompleted ? (
+                          <CheckCircle size={16} style={{ color: "var(--pd-accent)" }} />
+                        ) : isCancelled ? (
+                          <XCircle size={16} style={{ color: "#ef4444" }} />
+                        ) : (
+                          <Clock size={16} style={{ color: "var(--pd-muted)" }} />
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--pd-ink)" }}>{lesson.teacher.fullName}</div>
+                        <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 2 }}>
+                          {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
+                          {lesson.package ? ` · ${lesson.package.name}` : ""}
+                        </div>
+                        {lesson.notes && (
+                          <div
+                            style={{
+                              marginTop: 8,
+                              padding: "8px 12px",
+                              borderRadius: 8,
+                              background: isCompleted ? "var(--pd-accent-soft)" : "var(--pd-bg-subtle)",
+                              border: "1px solid var(--pd-line)",
+                              fontSize: 12,
+                              color: "var(--pd-ink-2)",
+                            }}
+                          >
+                            {lesson.notes}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <span
+                      className={
+                        isCompleted ? "pd-chip pd-chip-accent" :
+                        isCancelled ? "pd-chip" :
+                        "pd-chip"
+                      }
+                      style={{ flexShrink: 0 }}
+                    >
+                      {isCompleted ? "Tamamlandı" : isCancelled ? "İptal" : "Planlandı"}
+                    </span>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

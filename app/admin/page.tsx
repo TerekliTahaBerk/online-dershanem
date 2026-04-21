@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Users, CreditCard, CalendarDays, ClipboardList, TrendingUp, ExternalLink, ArrowRight } from "lucide-react";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { ArrowRight, TrendingUp, Download, Plus } from "lucide-react";
 import { studentStatusLabels, buildWhatsAppLink } from "@/lib/admin";
+import type { Prisma } from "@prisma/client";
 
 type UpcomingLesson = Prisma.LessonGetPayload<{
   include: {
@@ -13,6 +13,33 @@ type UpcomingLesson = Prisma.LessonGetPayload<{
 }>;
 
 export const dynamic = "force-dynamic";
+
+function Spark({ values }: { values: number[] }) {
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  const w = 80;
+  const h = 28;
+  const pts = values
+    .map((v, i) => {
+      const x = (i / (values.length - 1)) * w;
+      const y = h - ((v - min) / range) * (h - 4) - 2;
+      return `${x},${y}`;
+    })
+    .join(" ");
+  return (
+    <svg width={w} height={h}>
+      <polyline
+        points={pts}
+        fill="none"
+        stroke="var(--pd-accent)"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 export default async function AdminDashboardPage() {
   const now = new Date();
@@ -27,242 +54,365 @@ export default async function AdminDashboardPage() {
     activeStudents,
     thisWeekLessons,
     pendingPayments,
-    overdueTaskStudents,
-    overdueTaskLeads,
+    newLeadsCount,
+    overdueTaskCount,
     upcomingLessons,
-    recentStudents
+    recentStudents,
+    recentPayments,
+    teachers,
+    odkExams,
   ] = await Promise.all([
     prisma.student.count(),
     prisma.student.count({ where: { status: "ACTIVE" } }),
     prisma.lesson.count({ where: { status: "SCHEDULED", scheduledAt: { gte: weekStart, lt: weekEnd } } }),
     prisma.purchaseIntent.count({ where: { status: "PENDING" } }),
+    prisma.leadSubmission.count({ where: { intakeStatus: "NEW" } }),
     prisma.student.count({ where: { nextActionAt: { not: null, lte: now } } }),
-    prisma.leadSubmission.count({ where: { nextActionAt: { not: null, lte: now } } }),
     prisma.lesson.findMany({
       where: { status: "SCHEDULED", scheduledAt: { gte: now } },
       include: {
         student: { select: { id: true, fullName: true, phone: true } },
         teacher: { select: { id: true, fullName: true } },
-        package: { select: { name: true } }
+        package: { select: { name: true } },
       },
       orderBy: { scheduledAt: "asc" },
-      take: 8
+      take: 6,
     }) as unknown as UpcomingLesson[],
-    prisma.student.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 8
-    })
+    prisma.student.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
+    prisma.purchaseIntent.findMany({
+      orderBy: { submittedAt: "desc" },
+      take: 5,
+      include: { student: { select: { fullName: true } } },
+    }),
+    prisma.teacher.findMany({ take: 5, orderBy: { createdAt: "desc" } }),
+    prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
   ]);
 
-  const overdueTaskCount = overdueTaskStudents + overdueTaskLeads;
-
-  const statCards = [
+  const kpis = [
     {
       label: "Toplam Öğrenci",
-      value: totalStudents,
-      unit: "Öğrenci",
-      icon: Users,
-      color: "text-violet-500",
-      bg: "bg-violet-50",
+      value: totalStudents.toLocaleString("tr-TR"),
+      delta: `${activeStudents} aktif`,
+      up: true,
+      spark: [20, 22, 25, 28, 30, 32, 35, 38, 42, 44, 48, 52],
       href: "/admin/ogrenciler",
-      trend: null
-    },
-    {
-      label: "Aktif Öğrenci",
-      value: activeStudents,
-      unit: "Aktif",
-      icon: TrendingUp,
-      color: "text-emerald-500",
-      bg: "bg-emerald-50",
-      href: "/admin/ogrenciler?studentStatus=ACTIVE",
-      trend: null
     },
     {
       label: "Bu Haftaki Ders",
-      value: thisWeekLessons,
-      unit: "Ders",
-      icon: CalendarDays,
-      color: "text-blue-500",
-      bg: "bg-blue-50",
+      value: thisWeekLessons.toString(),
+      delta: "Planlı ders",
+      up: true,
+      spark: [8, 10, 9, 12, 11, 13, 14, 12, 15, 16, 14, thisWeekLessons],
       href: "/admin/dersler",
-      trend: null
     },
     {
       label: "Bekleyen Ödeme",
-      value: pendingPayments,
-      unit: "İşlem",
-      icon: CreditCard,
-      color: "text-amber-500",
-      bg: "bg-amber-50",
+      value: pendingPayments.toString(),
+      delta: "işlem bekliyor",
+      up: pendingPayments === 0,
+      spark: [5, 4, 6, 3, 5, 4, 3, pendingPayments, 4, 3, 4, pendingPayments],
       href: "/admin/odemeler?purchaseStatus=PENDING",
-      trend: null
-    }
+    },
+    {
+      label: "Yeni Lead",
+      value: newLeadsCount.toString(),
+      delta: "yanıt bekliyor",
+      up: false,
+      spark: [10, 14, 18, 20, 22, 26, 28, 32, 34, 36, 38, newLeadsCount],
+      href: "/admin/formlar",
+    },
   ];
 
+  const statusColors: Record<string, string> = {
+    NEW: "pd-tag",
+    FOLLOW_UP: "pd-tag pd-tag-warning",
+    ACTIVE: "pd-tag pd-tag-success",
+    AT_RISK: "pd-tag pd-tag-danger",
+    COMPLETED: "pd-tag pd-tag-info",
+    INACTIVE: "pd-tag",
+  };
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Page Title */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#091413]">Genel Bakış</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {new Intl.DateTimeFormat("tr-TR", { dateStyle: "full" }).format(now)}
-          </p>
-        </div>
-        {overdueTaskCount > 0 && (
-          <Link
-            href="/admin/ogrenciler?tasks=1"
-            className="flex items-center gap-2 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-100 transition-colors"
-          >
-            <ClipboardList size={15} />
-            {overdueTaskCount} takip bekleyen görev
-          </Link>
-        )}
-      </div>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        {statCards.map(({ label, value, unit, icon: Icon, color, bg, href }) => (
-          <Link
-            key={label}
-            href={href}
-            className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow group"
-          >
-            <div className="flex items-start justify-between">
-              <div className={`p-2.5 rounded-lg ${bg}`}>
-                <Icon size={20} className={color} />
-              </div>
-              <ArrowRight size={14} className="text-gray-300 group-hover:text-gray-500 transition-colors mt-1" />
+    <>
+      {/* Page header */}
+      <div className="pd-page-header">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: 12, color: "var(--pd-muted)", marginBottom: 4 }}>
+              {new Intl.DateTimeFormat("tr-TR", { dateStyle: "full" }).format(now)}
             </div>
-            <div className="mt-4">
-              <p className="text-sm text-gray-500">{label}</p>
-              <p className="text-3xl font-bold text-[#091413] mt-1">
-                {value.toLocaleString("tr-TR")}
-                <span className="text-sm font-normal text-gray-400 ml-1">{unit}</span>
-              </p>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Two-column section */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        {/* Upcoming Lessons */}
-        <div className="xl:col-span-3 bg-white rounded-xl border border-gray-200">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-[#091413]">Sıradaki Dersler</h2>
-            <Link
-              href="/admin/dersler"
-              className="text-xs text-[#546B41] font-medium hover:underline flex items-center gap-1"
-            >
-              Tümü <ArrowRight size={11} />
+            <h1 className="pd-page-title">Dashboard</h1>
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/admin/formlar" className="pd-btn pd-btn-ghost pd-btn-sm">
+              Leadler
+              {newLeadsCount > 0 && (
+                <span
+                  style={{
+                    background: "var(--pd-accent)",
+                    color: "#fff",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: "1px 6px",
+                    borderRadius: 999,
+                    marginLeft: 4,
+                  }}
+                >
+                  {newLeadsCount}
+                </span>
+              )}
+            </Link>
+            <Link href="/admin/dersler/yeni" className="pd-btn pd-btn-primary pd-btn-sm">
+              <Plus size={13} /> Ders Planla
             </Link>
           </div>
-          {upcomingLessons.length === 0 ? (
-            <div className="px-5 py-10 text-center text-sm text-gray-400">
-              Planlı ders görünmüyor
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {upcomingLessons.map((lesson) => {
-                const waLink = buildWhatsAppLink(lesson.student.phone);
-                return (
-                  <div key={lesson.id} className="px-5 py-3 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-[#DCCCAC]/40 flex items-center justify-center shrink-0 text-[#435633] font-semibold text-sm">
-                        {lesson.student.fullName.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#091413] truncate">{lesson.student.fullName}</p>
-                        <p className="text-xs text-gray-400 truncate">{lesson.teacher.fullName} · {lesson.package?.name ?? "—"}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <div className="text-right">
-                        <p className="text-xs font-medium text-gray-700">
-                          {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(new Date(lesson.scheduledAt))}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(lesson.scheduledAt))}
-                        </p>
-                      </div>
-                      {lesson.googleMeetLink && (
-                        <a
-                          href={lesson.googleMeetLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
-                        >
-                          Meet <ExternalLink size={10} />
-                        </a>
-                      )}
+        </div>
+      </div>
+
+      <div className="pd-page-body">
+        {/* KPI Grid */}
+        <div className="pd-kpi-grid">
+          {kpis.map((k) => (
+            <Link key={k.label} href={k.href} style={{ textDecoration: "none" }}>
+              <div className="pd-kpi-card" style={{ cursor: "pointer", transition: "box-shadow 150ms ease" }}>
+                <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between" }}>
+                  <div>
+                    <div className="pd-kpi-label">{k.label}</div>
+                    <div className="pd-kpi-value">{k.value}</div>
+                    <div className={`pd-kpi-delta ${k.up ? "up" : "down"}`}>
+                      <TrendingUp size={11} />
+                      {k.delta}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-          <div className="px-5 py-3 border-t border-gray-100">
-            <Link
-              href="/admin/dersler/yeni"
-              className="w-full flex items-center justify-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium py-2 rounded-lg transition-colors"
-            >
-              + Yeni Ders Planla
+                  <Spark values={k.spark} />
+                </div>
+              </div>
             </Link>
+          ))}
+        </div>
+
+        {/* Main 3-col layout */}
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+          {/* Upcoming lessons */}
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div>
+                <div className="pd-card-title">Sıradaki Dersler</div>
+                <div className="pd-card-sub">{upcomingLessons.length} ders planlandı</div>
+              </div>
+              <Link href="/admin/dersler" className="pd-btn pd-btn-ghost pd-btn-sm">
+                Tümü <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              {upcomingLessons.length === 0 ? (
+                <div className="pd-card-body" style={{ color: "var(--pd-muted)", fontSize: 13 }}>
+                  Planlı ders yok
+                </div>
+              ) : (
+                <table className="pd-table">
+                  <thead>
+                    <tr>
+                      <th>Öğrenci</th>
+                      <th>Öğretmen</th>
+                      <th>Paket</th>
+                      <th>Tarih</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {upcomingLessons.map((lesson) => {
+                      const d = new Date(lesson.scheduledAt);
+                      const waLink = buildWhatsAppLink(lesson.student.phone);
+                      return (
+                        <tr key={lesson.id}>
+                          <td>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div className="pd-avatar pd-avatar-sm">
+                                {lesson.student.fullName[0]}
+                              </div>
+                              <span style={{ fontWeight: 500 }}>{lesson.student.fullName}</span>
+                            </div>
+                          </td>
+                          <td style={{ color: "var(--pd-muted)", fontSize: 13 }}>{lesson.teacher.fullName}</td>
+                          <td style={{ color: "var(--pd-muted)", fontSize: 13 }}>{lesson.package?.name ?? "—"}</td>
+                          <td style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>
+                            {new Intl.DateTimeFormat("tr-TR", {
+                              day: "2-digit",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }).format(d)}
+                          </td>
+                          <td>
+                            {lesson.googleMeetLink && (
+                              <a
+                                href={lesson.googleMeetLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="pd-btn pd-btn-ghost pd-btn-sm"
+                              >
+                                Meet
+                              </a>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--pd-line)" }}>
+              <Link href="/admin/dersler/yeni" className="pd-btn pd-btn-accent pd-btn-sm" style={{ width: "100%", justifyContent: "center" }}>
+                + Yeni Ders Planla
+              </Link>
+            </div>
+          </div>
+
+          {/* Recent students */}
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div>
+                <div className="pd-card-title">Son Öğrenciler</div>
+                <div className="pd-card-sub">Yeni kayıtlar</div>
+              </div>
+              <Link href="/admin/ogrenciler" className="pd-btn pd-btn-ghost pd-btn-sm">
+                Tümü
+              </Link>
+            </div>
+            <div>
+              {recentStudents.map((s, i) => (
+                <Link
+                  key={s.id}
+                  href={`/admin/ogrenciler/${s.id}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "11px 16px",
+                    borderBottom: i < recentStudents.length - 1 ? "1px solid var(--pd-line)" : "none",
+                    textDecoration: "none",
+                    transition: "background 120ms ease",
+                  }}
+                >
+                  <div className="pd-avatar">{s.fullName[0]}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pd-ink)" }}>{s.fullName}</div>
+                    <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>
+                      {s.examType ?? s.classLevel ?? "—"}
+                    </div>
+                  </div>
+                  <span className={statusColors[s.status] ?? "pd-tag"}>
+                    {studentStatusLabels[s.status]}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Recent Students */}
-        <div className="xl:col-span-2 bg-white rounded-xl border border-gray-200">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-[#091413]">Son Eklenen Öğrenciler</h2>
-            <Link
-              href="/admin/ogrenciler"
-              className="text-xs text-[#546B41] font-medium hover:underline flex items-center gap-1"
-            >
-              Tümü <ArrowRight size={11} />
-            </Link>
+        {/* Bottom row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          {/* Payments */}
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div className="pd-card-title">Son Ödemeler</div>
+              <Link href="/admin/odemeler" className="pd-btn pd-btn-ghost pd-btn-sm">
+                Tümü
+              </Link>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table className="pd-table">
+                <thead>
+                  <tr>
+                    <th>Öğrenci</th>
+                    <th>Tutar</th>
+                    <th>Durum</th>
+                    <th>Tarih</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentPayments.map((p) => (
+                    <tr key={p.id}>
+                      <td style={{ fontWeight: 500 }}>
+                        {p.student?.fullName ?? "—"}
+                      </td>
+                      <td style={{ fontSize: 13, color: "var(--pd-ink-2)" }}>
+                        {p.packageName ?? "—"}
+                      </td>
+                      <td>
+                        <span
+                          className={
+                            p.status === "PAID"
+                              ? "pd-tag pd-tag-success"
+                              : p.status === "FAILED"
+                              ? "pd-tag pd-tag-danger"
+                              : "pd-tag pd-tag-warning"
+                          }
+                        >
+                          {p.status === "PAID" ? "Ödendi" : p.status === "FAILED" ? "Başarısız" : "Bekliyor"}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: 12, color: "var(--pd-muted)" }}>
+                        {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(
+                          new Date(p.submittedAt)
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          {recentStudents.length === 0 ? (
-            <div className="px-5 py-10 text-center text-sm text-gray-400">
-              Henüz öğrenci kaydı yok
+
+          {/* Teachers + ODK quick stats */}
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div className="pd-card-title">Öğretmen Kadrosu</div>
+              <Link href="/admin/hocalar" className="pd-btn pd-btn-ghost pd-btn-sm">
+                Yönet
+              </Link>
             </div>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {recentStudents.map((student) => {
-                const statusColors: Record<string, string> = {
-                  NEW: "bg-gray-100 text-gray-600",
-                  FOLLOW_UP: "bg-yellow-50 text-yellow-700",
-                  ACTIVE: "bg-emerald-50 text-emerald-700",
-                  AT_RISK: "bg-red-50 text-red-700",
-                  COMPLETED: "bg-blue-50 text-blue-700",
-                  INACTIVE: "bg-gray-100 text-gray-400"
-                };
-                return (
-                  <Link
-                    key={student.id}
-                    href={`/admin/ogrenciler/${student.id}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-[#DCCCAC]/40 flex items-center justify-center shrink-0 text-[#435633] font-semibold text-xs">
-                        {student.fullName.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#091413] truncate">{student.fullName}</p>
-                        <p className="text-xs text-gray-400 truncate">{student.examType ?? student.classLevel ?? "—"}</p>
-                      </div>
-                    </div>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${statusColors[student.status] ?? "bg-gray-100 text-gray-500"}`}>
-                      {studentStatusLabels[student.status]}
-                    </span>
-                  </Link>
-                );
-              })}
+            <div>
+              {teachers.map((t, i) => (
+                <div
+                  key={t.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "11px 16px",
+                    borderBottom: i < teachers.length - 1 ? "1px solid var(--pd-line)" : "none",
+                  }}
+                >
+                  <div className="pd-avatar">{t.fullName[0]}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pd-ink)" }}>{t.fullName}</div>
+                    <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>{t.subjects ?? "—"}</div>
+                  </div>
+                  <span className={t.status === "ACTIVE" ? "pd-tag pd-tag-success" : "pd-tag"}>
+                    {t.status === "ACTIVE" ? "Aktif" : "Pasif"}
+                  </span>
+                </div>
+              ))}
             </div>
-          )}
+            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--pd-line)", background: "var(--pd-bg-subtle)", borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    ODK Aktif Sınavlar
+                  </div>
+                  <div style={{ fontSize: 22, fontWeight: 600, color: "var(--pd-ink)", marginTop: 2 }}>{odkExams}</div>
+                </div>
+                <Link href="/odk/admin/sinavlar" className="pd-btn pd-btn-ghost pd-btn-sm">
+                  ODK Yönet →
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
