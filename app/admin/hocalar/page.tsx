@@ -254,8 +254,7 @@ export default async function HocalarPage({ searchParams }: Props) {
                                         confirmLabel="Hocayı sil"
                                         cancelLabel="Vazgeç"
                                         hiddenFields={[{ name: "teacherId", value: teacher.id }]}
-                                        className="pd-btn pd-btn-sm"
-                                        style={{ background: "var(--pd-bg-elevated)", border: "1px solid #fca5a5", color: "#b42318" }}
+                                        className="pd-btn pd-btn-sm pd-btn-danger"
                                       >
                                         <Trash2 size={13} /> Sil
                                       </ConfirmFormButton>
