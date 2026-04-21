@@ -7,7 +7,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, CreditCard, CalendarDays, Package, GraduationCap,
   FileText, Tent, Trophy, BookOpen, Calendar, User, LogOut, Menu, X,
-  Inbox, BarChart2, FlaskConical, Tag, ClipboardList
+  Inbox, BarChart2, FlaskConical, Tag, ClipboardList, type LucideIcon
 } from "lucide-react";
 
 export type SidebarPersona = "admin" | "student" | "teacher";
@@ -15,7 +15,7 @@ export type SidebarPersona = "admin" | "student" | "teacher";
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  icon: LucideIcon;
   exact?: boolean;
   badge?: number;
 }

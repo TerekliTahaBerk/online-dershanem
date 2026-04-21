@@ -338,10 +338,8 @@ export default async function AdminDashboardPage() {
                       <td style={{ fontWeight: 500 }}>
                         {p.student?.fullName ?? "—"}
                       </td>
-                      <td style={{ fontVariantNumeric: "tabular-nums", fontWeight: 600 }}>
-                        {p.price
-                          ? new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(p.price)
-                          : "—"}
+                      <td style={{ fontSize: 13, color: "var(--pd-ink-2)" }}>
+                        {p.packageName ?? "—"}
                       </td>
                       <td>
                         <span
@@ -391,7 +389,7 @@ export default async function AdminDashboardPage() {
                   <div className="pd-avatar">{t.fullName[0]}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pd-ink)" }}>{t.fullName}</div>
-                    <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>{t.branch ?? "—"}</div>
+                    <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>{t.subjects ?? "—"}</div>
                   </div>
                   <span className={t.status === "ACTIVE" ? "pd-tag pd-tag-success" : "pd-tag"}>
                     {t.status === "ACTIVE" ? "Aktif" : "Pasif"}
