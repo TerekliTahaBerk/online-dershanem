@@ -337,15 +337,16 @@ export default async function FormlarPage({ searchParams }: Props) {
                                 <Link href={buildUrl({ edit: "" })} className="pd-btn pd-btn-ghost pd-btn-sm">
                                   İptal
                                 </Link>
-                                <ConfirmDeleteButton
-                                  action={deleteLeadAction}
-                                  hiddenFields={{ leadId: lead.id, returnTo: buildUrl({ edit: "" }) }}
-                                  message="Bu formu kalıcı olarak silmek istediğinizden emin misiniz?"
-                                  className="pd-btn pd-btn-sm"
-                                  style={{ marginLeft: "auto", background: "var(--pd-bg-elevated)", border: "1px solid #fca5a5", color: "#b42318" }}
-                                >
-                                  Sil
-                                </ConfirmDeleteButton>
+                                <div style={{ marginLeft: "auto" }}>
+                                  <ConfirmDeleteButton
+                                    action={deleteLeadAction}
+                                    hiddenFields={{ leadId: lead.id, returnTo: buildUrl({ edit: "" }) }}
+                                    message="Bu formu kalıcı olarak silmek istediğinizden emin misiniz?"
+                                    className="pd-btn pd-btn-sm pd-btn-danger"
+                                  >
+                                    Sil
+                                  </ConfirmDeleteButton>
+                                </div>
                               </div>
                             </form>
                           </td>
