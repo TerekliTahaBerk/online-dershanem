@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { ExternalLink, BookOpen } from "lucide-react";
+import { BookOpen, ExternalLink } from "lucide-react";
 import { updateLessonNotesAction, completeLessonAction, cancelLessonAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -28,10 +28,10 @@ const tabLabels: Record<Tab, string> = {
   all: "Tümü",
 };
 
-const statusColors: Record<string, string> = {
-  SCHEDULED: "bg-blue-50 text-blue-700",
-  COMPLETED: "bg-emerald-50 text-emerald-700",
-  CANCELLED: "bg-stone-100 text-stone-400 line-through",
+const statusChip: Record<string, { bg: string; color: string }> = {
+  SCHEDULED: { bg: "#dbeafe", color: "#1d4ed8" },
+  COMPLETED: { bg: "var(--pd-accent-soft)", color: "var(--pd-accent)" },
+  CANCELLED: { bg: "var(--pd-bg-subtle)", color: "var(--pd-muted-2)" },
 };
 
 const statusLabels: Record<string, string> = {
@@ -90,194 +90,276 @@ export default async function OgretmenDerslerPage({
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-stone-900">Derslerim</h1>
-        <p className="mt-1 text-sm text-stone-500">{allLessons.length} ders kaydı</p>
+    <>
+      <div className="pd-page-header">
+        <h1 className="pd-page-title">Derslerim</h1>
+        <p className="pd-page-sub">{allLessons.length} ders kaydı</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-stone-100 rounded-xl p-1 w-fit">
-        {(["upcoming", "completed", "cancelled", "all"] as Tab[]).map((t) => (
-          <a
-            key={t}
-            href={`/ogretmen/dersler?tab=${t}`}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === t ? "bg-white text-stone-900 shadow-sm" : "text-stone-500 hover:text-stone-700"
-            }`}
-          >
-            {tabLabels[t]}
-            <span className="ml-1.5 text-xs text-stone-400">{counts[t]}</span>
-          </a>
-        ))}
-      </div>
+      <div className="pd-page-body">
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, background: "var(--pd-bg-subtle)", padding: 4, borderRadius: 12, width: "fit-content", marginBottom: 20 }}>
+          {(["upcoming", "completed", "cancelled", "all"] as Tab[]).map((t) => (
+            <a
+              key={t}
+              href={`/ogretmen/dersler?tab=${t}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 14px",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 500,
+                textDecoration: "none",
+                background: tab === t ? "var(--pd-bg-elevated)" : "transparent",
+                color: tab === t ? "var(--pd-ink)" : "var(--pd-muted)",
+                boxShadow: tab === t ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                transition: "all 120ms ease",
+              }}
+            >
+              {tabLabels[t]}
+              <span style={{ fontSize: 11, color: "var(--pd-muted-2)" }}>{counts[t]}</span>
+            </a>
+          ))}
+        </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-        {filtered.length === 0 ? (
-          <div className="py-16 text-center">
-            <BookOpen className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-            <p className="text-sm text-stone-500">Bu filtrede ders görünmüyor</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-stone-100 bg-stone-50">
-                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Tarih / Saat</th>
-                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Öğrenci</th>
-                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Paket</th>
-                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Süre</th>
-                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Bağlantı</th>
-                  <th className="text-left px-4 py-3 font-semibold text-stone-600">Durum</th>
-                  <th className="text-right px-4 py-3 font-semibold text-stone-600">İşlem</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-50">
-                {filtered.map((lesson) => {
-                  const isEditing = editId === lesson.id;
-                  const isPast = new Date(lesson.scheduledAt) < now;
-                  const isOverdue = isPast && lesson.status === "SCHEDULED";
-
-                  return (
-                    <>
-                      <tr
-                        key={lesson.id}
-                        className={`hover:bg-stone-50 transition-colors ${isEditing ? "bg-emerald-50/30" : ""} ${lesson.status === "CANCELLED" ? "opacity-50" : ""}`}
+        {/* Table card */}
+        <div className="pd-card" style={{ overflow: "hidden" }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: "60px 24px", textAlign: "center" }}>
+              <BookOpen size={28} style={{ color: "var(--pd-muted-2)", margin: "0 auto 10px" }} />
+              <p style={{ fontSize: 13, color: "var(--pd-muted)" }}>Bu filtrede ders görünmüyor</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--pd-line)", background: "var(--pd-bg-subtle)" }}>
+                    {["Tarih / Saat", "Öğrenci", "Paket", "Süre", "Bağlantı", "Durum", ""].map((h, i) => (
+                      <th
+                        key={i}
+                        style={{
+                          padding: "10px 16px",
+                          textAlign: i === 6 ? "right" : "left",
+                          fontWeight: 600,
+                          fontSize: 11,
+                          color: "var(--pd-muted)",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                          whiteSpace: "nowrap",
+                        }}
                       >
-                        <td className="px-4 py-3">
-                          <p className={`font-medium ${isOverdue ? "text-amber-600" : "text-stone-800"}`}>
-                            {fmt.format(new Date(lesson.scheduledAt))}
-                          </p>
-                          <p className="text-xs text-stone-400">
-                            {fmtTime.format(new Date(lesson.scheduledAt))}
-                          </p>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs shrink-0">
-                              {lesson.student.fullName.charAt(0)}
-                            </div>
-                            <span className="font-medium text-stone-900">{lesson.student.fullName}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-stone-500 text-xs">
-                          {lesson.package?.name ?? <span className="text-stone-300">—</span>}
-                        </td>
-                        <td className="px-4 py-3 text-stone-500">{lesson.duration} dk</td>
-                        <td className="px-4 py-3">
-                          {lesson.googleMeetLink ? (
-                            <a
-                              href={lesson.googleMeetLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-lg font-medium hover:bg-emerald-100 transition"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              Meet
-                            </a>
-                          ) : (
-                            <span className="text-stone-300 text-xs">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[lesson.status]}`}>
-                            {statusLabels[lesson.status]}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          {lesson.status === "SCHEDULED" && (
-                            <a
-                              href={`/ogretmen/dersler?tab=${tab}&edit=${isEditing ? "" : lesson.id}`}
-                              className="text-xs text-emerald-700 hover:text-emerald-900 border border-emerald-200 rounded-lg px-2.5 py-1.5 hover:bg-emerald-50 transition font-medium"
-                            >
-                              {isEditing ? "Kapat" : "Düzenle"}
-                            </a>
-                          )}
-                        </td>
-                      </tr>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((lesson) => {
+                    const isEditing = editId === lesson.id;
+                    const isPast = new Date(lesson.scheduledAt) < now;
+                    const isOverdue = isPast && lesson.status === "SCHEDULED";
+                    const chip = statusChip[lesson.status] ?? statusChip.SCHEDULED;
 
-                      {/* Completed notes row */}
-                      {lesson.notes && !isEditing && (
-                        <tr key={`${lesson.id}-notes`} className={lesson.status === "CANCELLED" ? "opacity-50" : ""}>
-                          <td colSpan={7} className="px-4 pb-3 pt-0">
-                            <div className={`rounded-lg px-3 py-2 text-xs ${
-                              lesson.status === "COMPLETED"
-                                ? "bg-amber-50 border border-amber-100 text-amber-800"
-                                : "bg-stone-50 border border-stone-100 text-stone-600"
-                            }`}>
-                              <span className="font-semibold mr-1">Not:</span>
-                              {lesson.notes}
+                    return (
+                      <>
+                        <tr
+                          key={lesson.id}
+                          style={{
+                            borderBottom: "1px solid var(--pd-line)",
+                            background: isEditing ? "var(--pd-accent-soft)" : "transparent",
+                            opacity: lesson.status === "CANCELLED" ? 0.55 : 1,
+                          }}
+                        >
+                          <td style={{ padding: "12px 16px" }}>
+                            <div style={{ fontWeight: 500, color: isOverdue ? "#b45309" : "var(--pd-ink)" }}>
+                              {fmt.format(new Date(lesson.scheduledAt))}
+                            </div>
+                            <div style={{ fontSize: 11, color: "var(--pd-muted)", marginTop: 2 }}>
+                              {fmtTime.format(new Date(lesson.scheduledAt))}
                             </div>
                           </td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div
+                                style={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: "50%",
+                                  background: "var(--pd-accent-soft)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "var(--pd-accent)",
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {lesson.student.fullName.charAt(0)}
+                              </div>
+                              <span style={{ fontWeight: 500, color: "var(--pd-ink)" }}>{lesson.student.fullName}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: "12px 16px", color: "var(--pd-muted)", fontSize: 12 }}>
+                            {lesson.package?.name ?? "—"}
+                          </td>
+                          <td style={{ padding: "12px 16px", color: "var(--pd-muted)" }}>{lesson.duration} dk</td>
+                          <td style={{ padding: "12px 16px" }}>
+                            {lesson.googleMeetLink ? (
+                              <a
+                                href={lesson.googleMeetLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="pd-btn pd-btn-ghost pd-btn-sm"
+                              >
+                                <ExternalLink size={11} /> Meet
+                              </a>
+                            ) : (
+                              <span style={{ color: "var(--pd-muted-2)", fontSize: 12 }}>—</span>
+                            )}
+                          </td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                padding: "3px 10px",
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                background: chip.bg,
+                                color: chip.color,
+                              }}
+                            >
+                              {statusLabels[lesson.status]}
+                            </span>
+                          </td>
+                          <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                            {lesson.status === "SCHEDULED" && (
+                              <a
+                                href={`/ogretmen/dersler?tab=${tab}&edit=${isEditing ? "" : lesson.id}`}
+                                className="pd-btn pd-btn-ghost pd-btn-sm"
+                              >
+                                {isEditing ? "Kapat" : "Düzenle"}
+                              </a>
+                            )}
+                          </td>
                         </tr>
-                      )}
 
-                      {/* Inline edit panel */}
-                      {isEditing && (
-                        <tr key={`${lesson.id}-edit`}>
-                          <td colSpan={7} className="px-4 py-4 bg-stone-50 border-b border-stone-100">
-                            <div className="space-y-4">
-                              {/* Notes */}
-                              <form action={updateLessonNotesAction} className="space-y-2">
-                                <input type="hidden" name="lessonId" value={lesson.id} />
-                                <input type="hidden" name="tab" value={tab} />
-                                <label className="block text-xs font-semibold text-stone-700">Ders Notu</label>
-                                <div className="flex gap-2">
-                                  <textarea
-                                    name="notes"
-                                    rows={2}
-                                    defaultValue={lesson.notes ?? ""}
-                                    placeholder="Öğrenciyle paylaşılacak kısa not"
-                                    className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-                                  />
-                                  <button type="submit" className="shrink-0 text-xs bg-stone-200 hover:bg-stone-300 text-stone-700 px-3 py-2 rounded-lg font-medium transition self-end">
-                                    Kaydet
-                                  </button>
-                                </div>
-                              </form>
+                        {lesson.notes && !isEditing && (
+                          <tr key={`${lesson.id}-notes`} style={{ opacity: lesson.status === "CANCELLED" ? 0.55 : 1 }}>
+                            <td colSpan={7} style={{ padding: "0 16px 12px" }}>
+                              <div
+                                style={{
+                                  borderRadius: 8,
+                                  padding: "8px 12px",
+                                  fontSize: 12,
+                                  background: lesson.status === "COMPLETED" ? "#fffbeb" : "var(--pd-bg-subtle)",
+                                  border: `1px solid ${lesson.status === "COMPLETED" ? "#fde68a" : "var(--pd-line)"}`,
+                                  color: lesson.status === "COMPLETED" ? "#92400e" : "var(--pd-muted)",
+                                }}
+                              >
+                                <span style={{ fontWeight: 600, marginRight: 4 }}>Not:</span>
+                                {lesson.notes}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
 
-                              {/* Mark complete */}
-                              {isPast && (
-                                <form action={completeLessonAction} className="space-y-2">
+                        {isEditing && (
+                          <tr key={`${lesson.id}-edit`}>
+                            <td
+                              colSpan={7}
+                              style={{
+                                padding: "16px",
+                                background: "var(--pd-bg-subtle)",
+                                borderBottom: "1px solid var(--pd-line)",
+                              }}
+                            >
+                              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                <form action={updateLessonNotesAction} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                   <input type="hidden" name="lessonId" value={lesson.id} />
                                   <input type="hidden" name="tab" value={tab} />
-                                  <div className="flex gap-2">
+                                  <label style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                    Ders Notu
+                                  </label>
+                                  <div style={{ display: "flex", gap: 8 }}>
                                     <textarea
                                       name="notes"
                                       rows={2}
                                       defaultValue={lesson.notes ?? ""}
-                                      placeholder="Kapanış notu ekleyebilirsiniz"
-                                      className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                                      placeholder="Öğrenciyle paylaşılacak kısa not"
+                                      style={{
+                                        flex: 1,
+                                        borderRadius: 8,
+                                        border: "1px solid var(--pd-line)",
+                                        padding: "8px 12px",
+                                        fontSize: 13,
+                                        color: "var(--pd-ink)",
+                                        background: "var(--pd-bg-elevated)",
+                                        outline: "none",
+                                        resize: "none",
+                                      }}
                                     />
-                                    <button type="submit" className="shrink-0 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg font-semibold transition self-end">
-                                      Dersi Tamamla
+                                    <button type="submit" className="pd-btn pd-btn-ghost pd-btn-sm" style={{ alignSelf: "flex-end" }}>
+                                      Kaydet
                                     </button>
                                   </div>
                                 </form>
-                              )}
 
-                              {/* Cancel */}
-                              <form action={cancelLessonAction}>
-                                <input type="hidden" name="lessonId" value={lesson.id} />
-                                <input type="hidden" name="tab" value={tab} />
-                                <button type="submit" className="text-xs text-red-500 hover:text-red-700 font-medium transition">
-                                  Dersi iptal et
-                                </button>
-                              </form>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                                {isPast && (
+                                  <form action={completeLessonAction}>
+                                    <input type="hidden" name="lessonId" value={lesson.id} />
+                                    <input type="hidden" name="tab" value={tab} />
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                      <textarea
+                                        name="notes"
+                                        rows={2}
+                                        defaultValue={lesson.notes ?? ""}
+                                        placeholder="Kapanış notu ekleyebilirsiniz"
+                                        style={{
+                                          flex: 1,
+                                          borderRadius: 8,
+                                          border: "1px solid var(--pd-line)",
+                                          padding: "8px 12px",
+                                          fontSize: 13,
+                                          color: "var(--pd-ink)",
+                                          background: "var(--pd-bg-elevated)",
+                                          outline: "none",
+                                          resize: "none",
+                                        }}
+                                      />
+                                      <button type="submit" className="pd-btn pd-btn-accent pd-btn-sm" style={{ alignSelf: "flex-end" }}>
+                                        Dersi Tamamla
+                                      </button>
+                                    </div>
+                                  </form>
+                                )}
+
+                                <form action={cancelLessonAction}>
+                                  <input type="hidden" name="lessonId" value={lesson.id} />
+                                  <input type="hidden" name="tab" value={tab} />
+                                  <button
+                                    type="submit"
+                                    style={{ fontSize: 12, color: "#dc2626", background: "none", border: "none", cursor: "pointer", fontWeight: 500 }}
+                                  >
+                                    Dersi iptal et
+                                  </button>
+                                </form>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

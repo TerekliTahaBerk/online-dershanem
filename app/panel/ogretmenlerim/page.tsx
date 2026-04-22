@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { BookOpen, CalendarDays, CheckCircle, Clock, User } from "lucide-react";
+import { BookOpen, CalendarDays, CheckCircle, Clock, User, Video } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -52,7 +52,6 @@ export default async function PanelOgretmenlerimPage() {
   const lessons = student.lessons as unknown as LessonWithTeacher[];
   const now = new Date();
 
-  // Collect unique teachers with stats
   const teacherMap = new Map<
     string,
     {
@@ -93,146 +92,174 @@ export default async function PanelOgretmenlerimPage() {
   }
 
   const teachers = Array.from(teacherMap.values()).sort((a, b) => {
-    // Active teachers (with upcoming lessons) first
     if (a.nextLesson && !b.nextLesson) return -1;
     if (!a.nextLesson && b.nextLesson) return 1;
     return b.totalLessons - a.totalLessons;
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-stone-900">Öğretmenlerim</h1>
-        <p className="mt-1 text-sm text-stone-500">
+    <>
+      <div className="pd-page-header">
+        <h1 className="pd-page-title">Öğretmenlerim</h1>
+        <p className="pd-page-sub">
           {teachers.length} öğretmen · ders programınıza göre atanmış
         </p>
       </div>
 
-      {teachers.length === 0 ? (
-        <div className="rounded-xl bg-white border border-stone-200 py-16 text-center">
-          <User className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Öğretmen eşleşmeniz yakında paylaşılacak</p>
-          <p className="text-xs text-stone-400 mt-1">İlk dersiniz planlandığında burada yer alacak.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {teachers.map(({ teacher, totalLessons, completedLessons, nextLesson, lastLesson }) => {
-            const subjects = teacher.subjects.split(",").map((s) => s.trim()).filter(Boolean);
-            const initials = teacher.fullName
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .slice(0, 2)
-              .toUpperCase();
-            const isActive = !!nextLesson;
+      <div className="pd-page-body">
+        {teachers.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 24px",
+              background: "var(--pd-bg-elevated)",
+              border: "1px solid var(--pd-line)",
+              borderRadius: 16,
+            }}
+          >
+            <User size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
+            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Öğretmen eşleşmeniz yakında paylaşılacak</p>
+            <p style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 4 }}>İlk dersiniz planlandığında burada yer alacak.</p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {teachers.map(({ teacher, totalLessons, completedLessons, nextLesson, lastLesson }) => {
+              const subjects = teacher.subjects.split(",").map((s: string) => s.trim()).filter(Boolean);
+              const initials = teacher.fullName
+                .split(" ")
+                .map((n: string) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
+              const isActive = !!nextLesson;
 
-            return (
-              <div key={teacher.id} className="rounded-xl bg-white border border-stone-200 overflow-hidden">
-                {/* Header */}
-                <div className="p-5 flex items-start gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-600 flex items-center justify-center text-white text-lg font-bold shrink-0">
-                    {initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div>
-                        <h2 className="text-base font-semibold text-stone-900">{teacher.fullName}</h2>
-                        {isActive && (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5 mt-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                            Aktif
-                          </span>
-                        )}
-                      </div>
-                      {/* Stats */}
-                      <div className="flex items-center gap-4 text-center shrink-0">
-                        <div>
-                          <p className="text-lg font-bold text-stone-900">{totalLessons}</p>
-                          <p className="text-xs text-stone-400">Toplam</p>
-                        </div>
-                        <div>
-                          <p className="text-lg font-bold text-emerald-700">{completedLessons}</p>
-                          <p className="text-xs text-stone-400">Tamamlanan</p>
-                        </div>
-                      </div>
+              return (
+                <div key={teacher.id} className="pd-card" style={{ overflow: "hidden" }}>
+                  <div style={{ padding: 20, display: "flex", alignItems: "flex-start", gap: 16 }}>
+                    <div
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: 14,
+                        background: "var(--pd-accent)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        fontSize: 17,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {initials}
                     </div>
-
-                    {/* Subjects */}
-                    {subjects.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {subjects.map((s) => (
-                          <span
-                            key={s}
-                            className="inline-flex items-center gap-1 text-xs bg-stone-100 text-stone-600 rounded-full px-2.5 py-0.5"
-                          >
-                            <BookOpen className="w-3 h-3" />
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Bio */}
-                    {teacher.bio && (
-                      <p className="mt-3 text-sm text-stone-500 leading-relaxed">{teacher.bio}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Next / Last lesson */}
-                {(nextLesson || lastLesson) && (
-                  <div className="border-t border-stone-100 divide-y divide-stone-100">
-                    {nextLesson && (
-                      <div className="px-5 py-3 flex items-center justify-between gap-4 bg-emerald-50/50">
-                        <div className="flex items-center gap-3">
-                          <CalendarDays className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                        <div>
+                          <div style={{ fontSize: 15, fontWeight: 600, color: "var(--pd-ink)" }}>{teacher.fullName}</div>
+                          {isActive && (
+                            <span className="pd-chip pd-chip-accent" style={{ marginTop: 6, display: "inline-flex" }}>
+                              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--pd-accent)", display: "inline-block" }} />
+                              Aktif
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ display: "flex", gap: 20, textAlign: "center", flexShrink: 0 }}>
                           <div>
-                            <p className="text-xs font-semibold text-emerald-700">Sıradaki Ders</p>
-                            <p className="text-xs text-stone-600 mt-0.5">
-                              {new Intl.DateTimeFormat("tr-TR", {
-                                day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
-                              }).format(new Date(nextLesson.scheduledAt))}
-                              {" · "}{nextLesson.duration} dk
-                              {nextLesson.package ? ` · ${nextLesson.package.name}` : ""}
-                            </p>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pd-ink)" }}>{totalLessons}</div>
+                            <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>Toplam</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pd-accent)" }}>{completedLessons}</div>
+                            <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>Tamamlanan</div>
                           </div>
                         </div>
-                        {nextLesson.googleMeetLink && (
-                          <a
-                            href={nextLesson.googleMeetLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0 text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"
-                          >
-                            <Clock className="w-3 h-3" />
-                            Katıl
-                          </a>
-                        )}
                       </div>
-                    )}
-                    {lastLesson && (
-                      <div className="px-5 py-3 flex items-center gap-3">
-                        <CheckCircle className="w-4 h-4 text-stone-400 shrink-0" />
-                        <div>
-                          <p className="text-xs font-semibold text-stone-500">Son İşlenen Ders</p>
-                          <p className="text-xs text-stone-400 mt-0.5">
-                            {new Intl.DateTimeFormat("tr-TR", {
-                              day: "numeric", month: "long", year: "numeric",
-                            }).format(new Date(lastLesson.scheduledAt))}
-                            {lastLesson.notes && (
-                              <span className="italic"> · "{lastLesson.notes}"</span>
-                            )}
-                          </p>
+
+                      {subjects.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
+                          {subjects.map((s: string) => (
+                            <span key={s} className="pd-chip" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                              <BookOpen size={10} /> {s}
+                            </span>
+                          ))}
                         </div>
-                      </div>
-                    )}
+                      )}
+
+                      {teacher.bio && (
+                        <p style={{ marginTop: 10, fontSize: 13, color: "var(--pd-muted)", lineHeight: 1.55 }}>{teacher.bio}</p>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+
+                  {(nextLesson || lastLesson) && (
+                    <div style={{ borderTop: "1px solid var(--pd-line)" }}>
+                      {nextLesson && (
+                        <div
+                          style={{
+                            padding: "12px 20px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 16,
+                            background: "var(--pd-accent-soft)",
+                            borderBottom: lastLesson ? "1px solid var(--pd-line)" : undefined,
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <CalendarDays size={14} style={{ color: "var(--pd-accent)", flexShrink: 0 }} />
+                            <div>
+                              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-accent)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                Sıradaki Ders
+                              </div>
+                              <div style={{ fontSize: 12, color: "var(--pd-ink-2)", marginTop: 2 }}>
+                                {new Intl.DateTimeFormat("tr-TR", {
+                                  day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
+                                }).format(new Date(nextLesson.scheduledAt))}
+                                {" · "}{nextLesson.duration} dk
+                                {nextLesson.package ? ` · ${nextLesson.package.name}` : ""}
+                              </div>
+                            </div>
+                          </div>
+                          {nextLesson.googleMeetLink && (
+                            <a
+                              href={nextLesson.googleMeetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="pd-btn pd-btn-accent pd-btn-sm"
+                              style={{ flexShrink: 0 }}
+                            >
+                              <Video size={12} /> Katıl
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      {lastLesson && (
+                        <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 10 }}>
+                          <CheckCircle size={14} style={{ color: "var(--pd-muted-2)", flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                              Son İşlenen Ders
+                            </div>
+                            <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 2 }}>
+                              {new Intl.DateTimeFormat("tr-TR", {
+                                day: "numeric", month: "long", year: "numeric",
+                              }).format(new Date(lastLesson.scheduledAt))}
+                              {lastLesson.notes && (
+                                <span style={{ fontStyle: "italic" }}> · "{lastLesson.notes}"</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
