@@ -14,10 +14,10 @@ import {
   purchaseStatusLabels
 } from "@/lib/admin";
 import { updateStudentAction, updateStudentInfoAction } from "@/app/admin/actions";
-import { createStudentAccountAction, deleteStudentAction } from "@/app/admin/ogrenciler/actions";
+import { createStudentAccountAction, deleteStudentAction, assignPackageToStudentAction, removePackageFromStudentAction } from "@/app/admin/ogrenciler/actions";
 import {
   User, Phone, Mail, MapPin, School, BookOpen, Target, CalendarDays,
-  ExternalLink, ChevronLeft, Plus, MessageCircle, KeyRound, CheckCircle
+  ExternalLink, ChevronLeft, Plus, MessageCircle, KeyRound, CheckCircle, Package, X
 } from "lucide-react";
 
 type StudentFull = Prisma.StudentGetPayload<{
@@ -31,6 +31,7 @@ type StudentFull = Prisma.StudentGetPayload<{
     };
     purchaseIntents: { include: { events: { take: 2 } } };
     leadSubmissions: true;
+    packages: { include: { package: true } };
   };
 }>;
 
@@ -60,26 +61,36 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
   const updated = sp?.updated ?? "";
   const activeTab = sp?.tab ?? "dersler";
 
-  const student = await prisma.student.findUnique({
-    where: { id },
-    include: {
-      user: { select: { email: true } },
-      lessons: {
-        include: {
-          teacher: { select: { id: true, fullName: true } },
-          package: { select: { name: true } }
+  const [student, allPackages] = await Promise.all([
+    prisma.student.findUnique({
+      where: { id },
+      include: {
+        user: { select: { email: true } },
+        lessons: {
+          include: {
+            teacher: { select: { id: true, fullName: true } },
+            package: { select: { name: true } }
+          },
+          orderBy: { scheduledAt: "desc" }
         },
-        orderBy: { scheduledAt: "desc" }
-      },
-      purchaseIntents: {
-        include: { events: { orderBy: { createdAt: "desc" }, take: 2 } },
-        orderBy: { submittedAt: "desc" }
-      },
-      leadSubmissions: { orderBy: { submittedAt: "desc" } }
-    }
-  }) as unknown as StudentFull | null;
+        purchaseIntents: {
+          include: { events: { orderBy: { createdAt: "desc" }, take: 2 } },
+          orderBy: { submittedAt: "desc" }
+        },
+        leadSubmissions: { orderBy: { submittedAt: "desc" } },
+        packages: { include: { package: true } }
+      }
+    }),
+    prisma.package.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, subjects: true }
+    })
+  ]);
 
   if (!student) notFound();
+
+  const assignedPackageIds = new Set((student as unknown as StudentFull).packages.map((sp) => sp.package.id));
 
   const waLink = buildWhatsAppLink(student.phone);
   const completedLessons = student.lessons.filter((l) => l.status === "COMPLETED").length;
@@ -92,6 +103,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
     { id: "dersler", label: "Dersler", count: student.lessons.length },
     { id: "odemeler", label: "Ödemeler", count: student.purchaseIntents.length },
     { id: "formlar", label: "Formlar", count: student.leadSubmissions.length },
+    { id: "paketler", label: "Paketler", count: (student as unknown as StudentFull).packages.length },
     { id: "profil", label: "Profil & Düzenle", count: null }
   ];
 
@@ -418,6 +430,84 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === "paketler" && (
+        <div className="space-y-5">
+          {/* Assign new package */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Package size={16} className="text-[#546B41]" />
+              <h2 className="font-semibold text-[#091413]">Paket Ata</h2>
+            </div>
+            {allPackages.filter((p) => !assignedPackageIds.has(p.id)).length === 0 ? (
+              <p className="text-sm text-gray-400">Atanabilecek başka paket yok.</p>
+            ) : (
+              <form action={assignPackageToStudentAction} className="flex items-end gap-3">
+                <input type="hidden" name="studentId" value={student.id} />
+                <div className="flex-1">
+                  <label className="text-xs font-medium text-gray-600 block mb-1.5">Paket Seçin</label>
+                  <select
+                    name="packageId"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                  >
+                    {allPackages
+                      .filter((p) => !assignedPackageIds.has(p.id))
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} {p.subjects ? `· ${p.subjects}` : ""}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+                >
+                  <Plus size={14} /> Ata
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Assigned packages list */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100">
+              <h2 className="font-semibold text-[#091413]">Tanımlı Paketler</h2>
+            </div>
+            {(student as unknown as StudentFull).packages.length === 0 ? (
+              <div className="py-12 text-center text-gray-400 text-sm">
+                Bu öğrenciye henüz paket atanmamış.
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {(student as unknown as StudentFull).packages.map((sp) => (
+                  <div key={sp.package.id} className="flex items-center justify-between px-5 py-3.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-[#DCCCAC]/30 flex items-center justify-center shrink-0">
+                        <Package size={14} className="text-[#546B41]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-800">{sp.package.name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{sp.package.subjects}</p>
+                      </div>
+                    </div>
+                    <form action={removePackageFromStudentAction}>
+                      <input type="hidden" name="studentId" value={student.id} />
+                      <input type="hidden" name="packageId" value={sp.package.id} />
+                      <button
+                        type="submit"
+                        className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 border border-red-200 rounded-lg px-2.5 py-1.5 hover:bg-red-50 transition-colors"
+                      >
+                        <X size={11} /> Kaldır
+                      </button>
+                    </form>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

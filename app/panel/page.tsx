@@ -17,6 +17,7 @@ type UserWithStudent = Prisma.UserGetPayload<{
       include: {
         lessons: { include: { teacher: true; package: true } };
         purchaseIntents: true;
+        packages: true;
       };
     };
   };
@@ -49,6 +50,7 @@ export default async function PanelDashboardPage() {
             orderBy: { scheduledAt: "asc" },
           },
           purchaseIntents: { orderBy: { submittedAt: "desc" }, take: 3 },
+          packages: true,
         },
       },
     },
@@ -375,7 +377,7 @@ export default async function PanelDashboardPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
           {[
             { href: "/panel/dersler", label: "Derslerim", sub: `${total} ders`, icon: "📚" },
-            { href: "/panel/odemeler", label: "Ödemelerim", sub: student.activePackage ?? "Paket yok", icon: "💳" },
+            { href: "/panel/paketler", label: "Paketlerim", sub: (student as any).packages?.length ? `${(student as any).packages.length} paket` : "Paket yok", icon: "📦" },
             { href: "/panel/profil", label: "Profilim", sub: student.examType ?? "Bilgi güncelle", icon: "👤" },
           ].map((item) => (
             <Link

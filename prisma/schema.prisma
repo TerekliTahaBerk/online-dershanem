@@ -186,6 +186,7 @@ model Student {
   leadSubmissions  LeadSubmission[]
   purchaseIntents  PurchaseIntent[]
   lessons          Lesson[]
+  packages         StudentPackage[]
 
   @@index([status, updatedAt])
 }
@@ -242,19 +243,31 @@ model Teacher {
 }
 
 model Package {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Int
-  paytrLink   String?
-  lessonCount Int
-  subjects    String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  lessons     Lesson[]
+  id              String           @id @default(cuid())
+  name            String
+  description     String?
+  price           Int
+  paytrLink       String?
+  lessonCount     Int
+  subjects        String
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  lessons         Lesson[]
+  studentPackages StudentPackage[]
 
   @@index([isActive])
+}
+
+model StudentPackage {
+  studentId  String
+  packageId  String
+  assignedAt DateTime @default(now())
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, packageId])
+  @@index([packageId])
 }
 
 model Camp {

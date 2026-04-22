@@ -139,3 +139,29 @@ export async function deleteStudentAction(formData: FormData) {
   revalidatePath("/admin");
   redirect("/admin/ogrenciler?updated=deleted");
 }
+
+export async function assignPackageToStudentAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  if (!studentId || !packageId) return;
+
+  await prisma.studentPackage.upsert({
+    where: { studentId_packageId: { studentId, packageId } },
+    create: { studentId, packageId },
+    update: {},
+  });
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+}
+
+export async function removePackageFromStudentAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  if (!studentId || !packageId) return;
+
+  await prisma.studentPackage.delete({
+    where: { studentId_packageId: { studentId, packageId } },
+  }).catch(() => {});
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+}
