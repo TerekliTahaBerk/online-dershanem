@@ -8,7 +8,7 @@ import { changePasswordAction, updateStudentProfileAction } from "@/app/panel/ac
 export const dynamic = "force-dynamic";
 
 type UserWithStudent = Prisma.UserGetPayload<{
-  include: { student: true };
+  include: { student: { include: { packages: { include: { package: true } } } } };
 }>;
 
 type Props = { searchParams?: Promise<{ error?: string; success?: string }> };
@@ -62,7 +62,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: { student: true },
+    include: { student: { include: { packages: { include: { package: true } } } } },
   }) as unknown as UserWithStudent | null;
 
   const student = user?.student;
@@ -96,10 +96,14 @@ export default async function PanelProfilPage({ searchParams }: Props) {
             <div>
               <div style={{ fontSize: 17, fontWeight: 600, color: "var(--pd-ink)" }}>{student.fullName}</div>
               {user?.email && <div style={{ fontSize: 13, color: "var(--pd-muted)", marginTop: 3 }}>{user.email}</div>}
-              {student.activePackage && (
-                <span className="pd-chip pd-chip-accent" style={{ display: "inline-flex", marginTop: 8 }}>
-                  <BookOpen size={11} /> {student.activePackage}
-                </span>
+              {student.packages.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                  {student.packages.map((sp: { package: { id: string; name: string } }) => (
+                    <span key={sp.package.id} className="pd-chip pd-chip-accent" style={{ display: "inline-flex" }}>
+                      <BookOpen size={11} /> {sp.package.name}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           </div>

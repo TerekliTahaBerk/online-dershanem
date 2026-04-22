@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { Users, ExternalLink } from "lucide-react";
+import { Users, Video } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -44,12 +44,10 @@ export default async function OgretmenOgrencilerimPage() {
 
   const now = new Date();
 
-  // Build a map of students
   const studentMap = new Map<
     string,
     {
       student: (typeof teacher.lessons)[0]["student"];
-      lessons: typeof teacher.lessons;
       totalLessons: number;
       completedLessons: number;
       nextLesson: (typeof teacher.lessons)[0] | null;
@@ -63,7 +61,6 @@ export default async function OgretmenOgrencilerimPage() {
     if (!studentMap.has(sid)) {
       studentMap.set(sid, {
         student: lesson.student,
-        lessons: [],
         totalLessons: 0,
         completedLessons: 0,
         nextLesson: null,
@@ -72,7 +69,6 @@ export default async function OgretmenOgrencilerimPage() {
       });
     }
     const entry = studentMap.get(sid)!;
-    entry.lessons.push(lesson);
     entry.totalLessons++;
     if (lesson.status === "COMPLETED") entry.completedLessons++;
     if (lesson.package) entry.packages.add(lesson.package.name);
@@ -92,146 +88,192 @@ export default async function OgretmenOgrencilerimPage() {
   }
 
   const students = Array.from(studentMap.values()).sort((a, b) => {
-    // Active students first
     if (a.nextLesson && !b.nextLesson) return -1;
     if (!a.nextLesson && b.nextLesson) return 1;
     return a.student.fullName.localeCompare(b.student.fullName, "tr");
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-stone-900">Öğrencilerim</h1>
-        <p className="mt-1 text-sm text-stone-500">{students.length} öğrenci</p>
+    <>
+      <div className="pd-page-header">
+        <h1 className="pd-page-title">Öğrencilerim</h1>
+        <p className="pd-page-sub">{students.length} öğrenci</p>
       </div>
 
-      {students.length === 0 ? (
-        <div className="rounded-xl border border-stone-200 bg-white py-16 text-center">
-          <Users className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm text-stone-500">Henüz öğrenciniz bulunmuyor</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {students.map(({ student, totalLessons, completedLessons, nextLesson, lastLesson, packages }) => (
-            <div key={student.id} className="bg-white rounded-xl border border-stone-200 p-5">
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-lg shrink-0">
-                  {student.fullName.charAt(0)}
-                </div>
+      <div className="pd-page-body">
+        {students.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 24px",
+              background: "var(--pd-bg-elevated)",
+              border: "1px solid var(--pd-line)",
+              borderRadius: 16,
+            }}
+          >
+            <Users size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
+            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Henüz öğrenciniz bulunmuyor</p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {students.map(({ student, totalLessons, completedLessons, nextLesson, lastLesson, packages }) => {
+              const initials = student.fullName
+                .split(" ")
+                .map((n: string) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase();
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-base font-semibold text-stone-900">{student.fullName}</h2>
-                    {nextLesson && (
-                      <span className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
-                        Aktif
-                      </span>
-                    )}
-                  </div>
+              return (
+                <div key={student.id} className="pd-card" style={{ overflow: "hidden" }}>
+                  <div style={{ padding: 20, display: "flex", alignItems: "flex-start", gap: 16 }}>
+                    <div
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 14,
+                        background: "var(--pd-accent)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        fontSize: 16,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {initials}
+                    </div>
 
-                  {/* Contact + metadata */}
-                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-stone-400">
-                    {student.phone && <span>{student.phone}</span>}
-                    {student.email && <span>{student.email}</span>}
-                    {student.classLevel && <span className="font-medium text-stone-600">{student.classLevel}</span>}
-                    {student.examType && <span className="font-medium text-stone-600">{student.examType}</span>}
-                  </div>
-
-                  {/* Academic profile */}
-                  {(student.targetGoal || student.weakLessons || student.strongLessons) && (
-                    <div className="mt-2 grid sm:grid-cols-3 gap-2">
-                      {student.targetGoal && (
-                        <div className="rounded-lg bg-blue-50 border border-blue-100 px-2.5 py-1.5">
-                          <p className="text-xs font-semibold text-blue-600 mb-0.5">Hedef</p>
-                          <p className="text-xs text-blue-800 truncate">{student.targetGoal}</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--pd-ink)" }}>{student.fullName}</div>
+                            {nextLesson && (
+                              <span className="pd-chip pd-chip-accent" style={{ display: "inline-flex" }}>
+                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--pd-accent)", display: "inline-block" }} />
+                                Aktif
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: "2px 12px", fontSize: 12, color: "var(--pd-muted)" }}>
+                            {student.phone && <span>{student.phone}</span>}
+                            {(student as { classLevel?: string }).classLevel && (
+                              <span style={{ color: "var(--pd-ink-2)", fontWeight: 500 }}>{(student as { classLevel?: string }).classLevel}</span>
+                            )}
+                            {(student as { examType?: string }).examType && (
+                              <span style={{ color: "var(--pd-ink-2)", fontWeight: 500 }}>{(student as { examType?: string }).examType}</span>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      {student.weakLessons && (
-                        <div className="rounded-lg bg-red-50 border border-red-100 px-2.5 py-1.5">
-                          <p className="text-xs font-semibold text-red-600 mb-0.5">Geliştirilmesi Gereken Dersler</p>
-                          <p className="text-xs text-red-800 line-clamp-2">{student.weakLessons}</p>
+
+                        <div style={{ display: "flex", gap: 20, textAlign: "center", flexShrink: 0 }}>
+                          <div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pd-ink)" }}>{totalLessons}</div>
+                            <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>Toplam</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pd-accent)" }}>{completedLessons}</div>
+                            <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>Tamamlanan</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pd-ink-2)" }}>{totalLessons - completedLessons}</div>
+                            <div style={{ fontSize: 11, color: "var(--pd-muted)" }}>Kalan</div>
+                          </div>
                         </div>
-                      )}
-                      {student.strongLessons && (
-                        <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-2.5 py-1.5">
-                          <p className="text-xs font-semibold text-emerald-600 mb-0.5">Güçlü Dersler</p>
-                          <p className="text-xs text-emerald-800 line-clamp-2">{student.strongLessons}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Packages */}
-                  {packages.size > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {Array.from(packages).map((pkg) => (
-                        <span key={pkg} className="inline-flex text-xs font-medium px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                          {pkg}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Stats */}
-                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="rounded-lg bg-stone-50 px-3 py-2">
-                      <p className="text-xs text-stone-500">Toplam Ders</p>
-                      <p className="text-lg font-bold text-stone-900">{totalLessons}</p>
-                    </div>
-                    <div className="rounded-lg bg-stone-50 px-3 py-2">
-                      <p className="text-xs text-stone-500">Tamamlanan</p>
-                      <p className="text-lg font-bold text-emerald-600">{completedLessons}</p>
-                    </div>
-                    <div className="rounded-lg bg-stone-50 px-3 py-2">
-                      <p className="text-xs text-stone-500">Kalan</p>
-                      <p className="text-lg font-bold text-stone-900">{totalLessons - completedLessons}</p>
-                    </div>
-                  </div>
-
-                  {/* Next lesson */}
-                  {nextLesson && (
-                    <div className="mt-3 flex items-center justify-between rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2">
-                      <div>
-                        <p className="text-xs font-semibold text-emerald-700">Sıradaki Ders</p>
-                        <p className="text-xs text-emerald-600 mt-0.5">
-                          {fmt.format(new Date(nextLesson.scheduledAt))} · {fmtTime.format(new Date(nextLesson.scheduledAt))} · {nextLesson.duration} dk
-                        </p>
                       </div>
-                      {nextLesson.googleMeetLink && (
-                        <a
-                          href={nextLesson.googleMeetLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg font-medium hover:bg-emerald-700 transition"
+
+                      {/* Academic profile */}
+                      {((student as { targetGoal?: string }).targetGoal || (student as { weakLessons?: string }).weakLessons || (student as { strongLessons?: string }).strongLessons) && (
+                        <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8 }}>
+                          {(student as { targetGoal?: string }).targetGoal && (
+                            <div style={{ borderRadius: 8, background: "#dbeafe", border: "1px solid #bfdbfe", padding: "8px 12px" }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: "#1d4ed8", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>Hedef</div>
+                              <div style={{ fontSize: 12, color: "#1e40af" }}>{(student as { targetGoal?: string }).targetGoal}</div>
+                            </div>
+                          )}
+                          {(student as { weakLessons?: string }).weakLessons && (
+                            <div style={{ borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca", padding: "8px 12px" }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>Zayıf Dersler</div>
+                              <div style={{ fontSize: 12, color: "#991b1b" }}>{(student as { weakLessons?: string }).weakLessons}</div>
+                            </div>
+                          )}
+                          {(student as { strongLessons?: string }).strongLessons && (
+                            <div style={{ borderRadius: 8, background: "var(--pd-accent-soft)", border: "1px solid var(--pd-line)", padding: "8px 12px" }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: "var(--pd-accent)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>Güçlü Dersler</div>
+                              <div style={{ fontSize: 12, color: "var(--pd-ink-2)" }}>{(student as { strongLessons?: string }).strongLessons}</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {packages.size > 0 && (
+                        <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {Array.from(packages).map((pkg) => (
+                            <span key={pkg} className="pd-chip">{pkg}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {(nextLesson || lastLesson) && (
+                    <div style={{ borderTop: "1px solid var(--pd-line)" }}>
+                      {nextLesson && (
+                        <div
+                          style={{
+                            padding: "12px 20px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 16,
+                            background: "var(--pd-accent-soft)",
+                            borderBottom: lastLesson ? "1px solid var(--pd-line)" : undefined,
+                          }}
                         >
-                          <ExternalLink className="w-3 h-3" />
-                          Bağlan
-                        </a>
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--pd-accent)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                              Sıradaki Ders
+                            </div>
+                            <div style={{ fontSize: 12, color: "var(--pd-ink-2)", marginTop: 2 }}>
+                              {fmt.format(new Date(nextLesson.scheduledAt))} · {fmtTime.format(new Date(nextLesson.scheduledAt))} · {nextLesson.duration} dk
+                            </div>
+                          </div>
+                          {nextLesson.googleMeetLink && (
+                            <a
+                              href={nextLesson.googleMeetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="pd-btn pd-btn-accent pd-btn-sm"
+                              style={{ flexShrink: 0 }}
+                            >
+                              <Video size={12} /> Bağlan
+                            </a>
+                          )}
+                        </div>
+                      )}
+                      {lastLesson && (
+                        <div style={{ padding: "10px 20px", fontSize: 12, color: "var(--pd-muted)" }}>
+                          Son işlenen ders:{" "}
+                          <span style={{ color: "var(--pd-ink-2)", fontWeight: 500 }}>
+                            {fmt.format(new Date(lastLesson.scheduledAt))}
+                          </span>
+                          {lastLesson.notes && (
+                            <span style={{ fontStyle: "italic" }}>
+                              {" "}— {lastLesson.notes.slice(0, 60)}{lastLesson.notes.length > 60 ? "…" : ""}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
-
-                  {/* Last completed lesson */}
-                  {lastLesson && (
-                    <div className="mt-2">
-                      <p className="text-xs text-stone-400">
-                        Son işlenen ders:{" "}
-                        <span className="text-stone-600 font-medium">
-                          {fmt.format(new Date(lastLesson.scheduledAt))}
-                        </span>
-                        {lastLesson.notes && (
-                          <span className="ml-1 italic text-stone-400">— {lastLesson.notes.slice(0, 60)}{lastLesson.notes.length > 60 ? "…" : ""}</span>
-                        )}
-                      </p>
-                    </div>
-                  )}
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

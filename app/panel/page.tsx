@@ -374,10 +374,11 @@ export default async function PanelDashboardPage() {
         </div>
 
         {/* Quick links */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           {[
             { href: "/panel/dersler", label: "Derslerim", sub: `${total} ders`, icon: "📚" },
-            { href: "/panel/paketler", label: "Paketlerim", sub: (student as any).packages?.length ? `${(student as any).packages.length} paket` : "Paket yok", icon: "📦" },
+            { href: "/panel/paketler", label: "Paketlerim", sub: student.packages.length > 0 ? `${student.packages.length} paket` : "Paket yok", icon: "📦" },
+            { href: "/panel/odemeler", label: "Ödemelerim", sub: `${student.purchaseIntents.length} kayıt`, icon: "💳" },
             { href: "/panel/profil", label: "Profilim", sub: student.examType ?? "Bilgi güncelle", icon: "👤" },
           ].map((item) => (
             <Link
