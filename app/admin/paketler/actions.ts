@@ -11,6 +11,7 @@ function readString(formData: FormData, key: string) {
 
 export async function createPackageAction(formData: FormData) {
   const name = readString(formData, "name");
+  const type = readString(formData, "type") as "COURSE" | "EXAM";
   const description = readString(formData, "description") || null;
   const priceStr = readString(formData, "price");
   const lessonCountStr = readString(formData, "lessonCount");
@@ -30,7 +31,16 @@ export async function createPackageAction(formData: FormData) {
   }
 
   await prisma.package.create({
-    data: { name, description, price, lessonCount, subjects, paytrLink, isActive }
+    data: {
+      name,
+      type: type === "EXAM" ? "EXAM" : "COURSE",
+      description,
+      price,
+      lessonCount,
+      subjects,
+      paytrLink,
+      isActive,
+    },
   });
 
   revalidatePath("/admin/paketler");
@@ -40,6 +50,7 @@ export async function createPackageAction(formData: FormData) {
 export async function updatePackageAction(formData: FormData) {
   const packageId = readString(formData, "packageId");
   const name = readString(formData, "name");
+  const type = readString(formData, "type") as "COURSE" | "EXAM";
   const description = readString(formData, "description") || null;
   const priceStr = readString(formData, "price");
   const lessonCountStr = readString(formData, "lessonCount");
@@ -58,13 +69,14 @@ export async function updatePackageAction(formData: FormData) {
     where: { id: packageId },
     data: {
       name,
+      type: type === "EXAM" ? "EXAM" : "COURSE",
       description,
       price: isNaN(price) ? undefined : price,
       lessonCount: isNaN(lessonCount) ? undefined : lessonCount,
       subjects,
       paytrLink,
-      isActive
-    }
+      isActive,
+    },
   });
 
   revalidatePath("/admin/paketler");
@@ -79,7 +91,7 @@ export async function togglePackageAction(formData: FormData) {
 
   await prisma.package.update({
     where: { id: packageId },
-    data: { isActive: !currentIsActive }
+    data: { isActive: !currentIsActive },
   });
 
   revalidatePath("/admin/paketler");
@@ -94,4 +106,39 @@ export async function deletePackageAction(formData: FormData) {
 
   revalidatePath("/admin/paketler");
   redirect("/admin/paketler?updated=deleted");
+}
+
+export async function bulkAssignPackageAction(formData: FormData) {
+  const packageId = readString(formData, "packageId");
+  const studentIdsRaw = readString(formData, "studentIds");
+  const expiresAtRaw = readString(formData, "expiresAt");
+
+  if (!packageId || !studentIdsRaw) {
+    redirect(`/admin/paketler/toplu-ata?error=missing`);
+  }
+
+  const studentIds = studentIdsRaw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (studentIds.length === 0) {
+    redirect(`/admin/paketler/toplu-ata?error=missing`);
+  }
+
+  const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
+
+  await Promise.all(
+    studentIds.map((studentId) =>
+      prisma.studentPackage.upsert({
+        where: { studentId_packageId: { studentId, packageId } },
+        create: { studentId, packageId, expiresAt, revokedAt: null },
+        update: { expiresAt, revokedAt: null, assignedAt: new Date() },
+      }),
+    ),
+  );
+
+  revalidatePath("/admin/ogrenciler");
+  revalidatePath("/admin/paketler");
+  redirect(`/admin/paketler/toplu-ata?updated=${studentIds.length}`);
 }

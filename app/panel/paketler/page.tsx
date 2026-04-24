@@ -22,6 +22,7 @@ export default async function PanelPaketlerPage() {
             select: {
               id: true,
               name: true,
+              type: true,
               description: true,
               lessonCount: true,
               subjects: true,
@@ -85,7 +86,12 @@ export default async function PanelPaketlerPage() {
           <div style={{ width: 40, height: 40, borderRadius: 10, background: expired ? "var(--pd-bg-elevated)" : "var(--pd-accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <BookOpen size={18} style={{ color: expired ? "var(--pd-muted-2)" : "var(--pd-accent)" }} />
           </div>
-          <span className="pd-chip" style={{ fontSize: 11 }}>{pkg.lessonCount} ders</span>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <span className="pd-chip" style={{ fontSize: 11, background: pkg.type === "EXAM" ? "rgba(124,58,237,0.08)" : undefined, color: pkg.type === "EXAM" ? "#7c3aed" : undefined }}>
+              {pkg.type === "EXAM" ? "📝 Deneme" : "📚 Ders"}
+            </span>
+            <span className="pd-chip" style={{ fontSize: 11 }}>{pkg.lessonCount} {pkg.type === "EXAM" ? "sınav" : "ders"}</span>
+          </div>
         </div>
 
         <div>

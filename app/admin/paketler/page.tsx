@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/admin";
 import { togglePackageAction, deletePackageAction } from "./actions";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
-import { Plus, ExternalLink, BookOpen, CheckCircle, XCircle } from "lucide-react";
+import { Plus, ExternalLink, BookOpen, CheckCircle, XCircle, Users } from "lucide-react";
 
 type PackageWithCount = Prisma.PackageGetPayload<{
   include: { _count: { select: { lessons: true } } };
@@ -38,13 +38,22 @@ export default async function PaketlerPage({ searchParams }: Props) {
             {packages.length} paket · {activeCount} aktif
           </p>
         </div>
-        <Link
-          href="/admin/paketler/yeni"
-          className="flex items-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Plus size={15} />
-          Yeni Paket
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/admin/paketler/toplu-ata"
+            className="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          >
+            <Users size={15} />
+            Toplu Ata
+          </Link>
+          <Link
+            href="/admin/paketler/yeni"
+            className="flex items-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+          >
+            <Plus size={15} />
+            Yeni Paket
+          </Link>
+        </div>
       </div>
 
       {/* Flash */}
@@ -97,9 +106,12 @@ export default async function PaketlerPage({ searchParams }: Props) {
 
                   {/* Meta */}
                   <div className="mt-3 flex flex-wrap gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${pkg.type === "EXAM" ? "bg-purple-50 text-purple-700" : "bg-[#DCCCAC]/30 text-[#435633]"}`}>
+                      {pkg.type === "EXAM" ? "📝 Deneme" : "📚 Ders"}
+                    </span>
                     <span className="inline-flex items-center gap-1 text-xs bg-[#DCCCAC]/30 text-[#435633] px-2 py-0.5 rounded-full font-medium">
                       <BookOpen size={10} />
-                      {pkg.lessonCount} ders
+                      {pkg.lessonCount} {pkg.type === "EXAM" ? "sınav" : "ders"}
                     </span>
                     <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-50 rounded-full">
                       {pkg.subjects}
