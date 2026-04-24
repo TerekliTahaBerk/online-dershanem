@@ -29,10 +29,14 @@ export default async function PaketDuzenlePage({ params }: Props) {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
             </div>
 
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Açıklama</label>
-              <textarea name="description" rows={2} defaultValue={pkg.description ?? ""}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41] resize-none" />
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Paket Türü *</label>
+              <select name="type" required defaultValue={pkg.type}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
+                <option value="COURSE">📚 Ders Paketi</option>
+                <option value="EXAM">📝 Deneme Paketi</option>
+              </select>
+              <p className="text-xs text-gray-400">Ders paketi birebir özel ders, deneme paketi ise sınav/deneme erişimi içerir.</p>
             </div>
 
             <div className="space-y-1.5">
@@ -41,8 +45,14 @@ export default async function PaketDuzenlePage({ params }: Props) {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
             </div>
 
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">Açıklama</label>
+              <textarea name="description" rows={2} defaultValue={pkg.description ?? ""}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41] resize-none" />
+            </div>
+
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Ders Sayısı *</label>
+              <label className="text-sm font-medium text-gray-700">Ders / Sınav Sayısı *</label>
               <input type="number" name="lessonCount" required min="1" defaultValue={pkg.lessonCount}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
             </div>

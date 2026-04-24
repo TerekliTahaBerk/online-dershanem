@@ -535,3 +535,118 @@ export async function revokeUserAccessTag(userId: string, accessTagId: string) {
   });
   revalidatePath("/odk/admin/ogrenciler");
 }
+
+// ── Entitlements (package-based access) ──────────────────────────────────────
+
+export async function createManualOdkEntitlement(
+  userId: string,
+  packageId: string,
+  options?: { expiresAt?: string | null },
+) {
+  const session = await requireOdkAdmin();
+
+  const pkg = await prisma.odkPackage.findUnique({
+    where: { id: packageId },
+    select: {
+      title: true,
+      durationDays: true,
+      packageAccessTags: { select: { accessTagId: true, accessTag: { select: { title: true } } } },
+    },
+  });
+  if (!pkg) throw new Error("Paket bulunamadı");
+
+  // Compute expiry: explicit > package durationDays > null
+  let expiresAt: Date | null = null;
+  if (options?.expiresAt) {
+    expiresAt = new Date(options.expiresAt);
+  } else if (pkg.durationDays) {
+    expiresAt = new Date(Date.now() + pkg.durationDays * 86_400_000);
+  }
+
+  // Create the entitlement
+  const entitlement = await prisma.odkEntitlement.create({
+    data: {
+      userId,
+      packageId,
+      status: "ACTIVE",
+      expiresAt,
+    },
+    select: { id: true },
+  });
+
+  // Grant all package access tags, linked to this entitlement
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } });
+
+  await Promise.all(
+    pkg.packageAccessTags.map(async ({ accessTagId, accessTag }) => {
+      await prisma.odkUserAccessTag.upsert({
+        where: { userId_accessTagId: { userId, accessTagId } },
+        create: {
+          userId,
+          accessTagId,
+          source: "MANUAL",
+          grantedById: session.user.id,
+          entitlementId: entitlement.id,
+          expiresAt,
+          revokedAt: null,
+        },
+        update: {
+          revokedAt: null,
+          expiresAt,
+          entitlementId: entitlement.id,
+          source: "MANUAL",
+        },
+      });
+
+      // Send access granted email (fire-and-forget)
+      if (user) {
+        sendOdkAccessGranted({
+          to: user.email,
+          name: user.name ?? user.email,
+          tagTitle: accessTag.title,
+        }).catch(() => {});
+      }
+    }),
+  );
+
+  revalidatePath("/odk/admin/ogrenciler");
+  return entitlement.id;
+}
+
+export async function revokeOdkEntitlement(entitlementId: string) {
+  await requireOdkAdmin();
+
+  const now = new Date();
+
+  await prisma.odkEntitlement.update({
+    where: { id: entitlementId },
+    data: { status: "REVOKED", revokedAt: now },
+  });
+
+  // Revoke all linked user access tags
+  await prisma.odkUserAccessTag.updateMany({
+    where: { entitlementId, revokedAt: null },
+    data: { revokedAt: now },
+  });
+
+  revalidatePath("/odk/admin/ogrenciler");
+}
+
+export async function extendOdkEntitlement(entitlementId: string, newExpiresAt: string | null) {
+  await requireOdkAdmin();
+
+  const expiresAt = newExpiresAt ? new Date(newExpiresAt) : null;
+
+  await prisma.odkEntitlement.update({
+    where: { id: entitlementId },
+    data: { expiresAt, status: "ACTIVE", revokedAt: null },
+  });
+
+  // Also extend all linked user access tags
+  await prisma.odkUserAccessTag.updateMany({
+    where: { entitlementId },
+    data: { expiresAt, revokedAt: null },
+  });
+
+  revalidatePath("/odk/admin/ogrenciler");
+}

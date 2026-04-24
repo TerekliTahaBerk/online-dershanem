@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { ArrowRight, TrendingUp, Download, Plus } from "lucide-react";
+import { ArrowRight, TrendingUp, Download, Plus, AlertTriangle } from "lucide-react";
 import { studentStatusLabels, buildWhatsAppLink } from "@/lib/admin";
 import type { Prisma } from "@prisma/client";
 
@@ -49,6 +49,8 @@ export default async function AdminDashboardPage() {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
 
+  const sevenDaysLater = new Date(now.getTime() + 7 * 86_400_000);
+
   const [
     totalStudents,
     activeStudents,
@@ -61,6 +63,7 @@ export default async function AdminDashboardPage() {
     recentPayments,
     teachers,
     odkExams,
+    expiringPackages,
   ] = await Promise.all([
     prisma.student.count(),
     prisma.student.count({ where: { status: "ACTIVE" } }),
@@ -86,6 +89,18 @@ export default async function AdminDashboardPage() {
     }),
     prisma.teacher.findMany({ take: 5, orderBy: { createdAt: "desc" } }),
     prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
+    prisma.studentPackage.findMany({
+      where: {
+        revokedAt: null,
+        expiresAt: { gte: now, lte: sevenDaysLater },
+      },
+      include: {
+        student: { select: { id: true, fullName: true } },
+        package: { select: { name: true } },
+      },
+      orderBy: { expiresAt: "asc" },
+      take: 8,
+    }),
   ]);
 
   const kpis = [
@@ -311,6 +326,56 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Expiring packages warning */}
+        {expiringPackages.length > 0 && (
+          <div className="pd-card" style={{ marginBottom: 16, border: "1px solid #fde68a" }}>
+            <div className="pd-card-head" style={{ background: "#fefce8", borderRadius: "16px 16px 0 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <AlertTriangle size={15} style={{ color: "#d97706" }} />
+                <div className="pd-card-title" style={{ color: "#92400e" }}>Yakında Dolacak Paketler</div>
+                <span style={{ fontSize: 11, fontWeight: 700, background: "#d97706", color: "#fff", padding: "1px 7px", borderRadius: 999 }}>
+                  {expiringPackages.length}
+                </span>
+              </div>
+              <Link href="/admin/ogrenciler" className="pd-btn pd-btn-ghost pd-btn-sm">Tümü</Link>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 0 }}>
+              {expiringPackages.map((sp, i) => {
+                const dLeft = sp.expiresAt ? Math.ceil((sp.expiresAt.getTime() - now.getTime()) / 86_400_000) : null;
+                return (
+                  <Link
+                    key={`${sp.studentId}-${sp.packageId}`}
+                    href={`/admin/ogrenciler/${sp.student.id}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "11px 16px",
+                      borderBottom: i < expiringPackages.length - 1 ? "1px solid var(--pd-line)" : "none",
+                      textDecoration: "none",
+                    }}
+                  >
+                    <div className="pd-avatar pd-avatar-sm">{sp.student.fullName[0]}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pd-ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {sp.student.fullName}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--pd-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {sp.package.name}
+                      </div>
+                    </div>
+                    {dLeft !== null && (
+                      <span style={{ fontSize: 11, fontWeight: 600, color: dLeft <= 2 ? "#dc2626" : "#d97706", flexShrink: 0 }}>
+                        {dLeft === 0 ? "Bugün" : `${dLeft} gün`}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Bottom row */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>

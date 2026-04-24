@@ -226,6 +226,11 @@ enum CampCategory {
   LGS
 }
 
+enum PackageType {
+  COURSE
+  EXAM
+}
+
 model Teacher {
   id        String        @id @default(cuid())
   fullName  String
@@ -246,6 +251,7 @@ model Teacher {
 model Package {
   id              String           @id @default(cuid())
   name            String
+  type            PackageType      @default(COURSE)
   description     String?
   price           Int
   paytrLink       String?
@@ -258,6 +264,7 @@ model Package {
   studentPackages StudentPackage[]
 
   @@index([isActive])
+  @@index([type, isActive])
 }
 
 model StudentPackage {
