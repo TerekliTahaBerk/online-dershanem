@@ -60,10 +60,11 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 
 export default async function OdkPanelPage() {
   const session = await getServerAuthSession();
-  const userId = session!.user.id;
+  if (!session?.user?.id) return null;
+  const userId = session.user.id;
   const { accessTags, recentAttempts, availableExams, completedCount } = await getStudentData(userId);
 
-  const firstName = session!.user.name?.split(" ")[0] ?? "Öğrenci";
+  const firstName = session.user.name?.split(" ")[0] ?? "Öğrenci";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Günaydın" : hour < 18 ? "İyi günler" : "İyi akşamlar";
 

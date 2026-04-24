@@ -30,6 +30,10 @@ const navItems = [
   { href: "/admin/istatistikler", label: "İstatistikler", icon: BarChart2 },
 ];
 
+const odkNavItems = [
+  { href: "/odk/admin", label: "ODK — Deneme Kulübü", icon: BarChart2 },
+];
+
 function LogoBlock() {
   return (
     <Link href="/admin" aria-label="Admin Panel">
@@ -47,27 +51,51 @@ function LogoBlock() {
 
 function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
   return (
-    <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-      {navItems.map(({ href, label, icon: Icon, exact }) => {
-        const isActive = exact ? pathname === href : pathname.startsWith(href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            prefetch
-            onClick={onNavigate}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive
-                ? "bg-emerald-600 text-white"
-                : "text-stone-400 hover:text-white hover:bg-white/10"
-            }`}
-          >
-            <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
+    <div className="flex flex-col flex-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
+        {navItems.map(({ href, label, icon: Icon, exact }) => {
+          const isActive = exact ? pathname === href : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              prefetch
+              onClick={onNavigate}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-emerald-600 text-white"
+                  : "text-stone-400 hover:text-white hover:bg-white/10"
+              }`}
+            >
+              <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="px-3 pb-4 border-t border-white/10 pt-3 space-y-0.5">
+        <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-stone-600">Diğer Paneller</p>
+        {odkNavItems.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              prefetch
+              onClick={onNavigate}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-emerald-600 text-white"
+                  : "text-stone-500 hover:text-white hover:bg-white/10"
+              }`}
+            >
+              <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+              {label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
