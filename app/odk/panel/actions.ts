@@ -19,7 +19,7 @@ async function requireOdkUser() {
 
 export async function startExam(
   examId: string,
-): Promise<{ attemptId: string; startedAt: string } | null> {
+): Promise<{ attemptId: string; startedAt: string; serverNow: number } | null> {
   const session = await requireOdkUser();
   const userId = session.user.id;
 
@@ -30,7 +30,7 @@ export async function startExam(
 
   if (existing) {
     revalidatePath(`/odk/panel/sinavlar/${examId}`);
-    return { attemptId: existing.id, startedAt: existing.startedAt.toISOString() };
+    return { attemptId: existing.id, startedAt: existing.startedAt.toISOString(), serverNow: Date.now() };
   }
 
   const attempt = await prisma.odkExamAttempt.create({
@@ -40,7 +40,35 @@ export async function startExam(
 
   revalidatePath(`/odk/panel/sinavlar/${examId}`);
   revalidatePath("/odk/panel/sinavlar");
-  return { attemptId: attempt.id, startedAt: attempt.startedAt.toISOString() };
+  return { attemptId: attempt.id, startedAt: attempt.startedAt.toISOString(), serverNow: Date.now() };
+}
+
+export async function recordAnswer(
+  attemptId: string,
+  sectionId: string,
+  questionNumber: number,
+  selectedOption: string | null,
+) {
+  const session = await requireOdkUser();
+  const userId = session.user.id;
+
+  const attempt = await prisma.odkExamAttempt.findFirst({
+    where: { id: attemptId, userId, status: "IN_PROGRESS" },
+    select: { id: true },
+  });
+  if (!attempt) return;
+
+  if (selectedOption === null) {
+    await prisma.odkAttemptOpticalAnswer.deleteMany({
+      where: { attemptId, sectionId, questionNumber },
+    });
+  } else {
+    await prisma.odkAttemptOpticalAnswer.upsert({
+      where: { attemptId_sectionId_questionNumber: { attemptId, sectionId, questionNumber } },
+      create: { attemptId, sectionId, questionNumber, selectedOption },
+      update: { selectedOption, answeredAt: new Date() },
+    });
+  }
 }
 
 export async function recordTabSwitch(attemptId: string, newCount: number) {
@@ -59,10 +87,17 @@ export async function recordTabSwitch(attemptId: string, newCount: number) {
 export async function submitAttempt(
   attemptId: string,
   answers: Record<string, Record<number, string>>,
+  answerTimestamps?: Record<string, Record<number, number>>,
 ) {
   const session = await requireOdkUser();
   const userId = session.user.id;
   const hasSectionScoresColumn = await hasOdkExamAttemptSectionScoresColumn();
+
+  type OfficialAnswer = {
+    questionNumber: number;
+    correctOption: string;
+    outcomes: { konu: string; kazanim: string; altKazanim?: string } | null;
+  };
 
   type AttemptWithExam = {
     id: string;
@@ -75,7 +110,7 @@ export async function submitAttempt(
         id: string;
         title: string;
         questionCount: number;
-        officialAnswers: Array<{ questionNumber: number; correctOption: string }>;
+        officialAnswers: OfficialAnswer[];
       }>;
     };
   };
@@ -204,6 +239,70 @@ export async function submitAttempt(
   const maxDurationSec = attempt.exam.durationMinutes * 60;
   const totalDuration = Math.min(rawDurationSec, maxDurationSec);
 
+  // Build per-kazanım breakdown from outcomes metadata
+  type KazanimStat = {
+    konu: string;
+    kazanim: string;
+    correct: number;
+    wrong: number;
+    blank: number;
+  };
+  const kazanimMap: Record<string, KazanimStat> = {};
+
+  for (const section of attempt.exam.sections) {
+    const userSection = answers[section.id] ?? {};
+    for (const official of section.officialAnswers) {
+      if (!official.outcomes) continue;
+      const key = `${official.outcomes.konu}::${official.outcomes.kazanim}`;
+      kazanimMap[key] ??= { konu: official.outcomes.konu, kazanim: official.outcomes.kazanim, correct: 0, wrong: 0, blank: 0 };
+      const ans = userSection[official.questionNumber];
+      if (!ans) kazanimMap[key].blank++;
+      else if (ans === official.correctOption) kazanimMap[key].correct++;
+      else kazanimMap[key].wrong++;
+    }
+  }
+
+  const kazanimBreakdown = Object.values(kazanimMap);
+
+  // Compute answer integrity flags from per-answer timestamps
+  type IntegrityFlags = {
+    avgAnswerIntervalMs: number;
+    minAnswerIntervalMs: number;
+    suspiciouslyFastAnswers: number;
+    burstAnswerGroups: number;
+    totalTimestamped: number;
+  };
+  let integrityFlags: IntegrityFlags | null = null;
+
+  if (answerTimestamps) {
+    const allTs = Object.values(answerTimestamps)
+      .flatMap((sec) => Object.values(sec))
+      .sort((a, b) => a - b);
+
+    if (allTs.length >= 2) {
+      const intervals = allTs.slice(1).map((t, i) => t - allTs[i]);
+      const avgMs = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      const minMs = Math.min(...intervals);
+      const fastCount = intervals.filter((ms) => ms < 3000).length;
+
+      // Count groups of 5+ consecutive fast answers (< 5s apart)
+      let burstGroups = 0;
+      let streak = 0;
+      for (const ms of intervals) {
+        if (ms < 5000) { streak++; if (streak === 5) burstGroups++; }
+        else streak = 0;
+      }
+
+      integrityFlags = {
+        avgAnswerIntervalMs: Math.round(avgMs),
+        minAnswerIntervalMs: Math.round(minMs),
+        suspiciouslyFastAnswers: fastCount,
+        burstAnswerGroups: burstGroups,
+        totalTimestamped: allTs.length,
+      };
+    }
+  }
+
   await prisma.odkExamAttempt.update({
     where: { id: attemptId },
     data: {
@@ -214,6 +313,7 @@ export async function submitAttempt(
       wrongCount: totalWrong,
       blankCount: totalBlank,
       durationSeconds: totalDuration,
+      resultPayload: { net, sectionScores, kazanimBreakdown, integrityFlags },
       ...(hasSectionScoresColumn ? { sectionScores: sectionScores as unknown as never } : {}),
     },
   });

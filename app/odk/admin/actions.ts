@@ -78,9 +78,131 @@ export async function createExam(data: {
   redirect(`/odk/admin/sinavlar/${exam.id}`);
 }
 
+async function autoSubmitExpiredAttempts(examId: string) {
+  const exam = await prisma.odkExam.findUnique({
+    where: { id: examId },
+    select: {
+      durationMinutes: true,
+      startsAt: true,
+      sections: {
+        select: {
+          id: true,
+          title: true,
+          questionCount: true,
+          officialAnswers: { select: { questionNumber: true, correctOption: true, outcomes: true } },
+        },
+      },
+    },
+  });
+  if (!exam) return;
+
+  const deadlineMs = exam.startsAt
+    ? exam.startsAt.getTime() + exam.durationMinutes * 60 * 1000 + 5 * 60 * 1000
+    : Date.now(); // if no startsAt, use now as safe cutoff
+
+  if (Date.now() < deadlineMs) return; // exam still running
+
+  const stale = await prisma.odkExamAttempt.findMany({
+    where: {
+      examId,
+      status: "IN_PROGRESS",
+      startedAt: { lt: new Date(deadlineMs - exam.durationMinutes * 60 * 1000) },
+    },
+    select: {
+      id: true,
+      startedAt: true,
+      opticalAnswers: { select: { sectionId: true, questionNumber: true, selectedOption: true } },
+    },
+  });
+
+  if (stale.length === 0) return;
+
+  const hasSectionScoresColumn = await (await import("@/lib/odk-exam-schema")).hasOdkExamAttemptSectionScoresColumn();
+
+  for (const attempt of stale) {
+    // Rebuild answers map from stored optical answers
+    const answerMap: Record<string, Record<number, string>> = {};
+    for (const oa of attempt.opticalAnswers) {
+      answerMap[oa.sectionId] ??= {};
+      answerMap[oa.sectionId][oa.questionNumber] = oa.selectedOption;
+    }
+
+    let totalCorrect = 0;
+    let totalWrong = 0;
+    let totalBlank = 0;
+    const sectionScores: Array<{
+      sectionId: string; title: string; questionCount: number;
+      correct: number; wrong: number; blank: number; net: number;
+    }> = [];
+
+    for (const section of exam.sections) {
+      const userSection = answerMap[section.id] ?? {};
+      let correct = 0; let wrong = 0; let blank = 0;
+
+      for (const official of section.officialAnswers) {
+        const ans = userSection[official.questionNumber];
+        if (!ans) blank++;
+        else if (ans === official.correctOption) correct++;
+        else wrong++;
+      }
+
+      const unanswered = section.questionCount - section.officialAnswers.length - blank;
+      blank += Math.max(0, unanswered);
+
+      totalCorrect += correct;
+      totalWrong += wrong;
+      totalBlank += blank;
+      sectionScores.push({
+        sectionId: section.id, title: section.title,
+        questionCount: section.questionCount,
+        correct, wrong, blank, net: correct - wrong / 4,
+      });
+    }
+
+    const net = totalCorrect - totalWrong / 4;
+    const rawSecs = Math.round((Date.now() - attempt.startedAt.getTime()) / 1000);
+
+    // Kazanım breakdown from outcomes metadata
+    type KazanimStat = { konu: string; kazanim: string; correct: number; wrong: number; blank: number };
+    const kazanimMap: Record<string, KazanimStat> = {};
+    for (const section of exam.sections) {
+      const userSection = answerMap[section.id] ?? {};
+      for (const official of section.officialAnswers) {
+        const raw = official.outcomes as { konu?: string; kazanim?: string } | null;
+        if (!raw?.konu || !raw?.kazanim) continue;
+        const key = `${raw.konu}::${raw.kazanim}`;
+        kazanimMap[key] ??= { konu: raw.konu, kazanim: raw.kazanim, correct: 0, wrong: 0, blank: 0 };
+        const ans = userSection[official.questionNumber];
+        if (!ans) kazanimMap[key].blank++;
+        else if (ans === official.correctOption) kazanimMap[key].correct++;
+        else kazanimMap[key].wrong++;
+      }
+    }
+    const kazanimBreakdown = Object.values(kazanimMap);
+
+    await prisma.odkExamAttempt.update({
+      where: { id: attempt.id },
+      data: {
+        status: "SUBMITTED",
+        submittedAt: new Date(),
+        score: net,
+        correctCount: totalCorrect,
+        wrongCount: totalWrong,
+        blankCount: totalBlank,
+        durationSeconds: Math.min(rawSecs, exam.durationMinutes * 60),
+        resultPayload: { net, sectionScores, kazanimBreakdown },
+        ...(hasSectionScoresColumn ? { sectionScores: sectionScores as unknown as never } : {}),
+      },
+    });
+  }
+}
+
 export async function releaseExamResults(examId: string) {
   await requireOdkAdmin();
   await requireOdkExamResultsReleasedAtColumn();
+
+  // Auto-close any stale IN_PROGRESS attempts before releasing
+  await autoSubmitExpiredAttempts(examId);
 
   const exam = await prisma.odkExam.update({
     where: { id: examId },
@@ -364,7 +486,11 @@ export async function deleteAccessTag(tagId: string) {
   revalidatePath("/odk/admin/etiketler");
 }
 
-export async function grantUserAccessTag(userId: string, accessTagId: string) {
+export async function grantUserAccessTag(
+  userId: string,
+  accessTagId: string,
+  options?: { expiresAt?: string | null },
+) {
   await requireOdkAdmin();
 
   const [user, tag] = await Promise.all([
@@ -372,10 +498,12 @@ export async function grantUserAccessTag(userId: string, accessTagId: string) {
     prisma.odkAccessTag.findUnique({ where: { id: accessTagId }, select: { title: true } }),
   ]);
 
+  const expiresAt = options?.expiresAt ? new Date(options.expiresAt) : null;
+
   await prisma.odkUserAccessTag.upsert({
     where: { userId_accessTagId: { userId, accessTagId } },
-    create: { userId, accessTagId, source: "MANUAL" },
-    update: { revokedAt: null },
+    create: { userId, accessTagId, source: "MANUAL", expiresAt, revokedAt: null },
+    update: { revokedAt: null, expiresAt },
   });
 
   // Send welcome/access granted email (fire-and-forget)
@@ -387,6 +515,15 @@ export async function grantUserAccessTag(userId: string, accessTagId: string) {
     }).catch(() => {});
   }
 
+  revalidatePath("/odk/admin/ogrenciler");
+}
+
+export async function extendUserAccessTag(userId: string, accessTagId: string, newExpiresAt: string | null) {
+  await requireOdkAdmin();
+  await prisma.odkUserAccessTag.update({
+    where: { userId_accessTagId: { userId, accessTagId } },
+    data: { expiresAt: newExpiresAt ? new Date(newExpiresAt) : null, revokedAt: null },
+  }).catch(() => {});
   revalidatePath("/odk/admin/ogrenciler");
 }
 

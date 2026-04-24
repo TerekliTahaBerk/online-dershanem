@@ -40,6 +40,7 @@ async function getExamStats(examId: string) {
       durationSeconds: true,
       ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
       ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
+      resultPayload: true,
       submittedAt: true,
       user: { select: { id: true, name: true, email: true } },
     },
@@ -252,6 +253,7 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
                   <th className="px-4 py-2.5 text-right font-medium">B</th>
                   <th className="px-4 py-2.5 text-right font-medium">Süre</th>
                   <th className="px-4 py-2.5 text-right font-medium">İhlal</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Hız Şüphesi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -280,6 +282,20 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
                         ) : (
                           <span className="text-stone-300 text-xs">—</span>
                         )}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        {(() => {
+                          const flags = (a.resultPayload as { integrityFlags?: { suspiciouslyFastAnswers?: number; avgAnswerIntervalMs?: number } } | null)?.integrityFlags;
+                          if (!flags) return <span className="text-stone-300 text-xs">—</span>;
+                          const suspicious = (flags.suspiciouslyFastAnswers ?? 0) > 5 || (flags.avgAnswerIntervalMs ?? 99999) < 4000;
+                          return suspicious ? (
+                            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700" title={`Ort. ${Math.round((flags.avgAnswerIntervalMs ?? 0) / 1000)}s/soru · ${flags.suspiciouslyFastAnswers} hızlı`}>
+                              ⚠ {flags.suspiciouslyFastAnswers} hızlı
+                            </span>
+                          ) : (
+                            <span className="text-stone-300 text-xs">—</span>
+                          );
+                        })()}
                       </td>
                     </tr>
                   ))}

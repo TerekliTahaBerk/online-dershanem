@@ -70,13 +70,14 @@ model User {
   role              UserRole           @default(ADMIN)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  student           Student?
-  teacher           Teacher?
-  odkCreatedExams   OdkExam[]          @relation("OdkExamCreator")
-  odkUserAccessTags OdkUserAccessTag[]
-  odkOrders         OdkOrder[]
-  odkEntitlements   OdkEntitlement[]
-  odkAttempts       OdkExamAttempt[]
+  student                Student?
+  teacher                Teacher?
+  odkCreatedExams        OdkExam[]          @relation("OdkExamCreator")
+  odkUserAccessTags      OdkUserAccessTag[]
+  odkOrders              OdkOrder[]
+  odkEntitlements        OdkEntitlement[]
+  odkAttempts            OdkExamAttempt[]
+  assignedStudentPackages StudentPackage[]  @relation("StudentPackageAssignedBy")
 }
 
 model LeadSubmission {
@@ -260,14 +261,20 @@ model Package {
 }
 
 model StudentPackage {
-  studentId  String
-  packageId  String
-  assignedAt DateTime @default(now())
-  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  studentId    String
+  packageId    String
+  assignedAt   DateTime  @default(now())
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  assignedById String?
+  notes        String?
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  package      Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  assignedBy   User?     @relation("StudentPackageAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
 
   @@id([studentId, packageId])
   @@index([packageId])
+  @@index([studentId, revokedAt, expiresAt])
 }
 
 model Camp {
