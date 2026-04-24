@@ -143,13 +143,47 @@ export async function deleteStudentAction(formData: FormData) {
 export async function assignPackageToStudentAction(formData: FormData) {
   const studentId = readString(formData, "studentId");
   const packageId = readString(formData, "packageId");
+  const expiresAtRaw = readString(formData, "expiresAt");
+  const notes = readString(formData, "notes") || null;
+
   if (!studentId || !packageId) return;
+
+  const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
 
   await prisma.studentPackage.upsert({
     where: { studentId_packageId: { studentId, packageId } },
-    create: { studentId, packageId },
-    update: {},
+    create: { studentId, packageId, expiresAt, notes, revokedAt: null },
+    // Re-assigning: restore access and update expiry
+    update: { expiresAt, notes, revokedAt: null, assignedAt: new Date() },
   });
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+}
+
+export async function extendPackageAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  const newExpiresAt = readString(formData, "newExpiresAt");
+
+  if (!studentId || !packageId || !newExpiresAt) return;
+
+  await prisma.studentPackage.update({
+    where: { studentId_packageId: { studentId, packageId } },
+    data: { expiresAt: new Date(newExpiresAt), revokedAt: null },
+  }).catch(() => {});
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+}
+
+export async function revokePackageFromStudentAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  if (!studentId || !packageId) return;
+
+  await prisma.studentPackage.update({
+    where: { studentId_packageId: { studentId, packageId } },
+    data: { revokedAt: new Date() },
+  }).catch(() => {});
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
 }

@@ -26,6 +26,7 @@ export function GrantAccessForm({
   const [selectedUser, setSelectedUser] = useState<StudentUser | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [tagId, setTagId] = useState(accessTags[0]?.id ?? "");
+  const [expiresAt, setExpiresAt] = useState("");
   const [singleError, setSingleError] = useState<string | null>(null);
   const [singleSuccess, setSingleSuccess] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,6 +34,7 @@ export function GrantAccessForm({
   // Bulk
   const [bulkEmails, setBulkEmails] = useState("");
   const [bulkTagId, setBulkTagId] = useState(accessTags[0]?.id ?? "");
+  const [bulkExpiresAt, setBulkExpiresAt] = useState("");
   const [bulkResults, setBulkResults] = useState<BulkResult[]>([]);
 
   const filtered = query.trim().length > 0
@@ -78,9 +80,10 @@ export function GrantAccessForm({
       try {
         const userId = await findUserId(email);
         if (!userId) { setSingleError("Kullanıcı bulunamadı."); return; }
-        await grantUserAccessTag(userId, tagId);
+        await grantUserAccessTag(userId, tagId, { expiresAt: expiresAt || null });
         setQuery("");
         setSelectedUser(null);
+        setExpiresAt("");
         setSingleSuccess(true);
         setTimeout(() => setSingleSuccess(false), 2500);
       } catch {
@@ -107,7 +110,7 @@ export function GrantAccessForm({
           if (!userId) {
             results.push({ email: em, ok: false, message: "Kullanıcı bulunamadı" });
           } else {
-            await grantUserAccessTag(userId, bulkTagId);
+            await grantUserAccessTag(userId, bulkTagId, { expiresAt: bulkExpiresAt || null });
             results.push({ email: em, ok: true, message: "Erişim verildi" });
           }
         } catch {
@@ -211,6 +214,18 @@ export function GrantAccessForm({
               </select>
             </label>
 
+            <label className="block text-sm font-medium text-stone-700">
+              Son Geçerlilik Tarihi
+              <span className="ml-1 text-xs font-normal text-stone-400">(boş = süresiz)</span>
+              <input
+                type="date"
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                className={`mt-1.5 ${inputCls}`}
+                min={new Date().toISOString().slice(0, 10)}
+              />
+            </label>
+
             <button
               type="submit"
               disabled={isPending}
@@ -240,6 +255,17 @@ export function GrantAccessForm({
                 <option key={t.id} value={t.id}>{t.title}</option>
               ))}
             </select>
+          </label>
+          <label className="block text-sm font-medium text-stone-700">
+            Son Geçerlilik Tarihi
+            <span className="ml-1 text-xs font-normal text-stone-400">(boş = süresiz)</span>
+            <input
+              type="date"
+              value={bulkExpiresAt}
+              onChange={(e) => setBulkExpiresAt(e.target.value)}
+              className={`mt-1.5 ${inputCls}`}
+              min={new Date().toISOString().slice(0, 10)}
+            />
           </label>
           <button
             type="submit"

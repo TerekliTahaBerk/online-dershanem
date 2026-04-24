@@ -15,6 +15,12 @@ type SectionScore = {
   net: number;
 };
 
+type IntegrityFlags = {
+  suspiciouslyFastAnswers?: number;
+  avgAnswerIntervalMs?: number;
+  burstAnswerGroups?: number;
+};
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ examId: string }> },
@@ -45,6 +51,7 @@ export async function GET(
       wrongCount: true,
       blankCount: true,
       durationSeconds: true,
+      resultPayload: true,
       ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
       ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
       submittedAt: true,
@@ -64,7 +71,9 @@ export async function GET(
     "Yanlış",
     "Boş",
     "Süre (dk)",
-    "İhlal",
+    "Tab İhlali",
+    "Hızlı Cevap (şüpheli)",
+    "Ort. Cevap Hızı (sn)",
     "Gönderim Tarihi",
     ...sectionTitles.flatMap((t) => [`${t} Net`, `${t} D`, `${t} Y`, `${t} B`]),
   ];
@@ -72,6 +81,9 @@ export async function GET(
   const rows = attempts.map((a) => {
     const sections = ("sectionScores" in a ? (a.sectionScores as SectionScore[] | null) : null) ?? [];
     const secMap = new Map(sections.map((s) => [s.title, s]));
+
+    const payload = a.resultPayload as { integrityFlags?: IntegrityFlags } | null;
+    const flags = payload?.integrityFlags;
 
     const base = [
       a.user.name ?? "",
@@ -82,6 +94,8 @@ export async function GET(
       String(a.blankCount),
       a.durationSeconds ? String(Math.round(a.durationSeconds / 60)) : "",
       String("tabSwitchCount" in a ? (a.tabSwitchCount ?? 0) : 0),
+      flags?.suspiciouslyFastAnswers != null ? String(flags.suspiciouslyFastAnswers) : "",
+      flags?.avgAnswerIntervalMs != null ? (flags.avgAnswerIntervalMs / 1000).toFixed(1) : "",
       a.submittedAt ? new Date(a.submittedAt).toLocaleString("tr-TR") : "",
     ];
 

@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
@@ -39,6 +40,8 @@ export async function createCampAction(formData: FormData) {
     },
   });
 
+  revalidatePath("/admin/kamplar");
+  revalidatePath("/kamplar");
   redirect("/admin/kamplar");
 }
 
@@ -72,11 +75,15 @@ export async function updateCampAction(id: string, formData: FormData) {
     },
   });
 
+  revalidatePath("/admin/kamplar");
+  revalidatePath("/kamplar");
   redirect("/admin/kamplar");
 }
 
 export async function deleteCampAction(id: string) {
   await requireAdmin();
   await prisma.camp.delete({ where: { id } });
+  revalidatePath("/admin/kamplar");
+  revalidatePath("/kamplar");
   redirect("/admin/kamplar");
 }

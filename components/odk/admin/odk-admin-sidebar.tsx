@@ -57,11 +57,18 @@ function SidebarContent({ pathname, onNavigate }: { pathname: string; onNavigate
           );
         })}
       </nav>
-      <div className="px-3 py-4 border-t border-white/10">
+      <div className="px-3 py-4 border-t border-white/10 space-y-1">
+        <Link
+          href="/admin"
+          onClick={onNavigate}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-stone-500 hover:text-stone-300 transition-colors"
+        >
+          ← Ana Yönetim Paneli
+        </Link>
         <Link
           href="/servis-secimi"
           onClick={onNavigate}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-stone-500 hover:text-stone-300 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-stone-600 hover:text-stone-400 transition-colors"
         >
           ← Hizmet seçimine dön
         </Link>
