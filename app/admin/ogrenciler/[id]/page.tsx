@@ -452,7 +452,16 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
             <div className="flex items-center gap-2 mb-4">
               <Package size={16} className="text-[#546B41]" />
               <h2 className="font-semibold text-[#091413]">Paket Ata</h2>
+              <Link href="/admin/paketler/toplu-ata" className="ml-auto text-xs text-gray-400 hover:text-[#546B41] transition-colors">
+                Toplu ata →
+              </Link>
             </div>
+            {allPackages.length === 0 ? (
+              <p className="text-sm text-gray-400">
+                Atanabilecek aktif paket yok.{" "}
+                <Link href="/admin/paketler/yeni" className="text-[#546B41] hover:underline">Yeni paket oluştur →</Link>
+              </p>
+            ) : (
             <form action={assignPackageToStudentAction}>
               <input type="hidden" name="studentId" value={student.id} />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
@@ -526,6 +535,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 </div>
               </div>
             </form>
+            )}
           </div>
 
           {/* Assigned packages list */}
