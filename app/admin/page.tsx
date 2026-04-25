@@ -152,14 +152,14 @@ export default async function AdminDashboardPage() {
     <>
       {/* Page header */}
       <div className="pd-page-header">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="pd-page-hdr-row">
           <div>
             <div style={{ fontSize: 12, color: "var(--pd-muted)", marginBottom: 4 }}>
               {new Intl.DateTimeFormat("tr-TR", { dateStyle: "full" }).format(now)}
             </div>
             <h1 className="pd-page-title">Dashboard</h1>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             <Link href="/admin/formlar" className="pd-btn pd-btn-ghost pd-btn-sm">
               Leadler
               {newLeadsCount > 0 && (
@@ -208,7 +208,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Main 3-col layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div className="pd-dash-main-grid">
           {/* Upcoming lessons */}
           <div className="pd-card">
             <div className="pd-card-head">
@@ -379,7 +379,7 @@ export default async function AdminDashboardPage() {
         )}
 
         {/* Bottom row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="pd-dash-bottom-grid">
           {/* Payments */}
           <div className="pd-card">
             <div className="pd-card-head">

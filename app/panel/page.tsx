@@ -265,7 +265,7 @@ export default async function PanelDashboardPage() {
         )}
 
         {/* Two-column: week schedule + progress */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div className="pd-dash-main-grid">
           {/* Week schedule */}
           <div className="pd-card">
             <div className="pd-card-head">
@@ -374,7 +374,7 @@ export default async function PanelDashboardPage() {
         </div>
 
         {/* Quick links */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="pd-panel-quicklinks">
           {[
             { href: "/panel/dersler", label: "Derslerim", sub: `${total} ders`, icon: "📚" },
             { href: "/panel/paketler", label: "Paketlerim", sub: student.packages.length > 0 ? `${student.packages.length} paket` : "Paket yok", icon: "📦" },

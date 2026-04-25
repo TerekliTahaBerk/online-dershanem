@@ -1654,3 +1654,99 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   background: #f3e8ff !important;
   color: #6b21a8 !important;
 }
+
+/* ============================================================
+   MOBILE RESPONSIVENESS — Panel & Admin
+   ============================================================ */
+
+/* Page header row (title + action buttons) */
+.pd-page-hdr-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Admin dashboard grids */
+.pd-dash-main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.pd-dash-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Responsive page header & body padding */
+@media (max-width: 1023px) {
+  .pd-page-header { padding: 20px 20px 16px; }
+  .pd-page-body   { padding: 16px 20px; }
+  /* Override the Tailwind panel page spacing */
+  .pd-app-main .p-6.space-y-5,
+  .pd-app-main .p-6.space-y-6 { padding: 16px 20px !important; }
+}
+
+@media (max-width: 767px) {
+  /* Single-column dashboard grids */
+  .pd-dash-main-grid  { grid-template-columns: 1fr; }
+  .pd-dash-bottom-grid { grid-template-columns: 1fr; }
+
+  /* Tighter page padding on phones */
+  .pd-page-header { padding: 16px 16px 12px; }
+  .pd-page-body   { padding: 12px 16px; }
+  .pd-app-main .p-6.space-y-5,
+  .pd-app-main .p-6.space-y-6 { padding: 12px 16px !important; }
+
+  /* KPI grid: 2-col on narrow phones → already handled at 1023px;
+     keep 2-col until very small */
+  .pd-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Quick links: 2-col on phones */
+  .pd-panel-quicklinks { grid-template-columns: repeat(2, 1fr); }
+
+  /* Student edit form: 2-col on phones */
+  .pd-student-edit-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 400px) {
+  .pd-kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pd-kpi-value { font-size: 24px; }
+
+  /* 1-col on very small phones */
+  .pd-student-edit-grid { grid-template-columns: 1fr; }
+  .pd-panel-quicklinks  { grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+
+/* Calendar: horizontal scroll on mobile instead of collapsing */
+@media (max-width: 767px) {
+  .pd-cal-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pd-cal-grid { min-width: 560px; }
+}
+
+/* Tables: always allow horizontal scroll */
+.pd-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Student panel quick-links: 4-col → 2-col on mobile */
+.pd-panel-quicklinks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* Admin student inline-edit form: 4-col → 2-col → 1-col */
+.pd-student-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* Lead inbox: already single-col at 1023px (see above), fine on mobile */
+
+/* Ensure overflow-x hidden doesn't clip sidebar slide-in */
+@media (max-width: 1023px) {
+  body { overflow-x: clip; }
+}
