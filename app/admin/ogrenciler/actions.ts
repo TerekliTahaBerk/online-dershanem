@@ -8,11 +8,7 @@ import { normalizePhone } from "@/lib/admin";
 import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 import { sendStudentWelcome } from "@/lib/email";
 import { getServerAuthSession } from "@/lib/auth";
-
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
+import { readString } from "@/lib/form-utils";
 
 export async function createStudentAction(formData: FormData) {
   const fullName = readString(formData, "fullName");
@@ -149,12 +145,14 @@ export async function assignPackageToStudentAction(formData: FormData) {
 
   if (!studentId || !packageId) return;
 
-  const session = await getServerAuthSession();
-  const assignedById = session?.user?.id ?? null;
-
-  // Verify package is still active before assigning
-  const pkg = await prisma.package.findUnique({ where: { id: packageId }, select: { isActive: true } });
+  // Parallelize auth + package validation
+  const [session, pkg] = await Promise.all([
+    getServerAuthSession(),
+    prisma.package.findUnique({ where: { id: packageId }, select: { isActive: true } }),
+  ]);
   if (!pkg?.isActive) return; // silently reject inactive package assignment
+
+  const assignedById = session?.user?.id ?? null;
 
   const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
 

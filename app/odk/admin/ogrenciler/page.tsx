@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { calcDaysLeft } from "@/lib/admin";
 import { GrantAccessForm } from "@/components/odk/admin/grant-access-form";
 import { AssignEntitlementForm } from "@/components/odk/admin/assign-entitlement-form";
 import { revokeUserAccessTag, extendUserAccessTag, revokeOdkEntitlement, extendOdkEntitlement } from "@/app/odk/admin/actions";
@@ -31,20 +32,15 @@ type Student = {
   odkEntitlements: EntitlementEntry[];
 };
 
-function isTagActive(tag: AccessTagEntry) {
-  if (tag.revokedAt) return false;
-  if (tag.expiresAt && tag.expiresAt <= new Date()) return false;
-  return true;
-}
-
-function isEntitlementActive(e: EntitlementEntry) {
-  if (e.revokedAt || e.status === "REVOKED" || e.status === "EXPIRED") return false;
-  if (e.expiresAt && e.expiresAt <= new Date()) return false;
+function isAccessActive(item: { revokedAt: Date | null; expiresAt: Date | null; status?: string }): boolean {
+  if (item.revokedAt) return false;
+  if (item.status && item.status !== "ACTIVE") return false;
+  if (item.expiresAt && item.expiresAt <= new Date()) return false;
   return true;
 }
 
 function daysLeft(expiresAt: Date): number {
-  return Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000);
+  return calcDaysLeft(expiresAt);
 }
 
 async function getData() {
@@ -144,8 +140,8 @@ export default async function OgrencilerPage() {
           ) : (
             <div className="divide-y divide-stone-100">
               {students.map((user) => {
-                const activeTags = user.odkUserAccessTags.filter(isTagActive);
-                const activeEntitlements = user.odkEntitlements.filter(isEntitlementActive);
+                const activeTags = user.odkUserAccessTags.filter(isAccessActive);
+                const activeEntitlements = user.odkEntitlements.filter(isAccessActive);
 
                 // Only show manual tags (not linked to an entitlement)
                 const manualTags = activeTags.filter((t) => !t.entitlementId);

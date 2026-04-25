@@ -3,11 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
+import { readString } from "@/lib/form-utils";
 
 export async function createPackageAction(formData: FormData) {
   const name = readString(formData, "name");
@@ -125,6 +121,10 @@ export async function bulkAssignPackageAction(formData: FormData) {
   if (studentIds.length === 0) {
     redirect(`/admin/paketler/toplu-ata?error=missing`);
   }
+
+  // Guard: only active packages can be bulk-assigned (same rule as single assign)
+  const pkg = await prisma.package.findUnique({ where: { id: packageId }, select: { isActive: true } });
+  if (!pkg?.isActive) redirect("/admin/paketler/toplu-ata?error=inactive");
 
   const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
 

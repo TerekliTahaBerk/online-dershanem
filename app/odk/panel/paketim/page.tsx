@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { calcDaysLeft } from "@/lib/admin";
 import { Package, Clock, CheckCircle2, XCircle, FileText, Tag } from "lucide-react";
 import Link from "next/link";
 
@@ -115,7 +116,7 @@ async function getData(userId: string) {
   const enrichedEntitlements = entitlements.map((ent) => {
     const active = isActive(ent.expiresAt, ent.revokedAt) && ent.status === "ACTIVE";
     const dLeft = ent.expiresAt && active
-      ? Math.max(0, Math.ceil((ent.expiresAt.getTime() - now.getTime()) / 86400000))
+      ? Math.max(0, calcDaysLeft(ent.expiresAt, now))
       : null;
 
     const allExams = ent.userAccessTags.flatMap((uat) => enrichExams(uat.accessTag.examTags));
@@ -129,7 +130,7 @@ async function getData(userId: string) {
   const enrichedManualTags = manualTags.map((uat) => {
     const active = isActive(uat.expiresAt, uat.revokedAt);
     const dLeft = uat.expiresAt && active
-      ? Math.max(0, Math.ceil((uat.expiresAt.getTime() - now.getTime()) / 86400000))
+      ? Math.max(0, calcDaysLeft(uat.expiresAt, now))
       : null;
     return { ...uat, isActive: active, daysLeft: dLeft, exams: enrichExams(uat.accessTag.examTags) };
   });

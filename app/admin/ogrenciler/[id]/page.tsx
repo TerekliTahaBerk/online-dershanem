@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import {
   buildWhatsAppLink,
+  calcDaysLeft,
   formatDateTime,
   formatDateTimeLocalInput,
   studentStatusLabels,
@@ -557,7 +558,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                   const isExpired = !isRevoked && expiresAt ? expiresAt < now : false;
                   const isActive = !isRevoked && !isExpired;
                   const daysLeft = expiresAt && isActive
-                    ? Math.ceil((expiresAt.getTime() - now.getTime()) / 86_400_000)
+                    ? calcDaysLeft(expiresAt, now)
                     : null;
 
                   return (

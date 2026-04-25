@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { calcDaysLeft } from "@/lib/admin";
 import { Package, BookOpen, Clock, LockKeyhole } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -52,7 +53,7 @@ export default async function PanelPaketlerPage() {
   }
 
   function daysLeft(d: Date) {
-    return Math.ceil((d.getTime() - now.getTime()) / 86_400_000);
+    return calcDaysLeft(d, now);
   }
 
   function PackageCard({ pkg, expired = false }: { pkg: typeof assignments[0]; expired?: boolean }) {

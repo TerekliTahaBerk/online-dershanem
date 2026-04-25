@@ -91,3 +91,8 @@ export function buildWhatsAppLink(phone: string) {
 
   return `https://wa.me/${withCountryCode}`;
 }
+
+/** Days remaining until expiresAt, floored to 0. Negative means already expired. */
+export function calcDaysLeft(expiresAt: Date, now = new Date()): number {
+  return Math.ceil((expiresAt.getTime() - now.getTime()) / 86_400_000);
+}

@@ -4,6 +4,7 @@ import { LessonStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { readString } from "@/lib/form-utils";
 import {
   sendLessonScheduled,
   sendMeetLinkUpdated,
@@ -11,10 +12,6 @@ import {
   sendLessonCancelled,
 } from "@/lib/email";
 
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
 
 function readOptionalDate(formData: FormData, key: string) {
   const value = readString(formData, key);
