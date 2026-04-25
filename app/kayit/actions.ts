@@ -5,11 +5,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
 import { sendSelfRegistrationWelcome } from "@/lib/email";
+import { readString } from "@/lib/form-utils";
 
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
 
 export async function registerAction(formData: FormData) {
   const fullName = readString(formData, "fullName");

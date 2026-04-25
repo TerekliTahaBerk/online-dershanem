@@ -99,7 +99,7 @@ export function BulkAssignClient({ packages, students, action }: Props) {
             </label>
             <div className="flex gap-2 text-xs">
               <button type="button" onClick={selectAll} className="text-[#546B41] hover:underline">
-                Tümünü Seç
+                {search ? "Görünenleri Seç" : "Tümünü Seç"}
               </button>
               <span className="text-gray-300">|</span>
               <button type="button" onClick={clearAll} className="text-gray-500 hover:underline">

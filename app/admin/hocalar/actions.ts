@@ -9,11 +9,8 @@ import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
 import { linkTeacherToExistingUserByEmail } from "@/lib/user-links";
 import { sendTeacherWelcome } from "@/lib/email";
+import { readString } from "@/lib/form-utils";
 
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
 
 async function requireAdmin() {
   const session = await getServerAuthSession();

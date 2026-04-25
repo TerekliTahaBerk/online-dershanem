@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ArrowRight, TrendingUp, Download, Plus, AlertTriangle } from "lucide-react";
-import { studentStatusLabels, buildWhatsAppLink } from "@/lib/admin";
+import { studentStatusLabels, buildWhatsAppLink, calcDaysLeft } from "@/lib/admin";
 import type { Prisma } from "@prisma/client";
 
 type UpcomingLesson = Prisma.LessonGetPayload<{
@@ -94,7 +94,8 @@ export default async function AdminDashboardPage() {
         revokedAt: null,
         expiresAt: { gte: now, lte: sevenDaysLater },
       },
-      include: {
+      select: {
+        expiresAt: true,
         student: { select: { id: true, fullName: true } },
         package: { select: { name: true } },
       },
@@ -151,14 +152,14 @@ export default async function AdminDashboardPage() {
     <>
       {/* Page header */}
       <div className="pd-page-header">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="pd-page-hdr-row">
           <div>
             <div style={{ fontSize: 12, color: "var(--pd-muted)", marginBottom: 4 }}>
               {new Intl.DateTimeFormat("tr-TR", { dateStyle: "full" }).format(now)}
             </div>
             <h1 className="pd-page-title">Dashboard</h1>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             <Link href="/admin/formlar" className="pd-btn pd-btn-ghost pd-btn-sm">
               Leadler
               {newLeadsCount > 0 && (
@@ -207,7 +208,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Main 3-col layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div className="pd-dash-main-grid">
           {/* Upcoming lessons */}
           <div className="pd-card">
             <div className="pd-card-head">
@@ -342,10 +343,10 @@ export default async function AdminDashboardPage() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 0 }}>
               {expiringPackages.map((sp, i) => {
-                const dLeft = sp.expiresAt ? Math.ceil((sp.expiresAt.getTime() - now.getTime()) / 86_400_000) : null;
+                const dLeft = sp.expiresAt ? calcDaysLeft(sp.expiresAt, now) : null;
                 return (
                   <Link
-                    key={`${sp.studentId}-${sp.packageId}`}
+                    key={`${sp.student.id}-${sp.package.name}`}
                     href={`/admin/ogrenciler/${sp.student.id}`}
                     style={{
                       display: "flex",
@@ -378,7 +379,7 @@ export default async function AdminDashboardPage() {
         )}
 
         {/* Bottom row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div className="pd-dash-bottom-grid">
           {/* Payments */}
           <div className="pd-card">
             <div className="pd-card-head">

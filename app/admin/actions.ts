@@ -6,11 +6,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
 import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
+import { readString } from "@/lib/form-utils";
 
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
 
 function readOptionalDate(formData: FormData, key: string) {
   const value = readString(formData, key);

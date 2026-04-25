@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FileText, Package, Users, Tag, TrendingUp, Plus, Calendar, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { calcDaysLeft } from "@/lib/admin";
 
 type RecentAttempt = {
   id: string;
@@ -150,9 +151,7 @@ export default async function OdkAdminDashboard() {
           </div>
           <div className="divide-y divide-amber-100">
             {expiringEntitlements.map((ent) => {
-              const dLeft = ent.expiresAt
-                ? Math.ceil((ent.expiresAt.getTime() - now.getTime()) / 86_400_000)
-                : null;
+              const dLeft = ent.expiresAt ? calcDaysLeft(ent.expiresAt, now) : null;
               return (
                 <div key={ent.id} className="flex items-center justify-between px-5 py-3">
                   <div className="min-w-0">
