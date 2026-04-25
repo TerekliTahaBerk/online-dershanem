@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
 import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 import { sendStudentWelcome } from "@/lib/email";
+import { getServerAuthSession } from "@/lib/auth";
 
 function readString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -148,16 +149,24 @@ export async function assignPackageToStudentAction(formData: FormData) {
 
   if (!studentId || !packageId) return;
 
+  const session = await getServerAuthSession();
+  const assignedById = session?.user?.id ?? null;
+
+  // Verify package is still active before assigning
+  const pkg = await prisma.package.findUnique({ where: { id: packageId }, select: { isActive: true } });
+  if (!pkg?.isActive) return; // silently reject inactive package assignment
+
   const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
 
   await prisma.studentPackage.upsert({
     where: { studentId_packageId: { studentId, packageId } },
-    create: { studentId, packageId, expiresAt, notes, revokedAt: null },
-    // Re-assigning: restore access and update expiry
-    update: { expiresAt, notes, revokedAt: null, assignedAt: new Date() },
+    create: { studentId, packageId, expiresAt, notes, assignedById, revokedAt: null },
+    // Re-assigning: restore access, update expiry, record who re-assigned
+    update: { expiresAt, notes, revokedAt: null, assignedAt: new Date(), assignedById },
   });
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
+  revalidatePath("/admin");
 }
 
 export async function extendPackageAction(formData: FormData) {
