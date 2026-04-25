@@ -9,7 +9,7 @@ import {
   removePackageAccessTag,
   togglePackageStatus,
 } from "@/app/odk/admin/actions";
-import { DeletePackageButton } from "@/components/odk/admin/exam-detail-editor";
+import { DeletePackageButton, PackageEditForm } from "@/components/odk/admin/exam-detail-editor";
 
 function formatPrice(cents: number) {
   return (cents / 100).toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
@@ -120,6 +120,17 @@ export default async function PackageDetailPage({
           <p className="mt-3 text-sm text-stone-500 max-w-xl">{pkg.description}</p>
         )}
       </div>
+
+      {/* Package metadata editor */}
+      <PackageEditForm
+        packageId={packageId}
+        current={{
+          title: pkg.title,
+          description: pkg.description ?? null,
+          priceCents: pkg.priceCents,
+          durationDays: pkg.durationDays ?? null,
+        }}
+      />
 
       {/* Linked Exams */}
       <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">

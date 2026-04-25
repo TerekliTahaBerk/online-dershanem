@@ -307,6 +307,8 @@ model Lesson {
   studentId      String
   teacherId      String
   packageId      String?
+  title          String?
+  subject        String?
   scheduledAt    DateTime
   duration       Int          @default(60)
   googleMeetLink String?

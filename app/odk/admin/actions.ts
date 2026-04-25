@@ -256,6 +256,33 @@ export async function updateExamMeetLink(examId: string, googleMeetLink: string 
   revalidatePath(`/odk/admin/sinavlar/${examId}`);
 }
 
+export async function updateExam(examId: string, data: {
+  title?: string;
+  cadenceFamily?: string;
+  durationMinutes?: number;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  description?: string | null;
+}) {
+  await requireOdkAdmin();
+
+  await prisma.odkExam.update({
+    where: { id: examId },
+    data: {
+      ...(data.title !== undefined ? { title: data.title } : {}),
+      ...(data.cadenceFamily !== undefined ? { cadenceFamily: data.cadenceFamily as never } : {}),
+      ...(data.durationMinutes !== undefined ? { durationMinutes: data.durationMinutes } : {}),
+      ...(data.startsAt !== undefined ? { startsAt: data.startsAt ? new Date(data.startsAt) : null } : {}),
+      ...(data.endsAt !== undefined ? { endsAt: data.endsAt ? new Date(data.endsAt) : null } : {}),
+      ...(data.description !== undefined ? { description: data.description } : {}),
+    },
+  });
+
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+  revalidatePath(`/odk/panel/sinavlar/${examId}`);
+  revalidatePath("/odk/panel/sinavlar");
+}
+
 export async function deleteExam(examId: string) {
   await requireOdkAdmin();
   await prisma.odkExam.delete({ where: { id: examId } });
@@ -409,6 +436,21 @@ export async function createPackage(data: {
       durationDays: data.durationDays || null,
     },
   });
+  revalidatePath("/odk/admin/paketler");
+}
+
+export async function updateOdkPackage(packageId: string, data: {
+  title?: string;
+  description?: string | null;
+  priceCents?: number;
+  durationDays?: number | null;
+}) {
+  await requireOdkAdmin();
+  await prisma.odkPackage.update({
+    where: { id: packageId },
+    data,
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
   revalidatePath("/odk/admin/paketler");
 }
 

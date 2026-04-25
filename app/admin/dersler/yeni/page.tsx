@@ -67,6 +67,20 @@ export default async function YeniDersPage({ searchParams }: Props) {
               </select>
             </div>
 
+            {/* Title */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Ders Başlığı</label>
+              <input type="text" name="title" placeholder="Örn: Türev Soruları, Paragraf Çözümü"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+            </div>
+
+            {/* Subject */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Ders Konusu / Branş</label>
+              <input type="text" name="subject" placeholder="Örn: Matematik, Türkçe"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+            </div>
+
             {/* Teacher */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Hoca *</label>

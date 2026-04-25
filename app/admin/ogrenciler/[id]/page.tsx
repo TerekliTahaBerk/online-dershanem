@@ -168,6 +168,31 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
           Bu telefon numarası başka bir öğrenciye ait.
         </div>
       )}
+      {updated === "assigned" && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+          Paket başarıyla atandı.
+        </div>
+      )}
+      {updated === "extended" && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+          Paket bitiş tarihi güncellendi.
+        </div>
+      )}
+      {updated === "revoked" && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2.5 rounded-lg">
+          Paket erişimi iptal edildi.
+        </div>
+      )}
+      {updated === "removed" && (
+        <div className="bg-gray-50 border border-gray-200 text-gray-700 text-sm px-4 py-2.5 rounded-lg">
+          Paket kaydı silindi.
+        </div>
+      )}
+      {updated === "inactive-package" && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
+          Seçilen paket aktif değil. Sadece aktif paketler atanabilir.
+        </div>
+      )}
 
       {/* Header Card */}
       <div className="bg-white rounded-xl border border-gray-200 p-5">
@@ -843,10 +868,25 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Aktif Paket</label>
-                  <input type="text" name="activePackage" defaultValue={student.activePackage ?? ""}
-                    placeholder="Paket adı..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                  <label className="text-xs font-medium text-gray-600">Aktif Paketler</label>
+                  <div className="w-full border border-gray-100 rounded-lg px-3 py-2.5 text-sm bg-gray-50 text-gray-500">
+                    {(student as unknown as StudentFull).packages.filter((sp) => {
+                      const now = new Date();
+                      const isRevoked = !!(sp as unknown as { revokedAt: Date | null }).revokedAt;
+                      const expiresAt = (sp as unknown as { expiresAt: Date | null }).expiresAt;
+                      return !isRevoked && (!expiresAt || expiresAt >= now);
+                    }).length > 0
+                      ? (student as unknown as StudentFull).packages
+                          .filter((sp) => {
+                            const now = new Date();
+                            const isRevoked = !!(sp as unknown as { revokedAt: Date | null }).revokedAt;
+                            const expiresAt = (sp as unknown as { expiresAt: Date | null }).expiresAt;
+                            return !isRevoked && (!expiresAt || expiresAt >= now);
+                          })
+                          .map((sp) => sp.package.name)
+                          .join(", ")
+                      : "Aktif paket yok — Paketler sekmesinden yönetin"}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

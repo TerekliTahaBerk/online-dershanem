@@ -4,7 +4,7 @@ import { LessonStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { readString } from "@/lib/form-utils";
+import { readString, readTurkeyDatetime } from "@/lib/form-utils";
 import {
   sendLessonScheduled,
   sendMeetLinkUpdated,
@@ -14,10 +14,7 @@ import {
 
 
 function readOptionalDate(formData: FormData, key: string) {
-  const value = readString(formData, key);
-  if (!value) return null;
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  return readTurkeyDatetime(formData, key);
 }
 
 async function fetchLessonWithParties(lessonId: string) {
@@ -35,6 +32,8 @@ export async function createLessonAction(formData: FormData) {
   const studentId = readString(formData, "studentId");
   const teacherId = readString(formData, "teacherId");
   const packageId = readString(formData, "packageId") || null;
+  const title = readString(formData, "title") || null;
+  const subject = readString(formData, "subject") || null;
   const scheduledAt = readOptionalDate(formData, "scheduledAt");
   const duration = parseInt(readString(formData, "duration") || "60", 10);
   const googleMeetLink = readString(formData, "googleMeetLink") || null;
@@ -49,6 +48,8 @@ export async function createLessonAction(formData: FormData) {
       studentId,
       teacherId,
       packageId,
+      title,
+      subject,
       scheduledAt,
       duration: isNaN(duration) ? 60 : duration,
       googleMeetLink,
@@ -81,6 +82,8 @@ export async function createLessonAction(formData: FormData) {
 export async function updateLessonAction(formData: FormData) {
   const lessonId = readString(formData, "lessonId");
   const status = readString(formData, "status") as LessonStatus;
+  const title = readString(formData, "title") || null;
+  const subject = readString(formData, "subject") || null;
   const scheduledAt = readOptionalDate(formData, "scheduledAt");
   const googleMeetLink = readString(formData, "googleMeetLink") || null;
   const notes = readString(formData, "notes") || null;
@@ -97,6 +100,8 @@ export async function updateLessonAction(formData: FormData) {
     where: { id: lessonId },
     data: {
       status,
+      title,
+      subject,
       ...(scheduledAt ? { scheduledAt } : {}),
       googleMeetLink,
       notes

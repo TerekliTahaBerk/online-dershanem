@@ -150,7 +150,9 @@ export async function assignPackageToStudentAction(formData: FormData) {
     getServerAuthSession(),
     prisma.package.findUnique({ where: { id: packageId }, select: { isActive: true } }),
   ]);
-  if (!pkg?.isActive) return; // silently reject inactive package assignment
+  if (!pkg?.isActive) {
+    redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=inactive-package`);
+  }
 
   const assignedById = session?.user?.id ?? null;
 
@@ -165,6 +167,7 @@ export async function assignPackageToStudentAction(formData: FormData) {
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
   revalidatePath("/admin");
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=assigned`);
 }
 
 export async function extendPackageAction(formData: FormData) {
@@ -180,6 +183,7 @@ export async function extendPackageAction(formData: FormData) {
   }).catch(() => {});
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=extended`);
 }
 
 export async function revokePackageFromStudentAction(formData: FormData) {
@@ -193,6 +197,7 @@ export async function revokePackageFromStudentAction(formData: FormData) {
   }).catch(() => {});
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=revoked`);
 }
 
 export async function removePackageFromStudentAction(formData: FormData) {
@@ -205,4 +210,5 @@ export async function removePackageFromStudentAction(formData: FormData) {
   }).catch(() => {});
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=removed`);
 }

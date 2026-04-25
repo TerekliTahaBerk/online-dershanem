@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 type LessonWithRelations = Prisma.LessonGetPayload<{
   include: { teacher: true; package: true };
-}>;
+}> & { title?: string | null; subject?: string | null };
 
 type UserWithStudent = Prisma.UserGetPayload<{
   include: {
@@ -201,10 +201,11 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                     </div>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: isNearby ? "#fff" : "var(--pd-ink)" }}>
-                        {lesson.teacher.fullName}
+                        {lesson.title ?? lesson.teacher.fullName}
                       </div>
                       <div style={{ fontSize: 12, color: isNearby ? "rgba(255,255,255,0.7)" : "var(--pd-muted)", marginTop: 3 }}>
-                        {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
+                        {lesson.subject ? `${lesson.subject} · ` : ""}
+                        {lesson.teacher.fullName} · {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
                         {lesson.package ? ` · ${lesson.package.name}` : ""}
                       </div>
                       {lesson.notes && (
@@ -293,9 +294,12 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                         )}
                       </div>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--pd-ink)" }}>{lesson.teacher.fullName}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "var(--pd-ink)" }}>
+                          {lesson.title ?? lesson.teacher.fullName}
+                        </div>
                         <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 2 }}>
-                          {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
+                          {lesson.subject ? `${lesson.subject} · ` : ""}
+                          {lesson.teacher.fullName} · {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
                           {lesson.package ? ` · ${lesson.package.name}` : ""}
                         </div>
                         {lesson.notes && (

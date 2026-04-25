@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { updateExamStatus, releaseExamResults, releaseAnswerKey, addExamAccessTag, removeExamAccessTag } from "@/app/odk/admin/actions";
-import { AnswerKeyEditor, AnswerKeyJsonImporter, DeleteExamButton, ExamFilesEditor, ExamMeetLinkEditor, OutcomesJsonImporter } from "@/components/odk/admin/exam-detail-editor";
+import { AnswerKeyEditor, AnswerKeyJsonImporter, DeleteExamButton, ExamFilesEditor, ExamMetaEditor, ExamMeetLinkEditor, OutcomesJsonImporter } from "@/components/odk/admin/exam-detail-editor";
 import {
   hasOdkExamAnswerKeyReleasedAtColumn,
   hasOdkExamGoogleMeetLinkColumn,
@@ -22,6 +22,9 @@ type ExamDetail = {
   status: string;
   cadenceFamily: string;
   durationMinutes: number;
+  startsAt: Date | null;
+  endsAt: Date | null;
+  description: string | null;
   googleMeetLink: string | null;
   resultsReleasedAt: Date | null;
   answerKeyReleasedAt: Date | null;
@@ -57,6 +60,9 @@ async function getExam(examId: string) {
         status: true,
         cadenceFamily: true,
         durationMinutes: true,
+        startsAt: true,
+        endsAt: true,
+        description: true,
         ...(hasGoogleMeetLinkColumn ? { googleMeetLink: true } : {}),
         ...(hasAnswerKeyReleasedAtColumn ? { answerKeyReleasedAt: true } : {}),
         ...(hasResultsReleasedAtColumn ? { resultsReleasedAt: true } : {}),
@@ -85,6 +91,9 @@ async function getExam(examId: string) {
   return {
     exam: {
       ...row,
+      startsAt: row.startsAt ?? null,
+      endsAt: row.endsAt ?? null,
+      description: row.description ?? null,
       googleMeetLink: "googleMeetLink" in row ? row.googleMeetLink ?? null : null,
       answerKeyReleasedAt: "answerKeyReleasedAt" in row ? row.answerKeyReleasedAt ?? null : null,
       resultsReleasedAt: "resultsReleasedAt" in row ? row.resultsReleasedAt ?? null : null,
@@ -174,6 +183,19 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
           </div>
         </div>
       </div>
+
+      {/* Exam metadata editor */}
+      <ExamMetaEditor
+        examId={examId}
+        current={{
+          title: exam.title,
+          cadenceFamily: exam.cadenceFamily,
+          durationMinutes: exam.durationMinutes,
+          startsAt: exam.startsAt ? exam.startsAt.toISOString() : null,
+          endsAt: exam.endsAt ? exam.endsAt.toISOString() : null,
+          description: exam.description,
+        }}
+      />
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">

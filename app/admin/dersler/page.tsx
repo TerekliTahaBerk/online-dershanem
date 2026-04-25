@@ -251,9 +251,23 @@ export default async function DerslerPage({ searchParams }: Props) {
                       <tr key={`${lesson.id}-edit`}>
                         <td colSpan={8} className="px-4 py-4 bg-[#DCCCAC]/5 border-b border-[#DCCCAC]/30">
                           <div className="flex flex-col gap-4">
-                            <form action={updateLessonAction} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <form action={updateLessonAction} className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
                               <input type="hidden" name="lessonId" value={lesson.id} />
                               <input type="hidden" name="returnTo" value={buildUrl({ edit: lesson.id })} />
+
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-gray-600">Ders Başlığı</label>
+                                <input type="text" name="title" defaultValue={(lesson as unknown as { title?: string | null }).title ?? ""}
+                                  placeholder="Türev Soruları..."
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-gray-600">Branş / Konu</label>
+                                <input type="text" name="subject" defaultValue={(lesson as unknown as { subject?: string | null }).subject ?? ""}
+                                  placeholder="Matematik..."
+                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+                              </div>
 
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-gray-600">Durum</label>
@@ -271,7 +285,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
                               </div>
 
-                              <div className="space-y-1 col-span-2">
+                              <div className="space-y-1 col-span-2 md:col-span-4">
                                 <label className="text-xs font-medium text-gray-600">Google Meet Linki</label>
                                 <input type="url" name="googleMeetLink" defaultValue={lesson.googleMeetLink ?? ""}
                                   placeholder="https://meet.google.com/xxx-xxxx-xxx"
