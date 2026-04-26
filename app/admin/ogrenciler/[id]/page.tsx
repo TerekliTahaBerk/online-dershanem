@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import {
   buildWhatsAppLink,
+  calcDaysLeft,
   formatDateTime,
   formatDateTimeLocalInput,
   studentStatusLabels,
@@ -14,10 +15,10 @@ import {
   purchaseStatusLabels
 } from "@/lib/admin";
 import { updateStudentAction, updateStudentInfoAction } from "@/app/admin/actions";
-import { createStudentAccountAction, deleteStudentAction } from "@/app/admin/ogrenciler/actions";
+import { createStudentAccountAction, deleteStudentAction, assignPackageToStudentAction, removePackageFromStudentAction, extendPackageAction, revokePackageFromStudentAction } from "@/app/admin/ogrenciler/actions";
 import {
   User, Phone, Mail, MapPin, School, BookOpen, Target, CalendarDays,
-  ExternalLink, ChevronLeft, Plus, MessageCircle, KeyRound, CheckCircle
+  ExternalLink, ChevronLeft, Plus, MessageCircle, KeyRound, CheckCircle, Package, X
 } from "lucide-react";
 
 type StudentFull = Prisma.StudentGetPayload<{
@@ -31,6 +32,13 @@ type StudentFull = Prisma.StudentGetPayload<{
     };
     purchaseIntents: { include: { events: { take: 2 } } };
     leadSubmissions: true;
+    packages: {
+      include: {
+        package: true;
+        assignedBy: { select: { name: true } };
+      };
+      orderBy: { assignedAt: "desc" };
+    };
   };
 }>;
 
@@ -60,26 +68,42 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
   const updated = sp?.updated ?? "";
   const activeTab = sp?.tab ?? "dersler";
 
-  const student = await prisma.student.findUnique({
-    where: { id },
-    include: {
-      user: { select: { email: true } },
-      lessons: {
-        include: {
-          teacher: { select: { id: true, fullName: true } },
-          package: { select: { name: true } }
+  const [student, allPackages] = await Promise.all([
+    prisma.student.findUnique({
+      where: { id },
+      include: {
+        user: { select: { email: true } },
+        lessons: {
+          include: {
+            teacher: { select: { id: true, fullName: true } },
+            package: { select: { name: true } }
+          },
+          orderBy: { scheduledAt: "desc" }
         },
-        orderBy: { scheduledAt: "desc" }
-      },
-      purchaseIntents: {
-        include: { events: { orderBy: { createdAt: "desc" }, take: 2 } },
-        orderBy: { submittedAt: "desc" }
-      },
-      leadSubmissions: { orderBy: { submittedAt: "desc" } }
-    }
-  }) as unknown as StudentFull | null;
+        purchaseIntents: {
+          include: { events: { orderBy: { createdAt: "desc" }, take: 2 } },
+          orderBy: { submittedAt: "desc" }
+        },
+        leadSubmissions: { orderBy: { submittedAt: "desc" } },
+        packages: {
+          include: {
+            package: true,
+            assignedBy: { select: { name: true } },
+          },
+          orderBy: { assignedAt: "desc" },
+        }
+      }
+    }),
+    prisma.package.findMany({
+      where: { isActive: true },
+      orderBy: [{ type: "asc" }, { name: "asc" }],
+      select: { id: true, name: true, type: true, subjects: true }
+    })
+  ]);
 
   if (!student) notFound();
+
+  const assignedPackageIds = new Set((student as unknown as StudentFull).packages.map((sp) => sp.package.id));
 
   const waLink = buildWhatsAppLink(student.phone);
   const completedLessons = student.lessons.filter((l) => l.status === "COMPLETED").length;
@@ -92,6 +116,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
     { id: "dersler", label: "Dersler", count: student.lessons.length },
     { id: "odemeler", label: "Ödemeler", count: student.purchaseIntents.length },
     { id: "formlar", label: "Formlar", count: student.leadSubmissions.length },
+    { id: "paketler", label: "Paketler", count: (student as unknown as StudentFull).packages.length },
     { id: "profil", label: "Profil & Düzenle", count: null }
   ];
 
@@ -141,6 +166,31 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       {updated === "phone-taken" && (
         <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
           Bu telefon numarası başka bir öğrenciye ait.
+        </div>
+      )}
+      {updated === "assigned" && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+          Paket başarıyla atandı.
+        </div>
+      )}
+      {updated === "extended" && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm px-4 py-2.5 rounded-lg">
+          Paket bitiş tarihi güncellendi.
+        </div>
+      )}
+      {updated === "revoked" && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2.5 rounded-lg">
+          Paket erişimi iptal edildi.
+        </div>
+      )}
+      {updated === "removed" && (
+        <div className="bg-gray-50 border border-gray-200 text-gray-700 text-sm px-4 py-2.5 rounded-lg">
+          Paket kaydı silindi.
+        </div>
+      )}
+      {updated === "inactive-package" && (
+        <div className="bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-2.5 rounded-lg">
+          Seçilen paket aktif değil. Sadece aktif paketler atanabilir.
         </div>
       )}
 
@@ -421,6 +471,231 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
         </div>
       )}
 
+      {activeTab === "paketler" && (
+        <div className="space-y-5">
+          {/* Assign new package */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Package size={16} className="text-[#546B41]" />
+              <h2 className="font-semibold text-[#091413]">Paket Ata</h2>
+              <Link href="/admin/paketler/toplu-ata" className="ml-auto text-xs text-gray-400 hover:text-[#546B41] transition-colors">
+                Toplu ata →
+              </Link>
+            </div>
+            {allPackages.length === 0 ? (
+              <p className="text-sm text-gray-400">
+                Atanabilecek aktif paket yok.{" "}
+                <Link href="/admin/paketler/yeni" className="text-[#546B41] hover:underline">Yeni paket oluştur →</Link>
+              </p>
+            ) : (
+            <form action={assignPackageToStudentAction}>
+              <input type="hidden" name="studentId" value={student.id} />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                <div className="sm:col-span-1">
+                  <label className="text-xs font-medium text-gray-600 block mb-1.5">Paket Seçin</label>
+                  <select
+                    name="packageId"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                  >
+                    {["COURSE", "EXAM"].map((typeGroup) => {
+                      const group = allPackages.filter((p) => (p as unknown as { type: string }).type === typeGroup);
+                      if (group.length === 0) return null;
+                      return (
+                        <optgroup key={typeGroup} label={typeGroup === "COURSE" ? "📚 Ders Paketleri" : "📝 Deneme Paketleri"}>
+                          {group.map((p) => {
+                            const alreadyAssigned = assignedPackageIds.has(p.id);
+                            return (
+                              <option key={p.id} value={p.id}>
+                                {alreadyAssigned ? "↺ " : ""}{p.name}{p.subjects ? ` · ${p.subjects}` : ""}{alreadyAssigned ? " (zaten atanmış)" : ""}
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 block mb-1.5">
+                    Bitiş Tarihi <span className="text-gray-400 font-normal">(boş = süresiz)</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="expiresAt"
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                  />
+                  {/* Quick preset links */}
+                  <div className="flex gap-2 mt-1">
+                    {[
+                      { label: "30g", days: 30 },
+                      { label: "90g", days: 90 },
+                      { label: "1yıl", days: 365 },
+                    ].map(({ label, days }) => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + days);
+                      return (
+                        <span key={label} className="text-[10px] text-[#546B41] bg-[#546B41]/10 rounded px-1.5 py-0.5 select-all cursor-pointer" title={`${label} için tarih kopyala`}>
+                          {label}: {d.toISOString().slice(0, 10)}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <label className="text-xs font-medium text-gray-600 block mb-1.5">Not</label>
+                    <input
+                      type="text"
+                      name="notes"
+                      placeholder="İsteğe bağlı not"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1.5 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    <Plus size={14} /> Ata
+                  </button>
+                </div>
+              </div>
+            </form>
+            )}
+          </div>
+
+          {/* Assigned packages list */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="font-semibold text-[#091413]">Tanımlı Paketler</h2>
+              <span className="text-xs text-gray-400">{(student as unknown as StudentFull).packages.length} paket</span>
+            </div>
+            {(student as unknown as StudentFull).packages.length === 0 ? (
+              <div className="py-12 text-center text-gray-400 text-sm">
+                Bu öğrenciye henüz paket atanmamış.
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {(student as unknown as StudentFull).packages.map((sp) => {
+                  const now = new Date();
+                  const isRevoked = !!(sp as unknown as { revokedAt: Date | null }).revokedAt;
+                  const expiresAt = (sp as unknown as { expiresAt: Date | null }).expiresAt;
+                  const isExpired = !isRevoked && expiresAt ? expiresAt < now : false;
+                  const isActive = !isRevoked && !isExpired;
+                  const daysLeft = expiresAt && isActive
+                    ? calcDaysLeft(expiresAt, now)
+                    : null;
+
+                  return (
+                    <div key={sp.package.id} className="px-5 py-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isActive ? "bg-[#DCCCAC]/30" : "bg-gray-100"}`}>
+                            <Package size={14} className={isActive ? "text-[#546B41]" : "text-gray-400"} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-medium text-gray-800">{sp.package.name}</p>
+                              {/* Package type badge */}
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                (sp.package as unknown as { type: string }).type === "EXAM"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : "bg-[#DCCCAC]/40 text-[#435633]"
+                              }`}>
+                                {(sp.package as unknown as { type: string }).type === "EXAM" ? "📝 Deneme" : "📚 Ders"}
+                              </span>
+                              {isRevoked && (
+                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500">İptal</span>
+                              )}
+                              {isExpired && !isRevoked && (
+                                <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600">Süresi Doldu</span>
+                              )}
+                              {isActive && (
+                                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Aktif</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {sp.package.subjects}
+                              {expiresAt && (
+                                <> · <span className={daysLeft !== null && daysLeft <= 7 ? "text-red-600 font-medium" : ""}>
+                                  {isExpired
+                                    ? `${expiresAt.toLocaleDateString("tr-TR")} sona erdi`
+                                    : `${expiresAt.toLocaleDateString("tr-TR")} bitiş${daysLeft !== null ? ` · ${daysLeft} gün` : ""}`}
+                                </span></>
+                              )}
+                              {!expiresAt && !isRevoked && <> · Süresiz</>}
+                            </p>
+                            {(sp as unknown as { notes: string | null }).notes && (
+                              <p className="text-xs text-gray-400 italic mt-0.5">Not: {(sp as unknown as { notes: string | null }).notes}</p>
+                            )}
+                            <p className="text-[10px] text-gray-300 mt-0.5">
+                              Atandı: {(sp as unknown as { assignedAt: Date }).assignedAt.toLocaleDateString("tr-TR")}
+                              {(sp as unknown as { assignedBy: { name: string | null } | null }).assignedBy?.name && (
+                                <> · {(sp as unknown as { assignedBy: { name: string | null } | null }).assignedBy!.name}</>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {/* Extend date */}
+                          {!isRevoked && (
+                            <form action={extendPackageAction} className="flex items-center gap-1.5">
+                              <input type="hidden" name="studentId" value={student.id} />
+                              <input type="hidden" name="packageId" value={sp.package.id} />
+                              <input
+                                type="date"
+                                name="newExpiresAt"
+                                min={new Date().toISOString().split("T")[0]}
+                                defaultValue={expiresAt ? expiresAt.toISOString().split("T")[0] : ""}
+                                className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#546B41]/30"
+                              />
+                              <button
+                                type="submit"
+                                className="text-xs text-[#546B41] hover:text-[#435633] border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#546B41]/5 transition-colors whitespace-nowrap"
+                              >
+                                Uzat
+                              </button>
+                            </form>
+                          )}
+
+                          {/* Revoke */}
+                          {!isRevoked && (
+                            <form action={revokePackageFromStudentAction}>
+                              <input type="hidden" name="studentId" value={student.id} />
+                              <input type="hidden" name="packageId" value={sp.package.id} />
+                              <button
+                                type="submit"
+                                className="flex items-center gap-1 text-xs text-amber-700 hover:text-amber-900 border border-amber-200 rounded-lg px-2.5 py-1.5 hover:bg-amber-50 transition-colors"
+                              >
+                                <X size={11} /> İptal Et
+                              </button>
+                            </form>
+                          )}
+
+                          {/* Hard delete */}
+                          <form action={removePackageFromStudentAction}>
+                            <input type="hidden" name="studentId" value={student.id} />
+                            <input type="hidden" name="packageId" value={sp.package.id} />
+                            <button
+                              type="submit"
+                              className="text-xs text-red-500 hover:text-red-700 border border-red-100 rounded-lg px-2.5 py-1.5 hover:bg-red-50 transition-colors"
+                              title="Kaydı tamamen sil"
+                            >
+                              Sil
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {activeTab === "profil" && (
         <div className="space-y-5">
           {/* Full profile edit form */}
@@ -593,10 +868,25 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Aktif Paket</label>
-                  <input type="text" name="activePackage" defaultValue={student.activePackage ?? ""}
-                    placeholder="Paket adı..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                  <label className="text-xs font-medium text-gray-600">Aktif Paketler</label>
+                  <div className="w-full border border-gray-100 rounded-lg px-3 py-2.5 text-sm bg-gray-50 text-gray-500">
+                    {(student as unknown as StudentFull).packages.filter((sp) => {
+                      const now = new Date();
+                      const isRevoked = !!(sp as unknown as { revokedAt: Date | null }).revokedAt;
+                      const expiresAt = (sp as unknown as { expiresAt: Date | null }).expiresAt;
+                      return !isRevoked && (!expiresAt || expiresAt >= now);
+                    }).length > 0
+                      ? (student as unknown as StudentFull).packages
+                          .filter((sp) => {
+                            const now = new Date();
+                            const isRevoked = !!(sp as unknown as { revokedAt: Date | null }).revokedAt;
+                            const expiresAt = (sp as unknown as { expiresAt: Date | null }).expiresAt;
+                            return !isRevoked && (!expiresAt || expiresAt >= now);
+                          })
+                          .map((sp) => sp.package.name)
+                          .join(", ")
+                      : "Aktif paket yok — Paketler sekmesinden yönetin"}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

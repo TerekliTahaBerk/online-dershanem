@@ -24,6 +24,7 @@ type ExamDetail = {
   durationMinutes: number;
   startsAt: Date | null;
   endsAt: Date | null;
+  description: string | null;
   googleMeetLink: string | null;
   resultsReleasedAt: Date | null;
   answerKeyReleasedAt: Date | null;
@@ -61,6 +62,7 @@ async function getExam(examId: string) {
         durationMinutes: true,
         startsAt: true,
         endsAt: true,
+        description: true,
         ...(hasGoogleMeetLinkColumn ? { googleMeetLink: true } : {}),
         ...(hasAnswerKeyReleasedAtColumn ? { answerKeyReleasedAt: true } : {}),
         ...(hasResultsReleasedAtColumn ? { resultsReleasedAt: true } : {}),
@@ -89,6 +91,9 @@ async function getExam(examId: string) {
   return {
     exam: {
       ...row,
+      startsAt: row.startsAt ?? null,
+      endsAt: row.endsAt ?? null,
+      description: row.description ?? null,
       googleMeetLink: "googleMeetLink" in row ? row.googleMeetLink ?? null : null,
       answerKeyReleasedAt: "answerKeyReleasedAt" in row ? row.answerKeyReleasedAt ?? null : null,
       resultsReleasedAt: "resultsReleasedAt" in row ? row.resultsReleasedAt ?? null : null,
@@ -207,6 +212,7 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
             durationMinutes: exam.durationMinutes,
             startsAt: exam.startsAt,
             endsAt: exam.endsAt,
+            description: exam.description,
             attemptsCount: exam._count.attempts,
             sections: exam.sections.map((section) => ({
               id: section.id,

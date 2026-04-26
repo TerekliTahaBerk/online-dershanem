@@ -7,11 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
 import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 import { sendStudentWelcome } from "@/lib/email";
-
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
+import { getServerAuthSession } from "@/lib/auth";
+import { readString } from "@/lib/form-utils";
 
 export async function createStudentAction(formData: FormData) {
   const fullName = readString(formData, "fullName");
@@ -138,4 +135,80 @@ export async function deleteStudentAction(formData: FormData) {
   revalidatePath("/admin/ogrenciler");
   revalidatePath("/admin");
   redirect("/admin/ogrenciler?updated=deleted");
+}
+
+export async function assignPackageToStudentAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  const expiresAtRaw = readString(formData, "expiresAt");
+  const notes = readString(formData, "notes") || null;
+
+  if (!studentId || !packageId) return;
+
+  // Parallelize auth + package validation
+  const [session, pkg] = await Promise.all([
+    getServerAuthSession(),
+    prisma.package.findUnique({ where: { id: packageId }, select: { isActive: true } }),
+  ]);
+  if (!pkg?.isActive) {
+    redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=inactive-package`);
+  }
+
+  const assignedById = session?.user?.id ?? null;
+
+  const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : null;
+
+  await prisma.studentPackage.upsert({
+    where: { studentId_packageId: { studentId, packageId } },
+    create: { studentId, packageId, expiresAt, notes, assignedById, revokedAt: null },
+    // Re-assigning: restore access, update expiry, record who re-assigned
+    update: { expiresAt, notes, revokedAt: null, assignedAt: new Date(), assignedById },
+  });
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+  revalidatePath("/admin");
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=assigned`);
+}
+
+export async function extendPackageAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  const newExpiresAt = readString(formData, "newExpiresAt");
+
+  if (!studentId || !packageId || !newExpiresAt) return;
+
+  await prisma.studentPackage.update({
+    where: { studentId_packageId: { studentId, packageId } },
+    data: { expiresAt: new Date(newExpiresAt), revokedAt: null },
+  }).catch(() => {});
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=extended`);
+}
+
+export async function revokePackageFromStudentAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  if (!studentId || !packageId) return;
+
+  await prisma.studentPackage.update({
+    where: { studentId_packageId: { studentId, packageId } },
+    data: { revokedAt: new Date() },
+  }).catch(() => {});
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=revoked`);
+}
+
+export async function removePackageFromStudentAction(formData: FormData) {
+  const studentId = readString(formData, "studentId");
+  const packageId = readString(formData, "packageId");
+  if (!studentId || !packageId) return;
+
+  await prisma.studentPackage.delete({
+    where: { studentId_packageId: { studentId, packageId } },
+  }).catch(() => {});
+
+  revalidatePath(`/admin/ogrenciler/${studentId}`);
+  redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=removed`);
 }

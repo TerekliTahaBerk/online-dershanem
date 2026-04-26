@@ -6,18 +6,11 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
 import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
+import { readString, readTurkeyDatetime } from "@/lib/form-utils";
 
-function readString(formData: FormData, key: string) {
-  const value = formData.get(key);
-  return typeof value === "string" ? value.trim() : "";
-}
 
 function readOptionalDate(formData: FormData, key: string) {
-  const value = readString(formData, key);
-  if (!value) return null;
-
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  return readTurkeyDatetime(formData, key);
 }
 
 function withFlash(returnTo: string, updated: string) {
@@ -30,7 +23,6 @@ function withFlash(returnTo: string, updated: string) {
 export async function updateStudentAction(formData: FormData) {
   const studentId = readString(formData, "studentId");
   const status = readString(formData, "status") as StudentStatus;
-  const activePackage = readString(formData, "activePackage");
   const notes = readString(formData, "notes");
   const taskLabel = readString(formData, "taskLabel");
   const nextActionAt = readOptionalDate(formData, "nextActionAt");
@@ -44,7 +36,6 @@ export async function updateStudentAction(formData: FormData) {
     where: { id: studentId },
     data: {
       status,
-      activePackage: activePackage || null,
       notes: notes || null,
       taskLabel: taskLabel || null,
       nextActionAt

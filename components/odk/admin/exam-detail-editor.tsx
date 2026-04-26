@@ -8,9 +8,11 @@ import {
   importAnswerKeyJson,
   importOutcomesJson,
   saveOfficialAnswers,
+  updateExam,
   updateExamDetails,
   updateExamFiles,
   updateExamMeetLink,
+  updateOdkPackage,
   type ExamSectionUpdateInput,
 } from "@/app/odk/admin/actions";
 
@@ -50,6 +52,7 @@ export function ExamDetailsEditor({
     durationMinutes: number;
     startsAt: Date | string | null;
     endsAt: Date | string | null;
+    description?: string | null;
     attemptsCount: number;
     sections: Section[];
   };
@@ -62,6 +65,7 @@ export function ExamDetailsEditor({
   const [durationMinutes, setDurationMinutes] = useState(exam.durationMinutes);
   const [startsAt, setStartsAt] = useState(toDateTimeLocal(exam.startsAt));
   const [endsAt, setEndsAt] = useState(toDateTimeLocal(exam.endsAt));
+  const [description, setDescription] = useState(exam.description ?? "");
   const [sections, setSections] = useState<ExamSectionUpdateInput[]>(
     exam.sections.map((section) => ({
       id: section.id,
@@ -101,6 +105,7 @@ export function ExamDetailsEditor({
           durationMinutes: Number(durationMinutes),
           startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
           endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
+          description: description.trim() || null,
           sections: sections.map((section) => ({
             ...section,
             title: section.title.trim(),
@@ -182,6 +187,17 @@ export function ExamDetailsEditor({
           />
         </label>
       </div>
+
+      <label className="block text-sm font-medium text-stone-700">
+        Açıklama
+        <textarea
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          rows={2}
+          className={`mt-1.5 resize-none ${inputCls}`}
+          placeholder="Sınav hakkında kısa açıklama..."
+        />
+      </label>
 
       <div className="space-y-3 border-t border-stone-100 pt-5">
         <div className="flex items-center justify-between gap-3">
@@ -655,5 +671,333 @@ export function DeletePackageButton({ packageId }: { packageId: string }) {
       confirmMessage="Bu paketi kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
       onDelete={() => deletePackage(packageId)}
     />
+  );
+}
+
+const CADENCE_FAMILIES = ["TYT", "AYT", "LGS", "KPSS", "ALES"] as const;
+
+export function ExamMetaEditor({
+  examId,
+  current,
+}: {
+  examId: string;
+  current: {
+    title: string;
+    cadenceFamily: string;
+    durationMinutes: number;
+    startsAt: string | null;
+    endsAt: string | null;
+    description: string | null;
+  };
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const [title, setTitle] = useState(current.title);
+  const [cadenceFamily, setCadenceFamily] = useState(current.cadenceFamily);
+  const [durationMinutes, setDurationMinutes] = useState(String(current.durationMinutes));
+  const [startsAt, setStartsAt] = useState(current.startsAt ? current.startsAt.slice(0, 16) : "");
+  const [endsAt, setEndsAt] = useState(current.endsAt ? current.endsAt.slice(0, 16) : "");
+  const [description, setDescription] = useState(current.description ?? "");
+
+  const handleSave = () => {
+    if (!title.trim()) { setError("Sınav adı boş olamaz."); return; }
+    const dur = parseInt(durationMinutes, 10);
+    if (isNaN(dur) || dur <= 0) { setError("Geçerli bir süre girin."); return; }
+    setError(null);
+
+    startTransition(async () => {
+      try {
+        await updateExam(examId, {
+          title: title.trim(),
+          cadenceFamily,
+          durationMinutes: dur,
+          startsAt: startsAt ? new Date(startsAt).toISOString() : null,
+          endsAt: endsAt ? new Date(endsAt).toISOString() : null,
+          description: description.trim() || null,
+        });
+        setSaved(true);
+        setOpen(false);
+        setTimeout(() => setSaved(false), 3000);
+      } catch {
+        setError("Kaydedilemedi. Tekrar deneyin.");
+      }
+    });
+  };
+
+  const handleCancel = () => {
+    setTitle(current.title);
+    setCadenceFamily(current.cadenceFamily);
+    setDurationMinutes(String(current.durationMinutes));
+    setStartsAt(current.startsAt ? current.startsAt.slice(0, 16) : "");
+    setEndsAt(current.endsAt ? current.endsAt.slice(0, 16) : "");
+    setDescription(current.description ?? "");
+    setError(null);
+    setOpen(false);
+  };
+
+  return (
+    <div className="rounded-xl border border-stone-200 bg-white">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-5 py-4 text-left"
+      >
+        <span className="text-sm font-semibold text-stone-900">Sınav Bilgilerini Düzenle</span>
+        <span className="text-xs text-stone-400">{open ? "▲ Kapat" : "▼ Aç"}</span>
+      </button>
+
+      {saved && !open && (
+        <div className="mx-5 mb-4 flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2 text-xs text-emerald-700 font-medium">
+          <Check className="h-3.5 w-3.5" /> Değişiklikler kaydedildi
+        </div>
+      )}
+
+      {open && (
+        <div className="border-t border-stone-100 px-5 py-5 space-y-4">
+          {error && (
+            <div className="rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">{error}</div>
+          )}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Sınav Adı *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={inputCls}
+                placeholder="TYT Deneme Sınavı #1"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Sınav Türü</label>
+              <select
+                value={cadenceFamily}
+                onChange={(e) => setCadenceFamily(e.target.value)}
+                className={inputCls}
+              >
+                {CADENCE_FAMILIES.map((f) => (
+                  <option key={f} value={f}>{f}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Süre (dakika) *</label>
+              <input
+                type="number"
+                min={1}
+                value={durationMinutes}
+                onChange={(e) => setDurationMinutes(e.target.value)}
+                className={inputCls}
+                placeholder="135"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Başlangıç Tarihi / Saati</label>
+              <input
+                type="datetime-local"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Bitiş Tarihi / Saati</label>
+              <input
+                type="datetime-local"
+                value={endsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Açıklama</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                className={`${inputCls} resize-none`}
+                placeholder="Sınav hakkında kısa açıklama..."
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-stone-100">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="rounded-lg border border-stone-200 px-4 py-2 text-xs font-medium text-stone-600 hover:bg-stone-50 transition"
+            >
+              İptal
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
+            >
+              <Save className="h-3.5 w-3.5" />
+              {isPending ? "Kaydediliyor..." : "Kaydet"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function PackageEditForm({
+  packageId,
+  current,
+}: {
+  packageId: string;
+  current: {
+    title: string;
+    description: string | null;
+    priceCents: number;
+    durationDays: number | null;
+  };
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const [title, setTitle] = useState(current.title);
+  const [description, setDescription] = useState(current.description ?? "");
+  const [price, setPrice] = useState(String(current.priceCents / 100));
+  const [durationDays, setDurationDays] = useState(current.durationDays ? String(current.durationDays) : "");
+
+  const handleSave = () => {
+    if (!title.trim()) { setError("Paket adı boş olamaz."); return; }
+    const priceCents = Math.round(parseFloat(price.replace(",", ".")) * 100);
+    if (isNaN(priceCents) || priceCents <= 0) { setError("Geçerli bir fiyat girin."); return; }
+    setError(null);
+
+    startTransition(async () => {
+      try {
+        await updateOdkPackage(packageId, {
+          title: title.trim(),
+          description: description.trim() || null,
+          priceCents,
+          durationDays: durationDays ? Number(durationDays) : null,
+        });
+        setSaved(true);
+        setOpen(false);
+        setTimeout(() => setSaved(false), 3000);
+      } catch {
+        setError("Kaydedilemedi. Tekrar deneyin.");
+      }
+    });
+  };
+
+  const handleCancel = () => {
+    setTitle(current.title);
+    setDescription(current.description ?? "");
+    setPrice(String(current.priceCents / 100));
+    setDurationDays(current.durationDays ? String(current.durationDays) : "");
+    setError(null);
+    setOpen(false);
+  };
+
+  return (
+    <div className="rounded-xl border border-stone-200 bg-white">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-5 py-4 text-left"
+      >
+        <span className="text-sm font-semibold text-stone-900">Paket Bilgilerini Düzenle</span>
+        <span className="text-xs text-stone-400">{open ? "▲ Kapat" : "▼ Aç"}</span>
+      </button>
+
+      {saved && !open && (
+        <div className="mx-5 mb-4 flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2 text-xs text-emerald-700 font-medium">
+          <Check className="h-3.5 w-3.5" /> Değişiklikler kaydedildi
+        </div>
+      )}
+
+      {open && (
+        <div className="border-t border-stone-100 px-5 py-5 space-y-4">
+          {error && (
+            <div className="rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">{error}</div>
+          )}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Paket Adı *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={inputCls}
+                placeholder="TYT Tüm Denemeler"
+              />
+            </div>
+
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Açıklama</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                className={`${inputCls} resize-none`}
+                placeholder="Kısa açıklama..."
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Fiyat (₺) *</label>
+              <input
+                type="text"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                className={inputCls}
+                placeholder="299.00"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-stone-600">Erişim Süresi (gün)</label>
+              <input
+                type="number"
+                min={1}
+                value={durationDays}
+                onChange={(e) => setDurationDays(e.target.value)}
+                className={inputCls}
+                placeholder="365 (boş = süresiz)"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-stone-100">
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="rounded-lg border border-stone-200 px-4 py-2 text-xs font-medium text-stone-600 hover:bg-stone-50 transition"
+            >
+              İptal
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
+            >
+              <Save className="h-3.5 w-3.5" />
+              {isPending ? "Kaydediliyor..." : "Kaydet"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

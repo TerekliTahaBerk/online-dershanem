@@ -7,7 +7,7 @@ import {
   useCallback,
   useTransition,
 } from "react";
-import { startExam, submitAttempt, recordTabSwitch } from "@/app/odk/panel/actions";
+import { startExam, submitAttempt, recordTabSwitch, recordAnswer } from "@/app/odk/panel/actions";
 import {
   AlertTriangle,
   Maximize2,
@@ -18,6 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Send,
+  Loader2,
+  CloudOff,
 } from "lucide-react";
 
 type Section = {
@@ -38,6 +40,8 @@ type Props = {
   sections: Section[];
   bookletUrl: string | null;
   googleMeetLink: string | null;
+  serverNow: number;
+  examStartsAt: string | null;
 };
 
 const OPTIONS = ["A", "B", "C", "D", "E"];
@@ -47,6 +51,7 @@ const OPTIONS = ["A", "B", "C", "D", "E"];
 function useExamTimer(
   durationMinutes: number,
   startedAt: string | null,
+  clockOffset: number,
   onExpire: () => void,
 ) {
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -58,7 +63,8 @@ function useExamTimer(
     const limitMs = durationMinutes * 60 * 1000;
 
     const tick = () => {
-      const elapsed = Date.now() - startMs;
+      const now = Date.now() + clockOffset;
+      const elapsed = now - startMs;
       const left = Math.max(0, limitMs - elapsed);
       setRemaining(left);
       if (left === 0 && !expiredRef.current) {
@@ -70,7 +76,7 @@ function useExamTimer(
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [startedAt, durationMinutes, onExpire]);
+  }, [startedAt, durationMinutes, clockOffset, onExpire]);
 
   return remaining;
 }
@@ -90,16 +96,29 @@ function PreExamScreen({
   examTitle,
   durationMinutes,
   googleMeetLink,
+  examStartsAt,
+  serverNow,
   onStart,
   pending,
 }: {
   examTitle: string;
   durationMinutes: number;
   googleMeetLink: string | null;
+  examStartsAt: string | null;
+  serverNow: number;
   onStart: () => void;
   pending: boolean;
 }) {
   const [meetConfirmed, setMeetConfirmed] = useState(!googleMeetLink);
+
+  const lateMinutes =
+    examStartsAt && serverNow > new Date(examStartsAt).getTime()
+      ? Math.floor((serverNow - new Date(examStartsAt).getTime()) / 60000)
+      : 0;
+
+  const adjustedMinutes = lateMinutes > 0
+    ? Math.max(1, durationMinutes - lateMinutes)
+    : durationMinutes;
 
   return (
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-6">
@@ -108,6 +127,19 @@ function PreExamScreen({
           <h1 className="text-2xl font-bold text-stone-900">{examTitle}</h1>
           <p className="text-stone-500 mt-1">{durationMinutes} dakikalık sınav</p>
         </div>
+
+        {/* Late joiner warning */}
+        {lateMinutes > 0 && (
+          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-4 space-y-1">
+            <p className="text-sm font-semibold text-orange-800 flex items-center gap-2">
+              <Clock className="h-4 w-4 shrink-0" />
+              Sınava {lateMinutes} dakika geç kaldın
+            </p>
+            <p className="text-sm text-orange-700">
+              Kalan süren <strong>{adjustedMinutes} dakika</strong>. Sınav diğer öğrenciler için devam ediyor.
+            </p>
+          </div>
+        )}
 
         {/* Rules */}
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 space-y-3">
@@ -211,7 +243,10 @@ export function ExamProctor({
   sections,
   bookletUrl,
   googleMeetLink,
+  serverNow,
+  examStartsAt,
 }: Props) {
+  const clockOffsetRef = useRef(serverNow - Date.now());
   const [phase, setPhase] = useState<"pre" | "exam" | "submitted">(
     initialAttemptId ? "exam" : "pre",
   );
@@ -228,6 +263,17 @@ export function ExamProctor({
     return init;
   });
 
+  // Per-answer save status
+  type SaveStatus = "idle" | "saving" | "saved" | "error";
+  const [saveStatus, setSaveStatus] = useState<Record<string, Record<number, SaveStatus>>>({});
+  const saveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // Per-answer timestamps for integrity analysis
+  const answerTimestampsRef = useRef<Record<string, Record<number, number>>>({});
+
+  // Active question for keyboard navigation
+  const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
+
   // Tab detection state
   const [violationCount, setViolationCount] = useState(0);
   const [showViolation, setShowViolation] = useState(false);
@@ -240,6 +286,9 @@ export function ExamProctor({
   // Confirm submit
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Duplicate tab detection
+  const [isDuplicateTab, setIsDuplicateTab] = useState(false);
 
   // ── Tab detection ──────────────────────────────────────────────────────────
 
@@ -293,13 +342,111 @@ export function ExamProctor({
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, [phase, handleFullscreenChange]);
 
+  // ── Duplicate tab detection ────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (phase !== "exam") return;
+    if (typeof BroadcastChannel === "undefined") return;
+
+    const channel = new BroadcastChannel(`odk-exam-${examId}`);
+
+    // Announce this tab is active — any other open tab will see this and show an error
+    channel.postMessage({ type: "CLAIM" });
+
+    channel.onmessage = () => {
+      // Another tab just claimed the exam session
+      setIsDuplicateTab(true);
+    };
+
+    return () => channel.close();
+  }, [phase, examId]);
+
+  // ── Anti-cheat: block copy/paste/print/devtools/right-click ──────────────
+
+  useEffect(() => {
+    if (phase !== "exam") return;
+    const prevent = (e: Event) => e.preventDefault();
+    document.addEventListener("contextmenu", prevent);
+    document.addEventListener("copy", prevent);
+    document.addEventListener("cut", prevent);
+    document.addEventListener("paste", prevent);
+    return () => {
+      document.removeEventListener("contextmenu", prevent);
+      document.removeEventListener("copy", prevent);
+      document.removeEventListener("cut", prevent);
+      document.removeEventListener("paste", prevent);
+    };
+  }, [phase]);
+
+  // ── Keyboard shortcuts ────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (phase !== "exam") return;
+    const currentSection = sections[activeSection];
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!currentSection) return;
+
+      // Block dangerous shortcuts
+      if (e.key === "PrintScreen") { e.preventDefault(); return; }
+      if (e.key === "F12") { e.preventDefault(); return; }
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && ["u", "s", "p", "a"].includes(e.key.toLowerCase())) { e.preventDefault(); return; }
+      if (ctrl && e.shiftKey && ["i", "j", "c"].includes(e.key.toLowerCase())) { e.preventDefault(); return; }
+
+      // Answer selection: A–E
+      const opt = e.key.toUpperCase();
+      if (["A", "B", "C", "D", "E"].includes(opt) && activeQuestion !== null) {
+        e.preventDefault();
+        const cur = answers[currentSection.id]?.[activeQuestion];
+        if (cur === opt) clearAnswer(currentSection.id, activeQuestion);
+        else setAnswer(currentSection.id, activeQuestion, opt);
+        return;
+      }
+
+      // Question navigation: ArrowDown / ArrowRight → next; ArrowUp / ArrowLeft → prev
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const next = (activeQuestion ?? 0) + 1;
+        if (next <= currentSection.questionCount) {
+          setActiveQuestion(next);
+        } else if (activeSection < sections.length - 1) {
+          setActiveSection((p) => p + 1);
+          setActiveQuestion(1);
+        }
+        return;
+      }
+      if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        const prev = (activeQuestion ?? 2) - 1;
+        if (prev >= 1) {
+          setActiveQuestion(prev);
+        } else if (activeSection > 0) {
+          const prevSec = sections[activeSection - 1];
+          setActiveSection((p) => p - 1);
+          setActiveQuestion(prevSec.questionCount);
+        }
+        return;
+      }
+
+      // Enter first question of section
+      if (e.key === "Enter" && activeQuestion === null) {
+        e.preventDefault();
+        setActiveQuestion(1);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [phase, activeSection, activeQuestion, answers, sections]);
+
   // ── Auto-submit on timer expire ────────────────────────────────────────────
 
   const handleTimerExpire = useCallback(() => {
     if (!attemptId || phase !== "exam") return;
     startTransition(async () => {
       try {
-        await submitAttempt(attemptId, answers);
+        await submitAttempt(attemptId, answers, answerTimestampsRef.current);
         setPhase("submitted");
       } catch {
         // ignore — page will refresh
@@ -307,7 +454,7 @@ export function ExamProctor({
     });
   }, [attemptId, answers, phase]);
 
-  const remaining = useExamTimer(durationMinutes, startedAt, handleTimerExpire);
+  const remaining = useExamTimer(durationMinutes, startedAt, clockOffsetRef.current, handleTimerExpire);
 
   // ── Start exam ─────────────────────────────────────────────────────────────
 
@@ -315,6 +462,7 @@ export function ExamProctor({
     startTransition(async () => {
       const result = await startExam(examId);
       if (result) {
+        clockOffsetRef.current = result.serverNow - Date.now();
         setAttemptId(result.attemptId);
         setStartedAt(result.startedAt);
       }
@@ -330,7 +478,7 @@ export function ExamProctor({
     setSubmitError(null);
     startTransition(async () => {
       try {
-        await submitAttempt(attemptId, answers);
+        await submitAttempt(attemptId, answers, answerTimestampsRef.current);
         setPhase("submitted");
       } catch {
         setSubmitError("Bir hata oluştu. Tekrar dene.");
@@ -339,13 +487,44 @@ export function ExamProctor({
     });
   }
 
-  // ── Answer helpers ─────────────────────────────────────────────────────────
+  // ── Answer helpers with auto-save ──────────────────────────────────────────
+
+  function scheduleAutoSave(sectionId: string, qNum: number, option: string | null) {
+    if (!attemptId) return;
+    const key = `${sectionId}-${qNum}`;
+    clearTimeout(saveTimeoutsRef.current[key]);
+    setSaveStatus((prev) => ({
+      ...prev,
+      [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "saving" },
+    }));
+    saveTimeoutsRef.current[key] = setTimeout(() => {
+      startTransition(async () => {
+        try {
+          await recordAnswer(attemptId, sectionId, qNum, option);
+          setSaveStatus((prev) => ({
+            ...prev,
+            [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "saved" },
+          }));
+        } catch {
+          setSaveStatus((prev) => ({
+            ...prev,
+            [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "error" },
+          }));
+        }
+      });
+    }, 400);
+  }
 
   function setAnswer(sectionId: string, qNum: number, option: string) {
+    // Record timestamp for integrity analysis
+    answerTimestampsRef.current[sectionId] ??= {};
+    answerTimestampsRef.current[sectionId][qNum] = Date.now();
+
     setAnswers((prev) => ({
       ...prev,
       [sectionId]: { ...prev[sectionId], [qNum]: option },
     }));
+    scheduleAutoSave(sectionId, qNum, option);
   }
 
   function clearAnswer(sectionId: string, qNum: number) {
@@ -354,6 +533,7 @@ export function ExamProctor({
       delete updated[qNum];
       return { ...prev, [sectionId]: updated };
     });
+    scheduleAutoSave(sectionId, qNum, null);
   }
 
   const totalQuestions = sections.reduce((s, sec) => s + sec.questionCount, 0);
@@ -361,6 +541,36 @@ export function ExamProctor({
     (sum, sec) => sum + Object.keys(sec).length,
     0,
   );
+
+  const allStatuses = Object.values(saveStatus).flatMap((sec) => Object.values(sec));
+  const isSaving = allStatuses.some((s) => s === "saving");
+  const hasSaveError = allStatuses.some((s) => s === "error");
+
+  // ── Duplicate tab overlay ──────────────────────────────────────────────────
+
+  if (isDuplicateTab) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/90 backdrop-blur-sm p-6">
+        <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl space-y-4">
+          <div className="flex justify-center">
+            <div className="rounded-full bg-amber-100 p-4">
+              <AlertTriangle className="h-8 w-8 text-amber-600" />
+            </div>
+          </div>
+          <h2 className="text-lg font-bold text-stone-900">Başka Sekmede Açık</h2>
+          <p className="text-sm text-stone-600">
+            Bu sınav başka bir sekmede zaten açık. Devam etmek için diğer sekmeyi kapatıp bu sayfayı yenile.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full rounded-xl bg-stone-900 py-2.5 text-sm font-semibold text-white hover:bg-stone-700 transition"
+          >
+            Sayfayı Yenile
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── Pre-exam screen ────────────────────────────────────────────────────────
 
@@ -370,6 +580,8 @@ export function ExamProctor({
         examTitle={examTitle}
         durationMinutes={durationMinutes}
         googleMeetLink={googleMeetLink}
+        examStartsAt={examStartsAt}
+        serverNow={serverNow}
         onStart={handleStart}
         pending={pending}
       />
@@ -431,6 +643,17 @@ export function ExamProctor({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Auto-save indicator */}
+          {hasSaveError && (
+            <span className="flex items-center gap-1 text-xs text-red-600">
+              <CloudOff className="h-3.5 w-3.5" /> Kaydedilemedi
+            </span>
+          )}
+          {isSaving && !hasSaveError && (
+            <span className="flex items-center gap-1 text-xs text-stone-400">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Kaydediliyor
+            </span>
+          )}
           <span className="text-xs text-stone-500">
             {totalAnswered}/{totalQuestions} işaretlendi
           </span>
@@ -510,6 +733,40 @@ export function ExamProctor({
             })}
           </div>
 
+          {/* Question navigator strip */}
+          {currentSection && (
+            <div className="shrink-0 border-b border-stone-100 bg-stone-50 px-3 py-2">
+              <div className="flex flex-wrap gap-1">
+                {Array.from({ length: currentSection.questionCount }, (_, i) => i + 1).map((qNum) => {
+                  const isAnswered = !!answers[currentSection.id]?.[qNum];
+                  const isActive = activeQuestion === qNum;
+                  const status = saveStatus[currentSection.id]?.[qNum];
+                  return (
+                    <button
+                      key={qNum}
+                      onClick={() => setActiveQuestion(qNum)}
+                      title={`Soru ${qNum}`}
+                      className={`flex h-6 w-6 items-center justify-center rounded text-[10px] font-bold transition ${
+                        isActive
+                          ? "bg-blue-600 text-white ring-2 ring-blue-300"
+                          : isAnswered
+                          ? status === "error"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-emerald-100 text-emerald-700"
+                          : "bg-white border border-stone-200 text-stone-400 hover:border-stone-400"
+                      }`}
+                    >
+                      {qNum}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-1 text-[10px] text-stone-400">
+                Ok tuşları ile gezin · A–E ile seç
+              </p>
+            </div>
+          )}
+
           {/* Question grid */}
           <div className="flex-1 overflow-y-auto p-4">
             {currentSection && (
@@ -517,9 +774,17 @@ export function ExamProctor({
                 {Array.from({ length: currentSection.questionCount }, (_, i) => i + 1).map(
                   (qNum) => {
                     const selected = answers[currentSection.id]?.[qNum];
+                    const isActive = activeQuestion === qNum;
+                    const status = saveStatus[currentSection.id]?.[qNum];
                     return (
-                      <div key={qNum} className="flex items-center gap-2">
-                        <span className="w-6 text-right text-xs font-mono text-stone-400">
+                      <div
+                        key={qNum}
+                        onClick={() => setActiveQuestion(qNum)}
+                        className={`flex items-center gap-2 rounded-lg p-1 transition cursor-default ${
+                          isActive ? "bg-blue-50 ring-1 ring-blue-200" : "hover:bg-stone-50"
+                        }`}
+                      >
+                        <span className={`w-6 text-right text-xs font-mono ${isActive ? "text-blue-600 font-bold" : "text-stone-400"}`}>
                           {qNum}
                         </span>
                         <div className="flex gap-1">
@@ -527,11 +792,13 @@ export function ExamProctor({
                             <button
                               key={opt}
                               type="button"
-                              onClick={() =>
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveQuestion(qNum);
                                 selected === opt
                                   ? clearAnswer(currentSection.id, qNum)
-                                  : setAnswer(currentSection.id, qNum, opt)
-                              }
+                                  : setAnswer(currentSection.id, qNum, opt);
+                              }}
                               className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold transition ${
                                 selected === opt
                                   ? "bg-emerald-600 text-white shadow-sm"
@@ -542,6 +809,13 @@ export function ExamProctor({
                             </button>
                           ))}
                         </div>
+                        {/* Per-answer save indicator */}
+                        {status === "saving" && (
+                          <Loader2 className="h-3 w-3 text-stone-300 animate-spin shrink-0" />
+                        )}
+                        {status === "error" && (
+                          <CloudOff className="h-3 w-3 text-red-400 shrink-0" />
+                        )}
                       </div>
                     );
                   },

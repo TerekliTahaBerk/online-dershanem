@@ -264,7 +264,7 @@ export default async function OgrencilerPage({ searchParams }: Props) {
                               borderBottom: "1px solid var(--pd-line)"
                             }}
                           >
-                            <form action={updateStudentAction} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+                            <form action={updateStudentAction} className="pd-student-edit-grid">
                               <input type="hidden" name="studentId" value={student.id} />
                               <input type="hidden" name="returnTo" value={buildUrl({ edit: student.id })} />
 

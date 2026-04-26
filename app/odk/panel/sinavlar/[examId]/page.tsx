@@ -4,6 +4,7 @@ import { ExternalLink, Clock, FileText, CheckCircle2, AlertCircle, Trophy } from
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ExamProctor } from "@/components/odk/student/exam-proctor";
+import { WaitingRoom } from "@/components/odk/student/waiting-room";
 import {
   hasOdkExamAnswerKeyReleasedAtColumn,
   hasOdkExamAttemptSectionScoresColumn,
@@ -68,6 +69,7 @@ async function getExamData(examId: string, userId: string) {
       wrongCount: true,
       blankCount: true,
       durationSeconds: true,
+      resultPayload: true,
       ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
       opticalAnswers: true,
     },
@@ -105,17 +107,46 @@ export default async function ExamDetailPage({
 
   // Enforce time window
   const now = new Date();
+  const serverNow = Date.now();
   const rawExam = exam as unknown as { startsAt?: Date | null; endsAt?: Date | null };
+
   if (rawExam.startsAt && rawExam.startsAt > now && !attempt) {
+    const windowOpenMs = rawExam.startsAt.getTime() - 15 * 60 * 1000;
+    const inWaitingWindow = serverNow >= windowOpenMs;
+
+    if (inWaitingWindow) {
+      // 15-min window: show live countdown
+      return (
+        <WaitingRoom
+          examTitle={exam.title}
+          startsAt={rawExam.startsAt.toISOString()}
+          serverNow={serverNow}
+          googleMeetLink={(exam as { googleMeetLink?: string | null }).googleMeetLink ?? null}
+        />
+      );
+    }
+
+    // More than 15 min away: static upcoming info
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center gap-3">
         <p className="text-lg font-semibold text-stone-800">Sınav Henüz Başlamadı</p>
-        <p className="text-sm text-stone-500 mt-2">
-          Bu sınav {new Date(rawExam.startsAt).toLocaleDateString("tr-TR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })} tarihinde başlayacak.
+        <p className="text-sm text-stone-500">
+          Bu sınav{" "}
+          <strong>
+            {rawExam.startsAt.toLocaleDateString("tr-TR", {
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </strong>{" "}
+          tarihinde başlayacak.
         </p>
+        <p className="text-xs text-stone-400">Başlamadan 15 dakika önce bu sayfaya geri dön.</p>
       </div>
     );
   }
+
   if (rawExam.endsAt && rawExam.endsAt < now && !attempt) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
@@ -190,6 +221,8 @@ export default async function ExamDetailPage({
         sections={sections}
         bookletUrl={booklet?.publicUrl ?? null}
         googleMeetLink={(exam as { googleMeetLink?: string }).googleMeetLink ?? null}
+        serverNow={serverNow}
+        examStartsAt={rawExam.startsAt ? rawExam.startsAt.toISOString() : null}
       />
     );
   }
@@ -205,6 +238,11 @@ export default async function ExamDetailPage({
     blank: number;
     net: number;
   }> | null) ?? null;
+
+  type KazanimStat = { konu: string; kazanim: string; correct: number; wrong: number; blank: number };
+  const kazanimBreakdown = (
+    (attempt?.resultPayload as { kazanimBreakdown?: KazanimStat[] } | null)?.kazanimBreakdown ?? []
+  );
 
   return (
     <div className="p-6 space-y-6 max-w-4xl">
@@ -338,6 +376,44 @@ export default async function ExamDetailPage({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Kazanım (learning outcome) breakdown */}
+      {isSubmitted && kazanimBreakdown.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-stone-700">Kazanım Analizi</h2>
+          <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-100 bg-stone-50 text-xs text-stone-500">
+                  <th className="px-4 py-2.5 text-left font-medium">Konu</th>
+                  <th className="px-4 py-2.5 text-left font-medium">Kazanım</th>
+                  <th className="px-3 py-2.5 text-center font-medium text-emerald-600">D</th>
+                  <th className="px-3 py-2.5 text-center font-medium text-red-500">Y</th>
+                  <th className="px-3 py-2.5 text-center font-medium text-stone-400">B</th>
+                  <th className="px-3 py-2.5 text-right font-medium">Oran</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-50">
+                {kazanimBreakdown.map((k, i) => {
+                  const total = k.correct + k.wrong + k.blank;
+                  const pct = total > 0 ? Math.round((k.correct / total) * 100) : 0;
+                  const pctColor = pct >= 70 ? "text-emerald-600" : pct >= 40 ? "text-amber-600" : "text-red-500";
+                  return (
+                    <tr key={i} className="hover:bg-stone-50 transition">
+                      <td className="px-4 py-2.5 font-medium text-stone-800 whitespace-nowrap">{k.konu}</td>
+                      <td className="px-4 py-2.5 text-stone-600 max-w-xs">{k.kazanim}</td>
+                      <td className="px-3 py-2.5 text-center font-semibold text-emerald-600">{k.correct}</td>
+                      <td className="px-3 py-2.5 text-center font-semibold text-red-500">{k.wrong}</td>
+                      <td className="px-3 py-2.5 text-center text-stone-400">{k.blank}</td>
+                      <td className={`px-3 py-2.5 text-right font-semibold ${pctColor}`}>{pct}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

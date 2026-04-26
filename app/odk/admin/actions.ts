@@ -54,6 +54,7 @@ export async function updateExamDetails(
     durationMinutes: number;
     startsAt?: string;
     endsAt?: string;
+    description?: string | null;
     sections: ExamSectionUpdateInput[];
   },
 ) {
@@ -126,6 +127,7 @@ export async function updateExamDetails(
         durationMinutes: data.durationMinutes,
         startsAt,
         endsAt,
+        description: data.description?.trim() || null,
       },
     });
 
@@ -206,9 +208,131 @@ export async function createExam(data: {
   redirect(`/odk/admin/sinavlar/${exam.id}`);
 }
 
+async function autoSubmitExpiredAttempts(examId: string) {
+  const exam = await prisma.odkExam.findUnique({
+    where: { id: examId },
+    select: {
+      durationMinutes: true,
+      startsAt: true,
+      sections: {
+        select: {
+          id: true,
+          title: true,
+          questionCount: true,
+          officialAnswers: { select: { questionNumber: true, correctOption: true, outcomes: true } },
+        },
+      },
+    },
+  });
+  if (!exam) return;
+
+  const deadlineMs = exam.startsAt
+    ? exam.startsAt.getTime() + exam.durationMinutes * 60 * 1000 + 5 * 60 * 1000
+    : Date.now(); // if no startsAt, use now as safe cutoff
+
+  if (Date.now() < deadlineMs) return; // exam still running
+
+  const stale = await prisma.odkExamAttempt.findMany({
+    where: {
+      examId,
+      status: "IN_PROGRESS",
+      startedAt: { lt: new Date(deadlineMs - exam.durationMinutes * 60 * 1000) },
+    },
+    select: {
+      id: true,
+      startedAt: true,
+      opticalAnswers: { select: { sectionId: true, questionNumber: true, selectedOption: true } },
+    },
+  });
+
+  if (stale.length === 0) return;
+
+  const hasSectionScoresColumn = await (await import("@/lib/odk-exam-schema")).hasOdkExamAttemptSectionScoresColumn();
+
+  for (const attempt of stale) {
+    // Rebuild answers map from stored optical answers
+    const answerMap: Record<string, Record<number, string>> = {};
+    for (const oa of attempt.opticalAnswers) {
+      answerMap[oa.sectionId] ??= {};
+      answerMap[oa.sectionId][oa.questionNumber] = oa.selectedOption;
+    }
+
+    let totalCorrect = 0;
+    let totalWrong = 0;
+    let totalBlank = 0;
+    const sectionScores: Array<{
+      sectionId: string; title: string; questionCount: number;
+      correct: number; wrong: number; blank: number; net: number;
+    }> = [];
+
+    for (const section of exam.sections) {
+      const userSection = answerMap[section.id] ?? {};
+      let correct = 0; let wrong = 0; let blank = 0;
+
+      for (const official of section.officialAnswers) {
+        const ans = userSection[official.questionNumber];
+        if (!ans) blank++;
+        else if (ans === official.correctOption) correct++;
+        else wrong++;
+      }
+
+      const unanswered = section.questionCount - section.officialAnswers.length - blank;
+      blank += Math.max(0, unanswered);
+
+      totalCorrect += correct;
+      totalWrong += wrong;
+      totalBlank += blank;
+      sectionScores.push({
+        sectionId: section.id, title: section.title,
+        questionCount: section.questionCount,
+        correct, wrong, blank, net: correct - wrong / 4,
+      });
+    }
+
+    const net = totalCorrect - totalWrong / 4;
+    const rawSecs = Math.round((Date.now() - attempt.startedAt.getTime()) / 1000);
+
+    // Kazanım breakdown from outcomes metadata
+    type KazanimStat = { konu: string; kazanim: string; correct: number; wrong: number; blank: number };
+    const kazanimMap: Record<string, KazanimStat> = {};
+    for (const section of exam.sections) {
+      const userSection = answerMap[section.id] ?? {};
+      for (const official of section.officialAnswers) {
+        const raw = official.outcomes as { konu?: string; kazanim?: string } | null;
+        if (!raw?.konu || !raw?.kazanim) continue;
+        const key = `${raw.konu}::${raw.kazanim}`;
+        kazanimMap[key] ??= { konu: raw.konu, kazanim: raw.kazanim, correct: 0, wrong: 0, blank: 0 };
+        const ans = userSection[official.questionNumber];
+        if (!ans) kazanimMap[key].blank++;
+        else if (ans === official.correctOption) kazanimMap[key].correct++;
+        else kazanimMap[key].wrong++;
+      }
+    }
+    const kazanimBreakdown = Object.values(kazanimMap);
+
+    await prisma.odkExamAttempt.update({
+      where: { id: attempt.id },
+      data: {
+        status: "SUBMITTED",
+        submittedAt: new Date(),
+        score: net,
+        correctCount: totalCorrect,
+        wrongCount: totalWrong,
+        blankCount: totalBlank,
+        durationSeconds: Math.min(rawSecs, exam.durationMinutes * 60),
+        resultPayload: { net, sectionScores, kazanimBreakdown },
+        ...(hasSectionScoresColumn ? { sectionScores: sectionScores as unknown as never } : {}),
+      },
+    });
+  }
+}
+
 export async function releaseExamResults(examId: string) {
   await requireOdkAdmin();
   await requireOdkExamResultsReleasedAtColumn();
+
+  // Auto-close any stale IN_PROGRESS attempts before releasing
+  await autoSubmitExpiredAttempts(examId);
 
   const exam = await prisma.odkExam.update({
     where: { id: examId },
@@ -260,6 +384,33 @@ export async function updateExamMeetLink(examId: string, googleMeetLink: string 
     data: { googleMeetLink: googleMeetLink || null },
   });
   revalidatePath(`/odk/admin/sinavlar/${examId}`);
+}
+
+export async function updateExam(examId: string, data: {
+  title?: string;
+  cadenceFamily?: string;
+  durationMinutes?: number;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  description?: string | null;
+}) {
+  await requireOdkAdmin();
+
+  await prisma.odkExam.update({
+    where: { id: examId },
+    data: {
+      ...(data.title !== undefined ? { title: data.title } : {}),
+      ...(data.cadenceFamily !== undefined ? { cadenceFamily: data.cadenceFamily as never } : {}),
+      ...(data.durationMinutes !== undefined ? { durationMinutes: data.durationMinutes } : {}),
+      ...(data.startsAt !== undefined ? { startsAt: data.startsAt ? new Date(data.startsAt) : null } : {}),
+      ...(data.endsAt !== undefined ? { endsAt: data.endsAt ? new Date(data.endsAt) : null } : {}),
+      ...(data.description !== undefined ? { description: data.description } : {}),
+    },
+  });
+
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+  revalidatePath(`/odk/panel/sinavlar/${examId}`);
+  revalidatePath("/odk/panel/sinavlar");
 }
 
 export async function deleteExam(examId: string) {
@@ -438,6 +589,21 @@ export async function createPackage(data: {
   revalidatePath("/odk/admin/paketler");
 }
 
+export async function updateOdkPackage(packageId: string, data: {
+  title?: string;
+  description?: string | null;
+  priceCents?: number;
+  durationDays?: number | null;
+}) {
+  await requireOdkAdmin();
+  await prisma.odkPackage.update({
+    where: { id: packageId },
+    data,
+  });
+  revalidatePath(`/odk/admin/paketler/${packageId}`);
+  revalidatePath("/odk/admin/paketler");
+}
+
 export async function deletePackage(packageId: string) {
   await requireOdkAdmin();
   await prisma.odkPackage.delete({ where: { id: packageId } });
@@ -512,7 +678,11 @@ export async function deleteAccessTag(tagId: string) {
   revalidatePath("/odk/admin/etiketler");
 }
 
-export async function grantUserAccessTag(userId: string, accessTagId: string) {
+export async function grantUserAccessTag(
+  userId: string,
+  accessTagId: string,
+  options?: { expiresAt?: string | null },
+) {
   await requireOdkAdmin();
 
   const [user, tag] = await Promise.all([
@@ -520,10 +690,12 @@ export async function grantUserAccessTag(userId: string, accessTagId: string) {
     prisma.odkAccessTag.findUnique({ where: { id: accessTagId }, select: { title: true } }),
   ]);
 
+  const expiresAt = options?.expiresAt ? new Date(options.expiresAt) : null;
+
   await prisma.odkUserAccessTag.upsert({
     where: { userId_accessTagId: { userId, accessTagId } },
-    create: { userId, accessTagId, source: "MANUAL" },
-    update: { revokedAt: null },
+    create: { userId, accessTagId, source: "MANUAL", expiresAt, revokedAt: null },
+    update: { revokedAt: null, expiresAt },
   });
 
   // Send welcome/access granted email (fire-and-forget)
@@ -538,11 +710,135 @@ export async function grantUserAccessTag(userId: string, accessTagId: string) {
   revalidatePath("/odk/admin/ogrenciler");
 }
 
+export async function extendUserAccessTag(userId: string, accessTagId: string, newExpiresAt: string | null) {
+  await requireOdkAdmin();
+  await prisma.odkUserAccessTag.update({
+    where: { userId_accessTagId: { userId, accessTagId } },
+    data: { expiresAt: newExpiresAt ? new Date(newExpiresAt) : null, revokedAt: null },
+  }).catch(() => {});
+  revalidatePath("/odk/admin/ogrenciler");
+}
+
 export async function revokeUserAccessTag(userId: string, accessTagId: string) {
   await requireOdkAdmin();
   await prisma.odkUserAccessTag.update({
     where: { userId_accessTagId: { userId, accessTagId } },
     data: { revokedAt: new Date() },
   });
+  revalidatePath("/odk/admin/ogrenciler");
+}
+
+// ── Entitlements (package-based access) ──────────────────────────────────────
+
+export async function createManualOdkEntitlement(
+  userId: string,
+  packageId: string,
+  options?: { expiresAt?: string | null },
+) {
+  const session = await requireOdkAdmin();
+
+  const pkg = await prisma.odkPackage.findUnique({
+    where: { id: packageId },
+    select: {
+      title: true,
+      durationDays: true,
+      packageAccessTags: { select: { accessTagId: true, accessTag: { select: { title: true } } } },
+    },
+  });
+  if (!pkg) throw new Error("Paket bulunamadı");
+
+  // Compute expiry: explicit > package durationDays > null
+  let expiresAt: Date | null = null;
+  if (options?.expiresAt) {
+    expiresAt = new Date(options.expiresAt);
+  } else if (pkg.durationDays) {
+    expiresAt = new Date(Date.now() + pkg.durationDays * 86_400_000);
+  }
+
+  // Create the entitlement
+  const entitlement = await prisma.odkEntitlement.create({
+    data: {
+      userId,
+      packageId,
+      status: "ACTIVE",
+      expiresAt,
+    },
+    select: { id: true },
+  });
+
+  // Grant all package access tags, linked to this entitlement
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } });
+
+  await Promise.all(
+    pkg.packageAccessTags.map(async ({ accessTagId, accessTag }) => {
+      await prisma.odkUserAccessTag.upsert({
+        where: { userId_accessTagId: { userId, accessTagId } },
+        create: {
+          userId,
+          accessTagId,
+          source: "MANUAL",
+          grantedById: session.user.id,
+          entitlementId: entitlement.id,
+          expiresAt,
+          revokedAt: null,
+        },
+        update: {
+          revokedAt: null,
+          expiresAt,
+          entitlementId: entitlement.id,
+          source: "MANUAL",
+        },
+      });
+
+      // Send access granted email (fire-and-forget)
+      if (user) {
+        sendOdkAccessGranted({
+          to: user.email,
+          name: user.name ?? user.email,
+          tagTitle: accessTag.title,
+        }).catch(() => {});
+      }
+    }),
+  );
+
+  revalidatePath("/odk/admin/ogrenciler");
+  return entitlement.id;
+}
+
+export async function revokeOdkEntitlement(entitlementId: string) {
+  await requireOdkAdmin();
+
+  const now = new Date();
+
+  await prisma.odkEntitlement.update({
+    where: { id: entitlementId },
+    data: { status: "REVOKED", revokedAt: now },
+  });
+
+  // Revoke all linked user access tags
+  await prisma.odkUserAccessTag.updateMany({
+    where: { entitlementId, revokedAt: null },
+    data: { revokedAt: now },
+  });
+
+  revalidatePath("/odk/admin/ogrenciler");
+}
+
+export async function extendOdkEntitlement(entitlementId: string, newExpiresAt: string | null) {
+  await requireOdkAdmin();
+
+  const expiresAt = newExpiresAt ? new Date(newExpiresAt) : null;
+
+  await prisma.odkEntitlement.update({
+    where: { id: entitlementId },
+    data: { expiresAt, status: "ACTIVE", revokedAt: null },
+  });
+
+  // Also extend all linked user access tags
+  await prisma.odkUserAccessTag.updateMany({
+    where: { entitlementId },
+    data: { expiresAt, revokedAt: null },
+  });
+
   revalidatePath("/odk/admin/ogrenciler");
 }

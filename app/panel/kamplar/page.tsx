@@ -13,10 +13,10 @@ const categoryLabels: Record<string, string> = {
   LGS: "LGS",
 };
 
-const categoryColors: Record<string, string> = {
-  AYT: "bg-blue-100 text-blue-700",
-  TYT: "bg-purple-100 text-purple-700",
-  LGS: "bg-orange-100 text-orange-700",
+const categoryChipStyle: Record<string, { background: string; color: string }> = {
+  AYT: { background: "#dbeafe", color: "#1d4ed8" },
+  TYT: { background: "#ede9fe", color: "#7c3aed" },
+  LGS: { background: "#ffedd5", color: "#c2410c" },
 };
 
 const sharedFeatures = [
@@ -62,121 +62,167 @@ export default async function PanelKamplarPage({
   });
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-stone-900">Kamplar</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Açık kamp programlarını inceleyip size uygun olanı seçin.
-        </p>
+    <>
+      <div className="pd-page-header">
+        <h1 className="pd-page-title">Kamplar</h1>
+        <p className="pd-page-sub">Açık kamp programlarını inceleyip size uygun olanı seçin.</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-stone-100 rounded-xl p-1 w-fit">
-        {tabs.map((tab) => (
-          <a
-            key={tab.value}
-            href={`/panel/kamplar${tab.value === "TUMU" ? "" : `?kategori=${tab.value}`}`}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              kategori === tab.value
-                ? "bg-white text-stone-900 shadow-sm"
-                : "text-stone-500 hover:text-stone-700"
-            }`}
-          >
-            {tab.label}
-          </a>
-        ))}
-      </div>
-
-      {camps.length === 0 ? (
-        <div className="rounded-xl border border-stone-200 bg-white py-16 text-center">
-          <Tent className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Bu kategoride açık kamp görünmüyor</p>
-          <p className="text-xs text-stone-400 mt-1">Yeni kamp açıldığında burada yayınlanacak.</p>
-        </div>
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {camps.map((camp) => (
-            <div
-              key={camp.id}
-              className="flex flex-col rounded-xl border border-stone-200 bg-white overflow-hidden"
+      <div className="pd-page-body">
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, background: "var(--pd-bg-subtle)", padding: 4, borderRadius: 12, width: "fit-content", marginBottom: 20 }}>
+          {tabs.map((tab) => (
+            <a
+              key={tab.value}
+              href={`/panel/kamplar${tab.value === "TUMU" ? "" : `?kategori=${tab.value}`}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "6px 14px",
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 500,
+                textDecoration: "none",
+                background: kategori === tab.value ? "var(--pd-bg-elevated)" : "transparent",
+                color: kategori === tab.value ? "var(--pd-ink)" : "var(--pd-muted)",
+                boxShadow: kategori === tab.value ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                transition: "all 120ms ease",
+              }}
             >
-              <div className="p-5 flex-1 flex flex-col gap-3">
-                <div className="flex flex-wrap gap-2">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryColors[camp.category]}`}>
-                    {categoryLabels[camp.category]}
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-600">
-                    <Users className="w-3 h-3" />
-                    Max {camp.quota} Öğrenci
-                  </span>
-                </div>
-
-                <h2 className="text-base font-semibold text-stone-900 leading-snug">{camp.name}</h2>
-                <p className="text-sm text-stone-500 leading-relaxed flex-1">{camp.detail}</p>
-
-                <ul className="space-y-1.5">
-                  {sharedFeatures.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-xs text-stone-500">
-                      <BadgeCheck className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="rounded-lg border border-stone-100 bg-stone-50 p-3">
-                  {camp.originalPrice > camp.price && (
-                    <p className="text-xs text-stone-400 line-through">{formatPrice(camp.originalPrice)}</p>
-                  )}
-                  <p className="text-xl font-bold text-stone-900">{formatPrice(camp.price)}</p>
-                  {camp.startDate && (
-                    <p className="text-xs text-stone-500 mt-1">
-                      Başlangıç:{" "}
-                      {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(camp.startDate)}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="px-5 pb-5">
-                {camp.paytrLink ? (
-                  <a
-                    href={camp.paytrLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Kayıt Ol
-                  </a>
-                ) : (
-                  <div className="rounded-lg bg-stone-100 px-4 py-2.5 text-center text-sm font-medium text-stone-500">
-                    Başvuru Yakında Açılacak
-                  </div>
-                )}
-              </div>
-            </div>
+              {tab.label}
+            </a>
           ))}
         </div>
-      )}
 
-      {/* Calendar section */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-3">
-        <div>
-          <h2 className="text-base font-semibold text-stone-900">Kamp Takvimi</h2>
-          <p className="text-sm text-stone-500 mt-0.5">Kamplar en geç 1 Mayıs tarihinde başlar.</p>
-        </div>
-        <div className="rounded-lg overflow-hidden border border-stone-100">
-          <iframe
-            src="https://calendar.google.com/calendar/embed?src=c7e9bc8f3695d608c263a450c1402dba131bc20a71b86ece44737de9115d9772%40group.calendar.google.com&ctz=Europe%2FIstanbul"
-            style={{ border: 0 }}
-            width="100%"
-            height="500"
-            frameBorder="0"
-            scrolling="no"
-            title="Kamplar Takvimi"
-          />
+        {camps.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 24px",
+              background: "var(--pd-bg-elevated)",
+              border: "1px solid var(--pd-line)",
+              borderRadius: 16,
+            }}
+          >
+            <Tent size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
+            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Bu kategoride açık kamp görünmüyor</p>
+            <p style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 4 }}>Yeni kamp açıldığında burada yayınlanacak.</p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+            {camps.map((camp) => {
+              const chipStyle = categoryChipStyle[camp.category] ?? { background: "var(--pd-bg-subtle)", color: "var(--pd-muted)" };
+              return (
+                <div key={camp.id} className="pd-card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                  <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "3px 10px",
+                          borderRadius: 999,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          ...chipStyle,
+                        }}
+                      >
+                        {categoryLabels[camp.category]}
+                      </span>
+                      <span className="pd-chip" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <Users size={10} /> Max {camp.quota} Öğrenci
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: 15, fontWeight: 600, color: "var(--pd-ink)", lineHeight: 1.4 }}>{camp.name}</div>
+                    <p style={{ fontSize: 13, color: "var(--pd-muted)", lineHeight: 1.55, flex: 1 }}>{camp.detail}</p>
+
+                    <ul style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {sharedFeatures.map((f) => (
+                        <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "var(--pd-muted)" }}>
+                          <BadgeCheck size={13} style={{ color: "var(--pd-accent)", marginTop: 1, flexShrink: 0 }} />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div
+                      style={{
+                        borderRadius: 10,
+                        border: "1px solid var(--pd-line)",
+                        background: "var(--pd-bg-subtle)",
+                        padding: "10px 14px",
+                      }}
+                    >
+                      {camp.originalPrice > camp.price && (
+                        <div style={{ fontSize: 12, color: "var(--pd-muted-2)", textDecoration: "line-through" }}>
+                          {formatPrice(camp.originalPrice)}
+                        </div>
+                      )}
+                      <div style={{ fontSize: 20, fontWeight: 700, color: "var(--pd-ink)" }}>{formatPrice(camp.price)}</div>
+                      {camp.startDate && (
+                        <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 4 }}>
+                          Başlangıç:{" "}
+                          {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(camp.startDate)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ padding: "0 20px 20px" }}>
+                    {camp.paytrLink ? (
+                      <a
+                        href={camp.paytrLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pd-btn pd-btn-accent"
+                        style={{ width: "100%", justifyContent: "center" }}
+                      >
+                        <ExternalLink size={14} /> Kayıt Ol
+                      </a>
+                    ) : (
+                      <div
+                        style={{
+                          background: "var(--pd-bg-subtle)",
+                          border: "1px solid var(--pd-line)",
+                          borderRadius: 10,
+                          padding: "10px 16px",
+                          textAlign: "center",
+                          fontSize: 13,
+                          color: "var(--pd-muted)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Başvuru Yakında Açılacak
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Calendar */}
+        <div className="pd-card" style={{ marginTop: 16, overflow: "hidden" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--pd-line)" }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--pd-ink)" }}>Kamp Takvimi</div>
+            <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 2 }}>Kamplar en geç 1 Mayıs tarihinde başlar.</div>
+          </div>
+          <div style={{ padding: 0 }}>
+            <iframe
+              src="https://calendar.google.com/calendar/embed?src=c7e9bc8f3695d608c263a450c1402dba131bc20a71b86ece44737de9115d9772%40group.calendar.google.com&ctz=Europe%2FIstanbul"
+              style={{ border: 0, display: "block" }}
+              width="100%"
+              height="500"
+              frameBorder="0"
+              scrolling="no"
+              title="Kamplar Takvimi"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createPackageAction } from "../actions";
 
+const inputCls = "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]";
+
 type Props = {
   searchParams?: Promise<{ error?: string }>;
 };
@@ -29,42 +31,52 @@ export default async function YeniPaketPage({ searchParams }: Props) {
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Paket Adı *</label>
               <input type="text" name="name" required placeholder="Örn: TYT Matematik - 10 Ders Paketi"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className={inputCls} />
             </div>
 
-            {/* Description */}
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Açıklama</label>
-              <textarea name="description" rows={2} placeholder="Paket hakkında kısa açıklama..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41] resize-none" />
+            {/* Type */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">Paket Türü *</label>
+              <select name="type" required className={inputCls}>
+                <option value="COURSE">📚 Ders Paketi</option>
+                <option value="EXAM">📝 Deneme Paketi</option>
+              </select>
+              <p className="text-xs text-gray-400">Ders paketi birebir özel ders, deneme paketi ise sınav/deneme erişimi içerir.</p>
             </div>
 
             {/* Price */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Fiyat (₺) *</label>
               <input type="number" name="price" required min="0" step="0.01" placeholder="599.00"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className={inputCls} />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">Açıklama</label>
+              <textarea name="description" rows={2} placeholder="Paket hakkında kısa açıklama..."
+                className={`${inputCls} resize-none`} />
             </div>
 
             {/* Lesson Count */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Ders Sayısı *</label>
+              <label className="text-sm font-medium text-gray-700">Ders / Sınav Sayısı *</label>
               <input type="number" name="lessonCount" required min="1" placeholder="10"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className={inputCls} />
             </div>
 
             {/* Subjects */}
-            <div className="space-y-1.5 md:col-span-2">
+            <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">Dersler / Konular *</label>
               <input type="text" name="subjects" required placeholder="Örn: TYT Matematik, Geometri"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className={inputCls} />
             </div>
 
             {/* PayTR Link */}
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">PayTR Ödeme Linki</label>
               <input type="url" name="paytrLink" placeholder="https://www.paytr.com/link/..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className={inputCls} />
               <p className="text-xs text-gray-400">PayTR panelinden aldığınız ödeme linkini buraya yapıştırın.</p>
             </div>
 
@@ -72,7 +84,7 @@ export default async function YeniPaketPage({ searchParams }: Props) {
             <div className="space-y-1.5 md:col-span-2">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" name="isActive" defaultChecked className="w-4 h-4 accent-[#546B41] rounded" />
-                <span className="text-sm font-medium text-gray-700">Aktif (web sitesinde görünür)</span>
+                <span className="text-sm font-medium text-gray-700">Aktif (öğrencilere görünür)</span>
               </label>
             </div>
           </div>

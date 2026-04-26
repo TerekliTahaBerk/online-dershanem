@@ -80,6 +80,7 @@ model User {
   odkOrders         OdkOrder[]
   odkEntitlements   OdkEntitlement[]
   odkAttempts       OdkExamAttempt[]
+  assignedStudentPackages StudentPackage[]  @relation("StudentPackageAssignedBy")
 }
 
 model LeadSubmission {
@@ -195,6 +196,7 @@ model Student {
   goals              StudentGoal[]
   examResults        StudentExamResult[]
   metricSnapshots    StudentMetricSnapshot[]
+  packages           StudentPackage[]
 
   @@index([status, updatedAt])
 }
@@ -314,6 +316,11 @@ enum AuditActorType {
   USER
 }
 
+enum PackageType {
+  COURSE
+  EXAM
+}
+
 model Teacher {
   id        String        @id @default(cuid())
   fullName  String
@@ -334,6 +341,7 @@ model Teacher {
 model Package {
   id             String                     @id @default(cuid())
   name           String
+  type           PackageType                @default(COURSE)
   description    String?
   price          Int
   paytrLink      String?
@@ -345,8 +353,27 @@ model Package {
   lessons        Lesson[]
   enrollments    StudentPackageEnrollment[]
   packageCourses PackageCourse[]
+  studentPackages StudentPackage[]
 
   @@index([isActive])
+  @@index([type, isActive])
+}
+
+model StudentPackage {
+  studentId    String
+  packageId    String
+  assignedAt   DateTime  @default(now())
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  assignedById String?
+  notes        String?
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  package      Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  assignedBy   User?     @relation("StudentPackageAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@id([studentId, packageId])
+  @@index([packageId])
+  @@index([studentId, revokedAt, expiresAt])
 }
 
 model Camp {
@@ -372,6 +399,8 @@ model Lesson {
   studentId      String
   teacherId      String
   packageId      String?
+  title          String?
+  subject        String?
   scheduledAt    DateTime
   duration       Int          @default(60)
   googleMeetLink String?
