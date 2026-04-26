@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Video, Clock, CheckCircle, XCircle, CalendarDays } from "lucide-react";
+import { BookOpen, CalendarDays, CheckCircle, Clock, Video, XCircle } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +16,15 @@ type UserWithStudent = Prisma.UserGetPayload<{
     student: {
       include: {
         lessons: { include: { teacher: true; package: true } };
+        courseProgress: {
+          include: {
+            course: {
+              include: {
+                modules: { include: { contents: true } };
+              };
+            };
+          };
+        };
       };
     };
   };
@@ -32,7 +41,11 @@ const TABS = [
 
 function fmtLong(date: Date) {
   return new Intl.DateTimeFormat("tr-TR", {
-    day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(new Date(date));
 }
 
@@ -49,6 +62,19 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
             include: { teacher: true, package: true },
             orderBy: { scheduledAt: "desc" },
           },
+          courseProgress: {
+            include: {
+              course: {
+                include: {
+                  modules: {
+                    include: { contents: true },
+                    orderBy: { orderIndex: "asc" },
+                  },
+                },
+              },
+            },
+            orderBy: [{ completionPercent: "desc" }, { updatedAt: "desc" }],
+          },
         },
       },
     },
@@ -63,11 +89,11 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
   const allLessons = student.lessons as unknown as LessonWithRelations[];
 
   const upcomingLessons = allLessons
-    .filter((l) => l.status === "SCHEDULED" && new Date(l.scheduledAt) >= now)
+    .filter((lesson) => lesson.status === "SCHEDULED" && new Date(lesson.scheduledAt) >= now)
     .reverse();
-  const completedLessons = allLessons.filter((l) => l.status === "COMPLETED");
-  const cancelledLessons = allLessons.filter((l) => l.status === "CANCELLED");
-  const totalHours = Math.round(completedLessons.reduce((s, l) => s + l.duration, 0) / 60);
+  const completedLessons = allLessons.filter((lesson) => lesson.status === "COMPLETED");
+  const cancelledLessons = allLessons.filter((lesson) => lesson.status === "CANCELLED");
+  const totalHours = Math.round(completedLessons.reduce((sum, lesson) => sum + lesson.duration, 0) / 60);
 
   const tabData: Record<string, LessonWithRelations[]> = {
     upcoming: upcomingLessons,
@@ -77,6 +103,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
   };
 
   const visibleLessons = tabData[activeTab] ?? upcomingLessons;
+  const topCourses = student.courseProgress.slice(0, 4);
 
   return (
     <>
@@ -85,7 +112,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
           <div>
             <h1 className="pd-page-title">Derslerim</h1>
             <p className="pd-page-sub">
-              {allLessons.length} ders · {completedLessons.length} tamamlandı · {totalHours} saat
+              {allLessons.length} ders · {completedLessons.length} tamamlandı · {totalHours} saat · {student.courseProgress.length} kurs
             </p>
           </div>
           <Link href="/panel/takvim" className="pd-btn pd-btn-ghost pd-btn-sm">
@@ -95,22 +122,64 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
       </div>
 
       <div className="pd-page-body">
-        {/* Stats strip */}
         <div className="pd-kpi-grid" style={{ marginBottom: 16 }}>
           {[
-            { label: "Tamamlanan", value: completedLessons.length.toString(), up: completedLessons.length > 0 },
-            { label: "Yaklaşan", value: upcomingLessons.length.toString(), up: upcomingLessons.length > 0 },
-            { label: "Toplam Saat", value: `${totalHours}s`, up: totalHours > 0 },
-            { label: "İptal", value: cancelledLessons.length.toString(), up: false },
-          ].map((k) => (
-            <div key={k.label} className="pd-kpi-card">
-              <div className="pd-kpi-label">{k.label}</div>
-              <div className="pd-kpi-value">{k.value}</div>
+            { label: "Tamamlanan", value: completedLessons.length.toString() },
+            { label: "Yaklaşan", value: upcomingLessons.length.toString() },
+            { label: "Toplam Saat", value: `${totalHours}s` },
+            { label: "Kurs", value: student.courseProgress.length.toString() },
+          ].map((item) => (
+            <div key={item.label} className="pd-kpi-card">
+              <div className="pd-kpi-label">{item.label}</div>
+              <div className="pd-kpi-value">{item.value}</div>
             </div>
           ))}
         </div>
 
-        {/* Tabs */}
+        <div className="pd-card" style={{ marginBottom: 16 }}>
+          <div className="pd-card-head">
+            <div>
+              <div className="pd-card-title">Kurs Akışlarım</div>
+              <div className="pd-card-sub">İçerik ilerlemesi ve modül durumu</div>
+            </div>
+            <BookOpen size={15} color="var(--pd-accent)" />
+          </div>
+          <div className="pd-card-body">
+            {topCourses.length === 0 ? (
+              <p style={{ color: "var(--pd-muted)", fontSize: 13 }}>Henüz kurs ataması görünmüyor.</p>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+                {topCourses.map((progress) => {
+                  const totalContent = Math.max(
+                    progress.totalContent,
+                    progress.course.modules.reduce((sum, module) => sum + module.contents.length, 0)
+                  );
+                  return (
+                    <div key={progress.id} style={{ border: "1px solid var(--pd-line)", borderRadius: 14, padding: 14 }}>
+                      <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--pd-ink)" }}>{progress.course.title}</div>
+                          <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 3 }}>
+                            {progress.course.subject} {progress.course.examType ? `· ${progress.course.examType}` : ""}
+                          </div>
+                        </div>
+                        <span className="pd-chip pd-chip-accent">%{progress.completionPercent}</span>
+                      </div>
+                      <div style={{ marginTop: 10, height: 8, background: "var(--pd-bg-subtle)", borderRadius: 999, overflow: "hidden" }}>
+                        <div style={{ width: `${progress.completionPercent}%`, height: "100%", background: "var(--pd-accent)" }} />
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 10, fontSize: 12, color: "var(--pd-muted)" }}>
+                        <span>{progress.completedContent}/{totalContent} içerik</span>
+                        <span>{progress.course.modules.length} modül</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
         <div style={{ display: "flex", gap: 4, background: "var(--pd-bg-subtle)", padding: 4, borderRadius: 12, width: "fit-content", marginBottom: 16 }}>
           {TABS.map((tab) => {
             const count = tabData[tab.id]?.length ?? 0;
@@ -151,7 +220,6 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
           })}
         </div>
 
-        {/* Lesson list */}
         {visibleLessons.length === 0 ? (
           <div
             style={{
@@ -207,11 +275,11 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                         {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
                         {lesson.package ? ` · ${lesson.package.name}` : ""}
                       </div>
-                      {lesson.notes && (
+                      {lesson.notes ? (
                         <div style={{ marginTop: 8, fontSize: 12, color: isNearby ? "rgba(255,255,255,0.8)" : "var(--pd-ink-2)", fontStyle: "italic" }}>
                           {lesson.notes}
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                   {lesson.googleMeetLink ? (
@@ -258,7 +326,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
           </div>
         ) : (
           <div className="pd-card" style={{ overflow: "hidden" }}>
-            {visibleLessons.map((lesson, i) => {
+            {visibleLessons.map((lesson, index) => {
               const isCompleted = lesson.status === "COMPLETED";
               const isCancelled = lesson.status === "CANCELLED";
               return (
@@ -266,7 +334,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                   key={lesson.id}
                   style={{
                     padding: "16px 20px",
-                    borderBottom: i < visibleLessons.length - 1 ? "1px solid var(--pd-line)" : "none",
+                    borderBottom: index < visibleLessons.length - 1 ? "1px solid var(--pd-line)" : "none",
                     opacity: isCancelled ? 0.6 : 1,
                   }}
                 >
@@ -298,7 +366,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                           {fmtLong(lesson.scheduledAt)} · {lesson.duration} dk
                           {lesson.package ? ` · ${lesson.package.name}` : ""}
                         </div>
-                        {lesson.notes && (
+                        {lesson.notes ? (
                           <div
                             style={{
                               marginTop: 8,
@@ -312,17 +380,10 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                           >
                             {lesson.notes}
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </div>
-                    <span
-                      className={
-                        isCompleted ? "pd-chip pd-chip-accent" :
-                        isCancelled ? "pd-chip" :
-                        "pd-chip"
-                      }
-                      style={{ flexShrink: 0 }}
-                    >
+                    <span className={isCompleted ? "pd-chip pd-chip-accent" : isCancelled ? "pd-chip" : "pd-chip"}>
                       {isCompleted ? "Tamamlandı" : isCancelled ? "İptal" : "Planlandı"}
                     </span>
                   </div>

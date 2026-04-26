@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { updateExamStatus, releaseExamResults, releaseAnswerKey, addExamAccessTag, removeExamAccessTag } from "@/app/odk/admin/actions";
-import { AnswerKeyEditor, AnswerKeyJsonImporter, DeleteExamButton, ExamFilesEditor, ExamMeetLinkEditor, OutcomesJsonImporter } from "@/components/odk/admin/exam-detail-editor";
+import { AnswerKeyEditor, AnswerKeyJsonImporter, DeleteExamButton, ExamDetailsEditor, ExamFilesEditor, ExamMeetLinkEditor, OutcomesJsonImporter } from "@/components/odk/admin/exam-detail-editor";
 import {
   hasOdkExamAnswerKeyReleasedAtColumn,
   hasOdkExamGoogleMeetLinkColumn,
@@ -22,6 +22,8 @@ type ExamDetail = {
   status: string;
   cadenceFamily: string;
   durationMinutes: number;
+  startsAt: Date | null;
+  endsAt: Date | null;
   googleMeetLink: string | null;
   resultsReleasedAt: Date | null;
   answerKeyReleasedAt: Date | null;
@@ -57,6 +59,8 @@ async function getExam(examId: string) {
         status: true,
         cadenceFamily: true,
         durationMinutes: true,
+        startsAt: true,
+        endsAt: true,
         ...(hasGoogleMeetLinkColumn ? { googleMeetLink: true } : {}),
         ...(hasAnswerKeyReleasedAtColumn ? { answerKeyReleasedAt: true } : {}),
         ...(hasResultsReleasedAtColumn ? { resultsReleasedAt: true } : {}),
@@ -113,7 +117,10 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
   const answerKeyFile = exam.files.find((f) => f.fileType === "ANSWER_KEY_PDF");
 
   const totalQuestions = exam.sections.reduce((s, sec) => s + sec.questionCount, 0);
-  const answeredQuestions = exam.sections.reduce((s, sec) => s + sec.officialAnswers.length, 0);
+  const answeredQuestions = exam.sections.reduce(
+    (s, sec) => s + sec.officialAnswers.filter((answer) => answer.correctOption).length,
+    0,
+  );
   const linkedTagIds = new Set(exam.examAccessTags.map((et) => et.accessTag.id));
   const availableTags = allTags.filter((t) => !linkedTagIds.has(t.id));
 
@@ -187,6 +194,29 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
             <p className="mt-1 text-xl font-bold text-stone-900">{value}</p>
           </div>
         ))}
+      </div>
+
+      {/* Exam details */}
+      <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <h2 className="text-sm font-semibold text-stone-900 mb-4">Sınav Bilgileri</h2>
+        <ExamDetailsEditor
+          exam={{
+            id: examId,
+            title: exam.title,
+            cadenceFamily: exam.cadenceFamily,
+            durationMinutes: exam.durationMinutes,
+            startsAt: exam.startsAt,
+            endsAt: exam.endsAt,
+            attemptsCount: exam._count.attempts,
+            sections: exam.sections.map((section) => ({
+              id: section.id,
+              title: section.title,
+              questionCount: section.questionCount,
+              orderIndex: section.orderIndex,
+              officialAnswers: section.officialAnswers,
+            })),
+          }}
+        />
       </div>
 
       {/* Results & Answer Key Release */}
@@ -286,10 +316,10 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
               <div>
                 <h3 className="text-sm font-semibold text-stone-900">{section.title}</h3>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  {section.questionCount} soru · {section.officialAnswers.length} cevap girildi
+                  {section.questionCount} soru · {section.officialAnswers.filter((answer) => answer.correctOption).length} cevap girildi
                 </p>
               </div>
-              {section.officialAnswers.length === section.questionCount && (
+              {section.officialAnswers.filter((answer) => answer.correctOption).length === section.questionCount && (
                 <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
                   Tamamlandı
                 </span>

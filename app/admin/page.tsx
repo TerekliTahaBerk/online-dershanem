@@ -1,14 +1,34 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { ArrowRight, TrendingUp, Download, Plus } from "lucide-react";
+import { ArrowRight, BookOpen, Layers3, Plus, Radio, TrendingUp } from "lucide-react";
 import { studentStatusLabels, buildWhatsAppLink } from "@/lib/admin";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, CourseStatus } from "@prisma/client";
 
 type UpcomingLesson = Prisma.LessonGetPayload<{
   include: {
     student: { select: { id: true; fullName: true; phone: true } };
     teacher: { select: { id: true; fullName: true } };
     package: { select: { name: true } };
+  };
+}>;
+
+type DashboardCourse = Prisma.CourseGetPayload<{
+  include: {
+    modules: {
+      include: {
+        contents: true;
+      };
+    };
+    packageCourses: {
+      include: {
+        package: {
+          select: { name: true };
+        };
+      };
+    };
+    studentProgress: {
+      select: { completionPercent: true };
+    };
   };
 }>;
 
@@ -61,6 +81,8 @@ export default async function AdminDashboardPage() {
     recentPayments,
     teachers,
     odkExams,
+    courses,
+    activeEnrollments,
   ] = await Promise.all([
     prisma.student.count(),
     prisma.student.count({ where: { status: "ACTIVE" } }),
@@ -86,6 +108,22 @@ export default async function AdminDashboardPage() {
     }),
     prisma.teacher.findMany({ take: 5, orderBy: { createdAt: "desc" } }),
     prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
+    prisma.course.findMany({
+      include: {
+        modules: {
+          include: { contents: true },
+          orderBy: { orderIndex: "asc" },
+        },
+        packageCourses: {
+          include: { package: { select: { name: true } } },
+          orderBy: { createdAt: "desc" },
+        },
+        studentProgress: { select: { completionPercent: true } },
+      },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: 4,
+    }) as unknown as DashboardCourse[],
+    prisma.studentPackageEnrollment.count({ where: { status: "ACTIVE" } }),
   ]);
 
   const kpis = [
@@ -132,6 +170,33 @@ export default async function AdminDashboardPage() {
     INACTIVE: "pd-tag",
   };
 
+  const courseStatusLabels: Record<CourseStatus, string> = {
+    DRAFT: "Taslak",
+    PUBLISHED: "Yayinda",
+    ARCHIVED: "Arsiv",
+  };
+
+  const courseStatusColors: Record<CourseStatus, string> = {
+    DRAFT: "pd-tag pd-tag-warning",
+    PUBLISHED: "pd-tag pd-tag-success",
+    ARCHIVED: "pd-tag",
+  };
+
+  const totalModules = courses.reduce((sum, course) => sum + course.modules.length, 0);
+  const totalContents = courses.reduce(
+    (sum, course) => sum + course.modules.reduce((moduleSum, module) => moduleSum + module.contents.length, 0),
+    0
+  );
+  const liveContentCount = courses.reduce(
+    (sum, course) =>
+      sum +
+      course.modules.reduce(
+        (moduleSum, module) => moduleSum + module.contents.filter((content) => content.contentType === "LIVE_SESSION").length,
+        0
+      ),
+    0
+  );
+
   return (
     <>
       {/* Page header */}
@@ -144,6 +209,9 @@ export default async function AdminDashboardPage() {
             <h1 className="pd-page-title">Dashboard</h1>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/admin/icerikler" className="pd-btn pd-btn-ghost pd-btn-sm">
+              Icerikler
+            </Link>
             <Link href="/admin/formlar" className="pd-btn pd-btn-ghost pd-btn-sm">
               Leadler
               {newLeadsCount > 0 && (
@@ -189,6 +257,41 @@ export default async function AdminDashboardPage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 16, marginBottom: 16 }}>
+          <Link href="/admin/icerikler" style={{ textDecoration: "none" }}>
+            <div className="pd-card" style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Kurs Alani</div>
+                <BookOpen size={16} color="var(--pd-accent)" />
+              </div>
+              <div style={{ fontSize: 30, fontWeight: 600, color: "var(--pd-ink)", lineHeight: 1 }}>{courses.length}</div>
+              <div style={{ marginTop: 6, fontSize: 13, color: "var(--pd-muted)" }}>{totalModules} modul · {totalContents} icerik</div>
+            </div>
+          </Link>
+          <Link href="/admin/icerikler" style={{ textDecoration: "none" }}>
+            <div className="pd-card" style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Yayinlanan Akis</div>
+                <Layers3 size={16} color="var(--pd-accent)" />
+              </div>
+              <div style={{ fontSize: 30, fontWeight: 600, color: "var(--pd-ink)", lineHeight: 1 }}>
+                {courses.filter((course) => course.status === "PUBLISHED").length}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 13, color: "var(--pd-muted)" }}>{activeEnrollments} aktif uyelik ile iliskili</div>
+            </div>
+          </Link>
+          <Link href="/admin/icerikler" style={{ textDecoration: "none" }}>
+            <div className="pd-card" style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Canli Icerikler</div>
+                <Radio size={16} color="var(--pd-accent)" />
+              </div>
+              <div style={{ fontSize: 30, fontWeight: 600, color: "var(--pd-ink)", lineHeight: 1 }}>{liveContentCount}</div>
+              <div style={{ marginTop: 6, fontSize: 13, color: "var(--pd-muted)" }}>Panel ve takvim akislarina hazir</div>
+            </div>
+          </Link>
         </div>
 
         {/* Main 3-col layout */}
@@ -308,6 +411,108 @@ export default async function AdminDashboardPage() {
                   </span>
                 </Link>
               ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 16, marginBottom: 16 }}>
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div>
+                <div className="pd-card-title">Icerik Yonetimi</div>
+                <div className="pd-card-sub">Kurs, modul ve paket baglari</div>
+              </div>
+              <Link href="/admin/icerikler" className="pd-btn pd-btn-ghost pd-btn-sm">
+                Yonet <ArrowRight size={12} />
+              </Link>
+            </div>
+            <div style={{ padding: "0 16px 16px" }}>
+              {courses.length === 0 ? (
+                <div style={{ padding: "24px 0", color: "var(--pd-muted)", fontSize: 13 }}>
+                  Henuz kurs tanimli degil.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 12 }}>
+                  {courses.map((course) => {
+                    const courseContentCount = course.modules.reduce((sum, module) => sum + module.contents.length, 0);
+                    const averageCompletion = course.studentProgress.length
+                      ? Math.round(
+                          course.studentProgress.reduce((sum, progress) => sum + progress.completionPercent, 0) /
+                            course.studentProgress.length
+                        )
+                      : 0;
+
+                    return (
+                      <div
+                        key={course.id}
+                        style={{
+                          border: "1px solid var(--pd-line)",
+                          borderRadius: 14,
+                          padding: 14,
+                          background: "var(--pd-bg-elevated)",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 12 }}>
+                          <div>
+                            <div style={{ fontSize: 15, fontWeight: 600, color: "var(--pd-ink)" }}>{course.title}</div>
+                            <div style={{ marginTop: 4, fontSize: 12, color: "var(--pd-muted)" }}>
+                              {course.subject} {course.examType ? `· ${course.examType}` : ""}
+                            </div>
+                          </div>
+                          <span className={courseStatusColors[course.status]}>{courseStatusLabels[course.status]}</span>
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                          <span className="pd-tag">{course.modules.length} modul</span>
+                          <span className="pd-tag">{courseContentCount} icerik</span>
+                          <span className="pd-tag">{course.packageCourses.length} paket</span>
+                          <span className="pd-tag pd-tag-info">%{averageCompletion} ort. ilerleme</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="pd-card">
+            <div className="pd-card-head">
+              <div>
+                <div className="pd-card-title">Paket Baglantilari</div>
+                <div className="pd-card-sub">Yeni kurs modeli ile eslesmeler</div>
+              </div>
+              <Link href="/admin/paketler" className="pd-btn pd-btn-ghost pd-btn-sm">
+                Paketler
+              </Link>
+            </div>
+            <div>
+              {courses.slice(0, 4).map((course, index) => (
+                <div
+                  key={course.id}
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom: index < Math.min(courses.length, 4) - 1 ? "1px solid var(--pd-line)" : "none",
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--pd-ink)" }}>{course.title}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                    {course.packageCourses.length === 0 ? (
+                      <span style={{ fontSize: 12, color: "var(--pd-muted)" }}>Paket bagi yok</span>
+                    ) : (
+                      course.packageCourses.map((packageCourse) => (
+                        <span key={packageCourse.packageId} className="pd-tag pd-tag-success">
+                          {packageCourse.package.name}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div style={{ padding: "12px 16px", borderTop: "1px solid var(--pd-line)" }}>
+                <Link href="/admin/icerikler" className="pd-btn pd-btn-accent pd-btn-sm" style={{ width: "100%", justifyContent: "center" }}>
+                  Icerik Merkezi
+                </Link>
+              </div>
             </div>
           </div>
         </div>

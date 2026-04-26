@@ -1,8 +1,18 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, FileText, Info, Save, Upload } from "lucide-react";
-import { deleteExam, deletePackage, importAnswerKeyJson, importOutcomesJson, saveOfficialAnswers, updateExamFiles, updateExamMeetLink } from "@/app/odk/admin/actions";
+import { Check, FileText, Info, Plus, Save, Trash2, Upload } from "lucide-react";
+import {
+  deleteExam,
+  deletePackage,
+  importAnswerKeyJson,
+  importOutcomesJson,
+  saveOfficialAnswers,
+  updateExamDetails,
+  updateExamFiles,
+  updateExamMeetLink,
+  type ExamSectionUpdateInput,
+} from "@/app/odk/admin/actions";
 
 type Section = {
   id: string;
@@ -14,17 +24,251 @@ type Section = {
 
 const OPTIONS = ["A", "B", "C", "D", "E"];
 const inputCls = "w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100";
+const FAMILIES = [
+  { value: "TYT", label: "TYT" },
+  { value: "AYT", label: "AYT" },
+  { value: "LGS", label: "LGS" },
+  { value: "KPSS", label: "KPSS" },
+  { value: "ALES", label: "ALES" },
+];
+
+function toDateTimeLocal(value: string | Date | null | undefined) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 16);
+}
+
+export function ExamDetailsEditor({
+  exam,
+}: {
+  exam: {
+    id: string;
+    title: string;
+    cadenceFamily: string;
+    durationMinutes: number;
+    startsAt: Date | string | null;
+    endsAt: Date | string | null;
+    attemptsCount: number;
+    sections: Section[];
+  };
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [title, setTitle] = useState(exam.title);
+  const [cadenceFamily, setCadenceFamily] = useState(exam.cadenceFamily);
+  const [durationMinutes, setDurationMinutes] = useState(exam.durationMinutes);
+  const [startsAt, setStartsAt] = useState(toDateTimeLocal(exam.startsAt));
+  const [endsAt, setEndsAt] = useState(toDateTimeLocal(exam.endsAt));
+  const [sections, setSections] = useState<ExamSectionUpdateInput[]>(
+    exam.sections.map((section) => ({
+      id: section.id,
+      title: section.title,
+      questionCount: section.questionCount,
+    })),
+  );
+
+  const hasAttempts = exam.attemptsCount > 0;
+  const updateSection = (index: number, field: keyof ExamSectionUpdateInput, value: string | number) => {
+    setSections((prev) => prev.map((section, sectionIndex) => (sectionIndex === index ? { ...section, [field]: value } : section)));
+  };
+
+  const handleSave = (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setSaved(false);
+
+    if (!title.trim()) {
+      setError("Sınav başlığı zorunludur.");
+      return;
+    }
+    if (sections.length === 0) {
+      setError("En az bir bölüm ekleyin.");
+      return;
+    }
+    if (sections.some((section) => !section.title.trim() || !Number.isInteger(Number(section.questionCount)) || Number(section.questionCount) < 1)) {
+      setError("Tüm bölümlerin başlığı ve soru sayısı dolu olmalıdır.");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await updateExamDetails(exam.id, {
+          title: title.trim(),
+          cadenceFamily,
+          durationMinutes: Number(durationMinutes),
+          startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
+          endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
+          sections: sections.map((section) => ({
+            ...section,
+            title: section.title.trim(),
+            questionCount: Number(section.questionCount),
+          })),
+        });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Sınav bilgileri kaydedilemedi.");
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSave} className="space-y-5">
+      {error && <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {hasAttempts && (
+        <div className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+          Bu sınava katılım başladığı için bölüm silme ve soru sayısı azaltma engellenir. Başlık, süre, tarih ve bölüm adları düzenlenebilir.
+        </div>
+      )}
+
+      <label className="block text-sm font-medium text-stone-700">
+        Sınav Başlığı <span className="text-red-400">*</span>
+        <input
+          type="text"
+          required
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          className={`mt-1.5 ${inputCls}`}
+        />
+      </label>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block text-sm font-medium text-stone-700">
+          Sınav Ailesi <span className="text-red-400">*</span>
+          <select
+            value={cadenceFamily}
+            onChange={(event) => setCadenceFamily(event.target.value)}
+            className={`mt-1.5 ${inputCls}`}
+          >
+            {FAMILIES.map((family) => (
+              <option key={family.value} value={family.value}>{family.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="block text-sm font-medium text-stone-700">
+          Süre (dakika) <span className="text-red-400">*</span>
+          <input
+            type="number"
+            required
+            min={10}
+            max={360}
+            value={durationMinutes}
+            onChange={(event) => setDurationMinutes(Number(event.target.value))}
+            className={`mt-1.5 ${inputCls}`}
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block text-sm font-medium text-stone-700">
+          Başlangıç Tarihi
+          <input
+            type="datetime-local"
+            value={startsAt}
+            onChange={(event) => setStartsAt(event.target.value)}
+            className={`mt-1.5 ${inputCls}`}
+          />
+        </label>
+        <label className="block text-sm font-medium text-stone-700">
+          Bitiş Tarihi
+          <input
+            type="datetime-local"
+            value={endsAt}
+            onChange={(event) => setEndsAt(event.target.value)}
+            className={`mt-1.5 ${inputCls}`}
+          />
+        </label>
+      </div>
+
+      <div className="space-y-3 border-t border-stone-100 pt-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-stone-900">Bölümler</h3>
+          <button
+            type="button"
+            onClick={() => setSections((prev) => [...prev, { title: "", questionCount: 20 }])}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 hover:border-emerald-300 hover:text-emerald-700 transition"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Bölüm Ekle
+          </button>
+        </div>
+
+        {sections.map((section, index) => (
+          <div key={section.id ?? `new-${index}`} className="flex flex-col gap-3 rounded-lg border border-stone-100 bg-stone-50 p-3 sm:flex-row sm:items-center">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700 shrink-0">
+              {index + 1}
+            </span>
+            <input
+              type="text"
+              value={section.title}
+              onChange={(event) => updateSection(index, "title", event.target.value)}
+              className="min-w-0 flex-1 rounded-md border border-stone-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-100"
+              placeholder="Bölüm adı"
+            />
+            <div className="flex items-center gap-2 sm:shrink-0">
+              <input
+                type="number"
+                min={1}
+                max={200}
+                value={section.questionCount}
+                onChange={(event) => updateSection(index, "questionCount", Number(event.target.value))}
+                className="w-24 rounded-md border border-stone-200 bg-white px-3 py-1.5 text-center text-sm outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-100"
+              />
+              <span className="text-xs text-stone-400">soru</span>
+              {sections.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setSections((prev) => prev.filter((_, sectionIndex) => sectionIndex !== index))}
+                  className="rounded-md p-1 text-stone-400 hover:bg-red-50 hover:text-red-500 transition"
+                  aria-label="Bölümü sil"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-end gap-3">
+        {saved && (
+          <span className="flex items-center gap-1 text-xs font-medium text-emerald-600">
+            <Check className="h-3.5 w-3.5" /> Kaydedildi
+          </span>
+        )}
+        <button
+          type="submit"
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
+        >
+          <Save className="h-3.5 w-3.5" />
+          {isPending ? "Kaydediliyor..." : "Sınav Bilgilerini Kaydet"}
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export function ExamMeetLinkEditor({ examId, currentLink }: { examId: string; currentLink: string }) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState(currentLink);
 
   const handleSave = () => {
+    setError(null);
+    setSaved(false);
     startTransition(async () => {
-      await updateExamMeetLink(examId, link || null);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      try {
+        await updateExamMeetLink(examId, link || null);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Google Meet linki kaydedilemedi.");
+      }
     });
   };
 
@@ -44,6 +288,7 @@ export function ExamMeetLinkEditor({ examId, currentLink }: { examId: string; cu
         Öğrenciler sınava başlamadan önce bu linke katılıp kamera açmak zorunda kalacak.
         Boş bırakırsanız zorunluluk olmaz.
       </p>
+      {error && <p className="text-xs text-red-500">{error}</p>}
       <div className="flex items-center justify-end gap-3">
         {saved && (
           <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
@@ -67,16 +312,23 @@ export function ExamMeetLinkEditor({ examId, currentLink }: { examId: string; cu
 export function AnswerKeyEditor({ section }: { section: Section }) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const initial: Record<number, string> = {};
   section.officialAnswers.forEach((a) => { initial[a.questionNumber] = a.correctOption; });
   const [answers, setAnswers] = useState<Record<number, string>>(initial);
 
   const handleSave = () => {
+    setError(null);
+    setSaved(false);
     startTransition(async () => {
-      await saveOfficialAnswers(section.id, answers);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      try {
+        await saveOfficialAnswers(section.id, answers);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Cevap anahtarı kaydedilemedi.");
+      }
     });
   };
 
@@ -98,6 +350,7 @@ export function AnswerKeyEditor({ section }: { section: Section }) {
         ))}
       </div>
 
+      {error && <p className="text-xs text-red-500">{error}</p>}
       <div className="flex items-center justify-end gap-3">
         {saved && (
           <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
@@ -162,10 +415,16 @@ function PdfFileUploader({
   };
 
   const handleUrlSave = () => {
+    setError(null);
+    setSaved(false);
     startTransition(async () => {
-      await updateExamFiles(examId, fileType === "BOOKLET_PDF" ? { bookletUrl: url || undefined } : { answerKeyUrl: url || undefined });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      try {
+        await updateExamFiles(examId, fileType === "BOOKLET_PDF" ? { bookletUrl: url || undefined } : { answerKeyUrl: url || undefined });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "PDF URL'i kaydedilemedi.");
+      }
     });
   };
 

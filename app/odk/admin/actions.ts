@@ -42,6 +42,134 @@ export type SectionInput = {
   questionCount: number;
 };
 
+export type ExamSectionUpdateInput = SectionInput & {
+  id?: string;
+};
+
+export async function updateExamDetails(
+  examId: string,
+  data: {
+    title: string;
+    cadenceFamily: string;
+    durationMinutes: number;
+    startsAt?: string;
+    endsAt?: string;
+    sections: ExamSectionUpdateInput[];
+  },
+) {
+  await requireOdkAdmin();
+
+  const title = data.title.trim();
+  if (!title) throw new Error("Sınav başlığı zorunludur.");
+  if (!Number.isInteger(data.durationMinutes) || data.durationMinutes < 10 || data.durationMinutes > 360) {
+    throw new Error("Süre 10 ile 360 dakika arasında olmalıdır.");
+  }
+  if (data.sections.length === 0) throw new Error("En az bir bölüm ekleyin.");
+
+  const sections = data.sections.map((section) => ({
+    id: section.id,
+    title: section.title.trim(),
+    questionCount: Number(section.questionCount),
+  }));
+
+  if (sections.some((section) => !section.title || !Number.isInteger(section.questionCount) || section.questionCount < 1 || section.questionCount > 200)) {
+    throw new Error("Tüm bölümlerin başlığı ve soru sayısı geçerli olmalıdır.");
+  }
+
+  const startsAt = data.startsAt ? new Date(data.startsAt) : null;
+  const endsAt = data.endsAt ? new Date(data.endsAt) : null;
+  if (startsAt && Number.isNaN(startsAt.getTime())) throw new Error("Başlangıç tarihi geçersiz.");
+  if (endsAt && Number.isNaN(endsAt.getTime())) throw new Error("Bitiş tarihi geçersiz.");
+  if (startsAt && endsAt && endsAt <= startsAt) {
+    throw new Error("Bitiş tarihi başlangıç tarihinden sonra olmalıdır.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.odkExam.findUnique({
+      where: { id: examId },
+      select: {
+        sections: {
+          select: {
+            id: true,
+            questionCount: true,
+            _count: { select: { officialAnswers: true, opticalAnswers: true } },
+          },
+        },
+        _count: { select: { attempts: true } },
+      },
+    });
+    if (!existing) throw new Error("Sınav bulunamadı.");
+
+    const existingById = new Map(existing.sections.map((section) => [section.id, section]));
+    const submittedIds = new Set(sections.map((section) => section.id).filter(Boolean));
+    const removedSections = existing.sections.filter((section) => !submittedIds.has(section.id));
+    const hasAttempts = existing._count.attempts > 0;
+
+    if (hasAttempts && removedSections.length > 0) {
+      throw new Error("Katılım başlamış sınavlarda bölüm silinemez.");
+    }
+
+    for (const section of sections) {
+      if (!section.id) continue;
+      const current = existingById.get(section.id);
+      if (!current) throw new Error("Güncellenecek bölüm bulunamadı.");
+      if (hasAttempts && section.questionCount < current.questionCount) {
+        throw new Error("Katılım başlamış sınavlarda soru sayısı azaltılamaz.");
+      }
+    }
+
+    await tx.odkExam.update({
+      where: { id: examId },
+      data: {
+        title,
+        cadenceFamily: data.cadenceFamily as never,
+        durationMinutes: data.durationMinutes,
+        startsAt,
+        endsAt,
+      },
+    });
+
+    for (const section of existing.sections) {
+      await tx.odkExamSection.update({
+        where: { id: section.id },
+        data: { orderIndex: -1000 - existing.sections.findIndex((item) => item.id === section.id) },
+      });
+    }
+
+    for (const removed of removedSections) {
+      await tx.odkExamSection.delete({ where: { id: removed.id } });
+    }
+
+    for (const [orderIndex, section] of sections.entries()) {
+      if (section.id) {
+        await tx.odkExamSection.update({
+          where: { id: section.id },
+          data: {
+            title: section.title,
+            questionCount: section.questionCount,
+            orderIndex,
+          },
+        });
+        await tx.odkExamOfficialAnswer.deleteMany({
+          where: { sectionId: section.id, questionNumber: { gt: section.questionCount } },
+        });
+      } else {
+        await tx.odkExamSection.create({
+          data: {
+            examId,
+            title: section.title,
+            questionCount: section.questionCount,
+            orderIndex,
+          },
+        });
+      }
+    }
+  });
+
+  revalidatePath(`/odk/admin/sinavlar/${examId}`);
+  revalidatePath("/odk/admin/sinavlar");
+}
+
 export async function createExam(data: {
   title: string;
   cadenceFamily: string;
@@ -179,15 +307,26 @@ export async function saveOfficialAnswers(sectionId: string, answers: Record<num
   const section = await prisma.odkExamSection.findUnique({ where: { id: sectionId } });
   if (!section) throw new Error("Bölüm bulunamadı");
 
-  const upserts = Object.entries(answers).map(([num, option]) =>
-    prisma.odkExamOfficialAnswer.upsert({
+  const validOptions = new Set(["A", "B", "C", "D", "E"]);
+  const operations = Object.entries(answers).map(([num, option]) => {
+    const questionNumber = Number(num);
+    if (!Number.isInteger(questionNumber) || questionNumber < 1 || questionNumber > section.questionCount) {
+      throw new Error("Geçersiz soru numarası.");
+    }
+    if (!option) {
+      return prisma.odkExamOfficialAnswer.deleteMany({
+        where: { sectionId, questionNumber },
+      });
+    }
+    if (!validOptions.has(option)) throw new Error("Cevaplar yalnızca A, B, C, D veya E olabilir.");
+    return prisma.odkExamOfficialAnswer.upsert({
       where: { sectionId_questionNumber: { sectionId, questionNumber: Number(num) } },
       create: { examId: section.examId, sectionId, questionNumber: Number(num), correctOption: option },
       update: { correctOption: option },
-    })
-  );
+    });
+  });
 
-  await prisma.$transaction(upserts);
+  await prisma.$transaction(operations);
   revalidatePath(`/odk/admin/sinavlar/${section.examId}`);
 }
 
@@ -206,19 +345,28 @@ export async function importAnswerKeyJson(
 
   const sectionMap = new Map(sections.map((s) => [s.title, s.id]));
 
-  const upserts = Object.entries(json).flatMap(([sectionTitle, answers]) => {
+  const validOptions = new Set(["A", "B", "C", "D", "E"]);
+  const operations = Object.entries(json).flatMap(([sectionTitle, answers]) => {
     const sectionId = sectionMap.get(sectionTitle);
     if (!sectionId) return [];
-    return Object.entries(answers).map(([num, option]) =>
-      prisma.odkExamOfficialAnswer.upsert({
-        where: { sectionId_questionNumber: { sectionId, questionNumber: Number(num) } },
-        create: { examId, sectionId, questionNumber: Number(num), correctOption: option },
+    return Object.entries(answers).map(([num, option]) => {
+      const questionNumber = Number(num);
+      if (!Number.isInteger(questionNumber) || questionNumber < 1) throw new Error("Geçersiz soru numarası.");
+      if (!option) {
+        return prisma.odkExamOfficialAnswer.deleteMany({
+          where: { sectionId, questionNumber },
+        });
+      }
+      if (!validOptions.has(option)) throw new Error("Cevaplar yalnızca A, B, C, D veya E olabilir.");
+      return prisma.odkExamOfficialAnswer.upsert({
+        where: { sectionId_questionNumber: { sectionId, questionNumber } },
+        create: { examId, sectionId, questionNumber, correctOption: option },
         update: { correctOption: option },
-      })
-    );
+      });
+    });
   });
 
-  await prisma.$transaction(upserts);
+  await prisma.$transaction(operations);
   revalidatePath(`/odk/admin/sinavlar/${examId}`);
 }
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ChevronLeft, ChevronRight, Video, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Video, CalendarDays, Radio } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -11,9 +11,19 @@ type LessonSlim = Prisma.LessonGetPayload<{
   include: { teacher: { select: { fullName: true } }; package: { select: { name: true } } };
 }>;
 
+type LiveContent = Prisma.CourseContentGetPayload<{
+  include: {
+    module: {
+      include: {
+        course: true;
+      };
+    };
+  };
+}>;
+
 type UserWithStudent = Prisma.UserGetPayload<{ include: { student: true } }>;
 
-const HOURS = Array.from({ length: 14 }, (_, i) => i + 8); // 08:00–21:00
+const HOURS = Array.from({ length: 14 }, (_, i) => i + 8);
 const DAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 
 function getWeekStart(date: Date): Date {
@@ -56,28 +66,77 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
   const nextWeek = `?week=${weekOffset + 1}`;
   const todayLink = `?week=0`;
 
-  const lessonsRaw = await prisma.lesson.findMany({
-    where: {
-      studentId: student.id,
-      scheduledAt: { gte: weekStart, lt: weekEnd },
-      status: { not: "CANCELLED" },
-    },
-    include: {
-      teacher: { select: { fullName: true } },
-      package: { select: { name: true } },
-    },
-    orderBy: { scheduledAt: "asc" },
-  }) as unknown as (LessonSlim & { googleMeetLink: string | null; status: string; duration: number })[];
+  const [lessonsRaw, liveContents] = await Promise.all([
+    prisma.lesson.findMany({
+      where: {
+        studentId: student.id,
+        scheduledAt: { gte: weekStart, lt: weekEnd },
+        status: { not: "CANCELLED" },
+      },
+      include: {
+        teacher: { select: { fullName: true } },
+        package: { select: { name: true } },
+      },
+      orderBy: { scheduledAt: "asc" },
+    }) as unknown as (LessonSlim & { googleMeetLink: string | null; status: string; duration: number })[],
+    prisma.courseContent.findMany({
+      where: {
+        contentType: "LIVE_SESSION",
+        status: "PUBLISHED",
+        liveStartsAt: { gte: weekStart, lt: weekEnd },
+        module: {
+          course: {
+            studentProgress: {
+              some: { studentId: student.id },
+            },
+          },
+        },
+      },
+      include: {
+        module: {
+          include: {
+            course: true,
+          },
+        },
+      },
+      orderBy: { liveStartsAt: "asc" },
+    }) as unknown as LiveContent[],
+  ]);
 
-  // Group lessons by day-hour
-  const lessonsByDayHour = new Map<string, typeof lessonsRaw>();
-  lessonsRaw.forEach((lesson) => {
-    const d = new Date(lesson.scheduledAt);
+  const lessonEvents = lessonsRaw.map((lesson) => ({
+    id: lesson.id,
+    startsAt: lesson.scheduledAt,
+    duration: lesson.duration,
+    title: lesson.teacher.fullName,
+    subtitle: lesson.package?.name ?? "Canlı ders",
+    type: "lesson" as const,
+    href: lesson.googleMeetLink,
+  }));
+
+  const contentEvents = liveContents
+    .filter((content) => content.liveStartsAt)
+    .map((content) => ({
+      id: content.id,
+      startsAt: content.liveStartsAt as Date,
+      duration: content.durationMinutes ?? 60,
+      title: content.title,
+      subtitle: content.module.course.title,
+      type: "content" as const,
+      href: content.externalUrl || content.videoUrl || content.fileUrl || null,
+    }));
+
+  const allEvents = [...lessonEvents, ...contentEvents].sort(
+    (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+  );
+
+  const lessonsByDayHour = new Map<string, typeof allEvents>();
+  allEvents.forEach((event) => {
+    const d = new Date(event.startsAt);
     const dayIndex = (d.getDay() + 6) % 7;
     const hour = d.getHours();
     const key = `${dayIndex}-${hour}`;
     if (!lessonsByDayHour.has(key)) lessonsByDayHour.set(key, []);
-    lessonsByDayHour.get(key)!.push(lesson);
+    lessonsByDayHour.get(key)!.push(event);
   });
 
   const today = new Date();
@@ -102,94 +161,105 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
       </div>
 
       <div className="pd-page-body">
-      {lessonsRaw.length === 0 ? (
-        <div style={{ background: "var(--pd-bg-elevated)", border: "1px solid var(--pd-line)", borderRadius: 16, padding: "60px 24px", textAlign: "center" }}>
-          <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Bu hafta planlı ders görünmüyor</p>
-          <p className="text-xs text-stone-400 mt-1">Yeni ders eklendiğinde takvimde yer alacak.</p>
-        </div>
-      ) : (
-        <div className="rounded-xl bg-white border border-stone-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[640px]">
-              <thead>
-                <tr>
-                  <th className="w-14 border-b border-stone-100 bg-stone-50 p-2" />
-                  {DAYS.map((day, i) => {
-                    const date = addDays(weekStart, i);
-                    const isToday = date.toDateString() === today.toDateString();
-                    return (
-                      <th
-                        key={day}
-                        className={`border-b border-stone-100 p-2 text-center ${isToday ? "bg-emerald-50" : "bg-stone-50"}`}
-                      >
-                        <span className={`text-xs font-semibold ${isToday ? "text-emerald-700" : "text-stone-500"}`}>
-                          {day}
-                        </span>
-                        <span className={`block text-sm font-bold mt-0.5 ${isToday ? "text-emerald-700" : "text-stone-800"}`}>
-                          {date.getDate()}
-                        </span>
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {HOURS.map((hour) => (
-                  <tr key={hour} className="border-b border-stone-50 last:border-0">
-                    <td className="text-right pr-3 py-1 text-xs text-stone-400 font-medium align-top pt-2 w-14">
-                      {hour}:00
-                    </td>
-                    {DAYS.map((_, dayIndex) => {
-                      const date = addDays(weekStart, dayIndex);
+        {allEvents.length === 0 ? (
+          <div style={{ background: "var(--pd-bg-elevated)", border: "1px solid var(--pd-line)", borderRadius: 16, padding: "60px 24px", textAlign: "center" }}>
+            <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <p className="text-sm font-medium text-stone-600">Bu hafta planlı oturum görünmüyor</p>
+            <p className="text-xs text-stone-400 mt-1">Yeni dersler ve canlı içerikler burada yer alacak.</p>
+          </div>
+        ) : (
+          <div className="rounded-xl bg-white border border-stone-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse min-w-[640px]">
+                <thead>
+                  <tr>
+                    <th className="w-14 border-b border-stone-100 bg-stone-50 p-2" />
+                    {DAYS.map((day, i) => {
+                      const date = addDays(weekStart, i);
                       const isToday = date.toDateString() === today.toDateString();
-                      const key = `${dayIndex}-${hour}`;
-                      const cellLessons = lessonsByDayHour.get(key) ?? [];
                       return (
-                        <td
-                          key={dayIndex}
-                          className={`border-l border-stone-100 p-0.5 align-top min-h-[40px] ${isToday ? "bg-emerald-50/30" : ""}`}
-                          style={{ minHeight: 40 }}
+                        <th
+                          key={day}
+                          className={`border-b border-stone-100 p-2 text-center ${isToday ? "bg-emerald-50" : "bg-stone-50"}`}
                         >
-                          {cellLessons.map((lesson) => (
-                            <div
-                              key={lesson.id}
-                              className="rounded-md border bg-[#DCCCAC]/60 border-[#546B41]/40 text-[#435633] p-1.5 text-xs mb-0.5 leading-tight"
-                            >
-                              <p className="font-semibold truncate">{lesson.teacher.fullName}</p>
-                              <p className="text-[10px] opacity-80 mt-0.5">
-                                {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(lesson.scheduledAt))}
-                                {" · "}{lesson.duration} dk
-                              </p>
-                              {lesson.googleMeetLink && (
-                                <a
-                                  href={lesson.googleMeetLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="mt-1 flex items-center gap-1 font-medium hover:underline"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Video className="w-2.5 h-2.5" /> Meet
-                                </a>
-                              )}
-                            </div>
-                          ))}
-                        </td>
+                          <span className={`text-xs font-semibold ${isToday ? "text-emerald-700" : "text-stone-500"}`}>
+                            {day}
+                          </span>
+                          <span className={`block text-sm font-bold mt-0.5 ${isToday ? "text-emerald-700" : "text-stone-800"}`}>
+                            {date.getDate()}
+                          </span>
+                        </th>
                       );
                     })}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {HOURS.map((hour) => (
+                    <tr key={hour} className="border-b border-stone-50 last:border-0">
+                      <td className="text-right pr-3 py-1 text-xs text-stone-400 font-medium align-top pt-2 w-14">
+                        {hour}:00
+                      </td>
+                      {DAYS.map((_, dayIndex) => {
+                        const date = addDays(weekStart, dayIndex);
+                        const isToday = date.toDateString() === today.toDateString();
+                        const key = `${dayIndex}-${hour}`;
+                        const cellEvents = lessonsByDayHour.get(key) ?? [];
+                        return (
+                          <td
+                            key={dayIndex}
+                            className={`border-l border-stone-100 p-0.5 align-top min-h-[40px] ${isToday ? "bg-emerald-50/30" : ""}`}
+                            style={{ minHeight: 40 }}
+                          >
+                            {cellEvents.map((event) => (
+                              <div
+                                key={event.id}
+                                className={`rounded-md border p-1.5 text-xs mb-0.5 leading-tight ${
+                                  event.type === "lesson"
+                                    ? "bg-[#DCCCAC]/60 border-[#546B41]/40 text-[#435633]"
+                                    : "bg-blue-50 border-blue-200 text-blue-700"
+                                }`}
+                              >
+                                <p className="font-semibold truncate">{event.title}</p>
+                                <p className="text-[10px] opacity-80 mt-0.5">{event.subtitle}</p>
+                                <p className="text-[10px] opacity-80 mt-0.5">
+                                  {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(event.startsAt))}
+                                  {" · "}{event.duration} dk
+                                </p>
+                                {event.href ? (
+                                  <a
+                                    href={event.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-1 flex items-center gap-1 font-medium hover:underline"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {event.type === "lesson" ? <Video className="w-2.5 h-2.5" /> : <Radio className="w-2.5 h-2.5" />}
+                                    Aç
+                                  </a>
+                                ) : null}
+                              </div>
+                            ))}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Legend */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--pd-muted)", marginTop: 8 }}>
-        <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 3, background: "var(--pd-accent-soft)", border: "1px solid var(--pd-accent)" }} />
-        Planlı ders
-      </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 12, color: "var(--pd-muted)", marginTop: 8, flexWrap: "wrap" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 3, background: "var(--pd-accent-soft)", border: "1px solid var(--pd-accent)" }} />
+            Planlı ders
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 3, background: "#dbeafe", border: "1px solid #93c5fd" }} />
+            Canlı içerik
+          </span>
+        </div>
       </div>
     </>
   );

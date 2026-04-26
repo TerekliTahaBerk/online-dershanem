@@ -35,6 +35,7 @@ function getAdminNav(): NavSection[] {
         { href: "/admin/ogrenciler", label: "Öğrenciler", icon: Users },
         { href: "/admin/hocalar", label: "Hocalar", icon: GraduationCap },
         { href: "/admin/paketler", label: "Paketler", icon: Package },
+        { href: "/admin/icerikler", label: "Icerikler", icon: BookOpen },
         { href: "/admin/odemeler", label: "Ödemeler", icon: CreditCard },
         { href: "/admin/kamplar", label: "Kamplar", icon: Tent },
         { href: "/admin/dersler", label: "Dersler", icon: CalendarDays },

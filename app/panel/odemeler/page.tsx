@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CreditCard, ExternalLink, CheckCircle, Clock, XCircle, Receipt } from "lucide-react";
+import { CheckCircle, Clock, CreditCard, ExternalLink, Receipt, XCircle } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +15,28 @@ type UserWithStudent = Prisma.UserGetPayload<{
     student: {
       include: {
         purchaseIntents: { include: { events: true } };
+        packageEnrollments: {
+          include: {
+            package: {
+              include: {
+                packageCourses: true;
+              };
+            };
+          };
+        };
       };
     };
   };
 }>;
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(date));
+}
+
+function formatPrice(kurus?: number | null) {
+  if (!kurus) return "—";
+  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(kurus / 100);
+}
 
 export default async function PanelOdemelerPage() {
   const session = await getServerAuthSession();
@@ -33,6 +51,14 @@ export default async function PanelOdemelerPage() {
             include: { events: { orderBy: { createdAt: "asc" } } },
             orderBy: { submittedAt: "desc" },
           },
+          packageEnrollments: {
+            include: {
+              package: {
+                include: { packageCourses: true },
+              },
+            },
+            orderBy: { startsAt: "desc" },
+          },
         },
       },
     },
@@ -42,31 +68,79 @@ export default async function PanelOdemelerPage() {
   if (!student) redirect("/panel");
 
   const purchases = student.purchaseIntents as unknown as PurchaseWithEvents[];
-  const paidCount = purchases.filter((p) => p.status === "PAID").length;
-  const pendingCount = purchases.filter((p) => p.status === "PENDING").length;
+  const enrollments = student.packageEnrollments;
+  const paidCount = purchases.filter((purchase) => purchase.status === "PAID").length;
+  const pendingCount = purchases.filter((purchase) => purchase.status === "PENDING").length;
+  const activeEnrollment = enrollments.find((enrollment) => enrollment.status === "ACTIVE") ?? null;
 
   return (
     <>
       <div className="pd-page-header">
         <h1 className="pd-page-title">Ödemelerim</h1>
         <p className="pd-page-sub">
-          {purchases.length} kayıt · {paidCount} ödendi · {pendingCount} beklemede
+          {purchases.length} kayıt · {paidCount} ödendi · {pendingCount} beklemede · {enrollments.length} üyelik
         </p>
       </div>
 
       <div className="pd-page-body">
-        {/* KPI strip */}
         <div className="pd-kpi-grid" style={{ marginBottom: 20 }}>
           {[
             { label: "Toplam Kayıt", value: purchases.length.toString() },
             { label: "Ödendi", value: paidCount.toString() },
             { label: "Beklemede", value: pendingCount.toString() },
-          ].map((k) => (
-            <div key={k.label} className="pd-kpi-card">
-              <div className="pd-kpi-label">{k.label}</div>
-              <div className="pd-kpi-value">{k.value}</div>
+            { label: "Aktif Üyelik", value: activeEnrollment ? "1" : "0" },
+          ].map((kpi) => (
+            <div key={kpi.label} className="pd-kpi-card">
+              <div className="pd-kpi-label">{kpi.label}</div>
+              <div className="pd-kpi-value">{kpi.value}</div>
             </div>
           ))}
+        </div>
+
+        <div className="pd-card" style={{ marginBottom: 16 }}>
+          <div className="pd-card-head">
+            <div>
+              <div className="pd-card-title">Paket Üyeliklerim</div>
+              <div className="pd-card-sub">Yeni üyelik modeli üzerinden izleniyor</div>
+            </div>
+          </div>
+          <div className="pd-card-body">
+            {enrollments.length === 0 ? (
+              <p style={{ fontSize: 13, color: "var(--pd-muted)" }}>Henüz aktif üyelik görünmüyor.</p>
+            ) : (
+              <div style={{ display: "grid", gap: 12 }}>
+                {enrollments.map((enrollment) => (
+                  <div key={enrollment.id} style={{ border: "1px solid var(--pd-line)", borderRadius: 14, padding: 16 }}>
+                    <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: "var(--pd-ink)" }}>{enrollment.package.name}</div>
+                        <div style={{ marginTop: 4, fontSize: 12, color: "var(--pd-muted)" }}>
+                          Başlangıç: {formatDate(enrollment.startsAt)}
+                          {enrollment.endsAt ? ` · Bitiş: ${formatDate(enrollment.endsAt)}` : ""}
+                        </div>
+                        <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <span className={enrollment.status === "ACTIVE" ? "pd-chip pd-chip-accent" : "pd-chip"}>
+                            {enrollment.status}
+                          </span>
+                          <span className="pd-chip">{enrollment.package.packageCourses.length} kurs</span>
+                          {enrollment.billingPeriodLabel ? <span className="pd-chip">{enrollment.billingPeriodLabel}</span> : null}
+                          {enrollment.autoRenew ? <span className="pd-chip">Otomatik yenileme</span> : null}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 20, fontWeight: 600, color: "var(--pd-ink)" }}>
+                          {formatPrice(enrollment.listPrice)}
+                        </div>
+                        <div style={{ fontSize: 12, color: "var(--pd-muted)" }}>
+                          {enrollment.discountAmount ? `${formatPrice(enrollment.discountAmount)} indirim` : "Standart fiyat"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {purchases.length === 0 ? (
@@ -89,11 +163,7 @@ export default async function PanelOdemelerPage() {
               const isPaid = purchase.status === "PAID";
               const isFailed = purchase.status === "FAILED";
               return (
-                <div
-                  key={purchase.id}
-                  className="pd-card"
-                  style={{ overflow: "hidden" }}
-                >
+                <div key={purchase.id} className="pd-card" style={{ overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, padding: "18px 20px" }}>
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 14, minWidth: 0 }}>
                       <div
@@ -115,7 +185,7 @@ export default async function PanelOdemelerPage() {
                           {purchase.packageName}
                         </div>
                         <div style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 3 }}>
-                          {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(purchase.submittedAt))}
+                          {formatDate(purchase.submittedAt)}
                           {purchase.source ? ` · ${purchase.source}` : ""}
                         </div>
                       </div>
@@ -133,7 +203,7 @@ export default async function PanelOdemelerPage() {
                           <><Clock size={11} /> Beklemede</>
                         )}
                       </span>
-                      {purchase.status === "PENDING" && purchase.paymentLink && (
+                      {purchase.status === "PENDING" && purchase.paymentLink ? (
                         <a
                           href={purchase.paymentLink}
                           target="_blank"
@@ -142,18 +212,12 @@ export default async function PanelOdemelerPage() {
                         >
                           Ödemeye Git <ExternalLink size={12} />
                         </a>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 
-                  {purchase.events.length > 0 && (
-                    <div
-                      style={{
-                        borderTop: "1px solid var(--pd-line)",
-                        background: "var(--pd-bg-subtle)",
-                        padding: "12px 20px",
-                      }}
-                    >
+                  {purchase.events.length > 0 ? (
+                    <div style={{ borderTop: "1px solid var(--pd-line)", background: "var(--pd-bg-subtle)", padding: "12px 20px" }}>
                       <div style={{ fontSize: 10, fontWeight: 600, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
                         Ödeme Geçmişi
                       </div>
@@ -162,7 +226,7 @@ export default async function PanelOdemelerPage() {
                           <div key={event.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--pd-muted-2)", flexShrink: 0 }} />
                             <span style={{ fontSize: 12, color: "var(--pd-ink-2)", fontWeight: 500 }}>
-                              {event.eventType.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}
+                              {event.eventType.replace(/_/g, " ").toLowerCase().replace(/^\w/, (char) => char.toUpperCase())}
                             </span>
                             <span style={{ fontSize: 11, color: "var(--pd-muted)" }}>
                               {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(event.createdAt))}
@@ -171,7 +235,7 @@ export default async function PanelOdemelerPage() {
                         ))}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               );
             })}
