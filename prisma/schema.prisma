@@ -63,6 +63,33 @@ model VerificationCode {
   @@index([email, type])
 }
 
+enum EmailOutboxStatus {
+  PENDING
+  SENT
+  FAILED
+  ABANDONED
+}
+
+/// Transactional email outbox — written before the Resend call so delivery
+/// can be retried if the serverless function crashes or Resend is transiently
+/// unavailable. SENT/ABANDONED entries are safe to purge after 7 days.
+model EmailOutbox {
+  id          String            @id @default(cuid())
+  recipients  String            // JSON-serialised string[]
+  subject     String
+  html        String
+  status      EmailOutboxStatus @default(PENDING)
+  attempts    Int               @default(0)
+  lastError   String?           @map("last_error")
+  sentAt      DateTime?         @map("sent_at")
+  nextRetryAt DateTime?         @map("next_retry_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  @@index([status, nextRetryAt])
+  @@map("email_outbox")
+}
+
 /// Lightweight DB-backed rate limiter — each row is one "token" consumed.
 /// Caller counts rows with a given key in the recent window to enforce limits.
 /// Old rows can be purged periodically (e.g. cron or on-demand).
@@ -1021,6 +1048,9 @@ model OdkExamAttempt {
 
   @@index([userId, examId])
   @@index([userId, status])
+  // Compound indexes for admin stats queries (examId + status + time)
+  @@index([examId, status, submittedAt])
+  @@index([examId, status, startedAt])
   @@map("odk_exam_attempts")
 }
 

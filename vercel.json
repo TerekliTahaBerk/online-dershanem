@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/email-retry",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

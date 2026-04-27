@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "Online Dershanem <noreply@onlinedershanem.com>";
@@ -167,6 +168,55 @@ function credentialBox(email: string, password: string): string {
 
 // ─── Low-level sender ────────────────────────────────────────────────────────
 
+// Maximum number of outbox-level delivery attempts before abandoning.
+const MAX_OUTBOX_ATTEMPTS = 10;
+
+/**
+ * Attempt delivery via Resend with up to 3 in-process retries (exponential
+ * backoff: immediate → 1 s → 4 s). Returns true on success.
+ * Throws on permanent 4xx failures; re-throws last error after all retries exhausted.
+ */
+async function attemptResendDelivery(
+  to: string | string[],
+  subject: string,
+  html: string,
+): Promise<void> {
+  const MAX_IN_PROCESS = 3;
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < MAX_IN_PROCESS; attempt++) {
+    try {
+      await resend.emails.send({ from: FROM, to, subject, html });
+      return; // success
+    } catch (err) {
+      lastErr = err;
+      // Don't retry on client errors (bad API key, invalid address, etc.)
+      const status = (err as { statusCode?: number })?.statusCode;
+      if (status && status >= 400 && status < 500) {
+        console.error("[email] permanent failure, not retrying:", err);
+        throw err;
+      }
+      if (attempt < MAX_IN_PROCESS - 1) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(4, attempt))); // 1s, 4s
+      }
+    }
+  }
+  console.error(`[email] send failed after ${MAX_IN_PROCESS} in-process attempts:`, lastErr);
+  throw lastErr;
+}
+
+/**
+ * P1: DB-outbox email sender.
+ *
+ * Flow:
+ *   1. Write an EmailOutbox row (PENDING) — guarantees at-least-once delivery
+ *      even if the serverless function is killed after this point.
+ *   2. Attempt delivery via Resend (with in-process retries).
+ *   3. On success: mark the row SENT.
+ *   4. On failure: mark FAILED + schedule a next retry; the /api/cron/email-retry
+ *      route will pick it up later.
+ *
+ * If the DB write itself fails we fall back to a direct send (no outbox guarantee).
+ */
 async function sendEmail({
   to,
   subject,
@@ -177,10 +227,48 @@ async function sendEmail({
   html: string;
 }) {
   if (!process.env.RESEND_API_KEY) return; // silently skip in dev if key not set
+
+  const recipients = Array.isArray(to) ? to : [to];
+
+  // 1. Write to outbox — fire-and-forget on DB error so email is never blocked
+  let outboxId: string | null = null;
   try {
-    await resend.emails.send({ from: FROM, to, subject, html });
+    const entry = await prisma.emailOutbox.create({
+      data: { recipients: JSON.stringify(recipients), subject, html },
+      select: { id: true },
+    });
+    outboxId = entry.id;
+  } catch (dbErr) {
+    console.error("[email] outbox write failed, attempting direct send:", dbErr);
+  }
+
+  // 2. Attempt delivery
+  try {
+    await attemptResendDelivery(recipients, subject, html);
+    // 3. Mark sent
+    if (outboxId) {
+      prisma.emailOutbox
+        .update({ where: { id: outboxId }, data: { status: "SENT", sentAt: new Date() } })
+        .catch((e) => console.error("[email] outbox SENT update failed:", e));
+    }
   } catch (err) {
-    console.error("[email] send failed:", err);
+    // 4. Mark failed — schedule retry with exponential backoff
+    if (outboxId) {
+      const attempts = 1; // this was the first outbox-level attempt
+      const nextRetryAt = new Date(Date.now() + Math.min(60_000 * Math.pow(2, attempts), 3_600_000));
+      prisma.emailOutbox
+        .update({
+          where: { id: outboxId },
+          data: {
+            status: attempts >= MAX_OUTBOX_ATTEMPTS ? "ABANDONED" : "FAILED",
+            attempts,
+            lastError: String(err).slice(0, 500),
+            nextRetryAt: attempts >= MAX_OUTBOX_ATTEMPTS ? null : nextRetryAt,
+          },
+        })
+        .catch((e) => console.error("[email] outbox FAILED update failed:", e));
+    }
+    throw err;
   }
 }
 

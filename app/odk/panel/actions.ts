@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
-import { requireOdkExamAccess } from "@/lib/odk-access";
+import { requireOdkExamAccess, syncExpiredEntitlements } from "@/lib/odk-access";
 import {
   hasOdkExamAttemptSectionScoresColumn,
   hasOdkExamAttemptTabSwitchCountColumn,
@@ -24,6 +24,8 @@ export async function startExam(
   const session = await requireOdkUser();
   const userId = session.user.id;
 
+  // P1: lazily sync expired entitlements before the access check
+  await syncExpiredEntitlements();
   // P0: enforce access control server-side
   await requireOdkExamAccess(userId, examId);
 
@@ -64,6 +66,12 @@ export async function startExam(
   return { attemptId: attempt.id, startedAt: attempt.startedAt.toISOString(), serverNow: Date.now() };
 }
 
+// In-process rate limiter for recordAnswer: keyed by userId+attemptId+sectionId+qNum.
+// Tracks last accepted timestamp. Rejects calls that arrive < 200ms after the last one
+// for the same slot. Works within a single serverless invocation; across-instance
+// protection relies on the unique constraint on (attemptId, sectionId, questionNumber).
+const recordAnswerLastSeen = new Map<string, number>();
+
 export async function recordAnswer(
   attemptId: string,
   sectionId: string,
@@ -72,6 +80,13 @@ export async function recordAnswer(
 ) {
   const session = await requireOdkUser();
   const userId = session.user.id;
+
+  // P1: server-side rate limit — reject bursts faster than 200ms per slot
+  const rlKey = `${userId}:${attemptId}:${sectionId}:${questionNumber}`;
+  const last = recordAnswerLastSeen.get(rlKey) ?? 0;
+  const now = Date.now();
+  if (now - last < 200) return; // drop; client will retry after debounce
+  recordAnswerLastSeen.set(rlKey, now);
 
   // P0: validate sectionId belongs to this attempt's exam
   const attempt = await prisma.odkExamAttempt.findFirst({

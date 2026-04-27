@@ -11,6 +11,7 @@ import {
   requireOdkExamGoogleMeetLinkColumn,
   requireOdkExamResultsReleasedAtColumn,
 } from "@/lib/odk-exam-schema";
+import { auditLog } from "@/lib/audit";
 
 async function requireOdkAdmin() {
   const session = await getServerAuthSession();
@@ -110,12 +111,26 @@ export async function updateExamDetails(
       throw new Error("Katılım başlamış sınavlarda bölüm silinemez.");
     }
 
-    for (const section of sections) {
+    for (const [orderIndex, section] of sections.entries()) {
       if (!section.id) continue;
       const current = existingById.get(section.id);
       if (!current) throw new Error("Güncellenecek bölüm bulunamadı.");
       if (hasAttempts && section.questionCount < current.questionCount) {
         throw new Error("Katılım başlamış sınavlarda soru sayısı azaltılamaz.");
+      }
+      if (hasAttempts) {
+        // P1: prevent title/order changes — sectionScores JSON and stats aggregate
+        // by title; renaming or reordering after attempts start corrupts analytics.
+        const currentSection = await tx.odkExamSection.findUnique({
+          where: { id: section.id },
+          select: { title: true, orderIndex: true },
+        });
+        if (currentSection && currentSection.title !== section.title) {
+          throw new Error(`Katılım başlamış sınavlarda bölüm adı değiştirilemez ("${currentSection.title}").`);
+        }
+        if (currentSection && currentSection.orderIndex !== orderIndex) {
+          throw new Error("Katılım başlamış sınavlarda bölüm sırası değiştirilemez.");
+        }
       }
     }
 
@@ -310,8 +325,10 @@ async function autoSubmitExpiredAttempts(examId: string) {
     }
     const kazanimBreakdown = Object.values(kazanimMap);
 
-    await prisma.odkExamAttempt.update({
-      where: { id: attempt.id },
+    // P1: atomic status transition — use updateMany with status guard to prevent
+    // race conditions if two admin actions trigger auto-submit simultaneously.
+    await prisma.odkExamAttempt.updateMany({
+      where: { id: attempt.id, status: "IN_PROGRESS" },
       data: {
         status: "SUBMITTED",
         submittedAt: new Date(),
@@ -333,6 +350,9 @@ export async function releaseExamResults(examId: string) {
 
   // Auto-close any stale IN_PROGRESS attempts before releasing
   await autoSubmitExpiredAttempts(examId);
+  // P1: sync expired entitlements so DB state is clean before we read it
+  const { syncExpiredEntitlements } = await import("@/lib/odk-access");
+  await syncExpiredEntitlements();
 
   const exam = await prisma.odkExam.update({
     where: { id: examId },
@@ -345,11 +365,11 @@ export async function releaseExamResults(examId: string) {
     where: { examId, status: "SUBMITTED" },
     select: {
       score: true,
-      user: { select: { email: true, name: true } },
+      user: { select: { id: true, email: true, name: true } },
     },
   });
 
-  await Promise.allSettled(
+  const emailResults = await Promise.allSettled(
     attempts.map((a) =>
       sendOdkResultsReleased({
         to: a.user.email,
@@ -360,6 +380,42 @@ export async function releaseExamResults(examId: string) {
       }),
     ),
   );
+
+  // P1: log failed deliveries + drop an in-app Notification so the student
+  // can still see results even if the email bounced.
+  const failedEmails: string[] = [];
+  for (let i = 0; i < emailResults.length; i++) {
+    const result = emailResults[i];
+    const attempt = attempts[i];
+    if (result.status === "rejected") {
+      failedEmails.push(attempt.user.email);
+      console.error(`[releaseExamResults] email failed for ${attempt.user.email}:`, result.reason);
+    }
+  }
+  if (failedEmails.length > 0) {
+    console.warn(`[releaseExamResults] ${failedEmails.length} email(s) failed for exam ${examId}:`, failedEmails);
+  }
+
+  // Drop in-app notification for every student regardless of email status.
+  await prisma.notification.createMany({
+    data: attempts.map((a) => ({
+      userId: a.user.id,
+      type: "ANNOUNCEMENT" as const,
+      priority: "NORMAL" as const,
+      title: "Sınav sonuçları açıklandı",
+      body: `"${exam.title}" sınavının sonuçları artık görüntülenebilir.`,
+      actionUrl: `/odk/panel/sinavlar/${examId}`,
+    })),
+    skipDuplicates: true,
+  });
+
+  await auditLog({
+    entityType: "OdkExam",
+    entityId: examId,
+    action: "RELEASE_RESULTS",
+    summary: `Sınav sonuçları yayınlandı: ${exam.title}`,
+    payload: { examId, title: exam.title, notifiedCount: attempts.length, failedEmails },
+  });
 
   revalidatePath(`/odk/admin/sinavlar/${examId}`);
   revalidatePath(`/odk/panel/sinavlar/${examId}`);
@@ -534,17 +590,42 @@ export async function importOutcomesJson(
 
   const sectionMap = new Map(sections.map((s) => [s.title, s.id]));
 
+  const validOptions = new Set(["A", "B", "C", "D", "E"]);
+  const skipped: string[] = [];
+
   const upserts = Object.entries(json).flatMap(([sectionTitle, questions]) => {
     const sectionId = sectionMap.get(sectionTitle);
-    if (!sectionId) return [];
-    return Object.entries(questions).map(([num, outcomes]) =>
-      prisma.odkExamOfficialAnswer.upsert({
-        where: { sectionId_questionNumber: { sectionId, questionNumber: Number(num) } },
-        create: { examId, sectionId, questionNumber: Number(num), correctOption: "", outcomes },
+    if (!sectionId) {
+      skipped.push(`Bölüm bulunamadı: "${sectionTitle}"`);
+      return [];
+    }
+    return Object.entries(questions).flatMap(([num, outcomes]) => {
+      const questionNumber = Number(num);
+      if (!Number.isInteger(questionNumber) || questionNumber < 1) {
+        skipped.push(`Geçersiz soru numarası: ${num}`);
+        return [];
+      }
+      // P1: only upsert outcomes — correctOption stays as-is if already set.
+      // An empty-string correctOption would silently corrupt answer keys; skip those rows.
+      return [prisma.odkExamOfficialAnswer.upsert({
+        where: { sectionId_questionNumber: { sectionId, questionNumber } },
+        create: {
+          examId, sectionId, questionNumber,
+          // Leave correctOption empty only if there's an existing row to merge into;
+          // for creates we require a valid option or skip entirely.
+          correctOption: validOptions.has((outcomes as unknown as { correctOption?: string }).correctOption ?? "")
+            ? (outcomes as unknown as { correctOption: string }).correctOption
+            : "",
+          outcomes,
+        },
         update: { outcomes },
-      })
-    );
+      })];
+    });
   });
+
+  if (skipped.length > 0) {
+    console.warn("[importOutcomesJson] skipped entries:", skipped);
+  }
 
   await prisma.$transaction(upserts);
   revalidatePath(`/odk/admin/sinavlar/${examId}`);
@@ -819,6 +900,14 @@ export async function revokeOdkEntitlement(entitlementId: string) {
   await prisma.odkUserAccessTag.updateMany({
     where: { entitlementId, revokedAt: null },
     data: { revokedAt: now },
+  });
+
+  await auditLog({
+    entityType: "OdkEntitlement",
+    entityId: entitlementId,
+    action: "REVOKE",
+    summary: `ODK yetkisi iptal edildi: ${entitlementId}`,
+    payload: { entitlementId },
   });
 
   revalidatePath("/odk/admin/ogrenciler");
