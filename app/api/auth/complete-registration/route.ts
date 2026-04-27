@@ -25,19 +25,37 @@ export async function POST(request: Request) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const verificationCode = await prisma.verificationCode.findFirst({
+    // P0: brute-force guard — find the active code first, then check the guess.
+    // Increment attempts regardless; if attempts >= 5, invalidate the code.
+    const MAX_CODE_ATTEMPTS = 5;
+    const activeCode = await prisma.verificationCode.findFirst({
       where: {
         email: normalizedEmail,
-        code: code.trim(),
         type: "REGISTER",
         usedAt: null,
         expiresAt: { gte: new Date() },
+        attempts: { lt: MAX_CODE_ATTEMPTS },
       },
+      select: { id: true, code: true, attempts: true },
     });
 
-    if (!verificationCode) {
+    if (!activeCode || activeCode.code !== code.trim()) {
+      // Increment attempt counter if a code exists (even on wrong guess)
+      if (activeCode) {
+        const newAttempts = activeCode.attempts + 1;
+        await prisma.verificationCode.update({
+          where: { id: activeCode.id },
+          data: {
+            attempts: newAttempts,
+            // Invalidate after hitting the limit
+            ...(newAttempts >= MAX_CODE_ATTEMPTS ? { usedAt: new Date() } : {}),
+          },
+        });
+      }
       return NextResponse.json({ error: "Kod geçersiz veya süresi dolmuş." }, { status: 400 });
     }
+
+    const verificationCode = activeCode;
 
     const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingUser) {

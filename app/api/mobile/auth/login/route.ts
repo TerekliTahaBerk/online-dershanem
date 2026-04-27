@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createMobileToken } from "@/lib/mobile-auth";
 import { credentialsSchema } from "@/lib/validators";
 import { ensureUserAccessLinksByEmail } from "@/lib/user-links";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,16 @@ export async function POST(request: Request) {
   }
 
   const email = parsed.data.email.toLowerCase();
+
+  // P0: brute-force protection — max 10 login attempts per email per 15 minutes
+  const rl = await checkRateLimit(`login:${email}`, 10, 15 * 60 * 1000);
+  if (!rl.allowed) {
+    return Response.json(
+      { error: "TOO_MANY_ATTEMPTS" },
+      { status: 429 },
+    );
+  }
+
   const user = await prisma.user.findUnique({
     where: { email },
     select: { id: true, email: true, name: true, role: true, passwordHash: true },
