@@ -8,7 +8,12 @@ export default withAuth({
     authorized: ({ token, req }) => {
       const pathname = req.nextUrl.pathname;
 
-      if (pathname.startsWith("/admin") || pathname.startsWith("/odk/admin")) {
+      if (
+        pathname.startsWith("/admin") ||
+        pathname.startsWith("/odk/admin") ||
+        pathname.startsWith("/api/admin") ||
+        pathname.startsWith("/api/odk/admin")
+      ) {
         return Boolean(token?.isAdmin);
       }
 
@@ -18,5 +23,12 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ["/admin/:path*", "/odk/admin/:path*"]
+  // Include admin API routes so a forgotten auth check in one handler
+  // doesn't leave it fully unauthenticated.
+  matcher: [
+    "/admin/:path*",
+    "/odk/admin/:path*",
+    "/api/admin/:path*",
+    "/api/odk/admin/:path*",
+  ],
 };

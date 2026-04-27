@@ -59,7 +59,8 @@ export async function POST(request: Request) {
 
     const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingUser) {
-      return NextResponse.json({ error: "Bu e-posta adresi zaten kullanılıyor." }, { status: 400 });
+      // Don't reveal that the account exists — use the same message as invalid code
+      return NextResponse.json({ error: "Kayıt tamamlanamadı. Lütfen tekrar deneyin." }, { status: 400 });
     }
 
     // Mark code as used
@@ -69,12 +70,15 @@ export async function POST(request: Request) {
     });
 
     const phoneKey = normalizePhone(phone);
+    // Store the normalized phone so UI displays a consistent format
+    const normalizedPhone = phone.replace(/\D/g, "").replace(/^0/, "+90").replace(/^90/, "+90").replace(/^(\d{10})$/, "+90$1");
     const passwordHash = await bcrypt.hash(password, 12);
     const existingStudent = await prisma.student.findUnique({ where: { phoneKey } });
 
     if (existingStudent) {
       if (existingStudent.userId) {
-        return NextResponse.json({ error: "Bu telefon numarası zaten kayıtlı." }, { status: 400 });
+        // Don't reveal phone ownership; generic message
+        return NextResponse.json({ error: "Kayıt tamamlanamadı. Lütfen tekrar deneyin." }, { status: 400 });
       }
       const user = await prisma.user.create({
         data: {
@@ -87,11 +91,11 @@ export async function POST(request: Request) {
       });
       await prisma.student.update({
         where: { id: existingStudent.id },
-        data: { email: normalizedEmail, userId: user.id },
+        data: { email: normalizedEmail, phone: normalizedPhone, userId: user.id },
       });
     } else {
       const student = await prisma.student.create({
-        data: { fullName, phone, phoneKey, email: normalizedEmail, status: "NEW", source: "register" },
+        data: { fullName, phone: normalizedPhone, phoneKey, email: normalizedEmail, status: "NEW", source: "register" },
       });
       const user = await prisma.user.create({
         data: {

@@ -1021,6 +1021,9 @@ model OdkExamAttempt {
 
   @@index([userId, examId])
   @@index([userId, status])
+  // Compound indexes for admin stats queries (examId + status + time)
+  @@index([examId, status, submittedAt])
+  @@index([examId, status, startedAt])
   @@map("odk_exam_attempts")
 }
 
