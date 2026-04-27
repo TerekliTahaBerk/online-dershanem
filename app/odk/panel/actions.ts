@@ -346,6 +346,15 @@ export async function submitAttempt(
     }
   }
 
+  // Compute denormalized suspiciousScore (0-1) from integrityFlags for fast DB sorting.
+  // Formula: 70% weight on fast-answer ratio + 30% weight on burst groups (capped at 5).
+  let suspiciousScore: number | null = null;
+  if (integrityFlags && integrityFlags.totalTimestamped > 0) {
+    const fastRatio = integrityFlags.suspiciouslyFastAnswers / integrityFlags.totalTimestamped;
+    const burstFactor = Math.min(integrityFlags.burstAnswerGroups, 5) / 5;
+    suspiciousScore = Math.min(1, fastRatio * 0.7 + burstFactor * 0.3);
+  }
+
   // P0: atomic status transition — prevents double-submit race condition.
   // updateMany returns a count; if count === 0 another request already submitted.
   const { count } = await prisma.odkExamAttempt.updateMany({
@@ -359,6 +368,7 @@ export async function submitAttempt(
       blankCount: totalBlank,
       durationSeconds: totalDuration,
       resultPayload: { net, sectionScores, kazanimBreakdown, integrityFlags },
+      suspiciousScore,
       ...(hasSectionScoresColumn ? { sectionScores: sectionScores as unknown as never } : {}),
     },
   });
