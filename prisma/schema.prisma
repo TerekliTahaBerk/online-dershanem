@@ -57,9 +57,21 @@ model VerificationCode {
   type      VerificationCodeType
   expiresAt DateTime
   usedAt    DateTime?
+  attempts  Int?                 @default(0)
   createdAt DateTime             @default(now())
 
   @@index([email, type])
+}
+
+/// Lightweight DB-backed rate limiter — each row is one "token" consumed.
+/// Caller counts rows with a given key in the recent window to enforce limits.
+/// Old rows can be purged periodically (e.g. cron or on-demand).
+model RateLimitEntry {
+  id        String   @id @default(cuid())
+  key       String   // e.g. "login:user@example.com" or "login:ip:1.2.3.4"
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }
 
 model User {

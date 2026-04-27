@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, AlertTriangle, TrendingDown, TrendingUp, Download } from "lucide-react";
+import { ArrowLeft, AlertTriangle, TrendingDown, TrendingUp, Download, ExternalLink } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import {
   hasOdkExamAttemptSectionScoresColumn,
@@ -25,9 +25,32 @@ async function getExamStats(examId: string) {
 
   const exam = await prisma.odkExam.findUnique({
     where: { id: examId },
-    select: { id: true, title: true, cadenceFamily: true, sections: { select: { id: true, title: true, questionCount: true } } },
+    select: {
+      id: true,
+      title: true,
+      cadenceFamily: true,
+      sections: {
+        orderBy: { orderIndex: "asc" },
+        select: {
+          id: true,
+          title: true,
+          questionCount: true,
+          officialAnswers: {
+            select: { questionNumber: true, correctOption: true, outcomes: true },
+          },
+        },
+      },
+    },
   });
   if (!exam) return null;
+
+  // P0: aggregate option counts in DB instead of loading all rows into memory.
+  // 1000 students × 100 questions = 100k rows; groupBy produces O(sections × questions × options) rows.
+  const optionCountRows = await prisma.odkAttemptOpticalAnswer.groupBy({
+    by: ["sectionId", "questionNumber", "selectedOption"],
+    where: { attempt: { examId, status: "SUBMITTED" } },
+    _count: { selectedOption: true },
+  });
 
   const attempts = await prisma.odkExamAttempt.findMany({
     where: { examId, status: "SUBMITTED" },
@@ -59,7 +82,99 @@ async function getExamStats(examId: string) {
       tabSwitchCount: "tabSwitchCount" in attempt ? attempt.tabSwitchCount : 0,
     })) as unknown as typeof attempts,
     inProgressCount,
+    optionCountRows,
   };
+}
+
+type Outcome = { konu?: string; kazanim?: string } | null;
+
+type QuestionAggregate = {
+  sectionTitle: string;
+  questionNumber: number;
+  correctOption: string;
+  outcome: Outcome;
+  totalAnswered: number;
+  correctCount: number;
+  wrongCount: number;
+  blankCount: number;
+  optionCounts: Record<string, number>;
+  wrongPct: number;
+};
+
+type OptionCountRow = {
+  sectionId: string;
+  questionNumber: number;
+  selectedOption: string;
+  _count: { selectedOption: number };
+};
+
+function aggregateQuestions(
+  exam: {
+    sections: Array<{
+      id: string;
+      title: string;
+      questionCount: number;
+      officialAnswers: Array<{ questionNumber: number; correctOption: string; outcomes: unknown }>;
+    }>;
+  },
+  optionCountRows: OptionCountRow[],
+  totalAttempts: number,
+): QuestionAggregate[] {
+  // Build a lookup: sectionId → questionNumber → option → count
+  const lookup = new Map<string, Map<number, Map<string, number>>>();
+  for (const row of optionCountRows) {
+    if (!lookup.has(row.sectionId)) lookup.set(row.sectionId, new Map());
+    const byQ = lookup.get(row.sectionId)!;
+    if (!byQ.has(row.questionNumber)) byQ.set(row.questionNumber, new Map());
+    byQ.get(row.questionNumber)!.set(row.selectedOption, row._count.selectedOption);
+  }
+
+  const result: QuestionAggregate[] = [];
+  for (const section of exam.sections) {
+    const officialMap = new Map<number, { correctOption: string; outcomes: Outcome }>();
+    for (const o of section.officialAnswers) {
+      officialMap.set(o.questionNumber, {
+        correctOption: o.correctOption,
+        outcomes: (o.outcomes as Outcome) ?? null,
+      });
+    }
+
+    const byQ = lookup.get(section.id);
+
+    for (let q = 1; q <= section.questionCount; q++) {
+      const off = officialMap.get(q);
+      if (!off) continue;
+
+      const optionCounts: Record<string, number> = {};
+      let correct = 0;
+      let wrong = 0;
+      let totalAnswered = 0;
+
+      const optionMap = byQ?.get(q);
+      if (optionMap) {
+        for (const [opt, cnt] of optionMap.entries()) {
+          optionCounts[opt] = cnt;
+          totalAnswered += cnt;
+          if (opt === off.correctOption) correct += cnt;
+          else wrong += cnt;
+        }
+      }
+
+      result.push({
+        sectionTitle: section.title,
+        questionNumber: q,
+        correctOption: off.correctOption,
+        outcome: off.outcomes,
+        totalAnswered,
+        correctCount: correct,
+        wrongCount: wrong,
+        blankCount: Math.max(0, totalAttempts - totalAnswered),
+        optionCounts,
+        wrongPct: totalAttempts > 0 ? wrong / totalAttempts : 0,
+      });
+    }
+  }
+  return result;
 }
 
 function aggregateSections(attempts: { sectionScores: unknown }[]) {
@@ -90,7 +205,12 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
   const data = await getExamStats(examId);
   if (!data) notFound();
 
-  const { exam, attempts, inProgressCount } = data;
+  const { exam, attempts, inProgressCount, optionCountRows } = data;
+  const questionStats = aggregateQuestions(exam, optionCountRows as OptionCountRow[], attempts.length);
+  const mostMissed = [...questionStats]
+    .filter((q) => q.totalAnswered > 0 || attempts.length > 0)
+    .sort((a, b) => b.wrongPct - a.wrongPct)
+    .slice(0, 12);
 
   const scores = attempts.map((a) => Number(a.score ?? 0));
   const avgScore = scores.length > 0 ? scores.reduce((s, v) => s + v, 0) / scores.length : null;
@@ -174,6 +294,83 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
         </div>
       )}
 
+      {/* Most-missed questions */}
+      {mostMissed.length > 0 && attempts.length > 0 && (
+        <div className="rounded-xl border border-stone-200 bg-white p-5">
+          <h2 className="text-sm font-semibold text-stone-900 mb-1">En Çok Yanlış Yapılan Sorular</h2>
+          <p className="text-xs text-stone-400 mb-4">
+            Sınıfın takıldığı sorular — yanlış oranına göre sıralı (ilk 12)
+          </p>
+          <div className="overflow-x-auto -mx-2">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-100 text-xs text-stone-500">
+                  <th className="px-2 py-2 text-left font-medium">Bölüm</th>
+                  <th className="px-2 py-2 text-center font-medium w-12">#</th>
+                  <th className="px-2 py-2 text-center font-medium w-16">Doğru</th>
+                  <th className="px-2 py-2 text-left font-medium">Konu / Kazanım</th>
+                  <th className="px-2 py-2 text-right font-medium">D</th>
+                  <th className="px-2 py-2 text-right font-medium">Y</th>
+                  <th className="px-2 py-2 text-right font-medium">B</th>
+                  <th className="px-2 py-2 text-right font-medium">Yanlış %</th>
+                  <th className="px-2 py-2 text-left font-medium">Şık Dağılımı</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-stone-50">
+                {mostMissed.map((q) => {
+                  const wrongPct = Math.round(q.wrongPct * 100);
+                  const pctColor = wrongPct >= 60 ? "text-red-600" : wrongPct >= 30 ? "text-amber-600" : "text-stone-500";
+                  return (
+                    <tr key={`${q.sectionTitle}-${q.questionNumber}`} className="hover:bg-stone-50 transition">
+                      <td className="px-2 py-2 text-xs text-stone-600 whitespace-nowrap">{q.sectionTitle}</td>
+                      <td className="px-2 py-2 text-center font-mono text-xs">{q.questionNumber}</td>
+                      <td className="px-2 py-2 text-center">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-emerald-100 text-[11px] font-bold text-emerald-700">
+                          {q.correctOption}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 text-xs text-stone-600">
+                        {q.outcome?.konu && <div className="font-medium text-stone-700">{q.outcome.konu}</div>}
+                        {q.outcome?.kazanim && <div className="text-stone-500">{q.outcome.kazanim}</div>}
+                        {!q.outcome && <span className="text-stone-300">—</span>}
+                      </td>
+                      <td className="px-2 py-2 text-right text-xs text-emerald-600 font-semibold">{q.correctCount}</td>
+                      <td className="px-2 py-2 text-right text-xs text-red-500 font-semibold">{q.wrongCount}</td>
+                      <td className="px-2 py-2 text-right text-xs text-stone-400">{q.blankCount}</td>
+                      <td className={`px-2 py-2 text-right text-sm font-bold ${pctColor}`}>{wrongPct}%</td>
+                      <td className="px-2 py-2">
+                        <div className="flex gap-0.5">
+                          {["A", "B", "C", "D", "E"].map((opt) => {
+                            const c = q.optionCounts[opt] ?? 0;
+                            const pct = attempts.length > 0 ? (c / attempts.length) * 100 : 0;
+                            const isCorrect = opt === q.correctOption;
+                            return (
+                              <div
+                                key={opt}
+                                className="flex-1 min-w-[18px] text-center"
+                                title={`${opt}: ${c} öğrenci`}
+                              >
+                                <div className="h-8 bg-stone-50 rounded relative overflow-hidden border border-stone-100">
+                                  <div
+                                    className={`absolute bottom-0 left-0 right-0 ${isCorrect ? "bg-emerald-400" : "bg-red-300"}`}
+                                    style={{ height: `${pct}%` }}
+                                  />
+                                </div>
+                                <div className="text-[10px] text-stone-400 mt-0.5">{opt}</div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Score range */}
       {attempts.length > 0 && (
         <div className="rounded-xl border border-stone-200 bg-white p-5">
@@ -215,7 +412,11 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
             {highViolationAttempts
               .sort((a, b) => (b.tabSwitchCount ?? 0) - (a.tabSwitchCount ?? 0))
               .map((a) => (
-                <div key={a.id} className="flex items-center justify-between px-4 py-2.5">
+                <Link
+                  key={a.id}
+                  href={`/odk/admin/sinavlar/${examId}/girisimler/${a.id}`}
+                  className="flex items-center justify-between px-4 py-2.5 hover:bg-amber-50 transition"
+                >
                   <div>
                     <p className="text-sm font-medium text-stone-800">
                       {a.user.name ?? a.user.email}
@@ -228,7 +429,7 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
                       {a.tabSwitchCount} ihlal
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
           </div>
         </div>
@@ -254,12 +455,13 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
                   <th className="px-4 py-2.5 text-right font-medium">Süre</th>
                   <th className="px-4 py-2.5 text-right font-medium">İhlal</th>
                   <th className="px-4 py-2.5 text-right font-medium">Hız Şüphesi</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Detay</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
                 {[...attempts]
                   .sort((a, b) => Number(b.score ?? 0) - Number(a.score ?? 0))
-                  .map((a, idx) => (
+                  .map((a) => (
                     <tr key={a.id} className="hover:bg-stone-50 transition">
                       <td className="px-4 py-2.5">
                         <p className="font-medium text-stone-900">{a.user.name ?? "—"}</p>
@@ -296,6 +498,14 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
                             <span className="text-stone-300 text-xs">—</span>
                           );
                         })()}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        <Link
+                          href={`/odk/admin/sinavlar/${examId}/girisimler/${a.id}`}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:text-emerald-900 transition"
+                        >
+                          Aç <ExternalLink className="h-3 w-3" />
+                        </Link>
                       </td>
                     </tr>
                   ))}

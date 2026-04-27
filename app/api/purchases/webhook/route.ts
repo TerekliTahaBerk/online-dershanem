@@ -37,15 +37,20 @@ export async function POST(request: Request) {
         })
       : null;
 
+    // P0: idempotency guard — PayTR re-delivers the same notification 2-3 times.
+    // If we already recorded this providerReference, return 200 immediately so
+    // PayTR stops retrying; don't create a duplicate event or status update.
+    if (existingEvent) {
+      return NextResponse.json({ ok: true });
+    }
+
+    // At this point existingEvent is null (we returned early if it was set).
+    // Resolve the purchase via the explicit purchaseId in the payload.
     const purchase = parsed.data.purchaseId
       ? await prisma.purchaseIntent.findUnique({
           where: { id: parsed.data.purchaseId }
         })
-      : existingEvent
-        ? await prisma.purchaseIntent.findUnique({
-            where: { id: existingEvent.purchaseIntentId }
-          })
-        : null;
+      : null;
 
     if (!purchase) {
       return NextResponse.json({ error: "Satın alma kaydı bulunamadı." }, { status: 404 });
