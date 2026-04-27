@@ -75,6 +75,7 @@ async function getAttemptDetail(examId: string, attemptId: string) {
       wrongCount: true,
       blankCount: true,
       durationSeconds: true,
+      suspiciousScore: true,
       resultPayload: true,
       ...(hasSectionScores ? { sectionScores: true } : {}),
       ...(hasTabSwitch ? { tabSwitchCount: true } : {}),
@@ -205,11 +206,28 @@ export default async function AttemptDetailPage({
       </div>
 
       {/* Anti-cheat flags */}
-      {(attempt.tabSwitchCount > 0 || integrityFlags) && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
-          <h2 className="text-sm font-semibold text-amber-900 flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" /> Bütünlük Sinyalleri
-          </h2>
+      {(attempt.tabSwitchCount > 0 || integrityFlags || attempt.suspiciousScore != null) && (
+        <div className={`rounded-xl border p-4 space-y-3 ${
+          (attempt.suspiciousScore ?? 0) >= 0.6
+            ? "border-red-200 bg-red-50"
+            : "border-amber-200 bg-amber-50"
+        }`}>
+          <div className="flex items-center justify-between">
+            <h2 className={`text-sm font-semibold flex items-center gap-2 ${(attempt.suspiciousScore ?? 0) >= 0.6 ? "text-red-900" : "text-amber-900"}`}>
+              <AlertTriangle className="h-4 w-4" /> Bütünlük Sinyalleri
+            </h2>
+            {attempt.suspiciousScore != null && (
+              <span className={`rounded-full px-3 py-1 text-xs font-bold ${
+                attempt.suspiciousScore >= 0.6
+                  ? "bg-red-200 text-red-800"
+                  : attempt.suspiciousScore >= 0.3
+                    ? "bg-orange-200 text-orange-800"
+                    : "bg-stone-200 text-stone-700"
+              }`}>
+                Şüphe skoru {(attempt.suspiciousScore * 100).toFixed(0)}%
+              </span>
+            )}
+          </div>
           <div className="grid gap-2 sm:grid-cols-2 text-sm text-amber-900">
             {attempt.tabSwitchCount > 0 && (
               <div>
@@ -221,6 +239,14 @@ export default async function AttemptDetailPage({
                 Ort. cevap aralığı:{" "}
                 <span className="font-semibold">
                   {Math.round(integrityFlags.avgAnswerIntervalMs / 1000)}s
+                </span>
+              </div>
+            )}
+            {integrityFlags?.minAnswerIntervalMs != null && (
+              <div>
+                Min. cevap aralığı:{" "}
+                <span className="font-semibold">
+                  {(integrityFlags.minAnswerIntervalMs / 1000).toFixed(1)}s
                 </span>
               </div>
             )}

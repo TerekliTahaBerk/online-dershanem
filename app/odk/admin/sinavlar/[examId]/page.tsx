@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BarChart2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BarChart2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { updateExamStatus, releaseExamResults, releaseAnswerKey, addExamAccessTag, removeExamAccessTag } from "@/app/odk/admin/actions";
 import { AnswerKeyEditor, AnswerKeyJsonImporter, DeleteExamButton, ExamDetailsEditor, ExamFilesEditor, ExamMeetLinkEditor, OutcomesJsonImporter } from "@/components/odk/admin/exam-detail-editor";
@@ -33,7 +33,7 @@ type ExamDetail = {
     title: string;
     questionCount: number;
     orderIndex: number;
-    officialAnswers: Array<{ id: string; questionNumber: number; correctOption: string }>;
+    officialAnswers: Array<{ id: string; questionNumber: number; correctOption: string; outcomes: unknown }>;
   }>;
   files: Array<{ id: string; fileType: string; publicUrl: string }>;
   examAccessTags: Array<{ accessTag: { id: string; title: string } }>;
@@ -73,7 +73,7 @@ async function getExam(examId: string) {
             title: true,
             questionCount: true,
             orderIndex: true,
-            officialAnswers: { orderBy: { questionNumber: "asc" } },
+            officialAnswers: { orderBy: { questionNumber: "asc" }, select: { id: true, questionNumber: true, correctOption: true, outcomes: true } },
           },
         },
         files: { select: { id: true, fileType: true, publicUrl: true } },
@@ -126,6 +126,18 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
     (s, sec) => s + sec.officialAnswers.filter((answer) => answer.correctOption).length,
     0,
   );
+
+  // Count questions with official answers but missing outcomes metadata
+  const missingOutcomes = exam.sections.reduce(
+    (s, sec) =>
+      s +
+      sec.officialAnswers.filter(
+        (a) => a.correctOption && (a.outcomes === null || a.outcomes === undefined),
+      ).length,
+    0,
+  );
+  const outcomesRatio = answeredQuestions > 0 ? missingOutcomes / answeredQuestions : 0;
+
   const linkedTagIds = new Set(exam.examAccessTags.map((et) => et.accessTag.id));
   const availableTags = allTags.filter((t) => !linkedTagIds.has(t.id));
 
@@ -200,6 +212,23 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
           </div>
         ))}
       </div>
+
+      {/* Outcomes coverage warning */}
+      {missingOutcomes > 0 && (
+        <div className={`flex items-start gap-3 rounded-xl border px-4 py-3 ${outcomesRatio >= 0.5 ? "border-amber-200 bg-amber-50" : "border-yellow-100 bg-yellow-50"}`}>
+          <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${outcomesRatio >= 0.5 ? "text-amber-600" : "text-yellow-500"}`} />
+          <div>
+            <p className={`text-sm font-semibold ${outcomesRatio >= 0.5 ? "text-amber-800" : "text-yellow-800"}`}>
+              {missingOutcomes} soruda kazanım eşleşmesi yok
+            </p>
+            <p className={`text-xs mt-0.5 ${outcomesRatio >= 0.5 ? "text-amber-700" : "text-yellow-700"}`}>
+              Cevap anahtarı girilmiş {answeredQuestions} sorunun{" "}
+              {Math.round(outcomesRatio * 100)}%&apos;inde outcomes verisi eksik.
+              Kazanım analizi bu sorular için hesaplanamaz.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Exam details */}
       <div className="rounded-xl border border-stone-200 bg-white p-5">
@@ -316,16 +345,27 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
       {/* Sections + Answer Keys */}
       <div className="space-y-4">
         <h2 className="text-sm font-semibold text-stone-900">Bölümler ve Cevap Anahtarları</h2>
-        {exam.sections.map((section) => (
+        {exam.sections.map((section) => {
+          const sectionAnswered = section.officialAnswers.filter((a) => a.correctOption).length;
+          const sectionMissingOutcomes = section.officialAnswers.filter(
+            (a) => a.correctOption && (a.outcomes === null || a.outcomes === undefined),
+          ).length;
+          return (
           <div key={section.id} className="rounded-xl border border-stone-200 bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-sm font-semibold text-stone-900">{section.title}</h3>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  {section.questionCount} soru · {section.officialAnswers.filter((answer) => answer.correctOption).length} cevap girildi
+                  {section.questionCount} soru · {sectionAnswered} cevap girildi
+                  {sectionMissingOutcomes > 0 && (
+                    <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+                      <AlertTriangle className="h-2.5 w-2.5" />
+                      {sectionMissingOutcomes} kazanım eksik
+                    </span>
+                  )}
                 </p>
               </div>
-              {section.officialAnswers.filter((answer) => answer.correctOption).length === section.questionCount && (
+              {sectionAnswered === section.questionCount && (
                 <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
                   Tamamlandı
                 </span>
@@ -339,7 +379,8 @@ export default async function ExamDetailPage({ params }: { params: Promise<{ exa
               officialAnswers: section.officialAnswers,
             }} />
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* JSON Import */}

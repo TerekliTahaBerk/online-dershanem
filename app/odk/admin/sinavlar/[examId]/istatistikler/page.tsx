@@ -61,6 +61,7 @@ async function getExamStats(examId: string) {
       wrongCount: true,
       blankCount: true,
       durationSeconds: true,
+      suspiciousScore: true,
       ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
       ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
       resultPayload: true,
@@ -200,8 +201,15 @@ function aggregateSections(attempts: { sectionScores: unknown }[]) {
   })).sort((a, b) => a.pct - b.pct);
 }
 
-export default async function ExamStatsPage({ params }: { params: Promise<{ examId: string }> }) {
+export default async function ExamStatsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ examId: string }>;
+  searchParams: Promise<{ sort?: string }>;
+}) {
   const { examId } = await params;
+  const { sort } = await searchParams;
   const data = await getExamStats(examId);
   if (!data) notFound();
 
@@ -437,8 +445,22 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
 
       {/* All results table */}
       <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
-        <div className="border-b border-stone-100 px-5 py-4">
+        <div className="border-b border-stone-100 px-5 py-4 flex items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-stone-900">Tüm Sonuçlar</h2>
+          <div className="flex gap-1.5 text-xs">
+            <Link
+              href={`/odk/admin/sinavlar/${examId}/istatistikler`}
+              className={`rounded-lg px-2.5 py-1 font-medium transition ${!sort || sort === "score" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"}`}
+            >
+              Net sırası
+            </Link>
+            <Link
+              href={`/odk/admin/sinavlar/${examId}/istatistikler?sort=suspicious`}
+              className={`rounded-lg px-2.5 py-1 font-medium transition ${sort === "suspicious" ? "bg-orange-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"}`}
+            >
+              ⚠ Şüphe skoru
+            </Link>
+          </div>
         </div>
         {attempts.length === 0 ? (
           <div className="px-5 py-10 text-center text-sm text-stone-400">Henüz tamamlanan girişim yok.</div>
@@ -460,7 +482,11 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
               </thead>
               <tbody className="divide-y divide-stone-100">
                 {[...attempts]
-                  .sort((a, b) => Number(b.score ?? 0) - Number(a.score ?? 0))
+                  .sort((a, b) =>
+                    sort === "suspicious"
+                      ? (b.suspiciousScore ?? -1) - (a.suspiciousScore ?? -1)
+                      : Number(b.score ?? 0) - Number(a.score ?? 0),
+                  )
                   .map((a) => (
                     <tr key={a.id} className="hover:bg-stone-50 transition">
                       <td className="px-4 py-2.5">
@@ -486,18 +512,22 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
                         )}
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        {(() => {
-                          const flags = (a.resultPayload as { integrityFlags?: { suspiciouslyFastAnswers?: number; avgAnswerIntervalMs?: number } } | null)?.integrityFlags;
-                          if (!flags) return <span className="text-stone-300 text-xs">—</span>;
-                          const suspicious = (flags.suspiciouslyFastAnswers ?? 0) > 5 || (flags.avgAnswerIntervalMs ?? 99999) < 4000;
-                          return suspicious ? (
-                            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700" title={`Ort. ${Math.round((flags.avgAnswerIntervalMs ?? 0) / 1000)}s/soru · ${flags.suspiciouslyFastAnswers} hızlı`}>
-                              ⚠ {flags.suspiciouslyFastAnswers} hızlı
-                            </span>
-                          ) : (
-                            <span className="text-stone-300 text-xs">—</span>
-                          );
-                        })()}
+                        {a.suspiciousScore != null ? (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                              a.suspiciousScore >= 0.6
+                                ? "bg-red-100 text-red-700"
+                                : a.suspiciousScore >= 0.3
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-stone-100 text-stone-500"
+                            }`}
+                            title={`Şüphe skoru: ${(a.suspiciousScore * 100).toFixed(0)}%`}
+                          >
+                            {(a.suspiciousScore * 100).toFixed(0)}%
+                          </span>
+                        ) : (
+                          <span className="text-stone-300 text-xs">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-right">
                         <Link

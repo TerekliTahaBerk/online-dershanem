@@ -1039,6 +1039,10 @@ model OdkExamAttempt {
   sectionScores   Json?                     @map("section_scores")
   tabSwitchCount  Int                       @default(0) @map("tab_switch_count")
   durationSeconds Int?                      @map("duration_seconds")
+  /// Denormalized 0-1 suspicion score derived from integrityFlags at submit time.
+  /// 0 = no signals, 1 = maximally suspicious. Null for auto-submitted attempts
+  /// with no answer-timing data. Use for ORDER BY / filter without JSON parsing.
+  suspiciousScore Float?                    @map("suspicious_score")
   createdAt       DateTime                  @default(now()) @map("created_at")
   updatedAt       DateTime                  @updatedAt @map("updated_at")
   user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
