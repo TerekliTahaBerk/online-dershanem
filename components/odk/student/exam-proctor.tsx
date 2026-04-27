@@ -52,23 +52,33 @@ const OPTIONS = ["A", "B", "C", "D", "E"];
 
 type AnswersMap = Record<string, Record<number, string>>;
 
+// Backup includes both answers and violation count so a browser crash doesn't
+// reset the anti-cheat counter.
+type Backup = { answers: AnswersMap; violations?: number };
+
 const BACKUP_KEY = (attemptId: string) => `odk-attempt-backup-${attemptId}`;
 
-function loadBackup(attemptId: string): AnswersMap | null {
+function loadBackup(attemptId: string): Backup | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(BACKUP_KEY(attemptId));
     if (!raw) return null;
-    return JSON.parse(raw) as AnswersMap;
+    const parsed = JSON.parse(raw) as Backup | AnswersMap;
+    // Handle old format (plain AnswersMap before this change)
+    if (parsed && typeof parsed === "object" && !("answers" in parsed)) {
+      return { answers: parsed as AnswersMap };
+    }
+    return parsed as Backup;
   } catch {
     return null;
   }
 }
 
-function saveBackup(attemptId: string, answers: AnswersMap) {
+function saveBackup(attemptId: string, answers: AnswersMap, violations: number) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(BACKUP_KEY(attemptId), JSON.stringify(answers));
+    const backup: Backup = { answers, violations };
+    window.localStorage.setItem(BACKUP_KEY(attemptId), JSON.stringify(backup));
   } catch {
     // quota exceeded — ignore
   }
@@ -296,6 +306,7 @@ function PreExamScreen({
 }
 
 // ── Violation overlay ─────────────────────────────────────────────────────────
+// Escalation levels: 1-2 = warning, 3-4 = strong warning, ≥5 = terminal
 
 function ViolationOverlay({
   count,
@@ -304,28 +315,44 @@ function ViolationOverlay({
   count: number;
   onDismiss: () => void;
 }) {
+  const isStrong = count >= 3;
+  const isTerminal = count >= 5;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
       <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl text-center space-y-4">
         <div className="flex justify-center">
-          <div className="rounded-full bg-red-100 p-4">
-            <AlertTriangle className="h-8 w-8 text-red-600" />
+          <div className={`rounded-full p-4 ${isTerminal ? "bg-red-200" : isStrong ? "bg-orange-100" : "bg-red-100"}`}>
+            <AlertTriangle className={`h-8 w-8 ${isTerminal ? "text-red-700" : isStrong ? "text-orange-600" : "text-red-600"}`} />
           </div>
         </div>
-        <h2 className="text-lg font-bold text-stone-900">Sınav İhlali Tespit Edildi!</h2>
+        <h2 className="text-lg font-bold text-stone-900">
+          {isTerminal ? "Sınav Sonlandırılıyor" : "Sınav İhlali Tespit Edildi!"}
+        </h2>
         <p className="text-sm text-stone-600">
-          Başka sekmeye geçildi veya tam ekrandan çıkıldı.{" "}
-          <span className="font-semibold text-red-600">Toplam ihlal: {count}</span>
+          {isTerminal
+            ? "5 ihlal limitine ulaştın. Sınavın otomatik olarak gönderildi ve admin tarafından incelenecek."
+            : "Başka sekmeye geçildi veya tam ekrandan çıkıldı."}{" "}
+          <span className={`font-semibold ${isStrong ? "text-red-700" : "text-red-600"}`}>
+            Toplam ihlal: {count}
+          </span>
         </p>
+        {isStrong && !isTerminal && (
+          <p className="text-xs font-semibold text-orange-700 bg-orange-50 rounded-lg px-3 py-2">
+            ⚠️ 5 ihlale ulaşırsan sınavın otomatik gönderilecek!
+          </p>
+        )}
         <p className="text-xs text-stone-400">
-          Bu ihlaller admin tarafından görülebilir. Sınavın devam ediyor, geri dönmek için butona bas.
+          Bu ihlaller admin tarafından görülebilir. {!isTerminal && "Sınavın devam ediyor, geri dönmek için butona bas."}
         </p>
-        <button
-          onClick={onDismiss}
-          className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition"
-        >
-          Sınava Dön
-        </button>
+        {!isTerminal && (
+          <button
+            onClick={onDismiss}
+            className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+          >
+            Sınava Dön
+          </button>
+        )}
       </div>
     </div>
   );
@@ -362,16 +389,10 @@ export function ExamProctor({
     }
     if (initialAttemptId) {
       const backup = loadBackup(initialAttemptId);
-      if (backup) return mergeAnswers(fromServer, backup);
+      if (backup) return mergeAnswers(fromServer, backup.answers);
     }
     return fromServer;
   });
-
-  // Persist answers to localStorage on every change.
-  useEffect(() => {
-    if (!attemptId) return;
-    saveBackup(attemptId, answers);
-  }, [attemptId, answers]);
 
   // Per-answer save status
   type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -384,10 +405,26 @@ export function ExamProctor({
   // Active question for keyboard navigation
   const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
 
-  // Tab detection state
-  const [violationCount, setViolationCount] = useState(0);
+  // Tab detection state — initialised from localStorage backup so violations
+  // survive a browser crash or accidental page reload.
+  const [violationCount, setViolationCount] = useState(() => {
+    if (initialAttemptId) {
+      const backup = loadBackup(initialAttemptId);
+      return backup?.violations ?? 0;
+    }
+    return 0;
+  });
   const [showViolation, setShowViolation] = useState(false);
-  const violationRef = useRef(0);
+  const violationRef = useRef(violationCount);
+
+  // Persist answers + violation count to localStorage on every change.
+  useEffect(() => {
+    if (!attemptId) return;
+    saveBackup(attemptId, answers, violationCount);
+  }, [attemptId, answers, violationCount]);
+
+  // Track whether fullscreen was ever rejected so we can log it as a violation.
+  const [fullscreenDenied, setFullscreenDenied] = useState(false);
 
   // PDF pane state
   const [showPdf, setShowPdf] = useState(!!bookletUrl);
@@ -405,23 +442,33 @@ export function ExamProctor({
 
   // ── Tab detection ──────────────────────────────────────────────────────────
 
-  const handleVisibilityChange = useCallback(() => {
-    if (document.hidden && phase === "exam" && attemptId) {
-      violationRef.current += 1;
-      setViolationCount(violationRef.current);
-      setShowViolation(true);
-      startTransition(() => recordTabSwitch(attemptId, violationRef.current));
+  // Forward ref so recordViolation can call handleTimerExpire before it's declared.
+  const triggerAutoSubmitRef = useRef<(() => void) | null>(null);
+
+  // Central violation recorder — updates ref, state, localStorage, server,
+  // and triggers auto-submit escalation at threshold.
+  const recordViolation = useCallback(() => {
+    if (phase !== "exam" || !attemptId) return;
+    violationRef.current += 1;
+    const newCount = violationRef.current;
+    setViolationCount(newCount);
+    setShowViolation(true);
+    // Persist violation count to localStorage so it survives a browser crash
+    saveBackup(attemptId, answers, newCount);
+    startTransition(() => recordTabSwitch(attemptId, newCount));
+    // P1: escalation — auto-submit + admin flag at 5 violations
+    if (newCount >= 5) {
+      triggerAutoSubmitRef.current?.();
     }
-  }, [phase, attemptId]);
+  }, [phase, attemptId, answers]);
+
+  const handleVisibilityChange = useCallback(() => {
+    if (document.hidden) recordViolation();
+  }, [recordViolation]);
 
   const handleBlur = useCallback(() => {
-    if (phase === "exam" && attemptId) {
-      violationRef.current += 1;
-      setViolationCount(violationRef.current);
-      setShowViolation(true);
-      startTransition(() => recordTabSwitch(attemptId, violationRef.current));
-    }
-  }, [phase, attemptId]);
+    recordViolation();
+  }, [recordViolation]);
 
   useEffect(() => {
     if (phase !== "exam") return;
@@ -437,17 +484,25 @@ export function ExamProctor({
 
   const requestFullscreen = useCallback(() => {
     const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    if (!el.requestFullscreen) return;
+    el.requestFullscreen().catch(() => {
+      // User denied fullscreen — will be logged as a violation via the
+      // fullscreenDenied effect below (needs exam phase to be active).
+      setFullscreenDenied(true);
+    });
   }, []);
 
-  const handleFullscreenChange = useCallback(() => {
-    if (!document.fullscreenElement && phase === "exam" && attemptId) {
-      violationRef.current += 1;
-      setViolationCount(violationRef.current);
-      setShowViolation(true);
-      startTransition(() => recordTabSwitch(attemptId, violationRef.current));
+  // Log fullscreen denial as a violation once the exam phase is active.
+  useEffect(() => {
+    if (fullscreenDenied && phase === "exam") {
+      setFullscreenDenied(false);
+      recordViolation();
     }
-  }, [phase, attemptId]);
+  }, [fullscreenDenied, phase, recordViolation]);
+
+  const handleFullscreenChange = useCallback(() => {
+    if (!document.fullscreenElement) recordViolation();
+  }, [recordViolation]);
 
   useEffect(() => {
     if (phase !== "exam") return;
@@ -614,6 +669,11 @@ export function ExamProctor({
         setAutoSubmitFailed(true);
       });
   }, [attemptId, phase, runSubmit]);
+
+  // Wire forward ref so recordViolation can call handleTimerExpire.
+  useEffect(() => {
+    triggerAutoSubmitRef.current = handleTimerExpire;
+  }, [handleTimerExpire]);
 
   const remaining = useExamTimer(durationMinutes, startedAt, clockOffsetRef.current, handleTimerExpire);
 
