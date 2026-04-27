@@ -19,6 +19,8 @@ type IntegrityFlags = {
   suspiciouslyFastAnswers?: number;
   avgAnswerIntervalMs?: number;
   burstAnswerGroups?: number;
+  minAnswerIntervalMs?: number;
+  totalTimestamped?: number;
 };
 
 export async function GET(
@@ -50,7 +52,9 @@ export async function GET(
 
   const headers = [
     "Ad Soyad", "E-posta", "Net", "Doğru", "Yanlış", "Boş",
-    "Süre (dk)", "Tab İhlali", "Hızlı Cevap (şüpheli)", "Ort. Cevap Hızı (sn)", "Gönderim Tarihi",
+    "Süre (dk)", "Tab İhlali",
+    "Son 10sn Cevap Sayısı", "Hızlı Cevap (<3sn)", "Ort. Cevap Hızı (sn)", "Min Cevap Hızı (sn)", "Patlama Grubu",
+    "Gönderim Tarihi",
     ...sectionTitles.flatMap((t) => [`${t} Net`, `${t} D`, `${t} Y`, `${t} B`]),
   ];
 
@@ -86,11 +90,33 @@ export async function GET(
           ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
         });
 
+        // Fetch per-answer timestamps for this batch to compute last-10s suspicious pattern
+        const attemptIds = batch.map((a) => a.id);
+        const opticalAnswers = await prisma.odkAttemptOpticalAnswer.findMany({
+          where: { attemptId: { in: attemptIds } },
+          select: { attemptId: true, answeredAt: true },
+        });
+
+        // Group timestamps by attemptId
+        const tsByAttempt = new Map<string, number[]>();
+        for (const oa of opticalAnswers) {
+          const arr = tsByAttempt.get(oa.attemptId) ?? [];
+          arr.push(new Date(oa.answeredAt).getTime());
+          tsByAttempt.set(oa.attemptId, arr);
+        }
+
         for (const a of batch) {
           const sections = ("sectionScores" in a ? (a.sectionScores as SectionScore[] | null) : null) ?? [];
           const secMap = new Map(sections.map((s) => [s.title, s]));
           const payload = a.resultPayload as { integrityFlags?: IntegrityFlags } | null;
           const flags = payload?.integrityFlags;
+
+          // Compute last-10s answers from actual optical answer timestamps
+          const timestamps = tsByAttempt.get(a.id) ?? [];
+          const submittedMs = a.submittedAt ? new Date(a.submittedAt).getTime() : null;
+          const last10sCount = submittedMs != null
+            ? timestamps.filter((t) => submittedMs - t <= 10_000 && submittedMs - t >= 0).length
+            : 0;
 
           const cells = [
             a.user.name ?? "", a.user.email,
@@ -98,8 +124,11 @@ export async function GET(
             String(a.correctCount), String(a.wrongCount), String(a.blankCount),
             a.durationSeconds ? String(Math.round(a.durationSeconds / 60)) : "",
             String("tabSwitchCount" in a ? (a.tabSwitchCount ?? 0) : 0),
+            String(last10sCount),
             flags?.suspiciouslyFastAnswers != null ? String(flags.suspiciouslyFastAnswers) : "",
             flags?.avgAnswerIntervalMs != null ? (flags.avgAnswerIntervalMs / 1000).toFixed(1) : "",
+            flags?.minAnswerIntervalMs != null ? (flags.minAnswerIntervalMs / 1000).toFixed(1) : "",
+            flags?.burstAnswerGroups != null ? String(flags.burstAnswerGroups) : "",
             a.submittedAt ? new Date(a.submittedAt).toLocaleString("tr-TR") : "",
             ...sectionTitles.flatMap((t) => {
               const s = secMap.get(t);
