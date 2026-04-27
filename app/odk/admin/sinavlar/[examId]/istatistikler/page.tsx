@@ -44,10 +44,12 @@ async function getExamStats(examId: string) {
   });
   if (!exam) return null;
 
-  // Pull all optical answers for question-level aggregation
-  const allOpticalAnswers = await prisma.odkAttemptOpticalAnswer.findMany({
+  // P0: aggregate option counts in DB instead of loading all rows into memory.
+  // 1000 students × 100 questions = 100k rows; groupBy produces O(sections × questions × options) rows.
+  const optionCountRows = await prisma.odkAttemptOpticalAnswer.groupBy({
+    by: ["sectionId", "questionNumber", "selectedOption"],
     where: { attempt: { examId, status: "SUBMITTED" } },
-    select: { attemptId: true, sectionId: true, questionNumber: true, selectedOption: true },
+    _count: { selectedOption: true },
   });
 
   const attempts = await prisma.odkExamAttempt.findMany({
@@ -80,7 +82,7 @@ async function getExamStats(examId: string) {
       tabSwitchCount: "tabSwitchCount" in attempt ? attempt.tabSwitchCount : 0,
     })) as unknown as typeof attempts,
     inProgressCount,
-    allOpticalAnswers,
+    optionCountRows,
   };
 }
 
@@ -99,6 +101,13 @@ type QuestionAggregate = {
   wrongPct: number;
 };
 
+type OptionCountRow = {
+  sectionId: string;
+  questionNumber: number;
+  selectedOption: string;
+  _count: { selectedOption: number };
+};
+
 function aggregateQuestions(
   exam: {
     sections: Array<{
@@ -108,9 +117,18 @@ function aggregateQuestions(
       officialAnswers: Array<{ questionNumber: number; correctOption: string; outcomes: unknown }>;
     }>;
   },
-  allOpticalAnswers: Array<{ attemptId: string; sectionId: string; questionNumber: number; selectedOption: string }>,
+  optionCountRows: OptionCountRow[],
   totalAttempts: number,
 ): QuestionAggregate[] {
+  // Build a lookup: sectionId → questionNumber → option → count
+  const lookup = new Map<string, Map<number, Map<string, number>>>();
+  for (const row of optionCountRows) {
+    if (!lookup.has(row.sectionId)) lookup.set(row.sectionId, new Map());
+    const byQ = lookup.get(row.sectionId)!;
+    if (!byQ.has(row.questionNumber)) byQ.set(row.questionNumber, new Map());
+    byQ.get(row.questionNumber)!.set(row.selectedOption, row._count.selectedOption);
+  }
+
   const result: QuestionAggregate[] = [];
   for (const section of exam.sections) {
     const officialMap = new Map<number, { correctOption: string; outcomes: Outcome }>();
@@ -120,20 +138,28 @@ function aggregateQuestions(
         outcomes: (o.outcomes as Outcome) ?? null,
       });
     }
+
+    const byQ = lookup.get(section.id);
+
     for (let q = 1; q <= section.questionCount; q++) {
       const off = officialMap.get(q);
       if (!off) continue;
-      const sectionAns = allOpticalAnswers.filter((oa) => oa.sectionId === section.id && oa.questionNumber === q);
+
       const optionCounts: Record<string, number> = {};
       let correct = 0;
       let wrong = 0;
-      for (const oa of sectionAns) {
-        optionCounts[oa.selectedOption] = (optionCounts[oa.selectedOption] ?? 0) + 1;
-        if (oa.selectedOption === off.correctOption) correct++;
-        else wrong++;
+      let totalAnswered = 0;
+
+      const optionMap = byQ?.get(q);
+      if (optionMap) {
+        for (const [opt, cnt] of optionMap.entries()) {
+          optionCounts[opt] = cnt;
+          totalAnswered += cnt;
+          if (opt === off.correctOption) correct += cnt;
+          else wrong += cnt;
+        }
       }
-      const blank = Math.max(0, totalAttempts - sectionAns.length);
-      const totalAnswered = sectionAns.length;
+
       result.push({
         sectionTitle: section.title,
         questionNumber: q,
@@ -142,7 +168,7 @@ function aggregateQuestions(
         totalAnswered,
         correctCount: correct,
         wrongCount: wrong,
-        blankCount: blank,
+        blankCount: Math.max(0, totalAttempts - totalAnswered),
         optionCounts,
         wrongPct: totalAttempts > 0 ? wrong / totalAttempts : 0,
       });
@@ -179,8 +205,8 @@ export default async function ExamStatsPage({ params }: { params: Promise<{ exam
   const data = await getExamStats(examId);
   if (!data) notFound();
 
-  const { exam, attempts, inProgressCount, allOpticalAnswers } = data;
-  const questionStats = aggregateQuestions(exam, allOpticalAnswers, attempts.length);
+  const { exam, attempts, inProgressCount, optionCountRows } = data;
+  const questionStats = aggregateQuestions(exam, optionCountRows as OptionCountRow[], attempts.length);
   const mostMissed = [...questionStats]
     .filter((q) => q.totalAnswered > 0 || attempts.length > 0)
     .sort((a, b) => b.wrongPct - a.wrongPct)
