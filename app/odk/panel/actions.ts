@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
-import { requireOdkExamAccess } from "@/lib/odk-access";
+import { requireOdkExamAccess, syncExpiredEntitlements } from "@/lib/odk-access";
 import {
   hasOdkExamAttemptSectionScoresColumn,
   hasOdkExamAttemptTabSwitchCountColumn,
@@ -24,6 +24,8 @@ export async function startExam(
   const session = await requireOdkUser();
   const userId = session.user.id;
 
+  // P1: lazily sync expired entitlements before the access check
+  await syncExpiredEntitlements();
   // P0: enforce access control server-side
   await requireOdkExamAccess(userId, examId);
 

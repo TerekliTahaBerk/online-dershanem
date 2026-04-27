@@ -349,6 +349,9 @@ export async function releaseExamResults(examId: string) {
 
   // Auto-close any stale IN_PROGRESS attempts before releasing
   await autoSubmitExpiredAttempts(examId);
+  // P1: sync expired entitlements so DB state is clean before we read it
+  const { syncExpiredEntitlements } = await import("@/lib/odk-access");
+  await syncExpiredEntitlements();
 
   const exam = await prisma.odkExam.update({
     where: { id: examId },
