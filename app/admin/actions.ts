@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/admin";
 import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 import { readString, readTurkeyDatetime } from "@/lib/form-utils";
+import { auditLog } from "@/lib/audit";;
 
 
 function readOptionalDate(formData: FormData, key: string) {
@@ -172,6 +173,14 @@ export async function updatePurchaseAction(formData: FormData) {
       }
     });
   }
+
+  await auditLog({
+    entityType: "PurchaseIntent",
+    entityId: purchaseId,
+    action: "UPDATE",
+    summary: `Ödeme güncellendi: ${purchaseId} → ${status}/${intakeStatus}`,
+    payload: { purchaseId, status, intakeStatus, packageName, linkedStudentId },
+  });
 
   revalidatePath("/admin/odemeler");
   revalidatePath("/admin");

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { readString } from "@/lib/form-utils";
+import { auditLog } from "@/lib/audit";
 
 export async function createPackageAction(formData: FormData) {
   const name = readString(formData, "name");
@@ -75,6 +76,14 @@ export async function updatePackageAction(formData: FormData) {
     },
   });
 
+  await auditLog({
+    entityType: "Package",
+    entityId: packageId,
+    action: "UPDATE",
+    summary: `Paket güncellendi: ${name}`,
+    payload: { packageId, name, isActive },
+  });
+
   revalidatePath("/admin/paketler");
   redirect("/admin/paketler?updated=package");
 }
@@ -98,7 +107,20 @@ export async function deletePackageAction(formData: FormData) {
   const packageId = readString(formData, "packageId");
   if (!packageId) redirect("/admin/paketler");
 
+  const pkg = await prisma.package.findUnique({
+    where: { id: packageId },
+    select: { name: true },
+  });
+
   await prisma.package.delete({ where: { id: packageId } });
+
+  await auditLog({
+    entityType: "Package",
+    entityId: packageId,
+    action: "DELETE",
+    summary: `Paket silindi: ${pkg?.name ?? packageId}`,
+    payload: { packageId, name: pkg?.name },
+  });
 
   revalidatePath("/admin/paketler");
   redirect("/admin/paketler?updated=deleted");

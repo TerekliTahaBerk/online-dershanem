@@ -10,6 +10,7 @@ import { getPanelAccess } from "@/lib/panel-access";
 import { linkTeacherToExistingUserByEmail } from "@/lib/user-links";
 import { sendTeacherWelcome } from "@/lib/email";
 import { readString } from "@/lib/form-utils";
+import { auditLog } from "@/lib/audit";
 
 
 async function requireAdmin() {
@@ -159,9 +160,19 @@ export async function toggleTeacherAdminAccessAction(formData: FormData) {
     redirect("/admin/hocalar");
   }
 
+  const newRole = currentValue === "true" ? "TEACHER" : "ADMIN";
+
   await prisma.user.update({
     where: { id: userId },
-    data: { role: currentValue === "true" ? "TEACHER" : "ADMIN" }
+    data: { role: newRole }
+  });
+
+  await auditLog({
+    entityType: "User",
+    entityId: userId,
+    action: "ROLE_CHANGE",
+    summary: `Öğretmen yönetici erişimi ${newRole === "ADMIN" ? "verildi" : "kaldırıldı"}: öğretmen ${teacherId}`,
+    payload: { teacherId, userId, newRole },
   });
 
   revalidatePath("/admin/hocalar");
@@ -202,6 +213,14 @@ export async function deleteTeacherAction(formData: FormData) {
       where: { id: teacher.user.id }
     });
   }
+
+  await auditLog({
+    entityType: "Teacher",
+    entityId: teacherId,
+    action: "DELETE",
+    summary: `Öğretmen silindi: ${teacher.fullName}`,
+    payload: { teacherId, userId: teacher.user?.id, fullName: teacher.fullName },
+  });
 
   revalidatePath("/admin/hocalar");
   revalidatePath("/ogretmen");

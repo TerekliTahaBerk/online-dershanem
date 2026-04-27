@@ -11,6 +11,7 @@ import {
   requireOdkExamGoogleMeetLinkColumn,
   requireOdkExamResultsReleasedAtColumn,
 } from "@/lib/odk-exam-schema";
+import { auditLog } from "@/lib/audit";
 
 async function requireOdkAdmin() {
   const session = await getServerAuthSession();
@@ -406,6 +407,14 @@ export async function releaseExamResults(examId: string) {
       actionUrl: `/odk/panel/sinavlar/${examId}`,
     })),
     skipDuplicates: true,
+  });
+
+  await auditLog({
+    entityType: "OdkExam",
+    entityId: examId,
+    action: "RELEASE_RESULTS",
+    summary: `Sınav sonuçları yayınlandı: ${exam.title}`,
+    payload: { examId, title: exam.title, notifiedCount: attempts.length, failedEmails },
   });
 
   revalidatePath(`/odk/admin/sinavlar/${examId}`);
@@ -891,6 +900,14 @@ export async function revokeOdkEntitlement(entitlementId: string) {
   await prisma.odkUserAccessTag.updateMany({
     where: { entitlementId, revokedAt: null },
     data: { revokedAt: now },
+  });
+
+  await auditLog({
+    entityType: "OdkEntitlement",
+    entityId: entitlementId,
+    action: "REVOKE",
+    summary: `ODK yetkisi iptal edildi: ${entitlementId}`,
+    payload: { entitlementId },
   });
 
   revalidatePath("/odk/admin/ogrenciler");

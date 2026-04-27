@@ -9,6 +9,7 @@ import { linkStudentToExistingUserByEmail } from "@/lib/user-links";
 import { sendStudentWelcome } from "@/lib/email";
 import { getServerAuthSession } from "@/lib/auth";
 import { readString } from "@/lib/form-utils";
+import { auditLog } from "@/lib/audit";
 
 export async function createStudentAction(formData: FormData) {
   const fullName = readString(formData, "fullName");
@@ -123,7 +124,7 @@ export async function deleteStudentAction(formData: FormData) {
 
   const student = await prisma.student.findUnique({
     where: { id: studentId },
-    select: { userId: true },
+    select: { userId: true, fullName: true, email: true },
   });
 
   await prisma.student.delete({ where: { id: studentId } });
@@ -131,6 +132,14 @@ export async function deleteStudentAction(formData: FormData) {
   if (student?.userId) {
     await prisma.user.delete({ where: { id: student.userId } }).catch(() => {});
   }
+
+  await auditLog({
+    entityType: "Student",
+    entityId: studentId,
+    action: "DELETE",
+    summary: `Öğrenci silindi: ${student?.fullName ?? studentId}`,
+    payload: { studentId, userId: student?.userId, email: student?.email },
+  });
 
   revalidatePath("/admin/ogrenciler");
   revalidatePath("/admin");
@@ -165,6 +174,15 @@ export async function assignPackageToStudentAction(formData: FormData) {
     update: { expiresAt, notes, revokedAt: null, assignedAt: new Date(), assignedById },
   });
 
+  await auditLog({
+    entityType: "StudentPackage",
+    entityId: `${studentId}:${packageId}`,
+    action: "ASSIGN",
+    summary: `Paket atandı: öğrenci ${studentId} → paket ${packageId}`,
+    payload: { studentId, packageId, expiresAt, assignedById },
+    actorUserId: assignedById,
+  });
+
   revalidatePath(`/admin/ogrenciler/${studentId}`);
   revalidatePath("/admin");
   redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=assigned`);
@@ -196,6 +214,14 @@ export async function revokePackageFromStudentAction(formData: FormData) {
     data: { revokedAt: new Date() },
   }).catch(() => {});
 
+  await auditLog({
+    entityType: "StudentPackage",
+    entityId: `${studentId}:${packageId}`,
+    action: "REVOKE",
+    summary: `Paket erişimi kaldırıldı: öğrenci ${studentId}, paket ${packageId}`,
+    payload: { studentId, packageId },
+  });
+
   revalidatePath(`/admin/ogrenciler/${studentId}`);
   redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=revoked`);
 }
@@ -208,6 +234,14 @@ export async function removePackageFromStudentAction(formData: FormData) {
   await prisma.studentPackage.delete({
     where: { studentId_packageId: { studentId, packageId } },
   }).catch(() => {});
+
+  await auditLog({
+    entityType: "StudentPackage",
+    entityId: `${studentId}:${packageId}`,
+    action: "REMOVE",
+    summary: `Paket kaydı silindi: öğrenci ${studentId}, paket ${packageId}`,
+    payload: { studentId, packageId },
+  });
 
   revalidatePath(`/admin/ogrenciler/${studentId}`);
   redirect(`/admin/ogrenciler/${studentId}?tab=paketler&updated=removed`);
