@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
 import { prisma } from "@/lib/prisma";
@@ -28,7 +28,7 @@ export async function GET(
   const session = await getServerAuthSession();
   const access = getPanelAccess(session?.user);
   if (!session || !access.hasAdminPanel) {
-    return new NextResponse("Yetkisiz", { status: 401 });
+    return new Response("Yetkisiz", { status: 401 });
   }
 
   const { examId } = await params;
@@ -41,85 +41,86 @@ export async function GET(
     where: { id: examId },
     select: { title: true, sections: { select: { title: true }, orderBy: { orderIndex: "asc" } } },
   });
-  if (!exam) return new NextResponse("Sınav bulunamadı", { status: 404 });
-
-  const attempts = await prisma.odkExamAttempt.findMany({
-    where: { examId, status: "SUBMITTED" },
-    select: {
-      score: true,
-      correctCount: true,
-      wrongCount: true,
-      blankCount: true,
-      durationSeconds: true,
-      resultPayload: true,
-      ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
-      ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
-      submittedAt: true,
-      user: { select: { name: true, email: true } },
-    },
-    orderBy: { score: "desc" },
-  });
+  if (!exam) return new Response("Sınav bulunamadı", { status: 404 });
 
   const sectionTitles = exam.sections.map((s) => s.title);
 
-  // Build CSV header
+  const csvRow = (cells: string[]) =>
+    cells.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",") + "\r\n";
+
   const headers = [
-    "Ad Soyad",
-    "E-posta",
-    "Net",
-    "Doğru",
-    "Yanlış",
-    "Boş",
-    "Süre (dk)",
-    "Tab İhlali",
-    "Hızlı Cevap (şüpheli)",
-    "Ort. Cevap Hızı (sn)",
-    "Gönderim Tarihi",
+    "Ad Soyad", "E-posta", "Net", "Doğru", "Yanlış", "Boş",
+    "Süre (dk)", "Tab İhlali", "Hızlı Cevap (şüpheli)", "Ort. Cevap Hızı (sn)", "Gönderim Tarihi",
     ...sectionTitles.flatMap((t) => [`${t} Net`, `${t} D`, `${t} Y`, `${t} B`]),
   ];
 
-  const rows = attempts.map((a) => {
-    const sections = ("sectionScores" in a ? (a.sectionScores as SectionScore[] | null) : null) ?? [];
-    const secMap = new Map(sections.map((s) => [s.title, s]));
+  // P1: streaming CSV — pages through attempts in batches of 200 so large exams
+  // don't timeout or exhaust memory in the route handler.
+  const filename = `${exam.title.replace(/[^a-zA-Z0-9À-ɏ\s]/g, "")}-sonuclar.csv`;
+  const PAGE_SIZE = 200;
 
-    const payload = a.resultPayload as { integrityFlags?: IntegrityFlags } | null;
-    const flags = payload?.integrityFlags;
+  const stream = new ReadableStream({
+    async start(controller) {
+      controller.enqueue(new TextEncoder().encode("﻿" + csvRow(headers))); // BOM for Excel
 
-    const base = [
-      a.user.name ?? "",
-      a.user.email,
-      Number(a.score ?? 0).toFixed(2),
-      String(a.correctCount),
-      String(a.wrongCount),
-      String(a.blankCount),
-      a.durationSeconds ? String(Math.round(a.durationSeconds / 60)) : "",
-      String("tabSwitchCount" in a ? (a.tabSwitchCount ?? 0) : 0),
-      flags?.suspiciouslyFastAnswers != null ? String(flags.suspiciouslyFastAnswers) : "",
-      flags?.avgAnswerIntervalMs != null ? (flags.avgAnswerIntervalMs / 1000).toFixed(1) : "",
-      a.submittedAt ? new Date(a.submittedAt).toLocaleString("tr-TR") : "",
-    ];
+      let cursor: string | undefined;
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const batch = await prisma.odkExamAttempt.findMany({
+          where: { examId, status: "SUBMITTED" },
+          select: {
+            id: true,
+            score: true,
+            correctCount: true,
+            wrongCount: true,
+            blankCount: true,
+            durationSeconds: true,
+            resultPayload: true,
+            ...(hasTabSwitchCountColumn ? { tabSwitchCount: true } : {}),
+            ...(hasSectionScoresColumn ? { sectionScores: true } : {}),
+            submittedAt: true,
+            user: { select: { name: true, email: true } },
+          },
+          orderBy: { score: "desc" },
+          take: PAGE_SIZE,
+          ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+        });
 
-    const secCols = sectionTitles.flatMap((t) => {
-      const s = secMap.get(t);
-      return s
-        ? [s.net.toFixed(2), String(s.correct), String(s.wrong), String(s.blank)]
-        : ["", "", "", ""];
-    });
+        for (const a of batch) {
+          const sections = ("sectionScores" in a ? (a.sectionScores as SectionScore[] | null) : null) ?? [];
+          const secMap = new Map(sections.map((s) => [s.title, s]));
+          const payload = a.resultPayload as { integrityFlags?: IntegrityFlags } | null;
+          const flags = payload?.integrityFlags;
 
-    return [...base, ...secCols];
+          const cells = [
+            a.user.name ?? "", a.user.email,
+            Number(a.score ?? 0).toFixed(2),
+            String(a.correctCount), String(a.wrongCount), String(a.blankCount),
+            a.durationSeconds ? String(Math.round(a.durationSeconds / 60)) : "",
+            String("tabSwitchCount" in a ? (a.tabSwitchCount ?? 0) : 0),
+            flags?.suspiciouslyFastAnswers != null ? String(flags.suspiciouslyFastAnswers) : "",
+            flags?.avgAnswerIntervalMs != null ? (flags.avgAnswerIntervalMs / 1000).toFixed(1) : "",
+            a.submittedAt ? new Date(a.submittedAt).toLocaleString("tr-TR") : "",
+            ...sectionTitles.flatMap((t) => {
+              const s = secMap.get(t);
+              return s ? [s.net.toFixed(2), String(s.correct), String(s.wrong), String(s.blank)] : ["", "", "", ""];
+            }),
+          ];
+          controller.enqueue(new TextEncoder().encode(csvRow(cells)));
+        }
+
+        if (batch.length < PAGE_SIZE) break;
+        cursor = batch[batch.length - 1].id;
+      }
+      controller.close();
+    },
   });
 
-  const csvLines = [headers, ...rows].map((row) =>
-    row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","),
-  );
-  const csv = "\uFEFF" + csvLines.join("\r\n"); // BOM for Excel UTF-8
-
-  const filename = `${exam.title.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, "")}-sonuclar.csv`;
-
-  return new NextResponse(csv, {
+  return new Response(stream, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      "Transfer-Encoding": "chunked",
     },
   });
 }

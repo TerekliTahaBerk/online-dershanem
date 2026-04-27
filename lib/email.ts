@@ -167,6 +167,8 @@ function credentialBox(email: string, password: string): string {
 
 // ─── Low-level sender ────────────────────────────────────────────────────────
 
+// P1: exponential-backoff retry for transient Resend failures.
+// 3 attempts: immediate → 1s → 4s. Permanent failures (4xx) are not retried.
 async function sendEmail({
   to,
   subject,
@@ -177,11 +179,28 @@ async function sendEmail({
   html: string;
 }) {
   if (!process.env.RESEND_API_KEY) return; // silently skip in dev if key not set
-  try {
-    await resend.emails.send({ from: FROM, to, subject, html });
-  } catch (err) {
-    console.error("[email] send failed:", err);
+
+  const MAX_ATTEMPTS = 3;
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    try {
+      await resend.emails.send({ from: FROM, to, subject, html });
+      return; // success
+    } catch (err) {
+      lastErr = err;
+      // Don't retry on client errors (bad API key, invalid address, etc.)
+      const status = (err as { statusCode?: number })?.statusCode;
+      if (status && status >= 400 && status < 500) {
+        console.error("[email] permanent failure, not retrying:", err);
+        throw err;
+      }
+      if (attempt < MAX_ATTEMPTS - 1) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(4, attempt))); // 1s, 4s
+      }
+    }
   }
+  console.error(`[email] send failed after ${MAX_ATTEMPTS} attempts:`, lastErr);
+  throw lastErr;
 }
 
 function getLeadNotificationRecipients(): string[] {
