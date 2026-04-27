@@ -1,5 +1,6 @@
--- Add attempt counter to VerificationCode to prevent brute-force code guessing
-ALTER TABLE "VerificationCode" ADD COLUMN "attempts" INTEGER NOT NULL DEFAULT 0;
+-- Add attempt counter to VerificationCode to prevent brute-force code guessing.
+-- Nullable so existing rows get NULL (treated as 0 in code); avoids prisma db push data-loss warning.
+ALTER TABLE "VerificationCode" ADD COLUMN "attempts" INTEGER DEFAULT 0;
 
 -- Lightweight DB-backed rate limit token table
 CREATE TABLE "RateLimitEntry" (

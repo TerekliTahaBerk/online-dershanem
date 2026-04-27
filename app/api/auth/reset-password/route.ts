@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     if (!activeCode || activeCode.code !== code.trim()) {
       if (activeCode) {
-        const newAttempts = activeCode.attempts + 1;
+        const newAttempts = (activeCode.attempts ?? 0) + 1;
         await prisma.verificationCode.update({
           where: { id: activeCode.id },
           data: {

@@ -57,7 +57,7 @@ model VerificationCode {
   type      VerificationCodeType
   expiresAt DateTime
   usedAt    DateTime?
-  attempts  Int                  @default(0)
+  attempts  Int?                 @default(0)
   createdAt DateTime             @default(now())
 
   @@index([email, type])
