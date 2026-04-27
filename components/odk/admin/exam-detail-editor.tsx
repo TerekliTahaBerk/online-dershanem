@@ -408,18 +408,34 @@ function PdfFileUploader({
     const file = e.target.files?.[0];
     if (!file) return;
     setError(null);
+
+    if (!file.type.includes("pdf")) {
+      setError("Yalnızca PDF yüklenebilir.");
+      e.target.value = "";
+      return;
+    }
+
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("fileType", fileType);
-      const res = await fetch(`/api/odk/admin/exams/${examId}/upload-file`, { method: "POST", body: fd });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error((j as { error?: string }).error ?? "Yükleme başarısız");
-      }
-      const { url: uploaded } = (await res.json()) as { url: string };
-      setUrl(uploaded);
+      // Direct browser → Vercel Blob upload (bypasses Vercel's 4.5MB route handler limit).
+      const { upload } = await import("@vercel/blob/client");
+      const filename = `odk/exams/${examId}/${fileType === "BOOKLET_PDF" ? "kitapcik" : "cevap-anahtari"}-${Date.now()}.pdf`;
+      const blob = await upload(filename, file, {
+        access: "public",
+        handleUploadUrl: `/api/odk/admin/exams/${examId}/upload-file`,
+        contentType: "application/pdf",
+        clientPayload: JSON.stringify({ fileType }),
+      });
+
+      // Belt-and-suspenders: persist the URL via server action too. The
+      // upload-file route's onUploadCompleted also writes it, but that callback
+      // is unreliable in local dev (no public webhook URL).
+      await updateExamFiles(
+        examId,
+        fileType === "BOOKLET_PDF" ? { bookletUrl: blob.url } : { answerKeyUrl: blob.url },
+      );
+
+      setUrl(blob.url);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {

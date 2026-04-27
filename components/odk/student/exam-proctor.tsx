@@ -46,6 +46,73 @@ type Props = {
 
 const OPTIONS = ["A", "B", "C", "D", "E"];
 
+// ── Local storage backup ──────────────────────────────────────────────────────
+// Keyed by attemptId, persists answers across reloads / network failures so the
+// student never loses work even if recordAnswer fails server-side.
+
+type AnswersMap = Record<string, Record<number, string>>;
+
+const BACKUP_KEY = (attemptId: string) => `odk-attempt-backup-${attemptId}`;
+
+function loadBackup(attemptId: string): AnswersMap | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(BACKUP_KEY(attemptId));
+    if (!raw) return null;
+    return JSON.parse(raw) as AnswersMap;
+  } catch {
+    return null;
+  }
+}
+
+function saveBackup(attemptId: string, answers: AnswersMap) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(BACKUP_KEY(attemptId), JSON.stringify(answers));
+  } catch {
+    // quota exceeded — ignore
+  }
+}
+
+function clearBackup(attemptId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(BACKUP_KEY(attemptId));
+  } catch {
+    // ignore
+  }
+}
+
+// Merge two answer maps; second one wins on conflict.
+function mergeAnswers(a: AnswersMap, b: AnswersMap): AnswersMap {
+  const out: AnswersMap = { ...a };
+  for (const [secId, secAns] of Object.entries(b)) {
+    out[secId] = { ...(out[secId] ?? {}), ...secAns };
+  }
+  return out;
+}
+
+// ── Retry helper ──────────────────────────────────────────────────────────────
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  attempts = 3,
+  baseDelayMs = 500,
+): Promise<T> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, baseDelayMs * Math.pow(2, i)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 // ── Timer ─────────────────────────────────────────────────────────────────────
 
 function useExamTimer(
@@ -110,6 +177,15 @@ function PreExamScreen({
   pending: boolean;
 }) {
   const [meetConfirmed, setMeetConfirmed] = useState(!googleMeetLink);
+  const [smallScreenAck, setSmallScreenAck] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsSmallScreen(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const lateMinutes =
     examStartsAt && serverNow > new Date(examStartsAt).getTime()
@@ -184,8 +260,31 @@ function PreExamScreen({
           </div>
         )}
 
+        {/* Small-screen warning */}
+        {isSmallScreen && (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 space-y-2">
+            <p className="text-sm font-semibold text-rose-900 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0" /> Telefon Ekranı
+            </p>
+            <p className="text-sm text-rose-800">
+              Bu sınav tablet/masaüstü için tasarlandı. Telefon ekranında soruları görmekte ve optikte
+              tüm seçenekleri işaretlemekte zorlanabilirsin. <strong>Mümkünse tabletten veya
+              bilgisayardan giriş yap.</strong>
+            </p>
+            <label className="flex items-start gap-2 text-sm text-rose-900 cursor-pointer mt-1">
+              <input
+                type="checkbox"
+                checked={smallScreenAck}
+                onChange={(e) => setSmallScreenAck(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-rose-400 shrink-0"
+              />
+              Anladım, yine de telefondan devam etmek istiyorum.
+            </label>
+          </div>
+        )}
+
         <button
-          disabled={!meetConfirmed || pending}
+          disabled={!meetConfirmed || pending || (isSmallScreen && !smallScreenAck)}
           onClick={onStart}
           className="w-full rounded-xl bg-emerald-600 px-6 py-3.5 text-base font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
@@ -254,14 +353,25 @@ export function ExamProctor({
   const [startedAt, setStartedAt] = useState<string | null>(attemptStartedAt);
   const [pending, startTransition] = useTransition();
 
-  // Answers state
-  const [answers, setAnswers] = useState<Record<string, Record<number, string>>>(() => {
-    const init: Record<string, Record<number, string>> = {};
+  // Answers state — initialised from server, then merged with localStorage backup
+  // (backup wins so we recover answers that didn't make it to the server).
+  const [answers, setAnswers] = useState<AnswersMap>(() => {
+    const fromServer: AnswersMap = {};
     for (const sec of sections) {
-      init[sec.id] = { ...sec.existingAnswers };
+      fromServer[sec.id] = { ...sec.existingAnswers };
     }
-    return init;
+    if (initialAttemptId) {
+      const backup = loadBackup(initialAttemptId);
+      if (backup) return mergeAnswers(fromServer, backup);
+    }
+    return fromServer;
   });
+
+  // Persist answers to localStorage on every change.
+  useEffect(() => {
+    if (!attemptId) return;
+    saveBackup(attemptId, answers);
+  }, [attemptId, answers]);
 
   // Per-answer save status
   type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -282,6 +392,9 @@ export function ExamProctor({
   // PDF pane state
   const [showPdf, setShowPdf] = useState(!!bookletUrl);
   const [activeSection, setActiveSection] = useState(0);
+
+  // Mobile pane toggle — on screens <lg only one of {pdf, answers} is visible.
+  const [mobileView, setMobileView] = useState<"pdf" | "answers">("answers");
 
   // Confirm submit
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -343,23 +456,53 @@ export function ExamProctor({
   }, [phase, handleFullscreenChange]);
 
   // ── Duplicate tab detection ────────────────────────────────────────────────
+  //
+  // The *older* tab wins. New tab broadcasts HELLO; older tab replies with
+  // INCUMBENT containing its own session timestamp. New tab receives that and
+  // locks itself. This protects the in-progress tab from being kicked when a
+  // student accidentally double-opens the link or restores a stale tab.
+  //
+  // Only active during the actual exam phase — pre/submitted screens don't
+  // broadcast, so a finished tab can't lock an in-progress one.
+
+  const tabSessionRef = useRef<string>(
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`,
+  );
+  const tabStartedAtRef = useRef<number>(Date.now());
 
   useEffect(() => {
     if (phase !== "exam") return;
+    if (!attemptId) return;
     if (typeof BroadcastChannel === "undefined") return;
 
     const channel = new BroadcastChannel(`odk-exam-${examId}`);
+    const myId = tabSessionRef.current;
+    const myStarted = tabStartedAtRef.current;
 
-    // Announce this tab is active — any other open tab will see this and show an error
-    channel.postMessage({ type: "CLAIM" });
+    type Msg =
+      | { type: "HELLO"; id: string; startedAt: number }
+      | { type: "INCUMBENT"; id: string; startedAt: number };
 
-    channel.onmessage = () => {
-      // Another tab just claimed the exam session
-      setIsDuplicateTab(true);
+    channel.onmessage = (event: MessageEvent<Msg>) => {
+      const msg = event.data;
+      if (!msg || msg.id === myId) return;
+      if (msg.type === "HELLO") {
+        // Someone new joined — tell them we're already here.
+        channel.postMessage({ type: "INCUMBENT", id: myId, startedAt: myStarted } satisfies Msg);
+      } else if (msg.type === "INCUMBENT") {
+        // Older tab beat us. We lock if they really are older.
+        if (msg.startedAt <= myStarted) {
+          setIsDuplicateTab(true);
+        }
+      }
     };
 
+    channel.postMessage({ type: "HELLO", id: myId, startedAt: myStarted } satisfies Msg);
+
     return () => channel.close();
-  }, [phase, examId]);
+  }, [phase, examId, attemptId]);
 
   // ── Anti-cheat: block copy/paste/print/devtools/right-click ──────────────
 
@@ -441,18 +584,36 @@ export function ExamProctor({
   }, [phase, activeSection, activeQuestion, answers, sections]);
 
   // ── Auto-submit on timer expire ────────────────────────────────────────────
+  // Don't silently swallow errors — show a blocking overlay so the student can
+  // retry manually. Per-answer recordAnswer calls have already persisted the
+  // answers, so worst case the attempt stays IN_PROGRESS until they retry.
+
+  const [autoSubmitFailed, setAutoSubmitFailed] = useState(false);
+  const [autoSubmitRetrying, setAutoSubmitRetrying] = useState(false);
+
+  const runSubmit = useCallback(async () => {
+    if (!attemptId) return;
+    await withRetry(
+      () => submitAttempt(attemptId, answers, answerTimestampsRef.current),
+      3,
+      800,
+    );
+    clearBackup(attemptId);
+  }, [attemptId, answers]);
 
   const handleTimerExpire = useCallback(() => {
     if (!attemptId || phase !== "exam") return;
-    startTransition(async () => {
-      try {
-        await submitAttempt(attemptId, answers, answerTimestampsRef.current);
+    setAutoSubmitRetrying(true);
+    runSubmit()
+      .then(() => {
+        setAutoSubmitRetrying(false);
         setPhase("submitted");
-      } catch {
-        // ignore — page will refresh
-      }
-    });
-  }, [attemptId, answers, phase]);
+      })
+      .catch(() => {
+        setAutoSubmitRetrying(false);
+        setAutoSubmitFailed(true);
+      });
+  }, [attemptId, phase, runSubmit]);
 
   const remaining = useExamTimer(durationMinutes, startedAt, clockOffsetRef.current, handleTimerExpire);
 
@@ -478,16 +639,76 @@ export function ExamProctor({
     setSubmitError(null);
     startTransition(async () => {
       try {
-        await submitAttempt(attemptId, answers, answerTimestampsRef.current);
+        // Flush any queued failed saves first so the final submit sees them.
+        await drainSaveQueue();
+        await runSubmit();
         setPhase("submitted");
       } catch {
-        setSubmitError("Bir hata oluştu. Tekrar dene.");
-        setConfirmOpen(false);
+        // Keep confirm dialog open so student can retry without losing context.
+        setSubmitError(
+          "Cevapların gönderilemedi. İnternet bağlantını kontrol edip tekrar dene. (Cevapların korunuyor.)",
+        );
       }
     });
   }
 
-  // ── Answer helpers with auto-save ──────────────────────────────────────────
+  function retryAutoSubmit() {
+    if (!attemptId) return;
+    setAutoSubmitRetrying(true);
+    runSubmit()
+      .then(() => {
+        setAutoSubmitRetrying(false);
+        setAutoSubmitFailed(false);
+        setPhase("submitted");
+      })
+      .catch(() => {
+        setAutoSubmitRetrying(false);
+      });
+  }
+
+  // ── Answer helpers with auto-save + retry queue ────────────────────────────
+  //
+  // Every answer change is persisted via recordAnswer. If a save fails after
+  // retries, the answer goes into a queue that we drain whenever:
+  //   1. A new save succeeds (proves connectivity)
+  //   2. Every 15 seconds via interval
+  //   3. Right before the user clicks Submit
+  // The localStorage backup means even a complete network failure can't lose
+  // answers — the next reload will recover them.
+
+  type QueuedSave = { sectionId: string; qNum: number; option: string | null };
+  const saveQueueRef = useRef<Map<string, QueuedSave>>(new Map());
+
+  const drainSaveQueue = useCallback(async () => {
+    if (!attemptId || saveQueueRef.current.size === 0) return;
+    const items = Array.from(saveQueueRef.current.values());
+    for (const item of items) {
+      const key = `${item.sectionId}-${item.qNum}`;
+      try {
+        await withRetry(
+          () => recordAnswer(attemptId, item.sectionId, item.qNum, item.option),
+          2,
+          400,
+        );
+        saveQueueRef.current.delete(key);
+        setSaveStatus((prev) => ({
+          ...prev,
+          [item.sectionId]: { ...(prev[item.sectionId] ?? {}), [item.qNum]: "saved" },
+        }));
+      } catch {
+        // Leave it queued for the next drain.
+      }
+    }
+  }, [attemptId]);
+
+  // Periodic drain — runs whenever there are queued saves.
+  useEffect(() => {
+    if (phase !== "exam") return;
+    const id = setInterval(() => {
+      void drainSaveQueue();
+    }, 15000);
+    return () => clearInterval(id);
+  }, [phase, drainSaveQueue]);
 
   function scheduleAutoSave(sectionId: string, qNum: number, option: string | null) {
     if (!attemptId) return;
@@ -497,21 +718,27 @@ export function ExamProctor({
       ...prev,
       [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "saving" },
     }));
-    saveTimeoutsRef.current[key] = setTimeout(() => {
-      startTransition(async () => {
-        try {
-          await recordAnswer(attemptId, sectionId, qNum, option);
-          setSaveStatus((prev) => ({
-            ...prev,
-            [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "saved" },
-          }));
-        } catch {
-          setSaveStatus((prev) => ({
-            ...prev,
-            [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "error" },
-          }));
-        }
-      });
+    saveTimeoutsRef.current[key] = setTimeout(async () => {
+      try {
+        await withRetry(
+          () => recordAnswer(attemptId, sectionId, qNum, option),
+          3,
+          400,
+        );
+        saveQueueRef.current.delete(key);
+        setSaveStatus((prev) => ({
+          ...prev,
+          [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "saved" },
+        }));
+        // A successful save means we have connectivity — try to drain backlog.
+        if (saveQueueRef.current.size > 0) void drainSaveQueue();
+      } catch {
+        saveQueueRef.current.set(key, { sectionId, qNum, option });
+        setSaveStatus((prev) => ({
+          ...prev,
+          [sectionId]: { ...(prev[sectionId] ?? {}), [qNum]: "error" },
+        }));
+      }
     }, 400);
   }
 
@@ -545,6 +772,7 @@ export function ExamProctor({
   const allStatuses = Object.values(saveStatus).flatMap((sec) => Object.values(sec));
   const isSaving = allStatuses.some((s) => s === "saving");
   const hasSaveError = allStatuses.some((s) => s === "error");
+  const queuedCount = allStatuses.filter((s) => s === "error").length;
 
   // ── Duplicate tab overlay ──────────────────────────────────────────────────
 
@@ -631,6 +859,33 @@ export function ExamProctor({
         />
       )}
 
+      {/* Auto-submit failure overlay — blocks until student retries successfully */}
+      {autoSubmitFailed && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="rounded-full bg-red-100 p-4">
+                <CloudOff className="h-8 w-8 text-red-600" />
+              </div>
+            </div>
+            <h2 className="text-lg font-bold text-stone-900">Süre Doldu — Gönderim Başarısız</h2>
+            <p className="text-sm text-stone-600">
+              Cevapların sunucuya ulaşamadı. İnternet bağlantını kontrol et ve tekrar dene.
+              <span className="block mt-1 text-xs text-stone-400">
+                Cevapların kaydedildi, kaybolmadı.
+              </span>
+            </p>
+            <button
+              disabled={autoSubmitRetrying}
+              onClick={retryAutoSubmit}
+              className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60 transition"
+            >
+              {autoSubmitRetrying ? "Gönderiliyor..." : "Tekrar Dene"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <div className="shrink-0 flex items-center justify-between gap-4 border-b border-stone-200 bg-white px-4 py-2.5">
         <div className="flex items-center gap-3 min-w-0">
@@ -645,9 +900,13 @@ export function ExamProctor({
         <div className="flex items-center gap-3">
           {/* Auto-save indicator */}
           {hasSaveError && (
-            <span className="flex items-center gap-1 text-xs text-red-600">
-              <CloudOff className="h-3.5 w-3.5" /> Kaydedilemedi
-            </span>
+            <button
+              onClick={() => void drainSaveQueue()}
+              title="Kaydedilemeyen cevapları tekrar dene"
+              className="flex items-center gap-1 text-xs text-red-600 hover:underline"
+            >
+              <CloudOff className="h-3.5 w-3.5" /> {queuedCount} kaydedilemedi · tekrar dene
+            </button>
           )}
           {isSaving && !hasSaveError && (
             <span className="flex items-center gap-1 text-xs text-stone-400">
@@ -681,30 +940,95 @@ export function ExamProctor({
         </div>
       </div>
 
+      {/* Mobile pane toggle (hidden on lg+) */}
+      {bookletUrl && showPdf && (
+        <div className="lg:hidden shrink-0 flex items-stretch border-b border-stone-200 bg-white">
+          <button
+            onClick={() => setMobileView("pdf")}
+            className={`flex-1 px-3 py-2 text-xs font-semibold transition ${
+              mobileView === "pdf"
+                ? "bg-stone-900 text-white"
+                : "bg-white text-stone-500 hover:bg-stone-50"
+            }`}
+          >
+            Kitapçık
+          </button>
+          <button
+            onClick={() => setMobileView("answers")}
+            className={`flex-1 px-3 py-2 text-xs font-semibold transition ${
+              mobileView === "answers"
+                ? "bg-stone-900 text-white"
+                : "bg-white text-stone-500 hover:bg-stone-50"
+            }`}
+          >
+            Optik ({totalAnswered}/{totalQuestions})
+          </button>
+        </div>
+      )}
+
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* PDF pane */}
         {showPdf && bookletUrl && (
-          <div className="flex flex-col w-1/2 border-r border-stone-200 bg-white">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-stone-100">
-              <span className="text-xs font-medium text-stone-600">Sınav Kitapçığı</span>
-              <button
-                onClick={() => setShowPdf(false)}
-                className="text-xs text-stone-400 hover:text-stone-600 transition"
-              >
-                Gizle
-              </button>
+          <div
+            className={`flex-col w-full lg:w-1/2 border-r border-stone-200 bg-white ${
+              mobileView === "pdf" ? "flex" : "hidden lg:flex"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-stone-100">
+              <span className="text-xs font-medium text-stone-600 truncate">Sınav Kitapçığı</span>
+              <div className="flex items-center gap-1 shrink-0">
+                <a
+                  href={bookletUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 rounded-md border border-stone-200 px-2 py-1 text-[11px] font-medium text-stone-600 hover:bg-stone-50 transition"
+                  title="Kitapçığı yeni sekmede aç"
+                >
+                  <ExternalLink className="h-3 w-3" /> Yeni sekme
+                </a>
+                <button
+                  onClick={() => setShowPdf(false)}
+                  className="rounded-md px-2 py-1 text-[11px] text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition"
+                >
+                  Gizle
+                </button>
+              </div>
             </div>
-            <iframe
-              src={bookletUrl}
+            <object
+              data={bookletUrl}
+              type="application/pdf"
               className="flex-1 w-full"
-              title="Sınav Kitapçığı"
-            />
+              aria-label="Sınav Kitapçığı"
+            >
+              <iframe src={bookletUrl} className="h-full w-full" title="Sınav Kitapçığı" />
+              <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                <p className="text-sm font-medium text-stone-700">
+                  Tarayıcın PDF&apos;i bu pencerede gösteremiyor.
+                </p>
+                <a
+                  href={bookletUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+                >
+                  <ExternalLink className="h-4 w-4" /> Kitapçığı Yeni Sekmede Aç
+                </a>
+              </div>
+            </object>
           </div>
         )}
 
         {/* Answer sheet pane */}
-        <div className={`flex flex-col overflow-hidden ${showPdf && bookletUrl ? "w-1/2" : "w-full"}`}>
+        <div
+          className={`flex-col overflow-hidden w-full ${
+            showPdf && bookletUrl ? "lg:w-1/2" : "lg:w-full"
+          } ${
+            !showPdf || !bookletUrl || mobileView === "answers"
+              ? "flex"
+              : "hidden lg:flex"
+          }`}
+        >
           {/* Section tabs */}
           <div className="shrink-0 flex items-center gap-1 px-3 py-2 border-b border-stone-200 bg-white overflow-x-auto">
             {!showPdf && bookletUrl && (
@@ -768,7 +1092,7 @@ export function ExamProctor({
           )}
 
           {/* Question grid */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 pb-24">
             {currentSection && (
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: currentSection.questionCount }, (_, i) => i + 1).map(
@@ -799,7 +1123,7 @@ export function ExamProctor({
                                   ? clearAnswer(currentSection.id, qNum)
                                   : setAnswer(currentSection.id, qNum, opt);
                               }}
-                              className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold transition ${
+                              className={`flex h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-lg text-sm sm:text-xs font-bold transition active:scale-95 ${
                                 selected === opt
                                   ? "bg-emerald-600 text-white shadow-sm"
                                   : "bg-white border border-stone-200 text-stone-600 hover:border-emerald-400 hover:text-emerald-600"
@@ -825,7 +1149,7 @@ export function ExamProctor({
           </div>
 
           {/* Section nav + submit */}
-          <div className="shrink-0 flex items-center justify-between gap-3 border-t border-stone-200 bg-white px-4 py-3">
+          <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border-t border-stone-200 bg-white px-3 py-2.5 sm:px-4 sm:py-3">
             <button
               disabled={activeSection === 0}
               onClick={() => setActiveSection((p) => p - 1)}
