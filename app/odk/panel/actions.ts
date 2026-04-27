@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import { requireOdkExamAccess } from "@/lib/odk-access";
 import {
   hasOdkExamAttemptSectionScoresColumn,
   hasOdkExamAttemptTabSwitchCountColumn,
@@ -22,6 +23,26 @@ export async function startExam(
 ): Promise<{ attemptId: string; startedAt: string; serverNow: number } | null> {
   const session = await requireOdkUser();
   const userId = session.user.id;
+
+  // P0: enforce access control server-side
+  await requireOdkExamAccess(userId, examId);
+
+  // P0: enforce time window server-side — client checks alone are bypassable
+  const exam = await prisma.odkExam.findUnique({
+    where: { id: examId },
+    select: { startsAt: true, endsAt: true, durationMinutes: true },
+  });
+  if (!exam) throw new Error("Sınav bulunamadı");
+
+  const now = new Date();
+  if (exam.startsAt && exam.startsAt > now) {
+    throw new Error("Sınav henüz başlamadı");
+  }
+  // Allow new attempts up to 2 minutes past endsAt (grace for last-second starters)
+  if (exam.endsAt) {
+    const graceEnd = new Date(exam.endsAt.getTime() + 2 * 60 * 1000);
+    if (now > graceEnd) throw new Error("Sınav sona erdi");
+  }
 
   const existing = await prisma.odkExamAttempt.findFirst({
     where: { userId, examId },
@@ -52,11 +73,18 @@ export async function recordAnswer(
   const session = await requireOdkUser();
   const userId = session.user.id;
 
+  // P0: validate sectionId belongs to this attempt's exam
   const attempt = await prisma.odkExamAttempt.findFirst({
     where: { id: attemptId, userId, status: "IN_PROGRESS" },
-    select: { id: true },
+    select: {
+      id: true,
+      exam: { select: { sections: { select: { id: true } } } },
+    },
   });
   if (!attempt) return;
+
+  const validSectionIds = new Set(attempt.exam.sections.map((s) => s.id));
+  if (!validSectionIds.has(sectionId)) return; // silently drop — not this exam's section
 
   if (selectedOption === null) {
     await prisma.odkAttemptOpticalAnswer.deleteMany({
@@ -303,8 +331,10 @@ export async function submitAttempt(
     }
   }
 
-  await prisma.odkExamAttempt.update({
-    where: { id: attemptId },
+  // P0: atomic status transition — prevents double-submit race condition.
+  // updateMany returns a count; if count === 0 another request already submitted.
+  const { count } = await prisma.odkExamAttempt.updateMany({
+    where: { id: attemptId, userId, status: "IN_PROGRESS" },
     data: {
       status: "SUBMITTED",
       submittedAt: new Date(),
@@ -317,6 +347,13 @@ export async function submitAttempt(
       ...(hasSectionScoresColumn ? { sectionScores: sectionScores as unknown as never } : {}),
     },
   });
+
+  if (count === 0) {
+    // Already submitted by a concurrent request — just revalidate so the client
+    // sees the existing result.
+    revalidatePath(`/odk/panel/sinavlar/${attempt.examId}`);
+    return;
+  }
 
   revalidatePath(`/odk/panel/sinavlar/${attempt.examId}`);
   revalidatePath("/odk/panel/sinavlar");

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ExternalLink, Clock, FileText, CheckCircle2, AlertCircle, Trophy } from "lucide-react";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { userCanAccessOdkExam } from "@/lib/odk-access";
 import { ExamProctor } from "@/components/odk/student/exam-proctor";
 import { WaitingRoom } from "@/components/odk/student/waiting-room";
 import {
@@ -100,8 +101,12 @@ export default async function ExamDetailPage({
   const session = await getServerAuthSession();
   const userId = session!.user.id;
 
-  const data = await getExamData(examId, userId);
+  const [data, canAccess] = await Promise.all([
+    getExamData(examId, userId),
+    userCanAccessOdkExam(userId, examId),
+  ]);
   if (!data) notFound();
+  if (!canAccess) notFound(); // Don't reveal existence of restricted exams
 
   const { exam, attempt } = data;
 
