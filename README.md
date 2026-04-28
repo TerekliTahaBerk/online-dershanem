@@ -94,3 +94,5 @@ Storage'in otomatik ekledigi `STORAGE_*` degiskenlerini tanimlayin:
 - `ADMIN_PASSWORD`
 - `ADMIN_NAME`
 - `PAYMENT_WEBHOOK_SECRET`
+
+<!-- redeploy trigger -->
