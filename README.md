@@ -1,4 +1,4 @@
-# Online Dershanem
+# Online Dershanem - Test
 
 Landing-first Next.js uygulaması artık auth, admin paneli ve Prisma veri katmanı ile genişletildi.
 
