@@ -24,69 +24,30 @@ export default function MissionPage() {
     <>
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* Hero with hand-drawn header doodle */}
+        {/* Hero with founders animation */}
         <section className="relative overflow-hidden">
           <div className="mx-auto max-w-3xl px-5 pt-20 pb-12 text-center sm:pt-28">
-            {/* Small inline doodle illustration */}
-            <div className="mx-auto h-32 w-44 sm:h-40 sm:w-56" aria-hidden>
-              <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full">
-                <g
-                  stroke="#2A2A22"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                >
-                  {/* Person 1 (left) */}
-                  <circle cx="55" cy="48" r="14" />
-                  <path d="M48 38c2-4 14-4 16 0" />
-                  <path d="M55 62v8" />
-                  <path d="M40 88c4-12 26-12 30 0v40h-30z" />
-                  <path d="M40 98l-6 8 6 6" />
-                  <path d="M70 98l6 8-6 6" />
-                  {/* Cheek */}
-                  <ellipse cx="49" cy="52" rx="2" ry="1.5" fill="#F2A5A5" stroke="none" />
-                  <ellipse cx="61" cy="52" rx="2" ry="1.5" fill="#F2A5A5" stroke="none" />
-                  {/* Eyes */}
-                  <path d="M50 47l2 2 2-2" />
-                  <path d="M58 47l2 2 2-2" />
-                  <path d="M52 56q3 2 6 0" />
-
-                  {/* Person 2 (center) */}
-                  <circle cx="110" cy="46" r="14" />
-                  <path d="M103 36c2-4 14-4 16 0" />
-                  <path d="M110 60v8" />
-                  <path d="M95 86c4-12 26-12 30 0v42h-30z" />
-                  <ellipse cx="104" cy="50" rx="2" ry="1.5" fill="#F2A5A5" stroke="none" />
-                  <ellipse cx="116" cy="50" rx="2" ry="1.5" fill="#F2A5A5" stroke="none" />
-                  <path d="M105 45l2 2 2-2" />
-                  <path d="M113 45l2 2 2-2" />
-                  <path d="M107 54q3 2 6 0" />
-
-                  {/* Person 3 (right) */}
-                  <circle cx="165" cy="48" r="14" />
-                  <path d="M158 38c2-4 14-4 16 0" />
-                  <path d="M165 62v8" />
-                  <path d="M150 88c4-12 26-12 30 0v40h-30z" />
-                  <ellipse cx="159" cy="52" rx="2" ry="1.5" fill="#F2A5A5" stroke="none" />
-                  <ellipse cx="171" cy="52" rx="2" ry="1.5" fill="#F2A5A5" stroke="none" />
-                  <path d="M160 47l2 2 2-2" />
-                  <path d="M168 47l2 2 2-2" />
-                  <path d="M162 56q3 2 6 0" />
-
-                  {/* Sparkle accents */}
-                  <path d="M22 30l3 3M28 30l-3 3" />
-                  <path d="M198 24c1.5 0 0 4 0 4M200 28c0-1.5 4 0 4 0" />
-                  <circle cx="195" cy="36" r="1" fill="#2A2A22" stroke="none" />
-                </g>
-              </svg>
+            {/* Founders animation */}
+            <div className="relative mx-auto w-full max-w-[440px]">
+              <div
+                className="absolute -inset-3 -z-10 rounded-[36px] bg-[var(--od-yellow-soft)] blur-[1px]"
+                aria-hidden
+              />
+              <Image
+                src="/founders.webp"
+                alt="Online Dershanem kurucuları"
+                width={400}
+                height={225}
+                unoptimized
+                priority
+                className="w-full rounded-[28px] border border-[var(--od-line)] bg-[var(--od-cream-2)] object-cover shadow-[0_28px_70px_-30px_rgba(20,20,15,0.25)]"
+              />
+              <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-[var(--od-line)] bg-white px-3 py-1 text-[11.5px] font-medium uppercase tracking-[0.14em] text-[var(--od-olive)] shadow-sm">
+                Taha Berk · Furkan · Melih
+              </span>
             </div>
 
-            <span className="mt-4 inline-flex items-center rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[11.5px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)] backdrop-blur">
-              Misyonumuz
-            </span>
-
-            <h1 className="mt-6 font-display text-[42px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+            <h1 className="mt-14 font-display text-[42px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
               Potansiyelin maddi koşullarla{" "}
               <em className="italic text-[var(--od-olive)]">sınırlanamayacağı</em>{" "}
               bir sistem.

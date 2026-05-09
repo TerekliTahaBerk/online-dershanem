@@ -13,10 +13,10 @@
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
-  /* Pastel palette — Opennote-inspired */
-  --od-cream: #FFFDF5;
-  --od-cream-2: #F8F2E1;
-  --od-paper: #FFFEF7;
+  /* Off-white palette — Opennote-inspired */
+  --od-cream: #FAFAF7;
+  --od-cream-2: #F1EFE9;
+  --od-paper: #FBFBF8;
   --od-yellow: #F4D86A;
   --od-yellow-soft: #FCEDB4;
   --od-mint: #D7E5D5;
@@ -25,7 +25,7 @@
   --od-olive-soft: #6F8458;
   --od-ink: #14140F;
   --od-ink-soft: #5A5A4F;
-  --od-line: #E8E2CF;
+  --od-line: #E5E3DC;
 
   /* Premium design tokens (Pine palette) */
   --pd-bg: #FAFAF7;
@@ -76,6 +76,16 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.011em;
+}
+
+/* Display serif gets a touch more breathing room across the site */
+.font-display {
+  letter-spacing: 0.005em;
+  word-spacing: 0.04em;
+}
+.font-display em,
+.font-display i {
+  letter-spacing: 0.01em;
 }
 
 a {
