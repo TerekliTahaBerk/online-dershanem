@@ -311,9 +311,6 @@ export function ExamClubPageContent() {
                   Ön kayıt bırak
                   <ArrowRight className="ml-1.5 h-4 w-4" />
                 </LeadFunnelTrigger>
-                <span className="inline-flex items-center rounded-full border border-white/10 px-4 py-3 text-xs font-medium text-white/60">
-                  1 dakikadan kısa
-                </span>
               </div>
             </div>
 

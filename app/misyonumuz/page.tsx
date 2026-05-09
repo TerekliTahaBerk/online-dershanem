@@ -36,15 +36,12 @@ export default function MissionPage() {
               <Image
                 src="/founders.webp"
                 alt="Online Dershanem kurucuları"
-                width={400}
-                height={225}
+                width={420}
+                height={288}
                 unoptimized
                 priority
-                className="w-full rounded-[28px] border border-[var(--od-line)] bg-[var(--od-cream-2)] object-cover shadow-[0_28px_70px_-30px_rgba(20,20,15,0.25)]"
+                className="w-full rounded-[28px] border border-[var(--od-line)] bg-white object-cover shadow-[0_28px_70px_-30px_rgba(20,20,15,0.25)]"
               />
-              <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-[var(--od-line)] bg-white px-3 py-1 text-[11.5px] font-medium uppercase tracking-[0.14em] text-[var(--od-olive)] shadow-sm">
-                Taha Berk · Furkan · Melih
-              </span>
             </div>
 
             <h1 className="mt-14 font-display text-[42px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">

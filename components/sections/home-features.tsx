@@ -90,7 +90,7 @@ export function HomeFeatures() {
   const Visual = current.Visual;
 
   return (
-    <section className="relative overflow-hidden border-t border-[var(--od-line)] bg-[var(--od-cream)] py-20 sm:py-28">
+    <section className="relative overflow-hidden bg-[var(--od-cream)] py-24 sm:py-32">
       {/* Faint ruled-paper backdrop, like Opennote's "Built for how you learn" */}
       <div
         aria-hidden
@@ -108,12 +108,12 @@ export function HomeFeatures() {
             <Sparkles size={12} />
             Her şey tek yerde
           </span>
-          <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.06] tracking-tight text-[var(--od-ink)] sm:text-[48px]">
+          <h2 className="mt-6 font-display text-[34px] font-normal leading-[1.12] tracking-tight text-[var(--od-ink)] sm:text-[48px]">
             Hazırlığın için ihtiyacın olan
             <br />
             her şey, <em className="italic text-[var(--od-olive)]">tek</em> bir akışta.
           </h2>
-          <p className="mt-5 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
+          <p className="mt-6 text-[15.5px] leading-[1.85] text-[var(--od-ink-soft)]">
             Notlar, sorular, denemeler, takvim ve hocan — sekme açıp kapatmadan
             tek bir ekranda. Sen sadece çalış; gerisini biz kuruyoruz.
           </p>
@@ -146,7 +146,7 @@ export function HomeFeatures() {
         </div>
 
         {/* Card */}
-        <div className="mt-10 overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-white shadow-[0_28px_70px_-36px_rgba(20,20,15,0.22)]">
+        <div className="mt-12 overflow-hidden rounded-[36px] border border-[var(--od-line)] bg-white shadow-[0_40px_90px_-40px_rgba(20,20,15,0.18)]">
           <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="flex flex-col justify-center gap-5 p-8 sm:p-12">
               <span className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">

@@ -19,7 +19,7 @@ export function HomePricing() {
   return (
     <section
       id="paketler-on-izleme"
-      className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)] py-20 sm:py-28"
+      className="bg-[var(--od-cream-2)] py-24 sm:py-32"
     >
       <div className="mx-auto max-w-6xl px-5">
         <header className="mx-auto flex max-w-2xl flex-col items-center text-center">
@@ -42,9 +42,9 @@ export function HomePricing() {
             return (
               <article
                 key={pkg.subject}
-                className={`relative flex flex-col rounded-3xl border p-6 transition ${
+                className={`relative flex flex-col rounded-[32px] border p-7 transition ${
                   isFeatured
-                    ? "border-[var(--od-ink)] bg-white shadow-[0_24px_60px_-32px_rgba(20,20,15,0.32)]"
+                    ? "border-[var(--od-ink)] bg-white shadow-[0_36px_80px_-36px_rgba(20,20,15,0.28)]"
                     : "border-[var(--od-line)] bg-white/90 hover:border-[var(--od-ink)]/30"
                 }`}
               >
