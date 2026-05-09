@@ -11,13 +11,13 @@ export default async function KayitPage() {
 
   return (
     <AuthShell
-      title="Aramıza katıl."
-      subtitle="Birkaç adımda hesabını oluştur ve başla."
+      title="Bir hesap, kişisel bir yol."
+      subtitle="Birkaç dakikada hesabını aç; gerisini birlikte planlayalım."
       footer={
         <p>
           Hesabın var mı?{" "}
           <Link href="/giris" className="font-semibold text-white hover:underline">
-            Giriş Yap
+            Giriş yap
           </Link>
         </p>
       }

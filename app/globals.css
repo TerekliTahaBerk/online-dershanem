@@ -1750,3 +1750,12 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 @media (max-width: 1023px) {
   body { overflow-x: clip; }
 }
+
+/* ── Opennote-style marquee for trust strip ───────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[marquee_40s_linear_infinite\] { animation: none !important; }
+}

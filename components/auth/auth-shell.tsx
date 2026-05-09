@@ -19,9 +19,9 @@ type AuthShellProps = {
  */
 export function AuthShell({ title, subtitle, children, footer }: AuthShellProps) {
   return (
-    <main className="min-h-screen bg-[#0E0E10] px-4 py-10 text-white sm:py-14">
-      <div className="mx-auto flex w-full max-w-md flex-col items-center">
-        <Link href="/" aria-label="Ana sayfa" className="mb-7 inline-flex">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0E0E10] px-4 py-12 text-white">
+      <div className="flex w-full max-w-md flex-col items-center">
+        <Link href="/" aria-label="Ana sayfa" className="mb-8 inline-flex">
           <Image
             src="/logo.png"
             alt="Online Dershanem"
@@ -32,12 +32,14 @@ export function AuthShell({ title, subtitle, children, footer }: AuthShellProps)
           />
         </Link>
 
-        <h1 className="font-serif text-[34px] font-semibold leading-tight tracking-tight text-white sm:text-[38px]">
+        <h1 className="text-center font-display text-[40px] font-normal leading-[1.05] tracking-tight text-white sm:text-[44px]">
           {title}
         </h1>
-        <p className="mt-2 text-[15px] leading-7 text-[#9A9AA0]">{subtitle}</p>
+        <p className="mt-3 max-w-sm text-center text-[15px] leading-7 text-[#9A9AA0]">
+          {subtitle}
+        </p>
 
-        <div className="mt-8 w-full">{children}</div>
+        <div className="mt-9 w-full">{children}</div>
 
         {footer ? (
           <div className="mt-10 text-center text-[14px] text-[#9A9AA0]">{footer}</div>
