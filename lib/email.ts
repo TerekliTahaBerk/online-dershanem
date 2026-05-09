@@ -21,8 +21,8 @@ function baseTemplate(content: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Online Dershanem</title>
 </head>
-<body style="margin:0;padding:0;background:#edeae4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#edeae4;padding:44px 16px;">
+<body style="margin:0;padding:0;background:#F2F2EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F2F2EF;padding:44px 16px;">
     <tr><td align="center">
       <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
 
@@ -49,20 +49,20 @@ function baseTemplate(content: string): string {
 
         <!-- Content -->
         <tr>
-          <td style="background:#ffffff;padding:40px 32px;border-left:1px solid #e2dfd9;border-right:1px solid #e2dfd9;">
+          <td style="background:#ffffff;padding:40px 32px;border-left:1px solid #E5E5E0;border-right:1px solid #E5E5E0;">
             ${content}
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="background:#f5f2ed;border-radius:0 0 16px 16px;border:1px solid #e2dfd9;border-top:none;padding:22px 32px;">
-            <p style="margin:0 0 6px;font-size:12px;color:#7a766d;line-height:1.7;">
-              Bu e-posta <strong style="color:#4a4640;">Online Dershanem</strong> tarafından otomatik olarak gönderilmiştir.<br/>
+          <td style="background:#F4F4F0;border-radius:0 0 16px 16px;border:1px solid #E5E5E0;border-top:none;padding:22px 32px;">
+            <p style="margin:0 0 6px;font-size:12px;color:#76777A;line-height:1.7;">
+              Bu e-posta <strong style="color:#444647;">Online Dershanem</strong> tarafından otomatik olarak gönderilmiştir.<br/>
               Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#546B41;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresine yazabilirsiniz.
             </p>
-            <p style="margin:10px 0 0;font-size:11px;color:#ada89f;">
-              © 2026 Online Dershanem &nbsp;·&nbsp; Bir <a href="https://yula.co" style="color:#ada89f;text-decoration:underline;font-weight:500;">yula.co</a> markasıdır.
+            <p style="margin:10px 0 0;font-size:11px;color:#A8A9AC;">
+              © 2026 Online Dershanem &nbsp;·&nbsp; Bir <a href="https://yula.co" style="color:#A8A9AC;text-decoration:underline;font-weight:500;">yula.co</a> markasıdır.
             </p>
           </td>
         </tr>
@@ -85,11 +85,11 @@ function subheading(text: string): string {
 }
 
 function paragraph(text: string): string {
-  return `<p style="margin:0 0 18px;font-size:14px;line-height:1.75;color:#4a4640;">${text}</p>`;
+  return `<p style="margin:0 0 18px;font-size:14px;line-height:1.75;color:#444647;">${text}</p>`;
 }
 
 function divider(): string {
-  return `<hr style="border:none;border-top:1px solid #f0ede8;margin:28px 0;" />`;
+  return `<hr style="border:none;border-top:1px solid #EBEBE7;margin:28px 0;" />`;
 }
 
 function bulletList(items: string[]): string {
@@ -99,7 +99,7 @@ function bulletList(items: string[]): string {
         <td style="padding:5px 0;vertical-align:top;width:20px;">
           <span style="color:#546B41;font-size:14px;font-weight:700;">·</span>
         </td>
-        <td style="padding:5px 0 5px 8px;font-size:14px;line-height:1.6;color:#4a4640;">${item}</td>
+        <td style="padding:5px 0 5px 8px;font-size:14px;line-height:1.6;color:#444647;">${item}</td>
       </tr>`
   ).join("");
   return `<table cellpadding="0" cellspacing="0" style="margin:12px 0 20px;">${rows}</table>`;
@@ -134,7 +134,7 @@ function infoBox(rows: { label: string; value: string }[]): string {
           <td style="padding:9px 14px;font-size:13px;color:#091413;font-weight:500;">${value}</td>
         </tr>`
     )
-    .join('<tr><td colspan="2" style="padding:0 14px;"><hr style="border:none;border-top:1px solid #f0ede8;margin:0;" /></td></tr>');
+    .join('<tr><td colspan="2" style="padding:0 14px;"><hr style="border:none;border-top:1px solid #EBEBE7;margin:0;" /></td></tr>');
   return `<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f6f2;border:1px solid #e7e5e0;border-radius:10px;margin:18px 0;overflow:hidden;">${items}</table>`;
 }
 
