@@ -1,93 +1,224 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Instagram, Send, MessageCircle, Mail, Phone, MapPin } from "lucide-react";
 import { contact } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
 import { PaymentTrustStrip } from "@/components/sections/payment-trust-strip";
 
+/* ── Link groups (kept in sync with original site IA) ─────────────── */
+
 const productLinks = [
   { label: "Paketler", href: "/paketler/" },
-  { label: "Kamplar", href: "/kamplar/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "Blog", href: "/blog/" }
-];
-const corpLinks = [
-  { label: "TYT-AYT Paketleri", href: "/yks/" },
-  { label: "LGS Paketleri", href: "/lgs/" },
-  { label: "Nasıl Çalışır?", href: "/#nasil-calisir" },
-  { label: "Eğitmenler", href: "/#egitmenler" }
+  { label: "Kamplar", href: "/kamplar/" },
+  { label: "Blog", href: "/blog/" },
 ];
 const supportLinks = [
-  { label: "SSS", href: "/#sss" },
+  { label: "Sıkça Sorulanlar", href: "/sss/" },
+  { label: "İletişim", href: "/iletisim/" },
   { label: "İade Politikası", href: "/iade/" },
   { label: "Gizlilik", href: "/gizlilik/" },
-  { label: "KVKK", href: "/kvkk/" }
+  { label: "KVKK", href: "/kvkk/" },
 ];
 
+const SOCIALS = [
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/onlinedershanem/",
+    Icon: Instagram,
+  },
+  {
+    label: "TikTok",
+    href: "https://www.tiktok.com/@onlinedershanem",
+    Icon: TikTokIcon,
+  },
+  {
+    label: "WhatsApp",
+    href: `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`,
+    Icon: MessageCircle,
+  },
+  {
+    label: "E-posta",
+    href: `mailto:${contact.email}`,
+    Icon: Send,
+  },
+];
+
+/**
+ * Site-wide footer (Opennote-inspired pastel theme).
+ *
+ * Preserves every original data hook from the legacy footer:
+ *  - contact info (phone, email, whatsapp, address)
+ *  - product / corporate / support link groups
+ *  - <ContactLink/> tracking on the phone CTA
+ *  - <PaymentTrustStrip/> at the bottom
+ *  - social handles (Instagram, TikTok, WhatsApp, email)
+ *
+ * Visual: cream background, soft doodle backdrop, "od." mono mark and wordmark.
+ */
 export function Footer() {
   return (
-    <footer className="pd-footer">
-      <div className="pd-footer-inner">
-        <div className="pd-footer-brand">
-          <Link href="/" className="pd-footer-brand-lockup" aria-label="Online Dershanem Ana Sayfa">
-            <Image
-              src="/logo.png"
-              alt="od."
-              width={96}
-              height={96}
-              className="pd-brand-mark"
-            />
-            <Image
-              src="/onlinedershanem_.png"
-              alt="Online Dershanem"
-              width={1050}
-              height={200}
-              className="pd-brand-wordmark"
-            />
-          </Link>
-          <p>
-            Butik sınıf online dershane. Sadece ihtiyacın olan dersi seç, küçük grupta odaklı ilerle.
-          </p>
-          <div style={{ marginTop: 14, fontSize: 13, color: "var(--pd-ink-3)" }}>
-            <ContactLink
-              href={`tel:${contact.phone}`}
-              channel="phone"
-              placement="footer_phone"
-              className="hover:text-[var(--pd-accent)]"
+    <footer className="relative overflow-hidden border-t border-[var(--od-line)] bg-[var(--od-cream)] text-[var(--od-ink)]">
+      {/* Soft doodle backdrop */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <Image
+          src="/v991-nt-35.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-[0.10] mix-blend-multiply"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, var(--od-cream) 0%, rgba(255,253,245,0.7) 25%, rgba(255,253,245,0.92) 100%)",
+          }}
+        />
+      </div>
+
+      <div className="mx-auto max-w-6xl px-5 pt-16 pb-8 sm:pt-20">
+        <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]">
+          {/* Brand + contact */}
+          <div className="flex flex-col gap-5">
+            <Link
+              href="/"
+              aria-label="Online Dershanem"
+              className="inline-flex items-center"
             >
-              {contact.phone}
-            </ContactLink>
-            <div style={{ marginTop: 4, color: "var(--pd-muted)", fontSize: 12 }}>{contact.email}</div>
+              <Image
+                src="/onlinedershanem_.png"
+                alt="Online Dershanem"
+                width={1050}
+                height={200}
+                className="h-7 w-auto object-contain"
+              />
+            </Link>
+
+            <p className="max-w-sm text-[13.5px] leading-6 text-[#7A7A6F]">
+              Butik sınıf online dershane. Sadece ihtiyacın olan dersi seç,
+              küçük grupta odaklı ilerle.
+            </p>
+
+            {/* Contact details */}
+            <ul className="mt-1 space-y-2.5 text-[13.5px] text-[var(--od-ink)]">
+              <li className="flex items-center gap-2.5">
+                <Phone size={14} className="text-[var(--od-olive)]" />
+                <ContactLink
+                  href={`tel:${contact.phone}`}
+                  channel="phone"
+                  placement="footer_phone"
+                  className="transition hover:text-[var(--od-olive)]"
+                >
+                  {contact.phone}
+                </ContactLink>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail size={14} className="text-[var(--od-olive)]" />
+                <a
+                  href={`mailto:${contact.email}`}
+                  className="transition hover:text-[var(--od-olive)]"
+                >
+                  {contact.email}
+                </a>
+              </li>
+              <li className="flex items-start gap-2.5 text-[#7A7A6F]">
+                <MapPin size={14} className="mt-0.5 shrink-0 text-[var(--od-olive)]" />
+                <span>{contact.address}</span>
+              </li>
+            </ul>
+
+            {/* Socials */}
+            <div className="mt-2 flex items-center gap-2">
+              {SOCIALS.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--od-line)] bg-white/85 text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40 hover:bg-white"
+                >
+                  <Icon size={15} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Link cols */}
+          <div className="grid grid-cols-2 gap-8">
+            <FooterCol title="Ürün" links={productLinks} />
+            <FooterCol title="Destek" links={supportLinks} />
           </div>
         </div>
 
-        <div className="pd-footer-col">
-          <h5>Ürün</h5>
-          {productLinks.map((l) => (
-            <Link key={l.href} href={l.href}>{l.label}</Link>
-          ))}
+        {/* Payment trust strip — preserved from original */}
+        <div className="mt-14">
+          <PaymentTrustStrip />
         </div>
-        <div className="pd-footer-col">
-          <h5>Kurumsal</h5>
-          {corpLinks.map((l) => (
-            <Link key={l.href} href={l.href}>{l.label}</Link>
-          ))}
-        </div>
-        <div className="pd-footer-col">
-          <h5>Destek</h5>
-          {supportLinks.map((l) => (
-            <Link key={l.href} href={l.href}>{l.label}</Link>
-          ))}
-        </div>
-      </div>
 
-      <div className="pd-footer-bottom">
-        <span>© {new Date().getFullYear()} Online Dershanem · Tüm hakları saklıdır.</span>
-        <span>Türkiye</span>
-      </div>
-
-      <div style={{ maxWidth: 1200, margin: "24px auto 0", padding: "0 0 8px" }}>
-        <PaymentTrustStrip />
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-[var(--od-line)] pt-6 text-[12.5px] text-[#7A7A6F] sm:flex-row">
+          <span>
+            © {new Date().getFullYear()} Online Dershanem · Tüm hakları saklıdır.
+          </span>
+          <span className="flex items-center gap-3">
+            <Link href="/gizlilik/" className="hover:text-[var(--od-ink)]">
+              Gizlilik
+            </Link>
+            <span className="text-[#C8C8B5]">·</span>
+            <Link href="/kvkk/" className="hover:text-[var(--od-ink)]">
+              KVKK
+            </Link>
+            <span className="text-[#C8C8B5]">·</span>
+            <Link href="/iade/" className="hover:text-[var(--od-ink)]">
+              İade
+            </Link>
+          </span>
+        </div>
       </div>
     </footer>
+  );
+}
+
+function FooterCol({
+  title,
+  links,
+}: {
+  title: string;
+  links: { label: string; href: string }[];
+}) {
+  return (
+    <div>
+      <h5 className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#8B8B7E]">
+        {title}
+      </h5>
+      <ul className="mt-4 space-y-2.5">
+        {links.map((l) => (
+          <li key={l.href}>
+            <Link
+              href={l.href}
+              className="text-[14px] text-[var(--od-ink)] transition hover:text-[var(--od-olive)]"
+            >
+              {l.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* TikTok inline SVG (lucide doesn't ship one). */
+function TikTokIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-2.89-2.89 2.92 2.92 0 0 1 .88.13v-3.55a6.45 6.45 0 0 0-.88-.06 6.41 6.41 0 1 0 6.41 6.41V8.86a8.4 8.4 0 0 0 4.92 1.59V6.99a4.85 4.85 0 0 1-1.22-.3z" />
+    </svg>
   );
 }

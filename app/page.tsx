@@ -8,7 +8,7 @@ import { HomePricing } from "@/components/sections/home-pricing";
 import { HomeTestimonials } from "@/components/sections/home-testimonials";
 import { HomeFAQ } from "@/components/sections/home-faq";
 import { HomeFinalCTA } from "@/components/sections/home-final-cta";
-import { HomeFooter } from "@/components/sections/home-footer";
+import { Footer } from "@/components/sections/footer";
 import { HomeYellowCTA } from "@/components/sections/home-yellow-cta";
 
 export const metadata: Metadata = {
@@ -73,7 +73,7 @@ export default function HomePage() {
         <HomeFAQ />
         <HomeFinalCTA />
       </main>
-      <HomeFooter />
+      <Footer />
     </>
   );
 }

@@ -2,148 +2,176 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Clock3 } from "lucide-react";
-import { FadeIn } from "@/components/ui/fade-in";
-import { ContactLink } from "@/components/ui/contact-link";
+import { ArrowRight, Clock3, Phone } from "lucide-react";
 import { contact, getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 
 type GroupKey = (typeof subjectPackageGroups)[number]["key"];
 type FilterKey = "ALL" | GroupKey;
 
-type PackageWithGroup = (typeof subjectPackageGroups)[number]["packages"][number] & {
-  groupKey: GroupKey;
-};
+type PackageWithGroup =
+  (typeof subjectPackageGroups)[number]["packages"][number] & {
+    groupKey: GroupKey;
+  };
 
 const filters: Array<{ key: FilterKey; label: string }> = [
   { key: "ALL", label: "Tümü" },
-  ...subjectPackageGroups.map((group) => ({ key: group.key, label: group.key }))
+  ...subjectPackageGroups.map((group) => ({ key: group.key, label: group.key })),
 ];
 
 const allPackages: PackageWithGroup[] = subjectPackageGroups.flatMap((group) =>
-  group.packages.map((pkg) => ({
-    ...pkg,
-    groupKey: group.key
-  }))
+  group.packages.map((pkg) => ({ ...pkg, groupKey: group.key })),
 );
 
-function isFeaturedPackage(pkg: PackageWithGroup) {
+function isFeatured(pkg: PackageWithGroup) {
   return pkg.badge.toLocaleUpperCase("tr-TR").includes("POPÜLER");
 }
 
 export function PackagesPageContent() {
-  const [activeFilter, setActiveFilter] = useState<FilterKey>("ALL");
+  const [active, setActive] = useState<FilterKey>("ALL");
 
-  const filteredPackages = useMemo(() => {
-    if (activeFilter === "ALL") {
-      return allPackages;
-    }
-
-    return allPackages.filter((pkg) => pkg.groupKey === activeFilter);
-  }, [activeFilter]);
+  const list = useMemo(
+    () => (active === "ALL" ? allPackages : allPackages.filter((p) => p.groupKey === active)),
+    [active],
+  );
 
   return (
-    <>
-      <FadeIn>
-        <div className="pd-packages-page-header">
-          <span className="pd-eyebrow">Paketler</span>
-          <h1 className="pd-packages-page-title">
-            İhtiyacına göre ders seç,
-            <br />
-            odaklan.
-          </h1>
-          <p className="pd-packages-page-sub">
-            Tek paket zorunluluğu yok. Sadece eksik olduğun derslere yatırım yap, bütçeni ve zamanını en verimli şekilde yönet.
-          </p>
+    <div className="mx-auto max-w-6xl px-5">
+      {/* Toolbar */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-b border-[var(--od-line)] pb-3">
+        <div className="flex flex-wrap items-center gap-1">
+          {filters.map((f) => {
+            const isActive = active === f.key;
+            return (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setActive(f.key)}
+                className={`relative -mb-px inline-flex items-center px-4 py-2.5 text-[13.5px] font-medium transition ${
+                  isActive
+                    ? "text-[var(--od-ink)]"
+                    : "text-[#8B8B7E] hover:text-[var(--od-ink)]"
+                }`}
+              >
+                {f.label}
+                {isActive ? (
+                  <span className="absolute inset-x-3 -bottom-[13px] h-[2px] rounded-full bg-[var(--od-ink)]" />
+                ) : null}
+              </button>
+            );
+          })}
         </div>
-      </FadeIn>
-
-      <div className="pd-packages-toolbar">
-        <div className="pd-packages-tabs">
-          {filters.map((filter) => (
-            <button
-              key={filter.key}
-              type="button"
-              onClick={() => setActiveFilter(filter.key)}
-              className={`pd-packages-tab ${activeFilter === filter.key ? "active" : ""}`}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
-        <span className="pd-packages-count">{filteredPackages.length} paket</span>
+        <span className="text-[12px] text-[#8B8B7E]">{list.length} paket</span>
       </div>
 
-      <div className="pd-packages-grid">
-        {filteredPackages.map((pkg, index) => {
+      {/* Grid */}
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {list.map((pkg) => {
           const paymentLink = getPackagePaymentLink(pkg.category, pkg.subject) ?? "";
-          const featured = isFeaturedPackage(pkg);
-
+          const featured = isFeatured(pkg);
           return (
-            <FadeIn key={`${pkg.groupKey}-${pkg.subject}`} delay={index * 0.04}>
-              <article className={`pd-packages-card ${featured ? "featured" : ""}`}>
-                {pkg.badge ? (
-                  <div className="pd-packages-card-badge">
-                    <span>{pkg.badge}</span>
-                  </div>
-                ) : null}
-
-                <p className="pd-packages-card-subject">{pkg.category}</p>
-                <h2 className="pd-packages-card-name">{pkg.subject}</h2>
-
-                <div className="pd-packages-card-quota">
-                  <Clock3 size={11} />
-                  <span>{pkg.quota}</span>
-                </div>
-
-                <div className="pd-packages-card-prices">
-                  <span className="pd-packages-card-price-new">{pkg.discountedPrice}</span>
-                  <span className="pd-packages-card-price-old">{pkg.oldPrice}</span>
-                </div>
-                <div className="pd-packages-card-per">{pkg.perLessonPrice}</div>
-
-                <ul className="pd-packages-card-feats">
-                  {pkg.features.map((feature) => (
-                    <li key={feature} className="pd-packages-card-feat">
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                <PurchaseFunnelTrigger
-                  source={`packages_page_${pkg.groupKey}_${pkg.subject}`}
-                  packageName={`${pkg.category} ${pkg.subject}`}
-                  paymentLink={paymentLink}
-                  className={`pd-packages-card-cta ${featured ? "featured" : ""}`}
-                  analyticsId={`packages_page_${pkg.groupKey}_${pkg.subject}`}
+            <article
+              key={`${pkg.groupKey}-${pkg.subject}`}
+              className={`relative flex flex-col rounded-3xl border bg-white p-7 transition hover:-translate-y-0.5 ${
+                featured
+                  ? "border-[var(--od-ink)]/30 shadow-[0_28px_70px_-32px_rgba(20,20,15,0.28)]"
+                  : "border-[var(--od-line)] shadow-[0_18px_44px_-32px_rgba(20,20,15,0.16)]"
+              }`}
+            >
+              {pkg.badge ? (
+                <span
+                  className={`absolute -top-2.5 left-7 inline-flex items-center rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] ${
+                    featured
+                      ? "bg-[var(--od-ink)] text-[var(--od-yellow)]"
+                      : "bg-[var(--od-yellow-soft)] text-[var(--od-ink)]"
+                  }`}
                 >
-                  {pkg.cta} <ArrowRight size={14} />
-                </PurchaseFunnelTrigger>
-              </article>
-            </FadeIn>
+                  {pkg.badge}
+                </span>
+              ) : null}
+
+              <span className="text-[11.5px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)]">
+                {pkg.category}
+              </span>
+              <h2 className="mt-2 font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)]">
+                {pkg.subject}
+              </h2>
+
+              <div className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full border border-[var(--od-line)] bg-[var(--od-cream-2)] px-2.5 py-1 text-[11.5px] text-[#7A7A6F]">
+                <Clock3 size={11} strokeWidth={1.8} />
+                <span>{pkg.quota}</span>
+              </div>
+
+              <div className="mt-6 flex items-baseline gap-3">
+                <span className="font-display text-[34px] leading-none text-[var(--od-ink)]">
+                  {pkg.discountedPrice}
+                </span>
+                <span className="text-[13px] text-[#A0A095] line-through">
+                  {pkg.oldPrice}
+                </span>
+              </div>
+              <div className="mt-1 text-[12.5px] text-[#7A7A6F]">{pkg.perLessonPrice}</div>
+
+              <ul className="mt-6 space-y-2 border-t border-dashed border-[var(--od-line)] pt-5 text-[13.5px] text-[var(--od-ink)]">
+                {pkg.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2.5">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--od-olive)]" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <PurchaseFunnelTrigger
+                source={`packages_page_${pkg.groupKey}_${pkg.subject}`}
+                packageName={`${pkg.category} ${pkg.subject}`}
+                paymentLink={paymentLink}
+                analyticsId={`packages_page_${pkg.groupKey}_${pkg.subject}`}
+                className={`mt-7 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[13.5px] font-medium transition ${
+                  featured
+                    ? "bg-[var(--od-ink)] text-white hover:bg-black"
+                    : "border border-[var(--od-ink)]/15 bg-white text-[var(--od-ink)] hover:border-[var(--od-ink)]/40"
+                }`}
+              >
+                {pkg.cta}
+                <ArrowRight size={14} />
+              </PurchaseFunnelTrigger>
+            </article>
           );
         })}
       </div>
 
-      <FadeIn>
-        <div className="pd-packages-help">
-          <h3>Aradığını bulamadın mı?</h3>
-          <p>Size özel bir paket oluşturmak için ücretsiz danışmanlık talep edin.</p>
-          <div className="pd-packages-help-actions">
-            <Link href="/seni-arayalim/" className="pd-btn pd-btn-primary pd-btn-lg">
-              Seni Arayalım
-            </Link>
-            <ContactLink
-              href={`tel:${contact.phone}`}
-              channel="phone"
-              placement="packages_page_footer_support"
-              className="pd-packages-help-phone"
+      {/* Help band */}
+      <div className="mt-16 overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)]">
+        <div className="grid gap-6 p-8 sm:grid-cols-[1.4fr_auto] sm:items-center sm:p-12">
+          <div>
+            <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)]">
+              Aradığını bulamadın mı?
+            </span>
+            <h3 className="mt-3 font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[34px]">
+              Sana özel bir paket kuralım.
+            </h3>
+            <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+              Hedefin, sınıfın ve mevcut çalışma saatine göre ders kombinasyonu
+              hazırlıyoruz. 10 dakikalık ücretsiz danışmanlık yeterli.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Link
+              href="/seni-arayalim/"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
             >
+              Seni arayalım
+            </Link>
+            <a
+              href={`tel:${contact.phone}`}
+              className="inline-flex items-center gap-2 text-[13.5px] font-medium text-[var(--od-ink)] hover:text-[var(--od-olive)]"
+            >
+              <Phone size={13} strokeWidth={1.8} />
               {contact.phone}
-            </ContactLink>
+            </a>
           </div>
         </div>
-      </FadeIn>
-    </>
+      </div>
+    </div>
   );
 }

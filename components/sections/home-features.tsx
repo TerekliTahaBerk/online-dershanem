@@ -6,17 +6,18 @@ import {
   ListChecks,
   LineChart,
   CalendarClock,
-  Users,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
 type Tab = {
   key: string;
   label: string;
+  eyebrow: string;
   title: string;
   description: string;
+  bullets: string[];
   icon: LucideIcon;
-  /** Render a small illustrative mockup for the active tab. */
   Visual: () => JSX.Element;
 };
 
@@ -24,47 +25,62 @@ const TABS: Tab[] = [
   {
     key: "live",
     label: "Canlı Ders",
-    title: "Maksimum dört kişilik gruplar.",
+    eyebrow: "Maks. 4 kişilik",
+    title: "Sıradan derse girer gibi.",
     description:
-      "Ekrandan değil, sıradan derse girer gibi: hocan adınla seslenir, soru sorabilir, anlık cevap alabilirsin.",
+      "Ekrandan değil; hocan sana adınla seslenir, anında soru sorabilir, kara tahtayı birlikte doldurursunuz. Birebir yakınlığıyla grup ekonomisini birleştirdik.",
+    bullets: [
+      "Google Meet üzerinden HD canlı yayın",
+      "Hocan sana özel mikrofon süresi ayırır",
+      "Her ders kayda alınır, istediğin zaman izlersin",
+    ],
     icon: Video,
     Visual: () => <LiveMock />,
   },
   {
     key: "bank",
     label: "Soru Bankası",
+    eyebrow: "Akıllı seçki",
     title: "Doğru soru, doğru zamanda.",
     description:
-      "Her konunun ardından seviyene göre seçilmiş sorular. Yanlış yapınca anında video çözüm açılır.",
+      "Konunun ardından seviyene göre seçilmiş sorular gelir. Yanlış yapınca anında video çözüm açılır; tekrar etmen gereken kavram bir sonraki güne planlanır.",
+    bullets: [
+      "Konu × zorluk eşleştirmesi",
+      "Yanlışta otomatik video çözüm",
+      "Eksik kavramlar takvimine düşer",
+    ],
     icon: ListChecks,
     Visual: () => <BankMock />,
   },
   {
     key: "analytics",
     label: "Deneme Analizi",
-    title: "Net değil, neden önemli.",
+    eyebrow: "Net değil, neden",
+    title: "Sayıların arkasındaki hikâye.",
     description:
-      "Her denemen konu-konu analiz edilir; güçlü kasların ve eksik kalan halkalar grafiklerle görünür hale gelir.",
+      "Her denemen konu-konu çözümlenir. Güçlü kasların, eksik halkaların ve zaman yönetimin grafiklerle netleşir; bir sonraki haftan buna göre kurulur.",
+    bullets: [
+      "Konu bazlı net haritası",
+      "Soru bazlı süre analizi",
+      "Hocandan yazılı haftalık yorum",
+    ],
     icon: LineChart,
     Visual: () => <AnalyticsMock />,
   },
   {
     key: "plan",
     label: "Haftalık Plan",
-    title: "Hafta, hocan tarafından kurulur.",
+    eyebrow: "Hocan kurar, sen takip et",
+    title: "Hangi gün ne çalışacağını düşünme.",
     description:
-      "Dersler, ödevler ve denemeler kişisel takvimine işlenir; ne zaman ne çalışacağını düşünmek zorunda kalmazsın.",
+      "Dersler, ödevler ve denemeler kişisel takvimine işlenir. Sabah uyandığında o günün listesi karşında; biten her şey kapanır, kalan hatırlatılır.",
+    bullets: [
+      "Akıllı haftalık takvim",
+      "Telefonuna anlık hatırlatma",
+      "Eksiklere göre haftalık güncelleme",
+    ],
     icon: CalendarClock,
     Visual: () => <PlanMock />,
-  },
-  {
-    key: "parent",
-    label: "Veli Paneli",
-    title: "Ailene de şeffaf.",
-    description:
-      "Velin haftalık özet rapor alır: derslere katılım, ödev tamamlama oranı, deneme sonuçları — fazlası değil.",
-    icon: Users,
-    Visual: () => <ParentMock />,
   },
 ];
 
@@ -74,20 +90,37 @@ export function HomeFeatures() {
   const Visual = current.Visual;
 
   return (
-    <section className="border-t border-[var(--od-line)] bg-[var(--od-cream)] py-20 sm:py-28">
+    <section className="relative overflow-hidden border-t border-[var(--od-line)] bg-[var(--od-cream)] py-20 sm:py-28">
+      {/* Faint ruled-paper backdrop, like Opennote's "Built for how you learn" */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(to bottom, transparent 0, transparent 31px, rgba(20,20,15,0.045) 32px)",
+          backgroundSize: "100% 32px",
+        }}
+      />
+
       <div className="mx-auto max-w-6xl px-5">
         <header className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-[32px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-            Her şey <em className="italic text-[#3A4A2C]">tek</em> yerde.
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[12px] font-medium text-[var(--od-olive)] backdrop-blur">
+            <Sparkles size={12} />
+            Her şey tek yerde
+          </span>
+          <h2 className="mt-5 font-display text-[34px] font-normal leading-[1.06] tracking-tight text-[var(--od-ink)] sm:text-[48px]">
+            Hazırlığın için ihtiyacın olan
+            <br />
+            her şey, <em className="italic text-[var(--od-olive)]">tek</em> bir akışta.
           </h2>
-          <p className="mt-4 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-            Notlar, sorular, denemeler, takvim, hocan ve ailen — sekme açıp
-            kapatmadan tek bir akışta.
+          <p className="mt-5 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
+            Notlar, sorular, denemeler, takvim ve hocan — sekme açıp kapatmadan
+            tek bir ekranda. Sen sadece çalış; gerisini biz kuruyoruz.
           </p>
         </header>
 
         {/* Tabs */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-1 border-b border-[var(--od-line)]">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-1 border-b border-[var(--od-line)]">
           {TABS.map((t) => {
             const isActive = t.key === active;
             const Icon = t.icon;
@@ -96,7 +129,7 @@ export function HomeFeatures() {
                 key={t.key}
                 type="button"
                 onClick={() => setActive(t.key)}
-                className={`relative -mb-px inline-flex items-center gap-1.5 px-4 py-3 text-[14px] font-medium transition ${
+                className={`relative -mb-px inline-flex items-center gap-1.5 px-5 py-3 text-[14px] font-medium transition ${
                   isActive
                     ? "text-[var(--od-ink)]"
                     : "text-[#8B8B7E] hover:text-[var(--od-ink)]"
@@ -105,7 +138,7 @@ export function HomeFeatures() {
                 <Icon size={15} strokeWidth={1.7} />
                 {t.label}
                 {isActive ? (
-                  <span className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-[#0E0E10]" />
+                  <span className="absolute inset-x-3 -bottom-px h-[2px] rounded-full bg-[var(--od-ink)]" />
                 ) : null}
               </button>
             );
@@ -113,15 +146,28 @@ export function HomeFeatures() {
         </div>
 
         {/* Card */}
-        <div className="mt-10 overflow-hidden rounded-3xl border border-[var(--od-line)] bg-white shadow-[0_24px_60px_-32px_rgba(14,14,16,0.18)]">
-          <div className="grid gap-0 lg:grid-cols-[0.85fr_1.15fr]">
-            <div className="flex flex-col justify-center gap-4 p-8 sm:p-12">
-              <h3 className="font-display text-[24px] font-normal leading-[1.15] tracking-tight text-[var(--od-ink)] sm:text-[30px]">
+        <div className="mt-10 overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-white shadow-[0_28px_70px_-36px_rgba(20,20,15,0.22)]">
+          <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="flex flex-col justify-center gap-5 p-8 sm:p-12">
+              <span className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">
+                {current.eyebrow}
+              </span>
+              <h3 className="font-display text-[28px] font-normal leading-[1.12] tracking-tight text-[var(--od-ink)] sm:text-[34px]">
                 {current.title}
               </h3>
-              <p className="text-[15px] leading-7 text-[var(--od-ink-soft)]">{current.description}</p>
+              <p className="text-[15px] leading-7 text-[var(--od-ink-soft)]">
+                {current.description}
+              </p>
+              <ul className="mt-1 space-y-2.5 text-[13.5px] text-[var(--od-ink)]">
+                {current.bullets.map((b) => (
+                  <li key={b} className="flex items-start gap-2.5">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--od-olive)]" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="relative min-h-[320px] border-t border-[var(--od-line)] bg-[#F6F4EE] p-6 sm:p-8 lg:border-l lg:border-t-0">
+            <div className="relative min-h-[340px] border-t border-[var(--od-line)] bg-[var(--od-cream-2)] p-6 sm:p-8 lg:border-l lg:border-t-0">
               <Visual />
             </div>
           </div>
@@ -135,41 +181,45 @@ export function HomeFeatures() {
 
 function LiveMock() {
   return (
-    <div className="relative h-full w-full">
-      <div className="rounded-2xl border border-[var(--od-line)] bg-white p-4 shadow-sm">
-        <div className="flex items-center gap-2 border-b border-[#EFECE4] pb-3">
-          <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#E54848]" />
-          <span className="text-[12px] font-medium text-[var(--od-ink)]">
-            TYT Matematik · Türev Uygulamaları
-          </span>
-          <span className="ml-auto text-[11.5px] text-[#8B8B7E]">00:42:18</span>
-        </div>
-        <div className="grid gap-3 pt-4 sm:grid-cols-[1.5fr_1fr]">
-          <div className="rounded-xl bg-[#0E0E10] p-4 font-mono text-[12.5px] leading-6 text-[#E8E8EA]">
-            <div className="opacity-60">f(x) = 3x² − 12x + 7</div>
-            <div>f&apos;(x) = 6x − 12</div>
-            <div>6x − 12 = 0 ⇒ <span className="text-[#7BD8A6]">x = 2</span></div>
-            <div className="mt-2 opacity-60">f&apos;&apos;(x) = 6 &gt; 0 → yerel min</div>
+    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-[#EFECE0] pb-3">
+        <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#E54848]" />
+        <span className="text-[12px] font-medium text-[var(--od-ink)]">
+          TYT Matematik · Türev Uygulamaları
+        </span>
+        <span className="ml-auto text-[11.5px] text-[#8B8B7E]">00:42:18</span>
+      </div>
+      <div className="grid gap-3 pt-4 sm:grid-cols-[1.5fr_1fr]">
+        <div className="rounded-xl bg-[var(--od-ink)] p-4 font-mono text-[12.5px] leading-6 text-[#E8E8DA]">
+          <div className="opacity-60">f(x) = 3x² − 12x + 7</div>
+          <div>f&apos;(x) = 6x − 12</div>
+          <div>
+            6x − 12 = 0 ⇒ <span className="text-[#F4D86A]">x = 2</span>
           </div>
-          <ul className="space-y-1.5 text-[12px]">
-            {["Merve Y.", "Ayşe D.", "Can Ö.", "Pelin A."].map((n, i) => (
-              <li
-                key={n}
-                className={`flex items-center gap-2 rounded-lg px-2 py-1.5 ${
-                  i === 0 ? "bg-[#F4F1E8] text-[var(--od-ink)]" : "text-[var(--od-ink-soft)]"
-                }`}
-              >
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0E0E10] text-[10px] font-medium text-white">
-                  {n.charAt(0)}
-                </span>
-                {n}
-                {i === 0 ? (
-                  <span className="ml-auto inline-flex h-1.5 w-1.5 rounded-full bg-[#22A06B]" />
-                ) : null}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-2 opacity-60">
+            f&apos;&apos;(x) = 6 &gt; 0 → yerel min
+          </div>
         </div>
+        <ul className="space-y-1.5 text-[12px]">
+          {["Merve Y.", "Ayşe D.", "Can Ö.", "Pelin A."].map((n, i) => (
+            <li
+              key={n}
+              className={`flex items-center gap-2 rounded-lg px-2 py-1.5 ${
+                i === 0
+                  ? "bg-[var(--od-yellow-soft)] text-[var(--od-ink)]"
+                  : "text-[var(--od-ink-soft)]"
+              }`}
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--od-ink)] text-[10px] font-medium text-white">
+                {n.charAt(0)}
+              </span>
+              {n}
+              {i === 0 ? (
+                <span className="ml-auto inline-flex h-1.5 w-1.5 rounded-full bg-[var(--od-olive)]" />
+              ) : null}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
@@ -216,13 +266,15 @@ function AnalyticsMock() {
         <span className="text-[12px] font-medium uppercase tracking-wider text-[#8B8B7E]">
           Son 7 deneme · TYT
         </span>
-        <span className="font-display text-[22px] text-[var(--od-ink)]">+14 net</span>
+        <span className="font-display text-[22px] text-[var(--od-ink)]">
+          +14 net
+        </span>
       </div>
-      <div className="mt-5 flex items-end gap-2 h-32">
+      <div className="mt-5 flex h-32 items-end gap-2">
         {bars.map((h, i) => (
           <div
             key={i}
-            className="flex-1 rounded-md bg-gradient-to-t from-[#3A4A2C] to-[#7BD8A6]"
+            className="flex-1 rounded-md bg-gradient-to-t from-[var(--od-olive)] to-[#B7CCA0]"
             style={{ height: `${h}%` }}
           />
         ))}
@@ -239,12 +291,12 @@ function AnalyticsMock() {
 function PlanMock() {
   const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
   const events = [
-    { d: 0, t: "TYT Matematik", c: "#0E0E10" },
-    { d: 1, t: "AYT Fizik", c: "#3A4A2C" },
-    { d: 1, t: "Soru Çözüm", c: "#7A7A7F" },
-    { d: 3, t: "TYT Türkçe", c: "#0E0E10" },
-    { d: 4, t: "Deneme", c: "#22A06B" },
-    { d: 6, t: "Koçluk", c: "#3A4A2C" },
+    { d: 0, t: "TYT Matematik", c: "var(--od-ink)" },
+    { d: 1, t: "AYT Fizik", c: "var(--od-olive)" },
+    { d: 1, t: "Soru Çözüm", c: "#8B8B7E" },
+    { d: 3, t: "TYT Türkçe", c: "var(--od-ink)" },
+    { d: 4, t: "Deneme", c: "#1E8C5C" },
+    { d: 6, t: "Koçluk", c: "var(--od-olive)" },
   ];
   return (
     <div className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
@@ -257,7 +309,7 @@ function PlanMock() {
         {days.map((_, i) => (
           <div
             key={i}
-            className="flex min-h-[88px] flex-col gap-1 rounded-lg bg-[var(--od-cream)] p-1.5"
+            className="flex min-h-[88px] flex-col gap-1 rounded-lg bg-[var(--od-cream-2)] p-1.5"
           >
             {events
               .filter((e) => e.d === i)
@@ -272,37 +324,6 @@ function PlanMock() {
               ))}
           </div>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function ParentMock() {
-  return (
-    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
-      <div className="text-[12px] font-medium uppercase tracking-wider text-[#8B8B7E]">
-        Haftalık veli özeti · Berk
-      </div>
-      <ul className="mt-4 space-y-3 text-[13.5px]">
-        <li className="flex justify-between">
-          <span className="text-[var(--od-ink)]">Derse katılım</span>
-          <span className="font-medium text-[#1E8C5C]">5 / 5</span>
-        </li>
-        <li className="flex justify-between">
-          <span className="text-[var(--od-ink)]">Ödev tamamlama</span>
-          <span className="font-medium text-[#1E8C5C]">%92</span>
-        </li>
-        <li className="flex justify-between">
-          <span className="text-[var(--od-ink)]">Deneme net</span>
-          <span className="font-medium text-[var(--od-ink)]">88 → 102</span>
-        </li>
-        <li className="flex justify-between">
-          <span className="text-[var(--od-ink)]">Çalışma süresi</span>
-          <span className="font-medium text-[var(--od-ink)]">14s 20dk</span>
-        </li>
-      </ul>
-      <div className="mt-5 rounded-lg bg-[#F4F1E8] px-3 py-2 text-[12px] text-[var(--od-ink-soft)]">
-        Hocadan not: <span className="text-[var(--od-ink)]">Geometri eksiklerine bu hafta odaklanıyoruz.</span>
       </div>
     </div>
   );

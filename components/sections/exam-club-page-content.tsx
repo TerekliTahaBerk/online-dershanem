@@ -116,43 +116,12 @@ const faq = [
 export function ExamClubPageContent() {
   return (
     <>
-      <FadeIn>
-        <section className="rounded-[24px] border border-line bg-[#f5f7f6] px-6 py-10 text-center sm:px-8 sm:py-14">
-          <span className="pd-eyebrow justify-center">Deneme Kulübü</span>
-          <h1 className="mt-6 text-4xl font-semibold tracking-[-0.05em] text-ink sm:text-5xl">
-            Denemeyi ölçümden çıkar,
-            <br className="hidden sm:block" /> pakete dönüştür.
-          </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-muted sm:text-base">
-            ODK, haftada 1 denemeyi tek başına bırakmaz. Sonuçları derinlemesine analiz eder, eksik konuları işaretler ve
-            öğrenciyi bir sonraki haftaya yönlendirir. Ana amaç yarış göstermek değil, öğrencinin gelişimini görünür kılmaktır.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <LeadFunnelTrigger
-              source="exam_club_hero_cta"
-              eventName="landing_cta_click"
-              className="inline-flex items-center rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white transition hover:bg-pine"
-              analyticsId="exam_club_hero_cta"
-            >
-              Ön kayıt bırak
-              <ArrowRight className="ml-1.5 h-4 w-4" />
-            </LeadFunnelTrigger>
-            <a
-              href="#paketler"
-              className="inline-flex items-center rounded-full border border-line-strong bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-soft"
-            >
-              Paketleri gör
-            </a>
-          </div>
-        </section>
-      </FadeIn>
-
-      <section className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat, index) => (
           <FadeIn key={stat.label} delay={index * 0.03}>
-            <div className="rounded-[20px] border border-line bg-white px-5 py-6 text-center shadow-soft">
-              <div className="text-2xl font-semibold tracking-[-0.03em] text-ink">{stat.value}</div>
-              <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{stat.label}</div>
+            <div className="rounded-[20px] border border-[var(--od-line)] bg-white px-5 py-6 text-center">
+              <div className="font-display text-[28px] leading-none text-[var(--od-ink)]">{stat.value}</div>
+              <div className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8B8B7E]">{stat.label}</div>
             </div>
           </FadeIn>
         ))}

@@ -258,12 +258,12 @@ export function OnboardingFlow({ firstName }: OnboardingFlowProps) {
       {/* Top brand bar */}
       <div className="flex items-center justify-center px-6 pt-7">
         <Image
-          src="/logo.png"
+          src="/onlinedershanem_.png"
           alt="Online Dershanem"
-          width={48}
-          height={48}
+          width={1050}
+          height={200}
           priority
-          className="h-9 w-9 object-contain opacity-90"
+          className="h-7 w-auto object-contain opacity-90 invert"
         />
       </div>
 
@@ -309,7 +309,7 @@ export function OnboardingFlow({ firstName }: OnboardingFlowProps) {
               type="button"
               onClick={goNext}
               disabled={submitting || !canProceed}
-              className="inline-flex items-center justify-center rounded-xl bg-[#22A06B] px-6 py-3 text-[14px] font-semibold text-white shadow-[0_8px_24px_-12px_rgba(34,160,107,0.55)] transition hover:bg-[#1E8C5C] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-xl bg-[#6F8458] px-6 py-3 text-[14px] font-semibold text-white transition hover:bg-[#5C6F49] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Kaydediliyor…" : "Başla"}
               <CheckCircle2 className="ml-2 h-4 w-4" />
@@ -320,7 +320,7 @@ export function OnboardingFlow({ firstName }: OnboardingFlowProps) {
               onClick={goNext}
               disabled={submitting || (!isIntro && !canProceed)}
               aria-label="İleri"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#22A06B] text-white shadow-[0_8px_24px_-12px_rgba(34,160,107,0.55)] transition hover:bg-[#1E8C5C] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#6F8458] text-white transition hover:bg-[#5C6F49] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ArrowRight className="h-5 w-5" />
             </button>
@@ -343,8 +343,8 @@ function IntroSlideView({
   const Icon = slide.icon;
   return (
     <div className="flex flex-col items-center text-center">
-      <div className="mb-8 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1B1B1E] text-[#22A06B] ring-1 ring-[#26262A]">
-        <Icon className="h-7 w-7" />
+      <div className="mb-8 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1B1B1E] text-[#B7CCA0] ring-1 ring-[#26262A]">
+        <Icon className="h-7 w-7" strokeWidth={1.6} />
       </div>
       <h1 className="max-w-xl font-display text-[36px] font-normal leading-[1.05] tracking-tight text-white sm:text-[44px]">
         {firstName && slide === INTRO_SLIDES[0] ? (
@@ -374,11 +374,7 @@ function QuestionView({
   return (
     <div className="w-full max-w-2xl">
       <header className="mb-8 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#15321F] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7BD8A6]">
-          <ClipboardList className="h-3 w-3" />
-          Hızlı tanışma
-        </span>
-        <h1 className="mt-5 font-display text-[30px] font-normal leading-[1.1] tracking-tight text-white sm:text-[38px]">
+        <h1 className="font-display text-[30px] font-normal leading-[1.1] tracking-tight text-white sm:text-[38px]">
           {question.title}
         </h1>
         {question.hint ? (
@@ -397,7 +393,7 @@ function QuestionView({
                 onClick={() => onChange(opt.value)}
                 className={`group flex items-center justify-between rounded-xl border px-4 py-3.5 text-left text-[14.5px] font-medium transition ${
                   selected
-                    ? "border-transparent bg-[#22A06B] text-white shadow-[0_8px_24px_-14px_rgba(34,160,107,0.6)]"
+                    ? "border-[#6F8458] bg-[#1F2A1A] text-white"
                     : "border-[#26262A] bg-[#1B1B1E] text-white hover:border-[#3A3A40] hover:bg-[#202024]"
                 }`}
               >
@@ -429,8 +425,8 @@ function QuestionView({
 function RadioMark({ selected }: { selected: boolean }) {
   if (selected) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-white">
-        <CheckCircle2 className="h-4 w-4" />
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#6F8458] bg-[#6F8458]/20 text-[#B7CCA0]">
+        <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2} />
       </span>
     );
   }
@@ -448,7 +444,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
           <span
             key={i}
             className={`h-[3px] w-6 rounded-full transition ${
-              reached ? "bg-[#22A06B]" : "bg-[#26262A]"
+              reached ? "bg-[#6F8458]" : "bg-[#26262A]"
             }`}
           />
         );
@@ -460,3 +456,4 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 /* Suppress unused-import warnings in case we extend slides later. */
 void GraduationCap;
 void Target;
+void ClipboardList;

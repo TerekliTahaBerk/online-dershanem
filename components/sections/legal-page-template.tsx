@@ -1,7 +1,6 @@
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
-import { Container } from "@/components/ui/container";
 
 type LegalSection = {
   title: string;
@@ -15,34 +14,59 @@ type LegalPageTemplateProps = {
   sections: LegalSection[];
 };
 
-export function LegalPageTemplate({ pageTitle, intro, effectiveDate, sections }: LegalPageTemplateProps) {
+export function LegalPageTemplate({
+  pageTitle,
+  intro,
+  effectiveDate,
+  sections,
+}: LegalPageTemplateProps) {
   return (
     <>
       <Navbar />
-      <main className="pb-16 pt-14 sm:pt-20">
-        <Container>
-          <article className="mx-auto max-w-4xl rounded-3xl border border-line bg-white p-6 shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Yasal Bilgilendirme</p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">{pageTitle}</h1>
-            <p className="mt-4 text-sm leading-relaxed text-muted sm:text-base">{intro}</p>
-            <p className="mt-3 text-xs font-semibold text-muted">Yürürlük tarihi: {effectiveDate}</p>
+      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+        {/* Hero */}
+        <section className="border-b border-[var(--od-line)]">
+          <div className="mx-auto max-w-3xl px-5 pt-28 pb-14 sm:pt-36 sm:pb-20 text-center">
+            <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
+              Yasal Bilgilendirme
+            </span>
+            <h1 className="mt-5 font-display text-[42px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+              {pageTitle}
+            </h1>
+            <p className="mt-6 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
+              {intro}
+            </p>
+            <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[12px] text-[#7A7A6F]">
+              Yürürlük tarihi: <strong className="font-medium text-[var(--od-ink)]">{effectiveDate}</strong>
+            </p>
+          </div>
+        </section>
 
-            <div className="mt-8 space-y-6">
-              {sections.map((section) => (
-                <section key={section.title} className="rounded-2xl border border-line bg-soft p-5">
-                  <h2 className="text-lg font-semibold text-ink">{section.title}</h2>
-                  <div className="mt-3 space-y-3">
-                    {section.paragraphs.map((paragraph) => (
-                      <p key={paragraph} className="text-sm leading-relaxed text-muted">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-          </article>
-        </Container>
+        {/* Body */}
+        <section className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+          <div className="space-y-10">
+            {sections.map((section, idx) => (
+              <article
+                key={section.title}
+                className="border-b border-[var(--od-line)] pb-10 last:border-b-0 last:pb-0"
+              >
+                <div className="flex items-baseline gap-4">
+                  <span className="font-display text-[22px] text-[var(--od-olive)]/70">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
+                  <h2 className="font-display text-[24px] font-normal leading-tight tracking-tight text-[var(--od-ink)] sm:text-[28px]">
+                    {section.title}
+                  </h2>
+                </div>
+                <div className="mt-5 space-y-4 pl-9 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+                  {section.paragraphs.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       </main>
       <Footer />
       <StickyContactBar />
