@@ -43,8 +43,8 @@ export function HomeHero() {
         />
       </div>
 
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-5 pt-20 pb-24 sm:pt-28 sm:pb-28 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
-        <div className="flex max-w-2xl flex-col items-center text-center lg:items-start lg:text-left">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-5 pt-20 pb-24 sm:pt-28 sm:pb-28">
+        <div className="flex max-w-2xl flex-col items-center text-center">
           <h1 className="font-display text-[44px] font-normal leading-[1.12] tracking-[0.005em] text-[var(--od-ink)] [word-spacing:0.04em] sm:text-[64px] sm:leading-[1.1]">
             Seninle birlikte
             <br />
@@ -64,7 +64,7 @@ export function HomeHero() {
             Birebir özel dersin yakınlığını, dershane fiyatlarıyla.
           </p>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/kayit"
               className="inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-7 py-3.5 text-[14.5px] font-medium tracking-[0.01em] text-white shadow-[0_10px_30px_-12px_rgba(20,20,15,0.45)] transition hover:bg-[#2A2A22]"
@@ -78,20 +78,6 @@ export function HomeHero() {
               Paketleri gör
             </Link>
           </div>
-        </div>
-
-        {/* Founders animation */}
-        <div className="relative w-full max-w-[420px] shrink-0 lg:max-w-[460px]">
-          <div className="absolute -inset-3 -z-10 rounded-[36px] bg-[var(--od-yellow-soft)] blur-[1px]" aria-hidden />
-          <Image
-            src="/founders.webp"
-            alt="Online Dershanem kurucuları"
-            width={420}
-            height={288}
-            unoptimized
-            priority
-            className="w-full rounded-[28px] border border-[var(--od-line)] bg-white object-cover shadow-[0_28px_70px_-30px_rgba(20,20,15,0.25)]"
-          />
         </div>
       </div>
     </section>

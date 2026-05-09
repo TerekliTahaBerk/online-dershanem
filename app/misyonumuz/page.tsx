@@ -27,22 +27,16 @@ export default function MissionPage() {
         {/* Hero with founders animation */}
         <section className="relative overflow-hidden">
           <div className="mx-auto max-w-3xl px-5 pt-20 pb-12 text-center sm:pt-28">
-            {/* Founders animation */}
-            <div className="relative mx-auto w-full max-w-[440px]">
-              <div
-                className="absolute -inset-3 -z-10 rounded-[36px] bg-[var(--od-yellow-soft)] blur-[1px]"
-                aria-hidden
-              />
-              <Image
-                src="/founders.webp"
-                alt="Online Dershanem kurucuları"
-                width={420}
-                height={288}
-                unoptimized
-                priority
-                className="w-full rounded-[28px] border border-[var(--od-line)] bg-white object-cover shadow-[0_28px_70px_-30px_rgba(20,20,15,0.25)]"
-              />
-            </div>
+            {/* Founders animation — clean, container-less */}
+            <Image
+              src="/founders.webp"
+              alt="Online Dershanem kurucuları"
+              width={900}
+              height={620}
+              unoptimized
+              priority
+              className="mx-auto block h-auto w-full max-w-[560px] object-contain"
+            />
 
             <h1 className="mt-14 font-display text-[42px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
               Potansiyelin maddi koşullarla{" "}
