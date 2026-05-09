@@ -12,6 +12,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 const links = [
   { label: "Paketler", href: "/paketler/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
+  { label: "Misyonumuz", href: "/misyonumuz/" },
   { label: "Blog", href: "/blog/" }
 ];
 

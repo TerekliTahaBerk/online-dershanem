@@ -7,7 +7,6 @@ import { HomeFeatures } from "@/components/sections/home-features";
 import { HomePricing } from "@/components/sections/home-pricing";
 import { HomeTestimonials } from "@/components/sections/home-testimonials";
 import { HomeFAQ } from "@/components/sections/home-faq";
-import { HomeFinalCTA } from "@/components/sections/home-final-cta";
 import { Footer } from "@/components/sections/footer";
 import { HomeYellowCTA } from "@/components/sections/home-yellow-cta";
 
@@ -68,10 +67,9 @@ export default function HomePage() {
         <UniversityStrip />
         <HomeFeatures />
         <HomePricing />
-        <HomeYellowCTA />
         <HomeTestimonials />
         <HomeFAQ />
-        <HomeFinalCTA />
+        <HomeYellowCTA />
       </main>
       <Footer />
     </>

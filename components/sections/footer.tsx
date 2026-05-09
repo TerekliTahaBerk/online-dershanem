@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Instagram, Send, MessageCircle, Mail, Phone, MapPin } from "lucide-react";
 import { contact } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
-import { PaymentTrustStrip } from "@/components/sections/payment-trust-strip";
 
 /* ── Link groups (kept in sync with original site IA) ─────────────── */
 
@@ -152,12 +151,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Payment trust strip — preserved from original */}
-        <div className="mt-14">
-          <PaymentTrustStrip />
-        </div>
-
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-[var(--od-line)] pt-6 text-[12.5px] text-[#7A7A6F] sm:flex-row">
+        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[var(--od-line)] pt-6 text-[12.5px] text-[#7A7A6F] sm:flex-row">
           <span>
             © {new Date().getFullYear()} Online Dershanem · Tüm hakları saklıdır.
           </span>
