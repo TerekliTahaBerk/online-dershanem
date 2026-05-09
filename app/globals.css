@@ -1175,7 +1175,7 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   color: var(--pd-ink);
   margin: 6px 0 4px;
   line-height: 1;
-  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 .pd-kpi-delta {
   font-size: 12px;
@@ -1613,7 +1613,7 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   border-color: var(--pd-line) !important;
   background: var(--pd-bg-elevated) !important;
   color: var(--pd-ink) !important;
-  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif !important;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif !important;
 }
 .pd-app-main input:focus,
 .pd-app-main select:focus,

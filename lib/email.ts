@@ -1,7 +1,13 @@
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY || "re_missing");
+  }
+  return _resend;
+}
 const FROM = "Online Dershanem <noreply@onlinedershanem.com>";
 const APP_URL = (process.env.NEXTAUTH_URL || "https://onlinedershanem.com").replace(/\/$/, "");
 
@@ -185,7 +191,7 @@ async function attemptResendDelivery(
   let lastErr: unknown;
   for (let attempt = 0; attempt < MAX_IN_PROCESS; attempt++) {
     try {
-      await resend.emails.send({ from: FROM, to, subject, html });
+      await getResend().emails.send({ from: FROM, to, subject, html });
       return; // success
     } catch (err) {
       lastErr = err;

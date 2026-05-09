@@ -1,13 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/content";
 
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-  display: "swap"
-});
 import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
@@ -76,7 +71,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className={geist.variable}>
+    <html lang="tr" className={GeistSans.variable}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />

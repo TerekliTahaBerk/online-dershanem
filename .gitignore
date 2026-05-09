@@ -8,3 +8,14 @@ prisma/dev.db
 prisma/dev.db-journal
 .vercel
 .env*.local
+
+# OS / editor / IDE / agent artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+.claire/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
