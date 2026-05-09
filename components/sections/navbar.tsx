@@ -53,14 +53,20 @@ export function Navbar() {
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           scrolled
-            ? "border-b border-[#E5E5E0]/60 bg-[#FAFAF7]/85 backdrop-blur-md"
+            ? "border-b border-[var(--od-line)]/70 bg-[var(--od-cream)]/90 backdrop-blur-md"
             : "border-b border-transparent bg-transparent"
         }`}
       >
         <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
           <Link href="/" aria-label="Online Dershanem" className="flex items-center gap-2 text-[#0E0E10]">
-            <Image src="/logo.png" alt="" width={32} height={32} priority className="h-7 w-7 object-contain" />
-            <span className="font-display text-[20px] leading-none tracking-tight text-[#0E0E10]">Online Dershanem</span>
+            <Image
+              src="/onlinedershanem_.png"
+              alt="Online Dershanem"
+              width={1050}
+              height={200}
+              priority
+              className="h-7 w-auto object-contain sm:h-8"
+            />
           </Link>
 
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex">

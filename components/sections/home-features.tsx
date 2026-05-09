@@ -74,20 +74,20 @@ export function HomeFeatures() {
   const Visual = current.Visual;
 
   return (
-    <section className="border-t border-[#E5E5E0] bg-[#FAFAF7] py-20 sm:py-28">
+    <section className="border-t border-[var(--od-line)] bg-[var(--od-cream)] py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-5">
         <header className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-[32px] font-normal leading-[1.1] tracking-tight text-[#0E0E10] sm:text-[44px]">
+          <h2 className="font-display text-[32px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
             Her şey <em className="italic text-[#3A4A2C]">tek</em> yerde.
           </h2>
-          <p className="mt-4 text-[15.5px] leading-7 text-[#5A5A5F]">
+          <p className="mt-4 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
             Notlar, sorular, denemeler, takvim, hocan ve ailen — sekme açıp
             kapatmadan tek bir akışta.
           </p>
         </header>
 
         {/* Tabs */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-1 border-b border-[#E5E5E0]">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-1 border-b border-[var(--od-line)]">
           {TABS.map((t) => {
             const isActive = t.key === active;
             const Icon = t.icon;
@@ -98,8 +98,8 @@ export function HomeFeatures() {
                 onClick={() => setActive(t.key)}
                 className={`relative -mb-px inline-flex items-center gap-1.5 px-4 py-3 text-[14px] font-medium transition ${
                   isActive
-                    ? "text-[#0E0E10]"
-                    : "text-[#7A7A7F] hover:text-[#0E0E10]"
+                    ? "text-[var(--od-ink)]"
+                    : "text-[#8B8B7E] hover:text-[var(--od-ink)]"
                 }`}
               >
                 <Icon size={15} strokeWidth={1.7} />
@@ -113,15 +113,15 @@ export function HomeFeatures() {
         </div>
 
         {/* Card */}
-        <div className="mt-10 overflow-hidden rounded-3xl border border-[#E5E5E0] bg-white shadow-[0_24px_60px_-32px_rgba(14,14,16,0.18)]">
+        <div className="mt-10 overflow-hidden rounded-3xl border border-[var(--od-line)] bg-white shadow-[0_24px_60px_-32px_rgba(14,14,16,0.18)]">
           <div className="grid gap-0 lg:grid-cols-[0.85fr_1.15fr]">
             <div className="flex flex-col justify-center gap-4 p-8 sm:p-12">
-              <h3 className="font-display text-[24px] font-normal leading-[1.15] tracking-tight text-[#0E0E10] sm:text-[30px]">
+              <h3 className="font-display text-[24px] font-normal leading-[1.15] tracking-tight text-[var(--od-ink)] sm:text-[30px]">
                 {current.title}
               </h3>
-              <p className="text-[15px] leading-7 text-[#5A5A5F]">{current.description}</p>
+              <p className="text-[15px] leading-7 text-[var(--od-ink-soft)]">{current.description}</p>
             </div>
-            <div className="relative min-h-[320px] border-t border-[#E5E5E0] bg-[#F6F4EE] p-6 sm:p-8 lg:border-l lg:border-t-0">
+            <div className="relative min-h-[320px] border-t border-[var(--od-line)] bg-[#F6F4EE] p-6 sm:p-8 lg:border-l lg:border-t-0">
               <Visual />
             </div>
           </div>
@@ -136,13 +136,13 @@ export function HomeFeatures() {
 function LiveMock() {
   return (
     <div className="relative h-full w-full">
-      <div className="rounded-2xl border border-[#E5E5E0] bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-[var(--od-line)] bg-white p-4 shadow-sm">
         <div className="flex items-center gap-2 border-b border-[#EFECE4] pb-3">
           <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#E54848]" />
-          <span className="text-[12px] font-medium text-[#0E0E10]">
+          <span className="text-[12px] font-medium text-[var(--od-ink)]">
             TYT Matematik · Türev Uygulamaları
           </span>
-          <span className="ml-auto text-[11.5px] text-[#7A7A7F]">00:42:18</span>
+          <span className="ml-auto text-[11.5px] text-[#8B8B7E]">00:42:18</span>
         </div>
         <div className="grid gap-3 pt-4 sm:grid-cols-[1.5fr_1fr]">
           <div className="rounded-xl bg-[#0E0E10] p-4 font-mono text-[12.5px] leading-6 text-[#E8E8EA]">
@@ -156,7 +156,7 @@ function LiveMock() {
               <li
                 key={n}
                 className={`flex items-center gap-2 rounded-lg px-2 py-1.5 ${
-                  i === 0 ? "bg-[#F4F1E8] text-[#0E0E10]" : "text-[#5A5A5F]"
+                  i === 0 ? "bg-[#F4F1E8] text-[var(--od-ink)]" : "text-[var(--od-ink-soft)]"
                 }`}
               >
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0E0E10] text-[10px] font-medium text-white">
@@ -186,9 +186,9 @@ function BankMock() {
       ].map((row) => (
         <div
           key={row.q}
-          className="flex items-center justify-between rounded-xl border border-[#E5E5E0] bg-white px-4 py-3 text-[13.5px]"
+          className="flex items-center justify-between rounded-xl border border-[var(--od-line)] bg-white px-4 py-3 text-[13.5px]"
         >
-          <span className="text-[#0E0E10]">{row.q}</span>
+          <span className="text-[var(--od-ink)]">{row.q}</span>
           {row.ok === true ? (
             <span className="rounded-full bg-[#E8F4ED] px-2 py-0.5 text-[11px] font-medium text-[#1E8C5C]">
               Doğru
@@ -198,7 +198,7 @@ function BankMock() {
               Tekrar gerekli
             </span>
           ) : (
-            <span className="rounded-full bg-[#F2F2EF] px-2 py-0.5 text-[11px] font-medium text-[#7A7A7F]">
+            <span className="rounded-full bg-[var(--od-cream-2)] px-2 py-0.5 text-[11px] font-medium text-[#8B8B7E]">
               Bekliyor
             </span>
           )}
@@ -211,12 +211,12 @@ function BankMock() {
 function AnalyticsMock() {
   const bars = [55, 72, 38, 84, 60, 90, 48];
   return (
-    <div className="rounded-2xl border border-[#E5E5E0] bg-white p-5">
+    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
       <div className="flex items-baseline justify-between">
-        <span className="text-[12px] font-medium uppercase tracking-wider text-[#7A7A7F]">
+        <span className="text-[12px] font-medium uppercase tracking-wider text-[#8B8B7E]">
           Son 7 deneme · TYT
         </span>
-        <span className="font-display text-[22px] text-[#0E0E10]">+14 net</span>
+        <span className="font-display text-[22px] text-[var(--od-ink)]">+14 net</span>
       </div>
       <div className="mt-5 flex items-end gap-2 h-32">
         {bars.map((h, i) => (
@@ -227,7 +227,7 @@ function AnalyticsMock() {
           />
         ))}
       </div>
-      <div className="mt-3 flex justify-between text-[10.5px] text-[#7A7A7F]">
+      <div className="mt-3 flex justify-between text-[10.5px] text-[#8B8B7E]">
         {["1", "2", "3", "4", "5", "6", "7"].map((d) => (
           <span key={d}>D{d}</span>
         ))}
@@ -247,8 +247,8 @@ function PlanMock() {
     { d: 6, t: "Koçluk", c: "#3A4A2C" },
   ];
   return (
-    <div className="rounded-2xl border border-[#E5E5E0] bg-white p-5">
-      <div className="grid grid-cols-7 gap-2 text-center text-[10.5px] font-medium uppercase tracking-wider text-[#7A7A7F]">
+    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
+      <div className="grid grid-cols-7 gap-2 text-center text-[10.5px] font-medium uppercase tracking-wider text-[#8B8B7E]">
         {days.map((d) => (
           <span key={d}>{d}</span>
         ))}
@@ -257,7 +257,7 @@ function PlanMock() {
         {days.map((_, i) => (
           <div
             key={i}
-            className="flex min-h-[88px] flex-col gap-1 rounded-lg bg-[#FAFAF7] p-1.5"
+            className="flex min-h-[88px] flex-col gap-1 rounded-lg bg-[var(--od-cream)] p-1.5"
           >
             {events
               .filter((e) => e.d === i)
@@ -279,30 +279,30 @@ function PlanMock() {
 
 function ParentMock() {
   return (
-    <div className="rounded-2xl border border-[#E5E5E0] bg-white p-5">
-      <div className="text-[12px] font-medium uppercase tracking-wider text-[#7A7A7F]">
+    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
+      <div className="text-[12px] font-medium uppercase tracking-wider text-[#8B8B7E]">
         Haftalık veli özeti · Berk
       </div>
       <ul className="mt-4 space-y-3 text-[13.5px]">
         <li className="flex justify-between">
-          <span className="text-[#0E0E10]">Derse katılım</span>
+          <span className="text-[var(--od-ink)]">Derse katılım</span>
           <span className="font-medium text-[#1E8C5C]">5 / 5</span>
         </li>
         <li className="flex justify-between">
-          <span className="text-[#0E0E10]">Ödev tamamlama</span>
+          <span className="text-[var(--od-ink)]">Ödev tamamlama</span>
           <span className="font-medium text-[#1E8C5C]">%92</span>
         </li>
         <li className="flex justify-between">
-          <span className="text-[#0E0E10]">Deneme net</span>
-          <span className="font-medium text-[#0E0E10]">88 → 102</span>
+          <span className="text-[var(--od-ink)]">Deneme net</span>
+          <span className="font-medium text-[var(--od-ink)]">88 → 102</span>
         </li>
         <li className="flex justify-between">
-          <span className="text-[#0E0E10]">Çalışma süresi</span>
-          <span className="font-medium text-[#0E0E10]">14s 20dk</span>
+          <span className="text-[var(--od-ink)]">Çalışma süresi</span>
+          <span className="font-medium text-[var(--od-ink)]">14s 20dk</span>
         </li>
       </ul>
-      <div className="mt-5 rounded-lg bg-[#F4F1E8] px-3 py-2 text-[12px] text-[#5A5A5F]">
-        Hocadan not: <span className="text-[#0E0E10]">Geometri eksiklerine bu hafta odaklanıyoruz.</span>
+      <div className="mt-5 rounded-lg bg-[#F4F1E8] px-3 py-2 text-[12px] text-[var(--od-ink-soft)]">
+        Hocadan not: <span className="text-[var(--od-ink)]">Geometri eksiklerine bu hafta odaklanıyoruz.</span>
       </div>
     </div>
   );

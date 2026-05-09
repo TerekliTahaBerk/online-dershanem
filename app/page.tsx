@@ -9,6 +9,7 @@ import { HomeTestimonials } from "@/components/sections/home-testimonials";
 import { HomeFAQ } from "@/components/sections/home-faq";
 import { HomeFinalCTA } from "@/components/sections/home-final-cta";
 import { HomeFooter } from "@/components/sections/home-footer";
+import { HomeYellowCTA } from "@/components/sections/home-yellow-cta";
 
 export const metadata: Metadata = {
   title: "TYT-AYT ve LGS için Küçük Grup Online Özel Ders",
@@ -67,6 +68,7 @@ export default function HomePage() {
         <UniversityStrip />
         <HomeFeatures />
         <HomePricing />
+        <HomeYellowCTA />
         <HomeTestimonials />
         <HomeFAQ />
         <HomeFinalCTA />

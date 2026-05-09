@@ -18,18 +18,18 @@ export function UniversityStrip() {
 
   return (
     <section
-      className="relative border-y border-[#E5E5E0] bg-[#FAFAF7] py-10"
+      className="relative border-y border-[var(--od-line)] bg-[var(--od-cream)] py-10"
       aria-label="Öğretmen kadrosu üniversiteleri"
     >
       <div className="mx-auto max-w-3xl px-5 text-center">
-        <p className="text-[12.5px] font-medium uppercase tracking-[0.18em] text-[#7A7A7F]">
+        <p className="text-[12.5px] font-medium uppercase tracking-[0.18em] text-[#8B8B7E]">
           Hocalarımız Türkiye&apos;nin lider üniversitelerinden
         </p>
       </div>
 
       {/* gradient edges */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[#FAFAF7] to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[#FAFAF7] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-[var(--od-cream)] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-[var(--od-cream)] to-transparent" />
 
       <div className="relative mt-7 overflow-hidden">
         <div className="flex w-max animate-[marquee_40s_linear_infinite] items-center gap-16 px-8">
