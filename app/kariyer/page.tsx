@@ -69,7 +69,7 @@ export default function CareersPage() {
           {/* Soft ruled-paper backdrop */}
           <div
             aria-hidden
-            className="absolute inset-x-0 top-0 -z-10 h-[120%] bg-[var(--od-sky-soft)]"
+            className="absolute inset-x-0 top-0 -z-10 h-[120%] bg-[var(--od-cream-2)]"
           />
           <div
             aria-hidden
@@ -81,11 +81,14 @@ export default function CareersPage() {
             }}
           />
 
-          <div className="overflow-hidden rounded-[28px] border border-[#3F4FE0]/20 bg-white shadow-[0_28px_70px_-32px_rgba(40,55,180,0.28)] sm:mt-16">
+          <div className="overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-white shadow-[0_28px_70px_-32px_rgba(20,20,15,0.18)] sm:mt-16">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_2fr]">
-              {/* Left blue intro */}
-              <aside className="relative bg-[#3F4FE0] p-8 text-white sm:p-10">
-                <h2 className="font-display text-[32px] font-normal leading-tight tracking-tight sm:text-[36px]">
+              {/* Left olive intro */}
+              <aside className="relative bg-[var(--od-olive)] p-8 text-white sm:p-10">
+                <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-yellow)]">
+                  Kariyer
+                </span>
+                <h2 className="mt-3 font-display text-[32px] font-normal leading-tight tracking-tight sm:text-[36px]">
                   Açık Pozisyonlar
                 </h2>
                 <p className="mt-4 max-w-xs text-[14px] leading-7 text-white/85">
@@ -98,7 +101,7 @@ export default function CareersPage() {
               </aside>
 
               {/* Right roles list */}
-              <div className="divide-y divide-[var(--od-line)]">
+              <div className="divide-y divide-[var(--od-line)] bg-[var(--od-paper)]">
                 {openRoles.map((role) => (
                   <a
                     key={role.title}
@@ -109,16 +112,16 @@ export default function CareersPage() {
                       <h3 className="font-display text-[20px] font-normal leading-tight tracking-tight text-[var(--od-ink)] sm:text-[22px]">
                         {role.title}
                       </h3>
-                      <p className="mt-1.5 text-[12.5px] font-medium uppercase tracking-[0.14em] text-[#8B8B7E]">
+                      <p className="mt-1.5 text-[12.5px] font-medium uppercase tracking-[0.14em] text-[var(--od-ink-soft)]">
                         <span>{role.location}</span>
-                        <span className="mx-2 text-[#C8C8B5]">·</span>
+                        <span className="mx-2 text-[var(--od-line)]">·</span>
                         <span>{role.type}</span>
                       </p>
                       <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[var(--od-ink-soft)]">
                         {role.summary}
                       </p>
                     </div>
-                    <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--od-line)] bg-white text-[var(--od-ink)] transition group-hover:border-[#3F4FE0]/40 group-hover:bg-[#3F4FE0] group-hover:text-white">
+                    <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--od-line)] bg-white text-[var(--od-ink)] transition group-hover:border-[var(--od-olive)] group-hover:bg-[var(--od-olive)] group-hover:text-white">
                       <ArrowRight size={15} strokeWidth={1.8} />
                     </span>
                   </a>
@@ -200,19 +203,19 @@ function CubeDoodle({ className = "" }: { className?: string }) {
       {/* tiny stars */}
       <path
         d="M22 36 l1.5 -3.5 l1.5 3.5 l3.5 1.5 l-3.5 1.5 l-1.5 3.5 l-1.5 -3.5 l-3.5 -1.5z"
-        fill="#3F4FE0"
-        opacity="0.65"
+        fill="var(--od-olive)"
+        opacity="0.85"
       />
       <path
         d="M97 18 c2 1 3 2 3 3 c-1 0 -2 1 -3 3 c-1 -2 -2 -3 -3 -3 c1 -1 2 -2 3 -3z"
-        fill="#3F4FE0"
-        opacity="0.7"
+        fill="var(--od-olive)"
+        opacity="0.85"
       />
 
       {/* cube — top face */}
       <path
         d="M60 18 L92 32 L60 46 L28 32 Z"
-        stroke="#1B1F4D"
+        stroke="var(--od-ink)"
         strokeWidth="1.6"
         strokeLinejoin="round"
         fill="white"
@@ -220,7 +223,7 @@ function CubeDoodle({ className = "" }: { className?: string }) {
       {/* left face */}
       <path
         d="M28 32 L28 68 L60 82 L60 46 Z"
-        stroke="#1B1F4D"
+        stroke="var(--od-ink)"
         strokeWidth="1.6"
         strokeLinejoin="round"
         fill="white"
@@ -228,25 +231,25 @@ function CubeDoodle({ className = "" }: { className?: string }) {
       {/* right face */}
       <path
         d="M92 32 L92 68 L60 82 L60 46 Z"
-        stroke="#1B1F4D"
+        stroke="var(--od-ink)"
         strokeWidth="1.6"
         strokeLinejoin="round"
         fill="white"
       />
       {/* highlighted top tile */}
-      <path d="M60 18 L76 25 L60 32 L44 25 Z" fill="#3F4FE0" opacity="0.85" />
+      <path d="M60 18 L76 25 L60 32 L44 25 Z" fill="var(--od-yellow)" opacity="0.95" />
       {/* internal grid lines: top */}
-      <path d="M44 25 L44 38 M76 25 L76 38" stroke="#1B1F4D" strokeWidth="1.2" />
-      <path d="M44 38 L60 32 M76 38 L60 32" stroke="#1B1F4D" strokeWidth="1.2" />
+      <path d="M44 25 L44 38 M76 25 L76 38" stroke="var(--od-ink)" strokeWidth="1.2" />
+      <path d="M44 38 L60 32 M76 38 L60 32" stroke="var(--od-ink)" strokeWidth="1.2" />
       {/* left grid */}
-      <path d="M28 44 L60 58 M28 56 L60 70" stroke="#1B1F4D" strokeWidth="1.2" />
-      <path d="M44 38 L44 75" stroke="#1B1F4D" strokeWidth="1.2" />
+      <path d="M28 44 L60 58 M28 56 L60 70" stroke="var(--od-ink)" strokeWidth="1.2" />
+      <path d="M44 38 L44 75" stroke="var(--od-ink)" strokeWidth="1.2" />
       {/* right grid */}
-      <path d="M60 58 L92 44 M60 70 L92 56" stroke="#1B1F4D" strokeWidth="1.2" />
-      <path d="M76 38 L76 75" stroke="#1B1F4D" strokeWidth="1.2" />
+      <path d="M60 58 L92 44 M60 70 L92 56" stroke="var(--od-ink)" strokeWidth="1.2" />
+      <path d="M76 38 L76 75" stroke="var(--od-ink)" strokeWidth="1.2" />
 
       {/* shadow */}
-      <ellipse cx="60" cy="100" rx="34" ry="3" fill="#1B1F4D" opacity="0.08" />
+      <ellipse cx="60" cy="100" rx="34" ry="3" fill="var(--od-ink)" opacity="0.08" />
     </svg>
   );
 }

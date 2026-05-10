@@ -80,12 +80,12 @@ function getAuthor(post: BlogPost) {
 }
 
 const visualByCategory: Record<string, { Icon: LucideIcon; tone: string; tile: string }> = {
-  "Online Dershane": { Icon: GraduationCap, tone: "#3F4FE0", tile: "var(--od-sky-soft)" },
+  "Online Dershane": { Icon: GraduationCap, tone: "var(--od-olive)", tile: "var(--od-mint)" },
   "Online Özel Ders": { Icon: Compass, tone: "#A67C4F", tile: "var(--od-cream-2)" },
-  YKS: { Icon: LineChart, tone: "#3A4A2C", tile: "#EFEFE1" },
-  LGS: { Icon: NotebookText, tone: "#5C7BA6", tile: "#E9EFF5" },
-  "e Dershane": { Icon: BookOpen, tone: "#3F4FE0", tile: "var(--od-sky-soft)" },
-  "Online Ders": { Icon: BookOpen, tone: "#3A4A2C", tile: "#EFEFE1" },
+  YKS: { Icon: LineChart, tone: "var(--od-olive)", tile: "var(--od-yellow-soft)" },
+  LGS: { Icon: NotebookText, tone: "#5C7BA6", tile: "var(--od-sky-soft)" },
+  "e Dershane": { Icon: BookOpen, tone: "var(--od-olive)", tile: "var(--od-mint)" },
+  "Online Ders": { Icon: BookOpen, tone: "var(--od-olive)", tile: "var(--od-cream-2)" },
   "Özel Ders": { Icon: Compass, tone: "#A67C4F", tile: "var(--od-cream-2)" },
   "Sınav Stratejisi": { Icon: PenLine, tone: "#9C5340", tile: "var(--od-blush)" }
 };
@@ -105,29 +105,29 @@ function PaperPlaneDoodle({ className = "" }: { className?: string }) {
       aria-hidden
       className={className}
     >
-      <circle cx="120" cy="14" r="2" fill="#1B1F4D" />
+      <circle cx="120" cy="14" r="2" fill="var(--od-ink)" />
       <path
         d="M40 70 L172 30 L138 88 L116 70 Z"
-        stroke="#1B1F4D"
+        stroke="var(--od-ink)"
         strokeWidth="2"
         strokeLinejoin="round"
         fill="white"
       />
-      <path d="M116 70 L138 88 L130 56" stroke="#1B1F4D" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M116 70 L172 30" stroke="#1B1F4D" strokeWidth="1.4" />
+      <path d="M116 70 L138 88 L130 56" stroke="var(--od-ink)" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M116 70 L172 30" stroke="var(--od-ink)" strokeWidth="1.4" />
       <path
         d="M70 64 C 50 76, 38 94, 60 100 C 80 105, 96 92, 86 80"
-        stroke="#1B1F4D"
+        stroke="var(--od-ink)"
         strokeWidth="2"
         strokeLinecap="round"
         fill="none"
       />
       <path
         d="M44 110 l1.4 -3 l1.4 3 l3 1.4 l-3 1.4 l-1.4 3 l-1.4 -3 l-3 -1.4 z"
-        fill="#3F4FE0"
-        opacity="0.85"
+        fill="var(--od-olive)"
+        opacity="0.9"
       />
-      <path d="M134 76 L138 88 L142 78 Z" fill="#3F4FE0" opacity="0.85" />
+      <path d="M134 76 L138 88 L142 78 Z" fill="var(--od-yellow)" />
     </svg>
   );
 }
@@ -176,14 +176,21 @@ export default function BlogPage() {
   return (
     <>
       <Navbar />
-      <main className="bg-white text-[var(--od-ink)]">
+      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* Hero */}
-        <section className="relative">
-          <div className="mx-auto max-w-3xl px-5 pt-20 pb-10 sm:pt-24 sm:pb-14 text-center">
+        <section className="relative border-b border-[var(--od-line)]">
+          <div className="mx-auto max-w-3xl px-5 pt-24 pb-12 sm:pt-32 sm:pb-16 text-center">
             <PaperPlaneDoodle className="mx-auto h-24 w-auto sm:h-28" />
-            <h1 className="mt-6 font-display text-[42px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+            <span className="mt-6 inline-block text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
+              Yazılar
+            </span>
+            <h1 className="mt-4 font-display text-[42px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
               Online Dershanem <em className="italic text-[var(--od-olive)]">Blog</em>
             </h1>
+            <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
+              LGS ve YKS için haftalık rehberler, deneme analizi ipuçları ve
+              sade premium hazırlık modeli üzerine yazılar.
+            </p>
           </div>
         </section>
 
@@ -202,7 +209,7 @@ export default function BlogPage() {
               </p>
               <Link
                 href={`/blog/${featured.slug}/`}
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0E0E10] px-5 py-2.5 text-[13.5px] font-medium text-white transition hover:bg-[#1F1F23]"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--od-ink)] px-5 py-2.5 text-[13.5px] font-medium text-white transition hover:bg-black"
               >
                 Yazıyı oku
                 <ArrowRight size={14} strokeWidth={1.8} />
