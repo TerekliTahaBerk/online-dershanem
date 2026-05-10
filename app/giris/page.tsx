@@ -24,20 +24,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <AuthShell
-      title="Hoş geldin."
-      subtitle="Çalışmana kaldığın yerden devam et."
+      title="Tekrar hoş geldin."
+      subtitle="Bıraktığın sayfa, çözdüğün son soru, kurduğun plan — hepsi seni bekliyor."
       footer={
         <p>
-          Hesabın yok mu?{" "}
+          İlk kez mi geliyorsun?{" "}
           <Link href="/kayit" className="font-semibold text-white hover:underline">
-            Kayıt Ol
+            Hesap oluştur
           </Link>
         </p>
       }
     >
       {justRegistered ? (
         <p className="mb-4 rounded-lg bg-[#15321F] px-3 py-2 text-center text-[13px] font-medium text-[#7BD8A6]">
-          Hesabın açıldı. Şimdi giriş yapabilirsin.
+          Hesabın hazır. Giriş yapıp kaldığın yerden devam edebilirsin.
         </p>
       ) : null}
       <LoginForm callbackUrl={params?.callbackUrl} />

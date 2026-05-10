@@ -2,8 +2,6 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
-import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 
@@ -42,7 +40,7 @@ export function ExamLandingTemplate({ data }: { data: ExamLandingData }) {
                     eventName="landing_cta_click"
                     className="inline-flex rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white"
                   >
-                    Ücretsiz Denemeyi Başlat
+                    {data.examKey} Paketlerini İncele
                   </LeadFunnelTrigger>
                   <a
                     href="#exam-paket"
@@ -146,7 +144,7 @@ export function ExamLandingTemplate({ data }: { data: ExamLandingData }) {
             <div className="rounded-3xl border border-line bg-white p-7 shadow-soft sm:p-10">
               <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">{data.examKey} için doğru ders paketini birlikte seçelim</h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-                1 dakikalık başvuru ile ücretsiz deneme + sana uygun ders paketi yönü netleşsin.
+                Seviyene uygun butik gruba yerleşim ve ders bazlı paket fiyatlarını netleştirelim. Tüm paketlerimizde haftalık takip ve şeffaf raporlama standarttır.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <LeadFunnelTrigger
@@ -154,7 +152,7 @@ export function ExamLandingTemplate({ data }: { data: ExamLandingData }) {
                   eventName="landing_cta_click"
                   className="inline-flex rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white"
                 >
-                  Ücretsiz Denemeyi Başlat
+                  Paketleri İncele
                 </LeadFunnelTrigger>
                 <Link href="/" className="inline-flex rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink">
                   Ana Sayfaya Dön
@@ -164,9 +162,7 @@ export function ExamLandingTemplate({ data }: { data: ExamLandingData }) {
           </Container>
         </section>
       </main>
-      <MultiStepLeadForm />
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

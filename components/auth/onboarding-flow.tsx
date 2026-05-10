@@ -53,8 +53,8 @@ const QUESTIONS: Question[] = [
   {
     key: "classLevel",
     kind: "single",
-    title: "Hangi sınıftasın?",
-    hint: "Sana uygun içerik ve plan hazırlayabilmemiz için.",
+    title: "Şu an hangi sınıftasın?",
+    hint: "Sana doğru içerik ve plan hazırlayabilmemiz için.",
     required: true,
     options: [
       { value: "8", label: "8. sınıf (LGS)" },
@@ -62,14 +62,14 @@ const QUESTIONS: Question[] = [
       { value: "10", label: "10. sınıf" },
       { value: "11", label: "11. sınıf" },
       { value: "12", label: "12. sınıf" },
-      { value: "mezun", label: "Mezun" },
+      { value: "mezun", label: "Mezunum" },
     ],
   },
   {
     key: "examType",
     kind: "single",
     title: "Hangi sınava hazırlanıyorsun?",
-    hint: "Birden fazla seçenek varsa ana hedefini seç.",
+    hint: "Birden fazla hedefin varsa şimdilik ana olanı seç — ileride değiştirebiliriz.",
     required: true,
     options: [
       { value: "LGS", label: "LGS" },
@@ -83,28 +83,29 @@ const QUESTIONS: Question[] = [
   {
     key: "city",
     kind: "text",
-    title: "Hangi şehirdesin?",
-    hint: "Lokal etkinlikler ve kampüs ziyaretleri için.",
+    title: "Hangi şehirden bağlanıyorsun?",
+    hint: "Lokal etkinlikler ve kampüs ziyaretleri için kullanıyoruz.",
     placeholder: "Örn. İstanbul",
   },
   {
     key: "schoolName",
     kind: "text",
-    title: "Okulun?",
-    hint: "Devam ettiğin liseyi yazabilirsin.",
+    title: "Devam ettiğin okul?",
+    hint: "Lisenin adını yazabilirsin; bu bilgiyi kimseyle paylaşmıyoruz.",
     placeholder: "Örn. Galatasaray Lisesi",
   },
   {
     key: "targetSchool",
     kind: "text",
-    title: "Hedef üniversiten / bölümün?",
-    hint: "Henüz netleşmediyse boş bırakabilirsin.",
+    title: "Hayalindeki üniversite ya da bölüm?",
+    hint: "Henüz netleşmediyse boş bırakabilirsin — yol birlikte çıkar.",
     placeholder: "Örn. Boğaziçi Üniversitesi — Bilgisayar Müh.",
   },
   {
     key: "weeklyStudyHours",
     kind: "single",
-    title: "Haftada ortalama kaç saat çalışıyorsun?",
+    title: "Şu an haftada ortalama kaç saat çalışıyorsun?",
+    hint: "Olduğun yeri biliyoruz; oradan başlayacağız.",
     options: [
       { value: "0-5", label: "0–5 saat" },
       { value: "6-10", label: "6–10 saat" },
@@ -116,20 +117,21 @@ const QUESTIONS: Question[] = [
   {
     key: "needType",
     kind: "single",
-    title: "Sana en çok ne lazım?",
-    hint: "İlk önceliğini seç.",
+    title: "İlk olarak en çok neye ihtiyacın var?",
+    hint: "Sıralamayı sen belirle; biz ona göre öneririz.",
     options: [
       { value: "Konu Anlatımı", label: "Konu anlatımı" },
       { value: "Soru Çözümü", label: "Soru çözümü" },
       { value: "Birebir Özel Ders", label: "Birebir özel ders" },
       { value: "Deneme + Analiz", label: "Deneme + analiz" },
-      { value: "Çalışma Programı", label: "Çalışma programı" },
+      { value: "Çalışma Programı", label: "Kişisel çalışma programı" },
     ],
   },
   {
     key: "source",
     kind: "single",
     title: "Bizi nereden duydun?",
+    hint: "Doğru yerlerde olmamıza yardımcı oluyorsun.",
     options: [
       { value: "Google", label: "Google" },
       { value: "Instagram", label: "Instagram" },
@@ -151,27 +153,27 @@ type IntroSlide = {
 const INTRO_SLIDES: IntroSlide[] = [
   {
     icon: Sparkles,
-    title: "Online Dershanem'e hoş geldin.",
+    title: "Burada başka bir dershane yok.",
     description:
-      "Sana özel hazırlanmış küçük gruplar, canlı dersler ve haftalık takiple sınava hazırlan.",
+      "Online Dershanem; küçük gruplar, gerçek öğretmenler ve sana özel bir takvimle çalışan, kişisel bir hazırlık alanıdır.",
   },
   {
     icon: BookOpenText,
-    title: "Konu, soru ve denemeler tek yerde.",
+    title: "Konu, soru, deneme — tek bir akışta.",
     description:
-      "Her konu için video anlatım, soru bankası ve deneme analizi paneline işlenir.",
+      "Her konunun video anlatımı, soru bankası ve deneme analizi aynı sayfada. Sekme değiştirmeden çalışırsın.",
   },
   {
     icon: CalendarClock,
-    title: "Haftalık planın hep elinin altında.",
+    title: "Haftan, hocan tarafından kurulur.",
     description:
-      "Dersler, ödevler ve denemeler takvimine düşer; günü kaçırmazsın.",
+      "Dersler, ödevler ve denemeler kişisel takvimine işlenir. Ne zaman ne çalışacağını düşünmek zorunda kalmazsın.",
   },
   {
     icon: LineChart,
-    title: "İlerleyişini gerçek zamanlı gör.",
+    title: "İlerleyişin sayılarla netleşir.",
     description:
-      "Net gelişimin, eksik konuların ve güçlü yönlerin grafiklerle netleşir.",
+      "Net gelişimini, eksik konularını ve güçlü yönlerini grafiklerle görür; her hafta nereye odaklanacağını bilirsin.",
   },
 ];
 
@@ -253,11 +255,20 @@ export function OnboardingFlow({ firstName }: OnboardingFlowProps) {
 
   return (
     <main className="flex min-h-screen flex-col bg-[#0E0E10] text-white">
-      {/* Top spacer / breathing room */}
-      <div className="h-10" />
+      {/* Top brand bar */}
+      <div className="flex items-center justify-center px-6 pt-7">
+        <Image
+          src="/onlinedershanem_.png"
+          alt="Online Dershanem"
+          width={1050}
+          height={200}
+          priority
+          className="h-7 w-auto object-contain opacity-90 invert"
+        />
+      </div>
 
       {/* Centered content */}
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 py-8">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 py-10">
         {isIntro ? (
           <IntroSlideView
             slide={INTRO_SLIDES[step]}
@@ -298,7 +309,7 @@ export function OnboardingFlow({ firstName }: OnboardingFlowProps) {
               type="button"
               onClick={goNext}
               disabled={submitting || !canProceed}
-              className="inline-flex items-center justify-center rounded-xl bg-[#22A06B] px-6 py-3 text-[14px] font-semibold text-white shadow-[0_8px_24px_-12px_rgba(34,160,107,0.55)] transition hover:bg-[#1E8C5C] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-xl bg-[#6F8458] px-6 py-3 text-[14px] font-semibold text-white transition hover:bg-[#5C6F49] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Kaydediliyor…" : "Başla"}
               <CheckCircle2 className="ml-2 h-4 w-4" />
@@ -309,7 +320,7 @@ export function OnboardingFlow({ firstName }: OnboardingFlowProps) {
               onClick={goNext}
               disabled={submitting || (!isIntro && !canProceed)}
               aria-label="İleri"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#22A06B] text-white shadow-[0_8px_24px_-12px_rgba(34,160,107,0.55)] transition hover:bg-[#1E8C5C] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#6F8458] text-white transition hover:bg-[#5C6F49] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ArrowRight className="h-5 w-5" />
             </button>
@@ -332,23 +343,21 @@ function IntroSlideView({
   const Icon = slide.icon;
   return (
     <div className="flex flex-col items-center text-center">
-      <Image
-        src="/logo.png"
-        alt="Online Dershanem"
-        width={72}
-        height={72}
-        priority
-        className="h-14 w-14 object-contain opacity-95"
-      />
-      <h1 className="mt-7 max-w-xl font-serif text-[32px] font-semibold leading-tight tracking-tight text-white sm:text-[38px]">
-        {firstName ? slide.title.replace(/^Online/, `${firstName}, Online`) : slide.title}
+      <div className="mb-8 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1B1B1E] text-[#B7CCA0] ring-1 ring-[#26262A]">
+        <Icon className="h-7 w-7" strokeWidth={1.6} />
+      </div>
+      <h1 className="max-w-xl font-display text-[36px] font-normal leading-[1.05] tracking-tight text-white sm:text-[44px]">
+        {firstName && slide === INTRO_SLIDES[0] ? (
+          <>
+            <span className="italic text-[#9A9AA0]">{firstName},</span> {slide.title.toLowerCase()}
+          </>
+        ) : (
+          slide.title
+        )}
       </h1>
-      <p className="mt-3 max-w-xl text-[15px] leading-7 text-[#9A9AA0]">
+      <p className="mt-5 max-w-lg text-[15.5px] leading-7 text-[#9A9AA0]">
         {slide.description}
       </p>
-      <div className="mt-12 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-[#1B1B1E] text-[#22A06B]">
-        <Icon className="h-9 w-9" />
-      </div>
     </div>
   );
 }
@@ -365,15 +374,11 @@ function QuestionView({
   return (
     <div className="w-full max-w-2xl">
       <header className="mb-8 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#15321F] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7BD8A6]">
-          <ClipboardList className="h-3 w-3" />
-          Hızlı tanışma
-        </span>
-        <h1 className="mt-4 font-serif text-[28px] font-semibold leading-tight tracking-tight text-white sm:text-[34px]">
+        <h1 className="font-display text-[30px] font-normal leading-[1.1] tracking-tight text-white sm:text-[38px]">
           {question.title}
         </h1>
         {question.hint ? (
-          <p className="mt-2 text-[14px] leading-6 text-[#9A9AA0]">{question.hint}</p>
+          <p className="mt-3 text-[14.5px] leading-6 text-[#9A9AA0]">{question.hint}</p>
         ) : null}
       </header>
 
@@ -388,7 +393,7 @@ function QuestionView({
                 onClick={() => onChange(opt.value)}
                 className={`group flex items-center justify-between rounded-xl border px-4 py-3.5 text-left text-[14.5px] font-medium transition ${
                   selected
-                    ? "border-transparent bg-[#22A06B] text-white shadow-[0_8px_24px_-14px_rgba(34,160,107,0.6)]"
+                    ? "border-[#6F8458] bg-[#1F2A1A] text-white"
                     : "border-[#26262A] bg-[#1B1B1E] text-white hover:border-[#3A3A40] hover:bg-[#202024]"
                 }`}
               >
@@ -420,8 +425,8 @@ function QuestionView({
 function RadioMark({ selected }: { selected: boolean }) {
   if (selected) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-white">
-        <CheckCircle2 className="h-4 w-4" />
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#6F8458] bg-[#6F8458]/20 text-[#B7CCA0]">
+        <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2} />
       </span>
     );
   }
@@ -439,7 +444,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
           <span
             key={i}
             className={`h-[3px] w-6 rounded-full transition ${
-              reached ? "bg-[#22A06B]" : "bg-[#26262A]"
+              reached ? "bg-[#6F8458]" : "bg-[#26262A]"
             }`}
           />
         );
@@ -451,3 +456,4 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
 /* Suppress unused-import warnings in case we extend slides later. */
 void GraduationCap;
 void Target;
+void ClipboardList;

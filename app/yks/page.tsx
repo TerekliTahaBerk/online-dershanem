@@ -5,7 +5,7 @@ import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 export const metadata: Metadata = {
   title: "TYT-AYT Grup Özel Ders Paketleri",
   description:
-    "TYT ve AYT için ders bazlı küçük grup özel ders paketleri: fiyatlar, ders içerikleri ve hızlı başvuru.",
+    "TYT ve AYT için ders bazlı küçük grup özel ders paketleri: ders içerikleri, fiyatlar ve butik grup yerleşimi.",
   alternates: {
     canonical: "/yks/"
   },

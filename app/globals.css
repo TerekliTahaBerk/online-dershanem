@@ -13,6 +13,23 @@
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
+  /* Off-white palette — Opennote-inspired */
+  --od-cream: #FAFAF7;
+  --od-cream-2: #F1EFE9;
+  --od-paper: #FBFBF8;
+  --od-yellow: #F4D86A;
+  --od-yellow-soft: #FCEDB4;
+  --od-mint: #D7E5D5;
+  --od-blush: #F2DBD0;
+  --od-sky: #DCEAF6;
+  --od-sky-soft: #ECF3FA;
+  --od-lavender: #E6E0F0;
+  --od-olive: #3A4A2C;
+  --od-olive-soft: #6F8458;
+  --od-ink: #14140F;
+  --od-ink-soft: #5A5A4F;
+  --od-line: #E5E3DC;
+
   /* Premium design tokens (Pine palette) */
   --pd-bg: #FAFAF7;
   --pd-bg-elevated: #ffffff;
@@ -62,6 +79,16 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.011em;
+}
+
+/* Display serif gets a touch more breathing room across the site */
+.font-display {
+  letter-spacing: 0.005em;
+  word-spacing: 0.04em;
+}
+.font-display em,
+.font-display i {
+  letter-spacing: 0.01em;
 }
 
 a {
@@ -1749,4 +1776,13 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 /* Ensure overflow-x hidden doesn't clip sidebar slide-in */
 @media (max-width: 1023px) {
   body { overflow-x: clip; }
+}
+
+/* ── Opennote-style marquee for trust strip ───────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-\[marquee_40s_linear_infinite\] { animation: none !important; }
 }

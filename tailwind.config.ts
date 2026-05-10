@@ -28,6 +28,17 @@ const config: Config = {
       },
       borderRadius: {
         xl2: "1.25rem"
+      },
+      fontFamily: {
+        display: ["var(--font-display)", "ui-serif", "Georgia", "serif"],
+        serif: ["var(--font-display)", "ui-serif", "Georgia", "serif"],
+        sans: [
+          "var(--font-sans)",
+          "var(--font-geist-sans)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
+        ]
       }
     }
   },

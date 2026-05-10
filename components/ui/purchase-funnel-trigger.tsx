@@ -12,6 +12,10 @@ type PurchaseFunnelTriggerProps = {
   analyticsId?: string;
 };
 
+/**
+ * Direct purchase CTA — the multi-step intent form has been removed.
+ * Clicking now opens the PayTR payment page in a new tab.
+ */
 export function PurchaseFunnelTrigger({
   children,
   source,
@@ -20,26 +24,28 @@ export function PurchaseFunnelTrigger({
   className = "",
   analyticsId
 }: PurchaseFunnelTriggerProps) {
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     trackConversionEvent("purchase_cta_click", { source, packageName });
 
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("open-purchase-funnel", {
-          detail: {
-            source,
-            packageName,
-            paymentLink
-          }
-        })
-      );
+    if (!paymentLink) {
+      event.preventDefault();
+      if (typeof window !== "undefined") {
+        window.location.href = "/paketler/";
+      }
     }
   };
 
   return (
-    <button type="button" onClick={handleClick} className={className} data-analytics-id={analyticsId ?? source}>
+    <a
+      href={paymentLink || "/paketler/"}
+      target={paymentLink ? "_blank" : undefined}
+      rel={paymentLink ? "noopener noreferrer" : undefined}
+      onClick={handleClick}
+      className={className}
+      data-analytics-id={analyticsId ?? source}
+      data-package-name={packageName}
+    >
       {children}
-    </button>
+    </a>
   );
 }

@@ -5,7 +5,7 @@ import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 export const metadata: Metadata = {
   title: "LGS Grup Özel Ders Paketleri",
   description:
-    "LGS Matematik ve Fen için ders bazlı küçük grup özel ders paketleri: fiyatlar, takip modeli ve hızlı başvuru.",
+    "LGS Matematik ve Fen için ders bazlı küçük grup özel ders paketleri: takip modeli, fiyatlar ve butik grup yapısı.",
   alternates: {
     canonical: "/lgs"
   },

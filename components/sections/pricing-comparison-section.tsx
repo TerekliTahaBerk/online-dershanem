@@ -15,14 +15,6 @@ export function PricingComparisonSection() {
 
   return (
     <section id="paket-karsilastirma" className="pd-section" style={{ background: "var(--pd-bg-subtle)" }}>
-      <blockquote className="pd-home-quote">
-        <p>
-          “Bu millete gideceği yolu gösterirken Dünya&apos;nın her türlü ilminden, keşfiyatından, terakkiyatından istifade edelim,
-          lâkin unutmayalım ki, asıl temeli kendi içimizden çıkarmak mecburiyetindeyiz.”
-        </p>
-        <cite>Gazi Mustafa Kemal Atatürk</cite>
-      </blockquote>
-
       <div className="pd-section-header">
         <div className="pd-section-head-txt">
           <span className="pd-eyebrow">Paketler</span>

@@ -1,9 +1,6 @@
 import { Check, CheckCircle2 } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
-import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
-import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
@@ -44,7 +41,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                     eventName="landing_cta_click"
                     className="inline-flex rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white"
                   >
-                    Ücretsiz Denemeyi Başlat
+                    Paketleri İncele
                   </LeadFunnelTrigger>
                   <a
                     href="#paketler"
@@ -159,10 +156,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
           </Container>
         </section>
       </main>
-      <MultiStepLeadForm />
-      <PurchaseIntentForm />
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

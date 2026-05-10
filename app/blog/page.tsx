@@ -1,171 +1,275 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, GraduationCap, NotebookPen, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, GraduationCap, LineChart, NotebookText, PenLine } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { Container } from "@/components/ui/container";
-import { FadeIn } from "@/components/ui/fade-in";
 import { blogPosts, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Online Dershane Blog",
+  title: "Online Dershanem Blog",
   description:
-    "Online dershane ve online özel ders rehberleri: LGS-YKS çalışma planı, küçük grup ders modeli ve haftalık takip sistemi.",
-  alternates: {
-    canonical: "/blog/"
-  },
+    "Online dershane ve online özel ders rehberleri: LGS-YKS çalışma planı, küçük grup ders modeli ve haftalık takip sistemi üzerine yazılar.",
+  alternates: { canonical: "/blog/" },
   openGraph: {
-    title: "Online Dershane Blog | Online Dershanem",
+    title: "Online Dershanem Blog",
     description:
-      "Online dershane, e dershane, online ders ve özel ders aramalarında ihtiyaç duyacağın uygulamalı rehberler.",
+      "Sınava hazırlık sürecinde gerçekten işe yarayan rehberler, deneme analizi ipuçları ve haftalık plan örnekleri.",
     url: `${siteUrl}/blog/`
   }
 };
 
 type BlogPost = (typeof blogPosts)[number];
 
-function getReadMinutes(post: BlogPost) {
-  const content = [
-    post.title,
-    post.excerpt,
-    post.cardSnippet,
-    ...post.sections.flatMap((section) => [section.h2, ...(section.paragraphs ?? []), ...(section.bullets ?? [])])
-  ].join(" ");
+/**
+ * Yayın tarihi haritası — şemaya dokunmadan blog kartlarına gerçek hissi
+ * vermek için sabit bir tablo. Yeni yazı eklendiğinde buraya tarih ekleyin;
+ * eksik kalan yazılar için yumuşak fallback kullanılır.
+ */
+const publishedAt: Record<string, string> = {
+  "online-dershane-nedir": "2026-04-22",
+  "online-ozel-ders-mi-dershane-mi": "2026-04-08",
+  "yks-online-ders-calisma-plani": "2026-03-25",
+  "lgs-online-ders-net-artirma": "2026-03-11",
+  "online-dershane-fiyatlari-2026": "2026-02-26",
+  "e-dershane-nedir": "2026-02-12",
+  "online-ders-calisma-programi": "2026-01-29",
+  "ozel-ders-mi-kucuk-grup-mu": "2026-01-15",
+  "yks-matematik-net-artirma": "2025-12-18",
+  "lgs-matematikte-zorlananlar-icin": "2025-12-04",
+  "deneme-analizi-nasil-yapilir": "2025-11-20",
+  "online-dershane-secim-rehberi-2026": "2025-11-06",
+  "online-ders-disiplini-nasil-kurulur": "2025-10-23"
+};
 
-  const words = content.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(3, Math.round(words / 180));
+const authorByCategory: Record<string, string> = {
+  "Online Dershane": "Online Dershanem Ekibi",
+  "Online Özel Ders": "Online Dershanem Ekibi",
+  YKS: "Eğitim Koçluğu",
+  LGS: "Eğitim Koçluğu",
+  "e Dershane": "Online Dershanem Ekibi",
+  "Online Ders": "Eğitim Koçluğu",
+  "Özel Ders": "Online Dershanem Ekibi",
+  "Sınav Stratejisi": "Eğitim Koçluğu"
+};
+
+const TR_MONTHS = [
+  "Oca",
+  "Şub",
+  "Mar",
+  "Nis",
+  "May",
+  "Haz",
+  "Tem",
+  "Ağu",
+  "Eyl",
+  "Eki",
+  "Kas",
+  "Ara"
+];
+
+function formatTrDate(iso?: string) {
+  if (!iso) return "Yakın zamanda";
+  const d = new Date(iso);
+  if (Number.isNaN(d.valueOf())) return "Yakın zamanda";
+  return `${TR_MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
-function getCategoryTheme(category: string) {
-  switch (category) {
-    case "YKS":
-      return { icon: Target, cover: "bg-[#eef8f1]", chip: "bg-emerald-50 text-emerald-700" };
-    case "LGS":
-      return { icon: GraduationCap, cover: "bg-[#eef5fb]", chip: "bg-sky-50 text-sky-700" };
-    case "Online Özel Ders":
-      return { icon: Sparkles, cover: "bg-[#fcf5ea]", chip: "bg-amber-50 text-amber-700" };
-    default:
-      return { icon: BookOpen, cover: "bg-[#f3f7f5]", chip: "bg-[#eef4f1] text-[#166534]" };
-  }
+function getAuthor(post: BlogPost) {
+  return authorByCategory[post.category] ?? "Online Dershanem Ekibi";
+}
+
+const visualByCategory: Record<string, { Icon: LucideIcon; tone: string; tile: string }> = {
+  "Online Dershane": { Icon: GraduationCap, tone: "var(--od-olive)", tile: "var(--od-mint)" },
+  "Online Özel Ders": { Icon: Compass, tone: "#A67C4F", tile: "var(--od-cream-2)" },
+  YKS: { Icon: LineChart, tone: "var(--od-olive)", tile: "var(--od-yellow-soft)" },
+  LGS: { Icon: NotebookText, tone: "#5C7BA6", tile: "var(--od-sky-soft)" },
+  "e Dershane": { Icon: BookOpen, tone: "var(--od-olive)", tile: "var(--od-mint)" },
+  "Online Ders": { Icon: BookOpen, tone: "var(--od-olive)", tile: "var(--od-cream-2)" },
+  "Özel Ders": { Icon: Compass, tone: "#A67C4F", tile: "var(--od-cream-2)" },
+  "Sınav Stratejisi": { Icon: PenLine, tone: "#9C5340", tile: "var(--od-blush)" }
+};
+
+function getVisual(category: string) {
+  return (
+    visualByCategory[category] ?? { Icon: BookOpen, tone: "var(--od-olive)", tile: "var(--od-cream-2)" }
+  );
+}
+
+function PaperPlaneDoodle({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 200 130"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <circle cx="120" cy="14" r="2" fill="var(--od-ink)" />
+      <path
+        d="M40 70 L172 30 L138 88 L116 70 Z"
+        stroke="var(--od-ink)"
+        strokeWidth="2"
+        strokeLinejoin="round"
+        fill="white"
+      />
+      <path d="M116 70 L138 88 L130 56" stroke="var(--od-ink)" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M116 70 L172 30" stroke="var(--od-ink)" strokeWidth="1.4" />
+      <path
+        d="M70 64 C 50 76, 38 94, 60 100 C 80 105, 96 92, 86 80"
+        stroke="var(--od-ink)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M44 110 l1.4 -3 l1.4 3 l3 1.4 l-3 1.4 l-1.4 3 l-1.4 -3 l-3 -1.4 z"
+        fill="var(--od-olive)"
+        opacity="0.9"
+      />
+      <path d="M134 76 L138 88 L142 78 Z" fill="var(--od-yellow)" />
+    </svg>
+  );
+}
+
+function PostVisual({ post, height = "aspect-[5/3]" }: { post: BlogPost; height?: string }) {
+  const { Icon, tone, tile } = getVisual(post.category);
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-2xl border border-[var(--od-line)] ${height}`}
+      style={{ background: tile }}
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-[0.55]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(20,20,15,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,20,15,0.08) 1px, transparent 1px)",
+          backgroundSize: "28px 28px"
+        }}
+      />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-4 text-center sm:flex-row sm:gap-4 sm:px-6 sm:text-left">
+        <span
+          className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_8px_24px_-12px_rgba(20,20,15,0.25)] sm:h-14 sm:w-14"
+          style={{ color: tone }}
+        >
+          <Icon size={22} strokeWidth={1.6} className="sm:hidden" />
+          <Icon size={26} strokeWidth={1.6} className="hidden sm:block" />
+        </span>
+        <span className="font-display text-[16px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[20px]">
+          {post.category}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function BlogPage() {
-  const featuredPosts = blogPosts.filter((post) => post.featured).slice(0, 2);
-  const restPosts = blogPosts.filter((post) => !post.featured);
+  const sorted = [...blogPosts].sort((a, b) => {
+    const da = publishedAt[a.slug] ?? "1970-01-01";
+    const db = publishedAt[b.slug] ?? "1970-01-01";
+    return db.localeCompare(da);
+  });
+
+  const featured = sorted[0];
+  const others = sorted.slice(1);
 
   return (
     <>
       <Navbar />
-      <main className="py-14 sm:py-20">
-        <Container>
-          <FadeIn>
-            <section className="rounded-[24px] border border-line bg-[#f5f7f6] px-6 py-10 text-center sm:px-8 sm:py-14">
-              <span className="pd-eyebrow justify-center">Blog</span>
-              <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-ink sm:text-5xl">Sınav rehberi ve öğrenme metodu.</h1>
-              <p className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-muted sm:text-base">
-                LGS ve YKS için haftalık yazılar, deneme analizi ipuçları, sınava hazırlık stratejileri ve doğru çalışma modeli
-                üzerine net içerikler.
+      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+        {/* Hero */}
+        <section className="relative border-b border-[var(--od-line)]">
+          <div className="mx-auto max-w-3xl px-5 pt-24 pb-12 sm:pt-32 sm:pb-16 text-center">
+            <PaperPlaneDoodle className="mx-auto h-24 w-auto sm:h-28" />
+            <span className="mt-6 inline-block text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
+              Yazılar
+            </span>
+            <h1 className="mt-4 font-display text-[36px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+              Online Dershanem <em className="italic text-[var(--od-olive)]">Blog</em>
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
+              LGS ve YKS için haftalık rehberler, deneme analizi ipuçları ve
+              sade premium hazırlık modeli üzerine yazılar.
+            </p>
+          </div>
+        </section>
+
+        {/* Featured */}
+        <section className="mx-auto max-w-6xl px-5 pb-16 sm:pb-20">
+          <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr]">
+            <div className="max-w-md">
+              <p className="text-[12.5px] text-[#8B8B7E]">
+                {getAuthor(featured)} — {formatTrDate(publishedAt[featured.slug])}
               </p>
-            </section>
-          </FadeIn>
-
-          <section className="mt-10">
-            <div className="grid gap-5 lg:grid-cols-2">
-              {featuredPosts.map((post, index) => {
-                const theme = getCategoryTheme(post.category);
-                const Icon = theme.icon;
-
-                return (
-                  <FadeIn key={post.slug} delay={index * 0.05}>
-                    <Link
-                      href={`/blog/${post.slug}/`}
-                      className="group overflow-hidden rounded-[22px] border border-line bg-white shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                    >
-                      <div className={`flex h-40 items-center justify-center ${theme.cover}`}>
-                        <Icon className="h-14 w-14 text-ink/50" />
-                      </div>
-                      <div className="px-6 py-6">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${theme.chip}`}>{post.category}</span>
-                        <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-ink">{post.title}</h2>
-                        <p className="mt-3 text-sm leading-7 text-muted">{post.excerpt}</p>
-                        <div className="mt-4 flex items-center gap-2 text-xs text-muted">
-                          <span>{getReadMinutes(post)} dk okuma</span>
-                          <span className="text-line-strong">·</span>
-                          <span>{post.sections.length} bölüm</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </FadeIn>
-                );
-              })}
+              <h2 className="mt-3 font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[36px]">
+                {featured.title}
+              </h2>
+              <p className="mt-4 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+                {featured.excerpt}
+              </p>
+              <Link
+                href={`/blog/${featured.slug}/`}
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--od-ink)] px-5 py-2.5 text-[13.5px] font-medium text-white transition hover:bg-black"
+              >
+                Yazıyı oku
+                <ArrowRight size={14} strokeWidth={1.8} />
+              </Link>
             </div>
-          </section>
 
-          <section className="mt-10">
-            <FadeIn>
-              <h2 className="text-xl font-semibold tracking-[-0.02em] text-ink">Son yazılar</h2>
-            </FadeIn>
+            <Link href={`/blog/${featured.slug}/`} className="group block">
+              <PostVisual post={featured} height="aspect-[16/10]" />
+            </Link>
+          </div>
+        </section>
 
-            <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {restPosts.map((post, index) => {
-                const theme = getCategoryTheme(post.category);
-                const Icon = theme.icon;
+        <hr className="mx-auto max-w-6xl border-t border-[var(--od-line)]" />
 
-                return (
-                  <FadeIn key={post.slug} delay={index * 0.04}>
-                    <Link
-                      href={`/blog/${post.slug}/`}
-                      className="group flex h-full flex-col rounded-[20px] border border-line bg-white p-5 shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                    >
-                      <div className={`mb-5 flex h-28 items-center justify-center rounded-[18px] ${theme.cover}`}>
-                        <Icon className="h-10 w-10 text-ink/45" />
-                      </div>
-                      <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${theme.chip}`}>{post.category}</span>
-                      <h3 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-ink">{post.title}</h3>
-                      <p className="mt-3 flex-1 text-sm leading-7 text-muted">{post.excerpt}</p>
-                      <div className="mt-5 flex items-center gap-2 text-xs text-muted">
-                        <span>{getReadMinutes(post)} dk okuma</span>
-                        <span className="text-line-strong">·</span>
-                        <span>{post.sections.length} bölüm</span>
-                        <span className="ml-auto inline-flex items-center font-semibold text-ink">
-                          Oku
-                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                        </span>
-                      </div>
-                    </Link>
-                  </FadeIn>
-                );
-              })}
-            </div>
-          </section>
+        {/* Grid */}
+        <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+          <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {others.map((post) => (
+              <Link key={post.slug} href={`/blog/${post.slug}/`} className="group flex flex-col">
+                <PostVisual post={post} />
+                <h3 className="mt-5 font-display text-[20px] font-normal leading-[1.2] tracking-tight text-[var(--od-ink)] transition group-hover:text-[var(--od-olive)] sm:text-[22px]">
+                  {post.title}
+                </h3>
+                <p className="mt-2 text-[12.5px] text-[#8B8B7E]">
+                  {getAuthor(post)} — {formatTrDate(publishedAt[post.slug])}
+                </p>
+                <p className="mt-1 text-[11.5px] font-medium uppercase tracking-[0.14em] text-[var(--od-olive)]">
+                  {post.category}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-          <section className="mt-10 rounded-[22px] border border-line bg-white p-6 shadow-soft sm:p-8">
-            <FadeIn>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  { href: "/online-dershane/", label: "Online Dershane", icon: NotebookPen },
-                  { href: "/online-ozel-ders/", label: "Online Özel Ders", icon: Sparkles },
-                  { href: "/deneme-kulubu/", label: "Deneme Kulübü", icon: Target }
-                ].map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="flex items-center gap-3 rounded-[18px] border border-line bg-[#f8faf9] px-5 py-5 text-sm font-semibold text-ink transition hover:bg-soft"
-                    >
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand shadow-soft">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      {item.label}
-                    </Link>
-                  );
-                })}
+        {/* Soft CTA */}
+        <section className="mx-auto max-w-6xl px-5 pb-24">
+          <div className="overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)] p-8 sm:p-12">
+            <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
+              <div>
+                <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)]">
+                  Sıradaki adım
+                </span>
+                <h3 className="mt-3 font-display text-[28px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[36px]">
+                  Okuduklarını uygulamaya geçirelim.
+                </h3>
+                <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+                  Sana uygun ders, hoca ve haftalık plan kombinasyonunu birlikte
+                  kuralım.
+                </p>
               </div>
-            </FadeIn>
-          </section>
-        </Container>
+              <Link
+                href="/paketler/"
+                className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
+              >
+                Paketleri gör
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

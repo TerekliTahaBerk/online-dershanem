@@ -11,13 +11,13 @@ export default async function SifremiUnuttumPage() {
 
   return (
     <AuthShell
-      title="Şifreni yenile."
-      subtitle="E-postanı bırak, sıfırlama kodunu gönderelim."
+      title="Şifreni sıfırlayalım."
+      subtitle="E-posta adresini gir; tek seferlik bir kodla yeni şifreni belirleyebilirsin."
       footer={
         <p>
           Hatırladın mı?{" "}
           <Link href="/giris" className="font-semibold text-white hover:underline">
-            Giriş Yap
+            Giriş yap
           </Link>
         </p>
       }
