@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 
 type LegalSection = {
   title: string;
@@ -69,7 +68,6 @@ export function LegalPageTemplate({
         </section>
       </main>
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

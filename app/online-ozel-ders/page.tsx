@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
-import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { siteUrl } from "@/lib/content";
@@ -44,7 +42,7 @@ export default function OnlineOzelDersPage() {
                 eventName="landing_cta_click"
                 className="inline-flex rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white"
               >
-                Ücretsiz Deneme Dersi Başlat
+                Paketleri İncele
               </LeadFunnelTrigger>
               <Link
                 href="/paketler/"
@@ -89,9 +87,7 @@ export default function OnlineOzelDersPage() {
           </section>
         </Container>
       </main>
-      <MultiStepLeadForm />
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

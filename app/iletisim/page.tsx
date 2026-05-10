@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Phone, Mail, MapPin, MessageCircle, Instagram, Send } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { contact } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -143,7 +142,6 @@ export default function ContactPage() {
         </section>
       </main>
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

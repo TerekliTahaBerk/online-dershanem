@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
-import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
-import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 import { Container } from "@/components/ui/container";
 import { siteUrl } from "@/lib/content";
 import { CampsPageContent } from "@/components/sections/camps-page-content";
@@ -30,10 +27,7 @@ export default function CampsPage() {
           <CampsPageContent />
         </Container>
       </main>
-      <MultiStepLeadForm />
-      <PurchaseIntentForm />
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

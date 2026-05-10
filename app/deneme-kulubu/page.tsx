@@ -3,8 +3,6 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
-import { MultiStepLeadForm } from "@/components/sections/multi-step-lead-form";
 import { ExamClubPageContent } from "@/components/sections/exam-club-page-content";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { siteUrl } from "@/lib/content";
@@ -84,9 +82,7 @@ export default function DenemeKulubuPage() {
           <ExamClubPageContent />
         </section>
       </main>
-      <MultiStepLeadForm />
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

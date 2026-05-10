@@ -62,7 +62,7 @@ export const programs = [
 
 export const howItWorks = [
   {
-    title: "Ücretsiz Strateji Analizi",
+    title: "Kişiye Özel Strateji Analizi",
     desc: "Ön görüşmede hedeflerini ve mevcut seviyeni mercek altına alıyoruz. Sana en hızlı net artışını getirecek dersleri birlikte netleştiriyoruz."
   },
   {
@@ -591,9 +591,9 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Ücretsiz deneme dersiyle seviyeni netleştir",
-      text: "Tek başına çalışırken nerede takıldığını görmek zor. Ücretsiz deneme ile hangi dersten başlaman gerektiğini birlikte belirleyelim.",
-      buttonLabel: "Ücretsiz Denemeye Başla"
+      title: "Sana uygun butik grup paketini birlikte belirleyelim",
+      text: "Tek başına çalışırken nerede takıldığını görmek zor. Hangi dersten başlaman gerektiğini uzman ekibimizle birlikte netleştirelim.",
+      buttonLabel: "Paketleri İncele"
     },
     relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
   },
@@ -636,7 +636,7 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Küçük grup modelini ücretsiz denemek ister misin?",
+      title: "Küçük grup modelini yakından incele",
       text: "Öğrencinin seviyesine göre en doğru modeli birlikte belirleyelim.",
       buttonLabel: "Online Dershane Sistemini İncele"
     },
@@ -695,7 +695,7 @@ export const blogPosts = [
     ],
     cta: {
       title: "TYT + AYT dengesini birlikte kuralım",
-      text: "Tek başına denge kurmak zor geliyorsa ücretsiz deneme görüşmesinde kişisel planını çıkaralım.",
+      text: "Tek başına denge kurmak zor geliyorsa sana uygun butik grup paketini birlikte belirleyelim.",
       buttonLabel: "Online Özel Ders Sistemini İncele"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
@@ -764,9 +764,9 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Ücretsiz deneme dersiyle net artış planını çıkar",
+      title: "Net artış planını birlikte çıkaralım",
       text: "Bu sistemi tek başına uygulamak zor geliyorsa öğrencinin seviyesine göre haftalık planı birlikte hazırlayalım.",
-      buttonLabel: "Ücretsiz Deneme Dersi Başlat"
+      buttonLabel: "Paketleri İncele"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -807,8 +807,8 @@ export const blogPosts = [
     ],
     cta: {
       title: "Küçük grup + takip sistemli modeli dene",
-      text: "Öğrencinin seviyesine göre ders planını çıkarıp ücretsiz deneme dersiyle doğru başlangıcı yap.",
-      buttonLabel: "Hemen Deneme Dersine Katıl"
+      text: "Öğrencinin seviyesine göre ders planını birlikte çıkaralım, doğru başlangıcı yapın.",
+      buttonLabel: "Hemen Paketleri İncele"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani"]
   },
@@ -845,9 +845,9 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "e dershane modelini ücretsiz dene",
+      title: "e dershane modelini yakından incele",
       text: "Öğrencinin seviyesine göre hangi dersten başlaman gerektiğini birlikte belirleyelim.",
-      buttonLabel: "Ücretsiz Denemeye Başla"
+      buttonLabel: "Paketleri İncele"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -885,7 +885,7 @@ export const blogPosts = [
     ],
     cta: {
       title: "Kişisel online ders programını birlikte oluşturalım",
-      text: "Ücretsiz deneme görüşmesinde haftalık planını seviyene göre çıkaralım.",
+      text: "İhtiyacına en uygun butik grup paketinde haftalık planını seviyene göre kuralım.",
       buttonLabel: "Programımı Oluştur"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "lgs-online-ders-net-artirma"]
@@ -919,7 +919,7 @@ export const blogPosts = [
     ],
     cta: {
       title: "Doğru modeli birlikte belirleyelim",
-      text: "Öğrencinin seviyesine göre özel ders mi küçük grup mu daha verimli, ücretsiz görüşmede netleştirelim.",
+      text: "Öğrencinin seviyesine göre özel ders mi küçük grup mu daha verimli, ön görüşmede netleştirelim.",
       buttonLabel: "Modelimi Belirle"
     },
     relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
@@ -953,8 +953,8 @@ export const blogPosts = [
     ],
     cta: {
       title: "Matematik netini birlikte yükseltelim",
-      text: "Ücretsiz deneme dersinde mevcut matematik seviyeni analiz edip ilk 4 haftalık planı çıkaralım.",
-      buttonLabel: "YKS Matematik Deneme Dersi"
+      text: "Mevcut matematik seviyeni analiz edip butik grupta ilk 4 haftalık planını birlikte çıkaralım.",
+      buttonLabel: "YKS Matematik Paketini İncele"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
   },
@@ -985,9 +985,9 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "LGS matematik için ücretsiz deneme yap",
+      title: "LGS matematik paketini incele",
       text: "Öğrencinin matematik seviyesini ölçüp hangi konudan başlaman gerektiğini belirleyelim.",
-      buttonLabel: "LGS Matematik Denemesi"
+      buttonLabel: "LGS Matematik Paketini İncele"
     },
     relatedSlugs: ["lgs-online-ders-net-artirma", "online-dershane-nedir", "online-ozel-ders-mi-dershane-mi"]
   },
@@ -1024,7 +1024,7 @@ export const blogPosts = [
     ],
     cta: {
       title: "Deneme analizini profesyonel takip ile yap",
-      text: "Ücretsiz deneme sonrası öğrencinin analiz raporunu birlikte çıkaralım.",
+      text: "Süreç başlamadan öğrencinin analiz raporunu birlikte çıkaralım.",
       buttonLabel: "Deneme Analizi Al"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "lgs-online-ders-net-artirma", "online-dershane-nedir"]
@@ -1060,9 +1060,9 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Doğru online dershane seçimi için ücretsiz görüşme",
+      title: "Doğru online dershane seçimi için bizimle iletişime geç",
       text: "Öğrencinin seviyesine göre en doğru başlangıç modelini birlikte belirleyelim.",
-      buttonLabel: "Ücretsiz Ön Görüşme Al"
+      buttonLabel: "Ön Görüşme Talep Et"
     },
     relatedSlugs: ["online-dershane-nedir", "online-dershane-fiyatlari-2026", "online-ozel-ders-mi-dershane-mi"]
   },
@@ -1095,7 +1095,7 @@ export const blogPosts = [
     ],
     cta: {
       title: "Online ders disiplinini birlikte kuralım",
-      text: "Ücretsiz deneme görüşmesinde öğrencinin haftalık çalışma düzenini seviyesine göre tasarlayalım.",
+      text: "Butik grup paketinde öğrencinin haftalık çalışma düzenini seviyesine göre tasarlayalım.",
       buttonLabel: "Disiplin Planımı Oluştur"
     },
     relatedSlugs: ["online-ders-calisma-programi", "deneme-analizi-nasil-yapilir", "online-dershane-nedir"]
@@ -1129,7 +1129,7 @@ export const faq = [
   },
   {
     q: "Paket seçimi konusunda kararsızsam ne yapmalıyım?",
-    a: "Endişelenme, yanındayız. Ücretsiz ön görüşmemizle senin seviyeni ve hedeflerini birlikte analiz ediyoruz. Başarıya giden en kısa yolu ve sana en uygun ders kombinasyonunu uzman rehberliğinde netleştiriyoruz."
+    a: "Endişelenme, yanındayız. Uzman ekibimizle yapacağın kısa ön görüşmede seviyeni ve hedeflerini birlikte analiz ediyoruz. Başarıya giden en kısa yolu ve sana en uygun ders kombinasyonunu profesyonel rehberlikle netleştiriyoruz."
   }
 ];
 

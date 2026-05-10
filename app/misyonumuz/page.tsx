@@ -169,15 +169,15 @@ export default function MissionPage() {
                   Yolu yakın zamanda yürümüş bir hocayla tanış.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  10 dakikalık ücretsiz ön görüşmede sana doğru kombinasyonu
-                  birlikte kuralım.
+                  Hangi sınava hazırlanırsan hazırlan, sana en uygun butik
+                  grup paketini birlikte belirleyelim.
                 </p>
               </div>
               <Link
-                href="/seni-arayalim/"
+                href="/paketler/"
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
               >
-                Seni arayalım
+                Paketleri İncele
                 <ArrowRight size={15} strokeWidth={1.8} />
               </Link>
             </div>

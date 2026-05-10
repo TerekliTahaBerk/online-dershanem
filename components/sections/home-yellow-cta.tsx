@@ -18,23 +18,23 @@ export function HomeYellowCTA() {
           <p className="mx-auto mt-7 max-w-2xl text-[16px] leading-[1.85] text-[#4A4126] sm:text-[17.5px]">
             Hangi konuda zorlandığını <strong className="font-medium text-[#2A2618]">birlikte</strong> görüyoruz;
             haftanı senin yerine kuruyoruz, denemenden sonra ne yapacağını
-            söylüyoruz. Burada hocan sayıları takip etmiyor — <em className="italic">seni</em> takip ediyor.
-            Sen sadece otur ve çalış; gerisi düşünülmüş bir akış.
+            söylüyoruz. Burada hocan sadece sayıları takip etmiyor — <em className="italic">seni</em> takip ediyor.
+            Sen sadece otur ve çalış; gerisi titizlikle düşünülmüş bir akış.
           </p>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/kayit"
+              href="/paketler/"
               className="inline-flex items-center gap-2 rounded-full bg-[#2A2618] px-7 py-3.5 text-[14.5px] font-medium text-white transition hover:bg-[#3A3422]"
             >
-              Ücretsiz dene
+              Paketleri İncele
               <ArrowRight size={15} strokeWidth={1.8} />
             </Link>
             <Link
-              href="/paketler/"
+              href="/kayit"
               className="inline-flex items-center rounded-full border border-[#2A2618]/25 bg-transparent px-6 py-3.5 text-[14.5px] font-medium text-[#2A2618] transition hover:bg-[#2A2618]/5"
             >
-              Paketleri incele
+              Hemen Kayıt Ol
             </Link>
           </div>
         </div>

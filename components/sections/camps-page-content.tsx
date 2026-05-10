@@ -123,7 +123,7 @@ export function CampsPageContent() {
                 className="inline-flex items-center rounded-full bg-white px-5 py-3 text-sm font-semibold text-ink transition hover:bg-white/90"
                 analyticsId="camps_page_hero_consultation"
               >
-                Ücretsiz görüşme
+                Bizimle İletişime Geç
               </LeadFunnelTrigger>
               <a
                 href="#kamp-listesi"

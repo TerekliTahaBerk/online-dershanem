@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { StickyContactBar } from "@/components/sections/sticky-contact-bar";
 import { HomeFAQ } from "@/components/sections/home-faq";
 
 export const metadata: Metadata = {
@@ -34,7 +33,6 @@ export default function SssPage() {
         <HomeFAQ />
       </main>
       <Footer />
-      <StickyContactBar />
     </>
   );
 }

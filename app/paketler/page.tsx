@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { PurchaseIntentForm } from "@/components/sections/purchase-intent-form";
 import { siteUrl } from "@/lib/content";
 import { PackagesPageContent } from "@/components/sections/packages-page-content";
 
@@ -64,7 +63,6 @@ export default function PackagesPage() {
           <PackagesPageContent />
         </section>
       </main>
-      <PurchaseIntentForm />
       <Footer />
     </>
   );

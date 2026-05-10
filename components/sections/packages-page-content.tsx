@@ -152,15 +152,15 @@ export function PackagesPageContent() {
             </h3>
             <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
               Hedefin, sınıfın ve mevcut çalışma saatine göre ders kombinasyonu
-              hazırlıyoruz. 10 dakikalık ücretsiz danışmanlık yeterli.
+              hazırlıyoruz. Detaylı bilgi için iletişime geç.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
             <Link
-              href="/seni-arayalim/"
+              href="/iletisim/"
               className="inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
             >
-              Seni arayalım
+              Bizimle İletişime Geç
             </Link>
             <a
               href={`tel:${contact.phone}`}

@@ -56,26 +56,26 @@ export function HomeHero() {
             ezbere planlarla olmaz. Burada sadece ihtiyacın olan dersi
             seçersin; en fazla{" "}
             <strong className="font-medium text-[var(--od-ink)]">dört kişilik</strong>{" "}
-            küçük grupta, hocan adınla seslenir, haftan senin için kurulur,
-            ilerleyişin hafta hafta görünür hale gelir.
+            butik grupta hocan adınla seslenir, haftan senin için kurulur,
+            ilerleyişin hafta hafta ölçülebilir hâle gelir.
           </p>
 
           <p className="mt-4 max-w-xl text-[15px] leading-[1.7] italic text-[var(--od-olive)] sm:text-[16px]">
-            Birebir özel dersin yakınlığını, dershane fiyatlarıyla.
+            Birebir özel dersin yakınlığını, dershane ekonomisiyle.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/kayit"
+              href="/paketler/"
               className="inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-7 py-3.5 text-[14.5px] font-medium tracking-[0.01em] text-white shadow-[0_10px_30px_-12px_rgba(20,20,15,0.45)] transition hover:bg-[#2A2A22]"
             >
-              Ücretsiz dene
+              Paketleri İncele
             </Link>
             <Link
-              href="/paketler/"
+              href="/kayit"
               className="inline-flex items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3.5 text-[14.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
             >
-              Paketleri gör
+              Hemen Kayıt Ol
             </Link>
           </div>
         </div>

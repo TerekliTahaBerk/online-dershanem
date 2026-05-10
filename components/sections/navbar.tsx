@@ -107,7 +107,7 @@ export function Navbar() {
                   href="/kayit"
                   className="rounded-full border border-[#0E0E10]/15 bg-white px-4 py-2 text-[13.5px] font-medium text-[#0E0E10] shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:border-[#0E0E10]/35 hover:bg-[#F2F2EF]"
                 >
-                  Ücretsiz Dene
+                  Hemen Kayıt Ol
                 </Link>
               </>
             )}
@@ -126,7 +126,7 @@ export function Navbar() {
                 href="/kayit"
                 className="rounded-full border border-[#0E0E10]/15 bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#0E0E10]"
               >
-                Ücretsiz Dene
+                Hemen Kayıt Ol
               </Link>
             )}
             <button
@@ -176,7 +176,7 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                   className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
                 >
-                  Ücretsiz Dene
+                  Hemen Kayıt Ol
                 </Link>
               </div>
             )}
