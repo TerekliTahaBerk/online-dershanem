@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Instagram, Send, MessageCircle, Mail, Phone, MapPin } from "lucide-react";
+import { Instagram, Linkedin, Send, MessageCircle, Mail, Phone, MapPin } from "lucide-react";
 import { contact } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
 
@@ -24,13 +24,18 @@ const supportLinks = [
 const SOCIALS = [
   {
     label: "Instagram",
-    href: "https://www.instagram.com/onlinedershanem/",
+    href: "https://www.instagram.com/onlinedershanem.tr/",
     Icon: Instagram,
   },
   {
     label: "TikTok",
-    href: "https://www.tiktok.com/@onlinedershanem",
+    href: "https://www.tiktok.com/@onlinedershanem.tr",
     Icon: TikTokIcon,
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/onlinedershanem",
+    Icon: Linkedin,
   },
   {
     label: "WhatsApp",

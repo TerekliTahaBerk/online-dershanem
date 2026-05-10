@@ -1135,7 +1135,7 @@ export const faq = [
 
 export const contact = {
   phone: "+90 537 795 44 34",
-  email: "onlinedershanem34@gmail.com",
+  email: "iletisim@onlinedershanem.com",
   whatsapp: "+90 537 795 44 34",
   address: "Yıldız Teknik Üniversitesi Davutpaşa Kampüsü"
 };

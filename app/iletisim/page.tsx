@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Phone, Mail, MapPin, MessageCircle, Instagram, Send } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Instagram, Linkedin, Send } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { contact } from "@/lib/content";
@@ -37,8 +37,9 @@ const channels = [
 ];
 
 const socials = [
-  { label: "Instagram", href: "https://www.instagram.com/onlinedershanem/", Icon: Instagram },
-  { label: "TikTok", href: "https://www.tiktok.com/@onlinedershanem", Icon: Send },
+  { label: "Instagram", href: "https://www.instagram.com/onlinedershanem.tr/", Icon: Instagram },
+  { label: "TikTok", href: "https://www.tiktok.com/@onlinedershanem.tr", Icon: Send },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/onlinedershanem", Icon: Linkedin },
 ];
 
 export default function ContactPage() {
