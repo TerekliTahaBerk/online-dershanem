@@ -51,7 +51,7 @@ export default function CareersPage() {
             {/* Cube doodle */}
             <CubeDoodle className="mx-auto h-24 w-24 sm:h-28 sm:w-28" />
 
-            <h1 className="mt-6 font-display text-[40px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+            <h1 className="mt-6 font-display text-[36px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
               Eğitimin geleceğini{" "}
               <em className="italic text-[var(--od-olive)]">birlikte</em> inşa
               edelim.

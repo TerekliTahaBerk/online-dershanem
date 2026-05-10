@@ -120,29 +120,31 @@ export function HomeFeatures() {
         </header>
 
         {/* Tabs */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-1 border-b border-[var(--od-line)]">
-          {TABS.map((t) => {
-            const isActive = t.key === active;
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setActive(t.key)}
-                className={`relative -mb-px inline-flex items-center gap-1.5 px-5 py-3 text-[14px] font-medium transition ${
-                  isActive
-                    ? "text-[var(--od-ink)]"
-                    : "text-[#8B8B7E] hover:text-[var(--od-ink)]"
-                }`}
-              >
-                <Icon size={15} strokeWidth={1.7} />
-                {t.label}
-                {isActive ? (
-                  <span className="absolute inset-x-3 -bottom-px h-[2px] rounded-full bg-[var(--od-ink)]" />
-                ) : null}
-              </button>
-            );
-          })}
+        <div className="mt-12 -mx-5 overflow-x-auto border-b border-[var(--od-line)] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mx-auto flex w-max items-center justify-start gap-1 px-5 sm:w-auto sm:flex-wrap sm:justify-center">
+            {TABS.map((t) => {
+              const isActive = t.key === active;
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setActive(t.key)}
+                  className={`relative -mb-px inline-flex shrink-0 items-center gap-1.5 px-4 py-3 text-[13.5px] font-medium transition sm:px-5 sm:text-[14px] ${
+                    isActive
+                      ? "text-[var(--od-ink)]"
+                      : "text-[#8B8B7E] hover:text-[var(--od-ink)]"
+                  }`}
+                >
+                  <Icon size={15} strokeWidth={1.7} />
+                  {t.label}
+                  {isActive ? (
+                    <span className="absolute inset-x-3 -bottom-px h-[2px] rounded-full bg-[var(--od-ink)]" />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Card */}
@@ -291,35 +293,36 @@ function AnalyticsMock() {
 function PlanMock() {
   const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
   const events = [
-    { d: 0, t: "TYT Matematik", c: "var(--od-ink)" },
-    { d: 1, t: "AYT Fizik", c: "var(--od-olive)" },
-    { d: 1, t: "Soru Çözüm", c: "#8B8B7E" },
-    { d: 3, t: "TYT Türkçe", c: "var(--od-ink)" },
-    { d: 4, t: "Deneme", c: "#1E8C5C" },
-    { d: 6, t: "Koçluk", c: "var(--od-olive)" },
+    { d: 0, t: "TYT Matematik", short: "TYT Mat", c: "var(--od-ink)" },
+    { d: 1, t: "AYT Fizik", short: "AYT Fz", c: "var(--od-olive)" },
+    { d: 1, t: "Soru Çözüm", short: "Soru", c: "#8B8B7E" },
+    { d: 3, t: "TYT Türkçe", short: "TYT Tü", c: "var(--od-ink)" },
+    { d: 4, t: "Deneme", short: "Dnm", c: "#1E8C5C" },
+    { d: 6, t: "Koçluk", short: "Koç", c: "var(--od-olive)" },
   ];
   return (
-    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
-      <div className="grid grid-cols-7 gap-2 text-center text-[10.5px] font-medium uppercase tracking-wider text-[#8B8B7E]">
+    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-3 sm:p-5">
+      <div className="grid grid-cols-7 gap-1 text-center text-[9.5px] font-medium uppercase tracking-wider text-[#8B8B7E] sm:gap-2 sm:text-[10.5px]">
         {days.map((d) => (
           <span key={d}>{d}</span>
         ))}
       </div>
-      <div className="mt-2 grid grid-cols-7 gap-2">
+      <div className="mt-2 grid grid-cols-7 gap-1 sm:gap-2">
         {days.map((_, i) => (
           <div
             key={i}
-            className="flex min-h-[88px] flex-col gap-1 rounded-lg bg-[var(--od-cream-2)] p-1.5"
+            className="flex min-h-[72px] flex-col gap-1 overflow-hidden rounded-md bg-[var(--od-cream-2)] p-1 sm:min-h-[88px] sm:rounded-lg sm:p-1.5"
           >
             {events
               .filter((e) => e.d === i)
               .map((e, idx) => (
                 <div
                   key={idx}
-                  className="rounded-md px-1.5 py-1 text-[10px] font-medium text-white"
+                  className="rounded-[5px] px-1 py-0.5 text-[8.5px] font-medium leading-tight text-white sm:rounded-md sm:px-1.5 sm:py-1 sm:text-[10px]"
                   style={{ background: e.c }}
                 >
-                  {e.t}
+                  <span className="sm:hidden">{e.short}</span>
+                  <span className="hidden sm:inline">{e.t}</span>
                 </div>
               ))}
           </div>

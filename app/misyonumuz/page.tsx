@@ -38,7 +38,7 @@ export default function MissionPage() {
               className="mx-auto block h-auto w-full max-w-[560px] object-contain"
             />
 
-            <h1 className="mt-14 font-display text-[42px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+            <h1 className="mt-14 font-display text-[34px] font-normal leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[60px] sm:leading-[1.04]">
               Potansiyelin maddi koşullarla{" "}
               <em className="italic text-[var(--od-olive)]">sınırlanamayacağı</em>{" "}
               bir sistem.

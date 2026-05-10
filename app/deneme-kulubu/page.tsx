@@ -49,7 +49,7 @@ export default function DenemeKulubuPage() {
             <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
               Online Deneme Kulübü
             </span>
-            <h1 className="mt-5 font-display text-[44px] font-normal leading-[1.02] tracking-tight text-[var(--od-ink)] sm:text-[68px]">
+            <h1 className="mt-5 font-display text-[38px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[68px]">
               Denemeyi sayıdan{" "}
               <em className="italic text-[var(--od-olive)]">karara</em> dönüştür.
             </h1>

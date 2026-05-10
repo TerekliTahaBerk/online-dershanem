@@ -59,15 +59,15 @@ export function Navbar() {
             : "border-b border-transparent bg-transparent"
         }`}
       >
-        <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" aria-label="Online Dershanem" className="flex items-center gap-2 text-[#0E0E10]">
+        <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-8">
+          <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center gap-2 text-[#0E0E10]">
             <Image
               src="/onlinedershanem_.png"
               alt="Online Dershanem"
               width={1050}
               height={200}
               priority
-              className="h-7 w-auto object-contain sm:h-8"
+              className="h-6 w-auto object-contain sm:h-8"
             />
           </Link>
 
@@ -114,26 +114,26 @@ export function Navbar() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-1.5 lg:hidden">
             {status === "loading" ? null : status === "authenticated" ? (
               <Link
                 href={panelHref}
-                className="rounded-full border border-[#0E0E10]/15 bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#0E0E10]"
+                className="rounded-full border border-[#0E0E10]/15 bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#0E0E10]"
               >
                 {panelLabel}
               </Link>
             ) : (
               <Link
                 href="/kayit"
-                className="rounded-full border border-[#0E0E10]/15 bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#0E0E10]"
+                className="rounded-full border border-[#0E0E10]/15 bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#0E0E10]"
               >
-                Hemen Kayıt Ol
+                Kayıt Ol
               </Link>
             )}
             <button
               type="button"
               onClick={() => setOpen((o) => !o)}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[#0E0E10]/12 bg-white text-[#0E0E10]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#0E0E10]/12 bg-white text-[#0E0E10]"
               aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
               aria-expanded={open}
             >

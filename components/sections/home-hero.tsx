@@ -45,7 +45,7 @@ export function HomeHero() {
 
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-5 pt-20 pb-24 sm:pt-28 sm:pb-28">
         <div className="flex max-w-2xl flex-col items-center text-center">
-          <h1 className="font-display text-[44px] font-normal leading-[1.12] tracking-[0.005em] text-[var(--od-ink)] [word-spacing:0.04em] sm:text-[64px] sm:leading-[1.1]">
+          <h1 className="font-display text-[38px] font-normal leading-[1.1] tracking-[0.005em] text-[var(--od-ink)] [word-spacing:0.04em] xs:text-[42px] sm:text-[64px] sm:leading-[1.1]">
             Seninle birlikte
             <br />
             düşünen <em className="italic text-[var(--od-olive)]">dershane.</em>

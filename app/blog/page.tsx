@@ -148,14 +148,15 @@ function PostVisual({ post, height = "aspect-[5/3]" }: { post: BlogPost; height?
           backgroundSize: "28px 28px"
         }}
       />
-      <div className="absolute inset-0 flex items-center justify-center gap-4 px-6">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 px-4 text-center sm:flex-row sm:gap-4 sm:px-6 sm:text-left">
         <span
-          className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-[0_8px_24px_-12px_rgba(20,20,15,0.25)]"
+          className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_8px_24px_-12px_rgba(20,20,15,0.25)] sm:h-14 sm:w-14"
           style={{ color: tone }}
         >
-          <Icon size={26} strokeWidth={1.6} />
+          <Icon size={22} strokeWidth={1.6} className="sm:hidden" />
+          <Icon size={26} strokeWidth={1.6} className="hidden sm:block" />
         </span>
-        <span className="font-display text-[20px] leading-tight tracking-tight text-[var(--od-ink)]">
+        <span className="font-display text-[16px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[20px]">
           {post.category}
         </span>
       </div>
@@ -184,7 +185,7 @@ export default function BlogPage() {
             <span className="mt-6 inline-block text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
               Yazılar
             </span>
-            <h1 className="mt-4 font-display text-[42px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+            <h1 className="mt-4 font-display text-[36px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
               Online Dershanem <em className="italic text-[var(--od-olive)]">Blog</em>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
