@@ -15,6 +15,7 @@ const productLinks = [
 const supportLinks = [
   { label: "Sıkça Sorulanlar", href: "/sss/" },
   { label: "İletişim", href: "/iletisim/" },
+  { label: "Kariyer", href: "/kariyer/" },
   { label: "İade Politikası", href: "/iade/" },
   { label: "Gizlilik", href: "/gizlilik/" },
   { label: "KVKK", href: "/kvkk/" },

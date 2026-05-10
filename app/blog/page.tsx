@@ -1,205 +1,244 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen, Compass, GraduationCap, LineChart, NotebookText, PenLine } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { blogPosts, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Online Dershane Blog",
+  title: "Online Dershanem Blog",
   description:
-    "Online dershane ve online özel ders rehberleri: LGS-YKS çalışma planı, küçük grup ders modeli ve haftalık takip sistemi.",
+    "Online dershane ve online özel ders rehberleri: LGS-YKS çalışma planı, küçük grup ders modeli ve haftalık takip sistemi üzerine yazılar.",
   alternates: { canonical: "/blog/" },
   openGraph: {
-    title: "Online Dershane Blog | Online Dershanem",
+    title: "Online Dershanem Blog",
     description:
-      "Online dershane, e dershane, online ders ve özel ders aramalarında ihtiyaç duyacağın uygulamalı rehberler.",
-    url: `${siteUrl}/blog/`,
-  },
+      "Sınava hazırlık sürecinde gerçekten işe yarayan rehberler, deneme analizi ipuçları ve haftalık plan örnekleri.",
+    url: `${siteUrl}/blog/`
+  }
 };
 
 type BlogPost = (typeof blogPosts)[number];
 
-function getReadMinutes(post: BlogPost) {
-  const content = [
-    post.title,
-    post.excerpt,
-    post.cardSnippet,
-    ...post.sections.flatMap((section) => [
-      section.h2,
-      ...(section.paragraphs ?? []),
-      ...(section.bullets ?? []),
-    ]),
-  ].join(" ");
-  const words = content.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(3, Math.round(words / 180));
-}
-
-const categoryAccent: Record<string, string> = {
-  YKS: "var(--od-olive)",
-  LGS: "#5C7BA6",
-  "Online Özel Ders": "#A67C4F",
+/**
+ * Yayın tarihi haritası — şemaya dokunmadan blog kartlarına gerçek hissi
+ * vermek için sabit bir tablo. Yeni yazı eklendiğinde buraya tarih ekleyin;
+ * eksik kalan yazılar için yumuşak fallback kullanılır.
+ */
+const publishedAt: Record<string, string> = {
+  "online-dershane-nedir": "2026-04-22",
+  "online-ozel-ders-mi-dershane-mi": "2026-04-08",
+  "yks-online-ders-calisma-plani": "2026-03-25",
+  "lgs-online-ders-net-artirma": "2026-03-11",
+  "online-dershane-fiyatlari-2026": "2026-02-26",
+  "e-dershane-nedir": "2026-02-12",
+  "online-ders-calisma-programi": "2026-01-29",
+  "ozel-ders-mi-kucuk-grup-mu": "2026-01-15",
+  "yks-matematik-net-artirma": "2025-12-18",
+  "lgs-matematikte-zorlananlar-icin": "2025-12-04",
+  "deneme-analizi-nasil-yapilir": "2025-11-20",
+  "online-dershane-secim-rehberi-2026": "2025-11-06",
+  "online-ders-disiplini-nasil-kurulur": "2025-10-23"
 };
 
-function getAccent(cat: string) {
-  return categoryAccent[cat] ?? "var(--od-olive)";
+const authorByCategory: Record<string, string> = {
+  "Online Dershane": "Online Dershanem Ekibi",
+  "Online Özel Ders": "Online Dershanem Ekibi",
+  YKS: "Eğitim Koçluğu",
+  LGS: "Eğitim Koçluğu",
+  "e Dershane": "Online Dershanem Ekibi",
+  "Online Ders": "Eğitim Koçluğu",
+  "Özel Ders": "Online Dershanem Ekibi",
+  "Sınav Stratejisi": "Eğitim Koçluğu"
+};
+
+const TR_MONTHS = [
+  "Oca",
+  "Şub",
+  "Mar",
+  "Nis",
+  "May",
+  "Haz",
+  "Tem",
+  "Ağu",
+  "Eyl",
+  "Eki",
+  "Kas",
+  "Ara"
+];
+
+function formatTrDate(iso?: string) {
+  if (!iso) return "Yakın zamanda";
+  const d = new Date(iso);
+  if (Number.isNaN(d.valueOf())) return "Yakın zamanda";
+  return `${TR_MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function getAuthor(post: BlogPost) {
+  return authorByCategory[post.category] ?? "Online Dershanem Ekibi";
+}
+
+const visualByCategory: Record<string, { Icon: LucideIcon; tone: string; tile: string }> = {
+  "Online Dershane": { Icon: GraduationCap, tone: "#3F4FE0", tile: "var(--od-sky-soft)" },
+  "Online Özel Ders": { Icon: Compass, tone: "#A67C4F", tile: "var(--od-cream-2)" },
+  YKS: { Icon: LineChart, tone: "#3A4A2C", tile: "#EFEFE1" },
+  LGS: { Icon: NotebookText, tone: "#5C7BA6", tile: "#E9EFF5" },
+  "e Dershane": { Icon: BookOpen, tone: "#3F4FE0", tile: "var(--od-sky-soft)" },
+  "Online Ders": { Icon: BookOpen, tone: "#3A4A2C", tile: "#EFEFE1" },
+  "Özel Ders": { Icon: Compass, tone: "#A67C4F", tile: "var(--od-cream-2)" },
+  "Sınav Stratejisi": { Icon: PenLine, tone: "#9C5340", tile: "var(--od-blush)" }
+};
+
+function getVisual(category: string) {
+  return (
+    visualByCategory[category] ?? { Icon: BookOpen, tone: "var(--od-olive)", tile: "var(--od-cream-2)" }
+  );
+}
+
+function PaperPlaneDoodle({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 200 130"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <circle cx="120" cy="14" r="2" fill="#1B1F4D" />
+      <path
+        d="M40 70 L172 30 L138 88 L116 70 Z"
+        stroke="#1B1F4D"
+        strokeWidth="2"
+        strokeLinejoin="round"
+        fill="white"
+      />
+      <path d="M116 70 L138 88 L130 56" stroke="#1B1F4D" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M116 70 L172 30" stroke="#1B1F4D" strokeWidth="1.4" />
+      <path
+        d="M70 64 C 50 76, 38 94, 60 100 C 80 105, 96 92, 86 80"
+        stroke="#1B1F4D"
+        strokeWidth="2"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <path
+        d="M44 110 l1.4 -3 l1.4 3 l3 1.4 l-3 1.4 l-1.4 3 l-1.4 -3 l-3 -1.4 z"
+        fill="#3F4FE0"
+        opacity="0.85"
+      />
+      <path d="M134 76 L138 88 L142 78 Z" fill="#3F4FE0" opacity="0.85" />
+    </svg>
+  );
+}
+
+function PostVisual({ post, height = "aspect-[5/3]" }: { post: BlogPost; height?: string }) {
+  const { Icon, tone, tile } = getVisual(post.category);
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-2xl border border-[var(--od-line)] ${height}`}
+      style={{ background: tile }}
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-[0.55]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(20,20,15,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,20,15,0.08) 1px, transparent 1px)",
+          backgroundSize: "28px 28px"
+        }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center gap-4 px-6">
+        <span
+          className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-[0_8px_24px_-12px_rgba(20,20,15,0.25)]"
+          style={{ color: tone }}
+        >
+          <Icon size={26} strokeWidth={1.6} />
+        </span>
+        <span className="font-display text-[20px] leading-tight tracking-tight text-[var(--od-ink)]">
+          {post.category}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function BlogPage() {
-  const featured = blogPosts.find((p) => p.featured) ?? blogPosts[0];
-  const others = blogPosts.filter((p) => p.slug !== featured.slug);
+  const sorted = [...blogPosts].sort((a, b) => {
+    const da = publishedAt[a.slug] ?? "1970-01-01";
+    const db = publishedAt[b.slug] ?? "1970-01-01";
+    return db.localeCompare(da);
+  });
+
+  const featured = sorted[0];
+  const others = sorted.slice(1);
 
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="bg-white text-[var(--od-ink)]">
         {/* Hero */}
-        <section className="relative overflow-hidden border-b border-[var(--od-line)]">
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-            <Image
-              src="/v991-nt-35.jpg"
-              alt=""
-              fill
-              sizes="100vw"
-              priority
-              className="object-cover opacity-[0.12] mix-blend-multiply"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,253,245,0.5) 0%, rgba(255,253,245,0.92) 70%, var(--od-cream) 100%)",
-              }}
-            />
-          </div>
-
-          <div className="mx-auto max-w-3xl px-5 pt-28 pb-14 sm:pt-36 sm:pb-20 text-center">
-            <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
-              Yazılar
-            </span>
-            <h1 className="mt-5 font-display text-[44px] font-normal leading-[1.02] tracking-tight sm:text-[68px]">
-              Sınava giden yolda{" "}
-              <em className="italic text-[var(--od-olive)]">notlar</em>.
+        <section className="relative">
+          <div className="mx-auto max-w-3xl px-5 pt-20 pb-10 sm:pt-24 sm:pb-14 text-center">
+            <PaperPlaneDoodle className="mx-auto h-24 w-auto sm:h-28" />
+            <h1 className="mt-6 font-display text-[42px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+              Online Dershanem <em className="italic text-[var(--od-olive)]">Blog</em>
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              LGS ve YKS için haftalık rehberler, deneme analizi ipuçları,
-              çalışma stratejileri ve doğru hazırlık modeli üzerine net içerikler.
-            </p>
           </div>
         </section>
 
         {/* Featured */}
-        <section className="mx-auto max-w-6xl px-5 pt-16">
-          <Link
-            href={`/blog/${featured.slug}/`}
-            className="group block overflow-hidden rounded-[32px] border border-[var(--od-line)] bg-white transition hover:-translate-y-0.5 hover:shadow-[0_28px_70px_-32px_rgba(20,20,15,0.22)]"
-          >
-            <div className="grid gap-0 lg:grid-cols-[1.1fr_1fr]">
-              <div className="flex flex-col justify-center gap-5 p-8 sm:p-12">
-                <div className="flex items-center gap-3 text-[12px]">
-                  <span
-                    className="inline-flex items-center rounded-full px-2.5 py-1 font-medium uppercase tracking-[0.14em]"
-                    style={{
-                      background: "var(--od-cream-2)",
-                      color: getAccent(featured.category),
-                    }}
-                  >
-                    {featured.category}
-                  </span>
-                  <span className="text-[#8B8B7E]">
-                    {getReadMinutes(featured)} dk okuma
-                  </span>
-                </div>
-                <h2 className="font-display text-[32px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-                  {featured.title}
-                </h2>
-                <p className="text-[15px] leading-7 text-[var(--od-ink-soft)]">
-                  {featured.excerpt}
-                </p>
-                <span className="mt-2 inline-flex items-center gap-1.5 text-[14px] font-medium text-[var(--od-ink)] transition group-hover:text-[var(--od-olive)]">
-                  Yazıyı oku
-                  <ArrowRight size={15} strokeWidth={1.8} />
-                </span>
-              </div>
-              <div
-                className="relative min-h-[260px] overflow-hidden border-t border-[var(--od-line)] lg:border-l lg:border-t-0"
-                style={{ background: "var(--od-cream-2)" }}
+        <section className="mx-auto max-w-6xl px-5 pb-16 sm:pb-20">
+          <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr]">
+            <div className="max-w-md">
+              <p className="text-[12.5px] text-[#8B8B7E]">
+                {getAuthor(featured)} — {formatTrDate(publishedAt[featured.slug])}
+              </p>
+              <h2 className="mt-3 font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[36px]">
+                {featured.title}
+              </h2>
+              <p className="mt-4 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+                {featured.excerpt}
+              </p>
+              <Link
+                href={`/blog/${featured.slug}/`}
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0E0E10] px-5 py-2.5 text-[13.5px] font-medium text-white transition hover:bg-[#1F1F23]"
               >
-                <Image
-                  src="/v991-nt-35.jpg"
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  className="object-cover opacity-[0.45] mix-blend-multiply"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span
-                    className="font-display text-[88px] italic leading-none opacity-30"
-                    style={{ color: getAccent(featured.category) }}
-                  >
-                    {featured.category.charAt(0).toLowerCase()}.
-                  </span>
-                </div>
-              </div>
+                Yazıyı oku
+                <ArrowRight size={14} strokeWidth={1.8} />
+              </Link>
             </div>
-          </Link>
+
+            <Link href={`/blog/${featured.slug}/`} className="group block">
+              <PostVisual post={featured} height="aspect-[16/10]" />
+            </Link>
+          </div>
         </section>
 
-        {/* Others — magazine-style list */}
-        <section className="mx-auto max-w-6xl px-5 py-16">
-          <h3 className="mb-8 font-display text-[26px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[32px]">
-            Son yazılar
-          </h3>
+        <hr className="mx-auto max-w-6xl border-t border-[var(--od-line)]" />
 
-          <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {others.map((post) => {
-              const accent = getAccent(post.category);
-              return (
-                <Link
-                  key={post.slug}
-                  href={`/blog/${post.slug}/`}
-                  className="group flex flex-col"
-                >
-                  <div
-                    className="relative mb-5 aspect-[4/3] overflow-hidden rounded-2xl border border-[var(--od-line)]"
-                    style={{ background: "var(--od-cream-2)" }}
-                  >
-                    <Image
-                      src="/v991-nt-35.jpg"
-                      alt=""
-                      fill
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover opacity-[0.4] mix-blend-multiply transition duration-500 group-hover:scale-[1.04]"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span
-                        className="font-display text-[64px] italic leading-none opacity-40"
-                        style={{ color: accent }}
-                      >
-                        {post.category.charAt(0).toLowerCase()}.
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[11.5px] font-medium uppercase tracking-[0.14em] text-[#8B8B7E]">
-                    <span style={{ color: accent }}>{post.category}</span>
-                    <span className="text-[#C8C8B5]">·</span>
-                    <span>{getReadMinutes(post)} dk okuma</span>
-                  </div>
-                  <h4 className="mt-3 font-display text-[22px] font-normal leading-[1.15] tracking-tight text-[var(--od-ink)] transition group-hover:text-[var(--od-olive)] sm:text-[24px]">
-                    {post.title}
-                  </h4>
-                  <p className="mt-2 text-[14px] leading-6 text-[var(--od-ink-soft)] line-clamp-3">
-                    {post.excerpt}
-                  </p>
-                </Link>
-              );
-            })}
+        {/* Grid */}
+        <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+          <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {others.map((post) => (
+              <Link key={post.slug} href={`/blog/${post.slug}/`} className="group flex flex-col">
+                <PostVisual post={post} />
+                <h3 className="mt-5 font-display text-[20px] font-normal leading-[1.2] tracking-tight text-[var(--od-ink)] transition group-hover:text-[var(--od-olive)] sm:text-[22px]">
+                  {post.title}
+                </h3>
+                <p className="mt-2 text-[12.5px] text-[#8B8B7E]">
+                  {getAuthor(post)} — {formatTrDate(publishedAt[post.slug])}
+                </p>
+                <p className="mt-1 text-[11.5px] font-medium uppercase tracking-[0.14em] text-[var(--od-olive)]">
+                  {post.category}
+                </p>
+              </Link>
+            ))}
           </div>
         </section>
 
         {/* Soft CTA */}
-        <section className="mx-auto max-w-6xl px-5 pb-20">
+        <section className="mx-auto max-w-6xl px-5 pb-24">
           <div className="overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)] p-8 sm:p-12">
             <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
               <div>

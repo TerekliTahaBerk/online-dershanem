@@ -13,7 +13,8 @@ const links = [
   { label: "Misyonumuz", href: "/misyonumuz/" },
   { label: "Paketler", href: "/paketler/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "Blog", href: "/blog/" }
+  { label: "Blog", href: "/blog/" },
+  { label: "Kariyer", href: "/kariyer/" }
 ];
 
 export function Navbar() {

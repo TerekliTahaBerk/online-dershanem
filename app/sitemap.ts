@@ -28,6 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/ogretmen/`, lastModified, changeFrequency: "monthly", priority: 0.65 },
     { url: `${siteUrl}/sss/`, lastModified, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/iletisim/`, lastModified, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${siteUrl}/kariyer/`, lastModified, changeFrequency: "monthly", priority: 0.55 },
     // Legal
     { url: `${siteUrl}/kvkk/`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${siteUrl}/gizlilik/`, lastModified, changeFrequency: "monthly", priority: 0.5 },
