@@ -103,33 +103,37 @@ model RateLimitEntry {
 }
 
 model User {
-  id                      String             @id @default(cuid())
-  email                   String             @unique
+  id                      String                   @id @default(cuid())
+  email                   String                   @unique
   name                    String?
   passwordHash            String?
-  role                    UserRole           @default(ADMIN)
+  role                    UserRole                 @default(ADMIN)
   onboardingCompletedAt   DateTime?
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
   student                 Student?
   teacher                 Teacher?
   parent                  Parent?
   notifications           Notification[]
-  auditLogs               AuditLog[]         @relation("AuditLogActor")
-  createdContent          CourseContent[]    @relation("CourseContentCreator")
-  odkCreatedExams         OdkExam[]          @relation("OdkExamCreator")
+  auditLogs               AuditLog[]               @relation("AuditLogActor")
+  createdContent          CourseContent[]          @relation("CourseContentCreator")
+  odkCreatedExams         OdkExam[]                @relation("OdkExamCreator")
   odkUserAccessTags       OdkUserAccessTag[]
   odkOrders               OdkOrder[]
   odkEntitlements         OdkEntitlement[]
   odkAttempts             OdkExamAttempt[]
-  assignedStudentPackages StudentPackage[]   @relation("StudentPackageAssignedBy")
-  studentTagAssignments   StudentTag[]       @relation("StudentTagAssignedBy")
-  attendanceRecords       Attendance[]       @relation("AttendanceRecorder")
-  inboxReceived           InboxMessage[]     @relation("InboxRecipient")
-  inboxSent               InboxMessage[]     @relation("InboxCreator")
-  studentNotesAuthored    StudentNote[]      @relation("StudentNoteAuthor")
-  studentFilesUploaded    StudentFile[]      @relation("StudentFileUploader")
-  accountingEntries       AccountingEntry[]  @relation("AccountingCreator")
+  assignedStudentPackages StudentPackage[]         @relation("StudentPackageAssignedBy")
+  studentTagAssignments   StudentTag[]             @relation("StudentTagAssignedBy")
+  attendanceRecords       Attendance[]             @relation("AttendanceRecorder")
+  inboxReceived           InboxMessage[]           @relation("InboxRecipient")
+  inboxSent               InboxMessage[]           @relation("InboxCreator")
+  studentNotesAuthored    StudentNote[]            @relation("StudentNoteAuthor")
+  studentFilesUploaded    StudentFile[]            @relation("StudentFileUploader")
+  accountingEntries       AccountingEntry[]        @relation("AccountingCreator")
+  permissionOverrides     UserPermissionOverride[]
+  refreshTokens           RefreshToken[]
+  savedViews              SavedView[]
+  dashboardLayouts        DashboardLayout[]
 }
 
 model LeadSubmission {
@@ -1529,4 +1533,114 @@ model TeacherPayroll {
   @@unique([teacherId, periodStart, periodEnd])
   @@index([teacherId, status])
   @@index([status, periodEnd])
+}
+
+// ─── Permission System (Faz 0 — Rebuild) ────────────────────────────────────
+// DB-driven RBAC. Defaults seeded from `lib/rbac/matrix.ts` via
+// `prisma/seeds/permissions.ts`. Per-user overrides in `UserPermissionOverride`.
+
+/// Permission key registry. Source of truth is `lib/rbac/matrix.ts` —
+/// seed script upserts these. UI reads via `/api/v1/me/permissions`.
+model Permission {
+  id              String                   @id @default(cuid())
+  /// "students.read", "payments.write", etc.
+  key             String                   @unique
+  category        String
+  description     String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  rolePermissions RolePermission[]
+  userOverrides   UserPermissionOverride[]
+
+  @@index([category])
+}
+
+/// Default permission set per role.
+model RolePermission {
+  role         UserRole
+  permissionId String
+  createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([role, permissionId])
+  @@index([permissionId])
+}
+
+/// Per-user override on top of role defaults.
+/// granted=true → ekle, granted=false → çıkar.
+model UserPermissionOverride {
+  userId       String
+  permissionId String
+  granted      Boolean
+  reason       String?
+  createdAt    DateTime   @default(now())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, permissionId])
+  @@index([permissionId])
+}
+
+/// Refresh token — JWT rotation. Faz 0'da tablo eklendi, Faz 4'te kullanılacak.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  ip        String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+}
+
+/// Saved table filters / segments — admin "VIP öğrenciler", "Geç ödeyenler" gibi.
+model SavedView {
+  id        String   @id @default(cuid())
+  ownerId   String
+  /// "students" | "payments" | "lessons" | ...
+  scope     String
+  name      String
+  filter    Json
+  isShared  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, scope])
+  @@index([scope, isShared])
+}
+
+enum DashboardPanelKey {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+/// Per-user dashboard widget layout (react-grid-layout JSON).
+model DashboardLayout {
+  userId    String
+  panel     DashboardPanelKey
+  layout    Json
+  updatedAt DateTime          @updatedAt
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, panel])
+}
+
+/// Realtime event log — Pusher pivot, audit-friendly.
+/// channel format: "user:<id>" | "classroom:<id>" | "panel:<panel>" | "global"
+model RealtimeEvent {
+  id        String   @id @default(cuid())
+  channel   String
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([channel, createdAt])
+  @@index([type, createdAt])
 }
