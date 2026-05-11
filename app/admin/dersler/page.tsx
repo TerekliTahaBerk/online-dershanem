@@ -127,12 +127,12 @@ export default async function DerslerPage({ searchParams }: Props) {
       <div className="pd-page-body">
       {/* Flash */}
       {updated === "lesson" && (
-        <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+        <div className="pd-alert pd-alert-success" style={{ marginBottom: 16 }}>
           Ders güncellendi.
         </div>
       )}
       {updated === "cancelled" && (
-        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", color: "#92400e", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+        <div className="pd-alert pd-alert-warning" style={{ marginBottom: 16 }}>
           Ders iptal edildi.
         </div>
       )}

@@ -10,6 +10,7 @@ declare module "next-auth" {
       isAdmin: boolean;
       hasStudentAccess: boolean;
       hasTeacherAccess: boolean;
+      hasOdAccess: boolean;
       hasOdkAccess: boolean;
     };
   }
@@ -19,6 +20,7 @@ declare module "next-auth" {
     isAdmin?: boolean;
     hasStudentAccess?: boolean;
     hasTeacherAccess?: boolean;
+    hasOdAccess?: boolean;
     hasOdkAccess?: boolean;
   }
 }
@@ -29,6 +31,7 @@ declare module "next-auth/jwt" {
     isAdmin?: boolean;
     hasStudentAccess?: boolean;
     hasTeacherAccess?: boolean;
+    hasOdAccess?: boolean;
     hasOdkAccess?: boolean;
   }
 }

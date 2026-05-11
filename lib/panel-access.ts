@@ -7,6 +7,7 @@ type SessionPanelUser = {
   isAdmin?: boolean | null;
   hasStudentAccess?: boolean | null;
   hasTeacherAccess?: boolean | null;
+  hasOdAccess?: boolean | null;
   hasOdkAccess?: boolean | null;
 };
 
@@ -46,10 +47,13 @@ export function getPanelLabel(panel: PanelKey) {
 }
 
 export function getPanelAccess(user?: SessionPanelUser | null) {
-  const hasStudentPanel = Boolean(user?.hasStudentAccess);
-  const hasTeacherPanel = Boolean(user?.hasTeacherAccess);
-  const hasAdminPanel = Boolean(user?.isAdmin) || user?.role === "ADMIN";
-  const hasOdkPanel = Boolean(user?.hasOdkAccess);
+  const isAdmin = Boolean(user?.isAdmin) || user?.role === "ADMIN";
+  // Admins implicitly hold every access; legacy student/teacher relations also grant OD.
+  const hasStudentPanel = isAdmin || Boolean(user?.hasStudentAccess);
+  const hasTeacherPanel = isAdmin || Boolean(user?.hasTeacherAccess);
+  const hasAdminPanel = isAdmin;
+  const hasOdAccess = isAdmin || Boolean(user?.hasOdAccess) || Boolean(user?.hasStudentAccess) || Boolean(user?.hasTeacherAccess);
+  const hasOdkPanel = isAdmin || Boolean(user?.hasOdkAccess);
 
   const panels: PanelKey[] = [];
 
@@ -73,6 +77,7 @@ export function getPanelAccess(user?: SessionPanelUser | null) {
     hasStudentPanel,
     hasTeacherPanel,
     hasAdminPanel,
+    hasOdAccess,
     hasOdkPanel,
     panels,
     requiresPanelChoice,
@@ -92,20 +97,6 @@ export function buildPanelChoiceHref(callbackUrl?: string | null) {
 }
 
 // Returns the destination within Online Dershanem (skips service selection layer).
-export function getOdPanelDestination(user?: SessionPanelUser | null) {
-  const access = getPanelAccess(user);
-
-  if (access.requiresPanelChoice) {
-    return buildPanelChoiceHref();
-  }
-
-  if (access.defaultPanel) {
-    return getPanelHref(access.defaultPanel);
-  }
-
-  return "/giris";
-}
-
 export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?: string | null) {
   const access = getPanelAccess(user);
   const callbackPath = normalizeCallbackPath(callbackUrl);
@@ -123,22 +114,28 @@ export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?
     return getPanelHref("admin");
   }
 
-  // OD student panel (includes ODK access via sidebar if applicable)
-  if (access.hasStudentPanel) {
+  // OD erişimi olan öğrenciler → öğrenci paneli
+  if (access.hasStudentPanel && access.hasOdAccess) {
     return getPanelHref("student");
   }
 
-  // ODK-only students go directly to ODK panel
+  // ODK erişimi varsa (öğrenci OD tag'i yoksa bile) → ODK paneli
   if (access.hasOdkPanel) {
     return "/odk/panel";
   }
 
-  // Teacher panel
+  // OD erişimi olan öğretmen → öğretmen paneli
+  if (access.hasTeacherPanel && access.hasOdAccess) {
+    return getPanelHref("teacher");
+  }
+
+  // Teacher relation var ama hiçbir tag yok → yine teacher paneli (geriye dönük uyum)
   if (access.hasTeacherPanel) {
     return getPanelHref("teacher");
   }
 
-  return "/giris";
+  // Hiçbir erişim yok — paketler sayfasına yönlendir
+  return "/paketler";
 }
 
 export function getPanelLink(panel: PanelKey, callbackUrl?: string | null) {

@@ -114,11 +114,12 @@ export default async function OdkPanelPage() {
         </div>
 
         {recentAttempts.length === 0 ? (
-          <div className="px-5 py-10 text-center">
-            <p className="text-sm text-stone-400">Henüz deneme çözmedin.</p>
+          <div className="pd-empty tone-yellow" style={{ margin: 16 }}>
+            <div className="pd-empty-title">Henüz deneme çözmedin</div>
             <Link
               href="/odk/panel/sinavlar"
-              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+              className="pd-btn pd-btn-accent pd-btn-sm"
+              style={{ marginTop: 10 }}
             >
               Sınavlara Göz At
             </Link>

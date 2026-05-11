@@ -154,7 +154,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
 
           <Section title="Performans Özeti" icon={<TrendingUp size={15} />}>
             {netSnapshots.length === 0 ? (
-              <p style={{ fontSize: 13, color: "var(--pd-muted)" }}>Henüz performans snapshot verisi yok.</p>
+              <div className="pd-empty-inline tone-sky">Henüz performans snapshot verisi yok.</div>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {netSnapshots.map((snapshot) => (
@@ -177,7 +177,7 @@ export default async function PanelProfilPage({ searchParams }: Props) {
 
         <Section title="Kişisel Bilgiler" icon={<User size={15} />}>
           {successKey === "profile" ? (
-            <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+            <div className="pd-alert pd-alert-success" style={{ marginBottom: 16 }}>
               Bilgileriniz kaydedildi.
             </div>
           ) : null}
@@ -275,12 +275,12 @@ export default async function PanelProfilPage({ searchParams }: Props) {
         <div style={{ marginTop: 16 }}>
           <Section title="Şifre Güncelle" icon={<Lock size={15} />}>
             {successKey === "password" ? (
-              <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+              <div className="pd-alert pd-alert-success" style={{ marginBottom: 16 }}>
                 Şifreniz güncellendi.
               </div>
             ) : null}
             {errorKey && passwordErrors[errorKey] ? (
-              <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+              <div className="pd-alert pd-alert-danger" style={{ marginBottom: 16 }}>
                 {passwordErrors[errorKey]}
               </div>
             ) : null}

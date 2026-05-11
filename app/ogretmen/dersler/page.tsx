@@ -29,7 +29,7 @@ const tabLabels: Record<Tab, string> = {
 };
 
 const statusChip: Record<string, { bg: string; color: string }> = {
-  SCHEDULED: { bg: "#dbeafe", color: "#1d4ed8" },
+  SCHEDULED: { bg: "var(--pd-pastel-sky-bg)", color: "var(--pd-pastel-sky-ink)" },
   COMPLETED: { bg: "var(--pd-accent-soft)", color: "var(--pd-accent)" },
   CANCELLED: { bg: "var(--pd-bg-subtle)", color: "var(--pd-muted-2)" },
 };
@@ -127,9 +127,12 @@ export default async function OgretmenDerslerPage({
         {/* Table card */}
         <div className="pd-card" style={{ overflow: "hidden" }}>
           {filtered.length === 0 ? (
-            <div style={{ padding: "60px 24px", textAlign: "center" }}>
-              <BookOpen size={28} style={{ color: "var(--pd-muted-2)", margin: "0 auto 10px" }} />
-              <p style={{ fontSize: 13, color: "var(--pd-muted)" }}>Bu filtrede ders görünmüyor</p>
+            <div className="pd-empty tone-yellow" style={{ borderRadius: 0, border: "none" }}>
+              <div className="pd-empty-icon">
+                <BookOpen size={20} />
+              </div>
+              <div className="pd-empty-title">Bu filtrede ders yok</div>
+              <div className="pd-empty-desc">Farklı bir sekme deneyebilirsin.</div>
             </div>
           ) : (
             <div style={{ overflowX: "auto" }}>
@@ -173,7 +176,7 @@ export default async function OgretmenDerslerPage({
                           }}
                         >
                           <td style={{ padding: "12px 16px" }}>
-                            <div style={{ fontWeight: 500, color: isOverdue ? "#b45309" : "var(--pd-ink)" }}>
+                            <div style={{ fontWeight: 500, color: isOverdue ? "var(--pd-pastel-yellow-ink)" : "var(--pd-ink)" }}>
                               {fmt.format(new Date(lesson.scheduledAt))}
                             </div>
                             <div style={{ fontSize: 11, color: "var(--pd-muted)", marginTop: 2 }}>
@@ -255,9 +258,9 @@ export default async function OgretmenDerslerPage({
                                   borderRadius: 8,
                                   padding: "8px 12px",
                                   fontSize: 12,
-                                  background: lesson.status === "COMPLETED" ? "#fffbeb" : "var(--pd-bg-subtle)",
-                                  border: `1px solid ${lesson.status === "COMPLETED" ? "#fde68a" : "var(--pd-line)"}`,
-                                  color: lesson.status === "COMPLETED" ? "#92400e" : "var(--pd-muted)",
+                                  background: lesson.status === "COMPLETED" ? "var(--pd-pastel-yellow-soft)" : "var(--pd-bg-subtle)",
+                                  border: `1px solid ${lesson.status === "COMPLETED" ? "var(--pd-pastel-yellow-bg)" : "var(--pd-line)"}`,
+                                  color: lesson.status === "COMPLETED" ? "var(--pd-pastel-yellow-ink)" : "var(--pd-muted)",
                                 }}
                               >
                                 <span style={{ fontWeight: 600, marginRight: 4 }}>Not:</span>
@@ -342,7 +345,7 @@ export default async function OgretmenDerslerPage({
                                   <input type="hidden" name="tab" value={tab} />
                                   <button
                                     type="submit"
-                                    style={{ fontSize: 12, color: "#dc2626", background: "none", border: "none", cursor: "pointer", fontWeight: 500 }}
+                                    style={{ fontSize: 12, color: "var(--pd-pastel-blush-ink)", background: "none", border: "none", cursor: "pointer", fontWeight: 500 }}
                                   >
                                     Dersi iptal et
                                   </button>

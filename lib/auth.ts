@@ -91,21 +91,38 @@ export const authOptions: NextAuthOptions = {
       token.hasStudentAccess = currentUser.role === "STUDENT" || Boolean(currentUser.student);
       token.hasTeacherAccess = Boolean(currentUser.teacher);
 
-      // Query ODK access separately — table may not exist yet before db push
-      let hasOdkAccess = false;
-      try {
-        const odkTag = await prisma.odkUserAccessTag.findFirst({
-          where: {
-            userId: token.sub,
-            revokedAt: null,
-            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-          },
-          select: { id: true }
-        });
-        hasOdkAccess = Boolean(odkTag);
-      } catch {
-        // Table doesn't exist yet — treat as no access
+      // Query OD/ODK access from access tags. Admin always sees everything.
+      let hasOdAccess = currentUser.role === "ADMIN";
+      let hasOdkAccess = currentUser.role === "ADMIN";
+
+      if (!token.isAdmin) {
+        try {
+          const activeTags = await prisma.odkUserAccessTag.findMany({
+            where: {
+              userId: token.sub,
+              revokedAt: null,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+              accessTag: { isActive: true },
+            },
+            select: { accessTag: { select: { service: true } } },
+          });
+          for (const t of activeTags) {
+            if (t.accessTag?.service === "OD") hasOdAccess = true;
+            if (t.accessTag?.service === "ODK") hasOdkAccess = true;
+          }
+        } catch {
+          // Table/column doesn't exist yet — fall back to legacy relation-based access for OD.
+          hasOdAccess = token.hasStudentAccess || token.hasTeacherAccess;
+        }
+
+        // Legacy fallback: if user has Student/Teacher relation but no OD tag yet,
+        // still grant OD panel access so existing users never lose access mid-migration.
+        if (!hasOdAccess && (token.hasStudentAccess || token.hasTeacherAccess)) {
+          hasOdAccess = true;
+        }
       }
+
+      token.hasOdAccess = hasOdAccess;
       token.hasOdkAccess = hasOdkAccess;
 
       return token;
@@ -118,6 +135,7 @@ export const authOptions: NextAuthOptions = {
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.hasStudentAccess = Boolean(token.hasStudentAccess);
         session.user.hasTeacherAccess = Boolean(token.hasTeacherAccess);
+        session.user.hasOdAccess = Boolean(token.hasOdAccess);
         session.user.hasOdkAccess = Boolean(token.hasOdkAccess);
       }
 

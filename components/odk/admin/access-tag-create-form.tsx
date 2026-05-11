@@ -12,6 +12,7 @@ export function AccessTagCreateForm() {
   const [title, setTitle] = useState("");
   const [key, setKey] = useState("");
   const [description, setDescription] = useState("");
+  const [service, setService] = useState<"OD" | "ODK">("ODK");
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
@@ -25,8 +26,8 @@ export function AccessTagCreateForm() {
 
     startTransition(async () => {
       try {
-        await createAccessTag({ key: key.trim(), title: title.trim(), description: description.trim() || undefined });
-        setTitle(""); setKey(""); setDescription("");
+        await createAccessTag({ key: key.trim(), title: title.trim(), description: description.trim() || undefined, service });
+        setTitle(""); setKey(""); setDescription(""); setService("ODK");
         setSuccess(true);
         setTimeout(() => setSuccess(false), 2500);
       } catch {
@@ -64,6 +65,26 @@ export function AccessTagCreateForm() {
           Açıklama
           <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} className={`mt-1.5 ${inputCls}`} placeholder="Opsiyonel açıklama" />
         </label>
+
+        <div>
+          <span className="block text-sm font-medium text-stone-700 mb-1.5">Servis</span>
+          <div className="grid grid-cols-2 gap-2">
+            {(["OD", "ODK"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setService(s)}
+                className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                  service === s
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+                }`}
+              >
+                {s === "OD" ? "OD (Online Dershanem)" : "ODK (Deneme Kulübü)"}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <button
           type="submit"

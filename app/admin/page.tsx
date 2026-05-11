@@ -134,6 +134,7 @@ export default async function AdminDashboardPage() {
       up: true,
       spark: [20, 22, 25, 28, 30, 32, 35, 38, 42, 44, 48, 52],
       href: "/admin/ogrenciler",
+      tone: "mint",
     },
     {
       label: "Bu Haftaki Ders",
@@ -142,6 +143,7 @@ export default async function AdminDashboardPage() {
       up: true,
       spark: [8, 10, 9, 12, 11, 13, 14, 12, 15, 16, 14, thisWeekLessons],
       href: "/admin/dersler",
+      tone: "sky",
     },
     {
       label: "Bekleyen Ödeme",
@@ -150,6 +152,7 @@ export default async function AdminDashboardPage() {
       up: pendingPayments === 0,
       spark: [5, 4, 6, 3, 5, 4, 3, pendingPayments, 4, 3, 4, pendingPayments],
       href: "/admin/odemeler?purchaseStatus=PENDING",
+      tone: "blush",
     },
     {
       label: "Yeni Lead",
@@ -158,6 +161,7 @@ export default async function AdminDashboardPage() {
       up: false,
       spark: [10, 14, 18, 20, 22, 26, 28, 32, 34, 36, 38, newLeadsCount],
       href: "/admin/formlar",
+      tone: "yellow",
     },
   ];
 
@@ -242,7 +246,7 @@ export default async function AdminDashboardPage() {
         <div className="pd-kpi-grid">
           {kpis.map((k) => (
             <Link key={k.label} href={k.href} style={{ textDecoration: "none" }}>
-              <div className="pd-kpi-card" style={{ cursor: "pointer", transition: "box-shadow 150ms ease" }}>
+              <div className={`pd-kpi-card tone-${k.tone}`} style={{ cursor: "pointer", transition: "box-shadow 150ms ease" }}>
                 <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between" }}>
                   <div>
                     <div className="pd-kpi-label">{k.label}</div>

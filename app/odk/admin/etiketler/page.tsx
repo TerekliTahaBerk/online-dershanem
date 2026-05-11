@@ -8,6 +8,7 @@ type TagRow = {
   key: string;
   title: string;
   description: string | null;
+  service: "OD" | "ODK";
   isActive: boolean;
   _count: { userTags: number; examTags: number; packageTags: number };
 };
@@ -20,6 +21,7 @@ async function getAccessTags(): Promise<TagRow[]> {
       key: true,
       title: true,
       description: true,
+      service: true,
       isActive: true,
       _count: { select: { userTags: true, examTags: true, packageTags: true } },
     },
@@ -43,10 +45,12 @@ export default async function EtiketlerPage() {
         {/* Tags list */}
         <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
           {tags.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Tag className="h-8 w-8 text-stone-300 mb-3" />
-              <p className="text-sm font-medium text-stone-500">Henüz etiket yok</p>
-              <p className="text-xs text-stone-400 mt-1">Sağdaki formdan ilk etiketi oluştur.</p>
+            <div className="pd-empty tone-yellow" style={{ borderRadius: 0, border: "none" }}>
+              <div className="pd-empty-icon">
+                <Tag size={20} />
+              </div>
+              <div className="pd-empty-title">Henüz etiket yok</div>
+              <div className="pd-empty-desc">Sağdaki formdan ilk etiketi oluştur.</div>
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -54,6 +58,7 @@ export default async function EtiketlerPage() {
                 <tr className="border-b border-stone-100 bg-stone-50">
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Etiket</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Anahtar</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Servis</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Öğrenci</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Sınav</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500">Paket</th>
@@ -72,6 +77,15 @@ export default async function EtiketlerPage() {
                       </td>
                       <td className="px-4 py-3">
                         <code className="rounded bg-stone-100 px-2 py-0.5 text-xs font-mono text-stone-600">{tag.key}</code>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          tag.service === "OD"
+                            ? "bg-sky-50 text-sky-700"
+                            : "bg-violet-50 text-violet-700"
+                        }`}>
+                          {tag.service}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-stone-600">{tag._count.userTags}</td>
                       <td className="px-4 py-3 text-stone-600">{tag._count.examTags}</td>

@@ -49,10 +49,10 @@ export default async function OgretmenDashboardPage() {
           <h1 className="pd-page-title">Öğretmen Paneli</h1>
         </div>
         <div className="pd-page-body">
-          <div className="pd-card" style={{ padding: 40, textAlign: "center" }}>
-            <p style={{ color: "var(--pd-muted)", fontSize: 14 }}>
-              Profiliniz henüz tamamlanmadı. Yönetim ekibimizle iletişime geçebilirsiniz.
-            </p>
+          <div className="pd-empty tone-yellow">
+            <div className="pd-empty-icon">👋</div>
+            <div className="pd-empty-title">Profiliniz henüz tamamlanmadı</div>
+            <div className="pd-empty-desc">Yönetim ekibimizle iletişime geçerek profilinizi tamamlayabilirsiniz.</div>
           </div>
         </div>
       </>
@@ -86,10 +86,10 @@ export default async function OgretmenDashboardPage() {
   const isNearby = nextLesson && new Date(nextLesson.scheduledAt).getTime() - now.getTime() < 30 * 60 * 1000;
 
   const kpis = [
-    { label: "Aktif Öğrenci", value: totalStudents, icon: Users },
-    { label: "Tamamlanan", value: completed.length, icon: CheckCircle2 },
-    { label: "Toplam Saat", value: totalHours, icon: Clock },
-    { label: "Yaklaşan", value: upcoming.length, icon: CalendarDays },
+    { label: "Aktif Öğrenci", value: totalStudents, icon: Users, tone: "mint" },
+    { label: "Tamamlanan", value: completed.length, icon: CheckCircle2, tone: "lavender" },
+    { label: "Toplam Saat", value: totalHours, icon: Clock, tone: "sky" },
+    { label: "Yaklaşan", value: upcoming.length, icon: CalendarDays, tone: "yellow" },
   ];
 
   return (
@@ -119,7 +119,7 @@ export default async function OgretmenDashboardPage() {
         {/* KPI cards */}
         <div className="pd-kpi-grid">
           {kpis.map((k) => (
-            <div key={k.label} className="pd-kpi-card">
+            <div key={k.label} className={`pd-kpi-card tone-${k.tone}`}>
               <div className="pd-kpi-label">{k.label}</div>
               <div className="pd-kpi-value">{k.value}</div>
             </div>

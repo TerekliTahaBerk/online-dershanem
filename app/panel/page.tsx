@@ -115,14 +115,12 @@ export default async function PanelDashboardPage() {
           <h1 className="pd-page-title">Panelim</h1>
         </div>
         <div className="pd-page-body">
-          <div className="pd-card" style={{ padding: 40, textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>👋</div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, color: "var(--pd-ink)", marginBottom: 8 }}>
-              Profiliniz hazırlanıyor
-            </h2>
-            <p style={{ color: "var(--pd-muted)", fontSize: 14 }}>
+          <div className="pd-empty tone-mint">
+            <div className="pd-empty-icon" style={{ fontSize: 22 }}>👋</div>
+            <div className="pd-empty-title">Profiliniz hazırlanıyor</div>
+            <div className="pd-empty-desc">
               Hesabınız kısa süre içinde tamamlanacak.
-            </p>
+            </div>
           </div>
         </div>
       </>
@@ -160,30 +158,35 @@ export default async function PanelDashboardPage() {
       value: completed.length.toString(),
       delta: `${total} dersten`,
       up: true,
+      tone: "mint",
     },
     {
       label: "Toplam Süre",
       value: `${totalHours}s`,
       delta: `${Math.max(1, Math.round(totalHours / 4))}h / hafta`,
       up: true,
+      tone: "sky",
     },
     {
       label: "Yaklaşan Ders",
       value: upcoming.length.toString(),
       delta: "planlandı",
       up: upcoming.length > 0,
+      tone: "yellow",
     },
     {
       label: "Kurs İlerlemesi",
       value: `%${courseProgress[0]?.completionPercent ?? lessonProgressPct}`,
       delta: `${courseProgress.length} aktif kurs`,
       up: (courseProgress[0]?.completionPercent ?? lessonProgressPct) > 50,
+      tone: "lavender",
     },
     {
       label: "Net Ortalaması",
       value: latestNet ? Number(latestNet.value).toFixed(1) : "—",
       delta: netDelta == null ? "ölçüm bekleniyor" : `${netDelta >= 0 ? "+" : ""}${netDelta.toFixed(1)} değişim`,
       up: netDelta == null ? false : netDelta >= 0,
+      tone: "blush",
     },
   ];
 
@@ -217,7 +220,7 @@ export default async function PanelDashboardPage() {
       <div className="pd-page-body">
         <div className="pd-kpi-grid">
           {kpis.map((kpi) => (
-            <div key={kpi.label} className="pd-kpi-card">
+            <div key={kpi.label} className={`pd-kpi-card tone-${kpi.tone}`}>
               <div className="pd-kpi-label">{kpi.label}</div>
               <div className="pd-kpi-value">{kpi.value}</div>
               <div className={`pd-kpi-delta ${kpi.up ? "up" : ""}`}>
@@ -232,7 +235,8 @@ export default async function PanelDashboardPage() {
           <div className="pd-card">
             <div className="pd-card-head">
               <div>
-                <div className="pd-card-title">Kurs İlerlemen</div>
+                <span className="pd-eyebrow-tag tone-mint">Kurslar</span>
+                <div className="pd-card-title" style={{ marginTop: 6 }}>Kurs İlerlemen</div>
                 <div className="pd-card-sub">{student.courseProgress.length} kurs takipte</div>
               </div>
               <Link href="/panel/dersler" className="pd-btn pd-btn-ghost pd-btn-sm">
@@ -241,7 +245,7 @@ export default async function PanelDashboardPage() {
             </div>
             <div className="pd-card-body">
               {courseProgress.length === 0 ? (
-                <p style={{ color: "var(--pd-muted)", fontSize: 13 }}>Henüz atanmış kurs görünmüyor.</p>
+                <div className="pd-empty-inline tone-mint">Henüz atanmış kurs görünmüyor.</div>
               ) : (
                 <div style={{ display: "grid", gap: 12 }}>
                   {courseProgress.map((progress) => {
@@ -280,14 +284,15 @@ export default async function PanelDashboardPage() {
           <div className="pd-card">
             <div className="pd-card-head">
               <div>
-                <div className="pd-card-title">Bildirimler</div>
+                <span className="pd-eyebrow-tag tone-blush">Bildirim</span>
+                <div className="pd-card-title" style={{ marginTop: 6 }}>Bildirimler</div>
                 <div className="pd-card-sub">{unreadNotifications.length} yeni</div>
               </div>
               <Bell size={15} color="var(--pd-accent)" />
             </div>
             <div className="pd-card-body" style={{ display: "grid", gap: 10 }}>
               {notifications.length === 0 ? (
-                <p style={{ color: "var(--pd-muted)", fontSize: 13 }}>Bildirim bulunmuyor.</p>
+                <div className="pd-empty-inline tone-blush">Bildirim bulunmuyor.</div>
               ) : (
                 notifications.map((notification) => (
                   <div
@@ -417,7 +422,8 @@ export default async function PanelDashboardPage() {
           <div className="pd-card">
             <div className="pd-card-head">
               <div>
-                <div className="pd-card-title">Bu Haftaki Program</div>
+                <span className="pd-eyebrow-tag tone-sky">Takvim</span>
+                <div className="pd-card-title" style={{ marginTop: 6 }}>Bu Haftaki Program</div>
                 <div className="pd-card-sub">{weekLessons.length} ders planlandı</div>
               </div>
               <Link href="/panel/takvim" className="pd-btn pd-btn-ghost pd-btn-sm">
@@ -426,7 +432,7 @@ export default async function PanelDashboardPage() {
             </div>
             <div className="pd-card-body">
               {weekLessons.length === 0 ? (
-                <p style={{ color: "var(--pd-muted)", fontSize: 13 }}>Bu hafta planlanmış ders yok.</p>
+                <div className="pd-empty-inline tone-yellow">Bu hafta planlanmış ders yok.</div>
               ) : (
                 weekLessons.map((lesson) => {
                   const isNext = lesson.id === nextLesson?.id;
@@ -464,7 +470,10 @@ export default async function PanelDashboardPage() {
 
           <div className="pd-card">
             <div className="pd-card-head">
-              <div className="pd-card-title">Performans & Hedefler</div>
+              <div>
+                <span className="pd-eyebrow-tag tone-lavender">Hedef</span>
+                <div className="pd-card-title" style={{ marginTop: 6 }}>Performans & Hedefler</div>
+              </div>
               <span style={{ fontSize: 18, fontWeight: 700, color: "var(--pd-accent)" }}>%{courseProgress[0]?.completionPercent ?? lessonProgressPct}</span>
             </div>
             <div className="pd-card-body">

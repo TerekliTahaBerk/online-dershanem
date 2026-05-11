@@ -20,6 +20,7 @@ export default async function OgretmenLayout({ children }: { children: React.Rea
         persona="teacher"
         userName={userName}
         userRole="Öğretmen"
+        hasOdkAccess={access.hasOdkPanel}
       />
       <div className="pd-app-main">
         {children}

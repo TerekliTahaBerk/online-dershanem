@@ -85,12 +85,12 @@ export default async function PanelOdemelerPage() {
       <div className="pd-page-body">
         <div className="pd-kpi-grid" style={{ marginBottom: 20 }}>
           {[
-            { label: "Toplam Kayıt", value: purchases.length.toString() },
-            { label: "Ödendi", value: paidCount.toString() },
-            { label: "Beklemede", value: pendingCount.toString() },
-            { label: "Aktif Üyelik", value: activeEnrollment ? "1" : "0" },
+            { label: "Toplam Kayıt", value: purchases.length.toString(), tone: "sky" },
+            { label: "Ödendi", value: paidCount.toString(), tone: "mint" },
+            { label: "Beklemede", value: pendingCount.toString(), tone: "yellow" },
+            { label: "Aktif Üyelik", value: activeEnrollment ? "1" : "0", tone: "lavender" },
           ].map((kpi) => (
-            <div key={kpi.label} className="pd-kpi-card">
+            <div key={kpi.label} className={`pd-kpi-card tone-${kpi.tone}`}>
               <div className="pd-kpi-label">{kpi.label}</div>
               <div className="pd-kpi-value">{kpi.value}</div>
             </div>
@@ -106,7 +106,7 @@ export default async function PanelOdemelerPage() {
           </div>
           <div className="pd-card-body">
             {enrollments.length === 0 ? (
-              <p style={{ fontSize: 13, color: "var(--pd-muted)" }}>Henüz aktif üyelik görünmüyor.</p>
+              <div className="pd-empty-inline tone-lavender">Henüz aktif üyelik görünmüyor.</div>
             ) : (
               <div style={{ display: "grid", gap: 12 }}>
                 {enrollments.map((enrollment) => (
@@ -144,18 +144,12 @@ export default async function PanelOdemelerPage() {
         </div>
 
         {purchases.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "60px 24px",
-              background: "var(--pd-bg-elevated)",
-              border: "1px solid var(--pd-line)",
-              borderRadius: 16,
-            }}
-          >
-            <CreditCard size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Henüz ödeme hareketiniz yok</p>
-            <p style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 4 }}>Satın alma detaylarınız burada yer alacak.</p>
+          <div className="pd-empty tone-blush">
+            <div className="pd-empty-icon">
+              <CreditCard size={20} />
+            </div>
+            <div className="pd-empty-title">Henüz ödeme hareketiniz yok</div>
+            <div className="pd-empty-desc">Satın alma detaylarınız burada yer alacak.</div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -192,8 +186,7 @@ export default async function PanelOdemelerPage() {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                       <span
-                        className={isPaid ? "pd-chip pd-chip-accent" : isFailed ? "pd-chip" : "pd-chip pd-chip-warning"}
-                        style={isFailed ? { color: "#b91c1c", background: "#fef2f2", border: "1px solid #fca5a5" } : undefined}
+                        className={isPaid ? "pd-chip pd-chip-accent" : isFailed ? "pd-chip pd-chip-danger" : "pd-chip pd-chip-warning"}
                       >
                         {isPaid ? (
                           <><CheckCircle size={11} /> Ödendi</>

@@ -58,10 +58,12 @@ export default async function AdminKamplarPage() {
       </div>
 
       {camps.length === 0 ? (
-        <div className="rounded-xl border border-stone-200 bg-white py-16 text-center">
-          <Tent className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-stone-600">Henüz kamp yok</p>
-          <p className="text-xs text-stone-400 mt-1">İlk kampı eklemek için "Yeni Kamp" butonuna tıklayın.</p>
+        <div className="pd-empty tone-lavender">
+          <div className="pd-empty-icon">
+            <Tent size={20} />
+          </div>
+          <div className="pd-empty-title">Henüz kamp yok</div>
+          <div className="pd-empty-desc">İlk kampı eklemek için "Yeni Kamp" butonuna tıklayın.</div>
         </div>
       ) : (
         <div className="space-y-8">

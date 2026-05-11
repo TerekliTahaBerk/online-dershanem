@@ -158,10 +158,12 @@ export default async function PaketimPage() {
   if (!hasAny) {
     return (
       <div className="p-6">
-        <div className="flex flex-col items-center justify-center rounded-xl border border-stone-200 bg-white py-20 text-center">
-          <Package className="h-8 w-8 text-stone-300 mb-3" />
-          <p className="text-sm font-medium text-stone-500">Henüz aktif paketin yok</p>
-          <p className="text-xs text-stone-400 mt-1">Paket satın aldığında sınavlara erişim otomatik açılacak.</p>
+        <div className="pd-empty tone-lavender">
+          <div className="pd-empty-icon">
+            <Package size={20} />
+          </div>
+          <div className="pd-empty-title">Henüz aktif paketin yok</div>
+          <div className="pd-empty-desc">Paket satın aldığında sınavlara erişim otomatik açılacak.</div>
         </div>
       </div>
     );

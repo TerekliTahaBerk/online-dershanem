@@ -132,10 +132,12 @@ export default async function OgrencilerPage() {
         {/* Student list */}
         <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
           {students.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Users className="h-8 w-8 text-stone-300 mb-3" />
-              <p className="text-sm font-medium text-stone-500">Henüz erişim verilmemiş</p>
-              <p className="text-xs text-stone-400 mt-1">Sağdaki formdan öğrenciye erişim ver.</p>
+            <div className="pd-empty tone-mint" style={{ borderRadius: 0, border: "none" }}>
+              <div className="pd-empty-icon">
+                <Users size={20} />
+              </div>
+              <div className="pd-empty-title">Henüz erişim verilmemiş</div>
+              <div className="pd-empty-desc">Sağdaki formdan öğrenciye erişim ver.</div>
             </div>
           ) : (
             <div className="divide-y divide-stone-100">

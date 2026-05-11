@@ -208,7 +208,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
                               {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(lesson.scheduledAt))}
                               {" · "}{lesson.teacher.fullName.split(" ")[0]}
                             </p>
-                            {(lesson as any).googleMeetLink && (
+                            {lesson.googleMeetLink && (
                               <span className="inline-flex items-center gap-0.5 opacity-60 text-[10px]">
                                 <ExternalLink size={8} /> Meet
                               </span>

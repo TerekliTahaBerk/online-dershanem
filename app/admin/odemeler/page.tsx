@@ -141,7 +141,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
 
       <div className="pd-page-body">
         {updated === "purchase" && (
-          <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 16px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+          <div className="pd-alert pd-alert-success" style={{ marginBottom: 16 }}>
             Ödeme kaydı güncellendi.
           </div>
         )}
@@ -199,7 +199,7 @@ export default async function OdemelerPage({ searchParams }: Props) {
                         <td style={{ fontSize: 12 }}>
                           {purchase.taskLabel && <div style={{ fontWeight: 500, color: "var(--pd-ink-2)", marginBottom: 2 }}>{purchase.taskLabel}</div>}
                           {purchase.nextActionAt ? (
-                            <span style={{ color: isOverdue ? "#b91c1c" : "var(--pd-muted)", fontWeight: isOverdue ? 600 : undefined }}>
+                            <span style={{ color: isOverdue ? "var(--pd-pastel-blush-ink)" : "var(--pd-muted)", fontWeight: isOverdue ? 600 : undefined }}>
                               {formatDateTime(purchase.nextActionAt)}
                             </span>
                           ) : (

@@ -739,10 +739,15 @@ export async function removePackageAccessTag(packageId: string, accessTagId: str
 
 // ── Access Tags ───────────────────────────────────────────────────────────────
 
-export async function createAccessTag(data: { key: string; title: string; description?: string }) {
+export async function createAccessTag(data: { key: string; title: string; description?: string; service?: "OD" | "ODK" }) {
   await requireOdkAdmin();
   await prisma.odkAccessTag.create({
-    data: { key: data.key, title: data.title, description: data.description || null },
+    data: {
+      key: data.key,
+      title: data.title,
+      description: data.description || null,
+      service: data.service ?? "ODK",
+    },
   });
   revalidatePath("/odk/admin/etiketler");
 }

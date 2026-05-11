@@ -147,10 +147,12 @@ export default async function OdkSinavlarimPage() {
       </div>
 
       {exams.length === 0 && lockedExams.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-stone-200 bg-white py-16 text-center">
-          <FileText className="h-8 w-8 text-stone-300 mb-3" />
-          <p className="text-sm font-medium text-stone-500">Henüz erişilebilir sınav yok</p>
-          <p className="text-xs text-stone-400 mt-1">Paket satın aldığında sınavlar burada görünecek.</p>
+        <div className="pd-empty tone-sky">
+          <div className="pd-empty-icon">
+            <FileText size={20} />
+          </div>
+          <div className="pd-empty-title">Henüz erişilebilir sınav yok</div>
+          <div className="pd-empty-desc">Paket satın aldığında sınavlar burada görünecek.</div>
         </div>
       )}
 

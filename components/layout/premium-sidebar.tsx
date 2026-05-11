@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -9,6 +10,7 @@ import {
   FileText, Tent, Trophy, BookOpen, Calendar, User, LogOut, Menu, X,
   Inbox, BarChart2, FlaskConical, Tag, ClipboardList, type LucideIcon
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export type SidebarPersona = "admin" | "student" | "teacher";
 
@@ -22,6 +24,7 @@ interface NavItem {
 
 interface NavSection {
   label: string;
+  tone?: "mint" | "sky" | "yellow" | "blush" | "lavender";
   items: NavItem[];
 }
 
@@ -29,6 +32,7 @@ function getAdminNav(): NavSection[] {
   return [
     {
       label: "Online Dershanem",
+      tone: "mint",
       items: [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
         { href: "/admin/formlar", label: "Lead Inbox", icon: Inbox },
@@ -44,6 +48,7 @@ function getAdminNav(): NavSection[] {
     },
     {
       label: "Deneme Kulübü",
+      tone: "lavender",
       items: [
         { href: "/odk/admin", label: "ODK Dashboard", icon: Trophy, exact: true },
         { href: "/odk/admin/sinavlar", label: "Sınavlar", icon: FileText },
@@ -59,6 +64,7 @@ function getStudentNav(hasOdkAccess: boolean): NavSection[] {
   const sections: NavSection[] = [
     {
       label: "Öğrenci",
+      tone: "mint",
       items: [
         { href: "/panel", label: "Anasayfa", icon: LayoutDashboard, exact: true },
         { href: "/panel/dersler", label: "Derslerim", icon: CalendarDays },
@@ -75,6 +81,7 @@ function getStudentNav(hasOdkAccess: boolean): NavSection[] {
   if (hasOdkAccess) {
     sections.push({
       label: "Deneme Kulübü",
+      tone: "lavender",
       items: [
         { href: "/odk/panel", label: "Sınavlarım", icon: Trophy, exact: true },
         { href: "/odk/panel/sinavlar", label: "Tüm Sınavlar", icon: FileText },
@@ -87,10 +94,11 @@ function getStudentNav(hasOdkAccess: boolean): NavSection[] {
   return sections;
 }
 
-function getTeacherNav(): NavSection[] {
-  return [
+function getTeacherNav(hasOdkAccess: boolean): NavSection[] {
+  const sections: NavSection[] = [
     {
       label: "Öğretmen",
+      tone: "sky",
       items: [
         { href: "/ogretmen", label: "Anasayfa", icon: LayoutDashboard, exact: true },
         { href: "/ogretmen/dersler", label: "Derslerim", icon: CalendarDays },
@@ -100,6 +108,20 @@ function getTeacherNav(): NavSection[] {
       ]
     }
   ];
+
+  if (hasOdkAccess) {
+    sections.push({
+      label: "Deneme Kulübü",
+      tone: "lavender",
+      items: [
+        { href: "/odk/panel", label: "Sınavlar", icon: Trophy, exact: true },
+        { href: "/odk/panel/sinavlar", label: "Tüm Sınavlar", icon: FileText },
+        { href: "/odk/panel/sonuclar", label: "Sonuçlar", icon: BarChart2 },
+      ]
+    });
+  }
+
+  return sections;
 }
 
 interface PremiumSidebarProps {
@@ -123,7 +145,7 @@ function SidebarContent({
       ? getAdminNav()
       : persona === "student"
       ? getStudentNav(!!hasOdkAccess)
-      : getTeacherNav();
+      : getTeacherNav(!!hasOdkAccess);
 
   const initials = (userName ?? "?")
     .split(" ")
@@ -138,25 +160,38 @@ function SidebarContent({
   return (
     <>
       {/* Brand */}
-      <div className="pd-sidebar-brand">
-        <div className="pd-sidebar-logo-sq">OD</div>
-        <div>
-          <div className="pd-sidebar-brand-name">Online Dershanem</div>
+      <Link
+        href={persona === "admin" ? "/admin" : persona === "teacher" ? "/ogretmen" : "/panel"}
+        onClick={onNavigate}
+        className="pd-sidebar-brand"
+        style={{ textDecoration: "none" }}
+      >
+        <Image
+          src="/onlinedershanem_.png"
+          alt="Online Dershanem"
+          width={1050}
+          height={200}
+          priority
+          className="pd-sidebar-brand-img"
+        />
+        <div style={{ minWidth: 0 }}>
           <div className="pd-sidebar-brand-sub">
             {persona === "admin"
-              ? "Yönetici paneli"
+              ? "Yönetici"
               : persona === "student"
-              ? "Öğrenci paneli"
-              : "Öğretmen paneli"}
+              ? "Öğrenci"
+              : "Öğretmen"}
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Nav sections */}
       <div className="pd-sidebar-nav">
         {sections.map((section) => (
           <div key={section.label}>
-            <div className="pd-sidebar-section-label">{section.label}</div>
+            <div className="pd-sidebar-section-label" data-tone={section.tone}>
+              {section.label}
+            </div>
             {section.items.map(({ href, label, icon: Icon, exact, badge }) => (
               <Link
                 key={href}
@@ -182,16 +217,18 @@ function SidebarContent({
           <div className="pd-sidebar-user-name">{userName ?? "Kullanıcı"}</div>
           <div className="pd-sidebar-user-role">{userRole ?? persona}</div>
         </div>
+        <ThemeToggle variant="icon" />
         <button
           onClick={() => signOut({ callbackUrl: "/giris" })}
           title="Çıkış yap"
+          aria-label="Çıkış yap"
           style={{
             background: "transparent",
             border: "none",
             cursor: "pointer",
             color: "var(--pd-muted-2)",
-            padding: "4px",
-            borderRadius: "6px",
+            padding: "6px",
+            borderRadius: "999px",
             display: "flex",
             alignItems: "center",
             transition: "color 120ms ease"
@@ -212,25 +249,34 @@ export function PremiumSidebar(props: PremiumSidebarProps) {
       {/* Mobile top bar */}
       <div className="pd-mobile-topbar">
         <div className="pd-sidebar-brand" style={{ border: "none", padding: 0, gap: 8 }}>
-          <div className="pd-sidebar-logo-sq">OD</div>
-          <span className="pd-sidebar-brand-name">Online Dershanem</span>
+          <Image
+            src="/onlinedershanem_.png"
+            alt="Online Dershanem"
+            width={1050}
+            height={200}
+            priority
+            className="pd-sidebar-brand-img"
+          />
         </div>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          style={{
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            color: "var(--pd-ink-3)",
-            padding: "6px",
-            borderRadius: "6px",
-            display: "flex",
-            alignItems: "center"
-          }}
-          aria-label="Menü"
-        >
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <ThemeToggle variant="icon" />
+          <button
+            onClick={() => setOpen((v) => !v)}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--pd-ink-3)",
+              padding: "6px",
+              borderRadius: "6px",
+              display: "flex",
+              alignItems: "center"
+            }}
+            aria-label="Menü"
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile overlay */}

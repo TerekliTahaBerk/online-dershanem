@@ -162,10 +162,12 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
 
       <div className="pd-page-body">
         {allEvents.length === 0 ? (
-          <div style={{ background: "var(--pd-bg-elevated)", border: "1px solid var(--pd-line)", borderRadius: 16, padding: "60px 24px", textAlign: "center" }}>
-            <CalendarDays className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-stone-600">Bu hafta planlı oturum görünmüyor</p>
-            <p className="text-xs text-stone-400 mt-1">Yeni dersler ve canlı içerikler burada yer alacak.</p>
+          <div className="pd-empty tone-sky">
+            <div className="pd-empty-icon">
+              <CalendarDays size={20} />
+            </div>
+            <div className="pd-empty-title">Bu hafta planlı oturum yok</div>
+            <div className="pd-empty-desc">Yeni dersler ve canlı içerikler burada yer alacak.</div>
           </div>
         ) : (
           <div className="rounded-xl bg-white border border-stone-200 overflow-hidden">
@@ -256,7 +258,7 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
             Planlı ders
           </span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 3, background: "#dbeafe", border: "1px solid #93c5fd" }} />
+            <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 3, background: "var(--pd-pastel-sky-bg)", border: "1px solid var(--pd-pastel-sky-ink)" }} />
             Canlı içerik
           </span>
         </div>

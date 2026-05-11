@@ -70,13 +70,16 @@ export default async function OdkSinavlarPage() {
 
       <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
         {exams.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <FileText className="h-8 w-8 text-stone-300 mb-3" />
-            <p className="text-sm font-medium text-stone-500">Henüz sınav yok</p>
-            <p className="text-xs text-stone-400 mt-1">İlk sınavını oluştur.</p>
+          <div className="pd-empty tone-sky" style={{ borderRadius: 0, border: "none" }}>
+            <div className="pd-empty-icon">
+              <FileText size={20} />
+            </div>
+            <div className="pd-empty-title">Henüz sınav yok</div>
+            <div className="pd-empty-desc">İlk sınavını oluştur.</div>
             <Link
               href="/odk/admin/sinavlar/yeni"
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+              className="pd-btn pd-btn-accent pd-btn-sm"
+              style={{ marginTop: 12 }}
             >
               <Plus className="h-4 w-4" />
               Sınav Oluştur

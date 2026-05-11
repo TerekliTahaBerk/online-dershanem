@@ -189,7 +189,7 @@ export default async function OdkAdminDashboard() {
         </div>
 
         {recentAttempts.length === 0 ? (
-          <div className="px-5 py-10 text-center text-sm text-stone-400">Henüz deneme girişimi yok.</div>
+          <div className="pd-empty-inline tone-yellow" style={{ margin: 16 }}>Henüz deneme girişimi yok.</div>
         ) : (
           <div className="divide-y divide-stone-100">
             {recentAttempts.map((attempt) => {

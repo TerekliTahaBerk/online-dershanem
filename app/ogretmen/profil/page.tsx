@@ -90,12 +90,12 @@ export default async function OgretmenProfilPage({
 
       <div className="pd-page-body" style={{ maxWidth: 680 }}>
         {params.success && successMessages[params.success] && (
-          <div style={{ background: "#e8f5ef", border: "1px solid #b3dfc7", color: "#0d5c3d", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+          <div className="pd-alert pd-alert-success" style={{ marginBottom: 16 }}>
             {successMessages[params.success]}
           </div>
         )}
         {params.error && errorMessages[params.error] && (
-          <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", color: "#b91c1c", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+          <div className="pd-alert pd-alert-danger" style={{ marginBottom: 16 }}>
             {errorMessages[params.error]}
           </div>
         )}

@@ -49,10 +49,12 @@ export default async function PaketlerPage() {
         {/* Package list */}
         <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
           {packages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Package className="h-8 w-8 text-stone-300 mb-3" />
-              <p className="text-sm font-medium text-stone-500">Henüz paket yok</p>
-              <p className="text-xs text-stone-400 mt-1">Sağdaki formdan ilk paketi oluştur.</p>
+            <div className="pd-empty tone-mint" style={{ borderRadius: 0, border: "none" }}>
+              <div className="pd-empty-icon">
+                <Package size={20} />
+              </div>
+              <div className="pd-empty-title">Henüz paket yok</div>
+              <div className="pd-empty-desc">Sağdaki formdan ilk paketi oluştur.</div>
             </div>
           ) : (
             <table className="w-full text-sm">

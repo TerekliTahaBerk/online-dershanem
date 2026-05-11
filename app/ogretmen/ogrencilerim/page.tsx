@@ -102,17 +102,12 @@ export default async function OgretmenOgrencilerimPage() {
 
       <div className="pd-page-body">
         {students.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "60px 24px",
-              background: "var(--pd-bg-elevated)",
-              border: "1px solid var(--pd-line)",
-              borderRadius: 16,
-            }}
-          >
-            <Users size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Henüz öğrenciniz bulunmuyor</p>
+          <div className="pd-empty tone-mint">
+            <div className="pd-empty-icon">
+              <Users size={20} />
+            </div>
+            <div className="pd-empty-title">Henüz öğrenciniz bulunmuyor</div>
+            <div className="pd-empty-desc">Atanan öğrenciler ders planlandıkça burada görünecek.</div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -188,21 +183,21 @@ export default async function OgretmenOgrencilerimPage() {
                       {((student as { targetGoal?: string }).targetGoal || (student as { weakLessons?: string }).weakLessons || (student as { strongLessons?: string }).strongLessons) && (
                         <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8 }}>
                           {(student as { targetGoal?: string }).targetGoal && (
-                            <div style={{ borderRadius: 8, background: "#dbeafe", border: "1px solid #bfdbfe", padding: "8px 12px" }}>
-                              <div style={{ fontSize: 10, fontWeight: 700, color: "#1d4ed8", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>Hedef</div>
-                              <div style={{ fontSize: 12, color: "#1e40af" }}>{(student as { targetGoal?: string }).targetGoal}</div>
+                            <div className="pd-info-card tone-sky">
+                              <div className="pd-info-card-label">Hedef</div>
+                              <div className="pd-info-card-value">{(student as { targetGoal?: string }).targetGoal}</div>
                             </div>
                           )}
                           {(student as { weakLessons?: string }).weakLessons && (
-                            <div style={{ borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca", padding: "8px 12px" }}>
-                              <div style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>Zayıf Dersler</div>
-                              <div style={{ fontSize: 12, color: "#991b1b" }}>{(student as { weakLessons?: string }).weakLessons}</div>
+                            <div className="pd-info-card tone-blush">
+                              <div className="pd-info-card-label">Zayıf Dersler</div>
+                              <div className="pd-info-card-value">{(student as { weakLessons?: string }).weakLessons}</div>
                             </div>
                           )}
                           {(student as { strongLessons?: string }).strongLessons && (
-                            <div style={{ borderRadius: 8, background: "var(--pd-accent-soft)", border: "1px solid var(--pd-line)", padding: "8px 12px" }}>
-                              <div style={{ fontSize: 10, fontWeight: 700, color: "var(--pd-accent)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 3 }}>Güçlü Dersler</div>
-                              <div style={{ fontSize: 12, color: "var(--pd-ink-2)" }}>{(student as { strongLessons?: string }).strongLessons}</div>
+                            <div className="pd-info-card tone-mint">
+                              <div className="pd-info-card-label">Güçlü Dersler</div>
+                              <div className="pd-info-card-value">{(student as { strongLessons?: string }).strongLessons}</div>
                             </div>
                           )}
                         </div>

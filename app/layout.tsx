@@ -7,7 +7,10 @@ import { seoKeywords, siteUrl } from "@/lib/content";
 import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
+
+const themeInitScript = `(()=>{try{var t=localStorage.getItem('od-theme');if(t!=='dark'&&t!=='light'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();`;
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -89,8 +92,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="tr"
       className={`${GeistSans.variable} ${instrumentSerif.variable} ${inter.variable}`}
+      suppressHydrationWarning
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="shortcut icon" href="/favicon.ico" />
@@ -98,13 +103,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthSessionProvider>
-          <Suspense fallback={null}>
-            <NavigationProgress />
-          </Suspense>
-          <Pixels />
-          {children}
-          <Analytics />
-          <SpeedInsights />
+          <ThemeProvider>
+            <Suspense fallback={null}>
+              <NavigationProgress />
+            </Suspense>
+            <Pixels />
+            {children}
+            <Analytics />
+            <SpeedInsights />
+          </ThemeProvider>
         </AuthSessionProvider>
       </body>
     </html>

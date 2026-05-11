@@ -13,12 +13,6 @@ const categoryLabels: Record<string, string> = {
   LGS: "LGS",
 };
 
-const categoryChipStyle: Record<string, { background: string; color: string }> = {
-  AYT: { background: "#dbeafe", color: "#1d4ed8" },
-  TYT: { background: "#ede9fe", color: "#7c3aed" },
-  LGS: { background: "#ffedd5", color: "#c2410c" },
-};
-
 const sharedFeatures = [
   "8 Kişilik Sınıf Yapısı",
   "Haftalık Detaylı PDF Materyali",
@@ -95,39 +89,21 @@ export default async function PanelKamplarPage({
         </div>
 
         {camps.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "60px 24px",
-              background: "var(--pd-bg-elevated)",
-              border: "1px solid var(--pd-line)",
-              borderRadius: 16,
-            }}
-          >
-            <Tent size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Bu kategoride açık kamp görünmüyor</p>
-            <p style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 4 }}>Yeni kamp açıldığında burada yayınlanacak.</p>
+          <div className="pd-empty tone-lavender">
+            <div className="pd-empty-icon">
+              <Tent size={20} />
+            </div>
+            <div className="pd-empty-title">Bu kategoride açık kamp yok</div>
+            <div className="pd-empty-desc">Yeni kamp açıldığında burada yayınlanacak.</div>
           </div>
         ) : (
           <div style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
             {camps.map((camp) => {
-              const chipStyle = categoryChipStyle[camp.category] ?? { background: "var(--pd-bg-subtle)", color: "var(--pd-muted)" };
               return (
                 <div key={camp.id} className="pd-card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
                   <div style={{ padding: 20, flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          padding: "3px 10px",
-                          borderRadius: 999,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          ...chipStyle,
-                        }}
-                      >
+                      <span className="pd-exam-pill" data-type={camp.category}>
                         {categoryLabels[camp.category]}
                       </span>
                       <span className="pd-chip" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>

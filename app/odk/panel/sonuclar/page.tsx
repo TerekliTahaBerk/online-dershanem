@@ -248,13 +248,16 @@ export default async function OdkSonuclarPage() {
       )}
 
       {attempts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-stone-200 bg-white py-16 text-center">
-          <BarChart2 className="h-8 w-8 text-stone-300 mb-3" />
-          <p className="text-sm font-medium text-stone-500">Henüz sınav sonucun yok</p>
-          <p className="text-xs text-stone-400 mt-1">Sınavlarım sayfasından bir sınav çöz.</p>
+        <div className="pd-empty tone-mint">
+          <div className="pd-empty-icon">
+            <BarChart2 size={20} />
+          </div>
+          <div className="pd-empty-title">Henüz sınav sonucun yok</div>
+          <div className="pd-empty-desc">Sınavlarım sayfasından bir sınav çöz.</div>
           <Link
             href="/odk/panel/sinavlar"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+            className="pd-btn pd-btn-accent pd-btn-sm"
+            style={{ marginTop: 12 }}
           >
             Sınavlara Git <ArrowRight className="h-3.5 w-3.5" />
           </Link>

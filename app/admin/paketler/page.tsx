@@ -65,12 +65,16 @@ export default async function PaketlerPage({ searchParams }: Props) {
 
       {/* Package Grid */}
       {packages.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 py-16 text-center">
-          <BookOpen size={40} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500 font-medium">Henüz paket yok</p>
-          <Link href="/admin/paketler/yeni" className="mt-3 inline-block text-sm text-[#546B41] hover:underline">
-            İlk paketi oluştur →
-          </Link>
+        <div className="pd-empty tone-mint">
+          <div className="pd-empty-icon">
+            <BookOpen size={20} />
+          </div>
+          <div className="pd-empty-title">Henüz paket yok</div>
+          <div className="pd-empty-desc">
+            <Link href="/admin/paketler/yeni" style={{ color: "var(--pd-accent)", textDecoration: "underline" }}>
+              İlk paketi oluştur →
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

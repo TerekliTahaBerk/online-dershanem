@@ -124,12 +124,12 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
       <div className="pd-page-body">
         <div className="pd-kpi-grid" style={{ marginBottom: 16 }}>
           {[
-            { label: "Tamamlanan", value: completedLessons.length.toString() },
-            { label: "Yaklaşan", value: upcomingLessons.length.toString() },
-            { label: "Toplam Saat", value: `${totalHours}s` },
-            { label: "Kurs", value: student.courseProgress.length.toString() },
+            { label: "Tamamlanan", value: completedLessons.length.toString(), tone: "mint" },
+            { label: "Yaklaşan", value: upcomingLessons.length.toString(), tone: "yellow" },
+            { label: "Toplam Saat", value: `${totalHours}s`, tone: "sky" },
+            { label: "Kurs", value: student.courseProgress.length.toString(), tone: "lavender" },
           ].map((item) => (
-            <div key={item.label} className="pd-kpi-card">
+            <div key={item.label} className={`pd-kpi-card tone-${item.tone}`}>
               <div className="pd-kpi-label">{item.label}</div>
               <div className="pd-kpi-value">{item.value}</div>
             </div>
@@ -146,7 +146,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
           </div>
           <div className="pd-card-body">
             {topCourses.length === 0 ? (
-              <p style={{ color: "var(--pd-muted)", fontSize: 13 }}>Henüz kurs ataması görünmüyor.</p>
+              <div className="pd-empty-inline tone-mint">Henüz kurs ataması görünmüyor.</div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
                 {topCourses.map((progress) => {
@@ -221,17 +221,12 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
         </div>
 
         {visibleLessons.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "60px 24px",
-              background: "var(--pd-bg-elevated)",
-              border: "1px solid var(--pd-line)",
-              borderRadius: 16,
-            }}
-          >
-            <CalendarDays size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: 14, color: "var(--pd-muted)" }}>Bu filtrede ders görünmüyor.</p>
+          <div className="pd-empty tone-yellow">
+            <div className="pd-empty-icon">
+              <CalendarDays size={20} />
+            </div>
+            <div className="pd-empty-title">Bu filtrede ders yok</div>
+            <div className="pd-empty-desc">Farklı bir sekme deneyebilir veya takvimden tüm derslerine bakabilirsin.</div>
           </div>
         ) : activeTab === "upcoming" ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -346,7 +341,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                           width: 36,
                           height: 36,
                           borderRadius: 9,
-                          background: isCompleted ? "var(--pd-accent-soft)" : isCancelled ? "#fef2f2" : "var(--pd-bg-subtle)",
+                          background: isCompleted ? "var(--pd-accent-soft)" : isCancelled ? "var(--pd-pastel-blush-soft)" : "var(--pd-bg-subtle)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -356,7 +351,7 @@ export default async function PanelDerslerPage({ searchParams }: Props) {
                         {isCompleted ? (
                           <CheckCircle size={16} style={{ color: "var(--pd-accent)" }} />
                         ) : isCancelled ? (
-                          <XCircle size={16} style={{ color: "#ef4444" }} />
+                          <XCircle size={16} style={{ color: "var(--pd-pastel-blush-ink)" }} />
                         ) : (
                           <Clock size={16} style={{ color: "var(--pd-muted)" }} />
                         )}
