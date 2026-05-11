@@ -217,7 +217,7 @@ export default async function PanelTakvimPage({ searchParams }: Props) {
                                 key={event.id}
                                 className={`rounded-md border p-1.5 text-xs mb-0.5 leading-tight ${
                                   event.type === "lesson"
-                                    ? "bg-[#DCCCAC]/60 border-[#546B41]/40 text-[#435633]"
+                                    ? "bg-[var(--pd-accent-soft)] border-[var(--pd-line)] text-[var(--pd-accent)]"
                                     : "bg-blue-50 border-blue-200 text-blue-700"
                                 }`}
                               >

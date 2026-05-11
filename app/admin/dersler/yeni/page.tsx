@@ -40,8 +40,8 @@ export default async function YeniDersPage({ searchParams }: Props) {
   return (
     <div className="p-6 max-w-2xl">
       <div className="mb-6">
-        <Link href="/admin/dersler" className="text-sm text-gray-500 hover:text-gray-700">← Derslere Dön</Link>
-        <h1 className="text-2xl font-bold text-[#091413] mt-2">Yeni Ders Ekle</h1>
+        <Link href="/admin/dersler" className="text-sm text-gray-500 hover:text-[var(--pd-ink-2)]">← Derslere Dön</Link>
+        <h1 className="text-2xl font-bold text-[var(--pd-ink)] mt-2">Yeni Ders Ekle</h1>
       </div>
 
       {error === "missing" && (
@@ -50,14 +50,14 @@ export default async function YeniDersPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-[var(--pd-line)] p-6">
         <form action={createLessonAction} className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Student */}
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Öğrenci *</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Öğrenci *</label>
               <select name="studentId" defaultValue={prefilledStudentId} required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]">
                 <option value="">Öğrenci seçin...</option>
                 {students.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -69,23 +69,23 @@ export default async function YeniDersPage({ searchParams }: Props) {
 
             {/* Title */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Ders Başlığı</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Ders Başlığı</label>
               <input type="text" name="title" placeholder="Örn: Türev Soruları, Paragraf Çözümü"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
             </div>
 
             {/* Subject */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Ders Konusu / Branş</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Ders Konusu / Branş</label>
               <input type="text" name="subject" placeholder="Örn: Matematik, Türkçe"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
             </div>
 
             {/* Teacher */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Hoca *</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Hoca *</label>
               <select name="teacherId" required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]">
                 <option value="">Hoca seçin...</option>
                 {teachers.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -103,9 +103,9 @@ export default async function YeniDersPage({ searchParams }: Props) {
 
             {/* Package */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Paket (opsiyonel)</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Paket (opsiyonel)</label>
               <select name="packageId"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]">
                 <option value="">Paketsiz</option>
                 {packages.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
@@ -115,41 +115,41 @@ export default async function YeniDersPage({ searchParams }: Props) {
 
             {/* Scheduled At */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Tarih ve Saat *</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Tarih ve Saat *</label>
               <input type="datetime-local" name="scheduledAt" defaultValue={defaultScheduledAt} required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
             </div>
 
             {/* Duration */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">Süre (dakika)</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Süre (dakika)</label>
               <input type="number" name="duration" defaultValue="60" min="15" max="240" step="15"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
             </div>
 
             {/* Google Meet Link */}
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Google Meet Linki</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Google Meet Linki</label>
               <input type="url" name="googleMeetLink" placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
-              <p className="text-xs text-gray-400">Dersi oluşturduktan sonra da ekleyebilirsiniz.</p>
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
+              <p className="text-xs text-[var(--pd-muted)]">Dersi oluşturduktan sonra da ekleyebilirsiniz.</p>
             </div>
 
             {/* Notes */}
             <div className="space-y-1.5 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">Notlar</label>
+              <label className="text-sm font-medium text-[var(--pd-ink-2)]">Notlar</label>
               <textarea name="notes" rows={3} placeholder="Ders konusu, özel notlar..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41] resize-none" />
+                className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)] resize-none" />
             </div>
           </div>
 
           <div className="flex gap-3 pt-2">
             <button type="submit"
-              className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
+              className="bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
               Dersi Kaydet
             </button>
             <Link href="/admin/dersler"
-              className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2.5">
+              className="text-sm text-gray-500 hover:text-[var(--pd-ink-2)] px-4 py-2.5">
               İptal
             </Link>
           </div>

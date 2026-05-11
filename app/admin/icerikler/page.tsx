@@ -121,14 +121,14 @@ function StatCard({
   icon: typeof BookOpen;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5">
+    <div className="rounded-2xl border border-[var(--pd-line)] bg-white p-5">
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-[0.08em] text-gray-400">{label}</span>
-        <div className="rounded-xl bg-[#0D5C3D]/8 p-2 text-[#0D5C3D]">
+        <span className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--pd-muted)]">{label}</span>
+        <div className="rounded-xl bg-[var(--pd-accent-soft)] p-2 text-[var(--pd-accent)]">
           <Icon size={16} />
         </div>
       </div>
-      <div className="text-3xl font-semibold tracking-tight text-[#091413]">{value}</div>
+      <div className="text-3xl font-semibold tracking-tight text-[var(--pd-ink)]">{value}</div>
       <p className="mt-1 text-sm text-gray-500">{sub}</p>
     </div>
   );
@@ -209,7 +209,7 @@ export default async function IceriklerPage({ searchParams }: Props) {
     <div className="p-6 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#091413]">Icerik Yonetimi</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--pd-ink)]">Icerik Yonetimi</h1>
           <p className="mt-1 text-sm text-gray-500">
             Kurs, modul, icerik ve paket baglantilarini mevcut sistemi bozmadan yonet.
           </p>
@@ -217,13 +217,13 @@ export default async function IceriklerPage({ searchParams }: Props) {
         <div className="flex gap-2">
           <Link
             href="/admin/istatistikler"
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--pd-line)] bg-white px-4 py-2 text-sm font-medium text-[var(--pd-ink-2)] transition hover:bg-[var(--pd-bg-subtle)]"
           >
             Istatistikler
           </Link>
           <Link
             href="/admin/paketler"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#0D5C3D] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0A4A31]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--pd-accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--pd-accent-hover)]"
           >
             Paketleri Ac
           </Link>
@@ -241,56 +241,56 @@ export default async function IceriklerPage({ searchParams }: Props) {
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5">
+        <div className="rounded-2xl border border-[var(--pd-line)] bg-white p-5">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-[#091413]">Yeni Kurs Olustur</h2>
+              <h2 className="text-lg font-semibold text-[var(--pd-ink)]">Yeni Kurs Olustur</h2>
               <p className="text-sm text-gray-500">Yeni admin icerik akislarini ayri route uzerinden yonet.</p>
             </div>
-            <div className="rounded-full bg-[#0D5C3D]/8 p-2 text-[#0D5C3D]">
+            <div className="rounded-full bg-[var(--pd-accent-soft)] p-2 text-[var(--pd-accent)]">
               <Plus size={16} />
             </div>
           </div>
           <form action={createCourseAction} className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input type="hidden" name="returnTo" value="/admin/icerikler" />
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">Kurs Basligi</span>
-              <input name="title" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none ring-0 transition focus:border-[#0D5C3D]" placeholder="TYT Matematik Problem Kampi" />
+              <span className="font-medium text-[var(--pd-ink-2)]">Kurs Basligi</span>
+              <input name="title" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none ring-0 transition focus:border-[var(--pd-accent)]" placeholder="TYT Matematik Problem Kampi" />
             </label>
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">Slug</span>
-              <input name="slug" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none ring-0 transition focus:border-[#0D5C3D]" placeholder="tyt-matematik-problem-kampi-2" />
+              <span className="font-medium text-[var(--pd-ink-2)]">Slug</span>
+              <input name="slug" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none ring-0 transition focus:border-[var(--pd-accent)]" placeholder="tyt-matematik-problem-kampi-2" />
             </label>
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">Brans</span>
-              <input name="subject" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none ring-0 transition focus:border-[#0D5C3D]" placeholder="Matematik" />
+              <span className="font-medium text-[var(--pd-ink-2)]">Brans</span>
+              <input name="subject" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none ring-0 transition focus:border-[var(--pd-accent)]" placeholder="Matematik" />
             </label>
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">Sinav Tipi</span>
-              <input name="examType" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none ring-0 transition focus:border-[#0D5C3D]" placeholder="TYT / AYT / LGS" />
+              <span className="font-medium text-[var(--pd-ink-2)]">Sinav Tipi</span>
+              <input name="examType" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none ring-0 transition focus:border-[var(--pd-accent)]" placeholder="TYT / AYT / LGS" />
             </label>
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">Seviye</span>
-              <input name="levelLabel" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none ring-0 transition focus:border-[#0D5C3D]" placeholder="Baslangic / Orta / Ust" />
+              <span className="font-medium text-[var(--pd-ink-2)]">Seviye</span>
+              <input name="levelLabel" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none ring-0 transition focus:border-[var(--pd-accent)]" placeholder="Baslangic / Orta / Ust" />
             </label>
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">Tahmini Sure (dk)</span>
-              <input name="estimatedMinutes" type="number" min="0" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none ring-0 transition focus:border-[#0D5C3D]" placeholder="720" />
+              <span className="font-medium text-[var(--pd-ink-2)]">Tahmini Sure (dk)</span>
+              <input name="estimatedMinutes" type="number" min="0" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none ring-0 transition focus:border-[var(--pd-accent)]" placeholder="720" />
             </label>
             <label className="space-y-1 text-sm md:col-span-2">
-              <span className="font-medium text-gray-700">Aciklama</span>
-              <textarea name="description" rows={3} className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none ring-0 transition focus:border-[#0D5C3D]" placeholder="Bu kursun hedefi, ritmi ve panelde nasil gorunecegi..." />
+              <span className="font-medium text-[var(--pd-ink-2)]">Aciklama</span>
+              <textarea name="description" rows={3} className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none ring-0 transition focus:border-[var(--pd-accent)]" placeholder="Bu kursun hedefi, ritmi ve panelde nasil gorunecegi..." />
             </label>
             <label className="space-y-1 text-sm">
-              <span className="font-medium text-gray-700">Durum</span>
-              <select name="status" defaultValue="DRAFT" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]">
+              <span className="font-medium text-[var(--pd-ink-2)]">Durum</span>
+              <select name="status" defaultValue="DRAFT" className="w-full rounded-xl border border-[var(--pd-line)] bg-white px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]">
                 {Object.entries(courseStatusLabels).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
             </label>
             <div className="flex items-end">
-              <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0D5C3D] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#0A4A31]">
+              <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--pd-accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--pd-accent-hover)]">
                 <Plus size={14} /> Kurs Olustur
               </button>
             </div>
@@ -298,12 +298,12 @@ export default async function IceriklerPage({ searchParams }: Props) {
         </div>
 
         <div className="space-y-5">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-[#091413]">Uyelik Dagilimi</h2>
+          <div className="rounded-2xl border border-[var(--pd-line)] bg-white p-5">
+            <h2 className="text-lg font-semibold text-[var(--pd-ink)]">Uyelik Dagilimi</h2>
             <p className="mt-1 text-sm text-gray-500">Paket uyelikleri yeni model uzerinden izleniyor.</p>
             <div className="mt-4 space-y-3">
               {enrollmentSummary.length === 0 ? (
-                <p className="text-sm text-gray-400">Henuz uyelik verisi yok.</p>
+                <p className="text-sm text-[var(--pd-muted)]">Henuz uyelik verisi yok.</p>
               ) : (
                 enrollmentSummary.map((item) => (
                   <div key={item.status}>
@@ -311,11 +311,11 @@ export default async function IceriklerPage({ searchParams }: Props) {
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${enrollmentTone[item.status]}`}>
                         {enrollmentStatusLabels[item.status]}
                       </span>
-                      <span className="font-medium text-[#091413]">{item._count}</span>
+                      <span className="font-medium text-[var(--pd-ink)]">{item._count}</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-stone-100">
                       <div
-                        className="h-full rounded-full bg-[#0D5C3D]"
+                        className="h-full rounded-full bg-[var(--pd-accent)]"
                         style={{
                           width: `${Math.max(
                             10,
@@ -330,16 +330,16 @@ export default async function IceriklerPage({ searchParams }: Props) {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h2 className="text-lg font-semibold text-[#091413]">Son Icerik Loglari</h2>
+          <div className="rounded-2xl border border-[var(--pd-line)] bg-white p-5">
+            <h2 className="text-lg font-semibold text-[var(--pd-ink)]">Son Icerik Loglari</h2>
             <p className="mt-1 text-sm text-gray-500">Admin aksiyonlari audit log uzerinden takip edilir.</p>
             <div className="mt-4 space-y-3">
               {recentAuditLogs.length === 0 ? (
-                <p className="text-sm text-gray-400">Icerik logu bulunmuyor.</p>
+                <p className="text-sm text-[var(--pd-muted)]">Icerik logu bulunmuyor.</p>
               ) : (
                 recentAuditLogs.map((log) => (
                   <div key={log.id} className="rounded-xl border border-gray-100 bg-stone-50 px-3 py-3">
-                    <div className="text-sm font-medium text-[#091413]">{log.summary ?? log.action}</div>
+                    <div className="text-sm font-medium text-[var(--pd-ink)]">{log.summary ?? log.action}</div>
                     <div className="mt-1 text-xs text-gray-500">
                       {(log.actor?.name ?? log.actor?.email ?? "Sistem")} ·{" "}
                       {new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(log.createdAt))}
@@ -354,9 +354,9 @@ export default async function IceriklerPage({ searchParams }: Props) {
 
       <div className="space-y-4">
         {courses.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
+          <div className="rounded-2xl border border-dashed border-[var(--pd-line-2)] bg-white px-6 py-16 text-center">
             <BookOpen size={36} className="mx-auto mb-3 text-gray-300" />
-            <h3 className="text-lg font-semibold text-[#091413]">Henuz kurs yok</h3>
+            <h3 className="text-lg font-semibold text-[var(--pd-ink)]">Henuz kurs yok</h3>
             <p className="mt-1 text-sm text-gray-500">Admin tarafinda ilk kursu yukaridaki form ile olusturabilirsin.</p>
           </div>
         ) : (
@@ -369,11 +369,11 @@ export default async function IceriklerPage({ searchParams }: Props) {
               : 0;
 
             return (
-              <div key={course.id} className="rounded-2xl border border-gray-200 bg-white p-5">
+              <div key={course.id} className="rounded-2xl border border-[var(--pd-line)] bg-white p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-semibold tracking-tight text-[#091413]">{course.title}</h2>
+                      <h2 className="text-xl font-semibold tracking-tight text-[var(--pd-ink)]">{course.title}</h2>
                       <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${statusTone[course.status]}`}>
                         {courseStatusLabels[course.status]}
                       </span>
@@ -381,12 +381,12 @@ export default async function IceriklerPage({ searchParams }: Props) {
                         {course.subject}
                       </span>
                       {course.examType ? (
-                        <span className="inline-flex rounded-full bg-[#0D5C3D]/8 px-2.5 py-1 text-xs font-medium text-[#0D5C3D]">
+                        <span className="inline-flex rounded-full bg-[var(--pd-accent-soft)] px-2.5 py-1 text-xs font-medium text-[var(--pd-accent)]">
                           {course.examType}
                         </span>
                       ) : null}
                     </div>
-                    {course.description ? <p className="max-w-4xl text-sm text-gray-600">{course.description}</p> : null}
+                    {course.description ? <p className="max-w-4xl text-sm text-[var(--pd-ink-3)]">{course.description}</p> : null}
                     <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                       <span>{course.modules.length} modul</span>
                       <span>
@@ -404,13 +404,13 @@ export default async function IceriklerPage({ searchParams }: Props) {
                     <select
                       name="status"
                       defaultValue={course.status}
-                      className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#0D5C3D]"
+                      className="rounded-xl border border-[var(--pd-line)] bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--pd-accent)]"
                     >
                       {Object.entries(courseStatusLabels).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
                       ))}
                     </select>
-                    <button className="rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+                    <button className="rounded-xl border border-[var(--pd-line)] px-3 py-2 text-sm font-medium text-[var(--pd-ink-2)] transition hover:bg-[var(--pd-bg-subtle)]">
                       Durumu Guncelle
                     </button>
                   </form>
@@ -422,26 +422,26 @@ export default async function IceriklerPage({ searchParams }: Props) {
                       <div key={module.id} className="rounded-2xl border border-gray-100 bg-stone-50 p-4">
                         <div className="mb-3 flex items-start justify-between gap-3">
                           <div>
-                            <div className="text-sm font-semibold text-[#091413]">
+                            <div className="text-sm font-semibold text-[var(--pd-ink)]">
                               Modul {module.orderIndex + 1}: {module.title}
                             </div>
                             {module.description ? <p className="mt-1 text-sm text-gray-500">{module.description}</p> : null}
                           </div>
-                          <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-gray-600">
+                          <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-[var(--pd-ink-3)]">
                             {module.contents.length} icerik
                           </span>
                         </div>
 
                         <div className="space-y-2">
                           {module.contents.length === 0 ? (
-                            <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-4 text-sm text-gray-400">
+                            <div className="rounded-xl border border-dashed border-[var(--pd-line-2)] bg-white px-4 py-4 text-sm text-[var(--pd-muted)]">
                               Bu modulde henuz icerik yok.
                             </div>
                           ) : (
                             module.contents.map((content) => (
                               <div key={content.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white px-4 py-3">
                                 <div>
-                                  <div className="text-sm font-medium text-[#091413]">{content.title}</div>
+                                  <div className="text-sm font-medium text-[var(--pd-ink)]">{content.title}</div>
                                   <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-500">
                                     <span>{contentTypeLabels[content.contentType]}</span>
                                     {content.durationMinutes ? <span>{content.durationMinutes} dk</span> : null}
@@ -464,7 +464,7 @@ export default async function IceriklerPage({ searchParams }: Props) {
                                       href={content.externalUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-gray-600 transition hover:bg-gray-50"
+                                      className="rounded-lg border border-[var(--pd-line)] px-2.5 py-1.5 text-[var(--pd-ink-3)] transition hover:bg-[var(--pd-bg-subtle)]"
                                     >
                                       Ac
                                     </a>
@@ -474,7 +474,7 @@ export default async function IceriklerPage({ searchParams }: Props) {
                                       href={content.videoUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-gray-600 transition hover:bg-gray-50"
+                                      className="rounded-lg border border-[var(--pd-line)] px-2.5 py-1.5 text-[var(--pd-ink-3)] transition hover:bg-[var(--pd-bg-subtle)]"
                                     >
                                       Video
                                     </a>
@@ -484,7 +484,7 @@ export default async function IceriklerPage({ searchParams }: Props) {
                                       href={content.fileUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-gray-600 transition hover:bg-gray-50"
+                                      className="rounded-lg border border-[var(--pd-line)] px-2.5 py-1.5 text-[var(--pd-ink-3)] transition hover:bg-[var(--pd-bg-subtle)]"
                                     >
                                       Dosya
                                     </a>
@@ -495,59 +495,59 @@ export default async function IceriklerPage({ searchParams }: Props) {
                           )}
                         </div>
 
-                        <form action={createContentAction} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-white p-4 md:grid-cols-2">
+                        <form action={createContentAction} className="mt-4 grid grid-cols-1 gap-3 rounded-xl border border-[var(--pd-line)] bg-white p-4 md:grid-cols-2">
                           <input type="hidden" name="moduleId" value={module.id} />
                           <input type="hidden" name="returnTo" value="/admin/icerikler" />
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Icerik Basligi</span>
-                            <input name="title" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" placeholder="Canli etut / PDF / Quiz" />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Icerik Basligi</span>
+                            <input name="title" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" placeholder="Canli etut / PDF / Quiz" />
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Tur</span>
-                            <select name="contentType" defaultValue="VIDEO" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]">
+                            <span className="font-medium text-[var(--pd-ink-2)]">Tur</span>
+                            <select name="contentType" defaultValue="VIDEO" className="w-full rounded-xl border border-[var(--pd-line)] bg-white px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]">
                               {Object.entries(contentTypeLabels).map(([value, label]) => (
                                 <option key={value} value={value}>{label}</option>
                               ))}
                             </select>
                           </label>
                           <label className="space-y-1 text-sm md:col-span-2">
-                            <span className="font-medium text-gray-700">Aciklama</span>
-                            <input name="description" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" placeholder="Ogrenci panelinde gorunecek kisa aciklama" />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Aciklama</span>
+                            <input name="description" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" placeholder="Ogrenci panelinde gorunecek kisa aciklama" />
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Sure (dk)</span>
-                            <input name="durationMinutes" type="number" min="0" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" placeholder="45" />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Sure (dk)</span>
+                            <input name="durationMinutes" type="number" min="0" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" placeholder="45" />
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Durum</span>
-                            <select name="status" defaultValue="PUBLISHED" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]">
+                            <span className="font-medium text-[var(--pd-ink-2)]">Durum</span>
+                            <select name="status" defaultValue="PUBLISHED" className="w-full rounded-xl border border-[var(--pd-line)] bg-white px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]">
                               {Object.entries(courseStatusLabels).map(([value, label]) => (
                                 <option key={value} value={value}>{label}</option>
                               ))}
                             </select>
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Video URL</span>
-                            <input name="videoUrl" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" placeholder="https://..." />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Video URL</span>
+                            <input name="videoUrl" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" placeholder="https://..." />
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Dosya URL</span>
-                            <input name="fileUrl" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" placeholder="https://..." />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Dosya URL</span>
+                            <input name="fileUrl" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" placeholder="https://..." />
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Harici Link</span>
-                            <input name="externalUrl" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" placeholder="https://meet.google.com/..." />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Harici Link</span>
+                            <input name="externalUrl" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" placeholder="https://meet.google.com/..." />
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Canli Baslangic</span>
-                            <input name="liveStartsAt" type="datetime-local" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Canli Baslangic</span>
+                            <input name="liveStartsAt" type="datetime-local" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" />
                           </label>
                           <label className="space-y-1 text-sm">
-                            <span className="font-medium text-gray-700">Canli Bitis</span>
-                            <input name="liveEndsAt" type="datetime-local" className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none transition focus:border-[#0D5C3D]" />
+                            <span className="font-medium text-[var(--pd-ink-2)]">Canli Bitis</span>
+                            <input name="liveEndsAt" type="datetime-local" className="w-full rounded-xl border border-[var(--pd-line)] px-3 py-2.5 outline-none transition focus:border-[var(--pd-accent)]" />
                           </label>
                           <div className="md:col-span-2">
-                            <button className="inline-flex items-center gap-2 rounded-xl bg-[#0D5C3D] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#0A4A31]">
+                            <button className="inline-flex items-center gap-2 rounded-xl bg-[var(--pd-accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--pd-accent-hover)]">
                               <Plus size={14} /> Icerik Ekle
                             </button>
                           </div>
@@ -562,9 +562,9 @@ export default async function IceriklerPage({ searchParams }: Props) {
                       <form action={createModuleAction} className="mt-3 space-y-3">
                         <input type="hidden" name="courseId" value={course.id} />
                         <input type="hidden" name="returnTo" value="/admin/icerikler" />
-                        <input name="title" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0D5C3D]" placeholder="Modul basligi" />
-                        <textarea name="description" rows={3} className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0D5C3D]" placeholder="Modul aciklamasi" />
-                        <button className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+                        <input name="title" className="w-full rounded-xl border border-[var(--pd-line)] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[var(--pd-accent)]" placeholder="Modul basligi" />
+                        <textarea name="description" rows={3} className="w-full rounded-xl border border-[var(--pd-line)] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[var(--pd-accent)]" placeholder="Modul aciklamasi" />
+                        <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--pd-line)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--pd-ink-2)] transition hover:bg-[var(--pd-bg-subtle)]">
                           <Plus size={14} /> Modul Ekle
                         </button>
                       </form>
@@ -575,13 +575,13 @@ export default async function IceriklerPage({ searchParams }: Props) {
                       <form action={linkCourseToPackageAction} className="mt-3 space-y-3">
                         <input type="hidden" name="courseId" value={course.id} />
                         <input type="hidden" name="returnTo" value="/admin/icerikler" />
-                        <select name="packageId" className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0D5C3D]">
+                        <select name="packageId" className="w-full rounded-xl border border-[var(--pd-line)] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[var(--pd-accent)]">
                           <option value="">Paket sec</option>
                           {packages.map((pkg) => (
                             <option key={pkg.id} value={pkg.id}>{pkg.name}</option>
                           ))}
                         </select>
-                        <button className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+                        <button className="inline-flex items-center gap-2 rounded-xl border border-[var(--pd-line)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--pd-ink-2)] transition hover:bg-[var(--pd-bg-subtle)]">
                           <Link2 size={14} /> Pakete Bagla
                         </button>
                       </form>
@@ -591,17 +591,17 @@ export default async function IceriklerPage({ searchParams }: Props) {
                       <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500">Bagli Paketler</h3>
                       <div className="mt-3 space-y-2">
                         {course.packageCourses.length === 0 ? (
-                          <p className="text-sm text-gray-400">Bu kurs henuz pakete baglanmadi.</p>
+                          <p className="text-sm text-[var(--pd-muted)]">Bu kurs henuz pakete baglanmadi.</p>
                         ) : (
                           course.packageCourses.map((packageCourse) => (
                             <div key={packageCourse.packageId} className="flex items-center justify-between rounded-xl bg-white px-3 py-3">
                               <div>
-                                <div className="text-sm font-medium text-[#091413]">{packageCourse.package.name}</div>
+                                <div className="text-sm font-medium text-[var(--pd-ink)]">{packageCourse.package.name}</div>
                                 <div className="text-xs text-gray-500">
                                   {new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(new Date(packageCourse.createdAt))}
                                 </div>
                               </div>
-                              <div className="rounded-full bg-[#0D5C3D]/8 px-2.5 py-1 text-xs font-medium text-[#0D5C3D]">
+                              <div className="rounded-full bg-[var(--pd-accent-soft)] px-2.5 py-1 text-xs font-medium text-[var(--pd-accent)]">
                                 Bagli
                               </div>
                             </div>
@@ -615,11 +615,11 @@ export default async function IceriklerPage({ searchParams }: Props) {
                       <div className="mt-3 grid grid-cols-2 gap-3">
                         <div className="rounded-xl bg-white p-3">
                           <div className="text-xs text-gray-500">Ilerleme Kaydi</div>
-                          <div className="mt-1 text-2xl font-semibold text-[#091413]">{course.studentProgress.length}</div>
+                          <div className="mt-1 text-2xl font-semibold text-[var(--pd-ink)]">{course.studentProgress.length}</div>
                         </div>
                         <div className="rounded-xl bg-white p-3">
                           <div className="text-xs text-gray-500">Ort. Tamamlama</div>
-                          <div className="mt-1 text-2xl font-semibold text-[#091413]">%{averageCompletion}</div>
+                          <div className="mt-1 text-2xl font-semibold text-[var(--pd-ink)]">%{averageCompletion}</div>
                         </div>
                       </div>
                     </div>

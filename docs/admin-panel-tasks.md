@@ -8,6 +8,10 @@ Bu liste repo içindeki mevcut yapı baz alınarak çıkarıldı. Durumlar düze
 - [x] Operasyon filtresi eklemek
 - [x] Kayıtlara görev başlığı ve sonraki aksiyon tarihi eklemek
 - [x] Görev kuyruğu metriği eklemek
+- [x] OD/ODK erişim etiketleri için ortak `service` ayrımı (migration 0009 + backfill tamam)
+- [x] Öğrenci ve öğretmen panellerine ODK kısayolu (üst başlık, koşullu)
+- [x] Admin panel renk token sweep (eski palet kaldırıldı)
+- [x] ODK admin dashboard'a OD/ODK servis bazlı etiket sayacı
 - [ ] Görev durumunu tamamlandı mantığı ile kapatmak
 
 ## Yakın Vade

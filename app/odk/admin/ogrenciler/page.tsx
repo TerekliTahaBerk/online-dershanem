@@ -28,6 +28,7 @@ type Student = {
   id: string;
   name: string | null;
   email: string;
+  role: "ADMIN" | "STUDENT" | "TEACHER";
   odkUserAccessTags: AccessTagEntry[];
   odkEntitlements: EntitlementEntry[];
 };
@@ -72,6 +73,7 @@ async function getData() {
         id: true,
         name: true,
         email: true,
+        role: true,
         odkUserAccessTags: {
           select: {
             id: true,
@@ -98,13 +100,18 @@ async function getData() {
       },
       orderBy: { createdAt: "desc" },
     }) as unknown as Promise<Student[]>,
-    prisma.odkAccessTag.findMany({ where: { isActive: true }, orderBy: { title: "asc" } }),
+    prisma.odkAccessTag.findMany({ where: { isActive: true }, orderBy: [{ service: "asc" }, { title: "asc" }] }),
     prisma.user.findMany({
       where: {
         role: { not: "ADMIN" },
-        OR: [{ role: "STUDENT" }, { student: { isNot: null } }],
+        OR: [
+          { role: "STUDENT" },
+          { role: "TEACHER" },
+          { student: { isNot: null } },
+          { teacher: { isNot: null } },
+        ],
       },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, role: true },
       orderBy: [{ name: "asc" }, { email: "asc" }],
     }),
     prisma.odkPackage.findMany({
@@ -122,9 +129,9 @@ export default async function OgrencilerPage() {
   return (
     <div className="p-6 space-y-5">
       <div>
-        <h1 className="text-xl font-semibold text-stone-900">Öğrenci Erişimi</h1>
+        <h1 className="text-xl font-semibold text-stone-900">Erişim Yönetimi</h1>
         <p className="text-sm text-stone-500 mt-0.5">
-          ODK&apos;ya aktif erişimi olan {students.length} öğrenci
+          OD ve ODK erişim tag'i bulunan {students.length} kullanıcı (öğrenci + eğitmen)
         </p>
       </div>
 
@@ -151,9 +158,18 @@ export default async function OgrencilerPage() {
                 return (
                   <div key={user.id} className="px-5 py-4">
                     <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="font-medium text-stone-900 truncate">{user.name ?? user.email}</p>
-                        {user.name && <p className="text-xs text-stone-400">{user.email}</p>}
+                      <div className="min-w-0 flex items-center gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-stone-900 truncate">{user.name ?? user.email}</p>
+                          {user.name && <p className="text-xs text-stone-400">{user.email}</p>}
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border ${
+                          user.role === "TEACHER"
+                            ? "bg-sky-50 text-sky-700 border-sky-100"
+                            : "bg-violet-50 text-violet-700 border-violet-100"
+                        }`}>
+                          {user.role === "TEACHER" ? "Eğitmen" : "Öğrenci"}
+                        </span>
                       </div>
                       <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-100">
                         Aktif

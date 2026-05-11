@@ -584,19 +584,6 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
-.pd-camp-card {
-  background: var(--pd-bg-elevated);
-  border: 1px solid var(--pd-line);
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: all 180ms ease;
-}
-.pd-camp-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--pd-shadow-md);
-}
 .pd-camp-hdr {
   padding: 18px 20px;
   border-bottom: 1px solid var(--pd-line);

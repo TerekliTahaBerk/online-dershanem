@@ -4,8 +4,8 @@ import { useState, useTransition, useRef } from "react";
 import { grantUserAccessTag } from "@/app/odk/admin/actions";
 import { Check, AlertCircle } from "lucide-react";
 
-type AccessTag = { id: string; key: string; title: string };
-type StudentUser = { id: string; name: string | null; email: string };
+type AccessTag = { id: string; key: string; title: string; service?: "OD" | "ODK" };
+type StudentUser = { id: string; name: string | null; email: string; role?: "ADMIN" | "STUDENT" | "TEACHER" };
 
 const inputCls = "w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100";
 
@@ -43,6 +43,30 @@ export function GrantAccessForm({
         return u.email.toLowerCase().includes(q) || u.name?.toLowerCase().includes(q);
       }).slice(0, 8)
     : [];
+
+  // Group tags by service for grouped <select> rendering
+  const tagsByService = {
+    OD: accessTags.filter((t) => (t.service ?? "ODK") === "OD"),
+    ODK: accessTags.filter((t) => (t.service ?? "ODK") === "ODK"),
+  };
+  const renderTagOptions = () => (
+    <>
+      {tagsByService.OD.length > 0 && (
+        <optgroup label="OD — Online Dershanem">
+          {tagsByService.OD.map((t) => (
+            <option key={t.id} value={t.id}>{t.title}</option>
+          ))}
+        </optgroup>
+      )}
+      {tagsByService.ODK.length > 0 && (
+        <optgroup label="ODK — Deneme Kulübü">
+          {tagsByService.ODK.map((t) => (
+            <option key={t.id} value={t.id}>{t.title}</option>
+          ))}
+        </optgroup>
+      )}
+    </>
+  );
 
   const handleSelect = (u: StudentUser) => {
     setSelectedUser(u);
@@ -208,9 +232,7 @@ export function GrantAccessForm({
             <label className="block text-sm font-medium text-stone-700">
               Erişim Etiketi <span className="text-red-400">*</span>
               <select value={tagId} onChange={(e) => setTagId(e.target.value)} className={`mt-1.5 ${inputCls}`}>
-                {accessTags.map((t) => (
-                  <option key={t.id} value={t.id}>{t.title}</option>
-                ))}
+                {renderTagOptions()}
               </select>
             </label>
 
@@ -251,9 +273,7 @@ export function GrantAccessForm({
           <label className="block text-sm font-medium text-stone-700">
             Erişim Etiketi <span className="text-red-400">*</span>
             <select value={bulkTagId} onChange={(e) => setBulkTagId(e.target.value)} className={`mt-1.5 ${inputCls}`}>
-              {accessTags.map((t) => (
-                <option key={t.id} value={t.id}>{t.title}</option>
-              ))}
+              {renderTagOptions()}
             </select>
           </label>
           <label className="block text-sm font-medium text-stone-700">

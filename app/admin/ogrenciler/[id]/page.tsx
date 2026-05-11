@@ -48,12 +48,12 @@ type Props = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  NEW: "bg-gray-100 text-gray-600",
+  NEW: "bg-gray-100 text-[var(--pd-ink-3)]",
   FOLLOW_UP: "bg-yellow-50 text-yellow-700",
   ACTIVE: "bg-emerald-50 text-emerald-700",
   AT_RISK: "bg-red-50 text-red-700",
   COMPLETED: "bg-blue-50 text-blue-700",
-  INACTIVE: "bg-gray-100 text-gray-400"
+  INACTIVE: "bg-gray-100 text-[var(--pd-muted)]"
 };
 
 const LESSON_STATUS_COLORS: Record<string, string> = {
@@ -123,7 +123,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
   return (
     <div className="p-6 space-y-5 max-w-6xl">
       {/* Back */}
-      <Link href="/admin/ogrenciler" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700">
+      <Link href="/admin/ogrenciler" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[var(--pd-ink-2)]">
         <ChevronLeft size={14} /> Öğrencilere Dön
       </Link>
 
@@ -184,7 +184,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
         </div>
       )}
       {updated === "removed" && (
-        <div className="bg-gray-50 border border-gray-200 text-gray-700 text-sm px-4 py-2.5 rounded-lg">
+        <div className="bg-gray-50 border border-[var(--pd-line)] text-[var(--pd-ink-2)] text-sm px-4 py-2.5 rounded-lg">
           Paket kaydı silindi.
         </div>
       )}
@@ -195,10 +195,10 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       )}
 
       {/* Header Card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          <div className="w-16 h-16 rounded-full bg-[#DCCCAC]/40 flex items-center justify-center text-[#435633] font-bold text-2xl shrink-0">
+          <div className="w-16 h-16 rounded-full bg-[var(--pd-accent-soft)] flex items-center justify-center text-[var(--pd-accent)] font-bold text-2xl shrink-0">
             {student.fullName.charAt(0)}
           </div>
 
@@ -206,7 +206,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h1 className="text-xl font-bold text-[#091413]">{student.fullName}</h1>
+                <h1 className="text-xl font-bold text-[var(--pd-ink)]">{student.fullName}</h1>
                 <div className="flex items-center gap-3 mt-1 flex-wrap">
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_COLORS[student.status]}`}>
                     {studentStatusLabels[student.status]}
@@ -233,7 +233,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 )}
                 <Link
                   href={`/admin/dersler/yeni?studentId=${student.id}`}
-                  className="flex items-center gap-1.5 bg-[#546B41] hover:bg-[#435633] text-white text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-xs font-medium px-3 py-2 rounded-lg transition-colors"
                 >
                   <Plus size={13} />
                   Ders Ekle
@@ -244,7 +244,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
             {/* Quick stats */}
             <div className="grid grid-cols-4 gap-3 mt-4">
               {[
-                { label: "Toplam Ders", value: student.lessons.length, color: "text-[#091413]" },
+                { label: "Toplam Ders", value: student.lessons.length, color: "text-[var(--pd-ink)]" },
                 { label: "Tamamlanan", value: completedLessons, color: "text-emerald-600" },
                 { label: "Planlanan", value: scheduledLessons, color: "text-blue-600" },
                 { label: "Ödeme", value: paidPurchases, color: "text-violet-600" }
@@ -260,34 +260,34 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
 
         {/* Contact row */}
         <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-gray-100">
-          <span className="flex items-center gap-1.5 text-sm text-gray-600">
-            <Phone size={13} className="text-gray-400" />
+          <span className="flex items-center gap-1.5 text-sm text-[var(--pd-ink-3)]">
+            <Phone size={13} className="text-[var(--pd-muted)]" />
             {waLink ? (
-              <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-[#546B41] hover:underline">
+              <a href={waLink} target="_blank" rel="noopener noreferrer" className="text-[var(--pd-accent)] hover:underline">
                 {student.phone}
               </a>
             ) : student.phone}
           </span>
           {student.email && (
-            <span className="flex items-center gap-1.5 text-sm text-gray-600">
-              <Mail size={13} className="text-gray-400" />
+            <span className="flex items-center gap-1.5 text-sm text-[var(--pd-ink-3)]">
+              <Mail size={13} className="text-[var(--pd-muted)]" />
               {student.email}
             </span>
           )}
           {(student.city || student.district) && (
-            <span className="flex items-center gap-1.5 text-sm text-gray-600">
-              <MapPin size={13} className="text-gray-400" />
+            <span className="flex items-center gap-1.5 text-sm text-[var(--pd-ink-3)]">
+              <MapPin size={13} className="text-[var(--pd-muted)]" />
               {[student.district, student.city].filter(Boolean).join(", ")}
             </span>
           )}
           {student.schoolName && (
-            <span className="flex items-center gap-1.5 text-sm text-gray-600">
-              <School size={13} className="text-gray-400" />
+            <span className="flex items-center gap-1.5 text-sm text-[var(--pd-ink-3)]">
+              <School size={13} className="text-[var(--pd-muted)]" />
               {student.schoolName}
             </span>
           )}
           {student.activePackage && (
-            <span className="flex items-center gap-1.5 text-sm text-[#546B41]">
+            <span className="flex items-center gap-1.5 text-sm text-[var(--pd-accent)]">
               <BookOpen size={13} />
               {student.activePackage}
             </span>
@@ -318,14 +318,14 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
             href={`/admin/ogrenciler/${id}?tab=${tab.id}`}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === tab.id
-                ? "bg-white text-[#091413] shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-white text-[var(--pd-ink)] shadow-sm"
+                : "text-gray-500 hover:text-[var(--pd-ink-2)]"
             }`}
           >
             {tab.label}
             {tab.count !== null && (
               <span className={`text-xs rounded-full px-1.5 py-0.5 ${
-                activeTab === tab.id ? "bg-[#DCCCAC]/40 text-[#435633]" : "bg-gray-200 text-gray-500"
+                activeTab === tab.id ? "bg-[var(--pd-accent-soft)] text-[var(--pd-accent)]" : "bg-[var(--pd-bg-subtle)] text-[var(--pd-muted)]"
               }`}>
                 {tab.count}
               </span>
@@ -336,20 +336,20 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
 
       {/* Tab Content */}
       {activeTab === "dersler" && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-[#091413]">Ders Geçmişi</h2>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Ders Geçmişi</h2>
             <Link
               href={`/admin/dersler/yeni?studentId=${student.id}`}
-              className="flex items-center gap-1.5 text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-[var(--pd-accent)] hover:text-[var(--pd-accent-hover)] font-medium border border-[var(--pd-line)] rounded-lg px-2.5 py-1.5 hover:bg-[var(--pd-accent-soft)] transition-colors"
             >
               <Plus size={11} /> Ders Ekle
             </Link>
           </div>
           {student.lessons.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">
+            <div className="py-12 text-center text-[var(--pd-muted)] text-sm">
               Henüz ders planlanmamış.
-              <Link href={`/admin/dersler/yeni?studentId=${student.id}`} className="block mt-2 text-[#546B41] hover:underline">
+              <Link href={`/admin/dersler/yeni?studentId=${student.id}`} className="block mt-2 text-[var(--pd-accent)] hover:underline">
                 İlk dersi ekle →
               </Link>
             </div>
@@ -359,16 +359,16 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 <div key={lesson.id} className={`flex items-center justify-between px-5 py-3.5 ${lesson.status === "CANCELLED" ? "opacity-50" : ""}`}>
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="text-center shrink-0 w-14">
-                      <p className="text-xs font-semibold text-gray-700">
+                      <p className="text-xs font-semibold text-[var(--pd-ink-2)]">
                         {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(new Date(lesson.scheduledAt))}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-[var(--pd-muted)]">
                         {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(lesson.scheduledAt))}
                       </p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-700">{lesson.teacher.fullName}</p>
-                      <p className="text-xs text-gray-400">{lesson.package?.name ?? "Paketsiz"} · {lesson.duration} dk</p>
+                      <p className="text-sm font-medium text-[var(--pd-ink-2)]">{lesson.teacher.fullName}</p>
+                      <p className="text-xs text-[var(--pd-muted)]">{lesson.package?.name ?? "Paketsiz"} · {lesson.duration} dk</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
@@ -394,12 +394,12 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       )}
 
       {activeTab === "odemeler" && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-[#091413]">Ödeme Geçmişi</h2>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Ödeme Geçmişi</h2>
           </div>
           {student.purchaseIntents.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">Kayıtlı ödeme yok.</div>
+            <div className="py-12 text-center text-[var(--pd-muted)] text-sm">Kayıtlı ödeme yok.</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {student.purchaseIntents.map((purchase) => (
@@ -407,7 +407,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium text-gray-800">{purchase.packageName}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(purchase.submittedAt)}</p>
+                      <p className="text-xs text-[var(--pd-muted)] mt-0.5">{formatDateTime(purchase.submittedAt)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
@@ -428,7 +428,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                   {purchase.events.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {purchase.events.map((event) => (
-                        <p key={event.id} className="text-xs text-gray-400">
+                        <p key={event.id} className="text-xs text-[var(--pd-muted)]">
                           {formatDateTime(event.createdAt)} — {event.eventType.replace(/_/g, " ")}
                         </p>
                       ))}
@@ -442,24 +442,24 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       )}
 
       {activeTab === "formlar" && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-semibold text-[#091413]">Form Başvuruları</h2>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Form Başvuruları</h2>
           </div>
           {student.leadSubmissions.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">Eşleştirilmiş form başvurusu yok.</div>
+            <div className="py-12 text-center text-[var(--pd-muted)] text-sm">Eşleştirilmiş form başvurusu yok.</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {student.leadSubmissions.map((lead) => (
                 <div key={lead.id} className="px-5 py-4 flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-gray-700">{lead.examType} — {lead.classLevel}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Kaynak: {lead.source} · {formatDateTime(lead.submittedAt)}</p>
+                    <p className="text-sm font-medium text-[var(--pd-ink-2)]">{lead.examType} — {lead.classLevel}</p>
+                    <p className="text-xs text-[var(--pd-muted)] mt-0.5">Kaynak: {lead.source} · {formatDateTime(lead.submittedAt)}</p>
                     {lead.targetGoal && <p className="text-xs text-gray-500 mt-1">Hedef: {lead.targetGoal}</p>}
                   </div>
                   <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
                     lead.intakeStatus === "ENROLLED" ? "bg-emerald-50 text-emerald-700" :
-                    lead.intakeStatus === "ARCHIVED" ? "bg-gray-100 text-gray-400" :
+                    lead.intakeStatus === "ARCHIVED" ? "bg-gray-100 text-[var(--pd-muted)]" :
                     "bg-blue-50 text-blue-700"
                   }`}>
                     {intakeStatusLabels[lead.intakeStatus]}
@@ -474,28 +474,28 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       {activeTab === "paketler" && (
         <div className="space-y-5">
           {/* Assign new package */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
             <div className="flex items-center gap-2 mb-4">
-              <Package size={16} className="text-[#546B41]" />
-              <h2 className="font-semibold text-[#091413]">Paket Ata</h2>
-              <Link href="/admin/paketler/toplu-ata" className="ml-auto text-xs text-gray-400 hover:text-[#546B41] transition-colors">
+              <Package size={16} className="text-[var(--pd-accent)]" />
+              <h2 className="font-semibold text-[var(--pd-ink)]">Paket Ata</h2>
+              <Link href="/admin/paketler/toplu-ata" className="ml-auto text-xs text-[var(--pd-muted)] hover:text-[var(--pd-accent)] transition-colors">
                 Toplu ata →
               </Link>
             </div>
             {allPackages.length === 0 ? (
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-[var(--pd-muted)]">
                 Atanabilecek aktif paket yok.{" "}
-                <Link href="/admin/paketler/yeni" className="text-[#546B41] hover:underline">Yeni paket oluştur →</Link>
+                <Link href="/admin/paketler/yeni" className="text-[var(--pd-accent)] hover:underline">Yeni paket oluştur →</Link>
               </p>
             ) : (
             <form action={assignPackageToStudentAction}>
               <input type="hidden" name="studentId" value={student.id} />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                 <div className="sm:col-span-1">
-                  <label className="text-xs font-medium text-gray-600 block mb-1.5">Paket Seçin</label>
+                  <label className="text-xs font-medium text-[var(--pd-ink-3)] block mb-1.5">Paket Seçin</label>
                   <select
                     name="packageId"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                    className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                   >
                     {["COURSE", "EXAM"].map((typeGroup) => {
                       const group = allPackages.filter((p) => (p as unknown as { type: string }).type === typeGroup);
@@ -516,14 +516,14 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 block mb-1.5">
-                    Bitiş Tarihi <span className="text-gray-400 font-normal">(boş = süresiz)</span>
+                  <label className="text-xs font-medium text-[var(--pd-ink-3)] block mb-1.5">
+                    Bitiş Tarihi <span className="text-[var(--pd-muted)] font-normal">(boş = süresiz)</span>
                   </label>
                   <input
                     type="date"
                     name="expiresAt"
                     min={new Date().toISOString().split("T")[0]}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                    className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                   />
                   {/* Quick preset links */}
                   <div className="flex gap-2 mt-1">
@@ -535,7 +535,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                       const d = new Date();
                       d.setDate(d.getDate() + days);
                       return (
-                        <span key={label} className="text-[10px] text-[#546B41] bg-[#546B41]/10 rounded px-1.5 py-0.5 select-all cursor-pointer" title={`${label} için tarih kopyala`}>
+                        <span key={label} className="text-[10px] text-[var(--pd-accent)] bg-[var(--pd-accent)]/10 rounded px-1.5 py-0.5 select-all cursor-pointer" title={`${label} için tarih kopyala`}>
                           {label}: {d.toISOString().slice(0, 10)}
                         </span>
                       );
@@ -544,17 +544,17 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 </div>
                 <div className="flex gap-2 items-end">
                   <div className="flex-1">
-                    <label className="text-xs font-medium text-gray-600 block mb-1.5">Not</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)] block mb-1.5">Not</label>
                     <input
                       type="text"
                       name="notes"
                       placeholder="İsteğe bağlı not"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="flex items-center gap-1.5 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
+                    className="flex items-center gap-1.5 bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
                   >
                     <Plus size={14} /> Ata
                   </button>
@@ -565,13 +565,13 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
           </div>
 
           {/* Assigned packages list */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-[var(--pd-line)] overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="font-semibold text-[#091413]">Tanımlı Paketler</h2>
-              <span className="text-xs text-gray-400">{(student as unknown as StudentFull).packages.length} paket</span>
+              <h2 className="font-semibold text-[var(--pd-ink)]">Tanımlı Paketler</h2>
+              <span className="text-xs text-[var(--pd-muted)]">{(student as unknown as StudentFull).packages.length} paket</span>
             </div>
             {(student as unknown as StudentFull).packages.length === 0 ? (
-              <div className="py-12 text-center text-gray-400 text-sm">
+              <div className="py-12 text-center text-[var(--pd-muted)] text-sm">
                 Bu öğrenciye henüz paket atanmamış.
               </div>
             ) : (
@@ -590,8 +590,8 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                     <div key={sp.package.id} className="px-5 py-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isActive ? "bg-[#DCCCAC]/30" : "bg-gray-100"}`}>
-                            <Package size={14} className={isActive ? "text-[#546B41]" : "text-gray-400"} />
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isActive ? "bg-[var(--pd-accent-soft)]" : "bg-gray-100"}`}>
+                            <Package size={14} className={isActive ? "text-[var(--pd-accent)]" : "text-[var(--pd-muted)]"} />
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -600,7 +600,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                               <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                                 (sp.package as unknown as { type: string }).type === "EXAM"
                                   ? "bg-purple-100 text-purple-700"
-                                  : "bg-[#DCCCAC]/40 text-[#435633]"
+                                  : "bg-[var(--pd-accent-soft)] text-[var(--pd-accent)]"
                               }`}>
                                 {(sp.package as unknown as { type: string }).type === "EXAM" ? "📝 Deneme" : "📚 Ders"}
                               </span>
@@ -614,7 +614,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Aktif</span>
                               )}
                             </div>
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-[var(--pd-muted)] mt-0.5">
                               {sp.package.subjects}
                               {expiresAt && (
                                 <> · <span className={daysLeft !== null && daysLeft <= 7 ? "text-red-600 font-medium" : ""}>
@@ -626,7 +626,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                               {!expiresAt && !isRevoked && <> · Süresiz</>}
                             </p>
                             {(sp as unknown as { notes: string | null }).notes && (
-                              <p className="text-xs text-gray-400 italic mt-0.5">Not: {(sp as unknown as { notes: string | null }).notes}</p>
+                              <p className="text-xs text-[var(--pd-muted)] italic mt-0.5">Not: {(sp as unknown as { notes: string | null }).notes}</p>
                             )}
                             <p className="text-[10px] text-gray-300 mt-0.5">
                               Atandı: {(sp as unknown as { assignedAt: Date }).assignedAt.toLocaleDateString("tr-TR")}
@@ -648,11 +648,11 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                                 name="newExpiresAt"
                                 min={new Date().toISOString().split("T")[0]}
                                 defaultValue={expiresAt ? expiresAt.toISOString().split("T")[0] : ""}
-                                className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[#546B41]/30"
+                                className="border border-[var(--pd-line)] rounded-lg px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-[var(--pd-accent-soft)]"
                               />
                               <button
                                 type="submit"
-                                className="text-xs text-[#546B41] hover:text-[#435633] border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#546B41]/5 transition-colors whitespace-nowrap"
+                                className="text-xs text-[var(--pd-accent)] hover:text-[var(--pd-accent-hover)] border border-[var(--pd-line)] rounded-lg px-2.5 py-1.5 hover:bg-[var(--pd-accent)]/5 transition-colors whitespace-nowrap"
                               >
                                 Uzat
                               </button>
@@ -699,43 +699,43 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
       {activeTab === "profil" && (
         <div className="space-y-5">
           {/* Full profile edit form */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="font-semibold text-[#091413] mb-5">Profil Bilgilerini Düzenle</h2>
+          <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
+            <h2 className="font-semibold text-[var(--pd-ink)] mb-5">Profil Bilgilerini Düzenle</h2>
             <form action={updateStudentInfoAction} className="space-y-6">
               <input type="hidden" name="studentId" value={student.id} />
               <input type="hidden" name="returnTo" value={`${returnTo}?tab=profil`} />
 
               {/* Basic */}
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Temel Bilgiler</p>
+                <p className="text-xs font-semibold text-[var(--pd-muted)] uppercase tracking-wider mb-3">Temel Bilgiler</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Ad Soyad *</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Ad Soyad *</label>
                     <input name="fullName" required defaultValue={student.fullName}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Telefon</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Telefon</label>
                     <input name="phone" defaultValue={student.phone ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="05xx xxx xx xx" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">E-posta</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">E-posta</label>
                     <input type="email" name="email" defaultValue={student.email ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="ogrenci@email.com" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Şehir</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Şehir</label>
                     <input name="city" defaultValue={student.city ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="İstanbul" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">İlçe</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">İlçe</label>
                     <input name="district" defaultValue={student.district ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Kadıköy" />
                   </div>
                 </div>
@@ -743,21 +743,21 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
 
               {/* Academic */}
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Akademik Bilgiler</p>
+                <p className="text-xs font-semibold text-[var(--pd-muted)] uppercase tracking-wider mb-3">Akademik Bilgiler</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Sınav Türü</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Sınav Türü</label>
                     <select name="examType" defaultValue={student.examType ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]">
                       <option value="">Seçiniz</option>
                       <option value="YKS">YKS</option>
                       <option value="LGS">LGS</option>
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Sınıf</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Sınıf</label>
                     <select name="classLevel" defaultValue={student.classLevel ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]">
                       <option value="">Seçiniz</option>
                       {["8. Sınıf","9. Sınıf","10. Sınıf","11. Sınıf","12. Sınıf","Mezun"].map((c) => (
                         <option key={c} value={c}>{c}</option>
@@ -765,51 +765,51 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                     </select>
                   </div>
                   <div className="sm:col-span-2 space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Okul Adı</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Okul Adı</label>
                     <input name="schoolName" defaultValue={student.schoolName ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Okul adı" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Hedef Okul / Üniversite</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Hedef Okul / Üniversite</label>
                     <input name="targetSchool" defaultValue={student.targetSchool ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Hedef okul veya üniversite" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Hedef (Puan / Sıralama)</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Hedef (Puan / Sıralama)</label>
                     <input name="targetGoal" defaultValue={student.targetGoal ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Örn: 450 puan, ilk 10.000" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Hedef Bölüm <span className="text-gray-400 font-normal">(YKS)</span></label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Hedef Bölüm <span className="text-[var(--pd-muted)] font-normal">(YKS)</span></label>
                     <input name="department" defaultValue={student.department ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Tıp, Hukuk..." />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Hedef Sıralama <span className="text-gray-400 font-normal">(YKS)</span></label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Hedef Sıralama <span className="text-[var(--pd-muted)] font-normal">(YKS)</span></label>
                     <input name="targetRanking" defaultValue={student.targetRanking ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Örn: 5000" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Mevcut Net</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Mevcut Net</label>
                     <input name="currentNet" defaultValue={student.currentNet ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Örn: TYT 80 net" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Güçlü Dersler</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Güçlü Dersler</label>
                     <input name="strongLessons" defaultValue={student.strongLessons ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Matematik, Fizik..." />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Zayıf Dersler</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Zayıf Dersler</label>
                     <input name="weakLessons" defaultValue={student.weakLessons ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Kimya, Biyoloji..." />
                   </div>
                 </div>
@@ -817,24 +817,24 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
 
               {/* Parent */}
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Veli Bilgileri</p>
+                <p className="text-xs font-semibold text-[var(--pd-muted)] uppercase tracking-wider mb-3">Veli Bilgileri</p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Veli Adı Soyadı</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Veli Adı Soyadı</label>
                     <input name="parentFullName" defaultValue={student.parentFullName ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="Ad Soyad" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Veli Telefonu</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Veli Telefonu</label>
                     <input name="parentPhone" defaultValue={student.parentPhone ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="05xx xxx xx xx" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-600">Veli E-postası</label>
+                    <label className="text-xs font-medium text-[var(--pd-ink-3)]">Veli E-postası</label>
                     <input type="email" name="parentEmail" defaultValue={student.parentEmail ?? ""}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                      className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       placeholder="veli@email.com" />
                   </div>
                 </div>
@@ -842,7 +842,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
 
               <div className="pt-2 border-t border-gray-100">
                 <button type="submit"
-                  className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
+                  className="bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
                   Profili Kaydet
                 </button>
               </div>
@@ -851,16 +851,16 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Admin quick-update */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="font-semibold text-[#091413] mb-4">Yönetim Bilgileri</h2>
+            <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
+              <h2 className="font-semibold text-[var(--pd-ink)] mb-4">Yönetim Bilgileri</h2>
               <form action={updateStudentAction} className="space-y-4">
                 <input type="hidden" name="studentId" value={student.id} />
                 <input type="hidden" name="returnTo" value={`${returnTo}?tab=profil`} />
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Durum</label>
+                  <label className="text-xs font-medium text-[var(--pd-ink-3)]">Durum</label>
                   <select name="status" defaultValue={student.status}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]">
+                    className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]">
                     {studentStatusOptions.map((s) => (
                       <option key={s} value={s}>{studentStatusLabels[s]}</option>
                     ))}
@@ -868,7 +868,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Aktif Paketler</label>
+                  <label className="text-xs font-medium text-[var(--pd-ink-3)]">Aktif Paketler</label>
                   <div className="w-full border border-gray-100 rounded-lg px-3 py-2.5 text-sm bg-gray-50 text-gray-500">
                     {(student as unknown as StudentFull).packages.filter((sp) => {
                       const now = new Date();
@@ -890,36 +890,36 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Görev Etiketi</label>
+                  <label className="text-xs font-medium text-[var(--pd-ink-3)]">Görev Etiketi</label>
                   <input type="text" name="taskLabel" defaultValue={student.taskLabel ?? ""}
                     placeholder="Görev açıklaması..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                    className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Sonraki Eylem</label>
+                  <label className="text-xs font-medium text-[var(--pd-ink-3)]">Sonraki Eylem</label>
                   <input type="datetime-local" name="nextActionAt" defaultValue={formatDateTimeLocalInput(student.nextActionAt)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+                    className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-gray-600">Notlar</label>
+                  <label className="text-xs font-medium text-[var(--pd-ink-3)]">Notlar</label>
                   <textarea name="notes" defaultValue={student.notes ?? ""} rows={4}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41] resize-none" />
+                    className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)] resize-none" />
                 </div>
 
                 <button type="submit"
-                  className="w-full bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
+                  className="w-full bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
                   Kaydet
                 </button>
               </form>
             </div>
 
             {/* Portal access card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
               <div className="flex items-center gap-2 mb-4">
-                <KeyRound size={16} className="text-[#546B41]" />
-                <h2 className="font-semibold text-[#091413]">Panel Erişimi</h2>
+                <KeyRound size={16} className="text-[var(--pd-accent)]" />
+                <h2 className="font-semibold text-[var(--pd-ink)]">Panel Erişimi</h2>
               </div>
               {student.userId ? (
                 <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
@@ -940,30 +940,30 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
                   <form action={createStudentAccountAction} className="space-y-3">
                     <input type="hidden" name="studentId" value={student.id} />
                     <div className="space-y-1">
-                      <label className="text-xs font-medium text-gray-600">E-posta</label>
+                      <label className="text-xs font-medium text-[var(--pd-ink-3)]">E-posta</label>
                       <input
                         type="email"
                         name="email"
                         defaultValue={student.email ?? ""}
                         placeholder="ogrenci@email.com"
                         required
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                        className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-medium text-gray-600">Şifre (min. 6 karakter)</label>
+                      <label className="text-xs font-medium text-[var(--pd-ink-3)]">Şifre (min. 6 karakter)</label>
                       <input
                         type="text"
                         name="password"
                         placeholder="••••••••"
                         minLength={6}
                         required
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]"
+                        className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]"
                       />
                     </div>
                     <button
                       type="submit"
-                      className="w-full bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
+                      className="w-full bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
                     >
                       Hesap Oluştur
                     </button>

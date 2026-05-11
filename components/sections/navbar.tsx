@@ -19,20 +19,12 @@ const links = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const panelAccess = getPanelAccess(session?.user);
   const panelHref = panelAccess.requiresPanelChoice
@@ -52,13 +44,7 @@ export function Navbar() {
 
   return (
     <>
-      <header
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-          scrolled
-            ? "border-b border-[var(--od-line)]/70 bg-[var(--od-cream)]/90 backdrop-blur-md"
-            : "border-b border-transparent bg-transparent"
-        }`}
-      >
+      <header className="sticky top-0 z-40 w-full border-b border-transparent bg-transparent">
         <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-8">
           <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center gap-2 text-[#0E0E10]">
             <Image

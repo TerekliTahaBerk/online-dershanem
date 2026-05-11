@@ -28,10 +28,10 @@ export default async function TopluAtaPage({ searchParams }: Props) {
   return (
     <div className="p-6 max-w-3xl">
       <div className="mb-6">
-        <Link href="/admin/paketler" className="text-sm text-gray-500 hover:text-gray-700">
+        <Link href="/admin/paketler" className="text-sm text-gray-500 hover:text-[var(--pd-ink-2)]">
           ← Paketlere Dön
         </Link>
-        <h1 className="text-2xl font-bold text-[#091413] mt-2">Toplu Paket Ata</h1>
+        <h1 className="text-2xl font-bold text-[var(--pd-ink)] mt-2">Toplu Paket Ata</h1>
         <p className="text-sm text-gray-500 mt-1">
           Birden fazla öğrenciye aynı anda paket erişimi verin.
         </p>

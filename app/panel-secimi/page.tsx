@@ -49,7 +49,7 @@ export default async function PanelChoicePage({ searchParams }: PanelChoicePageP
     <main className="min-h-screen bg-[#F7F5F0] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-5xl flex-col justify-center">
         <div className="rounded-[28px] border border-stone-200 bg-white shadow-xl">
-          <div className="border-b border-stone-200 bg-[#091413] px-8 py-8 text-white sm:px-10">
+          <div className="border-b border-stone-200 bg-[var(--pd-ink)] px-8 py-8 text-white sm:px-10">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">

@@ -40,7 +40,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>("light");
 
   useEffect(() => {
-    setThemeState(readInitialTheme());
+    // On mount: pick up stored / system preference and apply to <html>
+    const initial = readInitialTheme();
+    setThemeState(initial);
+    applyTheme(initial);
+    // On unmount (e.g. navigating from panel back to public site):
+    // reset to light so the public site is always light themed.
+    return () => {
+      if (typeof document !== "undefined") {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    };
   }, []);
 
   const setTheme = useCallback((next: ThemeMode) => {

@@ -25,7 +25,7 @@ async function getStats() {
   const now = new Date();
   const sevenDaysLater = new Date(now.getTime() + 7 * 86_400_000);
 
-  const [totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, activeEntitlements, rawAttempts, rawUpcoming, expiringEntitlements] =
+  const [totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, activeEntitlements, rawAttempts, rawUpcoming, expiringEntitlements, odActiveTags, odkActiveTags] =
     await Promise.all([
       prisma.odkExam.count(),
       prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
@@ -71,11 +71,25 @@ async function getStats() {
         orderBy: { expiresAt: "asc" },
         take: 6,
       }),
+      prisma.odkUserAccessTag.count({
+        where: {
+          revokedAt: null,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+          accessTag: { service: "OD" },
+        },
+      }),
+      prisma.odkUserAccessTag.count({
+        where: {
+          revokedAt: null,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+          accessTag: { service: "ODK" },
+        },
+      }),
     ]);
 
   const recentAttempts = rawAttempts as unknown as RecentAttempt[];
   const upcomingExams = rawUpcoming as unknown as UpcomingExam[];
-  return { totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, activeEntitlements, recentAttempts, upcomingExams, expiringEntitlements };
+  return { totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, activeEntitlements, recentAttempts, upcomingExams, expiringEntitlements, odActiveTags, odkActiveTags };
 }
 
 const statusLabels: Record<string, { label: string; className: string }> = {
@@ -85,7 +99,7 @@ const statusLabels: Record<string, { label: string; className: string }> = {
 };
 
 export default async function OdkAdminDashboard() {
-  const { totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, activeEntitlements, recentAttempts, upcomingExams, expiringEntitlements } =
+  const { totalExams, publishedExams, totalPackages, activePackages, activeStudents, attemptsLast30d, activeEntitlements, recentAttempts, upcomingExams, expiringEntitlements, odActiveTags, odkActiveTags } =
     await getStats();
   const now = new Date();
 
@@ -132,6 +146,31 @@ export default async function OdkAdminDashboard() {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* Service segmentation */}
+      <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+        <div className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5">
+          <h2 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+            <Tag className="h-4 w-4 text-stone-400" />
+            Servise Göre Aktif Etiketler
+          </h2>
+          <Link href="/odk/admin/etiketler" className="text-xs text-emerald-600 hover:text-emerald-700">
+            Etiketleri yönet →
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 divide-x divide-stone-100">
+          <div className="px-5 py-4">
+            <p className="text-xs font-medium text-stone-500">Online Dershane (OD)</p>
+            <p className="mt-1 text-2xl font-bold text-stone-900">{odActiveTags}</p>
+            <p className="text-xs text-stone-400">aktif etiket ataması</p>
+          </div>
+          <div className="px-5 py-4">
+            <p className="text-xs font-medium text-stone-500">Online Deneme Kulübü (ODK)</p>
+            <p className="mt-1 text-2xl font-bold text-stone-900">{odkActiveTags}</p>
+            <p className="text-xs text-stone-400">aktif etiket ataması</p>
+          </div>
+        </div>
       </div>
 
       {/* Expiring entitlements warning */}

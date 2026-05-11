@@ -33,7 +33,7 @@ export default async function PaketlerPage({ searchParams }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#091413]">Paketler</h1>
+          <h1 className="text-2xl font-bold text-[var(--pd-ink)]">Paketler</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {packages.length} paket · {activeCount} aktif
           </p>
@@ -41,14 +41,14 @@ export default async function PaketlerPage({ searchParams }: Props) {
         <div className="flex gap-2">
           <Link
             href="/admin/paketler/toplu-ata"
-            className="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-white hover:bg-[var(--pd-bg-subtle)] border border-[var(--pd-line)] text-[var(--pd-ink-2)] text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
           >
             <Users size={15} />
             Toplu Ata
           </Link>
           <Link
             href="/admin/paketler/yeni"
-            className="flex items-center gap-2 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={15} />
             Yeni Paket
@@ -84,19 +84,19 @@ export default async function PaketlerPage({ searchParams }: Props) {
               <div
                 key={pkg.id}
                 className={`bg-white rounded-xl border transition-all ${
-                  pkg.isActive ? "border-gray-200" : "border-gray-100 opacity-70"
-                } ${isEditing ? "ring-2 ring-[#546B41]/30" : ""}`}
+                  pkg.isActive ? "border-[var(--pd-line)]" : "border-gray-100 opacity-70"
+                } ${isEditing ? "ring-2 ring-[var(--pd-accent-soft)]" : ""}`}
               >
                 <div className="p-5">
                   {/* Header row */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-[#091413] truncate">{pkg.name}</h3>
+                        <h3 className="font-semibold text-[var(--pd-ink)] truncate">{pkg.name}</h3>
                         {pkg.isActive ? (
                           <CheckCircle size={14} className="text-emerald-500 shrink-0" />
                         ) : (
-                          <XCircle size={14} className="text-gray-400 shrink-0" />
+                          <XCircle size={14} className="text-[var(--pd-muted)] shrink-0" />
                         )}
                       </div>
                       {pkg.description && (
@@ -104,16 +104,16 @@ export default async function PaketlerPage({ searchParams }: Props) {
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-lg font-bold text-[#091413]">{formatPrice(pkg.price)}</p>
+                      <p className="text-lg font-bold text-[var(--pd-ink)]">{formatPrice(pkg.price)}</p>
                     </div>
                   </div>
 
                   {/* Meta */}
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${pkg.type === "EXAM" ? "bg-purple-50 text-purple-700" : "bg-[#DCCCAC]/30 text-[#435633]"}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${pkg.type === "EXAM" ? "bg-purple-50 text-purple-700" : "bg-[var(--pd-accent-soft)] text-[var(--pd-accent)]"}`}>
                       {pkg.type === "EXAM" ? "📝 Deneme" : "📚 Ders"}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs bg-[#DCCCAC]/30 text-[#435633] px-2 py-0.5 rounded-full font-medium">
+                    <span className="inline-flex items-center gap-1 text-xs bg-[var(--pd-accent-soft)] text-[var(--pd-accent)] px-2 py-0.5 rounded-full font-medium">
                       <BookOpen size={10} />
                       {pkg.lessonCount} {pkg.type === "EXAM" ? "sınav" : "ders"}
                     </span>
@@ -123,7 +123,7 @@ export default async function PaketlerPage({ searchParams }: Props) {
                   </div>
 
                   {/* Stats */}
-                  <p className="mt-2 text-xs text-gray-400">{pkg._count.lessons} ders bu pakete bağlı</p>
+                  <p className="mt-2 text-xs text-[var(--pd-muted)]">{pkg._count.lessons} ders bu pakete bağlı</p>
 
                   {/* PayTR Link */}
                   {pkg.paytrLink && (
@@ -144,7 +144,7 @@ export default async function PaketlerPage({ searchParams }: Props) {
                   <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
                     <Link
                       href={`/admin/paketler/duzenle/${pkg.id}`}
-                      className="text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
+                      className="text-xs text-[var(--pd-accent)] hover:text-[var(--pd-accent-hover)] font-medium border border-[var(--pd-line)] rounded-lg px-2.5 py-1.5 hover:bg-[var(--pd-accent-soft)] transition-colors"
                     >
                       Düzenle
                     </Link>

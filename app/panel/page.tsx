@@ -203,6 +203,11 @@ export default async function PanelDashboardPage() {
             </h1>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            {session.user.hasOdkAccess ? (
+              <Link href="/odk/panel" className="pd-btn pd-btn-ghost pd-btn-sm">
+                <Trophy size={13} /> ODK Sınavlarım
+              </Link>
+            ) : null}
             {nextLesson?.googleMeetLink ? (
               <a
                 href={nextLesson.googleMeetLink}
@@ -396,7 +401,7 @@ export default async function PanelDashboardPage() {
                     fontSize: 13,
                   }}
                 >
-                  Bağlantı yakında
+                  Toplantı linki henüz oluşturulmadı
                 </div>
               )}
             </div>

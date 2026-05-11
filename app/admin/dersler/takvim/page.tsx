@@ -36,7 +36,7 @@ function addDays(date: Date, days: number): Date {
 }
 
 const TEACHER_COLORS = [
-  "bg-[#DCCCAC]/60 border-[#546B41]/40 text-[#435633]",
+  "bg-[var(--pd-accent-soft)] border-[var(--pd-line)] text-[var(--pd-accent)]",
   "bg-blue-100 border-blue-300 text-blue-800",
   "bg-violet-100 border-violet-300 text-violet-800",
   "bg-amber-100 border-amber-300 text-amber-800",
@@ -110,26 +110,26 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <Link href="/admin/dersler" className="text-sm text-gray-500 hover:text-gray-700">Liste</Link>
+            <Link href="/admin/dersler" className="text-sm text-gray-500 hover:text-[var(--pd-ink-2)]">Liste</Link>
             <span className="text-gray-300">/</span>
-            <span className="text-sm font-medium text-gray-700">Takvim</span>
+            <span className="text-sm font-medium text-[var(--pd-ink-2)]">Takvim</span>
           </div>
-          <h1 className="text-xl font-bold text-[#091413] mt-1">{weekLabel}</h1>
+          <h1 className="text-xl font-bold text-[var(--pd-ink)] mt-1">{weekLabel}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Link href={prevWeekParam} className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <ChevronLeft size={16} className="text-gray-600" />
+          <Link href={prevWeekParam} className="p-2 border border-[var(--pd-line)] rounded-lg hover:bg-[var(--pd-bg-subtle)] transition-colors">
+            <ChevronLeft size={16} className="text-[var(--pd-ink-3)]" />
           </Link>
           {weekOffset !== 0 && (
-            <Link href={todayParam} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-2 hover:bg-[#DCCCAC]/20 transition-colors font-medium">
+            <Link href={todayParam} className="text-xs text-[var(--pd-accent)] border border-[var(--pd-line)] rounded-lg px-3 py-2 hover:bg-[var(--pd-accent-soft)] transition-colors font-medium">
               Bu Hafta
             </Link>
           )}
-          <Link href={nextWeekParam} className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <ChevronRight size={16} className="text-gray-600" />
+          <Link href={nextWeekParam} className="p-2 border border-[var(--pd-line)] rounded-lg hover:bg-[var(--pd-bg-subtle)] transition-colors">
+            <ChevronRight size={16} className="text-[var(--pd-ink-3)]" />
           </Link>
           <Link href="/admin/dersler/yeni"
-            className="flex items-center gap-1.5 bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors">
+            className="flex items-center gap-1.5 bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium px-3 py-2 rounded-lg transition-colors">
             <Plus size={14} /> Ders Ekle
           </Link>
         </div>
@@ -140,7 +140,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
         <Link
           href={`?week=${weekOffset}`}
           className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-            !teacherIdFilter ? "bg-[#546B41] text-white border-[#546B41]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+            !teacherIdFilter ? "bg-[var(--pd-accent)] text-white border-[var(--pd-accent)]" : "bg-white text-[var(--pd-ink-3)] border-[var(--pd-line)] hover:bg-[var(--pd-bg-subtle)]"
           }`}
         >
           Tüm Hocalar
@@ -153,7 +153,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
               key={t.id}
               href={`?week=${weekOffset}&teacherId=${t.id}`}
               className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                isActive ? "bg-[#546B41] text-white border-[#546B41]" : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                isActive ? "bg-[var(--pd-accent)] text-white border-[var(--pd-accent)]" : "bg-white text-[var(--pd-ink-3)] border-[var(--pd-line)] hover:bg-[var(--pd-bg-subtle)]"
               }`}
             >
               {t.fullName}
@@ -163,18 +163,18 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
       </div>
 
       {/* Calendar grid */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-[var(--pd-line)] overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[700px]">
             {/* Day headers */}
             <div className="grid grid-cols-8 border-b border-gray-100">
-              <div className="py-3 px-3 text-xs text-gray-400 font-medium">Saat</div>
+              <div className="py-3 px-3 text-xs text-[var(--pd-muted)] font-medium">Saat</div>
               {weekDays.map((day, i) => {
                 const isToday = day.getTime() === today.getTime();
                 return (
-                  <div key={i} className={`py-3 text-center border-l border-gray-100 ${isToday ? "bg-[#DCCCAC]/10" : ""}`}>
-                    <p className={`text-xs font-semibold ${isToday ? "text-[#546B41]" : "text-gray-600"}`}>{DAYS[i]}</p>
-                    <p className={`text-sm font-bold mt-0.5 ${isToday ? "text-[#546B41]" : "text-gray-800"}`}>
+                  <div key={i} className={`py-3 text-center border-l border-gray-100 ${isToday ? "bg-[var(--pd-accent-soft)]" : ""}`}>
+                    <p className={`text-xs font-semibold ${isToday ? "text-[var(--pd-accent)]" : "text-[var(--pd-ink-3)]"}`}>{DAYS[i]}</p>
+                    <p className={`text-sm font-bold mt-0.5 ${isToday ? "text-[var(--pd-accent)]" : "text-gray-800"}`}>
                       {new Intl.DateTimeFormat("tr-TR", { day: "numeric" }).format(day)}
                     </p>
                   </div>
@@ -185,7 +185,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
             {/* Hour rows */}
             {HOURS.map((hour) => (
               <div key={hour} className="grid grid-cols-8 border-b border-gray-50 min-h-[52px]">
-                <div className="py-2 px-3 text-xs text-gray-400 font-medium shrink-0">
+                <div className="py-2 px-3 text-xs text-[var(--pd-muted)] font-medium shrink-0">
                   {String(hour).padStart(2, "0")}:00
                 </div>
                 {weekDays.map((day, dayIdx) => {
@@ -193,7 +193,7 @@ export default async function DerslerTakvimPage({ searchParams }: Props) {
                   const key = `${dayIdx}-${hour}`;
                   const slotLessons = lessonsByDayHour.get(key) ?? [];
                   return (
-                    <div key={dayIdx} className={`border-l border-gray-100 p-1 space-y-1 ${isToday ? "bg-[#DCCCAC]/5" : ""}`}>
+                    <div key={dayIdx} className={`border-l border-gray-100 p-1 space-y-1 ${isToday ? "bg-[var(--pd-bg-subtle)]" : ""}`}>
                       {slotLessons.map((lesson) => {
                         const colorIdx = teacherColorMap.get(lesson.teacher.fullName) ?? 0;
                         const colorClass = TEACHER_COLORS[colorIdx];

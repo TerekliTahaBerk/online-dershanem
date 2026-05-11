@@ -140,56 +140,56 @@ export default async function DerslerPage({ searchParams }: Props) {
       {/* Filters */}
       <form method="GET" action="/admin/dersler" className="flex flex-wrap gap-3" style={{ marginBottom: 16 }}>
         <input type="text" name="q" defaultValue={q} placeholder="Öğrenci veya hoca adı..."
-          className="flex-1 min-w-48 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 focus:border-[#546B41]" />
+          className="flex-1 min-w-48 border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] focus:border-[var(--pd-accent)]" />
         <select name="status" defaultValue={status}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
+          className="border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]">
           <option value="">Tüm Durumlar</option>
           {lessonStatusOptions.map((s) => (
             <option key={s} value={s}>{lessonStatusLabels[s]}</option>
           ))}
         </select>
         <select name="teacherId" defaultValue={teacherId}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
+          className="border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]">
           <option value="">Tüm Hocalar</option>
           {teachers.map((t) => (
             <option key={t.id} value={t.id}>{t.fullName}</option>
           ))}
         </select>
         <input type="date" name="from" defaultValue={from}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+          className="border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]" />
         <input type="date" name="to" defaultValue={to}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+          className="border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]" />
         <button type="submit"
-          className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          className="bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
           Filtrele
         </button>
         {(q || status || teacherId || from || to) && (
-          <Link href="/admin/dersler" className="text-sm text-gray-500 hover:text-gray-700 px-2 py-2">Temizle</Link>
+          <Link href="/admin/dersler" className="text-sm text-gray-500 hover:text-[var(--pd-ink-2)] px-2 py-2">Temizle</Link>
         )}
       </form>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-[var(--pd-line)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Tarih / Saat</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Öğrenci</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Hoca</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Paket</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Süre</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Meet Linki</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Durum</th>
-                <th className="text-right px-4 py-3 font-semibold text-gray-600">İşlem</th>
+                <th className="text-left px-4 py-3 font-semibold text-[var(--pd-ink-3)]">Tarih / Saat</th>
+                <th className="text-left px-4 py-3 font-semibold text-[var(--pd-ink-3)]">Öğrenci</th>
+                <th className="text-left px-4 py-3 font-semibold text-[var(--pd-ink-3)]">Hoca</th>
+                <th className="text-left px-4 py-3 font-semibold text-[var(--pd-ink-3)]">Paket</th>
+                <th className="text-left px-4 py-3 font-semibold text-[var(--pd-ink-3)]">Süre</th>
+                <th className="text-left px-4 py-3 font-semibold text-[var(--pd-ink-3)]">Meet Linki</th>
+                <th className="text-left px-4 py-3 font-semibold text-[var(--pd-ink-3)]">Durum</th>
+                <th className="text-right px-4 py-3 font-semibold text-[var(--pd-ink-3)]">İşlem</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {lessons.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-gray-400">
+                  <td colSpan={8} className="px-4 py-10 text-center text-[var(--pd-muted)]">
                     Ders bulunamadı.{" "}
-                    <Link href="/admin/dersler/yeni" className="text-[#546B41] hover:underline">Yeni ders ekle →</Link>
+                    <Link href="/admin/dersler/yeni" className="text-[var(--pd-accent)] hover:underline">Yeni ders ekle →</Link>
                   </td>
                 </tr>
               )}
@@ -198,21 +198,21 @@ export default async function DerslerPage({ searchParams }: Props) {
                 const isPast = new Date(lesson.scheduledAt) < new Date();
                 return (
                   <>
-                    <tr key={lesson.id} className={`hover:bg-gray-50 transition-colors ${isEditing ? "bg-[#DCCCAC]/10" : ""} ${lesson.status === "CANCELLED" ? "opacity-60" : ""}`}>
+                    <tr key={lesson.id} className={`hover:bg-[var(--pd-bg-subtle)] transition-colors ${isEditing ? "bg-[var(--pd-accent-soft)]" : ""} ${lesson.status === "CANCELLED" ? "opacity-60" : ""}`}>
                       <td className="px-4 py-3">
-                        <p className={`font-medium ${isPast && lesson.status === "SCHEDULED" ? "text-amber-600" : "text-[#091413]"}`}>
+                        <p className={`font-medium ${isPast && lesson.status === "SCHEDULED" ? "text-amber-600" : "text-[var(--pd-ink)]"}`}>
                           {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(lesson.scheduledAt))}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-[var(--pd-muted)]">
                           {new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(new Date(lesson.scheduledAt))}
                         </p>
                       </td>
                       <td className="px-4 py-3">
-                        <Link href={`/admin/ogrenciler?edit=${lesson.student.id}`} className="font-medium text-[#091413] hover:text-[#546B41]">
+                        <Link href={`/admin/ogrenciler?edit=${lesson.student.id}`} className="font-medium text-[var(--pd-ink)] hover:text-[var(--pd-accent)]">
                           {lesson.student.fullName}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{lesson.teacher.fullName}</td>
+                      <td className="px-4 py-3 text-[var(--pd-ink-3)]">{lesson.teacher.fullName}</td>
                       <td className="px-4 py-3 text-gray-500">{lesson.package?.name ?? <span className="text-gray-300">—</span>}</td>
                       <td className="px-4 py-3 text-gray-500">{lesson.duration} dk</td>
                       <td className="px-4 py-3">
@@ -238,7 +238,7 @@ export default async function DerslerPage({ searchParams }: Props) {
                         {lesson.status !== "CANCELLED" && (
                           <Link
                             href={isEditing ? buildUrl({ edit: "" }) : buildUrl({ edit: lesson.id })}
-                            className="text-xs text-[#546B41] hover:text-[#435633] font-medium border border-[#546B41]/30 rounded-lg px-2.5 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors"
+                            className="text-xs text-[var(--pd-accent)] hover:text-[var(--pd-accent-hover)] font-medium border border-[var(--pd-line)] rounded-lg px-2.5 py-1.5 hover:bg-[var(--pd-accent-soft)] transition-colors"
                           >
                             {isEditing ? "Kapat" : "Düzenle"}
                           </Link>
@@ -249,30 +249,30 @@ export default async function DerslerPage({ searchParams }: Props) {
                     {/* Inline edit */}
                     {isEditing && (
                       <tr key={`${lesson.id}-edit`}>
-                        <td colSpan={8} className="px-4 py-4 bg-[#DCCCAC]/5 border-b border-[#DCCCAC]/30">
+                        <td colSpan={8} className="px-4 py-4 bg-[var(--pd-bg-subtle)] border-b border-[var(--pd-line)]">
                           <div className="flex flex-col gap-4">
                             <form action={updateLessonAction} className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
                               <input type="hidden" name="lessonId" value={lesson.id} />
                               <input type="hidden" name="returnTo" value={buildUrl({ edit: lesson.id })} />
 
                               <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Ders Başlığı</label>
+                                <label className="text-xs font-medium text-[var(--pd-ink-3)]">Ders Başlığı</label>
                                 <input type="text" name="title" defaultValue={(lesson as unknown as { title?: string | null }).title ?? ""}
                                   placeholder="Türev Soruları..."
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+                                  className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]" />
                               </div>
 
                               <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Branş / Konu</label>
+                                <label className="text-xs font-medium text-[var(--pd-ink-3)]">Branş / Konu</label>
                                 <input type="text" name="subject" defaultValue={(lesson as unknown as { subject?: string | null }).subject ?? ""}
                                   placeholder="Matematik..."
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+                                  className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]" />
                               </div>
 
                               <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Durum</label>
+                                <label className="text-xs font-medium text-[var(--pd-ink-3)]">Durum</label>
                                 <select name="status" defaultValue={lesson.status}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#546B41]/30">
+                                  className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]">
                                   {lessonStatusOptions.map((s) => (
                                     <option key={s} value={s}>{lessonStatusLabels[s]}</option>
                                   ))}
@@ -280,30 +280,30 @@ export default async function DerslerPage({ searchParams }: Props) {
                               </div>
 
                               <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-600">Tarih / Saat</label>
+                                <label className="text-xs font-medium text-[var(--pd-ink-3)]">Tarih / Saat</label>
                                 <input type="datetime-local" name="scheduledAt" defaultValue={formatDateTimeLocalInput(lesson.scheduledAt)}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+                                  className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]" />
                               </div>
 
                               <div className="space-y-1 col-span-2 md:col-span-4">
-                                <label className="text-xs font-medium text-gray-600">Google Meet Linki</label>
+                                <label className="text-xs font-medium text-[var(--pd-ink-3)]">Google Meet Linki</label>
                                 <input type="url" name="googleMeetLink" defaultValue={lesson.googleMeetLink ?? ""}
                                   placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30" />
+                                  className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)]" />
                               </div>
 
                               <div className="space-y-1 col-span-2 md:col-span-4">
-                                <label className="text-xs font-medium text-gray-600">Notlar</label>
+                                <label className="text-xs font-medium text-[var(--pd-ink-3)]">Notlar</label>
                                 <textarea name="notes" defaultValue={lesson.notes ?? ""} rows={2}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#546B41]/30 resize-none" />
+                                  className="w-full border border-[var(--pd-line)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent-soft)] resize-none" />
                               </div>
 
                               <div className="col-span-2 md:col-span-4 flex gap-3">
                                 <button type="submit"
-                                  className="bg-[#546B41] hover:bg-[#435633] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                                  className="bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                                   Kaydet
                                 </button>
-                                <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-gray-700 px-4 py-2">
+                                <Link href={buildUrl({ edit: "" })} className="text-sm text-gray-500 hover:text-[var(--pd-ink-2)] px-4 py-2">
                                   İptal
                                 </Link>
                               </div>
@@ -344,12 +344,12 @@ export default async function DerslerPage({ searchParams }: Props) {
             <span className="text-xs text-gray-500">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} / {total}</span>
             <div className="flex gap-2">
               {page > 0 && (
-                <Link href={buildUrl({ page: String(page - 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
+                <Link href={buildUrl({ page: String(page - 1) })} className="text-xs text-[var(--pd-accent)] border border-[var(--pd-line)] rounded-lg px-3 py-1.5 hover:bg-[var(--pd-accent-soft)] transition-colors">
                   Önceki
                 </Link>
               )}
               {(page + 1) * PAGE_SIZE < total && (
-                <Link href={buildUrl({ page: String(page + 1) })} className="text-xs text-[#546B41] border border-[#546B41]/30 rounded-lg px-3 py-1.5 hover:bg-[#DCCCAC]/20 transition-colors">
+                <Link href={buildUrl({ page: String(page + 1) })} className="text-xs text-[var(--pd-accent)] border border-[var(--pd-line)] rounded-lg px-3 py-1.5 hover:bg-[var(--pd-accent-soft)] transition-colors">
                   Sonraki
                 </Link>
               )}

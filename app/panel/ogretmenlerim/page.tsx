@@ -118,8 +118,8 @@ export default async function PanelOgretmenlerimPage() {
             }}
           >
             <User size={32} style={{ color: "var(--pd-muted-2)", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Öğretmen eşleşmeniz yakında paylaşılacak</p>
-            <p style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 4 }}>İlk dersiniz planlandığında burada yer alacak.</p>
+            <p style={{ fontSize: 14, fontWeight: 500, color: "var(--pd-ink-2)" }}>Henüz size atanmış bir öğretmen yok</p>
+            <p style={{ fontSize: 12, color: "var(--pd-muted)", marginTop: 4 }}>İlk dersiniz planlandığında öğretmeniniz burada görünecek.</p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

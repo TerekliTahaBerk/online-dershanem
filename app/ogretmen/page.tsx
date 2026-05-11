@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { CalendarDays, Users, CheckCircle2, Clock, BookOpen, Video, TrendingUp } from "lucide-react";
+import { CalendarDays, Users, CheckCircle2, Clock, BookOpen, Video, TrendingUp, Trophy } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -102,16 +102,23 @@ export default async function OgretmenDashboardPage() {
             </div>
             <h1 className="pd-page-title">Merhaba, {teacher.fullName.split(" ")[0]} 👋</h1>
           </div>
-          {nextLesson?.googleMeetLink && (
-            <a
-              href={nextLesson.googleMeetLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pd-btn pd-btn-accent pd-btn-sm"
-            >
-              <Video size={13} /> Sıradaki Derse Gir
-            </a>
-          )}
+          <div style={{ display: "flex", gap: 8 }}>
+            {session.user.hasOdkAccess && (
+              <Link href="/odk/panel" className="pd-btn pd-btn-ghost pd-btn-sm">
+                <Trophy size={13} /> ODK Sınavlar
+              </Link>
+            )}
+            {nextLesson?.googleMeetLink && (
+              <a
+                href={nextLesson.googleMeetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pd-btn pd-btn-accent pd-btn-sm"
+              >
+                <Video size={13} /> Sıradaki Derse Gir
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
@@ -189,7 +196,7 @@ export default async function OgretmenDashboardPage() {
                     fontSize: 13,
                   }}
                 >
-                  Bağlantı yakında
+                  Toplantı linki henüz oluşturulmadı
                 </div>
               )}
             </div>

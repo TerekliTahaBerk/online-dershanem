@@ -10,7 +10,7 @@ type GroupByExamType = { examType: string | null; _count: number }[];
 
 export const dynamic = "force-dynamic";
 
-function BarChart({ data, colorClass = "bg-[#546B41]" }: {
+function BarChart({ data, colorClass = "bg-[var(--pd-accent)]" }: {
   data: { label: string; value: number; total: number }[];
   colorClass?: string;
 }) {
@@ -20,8 +20,8 @@ function BarChart({ data, colorClass = "bg-[#546B41]" }: {
       {data.map(({ label, value, total }) => (
         <div key={label}>
           <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-gray-600 font-medium">{label}</span>
-            <span className="text-gray-400">{value} <span className="text-gray-300">/ {total}</span></span>
+            <span className="text-[var(--pd-ink-3)] font-medium">{label}</span>
+            <span className="text-[var(--pd-muted)]">{value} <span className="text-gray-300">/ {total}</span></span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
@@ -37,10 +37,10 @@ function BarChart({ data, colorClass = "bg-[#546B41]" }: {
 
 function StatCard({ label, value, sub }: { label: string; value: number | string; sub?: string }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
-      <p className="text-3xl font-bold text-[#091413]">{value}</p>
+    <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5 text-center">
+      <p className="text-3xl font-bold text-[var(--pd-ink)]">{value}</p>
       <p className="text-sm text-gray-500 mt-1">{label}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+      {sub && <p className="text-xs text-[var(--pd-muted)] mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -145,7 +145,7 @@ export default async function IstatistiklerPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#091413]">İstatistikler</h1>
+        <h1 className="text-2xl font-bold text-[var(--pd-ink)]">İstatistikler</h1>
         <p className="text-sm text-gray-500 mt-0.5">Platform geneli analiz ve istatistikler</p>
       </div>
 
@@ -198,12 +198,12 @@ export default async function IstatistiklerPage() {
             link: "/admin/odemeler"
           }
         ].map(({ label, thisMonth, lastMonth, growth, link }) => (
-          <Link key={label} href={link} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+          <Link key={label} href={link} className="bg-white rounded-xl border border-[var(--pd-line)] p-5 hover:shadow-md transition-shadow">
             <p className="text-xs text-gray-500 font-medium">{label}</p>
             <div className="flex items-end justify-between mt-2">
               <div>
-                <p className="text-2xl font-bold text-[#091413]">{thisMonth}</p>
-                <p className="text-xs text-gray-400 mt-0.5">Bu ay</p>
+                <p className="text-2xl font-bold text-[var(--pd-ink)]">{thisMonth}</p>
+                <p className="text-xs text-[var(--pd-muted)] mt-0.5">Bu ay</p>
               </div>
               {growth !== null && (
                 <span className={`text-sm font-semibold px-2 py-1 rounded-lg ${
@@ -215,7 +215,7 @@ export default async function IstatistiklerPage() {
                 </span>
               )}
             </div>
-            <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
+            <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-[var(--pd-muted)]">
               Geçen ay: {lastMonth}
             </div>
           </Link>
@@ -225,37 +225,37 @@ export default async function IstatistiklerPage() {
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Student by Status */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#091413]">Öğrenci Durumu</h2>
-            <Link href="/admin/ogrenciler" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Öğrenci Durumu</h2>
+            <Link href="/admin/ogrenciler" className="text-xs text-[var(--pd-accent)] hover:underline">Tümü →</Link>
           </div>
-          <BarChart data={studentStatusData} colorClass="bg-[#546B41]" />
+          <BarChart data={studentStatusData} colorClass="bg-[var(--pd-accent)]" />
         </div>
 
         {/* Lesson by Status */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#091413]">Ders Durumu</h2>
-            <Link href="/admin/dersler" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Ders Durumu</h2>
+            <Link href="/admin/dersler" className="text-xs text-[var(--pd-accent)] hover:underline">Tümü →</Link>
           </div>
           <BarChart data={lessonStatusData} colorClass="bg-blue-400" />
         </div>
 
         {/* Payment by Status */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#091413]">Ödeme Durumu</h2>
-            <Link href="/admin/odemeler" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Ödeme Durumu</h2>
+            <Link href="/admin/odemeler" className="text-xs text-[var(--pd-accent)] hover:underline">Tümü →</Link>
           </div>
           <BarChart data={purchaseStatusData} colorClass="bg-violet-400" />
         </div>
 
         {/* Lead by Status */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#091413]">Form Başvuru Süreci</h2>
-            <Link href="/admin/formlar" className="text-xs text-[#546B41] hover:underline">Tümü →</Link>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Form Başvuru Süreci</h2>
+            <Link href="/admin/formlar" className="text-xs text-[var(--pd-accent)] hover:underline">Tümü →</Link>
           </div>
           <BarChart data={leadStatusData} colorClass="bg-amber-400" />
         </div>
@@ -263,19 +263,19 @@ export default async function IstatistiklerPage() {
 
       {/* Exam type breakdown */}
       {examTypeData.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#091413]">Sınav Türüne Göre Öğrenci</h2>
+            <h2 className="font-semibold text-[var(--pd-ink)]">Sınav Türüne Göre Öğrenci</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {examTypeData.map(({ label, value }) => (
               <Link
                 key={label}
                 href={`/admin/ogrenciler?q=${label}`}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-[#DCCCAC]/20 transition-colors"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-[var(--pd-accent-soft)] transition-colors"
               >
-                <span className="text-sm font-medium text-gray-700">{label}</span>
-                <span className="text-sm font-bold text-[#546B41]">{value}</span>
+                <span className="text-sm font-medium text-[var(--pd-ink-2)]">{label}</span>
+                <span className="text-sm font-bold text-[var(--pd-accent)]">{value}</span>
               </Link>
             ))}
           </div>
@@ -283,15 +283,15 @@ export default async function IstatistiklerPage() {
       )}
 
       {/* Form leads this month */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="bg-white rounded-xl border border-[var(--pd-line)] p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-[#091413]">Bu Ay Form Başvuruları</h2>
-          <span className="text-2xl font-bold text-[#546B41]">{leadsThisMonth}</span>
+          <h2 className="font-semibold text-[var(--pd-ink)]">Bu Ay Form Başvuruları</h2>
+          <span className="text-2xl font-bold text-[var(--pd-accent)]">{leadsThisMonth}</span>
         </div>
         <p className="text-sm text-gray-500">
           Web sitesinden gelen form başvurularının {leadsThisMonth} tanesi bu ay geldi.
         </p>
-        <Link href="/admin/formlar" className="mt-3 inline-block text-xs text-[#546B41] hover:underline">
+        <Link href="/admin/formlar" className="mt-3 inline-block text-xs text-[var(--pd-accent)] hover:underline">
           Tüm formlara git →
         </Link>
       </div>

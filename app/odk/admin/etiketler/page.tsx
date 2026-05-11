@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { AccessTagCreateForm } from "@/components/odk/admin/access-tag-create-form";
 import { toggleAccessTag, deleteAccessTag } from "@/app/odk/admin/actions";
 import { Tag } from "lucide-react";
+import Link from "next/link";
 
 type TagRow = {
   id: string;
@@ -13,9 +14,10 @@ type TagRow = {
   _count: { userTags: number; examTags: number; packageTags: number };
 };
 
-async function getAccessTags(): Promise<TagRow[]> {
+async function getAccessTags(service?: "OD" | "ODK"): Promise<TagRow[]> {
   const rows = await prisma.odkAccessTag.findMany({
-    orderBy: { createdAt: "desc" },
+    where: service ? { service } : undefined,
+    orderBy: [{ service: "asc" }, { createdAt: "desc" }],
     select: {
       id: true,
       key: true,
@@ -29,16 +31,43 @@ async function getAccessTags(): Promise<TagRow[]> {
   return rows as unknown as TagRow[];
 }
 
-export default async function EtiketlerPage() {
-  const tags = await getAccessTags();
+export default async function EtiketlerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ service?: string }>;
+}) {
+  const sp = await searchParams;
+  const filter = sp.service === "OD" || sp.service === "ODK" ? sp.service : undefined;
+  const tags = await getAccessTags(filter);
+
+  const tabs: { key: string; label: string; href: string; active: boolean }[] = [
+    { key: "all", label: "Tümü", href: "/odk/admin/etiketler", active: !filter },
+    { key: "OD", label: "OD", href: "/odk/admin/etiketler?service=OD", active: filter === "OD" },
+    { key: "ODK", label: "ODK", href: "/odk/admin/etiketler?service=ODK", active: filter === "ODK" },
+  ];
 
   return (
     <div className="p-6 space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold text-stone-900">Erişim Etiketleri</h1>
-        <p className="text-sm text-stone-500 mt-0.5">
-          Sınavlara, paketlere ve öğrencilere atanan erişim kuralları
-        </p>
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-xl font-semibold text-stone-900">Erişim Etiketleri</h1>
+          <p className="text-sm text-stone-500 mt-0.5">
+            Sınavlara, paketlere ve kullanıcılara atanan OD/ODK erişim kuralları
+          </p>
+        </div>
+        <div className="flex rounded-lg border border-stone-200 overflow-hidden text-xs">
+          {tabs.map((t) => (
+            <Link
+              key={t.key}
+              href={t.href}
+              className={`px-3.5 py-1.5 font-medium transition ${
+                t.active ? "bg-emerald-600 text-white" : "text-stone-600 hover:bg-stone-50"
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
