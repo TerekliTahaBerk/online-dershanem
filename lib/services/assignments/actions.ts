@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { defineAction } from "@/lib/rbac/define-action";
+import { broadcastNotification, createNotification, parentUserIdsForStudents } from "@/lib/notifications";
 import {
   assignmentCreateSchema,
   assignmentUpdateSchema,
@@ -29,6 +30,59 @@ export const createAssignmentAction = defineAction({
       },
       select: { id: true },
     });
+
+    // 🔔 Notify students (only if PUBLISHED)
+    if (input.status === "PUBLISHED") {
+      const userIds: string[] = [];
+      const studentIds: string[] = [];
+      if (input.studentId) {
+        studentIds.push(input.studentId);
+        const s = await prisma.student.findUnique({
+          where: { id: input.studentId },
+          select: { userId: true },
+        });
+        if (s?.userId) userIds.push(s.userId);
+      } else if (input.classroomId) {
+        const rows = await prisma.classroomStudent.findMany({
+          where: { classroomId: input.classroomId },
+          select: { studentId: true, student: { select: { userId: true } } },
+        });
+        rows.forEach((r) => {
+          studentIds.push(r.studentId);
+          if (r.student.userId) userIds.push(r.student.userId);
+        });
+      }
+      if (userIds.length > 0) {
+        const dueText = input.dueAt
+          ? ` · Son teslim: ${new Date(input.dueAt).toLocaleString("tr-TR", {
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}`
+          : "";
+        await broadcastNotification(userIds, {
+          type: "CONTENT",
+          priority: "NORMAL",
+          title: `Yeni ödev: ${input.title}`,
+          body: `${input.subject ? input.subject + " · " : ""}${input.title}${dueText}`,
+          href: `/v2/panel/odevler/${a.id}`,
+        });
+
+        // 🔔 Parents
+        const parentIds = await parentUserIdsForStudents(studentIds);
+        if (parentIds.length > 0) {
+          await broadcastNotification(parentIds, {
+            type: "CONTENT",
+            priority: "LOW",
+            title: `Çocuğunuza yeni ödev verildi`,
+            body: `${input.title}${input.subject ? ` · ${input.subject}` : ""}`,
+            href: `/v2/veli/odevler`,
+          });
+        }
+      }
+    }
+
     revalidatePath("/v2/admin/odevler");
     return a;
   },

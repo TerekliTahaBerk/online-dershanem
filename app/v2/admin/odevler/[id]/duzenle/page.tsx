@@ -21,20 +21,7 @@ export default async function EditAssignmentPage({
   await requirePagePermission("assignments.write");
   const { id } = await params;
 
-  const [a, teachers, classrooms, students] = await Promise.all([
-    prisma.assignment.findUnique({ where: { id } }),
-    prisma.teacher.findMany({
-      where: { status: "ACTIVE" },
-      select: { id: true, fullName: true },
-      orderBy: { fullName: "asc" },
-    }),
-    prisma.classroom.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.student.findMany({ select: { id: true, fullName: true }, orderBy: { fullName: "asc" }, take: 500 }),
-  ]);
+  const a = await prisma.assignment.findUnique({ where: { id } });
   if (!a) return notFound();
 
   return (
@@ -62,21 +49,21 @@ export default async function EditAssignmentPage({
           {
             name: "teacherId",
             label: "Öğretmen",
-            type: "select",
+            type: "async-select",
             required: true,
-            options: teachers.map((t) => ({ value: t.id, label: t.fullName })),
+            endpoint: "/api/v1/search/teachers",
           },
           {
             name: "classroomId",
             label: "Sınıf",
-            type: "select",
-            options: classrooms.map((c) => ({ value: c.id, label: c.name })),
+            type: "async-select",
+            endpoint: "/api/v1/search/classrooms",
           },
           {
             name: "studentId",
             label: "Öğrenci",
-            type: "select",
-            options: students.map((s) => ({ value: s.id, label: s.fullName })),
+            type: "async-select",
+            endpoint: "/api/v1/search/students",
           },
           { name: "title", label: "Başlık", required: true, cols: 2 },
           { name: "subject", label: "Ders / Konu" },

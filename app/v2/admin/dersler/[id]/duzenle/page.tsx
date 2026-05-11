@@ -20,25 +20,7 @@ export default async function EditLessonPage({
   await requirePagePermission("lessons.write");
   const { id } = await params;
 
-  const [lesson, students, teachers, classrooms, packages] = await Promise.all([
-    prisma.lesson.findUnique({ where: { id } }),
-    prisma.student.findMany({ select: { id: true, fullName: true }, orderBy: { fullName: "asc" }, take: 500 }),
-    prisma.teacher.findMany({
-      where: { status: "ACTIVE" },
-      select: { id: true, fullName: true },
-      orderBy: { fullName: "asc" },
-    }),
-    prisma.classroom.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.package.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const lesson = await prisma.lesson.findUnique({ where: { id } });
   if (!lesson) return notFound();
 
   return (
@@ -67,28 +49,28 @@ export default async function EditLessonPage({
           {
             name: "studentId",
             label: "Öğrenci",
-            type: "select",
+            type: "async-select",
             required: true,
-            options: students.map((s) => ({ value: s.id, label: s.fullName })),
+            endpoint: "/api/v1/search/students",
           },
           {
             name: "teacherId",
             label: "Öğretmen",
-            type: "select",
+            type: "async-select",
             required: true,
-            options: teachers.map((t) => ({ value: t.id, label: t.fullName })),
+            endpoint: "/api/v1/search/teachers",
           },
           {
             name: "classroomId",
             label: "Sınıf",
-            type: "select",
-            options: classrooms.map((c) => ({ value: c.id, label: c.name })),
+            type: "async-select",
+            endpoint: "/api/v1/search/classrooms",
           },
           {
             name: "packageId",
             label: "Paket",
-            type: "select",
-            options: packages.map((p) => ({ value: p.id, label: p.name })),
+            type: "async-select",
+            endpoint: "/api/v1/search/packages",
           },
           { name: "title", label: "Başlık" },
           { name: "subject", label: "Konu" },

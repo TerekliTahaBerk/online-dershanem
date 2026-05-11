@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "next-auth/react";
-import { Bell, LogOut, Moon, Search, Sun, UserCircle, Settings, ChevronsUpDown } from "lucide-react";
+import { LogOut, Moon, Search, Sun, UserCircle, Settings, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/od/ui/button";
 import {
   DropdownMenu,
@@ -14,35 +14,16 @@ import {
   DropdownMenuTrigger
 } from "@/components/od/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/od/ui/avatar";
-import { Badge } from "@/components/od/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/od/ui/tooltip";
 import { useCommandMenu } from "./command-menu";
 import { cn } from "@/lib/utils/cn";
 import { Breadcrumb } from "./breadcrumb";
+import { NotificationCenter } from "./notification-center";
 
 export function Topbar() {
   const { data: session } = useSession();
   const { setTheme, theme, resolvedTheme } = useTheme();
   const { open } = useCommandMenu();
-  const [unread, setUnread] = React.useState(0);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const r = await fetch("/api/v1/me/inbox/unread", { credentials: "same-origin" });
-        if (!r.ok) return;
-        const j = await r.json();
-        if (!cancelled) setUnread(j.count ?? 0);
-      } catch {}
-    }
-    load();
-    const id = setInterval(load, 30_000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, []);
 
   const isDark = (resolvedTheme ?? theme) === "dark";
   const initials = (session?.user?.name ?? session?.user?.email ?? "??")
@@ -78,23 +59,7 @@ export function Topbar() {
         </Button>
 
         {/* Notifications */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Bildirimler" className="relative">
-              <Bell className="h-4 w-4" />
-              {unread > 0 && (
-                <Badge
-                  tone="blush"
-                  size="sm"
-                  className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full text-[10px]"
-                >
-                  {unread > 9 ? "9+" : unread}
-                </Badge>
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Bildirimler</TooltipContent>
-        </Tooltip>
+        <NotificationCenter />
 
         {/* Theme toggle */}
         <Tooltip>

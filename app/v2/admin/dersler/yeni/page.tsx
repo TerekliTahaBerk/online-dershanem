@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/od/page-header";
 import { AutoForm } from "@/components/od/forms/auto-form";
 import { createLessonAction } from "@/lib/services/lessons/actions";
@@ -8,25 +7,6 @@ export const dynamic = "force-dynamic";
 
 export default async function NewLessonPage() {
   await requirePagePermission("lessons.write");
-
-  const [students, teachers, classrooms, packages] = await Promise.all([
-    prisma.student.findMany({ select: { id: true, fullName: true }, orderBy: { fullName: "asc" }, take: 500 }),
-    prisma.teacher.findMany({
-      where: { status: "ACTIVE" },
-      select: { id: true, fullName: true },
-      orderBy: { fullName: "asc" },
-    }),
-    prisma.classroom.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.package.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
 
   return (
     <div className="space-y-od-5">
@@ -40,28 +20,28 @@ export default async function NewLessonPage() {
           {
             name: "studentId",
             label: "Öğrenci",
-            type: "select",
+            type: "async-select",
             required: true,
-            options: students.map((s) => ({ value: s.id, label: s.fullName })),
+            endpoint: "/api/v1/search/students",
           },
           {
             name: "teacherId",
             label: "Öğretmen",
-            type: "select",
+            type: "async-select",
             required: true,
-            options: teachers.map((t) => ({ value: t.id, label: t.fullName })),
+            endpoint: "/api/v1/search/teachers",
           },
           {
             name: "classroomId",
             label: "Sınıf (opsiyonel)",
-            type: "select",
-            options: classrooms.map((c) => ({ value: c.id, label: c.name })),
+            type: "async-select",
+            endpoint: "/api/v1/search/classrooms",
           },
           {
             name: "packageId",
             label: "Paket (opsiyonel)",
-            type: "select",
-            options: packages.map((p) => ({ value: p.id, label: p.name })),
+            type: "async-select",
+            endpoint: "/api/v1/search/packages",
           },
           { name: "title", label: "Başlık" },
           { name: "subject", label: "Konu" },

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { defineAction } from "@/lib/rbac/define-action";
+import { createNotification, broadcastNotification, parentUserIdsForStudents } from "@/lib/notifications";
 import {
   lessonCreateSchema,
   lessonUpdateSchema,
@@ -30,6 +31,42 @@ export const createLessonAction = defineAction({
       },
       select: { id: true },
     });
+
+    // 🔔 Notify the student
+    const stu = await prisma.student.findUnique({
+      where: { id: input.studentId },
+      select: { userId: true, fullName: true },
+    });
+    if (stu?.userId && input.status !== "CANCELLED") {
+      const dateText = input.scheduledAt.toLocaleString("tr-TR", {
+        day: "2-digit",
+        month: "short",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      await createNotification({
+        userId: stu.userId,
+        type: "LESSON",
+        priority: "NORMAL",
+        title: `Yeni ders programlandı`,
+        body: `${input.title ?? input.subject ?? "Ders"} · ${dateText}`,
+        href: "/v2/panel/dersler",
+      });
+
+      // 🔔 Parents
+      const parentIds = await parentUserIdsForStudents([input.studentId]);
+      if (parentIds.length > 0) {
+        await broadcastNotification(parentIds, {
+          type: "LESSON",
+          priority: "LOW",
+          title: `Çocuğunuza ders programlandı`,
+          body: `${input.title ?? input.subject ?? "Ders"} · ${dateText}`,
+          href: "/v2/veli/dersler",
+        });
+      }
+    }
+
     revalidatePath("/v2/admin/dersler");
     return l;
   },

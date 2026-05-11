@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Plus, Filter } from "lucide-react";
+import { MoreHorizontal, Plus } from "lucide-react";
 import { DataTable } from "@/components/od/data/data-table";
 import { Button } from "@/components/od/ui/button";
 import { Badge } from "@/components/od/ui/badge";
@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger
 } from "@/components/od/ui/dropdown-menu";
 import { StudentsBulkBar } from "./students-bulk-bar";
+import { StudentsFilters } from "./students-filters";
+import { ExportButton } from "@/components/od/data/export-button";
 
 export type StudentRow = {
   id: string;
@@ -63,9 +65,15 @@ const TAG_TONE: Record<string, "mint" | "sky" | "yellow" | "blush" | "lavender" 
 export function StudentsTable({
   data,
   tags = [],
+  filterOptions,
 }: {
   data: StudentRow[];
   tags?: { id: string; label: string }[];
+  filterOptions?: {
+    classLevels: string[];
+    examTypes: string[];
+    cities: string[];
+  };
 }) {
   const [selected, setSelected] = React.useState<Record<string, boolean>>({});
   const selectedIds = React.useMemo(
@@ -222,10 +230,16 @@ export function StudentsTable({
         pageSize={25}
         toolbar={
           <>
-            <Button variant="outline" size="sm">
-              <Filter className="h-3.5 w-3.5" />
-              Filtrele
-            </Button>
+            <StudentsFilters
+              classLevels={filterOptions?.classLevels ?? []}
+              examTypes={filterOptions?.examTypes ?? []}
+              cities={filterOptions?.cities ?? []}
+              tags={tags}
+            />
+            <ExportButton
+              endpoint="/api/v1/export/students"
+              printPath="/v2/yazdir/ogrenciler"
+            />
             <Link href="/v2/admin/ogrenciler/yeni">
               <Button variant="accent" size="sm">
                 <Plus className="h-3.5 w-3.5" />

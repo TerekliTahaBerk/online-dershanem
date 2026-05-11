@@ -6,19 +6,24 @@ import { Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/od/ui/card";
 import { Input, Textarea, Label } from "@/components/od/ui/input";
 import { Button } from "@/components/od/ui/button";
+import { AsyncSelect } from "@/components/od/forms/async-select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 
 export type FieldDef = {
   name: string;
   label: string;
-  type?: "text" | "email" | "number" | "textarea" | "select" | "checkbox" | "url" | "date" | "datetime-local" | "tel";
+  type?: "text" | "email" | "number" | "textarea" | "select" | "checkbox" | "url" | "date" | "datetime-local" | "tel" | "async-select";
   required?: boolean;
   placeholder?: string;
   helpText?: string;
   options?: { value: string; label: string }[];
   defaultValue?: string | number | boolean;
   cols?: 1 | 2;
+  /** async-select için API endpoint (örn. `/api/v1/search/students`). */
+  endpoint?: string;
+  /** async-select için ek query params. */
+  extraParams?: Record<string, string | undefined>;
 };
 
 export type AutoFormProps = {
@@ -133,6 +138,17 @@ export function AutoForm({
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
                   </select>
+                ) : f.type === "async-select" ? (
+                  <div className="mt-1">
+                    <AsyncSelect
+                      endpoint={f.endpoint!}
+                      value={form[f.name] || null}
+                      onChange={(v) => set(f.name, v ?? "")}
+                      placeholder={f.placeholder ?? "Seç…"}
+                      required={f.required}
+                      extraParams={f.extraParams}
+                    />
+                  </div>
                 ) : f.type === "checkbox" ? (
                   <label className="mt-od-2 flex items-center gap-od-2 text-od-body">
                     <input

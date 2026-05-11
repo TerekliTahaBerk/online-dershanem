@@ -8,6 +8,7 @@ import { Badge } from "@/components/od/ui/badge";
 import { EmptyState } from "@/components/od/feedback/empty-state";
 import { KpiCard } from "@/components/od/charts/kpi-card";
 import { requirePagePermission } from "@/lib/rbac/define-action";
+import { ExportButton } from "@/components/od/data/export-button";
 
 function fmtTL(kurus: number) {
   return new Intl.NumberFormat("tr-TR", {
@@ -56,7 +57,16 @@ export default async function AccountingPage() {
 
   return (
     <div className="space-y-od-5">
-      <PageHeader title="Muhasebe" description="Tüm gelir ve gider kayıtları" />
+      <PageHeader
+        title="Muhasebe"
+        description="Tüm gelir ve gider kayıtları"
+        actions={
+          <ExportButton
+            endpoint="/api/v1/export/accounting"
+            forwardParams={false}
+          />
+        }
+      />
 
       <div className="grid gap-od-3 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
