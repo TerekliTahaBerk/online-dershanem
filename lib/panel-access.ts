@@ -1,12 +1,13 @@
-type UserRole = "ADMIN" | "STUDENT" | "TEACHER";
+type UserRole = "ADMIN" | "STUDENT" | "TEACHER" | "PARENT";
 
-export type PanelKey = "student" | "teacher" | "admin";
+export type PanelKey = "student" | "teacher" | "parent" | "admin";
 
 type SessionPanelUser = {
   role?: UserRole | null;
   isAdmin?: boolean | null;
   hasStudentAccess?: boolean | null;
   hasTeacherAccess?: boolean | null;
+  hasParentAccess?: boolean | null;
   hasOdAccess?: boolean | null;
   hasOdkAccess?: boolean | null;
 };
@@ -14,12 +15,14 @@ type SessionPanelUser = {
 const PANEL_CONFIG: Record<PanelKey, { href: string; label: string }> = {
   student: { href: "/panel", label: "Öğrenci Paneli" },
   teacher: { href: "/ogretmen", label: "Öğretmen Paneli" },
-  admin: { href: "/admin", label: "Admin Paneli" }
+  parent:  { href: "/veli", label: "Veli Paneli" },
+  admin:   { href: "/admin", label: "Admin Paneli" }
 };
 
 function getPanelFromPath(pathname: string): PanelKey | null {
   if (pathname === "/panel" || pathname.startsWith("/panel/")) return "student";
   if (pathname === "/ogretmen" || pathname.startsWith("/ogretmen/")) return "teacher";
+  if (pathname === "/veli" || pathname.startsWith("/veli/")) return "parent";
   if (pathname === "/admin" || pathname.startsWith("/admin/")) return "admin";
   return null;
 }
@@ -51,6 +54,7 @@ export function getPanelAccess(user?: SessionPanelUser | null) {
   // Admins implicitly hold every access; legacy student/teacher relations also grant OD.
   const hasStudentPanel = isAdmin || Boolean(user?.hasStudentAccess);
   const hasTeacherPanel = isAdmin || Boolean(user?.hasTeacherAccess);
+  const hasParentPanel  = isAdmin || Boolean(user?.hasParentAccess);
   const hasAdminPanel = isAdmin;
   const hasOdAccess = isAdmin || Boolean(user?.hasOdAccess) || Boolean(user?.hasStudentAccess) || Boolean(user?.hasTeacherAccess);
   const hasOdkPanel = isAdmin || Boolean(user?.hasOdkAccess);
@@ -59,23 +63,31 @@ export function getPanelAccess(user?: SessionPanelUser | null) {
 
   if (hasStudentPanel) panels.push("student");
   if (hasTeacherPanel) panels.push("teacher");
-  if (hasAdminPanel) panels.push("admin");
+  if (hasParentPanel)  panels.push("parent");
+  if (hasAdminPanel)   panels.push("admin");
 
-  const requiresPanelChoice = !hasStudentPanel && hasTeacherPanel && hasAdminPanel;
+  // Multiple non-admin/non-student panels available → show chooser.
+  const requiresPanelChoice = !hasStudentPanel && (
+    (hasTeacherPanel && hasAdminPanel) ||
+    (hasParentPanel && (hasTeacherPanel || hasAdminPanel))
+  );
 
   let defaultPanel: PanelKey | null = null;
 
   if (hasStudentPanel) {
     defaultPanel = "student";
+  } else if (hasParentPanel && !hasTeacherPanel && !hasAdminPanel) {
+    defaultPanel = "parent";
   } else if (hasTeacherPanel && !hasAdminPanel) {
     defaultPanel = "teacher";
-  } else if (hasAdminPanel && !hasTeacherPanel) {
+  } else if (hasAdminPanel && !hasTeacherPanel && !hasParentPanel) {
     defaultPanel = "admin";
   }
 
   return {
     hasStudentPanel,
     hasTeacherPanel,
+    hasParentPanel,
     hasAdminPanel,
     hasOdAccess,
     hasOdkPanel,
@@ -117,6 +129,11 @@ export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?
   // OD erişimi olan öğrenciler → öğrenci paneli
   if (access.hasStudentPanel && access.hasOdAccess) {
     return getPanelHref("student");
+  }
+
+  // Veli erişimi olan kullanıcı → veli paneli
+  if (access.hasParentPanel) {
+    return getPanelHref("parent");
   }
 
   // ODK erişimi varsa (öğrenci OD tag'i yoksa bile) → ODK paneli

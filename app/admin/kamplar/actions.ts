@@ -3,13 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getServerAuthSession } from "@/lib/auth";
-import { getPanelAccess } from "@/lib/panel-access";
-
-async function requireAdmin() {
-  const session = await getServerAuthSession();
-  if (!getPanelAccess(session?.user).hasAdminPanel) redirect("/giris");
-}
+import { requireAdmin } from "@/lib/auth-guards";
 
 export async function createCampAction(formData: FormData) {
   await requireAdmin();

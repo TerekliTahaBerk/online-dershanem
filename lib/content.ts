@@ -8,16 +8,16 @@ export const navLinks = [
 ];
 
 export const hero = {
-  headline: "Kalabalıktan Çık, Hedefine Odaklan: Butik Sınıfla Net Artışını Hızlandır",
+  headline: "Küçük grupta, gerçekten takip edilen bir hazırlık",
   subheadline:
-    "Online Dershanem'de öğrenciler yüzlerce kişi içinde kaybolmaz. 8-10 kişilik butik sınıf modeli sayesinde öğretmen dersi anlatıp geçmez; öğrencinin gerçekten anladığından emin olana kadar takip eder, eksik noktalara anında müdahale eder ve her hafta ölçülebilir gelişim planı çıkarır.",
+    "Online Dershanem'de öğrenciler kalabalık içinde görünmez kalmaz. Küçük grup yapısında öğretmen dersi anlatıp geçmez; öğrencinin nerede takıldığını görür, eksik kalan noktalara aynı hafta döner ve ilerlemeyi her hafta ölçülebilir biçimde paylaşır.",
   detail:
-    "Amacımız sadece konu bitirmek değil, öğrencinin sınav psikolojisini güçlendirmek, düzenli çalışma alışkanlığı kazandırmak ve her deneme sonucunu performans fırsatına çevirmek. Bu yüzden canlı ders + koçluk + analiz üçlüsünü tek bir sistemde birleştiriyoruz.",
+    "Hedefimiz konu bitirmek değil, kalıcı bir çalışma düzeni kurmak. Canlı ders, koçluk ve deneme analizini tek bir sisteme bağlıyoruz; öğrenci her hafta nerede olduğunu, sıradaki adımın ne olduğunu net biçimde görüyor.",
   points: [
-    "Maksimum 10 kişilik sınıflar ile öğretmen-öğrenci etkileşimi yüksek tempo",
-    "Google Meet canlı derslerde aktif katılım, soru-cevap ve canlı çözüm disiplini",
-    "Öğrenci koçluğu ile haftalık plan, motivasyon ve çalışma alışkanlığı yönetimi",
-    "Deneme analizleriyle hata türü, zaman yönetimi ve net artış stratejisi"
+    "Küçük grup yapısı sayesinde öğretmen-öğrenci etkileşimi yüksek",
+    "Google Meet üzerinden canlı dersler, aktif soru-cevap ve birlikte çözüm",
+    "Koçluk desteğiyle haftalık plan, takip ve çalışma düzeni",
+    "Deneme analiziyle hata türü, süre yönetimi ve net hedefleri netleştirme"
   ]
 };
 
@@ -25,17 +25,17 @@ export const stats = [
   {
     value: "1000+",
     label: "Aktif ve mezun öğrenci",
-    detail: "Farklı sınav gruplarında ölçülebilir gelişim sürecinden geçen öğrenci kitlesi."
+    detail: "Farklı sınav gruplarında haftalık takiple ilerleyen öğrenci kitlesi."
   },
   {
     value: "%98",
     label: "Öğrenci ve veli memnuniyeti",
-    detail: "Süreç şeffaflığı, düzenli geri bildirim ve sürdürülebilir takip sistemine dayalı memnuniyet."
+    detail: "Şeffaf süreç, düzenli geri bildirim ve sürdürülebilir takip sistemine dayalı memnuniyet."
   },
   {
     value: "50+",
-    label: "Uzman eğitmen kadrosu",
-    detail: "Branşında deneyimli, öğrenci iletişimi güçlü ve sınav odaklı öğretmen ekibi."
+    label: "Branş öğretmeni",
+    detail: "Branşında deneyimli, öğrenciyle iletişimi güçlü ve sınav odaklı öğretmen kadrosu."
   }
 ];
 
@@ -43,43 +43,43 @@ export const programs = [
   {
     name: "TYT-AYT Matematik Grup Özel Ders",
     desc: "Matematikte konu eksiğini kapatıp soru çözüm hızını artırmak isteyen öğrenciler için küçük gruplu, odaklı ders yapısı.",
-    focus: "90 dakika blok ders, maksimum 4 kişi, seviyeye göre grup",
+    focus: "90 dakika blok ders, en fazla 4 kişi, seviyeye göre grup",
     outcome: "Kalabalık sınıf yerine doğrudan konuya odaklanır, derste daha fazla bireysel ilgi alırsın."
   },
   {
     name: "TYT-AYT Fen Dersleri Grup Özel Ders",
-    desc: "Fizik, Kimya ve Biyoloji derslerinde konu tarama, soru çözüm ve kazanım takibini ders bazlı ilerletmek isteyenler için.",
+    desc: "Fizik, Kimya ve Biyoloji'de konu tarama, soru çözüm ve kazanım takibini ders bazlı ilerletmek isteyenler için.",
     focus: "Ders bazlı seçim, küçük grup etkileşimi, düzenli mini quiz ve takip",
     outcome: "İhtiyaç duyduğun dersi ayrı seçer, gereksiz toplu paket maliyetine girmeden ilerlersin."
   },
   {
     name: "LGS Ders Bazlı Grup Özel Ders",
-    desc: "LGS Matematik ve Fen Bilimleri için kazanım bazlı, küçük grup odaklı, yakın takiple yürütülen premium ders modeli.",
-    focus: "Maksimum 4 kişilik grup, seviyeye göre yerleşim, düzenli ilerleme kontrolü",
+    desc: "LGS Matematik ve Fen Bilimleri için kazanım bazlı, küçük grupta yakın takiple yürütülen ders modeli.",
+    focus: "En fazla 4 kişilik grup, seviyeye göre yerleşim, düzenli ilerleme kontrolü",
     outcome: "LGS sürecinde odak kaybetmeden, ders ders net bir gelişim yolu görürsün."
   }
 ];
 
 export const howItWorks = [
   {
-    title: "Kişiye Özel Strateji Analizi",
-    desc: "Ön görüşmede hedeflerini ve mevcut seviyeni mercek altına alıyoruz. Sana en hızlı net artışını getirecek dersleri birlikte netleştiriyoruz."
+    title: "Seviye ve Hedef Analizi",
+    desc: "Ön görüşmede mevcut seviyeni ve hedefini birlikte değerlendiriyoruz; net artışını en hızlı getirecek dersleri birlikte belirliyoruz."
   },
   {
-    title: "Kişiye Özel VIP Yerleşim",
-    desc: "Seçtiğin derslerde, seninle aynı seviyedeki akranlarınla butik bir gruba yerleşirsin. Öğrenme hızını maksimuma çıkarırsın."
+    title: "Seviyene Uygun Gruba Yerleşim",
+    desc: "Seçtiğin derslerde seninle aynı seviyedeki öğrencilerle küçük bir gruba yerleşirsin. Tempo sana uygun, dikkatin dağılmaz."
   },
   {
-    title: "İnteraktif Derin Öğrenme",
-    desc: "Haftalık 90 dakikalık blok oturumlarda sadece dinlemezsin; aktif katılım ve soru-cevap odaklı sistemle konuyu derste bitirirsin."
+    title: "Etkileşimli Canlı Ders",
+    desc: "Haftalık 90 dakikalık oturumlarda sadece dinlemezsin; soru sorar, birlikte çözer ve konuyu derste bitirme alışkanlığı kazanırsın."
   },
   {
-    title: "Kesintisiz Takip & Feedback",
-    desc: "Ödev kontrolleri ve mini quizlerle gelişimin 7/24 izlenir. Gerçek ilerlemeyi anlık raporlarla somut olarak görürsün."
+    title: "Düzenli Takip ve Geri Bildirim",
+    desc: "Ödev kontrolleri ve mini quizlerle gelişimin haftalık olarak izlenir. Nerede ilerlediğini ve nerede tıkandığını net şekilde görürsün."
   },
   {
-    title: "Esnek Gelişim ve Büyüme",
-    desc: "Zorunluluk yok, özgürlük var! İhtiyaç duydukça yeni dersleri ekleyebilir, yolculuğunu kendi temponda genişletebilirsin."
+    title: "Esnek Genişleme",
+    desc: "Süreç içinde ihtiyaç duydukça yeni ders ekleyebilir, planını kendi temponda büyütebilirsin. Toplu paket zorunluluğu yok."
   }
 ];
 
@@ -88,46 +88,46 @@ export const teachers = [
     name: "Merve Yılmaz",
     branch: "Matematik",
     uni: "Boğaziçi Üniversitesi (YKS Derecesi)",
-    exp: "12+ Yıl Tecrübe | 500+ Derece Çıkaran Öğrenci",
+    exp: "12+ yıl deneyim · 500'den fazla derece çıkaran öğrenci",
     quote:
-      "Matematik, ezber kalıpların değil, doğru düşünme biçiminin inşasıdır. Yaklaşımım; öğrencinin takıldığı noktayı tespit edip, kalıcı başarıyı yakalamasını sağlamaktır.",
-    tag: "Butik Gruplarda Birebir Takip & Motivasyon"
+      "Matematik ezber kalıplarla değil, doğru düşünme alışkanlığıyla kalıcı hale gelir. Öğrencinin tam olarak nerede takıldığını bulmak ve oradan kurmak benim için işin özü.",
+    tag: "Küçük grupta yakın takip"
   },
   {
     name: "Can Demir",
-    branch: "Türkçe/Edebiyat",
+    branch: "Türkçe / Edebiyat",
     uni: "Marmara Üniversitesi (Edebiyat Fakültesi)",
-    exp: "10+ Yıl Tecrübe | Hızlı Okuma & Net Artırma Uzmanı",
+    exp: "10+ yıl deneyim · paragraf ve hız çalışmalarında uzman",
     quote:
-      "Paragraf netleri tesadüf değildir. Doğru okuma teknikleri ve analizli deneme rutini ile öğrencinin sadece netlerini değil, soru çözüm hızını da kalıcı şekilde artırıyoruz.",
-    tag: "LGS/YKS Odaklı Hızlı Net Artışı"
+      "Paragraf netleri tesadüf değil, sistemin ürünüdür. Doğru okuma teknikleri ve düzenli deneme analiziyle hem net hem çözüm hızı kalıcı şekilde artıyor.",
+    tag: "LGS / YKS odaklı net çalışması"
   },
   {
     name: "Ece Aydın",
-    branch: "Fen Bilimleri/Fizik",
+    branch: "Fen Bilimleri / Fizik",
     uni: "ODTÜ (Eğitim Fakültesi)",
-    exp: "9+ Yıl Tecrübe | Pratik Soru Çözüm Taktikleri",
+    exp: "9+ yıl deneyim · pratik soru çözüm yaklaşımı",
     quote:
-      "Fen derslerinde fark yaratan nokta; soruda neyin sorulduğunu saniyeler içinde analiz edebilmektir. Bu refleksi adım adım inşa ediyoruz.",
-    tag: "Konu Anlama Garantili Pratik Çözüm"
+      "Fen derslerinde fark yaratan asıl şey, soruda neyin sorulduğunu hızlı görebilmek. Bu refleksi adım adım birlikte kuruyoruz.",
+    tag: "Konuyu anlatıp pratiğe bağlayan yaklaşım"
   }
 ];
 
 export const whyUs = [
   {
-    title: "Akıllı Ekonomi, Maksimum Verim",
+    title: "Sadece İhtiyacın Olan Derse Ödeme",
     content:
-      "Zaten bildiğin konular için ödeme yapmak zorunda değilsin. Sadece eksik olduğun dersleri seçerek bütçeni ve zamanını en stratejik şekilde yönet."
+      "Zaten bildiğin konular için paket almak zorunda değilsin. İhtiyacın olan dersi seçer, bütçeni ve zamanını verimli yönetirsin."
   },
   {
-    title: "Maksimum 4 Kişilik VIP Sınıf Deneyimi",
+    title: "Küçük Grupta Yakın Takip",
     content:
-      "Kalabalık sınıflarda görünmez olmayı bırak. Öğretmenine dilediğin an soru sorabildiğin interaktif gruplarda, özel ders verimini her an hisset."
+      "Kalabalık sınıfta görünmez kalmak yok. Soru sorabildiğin, hocanın seni tanıdığı küçük gruplarda hem öğrenme hem motivasyon yüksek kalır."
   },
   {
-    title: "Dijital Takip ile %100 Disiplin",
+    title: "Düzenli Takip ve Şeffaf İletişim",
     content:
-      "Sürprizlere yer yok. Haftalık gelişim raporları ve kayıtlı derslerle eksiksiz ilerle. Veli denetimi ve öğrenci disiplinini tek bir panelde birleştiriyoruz."
+      "Haftalık gelişim raporları, kayıtlı dersler ve veli bilgilendirmesi tek panelde toplanır. Süreç hem öğrenci hem veli için takip edilebilir."
   }
 ];
 
@@ -258,18 +258,18 @@ export const subjectPackageGroups = [
       {
         subject: "Matematik",
         category: "TYT-AYT",
-        badge: "EN POPÜLER SEÇİM",
+        badge: "EN POPÜLER",
         quota: "Son 2 kontenjan",
         oldPrice: "₺3.500,00",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺2.000,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺500,00",
         features: [
-          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
-          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
-          "Sadece 4 Kişilik Butik Gruplarda VIP Eğitim (Özel Ders Verimi)",
-          "Kendi Seviyendeki Akranlarınla Maksimum Odak",
-          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
+          "Haftalık müfredat takibi",
+          "90 dakikalık odaklı canlı ders",
+          "En fazla 4 kişilik küçük grupta yakın takip",
+          "Aynı seviyedeki öğrencilerle dengeli grup",
+          "Haftalık performans raporu ve veli bilgilendirmesi"
         ],
         cta: "Satın Al"
       },
@@ -283,47 +283,47 @@ export const subjectPackageGroups = [
         discountedPrice: "1.500,00₺ / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
         features: [
-          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
-          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
-          "Anlık Geri Bildirim ve Başarı Ölçümü",
-          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
-          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
+          "Haftalık müfredat takibi",
+          "90 dakikalık odaklı canlı ders",
+          "Düzenli geri bildirim ve ölçme",
+          "Kazanım bazlı eksik takibi",
+          "Haftalık performans raporu ve veli bilgilendirmesi"
         ],
         cta: "Satın Al"
       },
       {
         subject: "Kimya",
         category: "TYT-AYT",
-        badge: "NET ARTIRMA GARANTİLİ",
+        badge: "ÖĞRENCİ FAVORİSİ",
         quota: "Son 3 kontenjan",
         oldPrice: "₺3.000,00",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
         features: [
-          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
-          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
-          "Görsel Hafıza Destekli Özet ve Materyaller",
-          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
-          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
+          "Haftalık müfredat takibi",
+          "90 dakikalık odaklı canlı ders",
+          "Görsel anlatım destekli özet materyaller",
+          "Kazanım bazlı eksik takibi",
+          "Haftalık performans raporu ve veli bilgilendirmesi"
         ],
         cta: "Satın Al"
       },
       {
         subject: "Biyoloji",
         category: "TYT-AYT",
-        badge: "NET ARTIRMA GARANTİLİ",
+        badge: "ÖĞRENCİ FAVORİSİ",
         quota: "Son 2 kontenjan",
         oldPrice: "₺3.000,00",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
         features: [
-          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
-          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
-          "Görsel Hafıza Destekli Özet ve Materyaller",
-          "Anlık Geri Bildirim ve Başarı Ölçümü",
-          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
+          "Haftalık müfredat takibi",
+          "90 dakikalık odaklı canlı ders",
+          "Görsel anlatım destekli özet materyaller",
+          "Düzenli geri bildirim ve ölçme",
+          "Haftalık performans raporu ve veli bilgilendirmesi"
         ],
         cta: "Satın Al"
       }
@@ -344,11 +344,11 @@ export const subjectPackageGroups = [
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
         features: [
-          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
-          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
-          "Sadece 4 Kişilik Butik Gruplarda VIP Eğitim (Özel Ders Verimi)",
-          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
-          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
+          "Haftalık müfredat takibi",
+          "90 dakikalık odaklı canlı ders",
+          "En fazla 4 kişilik küçük grupta yakın takip",
+          "Kazanım bazlı eksik takibi",
+          "Haftalık performans raporu ve veli bilgilendirmesi"
         ],
         cta: "Satın Al"
       },
@@ -362,11 +362,11 @@ export const subjectPackageGroups = [
         discountedPrice: "₺1.500,00 / Ay",
         perLessonPrice: "Ders başı ücret: ₺375,00",
         features: [
-          "Haftalık Düzenli ve Disiplinli Müfredat Takibi",
-          "90 Dakika Kesintisiz ve Derinlemesine Öğrenme Seansı",
-          "Eksik Konu Bırakmayan \"Kazanım Garantili\" Gelişim Takibi",
-          "Anlık Geri Bildirim ve Başarı Ölçümü",
-          "Düzenli Veli-Öğrenci Bilgilendirmesi ile Haftalık Performans Raporu"
+          "Haftalık müfredat takibi",
+          "90 dakikalık odaklı canlı ders",
+          "Kazanım bazlı eksik takibi",
+          "Düzenli geri bildirim ve ölçme",
+          "Haftalık performans raporu ve veli bilgilendirmesi"
         ],
         cta: "Satın Al"
       }
@@ -548,51 +548,53 @@ export const blogPosts = [
   {
     slug: "online-dershane-nedir",
     category: "Online Dershane",
-    title: "Online Dershane Nedir? LGS ve YKS İçin Nasıl Seçilir?",
-    seoTitle: "Online Dershane Nedir? LGS ve YKS Rehberi",
+    title: "Online Dershane Nedir? LGS ve YKS İçin Doğru Seçim Rehberi",
+    seoTitle: "Online Dershane Nedir? LGS-YKS İçin Seçim Rehberi",
     metaDescription:
-      "Online dershane seçerken sınıf mevcudu, haftalık takip ve ders bazlı model neden kritik? LGS ve YKS öğrencileri için net artıran rehber.",
+      "Online dershane nedir, hangi kriterlere göre seçilir? LGS ve YKS öğrencileri için sınıf mevcudu, takip sistemi ve ders bazlı modeli karşılaştıran rehber.",
     excerpt:
-      "Online dershane ararken en büyük hata sadece fiyat karşılaştırmak. Bu rehberde ders bazlı seçim, küçük grup ve takip sistemiyle doğru modeli anlatıyoruz.",
-    cardSnippet: "Kalabalık sınıf mı, küçük grup mu? Online dershanede doğru seçim rehberi.",
+      "Online dershane seçerken yapılan en yaygın hata sadece fiyat karşılaştırmak. Bu rehberde küçük grup, ders bazlı seçim ve düzenli takip kriterlerini gerçek bir karar çerçevesine oturtuyoruz.",
+    cardSnippet: "Kalabalık sınıf mı, küçük grup mu? Online dershane seçimi için pratik rehber.",
     featured: true,
     sections: [
       {
-        h2: "Online dershane seçerken neden çoğu öğrenci yanlış karar veriyor?",
+        h2: "Online dershane seçerken neden yanlış karar veriliyor?",
         paragraphs: [
-          "Birçok öğrenci ve veli, online dershane seçiminde sadece paket fiyatına bakıyor. Fakat net artışını belirleyen ana faktör fiyat değil, ders içi etkileşim ve düzenli takip sistemi.",
-          "Sınıf 20-30 kişiye çıktığında öğrenci derste görünmez hale gelir. Özellikle TYT ve LGS gibi süreçlerde bu durum, düzenli çalışan öğrencinin bile performansını düşürür."
+          "Birçok öğrenci ve veli online dershane seçiminde önce paket fiyatına bakıyor. Oysa öğrencinin gerçekten ilerleyip ilerlemediğini belirleyen ana etken fiyat değil; ders içi etkileşim ve düzenli takip.",
+          "Sınıf 20-30 kişiye çıktığında öğrenci derste görünmez kalır. Özellikle TYT ve LGS gibi süreçlerde bu durum, düzenli çalışan bir öğrencinin bile performansını düşürebilir."
         ],
         bullets: [
           "Kalabalık sınıfta bireysel geri bildirim azalır",
-          "Ders sonrası hata analizi yapılmazsa yanlışlar tekrar eder",
-          "Takipsiz programlarda çalışma disiplini kısa sürede bozulur"
+          "Ders sonrası analiz yapılmadığında aynı hatalar tekrar eder",
+          "Takip yoksa çalışma disiplini kısa sürede dağılır"
         ]
       },
       {
-        h2: "Net artıran online dershane modelinde hangi 3 kriter olmalı?",
-        paragraphs: ["Online dershane modelinin işe yarayıp yaramadığını aşağıdaki üç kritere bakarak hızlıca anlayabilirsin."],
-        bullets: [
-          "Maksimum 4 kişilik küçük grup: Derste soru sorabilmek ve bireysel dönüş alabilmek için.",
-          "Ders bazlı seçim: Sadece ihtiyaç olan derse yatırım yaparak verimi artırmak için.",
-          "Haftalık takip sistemi: Deneme analizi, ödev kontrolü ve net hedef takibi için."
-        ]
-      },
-      {
-        h2: "Online dershane mi online özel ders mi? Kararı nasıl verilir?",
+        h2: "Net üreten online dershane modelinin üç temel kriteri",
         paragraphs: [
-          "Eğer öğrenci tüm derslerde temel problemi yaşıyorsa yapılandırılmış bir online dershane sistemi daha sağlıklı olur. Sadece belirli bir derste tıkanma varsa online özel ders daha hızlı sonuç verebilir.",
-          "En iyi sonuç, dershane düzeni + gerektiğinde ders bazlı özel destek modelidir."
+          "Bir online dershane modelinin gerçekten işe yarayıp yaramadığını üç pratik soruyla anlayabilirsin."
+        ],
+        bullets: [
+          "Küçük grup: Soru sorabilmek ve bireysel dönüş alabilmek için en fazla 4 kişilik gruplar.",
+          "Ders bazlı seçim: Sadece ihtiyaç duyulan derse yatırım yaparak verimi artırmak için.",
+          "Haftalık takip: Deneme analizi, ödev kontrolü ve hedef takibinin düzenli işlemesi için."
+        ]
+      },
+      {
+        h2: "Online dershane mi, online özel ders mi? Karar nasıl verilir?",
+        paragraphs: [
+          "Öğrenci tüm derslerde temel bir problem yaşıyorsa yapılandırılmış bir online dershane modeli daha sağlıklı sonuç verir. Sadece belirli bir derste tıkanma varsa online özel ders daha hızlı çözüm olabilir.",
+          "Çoğu durumda en sürdürülebilir yol, dershane düzenine ihtiyaç olduğunda ders bazlı özel destekle birleşmiş bir model oluyor."
         ],
         links: [
-          { label: "Online özel ders modeli nasıl çalışıyor? Detaylı incele", href: "/online-ozel-ders/" },
-          { label: "Ders bazlı küçük grup sistemini gör", href: "/online-dershane/" }
+          { label: "Online özel ders modeli nasıl çalışıyor?", href: "/online-ozel-ders/" },
+          { label: "Ders bazlı küçük grup sistemini incele", href: "/online-dershane/" }
         ]
       }
     ],
     cta: {
       title: "Sana uygun butik grup paketini birlikte belirleyelim",
-      text: "Tek başına çalışırken nerede takıldığını görmek zor. Hangi dersten başlaman gerektiğini uzman ekibimizle birlikte netleştirelim.",
+      text: "Tek başına çalışırken nerede takıldığını görmek zordur. Hangi dersten başlaman gerektiğini ekibimizle birlikte netleştirelim.",
       buttonLabel: "Paketleri İncele"
     },
     relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
@@ -600,44 +602,44 @@ export const blogPosts = [
   {
     slug: "online-ozel-ders-mi-dershane-mi",
     category: "Online Özel Ders",
-    title: "Online Dershane mi Özel Ders mi?",
-    seoTitle: "Online Dershane mi Özel Ders mi? Hangisi Daha Etkili?",
+    title: "Online Dershane mi Özel Ders mi? Hangisi Sana Uygun?",
+    seoTitle: "Online Dershane mi Özel Ders mi? Karşılaştırma Rehberi",
     metaDescription:
-      "Online dershane mi özel ders mi daha etkili? Avantajlar, maliyet ve sürdürülebilirlik açısından küçük grup modelini karşılaştırmalı incele.",
+      "Online dershane mi özel ders mi daha verimli? Maliyet, sürdürülebilirlik ve sonuç açısından küçük grup modeliyle karşılaştırmalı değerlendirme.",
     excerpt:
-      "En çok sorulan soru: online dershane mi, özel ders mi almalıyım? Cevap öğrencinin ihtiyacına bağlı ve bu yazıda net karşılaştırma var.",
-    cardSnippet: "Online dershane ve özel ders karşılaştırması: hangisi daha etkili?",
+      "En sık sorulan sorulardan biri: online dershane mi alayım, özel ders mi? Cevap öğrencinin ihtiyacına göre değişiyor; bu yazıda karar çerçevesini birlikte kuruyoruz.",
+    cardSnippet: "Online dershane ve özel ders karşılaştırması: hangisi sana uygun?",
     featured: true,
     sections: [
       {
-        h2: "Özel Ders Avantajları",
+        h2: "Özel dersin güçlü tarafı",
         bullets: ["Birebir ilgi", "Hızlı ilerleme", "Esnek ders planı"],
         paragraphs: [
-          "Özel ders doğru öğretmenle çok hızlı sonuç verebilir.",
-          "Ancak çoğu öğrenci için maliyet nedeniyle uzun vadede sürdürülebilir değildir."
+          "Doğru öğretmenle yapılan özel ders kısa sürede ciddi sonuç verebilir.",
+          "Ancak çoğu öğrenci için maliyet, uzun sınav dönemlerinde sürdürülebilir olmuyor."
         ]
       },
       {
-        h2: "Online Dershane Avantajları",
-        bullets: ["Sistemli ilerleme", "Daha uygun fiyat", "Düzenli takip"],
+        h2: "Online dershanenin güçlü tarafı",
+        bullets: ["Sistemli ilerleme", "Daha uygun maliyet", "Düzenli takip"],
         paragraphs: [
-          "Online dershane modelinde haftalık plan, deneme analizi ve takip birlikte yürütülür.",
-          "Özellikle uzun sınav maratonlarında bu düzenli sistem motivasyonu korur."
+          "Online dershane modelinde haftalık plan, deneme analizi ve takip aynı sistemde yürütülür.",
+          "Özellikle uzun sınav süreçlerinde bu düzen, motivasyonu korumayı kolaylaştırır."
         ]
       },
       {
-        h2: "En İyi Model: Küçük Grup",
-        bullets: ["4 kişilik gruplar", "Birebir gibi ilgi", "Dershane gibi sistem"],
+        h2: "Çoğu öğrenci için en dengeli model: küçük grup",
+        bullets: ["4 kişilik gruplar", "Birebir gibi ilgi", "Dershane gibi düzen"],
         paragraphs: [
-          "Küçük grup modelinde öğrenci ne kalabalıkta kaybolur ne de maliyet baskısıyla ders bırakır.",
-          "Bu yapı hem verimli hem sürdürülebilir bir ilerleme sunar."
+          "Küçük grup modelinde öğrenci ne kalabalıkta kaybolur ne de maliyet yükü altına girer.",
+          "Bu yapı hem verimli hem de uzun süreçte sürdürülebilir bir ilerleme sunar."
         ],
         links: [{ label: "Online dershane sistemini incele", href: "/online-dershane/" }]
       }
     ],
     cta: {
       title: "Küçük grup modelini yakından incele",
-      text: "Öğrencinin seviyesine göre en doğru modeli birlikte belirleyelim.",
+      text: "Öğrencinin seviyesine göre en uygun modeli birlikte belirleyelim.",
       buttonLabel: "Online Dershane Sistemini İncele"
     },
     relatedSlugs: ["online-dershane-nedir", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
@@ -646,56 +648,56 @@ export const blogPosts = [
     slug: "yks-online-ders-calisma-plani",
     category: "YKS",
     title: "TYT ve AYT Aynı Anda Nasıl Çalışılır?",
-    seoTitle: "TYT ve AYT Aynı Anda Nasıl Çalışılır? (Net Artıran Sistem)",
+    seoTitle: "TYT ve AYT Aynı Anda Nasıl Çalışılır? Net Üreten Sistem",
     metaDescription:
-      "TYT ve AYT birlikte nasıl çalışılır? Zaman yönetimi, deneme analizi ve haftalık plan ile netlerini artır.",
+      "TYT ve AYT'yi birlikte yürütürken zaman yönetimi, deneme analizi ve haftalık plan nasıl kurulur? Uygulanabilir bir çalışma sistemi.",
     excerpt:
-      "YKS’de en büyük sorun TYT mi AYT mi çalışacağını bilememek. Yanlış denge düşük sıralamaya yol açar.",
-    cardSnippet: "TYT + AYT dengesini kurup net artıran haftalık çalışma sistemi.",
+      "YKS sürecinde en sık karşılaşılan sorun TYT ile AYT arasında dengeyi kuramamak. Yanlış denge sıralamayı doğrudan etkiliyor; bu yazıda işleyen bir haftalık plan kuruyoruz.",
+    cardSnippet: "TYT + AYT dengesini kurup net üreten haftalık çalışma sistemi.",
     featured: false,
     sections: [
       {
-        h2: "TYT ve AYT Arasındaki Fark",
-        bullets: ["TYT: hız", "AYT: derinlik", "İkisi farklı çalışma sistemi ister"],
+        h2: "TYT ve AYT arasındaki temel fark",
+        bullets: ["TYT: hız ve süre yönetimi", "AYT: derinlik ve analiz", "İki alan farklı çalışma mantığı ister"],
         paragraphs: [
-          "TYT ve AYT aynı mantıkla çalışıldığında süre yönetimi bozulur.",
-          "Doğru plan, iki alanı aynı hafta içinde dengeli yürütmektir."
+          "TYT ve AYT aynı yöntemle çalışıldığında önce süre yönetimi bozuluyor.",
+          "Doğru yaklaşım, iki alanı aynı hafta içinde dengeli ama farklı yoğunluklarla yürütmektir."
         ]
       },
       {
-        h2: "Haftalık Plan Nasıl Kurulmalı?",
+        h2: "Haftalık plan nasıl kurulmalı?",
         bullets: [
           "TYT için kısa ve hızlı bloklar",
           "AYT için uzun ve derin odak blokları",
-          "Her blok sonrası mini test"
+          "Her blok sonunda kısa bir mini test"
         ],
         paragraphs: [
-          "Mini test olmadan yapılan çalışma ölçülmez. Ölçülmeyen plan da sürdürülemez."
+          "Mini test olmayan çalışma ölçülmez. Ölçülmeyen plan da bir hafta sonra kendiliğinden dağılır."
         ]
       },
       {
-        h2: "Deneme Analizi Nasıl Yapılır?",
+        h2: "Deneme analizi nasıl yapılır?",
         paragraphs: [
-          "En kritik soru şudur: Nerede süre kaybettim?",
-          "Bu soruya net cevap verilmeyen analizlerde ilerleme görünmez."
+          "Her deneme sonrası kendine sorulması gereken ilk soru şudur: \"Nerede süre kaybettim?\"",
+          "Bu soruya net cevap verilmeyen analizlerde ilerleme görünmez kalır."
         ],
-        bullets: ["Süre kaybedilen branşları ayır", "Yanlış türüne göre tekrar planı yap", "Bir sonraki haftayı buna göre düzenle"]
+        bullets: ["Süre kaybedilen branşları ayır", "Yanlışları tipine göre sınıflandır", "Bir sonraki haftayı analize göre kur"]
       },
       {
-        h2: "Sınava Yaklaştıkça Ne Yapılmalı?",
-        bullets: ["TYT tekrarını artır", "AYT’de zayıf konulara odaklan", "Deneme ritmini koru"]
+        h2: "Sınava yaklaştıkça ne yapılmalı?",
+        bullets: ["TYT tekrarını sıklaştır", "AYT'de zayıf konulara odaklan", "Deneme ritmini bozma"]
       },
       {
-        h2: "En Büyük Sorun: Takipsizlik",
+        h2: "En sık karşılaşılan sorun: takipsizlik",
         paragraphs: [
-          "Öğrenciler plan yapıyor ama uygulayamıyor. Çünkü sistemli takip olmadığı zaman program kısa sürede dağılıyor."
+          "Öğrencilerin çoğu plan yapmayı biliyor ama planı uygulamakta zorlanıyor. Düzenli takip olmadığında program kısa sürede dağılıyor."
         ],
         links: [{ label: "Online özel ders sistemimizi incele", href: "/online-ozel-ders/" }]
       }
     ],
     cta: {
       title: "TYT + AYT dengesini birlikte kuralım",
-      text: "Tek başına denge kurmak zor geliyorsa sana uygun butik grup paketini birlikte belirleyelim.",
+      text: "Tek başına denge kurmak zorlanıyorsan sana uygun butik grup paketinde haftalık planı birlikte hazırlayalım.",
       buttonLabel: "Online Özel Ders Sistemini İncele"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
@@ -703,62 +705,62 @@ export const blogPosts = [
   {
     slug: "lgs-online-ders-net-artirma",
     category: "LGS",
-    title: "LGS Net Nasıl Artırılır? (8 Haftalık Gerçekçi Plan)",
-    seoTitle: "LGS Net Nasıl Artırılır? (8 Haftalık Kanıtlanmış Plan)",
+    title: "LGS Net Nasıl Artırılır? 8 Haftalık Uygulanabilir Plan",
+    seoTitle: "LGS Net Nasıl Artırılır? 8 Haftalık Uygulanabilir Plan",
     metaDescription:
-      "LGS’de netlerini artırmak için uygulanabilir 8 haftalık plan. Düzenli çalışma, deneme analizi ve doğru sistemle hızlı ilerle.",
+      "LGS netlerini artırmak için 8 haftalık uygulanabilir bir plan: düzenli çalışma, deneme analizi ve doğru ölçme sistemiyle ilerleme.",
     excerpt:
-      "LGS’de netlerini artırmak istiyorsan en büyük hata plansız ve dağınık çalışmak. Bu yazıda 8 haftalık net artırma sistemini adım adım göreceksin.",
+      "LGS'de net artırmak istiyorsan en büyük engel plansız ve dağınık çalışmak. Bu yazıda 8 haftalık net çalışma planını adım adım anlatıyoruz.",
     cardSnippet: "LGS net artırmak için 8 haftalık uygulanabilir plan ve analiz sistemi.",
     featured: false,
     sections: [
       {
-        h2: "LGS’de Net Artmamasının 3 Sebebi",
+        h2: "LGS'de net artmamasının üç yaygın sebebi",
         paragraphs: [
-          "LGS’de çoğu öğrenci çok çalışmasına rağmen ilerleyemiyor. Bunun temel sebebi plansız çalışma, deneme analizinin yapılmaması ve çok kaynak arasında kaybolmak.",
-          "Net artışı için formül net: ölçüm + analiz + tekrar."
+          "LGS hazırlığında çoğu öğrenci çok çalışmasına rağmen ilerleyemiyor. Bunun temel nedenleri plansız çalışma, deneme sonrası analiz yapılmaması ve çok sayıda kaynak arasında dağılmak.",
+          "Net artışının formülü aslında oldukça net: ölçüm, analiz ve hedefli tekrar."
         ],
-        bullets: ["Plansız çalışma", "Deneme analizinin yapılmaması", "Çok kaynak, az tekrar"]
+        bullets: ["Plansız çalışma", "Deneme analizinin atlanması", "Çok kaynak, az tekrar"]
       },
       {
-        h2: "1-2. Hafta: Temel Kurma",
+        h2: "1-2. hafta: Mevcut seviyeyi netleştirme",
         paragraphs: [
-          "İlk iki haftada öğrencinin mevcut seviyesini netleştirmek gerekir. Seviye belirleme denemesi yapıp özellikle Türkçe paragraf ve matematik problem sürelerini ölçmek kritik.",
-          "Bu aşamada hedef hız değil, doğru çözüm alışkanlığıdır."
+          "İlk iki haftada öğrencinin mevcut seviyesini ölçmek gerekiyor. Bir seviye belirleme denemesi yapıp özellikle Türkçe paragraf ve matematik problem sürelerini ölçmek kritik.",
+          "Bu aşamada öncelik hız değil, doğru çözüm alışkanlığını kurmak."
         ]
       },
       {
-        h2: "3-5. Hafta: Deneme Sistemi Kurma",
+        h2: "3-5. hafta: Deneme rutinini oturtma",
         paragraphs: [
           "Bu dönemde haftada en az bir deneme zorunlu olmalı. Deneme sonrası analiz yapılmadan yeni konuya geçmek verimi düşürür.",
-          "Analizde şu ayrım mutlaka yapılmalı: dikkat hatası mı, bilgi eksikliği mi? Bu ayrım sonraki haftanın planını belirler."
+          "Analizde şu ayrım net biçimde yapılmalı: bilgi eksikliği mi, dikkat hatası mı? Bu ayrım sonraki haftanın planını belirler."
         ],
-        bullets: ["Haftada en az 1 deneme", "Deneme sonrası analiz", "Dikkat hatası ve bilgi eksikliği ayrımı"]
+        bullets: ["Haftada en az 1 deneme", "Her deneme sonrası analiz", "Bilgi eksiği – dikkat hatası ayrımı"]
       },
       {
-        h2: "6-8. Hafta: Sınav Simülasyonu",
+        h2: "6-8. hafta: Sınav simülasyonu",
         paragraphs: [
-          "Son aşamada süre baskısı altında çözüm pratiği ve soru seçme stratejisi öne çıkar.",
+          "Son aşamada süre baskısı altında çözüm pratiği ve doğru soru seçme stratejisi öne çıkıyor.",
           "Net artışı genellikle bu dönemde görünür hale gelir; çünkü önceki haftalarda kurulan sistem sonuç üretmeye başlar."
         ],
-        bullets: ["Süre baskısı altında çözüm", "Soru seçme stratejisi geliştirme", "Net artışını görünür hale getirme"]
+        bullets: ["Süre baskısı altında çözüm", "Doğru soru seçme stratejisi", "İstikrarlı net çıktısı"]
       },
       {
-        h2: "Tek Başına Çalışmak Neden Zor?",
+        h2: "Tek başına çalışmak neden bu kadar zor?",
         paragraphs: [
-          "Planı bilmek tek başına yetmez. Asıl sorun, öğrencinin bu planı düzenli uygulayamaması.",
-          "Disiplin, takip ve kontrol olmadığı zaman sistem kısa sürede dağılır."
+          "Planı bilmek tek başına yetmez. Asıl zorluk, planı haftalar boyunca aynı disiplinle uygulayabilmek.",
+          "Düzenli takip ve dış kontrol olmadığında sistem genellikle ilk haftalardan sonra dağılıyor."
         ],
-        bullets: ["Disiplin eksikliği", "Takip eksikliği", "Kontrol eksikliği"]
+        bullets: ["Disiplin eksikliği", "Takip eksikliği", "Geri bildirim eksikliği"]
       },
       {
-        h2: "Daha Hızlı Net Artışı İçin Sistem",
+        h2: "Daha hızlı net artışı için sistemli model",
         paragraphs: [
-          "Bu yüzden birçok öğrenci küçük grup online ders sistemine geçiyor. Bu modelde haftalık takip, deneme analizi ve seviyeye göre plan birlikte yürütülür.",
-          "Yani öğrenci sadece çalışmaz, aynı zamanda süreç profesyonel şekilde yönetilir."
+          "Bu yüzden öğrencilerin önemli bir kısmı küçük grup online ders modeline geçiyor. Bu yapıda haftalık takip, deneme analizi ve seviyeye göre plan birlikte yürütülüyor.",
+          "Yani öğrenci yalnızca çalışmıyor; süreç de profesyonel olarak yönetiliyor."
         ],
         links: [
-          { label: "Online dershane sistemini keşfet", href: "/online-dershane/" },
+          { label: "Online dershane sistemini incele", href: "/online-dershane/" },
           { label: "Online özel ders modelini incele", href: "/online-ozel-ders/" }
         ]
       }
@@ -1035,10 +1037,10 @@ export const blogPosts = [
     title: "Online Dershane Seçim Rehberi 2026",
     seoTitle: "Online Dershane Seçim Rehberi 2026",
     metaDescription:
-      "2026’da online dershane seçerken dikkat edilmesi gereken kriterler: sınıf mevcudu, takip sistemi, ders bazlı model ve öğretmen kalitesi.",
+      "2026'da online dershane seçerken dikkat edilmesi gereken kriterler: sınıf mevcudu, takip sistemi, ders bazlı model ve öğretmen kalitesi.",
     excerpt:
-      "Online dershane seçerken sadece reklama bakmak yerine ölçülebilir kriterlerle karar vermek gerekir.",
-    cardSnippet: "2026 için online dershane seçme checklist’i.",
+      "Online dershane seçerken reklama değil, ölçülebilir kriterlere bakarak karar vermek uzun vadede çok daha sağlıklı sonuç veriyor.",
+    cardSnippet: "2026 için online dershane seçim kontrol listesi.",
     featured: false,
     sections: [
       {
@@ -1104,32 +1106,32 @@ export const blogPosts = [
 
 export const faq = [
   {
-    q: "Bu sistem tüm dersleri içeren klasik bir online paket mi?",
-    a: "Hayır, çok daha fazlası. Klasik dershanelerin aksine, bizde gereksiz ders yükü yok. Sadece eksik olduğun dersleri seçerek kendi özel müfredatını oluşturabilir, zamanını ve bütçeni en verimli şekilde yönetebilirsin."
+    q: "Bu sistem klasik bir online dershane paketi mi?",
+    a: "Hayır. Bizde tüm dersleri içeren tek bir paket dayatması yok. Sadece eksik olduğun dersleri seçer, kendi planını oluşturur ve zamanını verimli kullanırsın."
   },
   {
-    q: "Gruplar kaç kişilik oluyor?",
-    a: "Maksimum 4 kişi. Kalabalık sınıflarda kaybolmana izin vermiyoruz. 4 kişilik butik gruplarımız sayesinde öğretmenlerinle birebir etkileşim kurabilir, her an soru sorabilir ve özel ders kalitesinde eğitim alırsın."
+    q: "Gruplar kaç kişilik?",
+    a: "Gruplarımız en fazla 4 kişilik. Bu sayede öğretmen seninle birebir ilgilenir; soru sormak, çözüm yaptırmak ve takılan noktalara geri dönmek için yeterli süre kalır."
   },
   {
     q: "Seviyeye göre gruplandırma yapılıyor mu?",
-    a: "Kesinlikle. Kayıt öncesi yapılan analizlerle seninle aynı seviyedeki ve aynı hedeflere sahip arkadaşlarınla eşleşirsin. Bu sayede ders temposu tam sana göre ayarlanır; ne geri kalırsın ne de yavaşlarsın."
+    a: "Evet. Kayıt öncesi yapılan kısa değerlendirmeyle seninle aynı seviyedeki ve benzer hedeflere sahip öğrencilerle eşleşirsin. Tempo ne çok yavaş ne de çok hızlı kalır."
   },
   {
     q: "Sadece ihtiyacım olan dersi alabilir miyim?",
-    a: "Evet, özgürlük sende. İster sadece TYT Matematik, ister sadece LGS Fen Bilimleri... İhtiyacına göre tek bir ders seçebilir, ilerleyen süreçte performansına göre farklı paketleri sepetine ekleyebilirsin."
+    a: "Evet. İster yalnızca TYT Matematik, ister sadece LGS Fen Bilimleri seçebilirsin. Süreç içinde ihtiyaç duyduğun başka dersleri de paketine ekleyebilirsin."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Tamamen sonuç odaklı. Amacımız sadece konu bitirmek değil, sınavda netlerini artırmaktır. Müfredat; konu anlatımı, yeni nesil soru çözümleri ve stratejik takip üzerine kuruludur."
+    a: "Evet. Müfredat; konu anlatımı, yeni nesil soru çözümü ve düzenli takiple sınavda net üretmeye göre planlanıyor. Sadece konu bitirmek değil, ilerlemeni ölçmek esas."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
-    a: "Evet. Özellikle LGS tarafında veliler için süreç bilgilendirmesi yapılır. Öğrencinin ders devamı, genel ilerleme durumu ve ihtiyaç duyduğu destek alanları düzenli olarak paylaşılır."
+    a: "Evet. Özellikle LGS sürecinde veliler düzenli olarak bilgilendirilir. Devam durumu, genel ilerleme ve eksik kalan alanlar hakkında geri bildirim paylaşılır."
   },
   {
-    q: "Paket seçimi konusunda kararsızsam ne yapmalıyım?",
-    a: "Endişelenme, yanındayız. Uzman ekibimizle yapacağın kısa ön görüşmede seviyeni ve hedeflerini birlikte analiz ediyoruz. Başarıya giden en kısa yolu ve sana en uygun ders kombinasyonunu profesyonel rehberlikle netleştiriyoruz."
+    q: "Paket seçiminde kararsızsam ne yapmalıyım?",
+    a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Mevcut seviyeni ve hedefini konuşur, sana en uygun ders kombinasyonunu birlikte belirleriz."
   }
 ];
 

@@ -3,6 +3,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
 import { PremiumSidebar } from "@/components/layout/premium-sidebar";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { getUnreadCount } from "@/lib/inbox";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession();
@@ -24,6 +25,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   }
 
   const userName = session.user?.name ?? session.user?.email ?? "Öğrenci";
+  const inboxUnread = session.user?.id ? await getUnreadCount(session.user.id).catch(() => 0) : 0;
 
   return (
     <ThemeProvider>
@@ -33,6 +35,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
           userName={userName}
           userRole="Öğrenci"
           hasOdkAccess={access.hasOdkPanel}
+          inboxUnread={inboxUnread}
         />
         <div className="pd-app-main">
           {children}

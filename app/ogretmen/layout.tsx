@@ -3,6 +3,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
 import { PremiumSidebar } from "@/components/layout/premium-sidebar";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { getUnreadCount } from "@/lib/inbox";
 
 export default async function OgretmenLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession();
@@ -21,6 +22,7 @@ export default async function OgretmenLayout({ children }: { children: React.Rea
   }
 
   const userName = session.user?.name ?? session.user?.email ?? "Öğretmen";
+  const inboxUnread = session.user?.id ? await getUnreadCount(session.user.id).catch(() => 0) : 0;
 
   return (
     <ThemeProvider>
@@ -30,6 +32,7 @@ export default async function OgretmenLayout({ children }: { children: React.Rea
           userName={userName}
           userRole="Öğretmen"
           hasOdkAccess={access.hasOdkPanel}
+          inboxUnread={inboxUnread}
         />
         <div className="pd-app-main">
           {children}

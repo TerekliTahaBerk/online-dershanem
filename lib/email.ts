@@ -744,3 +744,41 @@ export async function sendLeadSubmissionNotification({
     html,
   });
 }
+
+/** Sent when admin invites a parent — includes credentials and child info. */
+export async function sendParentInvite({
+  to,
+  parentName,
+  email,
+  password,
+  childNames,
+}: {
+  to: string;
+  parentName: string;
+  email: string;
+  password: string;
+  childNames: string[];
+}) {
+  const firstName = parentName.split(" ")[0];
+  const childList = childNames.length > 0
+    ? childNames.map((n) => `<li style="margin:4px 0;">${n}</li>`).join("")
+    : "<li>—</li>";
+
+  const html = baseTemplate(`
+    ${heading(`Hoş geldiniz, ${firstName}! 👨‍👩‍👧`)}
+    ${paragraph(`<strong>${parentName}</strong>, Online Dershanem veli paneliniz oluşturuldu. Çocuğunuzun/çocuklarınızın ders, ödev, devamsızlık ve ödeme bilgilerini buradan takip edebilirsiniz.`)}
+    ${paragraph(`<strong>Bağlı öğrenciler:</strong><ul style="margin:8px 0 16px 20px;padding:0;color:#091413;font-size:14px;">${childList}</ul>`)}
+    ${credentialBox(email, password)}
+    ${ctaButton("Veli Paneline Giriş Yap →", `${APP_URL}/giris?callbackUrl=%2Fveli`)}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Güvenliğiniz için giriş yaptıktan sonra şifrenizi <a href="' + APP_URL + '/veli/profil" style="color:#546B41;text-decoration:none;">Profil sayfanızdan</a> değiştirmenizi öneririz.</span>')}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#546B41;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresinden bize yazabilirsiniz.</span>')}
+    ${signature()}
+  `);
+
+  await sendEmail({
+    to,
+    subject: `Hoş geldiniz, ${firstName}! Veli paneliniz hazır.`,
+    html,
+  });
+}

@@ -117,8 +117,9 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
     { id: "odemeler", label: "Ödemeler", count: student.purchaseIntents.length },
     { id: "formlar", label: "Formlar", count: student.leadSubmissions.length },
     { id: "paketler", label: "Paketler", count: (student as unknown as StudentFull).packages.length },
+    { id: "crm", label: "CRM (Notlar/Yorumlar/Dosyalar)", count: null, externalHref: `/admin/ogrenciler/${id}/crm` },
     { id: "profil", label: "Profil & Düzenle", count: null }
-  ];
+  ] as Array<{ id: string; label: string; count: number | null; externalHref?: string }>;
 
   return (
     <div className="p-6 space-y-5 max-w-6xl">
@@ -315,7 +316,7 @@ export default async function OgrenciDetayPage({ params, searchParams }: Props) 
         {tabs.map((tab) => (
           <Link
             key={tab.id}
-            href={`/admin/ogrenciler/${id}?tab=${tab.id}`}
+            href={tab.externalHref ?? `/admin/ogrenciler/${id}?tab=${tab.id}`}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === tab.id
                 ? "bg-white text-[var(--pd-ink)] shadow-sm"

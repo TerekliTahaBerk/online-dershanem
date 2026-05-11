@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CheckCircle, Clock, CreditCard, ExternalLink, Receipt, XCircle } from "lucide-react";
+import { CheckCircle, Clock, CreditCard, ExternalLink, Lock, Receipt, XCircle } from "lucide-react";
 import type { Prisma } from "@prisma/client";
+import { canSeeOwnedPackagePrice, formatPriceMasked } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -33,14 +34,12 @@ function formatDate(date: Date) {
   return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(date));
 }
 
-function formatPrice(kurus?: number | null) {
-  if (!kurus) return "—";
-  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(kurus / 100);
-}
-
 export default async function PanelOdemelerPage() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) redirect("/giris");
+
+  const role = session.user.role;
+  const showPrice = canSeeOwnedPackagePrice(role);
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -129,10 +128,18 @@ export default async function PanelOdemelerPage() {
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <div style={{ fontSize: 20, fontWeight: 600, color: "var(--pd-ink)" }}>
-                          {formatPrice(enrollment.listPrice)}
+                          {showPrice ? (
+                            formatPriceMasked(enrollment.listPrice, true)
+                          ) : (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--pd-muted)", fontSize: 13, fontWeight: 500 }}>
+                              <Lock size={13} /> Gizli
+                            </span>
+                          )}
                         </div>
                         <div style={{ fontSize: 12, color: "var(--pd-muted)" }}>
-                          {enrollment.discountAmount ? `${formatPrice(enrollment.discountAmount)} indirim` : "Standart fiyat"}
+                          {showPrice
+                            ? (enrollment.discountAmount ? `${formatPriceMasked(enrollment.discountAmount, true)} indirim` : "Standart fiyat")
+                            : "Fiyat bilgisi velinize ait"}
                         </div>
                       </div>
                     </div>

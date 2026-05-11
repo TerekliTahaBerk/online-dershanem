@@ -8,11 +8,12 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, CreditCard, CalendarDays, Package, GraduationCap,
   FileText, Tent, Trophy, BookOpen, Calendar, User, LogOut, Menu, X,
-  Inbox, BarChart2, FlaskConical, Tag, ClipboardList, type LucideIcon
+  Inbox, BarChart2, FlaskConical, Tag, ClipboardList, School, Wallet,
+  ClipboardCheck, Heart, type LucideIcon
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-export type SidebarPersona = "admin" | "student" | "teacher";
+export type SidebarPersona = "admin" | "student" | "teacher" | "parent";
 
 interface NavItem {
   href: string;
@@ -28,19 +29,24 @@ interface NavSection {
   items: NavItem[];
 }
 
-function getAdminNav(): NavSection[] {
+function getAdminNav(inboxUnread?: number): NavSection[] {
   return [
     {
       label: "Online Dershanem",
       tone: "mint",
       items: [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-        { href: "/admin/formlar", label: "Lead Inbox", icon: Inbox },
+        { href: "/admin/inbox", label: "Bildirimler", icon: Inbox, badge: inboxUnread },
+        { href: "/admin/formlar", label: "Lead Inbox", icon: ClipboardList },
         { href: "/admin/ogrenciler", label: "Öğrenciler", icon: Users },
+        { href: "/admin/veliler", label: "Veliler", icon: Heart },
         { href: "/admin/hocalar", label: "Hocalar", icon: GraduationCap },
+        { href: "/admin/siniflar", label: "Sınıflar", icon: School },
+        { href: "/admin/etiketler", label: "Etiketler", icon: Tag },
         { href: "/admin/paketler", label: "Paketler", icon: Package },
         { href: "/admin/icerikler", label: "Icerikler", icon: BookOpen },
         { href: "/admin/odemeler", label: "Ödemeler", icon: CreditCard },
+        { href: "/admin/muhasebe", label: "Muhasebe", icon: Wallet },
         { href: "/admin/kamplar", label: "Kamplar", icon: Tent },
         { href: "/admin/dersler", label: "Dersler", icon: CalendarDays },
         { href: "/admin/istatistikler", label: "İstatistikler", icon: BarChart2 },
@@ -60,14 +66,18 @@ function getAdminNav(): NavSection[] {
   ];
 }
 
-function getStudentNav(hasOdkAccess: boolean): NavSection[] {
+function getStudentNav(hasOdkAccess: boolean, inboxUnread?: number): NavSection[] {
   const sections: NavSection[] = [
     {
       label: "Öğrenci",
       tone: "mint",
       items: [
         { href: "/panel", label: "Anasayfa", icon: LayoutDashboard, exact: true },
+        { href: "/panel/inbox", label: "Bildirimler", icon: Inbox, badge: inboxUnread },
         { href: "/panel/dersler", label: "Derslerim", icon: CalendarDays },
+        { href: "/panel/sinifim", label: "Sınıfım", icon: School },
+        { href: "/panel/odevler", label: "Ödevlerim", icon: ClipboardCheck },
+        { href: "/panel/devamsizlik", label: "Devamsızlık", icon: ClipboardList },
         { href: "/panel/takvim", label: "Takvim", icon: Calendar },
         { href: "/panel/ogretmenlerim", label: "Öğretmenlerim", icon: GraduationCap },
         { href: "/panel/kamplar", label: "Kamplar", icon: Tent },
@@ -94,15 +104,19 @@ function getStudentNav(hasOdkAccess: boolean): NavSection[] {
   return sections;
 }
 
-function getTeacherNav(hasOdkAccess: boolean): NavSection[] {
+function getTeacherNav(hasOdkAccess: boolean, inboxUnread?: number): NavSection[] {
   const sections: NavSection[] = [
     {
       label: "Öğretmen",
       tone: "sky",
       items: [
         { href: "/ogretmen", label: "Anasayfa", icon: LayoutDashboard, exact: true },
+        { href: "/ogretmen/inbox", label: "Bildirimler", icon: Inbox, badge: inboxUnread },
         { href: "/ogretmen/dersler", label: "Derslerim", icon: CalendarDays },
+        { href: "/ogretmen/siniflarim", label: "Sınıflarım", icon: School },
         { href: "/ogretmen/ogrencilerim", label: "Öğrencilerim", icon: Users },
+        { href: "/ogretmen/yoklama", label: "Yoklama", icon: ClipboardList },
+        { href: "/ogretmen/odevler", label: "Ödevler", icon: ClipboardCheck },
         { href: "/ogretmen/takvim", label: "Takvim", icon: Calendar },
         { href: "/ogretmen/profil", label: "Profilim", icon: User },
       ]
@@ -124,11 +138,31 @@ function getTeacherNav(hasOdkAccess: boolean): NavSection[] {
   return sections;
 }
 
+function getParentNav(inboxUnread?: number): NavSection[] {
+  return [
+    {
+      label: "Veli",
+      tone: "blush",
+      items: [
+        { href: "/veli", label: "Anasayfa", icon: LayoutDashboard, exact: true },
+        { href: "/veli/inbox", label: "Bildirimler", icon: Inbox, badge: inboxUnread },
+        { href: "/veli/cocuklarim", label: "Çocuklarım", icon: Users },
+        { href: "/veli/dersler", label: "Dersler", icon: CalendarDays },
+        { href: "/veli/odevler", label: "Ödevler", icon: ClipboardCheck },
+        { href: "/veli/devamsizlik", label: "Devamsızlık", icon: ClipboardList },
+        { href: "/veli/odemeler", label: "Ödemeler", icon: CreditCard },
+        { href: "/veli/profil", label: "Profilim", icon: User },
+      ]
+    }
+  ];
+}
+
 interface PremiumSidebarProps {
   persona: SidebarPersona;
   userName?: string | null;
   userRole?: string | null;
   hasOdkAccess?: boolean;
+  inboxUnread?: number;
 }
 
 function SidebarContent({
@@ -136,16 +170,19 @@ function SidebarContent({
   userName,
   userRole,
   hasOdkAccess,
+  inboxUnread,
   onNavigate
 }: PremiumSidebarProps & { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   const sections =
     persona === "admin"
-      ? getAdminNav()
+      ? getAdminNav(inboxUnread)
       : persona === "student"
-      ? getStudentNav(!!hasOdkAccess)
-      : getTeacherNav(!!hasOdkAccess);
+      ? getStudentNav(!!hasOdkAccess, inboxUnread)
+      : persona === "teacher"
+      ? getTeacherNav(!!hasOdkAccess, inboxUnread)
+      : getParentNav(inboxUnread);
 
   const initials = (userName ?? "?")
     .split(" ")
@@ -161,7 +198,7 @@ function SidebarContent({
     <>
       {/* Brand */}
       <Link
-        href={persona === "admin" ? "/admin" : persona === "teacher" ? "/ogretmen" : "/panel"}
+        href={persona === "admin" ? "/admin" : persona === "teacher" ? "/ogretmen" : persona === "parent" ? "/veli" : "/panel"}
         onClick={onNavigate}
         className="pd-sidebar-brand"
         style={{ textDecoration: "none" }}
@@ -180,6 +217,8 @@ function SidebarContent({
               ? "Yönetici"
               : persona === "student"
               ? "Öğrenci"
+              : persona === "parent"
+              ? "Veli"
               : "Öğretmen"}
           </div>
         </div>

@@ -4,6 +4,7 @@ import { getServerAuthSession } from "@/lib/auth";
 import { getPanelAccess } from "@/lib/panel-access";
 import { PremiumSidebar } from "@/components/layout/premium-sidebar";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { getUnreadCount } from "@/lib/inbox";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await getServerAuthSession();
@@ -14,6 +15,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   const userName = session.user?.name ?? session.user?.email ?? "Yönetici";
+  const inboxUnread = session.user?.id ? await getUnreadCount(session.user.id).catch(() => 0) : 0;
 
   return (
     <ThemeProvider>
@@ -23,6 +25,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           userName={userName}
           userRole="Yönetici"
           hasOdkAccess={true}
+          inboxUnread={inboxUnread}
         />
         <div className="pd-app-main">
           {children}

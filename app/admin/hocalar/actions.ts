@@ -5,20 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { getServerAuthSession } from "@/lib/auth";
-import { getPanelAccess } from "@/lib/panel-access";
+import { requireAdmin } from "@/lib/auth-guards";
 import { linkTeacherToExistingUserByEmail } from "@/lib/user-links";
 import { sendTeacherWelcome } from "@/lib/email";
 import { readString } from "@/lib/form-utils";
 import { auditLog } from "@/lib/audit";
-
-
-async function requireAdmin() {
-  const session = await getServerAuthSession();
-  if (!getPanelAccess(session?.user).hasAdminPanel) {
-    redirect("/giris");
-  }
-}
 
 export async function createTeacherAction(formData: FormData) {
   await requireAdmin();

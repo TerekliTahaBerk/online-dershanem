@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { BookOpen, ExternalLink, Package } from "lucide-react";
+import { BookOpen, ExternalLink, Lock, Package } from "lucide-react";
 import type { Prisma } from "@prisma/client";
+import { canSeeMarketplacePrice, canSeeOwnedPackagePrice, formatPriceMasked } from "@/lib/permissions";
 
 type PackageRow = Prisma.PackageGetPayload<{
   include: {
@@ -22,15 +23,13 @@ type UserWithStudent = Prisma.UserGetPayload<{
   };
 }>;
 
-function formatPrice(kurus: number) {
-  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(
-    kurus / 100
-  );
-}
-
 export default async function PanelPaketlerPage() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) redirect("/giris");
+
+  const role = session.user.role;
+  const showMarketPrice = canSeeMarketplacePrice(role);
+  const showOwnedPrice = canSeeOwnedPackagePrice(role);
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -133,7 +132,11 @@ export default async function PanelPaketlerPage() {
                 ) : null}
 
                 <div className="mt-auto pt-5 flex items-center justify-between">
-                  <p className="text-xl font-bold text-stone-900">{formatPrice(pkg.price)}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xl font-bold text-stone-900">
+                      {showMarketPrice ? formatPriceMasked(pkg.price, true) : <span className="inline-flex items-center gap-1 text-stone-400 text-sm font-medium"><Lock className="w-3.5 h-3.5" /> Gizli</span>}
+                    </p>
+                  </div>
                   {pkg.paytrLink ? (
                     <a
                       href={pkg.paytrLink}

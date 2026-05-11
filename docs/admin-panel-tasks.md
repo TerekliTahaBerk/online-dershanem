@@ -1,5 +1,9 @@
 # Admin Panel Tasks
 
+> **Not (Faz 0+):** Bu dosya sadece admin panelinin operasyonel backlog'udur.
+> Tüm panel sisteminin (Öğrenci/Öğretmen/Veli/Admin) ürün vizyonu ve faz yol
+> haritası için **`docs/panel-system-master-plan.md`** dokümanına bakın.
+
 Bu liste repo içindeki mevcut yapı baz alınarak çıkarıldı. Durumlar düzenli uygulanabilir backlog mantığında tutuldu.
 
 ## Şimdi

@@ -1,6 +1,6 @@
 import type { DefaultSession } from "next-auth";
 
-type UserRole = "ADMIN" | "STUDENT" | "TEACHER";
+type UserRole = "ADMIN" | "STUDENT" | "TEACHER" | "PARENT";
 
 declare module "next-auth" {
   interface Session {
@@ -10,6 +10,7 @@ declare module "next-auth" {
       isAdmin: boolean;
       hasStudentAccess: boolean;
       hasTeacherAccess: boolean;
+      hasParentAccess: boolean;
       hasOdAccess: boolean;
       hasOdkAccess: boolean;
     };
@@ -20,6 +21,7 @@ declare module "next-auth" {
     isAdmin?: boolean;
     hasStudentAccess?: boolean;
     hasTeacherAccess?: boolean;
+    hasParentAccess?: boolean;
     hasOdAccess?: boolean;
     hasOdkAccess?: boolean;
   }
@@ -31,6 +33,7 @@ declare module "next-auth/jwt" {
     isAdmin?: boolean;
     hasStudentAccess?: boolean;
     hasTeacherAccess?: boolean;
+    hasParentAccess?: boolean;
     hasOdAccess?: boolean;
     hasOdkAccess?: boolean;
   }

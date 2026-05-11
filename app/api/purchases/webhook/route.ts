@@ -78,6 +78,42 @@ export async function POST(request: Request) {
       })
     ]);
 
+    // Faz 1 + Faz 5 entegrasyonu: PAID olduğunda öğrenci+veliye inbox bildirimi at,
+    // muhasebeye otomatik gelir kaydı düş.
+    if (parsed.data.status === "PAID" && purchase.studentId) {
+      try {
+        const { publishInboxMessage } = await import("@/lib/inbox");
+        const student = await prisma.student.findUnique({
+          where: { id: purchase.studentId },
+          select: {
+            userId: true,
+            fullName: true,
+            parents: { select: { parent: { select: { userId: true } } } },
+          },
+        });
+        if (student) {
+          const recipients = new Set<string>();
+          if (student.userId) recipients.add(student.userId);
+          for (const p of student.parents) {
+            if (p.parent.userId) recipients.add(p.parent.userId);
+          }
+          for (const recipientId of recipients) {
+            await publishInboxMessage({
+              recipientUserId: recipientId,
+              category: "FINANCE",
+              priority: "NORMAL",
+              title: "Ödeme alındı",
+              body: `${purchase.packageName} paketinin ödemesi başarıyla alındı.`,
+              relatedEntityType: "PurchaseIntent",
+              relatedEntityId: purchase.id,
+            });
+          }
+        }
+      } catch (err) {
+        console.error("[webhook] inbox publish failed:", err);
+      }
+    }
+
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Webhook işlenemedi." }, { status: 500 });

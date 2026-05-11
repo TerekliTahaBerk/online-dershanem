@@ -5,7 +5,7 @@ import { grantUserAccessTag } from "@/app/odk/admin/actions";
 import { Check, AlertCircle } from "lucide-react";
 
 type AccessTag = { id: string; key: string; title: string; service?: "OD" | "ODK" };
-type StudentUser = { id: string; name: string | null; email: string; role?: "ADMIN" | "STUDENT" | "TEACHER" };
+type StudentUser = { id: string; name: string | null; email: string; role?: "ADMIN" | "STUDENT" | "TEACHER" | "PARENT" };
 
 const inputCls = "w-full rounded-lg border border-stone-200 bg-stone-50 px-4 py-2.5 text-sm text-stone-900 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100";
 

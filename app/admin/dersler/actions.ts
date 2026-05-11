@@ -74,6 +74,44 @@ export async function createLessonAction(formData: FormData) {
     packageName: lesson.package?.name,
   });
 
+  // Faz 1 entegrasyonu: ders planlandığında öğrenci + bağlı veliler inbox bildirimi alır.
+  try {
+    const { publishInboxMessage } = await import("@/lib/inbox");
+    const studentRow = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: {
+        userId: true,
+        parents: { select: { parent: { select: { userId: true } } } },
+      },
+    });
+    if (studentRow) {
+      const recipients = new Set<string>();
+      if (studentRow.userId) recipients.add(studentRow.userId);
+      for (const p of studentRow.parents) {
+        if (p.parent.userId) recipients.add(p.parent.userId);
+      }
+      const dateStr = lesson.scheduledAt.toLocaleString("tr-TR", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      for (const recipientId of recipients) {
+        await publishInboxMessage({
+          recipientUserId: recipientId,
+          category: "EDUCATION",
+          priority: "NORMAL",
+          title: "Yeni ders planlandı",
+          body: `${lesson.title ?? "Ders"} · ${dateStr} · ${lesson.teacher.fullName}`,
+          relatedEntityType: "Lesson",
+          relatedEntityId: lesson.id,
+        });
+      }
+    }
+  } catch (err) {
+    console.error("[lesson.create] inbox publish failed:", err);
+  }
+
   revalidatePath("/admin/dersler");
   revalidatePath("/admin");
   redirect("/admin/dersler");

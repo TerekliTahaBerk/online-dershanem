@@ -28,7 +28,7 @@ type Student = {
   id: string;
   name: string | null;
   email: string;
-  role: "ADMIN" | "STUDENT" | "TEACHER";
+  role: "ADMIN" | "STUDENT" | "TEACHER" | "PARENT";
   odkUserAccessTags: AccessTagEntry[];
   odkEntitlements: EntitlementEntry[];
 };

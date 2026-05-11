@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 type MobileTokenPayload = {
   sub: string;
   email: string;
-  role: "ADMIN" | "STUDENT" | "TEACHER";
+  role: "ADMIN" | "STUDENT" | "TEACHER" | "PARENT";
   name?: string | null;
   exp: number;
 };

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { ensureUserAccessLinksByEmail } from "@/lib/user-links";
 import { credentialsSchema } from "@/lib/validators";
 
-async function syncUserPanelLinks(userId: string, email?: string | null, role?: "ADMIN" | "STUDENT" | "TEACHER" | null) {
+async function syncUserPanelLinks(userId: string, email?: string | null, role?: "ADMIN" | "STUDENT" | "TEACHER" | "PARENT" | null) {
   try {
     await ensureUserAccessLinksByEmail(userId, email, role);
   } catch (error) {
@@ -78,6 +78,7 @@ export const authOptions: NextAuthOptions = {
           name: true,
           student: { select: { id: true } },
           teacher: { select: { id: true } },
+          parent: { select: { id: true } },
         }
       });
 
@@ -90,6 +91,7 @@ export const authOptions: NextAuthOptions = {
       token.isAdmin = currentUser.role === "ADMIN";
       token.hasStudentAccess = currentUser.role === "STUDENT" || Boolean(currentUser.student);
       token.hasTeacherAccess = Boolean(currentUser.teacher);
+      token.hasParentAccess = currentUser.role === "PARENT" || Boolean(currentUser.parent);
 
       // Query OD/ODK access from access tags. Admin always sees everything.
       let hasOdAccess = currentUser.role === "ADMIN";
@@ -130,11 +132,12 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
-        session.user.role = (token.role as "ADMIN" | "STUDENT" | "TEACHER") ?? "ADMIN";
+        session.user.role = (token.role as "ADMIN" | "STUDENT" | "TEACHER" | "PARENT") ?? "ADMIN";
         session.user.name = token.name ?? session.user.name;
         session.user.isAdmin = Boolean(token.isAdmin);
         session.user.hasStudentAccess = Boolean(token.hasStudentAccess);
         session.user.hasTeacherAccess = Boolean(token.hasTeacherAccess);
+        session.user.hasParentAccess = Boolean(token.hasParentAccess);
         session.user.hasOdAccess = Boolean(token.hasOdAccess);
         session.user.hasOdkAccess = Boolean(token.hasOdkAccess);
       }
