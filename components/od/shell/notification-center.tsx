@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
+import { toast } from "sonner";
 import {
   Bell,
   CheckCheck,
@@ -85,6 +86,65 @@ export function NotificationCenter() {
     const id = setInterval(loadCount, 30_000);
     return () => clearInterval(id);
   }, [loadCount]);
+
+  // Realtime SSE — push-update unread count + toast on new notification
+  React.useEffect(() => {
+    let es: EventSource | null = null;
+    let cancelled = false;
+    let retryDelay = 2_000;
+
+    const connect = () => {
+      if (cancelled) return;
+      es = new EventSource("/api/v1/realtime/notifications", {
+        withCredentials: true,
+      });
+      es.onopen = () => {
+        retryDelay = 2_000;
+      };
+      es.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          if (data?.kind === "notification") {
+            setUnread((c) => c + 1);
+            // Refresh list if popover currently open
+            setOpen((isOpen) => {
+              if (isOpen) loadList();
+              return isOpen;
+            });
+            const p = data.payload;
+            if (p?.title) {
+              toast(p.title, {
+                description: p.body,
+                action: p.href
+                  ? {
+                      label: "Aç",
+                      onClick: () => {
+                        window.location.href = p.href;
+                      },
+                    }
+                  : undefined,
+              });
+            }
+          }
+        } catch {
+          /* ignore non-JSON */
+        }
+      };
+      es.onerror = () => {
+        es?.close();
+        es = null;
+        if (cancelled) return;
+        // Exponential backoff up to 30s
+        setTimeout(connect, retryDelay);
+        retryDelay = Math.min(retryDelay * 2, 30_000);
+      };
+    };
+    connect();
+    return () => {
+      cancelled = true;
+      es?.close();
+    };
+  }, [loadList]);
 
   // Fetch list when opened
   React.useEffect(() => {

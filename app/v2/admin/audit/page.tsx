@@ -2,11 +2,16 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/od/page-header";
 import { AuditTable } from "@/components/od/domain/audit/audit-table";
 import { requirePagePermission } from "@/lib/rbac/define-action";
+import { getServerAuthSession } from "@/lib/auth";
+import { loadSavedViews } from "@/lib/services/saved-views/loader";
 
 type SearchParams = {
   entityType?: string;
   action?: string;
   q?: string;
+  actorUserId?: string;
+  from?: string;
+  to?: string;
   page?: string;
 };
 
@@ -17,6 +22,8 @@ export default async function AuditPage({
 }) {
   await requirePagePermission("audit.read");
   const sp = await searchParams;
+  const session = await getServerAuthSession();
+  const currentUserId = session?.user?.id;
 
   const page = Math.max(1, Number(sp.page ?? 1));
   const take = 50;
@@ -25,6 +32,7 @@ export default async function AuditPage({
   const where: any = {
     ...(sp.entityType ? { entityType: sp.entityType } : {}),
     ...(sp.action ? { action: { contains: sp.action, mode: "insensitive" } } : {}),
+    ...(sp.actorUserId ? { actorUserId: sp.actorUserId } : {}),
     ...(sp.q
       ? {
           OR: [
@@ -37,7 +45,17 @@ export default async function AuditPage({
       : {}),
   };
 
-  const [rows, total] = await Promise.all([
+  if (sp.from || sp.to) {
+    where.createdAt = {};
+    if (sp.from) where.createdAt.gte = new Date(sp.from);
+    if (sp.to) {
+      const end = new Date(sp.to);
+      end.setHours(23, 59, 59, 999);
+      where.createdAt.lte = end;
+    }
+  }
+
+  const [rows, total, savedViews] = await Promise.all([
     prisma.auditLog.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -48,6 +66,7 @@ export default async function AuditPage({
       },
     }),
     prisma.auditLog.count({ where }),
+    loadSavedViews("audit", currentUserId),
   ]);
 
   return (
@@ -63,8 +82,13 @@ export default async function AuditPage({
           entityType: sp.entityType,
           action: sp.action,
           q: sp.q,
+          actorUserId: sp.actorUserId,
+          from: sp.from,
+          to: sp.to,
           page,
         }}
+        savedViews={savedViews}
+        currentUserId={currentUserId}
       />
     </div>
   );

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "next-auth/react";
-import { LogOut, Moon, Search, Sun, UserCircle, Settings, ChevronsUpDown } from "lucide-react";
+import { LogOut, Moon, Search, Sun, UserCircle, Settings, ChevronsUpDown, Menu } from "lucide-react";
 import { Button } from "@/components/od/ui/button";
 import {
   DropdownMenu,
@@ -19,11 +19,14 @@ import { useCommandMenu } from "./command-menu";
 import { cn } from "@/lib/utils/cn";
 import { Breadcrumb } from "./breadcrumb";
 import { NotificationCenter } from "./notification-center";
+import { GlobalPresenceBadge } from "@/components/od/presence/global-presence-badge";
+import { useMobileNav } from "./app-shell";
 
 export function Topbar() {
   const { data: session } = useSession();
   const { setTheme, theme, resolvedTheme } = useTheme();
   const { open } = useCommandMenu();
+  const mobileNav = useMobileNav();
 
   const isDark = (resolvedTheme ?? theme) === "dark";
   const initials = (session?.user?.name ?? session?.user?.email ?? "??")
@@ -36,6 +39,17 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-od-border bg-od-bg/80 px-4 backdrop-blur-md">
+      {/* Mobile hamburger */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="lg:hidden"
+        onClick={mobileNav.toggle}
+        aria-label="Menüyü aç"
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+
       <Breadcrumb className="hidden md:flex" />
 
       <div className="ml-auto flex items-center gap-2">
@@ -57,6 +71,9 @@ export function Topbar() {
         <Button variant="ghost" size="icon" className="md:hidden" onClick={open} aria-label="Ara">
           <Search className="h-4 w-4" />
         </Button>
+
+        {/* Online presence */}
+        <GlobalPresenceBadge />
 
         {/* Notifications */}
         <NotificationCenter />

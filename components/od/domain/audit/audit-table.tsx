@@ -10,6 +10,8 @@ import { Badge } from "@/components/od/ui/badge";
 import { Input } from "@/components/od/ui/input";
 import { Button } from "@/components/od/ui/button";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import { ExportButton } from "@/components/od/data/export-button";
+import { SavedViewsMenu, type SavedViewItem } from "@/components/od/data/saved-views-menu";
 import { cn } from "@/lib/utils/cn";
 
 type AuditRow = {
@@ -28,7 +30,17 @@ type AuditRow = {
 type Props = {
   rows: AuditRow[];
   total: number;
-  filter: { entityType?: string; action?: string; q?: string; page?: number };
+  filter: {
+    entityType?: string;
+    action?: string;
+    q?: string;
+    actorUserId?: string;
+    from?: string;
+    to?: string;
+    page?: number;
+  };
+  savedViews?: SavedViewItem[];
+  currentUserId?: string;
 };
 
 const ACTION_TONE: Record<string, "mint" | "sky" | "yellow" | "blush" | "lavender" | "neutral"> = {
@@ -54,7 +66,7 @@ function actionTone(action: string) {
   return "neutral" as const;
 }
 
-export function AuditTable({ rows, total, filter }: Props) {
+export function AuditTable({ rows, total, filter, savedViews = [], currentUserId }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState(filter.q ?? "");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -87,7 +99,7 @@ export function AuditTable({ rows, total, filter }: Props) {
           <div className="ml-auto flex flex-wrap items-center gap-od-2">
             <Input
               type="search"
-              placeholder="entityType / action ara…"
+              placeholder="entityType / action / id ara…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -106,11 +118,34 @@ export function AuditTable({ rows, total, filter }: Props) {
               <option>Parent</option>
               <option>Classroom</option>
               <option>Lesson</option>
+              <option>Assignment</option>
+              <option>AssignmentSubmission</option>
+              <option>Attendance</option>
               <option>Payment</option>
+              <option>AccountingEntry</option>
               <option>InboxMessage</option>
+              <option>Notification</option>
               <option>RolePermission</option>
               <option>UserPermissionOverride</option>
             </select>
+            <Input
+              type="date"
+              value={filter.from ?? ""}
+              onChange={(e) => applyFilter({ from: e.target.value || null })}
+              className="w-[150px]"
+              title="Başlangıç tarihi"
+            />
+            <Input
+              type="date"
+              value={filter.to ?? ""}
+              onChange={(e) => applyFilter({ to: e.target.value || null })}
+              className="w-[150px]"
+              title="Bitiş tarihi"
+            />
+            <ExportButton endpoint="/api/v1/export/audit" />
+            {currentUserId && (
+              <SavedViewsMenu scope="audit" views={savedViews} currentUserId={currentUserId} />
+            )}
           </div>
         </CardContent>
       </Card>

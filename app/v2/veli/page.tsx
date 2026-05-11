@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Fragment } from "react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import {
@@ -17,6 +18,9 @@ import { KpiCard } from "@/components/od/charts/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/od/ui/card";
 import { Badge } from "@/components/od/ui/badge";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import { loadDashboardLayout } from "@/lib/services/dashboard-layout/loader";
+import { PARENT_WIDGETS } from "@/lib/services/dashboard-layout/types";
+import { WidgetManager } from "@/components/od/dashboard/widget-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -74,74 +78,97 @@ export default async function ParentDashboardPage() {
       ? Math.round((present / monthAttendances.length) * 100)
       : null;
 
+  const layout = await loadDashboardLayout("PARENT", session.user.id);
+  const visible = layout.items.filter((it) => it.visible);
+  const kpiOrder = visible.filter((it) => it.key.startsWith("kpi.")).map((it) => it.key);
+  const blockOrder = visible.filter((it) => !it.key.startsWith("kpi.")).map((it) => it.key);
+
+  const kpiWidgets: Record<string, React.ReactNode> = {
+    "kpi.children": <KpiCard tone="lavender" label="Çocuklarım" value={parent.students.length} />,
+    "kpi.upcomingLessons": <KpiCard tone="sky" label="Bu Hafta Ders" value={weekLessons} />,
+    "kpi.pendingPayments": <KpiCard tone="yellow" label="Aktif Ödev" value={openAssignments} />,
+  };
+
+  const blockWidgets: Record<string, React.ReactNode> = {
+    "list.upcomingLessons": (
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-od-2">
+            <CalendarDays className="h-4 w-4 text-pastel-sky-ink" /> Yaklaşan Dersler
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y divide-od-border p-0">
+          {recentLessons.length === 0 ? (
+            <p className="p-od-3 text-od-tiny text-od-mute">Bu hafta planlı ders yok.</p>
+          ) : (
+            recentLessons.map((l) => (
+              <div key={l.id} className="flex items-center justify-between p-od-3">
+                <div>
+                  <div className="font-medium text-od-body">{l.title ?? l.subject ?? "—"}</div>
+                  <div className="text-od-tiny text-od-mute">
+                    {l.student.fullName} · {l.teacher.fullName}
+                  </div>
+                </div>
+                <span className="text-od-tiny text-od-mute">
+                  {format(l.scheduledAt, "dd MMM HH:mm", { locale: tr })}
+                </span>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+    ),
+    "list.recentPayments": (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-od-2">
+            <Users className="h-4 w-4 text-pastel-lavender-ink" /> Çocuklarım
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-od-2">
+          {parent.students.map((ps) => (
+            <Link
+              key={ps.studentId}
+              href={`/v2/veli/cocuklarim/${ps.studentId}`}
+              className="block rounded-od border border-od-border bg-od-subtle p-od-2 hover:bg-od-surface"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-od-body">{ps.student.fullName}</span>
+                <ArrowRight className="h-4 w-4 text-od-mute" />
+              </div>
+              <div className="mt-1 flex flex-wrap gap-1 text-od-tiny">
+                {ps.student.classLevel && <Badge tone="sky" size="sm">{ps.student.classLevel}</Badge>}
+                {ps.student.examType && <Badge tone="lavender" size="sm">{ps.student.examType}</Badge>}
+                {ps.relationship && <Badge tone="neutral" size="sm">{ps.relationship}</Badge>}
+              </div>
+            </Link>
+          ))}
+        </CardContent>
+      </Card>
+    ),
+  };
+
   return (
     <div className="space-y-od-5">
       <PageHeader
         title={`Merhaba, ${parent.fullName.split(" ")[0]} 👋`}
         description={`${parent.students.length} çocuk takipte`}
+        actions={
+          <WidgetManager
+            panel="PARENT"
+            initialItems={layout.items}
+            catalog={PARENT_WIDGETS}
+          />
+        }
       />
 
       <div className="grid gap-od-3 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard tone="lavender" label="Çocuklarım" value={parent.students.length} />
-        <KpiCard tone="sky" label="Bu Hafta Ders" value={weekLessons} />
-        <KpiCard tone="yellow" label="Aktif Ödev" value={openAssignments} />
+        {kpiOrder.map((key) => (kpiWidgets[key] ? <Fragment key={key}>{kpiWidgets[key]}</Fragment> : null))}
         <KpiCard tone="mint" label="Aylık Katılım" value={rate != null ? `%${rate}` : "—"} />
       </div>
 
       <div className="grid gap-od-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-od-2">
-              <CalendarDays className="h-4 w-4 text-pastel-sky-ink" /> Yaklaşan Dersler
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-od-border p-0">
-            {recentLessons.length === 0 ? (
-              <p className="p-od-3 text-od-tiny text-od-mute">Bu hafta planlı ders yok.</p>
-            ) : (
-              recentLessons.map((l) => (
-                <div key={l.id} className="flex items-center justify-between p-od-3">
-                  <div>
-                    <div className="font-medium text-od-body">{l.title ?? l.subject ?? "—"}</div>
-                    <div className="text-od-tiny text-od-mute">
-                      {l.student.fullName} · {l.teacher.fullName}
-                    </div>
-                  </div>
-                  <span className="text-od-tiny text-od-mute">
-                    {format(l.scheduledAt, "dd MMM HH:mm", { locale: tr })}
-                  </span>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-od-2">
-              <Users className="h-4 w-4 text-pastel-lavender-ink" /> Çocuklarım
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-od-2">
-            {parent.students.map((ps) => (
-              <Link
-                key={ps.studentId}
-                href={`/v2/veli/cocuklarim/${ps.studentId}`}
-                className="block rounded-od border border-od-border bg-od-subtle p-od-2 hover:bg-od-surface"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-od-body">{ps.student.fullName}</span>
-                  <ArrowRight className="h-4 w-4 text-od-mute" />
-                </div>
-                <div className="mt-1 flex flex-wrap gap-1 text-od-tiny">
-                  {ps.student.classLevel && <Badge tone="sky" size="sm">{ps.student.classLevel}</Badge>}
-                  {ps.student.examType && <Badge tone="lavender" size="sm">{ps.student.examType}</Badge>}
-                  {ps.relationship && <Badge tone="neutral" size="sm">{ps.relationship}</Badge>}
-                </div>
-              </Link>
-            ))}
-          </CardContent>
-        </Card>
+        {blockOrder.map((key) => (blockWidgets[key] ? <Fragment key={key}>{blockWidgets[key]}</Fragment> : null))}
       </div>
 
       <div className="grid gap-od-3 md:grid-cols-3">

@@ -1,24 +1,32 @@
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
-import { CalendarDays, Video } from "lucide-react";
+import type { Prisma } from "@prisma/client";
+import { CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import { loadSavedViews } from "@/lib/services/saved-views/loader";
 import { PageHeader } from "@/components/od/page-header";
-import { Card, CardContent } from "@/components/od/ui/card";
-import { Badge } from "@/components/od/ui/badge";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import {
+  TeacherLessonsTable,
+  type TeacherLessonRow,
+} from "@/components/od/domain/teacher/teacher-lessons-table";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_TONE: Record<string, "sky" | "mint" | "blush" | "neutral"> = {
-  SCHEDULED: "sky",
-  COMPLETED: "mint",
-  CANCELLED: "blush",
-};
+type SP = Record<string, string | string[] | undefined>;
 
-export default async function TeacherLessonsPage() {
+const STATUSES = new Set(["SCHEDULED", "COMPLETED", "CANCELLED"]);
+
+function asArray(v: string | string[] | undefined): string[] {
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+export default async function TeacherLessonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}) {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/giris");
 
@@ -28,73 +36,68 @@ export default async function TeacherLessonsPage() {
   });
   if (!teacher) return notFound();
 
+  const sp = await searchParams;
+  const status = asArray(sp.status).filter((s) => STATUSES.has(s)) as any[];
+  const fromStr = typeof sp.from === "string" ? sp.from : undefined;
+  const toStr = typeof sp.to === "string" ? sp.to : undefined;
+
+  const where: Prisma.LessonWhereInput = { teacherId: teacher.id };
+  if (status.length) where.status = { in: status };
+  if (fromStr || toStr) {
+    where.scheduledAt = {};
+    if (fromStr) where.scheduledAt.gte = new Date(fromStr);
+    if (toStr) {
+      const end = new Date(toStr);
+      end.setHours(23, 59, 59, 999);
+      where.scheduledAt.lte = end;
+    }
+  }
+
   const lessons = await prisma.lesson.findMany({
-    where: { teacherId: teacher.id },
+    where,
     orderBy: { scheduledAt: "desc" },
-    take: 100,
+    take: 500,
     include: {
       student: { select: { id: true, fullName: true } },
       classroom: { select: { id: true, name: true } },
     },
   });
 
+  const savedViews = await loadSavedViews("teacher.lessons", session.user.id);
+
+  if (lessons.length === 0 && status.length === 0 && !fromStr && !toStr) {
+    return (
+      <div className="space-y-od-5">
+        <PageHeader title="Derslerim" description="Henüz ders kaydın yok" />
+        <EmptyState
+          tone="sky"
+          icon={CalendarDays}
+          title="Henüz ders yok"
+          description="Sana atanan dersler burada listelenir."
+        />
+      </div>
+    );
+  }
+
+  const rows: TeacherLessonRow[] = lessons.map((l) => ({
+    id: l.id,
+    scheduledAt: l.scheduledAt.toISOString(),
+    title: l.title,
+    subject: l.subject,
+    studentName: l.student.fullName,
+    classroomName: l.classroom?.name ?? null,
+    duration: l.duration,
+    status: l.status,
+    googleMeetLink: l.googleMeetLink,
+  }));
+
   return (
     <div className="space-y-od-5">
-      <PageHeader title="Derslerim" description={`Son ${lessons.length} ders`} />
-      {lessons.length === 0 ? (
-        <EmptyState tone="sky" icon={CalendarDays} title="Henüz ders yok" />
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <table className="w-full text-od-small">
-              <thead className="border-b border-od-border bg-od-subtle text-left text-od-tiny uppercase text-od-mute">
-                <tr>
-                  <th className="px-od-4 py-od-2">Tarih</th>
-                  <th className="px-od-4 py-od-2">Başlık</th>
-                  <th className="px-od-4 py-od-2">Öğrenci / Sınıf</th>
-                  <th className="px-od-4 py-od-2">Süre</th>
-                  <th className="px-od-4 py-od-2">Durum</th>
-                  <th className="px-od-4 py-od-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {lessons.map((l) => (
-                  <tr key={l.id} className="border-b border-od-border/60 hover:bg-od-subtle">
-                    <td className="px-od-4 py-od-2 text-od-tiny text-od-mute">
-                      {format(l.scheduledAt, "dd MMM yyyy HH:mm", { locale: tr })}
-                    </td>
-                    <td className="px-od-4 py-od-2 font-medium text-od-ink">
-                      {l.title ?? l.subject ?? "—"}
-                    </td>
-                    <td className="px-od-4 py-od-2 text-od-mute">
-                      {l.student.fullName}
-                      {l.classroom && ` · ${l.classroom.name}`}
-                    </td>
-                    <td className="px-od-4 py-od-2 text-od-mute">{l.duration} dk</td>
-                    <td className="px-od-4 py-od-2">
-                      <Badge tone={STATUS_TONE[l.status] ?? "neutral"} size="sm">
-                        {l.status}
-                      </Badge>
-                    </td>
-                    <td className="px-od-4 py-od-2">
-                      {l.googleMeetLink && (
-                        <a
-                          href={l.googleMeetLink}
-                          target="_blank"
-                          rel="noopener"
-                          className="inline-flex items-center gap-1 text-od-tiny text-pastel-sky-ink"
-                        >
-                          <Video className="h-3.5 w-3.5" /> Meet
-                        </a>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      )}
+      <PageHeader
+        title="Derslerim"
+        description={rows.length + " ders · filtrele veya dışa aktar"}
+      />
+      <TeacherLessonsTable data={rows} savedViews={savedViews} currentUserId={session.user.id} />
     </div>
   );
 }

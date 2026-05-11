@@ -1,17 +1,25 @@
 import { redirect, notFound } from "next/navigation";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
-import { Wallet, ExternalLink } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { getParentWithChildren } from "@/lib/parent-context";
+import { loadSavedViews } from "@/lib/services/saved-views/loader";
 import { PageHeader } from "@/components/od/page-header";
 import { KpiCard } from "@/components/od/charts/kpi-card";
-import { Card, CardContent } from "@/components/od/ui/card";
-import { Badge } from "@/components/od/ui/badge";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import {
+  ParentPaymentsTable,
+  type ParentPaymentRow,
+} from "@/components/od/domain/parent/parent-payments-table";
 
 export const dynamic = "force-dynamic";
+
+type SP = Record<string, string | string[] | undefined>;
+
+function asArray(v: string | string[] | undefined): string[] {
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+}
 
 function fmtTL(kurus: number) {
   return new Intl.NumberFormat("tr-TR", {
@@ -21,40 +29,101 @@ function fmtTL(kurus: number) {
   }).format(kurus / 100);
 }
 
-const STATUS_TONE: Record<string, "mint" | "yellow" | "blush" | "neutral"> = {
-  COMPLETED: "mint",
-  PENDING: "yellow",
-  FAILED: "blush",
-  CANCELLED: "blush",
-};
-
-export default async function ParentPaymentsPage() {
+export default async function ParentPaymentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}) {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/giris");
   const ctx = await getParentWithChildren(session.user.id);
   if (!ctx) return notFound();
 
+  const sp = await searchParams;
+  const kindFilter = new Set(asArray(sp.kind).filter((k) => k === "INTENT" || k === "INCOME"));
+  const statusFilter = new Set(asArray(sp.status));
+  const childFilter = asArray(sp.childId).filter((id) => ctx.childIds.includes(id));
+  const targetIds = childFilter.length ? childFilter : ctx.childIds;
+
+  const includeIntent = kindFilter.size === 0 || kindFilter.has("INTENT");
+  const includeIncome = kindFilter.size === 0 || kindFilter.has("INCOME");
+
   const [intents, accounting] = await Promise.all([
-    prisma.purchaseIntent.findMany({
-      where: { studentId: { in: ctx.childIds } },
-      orderBy: { submittedAt: "desc" },
-      take: 50,
-      include: { student: { select: { fullName: true } } },
-    }),
-    prisma.accountingEntry.findMany({
-      where: { studentId: { in: ctx.childIds }, type: "INCOME" },
-      orderBy: { occurredAt: "desc" },
-      take: 50,
-      include: { student: { select: { fullName: true } }, package: { select: { name: true } } },
-    }),
+    includeIntent
+      ? prisma.purchaseIntent.findMany({
+          where: { studentId: { in: targetIds } },
+          orderBy: { submittedAt: "desc" },
+          take: 200,
+          include: { student: { select: { id: true, fullName: true } } },
+        })
+      : Promise.resolve([] as any[]),
+    includeIncome
+      ? prisma.accountingEntry.findMany({
+          where: { studentId: { in: targetIds }, type: "INCOME" },
+          orderBy: { occurredAt: "desc" },
+          take: 200,
+          include: {
+            student: { select: { id: true, fullName: true } },
+            package: { select: { name: true } },
+          },
+        })
+      : Promise.resolve([] as any[]),
   ]);
 
-  const totalPaid = accounting.reduce((acc, a) => acc + a.amount, 0);
-  const pendingCount = intents.filter((i) => i.status === "PENDING").length;
+  const allRows: ParentPaymentRow[] = [
+    ...intents.map((i: any) => ({
+      id: "intent-" + i.id,
+      occurredAt: i.submittedAt.toISOString(),
+      childId: i.student?.id ?? null,
+      childName: i.student?.fullName ?? i.studentFullName ?? "—",
+      description: i.packageName,
+      amount: 0,
+      kind: "INTENT" as const,
+      status: i.status,
+      paymentLink: i.paymentLink,
+    })),
+    ...accounting.map((a: any) => ({
+      id: "income-" + a.id,
+      occurredAt: a.occurredAt.toISOString(),
+      childId: a.student?.id ?? null,
+      childName: a.student?.fullName ?? "—",
+      description: a.package?.name ?? a.description ?? "—",
+      amount: a.amount,
+      kind: "INCOME" as const,
+      status: "PAID",
+      paymentLink: null,
+    })),
+  ]
+    .filter((r) => statusFilter.size === 0 || statusFilter.has(r.status))
+    .sort((a, b) => +new Date(b.occurredAt) - +new Date(a.occurredAt));
+
+  const totalPaid = accounting.reduce((acc: number, a: any) => acc + a.amount, 0);
+  const pendingCount = intents.filter((i: any) => i.status === "PENDING").length;
+
+  if (allRows.length === 0 && kindFilter.size === 0 && statusFilter.size === 0 && childFilter.length === 0) {
+    return (
+      <div className="space-y-od-5">
+        <PageHeader title="Ödemeler" description="Henüz ödeme/sipariş yok" />
+        <EmptyState
+          tone="yellow"
+          icon={Wallet}
+          title="Henüz kayıt yok"
+          description="Sipariş ve tahsilatlar burada listelenir."
+        />
+      </div>
+    );
+  }
+
+  const childOptions = ctx.parent.students.map((ps) => ({
+    id: ps.studentId,
+    name: ps.student.fullName,
+  }));
+
+  const savedViews = await loadSavedViews("parent.payments", session.user.id);
 
   return (
     <div className="space-y-od-5">
-      <PageHeader title="Ödemeler" description="Sipariş ve ödeme geçmişi" />
+      <PageHeader title="Ödemeler" description="Sipariş ve tahsilat geçmişi" />
 
       <div className="grid gap-od-3 md:grid-cols-3">
         <KpiCard tone="mint" label="Toplam Ödenen" value={fmtTL(totalPaid)} />
@@ -62,90 +131,12 @@ export default async function ParentPaymentsPage() {
         <KpiCard tone="sky" label="Toplam Sipariş" value={intents.length} />
       </div>
 
-      <Card>
-        <CardContent className="space-y-od-2 p-od-3">
-          <h3 className="text-od-h4 font-semibold">Siparişlerim</h3>
-          {intents.length === 0 ? (
-            <p className="text-od-tiny text-od-mute">Sipariş yok.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-od-small">
-                <thead className="border-b border-od-border bg-od-subtle text-left text-od-tiny uppercase text-od-mute">
-                  <tr>
-                    <th className="px-od-4 py-od-2">Tarih</th>
-                    <th className="px-od-4 py-od-2">Çocuk</th>
-                    <th className="px-od-4 py-od-2">Paket</th>
-                    <th className="px-od-4 py-od-2">Durum</th>
-                    <th className="px-od-4 py-od-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {intents.map((i) => (
-                    <tr key={i.id} className="border-b border-od-border/60">
-                      <td className="px-od-4 py-od-2 text-od-tiny text-od-mute">
-                        {format(i.submittedAt, "dd MMM yyyy", { locale: tr })}
-                      </td>
-                      <td className="px-od-4 py-od-2 font-medium">{i.student?.fullName ?? "—"}</td>
-                      <td className="px-od-4 py-od-2">{i.packageName}</td>
-                      <td className="px-od-4 py-od-2">
-                        <Badge tone={STATUS_TONE[i.status] ?? "neutral"} size="sm">{i.status}</Badge>
-                      </td>
-                      <td className="px-od-4 py-od-2">
-                        {i.paymentLink && i.status === "PENDING" && (
-                          <a
-                            href={i.paymentLink}
-                            target="_blank"
-                            rel="noopener"
-                            className="inline-flex items-center gap-1 text-od-tiny text-pastel-sky-ink"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" /> Öde
-                          </a>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="space-y-od-2 p-od-3">
-          <h3 className="text-od-h4 font-semibold">Ödeme Geçmişi</h3>
-          {accounting.length === 0 ? (
-            <p className="text-od-tiny text-od-mute">Henüz ödeme yok.</p>
-          ) : (
-            <table className="w-full text-od-small">
-              <thead className="border-b border-od-border bg-od-subtle text-left text-od-tiny uppercase text-od-mute">
-                <tr>
-                  <th className="px-od-4 py-od-2">Tarih</th>
-                  <th className="px-od-4 py-od-2">Çocuk</th>
-                  <th className="px-od-4 py-od-2">Paket / Açıklama</th>
-                  <th className="px-od-4 py-od-2">Tutar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {accounting.map((a) => (
-                  <tr key={a.id} className="border-b border-od-border/60">
-                    <td className="px-od-4 py-od-2 text-od-tiny text-od-mute">
-                      {format(a.occurredAt, "dd MMM yyyy", { locale: tr })}
-                    </td>
-                    <td className="px-od-4 py-od-2 font-medium">{a.student?.fullName ?? "—"}</td>
-                    <td className="px-od-4 py-od-2 text-od-mute">{a.package?.name ?? a.description ?? "—"}</td>
-                    <td className="px-od-4 py-od-2 font-medium text-pastel-mint-ink">{fmtTL(a.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
-
-      {intents.length === 0 && accounting.length === 0 && (
-        <EmptyState tone="yellow" icon={Wallet} title="Henüz ödeme/sipariş yok" />
-      )}
+      <ParentPaymentsTable
+        data={allRows}
+        children={childOptions}
+        savedViews={savedViews}
+        currentUserId={session.user.id}
+      />
     </div>
   );
 }

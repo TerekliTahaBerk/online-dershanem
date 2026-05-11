@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/od/ui/car
 import { Badge } from "@/components/od/ui/badge";
 import { Input } from "@/components/od/ui/input";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import { LivePresenceDot, PresenceProvider } from "@/components/od/presence/live-presence";
 import { cn } from "@/lib/utils/cn";
 import {
   markInboxRead,
@@ -115,6 +116,7 @@ export function InboxClient({ items, unreadCount, total, filter }: Props) {
   }
 
   return (
+    <PresenceProvider userIds={items.map((m) => m.createdBy?.id).filter(Boolean) as string[]}>
     <div className="space-y-od-4">
       {/* Toolbar */}
       <Card>
@@ -267,6 +269,12 @@ export function InboxClient({ items, unreadCount, total, filter }: Props) {
                     >
                       {m.title}
                     </h3>
+                    {m.createdBy && (
+                      <div className="mt-0.5 flex items-center gap-1 text-od-tiny text-od-mute">
+                        <LivePresenceDot userId={m.createdBy.id} />
+                        <span>{m.createdBy.name ?? m.createdBy.email ?? "Sistem"}</span>
+                      </div>
+                    )}
                     <p className="mt-0.5 line-clamp-2 text-od-small text-od-mute">
                       {m.body}
                     </p>
@@ -286,5 +294,6 @@ export function InboxClient({ items, unreadCount, total, filter }: Props) {
         </Card>
       )}
     </div>
+    </PresenceProvider>
   );
 }

@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import { loadSavedViews } from "@/lib/services/saved-views/loader";
 import { PageHeader } from "@/components/od/page-header";
 import { EmptyState } from "@/components/od/feedback/empty-state";
 import {
@@ -73,7 +74,7 @@ export default async function TeacherStudentsPage({
   if (classLevel.length) where.classLevel = { in: classLevel };
   if (examType.length) where.examType = { in: examType };
 
-  const [students, classLevelOpts, examTypeOpts] = await Promise.all([
+  const [students, classLevelOpts, examTypeOpts, savedViews] = await Promise.all([
     prisma.student.findMany({
       where,
       select: {
@@ -99,6 +100,7 @@ export default async function TeacherStudentsPage({
       select: { examType: true },
       orderBy: { examType: "asc" },
     }),
+    loadSavedViews("teacher.students", session.user.id),
   ]);
 
   const rows: TeacherStudentRow[] = students.map((s) => ({
@@ -121,6 +123,8 @@ export default async function TeacherStudentsPage({
         data={rows}
         classLevels={classLevelOpts.map((c) => c.classLevel!).filter(Boolean)}
         examTypes={examTypeOpts.map((c) => c.examType!).filter(Boolean)}
+        savedViews={savedViews}
+        currentUserId={session.user.id}
       />
     </div>
   );

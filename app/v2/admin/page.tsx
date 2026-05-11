@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
+import { Fragment, type ReactNode } from "react";
 import { format, formatDistanceToNow, startOfDay, subDays } from "date-fns";
 import { tr } from "date-fns/locale";
 import { prisma } from "@/lib/prisma";
@@ -22,6 +23,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/od/ui/badge";
 import { Button } from "@/components/od/ui/button";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import { getServerAuthSession } from "@/lib/auth";
+import { loadDashboardLayout } from "@/lib/services/dashboard-layout/loader";
+import { ADMIN_WIDGETS } from "@/lib/services/dashboard-layout/types";
+import { WidgetManager } from "@/components/od/dashboard/widget-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -206,6 +211,217 @@ const ACTION_LABEL: Record<string, string> = {
 
 export default async function AdminV2Dashboard() {
   const m = await getMetrics();
+  const session = await getServerAuthSession();
+  const layout = await loadDashboardLayout("ADMIN", session?.user?.id);
+
+  const kpiWidgets: Record<string, ReactNode> = {
+    "kpi.activeStudents": (
+      <KpiCard label="Aktif Öğrenci" value={m.activeStudents} icon={Users} tone="mint" />
+    ),
+    "kpi.newStudents30d": (
+      <KpiCard
+        label="30g Yeni Kayıt"
+        value={m.newStudents30d}
+        icon={Sparkles}
+        tone="lavender"
+        delta={m.enrollDelta !== null ? { value: m.enrollDelta, label: "öncekine göre" } : undefined}
+      />
+    ),
+    "kpi.income30d": (
+      <KpiCard
+        label="30g Gelir"
+        value={fmtTL(m.incomeNow)}
+        icon={Wallet}
+        tone="mint"
+        delta={m.incomeDelta !== null ? { value: m.incomeDelta, label: "öncekine göre" } : undefined}
+      />
+    ),
+    "kpi.pendingPayments": (
+      <KpiCard
+        label="Bekleyen Ödeme"
+        value={m.pendingPayments}
+        icon={AlertTriangle}
+        tone={m.pendingPayments > 0 ? "blush" : "neutral"}
+      />
+    ),
+    "kpi.todayLessons": (
+      <KpiCard label="Bugünkü Ders" value={m.todayLessons} icon={CalendarDays} tone="sky" />
+    ),
+    "kpi.activeTeachers": (
+      <KpiCard label="Aktif Öğretmen" value={m.activeTeachers} icon={GraduationCap} tone="yellow" />
+    ),
+  };
+
+  const blockWidgets: Record<string, ReactNode> = {
+    "chart.revenue14d": (
+      <Card>
+        <CardHeader>
+          <CardTitle>Gelir / Gider · Son 14 Gün</CardTitle>
+          <CardDescription>Günlük tahsilat ve harcama (TL)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AreaChart
+            data={m.revenueTrend}
+            xKey="day"
+            series={[
+              { key: "Gelir", label: "Gelir (₺)", color: "#3A4A2C" },
+              { key: "Gider", label: "Gider (₺)", color: "#D9716E" },
+            ]}
+            height={260}
+          />
+        </CardContent>
+      </Card>
+    ),
+    "chart.userDistribution": (
+      <Card>
+        <CardHeader>
+          <CardTitle>Kullanıcı Dağılımı</CardTitle>
+          <CardDescription>Tüm sistem · rol bazlı</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {m.userDistribution.length === 0 ? (
+            <EmptyState tone="neutral" icon={Users} title="Veri yok" />
+          ) : (
+            <DonutChart data={m.userDistribution} height={260} />
+          )}
+        </CardContent>
+      </Card>
+    ),
+    "chart.enrollment30d": (
+      <Card>
+        <CardHeader>
+          <CardTitle>Yeni Öğrenci Kayıtları · Son 30 Gün</CardTitle>
+          <CardDescription>Günlük kayıt sayısı</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AreaChart
+            data={m.enrollmentTrend}
+            xKey="day"
+            series={[{ key: "Kayıt", label: "Yeni kayıt", color: "#A8C8D8" }]}
+            height={240}
+          />
+        </CardContent>
+      </Card>
+    ),
+    "list.teacherWorkload": (
+      <Card>
+        <CardHeader>
+          <CardTitle>Öğretmen Yoğunluğu</CardTitle>
+          <CardDescription>Son 30 günde en çok ders veren · Top 5</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {m.teacherWorkload.length === 0 ? (
+            <EmptyState tone="neutral" icon={GraduationCap} title="Veri yok" />
+          ) : (
+            <ul className="divide-y divide-od-border/60">
+              {m.teacherWorkload.map((t, i) => (
+                <li key={t.id} className="flex items-center gap-3 px-4 py-2.5">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-pastel-yellow-soft text-[11px] font-bold text-pastel-yellow-ink">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-od-small font-medium text-od-ink truncate">{t.fullName}</p>
+                    <p className="text-od-tiny text-od-mute truncate">{t.subjects}</p>
+                  </div>
+                  <Badge tone="sky" size="sm">{t._count.lessons} ders</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    ),
+    "list.riskStudents": (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Risk Skoru Yüksek Öğrenciler</CardTitle>
+              <CardDescription>AT_RISK statüsündekiler</CardDescription>
+            </div>
+            <Link href="/v2/admin/ogrenciler?status=AT_RISK">
+              <Button variant="ghost" size="sm">
+                Tümü <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {m.riskStudents.length === 0 ? (
+            <EmptyState
+              tone="mint"
+              icon={Users}
+              title="Risk altında öğrenci yok"
+              description="Tüm öğrenciler aktif veya takip durumunda."
+            />
+          ) : (
+            <ul className="divide-y divide-od-border/60">
+              {m.riskStudents.map((s) => (
+                <li key={s.id}>
+                  <Link
+                    href={`/v2/admin/ogrenciler/${s.id}`}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-od-subtle/60"
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-pastel-blush-ink" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-od-small font-medium text-od-ink truncate">{s.fullName}</p>
+                      <p className="text-od-tiny text-od-mute truncate">
+                        {[s.classLevel, s.examType, s.city].filter(Boolean).join(" · ") || "—"}
+                      </p>
+                    </div>
+                    <Badge tone="neutral" size="sm">{s._count.lessons} ders</Badge>
+                    <ChevronRight className="h-3.5 w-3.5 text-od-mute-2" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    ),
+    "list.recentAudit": (
+      <Card>
+        <CardHeader>
+          <CardTitle>Son Sistem Aktivitesi</CardTitle>
+          <CardDescription>Audit log · son 10 işlem</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {m.recentAudit.length === 0 ? (
+            <EmptyState tone="sky" icon={Activity} title="Henüz aktivite yok" />
+          ) : (
+            <ul className="divide-y divide-od-border/60">
+              {m.recentAudit.map((a) => (
+                <li key={a.id} className="flex items-start gap-3 px-4 py-2.5">
+                  <Activity className="mt-0.5 h-4 w-4 shrink-0 text-od-mute" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-od-small text-od-ink">
+                      <span className="font-medium">
+                        {a.actor?.name ?? a.actor?.email ?? "Sistem"}
+                      </span>{" "}
+                      <span className="text-od-mute">
+                        bir {a.entityType} {ACTION_LABEL[a.action] ?? a.action}
+                      </span>
+                    </p>
+                    {a.summary && (
+                      <p className="text-od-tiny text-od-mute-2 truncate">{a.summary}</p>
+                    )}
+                    <p className="text-[10px] text-od-mute-2">
+                      {formatDistanceToNow(a.createdAt, { addSuffix: true, locale: tr })}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    ),
+  };
+
+  // Layout sırasına göre KPI ve diğer widget'ları ayır
+  const visibleItems = layout.items.filter((it) => it.visible);
+  const orderedKpis = visibleItems.filter((it) => it.key.startsWith("kpi."));
+  const orderedBlocks = visibleItems.filter((it) => !it.key.startsWith("kpi."));
 
   return (
     <div className="flex flex-col gap-6">
@@ -217,6 +433,13 @@ export default async function AdminV2Dashboard() {
             <Badge tone="lavender" size="lg">
               <Sparkles className="h-3 w-3" /> v2
             </Badge>
+            {session?.user?.id && (
+              <WidgetManager
+                panel="ADMIN"
+                initialItems={layout.items}
+                catalog={ADMIN_WIDGETS}
+              />
+            )}
             <Link href="/v2/admin/ogrenciler/yeni">
               <Button variant="accent" size="md">Yeni Öğrenci</Button>
             </Link>
@@ -224,228 +447,25 @@ export default async function AdminV2Dashboard() {
         }
       />
 
-      {/* KPI grid */}
-      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <KpiCard
-          label="Aktif Öğrenci"
-          value={m.activeStudents}
-          icon={Users}
-          tone="mint"
-        />
-        <KpiCard
-          label="30g Yeni Kayıt"
-          value={m.newStudents30d}
-          icon={Sparkles}
-          tone="lavender"
-          delta={m.enrollDelta !== null ? { value: m.enrollDelta, label: "öncekine göre" } : undefined}
-        />
-        <KpiCard
-          label="30g Gelir"
-          value={fmtTL(m.incomeNow)}
-          icon={Wallet}
-          tone="mint"
-          delta={m.incomeDelta !== null ? { value: m.incomeDelta, label: "öncekine göre" } : undefined}
-        />
-        <KpiCard
-          label="Bekleyen Ödeme"
-          value={m.pendingPayments}
-          icon={AlertTriangle}
-          tone={m.pendingPayments > 0 ? "blush" : "neutral"}
-        />
-        <KpiCard
-          label="Bugünkü Ders"
-          value={m.todayLessons}
-          icon={CalendarDays}
-          tone="sky"
-        />
-        <KpiCard
-          label="Aktif Öğretmen"
-          value={m.activeTeachers}
-          icon={GraduationCap}
-          tone="yellow"
-        />
-      </section>
+      {orderedKpis.length > 0 && (
+        <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {orderedKpis.map((it) =>
+            kpiWidgets[it.key] ? (
+              <Fragment key={it.key}>{kpiWidgets[it.key]}</Fragment>
+            ) : null,
+          )}
+        </section>
+      )}
 
-      {/* Charts row 1 */}
-      <section className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Gelir / Gider · Son 14 Gün</CardTitle>
-            <CardDescription>Günlük tahsilat ve harcama (TL)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AreaChart
-              data={m.revenueTrend}
-              xKey="day"
-              series={[
-                { key: "Gelir", label: "Gelir (₺)", color: "#3A4A2C" },
-                { key: "Gider", label: "Gider (₺)", color: "#D9716E" },
-              ]}
-              height={260}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Kullanıcı Dağılımı</CardTitle>
-            <CardDescription>Tüm sistem · rol bazlı</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {m.userDistribution.length === 0 ? (
-              <EmptyState tone="neutral" icon={Users} title="Veri yok" />
-            ) : (
-              <DonutChart data={m.userDistribution} height={260} />
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Charts row 2 */}
-      <section className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Yeni Öğrenci Kayıtları · Son 30 Gün</CardTitle>
-            <CardDescription>Günlük kayıt sayısı</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AreaChart
-              data={m.enrollmentTrend}
-              xKey="day"
-              series={[
-                { key: "Kayıt", label: "Yeni kayıt", color: "#A8C8D8" },
-              ]}
-              height={240}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Öğretmen Yoğunluğu</CardTitle>
-            <CardDescription>Son 30 günde en çok ders veren · Top 5</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            {m.teacherWorkload.length === 0 ? (
-              <EmptyState tone="neutral" icon={GraduationCap} title="Veri yok" />
-            ) : (
-              <ul className="divide-y divide-od-border/60">
-                {m.teacherWorkload.map((t, i) => (
-                  <li key={t.id} className="flex items-center gap-3 px-4 py-2.5">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-pastel-yellow-soft text-[11px] font-bold text-pastel-yellow-ink">
-                      {i + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-od-small font-medium text-od-ink truncate">
-                        {t.fullName}
-                      </p>
-                      <p className="text-od-tiny text-od-mute truncate">
-                        {t.subjects}
-                      </p>
-                    </div>
-                    <Badge tone="sky" size="sm">{t._count.lessons} ders</Badge>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Bottom row: risk + activity */}
-      <section className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Risk Skoru Yüksek Öğrenciler</CardTitle>
-                <CardDescription>AT_RISK statüsündekiler</CardDescription>
-              </div>
-              <Link href="/v2/admin/ogrenciler?status=AT_RISK">
-                <Button variant="ghost" size="sm">
-                  Tümü <ChevronRight className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {m.riskStudents.length === 0 ? (
-              <EmptyState
-                tone="mint"
-                icon={Users}
-                title="Risk altında öğrenci yok"
-                description="Tüm öğrenciler aktif veya takip durumunda."
-              />
-            ) : (
-              <ul className="divide-y divide-od-border/60">
-                {m.riskStudents.map((s) => (
-                  <li key={s.id}>
-                    <Link
-                      href={`/v2/admin/ogrenciler/${s.id}`}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-od-subtle/60"
-                    >
-                      <AlertTriangle className="h-4 w-4 shrink-0 text-pastel-blush-ink" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-od-small font-medium text-od-ink truncate">
-                          {s.fullName}
-                        </p>
-                        <p className="text-od-tiny text-od-mute truncate">
-                          {[s.classLevel, s.examType, s.city]
-                            .filter(Boolean)
-                            .join(" · ") || "—"}
-                        </p>
-                      </div>
-                      <Badge tone="neutral" size="sm">{s._count.lessons} ders</Badge>
-                      <ChevronRight className="h-3.5 w-3.5 text-od-mute-2" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Son Sistem Aktivitesi</CardTitle>
-            <CardDescription>Audit log · son 10 işlem</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            {m.recentAudit.length === 0 ? (
-              <EmptyState tone="sky" icon={Activity} title="Henüz aktivite yok" />
-            ) : (
-              <ul className="divide-y divide-od-border/60">
-                {m.recentAudit.map((a) => (
-                  <li key={a.id} className="flex items-start gap-3 px-4 py-2.5">
-                    <Activity className="mt-0.5 h-4 w-4 shrink-0 text-od-mute" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-od-small text-od-ink">
-                        <span className="font-medium">
-                          {a.actor?.name ?? a.actor?.email ?? "Sistem"}
-                        </span>{" "}
-                        <span className="text-od-mute">
-                          bir {a.entityType} {ACTION_LABEL[a.action] ?? a.action}
-                        </span>
-                      </p>
-                      {a.summary && (
-                        <p className="text-od-tiny text-od-mute-2 truncate">
-                          {a.summary}
-                        </p>
-                      )}
-                      <p className="text-[10px] text-od-mute-2">
-                        {formatDistanceToNow(a.createdAt, {
-                          addSuffix: true,
-                          locale: tr,
-                        })}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </section>
+      {orderedBlocks.length > 0 && (
+        <section className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          {orderedBlocks.map((it) =>
+            blockWidgets[it.key] ? (
+              <Fragment key={it.key}>{blockWidgets[it.key]}</Fragment>
+            ) : null,
+          )}
+        </section>
+      )}
     </div>
   );
 }

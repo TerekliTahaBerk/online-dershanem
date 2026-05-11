@@ -17,6 +17,8 @@ import {
 import { StudentsBulkBar } from "./students-bulk-bar";
 import { StudentsFilters } from "./students-filters";
 import { ExportButton } from "@/components/od/data/export-button";
+import { SavedViewsMenu, type SavedViewItem } from "@/components/od/data/saved-views-menu";
+import { PresenceProvider, LivePresenceDot } from "@/components/od/presence/live-presence";
 
 export type StudentRow = {
   id: string;
@@ -29,6 +31,7 @@ export type StudentRow = {
   status: "NEW" | "FOLLOW_UP" | "ACTIVE" | "AT_RISK" | "COMPLETED" | "INACTIVE";
   activePackage: string | null;
   updatedAt: string | Date;
+  userId?: string | null;
   tags: { tag: { id: string; key: string; label: string; color: string } }[];
   _count: { lessons: number };
 };
@@ -66,6 +69,8 @@ export function StudentsTable({
   data,
   tags = [],
   filterOptions,
+  savedViews = [],
+  currentUserId,
 }: {
   data: StudentRow[];
   tags?: { id: string; label: string }[];
@@ -74,7 +79,13 @@ export function StudentsTable({
     examTypes: string[];
     cities: string[];
   };
+  savedViews?: SavedViewItem[];
+  currentUserId?: string;
 }) {
+  const presenceUserIds = React.useMemo(
+    () => data.map((r) => r.userId).filter((id): id is string => !!id),
+    [data]
+  );
   const [selected, setSelected] = React.useState<Record<string, boolean>>({});
   const selectedIds = React.useMemo(
     () => Object.keys(selected).filter((k) => selected[k]),
@@ -116,12 +127,15 @@ export function StudentsTable({
         accessorKey: "fullName",
         header: "Ad Soyad",
         cell: ({ row }) => (
-          <Link
-            href={`/v2/admin/ogrenciler/${row.original.id}`}
-            className="font-medium text-od-ink hover:text-od-accent transition-colors"
-          >
-            {row.original.fullName}
-          </Link>
+          <span className="inline-flex items-center gap-2">
+            <LivePresenceDot userId={row.original.userId ?? null} size="sm" />
+            <Link
+              href={`/v2/admin/ogrenciler/${row.original.id}`}
+              className="font-medium text-od-ink hover:text-od-accent transition-colors"
+            >
+              {row.original.fullName}
+            </Link>
+          </span>
         )
       },
       {
@@ -217,39 +231,48 @@ export function StudentsTable({
   );
 
   return (
-    <div className="space-y-od-3">
-      <StudentsBulkBar
-        selectedIds={selectedIds}
-        tags={tags}
-        onClear={() => setSelected({})}
-      />
-      <DataTable
-        columns={columns}
-        data={data}
-        searchPlaceholder="Ad, telefon, e-posta ara…"
-        pageSize={25}
-        toolbar={
-          <>
-            <StudentsFilters
-              classLevels={filterOptions?.classLevels ?? []}
-              examTypes={filterOptions?.examTypes ?? []}
-              cities={filterOptions?.cities ?? []}
-              tags={tags}
-            />
-            <ExportButton
-              endpoint="/api/v1/export/students"
-              printPath="/v2/yazdir/ogrenciler"
-            />
-            <Link href="/v2/admin/ogrenciler/yeni">
-              <Button variant="accent" size="sm">
-                <Plus className="h-3.5 w-3.5" />
-                Yeni Öğrenci
-              </Button>
-            </Link>
-          </>
-        }
-        emptyState="Henüz öğrenci kaydı yok."
-      />
-    </div>
+    <PresenceProvider userIds={presenceUserIds}>
+      <div className="space-y-od-3">
+        <StudentsBulkBar
+          selectedIds={selectedIds}
+          tags={tags}
+          onClear={() => setSelected({})}
+        />
+        <DataTable
+          columns={columns}
+          data={data}
+          searchPlaceholder="Ad, telefon, e-posta ara…"
+          pageSize={25}
+          toolbar={
+            <>
+              <StudentsFilters
+                classLevels={filterOptions?.classLevels ?? []}
+                examTypes={filterOptions?.examTypes ?? []}
+                cities={filterOptions?.cities ?? []}
+                tags={tags}
+              />
+              {currentUserId && (
+                <SavedViewsMenu
+                  scope="students"
+                  views={savedViews}
+                  currentUserId={currentUserId}
+                />
+              )}
+              <ExportButton
+                endpoint="/api/v1/export/students"
+                printPath="/v2/yazdir/ogrenciler"
+              />
+              <Link href="/v2/admin/ogrenciler/yeni">
+                <Button variant="accent" size="sm">
+                  <Plus className="h-3.5 w-3.5" />
+                  Yeni Öğrenci
+                </Button>
+              </Link>
+            </>
+          }
+          emptyState="Henüz öğrenci kaydı yok."
+        />
+      </div>
+    </PresenceProvider>
   );
 }

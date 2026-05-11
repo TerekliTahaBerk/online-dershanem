@@ -8,6 +8,7 @@ import { DataTable } from "@/components/od/data/data-table";
 import { Badge } from "@/components/od/ui/badge";
 import { Button } from "@/components/od/ui/button";
 import { ExportButton } from "@/components/od/data/export-button";
+import { SavedViewsMenu, type SavedViewItem } from "@/components/od/data/saved-views-menu";
 import {
   Popover,
   PopoverContent,
@@ -50,10 +51,14 @@ export function TeacherStudentsTable({
   data,
   classLevels,
   examTypes,
+  savedViews = [],
+  currentUserId,
 }: {
   data: TeacherStudentRow[];
   classLevels: string[];
   examTypes: string[];
+  savedViews?: SavedViewItem[];
+  currentUserId?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -197,6 +202,9 @@ export function TeacherStudentsTable({
               </div>
             </PopoverContent>
           </Popover>
+          {currentUserId && (
+            <SavedViewsMenu scope="teacher.students" views={savedViews} currentUserId={currentUserId} />
+          )}
           <ExportButton endpoint="/api/v1/export/teacher/my-students" />
         </>
       }

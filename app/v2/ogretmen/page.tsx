@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Fragment } from "react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import {
@@ -17,6 +18,9 @@ import { KpiCard } from "@/components/od/charts/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/od/ui/card";
 import { Badge } from "@/components/od/ui/badge";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import { loadDashboardLayout } from "@/lib/services/dashboard-layout/loader";
+import { TEACHER_WIDGETS } from "@/lib/services/dashboard-layout/types";
+import { WidgetManager } from "@/components/od/dashboard/widget-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -77,73 +81,95 @@ export default async function TeacherDashboardPage() {
       }),
     ]);
 
+  const layout = await loadDashboardLayout("TEACHER", session.user.id);
+  const visible = layout.items.filter((it) => it.visible);
+  const kpiOrder = visible.filter((it) => it.key.startsWith("kpi.")).map((it) => it.key);
+  const blockOrder = visible.filter((it) => !it.key.startsWith("kpi.")).map((it) => it.key);
+
+  const kpiWidgets: Record<string, React.ReactNode> = {
+    "kpi.todayLessons": <KpiCard tone="sky" label="Bugün Ders" value={todayCount} />,
+    "kpi.totalStudents": <KpiCard tone="yellow" label="Aktif Öğrenci" value={studentCount} />,
+    "kpi.openAssignments": <KpiCard tone="lavender" label="Açık Ödev" value={pendingAssignments} />,
+  };
+
+  const blockWidgets: Record<string, React.ReactNode> = {
+    "list.upcomingLessons": (
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-od-2">
+            <CalendarDays className="h-4 w-4 text-pastel-sky-ink" /> Bugünün Dersleri
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y divide-od-border p-0">
+          {todayLessons.length === 0 ? (
+            <p className="p-od-3 text-od-tiny text-od-mute">Bugün için ders planlanmamış.</p>
+          ) : (
+            todayLessons.map((l) => (
+              <Link
+                key={l.id}
+                href={`/v2/ogretmen/dersler/${l.id}`}
+                className="flex items-center justify-between p-od-3 hover:bg-od-subtle"
+              >
+                <div>
+                  <div className="font-medium text-od-body">{l.title ?? l.subject ?? "—"}</div>
+                  <div className="text-od-tiny text-od-mute">
+                    {l.student.fullName}
+                    {l.classroom && ` · ${l.classroom.name}`}
+                  </div>
+                </div>
+                <div className="flex items-center gap-od-2">
+                  <Badge tone={STATUS_TONE[l.status] ?? "neutral"} size="sm">{l.status}</Badge>
+                  <span className="text-od-tiny text-od-mute">
+                    {format(l.scheduledAt, "HH:mm", { locale: tr })}
+                  </span>
+                </div>
+              </Link>
+            ))
+          )}
+        </CardContent>
+      </Card>
+    ),
+    "list.pendingSubmissions": (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-od-2">
+            <ClipboardList className="h-4 w-4 text-pastel-blush-ink" /> Aktif Ödevler
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-od-2">
+          <div className="text-od-h2 font-bold text-pastel-blush-ink">{pendingAssignments}</div>
+          <p className="text-od-tiny text-od-mute">Yayında olan ödev sayısı.</p>
+          <Link
+            href="/v2/ogretmen/odevler"
+            className="inline-flex items-center gap-1 text-od-tiny text-pastel-sky-ink hover:underline"
+          >
+            Ödevleri yönet <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </CardContent>
+      </Card>
+    ),
+  };
+
   return (
     <div className="space-y-od-5">
       <PageHeader
         title={`Merhaba, ${teacher.fullName.split(" ")[0]} 👋`}
         description={teacher.subjects}
+        actions={
+          <WidgetManager
+            panel="TEACHER"
+            initialItems={layout.items}
+            catalog={TEACHER_WIDGETS}
+          />
+        }
       />
 
       <div className="grid gap-od-3 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard tone="sky" label="Bugün Ders" value={todayCount} />
-        <KpiCard tone="mint" label="Bu Hafta Ders" value={weekCount} />
-        <KpiCard tone="lavender" label="Sınıflarım" value={classroomCount} />
-        <KpiCard tone="yellow" label="Aktif Öğrenci" value={studentCount} />
+        {kpiOrder.map((key) => (kpiWidgets[key] ? <Fragment key={key}>{kpiWidgets[key]}</Fragment> : null))}
       </div>
 
       <div className="grid gap-od-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-od-2">
-              <CalendarDays className="h-4 w-4 text-pastel-sky-ink" /> Bugünün Dersleri
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-od-border p-0">
-            {todayLessons.length === 0 ? (
-              <p className="p-od-3 text-od-tiny text-od-mute">Bugün için ders planlanmamış.</p>
-            ) : (
-              todayLessons.map((l) => (
-                <Link
-                  key={l.id}
-                  href={`/v2/ogretmen/dersler/${l.id}`}
-                  className="flex items-center justify-between p-od-3 hover:bg-od-subtle"
-                >
-                  <div>
-                    <div className="font-medium text-od-body">{l.title ?? l.subject ?? "—"}</div>
-                    <div className="text-od-tiny text-od-mute">
-                      {l.student.fullName}
-                      {l.classroom && ` · ${l.classroom.name}`}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-od-2">
-                    <Badge tone={STATUS_TONE[l.status] ?? "neutral"} size="sm">{l.status}</Badge>
-                    <span className="text-od-tiny text-od-mute">
-                      {format(l.scheduledAt, "HH:mm", { locale: tr })}
-                    </span>
-                  </div>
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-od-2">
-              <ClipboardList className="h-4 w-4 text-pastel-peach-ink" /> Aktif Ödevler
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-od-2">
-            <div className="text-od-h2 font-bold text-pastel-peach-ink">{pendingAssignments}</div>
-            <p className="text-od-tiny text-od-mute">Yayında olan ödev sayısı.</p>
-            <Link
-              href="/v2/ogretmen/odevler"
-              className="inline-flex items-center gap-1 text-od-tiny text-pastel-sky-ink hover:underline"
-            >
-              Ödevleri yönet <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </CardContent>
-        </Card>
+        {blockOrder.map((key) => (blockWidgets[key] ? <Fragment key={key}>{blockWidgets[key]}</Fragment> : null))}
       </div>
 
       <div className="grid gap-od-3 md:grid-cols-3">

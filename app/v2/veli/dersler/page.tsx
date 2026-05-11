@@ -1,76 +1,119 @@
 import { redirect, notFound } from "next/navigation";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+import type { Prisma } from "@prisma/client";
 import { CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { getParentWithChildren } from "@/lib/parent-context";
+import { loadSavedViews } from "@/lib/services/saved-views/loader";
 import { PageHeader } from "@/components/od/page-header";
-import { Card, CardContent } from "@/components/od/ui/card";
-import { Badge } from "@/components/od/ui/badge";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import {
+  ParentLessonsTable,
+  type ParentLessonRow,
+} from "@/components/od/domain/parent/parent-lessons-table";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_TONE: Record<string, "sky" | "mint" | "blush" | "neutral"> = {
-  SCHEDULED: "sky",
-  COMPLETED: "mint",
-  CANCELLED: "blush",
-};
+type SP = Record<string, string | string[] | undefined>;
 
-export default async function ParentLessonsPage() {
+const STATUSES = new Set(["SCHEDULED", "COMPLETED", "CANCELLED"]);
+
+function asArray(v: string | string[] | undefined): string[] {
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+export default async function ParentLessonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}) {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/giris");
   const ctx = await getParentWithChildren(session.user.id);
   if (!ctx) return notFound();
 
+  const sp = await searchParams;
+  const status = asArray(sp.status).filter((s) => STATUSES.has(s)) as any[];
+  const childFilter = asArray(sp.childId).filter((id) => ctx.childIds.includes(id));
+  const fromStr = typeof sp.from === "string" ? sp.from : undefined;
+  const toStr = typeof sp.to === "string" ? sp.to : undefined;
+
+  const where: Prisma.LessonWhereInput = {
+    studentId: { in: childFilter.length ? childFilter : ctx.childIds },
+  };
+  if (status.length) where.status = { in: status };
+  if (fromStr || toStr) {
+    where.scheduledAt = {};
+    if (fromStr) where.scheduledAt.gte = new Date(fromStr);
+    if (toStr) {
+      const end = new Date(toStr);
+      end.setHours(23, 59, 59, 999);
+      where.scheduledAt.lte = end;
+    }
+  }
+
   const lessons = await prisma.lesson.findMany({
-    where: { studentId: { in: ctx.childIds } },
+    where,
     orderBy: { scheduledAt: "desc" },
-    take: 100,
+    take: 500,
     include: {
-      student: { select: { fullName: true } },
+      student: { select: { id: true, fullName: true } },
       teacher: { select: { fullName: true } },
     },
   });
 
+  const savedViews = await loadSavedViews("parent.lessons", session.user.id);
+
+  if (
+    lessons.length === 0 &&
+    status.length === 0 &&
+    childFilter.length === 0 &&
+    !fromStr &&
+    !toStr
+  ) {
+    return (
+      <div className="space-y-od-5">
+        <PageHeader title="Dersler" description="Henüz ders yok" />
+        <EmptyState
+          tone="sky"
+          icon={CalendarDays}
+          title="Henüz ders yok"
+          description="Çocuklarına atanan dersler burada listelenir."
+        />
+      </div>
+    );
+  }
+
+  const rows: ParentLessonRow[] = lessons.map((l) => ({
+    id: l.id,
+    scheduledAt: l.scheduledAt.toISOString(),
+    childId: l.student.id,
+    childName: l.student.fullName,
+    title: l.title,
+    subject: l.subject,
+    teacherName: l.teacher.fullName,
+    duration: l.duration,
+    status: l.status,
+  }));
+
+  const childOptions = ctx.parent.students.map((ps) => ({
+    id: ps.studentId,
+    name: ps.student.fullName,
+  }));
+
   return (
     <div className="space-y-od-5">
-      <PageHeader title="Dersler" description={`Son ${lessons.length} ders`} />
-      {lessons.length === 0 ? (
-        <EmptyState tone="sky" icon={CalendarDays} title="Henüz ders yok" />
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <table className="w-full text-od-small">
-              <thead className="border-b border-od-border bg-od-subtle text-left text-od-tiny uppercase text-od-mute">
-                <tr>
-                  <th className="px-od-4 py-od-2">Tarih</th>
-                  <th className="px-od-4 py-od-2">Çocuk</th>
-                  <th className="px-od-4 py-od-2">Ders</th>
-                  <th className="px-od-4 py-od-2">Öğretmen</th>
-                  <th className="px-od-4 py-od-2">Durum</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lessons.map((l) => (
-                  <tr key={l.id} className="border-b border-od-border/60 hover:bg-od-subtle">
-                    <td className="px-od-4 py-od-2 text-od-tiny text-od-mute">
-                      {format(l.scheduledAt, "dd MMM yyyy HH:mm", { locale: tr })}
-                    </td>
-                    <td className="px-od-4 py-od-2 font-medium text-od-ink">{l.student.fullName}</td>
-                    <td className="px-od-4 py-od-2">{l.title ?? l.subject ?? "—"}</td>
-                    <td className="px-od-4 py-od-2 text-od-mute">{l.teacher.fullName}</td>
-                    <td className="px-od-4 py-od-2">
-                      <Badge tone={STATUS_TONE[l.status] ?? "neutral"} size="sm">{l.status}</Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      )}
+      <PageHeader
+        title="Dersler"
+        description={rows.length + " ders · filtrele veya dışa aktar"}
+      />
+      <ParentLessonsTable
+        data={rows}
+        children={childOptions}
+        savedViews={savedViews}
+        currentUserId={session.user.id}
+      />
     </div>
   );
 }

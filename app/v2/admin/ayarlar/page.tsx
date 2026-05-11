@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Settings, ShieldCheck, ScrollText, User, Database } from "lucide-react";
+import { Settings, ShieldCheck, ScrollText, User, Database, Bell } from "lucide-react";
 import { PageHeader } from "@/components/od/page-header";
 import { Card, CardContent } from "@/components/od/ui/card";
 import { Badge } from "@/components/od/ui/badge";
@@ -36,6 +36,13 @@ export default async function SettingsPage() {
           title="Inbox & Bildirimler"
           description="Toplu duyuru gönderimi ve mesaj yönetimi"
           badge="İletişim"
+        />
+        <SettingsCard
+          href="/v2/bildirim-tercihleri"
+          icon={Bell}
+          title="Bildirim Tercihleri"
+          description="Tip bazında inbox/toast/e-posta kanallarını yönet"
+          badge="Kişisel"
         />
         <SettingsCard
           href="/api/v1/me/permissions"

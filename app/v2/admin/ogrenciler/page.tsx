@@ -2,9 +2,11 @@ import { Users, Plus } from "lucide-react";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getServerAuthSession } from "@/lib/auth";
 import { PageHeader } from "@/components/od/page-header";
 import { Button } from "@/components/od/ui/button";
 import { StudentsTable, type StudentRow } from "@/components/od/domain/students/students-table";
+import type { SavedViewItem } from "@/components/od/data/saved-views-menu";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +56,7 @@ async function loadStudents(where: Prisma.StudentWhereInput): Promise<StudentRow
       status: true,
       activePackage: true,
       updatedAt: true,
+      userId: true,
       tags: {
         select: {
           tag: { select: { id: true, key: true, label: true, color: true } },
@@ -78,8 +81,10 @@ export default async function AdminStudentsPage({
 }) {
   const sp = await searchParams;
   const where = buildWhere(sp);
+  const session = await getServerAuthSession();
+  const currentUserId = session?.user?.id;
 
-  const [students, tags, classLevels, examTypes, cities] = await Promise.all([
+  const [students, tags, classLevels, examTypes, cities, savedViewsRaw] = await Promise.all([
     loadStudents(where),
     prisma.tag.findMany({
       where: { scope: "STUDENT" },
@@ -104,7 +109,33 @@ export default async function AdminStudentsPage({
       select: { city: true },
       orderBy: { city: "asc" },
     }),
+    currentUserId
+      ? prisma.savedView.findMany({
+          where: {
+            scope: "students",
+            OR: [{ ownerId: currentUserId }, { isShared: true }],
+          },
+          orderBy: [{ isShared: "asc" }, { name: "asc" }],
+          select: {
+            id: true,
+            name: true,
+            scope: true,
+            filter: true,
+            isShared: true,
+            ownerId: true,
+          },
+        })
+      : Promise.resolve([]),
   ]);
+
+  const savedViews: SavedViewItem[] = savedViewsRaw.map((v) => ({
+    id: v.id,
+    name: v.name,
+    scope: v.scope,
+    isShared: v.isShared,
+    ownerId: v.ownerId,
+    filter: (v.filter as Record<string, string | string[]>) ?? {},
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -132,6 +163,8 @@ export default async function AdminStudentsPage({
           examTypes: examTypes.map((c) => c.examType!).filter(Boolean),
           cities: cities.map((c) => c.city!).filter(Boolean),
         }}
+        savedViews={savedViews}
+        currentUserId={currentUserId}
       />
     </div>
   );

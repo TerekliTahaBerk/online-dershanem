@@ -1,40 +1,103 @@
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
-import { CalendarDays, Video, Plus } from "lucide-react";
+import type { Prisma } from "@prisma/client";
+import { CalendarDays, Plus } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/od/page-header";
-import { Card, CardContent } from "@/components/od/ui/card";
-import { Badge } from "@/components/od/ui/badge";
 import { Button } from "@/components/od/ui/button";
 import { EmptyState } from "@/components/od/feedback/empty-state";
 import { requirePagePermission } from "@/lib/rbac/define-action";
+import { getServerAuthSession } from "@/lib/auth";
+import { loadSavedViews } from "@/lib/services/saved-views/loader";
+import {
+  AdminLessonsTable,
+  type AdminLessonRow,
+} from "@/components/od/domain/admin/admin-lessons-table";
 
-const STATUS_TONE: Record<string, "sky" | "mint" | "blush" | "yellow" | "neutral"> = {
-  SCHEDULED: "sky",
-  COMPLETED: "mint",
-  CANCELLED: "blush",
-  NO_SHOW: "blush",
-  RESCHEDULED: "yellow",
-};
+export const dynamic = "force-dynamic";
 
-export default async function LessonsPage() {
+type SP = Record<string, string | string[] | undefined>;
+
+const STATUSES = new Set(["SCHEDULED", "COMPLETED", "CANCELLED"]);
+
+function asArray(v: string | string[] | undefined): string[] {
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+export default async function LessonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}) {
   await requirePagePermission("lessons.read");
+  const sp = await searchParams;
+  const session = await getServerAuthSession();
+  const currentUserId = session?.user?.id;
+
+  const status = asArray(sp.status).filter((s) => STATUSES.has(s)) as any[];
+  const fromStr = typeof sp.from === "string" ? sp.from : undefined;
+  const toStr = typeof sp.to === "string" ? sp.to : undefined;
+
+  const where: Prisma.LessonWhereInput = {};
+  if (status.length) where.status = { in: status };
+  if (fromStr || toStr) {
+    where.scheduledAt = {};
+    if (fromStr) where.scheduledAt.gte = new Date(fromStr);
+    if (toStr) {
+      const end = new Date(toStr);
+      end.setHours(23, 59, 59, 999);
+      where.scheduledAt.lte = end;
+    }
+  }
 
   const lessons = await prisma.lesson.findMany({
+    where,
     orderBy: { scheduledAt: "desc" },
-    take: 100,
+    take: 500,
     include: {
       student: { select: { id: true, fullName: true } },
       teacher: { select: { id: true, fullName: true } },
     },
   });
 
+  const savedViews = await loadSavedViews("lessons", currentUserId);
+
+  if (lessons.length === 0 && status.length === 0 && !fromStr && !toStr) {
+    return (
+      <div className="space-y-od-5">
+        <PageHeader
+          title="Dersler"
+          description="Henüz ders kaydı yok"
+          actions={
+            <Link href="/v2/admin/dersler/yeni">
+              <Button variant="primary" size="sm">
+                <Plus className="mr-1 h-4 w-4" /> Yeni Ders
+              </Button>
+            </Link>
+          }
+        />
+        <EmptyState tone="sky" icon={CalendarDays} title="Henüz ders yok" />
+      </div>
+    );
+  }
+
+  const rows: AdminLessonRow[] = lessons.map((l) => ({
+    id: l.id,
+    scheduledAt: l.scheduledAt.toISOString(),
+    studentName: l.student?.fullName ?? "—",
+    teacherName: l.teacher?.fullName ?? "—",
+    title: l.title,
+    subject: l.subject,
+    duration: l.duration,
+    status: l.status,
+    googleMeetLink: l.googleMeetLink,
+  }));
+
   return (
     <div className="space-y-od-5">
       <PageHeader
         title="Dersler"
-        description={`Son ${lessons.length} ders`}
+        description={rows.length + " ders · seç, filtrele veya dışa aktar"}
         actions={
           <Link href="/v2/admin/dersler/yeni">
             <Button variant="primary" size="sm">
@@ -43,64 +106,7 @@ export default async function LessonsPage() {
           </Link>
         }
       />
-      {lessons.length === 0 ? (
-        <EmptyState tone="sky" icon={CalendarDays} title="Henüz ders yok" />
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <table className="w-full text-od-small">
-              <thead className="border-b border-od-border bg-od-subtle text-left text-od-tiny uppercase text-od-mute">
-                <tr>
-                  <th className="px-od-4 py-od-2">Tarih</th>
-                  <th className="px-od-4 py-od-2">Öğrenci</th>
-                  <th className="px-od-4 py-od-2">Öğretmen</th>
-                  <th className="px-od-4 py-od-2">Konu</th>
-                  <th className="px-od-4 py-od-2">Süre</th>
-                  <th className="px-od-4 py-od-2">Durum</th>
-                  <th className="px-od-4 py-od-2">Meet</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lessons.map((l) => (
-                  <tr key={l.id} className="border-b border-od-border/60 hover:bg-od-subtle">
-                    <td className="px-od-4 py-od-2">
-                      <div className="font-medium text-od-ink">
-                        {format(new Date(l.scheduledAt), "dd MMM yyyy", { locale: tr })}
-                      </div>
-                      <div className="text-od-tiny text-od-mute">
-                        {format(new Date(l.scheduledAt), "HH:mm", { locale: tr })}
-                      </div>
-                    </td>
-                    <td className="px-od-4 py-od-2 text-od-ink-2">{l.student?.fullName ?? "—"}</td>
-                    <td className="px-od-4 py-od-2 text-od-ink-2">{l.teacher?.fullName ?? "—"}</td>
-                    <td className="px-od-4 py-od-2 text-od-mute">
-                      {l.title ?? l.subject ?? "—"}
-                    </td>
-                    <td className="px-od-4 py-od-2 text-od-mute">{l.duration} dk</td>
-                    <td className="px-od-4 py-od-2">
-                      <Badge tone={STATUS_TONE[l.status] ?? "neutral"}>{l.status}</Badge>
-                    </td>
-                    <td className="px-od-4 py-od-2">
-                      {l.googleMeetLink ? (
-                        <a
-                          href={l.googleMeetLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-od-accent hover:underline"
-                        >
-                          <Video className="h-3.5 w-3.5" /> Aç
-                        </a>
-                      ) : (
-                        <span className="text-od-mute">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      )}
+      <AdminLessonsTable data={rows} savedViews={savedViews} currentUserId={currentUserId} />
     </div>
   );
 }

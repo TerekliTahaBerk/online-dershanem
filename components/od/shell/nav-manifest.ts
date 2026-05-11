@@ -22,6 +22,7 @@ import {
   Settings,
   ShieldCheck,
   ScrollText,
+  Activity,
   BookOpen,
   CheckSquare,
   CalendarCheck,
@@ -85,6 +86,7 @@ export const navManifests: Record<PanelKey, NavGroup[]> = {
       items: [
         { href: "/v2/admin/izinler",        label: "İzinler",     icon: ShieldCheck,     permission: "permissions.read" },
         { href: "/v2/admin/audit",          label: "Audit Log",   icon: ScrollText,      permission: "audit.read" },
+        { href: "/v2/admin/rate-limit",     label: "Rate Limit",  icon: Activity,        permission: "settings.read" },
         { href: "/v2/admin/ayarlar",        label: "Ayarlar",     icon: Settings,        permission: "settings.read" }
       ]
     }
@@ -112,7 +114,8 @@ export const navManifests: Record<PanelKey, NavGroup[]> = {
     {
       label: "Hesabım",
       items: [
-        { href: "/v2/ogretmen/profil",      label: "Profil & Maaş", icon: UserCircle,    permission: "accounting.payroll.read.own" }
+        { href: "/v2/ogretmen/profil",      label: "Profil & Maaş", icon: UserCircle,    permission: "accounting.payroll.read.own" },
+        { href: "/v2/ogretmen/ayarlar",     label: "Ayarlar",       icon: Settings,      permission: "notifications.read.own" }
       ]
     }
   ],
@@ -139,7 +142,8 @@ export const navManifests: Record<PanelKey, NavGroup[]> = {
     {
       label: "Hesabım",
       items: [
-        { href: "/v2/panel/profil",         label: "Profil",       icon: UserCircle,     permission: "students.read.own" }
+        { href: "/v2/panel/profil",         label: "Profil",       icon: UserCircle,     permission: "students.read.own" },
+        { href: "/v2/panel/ayarlar",        label: "Ayarlar",      icon: Settings,       permission: "notifications.read.own" }
       ]
     }
   ],
@@ -170,7 +174,8 @@ export const navManifests: Record<PanelKey, NavGroup[]> = {
     {
       label: "Hesabım",
       items: [
-        { href: "/v2/veli/profil",          label: "Profil",       icon: UserCircle,     permission: "parents.read.own" }
+        { href: "/v2/veli/profil",          label: "Profil",       icon: UserCircle,     permission: "parents.read.own" },
+        { href: "/v2/veli/ayarlar",         label: "Ayarlar",      icon: Settings,       permission: "notifications.read.own" }
       ]
     }
   ]

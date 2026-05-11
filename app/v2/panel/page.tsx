@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Fragment } from "react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
 import {
@@ -18,6 +19,9 @@ import { KpiCard } from "@/components/od/charts/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/od/ui/card";
 import { Badge } from "@/components/od/ui/badge";
 import { EmptyState } from "@/components/od/feedback/empty-state";
+import { loadDashboardLayout } from "@/lib/services/dashboard-layout/loader";
+import { STUDENT_WIDGETS } from "@/lib/services/dashboard-layout/types";
+import { WidgetManager } from "@/components/od/dashboard/widget-manager";
 
 export const dynamic = "force-dynamic";
 
@@ -73,85 +77,57 @@ export default async function StudentDashboardPage() {
     }),
   ]);
 
-  return (
-    <div className="space-y-od-5">
-      <PageHeader
-        title={`Hoş geldin, ${student.fullName.split(" ")[0]} 👋`}
-        description={[student.classLevel, student.examType].filter(Boolean).join(" · ") || "Öğrenci paneli"}
-      />
+  const layout = await loadDashboardLayout("STUDENT", session.user.id);
+  const visible = layout.items.filter((it) => it.visible);
+  const kpiOrder = visible.filter((it) => it.key.startsWith("kpi.")).map((it) => it.key);
+  const blockOrder = visible.filter((it) => !it.key.startsWith("kpi.")).map((it) => it.key);
 
-      <div className="grid gap-od-3 md:grid-cols-2 lg:grid-cols-4">
-        <KpiCard tone="sky" label="Bu Hafta Ders" value={weekLessonCount} />
-        <KpiCard tone="yellow" label="Bekleyen Ödev" value={openAssignments.length} />
-        <KpiCard tone="mint" label="Tamamlanan" value={pendingSubs} />
-        <KpiCard
-          tone="lavender"
-          label="Son Deneme Net"
-          value={lastExam?.net ? Number(lastExam.net).toFixed(2) : "—"}
-        />
-      </div>
+  const kpiWidgets: Record<string, React.ReactNode> = {
+    "kpi.todayLessons": <KpiCard tone="sky" label="Bu Hafta Ders" value={weekLessonCount} />,
+    "kpi.openAssignments": <KpiCard tone="yellow" label="Bekleyen Ödev" value={openAssignments.length} />,
+  };
 
-      <div className="grid gap-od-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-od-2">
-              <CalendarDays className="h-4 w-4 text-pastel-sky-ink" /> Yaklaşan Dersler
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="divide-y divide-od-border p-0">
-            {upcomingLessons.length === 0 ? (
-              <p className="p-od-3 text-od-tiny text-od-mute">Bu hafta planlı ders yok.</p>
-            ) : (
-              upcomingLessons.map((l) => (
-                <div key={l.id} className="flex items-center justify-between p-od-3">
-                  <div>
-                    <div className="font-medium text-od-body">{l.title ?? l.subject ?? "—"}</div>
-                    <div className="text-od-tiny text-od-mute">
-                      {l.teacher.fullName} · {format(l.scheduledAt, "dd MMM HH:mm", { locale: tr })}
-                    </div>
+  const blockWidgets: Record<string, React.ReactNode> = {
+    "list.upcomingLessons": (
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-od-2">
+            <CalendarDays className="h-4 w-4 text-pastel-sky-ink" /> Yaklaşan Dersler
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y divide-od-border p-0">
+          {upcomingLessons.length === 0 ? (
+            <p className="p-od-3 text-od-tiny text-od-mute">Bu hafta planlı ders yok.</p>
+          ) : (
+            upcomingLessons.map((l) => (
+              <div key={l.id} className="flex items-center justify-between p-od-3">
+                <div>
+                  <div className="font-medium text-od-body">{l.title ?? l.subject ?? "—"}</div>
+                  <div className="text-od-tiny text-od-mute">
+                    {l.teacher.fullName} · {format(l.scheduledAt, "dd MMM HH:mm", { locale: tr })}
                   </div>
-                  {l.googleMeetLink && (
-                    <a
-                      href={l.googleMeetLink}
-                      target="_blank"
-                      rel="noopener"
-                      className="inline-flex items-center gap-1 text-od-tiny text-pastel-sky-ink hover:underline"
-                    >
-                      <Video className="h-3.5 w-3.5" /> Katıl
-                    </a>
-                  )}
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-od-2">
-              <Target className="h-4 w-4 text-pastel-lavender-ink" /> Hedefim
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-od-2">
-            <p className="text-od-body font-medium">{student.targetGoal ?? "Henüz belirlenmemiş"}</p>
-            {lastExam && (
-              <div className="rounded-od border border-od-border bg-od-subtle p-od-2 text-od-tiny">
-                <div className="flex items-center gap-1 text-od-mute">
-                  <TrendingUp className="h-3.5 w-3.5" /> Son sonuç: {lastExam.title}
-                </div>
-                <div className="mt-1 font-medium text-od-ink">
-                  Net: {Number(lastExam.net ?? 0).toFixed(2)} · D:{lastExam.correctCount} Y:{lastExam.wrongCount}
-                </div>
+                {l.googleMeetLink && (
+                  <a
+                    href={l.googleMeetLink}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center gap-1 text-od-tiny text-pastel-sky-ink hover:underline"
+                  >
+                    <Video className="h-3.5 w-3.5" /> Katıl
+                  </a>
+                )}
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
+            ))
+          )}
+        </CardContent>
+      </Card>
+    ),
+    "list.pendingAssignments": (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-od-2">
-            <ClipboardList className="h-4 w-4 text-pastel-peach-ink" /> Bekleyen Ödevler
+            <ClipboardList className="h-4 w-4 text-pastel-blush-ink" /> Bekleyen Ödevler
           </CardTitle>
         </CardHeader>
         <CardContent className="divide-y divide-od-border p-0">
@@ -181,6 +157,57 @@ export default async function StudentDashboardPage() {
           )}
         </CardContent>
       </Card>
+    ),
+  };
+
+  return (
+    <div className="space-y-od-5">
+      <PageHeader
+        title={`Hoş geldin, ${student.fullName.split(" ")[0]} 👋`}
+        description={[student.classLevel, student.examType].filter(Boolean).join(" · ") || "Öğrenci paneli"}
+        actions={
+          <WidgetManager
+            panel="STUDENT"
+            initialItems={layout.items}
+            catalog={STUDENT_WIDGETS}
+          />
+        }
+      />
+
+      <div className="grid gap-od-3 md:grid-cols-2 lg:grid-cols-4">
+        {kpiOrder.map((key) => (kpiWidgets[key] ? <Fragment key={key}>{kpiWidgets[key]}</Fragment> : null))}
+        <KpiCard tone="mint" label="Bekleyen Teslim" value={pendingSubs} />
+        <KpiCard
+          tone="lavender"
+          label="Son Deneme Net"
+          value={lastExam?.net ? Number(lastExam.net).toFixed(2) : "—"}
+        />
+      </div>
+
+      <div className="grid gap-od-4 lg:grid-cols-3">
+        {blockOrder.map((key) => (blockWidgets[key] ? <Fragment key={key}>{blockWidgets[key]}</Fragment> : null))}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-od-2">
+              <Target className="h-4 w-4 text-pastel-lavender-ink" /> Hedefim
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-od-2">
+            <p className="text-od-body font-medium">{student.targetGoal ?? "Henüz belirlenmemiş"}</p>
+            {lastExam && (
+              <div className="rounded-od border border-od-border bg-od-subtle p-od-2 text-od-tiny">
+                <div className="flex items-center gap-1 text-od-mute">
+                  <TrendingUp className="h-3.5 w-3.5" /> Son sonuç: {lastExam.title}
+                </div>
+                <div className="mt-1 font-medium text-od-ink">
+                  Net: {Number(lastExam.net ?? 0).toFixed(2)} · D:{lastExam.correctCount} Y:{lastExam.wrongCount}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
