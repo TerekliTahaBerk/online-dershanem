@@ -12,7 +12,7 @@ import {
 export const createClassroomAction = defineAction({
   input: classroomCreateSchema,
   permission: "classrooms.write",
-  audit: { entityType: "Classroom", action: "create", entityId: ({ output }) => (output as any)?.id ?? "—" },
+  audit: { entityType: "Classroom", action: "create", entityId: async ({ output }) => (output as any)?.id ?? "—" },
   async handler({ input }) {
     const c = await prisma.classroom.create({
       data: {
@@ -33,7 +33,7 @@ export const createClassroomAction = defineAction({
 export const updateClassroomAction = defineAction({
   input: classroomUpdateSchema,
   permission: "classrooms.write",
-  audit: { entityType: "Classroom", action: "update", entityId: ({ input }) => input.id },
+  audit: { entityType: "Classroom", action: "update", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     const { id, ...rest } = input;
     const c = await prisma.classroom.update({
@@ -56,7 +56,7 @@ export const updateClassroomAction = defineAction({
 export const deleteClassroomAction = defineAction({
   input: classroomDeleteSchema,
   permission: "classrooms.delete",
-  audit: { entityType: "Classroom", action: "delete", entityId: ({ input }) => input.id },
+  audit: { entityType: "Classroom", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     await prisma.classroom.delete({ where: { id: input.id } });
     revalidatePath("/v2/admin/siniflar");

@@ -35,9 +35,9 @@ type DefineActionOptions<TInput extends z.ZodTypeAny, TOutput> = {
   audit?: {
     entityType: string;
     action: string;
-    /** Resolve entity id from input/output. */
-    entityId?: (args: { input: z.infer<TInput>; output: TOutput }) => string;
-    summary?: (args: { input: z.infer<TInput>; output: TOutput }) => string;
+    /** Resolve entity id from input/output. May be sync or async. */
+    entityId?: (args: { input: z.infer<TInput>; output: TOutput }) => string | Promise<string>;
+    summary?: (args: { input: z.infer<TInput>; output: TOutput }) => string | Promise<string>;
   };
   /** Handler — receives validated input + auth context. */
   handler: (args: { input: z.infer<TInput>; ctx: ActionContext }) => Promise<TOutput>;
@@ -112,12 +112,14 @@ export function defineAction<TInput extends z.ZodTypeAny, TOutput>(
     // 5. Audit log (best-effort, non-blocking failure)
     if (opts.audit) {
       try {
+        const entityId = (await opts.audit.entityId?.({ input: parsed.data, output })) ?? "—";
+        const summary = await opts.audit.summary?.({ input: parsed.data, output });
         await auditLog({
           actorUserId: ctx.user.id,
           entityType: opts.audit.entityType,
-          entityId: opts.audit.entityId?.({ input: parsed.data, output }) ?? "—",
+          entityId,
           action: opts.audit.action,
-          summary: opts.audit.summary?.({ input: parsed.data, output })
+          summary
         });
       } catch (err) {
         console.error("[defineAction] audit write failed", err);

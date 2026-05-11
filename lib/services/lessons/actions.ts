@@ -13,7 +13,7 @@ import {
 export const createLessonAction = defineAction({
   input: lessonCreateSchema,
   permission: "lessons.write",
-  audit: { entityType: "Lesson", action: "create", entityId: ({ output }) => (output as any)?.id ?? "—" },
+  audit: { entityType: "Lesson", action: "create", entityId: async ({ output }) => (output as any)?.id ?? "—" },
   async handler({ input }) {
     const l = await prisma.lesson.create({
       data: {
@@ -75,7 +75,7 @@ export const createLessonAction = defineAction({
 export const updateLessonAction = defineAction({
   input: lessonUpdateSchema,
   permission: "lessons.write",
-  audit: { entityType: "Lesson", action: "update", entityId: ({ input }) => input.id },
+  audit: { entityType: "Lesson", action: "update", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     const { id, ...rest } = input;
     const l = await prisma.lesson.update({
@@ -103,7 +103,7 @@ export const updateLessonAction = defineAction({
 export const deleteLessonAction = defineAction({
   input: lessonDeleteSchema,
   permission: "lessons.delete",
-  audit: { entityType: "Lesson", action: "delete", entityId: ({ input }) => input.id },
+  audit: { entityType: "Lesson", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     await prisma.lesson.delete({ where: { id: input.id } });
     revalidatePath("/v2/admin/dersler");

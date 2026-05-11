@@ -21,7 +21,7 @@ function normalizePhoneKey(phone?: string | null): string | null {
 export const createParentAction = defineAction({
   input: parentCreateSchema,
   permission: "parents.write",
-  audit: { entityType: "Parent", action: "create", entityId: ({ output }) => (output as any)?.id ?? "—" },
+  audit: { entityType: "Parent", action: "create", entityId: async ({ output }) => (output as any)?.id ?? "—" },
   async handler({ input }) {
     const p = await prisma.parent.create({
       data: {
@@ -41,7 +41,7 @@ export const createParentAction = defineAction({
 export const updateParentAction = defineAction({
   input: parentUpdateSchema,
   permission: "parents.write",
-  audit: { entityType: "Parent", action: "update", entityId: ({ input }) => input.id },
+  audit: { entityType: "Parent", action: "update", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     const { id, ...rest } = input;
     const p = await prisma.parent.update({
@@ -66,7 +66,7 @@ export const updateParentAction = defineAction({
 export const deleteParentAction = defineAction({
   input: parentDeleteSchema,
   permission: "parents.delete",
-  audit: { entityType: "Parent", action: "delete", entityId: ({ input }) => input.id },
+  audit: { entityType: "Parent", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     await prisma.parent.delete({ where: { id: input.id } });
     revalidatePath("/v2/admin/veliler");
@@ -77,11 +77,7 @@ export const deleteParentAction = defineAction({
 export const linkParentStudentAction = defineAction({
   input: parentLinkStudentSchema,
   permission: "parents.write",
-  audit: {
-    entityType: "ParentStudent",
-    action: "create",
-    entityId: ({ input }) => `${input.parentId}:${input.studentId}`,
-  },
+  audit: { entityType: "ParentStudent", action: "create", entityId: async ({ input }) => `${input.parentId}:${input.studentId}` },
   async handler({ input }) {
     await prisma.parentStudent.upsert({
       where: { parentId_studentId: { parentId: input.parentId, studentId: input.studentId } },
@@ -104,11 +100,7 @@ export const linkParentStudentAction = defineAction({
 export const unlinkParentStudentAction = defineAction({
   input: parentUnlinkStudentSchema,
   permission: "parents.write",
-  audit: {
-    entityType: "ParentStudent",
-    action: "delete",
-    entityId: ({ input }) => `${input.parentId}:${input.studentId}`,
-  },
+  audit: { entityType: "ParentStudent", action: "delete", entityId: async ({ input }) => `${input.parentId}:${input.studentId}` },
   async handler({ input }) {
     await prisma.parentStudent.delete({
       where: { parentId_studentId: { parentId: input.parentId, studentId: input.studentId } },

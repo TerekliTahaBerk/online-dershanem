@@ -27,11 +27,7 @@ const recordSchema = z.object({
 export const recordLessonAttendanceAction = defineAction({
   input: recordSchema,
   permission: "lessons.attendance.write",
-  audit: {
-    entityType: "Attendance",
-    action: "record",
-    entityId: ({ input }) => input.lessonId,
-  },
+  audit: { entityType: "Attendance", action: "record", entityId: async ({ input }) => input.lessonId },
   async handler({ input, ctx }) {
     const lesson = await prisma.lesson.findUnique({
       where: { id: input.lessonId },

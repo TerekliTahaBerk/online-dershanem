@@ -12,7 +12,7 @@ import {
 export const createPackageAction = defineAction({
   input: packageCreateSchema,
   permission: "packages.write",
-  audit: { entityType: "Package", action: "create", entityId: ({ output }) => (output as any)?.id ?? "—" },
+  audit: { entityType: "Package", action: "create", entityId: async ({ output }) => (output as any)?.id ?? "—" },
   async handler({ input }) {
     const p = await prisma.package.create({
       data: {
@@ -35,7 +35,7 @@ export const createPackageAction = defineAction({
 export const updatePackageAction = defineAction({
   input: packageUpdateSchema,
   permission: "packages.write",
-  audit: { entityType: "Package", action: "update", entityId: ({ input }) => input.id },
+  audit: { entityType: "Package", action: "update", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     const { id, ...rest } = input;
     const p = await prisma.package.update({
@@ -60,7 +60,7 @@ export const updatePackageAction = defineAction({
 export const deletePackageAction = defineAction({
   input: packageDeleteSchema,
   permission: "packages.delete",
-  audit: { entityType: "Package", action: "delete", entityId: ({ input }) => input.id },
+  audit: { entityType: "Package", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     await prisma.package.delete({ where: { id: input.id } });
     revalidatePath("/v2/admin/paketler");

@@ -181,3 +181,13 @@ export const defaultRolePermissions: Record<"ADMIN" | "TEACHER" | "STUDENT" | "P
     "statistics.dashboard.read.own"
   ]
 };
+
+/**
+ * Synchronous, client-safe variant — sadece role default'larını döndürür.
+ * Server side'da `resolveUserPermissions` (DB merge) kullanılır.
+ */
+export function defaultPermissionsFor(
+  role: "ADMIN" | "TEACHER" | "STUDENT" | "PARENT"
+): Set<PermissionKey> {
+  return new Set(defaultRolePermissions[role]);
+}

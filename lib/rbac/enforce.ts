@@ -51,10 +51,11 @@ export async function resolveUserPermissions(
 /**
  * Synchronous variant for client side — uses defaults only.
  * Server side always uses `resolveUserPermissions` for full enforcement.
+ *
+ * @deprecated Client tarafından `import { defaultPermissionsFor } from "@/lib/rbac/matrix"`
+ * kullanın. Bu re-export geriye dönük uyumluluk için duruyor.
  */
-export function defaultPermissionsFor(role: "ADMIN" | "TEACHER" | "STUDENT" | "PARENT"): Set<PermissionKey> {
-  return new Set(defaultRolePermissions[role]);
-}
+export { defaultPermissionsFor } from "./matrix";
 
 export class ForbiddenError extends Error {
   constructor(public permission: string) {

@@ -22,11 +22,7 @@ const prefsSchema = z.record(
 export const saveNotificationPrefsAction = defineAction({
   input: z.object({ prefs: prefsSchema }),
   permission: "notifications.read.own",
-  audit: {
-    entityType: "NotificationPrefs",
-    action: "update",
-    entityId: () => NOTIFICATION_PREFS_NAME,
-  },
+  audit: { entityType: "NotificationPrefs", action: "update", entityId: async () => NOTIFICATION_PREFS_NAME },
   async handler({ input, ctx }) {
     const data = { prefs: input.prefs as NotificationPrefs };
     // SavedView reuse — composite scope+name+ownerId, idempotent upsert
@@ -62,11 +58,7 @@ export const saveNotificationPrefsAction = defineAction({
 export const resetNotificationPrefsAction = defineAction({
   input: z.object({}),
   permission: "notifications.read.own",
-  audit: {
-    entityType: "NotificationPrefs",
-    action: "delete",
-    entityId: () => NOTIFICATION_PREFS_NAME,
-  },
+  audit: { entityType: "NotificationPrefs", action: "delete", entityId: async () => NOTIFICATION_PREFS_NAME },
   async handler({ ctx }) {
     await prisma.savedView.deleteMany({
       where: {

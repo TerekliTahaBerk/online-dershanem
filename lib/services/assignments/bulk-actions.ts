@@ -13,11 +13,7 @@ const bulkStatusSchema = z.object({
 export const bulkUpdateAssignmentStatusAction = defineAction({
   input: bulkStatusSchema,
   permission: "assignments.write",
-  audit: {
-    entityType: "Assignment",
-    action: "bulk_status",
-    entityId: ({ input }) => `${input.assignmentIds.length}_to_${input.status}`,
-  },
+  audit: { entityType: "Assignment", action: "bulk_status", entityId: async ({ input }) => `${input.assignmentIds.length}_to_${input.status}` },
   async handler({ input }) {
     const r = await prisma.assignment.updateMany({
       where: { id: { in: input.assignmentIds } },
@@ -35,11 +31,7 @@ const bulkDeleteSchema = z.object({
 export const bulkDeleteAssignmentsAction = defineAction({
   input: bulkDeleteSchema,
   permission: "assignments.write",
-  audit: {
-    entityType: "Assignment",
-    action: "bulk_delete",
-    entityId: ({ input }) => `count_${input.assignmentIds.length}`,
-  },
+  audit: { entityType: "Assignment", action: "bulk_delete", entityId: async ({ input }) => `count_${input.assignmentIds.length}` },
   async handler({ input }) {
     const r = await prisma.assignment.deleteMany({
       where: { id: { in: input.assignmentIds } },

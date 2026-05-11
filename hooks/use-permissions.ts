@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useSession } from "next-auth/react";
-import { defaultPermissionsFor } from "@/lib/rbac/enforce";
+import { defaultPermissionsFor } from "@/lib/rbac/matrix";
 import type { PermissionKey } from "@/lib/rbac/matrix";
 
 /**

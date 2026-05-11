@@ -16,11 +16,7 @@ import {
 export const createStudentAction = defineAction({
   input: studentCreateSchema,
   permission: "students.write",
-  audit: {
-    entityType: "Student",
-    action: "create",
-    entityId: ({ output }) => (output as any)?.id ?? "—",
-  },
+  audit: { entityType: "Student", action: "create", entityId: async ({ output }) => (output as any)?.id ?? "—" },
   async handler({ input, ctx }) {
     const out = await svcCreate(input, ctx);
     revalidatePath("/v2/admin/ogrenciler");
@@ -31,11 +27,7 @@ export const createStudentAction = defineAction({
 export const updateStudentAction = defineAction({
   input: studentUpdateSchema,
   permission: "students.write",
-  audit: {
-    entityType: "Student",
-    action: "update",
-    entityId: ({ input }) => input.id,
-  },
+  audit: { entityType: "Student", action: "update", entityId: async ({ input }) => input.id },
   async handler({ input, ctx }) {
     const out = await svcUpdate(input, ctx);
     revalidatePath("/v2/admin/ogrenciler");
@@ -47,11 +39,7 @@ export const updateStudentAction = defineAction({
 export const deleteStudentAction = defineAction({
   input: studentDeleteSchema,
   permission: "students.delete",
-  audit: {
-    entityType: "Student",
-    action: "delete",
-    entityId: ({ input }) => input.id,
-  },
+  audit: { entityType: "Student", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input, ctx }) {
     const out = await svcDelete(input.id, ctx);
     revalidatePath("/v2/admin/ogrenciler");

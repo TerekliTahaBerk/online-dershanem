@@ -19,11 +19,7 @@ const submitSchema = z.object({
 export const submitAssignmentAction = defineAction({
   input: submitSchema,
   permission: "assignments.submit",
-  audit: {
-    entityType: "AssignmentSubmission",
-    action: "submit",
-    entityId: ({ input }) => input.assignmentId,
-  },
+  audit: { entityType: "AssignmentSubmission", action: "submit", entityId: async ({ input }) => input.assignmentId },
   async handler({ input, ctx }) {
     const student = await prisma.student.findUnique({
       where: { userId: ctx.user.id },
@@ -94,11 +90,7 @@ const gradeSchema = z.object({
 export const gradeSubmissionAction = defineAction({
   input: gradeSchema,
   permission: "assignments.grade",
-  audit: {
-    entityType: "AssignmentSubmission",
-    action: "grade",
-    entityId: ({ input }) => input.submissionId,
-  },
+  audit: { entityType: "AssignmentSubmission", action: "grade", entityId: async ({ input }) => input.submissionId },
   async handler({ input, ctx }) {
     if (ctx.user.role === "TEACHER") {
       const own = await prisma.assignmentSubmission.findFirst({

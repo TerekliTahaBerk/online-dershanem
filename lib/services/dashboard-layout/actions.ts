@@ -20,11 +20,7 @@ const saveSchema = z.object({
 export const saveDashboardLayoutAction = defineAction({
   input: saveSchema,
   permission: "notifications.read.own",
-  audit: {
-    entityType: "DashboardLayout",
-    action: "update",
-    entityId: ({ input }) => input.panel,
-  },
+  audit: { entityType: "DashboardLayout", action: "update", entityId: async ({ input }) => input.panel },
   async handler({ input, ctx }) {
     await prisma.dashboardLayout.upsert({
       where: { userId_panel: { userId: ctx.user.id, panel: input.panel } },
@@ -43,11 +39,7 @@ export const saveDashboardLayoutAction = defineAction({
 export const resetDashboardLayoutAction = defineAction({
   input: z.object({ panel: PanelEnum }),
   permission: "notifications.read.own",
-  audit: {
-    entityType: "DashboardLayout",
-    action: "delete",
-    entityId: ({ input }) => input.panel,
-  },
+  audit: { entityType: "DashboardLayout", action: "delete", entityId: async ({ input }) => input.panel },
   async handler({ input, ctx }) {
     await prisma.dashboardLayout.deleteMany({
       where: { userId: ctx.user.id, panel: input.panel },

@@ -12,7 +12,7 @@ import {
 export const createTeacherAction = defineAction({
   input: teacherCreateSchema,
   permission: "teachers.write",
-  audit: { entityType: "Teacher", action: "create", entityId: ({ output }) => (output as any)?.id ?? "—" },
+  audit: { entityType: "Teacher", action: "create", entityId: async ({ output }) => (output as any)?.id ?? "—" },
   async handler({ input }) {
     const t = await prisma.teacher.create({
       data: {
@@ -33,7 +33,7 @@ export const createTeacherAction = defineAction({
 export const updateTeacherAction = defineAction({
   input: teacherUpdateSchema,
   permission: "teachers.write",
-  audit: { entityType: "Teacher", action: "update", entityId: ({ input }) => input.id },
+  audit: { entityType: "Teacher", action: "update", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     const { id, ...rest } = input;
     const t = await prisma.teacher.update({
@@ -56,7 +56,7 @@ export const updateTeacherAction = defineAction({
 export const deleteTeacherAction = defineAction({
   input: teacherDeleteSchema,
   permission: "teachers.delete",
-  audit: { entityType: "Teacher", action: "delete", entityId: ({ input }) => input.id },
+  audit: { entityType: "Teacher", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     await prisma.teacher.delete({ where: { id: input.id } });
     revalidatePath("/v2/admin/ogretmenler");

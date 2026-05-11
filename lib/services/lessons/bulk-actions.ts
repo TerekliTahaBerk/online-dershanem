@@ -13,11 +13,7 @@ const bulkStatusSchema = z.object({
 export const bulkUpdateLessonStatusAction = defineAction({
   input: bulkStatusSchema,
   permission: "lessons.write",
-  audit: {
-    entityType: "Lesson",
-    action: "bulk_status",
-    entityId: ({ input }) => `${input.lessonIds.length}_to_${input.status}`,
-  },
+  audit: { entityType: "Lesson", action: "bulk_status", entityId: async ({ input }) => `${input.lessonIds.length}_to_${input.status}` },
   async handler({ input }) {
     const r = await prisma.lesson.updateMany({
       where: { id: { in: input.lessonIds } },
@@ -37,11 +33,7 @@ const bulkRescheduleSchema = z.object({
 export const bulkRescheduleLessonsAction = defineAction({
   input: bulkRescheduleSchema,
   permission: "lessons.write",
-  audit: {
-    entityType: "Lesson",
-    action: "bulk_reschedule",
-    entityId: ({ input }) => `${input.lessonIds.length}_to_${input.newDate}`,
-  },
+  audit: { entityType: "Lesson", action: "bulk_reschedule", entityId: async ({ input }) => `${input.lessonIds.length}_to_${input.newDate}` },
   async handler({ input }) {
     const target = new Date(input.newDate);
     const lessons = await prisma.lesson.findMany({
@@ -77,11 +69,7 @@ const bulkDeleteSchema = z.object({
 export const bulkDeleteLessonsAction = defineAction({
   input: bulkDeleteSchema,
   permission: "lessons.delete",
-  audit: {
-    entityType: "Lesson",
-    action: "bulk_delete",
-    entityId: ({ input }) => `count_${input.lessonIds.length}`,
-  },
+  audit: { entityType: "Lesson", action: "bulk_delete", entityId: async ({ input }) => `count_${input.lessonIds.length}` },
   async handler({ input }) {
     const r = await prisma.lesson.deleteMany({
       where: { id: { in: input.lessonIds } },

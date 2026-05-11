@@ -30,11 +30,7 @@ const createSchema = z.object({
 export const createSavedViewAction = defineAction({
   input: createSchema,
   permission: "notifications.read.own",
-  audit: {
-    entityType: "SavedView",
-    action: "create",
-    entityId: ({ input }) => `${input.scope}:${input.name}`,
-  },
+  audit: { entityType: "SavedView", action: "create", entityId: async ({ input }) => `${input.scope}:${input.name}` },
   async handler({ input, ctx }) {
     const v = await prisma.savedView.create({
       data: {
@@ -55,11 +51,7 @@ const deleteSchema = z.object({ id: z.string().cuid() });
 export const deleteSavedViewAction = defineAction({
   input: deleteSchema,
   permission: "notifications.read.own",
-  audit: {
-    entityType: "SavedView",
-    action: "delete",
-    entityId: ({ input }) => input.id,
-  },
+  audit: { entityType: "SavedView", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input, ctx }) {
     // Owner check — only delete your own (admin can delete anyone's)
     const existing = await prisma.savedView.findUnique({ where: { id: input.id } });

@@ -13,11 +13,7 @@ const bulkStatusSchema = z.object({
 export const bulkUpdateStudentStatusAction = defineAction({
   input: bulkStatusSchema,
   permission: "students.write",
-  audit: {
-    entityType: "Student",
-    action: "bulk_status",
-    entityId: ({ input }) => `${input.studentIds.length}_to_${input.status}`,
-  },
+  audit: { entityType: "Student", action: "bulk_status", entityId: async ({ input }) => `${input.studentIds.length}_to_${input.status}` },
   async handler({ input }) {
     const r = await prisma.student.updateMany({
       where: { id: { in: input.studentIds } },
@@ -37,11 +33,7 @@ const bulkTagSchema = z.object({
 export const bulkToggleStudentTagAction = defineAction({
   input: bulkTagSchema,
   permission: "students.write",
-  audit: {
-    entityType: "Student",
-    action: "bulk_tag",
-    entityId: ({ input }) => `${input.studentIds.length}_${input.mode}_${input.tagId}`,
-  },
+  audit: { entityType: "Student", action: "bulk_tag", entityId: async ({ input }) => `${input.studentIds.length}_${input.mode}_${input.tagId}` },
   async handler({ input, ctx }) {
     if (input.mode === "remove") {
       const r = await prisma.studentTag.deleteMany({
@@ -69,11 +61,7 @@ const bulkDeleteSchema = z.object({
 export const bulkDeleteStudentsAction = defineAction({
   input: bulkDeleteSchema,
   permission: "students.delete",
-  audit: {
-    entityType: "Student",
-    action: "bulk_delete",
-    entityId: ({ input }) => `count_${input.studentIds.length}`,
-  },
+  audit: { entityType: "Student", action: "bulk_delete", entityId: async ({ input }) => `count_${input.studentIds.length}` },
   async handler({ input }) {
     const r = await prisma.student.deleteMany({
       where: { id: { in: input.studentIds } },

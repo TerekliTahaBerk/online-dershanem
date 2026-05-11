@@ -13,7 +13,7 @@ import {
 export const createAssignmentAction = defineAction({
   input: assignmentCreateSchema,
   permission: "assignments.write",
-  audit: { entityType: "Assignment", action: "create", entityId: ({ output }) => (output as any)?.id ?? "—" },
+  audit: { entityType: "Assignment", action: "create", entityId: async ({ output }) => (output as any)?.id ?? "—" },
   async handler({ input }) {
     const a = await prisma.assignment.create({
       data: {
@@ -91,7 +91,7 @@ export const createAssignmentAction = defineAction({
 export const updateAssignmentAction = defineAction({
   input: assignmentUpdateSchema,
   permission: "assignments.write",
-  audit: { entityType: "Assignment", action: "update", entityId: ({ input }) => input.id },
+  audit: { entityType: "Assignment", action: "update", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     const { id, ...rest } = input;
     const a = await prisma.assignment.update({
@@ -118,7 +118,7 @@ export const updateAssignmentAction = defineAction({
 export const deleteAssignmentAction = defineAction({
   input: assignmentDeleteSchema,
   permission: "assignments.write",
-  audit: { entityType: "Assignment", action: "delete", entityId: ({ input }) => input.id },
+  audit: { entityType: "Assignment", action: "delete", entityId: async ({ input }) => input.id },
   async handler({ input }) {
     await prisma.assignment.delete({ where: { id: input.id } });
     revalidatePath("/v2/admin/odevler");
