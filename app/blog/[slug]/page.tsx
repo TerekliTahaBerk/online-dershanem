@@ -57,7 +57,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <>
       <Navbar />
-      <main className="py-14 sm:py-20">
+      <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>
           <article className="mx-auto max-w-4xl rounded-3xl border border-line bg-white p-6 shadow-soft sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-wide text-brand">{post.category}</p>

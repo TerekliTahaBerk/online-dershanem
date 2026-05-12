@@ -22,7 +22,7 @@ export default function CampsPage() {
   return (
     <>
       <Navbar />
-      <main className="py-14 sm:py-20">
+      <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>
           <CampsPageContent />
         </Container>

@@ -141,20 +141,10 @@ export default function MissionPage() {
             </div>
 
             {/* Signature */}
-            <div className="flex flex-col items-center gap-3 pt-2 text-center">
-              <span className="inline-flex items-center justify-center rounded-2xl bg-[#FBFBF8] p-2 ring-1 ring-black/5 shadow-sm">
-                <Image
-                  src="/icon-192.png"
-                  alt="Online Dershanem"
-                  width={192}
-                  height={192}
-                  className="h-10 w-10 object-contain"
-                />
-              </span>
+            <div className="flex flex-col items-start gap-1 pt-2 text-left">
               <p className="text-[14px] font-medium text-[var(--od-ink)]">
                 — Taha Berk, Furkan &amp; Melih
               </p>
-              <p className="text-[12.5px] text-[#8B8B7E]">Kurucular</p>
             </div>
           </div>
         </section>

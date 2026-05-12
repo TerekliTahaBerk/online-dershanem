@@ -25,7 +25,7 @@ export default function OnlineOzelDersPage() {
   return (
     <>
       <Navbar />
-      <main className="py-14 sm:py-20">
+      <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>
           <section className="rounded-3xl border border-line bg-white p-7 shadow-soft sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Online Özel Ders</p>
