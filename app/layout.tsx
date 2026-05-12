@@ -8,6 +8,8 @@ import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
+
+const themeInitScript = `(()=>{try{document.documentElement.setAttribute('data-theme','light');}catch(e){}})();`;
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -89,8 +91,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="tr"
       className={`${GeistSans.variable} ${instrumentSerif.variable} ${inter.variable}`}
+      suppressHydrationWarning
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="shortcut icon" href="/favicon.ico" />

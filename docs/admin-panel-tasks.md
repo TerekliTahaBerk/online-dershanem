@@ -1,5 +1,9 @@
 # Admin Panel Tasks
 
+> **Not (Faz 0+):** Bu dosya sadece admin panelinin operasyonel backlog'udur.
+> Tüm panel sisteminin (Öğrenci/Öğretmen/Veli/Admin) ürün vizyonu ve faz yol
+> haritası için **`docs/panel-system-master-plan.md`** dokümanına bakın.
+
 Bu liste repo içindeki mevcut yapı baz alınarak çıkarıldı. Durumlar düzenli uygulanabilir backlog mantığında tutuldu.
 
 ## Şimdi
@@ -8,6 +12,10 @@ Bu liste repo içindeki mevcut yapı baz alınarak çıkarıldı. Durumlar düze
 - [x] Operasyon filtresi eklemek
 - [x] Kayıtlara görev başlığı ve sonraki aksiyon tarihi eklemek
 - [x] Görev kuyruğu metriği eklemek
+- [x] OD/ODK erişim etiketleri için ortak `service` ayrımı (migration 0009 + backfill tamam)
+- [x] Öğrenci ve öğretmen panellerine ODK kısayolu (üst başlık, koşullu)
+- [x] Admin panel renk token sweep (eski palet kaldırıldı)
+- [x] ODK admin dashboard'a OD/ODK servis bazlı etiket sayacı
 - [ ] Görev durumunu tamamlandı mantığı ile kapatmak
 
 ## Yakın Vade

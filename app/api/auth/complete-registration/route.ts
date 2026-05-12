@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { normalizePhone } from "@/lib/admin";
+import { normalizePhone } from "@/lib/auth-utils";
 import { sendSelfRegistrationWelcome } from "@/lib/email";
 
 export async function POST(request: Request) {

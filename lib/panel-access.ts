@@ -1,150 +1,126 @@
-type UserRole = "ADMIN" | "STUDENT" | "TEACHER";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import type { UserRole } from "@prisma/client";
+import { getServerAuthSession } from "@/lib/auth";
 
-export type PanelKey = "student" | "teacher" | "admin";
+/**
+ * Panel rol & yonlendirme yardimcilari.
+ *
+ * - 4 rol vardir: ADMIN, TEACHER, STUDENT, PARENT.
+ * - Her rolun kendi `/panel/<segment>/...` agaci vardir.
+ * - ADMIN istedigi rolun panelini "view-as" cookie\'siyle gezebilir.
+ * - Diger roller cookie set etse bile yetkisi olmadigi panellere giremez
+ *   (middleware bunu engeller).
+ */
 
-type SessionPanelUser = {
-  role?: UserRole | null;
-  isAdmin?: boolean | null;
-  hasStudentAccess?: boolean | null;
-  hasTeacherAccess?: boolean | null;
-  hasOdkAccess?: boolean | null;
+export const PANEL_VIEW_COOKIE = "od-view-as" as const;
+
+export type PanelRole = "admin" | "ogretmen" | "ogrenci" | "veli";
+
+const ROLE_TO_SEGMENT: Record<UserRole, PanelRole> = {
+  ADMIN: "admin",
+  TEACHER: "ogretmen",
+  STUDENT: "ogrenci",
+  PARENT: "veli",
 };
 
-const PANEL_CONFIG: Record<PanelKey, { href: string; label: string }> = {
-  student: { href: "/panel", label: "Öğrenci Paneli" },
-  teacher: { href: "/ogretmen", label: "Öğretmen Paneli" },
-  admin: { href: "/admin", label: "Admin Paneli" }
+const SEGMENT_TO_ROLE: Record<PanelRole, UserRole> = {
+  admin: "ADMIN",
+  ogretmen: "TEACHER",
+  ogrenci: "STUDENT",
+  veli: "PARENT",
 };
 
-function getPanelFromPath(pathname: string): PanelKey | null {
-  if (pathname === "/panel" || pathname.startsWith("/panel/")) return "student";
-  if (pathname === "/ogretmen" || pathname.startsWith("/ogretmen/")) return "teacher";
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) return "admin";
-  return null;
+export const PANEL_ROLES: ReadonlyArray<PanelRole> = [
+  "admin",
+  "ogretmen",
+  "ogrenci",
+  "veli",
+];
+
+export function roleToSegment(role: UserRole): PanelRole {
+  return ROLE_TO_SEGMENT[role];
 }
 
-function normalizeCallbackPath(callbackUrl?: string | null) {
-  if (!callbackUrl) return null;
-
-  try {
-    const url = new URL(callbackUrl, "http://localhost");
-    if (!url.pathname.startsWith("/")) return null;
-
-    const path = `${url.pathname}${url.search}${url.hash}`;
-    return getPanelFromPath(url.pathname) ? path : null;
-  } catch {
-    return null;
-  }
+export function segmentToRole(segment: PanelRole): UserRole {
+  return SEGMENT_TO_ROLE[segment];
 }
 
-export function getPanelHref(panel: PanelKey) {
-  return PANEL_CONFIG[panel].href;
+export function isPanelSegment(value: string): value is PanelRole {
+  return value === "admin" || value === "ogretmen" || value === "ogrenci" || value === "veli";
 }
 
-export function getPanelLabel(panel: PanelKey) {
-  return PANEL_CONFIG[panel].label;
+/**
+ * Giris yapan kullaniciyi rolune gore dogru panel dashboard\'una yonlendiren
+ * destination URL\'i uretir. callbackUrl varsa once o degerlendirilir.
+ */
+export function getPanelDestination(
+  user: { role?: UserRole | null } | null | undefined,
+  callbackUrl?: string | null,
+): string {
+  if (callbackUrl && callbackUrl.startsWith("/")) return callbackUrl;
+  const role = user?.role ?? "STUDENT";
+  return `/panel/${roleToSegment(role)}`;
 }
 
-export function getPanelAccess(user?: SessionPanelUser | null) {
-  const hasStudentPanel = Boolean(user?.hasStudentAccess);
-  const hasTeacherPanel = Boolean(user?.hasTeacherAccess);
-  const hasAdminPanel = Boolean(user?.isAdmin) || user?.role === "ADMIN";
-  const hasOdkPanel = Boolean(user?.hasOdkAccess);
+export type EffectiveRole = {
+  /** Login\'de gercek rol (DB). */
+  actualRole: UserRole;
+  /** Sayfada efektif rol (admin view-as yapmissa farkli olabilir). */
+  role: UserRole;
+  /** Admin baska bir rolun panelini izliyor mu? */
+  isViewingAs: boolean;
+  /** Segment karsiligi (URL). */
+  segment: PanelRole;
+};
 
-  const panels: PanelKey[] = [];
-
-  if (hasStudentPanel) panels.push("student");
-  if (hasTeacherPanel) panels.push("teacher");
-  if (hasAdminPanel) panels.push("admin");
-
-  const requiresPanelChoice = !hasStudentPanel && hasTeacherPanel && hasAdminPanel;
-
-  let defaultPanel: PanelKey | null = null;
-
-  if (hasStudentPanel) {
-    defaultPanel = "student";
-  } else if (hasTeacherPanel && !hasAdminPanel) {
-    defaultPanel = "teacher";
-  } else if (hasAdminPanel && !hasTeacherPanel) {
-    defaultPanel = "admin";
-  }
-
-  return {
-    hasStudentPanel,
-    hasTeacherPanel,
-    hasAdminPanel,
-    hasOdkPanel,
-    panels,
-    requiresPanelChoice,
-    defaultPanel
-  };
-}
-
-export function buildPanelChoiceHref(callbackUrl?: string | null) {
-  const callbackPath = normalizeCallbackPath(callbackUrl);
-
-  if (!callbackPath) {
-    return "/panel-secimi";
+/**
+ * Server component\'lerde cagrilir. Session\'i okur, view-as cookie\'sini
+ * dikkate alir, panel rolunun segmentini birlikte dondurur. Login yoksa
+ * /giris\'e yonlendirir.
+ */
+export async function requirePanelSession(): Promise<EffectiveRole & { userId: string; email: string; name: string | null }> {
+  const session = await getServerAuthSession();
+  if (!session?.user?.id) {
+    redirect("/giris");
   }
 
-  const params = new URLSearchParams({ callbackUrl: callbackPath });
-  return `/panel-secimi?${params.toString()}`;
-}
+  const actualRole = (session.user.role ?? "STUDENT") as UserRole;
+  let effective: UserRole = actualRole;
+  let isViewingAs = false;
 
-// Returns the destination within Online Dershanem (skips service selection layer).
-export function getOdPanelDestination(user?: SessionPanelUser | null) {
-  const access = getPanelAccess(user);
-
-  if (access.requiresPanelChoice) {
-    return buildPanelChoiceHref();
-  }
-
-  if (access.defaultPanel) {
-    return getPanelHref(access.defaultPanel);
-  }
-
-  return "/giris";
-}
-
-export function getPanelDestination(user?: SessionPanelUser | null, callbackUrl?: string | null) {
-  const access = getPanelAccess(user);
-  const callbackPath = normalizeCallbackPath(callbackUrl);
-
-  // Respect a valid callback URL for an accessible panel
-  if (callbackPath) {
-    const callbackPanel = getPanelFromPath(new URL(callbackPath, "http://localhost").pathname);
-    if (callbackPanel && access.panels.includes(callbackPanel)) {
-      return callbackPath;
+  if (actualRole === "ADMIN") {
+    const cookieStore = await cookies();
+    const cookieValue = cookieStore.get(PANEL_VIEW_COOKIE)?.value;
+    if (cookieValue && isPanelSegment(cookieValue)) {
+      const targetRole = segmentToRole(cookieValue);
+      if (targetRole !== "ADMIN") {
+        effective = targetRole;
+        isViewingAs = true;
+      }
     }
   }
 
-  // Admin takes priority over all else
-  if (access.hasAdminPanel) {
-    return getPanelHref("admin");
-  }
-
-  // OD student panel (includes ODK access via sidebar if applicable)
-  if (access.hasStudentPanel) {
-    return getPanelHref("student");
-  }
-
-  // ODK-only students go directly to ODK panel
-  if (access.hasOdkPanel) {
-    return "/odk/panel";
-  }
-
-  // Teacher panel
-  if (access.hasTeacherPanel) {
-    return getPanelHref("teacher");
-  }
-
-  return "/giris";
+  return {
+    actualRole,
+    role: effective,
+    isViewingAs,
+    segment: roleToSegment(effective),
+    userId: session.user.id,
+    email: session.user.email ?? "",
+    name: session.user.name ?? null,
+  };
 }
 
-export function getPanelLink(panel: PanelKey, callbackUrl?: string | null) {
-  const callbackPath = normalizeCallbackPath(callbackUrl);
-  if (!callbackPath) return getPanelHref(panel);
-
-  const callbackPanel = getPanelFromPath(new URL(callbackPath, "http://localhost").pathname);
-  return callbackPanel === panel ? callbackPath : getPanelHref(panel);
+/**
+ * Belirli bir rolun URL\'ine erisim icin sayfa-level guard.
+ * Admin her zaman gecer. Diger roller sadece kendi paneline erisir.
+ */
+export async function requirePanelRole(allowedSegment: PanelRole) {
+  const ctx = await requirePanelSession();
+  if (ctx.actualRole === "ADMIN") return ctx;
+  if (ctx.segment !== allowedSegment) {
+    redirect(`/panel/${ctx.segment}`);
+  }
+  return ctx;
 }

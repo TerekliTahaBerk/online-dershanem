@@ -1,33 +1,36 @@
-import { redirect } from "next/navigation";
-import { getServerAuthSession } from "@/lib/auth";
-import { getPanelAccess } from "@/lib/panel-access";
-import { PremiumSidebar } from "@/components/layout/premium-sidebar";
+import type { Metadata } from "next";
+import { requirePanelSession } from "@/lib/panel-access";
+import { PanelShell } from "@/components/panel/shell/panel-shell";
+import { getUserAccessFlags } from "@/lib/access/odk";
 
-export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerAuthSession();
-  const access = getPanelAccess(session?.user);
+export const metadata: Metadata = {
+  title: "Panel · OnlineDershanem",
+  robots: { index: false, follow: false },
+};
 
-  if (!session) {
-    redirect("/giris");
-  }
+export const dynamic = "force-dynamic";
 
-  if (!access.hasStudentPanel) {
-    redirect(access.defaultPanel ? (access.defaultPanel === "teacher" ? "/ogretmen" : "/admin") : "/giris");
-  }
-
-  const userName = session.user?.name ?? session.user?.email ?? "Öğrenci";
-
+export default async function PanelLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const ctx = await requirePanelSession();
+  // Effective role'a göre OD/ODK bayrakları (admin view-as'ta da panel
+  // navigasyonu doğru görünsün diye actualRole değil effective role kullanılır;
+  // ADMIN her zaman tüm bayrakları açık görür).
+  const accessFlags = await getUserAccessFlags(ctx.userId, ctx.actualRole);
   return (
-    <div className="pd-app">
-      <PremiumSidebar
-        persona="student"
-        userName={userName}
-        userRole="Öğrenci"
-        hasOdkAccess={access.hasOdkPanel}
-      />
-      <div className="pd-app-main">
-        {children}
-      </div>
-    </div>
+    <PanelShell
+      role={ctx.role}
+      actualRole={ctx.actualRole}
+      isViewingAs={ctx.isViewingAs}
+      userId={ctx.userId}
+      userName={ctx.name}
+      userEmail={ctx.email}
+      accessFlags={accessFlags}
+    >
+      {children}
+    </PanelShell>
   );
 }

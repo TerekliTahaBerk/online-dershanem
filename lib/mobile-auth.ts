@@ -1,84 +1,61 @@
-import crypto from "crypto";
-import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
+/**
+ * Mobil API guard'ları.
+ *
+ * Kullanım:
+ *   const auth = await requireMobileUser(req);
+ *   if (!("userId" in auth)) return auth; // NextResponse 401
+ *   const { userId, role, email } = auth;
+ */
+import { NextResponse } from "next/server";
+import type { UserRole } from "@prisma/client";
+import { mobileJwt } from "@/lib/mobile-jwt";
 
-type MobileTokenPayload = {
-  sub: string;
+export type MobileAuthContext = {
+  userId: string;
+  role: UserRole;
   email: string;
-  role: "ADMIN" | "STUDENT" | "TEACHER";
-  name?: string | null;
-  exp: number;
 };
 
-const encoder = new TextEncoder();
-
-function base64url(input: Buffer | string) {
-  return Buffer.from(input).toString("base64url");
+export function jsonError(
+  status: number,
+  code: string,
+  message: string,
+): NextResponse {
+  return NextResponse.json({ error: { code, message } }, { status });
 }
 
-function signPart(value: string, secret: string) {
-  return crypto.createHmac("sha256", secret).update(value).digest("base64url");
+export function jsonOk<T>(data: T, init?: ResponseInit): NextResponse {
+  return NextResponse.json({ data }, init);
 }
 
-function getSecret() {
-  const secret = process.env.NEXTAUTH_SECRET;
-  if (!secret) {
-    throw new Error("NEXTAUTH_SECRET is required for mobile auth");
+/**
+ * Authorization: Bearer <token> header'ından kullanıcı çıkarır.
+ * Geçersizse 401 NextResponse döner — caller "in" check ile ayırır.
+ */
+export async function requireMobileUser(
+  req: Request,
+): Promise<MobileAuthContext | NextResponse> {
+  const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
+  if (!header || !header.toLowerCase().startsWith("bearer ")) {
+    return jsonError(401, "UNAUTHENTICATED", "Token gerekli.");
   }
-  return secret;
-}
-
-export function createMobileToken(payload: Omit<MobileTokenPayload, "exp">) {
-  const header = base64url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-  const body = base64url(
-    JSON.stringify({
-      ...payload,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
-    })
-  );
-  const unsigned = `${header}.${body}`;
-  return `${unsigned}.${signPart(unsigned, getSecret())}`;
-}
-
-export function decodeMobileToken(token: string): MobileTokenPayload | null {
-  const [header, body, signature] = token.split(".");
-  if (!header || !body || !signature) return null;
-
-  const unsigned = `${header}.${body}`;
-  const expected = signPart(unsigned, getSecret());
-  const expectedBytes = encoder.encode(expected);
-  const actualBytes = encoder.encode(signature);
-  if (expectedBytes.length !== actualBytes.length || !crypto.timingSafeEqual(expectedBytes, actualBytes)) {
-    return null;
+  const token = header.slice(7).trim();
+  const payload = mobileJwt.verifyAccess(token);
+  if (!payload) {
+    return jsonError(401, "INVALID_TOKEN", "Token geçersiz veya süresi dolmuş.");
   }
-
-  const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as MobileTokenPayload;
-  if (!payload.sub || payload.exp < Math.floor(Date.now() / 1000)) return null;
-  return payload;
+  return { userId: payload.sub, role: payload.role, email: payload.email };
 }
 
-export async function getMobileUser(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : null;
-  if (!token) return null;
-
-  const payload = decodeMobileToken(token);
-  if (!payload) return null;
-
-  return prisma.user.findUnique({
-    where: { id: payload.sub },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      student: { select: { id: true } },
-      teacher: { select: { id: true } },
-    },
-  });
+/**
+ * Belirli rol(lerin) izni varsa devam eder, yoksa 403 döner.
+ */
+export function requireMobileRole(
+  ctx: MobileAuthContext,
+  allowed: UserRole | UserRole[],
+): NextResponse | null {
+  const list = Array.isArray(allowed) ? allowed : [allowed];
+  // ADMIN her şeye erişir.
+  if (ctx.role === "ADMIN" || list.includes(ctx.role)) return null;
+  return jsonError(403, "FORBIDDEN", "Bu işlem için yetkin yok.");
 }
-
-export function unauthorized() {
-  return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
-}
-

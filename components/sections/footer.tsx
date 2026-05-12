@@ -89,15 +89,18 @@ export function Footer() {
             <Link
               href="/"
               aria-label="Online Dershanem"
-              className="inline-flex items-center"
+              className="inline-flex items-center gap-2.5"
             >
-              <Image
-                src="/onlinedershanem_.png"
-                alt="Online Dershanem"
-                width={1050}
-                height={200}
-                className="h-7 w-auto object-contain"
-              />
+              <span className="inline-flex items-center justify-center rounded-xl bg-[#FBFBF8] p-1 ring-1 ring-black/5 shadow-sm">
+                <Image
+                  src="/icon-192.png"
+                  alt="Online Dershanem"
+                  width={192}
+                  height={192}
+                  className="h-8 w-8 object-contain"
+                />
+              </span>
+              <span className="text-[15px] font-semibold tracking-tight text-[var(--od-ink)]">Online Dershanem</span>
             </Link>
 
             <p className="max-w-sm text-[13.5px] leading-6 text-[#7A7A6F]">

@@ -744,3 +744,146 @@ export async function sendLeadSubmissionNotification({
     html,
   });
 }
+
+/** Sent when admin invites a parent — includes credentials and child info. */
+export async function sendParentInvite({
+  to,
+  parentName,
+  email,
+  password,
+  childNames,
+}: {
+  to: string;
+  parentName: string;
+  email: string;
+  password: string;
+  childNames: string[];
+}) {
+  const firstName = parentName.split(" ")[0];
+  const childList = childNames.length > 0
+    ? childNames.map((n) => `<li style="margin:4px 0;">${n}</li>`).join("")
+    : "<li>—</li>";
+
+  const html = baseTemplate(`
+    ${heading(`Hoş geldiniz, ${firstName}! 👨‍👩‍👧`)}
+    ${paragraph(`<strong>${parentName}</strong>, Online Dershanem veli paneliniz oluşturuldu. Çocuğunuzun/çocuklarınızın ders, ödev, devamsızlık ve ödeme bilgilerini buradan takip edebilirsiniz.`)}
+    ${paragraph(`<strong>Bağlı öğrenciler:</strong><ul style="margin:8px 0 16px 20px;padding:0;color:#091413;font-size:14px;">${childList}</ul>`)}
+    ${credentialBox(email, password)}
+    ${ctaButton("Veli Paneline Giriş Yap →", `${APP_URL}/giris?callbackUrl=%2Fveli`)}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Güvenliğiniz için giriş yaptıktan sonra şifrenizi <a href="' + APP_URL + '/veli/profil" style="color:#546B41;text-decoration:none;">Profil sayfanızdan</a> değiştirmenizi öneririz.</span>')}
+    ${divider()}
+    ${paragraph('<span style="font-size:13px;color:#6b6560;">Sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#546B41;text-decoration:none;font-weight:500;">destek@onlinedershanem.com</a> adresinden bize yazabilirsiniz.</span>')}
+    ${signature()}
+  `);
+
+  await sendEmail({
+    to,
+    subject: `Hoş geldiniz, ${firstName}! Veli paneliniz hazır.`,
+    html,
+  });
+}
+
+// ─── Notification email channel ──────────────────────────────────────────────
+
+/**
+ * Lightweight notification mailer — kullanıcının bildirim tercihinde
+ * `email` kanalı açıksa lib/notifications.ts buradan tetikler.
+ *
+ * Tasarım: minimal şablon, başlık + body + opsiyonel "Görüntüle" CTA.
+ * Outbox üzerinden atılır, retry-safe.
+ */
+export async function sendNotificationEmail({
+  to,
+  title,
+  body,
+  href,
+  priority,
+}: {
+  to: string;
+  title: string;
+  body: string;
+  href?: string | null;
+  priority?: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+}) {
+  const isUrgent = priority === "URGENT";
+  const safeTitle = escapeHtml(title);
+  const safeBody = escapeHtml(body).replace(/\n/g, "<br/>");
+  const cta = href
+    ? ctaButton("Görüntüle →", href.startsWith("http") ? href : `${APP_URL}${href}`)
+    : "";
+  const priorityBadge = isUrgent
+    ? `<div style="display:inline-block;background:#FBE9E9;color:#A04A4A;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;margin-bottom:14px;">ACİL</div>`
+    : "";
+  const html = baseTemplate(`
+    ${priorityBadge}
+    ${heading(safeTitle)}
+    ${paragraph(safeBody)}
+    ${cta}
+    ${divider()}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Bu e-postayı bildirim tercihlerinize göre alıyorsunuz. Tercihleri değiştirmek için <a href="' + APP_URL + '/v2/bildirim-tercihleri" style="color:#546B41;text-decoration:none;">Bildirim Tercihleri</a> sayfanızı ziyaret edin.</span>')}
+  `);
+  await sendEmail({
+    to,
+    subject: isUrgent ? `[ACİL] ${title}` : title,
+    html,
+  });
+}
+
+/**
+ * Günlük dijital özet — son 24 saatte oluşan okunmamış bildirimleri tek bir
+ * e-postada toplar. /api/cron/notification-digest tarafından her sabah çalışır.
+ */
+export async function sendNotificationDigestEmail({
+  to,
+  recipientName,
+  items,
+}: {
+  to: string;
+  recipientName?: string | null;
+  items: Array<{
+    title: string;
+    body: string;
+    href?: string | null;
+    createdAt: Date;
+    typeLabel: string;
+  }>;
+}) {
+  if (items.length === 0) return;
+  const greet = recipientName ? `Merhaba ${escapeHtml(recipientName)},` : "Merhaba,";
+  const list = items
+    .slice(0, 25)
+    .map((it) => {
+      const href = it.href
+        ? it.href.startsWith("http")
+          ? it.href
+          : `${APP_URL}${it.href}`
+        : null;
+      const titleHtml = href
+        ? `<a href="${href}" style="color:#546B41;text-decoration:none;font-weight:600;">${escapeHtml(it.title)}</a>`
+        : `<span style="font-weight:600;">${escapeHtml(it.title)}</span>`;
+      return `
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid #eee5d3;">
+            <div style="font-size:11px;color:#9c9589;text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(it.typeLabel)}</div>
+            <div style="font-size:14px;margin-top:4px;">${titleHtml}</div>
+            <div style="font-size:13px;color:#5a544a;margin-top:4px;">${escapeHtml(it.body)}</div>
+          </td>
+        </tr>`;
+    })
+    .join("");
+  const more = items.length > 25 ? `<p style="font-size:12px;color:#9c9589;text-align:center;margin-top:14px;">... ve ${items.length - 25} bildirim daha. <a href="${APP_URL}/v2" style="color:#546B41;">Panele git →</a></p>` : "";
+  const html = baseTemplate(`
+    ${heading("Günlük özet")}
+    ${paragraph(`${greet} son 24 saatte ${items.length} okunmamış bildiriminiz oldu:`)}
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">${list}</table>
+    ${more}
+    ${ctaButton("Bildirim merkezine git →", `${APP_URL}/v2`)}
+    ${divider()}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Günlük özetleri kapatmak için <a href="' + APP_URL + '/v2/bildirim-tercihleri" style="color:#546B41;text-decoration:none;">Bildirim Tercihleri</a> sayfanızı ziyaret edin.</span>')}
+  `);
+  await sendEmail({
+    to,
+    subject: `Günlük özet — ${items.length} bildirim`,
+    html,
+  });
+}
