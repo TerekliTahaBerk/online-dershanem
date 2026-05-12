@@ -134,6 +134,10 @@ model User {
   refreshTokens           RefreshToken[]
   savedViews              SavedView[]
   dashboardLayouts        DashboardLayout[]
+  // ── Mobile (Faz Mobile) ──
+  mobileDevices           MobileDevice[]
+  notificationPrefs       NotificationPreference[]
+  appActivityLogs         AppActivityLog[]
 }
 
 model LeadSubmission {
@@ -260,6 +264,8 @@ model Student {
   directAssignments  Assignment[]               @relation("DirectAssignment")
   submissions        AssignmentSubmission[]
   accountingEntries  AccountingEntry[]          @relation("AccountingStudent")
+  // ── Mobile (Faz Mobile) ──
+  dailyTasks         StudentDailyTask[]
 
   @@index([status, updatedAt])
 }
@@ -1643,4 +1649,112 @@ model RealtimeEvent {
 
   @@index([channel, createdAt])
   @@index([type, createdAt])
+}
+
+// ─── Mobile (Faz Mobile) ─────────────────────────────────────────────────────
+// Mobil uygulama için additive (mevcut hiçbir tablo değişmez).
+// Detay: mobile-app/docs/BACKEND_GAPS.md
+
+enum MobilePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum NotificationChannel {
+  PUSH
+  INBOX
+  EMAIL
+}
+
+enum NotificationCategoryKey {
+  LESSON
+  ASSIGNMENT
+  EXAM
+  ANNOUNCEMENT
+  TEACHER_MESSAGE
+  ATTENDANCE
+  PAYMENT
+  SYSTEM
+}
+
+/// Kullanıcının mobil cihazları — push token registry.
+/// Bir kullanıcının birden çok cihazı olabilir (telefon + tablet).
+model MobileDevice {
+  id            String         @id @default(cuid())
+  userId        String         @map("user_id")
+  expoPushToken String         @unique @map("expo_push_token")
+  platform      MobilePlatform
+  appVersion    String         @map("app_version")
+  deviceModel   String?        @map("device_model")
+  osVersion     String?        @map("os_version")
+  locale        String?
+  timezone      String?
+  lastSeenAt    DateTime       @default(now()) @map("last_seen_at")
+  revokedAt     DateTime?      @map("revoked_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([lastSeenAt])
+  @@map("mobile_devices")
+}
+
+/// Kullanıcı bazında bildirim tercihleri (kategori × kanal).
+/// Eksik satır = açık (defansif default).
+model NotificationPreference {
+  id        String                  @id @default(cuid())
+  userId    String                  @map("user_id")
+  category  NotificationCategoryKey
+  channel   NotificationChannel
+  enabled   Boolean                 @default(true)
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime                @updatedAt @map("updated_at")
+  user      User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category, channel])
+  @@index([userId])
+  @@map("notification_preferences")
+}
+
+enum DailyTaskSource {
+  ASSIGNMENT
+  LESSON
+  EXAM
+  GOAL
+  MANUAL
+}
+
+/// Mobil-spesifik öğrenci todo. Streak hesabı buradan beslenir.
+model StudentDailyTask {
+  id          String          @id @default(cuid())
+  studentId   String          @map("student_id")
+  title       String
+  description String?
+  sourceType  DailyTaskSource @map("source_type")
+  sourceId    String?         @map("source_id")
+  dueAt       DateTime?       @map("due_at")
+  isDone      Boolean         @default(false) @map("is_done")
+  doneAt      DateTime?       @map("done_at")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, dueAt])
+  @@index([studentId, isDone])
+  @@map("student_daily_tasks")
+}
+
+/// Mobil ekran görüntüleme / app açılış telemetrisi (streak için).
+model AppActivityLog {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  action    String
+  payload   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("app_activity_logs")
 }

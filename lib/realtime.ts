@@ -1,7 +1,19 @@
 import "server-only";
 import Pusher from "pusher";
 import { prisma } from "@/lib/prisma";
-import type { NotificationType, NotificationPriority } from "@prisma/client";
+import type { NotificationType, NotificationPriority, NotificationCategoryKey } from "@prisma/client";
+import { sendPush } from "@/lib/push";
+
+function mapTypeToCategory(t: NotificationType | undefined): NotificationCategoryKey {
+  switch (t) {
+    case "LESSON": return "LESSON";
+    case "CONTENT": return "ASSIGNMENT";
+    case "PERFORMANCE": return "ASSIGNMENT";
+    case "PAYMENT": return "PAYMENT";
+    case "ANNOUNCEMENT": return "ANNOUNCEMENT";
+    default: return "SYSTEM";
+  }
+}
 
 const appId = process.env.PUSHER_APP_ID;
 const key = process.env.PUSHER_KEY;
@@ -73,5 +85,13 @@ export async function notifyUser(args: {
       payload: { id: n.id, title: n.title, body: n.body, href: n.href, priority: n.priority },
     }),
     trigger({ type: "inbox:update", userId: args.userId, payload: { unread } }),
+    sendPush({
+      userIds: [args.userId],
+      title: args.title,
+      body: args.body,
+      data: { href: args.href ?? null, notificationId: n.id, type: args.type ?? "SYSTEM" },
+      category: mapTypeToCategory(args.type),
+      priority: args.priority === "URGENT" || args.priority === "HIGH" ? "high" : "default",
+    }).catch((e) => console.error("[push] sendPush failed", e)),
   ]);
 }
