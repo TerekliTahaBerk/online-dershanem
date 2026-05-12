@@ -7,9 +7,11 @@ export const endpoints = {
   login: "/auth/login",
   refresh: "/auth/refresh",
   logout: "/auth/logout",
-  sendCode: "/auth/send-code",
-  completeRegistration: "/auth/complete-registration",
-  resetPassword: "/auth/reset-password",
+  // Bunlar /api/v1/mobile altında DEĞİL, mevcut public /api/auth/* endpoint'lerini kullanır.
+  // client.ts içinde absolute URL ile çağrılır.
+  sendCode: "/api/auth/send-code",
+  completeRegistration: "/api/auth/complete-registration",
+  resetPassword: "/api/auth/reset-password",
 
   // Identity
   me: "/me",
@@ -48,6 +50,7 @@ export const endpoints = {
   teacherStudents: "/teacher/students",
   teacherAttendance: "/teacher/attendance",
   teacherAssignments: "/teacher/assignments",
+  teacherGradeSubmission: (id: string) => `/teacher/submissions/${id}/grade`,
 
   // Parent
   parentDashboard: "/parent/dashboard",
@@ -59,4 +62,7 @@ export const endpoints = {
   adminDashboard: "/admin/dashboard",
   adminSearch: "/admin/search",
   adminAnnouncement: "/admin/announcements",
+
+  // Dev / QA
+  devTestPush: "/dev/test-push",
 } as const;
