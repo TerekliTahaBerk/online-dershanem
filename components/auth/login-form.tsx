@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
-import { getPanelDestination } from "@/lib/panel-access";
 
 type LoginFormProps = {
   callbackUrl?: string;
@@ -35,25 +34,24 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       return;
     }
 
-    const sessionRes = await fetch("/api/auth/session");
-    const session = await sessionRes.json();
-    const fallback = getPanelDestination(
-      session?.user,
-      callbackUrl ?? result.url,
-    );
-
-    // Students go through onboarding gateway; the page itself
-    // redirects to /panel if onboarding has already been completed.
-    if (
-      session?.user?.role === "STUDENT" &&
-      !callbackUrl &&
-      (fallback === "/panel" || fallback.startsWith("/panel/"))
-    ) {
-      window.location.href = "/hosgeldin";
-      return;
+    // Oturumdan rolü çekip ilgili panele yönlendir.
+    try {
+      const sessionRes = await fetch("/api/auth/session");
+      const session = await sessionRes.json();
+      const role = session?.user?.role as
+        | "ADMIN"
+        | "TEACHER"
+        | "STUDENT"
+        | "PARENT"
+        | undefined;
+      const segment =
+        role === "ADMIN" ? "admin" :
+        role === "TEACHER" ? "ogretmen" :
+        role === "PARENT" ? "veli" : "ogrenci";
+      window.location.href = callbackUrl ?? `/panel/${segment}`;
+    } catch {
+      window.location.href = callbackUrl ?? "/panel/ogrenci";
     }
-
-    window.location.href = fallback;
   };
 
   return (

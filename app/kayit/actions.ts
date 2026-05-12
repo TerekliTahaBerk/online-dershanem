@@ -3,9 +3,8 @@
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { normalizePhone } from "@/lib/admin";
+import { normalizePhone, readString } from "@/lib/auth-utils";
 import { sendSelfRegistrationWelcome } from "@/lib/email";
-import { readString } from "@/lib/form-utils";
 
 
 export async function registerAction(formData: FormData) {

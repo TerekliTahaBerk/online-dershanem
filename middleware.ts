@@ -2,90 +2,64 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 /**
- * Middleware — TÜM panel ve API route'larını korur.
- * Her route prefix'ine göre uygun token claim'i match edilir.
+ * /panel/* rotalarini korur.
  *
- * Kural: hiçbir route handler "unutulmuş guard" yüzünden açıkta kalmasın.
- * Sayfa-level guard (`requirePagePermission`) ek granularity için.
+ * Kurallar:
+ * - Login yoksa /giris\'e yonlendirilir.
+ * - ADMIN: her panel segmentine erisebilir (view-as icin de gerekli).
+ * - TEACHER / STUDENT / PARENT: yalniz kendi segmentine erisebilir.
+ *   Yanlis segmentse kendi paneline yonlendirilir.
+ *
+ * /panel (segment yok) durumu sayfada handle edilir
+ * (requirePanelSession + redirect).
  */
 export default withAuth(
-  function onAuthorized() {
+  function middleware(req) {
+    const token = req.nextauth.token;
+    const pathname = req.nextUrl.pathname;
+
+    if (!pathname.startsWith("/panel")) {
+      return NextResponse.next();
+    }
+
+    // /panel veya /panel/ -> sayfa kendi redirect\'ini yapacak
+    const parts = pathname.split("/").filter(Boolean); // ["panel", "<seg>", ...]
+    if (parts.length < 2) {
+      return NextResponse.next();
+    }
+
+    const segment = parts[1];
+    const role = token?.role as string | undefined;
+
+    if (role === "ADMIN") return NextResponse.next();
+
+    const allowedSegment =
+      role === "TEACHER" ? "ogretmen" :
+      role === "STUDENT" ? "ogrenci" :
+      role === "PARENT" ? "veli" : null;
+
+    if (!allowedSegment) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/giris";
+      return NextResponse.redirect(url);
+    }
+
+    if (segment !== allowedSegment) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/panel/${allowedSegment}`;
+      return NextResponse.redirect(url);
+    }
+
     return NextResponse.next();
   },
   {
     pages: { signIn: "/giris" },
     callbacks: {
-      authorized: ({ token, req }) => {
-        const pathname = req.nextUrl.pathname;
-
-        // Admin alanları
-        if (
-          pathname.startsWith("/admin") ||
-          pathname.startsWith("/v2/admin") ||
-          pathname.startsWith("/odk/admin") ||
-          pathname.startsWith("/api/admin") ||
-          pathname.startsWith("/api/odk/admin") ||
-          pathname.startsWith("/api/v1/admin")
-        ) {
-          return Boolean(token?.isAdmin);
-        }
-
-        // Öğretmen
-        if (
-          pathname.startsWith("/ogretmen") ||
-          pathname.startsWith("/v2/ogretmen") ||
-          pathname.startsWith("/api/v1/teacher")
-        ) {
-          return Boolean(token?.hasTeacherAccess) || Boolean(token?.isAdmin);
-        }
-
-        // Öğrenci
-        if (
-          pathname === "/panel" || pathname.startsWith("/panel/") ||
-          pathname === "/v2/panel" || pathname.startsWith("/v2/panel/") ||
-          pathname.startsWith("/api/v1/student")
-        ) {
-          return Boolean(token?.hasStudentAccess) || Boolean(token?.isAdmin);
-        }
-
-        // Veli
-        if (
-          pathname.startsWith("/veli") ||
-          pathname.startsWith("/v2/veli") ||
-          pathname.startsWith("/api/v1/parent")
-        ) {
-          return Boolean(token?.hasParentAccess) || Boolean(token?.isAdmin);
-        }
-
-        // ODK öğrenci paneli
-        if (pathname.startsWith("/odk/panel") || pathname.startsWith("/api/odk/panel")) {
-          return Boolean(token?.hasOdkAccess) || Boolean(token?.isAdmin);
-        }
-
-        // Self / me API
-        if (pathname.startsWith("/api/v1/me")) {
-          return Boolean(token);
-        }
-
-        return true;
-      }
-    }
-  }
+      authorized: ({ token }) => Boolean(token),
+    },
+  },
 );
 
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/v2/:path*",
-    "/ogretmen/:path*",
-    "/panel",
-    "/panel/:path*",
-    "/veli/:path*",
-    "/odk/admin/:path*",
-    "/odk/panel/:path*",
-    "/api/admin/:path*",
-    "/api/odk/admin/:path*",
-    "/api/odk/panel/:path*",
-    "/api/v1/:path*"
-  ]
+  matcher: ["/panel/:path*"],
 };

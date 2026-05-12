@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Menu, X } from "lucide-react";
-import { buildPanelChoiceHref, getPanelAccess, getPanelHref } from "@/lib/panel-access";
 import { LogoutButton } from "@/components/auth/logout-button";
 
 const links = [
@@ -26,19 +25,21 @@ export function Navbar() {
     setOpen(false);
   }, [pathname]);
 
-  const panelAccess = getPanelAccess(session?.user);
-  const panelHref = panelAccess.requiresPanelChoice
-    ? buildPanelChoiceHref()
-    : panelAccess.defaultPanel
-      ? getPanelHref(panelAccess.defaultPanel)
-      : "/panel";
-  const panelLabel = panelAccess.requiresPanelChoice
-    ? "Panel Seç"
-    : panelAccess.defaultPanel === "admin"
-      ? "Admin"
-      : panelAccess.defaultPanel === "teacher"
-        ? "Öğretmen"
-        : "Panelim";
+  const role = session?.user?.role as
+    | "ADMIN"
+    | "TEACHER"
+    | "STUDENT"
+    | "PARENT"
+    | undefined;
+  const panelSegment =
+    role === "ADMIN" ? "admin" :
+    role === "TEACHER" ? "ogretmen" :
+    role === "PARENT" ? "veli" : "ogrenci";
+  const panelHref = `/panel/${panelSegment}`;
+  const panelLabel =
+    role === "ADMIN" ? "Admin Panel" :
+    role === "TEACHER" ? "Öğretmen Paneli" :
+    role === "PARENT" ? "Veli Paneli" : "Öğrenci Paneli";
 
   const isActive = (href: string) => pathname.startsWith(href.replace(/\/$/, ""));
 
