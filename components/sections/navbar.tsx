@@ -60,7 +60,6 @@ export function Navbar() {
     role === "PARENT" ? "Veli Paneli" : "Öğrenci Paneli";
 
   const isActive = (href: string) => pathname.startsWith(href.replace(/\/$/, ""));
-  const isHome = pathname === "/";
 
   return (
     <>
@@ -77,7 +76,7 @@ export function Navbar() {
             />
           </Link>
 
-          <nav className={`absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex ${isHome ? "lg:hidden" : ""}`}>
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex">
             {links.map((l) => (
               <Link
                 key={l.href}
@@ -91,7 +90,7 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className={`hidden items-center gap-2 lg:flex ${isHome ? "lg:hidden" : ""}`}>
+          <div className="hidden items-center gap-2 lg:flex">
             {status === "loading" ? null : status === "authenticated" ? (
               <>
                 <div className="relative" ref={panelRef}>
@@ -139,24 +138,28 @@ export function Navbar() {
                 <LogoutButton />
               </>
             ) : (
-              <>
-                <Link
-                  href="/giris"
-                  className="rounded-full px-3 py-2 text-[13.5px] text-[#5A5A5F] transition hover:text-[#0E0E10]"
+              <Link
+                href="/giris"
+                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-[#0E0E10] px-5 py-2 text-[13.5px] font-medium text-white shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-[#1a1a1f]"
+              >
+                <span className="relative z-10">Başla</span>
+                <span
+                  aria-hidden
+                  className="relative z-10 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-white transition-transform group-hover:translate-x-0.5"
                 >
-                  Giriş Yap
-                </Link>
-                <Link
-                  href="/kayit"
-                  className="rounded-full border border-[#0E0E10]/15 bg-white px-4 py-2 text-[13.5px] font-medium text-[#0E0E10] shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:border-[#0E0E10]/35 hover:bg-[#F2F2EF]"
-                >
-                  Hemen Kayıt Ol
-                </Link>
-              </>
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span
+                  aria-hidden
+                  className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+                />
+              </Link>
             )}
           </div>
 
-          <div className={`flex items-center gap-1.5 lg:hidden ${isHome ? "hidden" : ""}`}>
+          <div className="flex items-center gap-1.5 lg:hidden">
             {status === "loading" ? null : status === "authenticated" ? (
               <Link
                 href={panelHref}
@@ -166,10 +169,13 @@ export function Navbar() {
               </Link>
             ) : (
               <Link
-                href="/kayit"
-                className="rounded-full border border-[#0E0E10]/15 bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#0E0E10]"
+                href="/giris"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#0E0E10] px-3.5 py-1.5 text-[12.5px] font-medium text-white"
               >
-                Kayıt Ol
+                Başla
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
+                  <path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </Link>
             )}
             <button
