@@ -48,14 +48,17 @@ export function Navbar() {
       <header className="sticky top-0 z-40 w-full border-b border-transparent bg-transparent">
         <div className="relative mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-8">
           <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center gap-2 text-[#0E0E10]">
-            <Image
-              src="/onlinedershanem_.png"
-              alt="Online Dershanem"
-              width={1050}
-              height={200}
-              priority
-              className="h-6 w-auto object-contain sm:h-8"
-            />
+            <span className="inline-flex items-center justify-center rounded-xl bg-[#FBFBF8] p-1 ring-1 ring-black/5 shadow-sm">
+              <Image
+                src="/icon-192.png"
+                alt="Online Dershanem"
+                width={192}
+                height={192}
+                priority
+                className="h-7 w-7 object-contain sm:h-8 sm:w-8"
+              />
+            </span>
+            <span className="hidden text-[15px] font-semibold tracking-tight sm:inline">Online Dershanem</span>
           </Link>
 
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex">

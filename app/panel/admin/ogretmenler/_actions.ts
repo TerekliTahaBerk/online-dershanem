@@ -48,3 +48,34 @@ export async function deleteTeacherAction(id: string) {
   await prisma.teacher.delete({ where: { id } });
   revalidatePath("/panel/admin/ogretmenler");
 }
+
+// ─── Relations ───────────────────────────────────────────────────────────────
+
+export async function assignClassroomToTeacherAction(teacherId: string, fd: FormData) {
+  await requirePanelRole("admin");
+  const classroomId = readStr(fd, "classroomId");
+  if (!classroomId) throw new Error("Sınıf zorunlu");
+  await prisma.classroomTeacher.upsert({
+    where: { classroomId_teacherId: { classroomId, teacherId } },
+    update: {
+      isLead: fd.get("isLead") === "on",
+      subject: opt(readStr(fd, "subject")),
+    },
+    create: {
+      classroomId, teacherId,
+      isLead: fd.get("isLead") === "on",
+      subject: opt(readStr(fd, "subject")),
+    },
+  });
+  revalidatePath(`/panel/admin/ogretmenler/${teacherId}/duzenle`);
+  revalidatePath(`/panel/admin/siniflar/${classroomId}/duzenle`);
+}
+
+export async function removeClassroomFromTeacherAction(teacherId: string, classroomId: string) {
+  await requirePanelRole("admin");
+  await prisma.classroomTeacher.delete({
+    where: { classroomId_teacherId: { classroomId, teacherId } },
+  });
+  revalidatePath(`/panel/admin/ogretmenler/${teacherId}/duzenle`);
+  revalidatePath(`/panel/admin/siniflar/${classroomId}/duzenle`);
+}

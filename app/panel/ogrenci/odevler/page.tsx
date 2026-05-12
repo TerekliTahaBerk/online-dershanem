@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function StudentAssignments() {
               const overdue = a.dueAt && a.dueAt.getTime() < now && (!sub || !sub.submittedAt);
               return (
                 <tr key={a.id}>
-                  <td>{a.title}</td>
+                  <td><Link href={`/panel/ogrenci/odevler/${a.id}`} className="od-link">{a.title}</Link></td>
                   <td>{a.subject ?? "—"}</td>
                   <td className="od-mono od-muted">{a.dueAt ? new Intl.DateTimeFormat("tr-TR").format(a.dueAt) : "—"}</td>
                   <td>{sub?.submittedAt ? <Badge tone="ok">Gönderildi</Badge> : overdue ? <Badge tone="bad">Geçmiş</Badge> : <Badge tone="warn">Bekliyor</Badge>}</td>

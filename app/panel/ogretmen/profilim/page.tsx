@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { Badge } from "@/components/panel/ui/badge";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,11 @@ export default async function TeacherProfile() {
   if (!teacher) return <Card><EmptyState icon="user" title="Öğretmen profili yok" /></Card>;
   return (
     <>
-      <PageHeader title="Profilim" subtitle={teacher.fullName} />
+      <PageHeader
+        title="Profilim"
+        subtitle={teacher.fullName}
+        right={<Link href="/panel/ogretmen/profilim/duzenle" className="od-btn od-btn-primary od-btn-sm">Düzenle</Link>}
+      />
       <Card>
         <CardHeader title="Bilgiler" />
         <CardBody>

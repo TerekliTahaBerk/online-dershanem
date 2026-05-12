@@ -2230,9 +2230,12 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 .od-sb-mark {
   width: 32px; height: 32px; border-radius: 8px;
   display: grid; place-items: center;
-  background: var(--pd-accent); color: #fff;
-  font-weight: 600; font-size: 14px;
+  background: #FBFBF8;
+  border: 1px solid var(--pd-line);
+  overflow: hidden;
+  padding: 3px;
 }
+.od-sb-mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .od-sb-brand-name { font-weight: 600; font-size: 14px; letter-spacing: -.01em; color: var(--pd-ink); }
 .od-sb-brand-sub  { font-size: 11px; color: var(--pd-muted); margin-top: 1px; }
 
@@ -2384,6 +2387,14 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 .od-card-hd-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .od-card-bd { padding: 16px; }
 
+/* Skeleton aliases (legacy + new) */
+.od-skeleton {
+  background: linear-gradient(90deg, var(--pd-bg-subtle) 0%, var(--pd-bg-muted) 50%, var(--pd-bg-subtle) 100%);
+  background-size: 200% 100%;
+  animation: od-skel 1.4s linear infinite;
+  border-radius: 8px;
+}
+
 /* KPI */
 .od-kpi { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 .od-kpi-label { font-size: 12px; color: var(--pd-muted); }
@@ -2464,8 +2475,24 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 /* Responsive */
 @media (max-width: 900px) {
   .od-panel-app { grid-template-columns: 1fr; }
-  .od-sidebar { display: none; }
+  .od-sidebar {
+    position: fixed; inset: 0 auto 0 0; width: 280px; max-width: 85vw;
+    z-index: 60; transform: translateX(-100%);
+    transition: transform 220ms cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+  .od-panel-app.is-drawer-open .od-sidebar { transform: translateX(0); display: flex; }
+  .od-drawer-overlay {
+    position: fixed; inset: 0; z-index: 55;
+    background: rgba(15,23,42,.45); backdrop-filter: blur(2px);
+    border: 0; padding: 0; cursor: pointer;
+    animation: od-cmd-fade 160ms ease-out;
+  }
   .od-panel-body { padding: 18px 16px 40px; }
+  .od-topbar-menu { display: inline-flex; }
+}
+@media (min-width: 901px) {
+  .od-topbar-menu { display: none; }
 }
 
 /* ─── Command Palette ───────────────────────────────────────────────── */

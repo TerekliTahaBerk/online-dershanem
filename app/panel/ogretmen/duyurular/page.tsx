@@ -2,18 +2,23 @@ import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeacherAnnouncements() {
   const ctx = await requirePanelRole("ogretmen");
-  const items = await prisma.notification.findMany({
-    where: { userId: ctx.userId, type: "SYSTEM" },
+  const items = await prisma.inboxMessage.findMany({
+    where: { createdById: ctx.userId, category: "ANNOUNCEMENT" },
     orderBy: { createdAt: "desc" }, take: 50,
   });
   return (
     <>
-      <PageHeader title="Duyurular" subtitle={`${items.length} duyuru`} />
+      <PageHeader
+        title="Duyurular"
+        subtitle={`${items.length} duyuru`}
+        right={<Link href="/panel/ogretmen/duyurular/yeni" className="od-btn od-btn-primary od-btn-sm">+ Yeni duyuru</Link>}
+      />
       <Card>
         <table className="od-table">
           <thead><tr><th>Başlık</th><th>İçerik</th><th>Tarih</th></tr></thead>
@@ -25,7 +30,7 @@ export default async function TeacherAnnouncements() {
                 <td className="od-mono od-muted">{new Intl.DateTimeFormat("tr-TR").format(n.createdAt)}</td>
               </tr>
             ))}
-            {items.length === 0 ? <tr><td colSpan={3} style={{ padding: 24, textAlign: "center" }} className="od-muted">Duyuru yok.</td></tr> : null}
+            {items.length === 0 ? <tr><td colSpan={3} style={{ padding: 24, textAlign: "center" }} className="od-muted">Henüz duyuru yok.</td></tr> : null}
           </tbody>
         </table>
       </Card>

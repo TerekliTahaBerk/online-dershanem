@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { Badge } from "@/components/panel/ui/badge";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,9 @@ export default async function ParentChildren() {
                 <div><span className="od-muted">Yakınlık: </span>{relationship ?? "—"} {isPrimary ? <Badge tone="accent">Birincil</Badge> : null}</div>
                 <div><span className="od-muted">Hedef: </span>{student.targetGoal ?? "—"}</div>
                 <div><Badge tone="accent">{student.status}</Badge></div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <Link href={`/panel/veli/cocuklarim/${student.id}`} className="od-btn od-btn-ghost od-btn-sm">Detayları gör →</Link>
               </div>
             </CardBody>
           </Card>

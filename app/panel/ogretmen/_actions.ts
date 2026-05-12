@@ -133,3 +133,130 @@ export async function addCommentAction(fd: FormData) {
   });
   revalidatePath("/panel/ogretmen/karne");
 }
+
+// ─── Profile ────────────────────────────────────────────────────────────────
+export async function updateTeacherProfileAction(fd: FormData) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  await prisma.teacher.update({
+    where: { id: teacher.id },
+    data: {
+      fullName: readStr(fd, "fullName") || teacher.fullName,
+      email: readStr(fd, "email") || null,
+      phone: readStr(fd, "phone") || null,
+      bio: readStr(fd, "bio") || null,
+    },
+  });
+  revalidatePath("/panel/ogretmen/profilim");
+}
+
+// ─── Assignment toggle/delete ───────────────────────────────────────────────
+export async function toggleAssignmentStatusAction(id: string, next: AssignmentStatus) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const a = await prisma.assignment.findFirst({ where: { id, teacherId: teacher.id } });
+  if (!a) throw new Error("Yetki yok");
+  await prisma.assignment.update({ where: { id }, data: { status: next } });
+  revalidatePath("/panel/ogretmen/odevler");
+  revalidatePath(`/panel/ogretmen/odevler/${id}`);
+}
+
+export async function deleteTeacherAssignmentAction(id: string) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const a = await prisma.assignment.findFirst({ where: { id, teacherId: teacher.id } });
+  if (!a) throw new Error("Yetki yok");
+  await prisma.assignment.delete({ where: { id } });
+  revalidatePath("/panel/ogretmen/odevler");
+}
+
+// ─── Classroom session attendance (bulk) ────────────────────────────────────
+export async function recordClassroomAttendanceAction(fd: FormData) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const classroomId = readStr(fd, "classroomId");
+  const sessionDate = readStr(fd, "sessionDate");
+  if (!classroomId || !sessionDate) throw new Error("Sınıf ve tarih zorunlu");
+  const link = await prisma.classroomTeacher.findFirst({ where: { classroomId, teacherId: teacher.id } });
+  if (!link) throw new Error("Bu sınıfa atanmamışsınız");
+  const date = new Date(sessionDate);
+  const students = await prisma.classroomStudent.findMany({ where: { classroomId, leftAt: null }, select: { studentId: true } });
+  await Promise.all(students.map(async ({ studentId }) => {
+    const status = readStr(fd, `status_${studentId}`) as AttendanceStatus;
+    if (!status || !["PRESENT", "ABSENT", "LATE", "EXCUSED"].includes(status)) return;
+    const existing = await prisma.attendance.findFirst({
+      where: { studentId, classroomId, sessionDate: date, context: "CLASSROOM_SESSION" },
+    });
+    if (existing) {
+      await prisma.attendance.update({ where: { id: existing.id }, data: { status, recordedById: ctx.userId } });
+    } else {
+      await prisma.attendance.create({
+        data: { studentId, classroomId, sessionDate: date, status, context: "CLASSROOM_SESSION", recordedById: ctx.userId },
+      });
+    }
+  }));
+  revalidatePath("/panel/ogretmen/yoklama");
+}
+
+// ─── Comments ───────────────────────────────────────────────────────────────
+export async function deleteTeacherCommentAction(commentId: string) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const c = await prisma.teacherComment.findUnique({ where: { id: commentId } });
+  if (!c || c.teacherId !== teacher.id) throw new Error("Yetki yok");
+  await prisma.teacherComment.delete({ where: { id: commentId } });
+  revalidatePath(`/panel/ogretmen/ogrencilerim/${c.studentId}`);
+  revalidatePath("/panel/ogretmen/karne");
+}
+
+// ─── Announcement (Inbox to classroom or all students) ──────────────────────
+export async function sendAnnouncementAction(fd: FormData) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const title = readStr(fd, "title");
+  const body = readStr(fd, "body");
+  const classroomId = readStr(fd, "classroomId") || null;
+  if (!title || !body) throw new Error("Başlık ve içerik zorunlu");
+  let recipientIds: string[] = [];
+  if (classroomId) {
+    const link = await prisma.classroomTeacher.findFirst({ where: { classroomId, teacherId: teacher.id } });
+    if (!link) throw new Error("Bu sınıfa atanmamışsınız");
+    const studs = await prisma.classroomStudent.findMany({
+      where: { classroomId, leftAt: null },
+      select: { student: { select: { userId: true } } },
+    });
+    recipientIds = studs.map((x) => x.student.userId).filter((x): x is string => !!x);
+  } else {
+    const classes = await prisma.classroomTeacher.findMany({ where: { teacherId: teacher.id }, select: { classroomId: true } });
+    const studs = await prisma.classroomStudent.findMany({
+      where: { classroomId: { in: classes.map((c) => c.classroomId) }, leftAt: null },
+      select: { student: { select: { userId: true } } },
+    });
+    recipientIds = Array.from(new Set(studs.map((x) => x.student.userId).filter((x): x is string => !!x)));
+  }
+  if (recipientIds.length > 0) {
+    await prisma.inboxMessage.createMany({
+      data: recipientIds.map((uid) => ({
+        recipientUserId: uid,
+        title,
+        body,
+        category: "ANNOUNCEMENT" as const,
+        createdById: ctx.userId,
+      })),
+    });
+    await Promise.all(recipientIds.map((uid) => notifyUser({
+      userId: uid,
+      title: `Duyuru: ${title}`,
+      body: body.slice(0, 140),
+      type: "ANNOUNCEMENT",
+      href: "/panel/ogrenci/bildirimler",
+    }).catch(() => null)));
+  }
+  revalidatePath("/panel/ogretmen/duyurular");
+}

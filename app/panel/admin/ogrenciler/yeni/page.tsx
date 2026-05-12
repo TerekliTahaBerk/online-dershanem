@@ -1,4 +1,5 @@
 import { requirePanelRole } from "@/lib/panel-access";
+import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, FormActions } from "@/components/panel/ui/form";
@@ -8,6 +9,10 @@ export const dynamic = "force-dynamic";
 
 export default async function NewStudent() {
   await requirePanelRole("admin");
+  const [classrooms, parents] = await Promise.all([
+    prisma.classroom.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, branch: true } }),
+    prisma.parent.findMany({ orderBy: { fullName: "asc" }, select: { id: true, fullName: true, phone: true } }),
+  ]);
   return (
     <>
       <PageHeader title="Yeni öğrenci" subtitle="Hızlı kayıt formu" />
@@ -32,6 +37,26 @@ export default async function NewStudent() {
                 <option value="COMPLETED">COMPLETED</option>
                 <option value="INACTIVE">INACTIVE</option>
               </Select>
+            </Field>
+            <Field label="Sınıf ata (opsiyonel)">
+              <Select name="classroomId" defaultValue="">
+                <option value="">— Şimdilik atama —</option>
+                {classrooms.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}{c.branch ? ` · ${c.branch}` : ""}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Veli bağla (opsiyonel)">
+              <Select name="parentId" defaultValue="">
+                <option value="">— Şimdilik bağlama —</option>
+                {parents.map((p) => (
+                  <option key={p.id} value={p.id}>{p.fullName}{p.phone ? ` · ${p.phone}` : ""}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Veli ilişkisi"><Input name="parentRelationship" placeholder="Anne / Baba / Vasi" /></Field>
+            <Field label="Birincil veli">
+              <label style={{ fontSize: 13 }}><input type="checkbox" name="parentIsPrimary" /> Birincil iletişim</label>
             </Field>
             <div style={{ gridColumn: "1 / -1" }}>
               <FormActions>

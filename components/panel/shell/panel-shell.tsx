@@ -1,7 +1,5 @@
 import type { UserRole } from "@prisma/client";
-import { Sidebar } from "@/components/panel/shell/sidebar";
-import { Topbar } from "@/components/panel/shell/topbar";
-import { CommandPalette } from "@/components/panel/shell/command-palette";
+import { PanelShellClient } from "@/components/panel/shell/panel-shell-client";
 import { getSectionsForRole } from "@/components/panel/shell/sections";
 import { getCommandsForRole } from "@/lib/panel-nav";
 
@@ -27,23 +25,17 @@ export function PanelShell({
   const sections = getSectionsForRole(role);
   const commands = getCommandsForRole(role);
   return (
-    <div className="od-panel-app">
-      <Sidebar
-        role={role}
-        sections={sections}
-        userName={userName}
-        userEmail={userEmail}
-      />
-      <main className="od-panel-main">
-        <Topbar
-          role={role}
-          actualRole={actualRole}
-          isViewingAs={isViewingAs}
-          userId={userId}
-        />
-        <div className="od-panel-body">{children}</div>
-      </main>
-      <CommandPalette role={role} commands={commands} />
-    </div>
+    <PanelShellClient
+      role={role}
+      actualRole={actualRole}
+      isViewingAs={isViewingAs}
+      userId={userId}
+      userName={userName}
+      userEmail={userEmail}
+      sections={sections}
+      commands={commands}
+    >
+      {children}
+    </PanelShellClient>
   );
 }

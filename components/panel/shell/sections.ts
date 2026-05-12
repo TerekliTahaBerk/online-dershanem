@@ -117,6 +117,7 @@ function parentSections(): SidebarGroup[] {
     ]},
     { title: "İletişim", items: [
       { id: "ogretmenlerle", label: "Öğretmenlerle", icon: "inbox", href: base(seg, "ogretmenlerle") },
+      { id: "profilim", label: "Profilim", icon: "user", href: base(seg, "profilim") },
     ]},
   ];
 }

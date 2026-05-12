@@ -18,7 +18,11 @@ function toLocalDateTime(d: Date | null) {
 export default async function EditAssignment({ params }: { params: Promise<{ id: string }> }) {
   await requirePanelRole("admin");
   const { id } = await params;
-  const a = await prisma.assignment.findUnique({ where: { id } });
+  const [a, classrooms, students] = await Promise.all([
+    prisma.assignment.findUnique({ where: { id } }),
+    prisma.classroom.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, branch: true } }),
+    prisma.student.findMany({ orderBy: { fullName: "asc" }, select: { id: true, fullName: true, classLevel: true } }),
+  ]);
   if (!a) notFound();
   const update = updateAssignmentAction.bind(null, id);
   const del = deleteAssignmentAction.bind(null, id);
@@ -33,8 +37,22 @@ export default async function EditAssignment({ params }: { params: Promise<{ id:
           <form action={update} className="od-grid g-2" style={{ gap: 12 }}>
             <Field label="Başlık *"><Input name="title" defaultValue={a.title} required /></Field>
             <Field label="Ders"><Input name="subject" defaultValue={a.subject ?? ""} /></Field>
-            <Field label="Sınıf ID"><Input name="classroomId" defaultValue={a.classroomId ?? ""} /></Field>
-            <Field label="Öğrenci ID (bireysel)"><Input name="studentId" defaultValue={a.studentId ?? ""} /></Field>
+            <Field label="Sınıf">
+              <Select name="classroomId" defaultValue={a.classroomId ?? ""}>
+                <option value="">— Sınıf yok —</option>
+                {classrooms.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}{c.branch ? ` · ${c.branch}` : ""}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Öğrenci (bireysel)">
+              <Select name="studentId" defaultValue={a.studentId ?? ""}>
+                <option value="">— Bireysel yok —</option>
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>{s.fullName}{s.classLevel ? ` · ${s.classLevel}` : ""}</option>
+                ))}
+              </Select>
+            </Field>
             <Field label="Son Teslim"><Input name="dueAt" type="datetime-local" defaultValue={toLocalDateTime(a.dueAt)} /></Field>
             <Field label="Durum">
               <Select name="status" defaultValue={a.status}>

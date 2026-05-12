@@ -20,6 +20,9 @@ export async function createEntryAction(fd: FormData) {
       amount,
       description: readStr(fd, "description") || null,
       occurredAt: readStr(fd, "occurredAt") ? new Date(readStr(fd, "occurredAt")) : new Date(),
+      studentId: readStr(fd, "studentId") || null,
+      teacherId: readStr(fd, "teacherId") || null,
+      packageId: readStr(fd, "packageId") || null,
       createdById: ctx.userId,
     },
   });

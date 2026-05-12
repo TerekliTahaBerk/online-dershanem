@@ -13,6 +13,7 @@ type Props = {
   actualRole: UserRole;
   isViewingAs: boolean;
   userId: string;
+  onMenuClick?: () => void;
 };
 
 const ROLE_OPTIONS: { value: "admin" | "ogretmen" | "ogrenci" | "veli"; label: string }[] = [
@@ -22,7 +23,7 @@ const ROLE_OPTIONS: { value: "admin" | "ogretmen" | "ogrenci" | "veli"; label: s
   { value: "veli", label: "Veli" },
 ];
 
-export function Topbar({ role, actualRole, isViewingAs, userId }: Props) {
+export function Topbar({ role, actualRole, isViewingAs, userId, onMenuClick }: Props) {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -41,6 +42,18 @@ export function Topbar({ role, actualRole, isViewingAs, userId }: Props) {
 
   return (
     <header className="od-topbar">
+      {onMenuClick ? (
+        <button
+          type="button"
+          className="od-iconbtn od-topbar-menu"
+          onClick={onMenuClick}
+          aria-label="Menüyü aç"
+          title="Menü"
+        >
+          <PanelIcon name="menu" size={18} />
+        </button>
+      ) : null}
+
       {isViewingAs ? (
         <div className="od-topbar-banner">
           <PanelIcon name="eye" size={14} />

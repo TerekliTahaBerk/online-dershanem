@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
-import { Field, Input, Textarea, FormActions } from "@/components/panel/ui/form";
+import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
 import { updateParentAction, deleteParentAction, linkChildAction, unlinkChildAction } from "../../_actions";
 
 export const dynamic = "force-dynamic";
@@ -12,11 +12,16 @@ export const dynamic = "force-dynamic";
 export default async function EditParent({ params }: { params: Promise<{ id: string }> }) {
   await requirePanelRole("admin");
   const { id } = await params;
-  const p = await prisma.parent.findUnique({
-    where: { id },
-    include: { students: { include: { student: { select: { id: true, fullName: true } } } } },
-  });
+  const [p, allStudents] = await Promise.all([
+    prisma.parent.findUnique({
+      where: { id },
+      include: { students: { include: { student: { select: { id: true, fullName: true } } } } },
+    }),
+    prisma.student.findMany({ orderBy: { fullName: "asc" }, select: { id: true, fullName: true, classLevel: true } }),
+  ]);
   if (!p) notFound();
+  const linkedIds = new Set(p.students.map((s) => s.student.id));
+  const unlinked = allStudents.filter((s) => !linkedIds.has(s.id));
   const update = updateParentAction.bind(null, id);
   const del = deleteParentAction.bind(null, id);
   const linkChild = linkChildAction.bind(null, id);
@@ -62,7 +67,14 @@ export default async function EditParent({ params }: { params: Promise<{ id: str
 
           <h3 style={{ fontSize: 14, fontWeight: 700, margin: "20px 0 12px" }}>Çocuk ekle</h3>
           <form action={linkChild} className="od-grid g-3" style={{ gap: 12, alignItems: "end" }}>
-            <Field label="Öğrenci ID *"><Input name="studentId" required placeholder="Öğrenci ID" /></Field>
+            <Field label="Öğrenci *">
+              <Select name="studentId" required defaultValue="">
+                <option value="" disabled>Seçin…</option>
+                {unlinked.map((s) => (
+                  <option key={s.id} value={s.id}>{s.fullName}{s.classLevel ? ` · ${s.classLevel}` : ""}</option>
+                ))}
+              </Select>
+            </Field>
             <Field label="İlişki"><Input name="relationship" placeholder="Anne / Baba / Vasi" /></Field>
             <Field label="Birincil"><label style={{ fontSize: 13 }}><input type="checkbox" name="isPrimary" /> Birincil iletişim</label></Field>
             <div style={{ gridColumn: "1 / -1" }}>

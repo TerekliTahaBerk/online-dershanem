@@ -32,7 +32,10 @@ export function Sidebar({ role, sections, userName, userEmail }: Props) {
   return (
     <aside className="od-sidebar">
       <div className="od-sb-brand">
-        <div className="od-sb-mark">Ö</div>
+        <div className="od-sb-mark">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="Online Dershanem" />
+        </div>
         <div>
           <div className="od-sb-brand-name">OnlineDershanem</div>
           <div className="od-sb-brand-sub">{ROLE_LABEL[role]} paneli</div>

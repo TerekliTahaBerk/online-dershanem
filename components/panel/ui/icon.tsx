@@ -49,6 +49,7 @@ import {
   Users2,
   Megaphone,
   Home,
+  Menu,
   type LucideIcon,
 } from "lucide-react";
 
@@ -103,6 +104,7 @@ const ICONS: Record<string, LucideIcon> = {
   school: School,
   parent: Users2,
   megaphone: Megaphone,
+  menu: Menu,
 };
 
 export type PanelIconName = keyof typeof ICONS;

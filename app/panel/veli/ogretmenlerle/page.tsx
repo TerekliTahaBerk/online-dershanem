@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { requireParent, getChildIds } from "@/lib/panel-parent";
 import { PageHeader } from "@/components/panel/ui/page-header";
-import { Card } from "@/components/panel/ui/card";
+import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { Field, Input, Textarea, Select, FormActions } from "@/components/panel/ui/form";
+import { sendMessageToTeacherAction } from "../_actions";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +62,41 @@ export default async function ParentTeachers() {
           </table>
         </Card>
       </div>
+
+      {teachers.length > 0 ? (
+        <>
+          <CardHeader title="Öğretmene mesaj gönder" subtitle="Mesajınız öğretmenin gelen kutusuna iletilir" />
+          <div className="od-grid g-2">
+            {teachers.map((t) => (
+              <Card key={`msg-${t.id}`}>
+                <CardHeader title={t.fullName} subtitle={t.subjects ?? ""} />
+                <CardBody>
+                  <form action={sendMessageToTeacherAction} style={{ display: "grid", gap: 10 }}>
+                    <input type="hidden" name="teacherId" value={t.id} />
+                    <Field label="Çocuk">
+                      <Select name="studentId" required defaultValue="">
+                        <option value="" disabled>Seçin…</option>
+                        {parent.students.map(({ student }) => (
+                          <option key={student.id} value={student.id}>{student.fullName}</option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Field label="Konu">
+                      <Input name="title" required maxLength={120} placeholder="Konu" />
+                    </Field>
+                    <Field label="Mesaj">
+                      <Textarea name="body" required rows={3} maxLength={2000} placeholder="Öğretmene iletmek istediğiniz mesaj..." />
+                    </Field>
+                    <FormActions>
+                      <button type="submit" className="od-btn od-btn-primary od-btn-sm">Gönder</button>
+                    </FormActions>
+                  </form>
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+        </>
+      ) : null}
     </>
   );
 }
