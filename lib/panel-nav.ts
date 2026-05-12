@@ -1,5 +1,6 @@
 import { getSectionsForRole } from "@/components/panel/shell/sections";
 import type { UserRole } from "@prisma/client";
+import type { AccessFlags } from "@/lib/access/odk";
 
 export type NavCommand = {
   id: string;
@@ -9,8 +10,11 @@ export type NavCommand = {
   icon: string;
 };
 
-export function getCommandsForRole(role: UserRole): NavCommand[] {
-  const sections = getSectionsForRole(role);
+export function getCommandsForRole(
+  role: UserRole,
+  accessFlags?: AccessFlags,
+): NavCommand[] {
+  const sections = getSectionsForRole(role, accessFlags);
   const cmds: NavCommand[] = [];
   for (const sec of sections) {
     const group = sec.title ?? "Genel";

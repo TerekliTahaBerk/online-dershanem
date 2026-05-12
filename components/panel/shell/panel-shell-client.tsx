@@ -8,6 +8,7 @@ import { Topbar } from "@/components/panel/shell/topbar";
 import { CommandPalette } from "@/components/panel/shell/command-palette";
 import type { SidebarGroup } from "@/components/panel/shell/sections";
 import type { NavCommand } from "@/lib/panel-nav";
+import type { AccessFlags } from "@/lib/access/odk";
 
 type Props = {
   role: UserRole;
@@ -18,6 +19,7 @@ type Props = {
   userEmail: string;
   sections: SidebarGroup[];
   commands: NavCommand[];
+  accessFlags: AccessFlags;
   children: React.ReactNode;
 };
 
@@ -30,6 +32,7 @@ export function PanelShellClient({
   userEmail,
   sections,
   commands,
+  accessFlags,
   children,
 }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -82,6 +85,7 @@ export function PanelShellClient({
           actualRole={actualRole}
           isViewingAs={isViewingAs}
           userId={userId}
+          accessFlags={accessFlags}
           onMenuClick={() => setDrawerOpen((v) => !v)}
         />
         <div className="od-panel-body">{children}</div>

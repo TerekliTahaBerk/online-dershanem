@@ -843,14 +843,19 @@ model OdkExam {
   slug                String               @unique
   description         String?
   cadenceFamily       OdkExamCadenceFamily @map("cadence_family")
+  classLevel          String?              @map("class_level")
   examSeriesId        String?              @map("exam_series_id")
   status              OdkExamStatus        @default(DRAFT)
   durationMinutes     Int                  @default(120) @map("duration_minutes")
   startsAt            DateTime?            @map("starts_at")
   endsAt              DateTime?            @map("ends_at")
+  publishedAt         DateTime?            @map("published_at")
   answerKeyReleasedAt DateTime?            @map("answer_key_released_at")
   resultsReleasedAt   DateTime?            @map("results_released_at")
   googleMeetLink      String?              @map("google_meet_link")
+  /// JSON: { showResultImmediately, showAnswerKeyImmediately, allowReview,
+  /// fullscreenRequired, blockCopyPaste, autoSubmitOnFullscreenExit, warnOnViolation }
+  settings            Json?
   createdById         String?              @map("created_by_id")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
@@ -885,18 +890,27 @@ model OdkExamSection {
 }
 
 model OdkExamOfficialAnswer {
-  id             String         @id @default(cuid())
-  examId         String         @map("exam_id")
-  sectionId      String         @map("section_id")
-  questionNumber Int            @map("question_number")
-  correctOption  String         @map("correct_option")
-  /// JSON: { konu: string, kazanim: string, altKazanim?: string }
-  outcomes       Json?
-  createdAt      DateTime       @default(now()) @map("created_at")
-  section        OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  id                  String         @id @default(cuid())
+  examId              String         @map("exam_id")
+  sectionId           String         @map("section_id")
+  questionNumber      Int            @map("question_number")
+  correctOption       String         @map("correct_option")
+  /// Faz-1 legacy: { konu, kazanim, altKazanim? }. Faz-2 zenginleştirilmiş şema:
+  /// { lesson, unit?, topic?, learningOutcomeCode?, learningOutcome?, difficulty? }
+  outcomes            Json?
+  // Faz-2: Zenginleştirilmiş kazanım alanları (nullable; outcomes JSON ile birlikte yazılır).
+  lesson              String?        @map("lesson")
+  unit                String?        @map("unit")
+  topic               String?        @map("topic")
+  learningOutcomeCode String?        @map("learning_outcome_code")
+  learningOutcome     String?        @map("learning_outcome")
+  difficulty          String?        @map("difficulty")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  section             OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@unique([sectionId, questionNumber])
   @@index([examId])
+  @@index([examId, learningOutcomeCode])
   @@map("odk_exam_official_answers")
 }
 
@@ -1071,31 +1085,35 @@ model OdkEntitlement {
 }
 
 model OdkExamAttempt {
-  id              String                    @id @default(cuid())
-  userId          String                    @map("user_id")
-  examId          String                    @map("exam_id")
-  entitlementId   String?                   @map("entitlement_id")
-  status          OdkAttemptStatus          @default(IN_PROGRESS)
-  startedAt       DateTime                  @default(now()) @map("started_at")
-  submittedAt     DateTime?                 @map("submitted_at")
-  score           Decimal?                  @db.Decimal(6, 2)
-  correctCount    Int                       @default(0) @map("correct_count")
-  wrongCount      Int                       @default(0) @map("wrong_count")
-  blankCount      Int                       @default(0) @map("blank_count")
-  resultPayload   Json?                     @map("result_payload")
-  sectionScores   Json?                     @map("section_scores")
-  tabSwitchCount  Int                       @default(0) @map("tab_switch_count")
-  durationSeconds Int?                      @map("duration_seconds")
+  id                  String                    @id @default(cuid())
+  userId              String                    @map("user_id")
+  examId              String                    @map("exam_id")
+  entitlementId       String?                   @map("entitlement_id")
+  status              OdkAttemptStatus          @default(IN_PROGRESS)
+  startedAt           DateTime                  @default(now()) @map("started_at")
+  submittedAt         DateTime?                 @map("submitted_at")
+  score               Decimal?                  @db.Decimal(6, 2)
+  correctCount        Int                       @default(0) @map("correct_count")
+  wrongCount          Int                       @default(0) @map("wrong_count")
+  blankCount          Int                       @default(0) @map("blank_count")
+  resultPayload       Json?                     @map("result_payload")
+  sectionScores       Json?                     @map("section_scores")
+  tabSwitchCount      Int                       @default(0) @map("tab_switch_count")
+  cheatViolationCount Int                       @default(0) @map("cheat_violation_count")
+  lastEventAt         DateTime?                 @map("last_event_at")
+  autoSubmitted       Boolean                   @default(false) @map("auto_submitted")
+  durationSeconds     Int?                      @map("duration_seconds")
   /// Denormalized 0-1 suspicion score derived from integrityFlags at submit time.
   /// 0 = no signals, 1 = maximally suspicious. Null for auto-submitted attempts
   /// with no answer-timing data. Use for ORDER BY / filter without JSON parsing.
-  suspiciousScore Float?                    @map("suspicious_score")
-  createdAt       DateTime                  @default(now()) @map("created_at")
-  updatedAt       DateTime                  @updatedAt @map("updated_at")
-  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exam            OdkExam                   @relation(fields: [examId], references: [id], onDelete: Cascade)
-  entitlement     OdkEntitlement?           @relation(fields: [entitlementId], references: [id], onDelete: SetNull)
-  opticalAnswers  OdkAttemptOpticalAnswer[]
+  suspiciousScore     Float?                    @map("suspicious_score")
+  createdAt           DateTime                  @default(now()) @map("created_at")
+  updatedAt           DateTime                  @updatedAt @map("updated_at")
+  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam                OdkExam                   @relation(fields: [examId], references: [id], onDelete: Cascade)
+  entitlement         OdkEntitlement?           @relation(fields: [entitlementId], references: [id], onDelete: SetNull)
+  opticalAnswers      OdkAttemptOpticalAnswer[]
+  events              OdkExamAttemptEvent[]
 
   @@index([userId, examId])
   @@index([userId, status])
@@ -1103,6 +1121,43 @@ model OdkExamAttempt {
   @@index([examId, status, submittedAt])
   @@index([examId, status, startedAt])
   @@map("odk_exam_attempts")
+}
+
+enum OdkAttemptEventType {
+  TAB_BLUR
+  TAB_FOCUS
+  VISIBILITY_HIDDEN
+  VISIBILITY_VISIBLE
+  FULLSCREEN_ENTER
+  FULLSCREEN_EXIT
+  RIGHT_CLICK
+  COPY
+  PASTE
+  CUT
+  PRINT
+  KEY_DEVTOOLS
+  ANSWER_CHANGE
+  NAVIGATE
+  AUTOSAVE
+  NETWORK_DROP
+  NETWORK_RESUME
+  WARNING_SHOWN
+}
+
+/// Cheat / UX olayı (sekme geçişi, fokus kaybı, kopyala-yapıştır vb.).
+/// Submit sonrası audit ve istatistik için saklanır.
+model OdkExamAttemptEvent {
+  id             String              @id @default(cuid())
+  attemptId      String              @map("attempt_id")
+  type           OdkAttemptEventType
+  questionNumber Int?                @map("question_number")
+  payload        Json?
+  occurredAt     DateTime            @default(now()) @map("occurred_at")
+  attempt        OdkExamAttempt      @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId, occurredAt])
+  @@index([attemptId, type])
+  @@map("odk_exam_attempt_events")
 }
 
 model OdkAttemptOpticalAnswer {
