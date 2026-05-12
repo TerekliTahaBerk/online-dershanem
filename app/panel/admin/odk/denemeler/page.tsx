@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { ExportButton } from "@/components/panel/ui/export-button";
 
 export const metadata: Metadata = {
   title: "ODK Denemeler · Admin",
@@ -61,9 +62,12 @@ export default async function AdminOdkExamsList() {
         title="ODK Denemeler"
         subtitle={`Toplam ${exams.length} deneme · TYT / AYT / LGS dijital sınav yönetimi`}
         right={
-          <Link href="/panel/admin/odk/denemeler/yeni" className="od-btn od-btn-primary">
-            Yeni deneme
-          </Link>
+          <div style={{ display: "flex", gap: 8 }}>
+            <ExportButton entity="odk-denemeler" label="Excel" />
+            <Link href="/panel/admin/odk/denemeler/yeni" className="od-btn od-btn-primary">
+              Yeni deneme
+            </Link>
+          </div>
         }
       />
 

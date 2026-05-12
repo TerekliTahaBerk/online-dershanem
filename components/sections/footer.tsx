@@ -9,6 +9,7 @@ import { ContactLink } from "@/components/ui/contact-link";
 const productLinks = [
   { label: "Paketler", href: "/paketler/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
+  { label: "ODK Paketleri", href: "/odk-paketleri/" },
   { label: "Kamplar", href: "/kamplar/" },
   { label: "Blog", href: "/blog/" },
 ];

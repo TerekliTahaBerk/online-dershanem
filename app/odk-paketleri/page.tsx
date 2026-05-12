@@ -138,6 +138,55 @@ export default async function OdkPackagesPage() {
             </div>
           </div>
         </section>
+
+        {/* FAQ */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className="mx-auto max-w-4xl px-5 py-16">
+            <div className="text-center">
+              <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
+                Sık Sorulanlar
+              </span>
+              <h2 className="mt-3 font-display text-[30px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[36px]">
+                Merak edilenler.
+              </h2>
+            </div>
+
+            <div className="mx-auto mt-8 max-w-3xl divide-y divide-[var(--od-line)] rounded-[20px] border border-[var(--od-line)] bg-white">
+              {[
+                {
+                  q: "Paketi satın aldıktan sonra denemelere nasıl erişeceğim?",
+                  a: "Satın alma onayından sonra öğrenci panelinde ‘Denemelerim’ bölümünden tüm aktif denemeler listelenir. Tek tıkla çözüme başlayabilirsin.",
+                },
+                {
+                  q: "Deneme süresi dolmadan ara verebilir miyim?",
+                  a: "Hayır. Süre başladığında geri sayım kesintisiz işler — tıpkı gerçek sınavda olduğu gibi. Bu, doğru ölçüm için bilinçli bir tasarım kararı.",
+                },
+                {
+                  q: "Sonuçlarımı kim görüyor?",
+                  a: "Sonuçların yalnızca sana, varsa öğretmenine ve veliye (öğrenci alt yaştaysa) görünür. Üçüncü taraflarla paylaşılmaz.",
+                },
+                {
+                  q: "Mobilde de çözebilir miyim?",
+                  a: "Evet. PDF kitapçık ve dijital optik form mobilde alt-üst düzene geçer; tablet ve telefonda da rahat çözebilirsin.",
+                },
+                {
+                  q: "İade politikası nedir?",
+                  a: "Hiç deneme başlatmadıysan, satın aldıktan sonra 14 gün içinde tam iade hakkın var. Detaylar için /iade sayfasına bakabilirsin.",
+                },
+              ].map((item) => (
+                <details key={item.q} className="group px-5 py-5 sm:px-6">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-[15px] font-medium text-[var(--od-ink)]">
+                    {item.q}
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--od-line)] bg-[var(--od-cream)] text-[var(--od-olive)] transition group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-3 text-[14px] leading-7 text-[var(--od-ink-soft)]">{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

@@ -371,6 +371,7 @@ function SectionGrid({
                     key={o}
                     type="button"
                     aria-pressed={isSel}
+                    aria-label={`Soru ${qn}, cevap ${o}${isSel ? " (seçili)" : ""}`}
                     className={`odk-bubble ${isSel ? "is-selected" : ""}`}
                     onClick={() => onPick(qn, isSel ? null : o)}
                   >
