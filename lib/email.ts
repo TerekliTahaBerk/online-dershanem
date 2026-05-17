@@ -887,3 +887,116 @@ export async function sendNotificationDigestEmail({
     html,
   });
 }
+
+// ─── Round 5 — Parent weekly digest ─────────────────────────────────────────
+
+/**
+ * Veliye haftalık özet e-postası. Her çocuk için kart-benzeri blok
+ * (devamsızlık / bekleyen ödev / son puan / yaklaşan ders / son ODK net)
+ * + kritik uyarılar üstte. Pazartesi 08:00 cron.
+ */
+export async function sendParentWeeklyDigestEmail({
+  to,
+  parentName,
+  children,
+}: {
+  to: string;
+  parentName?: string | null;
+  children: Array<{
+    fullName: string;
+    classLevel: string | null;
+    attendance7: { total: number; present: number; absent: number; late: number };
+    pendingAssignments: number;
+    overdueAssignments: number;
+    lastGradedScore: number | null;
+    lastGradedTitle: string | null;
+    upcomingLessons7: number;
+    lastOdkNet: number | null;
+    lastOdkExam: string | null;
+    alerts: Array<{ severity: "info" | "warning" | "critical"; message: string }>;
+  }>;
+}) {
+  if (children.length === 0) return;
+  const greet = parentName ? `Merhaba ${escapeHtml(parentName)},` : "Merhaba,";
+
+  const criticalAll = children.flatMap((c) =>
+    c.alerts.filter((a) => a.severity === "critical").map((a) => ({ child: c.fullName, message: a.message })),
+  );
+
+  const criticalBlock =
+    criticalAll.length > 0
+      ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 18px;margin:8px 0 20px;">
+          <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#991b1b;">🚨 Acil dikkat</p>
+          ${criticalAll
+            .map(
+              (a) =>
+                `<p style="margin:4px 0;font-size:13px;color:#7f1d1d;">• <strong>${escapeHtml(a.child)}:</strong> ${escapeHtml(a.message)}</p>`,
+            )
+            .join("")}
+        </div>`
+      : "";
+
+  function metric(label: string, value: string, tone: "ok" | "warn" | "bad" | "neutral" = "neutral"): string {
+    const color = tone === "bad" ? "#991b1b" : tone === "warn" ? "#92400e" : tone === "ok" ? "#065f46" : "#5a544a";
+    const bg = tone === "bad" ? "#fef2f2" : tone === "warn" ? "#fffbeb" : tone === "ok" ? "#f0fdf4" : "#f8f8f5";
+    return `<div style="background:${bg};border-radius:8px;padding:8px 10px;flex:1;min-width:120px;">
+      <div style="font-size:10px;color:#9c9589;text-transform:uppercase;letter-spacing:0.5px;">${label}</div>
+      <div style="font-size:15px;font-weight:700;color:${color};margin-top:2px;">${value}</div>
+    </div>`;
+  }
+
+  const childCards = children
+    .map((c) => {
+      const attRate = c.attendance7.total > 0 ? Math.round((c.attendance7.present / c.attendance7.total) * 100) : null;
+      const attTone: "ok" | "warn" | "bad" | "neutral" =
+        attRate == null ? "neutral" : attRate >= 90 ? "ok" : attRate >= 70 ? "warn" : "bad";
+      const overdueTone: "ok" | "warn" | "bad" | "neutral" =
+        c.overdueAssignments >= 2 ? "bad" : c.overdueAssignments >= 1 ? "warn" : "ok";
+      const warningAlerts = c.alerts.filter((a) => a.severity !== "critical");
+      const warningBlock = warningAlerts.length
+        ? `<div style="margin-top:8px;font-size:12px;color:#92400e;">
+            ${warningAlerts.map((a) => `<div>⚠ ${escapeHtml(a.message)}</div>`).join("")}
+          </div>`
+        : "";
+      return `
+        <div style="border:1px solid #E5E5E0;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;">
+            <h3 style="margin:0;font-size:16px;font-weight:800;color:#091413;">${escapeHtml(c.fullName)}</h3>
+            <span style="font-size:11px;color:#9c9589;">${escapeHtml(c.classLevel ?? "—")}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+            ${metric("7g devam", attRate != null ? `%${attRate}` : "—", attTone)}
+            ${metric("Bekleyen ödev", String(c.pendingAssignments), c.pendingAssignments >= 3 ? "warn" : "neutral")}
+            ${metric("Geciken", String(c.overdueAssignments), overdueTone)}
+            ${metric("Bu hafta ders", String(c.upcomingLessons7), "neutral")}
+            ${
+              c.lastGradedScore != null
+                ? metric("Son ödev", `${c.lastGradedScore}/100`, c.lastGradedScore >= 70 ? "ok" : c.lastGradedScore >= 50 ? "warn" : "bad")
+                : ""
+            }
+            ${c.lastOdkNet != null ? metric("Son ODK net", String(c.lastOdkNet), "neutral") : ""}
+          </div>
+          ${warningBlock}
+        </div>`;
+    })
+    .join("");
+
+  const html = baseTemplate(`
+    ${heading("Haftalık özet")}
+    ${paragraph(`${greet} çocuklarınızın geçtiğimiz haftadaki durumu aşağıdadır.`)}
+    ${criticalBlock}
+    ${childCards}
+    ${ctaButton("Veli paneline git →", `${APP_URL}/panel/veli`)}
+    ${divider()}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Haftalık özetleri kapatmak için bildirim tercihlerinizi güncelleyebilirsiniz.</span>')}
+  `);
+
+  const subjectSuffix =
+    criticalAll.length > 0 ? ` — ${criticalAll.length} acil dikkat` : ` — ${children.length} çocuk`;
+  await sendEmail({
+    to,
+    subject: `Haftalık özet${subjectSuffix}`,
+    html,
+  });
+}
+

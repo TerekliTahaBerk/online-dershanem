@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/content";
 import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
+import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "TYT-AYT Grup Özel Ders Paketleri",
@@ -17,8 +18,21 @@ export const metadata: Metadata = {
 };
 
 export default function TYTLandingPage() {
+  const courseLd = courseJsonLd({
+    name: "TYT-AYT Grup Özel Ders",
+    description:
+      "TYT ve AYT için ders bazlı küçük grup özel ders. Maksimum 4 kişilik gruplarla seviyeye göre yerleşim, haftalık takip ve net odaklı çalışma planı.",
+    url: "/yks/",
+  });
+  const breadcrumbLd = breadcrumbJsonLd([
+    { name: "Ana Sayfa", url: "/" },
+    { name: "TYT-AYT Grup Özel Ders", url: "/yks/" },
+  ]);
   return (
-    <ExamSalesLanding
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <ExamSalesLanding
       data={{
         examKey: "TYT-AYT",
         heroBadge: "TYT-AYT Grup Özel Ders",
@@ -46,5 +60,6 @@ export default function TYTLandingPage() {
         ]
       }}
     />
+    </>
   );
 }

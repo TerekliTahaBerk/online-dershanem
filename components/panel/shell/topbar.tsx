@@ -16,6 +16,7 @@ type Props = {
   isViewingAs: boolean;
   userId: string;
   accessFlags: AccessFlags;
+  currentProduct?: "od" | "odk";
   onMenuClick?: () => void;
 };
 
@@ -26,7 +27,7 @@ const ROLE_OPTIONS: { value: "admin" | "ogretmen" | "ogrenci" | "veli"; label: s
   { value: "veli", label: "Veli" },
 ];
 
-export function Topbar({ role, actualRole, isViewingAs, userId, accessFlags, onMenuClick }: Props) {
+export function Topbar({ role, actualRole, isViewingAs, userId, accessFlags, currentProduct = "od", onMenuClick }: Props) {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -57,7 +58,7 @@ export function Topbar({ role, actualRole, isViewingAs, userId, accessFlags, onM
         </button>
       ) : null}
 
-      <ProductSwitcher role={role} actualRole={actualRole} accessFlags={accessFlags} />
+      <ProductSwitcher role={role} actualRole={actualRole} accessFlags={accessFlags} currentProduct={currentProduct} />
 
       {isViewingAs ? (
         <div className="od-topbar-banner">

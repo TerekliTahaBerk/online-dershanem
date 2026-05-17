@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import { PanelIcon, type PanelIconName } from "@/components/panel/ui/icon";
-import type { SidebarGroup } from "@/components/panel/shell/sections";
+import type { SidebarGroup, ProductId } from "@/components/panel/shell/sections";
 
 type Props = {
   role: UserRole;
   sections: SidebarGroup[];
+  product?: ProductId;
   userName: string | null;
   userEmail: string;
 };
@@ -27,17 +28,20 @@ function initials(name: string | null | undefined, fallback: string): string {
   return parts.map((p) => p[0]?.toUpperCase() ?? "").join("") || source[0].toUpperCase();
 }
 
-export function Sidebar({ role, sections, userName, userEmail }: Props) {
+export function Sidebar({ role, sections, product = "od", userName, userEmail }: Props) {
   const pathname = usePathname();
+  const isOdk = product === "odk";
   return (
-    <aside className="od-sidebar">
+    <aside className={`od-sidebar${isOdk ? " is-odk" : " is-od"}`}>
       <div className="od-sb-brand">
         <div className="od-sb-mark">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon-192.png" alt="Online Dershanem" />
+          <img src="/icon-192.png" alt={isOdk ? "Online Deneme Kulübü" : "Online Dershanem"} />
         </div>
         <div>
-          <div className="od-sb-brand-name">OnlineDershanem</div>
+          <div className="od-sb-brand-name">
+            {isOdk ? "OnlineDenemeKulübü" : "OnlineDershanem"}
+          </div>
           <div className="od-sb-brand-sub">{ROLE_LABEL[role]} paneli</div>
         </div>
       </div>

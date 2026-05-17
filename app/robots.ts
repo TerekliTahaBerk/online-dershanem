@@ -5,11 +5,26 @@ export const dynamic = "force-static";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: "*",
-      allow: ["/", "/favicon.ico", "/favicon.png", "/apple-touch-icon.png"]
-    },
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: [
+          "/panel/",
+          "/api/",
+          "/giris",
+          "/kayit",
+          "/sifremi-unuttum",
+          "/odk/oturum/",
+          "/odk-paketleri/*/satin-al",
+        ],
+      },
+      // Aggressive bot'ları engelle (opsiyonel — bandwidth koruması)
+      { userAgent: "GPTBot", disallow: "/" },
+      { userAgent: "ClaudeBot", disallow: "/" },
+      { userAgent: "CCBot", disallow: "/" },
+    ],
     host: siteUrl,
-    sitemap: `${siteUrl}/sitemap.xml`
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

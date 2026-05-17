@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireOdkPanel } from "@/lib/access/odk-panel";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/panel/ui/page-header";
@@ -6,6 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { KpiCard } from "@/components/panel/ui/kpi-card";
+import { toggleAccessTagAction, deleteAccessTagAction } from "./_actions";
 
 export const metadata: Metadata = {
   title: "Erişim Tagları · ODK Admin",
@@ -75,6 +77,19 @@ export default async function AdminOdkAccessPage() {
       <PageHeader
         title="Erişim Tagları"
         subtitle="OD (OnlineDershanem) ve ODK (OnlineDenemeKulübü) ürün erişim katmanı"
+        right={
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/panel/admin/odk/erisim/kullanicilar" className="od-btn od-btn-ghost">
+              Kullanıcı erişimleri →
+            </Link>
+            <Link href="/panel/admin/odk/erisim/bulk" className="od-btn od-btn-ghost">
+              Toplu CSV
+            </Link>
+            <Link href="/panel/admin/odk/erisim/yeni" className="od-btn od-btn-primary">
+              + Yeni tag
+            </Link>
+          </div>
+        }
       />
 
       <div className="od-kpi-grid">
@@ -107,29 +122,65 @@ export default async function AdminOdkAccessPage() {
                     <th>Deneme</th>
                     <th>Paket</th>
                     <th>Durum</th>
+                    <th>İşlem</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {tags.map((t) => (
-                    <tr key={t.id}>
-                      <td>
-                        <Badge tone={t.service === "ODK" ? "purple" : "accent"}>{t.service}</Badge>
-                      </td>
-                      <td className="od-mono" style={{ fontSize: 11 }}>{t.key}</td>
-                      <td>
-                        <strong>{t.title}</strong>
-                        {t.description ? (
-                          <div className="od-muted" style={{ fontSize: 11 }}>{t.description}</div>
-                        ) : null}
-                      </td>
-                      <td>{t._count.userTags}</td>
-                      <td>{t._count.examTags}</td>
-                      <td>{t._count.packageTags}</td>
-                      <td>
-                        {t.isActive ? <Badge tone="ok">Aktif</Badge> : <Badge tone="neutral">Pasif</Badge>}
-                      </td>
-                    </tr>
-                  ))}
+                  {tags.map((t) => {
+                    const totalUsage = t._count.userTags + t._count.examTags + t._count.packageTags;
+                    const toggle = toggleAccessTagAction.bind(null, t.id, !t.isActive);
+                    const remove = deleteAccessTagAction.bind(null, t.id);
+                    return (
+                      <tr key={t.id}>
+                        <td>
+                          <Badge tone={t.service === "ODK" ? "purple" : "accent"}>{t.service}</Badge>
+                        </td>
+                        <td className="od-mono" style={{ fontSize: 11 }}>{t.key}</td>
+                        <td>
+                          <strong>{t.title}</strong>
+                          {t.description ? (
+                            <div className="od-muted" style={{ fontSize: 11 }}>{t.description}</div>
+                          ) : null}
+                        </td>
+                        <td>{t._count.userTags}</td>
+                        <td>{t._count.examTags}</td>
+                        <td>{t._count.packageTags}</td>
+                        <td>
+                          {t.isActive ? <Badge tone="ok">Aktif</Badge> : <Badge tone="neutral">Pasif</Badge>}
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                            <Link
+                              href={`/panel/admin/odk/erisim/${t.id}/duzenle`}
+                              className="od-btn od-btn-ghost"
+                              style={{ fontSize: 11, padding: "4px 8px" }}
+                            >
+                              Düzenle
+                            </Link>
+                            <form action={toggle} style={{ display: "inline" }}>
+                              <button
+                                type="submit"
+                                className="od-btn od-btn-ghost"
+                                style={{ fontSize: 11, padding: "4px 8px" }}
+                              >
+                                {t.isActive ? "Pasifleştir" : "Aktifleştir"}
+                              </button>
+                            </form>
+                            <form action={remove} style={{ display: "inline" }}>
+                              <button
+                                type="submit"
+                                className="od-btn od-btn-ghost"
+                                style={{ fontSize: 11, padding: "4px 8px", color: "var(--pd-bad, #b91c1c)" }}
+                                title={totalUsage > 0 ? "Kullanımda olduğu için pasifleştirilecek" : "Kalıcı silinecek"}
+                              >
+                                {totalUsage > 0 ? "Pasif" : "Sil"}
+                              </button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}

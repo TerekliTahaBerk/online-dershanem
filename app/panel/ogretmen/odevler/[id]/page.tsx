@@ -107,11 +107,12 @@ export default async function TeacherAssignmentDetail({ params }: { params: Prom
                     </div>
                   ) : null}
                   <form action={gradeMySubmissionAction.bind(null, s.id)} className="od-grid g-3" style={{ gap: 8, alignItems: "end", marginTop: 12 }}>
+                    <input type="hidden" name="autoAdvance" value="1" />
                     <Field label="Puan (0-100)"><Input name="score" type="number" min={0} max={100} defaultValue={s.score ?? ""} /></Field>
                     <div style={{ gridColumn: "span 2" }}>
                       <Field label="Geri bildirim"><Input name="feedback" defaultValue={s.feedback ?? ""} placeholder="Kısa not…" /></Field>
                     </div>
-                    <FormActions><button className="od-btn od-btn-primary od-btn-sm" type="submit">Kaydet</button></FormActions>
+                    <FormActions><button className="od-btn od-btn-primary od-btn-sm" type="submit">Kaydet & Sıradaki</button></FormActions>
                   </form>
                 </div>
               ))}

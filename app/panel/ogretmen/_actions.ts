@@ -2,8 +2,10 @@
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { AttendanceStatus, AssignmentStatus } from "@prisma/client";
 import { notifyUser } from "@/lib/realtime";
+import { getNextPendingSubmissionId } from "@/lib/teacher-utils";
 
 function readStr(fd: FormData, key: string): string {
   const v = fd.get(key);
@@ -113,6 +115,16 @@ export async function gradeMySubmissionAction(submissionId: string, fd: FormData
     });
   }
   revalidatePath("/panel/ogretmen/odevler");
+
+  // Round 4: auto-advance to next pending submission in the same assignment
+  if (fd.get("autoAdvance") === "1") {
+    const next = await getNextPendingSubmissionId(teacher.id, submissionId);
+    if (next?.nextSubmissionId) {
+      redirect(`/panel/ogretmen/odevler/${next.assignmentId}?focus=${next.nextSubmissionId}`);
+    } else if (next) {
+      redirect(`/panel/ogretmen/odevler/${next.assignmentId}?done=1`);
+    }
+  }
 }
 
 export async function addCommentAction(fd: FormData) {

@@ -7,6 +7,9 @@ import { Card, CardBody, CardHeader } from "@/components/panel/ui/card";
 import { KpiCard } from "@/components/panel/ui/kpi-card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { getOdkAdminAnalytics } from "@/lib/analytics/odk-admin";
+import { getTopRiskyStudents } from "@/lib/analytics/risk";
+import { TrendCard, BarList, Heatmap, RiskBadge, StatCard } from "@/components/panel/analytics";
 
 export const metadata: Metadata = {
   title: "ODK · Admin",
@@ -47,6 +50,8 @@ export default async function AdminOdkDashboard() {
     netAvg,
     recentAttempts,
     topExams,
+    analytics,
+    riskyStudents,
   ] = await Promise.all([
     prisma.odkExam.count(),
     prisma.odkExam.count({ where: { status: "PUBLISHED" } }),
@@ -84,6 +89,8 @@ export default async function AdminOdkDashboard() {
       orderBy: { _count: { examId: "desc" } },
       take: 5,
     }),
+    getOdkAdminAnalytics(30),
+    getTopRiskyStudents(8),
   ]);
 
   const topExamIds = topExams.map((t) => t.examId);
@@ -126,6 +133,119 @@ export default async function AdminOdkDashboard() {
           value={cheatTotal._sum.cheatViolationCount ?? 0}
           meta="Toplam tüm denemeler"
         />
+      </div>
+
+      {/* FAZ 8 — Analytics layer */}
+      <div style={{ marginTop: 16 }}>
+        <h3 style={{ margin: "0 0 12px", fontSize: 14, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>Son 30 gün analytics</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+          <StatCard
+            label="Aktif deneme oturumu"
+            value={analytics.totalAttempts}
+            tone="accent"
+            hint={`${analytics.totalCompleted} submit · %${analytics.completionRatePct} tamamlama`}
+          />
+          <StatCard
+            label="Ortalama net (30g)"
+            value={analytics.avgNet?.toFixed(2) ?? "—"}
+            tone="ok"
+            hint="SUBMITTED attempt'lerin ortalaması"
+          />
+          <StatCard
+            label="Zor denemeler"
+            value={analytics.hardestExams.length}
+            tone="warn"
+            hint="En düşük ortalama skorlu top 5"
+          />
+          <StatCard
+            label="Riskli öğrenci"
+            value={riskyStudents.filter((r) => r.level !== "low").length}
+            tone="bad"
+            hint="Devamsızlık + ödev geciktirme sinyali"
+          />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 12 }}>
+          <TrendCard
+            title="Günlük deneme aktivitesi"
+            data={analytics.attemptsByDay.map((b) => b.count)}
+            color="var(--pd-accent, #4a7eb0)"
+          />
+          <Card>
+            <CardHeader title="En zor denemeler" subtitle="Düşük avgScore" />
+            <CardBody>
+              <BarList
+                rows={analytics.hardestExams.map((e) => ({
+                  label: e.title ?? e.examId,
+                  value: e.hardness,
+                  meta: e.avgNet !== null ? `net ${e.avgNet.toFixed(1)} ·` : "",
+                  tone: e.hardness > 60 ? "bad" : e.hardness > 40 ? "warn" : "accent",
+                }))}
+                format="int"
+                maxOverride={100}
+                emptyText="Yeterli SUBMIT yok"
+              />
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader title="Cheat heatmap" subtitle="Top ihlalli denemeler" />
+            <CardBody>
+              <Heatmap
+                rows={analytics.cheatHeat.map((c) => ({
+                  label: c.examTitle,
+                  value: c.violations,
+                  total: c.total,
+                }))}
+                emptyText="Cheat ihlali yok 🎉"
+              />
+            </CardBody>
+          </Card>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+          <Card>
+            <CardHeader title="En problemli kazanımlar" subtitle="Hata oranı yüksek (min 5 cevap)" />
+            <CardBody>
+              <BarList
+                rows={analytics.problematicOutcomes.map((o) => ({
+                  label: <span><strong style={{ fontSize: 11 }}>{o.code}</strong> · {o.outcome}</span>,
+                  value: o.errorRate,
+                  meta: `${o.wrong}/${o.total} ·`,
+                  tone: o.errorRate > 70 ? "bad" : o.errorRate > 50 ? "warn" : "accent",
+                }))}
+                format="pct"
+                maxOverride={100}
+                emptyText="Kazanım analizi için yeterli veri yok"
+              />
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader title="Riskli öğrenciler" subtitle="Devamsızlık / ödev sinyali" right={<Link href="/panel/admin/ogrenciler" className="od-btn od-btn-ghost od-btn-sm">Tümü →</Link>} />
+            <CardBody>
+              {riskyStudents.length === 0 ? (
+                <EmptyState title="Risk sinyali olan öğrenci yok 🎉" />
+              ) : (
+                <table className="od-table" style={{ fontSize: 12 }}>
+                  <thead><tr><th>Öğrenci</th><th>Sinyal</th><th>Risk</th></tr></thead>
+                  <tbody>
+                    {riskyStudents.map((r) => (
+                      <tr key={r.studentId}>
+                        <td>
+                          <Link href={`/panel/admin/ogrenciler/${r.studentId}`} style={{ fontWeight: 600 }}>{r.fullName}</Link>
+                          <div className="od-muted" style={{ fontSize: 11 }}>{r.classLevel ?? "—"}</div>
+                        </td>
+                        <td className="od-muted" style={{ fontSize: 11 }}>
+                          {r.signals.slice(0, 2).map((s) => s.message).join(" · ") || "—"}
+                        </td>
+                        <td><RiskBadge level={r.level} score={r.score} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </CardBody>
+          </Card>
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>

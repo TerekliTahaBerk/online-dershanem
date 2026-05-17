@@ -1,6 +1,6 @@
 import type { UserRole } from "@prisma/client";
 import { PanelShellClient } from "@/components/panel/shell/panel-shell-client";
-import { getSectionsForRole } from "@/components/panel/shell/sections";
+import { getProductSectionsForRole } from "@/components/panel/shell/sections";
 import { getCommandsForRole } from "@/lib/panel-nav";
 import type { AccessFlags } from "@/lib/access/odk";
 
@@ -25,7 +25,8 @@ export function PanelShell({
   accessFlags,
   children,
 }: Props) {
-  const sections = getSectionsForRole(role, accessFlags);
+  const productSections = getProductSectionsForRole(role);
+  // Komut paleti tüm ürünlerin komutlarını görsün (cross-product navigation).
   const commands = getCommandsForRole(role, accessFlags);
   return (
     <PanelShellClient
@@ -35,7 +36,7 @@ export function PanelShell({
       userId={userId}
       userName={userName}
       userEmail={userEmail}
-      sections={sections}
+      productSections={productSections}
       commands={commands}
       accessFlags={accessFlags}
     >

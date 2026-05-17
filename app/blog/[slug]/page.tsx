@@ -6,6 +6,7 @@ import { Footer } from "@/components/sections/footer";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { blogPosts, siteUrl } from "@/lib/content";
+import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo/jsonld";
 
 type BlogPostPageProps = {
   params: Promise<{
@@ -54,8 +55,24 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     .map((relatedSlug) => blogPosts.find((item) => item.slug === relatedSlug))
     .filter((item): item is (typeof blogPosts)[number] => Boolean(item));
 
+  // Article JSON-LD — blog post tarihi yok, statik fallback (genel SEO için yeterli)
+  const articleLd = articleJsonLd({
+    headline: post.title,
+    description: post.metaDescription,
+    url: `/blog/${post.slug}/`,
+    datePublished: "2025-01-01T00:00:00Z",
+    dateModified: new Date().toISOString(),
+  });
+  const breadcrumbLd = breadcrumbJsonLd([
+    { name: "Ana Sayfa", url: "/" },
+    { name: "Blog", url: "/blog/" },
+    { name: post.title, url: `/blog/${post.slug}/` },
+  ]);
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>

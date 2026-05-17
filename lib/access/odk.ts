@@ -55,8 +55,8 @@ export async function getUserAccessFlags(
 }
 
 /**
- * Sayfa-seviyesi guard. ODK erişimi yoksa kullanıcının kendi paneline
- * yönlendirir (ya da /giris). Admin her zaman geçer.
+ * Sayfa-seviyesi guard. ODK erişimi yoksa kullanıcıyı ODK paket satın alma
+ * sayfasına yönlendirir. Admin her zaman geçer.
  *
  * Kullanım:
  *   const ctx = await requirePanelSession();
@@ -69,7 +69,7 @@ export async function requireOdkAccess(
 ): Promise<AccessFlags> {
   const flags = await getUserAccessFlags(userId, role);
   if (!flags.hasODK) {
-    redirect(fallbackHref ?? "/panel");
+    redirect(fallbackHref ?? "/odk-paketleri?from=panel");
   }
   return flags;
 }
@@ -78,6 +78,8 @@ export async function requireOdkAccess(
  * OD (klasik OnlineDershanem panel) erişim guard'ı. Şu an mevcut tüm
  * öğrenci/öğretmen kullanıcılarının `od-default` tagı var (backfill
  * sayesinde) — yine de yeni kullanıcılar için defansif.
+ *
+ * Erişim yoksa OD paket sayfasına yönlendirir.
  */
 export async function requireOdAccess(
   userId: string,
@@ -86,7 +88,7 @@ export async function requireOdAccess(
 ): Promise<AccessFlags> {
   const flags = await getUserAccessFlags(userId, role);
   if (!flags.hasOD) {
-    redirect(fallbackHref ?? "/");
+    redirect(fallbackHref ?? "/paketler?from=panel");
   }
   return flags;
 }

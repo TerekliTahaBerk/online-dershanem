@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { revalidatePath } from "next/cache";
 import { ClassroomLevel } from "@prisma/client";
+import { logAudit } from "@/lib/audit";
 
 function readStr(fd: FormData, key: string): string {
   const v = fd.get(key);
@@ -46,8 +47,20 @@ export async function updateClassroomAction(id: string, fd: FormData) {
 }
 
 export async function deleteClassroomAction(id: string) {
-  await requirePanelRole("admin");
+  const ctx = await requirePanelRole("admin");
+  const existing = await prisma.classroom.findUnique({
+    where: { id },
+    select: { name: true, branch: true },
+  });
   await prisma.classroom.delete({ where: { id } });
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Classroom",
+    entityId: id,
+    action: "CLASSROOM_DELETE",
+    summary: existing?.name || id,
+    payload: { branch: existing?.branch },
+  });
   revalidatePath("/panel/admin/siniflar");
 }
 

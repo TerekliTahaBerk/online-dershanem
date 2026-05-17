@@ -17,22 +17,46 @@ export type SidebarGroup = {
   items: SidebarItem[];
 };
 
-const base = (seg: PanelRole, path: string) => `/panel/${seg}${path === "" ? "" : `/${path}`}`;
-const odkBase = (seg: PanelRole, path: string) => `/panel/${seg}/odk${path === "" ? "" : `/${path}`}`;
+export type ProductId = "od" | "odk";
 
-// ── ODK (OnlineDenemeKulübü) sidebar grupları, role bazlı ────────────────────
+export type ProductSections = {
+  od: SidebarGroup[];
+  odk: SidebarGroup[];
+};
+
+const base = (seg: PanelRole, path: string) =>
+  `/panel/${seg}${path === "" ? "" : `/${path}`}`;
+const odkBase = (seg: PanelRole, path: string) =>
+  `/panel/${seg}/odk${path === "" ? "" : `/${path}`}`;
+
+// ── ODK alt-ürün sidebar grupları ────────────────────────────────────────────
 
 function adminOdkSections(): SidebarGroup[] {
   const seg: PanelRole = "admin";
   return [
-    { title: "ODK", items: [
+    { items: [
       { id: "odk-dashboard", label: "ODK Dashboard", icon: "target", href: odkBase(seg, "") },
+    ]},
+    { title: "İçerik", items: [
       { id: "odk-denemeler", label: "Denemeler", icon: "report", href: odkBase(seg, "denemeler") },
-      { id: "odk-paketler", label: "ODK Paketleri", icon: "package", href: odkBase(seg, "paketler") },
-      { id: "odk-erisim", label: "Erişim Tagları", icon: "shield", href: odkBase(seg, "erisim") },
-      { id: "odk-cheat", label: "Cheat Logları", icon: "alert", href: odkBase(seg, "cheat") },
       { id: "odk-kazanim", label: "Kazanım Analizi", icon: "chart", href: odkBase(seg, "kazanim") },
-      { id: "odk-raporlar", label: "ODK Raporlar", icon: "report", href: odkBase(seg, "raporlar") },
+      { id: "odk-cheat", label: "Cheat Logları", icon: "alert", href: odkBase(seg, "cheat") },
+    ]},
+    { title: "Satış", items: [
+      { id: "odk-paketler", label: "ODK Paketleri", icon: "package", href: odkBase(seg, "paketler") },
+      { id: "odk-siparisler", label: "ODK Siparişleri", icon: "money", href: odkBase(seg, "siparisler") },
+      { id: "odk-odemeler", label: "ODK Ödemeleri", icon: "money", href: odkBase(seg, "odemeler") },
+      { id: "odk-muhasebe", label: "ODK Muhasebe", icon: "money", href: "/panel/admin/muhasebe?service=ODK" },
+    ]},
+    { title: "Erişim", items: [
+      { id: "odk-erisim", label: "Erişim Tagları", icon: "shield", href: odkBase(seg, "erisim") },
+      { id: "odk-erisim-users", label: "Kullanıcı Erişimleri", icon: "users", href: odkBase(seg, "erisim/kullanicilar") },
+    ]},
+    { title: "İnsanlar", items: [
+      { id: "odk-ogrenciler", label: "ODK Öğrencileri", icon: "users", href: odkBase(seg, "ogrenciler") },
+    ]},
+    { title: "Analiz", items: [
+      { id: "odk-raporlar", label: "Raporlar", icon: "report", href: odkBase(seg, "raporlar") },
     ]},
   ];
 }
@@ -40,8 +64,10 @@ function adminOdkSections(): SidebarGroup[] {
 function teacherOdkSections(): SidebarGroup[] {
   const seg: PanelRole = "ogretmen";
   return [
-    { title: "ODK", items: [
+    { items: [
       { id: "odk-dashboard", label: "ODK Dashboard", icon: "target", href: odkBase(seg, "") },
+    ]},
+    { title: "ODK", items: [
       { id: "odk-ogrencilerim", label: "Öğrenci Sonuçları", icon: "users", href: odkBase(seg, "ogrencilerim") },
       { id: "odk-siniflar", label: "Sınıf Analizi", icon: "classroom", href: odkBase(seg, "siniflar") },
       { id: "odk-kazanim", label: "Kazanım Zayıflıkları", icon: "chart", href: odkBase(seg, "kazanim") },
@@ -53,8 +79,10 @@ function teacherOdkSections(): SidebarGroup[] {
 function studentOdkSections(): SidebarGroup[] {
   const seg: PanelRole = "ogrenci";
   return [
-    { title: "ODK", items: [
+    { items: [
       { id: "odk-dashboard", label: "ODK Dashboard", icon: "target", href: odkBase(seg, "") },
+    ]},
+    { title: "Eğitim", items: [
       { id: "odk-denemeler", label: "Denemeler", icon: "play", href: odkBase(seg, "denemeler") },
       { id: "odk-kazanim", label: "Kazanım Analizim", icon: "chart", href: odkBase(seg, "kazanim-analizim") },
       { id: "odk-gelisim", label: "Gelişim Grafiğim", icon: "chart", href: odkBase(seg, "gelisim") },
@@ -65,8 +93,10 @@ function studentOdkSections(): SidebarGroup[] {
 function parentOdkSections(): SidebarGroup[] {
   const seg: PanelRole = "veli";
   return [
-    { title: "ODK", items: [
+    { items: [
       { id: "odk-dashboard", label: "ODK Dashboard", icon: "target", href: odkBase(seg, "") },
+    ]},
+    { title: "Takip", items: [
       { id: "odk-cocuklarim", label: "Çocuklarım", icon: "users", href: odkBase(seg, "cocuklarim") },
       { id: "odk-gelisim", label: "Net Gelişimi", icon: "chart", href: odkBase(seg, "gelisim") },
       { id: "odk-kazanim", label: "Zayıf Kazanımlar", icon: "alert", href: odkBase(seg, "kazanim") },
@@ -84,6 +114,8 @@ function odkSectionsForRole(role: UserRole): SidebarGroup[] {
   }
 }
 
+// ── OD (OnlineDershanem) sidebar grupları ────────────────────────────────────
+
 function adminSections(): SidebarGroup[] {
   const seg: PanelRole = "admin";
   return [
@@ -91,19 +123,21 @@ function adminSections(): SidebarGroup[] {
       { id: "dashboard", label: "Dashboard", icon: "home", href: base(seg, "") },
       { id: "inbox", label: "Inbox", icon: "inbox", href: base(seg, "inbox") },
     ]},
-    { title: "Operasyon", items: [
+    { title: "Eğitim", items: [
+      { id: "siniflar", label: "Sınıflar", icon: "classroom", href: base(seg, "siniflar") },
+      { id: "dersler", label: "Dersler", icon: "book", href: base(seg, "dersler") },
+      { id: "ders-programi", label: "Ders programı", icon: "cal", href: base(seg, "ders-programi") },
+      { id: "odevler", label: "Ödevler", icon: "assignment", href: base(seg, "odevler") },
+    ]},
+    { title: "İnsanlar", items: [
       { id: "ogrenciler", label: "Öğrenciler", icon: "users", href: base(seg, "ogrenciler") },
       { id: "ogretmenler", label: "Öğretmenler", icon: "school", href: base(seg, "ogretmenler") },
       { id: "veliler", label: "Veliler", icon: "parent", href: base(seg, "veliler") },
-      { id: "siniflar", label: "Sınıflar", icon: "classroom", href: base(seg, "siniflar") },
-      { id: "dersler", label: "Dersler", icon: "book", href: base(seg, "dersler") },
-      { id: "odevler", label: "Ödevler", icon: "assignment", href: base(seg, "odevler") },
-      { id: "ders-programi", label: "Ders programı", icon: "cal", href: base(seg, "ders-programi") },
     ]},
     { title: "Finans", items: [
       { id: "paketler", label: "Paketler", icon: "package", href: base(seg, "paketler") },
       { id: "odemeler", label: "Ödemeler", icon: "money", href: base(seg, "odemeler") },
-      { id: "muhasebe", label: "Muhasebe", icon: "report", href: base(seg, "muhasebe") },
+      { id: "muhasebe", label: "Muhasebe", icon: "report", href: `${base(seg, "muhasebe")}?service=OD` },
     ]},
     { title: "Analiz", items: [
       { id: "istatistikler", label: "İstatistikler", icon: "chart", href: base(seg, "istatistikler") },
@@ -188,24 +222,43 @@ function parentSections(): SidebarGroup[] {
   ];
 }
 
+function odSectionsForRole(role: UserRole): SidebarGroup[] {
+  switch (role) {
+    case "ADMIN": return adminSections();
+    case "TEACHER": return teacherSections();
+    case "STUDENT": return studentSections();
+    case "PARENT": return parentSections();
+    default: return studentSections();
+  }
+}
+
+export function getProductSectionsForRole(role: UserRole): ProductSections {
+  return {
+    od: odSectionsForRole(role),
+    odk: odkSectionsForRole(role),
+  };
+}
+
+export function getSectionsForProduct(
+  role: UserRole,
+  product: ProductId,
+  accessFlags?: AccessFlags,
+): SidebarGroup[] {
+  if (product === "odk") {
+    const allowed = role === "ADMIN" || (accessFlags?.hasODK ?? false);
+    return allowed ? odkSectionsForRole(role) : [];
+  }
+  return odSectionsForRole(role);
+}
+
 export function getSectionsForRole(
   role: UserRole,
   accessFlags?: AccessFlags,
 ): SidebarGroup[] {
-  let sections: SidebarGroup[];
-  switch (role) {
-    case "ADMIN": sections = adminSections(); break;
-    case "TEACHER": sections = teacherSections(); break;
-    case "STUDENT": sections = studentSections(); break;
-    case "PARENT": sections = parentSections(); break;
-    default: sections = studentSections();
-  }
-  // ODK alt-ürün entry'leri — admin her zaman, diğerleri sadece tag varsa.
+  const od = odSectionsForRole(role);
   const includeOdk = role === "ADMIN" || (accessFlags?.hasODK ?? false);
-  if (includeOdk) {
-    sections = [...sections, ...odkSectionsForRole(role)];
-  }
-  return sections;
+  if (!includeOdk) return od;
+  return [...od, ...odkSectionsForRole(role)];
 }
 
 export function roleHomeHref(role: UserRole): string {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/content";
 import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
+import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "LGS Grup Özel Ders Paketleri",
@@ -17,8 +18,21 @@ export const metadata: Metadata = {
 };
 
 export default function LGSLandingPage() {
+  const courseLd = courseJsonLd({
+    name: "LGS Grup Özel Ders",
+    description:
+      "LGS Matematik ve Fen Bilimleri için ders bazlı küçük grup (maks. 4 kişi) özel ders. Kazanım takibi ve düzenli mini quiz yapısıyla.",
+    url: "/lgs/",
+  });
+  const breadcrumbLd = breadcrumbJsonLd([
+    { name: "Ana Sayfa", url: "/" },
+    { name: "LGS Grup Özel Ders", url: "/lgs/" },
+  ]);
   return (
-    <ExamSalesLanding
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <ExamSalesLanding
       data={{
         examKey: "LGS",
         heroBadge: "LGS Grup Özel Ders",
@@ -46,5 +60,6 @@ export default function LGSLandingPage() {
         ]
       }}
     />
+    </>
   );
 }

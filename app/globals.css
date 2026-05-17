@@ -2567,10 +2567,11 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 @keyframes od-cmd-pop { from { transform: translateY(-8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* ─── Product Switcher (OD ↔ ODK) ─────────────────────────────────────── */
-.od-product-switcher { position: relative; display: inline-flex; }
+.od-product-switcher { position: relative; display: inline-flex; min-width: 0; }
 .od-product-trigger {
   display: inline-flex; align-items: center; gap: 8px;
-  height: 34px; padding: 0 10px 0 8px;
+  height: 34px; padding: 0 10px 0 10px;
+  min-width: 0; max-width: 240px;
   border: 1px solid var(--pd-line); background: var(--pd-bg-elevated);
   border-radius: 10px; cursor: pointer;
   font-size: 13px; font-weight: 500; color: var(--pd-ink);
@@ -2578,7 +2579,14 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 }
 .od-product-trigger:hover,
 .od-product-trigger.is-open { background: var(--pd-bg-subtle); border-color: var(--pd-ink-3); }
-.od-product-name { line-height: 1; }
+.od-product-name {
+  line-height: 1;
+  min-width: 0;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .od-product-dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--pd-ink-3); flex: 0 0 8px;
@@ -2586,14 +2594,16 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 .od-product-dot.is-od  { background: #2563eb; }
 .od-product-dot.is-odk { background: #f59e0b; }
 .od-product-badge {
-  display: inline-block; margin-left: 6px;
+  display: inline-block;
   padding: 1px 6px; border-radius: 999px;
   font-size: 10px; font-weight: 700; letter-spacing: .03em;
   background: var(--pd-pastel-yellow-bg); color: var(--pd-pastel-yellow-ink);
+  line-height: 1.3;
+  white-space: nowrap;
 }
 .od-product-menu {
   position: absolute; top: calc(100% + 6px); left: 0;
-  min-width: 280px; z-index: 50;
+  min-width: 320px; max-width: 360px; z-index: 70;
   background: var(--pd-card); border: 1px solid var(--pd-line);
   border-radius: 12px; padding: 6px;
   box-shadow: 0 16px 36px -16px rgba(0,0,0,.25);
@@ -2605,28 +2615,61 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   text-transform: uppercase; letter-spacing: .04em;
   color: var(--pd-ink-3);
 }
+.od-product-menu-foot {
+  padding: 8px 10px 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--pd-line);
+  font-size: 11px; color: var(--pd-ink-3);
+  line-height: 1.4;
+}
 .od-product-menu-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px; border-radius: 8px;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  align-items: center; gap: 10px;
+  padding: 10px 10px; border-radius: 8px;
   text-decoration: none; color: var(--pd-ink); cursor: pointer;
   border: 0; background: transparent; width: 100%; text-align: left;
 }
 .od-product-menu-item:hover { background: var(--pd-soft); }
 .od-product-menu-item.is-active { background: var(--pd-soft); }
-.od-product-menu-item.is-disabled {
-  opacity: .55; cursor: not-allowed;
+.od-product-menu-item.is-locked { opacity: .85; }
+.od-product-menu-item.is-locked:hover { background: var(--pd-bg-subtle); }
+.od-product-menu-meta {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0;
 }
-.od-product-menu-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-.od-product-menu-meta .t { font-size: 13px; font-weight: 600; line-height: 1.2; display: inline-flex; align-items: center; gap: 6px; }
-.od-product-menu-meta .s { font-size: 11px; color: var(--pd-ink-3); line-height: 1.3; }
+.od-product-menu-meta .t {
+  font-size: 13px; font-weight: 600; line-height: 1.2;
+  display: flex; align-items: center; gap: 6px;
+  min-width: 0;
+}
+.od-product-menu-meta .t-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.od-product-menu-meta .s {
+  font-size: 11px; color: var(--pd-ink-3); line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.od-product-menu-state {
+  display: inline-flex; align-items: center;
+  flex: 0 0 auto;
+  color: var(--pd-ink-3);
+}
 .od-product-locked {
   font-size: 10px; font-weight: 600; padding: 2px 6px;
   background: var(--pd-bg-subtle); color: var(--pd-ink-3);
   border-radius: 999px; text-transform: uppercase; letter-spacing: .03em;
+  white-space: nowrap;
 }
 @media (max-width: 720px) {
   .od-product-name { display: none; }
-  .od-product-trigger { padding: 0 8px; }
+  .od-product-trigger { padding: 0 10px; max-width: none; }
+  .od-product-menu { min-width: 280px; max-width: calc(100vw - 32px); }
 }
 
 /* ─── ODK Exam Solver ───────────────────────────────────────────── */
