@@ -19,6 +19,14 @@
     {
       "path": "/api/cron/assignment-reminders",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/parent-weekly-digest",
+      "schedule": "0 5 * * 1"
+    },
+    {
+      "path": "/api/cron/rate-limit-prune",
+      "schedule": "0 4 * * *"
     }
   ]
 }

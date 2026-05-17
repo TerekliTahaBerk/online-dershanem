@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import { Sidebar } from "@/components/panel/shell/sidebar";
 import { Topbar } from "@/components/panel/shell/topbar";
 import { CommandPalette } from "@/components/panel/shell/command-palette";
-import type { SidebarGroup } from "@/components/panel/shell/sections";
+import type { ProductSections } from "@/components/panel/shell/sections";
 import type { NavCommand } from "@/lib/panel-nav";
 import type { AccessFlags } from "@/lib/access/odk";
 
@@ -17,10 +17,17 @@ type Props = {
   userId: string;
   userName: string | null;
   userEmail: string;
-  sections: SidebarGroup[];
+  productSections: ProductSections;
   commands: NavCommand[];
   accessFlags: AccessFlags;
   children: React.ReactNode;
+};
+
+const ROLE_TO_SEGMENT: Record<UserRole, "admin" | "ogretmen" | "ogrenci" | "veli"> = {
+  ADMIN: "admin",
+  TEACHER: "ogretmen",
+  STUDENT: "ogrenci",
+  PARENT: "veli",
 };
 
 export function PanelShellClient({
@@ -30,13 +37,22 @@ export function PanelShellClient({
   userId,
   userName,
   userEmail,
-  sections,
+  productSections,
   commands,
   accessFlags,
   children,
 }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
+
+  // Aktif ürün URL'den türetilir. /panel/<rol>/odk altındaysa ODK; aksi halde OD.
+  const currentProduct: "od" | "odk" = useMemo(() => {
+    const seg = ROLE_TO_SEGMENT[role];
+    return pathname.startsWith(`/panel/${seg}/odk`) ? "odk" : "od";
+  }, [pathname, role]);
+
+  const sections =
+    currentProduct === "odk" ? productSections.odk : productSections.od;
 
   // Close drawer on route change
   useEffect(() => {
@@ -64,12 +80,17 @@ export function PanelShellClient({
   }, [drawerOpen]);
 
   return (
-    <div className={`od-panel-app${drawerOpen ? " is-drawer-open" : ""}`}>
+    <div
+      className={`od-panel-app${drawerOpen ? " is-drawer-open" : ""}`}
+      data-product={currentProduct}
+    >
       <Sidebar
         role={role}
         sections={sections}
+        product={currentProduct}
         userName={userName}
         userEmail={userEmail}
+        accessFlags={accessFlags}
       />
       {drawerOpen ? (
         <button
@@ -85,7 +106,6 @@ export function PanelShellClient({
           actualRole={actualRole}
           isViewingAs={isViewingAs}
           userId={userId}
-          accessFlags={accessFlags}
           onMenuClick={() => setDrawerOpen((v) => !v)}
         />
         <div className="od-panel-body">{children}</div>

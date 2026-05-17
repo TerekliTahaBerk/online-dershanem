@@ -5,6 +5,7 @@ import { normalizePhone } from "@/lib/auth-utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { StudentStatus } from "@prisma/client";
+import { logAudit } from "@/lib/audit";
 
 function readStr(fd: FormData, key: string): string {
   const v = fd.get(key);
@@ -13,7 +14,7 @@ function readStr(fd: FormData, key: string): string {
 function opt(v: string): string | null { return v.length === 0 ? null : v; }
 
 export async function createStudentAction(fd: FormData) {
-  await requirePanelRole("admin");
+  const ctx = await requirePanelRole("admin");
   const fullName = readStr(fd, "fullName");
   const phoneRaw = readStr(fd, "phone");
   if (!fullName || !phoneRaw) throw new Error("Ad ve telefon zorunlu");
@@ -47,12 +48,20 @@ export async function createStudentAction(fd: FormData) {
       },
     });
   }
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Student",
+    entityId: created.id,
+    action: "STUDENT_CREATE",
+    summary: fullName,
+    payload: { phoneKey, classroomId, parentId },
+  });
   revalidatePath("/panel/admin/ogrenciler");
   redirect(`/panel/admin/ogrenciler/${created.id}`);
 }
 
 export async function updateStudentAction(id: string, fd: FormData) {
-  await requirePanelRole("admin");
+  const ctx = await requirePanelRole("admin");
   const fullName = readStr(fd, "fullName");
   if (!fullName) throw new Error("Ad zorunlu");
   await prisma.student.update({
@@ -70,13 +79,36 @@ export async function updateStudentAction(id: string, fd: FormData) {
       notes: opt(readStr(fd, "notes")),
     },
   });
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Student",
+    entityId: id,
+    action: "STUDENT_UPDATE",
+    summary: fullName,
+  });
   revalidatePath(`/panel/admin/ogrenciler/${id}`);
   revalidatePath("/panel/admin/ogrenciler");
 }
 
 export async function deleteStudentAction(id: string) {
-  await requirePanelRole("admin");
+  const ctx = await requirePanelRole("admin");
+  const existing = await prisma.student.findUnique({
+    where: { id },
+    select: { fullName: true, phoneKey: true, email: true },
+  });
   await prisma.student.delete({ where: { id } });
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Student",
+    entityId: id,
+    action: "STUDENT_DELETE",
+    summary: existing?.fullName || id,
+    payload: {
+      phoneKey: existing?.phoneKey,
+      email: existing?.email,
+      kvkkHardDelete: true,
+    },
+  });
   revalidatePath("/panel/admin/ogrenciler");
   redirect("/panel/admin/ogrenciler");
 }

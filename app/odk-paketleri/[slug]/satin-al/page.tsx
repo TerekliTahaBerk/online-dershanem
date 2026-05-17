@@ -42,10 +42,10 @@ export default async function OdkCheckoutPage({ params }: { params: Params }) {
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         <section className="mx-auto max-w-2xl px-5 pt-28 pb-16 sm:pt-36">
           <Link
-            href={`/odk-paketleri/${slug}`}
+            href="/deneme-kulubu#paketler"
             className="inline-flex items-center gap-1 text-[13px] text-[var(--od-ink-soft)] hover:text-[var(--od-ink)]"
           >
-            ← Pakete dön
+            ← Paketlere dön
           </Link>
           <h1 className="mt-6 font-display text-[36px] sm:text-[48px] leading-[1.05]">
             Satın Al

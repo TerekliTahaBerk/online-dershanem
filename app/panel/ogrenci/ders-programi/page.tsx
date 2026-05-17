@@ -14,23 +14,24 @@ export default async function StudentSchedule() {
   const lessons = await prisma.lesson.findMany({
     where: { studentId: student.id, scheduledAt: { gte: start, lte: new Date(start.getTime() + 14 * 86400000) } },
     orderBy: { scheduledAt: "asc" },
-    include: { teacher: { select: { fullName: true } } },
+    include: { teacher: { select: { fullName: true } }, course: { select: { title: true } } },
   });
   return (
     <>
       <PageHeader title="Ders programım" subtitle={`Önümüzdeki 14 gün — ${lessons.length} ders`} />
       <Card>
         <table className="od-table">
-          <thead><tr><th>Tarih/Saat</th><th>Konu</th><th>Öğretmen</th><th>Süre</th><th>Link</th><th>Durum</th></tr></thead>
+          <thead><tr><th>Tarih/Saat</th><th>Konu</th><th>Öğretmen</th><th>Lokasyon</th><th>Süre</th><th>Link</th><th>Durum</th></tr></thead>
           <tbody>
             {lessons.map((l) => (
               <tr key={l.id}>
                 <td className="od-mono">{new Intl.DateTimeFormat("tr-TR", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(l.scheduledAt)}</td>
-                <td>{l.title ?? l.subject ?? "—"}</td>
+                <td>{l.course?.title ?? l.title ?? l.subject ?? "—"}</td>
                 <td>{l.teacher.fullName}</td>
+                <td>{l.location ?? <span className="od-muted">—</span>}</td>
                 <td className="od-mono">{l.duration} dk</td>
                 <td>{l.googleMeetLink ? <a href={l.googleMeetLink} target="_blank" rel="noreferrer">Bağlan</a> : <span className="od-muted">—</span>}</td>
-                <td><Badge tone={l.status === "COMPLETED" ? "ok" : "teal"}>{l.status}</Badge></td>
+                <td><Badge tone={l.status === "COMPLETED" ? "ok" : l.status === "CANCELLED" ? "bad" : "teal"}>{l.status}</Badge></td>
               </tr>
             ))}
           </tbody>

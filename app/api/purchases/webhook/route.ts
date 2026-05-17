@@ -2,6 +2,8 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { purchaseWebhookSchema } from "@/lib/validators";
+import { logAudit } from "@/lib/audit";
+import { log } from "@/lib/logger";
 
 function isAuthorized(request: Request) {
   const secret = process.env.PAYMENT_WEBHOOK_SECRET;
@@ -19,6 +21,7 @@ function isAuthorized(request: Request) {
 
 export async function POST(request: Request) {
   if (!isAuthorized(request)) {
+    log.warn("webhook.purchase.unauthorized", { ua: request.headers.get("user-agent") ?? null });
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });
   }
 
@@ -27,6 +30,7 @@ export async function POST(request: Request) {
     const parsed = purchaseWebhookSchema.safeParse(body);
 
     if (!parsed.success) {
+      log.warn("webhook.purchase.invalid_payload", { issues: parsed.error.issues.slice(0, 5) });
       return NextResponse.json({ error: "Geçersiz webhook verisi." }, { status: 400 });
     }
 
@@ -38,14 +42,11 @@ export async function POST(request: Request) {
       : null;
 
     // P0: idempotency guard — PayTR re-delivers the same notification 2-3 times.
-    // If we already recorded this providerReference, return 200 immediately so
-    // PayTR stops retrying; don't create a duplicate event or status update.
     if (existingEvent) {
+      log.debug("webhook.purchase.duplicate_ignored", { providerReference: parsed.data.providerReference });
       return NextResponse.json({ ok: true });
     }
 
-    // At this point existingEvent is null (we returned early if it was set).
-    // Resolve the purchase via the explicit purchaseId in the payload.
     const purchase = parsed.data.purchaseId
       ? await prisma.purchaseIntent.findUnique({
           where: { id: parsed.data.purchaseId }
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
       : null;
 
     if (!purchase) {
+      log.warn("webhook.purchase.intent_not_found", { purchaseId: parsed.data.purchaseId });
       return NextResponse.json({ error: "Satın alma kaydı bulunamadı." }, { status: 404 });
     }
 
@@ -78,11 +80,28 @@ export async function POST(request: Request) {
       })
     ]);
 
+    log.info("webhook.purchase.processed", {
+      purchaseId: purchase.id,
+      status: parsed.data.status,
+      eventType: parsed.data.eventType,
+      provider: parsed.data.provider,
+    });
+    void logAudit({
+      actorUserId: null,
+      actorType: "SYSTEM",
+      entityType: "PurchaseIntent",
+      entityId: purchase.id,
+      action: `WEBHOOK_${parsed.data.eventType}`,
+      summary: `${parsed.data.provider ?? "?"} → ${parsed.data.status}`,
+      payload: { providerReference: parsed.data.providerReference },
+    });
+
     // Inbox / muhasebe entegrasyonu paneller sökülürken kaldırıldı.
     // Paneller sıfırdan kurulurken yeniden eklenecek.
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    log.error("webhook.purchase.unhandled", err);
     return NextResponse.json({ error: "Webhook işlenemedi." }, { status: 500 });
   }
 }

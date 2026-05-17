@@ -14,23 +14,42 @@ export default async function TeacherSchedule() {
   const lessons = await prisma.lesson.findMany({
     where: { teacherId: teacher.id, scheduledAt: { gte: start, lte: new Date(start.getTime() + 30 * 86400000) } },
     orderBy: { scheduledAt: "asc" },
-    include: { student: { select: { fullName: true } }, classroom: { select: { name: true } } },
+    include: {
+      student: { select: { fullName: true } },
+      classroom: { select: { name: true } },
+      course: { select: { title: true } },
+    },
   });
+
+  // sessionGroupId paylaşan satırları öğretmen için tek satıra grupla
+  const grouped = new Map<string, typeof lessons>();
+  for (const l of lessons) {
+    const key = l.sessionGroupId ?? `solo:${l.id}`;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(l);
+  }
+  const rows = Array.from(grouped.values()).map((arr) => ({ head: arr[0], count: arr.length }));
+
   return (
     <>
-      <PageHeader title="Ders programım" subtitle={`Önümüzdeki 30 gün — ${lessons.length} ders`} />
+      <PageHeader title="Ders programım" subtitle={`Önümüzdeki 30 gün — ${rows.length} seans`} />
       <Card>
         <table className="od-table">
-          <thead><tr><th>Tarih</th><th>Konu</th><th>Öğrenci/Sınıf</th><th>Süre</th><th>Durum</th><th>Link</th></tr></thead>
+          <thead><tr><th>Tarih</th><th>Konu</th><th>Öğrenci/Sınıf</th><th>Lokasyon</th><th>Süre</th><th>Durum</th><th>Link</th></tr></thead>
           <tbody>
-            {lessons.map((l) => (
-              <tr key={l.id}>
-                <td className="od-mono">{new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(l.scheduledAt)}</td>
-                <td>{l.title ?? l.subject ?? "—"}</td>
-                <td>{l.classroom?.name ?? l.student?.fullName ?? "—"}</td>
-                <td className="od-mono">{l.duration} dk</td>
-                <td><Badge tone={l.status === "COMPLETED" ? "ok" : l.status === "CANCELLED" ? "bad" : "teal"}>{l.status}</Badge></td>
-                <td>{l.googleMeetLink ? <a className="od-mono" href={l.googleMeetLink} target="_blank" rel="noreferrer">Bağlan</a> : <span className="od-muted">—</span>}</td>
+            {rows.map(({ head, count }) => (
+              <tr key={head.id}>
+                <td className="od-mono">{new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(head.scheduledAt)}</td>
+                <td>{head.course?.title ?? head.title ?? head.subject ?? "—"}</td>
+                <td>
+                  {head.classroom?.name
+                    ? <>{head.classroom.name} <Badge tone="teal">{count} öğr.</Badge></>
+                    : head.student?.fullName ?? "—"}
+                </td>
+                <td>{head.location ?? <span className="od-muted">—</span>}</td>
+                <td className="od-mono">{head.duration} dk</td>
+                <td><Badge tone={head.status === "COMPLETED" ? "ok" : head.status === "CANCELLED" ? "bad" : "teal"}>{head.status}</Badge></td>
+                <td>{head.googleMeetLink ? <a className="od-mono" href={head.googleMeetLink} target="_blank" rel="noreferrer">Bağlan</a> : <span className="od-muted">—</span>}</td>
               </tr>
             ))}
           </tbody>

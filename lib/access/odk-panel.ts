@@ -28,7 +28,7 @@ export async function requireOdkPanel(
   }
   const flags = await getUserAccessFlags(ctx.userId, ctx.actualRole);
   if (!flags.hasODK && ctx.actualRole !== "ADMIN") {
-    redirect(`/panel/${ctx.segment}`);
+    redirect(`/odk-paketleri?from=panel`);
   }
   return { ...ctx, hasOD: flags.hasOD, hasODK: flags.hasODK };
 }

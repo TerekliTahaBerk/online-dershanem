@@ -408,6 +408,7 @@ model Teacher {
   assignments       Assignment[]
   payrolls          TeacherPayroll[]
   accountingEntries AccountingEntry[]  @relation("AccountingTeacher")
+  defaultForCourses Course[]           @relation("CourseDefaultTeacher")
 
   @@index([status])
 }
@@ -475,6 +476,10 @@ model Lesson {
   teacherId      String
   packageId      String?
   classroomId    String?
+  courseId       String?
+  seriesId       String?
+  sessionGroupId String?
+  location       String?
   title          String?
   subject        String?
   scheduledAt    DateTime
@@ -488,12 +493,16 @@ model Lesson {
   teacher        Teacher      @relation(fields: [teacherId], references: [id], onDelete: Restrict)
   package        Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
   classroom      Classroom?   @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+  course         Course?      @relation(fields: [courseId], references: [id], onDelete: SetNull)
   attendances    Attendance[]
 
   @@index([studentId, scheduledAt])
   @@index([teacherId, scheduledAt])
   @@index([status, scheduledAt])
   @@index([classroomId, scheduledAt])
+  @@index([courseId, scheduledAt])
+  @@index([seriesId])
+  @@index([sessionGroupId])
 }
 
 model StudentPackageEnrollment {
@@ -521,23 +530,32 @@ model StudentPackageEnrollment {
 }
 
 model Course {
-  id               String                  @id @default(cuid())
-  title            String
-  slug             String                  @unique
-  description      String?
-  subject          String
-  examType         String?
-  levelLabel       String?
-  estimatedMinutes Int?
-  status           CourseStatus            @default(DRAFT)
-  coverImageUrl    String?
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
-  modules          CourseModule[]
-  packageCourses   PackageCourse[]
-  studentProgress  StudentCourseProgress[]
+  id                 String                  @id @default(cuid())
+  title              String
+  slug               String                  @unique
+  description        String?
+  subject            String
+  examType           String?
+  levelLabel         String?
+  estimatedMinutes   Int?
+  status             CourseStatus            @default(DRAFT)
+  isActive           Boolean                 @default(true)
+  coverImageUrl      String?
+  defaultTeacherId   String?
+  defaultClassroomId String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  modules            CourseModule[]
+  packageCourses     PackageCourse[]
+  studentProgress    StudentCourseProgress[]
+  lessons            Lesson[]
+  defaultTeacher     Teacher?                @relation("CourseDefaultTeacher", fields: [defaultTeacherId], references: [id], onDelete: SetNull)
+  defaultClassroom   Classroom?              @relation("CourseDefaultClassroom", fields: [defaultClassroomId], references: [id], onDelete: SetNull)
 
   @@index([status, subject])
+  @@index([defaultTeacherId])
+  @@index([defaultClassroomId])
+  @@index([isActive])
 }
 
 model CourseModule {
@@ -987,8 +1005,11 @@ model OdkPackage {
   slug              String                @unique
   description       String?
   priceCents        Int                   @map("price_cents")
+  originalPriceCents Int?                 @map("original_price_cents")
   durationDays      Int?                  @map("duration_days")
   isActive          Boolean               @default(true) @map("is_active")
+  isFeatured        Boolean               @default(false) @map("is_featured")
+  ctaText           String?               @map("cta_text")
   createdAt         DateTime              @default(now()) @map("created_at")
   updatedAt         DateTime              @updatedAt @map("updated_at")
   packageExams      OdkPackageExam[]
@@ -997,6 +1018,7 @@ model OdkPackage {
   entitlements      OdkEntitlement[]
 
   @@index([isActive])
+  @@index([isFeatured])
   @@map("odk_packages")
 }
 
@@ -1267,6 +1289,7 @@ model Classroom {
   attendances Attendance[]
   lessons     Lesson[]
   assignments Assignment[]
+  defaultForCourses Course[]         @relation("CourseDefaultClassroom")
 
   @@unique([name, branch])
   @@index([isActive])
@@ -1550,8 +1573,10 @@ enum PayrollStatus {
 
 /// Tek satırlık muhasebe kaydı (gelir veya gider). Tutar `Int` (kuruş).
 /// `refType`/`refId` polymorphic kaynak referansı (örn. PurchaseIntent, TeacherPayroll).
+/// `service` = OD veya ODK — ürün bazlı muhasebe ayrımı (FAZ 4).
 model AccountingEntry {
   id          String        @id @default(cuid())
+  service     AccessService @default(OD)
   type        EntryType
   category    EntryCategory @default(OTHER_INCOME)
   amount      Int
@@ -1574,6 +1599,8 @@ model AccountingEntry {
   @@index([category, occurredAt])
   @@index([studentId])
   @@index([teacherId])
+  @@index([service, occurredAt])
+  @@index([service, type])
 }
 
 /// Öğretmen maaş döngüsü (örn. Mart 2026 maaşı). PAID olduğunda otomatik olarak

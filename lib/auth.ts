@@ -4,6 +4,9 @@ import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { credentialsSchema } from "@/lib/validators";
+import { isLockedOut, recordFailedAttempt, isIpLockedOut, recordIpFailedAttempt, extractClientIp } from "@/lib/login-attempts";
+import { logAudit } from "@/lib/audit";
+import { log } from "@/lib/logger";
 
 /**
  * NextAuth temel konfigurasyonu.
@@ -25,16 +28,60 @@ export const authOptions: NextAuthOptions = {
         email: { label: "E-posta", type: "email" },
         password: { label: "Sifre", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) return null;
 
         const email = parsed.data.email.toLowerCase();
+        const ip = extractClientIp(req?.headers ?? {});
+
+        // IP-based brute-force (credential stuffing)
+        if (await isIpLockedOut(ip)) {
+          log.warn("auth.ip_locked_out", { ip });
+          return null;
+        }
+
+        // Email-based brute-force — 5 fail / 15dk lockout
+        if (await isLockedOut(email)) {
+          log.warn("auth.login_locked_out", { email, ip });
+          // null → NextAuth "CredentialsSignin" hatası verir; UI generic mesaj gösterir.
+          return null;
+        }
+
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !user.passwordHash) return null;
+        if (!user || !user.passwordHash) {
+          const res = await recordFailedAttempt(email);
+          await recordIpFailedAttempt(ip);
+          log.warn("auth.login_failed", { email, ip, reason: "no_user", remaining: res.remaining });
+          return null;
+        }
 
         const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
-        if (!ok) return null;
+        if (!ok) {
+          const res = await recordFailedAttempt(email);
+          await recordIpFailedAttempt(ip);
+          log.warn("auth.login_failed", { email, ip, reason: "bad_password", remaining: res.remaining, lockedNow: res.lockedNow });
+          if (res.lockedNow) {
+            void logAudit({
+              actorUserId: user.id,
+              entityType: "User",
+              entityId: user.id,
+              action: "LOGIN_LOCKOUT",
+              summary: `${email} — 5 başarısız deneme, 15dk lockout`,
+              payload: { email, ip },
+            });
+          }
+          return null;
+        }
+
+        log.info("auth.login_ok", { userId: user.id, role: user.role, ip });
+        void logAudit({
+          actorUserId: user.id,
+          entityType: "User",
+          entityId: user.id,
+          action: "LOGIN_SUCCESS",
+          summary: `${email} giriş yaptı`,
+        });
 
         return {
           id: user.id,

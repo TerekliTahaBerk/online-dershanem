@@ -338,7 +338,7 @@ export function ExamDetailEditor({ exam, availableTags, linkedTagIds: initialLin
             </p>
             {availableTags.length === 0 ? (
               <p className="od-muted" style={{ fontSize: 13 }}>
-                Henüz aktif ODK tagı yok. Önce <a href="/panel/admin/odk/erisim">Erişim Tagları</a> sayfasından bir tag oluşturun.
+                Henüz aktif ODK tagı yok. Önce <a href="/panel/admin/odk/erisim/yeni">yeni bir tag oluşturun</a>.
               </p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
