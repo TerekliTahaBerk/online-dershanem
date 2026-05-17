@@ -47,7 +47,7 @@ export default async function AdminOdkPackagesPage() {
         title="ODK Paketleri"
         subtitle={`${packages.length} paket · ${totalActive} aktif · ${totalEntitlements} entitlement`}
         right={
-          <Link href="/odk-paketleri" className="od-btn">
+          <Link href="/deneme-kulubu#paketler" className="od-btn">
             Public katalog
           </Link>
         }

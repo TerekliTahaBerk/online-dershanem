@@ -5,6 +5,7 @@ import { HomeHero } from "@/components/sections/home-hero";
 import { UniversityStrip } from "@/components/sections/university-strip";
 import { HomeFeatures } from "@/components/sections/home-features";
 import { HomePricing } from "@/components/sections/home-pricing";
+import { HomeOdkPreview } from "@/components/sections/home-odk-preview";
 import { HomeTestimonials } from "@/components/sections/home-testimonials";
 import { HomeFAQ } from "@/components/sections/home-faq";
 import { Footer } from "@/components/sections/footer";
@@ -67,6 +68,7 @@ export default function HomePage() {
         <UniversityStrip />
         <HomeFeatures />
         <HomePricing />
+        <HomeOdkPreview />
         <HomeTestimonials />
         <HomeFAQ />
         <HomeYellowCTA />

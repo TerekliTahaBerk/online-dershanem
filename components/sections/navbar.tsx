@@ -12,7 +12,6 @@ const links = [
   { label: "Misyonumuz", href: "/misyonumuz/" },
   { label: "Paketler", href: "/paketler/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "ODK Paketleri", href: "/odk-paketleri/" },
   { label: "Blog", href: "/blog/" },
   { label: "Kariyer", href: "/kariyer/" }
 ];
