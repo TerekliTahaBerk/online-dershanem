@@ -28,6 +28,7 @@ type Product = {
   href: string;
   upsellHref: string;
   enabled: boolean;
+  logo: string;
 };
 
 /**
@@ -60,6 +61,7 @@ export function SidebarBrandSwitcher({ role, accessFlags, currentProduct, roleLa
       href: `/panel/${segment}`,
       upsellHref: "/paketler?from=panel",
       enabled: isAdmin || accessFlags.hasOD,
+      logo: "/icon-192.png",
     },
     {
       id: "odk",
@@ -68,6 +70,7 @@ export function SidebarBrandSwitcher({ role, accessFlags, currentProduct, roleLa
       href: `/panel/${segment}/odk`,
       upsellHref: "/odk-paketleri?from=panel",
       enabled: isAdmin || accessFlags.hasODK,
+      logo: "/odklogo1.png",
     },
   ];
 
@@ -107,7 +110,7 @@ export function SidebarBrandSwitcher({ role, accessFlags, currentProduct, roleLa
       >
         <span className={`od-brand-mark od-brand-mark--${current.id}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon-192.png" alt="" />
+          <img src={current.logo} alt="" />
         </span>
         <span className="od-brand-text">
           <span className="od-brand-name">
@@ -138,7 +141,7 @@ export function SidebarBrandSwitcher({ role, accessFlags, currentProduct, roleLa
                   >
                     <span className={`od-brand-menu-mark od-brand-mark--${p.id}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/icon-192.png" alt="" />
+                      <img src={p.logo} alt="" />
                     </span>
                     <span className="od-brand-menu-meta">
                       <span className="od-brand-menu-title">
