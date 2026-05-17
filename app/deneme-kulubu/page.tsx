@@ -217,6 +217,7 @@ export default async function DenemeKulubuPage() {
       slug: true,
       description: true,
       priceCents: true,
+      originalPriceCents: true,
       durationDays: true,
       _count: { select: { packageExams: true } },
     },
@@ -772,11 +773,21 @@ export default async function DenemeKulubuPage() {
                               <p className="mt-3 text-[13px] leading-6 text-[var(--od-ink-soft)]">Dijital deneme + kazanım analizi + gelişim grafiği.</p>
                             )}
 
-                            <div className="mt-5 flex items-baseline gap-1.5">
+                            <div className="mt-5 flex items-baseline gap-2">
                               <span className="font-display text-[32px] leading-none tracking-tight text-[var(--od-ink)]">{priceFormatter.format(p.priceCents / 100)}</span>
                               <span className="text-[12px] text-[var(--od-ink-soft)]">/ paket</span>
                             </div>
-                            <div className="mt-1 text-[11.5px] text-[var(--od-ink-soft)]">{formatDuration(p.durationDays)}</div>
+                            {p.originalPriceCents && p.originalPriceCents > p.priceCents ? (
+                              <div className="mt-1.5 flex items-center gap-2">
+                                <span className="text-[13px] text-[var(--od-ink-soft)] line-through decoration-[var(--od-ink-soft)]/60">
+                                  {priceFormatter.format(p.originalPriceCents / 100)}
+                                </span>
+                                <span className="rounded-full bg-[var(--od-olive)]/12 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[var(--od-olive)]">
+                                  %{Math.round((1 - p.priceCents / p.originalPriceCents) * 100)} indirim
+                                </span>
+                              </div>
+                            ) : null}
+                            <div className="mt-1.5 text-[11.5px] text-[var(--od-ink-soft)]">{formatDuration(p.durationDays)}</div>
                           </div>
 
                           <div className="flex flex-1 flex-col px-6 py-6">

@@ -987,6 +987,7 @@ model OdkPackage {
   slug              String                @unique
   description       String?
   priceCents        Int                   @map("price_cents")
+  originalPriceCents Int?                 @map("original_price_cents")
   durationDays      Int?                  @map("duration_days")
   isActive          Boolean               @default(true) @map("is_active")
   createdAt         DateTime              @default(now()) @map("created_at")
