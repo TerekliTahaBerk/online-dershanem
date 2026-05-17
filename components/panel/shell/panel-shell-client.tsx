@@ -90,6 +90,7 @@ export function PanelShellClient({
         product={currentProduct}
         userName={userName}
         userEmail={userEmail}
+        accessFlags={accessFlags}
       />
       {drawerOpen ? (
         <button
@@ -105,8 +106,6 @@ export function PanelShellClient({
           actualRole={actualRole}
           isViewingAs={isViewingAs}
           userId={userId}
-          accessFlags={accessFlags}
-          currentProduct={currentProduct}
           onMenuClick={() => setDrawerOpen((v) => !v)}
         />
         <div className="od-panel-body">{children}</div>

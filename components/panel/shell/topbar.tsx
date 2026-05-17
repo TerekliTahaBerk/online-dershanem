@@ -7,16 +7,12 @@ import { PanelIcon } from "@/components/panel/ui/icon";
 import { setViewAsAction } from "@/components/panel/shell/actions";
 import { useTheme } from "@/components/providers/theme-provider";
 import { NotificationBell } from "@/components/panel/shell/notification-bell";
-import { ProductSwitcher } from "@/components/panel/shell/product-switcher";
-import type { AccessFlags } from "@/lib/access/odk";
 
 type Props = {
   role: UserRole;
   actualRole: UserRole;
   isViewingAs: boolean;
   userId: string;
-  accessFlags: AccessFlags;
-  currentProduct?: "od" | "odk";
   onMenuClick?: () => void;
 };
 
@@ -27,7 +23,7 @@ const ROLE_OPTIONS: { value: "admin" | "ogretmen" | "ogrenci" | "veli"; label: s
   { value: "veli", label: "Veli" },
 ];
 
-export function Topbar({ role, actualRole, isViewingAs, userId, accessFlags, currentProduct = "od", onMenuClick }: Props) {
+export function Topbar({ role, actualRole, isViewingAs, userId, onMenuClick }: Props) {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -57,8 +53,6 @@ export function Topbar({ role, actualRole, isViewingAs, userId, accessFlags, cur
           <PanelIcon name="menu" size={18} />
         </button>
       ) : null}
-
-      <ProductSwitcher role={role} actualRole={actualRole} accessFlags={accessFlags} currentProduct={currentProduct} />
 
       {isViewingAs ? (
         <div className="od-topbar-banner">

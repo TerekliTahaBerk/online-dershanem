@@ -2566,6 +2566,182 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 @keyframes od-cmd-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes od-cmd-pop { from { transform: translateY(-8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+/* ─── Sidebar Brand Switcher (OD ↔ ODK, premium SaaS feel) ──────────────── */
+.od-brand-switch { position: relative; padding: 0 0 14px; }
+
+.od-brand-trigger {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 8px; border-radius: 10px;
+  background: transparent; border: 1px solid transparent;
+  cursor: pointer; text-align: left;
+  transition: background .14s ease, border-color .14s ease;
+}
+.od-brand-trigger:hover,
+.od-brand-trigger:focus-visible {
+  background: var(--pd-bg-subtle);
+  border-color: var(--pd-line);
+  outline: none;
+}
+.od-brand-trigger.is-open {
+  background: var(--pd-bg-subtle);
+  border-color: var(--pd-line);
+}
+
+.od-brand-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: grid; place-items: center;
+  background: #FBFBF8;
+  border: 1px solid var(--pd-line);
+  overflow: hidden; padding: 3px;
+  flex: 0 0 32px;
+  position: relative;
+}
+.od-brand-mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* Subtle accent ring per product */
+.od-brand-mark--od  { box-shadow: 0 0 0 1.5px rgba(37,99,235,.18); }
+.od-brand-mark--odk { box-shadow: 0 0 0 1.5px rgba(245,158,11,.22); }
+
+.od-brand-text {
+  display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto;
+  line-height: 1.2;
+}
+.od-brand-name {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-weight: 600; font-size: 13.5px; letter-spacing: -.01em;
+  color: var(--pd-ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+}
+.od-brand-sub {
+  font-size: 11px; color: var(--pd-muted); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.od-brand-accent {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex: 0 0 6px; display: inline-block;
+}
+.od-brand-accent--od  { background: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.18); }
+.od-brand-accent--odk { background: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,.22); }
+
+.od-brand-chev {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  color: var(--pd-muted-2);
+  transition: transform .18s ease;
+  flex: 0 0 18px;
+}
+.od-brand-chev.is-open { transform: rotate(180deg); color: var(--pd-ink-2); }
+
+/* Dropdown menu */
+.od-brand-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  z-index: 80;
+  background: var(--pd-card);
+  border: 1px solid var(--pd-line);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 28px -10px rgba(15, 23, 42, .18), 0 2px 6px -2px rgba(15, 23, 42, .06);
+  animation: od-brand-pop 140ms ease-out;
+  /* Sidebar genişliğini taşmasın, dar viewport'ta okunabilir kalsın */
+  min-width: 240px;
+}
+
+@keyframes od-brand-pop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.od-brand-menu-head {
+  padding: 8px 10px 6px;
+  font-size: 10.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--pd-muted-2);
+}
+
+.od-brand-menu-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.od-brand-menu-item {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center; gap: 10px;
+  padding: 8px 8px;
+  border-radius: 8px;
+  text-decoration: none; color: var(--pd-ink);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .12s ease, border-color .12s ease;
+}
+.od-brand-menu-item:hover,
+.od-brand-menu-item:focus-visible {
+  background: var(--pd-bg-subtle);
+  outline: none;
+}
+.od-brand-menu-item.is-active {
+  background: var(--pd-soft);
+  border-color: var(--pd-line);
+}
+.od-brand-menu-item.is-locked { opacity: .75; }
+
+.od-brand-menu-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: grid; place-items: center;
+  background: #FBFBF8;
+  border: 1px solid var(--pd-line);
+  overflow: hidden; padding: 3px;
+  flex: 0 0 32px;
+}
+.od-brand-menu-mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.od-brand-menu-meta {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.od-brand-menu-title {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; line-height: 1.2;
+  color: var(--pd-ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0;
+}
+.od-brand-menu-sub {
+  font-size: 11px; color: var(--pd-muted); line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.od-brand-menu-state {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 auto;
+  color: #16a34a; /* check ikonu yeşil — aktif vurgu */
+}
+
+.od-brand-locked {
+  font-size: 9.5px; font-weight: 700;
+  padding: 2px 6px;
+  background: var(--pd-bg-subtle);
+  color: var(--pd-muted);
+  border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.od-brand-menu-foot {
+  margin-top: 4px;
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--pd-line);
+  font-size: 11px; color: var(--pd-muted);
+  line-height: 1.4;
+}
+
+/* Mobile drawer'da dropdown taşmasın */
+@media (max-width: 720px) {
+  .od-brand-menu { min-width: 220px; }
+}
+
 /* ─── Product Switcher (OD ↔ ODK) ─────────────────────────────────────── */
 .od-product-switcher { position: relative; display: inline-flex; min-width: 0; }
 .od-product-trigger {
