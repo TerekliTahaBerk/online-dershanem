@@ -2638,15 +2638,28 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   position: absolute;
   top: calc(100% + 4px);
   left: 0; right: 0;
-  z-index: 80;
-  background: var(--pd-card);
+  z-index: 90;
+  /* Solid opaque bg — sidebar nav items'ın arkasından sızmasını engeller */
+  background: var(--pd-bg-elevated, #ffffff);
   border: 1px solid var(--pd-line);
   border-radius: 12px;
   padding: 6px;
-  box-shadow: 0 12px 28px -10px rgba(15, 23, 42, .18), 0 2px 6px -2px rgba(15, 23, 42, .06);
+  box-shadow:
+    0 12px 28px -10px rgba(15, 23, 42, .22),
+    0 4px 10px -4px rgba(15, 23, 42, .10),
+    0 0 0 1px rgba(15, 23, 42, .02);
   animation: od-brand-pop 140ms ease-out;
   /* Sidebar genişliğini taşmasın, dar viewport'ta okunabilir kalsın */
   min-width: 240px;
+  /* Backdrop-filter ile arkadan sızan içerik silikleşir (fallback solid bg ile zaten kapalı) */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  /* Alttaki içeriğin tıklanmasını engelle (menu kapalıyken zaten yok) */
+  isolation: isolate;
+}
+
+[data-theme="dark"] .od-brand-menu {
+  background: var(--pd-bg-elevated, #1a1a1a);
 }
 
 @keyframes od-brand-pop {
@@ -2675,6 +2688,8 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
   text-decoration: none; color: var(--pd-ink);
   cursor: pointer;
   border: 1px solid transparent;
+  /* Solid bg — parent menu zaten opak ama hover/active geçişlerinde flicker olmasın */
+  background: transparent;
   transition: background .12s ease, border-color .12s ease;
 }
 .od-brand-menu-item:hover,
