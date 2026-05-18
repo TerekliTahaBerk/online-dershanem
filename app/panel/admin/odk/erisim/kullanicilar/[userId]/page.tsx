@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody, CardHeader } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { ToastForm } from "@/components/ui/toast-form";
 import {
   grantUserAccessAction,
   revokeUserAccessAction,
@@ -182,7 +183,7 @@ export default async function UserAccessDetailPage({
                   <Link href="/panel/admin/odk/erisim/yeni">yeni bir tag oluşturun</Link>.
                 </p>
               ) : (
-                <form action={grantUserAccessAction} style={{ display: "grid", gap: 12 }}>
+                <ToastForm action={grantUserAccessAction} style={{ display: "grid", gap: 12 }} successMessage="Erişim tagı atandı">
                   <input type="hidden" name="userId" value={user.id} />
 
                   <label style={{ display: "grid", gap: 6 }}>
@@ -211,7 +212,7 @@ export default async function UserAccessDetailPage({
                   <button type="submit" className="od-btn od-btn-primary">
                     Tagı ata
                   </button>
-                </form>
+                </ToastForm>
               )}
             </CardBody>
           </Card>

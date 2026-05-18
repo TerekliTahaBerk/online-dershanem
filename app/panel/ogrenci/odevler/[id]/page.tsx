@@ -7,6 +7,7 @@ import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Textarea, FormActions } from "@/components/panel/ui/form";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { ToastForm } from "@/components/ui/toast-form";
 import { submitAssignmentExtendedAction } from "../../_actions";
 
 export const dynamic = "force-dynamic";
@@ -72,7 +73,12 @@ export default async function StudentAssignmentDetail({ params }: { params: Prom
           {closed ? (
             <EmptyState icon="lock" title="Bu ödev kapalı" description="Artık gönderim yapılamaz." />
           ) : (
-            <form action={submit} className="od-grid g-2" style={{ gap: 12 }}>
+            <ToastForm
+              action={submit}
+              className="od-grid g-2"
+              style={{ gap: 12 }}
+              successMessage={sub?.submittedAt ? "Gönderim güncellendi" : "Ödev gönderildi"}
+            >
               <div style={{ gridColumn: "1 / -1" }}>
                 <Field label="Cevap / Açıklama"><Textarea name="content" rows={6} defaultValue={sub?.content ?? ""} placeholder="Cevabını veya notlarını yaz…" /></Field>
               </div>
@@ -84,7 +90,7 @@ export default async function StudentAssignmentDetail({ params }: { params: Prom
                   <button type="submit" className="od-btn od-btn-primary">{sub?.submittedAt ? "Güncelle" : "Gönder"}</button>
                 </FormActions>
               </div>
-            </form>
+            </ToastForm>
           )}
         </CardBody>
       </Card>
