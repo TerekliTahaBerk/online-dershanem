@@ -3,6 +3,7 @@ import { requireParent, getChildIds } from "@/lib/panel-parent";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { NoChildEmpty } from "@/components/panel/parent/no-child-empty";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export default async function ParentPerformance() {
   const { parent } = await requireParent();
   if (!parent) return <Card><EmptyState icon="users" title="Veli profili yok" /></Card>;
   const childIds = await getChildIds(parent.id);
-  if (childIds.length === 0) return <><PageHeader title="Performans" /><Card><EmptyState icon="users" title="Bağlı çocuk yok" /></Card></>;
+  if (childIds.length === 0) return <NoChildEmpty pageTitle="Performans" />;
   const results = await prisma.studentExamResult.findMany({
     where: { studentId: { in: childIds } },
     orderBy: { takenAt: "desc" }, take: 100,

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { Badge } from "@/components/panel/ui/badge";
+import { NoChildEmpty } from "@/components/panel/parent/no-child-empty";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function ParentSchedule() {
   const { parent } = await requireParent();
   if (!parent) return <Card><EmptyState icon="users" title="Veli profili yok" /></Card>;
   const childIds = await getChildIds(parent.id);
-  if (childIds.length === 0) return <><PageHeader title="Ders programı" /><Card><EmptyState icon="users" title="Bağlı çocuk yok" /></Card></>;
+  if (childIds.length === 0) return <NoChildEmpty pageTitle="Ders programı" />;
   const start = new Date(); start.setHours(0, 0, 0, 0);
   const lessons = await prisma.lesson.findMany({
     where: { studentId: { in: childIds }, scheduledAt: { gte: start, lte: new Date(start.getTime() + 14 * 86400000) } },

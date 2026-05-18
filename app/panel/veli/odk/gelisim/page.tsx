@@ -21,7 +21,11 @@ export default async function ParentProgressIndex() {
         <CardHeader title="Çocuk seç" />
         <CardBody>
           {children.length === 0 ? (
-            <EmptyState title="Bağlı çocuk yok" />
+            <EmptyState
+              title="Bağlı çocuk yok"
+              description="Hesabınıza henüz çocuk eşleştirilmemiş. Lütfen okul yöneticinizle iletişime geçin."
+              action={<Link href="/iletisim" className="od-btn od-btn-sm od-btn-primary">İletişime geç</Link>}
+            />
           ) : (
             <div className="od-grid g-3">
               {children.map((c) => (

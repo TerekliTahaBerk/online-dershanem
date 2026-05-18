@@ -1,20 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
+import { useToast } from "@/components/ui/toast";
 
 /**
  * KVKK / Veri Sahibi Hakları kartı.
  *
  * - Veri ihracı: GET /api/v1/me/data-export (5/gün rate-limit)
- * - Hesap silme talebi: `mailto:` ile destek e-postasına yönlendirir
- *   (otomatik akış R-X — Account deletion request — sonraki round'da gelecek)
+ * - Hesap silme: /panel/{role}/profilim/hesap-sil (Round R-D+ ile gerçek akışa bağlandı)
  *
  * Tüm rollerde (öğrenci/öğretmen/veli/admin) profil sayfalarına monte edilebilir.
  */
 export function PrivacyRightsCard() {
+  const pathname = usePathname() ?? "";
+  // Beklenen path: /panel/{segment}/...
+  const segMatch = /^\/panel\/(ogrenci|ogretmen|veli|admin)(?:\/|$)/.exec(pathname);
+  const segment = segMatch?.[1] ?? "ogrenci";
+  const deleteHref = `/panel/${segment}/profilim/hesap-sil`;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   async function downloadExport() {
     setLoading(true);
@@ -30,6 +38,7 @@ export function PrivacyRightsCard() {
           if (j?.message) msg = j.message;
         } catch {/* ignore */}
         setError(msg);
+        toast.error(msg);
         return;
       }
       const blob = await res.blob();
@@ -43,8 +52,11 @@ export function PrivacyRightsCard() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      toast.success("Veri dosyan indiriliyor", { title: "İhraç tamam" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bilinmeyen hata.");
+      const msg = err instanceof Error ? err.message : "Bilinmeyen hata.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -69,12 +81,12 @@ export function PrivacyRightsCard() {
             >
               {loading ? "Hazırlanıyor…" : "📥 Verilerimi indir (JSON)"}
             </button>
-            <a
-              href="mailto:destek@onlinedershanem.com?subject=Hesap%20silme%20talebi&body=Merhaba%2C%0A%0AKVKK%2011.%20madde%20kapsam%C4%B1nda%20hesab%C4%B1m%C4%B1n%20ve%20ki%C5%9Fisel%20verilerimin%20silinmesini%20talep%20ediyorum.%0A%0ATe%C5%9Fekk%C3%BCrler."
+            <Link
+              href={deleteHref}
               className="od-btn od-btn-ghost od-btn-sm"
             >
-              ✉️ Hesap silme talebi
-            </a>
+              🗑️ Hesabımı sil
+            </Link>
             <a
               href="/kvkk"
               className="od-btn od-btn-ghost od-btn-sm"

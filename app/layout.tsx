@@ -10,6 +10,7 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartFab } from "@/components/cart/cart-fab";
+import { ToastProvider } from "@/components/ui/toast";
 
 const themeInitScript = `(()=>{try{document.documentElement.setAttribute('data-theme','light');}catch(e){}})();`;
 import { Analytics } from "@vercel/analytics/next";
@@ -105,14 +106,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AuthSessionProvider>
           <CartProvider>
-            <Suspense fallback={null}>
-              <NavigationProgress />
-            </Suspense>
-            <Pixels />
-            {children}
-            <CartFab />
-            <Analytics />
-            <SpeedInsights />
+            <ToastProvider>
+              <Suspense fallback={null}>
+                <NavigationProgress />
+              </Suspense>
+              <Pixels />
+              {children}
+              <CartFab />
+              <Analytics />
+              <SpeedInsights />
+            </ToastProvider>
           </CartProvider>
         </AuthSessionProvider>
       </body>

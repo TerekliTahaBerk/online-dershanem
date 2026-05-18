@@ -78,7 +78,11 @@ export default async function StudentOdkDashboard() {
         <CardHeader title="Son denemeler" />
         <CardBody>
           {recentAttempts.length === 0 ? (
-            <EmptyState title="Henüz tamamlanmış deneme yok" description="İlk denemeni çözünce burada görüneceksin." />
+            <EmptyState
+              title="Henüz tamamlanmış deneme yok"
+              description="İlk denemeni çözünce burada görüneceksin."
+              action={<Link href="/panel/ogrenci/odk/denemeler" className="od-btn od-btn-primary od-btn-sm">Denemelere git</Link>}
+            />
           ) : (
             <table className="od-table">
               <thead>

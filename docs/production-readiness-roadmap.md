@@ -595,3 +595,67 @@ ODK paket satın alma akışı PayTR iFrame API ile uçtan-uca bağlandı. `mark
 ## "STOP" — R-C burada bitiyor
 
 Sonraki önerilen: **R-D — ODK öğrenci erişim UI'ı** (panel/ogrenci/odk altında aktif paket/kalan gün/erişim listesi) veya **R-E — OD ödeme entegrasyonu** (aynı PayTR altyapısını OD paketler için yeniden kullan).
+
+---
+
+## Tamamlanan Tur — R-D + Audit Faz leftover + R-D+ (2026-05-18)
+
+### R-D — ODK öğrenci erişim UI
+- `app/panel/ogrenci/odk/paketim/page.tsx` — Aktif paket kartları (kalan gün uyarısı), aktif/eski erişim etiketleri chip'leri, pasif paket tablosu
+- Sidebar: "Hesabım → Paketlerim" eklendi
+
+### Audit Faz leftover — `/api/v1/me/products` + Devamsızlık + Maaşlar
+- `app/api/v1/me/products/route.ts` — Mobile + product switcher için OD/ODK access matrix
+- `app/panel/admin/devamsizlik/page.tsx` — 4 KPI + status/sınıf/tarih filtreleri + tablo (50/page)
+- `app/panel/admin/maaslar/{page,_form,_actions,yeni,[id]/duzenle}.tsx` — Full CRUD + markPayrollPaid (tx-safe + idempotent AccountingEntry)
+
+### R-D+ — Account Deletion (KVKK akışı)
+**Veri katmanı:**
+- `AccountDeletionRequest` modeli + `AccountDeletionStatus` enum + migration `0026_account_deletion_request`
+- `lib/account-deletion.ts` — `anonymizeUser()` (PII sil, paket revoke, session/device hard-delete; finans/audit korunur) + `processApprovedDeletionRequest()`
+
+**Server actions + UI:**
+- `app/panel/_shared/account-deletion-actions.ts` — create/cancel (user) + approve/reject/processNow (admin)
+- `app/panel/_shared/{account-deletion-form,hesap-sil-page}.tsx` — Shared form + page
+- `app/panel/{ogrenci,ogretmen,veli}/profilim/hesap-sil/page.tsx` — Role pages
+- `components/panel/privacy/privacy-rights-card.tsx` — mailto→gerçek route bağlandı
+
+**Admin + cron:**
+- `app/panel/admin/hesap-silme-talepleri/page.tsx` — 4 KPI + 6 status filter + tablo + inline approve/reject/processNow
+- `app/api/cron/account-deletion-process/route.ts` — Günlük batch (50/run)
+- `vercel.json` — `0 2 * * *` schedule eklendi
+- Sidebar: Admin Sistem → "Hesap silme talepleri"
+
+## "STOP" — R-D+ burada bitiyor
+
+---
+
+## Tamamlanan Tur — Round 10 (SEO/OG) + Round 9 (DevOps docs) + Round 11 (Toast) + Round 12 (Link scanner)
+
+### Round 10 — OG Image Generator (Faz I)
+- `lib/seo/og-template.tsx` — OD design system temalı paylaşımlı template (default/blog/package varyantları)
+- 10 OG route: `/`, `/blog`, `/blog/[slug]` (dynamic per post), `/tyt`, `/ayt`, `/lgs`, `/yks`, `/paketler`, `/odk-paketleri`, `/deneme-kulubu`
+- Build doğrulaması: `npx next build` ✅ tüm rotalar başarılı
+
+### Round 9 — DevOps polish (docs-only, kod onayı bekliyor)
+- `docs/devops-runbook.md` — DB backup/restore (Neon/Supabase PITR + manuel `pg_dump`), staging env (Vercel preview + Neon branching), monitoring (Vercel Analytics/Speed Insights + Sentry kurulum adımları), deployment checklist (pre/deploy/post/rollback), troubleshooting (connection pool, callback timeout, email outbox stuck, migration drift)
+- **Sentry kurulumu kullanıcı onayı bekliyor** (`@sentry/nextjs` paketi + wizard); stub `lib/error-capture.ts`'de hazır
+
+### Round 11 — Toast system (UX polish başlangıcı)
+- `components/ui/toast.tsx` — `ToastProvider` + `useToast()` hook (success/error/info/warn, auto-dismiss, manual close)
+- `app/layout.tsx` — root layout'ta `<ToastProvider>` monte edildi
+- Form UX iyileştirmeleri için kullanıma hazır (mevcut server action throw'larını client-side toast'a bağlanabilir)
+
+### Round 12 — Broken link scanner (QA başlangıcı)
+- `scripts/scan-broken-links.ts` — Sitemap fetch + paralel HTTP check (6 concurrent, 10s timeout, renkli rapor)
+- `package.json`: `npm run scan:links` (default `http://localhost:3000`, `BASE_URL=...` ile prod taranabilir)
+- CI/E2E akışına entegre edilebilir
+
+## "STOP" — Round 10/11/12 başlangıçları burada bitiyor
+
+Sonraki önerilen:
+- **Sentry SDK onayı + aktivasyon** (Round 9 tamamlama)
+- **Playwright E2E** (Round 12 ana çıktı: login → öğrenci panel → ödev gönder → öğretmen değerlendirir)
+- **Toast'ı mevcut formlara bağla** (Round 11 yayma — student/teacher/parent profil edit + ödev gönder + admin CRUD)
+- **Empty state audit** (Round 11 devam)
+

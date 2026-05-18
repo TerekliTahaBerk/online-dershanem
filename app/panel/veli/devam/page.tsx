@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { NoChildEmpty } from "@/components/panel/parent/no-child-empty";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function ParentAttendance() {
   const { parent } = await requireParent();
   if (!parent) return <Card><EmptyState icon="users" title="Veli profili yok" /></Card>;
   const childIds = await getChildIds(parent.id);
-  if (childIds.length === 0) return <><PageHeader title="Devam durumu" /><Card><EmptyState icon="users" title="Bağlı çocuk yok" /></Card></>;
+  if (childIds.length === 0) return <NoChildEmpty pageTitle="Devam durumu" />;
   const records = await prisma.attendance.findMany({
     where: { studentId: { in: childIds } },
     orderBy: { sessionDate: "desc" }, take: 200,

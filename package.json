@@ -13,7 +13,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "scan:links": "tsx scripts/scan-broken-links.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

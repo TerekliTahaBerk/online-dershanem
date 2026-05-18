@@ -141,6 +141,9 @@ model User {
   mobileDevices           MobileDevice[]
   notificationPrefs       NotificationPreference[]
   appActivityLogs         AppActivityLog[]
+  // ── Account deletion (KVKK / Faz Production) ──
+  accountDeletionRequests AccountDeletionRequest[] @relation("AccountDeletionRequestUser")
+  accountDeletionReviews  AccountDeletionRequest[] @relation("AccountDeletionRequestReviewer")
 }
 
 model LeadSubmission {
@@ -1005,22 +1008,22 @@ model OdkExamAccessTag {
 }
 
 model OdkPackage {
-  id                String                @id @default(cuid())
-  title             String
-  slug              String                @unique
-  description       String?
-  priceCents        Int                   @map("price_cents")
-  originalPriceCents Int?                 @map("original_price_cents")
-  durationDays      Int?                  @map("duration_days")
-  isActive          Boolean               @default(true) @map("is_active")
-  isFeatured        Boolean               @default(false) @map("is_featured")
-  ctaText           String?               @map("cta_text")
-  createdAt         DateTime              @default(now()) @map("created_at")
-  updatedAt         DateTime              @updatedAt @map("updated_at")
-  packageExams      OdkPackageExam[]
-  packageAccessTags OdkPackageAccessTag[]
-  orders            OdkOrder[]
-  entitlements      OdkEntitlement[]
+  id                 String                @id @default(cuid())
+  title              String
+  slug               String                @unique
+  description        String?
+  priceCents         Int                   @map("price_cents")
+  originalPriceCents Int?                  @map("original_price_cents")
+  durationDays       Int?                  @map("duration_days")
+  isActive           Boolean               @default(true) @map("is_active")
+  isFeatured         Boolean               @default(false) @map("is_featured")
+  ctaText            String?               @map("cta_text")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+  packageExams       OdkPackageExam[]
+  packageAccessTags  OdkPackageAccessTag[]
+  orders             OdkOrder[]
+  entitlements       OdkEntitlement[]
 
   @@index([isActive])
   @@index([isFeatured])
@@ -1281,21 +1284,21 @@ model ParentStudent {
 /// Sınıf/şube. İleride grup dersleri (`Lesson.classroomId`) ve sınıf bazlı
 /// yoklama (`Attendance.classroomId`) için temel.
 model Classroom {
-  id          String             @id @default(cuid())
-  name        String
-  branch      String?
-  level       ClassroomLevel     @default(MIXED)
-  capacity    Int                @default(30)
-  description String?
-  isActive    Boolean            @default(true)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  teachers    ClassroomTeacher[]
-  students    ClassroomStudent[]
-  attendances Attendance[]
-  lessons     Lesson[]
-  assignments Assignment[]
-  defaultForCourses Course[]         @relation("CourseDefaultClassroom")
+  id                String             @id @default(cuid())
+  name              String
+  branch            String?
+  level             ClassroomLevel     @default(MIXED)
+  capacity          Int                @default(30)
+  description       String?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  teachers          ClassroomTeacher[]
+  students          ClassroomStudent[]
+  attendances       Attendance[]
+  lessons           Lesson[]
+  assignments       Assignment[]
+  defaultForCourses Course[]           @relation("CourseDefaultClassroom")
 
   @@unique([name, branch])
   @@index([isActive])
@@ -1857,7 +1860,7 @@ model AppActivityLog {
 model OdOrder {
   id            String         @id @default(cuid())
   userId        String         @map("user_id")
-  packageId    String?         @map("package_id")
+  packageId     String?        @map("package_id")
   packageName   String         @map("package_name")
   category      String?
   subject       String?
@@ -1904,7 +1907,7 @@ model OdPayment {
 
 enum CouponType {
   PERCENT // %20 indirim
-  FIXED   // ₺200 sabit indirim
+  FIXED // ₺200 sabit indirim
 }
 
 enum CouponService {
@@ -1914,49 +1917,87 @@ enum CouponService {
 }
 
 model Coupon {
-  id              String         @id @default(cuid())
-  code            String         @unique
-  description     String?
-  type            CouponType     @default(PERCENT)
-  service         CouponService  @default(ALL)
+  id               String             @id @default(cuid())
+  code             String             @unique
+  description      String?
+  type             CouponType         @default(PERCENT)
+  service          CouponService      @default(ALL)
   // PERCENT için: 1-100 (%)
   // FIXED   için: kuruş cinsinden indirim tutarı
-  value           Int
+  value            Int
   // Sepette minimum tutar (kuruş). 0 = sınır yok.
-  minOrderCents   Int            @default(0) @map("min_order_cents")
+  minOrderCents    Int                @default(0) @map("min_order_cents")
   // PERCENT için indirim üst sınırı (kuruş). 0 = sınır yok.
-  maxDiscountCents Int           @default(0) @map("max_discount_cents")
+  maxDiscountCents Int                @default(0) @map("max_discount_cents")
   // Toplam kullanım hakkı. 0 = sınırsız.
-  usageLimit      Int            @default(0) @map("usage_limit")
+  usageLimit       Int                @default(0) @map("usage_limit")
   // Kullanıcı başı maksimum. 0 = sınırsız.
-  perUserLimit    Int            @default(1) @map("per_user_limit")
-  startsAt        DateTime?      @map("starts_at")
-  expiresAt       DateTime?      @map("expires_at")
-  isActive        Boolean        @default(true) @map("is_active")
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  createdById     String?        @map("created_by_id")
-  createdBy       User?          @relation("CouponCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  redemptions     CouponRedemption[]
+  perUserLimit     Int                @default(1) @map("per_user_limit")
+  startsAt         DateTime?          @map("starts_at")
+  expiresAt        DateTime?          @map("expires_at")
+  isActive         Boolean            @default(true) @map("is_active")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  createdById      String?            @map("created_by_id")
+  createdBy        User?              @relation("CouponCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  redemptions      CouponRedemption[]
 
   @@index([isActive, expiresAt])
   @@map("coupons")
 }
 
 model CouponRedemption {
-  id           String   @id @default(cuid())
-  couponId     String   @map("coupon_id")
-  userId       String   @map("user_id")
+  id            String   @id @default(cuid())
+  couponId      String   @map("coupon_id")
+  userId        String   @map("user_id")
   // Hangi siparişte kullanıldı. OdOrder veya OdkOrder id'si — ikisi de String.
-  orderService String   @map("order_service") // "OD" | "ODK"
-  orderId      String   @map("order_id")
-  discountCents Int     @map("discount_cents")
-  redeemedAt   DateTime @default(now()) @map("redeemed_at")
-  coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  user         User     @relation("CouponRedemptionUser", fields: [userId], references: [id], onDelete: Cascade)
+  orderService  String   @map("order_service") // "OD" | "ODK"
+  orderId       String   @map("order_id")
+  discountCents Int      @map("discount_cents")
+  redeemedAt    DateTime @default(now()) @map("redeemed_at")
+  coupon        Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user          User     @relation("CouponRedemptionUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([couponId])
   @@index([userId])
   @@index([orderService, orderId])
   @@map("coupon_redemptions")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Account Deletion Request (KVKK madde 7 & 11 / Faz Production-Readiness)
+// Kullanıcı hesabını silmek istediğinde 7 günlük bekleme süresi başlar.
+// Admin onayı sonrası cron, kullanıcıyı KVKK uyumlu şekilde anonimleştirir
+// (finansal kayıtlar — sipariş, ödeme, muhasebe — Türk Vergi mevzuatı gereği
+// 5+ yıl saklanmak zorunda olduğu için hard-delete yerine anonimleştirme).
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AccountDeletionStatus {
+  PENDING // kullanıcı talep etti, admin incelemesi bekleniyor
+  APPROVED // admin onayladı, scheduledFor sonrası cron işleyecek
+  REJECTED // admin reddetti
+  CANCELLED // kullanıcı kendi iptal etti
+  PROCESSED // cron anonimleştirme işlemini tamamladı
+}
+
+model AccountDeletionRequest {
+  id            String                @id @default(cuid())
+  userId        String                @map("user_id")
+  reason        String?
+  status        AccountDeletionStatus @default(PENDING)
+  requestedAt   DateTime              @default(now()) @map("requested_at")
+  scheduledFor  DateTime              @map("scheduled_for") // 7 gün sonrası
+  reviewedById  String?               @map("reviewed_by_id")
+  reviewedAt    DateTime?             @map("reviewed_at")
+  reviewerNotes String?               @map("reviewer_notes")
+  processedAt   DateTime?             @map("processed_at")
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
+
+  user       User  @relation("AccountDeletionRequestUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("AccountDeletionRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, scheduledFor])
+  @@index([userId, status])
+  @@map("account_deletion_requests")
 }

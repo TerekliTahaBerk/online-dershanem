@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { NoChildEmpty } from "@/components/panel/parent/no-child-empty";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function ParentPayments() {
   const { parent } = await requireParent();
   if (!parent) return <Card><EmptyState icon="users" title="Veli profili yok" /></Card>;
   const childIds = await getChildIds(parent.id);
-  if (childIds.length === 0) return <><PageHeader title="Ödemeler" /><Card><EmptyState icon="users" title="Bağlı çocuk yok" /></Card></>;
+  if (childIds.length === 0) return <NoChildEmpty pageTitle="Ödemeler" />;
   const intents = await prisma.purchaseIntent.findMany({
     where: { studentId: { in: childIds } },
     orderBy: { submittedAt: "desc" }, take: 50,

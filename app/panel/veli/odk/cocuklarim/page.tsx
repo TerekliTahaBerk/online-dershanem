@@ -21,7 +21,11 @@ export default async function ParentChildrenList() {
         <CardHeader title="Bağlı çocukların" />
         <CardBody>
           {children.length === 0 ? (
-            <EmptyState title="Bağlı çocuk yok" description="Lütfen okul yöneticinizle iletişime geçin." />
+            <EmptyState
+              title="Bağlı çocuk yok"
+              description="Lütfen okul yöneticinizle iletişime geçin."
+              action={<Link href="/iletisim" className="od-btn od-btn-sm od-btn-primary">İletişime geç</Link>}
+            />
           ) : (
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {children.map((c) => (

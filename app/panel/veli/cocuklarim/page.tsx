@@ -2,6 +2,7 @@ import { requireParent } from "@/lib/panel-parent";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { NoChildEmpty } from "@/components/panel/parent/no-child-empty";
 import { Badge } from "@/components/panel/ui/badge";
 import Link from "next/link";
 
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ParentChildren() {
   const { parent } = await requireParent();
-  if (!parent || parent.students.length === 0) return <Card><EmptyState icon="users" title="Bağlı çocuk yok" /></Card>;
+  if (!parent || parent.students.length === 0) return <NoChildEmpty />;
   return (
     <>
       <PageHeader title="Çocuklarım" subtitle={`${parent.students.length} çocuk`} />
