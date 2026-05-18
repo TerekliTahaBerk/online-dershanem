@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import type { UserRole } from "@prisma/client";
@@ -92,9 +93,9 @@ export function Topbar({ role, actualRole, isViewingAs, userId, onMenuClick }: P
 
         <NotificationBell userId={userId} />
 
-        <a className="od-iconbtn" href="/" aria-label="Siteye dön" title="Siteye dön">
+        <Link className="od-iconbtn" href="/" aria-label="Siteye dön" title="Siteye dön">
           <PanelIcon name="home" size={16} />
-        </a>
+        </Link>
       </div>
     </header>
   );
