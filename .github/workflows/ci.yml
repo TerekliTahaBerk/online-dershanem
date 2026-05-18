@@ -26,6 +26,9 @@ jobs:
         run: npm ci
 
       - name: Prisma generate
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
+          DIRECT_URL: postgresql://user:pass@localhost:5432/db?schema=public
         run: npx prisma generate
 
       - name: Type-check

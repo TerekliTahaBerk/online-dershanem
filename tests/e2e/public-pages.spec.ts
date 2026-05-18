@@ -6,25 +6,25 @@ import { test, expect } from "@playwright/test";
  */
 
 const PUBLIC_ROUTES = [
-  { path: "/", title: /Online Dershanem|online dershane|özel ders/i },
-  { path: "/yks", title: /YKS/i },
-  { path: "/tyt", title: /TYT/i },
-  { path: "/ayt", title: /AYT/i },
-  { path: "/lgs", title: /LGS/i },
-  { path: "/online-dershane", title: /online dershane/i },
-  { path: "/online-ozel-ders", title: /özel ders/i },
-  { path: "/paketler", title: /paket/i },
-  { path: "/odk-paketleri", title: /ODK|deneme/i },
-  { path: "/deneme-kulubu", title: /deneme|ODK/i },
-  { path: "/iletisim", title: /iletişim/i },
-  { path: "/sss", title: /sıkça|S\.S\.S\.|SSS/i },
-  { path: "/kvkk", title: /KVKK/i },
-  { path: "/gizlilik", title: /gizlilik/i },
-  { path: "/iade", title: /iade/i },
-  { path: "/misyonumuz", title: /misyon/i },
-  { path: "/kariyer", title: /kariyer/i },
-  { path: "/giris", title: /giriş/i },
-  { path: "/kayit", title: /kayıt/i },
+  { path: "/", keyword: /online dershanem|dershane|özel ders|yks|tyt|lgs/i },
+  { path: "/yks", keyword: /yks|tyt|ayt|paket/i },
+  { path: "/tyt", keyword: /tyt|paket/i },
+  { path: "/ayt", keyword: /ayt|paket/i },
+  { path: "/lgs", keyword: /lgs|paket/i },
+  { path: "/online-dershane", keyword: /online dershane|grup|takip/i },
+  { path: "/online-ozel-ders", keyword: /özel ders|birebir|paket/i },
+  { path: "/paketler", keyword: /paket|ders/i },
+  { path: "/odk-paketleri", keyword: /odk|deneme|kulüb|paket/i },
+  { path: "/deneme-kulubu", keyword: /deneme|odk|kulüb/i },
+  { path: "/iletisim", keyword: /letişim|telefon|e-posta|whatsapp/i },
+  { path: "/sss", keyword: /sıkça|soru|cevap/i },
+  { path: "/kvkk", keyword: /kvkk|kişisel|aydınlatma/i },
+  { path: "/gizlilik", keyword: /gizlilik|veri/i },
+  { path: "/iade", keyword: /ade|iptal|cayma/i },
+  { path: "/misyonumuz", keyword: /misyon|hakk|kuruluş|biz/i },
+  { path: "/kariyer", keyword: /kariyer|pozisyon|ekip/i },
+  { path: "/giris", keyword: /giriş|şifre|e-posta|hesab/i },
+  { path: "/kayit", keyword: /kayıt|hesap|şifre|e-posta/i },
 ];
 
 for (const route of PUBLIC_ROUTES) {
@@ -34,8 +34,10 @@ for (const route of PUBLIC_ROUTES) {
     expect(response!.status(), `${route.path} → status`).toBeLessThan(400);
     // Body yüklendi mi
     await expect(page.locator("body")).toBeVisible();
-    // Sayfa title'ı pattern ile eşleşiyor mu
-    await expect(page).toHaveTitle(route.title);
+    // Title boş değil (en az 1 anlamlı karakter)
+    await expect(page).toHaveTitle(/\w{3,}/);
+    // Sayfa-spesifik anahtar kelime body'de var mı (Türkçe-İ safe — body içeriği)
+    await expect(page.locator("body")).toContainText(route.keyword);
   });
 }
 

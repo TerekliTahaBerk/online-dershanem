@@ -35,8 +35,8 @@ test("giriş formu render oluyor", async ({ page }) => {
 
 test("kayıt formu render oluyor", async ({ page }) => {
   await page.goto("/kayit");
-  await expect(page.locator('input[name="email"]')).toBeVisible();
-  await expect(page.locator('input[name="password"]')).toBeVisible();
+  await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible();
+  await expect(page.locator('input[type="password"], input[name="password"]')).toBeVisible();
 });
 
 test("şifremi unuttum sayfası açılıyor", async ({ page }) => {

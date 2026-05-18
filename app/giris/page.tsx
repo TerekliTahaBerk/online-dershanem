@@ -1,9 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelDestination } from "@/lib/panel-access";
+
+export const metadata: Metadata = {
+  title: "Giriş Yap",
+  description: "Online Dershanem öğrenci, öğretmen ve veli panellerine giriş yapın.",
+};
 
 type LoginPageProps = {
   searchParams?: Promise<{

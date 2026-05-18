@@ -4,7 +4,7 @@ import { Footer } from "@/components/sections/footer";
 import { HomeFAQ } from "@/components/sections/home-faq";
 
 export const metadata: Metadata = {
-  title: "Sıkça Sorulanlar | Online Dershanem",
+  title: "Sıkça Sorulanlar",
   description:
     "Online Dershanem hakkında sık sorulan sorular: dersler nasıl işliyor, ödeme, kontenjan, deneme dersleri ve daha fazlası.",
   alternates: { canonical: "/sss/" },

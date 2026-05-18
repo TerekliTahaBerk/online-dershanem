@@ -7,7 +7,7 @@ import { Footer } from "@/components/sections/footer";
 import { siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Misyonumuz | Online Dershanem",
+  title: "Misyonumuz",
   description:
     "Bir insanın geleceğinin maddi imkanlarla değil; merakı, emeği ve potansiyeliyle şekillendiği bir sistem inşa ediyoruz.",
   alternates: { canonical: "/misyonumuz/" },
