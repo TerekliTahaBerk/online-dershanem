@@ -66,7 +66,7 @@ jobs:
       - name: Prisma migrate
         run: |
           npx prisma generate
-          npx prisma migrate deploy
+          npx prisma db push --skip-generate --accept-data-loss
 
       - name: Seed E2E users
         run: npx tsx prisma/seed-e2e.ts
