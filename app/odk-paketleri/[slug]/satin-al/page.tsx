@@ -6,6 +6,10 @@ import { Footer } from "@/components/sections/footer";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { BuyerInfoForm } from "@/components/checkout/buyer-info-form";
+import {
+  OrderSummaryCard,
+  CheckoutPageHeader,
+} from "@/components/checkout/order-summary-card";
 
 type Params = Promise<{ slug: string }>;
 
@@ -98,34 +102,54 @@ export default async function OdkCheckoutFormPage({
   return (
     <>
       <Navbar />
-      <main className="bg-slate-50 min-h-screen py-10">
-        <div className="max-w-3xl mx-auto px-4">
-          <nav className="text-sm text-slate-500 mb-4">
-            <Link href="/deneme-kulubu" className="hover:underline">
+      <main className="bg-[var(--od-cream)] min-h-screen py-10">
+        <div className="max-w-6xl mx-auto px-4">
+          <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
+            <Link href="/deneme-kulubu" className="hover:text-[var(--od-ink)]">
               ODK Paketleri
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-slate-700">Satın Al</span>
+            <span className="text-[var(--od-ink)]">Satın Al</span>
           </nav>
 
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">
-            Sepetiniz / Bilgiler
-          </h1>
-          <p className="text-sm text-slate-600 mb-6">
-            {pkg.durationDays ? `${pkg.durationDays} gün erişim · ` : ""}
-            Bilgilerinizi doldurun, güvenli ödemeye geçelim.
-          </p>
+          <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+            <div>
+              <CheckoutPageHeader
+                subtitle={
+                  <>
+                    {pkg.durationDays ? `${pkg.durationDays} gün erişim · ` : ""}
+                    Bilgilerinizi doldurun, güvenli ödemeye geçelim.
+                  </>
+                }
+              />
+              <BuyerInfoForm
+                action="/api/odk/checkout/start"
+                service="ODK"
+                submitMode="redirect"
+                submitLabel="Güvenli Ödemeye Geç"
+                packageLabel={pkg.title}
+                priceLabel={formatPrice(pkg.priceCents)}
+                hiddenFields={{ packageId: pkg.id, packageSlug: pkg.slug }}
+                defaults={defaults}
+              />
+            </div>
 
-          <BuyerInfoForm
-            action="/api/odk/checkout/start"
-            service="ODK"
-            submitMode="redirect"
-            submitLabel="Güvenli Ödemeye Geç"
-            packageLabel={pkg.title}
-            priceLabel={formatPrice(pkg.priceCents)}
-            hiddenFields={{ packageId: pkg.id, packageSlug: pkg.slug }}
-            defaults={defaults}
-          />
+            <OrderSummaryCard
+              items={[
+                {
+                  id: pkg.id,
+                  category: "ODK",
+                  name: pkg.title,
+                  subtitle: pkg.durationDays
+                    ? `${pkg.durationDays} gün erişim`
+                    : undefined,
+                  priceCents: pkg.priceCents,
+                },
+              ]}
+              backHref={`/odk-paketleri/${slug}`}
+              backLabel="← Pakete dön"
+            />
+          </div>
         </div>
       </main>
       <Footer />

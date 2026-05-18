@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
+import {
+  CheckoutResultCard,
+  type CheckoutResultStatus,
+} from "@/components/checkout/checkout-result-card";
 
 type Search = Promise<{ status?: string }>;
 
@@ -18,86 +21,62 @@ export default async function OdCheckoutThankYouPage({
   searchParams: Search;
 }) {
   const { status } = await searchParams;
-  const isFailed = status === "failed";
-  const isPending = status === "pending";
-  const isSuccess = !isFailed && !isPending; // default + "success"
-
-  if (isFailed) {
-    return (
-      <>
-        <Navbar />
-        <main className="bg-slate-50 min-h-screen py-16">
-          <div className="max-w-xl mx-auto px-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-rose-200 p-8 text-center">
-              <div className="text-5xl mb-3">⚠️</div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">
-                Ödeme tamamlanamadı
-              </h1>
-              <p className="text-slate-600 mb-5">
-                İşleminiz başarısız oldu veya iptal edildi. Kart bilgilerinizi
-                kontrol edip tekrar deneyebilir ya da bizimle iletişime
-                geçebilirsiniz.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Link
-                  href="/paketler"
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700"
-                >
-                  Paketlere Dön
-                </Link>
-                <Link
-                  href="/iletisim"
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50"
-                >
-                  İletişim
-                </Link>
-              </div>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
-  void isSuccess;
+  const normalizedStatus: CheckoutResultStatus =
+    status === "failed" ? "failed" : status === "pending" ? "pending" : "success";
 
   return (
     <>
       <Navbar />
-      <main className="bg-slate-50 min-h-screen py-16">
-        <div className="max-w-xl mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-sm border border-emerald-200 p-8 text-center">
-            <div className="text-5xl mb-3">✅</div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">
-              {isPending ? "Bilgileriniz alındı" : "Ödemeniz alındı!"}
-            </h1>
-            <p className="text-slate-600 mb-4">
-              {isPending
-                ? "Talebiniz kayıt altına alındı."
-                : "Ödemeniz başarıyla tamamlandı. Teşekkür ederiz!"}
-            </p>
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 mb-5 text-left">
-              <strong>��‍🏫 Sıradaki Adım:</strong> Hocalarımız{" "}
-              <strong>24 saat içinde</strong> sizinle iletişime geçerek
-              programınızı planlayacak. Henüz öğrenciye ders veya öğretmen
-              atanmadı; planlama bizimle birlikte yapılacaktır.
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-              <Link
-                href="/panel/ogrenci"
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700"
-              >
-                Panele Git
-              </Link>
-              <Link
-                href="/iletisim"
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50"
-              >
-                İletişim
-              </Link>
-            </div>
-          </div>
+      <main className="bg-[var(--od-cream)] min-h-screen py-16">
+        <div className="px-4">
+          {normalizedStatus === "success" && (
+            <CheckoutResultCard
+              status="success"
+              eyebrow="Online Dershane"
+              nextStepNote={
+                <>
+                  <strong>Sıradaki adım:</strong> Hocalarımız{" "}
+                  <strong>24 saat içinde</strong> sizinle iletişime geçerek
+                  programınızı planlayacak. Henüz öğrenci için ders veya
+                  öğretmen ataması yapılmadı; planlama birlikte yapılır.
+                </>
+              }
+              primaryAction={{
+                href: "/panel/ogrenci",
+                label: "Panele Git",
+                variant: "primary",
+              }}
+              secondaryAction={{ href: "/iletisim", label: "İletişim" }}
+            />
+          )}
+
+          {normalizedStatus === "pending" && (
+            <CheckoutResultCard
+              status="pending"
+              eyebrow="Online Dershane"
+              title="Bilgileriniz alındı"
+              description="Talebiniz kayıt altına alındı. Hocalarımız 24 saat içinde sizinle iletişime geçecek."
+              primaryAction={{
+                href: "/panel/ogrenci",
+                label: "Panele Git",
+                variant: "primary",
+              }}
+              secondaryAction={{ href: "/iletisim", label: "İletişim" }}
+            />
+          )}
+
+          {normalizedStatus === "failed" && (
+            <CheckoutResultCard
+              status="failed"
+              eyebrow="Online Dershane"
+              primaryAction={{
+                href: "/paketler",
+                label: "Paketlere Dön",
+                variant: "primary",
+              }}
+              secondaryAction={{ href: "/iletisim", label: "İletişim" }}
+            />
+          )}
         </div>
       </main>
       <Footer />
