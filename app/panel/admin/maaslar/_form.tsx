@@ -1,4 +1,5 @@
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
+import { ToastForm } from "@/components/ui/toast-form";
 
 type Defaults = {
   teacherId?: string;
@@ -30,7 +31,7 @@ export function PayrollForm({
   lockTeacher?: boolean;
 }) {
   return (
-    <form action={action} className="od-grid g-2" style={{ gap: 12 }}>
+    <ToastForm action={action} className="od-grid g-2" style={{ gap: 12 }} successMessage="Maaş kaydı oluşturuldu">
       <Field label="Öğretmen *">
         {lockTeacher && defaults.teacherId ? (
           <>
@@ -88,6 +89,6 @@ export function PayrollForm({
           <button type="submit" className="od-btn od-btn-primary">{submitLabel}</button>
         </FormActions>
       </div>
-    </form>
+    </ToastForm>
   );
 }

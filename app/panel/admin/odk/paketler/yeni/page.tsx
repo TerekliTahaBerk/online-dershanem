@@ -4,6 +4,7 @@ import { requireOdkPanel } from "@/lib/access/odk-panel";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createOdkPackageAction } from "../_actions";
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default async function NewOdkPackagePage() {
 
       <Card>
         <CardBody>
-          <form action={createOdkPackageAction} className="od-form">
+          <ToastForm action={createOdkPackageAction} className="od-form">
             <div className="od-grid g-2">
               <Field label="Paket adı *">
                 <Input name="title" required placeholder="ODK Klasik TYT Paketi" />
@@ -72,7 +73,7 @@ export default async function NewOdkPackagePage() {
                 Paketi oluştur
               </button>
             </FormActions>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

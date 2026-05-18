@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, FormActions } from "@/components/panel/ui/form";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createStudentAction } from "../_actions";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export default async function NewStudent() {
       <PageHeader title="Yeni öğrenci" subtitle="Hızlı kayıt formu" />
       <Card>
         <CardBody>
-          <form action={createStudentAction} className="od-grid g-2" style={{ gap: 12 }}>
+          <ToastForm action={createStudentAction} className="od-grid g-2" style={{ gap: 12 }}>
             <Field label="Ad Soyad *"><Input name="fullName" required /></Field>
             <Field label="Telefon *"><Input name="phone" required placeholder="+90..." /></Field>
             <Field label="Email"><Input name="email" type="email" /></Field>
@@ -63,7 +64,7 @@ export default async function NewStudent() {
                 <button className="od-btn od-btn-primary" type="submit">Kaydet</button>
               </FormActions>
             </div>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

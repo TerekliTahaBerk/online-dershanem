@@ -4,6 +4,7 @@ import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createLessonAction } from "../_actions";
 
 export const dynamic = "force-dynamic";
@@ -60,7 +61,7 @@ export default async function NewLessonPlanPage({
 
       <Card>
         <CardBody>
-          <form action={createLessonAction} className="od-grid g-2" style={{ gap: 16 }}>
+          <ToastForm action={createLessonAction} className="od-grid g-2" style={{ gap: 16 }}>
             <Field label="Ders tanımı (Course)">
               <Select name="courseId" defaultValue={sp.courseId ?? ""}>
                 <option value="">— Seçilmedi (özel ders) —</option>
@@ -188,7 +189,7 @@ export default async function NewLessonPlanPage({
                 <button type="submit" className="od-btn od-btn-primary">Planla</button>
               </FormActions>
             </div>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

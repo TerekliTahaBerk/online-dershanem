@@ -1,4 +1,5 @@
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
+import { ToastForm } from "@/components/ui/toast-form";
 
 type CouponFormDefaults = {
   code?: string;
@@ -31,7 +32,7 @@ export function CouponForm({
 }) {
   const d = defaults;
   return (
-    <form action={action} className="od-grid g-2" style={{ gap: 12 }}>
+    <ToastForm action={action} className="od-grid g-2" style={{ gap: 12 }} successMessage="Kupon kaydedildi">
       <Field label="Kod *" hint="Otomatik büyük harfe çevrilir (örn: HOSGELDIN20)">
         <Input name="code" required defaultValue={d.code || ""} maxLength={60} style={{ textTransform: "uppercase" }} />
       </Field>
@@ -93,6 +94,6 @@ export function CouponForm({
           <button className="od-btn od-btn-primary" type="submit">{submitLabel}</button>
         </FormActions>
       </div>
-    </form>
+    </ToastForm>
   );
 }
