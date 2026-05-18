@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, FormActions } from "@/components/panel/ui/form";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { ToastForm } from "@/components/ui/toast-form";
 import { updateParentProfileAction } from "../../_actions";
 
 export const dynamic = "force-dynamic";
@@ -19,14 +20,19 @@ export default async function EditParentProfile() {
       />
       <Card>
         <CardBody>
-          <form action={updateParentProfileAction} className="od-grid g-2" style={{ gap: 12 }}>
+          <ToastForm
+            action={updateParentProfileAction}
+            className="od-grid g-2"
+            style={{ gap: 12 }}
+            successMessage="Profil güncellendi"
+          >
             <Field label="Ad Soyad"><Input name="fullName" defaultValue={parent.fullName} required /></Field>
             <Field label="E-posta"><Input name="email" type="email" defaultValue={parent.email ?? ""} /></Field>
             <Field label="Telefon"><Input name="phone" defaultValue={parent.phone ?? ""} /></Field>
             <FormActions>
               <button type="submit" className="od-btn od-btn-primary">Kaydet</button>
             </FormActions>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>
