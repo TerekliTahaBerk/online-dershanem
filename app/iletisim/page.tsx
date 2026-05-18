@@ -6,7 +6,7 @@ import { Footer } from "@/components/sections/footer";
 import { contact } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "İletişim | Online Dershanem",
+  title: "İletişim",
   description:
     "Online Dershanem ekibine ulaş — telefon, e-posta, WhatsApp ve sosyal medya kanallarımız.",
   alternates: { canonical: "/iletisim/" },

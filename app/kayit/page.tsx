@@ -1,9 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { RegisterForm } from "@/components/auth/register-form";
 import { getServerAuthSession } from "@/lib/auth";
 import { getPanelDestination } from "@/lib/panel-access";
+
+export const metadata: Metadata = {
+  title: "Kayıt Ol",
+  description: "Online Dershanem'e ücretsiz hesap oluşturun; TYT, AYT ve LGS hazırlığına başlayın.",
+};
 
 export default async function KayitPage() {
   const session = await getServerAuthSession();

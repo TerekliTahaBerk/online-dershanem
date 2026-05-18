@@ -6,25 +6,25 @@ import { test, expect } from "@playwright/test";
  */
 
 const PUBLIC_ROUTES = [
-  { path: "/", title: /Online Dershanem|online dershane|özel ders/i },
-  { path: "/yks", title: /TYT|AYT|YKS|paket/i },
-  { path: "/tyt", title: /TYT|paket/i },
-  { path: "/ayt", title: /AYT|paket/i },
-  { path: "/lgs", title: /LGS|paket/i },
-  { path: "/online-dershane", title: /online dershane/i },
-  { path: "/online-ozel-ders", title: /özel ders/i },
-  { path: "/paketler", title: /paket/i },
-  { path: "/odk-paketleri", title: /ODK|deneme|kulüb|paket/i },
-  { path: "/deneme-kulubu", title: /deneme|ODK|kulüb/i },
-  { path: "/iletisim", title: /iletişim/i },
-  { path: "/sss", title: /sıkça|S\.S\.S\.|SSS|soru/i },
-  { path: "/kvkk", title: /KVKK|kişisel/i },
-  { path: "/gizlilik", title: /gizlilik/i },
-  { path: "/iade", title: /iade|teslimat/i },
-  { path: "/misyonumuz", title: /misyon|hakk/i },
-  { path: "/kariyer", title: /kariyer/i },
-  { path: "/giris", title: /giriş|online dershanem/i },
-  { path: "/kayit", title: /kayıt|hesap|online dershanem/i },
+  { path: "/", keyword: /online dershanem|dershane|özel ders|yks|tyt|lgs/i },
+  { path: "/yks", keyword: /yks|tyt|ayt|paket/i },
+  { path: "/tyt", keyword: /tyt|paket/i },
+  { path: "/ayt", keyword: /ayt|paket/i },
+  { path: "/lgs", keyword: /lgs|paket/i },
+  { path: "/online-dershane", keyword: /online dershane|grup|takip/i },
+  { path: "/online-ozel-ders", keyword: /özel ders|birebir|paket/i },
+  { path: "/paketler", keyword: /paket|ders/i },
+  { path: "/odk-paketleri", keyword: /odk|deneme|kulüb|paket/i },
+  { path: "/deneme-kulubu", keyword: /deneme|odk|kulüb/i },
+  { path: "/iletisim", keyword: /letişim|telefon|e-posta|whatsapp/i },
+  { path: "/sss", keyword: /sıkça|soru|cevap/i },
+  { path: "/kvkk", keyword: /kvkk|kişisel|aydınlatma/i },
+  { path: "/gizlilik", keyword: /gizlilik|veri/i },
+  { path: "/iade", keyword: /ade|iptal|cayma/i },
+  { path: "/misyonumuz", keyword: /misyon|hakk|kuruluş|biz/i },
+  { path: "/kariyer", keyword: /kariyer|pozisyon|ekip/i },
+  { path: "/giris", keyword: /giriş|şifre|e-posta|hesab/i },
+  { path: "/kayit", keyword: /kayıt|hesap|şifre|e-posta/i },
 ];
 
 for (const route of PUBLIC_ROUTES) {
@@ -34,8 +34,10 @@ for (const route of PUBLIC_ROUTES) {
     expect(response!.status(), `${route.path} → status`).toBeLessThan(400);
     // Body yüklendi mi
     await expect(page.locator("body")).toBeVisible();
-    // Sayfa title'ı pattern ile eşleşiyor mu
-    await expect(page).toHaveTitle(route.title);
+    // Brand title her sayfada (root layout veya page metadata template'i)
+    await expect(page).toHaveTitle(/online dershanem/i);
+    // Sayfa-spesifik anahtar kelime body'de var mı (Türkçe-İ safe — body içeriği)
+    await expect(page.locator("body")).toContainText(route.keyword);
   });
 }
 

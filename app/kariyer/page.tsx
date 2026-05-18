@@ -6,7 +6,7 @@ import { Footer } from "@/components/sections/footer";
 import { contact, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Kariyer | Online Dershanem",
+  title: "Kariyer",
   description:
     "Online Dershanem'de açık pozisyonlar. Eğitimin geleceğini birlikte inşa edecek hocalar, içerik ekibi ve kampüs elçileriyle tanışmak istiyoruz.",
   alternates: { canonical: "/kariyer/" },
