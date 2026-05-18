@@ -5,6 +5,11 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
+import { BuyerInfoForm } from "@/components/checkout/buyer-info-form";
+import {
+  OrderSummaryCard,
+  CheckoutPageHeader,
+} from "@/components/checkout/order-summary-card";
 
 type Params = Promise<{ slug: string }>;
 
@@ -19,76 +24,133 @@ function formatPrice(cents: number): string {
   return new Intl.NumberFormat("tr-TR", {
     style: "currency",
     currency: "TRY",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
   }).format(cents / 100);
 }
 
-export default async function OdkCheckoutPage({ params }: { params: Params }) {
+export default async function OdkCheckoutFormPage({
+  params,
+}: {
+  params: Params;
+}) {
   const { slug } = await params;
-  const pkg = await prisma.odkPackage.findUnique({
+
+  const pkg = await prisma.odkPackage.findFirst({
     where: { slug, isActive: true },
-    select: { id: true, title: true, priceCents: true, durationDays: true },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      priceCents: true,
+      durationDays: true,
+      description: true,
+    },
   });
-  if (!pkg) notFound();
+
+  if (!pkg) {
+    notFound();
+  }
 
   const session = await getServerAuthSession();
-  if (!session?.user) {
-    redirect(`/giris?next=/odk-paketleri/${slug}/satin-al`);
+  if (!session?.user?.id) {
+    redirect(`/giris?callbackUrl=/odk-paketleri/${slug}/satin-al`);
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      student: {
+        select: {
+          fullName: true,
+          phone: true,
+          city: true,
+          district: true,
+          schoolName: true,
+          classLevel: true,
+          department: true,
+          examType: true,
+          targetSchool: true,
+          parentFullName: true,
+          parentPhone: true,
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    redirect(`/giris?callbackUrl=/odk-paketleri/${slug}/satin-al`);
+  }
+
+  const defaults = {
+    fullName: user.student?.fullName || user.name || "",
+    email: user.email || "",
+    phone: user.student?.phone || "",
+    city: user.student?.city || "",
+    district: user.student?.district || "",
+    schoolName: user.student?.schoolName || "",
+    classLevel: user.student?.classLevel || "",
+    department: user.student?.department || "",
+    examType: user.student?.examType || "",
+    targetSchool: user.student?.targetSchool || "",
+    parentFullName: user.student?.parentFullName || "",
+    parentPhone: user.student?.parentPhone || "",
+  };
 
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
-        <section className="mx-auto max-w-2xl px-5 pt-28 pb-16 sm:pt-36">
-          <Link
-            href="/deneme-kulubu#paketler"
-            className="inline-flex items-center gap-1 text-[13px] text-[var(--od-ink-soft)] hover:text-[var(--od-ink)]"
-          >
-            ← Paketlere dön
-          </Link>
-          <h1 className="mt-6 font-display text-[36px] sm:text-[48px] leading-[1.05]">
-            Satın Al
-          </h1>
+      <main className="bg-[var(--od-cream)] min-h-screen py-10">
+        <div className="max-w-6xl mx-auto px-4">
+          <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
+            <Link href="/deneme-kulubu" className="hover:text-[var(--od-ink)]">
+              ODK Paketleri
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-[var(--od-ink)]">Satın Al</span>
+          </nav>
 
-          <div className="mt-10 rounded-2xl border border-[var(--od-line)] bg-white p-6">
-            <h2 className="font-display text-2xl">{pkg.title}</h2>
-            <div className="mt-4 flex items-baseline justify-between border-b border-[var(--od-line)] pb-4">
-              <span className="text-[var(--od-ink-soft)]">Tutar</span>
-              <span className="font-display text-3xl">{formatPrice(pkg.priceCents)}</span>
-            </div>
-            {pkg.durationDays ? (
-              <div className="mt-3 flex items-baseline justify-between text-[14px]">
-                <span className="text-[var(--od-ink-soft)]">Erişim süresi</span>
-                <span>
-                  {pkg.durationDays % 30 === 0 ? `${pkg.durationDays / 30} ay` : `${pkg.durationDays} gün`}
-                </span>
-              </div>
-            ) : null}
-
-            <div className="mt-8 rounded-xl bg-[var(--od-cream)] border border-dashed border-[var(--od-line)] p-5 text-[14px] leading-6 text-[var(--od-ink-soft)]">
-              <strong className="block text-[var(--od-ink)] mb-2">Ödeme entegrasyonu yakında</strong>
-              PayTR / iyzico entegrasyonu yakında aktif olacak. Şu an satın
-              almak için <Link href="/iletisim" className="underline">bizimle iletişime geçin</Link>;
-              ödeme onayından sonra hesabınıza paket erişimi tanımlanır.
+          <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
+            <div>
+              <CheckoutPageHeader
+                subtitle={
+                  <>
+                    {pkg.durationDays ? `${pkg.durationDays} gün erişim · ` : ""}
+                    Bilgilerinizi doldurun, güvenli ödemeye geçelim.
+                  </>
+                }
+              />
+              <BuyerInfoForm
+                action="/api/odk/checkout/start"
+                service="ODK"
+                submitMode="redirect"
+                submitLabel="Güvenli Ödemeye Geç"
+                packageLabel={pkg.title}
+                priceLabel={formatPrice(pkg.priceCents)}
+                hiddenFields={{ packageId: pkg.id, packageSlug: pkg.slug }}
+                defaults={defaults}
+              />
             </div>
 
-            <div className="mt-6 flex items-center justify-between">
-              <Link
-                href="/iletisim"
-                className="rounded-full border border-[var(--od-olive)] px-6 py-2.5 text-[14px] font-medium text-[var(--od-olive)] hover:bg-[var(--od-olive)] hover:text-white transition"
-              >
-                İletişime Geç
-              </Link>
-              <Link
-                href="/panel"
-                className="text-[13px] text-[var(--od-ink-soft)] hover:text-[var(--od-ink)]"
-              >
-                Panele dön →
-              </Link>
-            </div>
+            <OrderSummaryCard
+              items={[
+                {
+                  id: pkg.id,
+                  category: "ODK",
+                  name: pkg.title,
+                  subtitle: pkg.durationDays
+                    ? `${pkg.durationDays} gün erişim`
+                    : undefined,
+                  priceCents: pkg.priceCents,
+                },
+              ]}
+              backHref={`/odk-paketleri/${slug}`}
+              backLabel="← Pakete dön"
+            />
           </div>
-        </section>
+        </div>
       </main>
       <Footer />
     </>

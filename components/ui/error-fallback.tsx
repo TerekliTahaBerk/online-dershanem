@@ -40,6 +40,7 @@ export function ErrorFallback({
               >
                 Tekrar dene
               </button>
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- intentional hard navigation from error boundary */}
               <a
                 href="/"
                 className="inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition"

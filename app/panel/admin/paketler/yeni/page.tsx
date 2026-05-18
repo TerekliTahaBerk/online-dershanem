@@ -2,6 +2,7 @@ import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createPackageAction } from "../_actions";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export default async function NewPackage() {
       <PageHeader title="Yeni paket" />
       <Card>
         <CardBody>
-          <form action={createPackageAction} className="od-grid g-2" style={{ gap: 12 }}>
+          <ToastForm action={createPackageAction} className="od-grid g-2" style={{ gap: 12 }}>
             <Field label="Ad *"><Input name="name" required /></Field>
             <Field label="Tür">
               <Select name="type" defaultValue="COURSE">
@@ -36,7 +37,7 @@ export default async function NewPackage() {
             <div style={{ gridColumn: "1 / -1" }}>
               <FormActions><button className="od-btn od-btn-primary" type="submit">Kaydet</button></FormActions>
             </div>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

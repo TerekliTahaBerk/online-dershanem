@@ -58,6 +58,7 @@ export default function GlobalError({
             >
               Tekrar Dene
             </button>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error runs without root layout; Link client component unavailable */}
             <a
               href="/"
               style={{

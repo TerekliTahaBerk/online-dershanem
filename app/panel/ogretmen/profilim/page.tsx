@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { Badge } from "@/components/panel/ui/badge";
+import { PrivacyRightsCard } from "@/components/panel/privacy/privacy-rights-card";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,9 @@ export default async function TeacherProfile() {
           </div>
         </CardBody>
       </Card>
+      <div style={{ marginTop: 16 }}>
+        <PrivacyRightsCard />
+      </div>
     </>
   );
 }

@@ -34,7 +34,7 @@ export function QuickAttendanceForm({
   rows: AttendanceStudentRow[];
   classroomId: string;
   sessionDate: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // Server action — bound on parent; not worth typing through generics here.
   action: any;
 }) {
   const [statuses, setStatuses] = useState<Record<string, Status>>(() =>

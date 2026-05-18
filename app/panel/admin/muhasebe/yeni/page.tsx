@@ -4,6 +4,7 @@ import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createEntryAction } from "../_actions";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ export default async function NewEntry({
       />
       <Card>
         <CardBody>
-          <form action={createEntryAction} className="od-grid g-2" style={{ gap: 12 }}>
+          <ToastForm action={createEntryAction} className="od-grid g-2" style={{ gap: 12 }}>
             <Field label="Ürün *">
               <Select name="service" defaultValue={defaultService} required>
                 <option value="OD">OnlineDershanem (OD)</option>
@@ -135,7 +136,7 @@ export default async function NewEntry({
                 <button className="od-btn od-btn-primary" type="submit">Kaydet</button>
               </FormActions>
             </div>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

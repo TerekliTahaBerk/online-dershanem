@@ -470,7 +470,7 @@ Her iki migration **non-destructive**: mevcut veriler kaybolmaz, default değerl
 - [ ] Light/dark tema switcher uyumlu.
 - [ ] Sidebar drawer mobile'da kapanıyor.
 - [ ] Topbar overflow / text-clip yok.
-- [ ] Tüm `Link` href'leri 200 dönüyor.
+- [ ] Tüm `Link` href'leri 200 dönüyor. 
 
 ---
 

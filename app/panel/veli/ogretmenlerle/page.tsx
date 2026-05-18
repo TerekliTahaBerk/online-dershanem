@@ -3,6 +3,7 @@ import { requireParent, getChildIds } from "@/lib/panel-parent";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { NoChildEmpty } from "@/components/panel/parent/no-child-empty";
 import { Field, Input, Textarea, Select, FormActions } from "@/components/panel/ui/form";
 import { sendMessageToTeacherAction } from "../_actions";
 
@@ -12,7 +13,7 @@ export default async function ParentTeachers() {
   const { parent } = await requireParent();
   if (!parent) return <Card><EmptyState icon="users" title="Veli profili yok" /></Card>;
   const childIds = await getChildIds(parent.id);
-  if (childIds.length === 0) return <><PageHeader title="Öğretmenlerle" /><Card><EmptyState icon="users" title="Bağlı çocuk yok" /></Card></>;
+  if (childIds.length === 0) return <NoChildEmpty pageTitle="Öğretmenlerle" />;
 
   const [teachers, comments] = await Promise.all([
     prisma.teacher.findMany({

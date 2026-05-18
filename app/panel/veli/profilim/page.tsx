@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireParent } from "@/lib/panel-parent";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
+import { PrivacyRightsCard } from "@/components/panel/privacy/privacy-rights-card";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,9 @@ export default async function ParentProfile() {
           </tbody>
         </table>
       </Card>
+      <div style={{ marginTop: 16 }}>
+        <PrivacyRightsCard />
+      </div>
     </>
   );
 }

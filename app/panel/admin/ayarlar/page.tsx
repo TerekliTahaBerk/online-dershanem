@@ -3,6 +3,7 @@ import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { KpiCard } from "@/components/panel/ui/kpi-card";
+import { PrivacyRightsCard } from "@/components/panel/privacy/privacy-rights-card";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,9 @@ export default async function AdminSettings() {
           </div>
         </CardBody>
       </Card>
+      <div style={{ marginTop: 16 }}>
+        <PrivacyRightsCard />
+      </div>
     </>
   );
 }

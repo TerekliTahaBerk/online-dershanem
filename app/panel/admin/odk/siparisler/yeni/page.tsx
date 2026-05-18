@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
 import { UserSearch } from "@/components/panel/odk/user-search";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createManualOdkOrderAction } from "../_actions";
 
 export const metadata: Metadata = {
@@ -86,7 +87,7 @@ export default async function NewOdkOrderPage({
               <Link href="/panel/admin/odk/paketler/yeni">bir paket oluşturun</Link>.
             </p>
           ) : (
-            <form action={createManualOdkOrderAction} className="od-form">
+            <ToastForm action={createManualOdkOrderAction} className="od-form">
               <Field label="Kullanıcı *" hint="Ad, email veya telefon ile arayın (en az 2 karakter)">
                 <UserSearch name="userId" defaultUser={prefilledUser} />
               </Field>
@@ -146,7 +147,7 @@ export default async function NewOdkOrderPage({
                   Siparişi oluştur
                 </button>
               </FormActions>
-            </form>
+            </ToastForm>
           )}
         </CardBody>
       </Card>

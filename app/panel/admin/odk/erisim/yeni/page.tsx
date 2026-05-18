@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createAccessTagAction } from "../_actions";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function NewAccessTagPage() {
 
       <Card>
         <CardBody>
-          <form action={createAccessTagAction} style={{ display: "grid", gap: 16, maxWidth: 560 }}>
+          <ToastForm action={createAccessTagAction} style={{ display: "grid", gap: 16, maxWidth: 560 }}>
             <label style={{ display: "grid", gap: 6 }}>
               <span style={{ fontSize: 12, fontWeight: 600 }}>Servis *</span>
               <select name="service" defaultValue="ODK" required className="od-select">
@@ -89,7 +90,7 @@ export default async function NewAccessTagPage() {
                 Tagı oluştur
               </button>
             </div>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

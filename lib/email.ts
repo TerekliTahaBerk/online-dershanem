@@ -1000,3 +1000,178 @@ export async function sendParentWeeklyDigestEmail({
   });
 }
 
+
+// ─── Order paid notifications (OD + ODK) ────────────────────────────────────
+
+function formatTry(cents: number): string {
+  return new Intl.NumberFormat("tr-TR", {
+    style: "currency",
+    currency: "TRY",
+    minimumFractionDigits: 2,
+  }).format(cents / 100);
+}
+
+type OrderPaidItem = {
+  name: string;
+  qty?: number;
+  priceCents: number;
+};
+
+/**
+ * Kullanıcıya gönderilen "Ödemeniz alındı" e-postası.
+ * Hem OD hem ODK için kullanılır; `service` etiket olarak görünür.
+ */
+export async function sendOrderPaidUserEmail({
+  to,
+  name,
+  service,
+  orderId,
+  packageName,
+  items,
+  totalCents,
+  panelHref,
+}: {
+  to: string;
+  name?: string | null;
+  service: "OD" | "ODK";
+  orderId: string;
+  packageName: string;
+  items?: OrderPaidItem[];
+  totalCents: number;
+  panelHref?: string;
+}) {
+  const firstName = (name || "").split(" ")[0] || "değerli öğrencimiz";
+  const serviceLabel = service === "ODK" ? "Online Deneme Kulübü" : "Online Dershanem";
+  const itemsRows =
+    items && items.length > 0
+      ? items
+          .map(
+            (it) => `
+        <tr>
+          <td style="padding:10px 14px;font-size:13px;color:#091413;">
+            ${escapeHtml(it.name)}${it.qty && it.qty > 1 ? ` <span style="color:#9c9589;">× ${it.qty}</span>` : ""}
+          </td>
+          <td style="padding:10px 14px;font-size:13px;color:#091413;text-align:right;white-space:nowrap;">
+            ${formatTry(it.priceCents * (it.qty ?? 1))}
+          </td>
+        </tr>`,
+          )
+          .join('<tr><td colspan="2" style="padding:0 14px;"><hr style="border:none;border-top:1px solid #EBEBE7;margin:0;"/></td></tr>')
+      : `<tr>
+          <td style="padding:10px 14px;font-size:13px;color:#091413;">${escapeHtml(packageName)}</td>
+          <td style="padding:10px 14px;font-size:13px;color:#091413;text-align:right;">${formatTry(totalCents)}</td>
+        </tr>`;
+  const orderTable = `
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f6f2;border:1px solid #e7e5e0;border-radius:10px;margin:18px 0;overflow:hidden;">
+      <tr>
+        <td colspan="2" style="padding:10px 14px;background:#091413;color:#fff;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;">
+          Sipariş Detayı
+          <span style="float:right;color:#6ee7b7;font-family:monospace;">#${escapeHtml(orderId.slice(-10).toUpperCase())}</span>
+        </td>
+      </tr>
+      ${itemsRows}
+      <tr><td colspan="2" style="padding:0 14px;"><hr style="border:none;border-top:1px solid #EBEBE7;margin:0;"/></td></tr>
+      <tr>
+        <td style="padding:12px 14px;font-size:13px;font-weight:700;color:#091413;">Toplam</td>
+        <td style="padding:12px 14px;font-size:16px;font-weight:800;color:#546B41;text-align:right;">${formatTry(totalCents)}</td>
+      </tr>
+    </table>`;
+
+  const nextStep = service === "ODK"
+    ? "Erişiminiz panelinize tanımlandı. Hemen sınavlara başlayabilirsiniz."
+    : "Hocalarımız 24 saat içinde sizinle iletişime geçerek ders programınızı planlayacak.";
+  const cta = panelHref || (service === "ODK" ? "/odk/panel/sinavlar" : "/panel/ogrenci");
+  const ctaLabel = service === "ODK" ? "Sınavlara Git →" : "Panele Git →";
+
+  const html = baseTemplate(`
+    ${heading("Ödemeniz başarıyla alındı 🎉")}
+    ${paragraph(`Merhaba <strong>${escapeHtml(firstName)}</strong>, <strong>${escapeHtml(serviceLabel)}</strong> üzerinden gerçekleştirdiğiniz ödeme onaylandı.`)}
+    ${orderTable}
+    ${paragraph(`<strong>Sıradaki adım:</strong> ${nextStep}`)}
+    ${ctaButton(ctaLabel, `${APP_URL}${cta}`)}
+    ${divider()}
+    ${paragraph('<span style="font-size:12px;color:#9c9589;">Bu siparişle ilgili sorularınız için <a href="mailto:destek@onlinedershanem.com" style="color:#546B41;text-decoration:none;">destek@onlinedershanem.com</a> adresinden bize yazabilirsiniz.</span>')}
+    ${signature()}
+  `);
+
+  await sendEmail({
+    to,
+    subject: `Ödemeniz alındı – ${serviceLabel}`,
+    html,
+  });
+}
+
+/**
+ * Admin ekibine gönderilen "Yeni satış" bildirimi.
+ * LEAD_NOTIFICATION_EMAILS / ADMIN_EMAIL alıcılarına gider.
+ */
+export async function sendOrderPaidAdminEmail({
+  service,
+  orderId,
+  packageName,
+  items,
+  totalCents,
+  buyer,
+}: {
+  service: "OD" | "ODK";
+  orderId: string;
+  packageName: string;
+  items?: OrderPaidItem[];
+  totalCents: number;
+  buyer: {
+    fullName: string;
+    email: string;
+    phone?: string | null;
+    city?: string | null;
+    district?: string | null;
+    classLevel?: string | null;
+    examType?: string | null;
+    schoolName?: string | null;
+    parentPhone?: string | null;
+  };
+}) {
+  const recipients = getLeadNotificationRecipients();
+  if (recipients.length === 0) return;
+
+  const serviceLabel = service === "ODK" ? "ODK" : "OD";
+  const adminPath = service === "ODK" ? "/panel/admin/odk-orders" : "/panel/admin/odk-orders";
+
+  const itemsBlock =
+    items && items.length > 1
+      ? `<div style="margin:6px 0 14px;font-size:13px;color:#091413;">
+          <strong>Sepet kalemleri (${items.length}):</strong>
+          <ul style="margin:6px 0 0 20px;padding:0;">
+            ${items.map((it) => `<li>${escapeHtml(it.name)} — ${formatTry(it.priceCents * (it.qty ?? 1))}</li>`).join("")}
+          </ul>
+        </div>`
+      : "";
+
+  const html = baseTemplate(`
+    ${heading(`Yeni ${serviceLabel} Satışı 💸`)}
+    ${paragraph(`<strong>${escapeHtml(buyer.fullName)}</strong> tarafından yeni bir ödeme alındı.`)}
+    ${itemsBlock}
+    ${infoBox([
+      { label: "Servis", value: serviceLabel },
+      { label: "Sipariş ID", value: escapeHtml(orderId) },
+      { label: "Paket", value: escapeHtml(packageName) },
+      { label: "Tutar", value: formatTry(totalCents) },
+      { label: "Ad Soyad", value: escapeHtml(buyer.fullName) },
+      { label: "E-posta", value: escapeHtml(buyer.email) },
+      ...(buyer.phone ? [{ label: "Telefon", value: escapeHtml(buyer.phone) }] : []),
+      ...(buyer.classLevel ? [{ label: "Sınıf", value: escapeHtml(buyer.classLevel) }] : []),
+      ...(buyer.examType ? [{ label: "Sınav", value: escapeHtml(buyer.examType) }] : []),
+      ...(buyer.schoolName ? [{ label: "Okul", value: escapeHtml(buyer.schoolName) }] : []),
+      ...(buyer.city || buyer.district
+        ? [{ label: "Şehir", value: escapeHtml([buyer.district, buyer.city].filter(Boolean).join(", ")) }]
+        : []),
+      ...(buyer.parentPhone ? [{ label: "Veli Tel", value: escapeHtml(buyer.parentPhone) }] : []),
+    ])}
+    ${ctaButton("Admin Panelinde Aç →", `${APP_URL}${adminPath}`)}
+  `);
+
+  await sendEmail({
+    to: recipients,
+    subject: `[${serviceLabel}] Yeni satış – ${buyer.fullName} – ${formatTry(totalCents)}`,
+    html,
+  });
+}

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
 import Link from "next/link";
+import { ToastForm } from "@/components/ui/toast-form";
 import { createCourseAction } from "../_actions";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +37,7 @@ export default async function NewCoursePage() {
       />
       <Card>
         <CardBody>
-          <form action={createCourseAction} className="od-grid g-2" style={{ gap: 12 }}>
+          <ToastForm action={createCourseAction} className="od-grid g-2" style={{ gap: 12 }} successMessage="Ders oluşturuldu">
             <Field label="Ders adı *">
               <Input name="title" required maxLength={120} placeholder="Örn. Matematik 12 — Limit" />
             </Field>
@@ -102,7 +103,7 @@ export default async function NewCoursePage() {
                 <button type="submit" className="od-btn od-btn-primary">Dersi oluştur</button>
               </FormActions>
             </div>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

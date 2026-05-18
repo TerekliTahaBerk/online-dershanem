@@ -445,3 +445,217 @@ Round 7'de hepsi implement edildi + Round 2'nin brute force tablosu için ek cle
 
 Round 8 (Security finalize) için: **"Round 8 başla"** veya **"Security"** komutu.
 **Round 8 kapsamı:** Lesson cancel/delete audit, student delete audit, admin "view-as" audit, **IP-based brute force** (Round 2'nin email-only mekanizmasını süpresede eden custom `/api/auth/login` + middleware), KVKK data export/delete request flows, hassas POST'lara CSRF token.
+
+---
+
+## Tamamlanan Tur — Round A.1 (R-A.1): Critical Infrastructure Fix (2026-05-18)
+
+> Master audit'ten (R-A) çıkan kritik altyapı düzeltmeleri.
+
+| # | Çıktı | Dosya | Durum |
+|---|---|---|---|
+| 1 | Build script `prisma db push` → `prisma migrate deploy` | `package.json` | ✅ MOD |
+| 2 | `build:nomigrate` escape hatch (deploy fail durumunda) | `package.json` | ✅ NEW |
+| 3 | Middleware admin API guard (`/api/v1/admin/*`, `/api/admin/*`, `/api/v1/odk/admin/*`) — ADMIN değilse 403 JSON | `middleware.ts` | ✅ MOD |
+| 4 | Middleware matcher genişletildi (panel + admin API) | `middleware.ts` | ✅ MOD |
+
+**Önceki audit'in keşfettiği gerçekler (planlama sırasında):**
+- ✅ `AccountingEntry.service` kolonu **zaten var** (migration `0020_accounting_service`)
+- ✅ ODK finance helper `service: "ODK"` yazıyor
+- ✅ Muhasebe manuel entry action `service` form alanı kullanıyor
+- ❌ OD `/api/purchases/webhook` AccountingEntry yazmıyor (yorum: "paneller sökülürken kaldırıldı") → R-E'de düzeltilecek
+
+**Bilinçli kapsam dışı:**
+- ⏳ B-04 `Lesson.studentId` nullable → 13+ kod path'i etkilenir (yoklama, mobil API, parent-summary, lesson-reminders cron). Kendi round'una alındı (R-A.X).
+- ⏳ B-08 Pagination wire (20+ sayfa hardcoded `take: 100/200/500/1000/2000/5000`) → R-I (Performance pass).
+
+**Verify:**
+- `npx tsc --noEmit` → 0 hata
+- ADMIN olmayan kullanıcı `/api/v1/admin/*`'a istek atarsa middleware'de `{ error: { code: "FORBIDDEN" } }` 403 dönüyor; handler-level `requireAdminApi` ikinci katman olarak devam ediyor.
+
+---
+
+## Tamamlanan Tur — Round 8 / R-B: Security Finalize (2026-05-18)
+
+> Round 7'nin sonunda planlanan Round 8'in alt kümesi. Planda olan ama
+> **zaten yapılmış** olan işler atlandı.
+
+| # | Çıktı | Dosya | Durum |
+|---|---|---|---|
+| 1 | Content Security Policy (pragmatic baseline + PayTR/Meet/PDF iframe whitelisting) | `next.config.ts` | ✅ MOD |
+| 2 | HSTS `max-age=63072000` + `preload` (1 yıl → 2 yıl) | `next.config.ts` | ✅ MOD |
+| 3 | COOP `same-origin-allow-popups` (Spectre koruması) | `next.config.ts` | ✅ MOD |
+| 4 | `Permissions-Policy: interest-cohort=()` (FLoC opt-out) | `next.config.ts` | ✅ MOD |
+| 5 | Logger PII masking (email/phone/token/secret otomatik mask) — `LOG_PII_MASK=0` ile kapatılabilir | `lib/logger.ts` | ✅ MOD |
+| 6 | KVKK Privacy Rights kartı (veri indir + hesap silme talebi `mailto:` + KVKK linki) | `components/panel/privacy/privacy-rights-card.tsx` | ✅ NEW |
+| 7 | Kart 4 panele monte edildi (öğrenci/öğretmen/veli profilim + admin ayarlar) | 4 sayfa | ✅ MOD |
+
+**Round 8 kapsamında zaten YAPILMIŞ olduğu için atlanan işler:**
+- ✅ Lesson cancel audit — `LESSON_CANCEL` `app/panel/admin/ders-programi/_actions.ts` (Round 4-5 civarı)
+- ✅ Lesson hard delete audit — `LESSON_HARD_DELETE`
+- ✅ Student delete audit — `STUDENT_DELETE` + `kvkkHardDelete: true` payload
+- ✅ KVKK data export endpoint — `/api/v1/me/data-export` (5/gün rate-limit, audit, JSON download)
+
+**Bilinçli kapsam dışı (sonraki round):**
+- ⏳ IP-bazlı brute force koruma — Custom `/api/auth/login` route + IP middleware gerekir (NextAuth `authorize` callback'i IP'ye erişim vermiyor). Round 2'nin email-only mekanizması yetersiz.
+- ⏳ Account deletion request akışı (24h soft → admin onay → hard delete) — `AccountDeletionRequest` modeli + admin onay UI + cron hard-delete. Şu an kullanıcı `mailto:` ile destek e-postasına yönlendiriliyor.
+- ⏳ CSRF token — Next.js 15 server actions origin check zaten yapıyor; ek token sadece dış POST'larda gerekli.
+- ⏳ "View-as" audit — view-as feature mevcut değil; gelirse audit eklenir.
+
+**CSP test notu:**
+- PayTR iframe, Google Meet iframe, ODK solver PDF iframe whitelist'te
+- Inline script/style kullanan eski component varsa (özellikle 3rd party widget) CSP raporlama modu (`Content-Security-Policy-Report-Only`) ile önce test edilebilir
+- Strict CSP (nonce-based) Round 11 UX polish'ten önce kurulabilir
+
+**Verify:**
+- `npx tsc --noEmit` → 0 hata
+- `curl -I https://<domain>/` → `Content-Security-Policy`, `Strict-Transport-Security: max-age=63072000…`, `Cross-Origin-Opener-Policy` header'ları görünür
+- `/panel/ogrenci/profilim` → en altta "Gizlilik ve veri haklarınız" kartı, "Verilerimi indir (JSON)" butonu çalışıyor → JSON dosyası iniyor
+- Test: log'a `log.info("test", { email: "ali@x.com", phone: "+905551234567" })` yaz → çıktıda `email: "a**@x.com"`, `phone: "+9055****4567"` görünür
+
+## "STOP" — R-B (Round 8 subset) burada bitiyor
+
+Sonraki: **R-C — ODK ödeme entegrasyonu (PayTR webhook → OdkPayment + OdkOrder + OdkEntitlement)** veya master backlog'tan farklı bir round seçilebilir.
+
+
+---
+
+# R-C — ODK PayTR Ödeme Entegrasyonu (TAMAMLANDI ✓)
+
+ODK paket satın alma akışı PayTR iFrame API ile uçtan-uca bağlandı. `markOdkOrderPaid()` zaten idempotent olduğundan callback bu fonksiyona delege eder — entitlement + access tag + accounting tek bir kaynaktan yönetilir.
+
+## Akış
+
+1. Kullanıcı `/odk-paketleri/<slug>/satin-al` sayfasına gider.
+2. Sunucu `createOdkCheckoutSession()` çağırır: `OdkOrder` (PENDING) + `OdkPayment` (provider=PAYTR, providerRef=merchant_oid) oluşturur ya da son 30 dakikadaki PENDING siparişi yeniden kullanır (idempotent).
+3. PayTR `get-token` endpoint'i HMAC-SHA256 hash ile çağrılır → token alınır.
+4. Sayfa PayTR iframe'ini (`https://www.paytr.com/odeme/guvenli/<token>`) gömer.
+5. Banka onayı sonrası PayTR `POST /api/odk/paytr/callback` endpoint'imizi çağırır:
+   - Hash doğrulanır (`crypto.timingSafeEqual`)
+   - `status=success` → ödeme `SUCCEEDED` + `markOdkOrderPaid()` → Order PAID + Entitlement + AccessTag + AccountingEntry (service=ODK)
+   - `status=failed` → ödeme `FAILED` + failure_reason
+   - Her durumda plain `"OK"` döner (PayTR retry'larını önler); kötü hash'te 400.
+6. Kullanıcı `?status=success|failed` ile `sonuc/page.tsx` sayfasına yönlenir (gerçek onay webhook'tan gelir).
+
+## Değişiklikler
+
+| Dosya | Tip | Not |
+|---|---|---|
+| `prisma/schema.prisma` | MOD | `OdkPaymentProvider` enum'una `PAYTR` eklendi |
+| `prisma/migrations/0022_odk_paytr_provider/migration.sql` | NEW | `ALTER TYPE … ADD VALUE IF NOT EXISTS 'PAYTR'` |
+| `lib/odk/paytr.ts` | NEW | `createPaytrIframeToken`, `verifyPaytrCallbackHash`, `buildMerchantOid`, `getClientIp`, `isPaytrConfigured` |
+| `lib/odk/checkout.ts` | NEW | `createOdkCheckoutSession` (idempotent PENDING reuse, OdkOrder + OdkPayment yazımı) |
+| `app/api/odk/paytr/callback/route.ts` | NEW | Webhook: hash verify → markOdkOrderPaid; tüm sonuçlar audit log'a yazılır |
+| `app/odk-paketleri/[slug]/satin-al/page.tsx` | REWRITE | "Yakında" yerine PayTR iframe; ödeme yapılandırılmadıysa açıklayıcı mesaj |
+| `app/odk-paketleri/[slug]/satin-al/sonuc/page.tsx` | NEW | Başarılı/başarısız ödeme dönüş sayfası |
+
+## Güvenlik Notları
+
+- Callback **kimlik doğrulaması yok** — güvenlik tamamen HMAC hash karşılaştırması ile sağlanır.
+- Hash karşılaştırması `timingSafeEqual` ile yapılır (timing attack koruması).
+- Idempotency iki katmanlı: (1) checkout'ta 30dk PENDING penceresi, (2) callback'te `payment.status === SUCCEEDED && order.status === PAID` early return.
+- `merchant_oid` formatı: `ODK<orderId-alphanumeric>` (max 32 char, PayTR sınırı).
+- Tüm callback olayları `AuditLog`'a yazılır (`PAYTR_CALLBACK_BAD_HASH`, `PAYTR_PAYMENT_SUCCESS`, `PAYTR_PAYMENT_FAILED`, `PAYTR_PAYMENT_ORPHAN`).
+
+## Operasyonel Adımlar (Production'a Çıkmadan Önce)
+
+1. **`.env` dosyasına ekle:**
+   ```
+   PAYTR_MERCHANT_ID=683619
+   PAYTR_MERCHANT_KEY=k14fnazC23XQhfeC
+   PAYTR_MERCHANT_SALT=kWz9m97zyHtqq7mM
+   ```
+
+2. **Migration uygula:**
+   ```sh
+   npx prisma migrate deploy
+   ```
+
+3. **PayTR Mağaza Panelinde callback URL'ini kaydet:**
+   - URL: `https://onlinedershanem.com/api/odk/paytr/callback`
+   - Method: POST
+
+4. **Test (PayTR test modu):** `lib/odk/checkout.ts` içindeki `createPaytrIframeToken` çağrısına `testMode: "1"` parametresi geçici olarak eklenebilir; canlıya geçerken kaldırılmalı.
+
+## Verify
+
+- `npx tsc --noEmit` → 0 hata ✓
+- Giriş yapmış kullanıcı `/odk-paketleri/<slug>/satin-al` → PayTR iframe yükleniyor
+- Test kartıyla başarılı ödeme → callback → `OdkPayment.status=SUCCEEDED`, `OdkOrder.status=PAID`, `OdkEntitlement` aktif, `OdkUserAccessTag` veriliyor, `AccountingEntry(service="ODK")` yazılıyor
+- Aynı `merchant_oid` ile ikinci callback geldiğinde idempotent: hiçbir alan değişmez, "OK" döner
+- Bozuk hash ile çağrı → 400 + AuditLog `PAYTR_CALLBACK_BAD_HASH`
+
+## Bilinen Sınırlar / Gelecek Round
+
+- **Refund/Chargeback** akışı henüz yok — manuel olarak `OdkPayment` ve `OdkEntitlement` revoke edilmeli.
+- **Taksit** (max_installment) şu an `0` (taksit yok). Banka taksit desteği eklemek isterse `checkout.ts` parametrik hale getirilmeli.
+- **Test mode toggle** environment ile kontrol edilmiyor; `PAYTR_TEST_MODE=1` env eklenebilir.
+- **Email bildirimi** (ödeme başarılı/başarısız) henüz yok — `lib/notifications.ts` ile bağlanabilir.
+
+## "STOP" — R-C burada bitiyor
+
+Sonraki önerilen: **R-D — ODK öğrenci erişim UI'ı** (panel/ogrenci/odk altında aktif paket/kalan gün/erişim listesi) veya **R-E — OD ödeme entegrasyonu** (aynı PayTR altyapısını OD paketler için yeniden kullan).
+
+---
+
+## Tamamlanan Tur — R-D + Audit Faz leftover + R-D+ (2026-05-18)
+
+### R-D — ODK öğrenci erişim UI
+- `app/panel/ogrenci/odk/paketim/page.tsx` — Aktif paket kartları (kalan gün uyarısı), aktif/eski erişim etiketleri chip'leri, pasif paket tablosu
+- Sidebar: "Hesabım → Paketlerim" eklendi
+
+### Audit Faz leftover — `/api/v1/me/products` + Devamsızlık + Maaşlar
+- `app/api/v1/me/products/route.ts` — Mobile + product switcher için OD/ODK access matrix
+- `app/panel/admin/devamsizlik/page.tsx` — 4 KPI + status/sınıf/tarih filtreleri + tablo (50/page)
+- `app/panel/admin/maaslar/{page,_form,_actions,yeni,[id]/duzenle}.tsx` — Full CRUD + markPayrollPaid (tx-safe + idempotent AccountingEntry)
+
+### R-D+ — Account Deletion (KVKK akışı)
+**Veri katmanı:**
+- `AccountDeletionRequest` modeli + `AccountDeletionStatus` enum + migration `0026_account_deletion_request`
+- `lib/account-deletion.ts` — `anonymizeUser()` (PII sil, paket revoke, session/device hard-delete; finans/audit korunur) + `processApprovedDeletionRequest()`
+
+**Server actions + UI:**
+- `app/panel/_shared/account-deletion-actions.ts` — create/cancel (user) + approve/reject/processNow (admin)
+- `app/panel/_shared/{account-deletion-form,hesap-sil-page}.tsx` — Shared form + page
+- `app/panel/{ogrenci,ogretmen,veli}/profilim/hesap-sil/page.tsx` — Role pages
+- `components/panel/privacy/privacy-rights-card.tsx` — mailto→gerçek route bağlandı
+
+**Admin + cron:**
+- `app/panel/admin/hesap-silme-talepleri/page.tsx` — 4 KPI + 6 status filter + tablo + inline approve/reject/processNow
+- `app/api/cron/account-deletion-process/route.ts` — Günlük batch (50/run)
+- `vercel.json` — `0 2 * * *` schedule eklendi
+- Sidebar: Admin Sistem → "Hesap silme talepleri"
+
+## "STOP" — R-D+ burada bitiyor
+
+---
+
+## Tamamlanan Tur — Round 10 (SEO/OG) + Round 9 (DevOps docs) + Round 11 (Toast) + Round 12 (Link scanner)
+
+### Round 10 — OG Image Generator (Faz I)
+- `lib/seo/og-template.tsx` — OD design system temalı paylaşımlı template (default/blog/package varyantları)
+- 10 OG route: `/`, `/blog`, `/blog/[slug]` (dynamic per post), `/tyt`, `/ayt`, `/lgs`, `/yks`, `/paketler`, `/odk-paketleri`, `/deneme-kulubu`
+- Build doğrulaması: `npx next build` ✅ tüm rotalar başarılı
+
+### Round 9 — DevOps polish (docs-only, kod onayı bekliyor)
+- `docs/devops-runbook.md` — DB backup/restore (Neon/Supabase PITR + manuel `pg_dump`), staging env (Vercel preview + Neon branching), monitoring (Vercel Analytics/Speed Insights + Sentry kurulum adımları), deployment checklist (pre/deploy/post/rollback), troubleshooting (connection pool, callback timeout, email outbox stuck, migration drift)
+- **Sentry kurulumu kullanıcı onayı bekliyor** (`@sentry/nextjs` paketi + wizard); stub `lib/error-capture.ts`'de hazır
+
+### Round 11 — Toast system (UX polish başlangıcı)
+- `components/ui/toast.tsx` — `ToastProvider` + `useToast()` hook (success/error/info/warn, auto-dismiss, manual close)
+- `app/layout.tsx` — root layout'ta `<ToastProvider>` monte edildi
+- Form UX iyileştirmeleri için kullanıma hazır (mevcut server action throw'larını client-side toast'a bağlanabilir)
+
+### Round 12 — Broken link scanner (QA başlangıcı)
+- `scripts/scan-broken-links.ts` — Sitemap fetch + paralel HTTP check (6 concurrent, 10s timeout, renkli rapor)
+- `package.json`: `npm run scan:links` (default `http://localhost:3000`, `BASE_URL=...` ile prod taranabilir)
+- CI/E2E akışına entegre edilebilir
+
+## "STOP" — Round 10/11/12 başlangıçları burada bitiyor
+
+Sonraki önerilen:
+- **Sentry SDK onayı + aktivasyon** (Round 9 tamamlama)
+- **Playwright E2E** (Round 12 ana çıktı: login → öğrenci panel → ödev gönder → öğretmen değerlendirir)
+- **Toast'ı mevcut formlara bağla** (Round 11 yayma — student/teacher/parent profil edit + ödev gönder + admin CRUD)
+- **Empty state audit** (Round 11 devam)
+

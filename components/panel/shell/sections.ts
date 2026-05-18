@@ -87,6 +87,9 @@ function studentOdkSections(): SidebarGroup[] {
       { id: "odk-kazanim", label: "Kazanım Analizim", icon: "chart", href: odkBase(seg, "kazanim-analizim") },
       { id: "odk-gelisim", label: "Gelişim Grafiğim", icon: "chart", href: odkBase(seg, "gelisim") },
     ]},
+    { title: "Hesabım", items: [
+      { id: "odk-paketim", label: "Paketlerim", icon: "package", href: odkBase(seg, "paketim") },
+    ]},
   ];
 }
 
@@ -128,6 +131,7 @@ function adminSections(): SidebarGroup[] {
       { id: "dersler", label: "Dersler", icon: "book", href: base(seg, "dersler") },
       { id: "ders-programi", label: "Ders programı", icon: "cal", href: base(seg, "ders-programi") },
       { id: "odevler", label: "Ödevler", icon: "assignment", href: base(seg, "odevler") },
+      { id: "devamsizlik", label: "Devamsızlık", icon: "users", href: base(seg, "devamsizlik") },
     ]},
     { title: "İnsanlar", items: [
       { id: "ogrenciler", label: "Öğrenciler", icon: "users", href: base(seg, "ogrenciler") },
@@ -136,7 +140,10 @@ function adminSections(): SidebarGroup[] {
     ]},
     { title: "Finans", items: [
       { id: "paketler", label: "Paketler", icon: "package", href: base(seg, "paketler") },
+      { id: "od-siparisler", label: "OD Siparişleri", icon: "money", href: base(seg, "od-siparisler") },
+      { id: "indirim-kodlari", label: "İndirim Kodları", icon: "tag", href: base(seg, "indirim-kodlari") },
       { id: "odemeler", label: "Ödemeler", icon: "money", href: base(seg, "odemeler") },
+      { id: "maaslar", label: "Öğretmen ödemeleri", icon: "money", href: base(seg, "maaslar") },
       { id: "muhasebe", label: "Muhasebe", icon: "report", href: `${base(seg, "muhasebe")}?service=OD` },
     ]},
     { title: "Analiz", items: [
@@ -146,6 +153,7 @@ function adminSections(): SidebarGroup[] {
     { title: "Sistem", items: [
       { id: "ayarlar", label: "Ayarlar", icon: "settings", href: base(seg, "ayarlar") },
       { id: "yetkiler", label: "Yetkiler", icon: "shield", href: base(seg, "yetkiler") },
+      { id: "hesap-silme", label: "Hesap silme talepleri", icon: "shield", href: base(seg, "hesap-silme-talepleri") },
       { id: "audit", label: "Audit logs", icon: "log", href: base(seg, "audit") },
     ]},
   ];

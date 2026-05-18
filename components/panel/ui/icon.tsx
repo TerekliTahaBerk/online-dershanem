@@ -50,6 +50,7 @@ import {
   Megaphone,
   Home,
   Menu,
+  Tag,
   type LucideIcon,
 } from "lucide-react";
 
@@ -64,6 +65,7 @@ const ICONS: Record<string, LucideIcon> = {
   assignment: ClipboardList,
   package: Package,
   money: Wallet,
+  tag: Tag,
   chart: BarChart3,
   report: FileText,
   settings: Settings,

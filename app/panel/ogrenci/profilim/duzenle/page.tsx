@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, FormActions } from "@/components/panel/ui/form";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { ToastForm } from "@/components/ui/toast-form";
 import { updateStudentProfileAction } from "../../_actions";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,12 @@ export default async function EditStudentProfile() {
       />
       <Card>
         <CardBody>
-          <form action={updateStudentProfileAction} className="od-grid g-2" style={{ gap: 12 }}>
+          <ToastForm
+            action={updateStudentProfileAction}
+            className="od-grid g-2"
+            style={{ gap: 12 }}
+            successMessage="Profil güncellendi"
+          >
             <Field label="Email"><Input name="email" type="email" defaultValue={student.email ?? ""} /></Field>
             <Field label="Şehir"><Input name="city" defaultValue={student.city ?? ""} /></Field>
             <Field label="İlçe"><Input name="district" defaultValue={student.district ?? ""} /></Field>
@@ -31,7 +37,7 @@ export default async function EditStudentProfile() {
             <div style={{ gridColumn: "1 / -1" }}>
               <FormActions><button className="od-btn od-btn-primary" type="submit">Kaydet</button></FormActions>
             </div>
-          </form>
+          </ToastForm>
         </CardBody>
       </Card>
     </>

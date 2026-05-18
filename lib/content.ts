@@ -1163,3 +1163,47 @@ export const seoKeywords = [
   "google meet canlı ders",
   "küçük grup ders"
 ];
+
+/**
+ * Türkçe formattaki fiyat string'ini kuruşa çevirir.
+ * Örnek: "₺1.500,00 / Ay" → 150000
+ *        "1.500,00₺"     → 150000
+ *        "3.290 TL"      → 329000
+ */
+export function parsePriceToCents(priceLabel: string | null | undefined): number {
+  if (!priceLabel) return 0;
+  // Sadece rakam, nokta (binlik) ve virgül (ondalık) bırak
+  const cleaned = priceLabel.replace(/[^\d.,]/g, "");
+  if (!cleaned) return 0;
+
+  // Türkçe format: "1.500,00" — nokta=binlik, virgül=ondalık
+  let normalised = cleaned;
+  if (cleaned.includes(",")) {
+    // Türkçe formatlı: noktayı sil, virgülü noktaya çevir
+    normalised = cleaned.replace(/\./g, "").replace(",", ".");
+  } else {
+    // Sadece nokta var — binlik ayraç olarak yorumla (örn "3.290")
+    normalised = cleaned.replace(/\./g, "");
+  }
+
+  const tl = parseFloat(normalised);
+  if (!isFinite(tl) || tl <= 0) return 0;
+  return Math.round(tl * 100);
+}
+
+/**
+ * Static katalogdaki paket fiyatını kuruş olarak döner. Bulamazsa 0.
+ */
+export function getPackagePriceCents(
+  category: string,
+  subject: string,
+): number {
+  for (const group of subjectPackageGroups) {
+    for (const pkg of group.packages) {
+      if (pkg.category === category && pkg.subject === subject) {
+        return parsePriceToCents(pkg.discountedPrice);
+      }
+    }
+  }
+  return 0;
+}
