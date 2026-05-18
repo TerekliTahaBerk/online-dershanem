@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
+import { PaytrIframeShell } from "@/components/checkout/paytr-iframe-shell";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { createOdCheckoutSession } from "@/lib/od/checkout";
@@ -17,14 +17,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-function formatPrice(cents: number): string {
-  return new Intl.NumberFormat("tr-TR", {
-    style: "currency",
-    currency: "TRY",
-    minimumFractionDigits: 2,
-  }).format(cents / 100);
-}
 
 export default async function OdPaymentPage({
   searchParams,
@@ -103,82 +95,20 @@ export default async function OdPaymentPage({
   return (
     <>
       <Navbar />
-      <main className="bg-slate-50 min-h-screen py-10">
-        <div className="max-w-3xl mx-auto px-4">
-          <nav className="text-sm text-slate-500 mb-4">
-            <Link href="/paketler" className="hover:underline">
-              Paketler
-            </Link>
-            <span className="mx-2">/</span>
-            <Link href={editHref} className="hover:underline">
-              Bilgiler
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-slate-700">Ödeme</span>
-          </nav>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">
-              {order.packageName}
-            </h1>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-indigo-600">
-                {formatPrice(order.totalCents)}
-              </span>
-              <Link
-                href={editHref}
-                className="text-xs text-slate-500 hover:underline"
-              >
-                Bilgilerimi düzenle
-              </Link>
-            </div>
-          </div>
-
-          {!paytrReady && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-amber-900">
-              <h2 className="font-semibold mb-1">
-                Ödeme sistemi şu anda yapılandırılıyor
-              </h2>
-              <p className="text-sm">
-                Lütfen kısa süre içinde tekrar deneyin veya{" "}
-                <Link href="/iletisim" className="underline">
-                  bizimle iletişime geçin
-                </Link>
-                .
-              </p>
-            </div>
-          )}
-
-          {checkout && !checkout.ok && (
-            <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 text-rose-900">
-              <h2 className="font-semibold mb-1">Ödeme başlatılamadı</h2>
-              <p className="text-sm">{checkout.userMessage}</p>
-              <p className="text-xs mt-2 opacity-70">
-                Sorun devam ederse{" "}
-                <Link href="/iletisim" className="underline">
-                  iletişime geçin
-                </Link>
-                .
-              </p>
-            </div>
-          )}
-
-          {checkout && checkout.ok && (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <iframe
-                src={checkout.iframeUrl}
-                title="PayTR Güvenli Ödeme"
-                scrolling="no"
-                style={{ width: "100%", minHeight: 700, border: 0 }}
-              />
-              <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-500">
-                Ödeme işleminiz PayTR güvenli ödeme altyapısı üzerinden
-                gerçekleştirilmektedir. Kart bilgileriniz sitemizde
-                saklanmaz.
-              </div>
-            </div>
-          )}
-        </div>
+      <main className="bg-[var(--od-cream)] min-h-screen py-10 sm:py-14">
+        <PaytrIframeShell
+          breadcrumb={[
+            { label: "Paketler", href: "/paketler" },
+            { label: "Bilgiler", href: editHref },
+            { label: "Ödeme" },
+          ]}
+          eyebrow="Online Dershanem"
+          title={order.packageName}
+          totalCents={order.totalCents}
+          editHref={editHref}
+          paytrReady={paytrReady}
+          checkout={checkout}
+        />
       </main>
       <Footer />
     </>
