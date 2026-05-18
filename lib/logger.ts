@@ -22,9 +22,70 @@ function shouldEmit(level: Level): boolean {
   return LEVEL_RANK[level] >= LEVEL_RANK[MIN_LEVEL];
 }
 
-function emit(level: Level, event: string, context?: Record<string, unknown>, err?: unknown) {
+/**
+ * PII masking — telefon ve e-mail değerlerini kısmen maskeler.
+ *
+ * - "ali@example.com" → "a**@example.com"
+ * - "+905551234567"   → "+9055****4567"
+ *
+ * Sadece string değerler işlenir; nesne/dizi içindeki PII alanları için
+ * (`email`, `phone`, `phoneKey`, `password`, `token`, `secret`) anahtar bazlı
+ * maskeleme uygulanır. KVKK / log aggregator hijyeni için kritik.
+ *
+ * Maskeleme `LOG_PII_MASK=0` ile devre dışı bırakılabilir (debug için).
+ */
+const MASK_PII = process.env.LOG_PII_MASK !== "0";
+const PII_KEYS = new Set([
+  "email", "phone", "phoneKey", "phoneE164",
+  "password", "passwordHash", "token", "accessToken", "refreshToken",
+  "secret", "apiKey", "authorization", "cookie",
+]);
+
+function maskEmail(s: string): string {
+  const at = s.indexOf("@");
+  if (at < 1) return s;
+  const local = s.slice(0, at);
+  const domain = s.slice(at);
+  const visible = local.slice(0, Math.min(1, local.length));
+  return `${visible}${"*".repeat(Math.max(2, local.length - 1))}${domain}`;
+}
+
+function maskPhone(s: string): string {
+  const digits = s.replace(/\D/g, "");
+  if (digits.length < 6) return s;
+  const head = s.slice(0, 4);
+  const tail = s.slice(-4);
+  return `${head}${"*".repeat(Math.max(2, s.length - 8))}${tail}`;
+}
+
+function maskValue(key: string, value: unknown): unknown {
+  if (!MASK_PII) return value;
+  if (typeof value === "string") {
+    const k = key.toLowerCase();
+    if (k === "email" || /email/i.test(key)) return maskEmail(value);
+    if (k === "phone" || k === "phonekey" || /phone/i.test(key)) return maskPhone(value);
+    if (PII_KEYS.has(k)) return "***redacted***";
+  }
+  return value;
+}
+
+function sanitizeContext(ctx: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (!ctx || !MASK_PII) return ctx;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(ctx)) {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      out[k] = sanitizeContext(v as Record<string, unknown>);
+    } else {
+      out[k] = maskValue(k, v);
+    }
+  }
+  return out;
+}
+
+function emit(level: Level, event: string, contextRaw?: Record<string, unknown>, err?: unknown) {
   if (!shouldEmit(level)) return;
   const ts = new Date().toISOString();
+  const context = sanitizeContext(contextRaw);
   const errInfo = err
     ? err instanceof Error
       ? { errorName: err.name, errorMessage: err.message, stack: err.stack?.split("\n").slice(0, 8).join("\n") }

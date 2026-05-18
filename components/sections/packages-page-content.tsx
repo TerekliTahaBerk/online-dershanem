@@ -125,6 +125,9 @@ export function PackagesPageContent() {
                 source={`packages_page_${pkg.groupKey}_${pkg.subject}`}
                 packageName={`${pkg.category} ${pkg.subject}`}
                 paymentLink={paymentLink}
+                category={pkg.category}
+                subject={pkg.subject}
+                priceLabel={pkg.discountedPrice}
                 analyticsId={`packages_page_${pkg.groupKey}_${pkg.subject}`}
                 className={`mt-7 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[13.5px] font-medium transition ${
                   featured

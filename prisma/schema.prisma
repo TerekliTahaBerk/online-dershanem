@@ -122,6 +122,7 @@ model User {
   odkOrders               OdkOrder[]
   odkEntitlements         OdkEntitlement[]
   odkAttempts             OdkExamAttempt[]
+  odOrders                OdOrder[]
   assignedStudentPackages StudentPackage[]         @relation("StudentPackageAssignedBy")
   studentTagAssignments   StudentTag[]             @relation("StudentTagAssignedBy")
   attendanceRecords       Attendance[]             @relation("AttendanceRecorder")
@@ -430,6 +431,7 @@ model Package {
   packageCourses    PackageCourse[]
   studentPackages   StudentPackage[]
   accountingEntries AccountingEntry[]          @relation("AccountingPackage")
+  odOrders          OdOrder[]
 
   @@index([isActive])
   @@index([type, isActive])
@@ -825,6 +827,7 @@ enum OdkPaymentProvider {
   MANUAL
   IYZICO
   BANK_TRANSFER
+  PAYTR
 }
 
 enum OdkEntitlementStatus {
@@ -1055,6 +1058,7 @@ model OdkOrder {
   subtotalCents Int              @map("subtotal_cents")
   discountCents Int              @default(0) @map("discount_cents")
   totalCents    Int              @map("total_cents")
+  buyerInfo     Json?            @map("buyer_info")
   createdAt     DateTime         @default(now()) @map("created_at")
   updatedAt     DateTime         @updatedAt @map("updated_at")
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1839,4 +1843,54 @@ model AppActivityLog {
 
   @@index([userId, createdAt])
   @@map("app_activity_logs")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Online Dershanem (OD) ödeme akışı — paket bazlı (Package) tek seferlik
+// ödeme. ODK ile aynı PayTR altyapısını kullanır; merchant_oid prefix'i
+// "OD" ile başlar. Başarılı ödeme sonrası entitlement OTOMATİK YOK; admin
+// hocaları manuel atayacaktır. PurchaseIntent kaydı linklenir.
+// ──────────────────────────────────────────────────────────────────────────
+
+model OdOrder {
+  id            String         @id @default(cuid())
+  userId        String         @map("user_id")
+  packageId    String?         @map("package_id")
+  packageName   String         @map("package_name")
+  category      String?
+  subject       String?
+  status        OdkOrderStatus @default(PENDING)
+  subtotalCents Int            @map("subtotal_cents")
+  discountCents Int            @default(0) @map("discount_cents")
+  totalCents    Int            @map("total_cents")
+  buyerInfo     Json?          @map("buyer_info")
+  intentId      String?        @map("intent_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package       Package?       @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  payments      OdPayment[]
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([intentId])
+  @@map("od_orders")
+}
+
+model OdPayment {
+  id            String             @id @default(cuid())
+  orderId       String             @map("order_id")
+  provider      OdkPaymentProvider @default(PAYTR)
+  providerRef   String?            @map("provider_ref")
+  status        OdkPaymentStatus   @default(PENDING)
+  amountCents   Int                @map("amount_cents")
+  paidAt        DateTime?          @map("paid_at")
+  failureReason String?            @map("failure_reason")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  order         OdOrder            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@map("od_payments")
 }
