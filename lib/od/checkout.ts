@@ -45,6 +45,7 @@ export async function createOdCheckoutSession(input: {
       status: true,
       totalCents: true,
       packageName: true,
+      buyerInfo: true,
     },
   });
   if (!order) {
@@ -89,9 +90,20 @@ export async function createOdCheckoutSession(input: {
     });
   }
 
-  const basket: PaytrBasketItem[] = [
-    [order.packageName.slice(0, 200), (order.totalCents / 100).toFixed(2), 1],
-  ];
+  // Basket'i sepet snapshot'ından oluştur (çoklu kalem desteği).
+  const buyer = (order.buyerInfo ?? {}) as Record<string, unknown>;
+  const cart = Array.isArray(buyer.cart)
+    ? (buyer.cart as Array<{ name: string; priceCents: number; qty: number }>)
+    : null;
+
+  const basket: PaytrBasketItem[] =
+    cart && cart.length > 0
+      ? cart.map((c) => [
+          c.name.slice(0, 200),
+          (c.priceCents / 100).toFixed(2),
+          Math.max(1, Math.floor(c.qty || 1)),
+        ])
+      : [[order.packageName.slice(0, 200), (order.totalCents / 100).toFixed(2), 1]];
 
   const okUrl = `${input.origin}/paketler/satin-al/sonuc?status=success`;
   const failUrl = `${input.origin}/paketler/satin-al/sonuc?status=failed`;

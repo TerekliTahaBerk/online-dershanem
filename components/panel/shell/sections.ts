@@ -136,6 +136,8 @@ function adminSections(): SidebarGroup[] {
     ]},
     { title: "Finans", items: [
       { id: "paketler", label: "Paketler", icon: "package", href: base(seg, "paketler") },
+      { id: "od-siparisler", label: "OD Siparişleri", icon: "money", href: base(seg, "od-siparisler") },
+      { id: "indirim-kodlari", label: "İndirim Kodları", icon: "tag", href: base(seg, "indirim-kodlari") },
       { id: "odemeler", label: "Ödemeler", icon: "money", href: base(seg, "odemeler") },
       { id: "muhasebe", label: "Muhasebe", icon: "report", href: `${base(seg, "muhasebe")}?service=OD` },
     ]},

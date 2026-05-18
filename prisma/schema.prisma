@@ -123,6 +123,8 @@ model User {
   odkEntitlements         OdkEntitlement[]
   odkAttempts             OdkExamAttempt[]
   odOrders                OdOrder[]
+  couponsCreated          Coupon[]                 @relation("CouponCreatedBy")
+  couponRedemptions       CouponRedemption[]       @relation("CouponRedemptionUser")
   assignedStudentPackages StudentPackage[]         @relation("StudentPackageAssignedBy")
   studentTagAssignments   StudentTag[]             @relation("StudentTagAssignedBy")
   attendanceRecords       Attendance[]             @relation("AttendanceRecorder")
@@ -1893,4 +1895,68 @@ model OdPayment {
   @@index([orderId])
   @@index([status, createdAt])
   @@map("od_payments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Coupon / Discount codes (FAZ 7)
+// Admin tarafından tanımlanır; sepette uygulanır; OD ve/veya ODK için geçerli.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum CouponType {
+  PERCENT // %20 indirim
+  FIXED   // ₺200 sabit indirim
+}
+
+enum CouponService {
+  OD
+  ODK
+  ALL
+}
+
+model Coupon {
+  id              String         @id @default(cuid())
+  code            String         @unique
+  description     String?
+  type            CouponType     @default(PERCENT)
+  service         CouponService  @default(ALL)
+  // PERCENT için: 1-100 (%)
+  // FIXED   için: kuruş cinsinden indirim tutarı
+  value           Int
+  // Sepette minimum tutar (kuruş). 0 = sınır yok.
+  minOrderCents   Int            @default(0) @map("min_order_cents")
+  // PERCENT için indirim üst sınırı (kuruş). 0 = sınır yok.
+  maxDiscountCents Int           @default(0) @map("max_discount_cents")
+  // Toplam kullanım hakkı. 0 = sınırsız.
+  usageLimit      Int            @default(0) @map("usage_limit")
+  // Kullanıcı başı maksimum. 0 = sınırsız.
+  perUserLimit    Int            @default(1) @map("per_user_limit")
+  startsAt        DateTime?      @map("starts_at")
+  expiresAt       DateTime?      @map("expires_at")
+  isActive        Boolean        @default(true) @map("is_active")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  createdById     String?        @map("created_by_id")
+  createdBy       User?          @relation("CouponCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  redemptions     CouponRedemption[]
+
+  @@index([isActive, expiresAt])
+  @@map("coupons")
+}
+
+model CouponRedemption {
+  id           String   @id @default(cuid())
+  couponId     String   @map("coupon_id")
+  userId       String   @map("user_id")
+  // Hangi siparişte kullanıldı. OdOrder veya OdkOrder id'si — ikisi de String.
+  orderService String   @map("order_service") // "OD" | "ODK"
+  orderId      String   @map("order_id")
+  discountCents Int     @map("discount_cents")
+  redeemedAt   DateTime @default(now()) @map("redeemed_at")
+  coupon       Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user         User     @relation("CouponRedemptionUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([userId])
+  @@index([orderService, orderId])
+  @@map("coupon_redemptions")
 }

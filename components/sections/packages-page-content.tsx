@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Clock3, Phone } from "lucide-react";
-import { contact, getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
+import { contact, getPackagePaymentLink, getPackagePriceCents, parsePriceToCents, subjectPackageGroups } from "@/lib/content";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 
 type GroupKey = (typeof subjectPackageGroups)[number]["key"];
 type FilterKey = "ALL" | GroupKey;
@@ -138,6 +139,21 @@ export function PackagesPageContent() {
                 {pkg.cta}
                 <ArrowRight size={14} />
               </PurchaseFunnelTrigger>
+
+              <AddToCartButton
+                analyticsSource={`packages_page_${pkg.groupKey}_${pkg.subject}`}
+                item={{
+                  id: `${pkg.category}__${pkg.subject}`,
+                  name: `${pkg.category} ${pkg.subject}`,
+                  category: pkg.category,
+                  subject: pkg.subject,
+                  priceCents:
+                    getPackagePriceCents(pkg.category, pkg.subject) ||
+                    parsePriceToCents(pkg.discountedPrice),
+                  priceLabel: pkg.discountedPrice,
+                }}
+                className="mt-3 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[12.5px] font-medium border border-[var(--od-ink)]/12 bg-[var(--od-cream-2)] text-[var(--od-ink)] hover:bg-white hover:border-[var(--od-ink)]/30 transition data-[justadded=1]:bg-[#dcfce7] data-[justadded=1]:border-emerald-300 data-[justadded=1]:text-emerald-800"
+              />
             </article>
           );
         })}

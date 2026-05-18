@@ -12,12 +12,14 @@
  */
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { sendOrderPaidUserEmail, sendOrderPaidAdminEmail } from "@/lib/email";
+import { redeemCoupon } from "@/lib/discount";
 
 export async function markOdOrderPaid(
   orderId: string,
   options: { actorUserId?: string | null } = {},
 ): Promise<{ orderId: string; accountingEntryId: string | null; intentId: string | null }> {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const order = await tx.odOrder.findUnique({
       where: { id: orderId },
       select: {
@@ -68,6 +70,22 @@ export async function markOdOrderPaid(
         select: { id: true },
       });
       accountingEntryId = entry.id;
+    }
+
+    // 1b. Coupon redemption (idempotent, buyerInfo.coupon varsa)
+    const buyerInfoObj = (order.buyerInfo ?? {}) as Record<string, unknown>;
+    const couponRaw = buyerInfoObj.coupon as
+      | { id?: string; code?: string; discountCents?: number }
+      | null
+      | undefined;
+    if (couponRaw && couponRaw.id && couponRaw.discountCents && couponRaw.discountCents > 0) {
+      await redeemCoupon(tx, {
+        couponId: couponRaw.id,
+        userId: order.userId,
+        orderService: "OD",
+        orderId: order.id,
+        discountCents: couponRaw.discountCents,
+      });
     }
 
     // 2. PurchaseIntent: link existing or create
@@ -128,6 +146,65 @@ export async function markOdOrderPaid(
       });
     }
 
-    return { orderId: order.id, accountingEntryId, intentId };
+    return {
+      orderId: order.id,
+      accountingEntryId,
+      intentId,
+      // Email payload (captured inside tx for consistent buyer view)
+      _emailPayload: {
+        userEmail: order.user.email,
+        userName: order.user.name,
+        packageName: order.packageName,
+        totalCents: order.totalCents,
+        buyerInfo: (order.buyerInfo ?? {}) as Record<string, string | null | undefined>,
+      },
+    };
   });
+
+  // Fire-and-forget email notifications (errors swallowed — outbox already retries)
+  try {
+    const p = result._emailPayload;
+    const items = Array.isArray(p.buyerInfo.cart)
+      ? (p.buyerInfo.cart as Array<{ name: string; qty?: number; priceCents: number }>)
+      : undefined;
+
+    if (p.userEmail) {
+      void sendOrderPaidUserEmail({
+        to: p.userEmail,
+        name: p.userName,
+        service: "OD",
+        orderId: result.orderId,
+        packageName: p.packageName,
+        items,
+        totalCents: p.totalCents,
+      }).catch((e) => console.error("[od.finance] user email failed:", e));
+    }
+
+    void sendOrderPaidAdminEmail({
+      service: "OD",
+      orderId: result.orderId,
+      packageName: p.packageName,
+      items,
+      totalCents: p.totalCents,
+      buyer: {
+        fullName: p.buyerInfo.fullName || p.userName || "—",
+        email: p.buyerInfo.email || p.userEmail || "—",
+        phone: p.buyerInfo.phone || null,
+        city: p.buyerInfo.city || null,
+        district: p.buyerInfo.district || null,
+        classLevel: p.buyerInfo.classLevel || null,
+        examType: p.buyerInfo.examType || null,
+        schoolName: p.buyerInfo.schoolName || null,
+        parentPhone: p.buyerInfo.parentPhone || null,
+      },
+    }).catch((e) => console.error("[od.finance] admin email failed:", e));
+  } catch (e) {
+    console.error("[od.finance] email dispatch failed:", e);
+  }
+
+  return {
+    orderId: result.orderId,
+    accountingEntryId: result.accountingEntryId,
+    intentId: result.intentId,
+  };
 }

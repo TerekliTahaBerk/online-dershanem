@@ -24,6 +24,12 @@ export type BuyerInfoFormProps = {
   packageLabel: string;
   priceLabel: string;
   hiddenFields?: Record<string, string>;
+  /**
+   * Extra non-string payload (e.g. cart `items[]`) merged into the JSON body
+   * AFTER the flat FormData. Use for arrays/objects that can't live in
+   * `<input type="hidden">`.
+   */
+  extraPayload?: Record<string, unknown>;
   defaults?: BuyerInfoFormDefaults;
   /**
    * After submit:
@@ -33,6 +39,8 @@ export type BuyerInfoFormProps = {
   submitMode: "redirect" | "external";
   submitLabel?: string;
   service: "OD" | "ODK";
+  /** Called after successful submission (e.g. to clear cart). */
+  onSuccess?: () => void;
 };
 
 type ApiResult =
@@ -44,10 +52,12 @@ export function BuyerInfoForm({
   packageLabel,
   priceLabel,
   hiddenFields = {},
+  extraPayload,
   defaults = {},
   submitMode,
   submitLabel = "Ödemeye Geç",
   service,
+  onSuccess,
 }: BuyerInfoFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -62,6 +72,12 @@ export function BuyerInfoForm({
     fd.forEach((value, key) => {
       payload[key] = typeof value === "string" ? value.trim() : value;
     });
+    // Merge extraPayload (cart items, etc.) — overrides any flat duplicates.
+    if (extraPayload) {
+      for (const [k, v] of Object.entries(extraPayload)) {
+        payload[k] = v;
+      }
+    }
 
     // Client-side validation
     const required = [
@@ -70,12 +86,16 @@ export function BuyerInfoForm({
       "phone",
       "city",
       "district",
+      "address",
+      "schoolName",
       "classLevel",
+      "examType",
       "kvkkConsent",
+      "paymentConsent",
     ];
     for (const k of required) {
       if (!payload[k]) {
-        setError(`Lütfen tüm zorunlu alanları doldurun (${k}).`);
+        setError("Lütfen tüm zorunlu (★) alanları doldurun.");
         return;
       }
     }
@@ -85,7 +105,11 @@ export function BuyerInfoForm({
     }
     const phoneDigits = String(payload.phone).replace(/\D/g, "");
     if (phoneDigits.length < 10) {
-      setError("Geçerli bir telefon numarası girin.");
+      setError("Geçerli bir telefon numarası girin (en az 10 hane).");
+      return;
+    }
+    if (payload.tcKimlik && String(payload.tcKimlik).replace(/\D/g, "").length !== 11) {
+      setError("T.C. Kimlik No 11 hane olmalı veya boş bırakılmalı.");
       return;
     }
 
@@ -105,10 +129,12 @@ export function BuyerInfoForm({
           return;
         }
         if (submitMode === "external" && json.paymentLink) {
+          onSuccess?.();
           window.location.href = json.paymentLink;
           return;
         }
         if (json.redirectUrl) {
+          onSuccess?.();
           router.push(json.redirectUrl);
           return;
         }
@@ -125,14 +151,14 @@ export function BuyerInfoForm({
         <input key={k} type="hidden" name={k} value={v} />
       ))}
 
-      <div className="rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-4 flex items-start gap-3">
+      <div className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4 flex items-start gap-3">
         <div className="text-2xl">🛒</div>
         <div className="flex-1">
-          <div className="text-xs uppercase tracking-wider text-indigo-700 font-semibold mb-1">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--od-olive)] font-semibold mb-1">
             Sepetiniz
           </div>
-          <div className="text-slate-900 font-semibold">{packageLabel}</div>
-          <div className="text-indigo-700 text-xl font-bold mt-1">
+          <div className="text-[var(--od-ink)] font-display text-[22px] leading-tight">{packageLabel}</div>
+          <div className="text-[var(--od-olive)] text-[20px] font-bold mt-1">
             {priceLabel}
           </div>
         </div>
@@ -181,6 +207,7 @@ export function BuyerInfoForm({
           label="Açık Adres (fatura için)"
           textarea
           rows={2}
+          required
         />
       </Section>
 
@@ -189,6 +216,7 @@ export function BuyerInfoForm({
           name="schoolName"
           label="Okul"
           defaultValue={defaults.schoolName}
+          required
         />
         <SelectField
           name="classLevel"
@@ -217,6 +245,7 @@ export function BuyerInfoForm({
         <SelectField
           name="examType"
           label="Hedef Sınav"
+          required
           defaultValue={defaults.examType}
           options={[
             { v: "", l: "Seçin" },
@@ -260,25 +289,25 @@ export function BuyerInfoForm({
         />
       </Section>
 
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+      <div className="space-y-3 rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
             name="kvkkConsent"
             value="1"
             required
-            className="mt-1 h-4 w-4 rounded border-slate-300"
+            className="mt-1 h-4 w-4 rounded border-[var(--od-line)]"
           />
-          <span className="text-sm text-slate-700">
+          <span className="text-sm text-[var(--od-ink-soft)]">
             <Link
               href="/kvkk"
               target="_blank"
-              className="text-indigo-600 underline"
+              className="text-[var(--od-olive)] underline font-medium"
             >
               KVKK Aydınlatma Metni
             </Link>
             'ni okudum ve onaylıyorum.{" "}
-            <span className="text-rose-600">*</span>
+            <span className="text-rose-600">★</span>
           </span>
         </label>
         <label className="flex items-start gap-3 cursor-pointer">
@@ -286,9 +315,9 @@ export function BuyerInfoForm({
             type="checkbox"
             name="marketingConsent"
             value="1"
-            className="mt-1 h-4 w-4 rounded border-slate-300"
+            className="mt-1 h-4 w-4 rounded border-[var(--od-line)]"
           />
-          <span className="text-sm text-slate-700">
+          <span className="text-sm text-[var(--od-ink-soft)]">
             Kampanya, duyuru ve eğitim içerikleri için elektronik ileti
             (SMS/e-posta) almayı kabul ediyorum.
           </span>
@@ -299,12 +328,14 @@ export function BuyerInfoForm({
             name="paymentConsent"
             value="1"
             required
-            className="mt-1 h-4 w-4 rounded border-slate-300"
+            className="mt-1 h-4 w-4 rounded border-[var(--od-line)]"
           />
-          <span className="text-sm text-slate-700">
-            Ön bilgilendirme ve mesafeli satış sözleşmesini okudum, kabul
-            ediyorum. Hizmet hocalarımız tarafından planlandıktan sonra
-            başlatılacaktır. <span className="text-rose-600">*</span>
+          <span className="text-sm text-[var(--od-ink-soft)]">
+            <Link href="/iade" target="_blank" className="text-[var(--od-olive)] underline font-medium">
+              Ön bilgilendirme ve mesafeli satış sözleşmesini
+            </Link>{" "}
+            okudum, kabul ediyorum. Hizmet hocalarımız tarafından planlandıktan sonra
+            başlatılacaktır. <span className="text-rose-600">★</span>
           </span>
         </label>
       </div>
@@ -315,7 +346,7 @@ export function BuyerInfoForm({
         </div>
       )}
 
-      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <div className="rounded-xl border border-[var(--od-yellow)]/40 bg-[var(--od-yellow-soft)] px-4 py-3 text-[13.5px] text-[var(--od-ink)]">
         <strong>Bilgi:</strong>{" "}
         {service === "OD"
           ? "Ödemeniz alındıktan sonra hocalarımız 24 saat içinde sizinle iletişime geçerek programınızı planlayacaktır. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
@@ -325,7 +356,7 @@ export function BuyerInfoForm({
       <button
         type="submit"
         disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-4 text-[15px] font-semibold text-white shadow-sm transition hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isPending ? "İşleniyor..." : submitLabel} →
       </button>
@@ -341,8 +372,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5">
-      <h2 className="text-base font-semibold text-slate-900 mb-4">{title}</h2>
+    <section className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
+      <h2 className="text-[15px] font-semibold text-[var(--od-ink)] mb-4 tracking-tight">{title}</h2>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </section>
   );
@@ -377,9 +408,9 @@ function Field({
     <label
       className={`block ${textarea ? "sm:col-span-2" : ""}`}
     >
-      <span className="block text-sm font-medium text-slate-700 mb-1">
+      <span className="block text-[12.5px] font-medium text-[var(--od-ink-soft)] mb-1.5 uppercase tracking-wide">
         {label}
-        {required ? <span className="text-rose-600 ml-0.5">*</span> : null}
+        {required ? <span className="text-rose-600 ml-0.5">★</span> : null}
       </span>
       {textarea ? (
         <textarea
@@ -389,7 +420,7 @@ function Field({
           placeholder={placeholder}
           rows={rows}
           maxLength={maxLength}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+          className="w-full rounded-lg border border-[var(--od-line)] bg-white px-3 py-2.5 text-[14px] text-[var(--od-ink)] shadow-sm focus:border-[var(--od-olive)] focus:ring-1 focus:ring-[var(--od-olive)] outline-none transition"
         />
       ) : (
         <input
@@ -399,10 +430,10 @@ function Field({
           defaultValue={defaultValue}
           placeholder={placeholder}
           maxLength={maxLength}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+          className="w-full rounded-lg border border-[var(--od-line)] bg-white px-3 py-2.5 text-[14px] text-[var(--od-ink)] shadow-sm focus:border-[var(--od-olive)] focus:ring-1 focus:ring-[var(--od-olive)] outline-none transition"
         />
       )}
-      {help && <span className="block text-xs text-slate-500 mt-1">{help}</span>}
+      {help && <span className="block text-[11.5px] text-[var(--od-ink-soft)] mt-1">{help}</span>}
     </label>
   );
 }
@@ -422,15 +453,15 @@ function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="block text-sm font-medium text-slate-700 mb-1">
+      <span className="block text-[12.5px] font-medium text-[var(--od-ink-soft)] mb-1.5 uppercase tracking-wide">
         {label}
-        {required ? <span className="text-rose-600 ml-0.5">*</span> : null}
+        {required ? <span className="text-rose-600 ml-0.5">★</span> : null}
       </span>
       <select
         name={name}
         required={required}
         defaultValue={defaultValue ?? ""}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none bg-white"
+        className="w-full rounded-lg border border-[var(--od-line)] bg-white px-3 py-2.5 text-[14px] text-[var(--od-ink)] shadow-sm focus:border-[var(--od-olive)] focus:ring-1 focus:ring-[var(--od-olive)] outline-none transition bg-white"
       >
         {options.map((o) => (
           <option key={o.v} value={o.v}>
