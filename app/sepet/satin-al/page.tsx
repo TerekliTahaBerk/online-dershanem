@@ -62,7 +62,7 @@ export default async function CartCheckoutPage() {
     <>
       <Navbar />
       <main className="min-h-screen bg-[var(--od-cream)] py-10">
-        <div className="max-w-3xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4">
           <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
             <Link href="/sepet" className="hover:text-[var(--od-ink)]">
               Sepet

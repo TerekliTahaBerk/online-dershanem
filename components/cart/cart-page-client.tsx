@@ -83,7 +83,8 @@ export function CartPageClient({ isLoggedIn }: Props) {
     }
   }, [code, isLoggedIn, router, totalCents]);
 
-  // Yeni sekmede form aç → cart snapshot URL'ye sıkıştırılarak gönderilir
+  // Sepet snapshot'ını localStorage'a yaz (sessionStorage sekmeler arası paylaşılmaz),
+  // aynı sekmede /sepet/satin-al'a yönlendir.
   const handleCheckout = useCallback(() => {
     if (!isLoggedIn) {
       router.push(`/giris?callbackUrl=${encodeURIComponent("/sepet")}`);
@@ -93,9 +94,8 @@ export function CartPageClient({ isLoggedIn }: Props) {
     const params = new URLSearchParams();
     params.set("fromCart", "1");
     if (coupon) params.set("coupon", coupon.code);
-    // cart items'i URL'e değil, sessionStorage'e yaz (URL limiti)
     try {
-      sessionStorage.setItem(
+      localStorage.setItem(
         "od_checkout_cart",
         JSON.stringify({
           items,
@@ -105,8 +105,8 @@ export function CartPageClient({ isLoggedIn }: Props) {
       );
     } catch {/* ignore */}
     trackConversionEvent("cart_checkout_open", { count, totalCents, coupon: coupon?.code });
-    // Yeni sekme — kullanıcı sepete kolay dönebilir
-    window.open(`/sepet/satin-al?${params.toString()}`, "_blank", "noopener,noreferrer");
+    // Aynı sekmede aç — kullanıcı geri tuşu ile sepete dönebilir
+    router.push(`/sepet/satin-al?${params.toString()}`);
   }, [isLoggedIn, items, coupon, router, count, totalCents]);
 
   // ── Empty state ──
@@ -319,7 +319,7 @@ export function CartPageClient({ isLoggedIn }: Props) {
             </button>
 
             <div className="mt-3 text-[11.5px] text-center text-[var(--od-ink-soft)]">
-              Ödeme bilgileri formu yeni sekmede açılır.
+              Bilgi formunu doldurun, PayTR güvenli ödeme sayfasına geçilir.
             </div>
 
             <ul className="mt-5 space-y-1.5 text-[11.5px] text-[var(--od-ink-soft)]">
