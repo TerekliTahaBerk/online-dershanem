@@ -45,6 +45,26 @@ npm run e2e:ui
 | `public-pages.spec.ts` | 19 public route smoke + 404/robots/sitemap/manifest |
 | `auth-flow.spec.ts` | 9 korumalı route → giriş yönlendirme + login/kayıt/şifre forms |
 | `api-smoke.spec.ts` | health/me/products/OG image endpoint smoke |
+| `panel-flows.spec.ts` | 10 login-sonrası panel smoke (admin/öğrenci/öğretmen/veli + role gate + logout) |
+| `fixtures/auth.ts` | Login helper + `adminPage`/`ogrenciPage`/`ogretmenPage`/`veliPage` fixture'ları |
+
+## Test Kullanıcıları
+
+Panel testleri için DB'de E2E kullanıcılarının seed edilmesi gerekir:
+
+```bash
+E2E_PASSWORD="testpass123" tsx prisma/seed-e2e.ts
+```
+
+Oluşturulan hesaplar:
+- `e2e-admin@onlinedershanem.test` (ADMIN)
+- `e2e-ogrenci@onlinedershanem.test` (STUDENT)
+- `e2e-ogretmen@onlinedershanem.test` (TEACHER)
+- `e2e-veli@onlinedershanem.test` (PARENT)
+
+> **UYARI:** `seed-e2e.ts` script'i `DATABASE_URL` içinde `prod`/`production`
+> kelimesi tespit ederse abort eder. Yine de yalnızca test/staging DB'lerde
+> çalıştırın.
 
 ## CI Entegrasyonu
 
