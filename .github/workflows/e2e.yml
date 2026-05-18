@@ -43,6 +43,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
       NEXTAUTH_SECRET: e2e-secret-do-not-use-in-prod
       NEXTAUTH_URL: http://localhost:3000
       E2E_PASSWORD: testpass123
