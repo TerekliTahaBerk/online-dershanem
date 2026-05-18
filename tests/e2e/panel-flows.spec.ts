@@ -1,4 +1,4 @@
-import { test, expect, TEST_USERS } from "../fixtures/auth";
+import { test, expect, TEST_USERS } from "@/tests/e2e/fixtures/auth";
 
 /**
  * Login sonrası panel smoke testleri.
