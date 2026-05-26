@@ -17,6 +17,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/lesson-lifecycle-tick",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/assignment-reminders",
       "schedule": "0 9 * * *"
     },

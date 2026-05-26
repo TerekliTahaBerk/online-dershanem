@@ -106,6 +106,12 @@ export default async function AdminOdOrdersPage({ searchParams }: { searchParams
             >
               İptal
             </Link>
+            <Link
+              href="/panel/admin/od-siparisler?status=REFUNDED"
+              className={`od-btn od-btn-sm ${status === "REFUNDED" ? "od-btn-primary" : "od-btn-ghost"}`}
+            >
+              İade
+            </Link>
           </div>
         }
       />
@@ -176,12 +182,16 @@ export default async function AdminOdOrdersPage({ searchParams }: { searchParams
                             ? "rgba(16,185,129,0.12)"
                             : o.status === "PENDING"
                             ? "rgba(245,158,11,0.12)"
+                            : o.status === "REFUNDED"
+                            ? "rgba(244,114,182,0.12)"
                             : "rgba(148,163,184,0.12)",
                         color:
                           o.status === "PAID"
                             ? "var(--pd-good)"
                             : o.status === "PENDING"
                             ? "var(--pd-warn)"
+                            : o.status === "REFUNDED"
+                            ? "#db2777"
                             : "var(--pd-text-muted)",
                       }}
                     >

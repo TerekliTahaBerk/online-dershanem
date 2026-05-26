@@ -4,6 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
+import {
+  markOdOrderPaidManualAction,
+  markOdOrderCancelledAction,
+  markOdOrderRefundedAction,
+} from "../_actions";
 
 export const dynamic = "force-dynamic";
 
@@ -147,6 +152,107 @@ export default async function OdOrderDetailPage({
               ))}
             </tbody>
           </table>
+        </CardBody>
+      </Card>
+
+      {order.status === "REFUNDED" && (
+        <Card
+          style={{
+            marginTop: 16,
+            borderLeft: "4px solid var(--pd-warn, #f59e0b)",
+            background: "rgba(245, 158, 11, 0.06)",
+          }}
+        >
+          <CardBody>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div style={{ fontSize: 20, lineHeight: 1 }}>⚠️</div>
+              <div>
+                <h4 style={{ margin: "0 0 4px", fontSize: 14 }}>
+                  Bu sipariş iade edildi
+                </h4>
+                <p style={{ margin: 0, fontSize: 13, color: "var(--pd-text-muted)" }}>
+                  Eğer öğrenciye daha önce manuel paket/sınıf/öğretmen ataması
+                  yapıldıysa, erişimi <strong>ayrıca kontrol edin</strong>. OD
+                  tarafında erişim otomatik geri alınmaz; admin panelinden
+                  StudentPackage / Classroom kayıtlarını gözden geçirin.
+                </p>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
+      <Card style={{ marginTop: 16 }}>
+        <CardBody>
+          <h3 style={{ marginBottom: 12 }}>Sipariş Aksiyonları</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {order.status === "PENDING" && (
+              <>
+                <form action={markOdOrderPaidManualAction.bind(null, order.id)}>
+                  <button
+                    type="submit"
+                    className="od-btn od-btn-primary od-btn-sm"
+                  >
+                    ✓ Manuel "Ödendi" işaretle
+                  </button>
+                  <span style={{ marginLeft: 12, fontSize: 12, color: "var(--pd-text-muted)" }}>
+                    Havale/EFT alındıysa veya PayTR dışı tahsilat yapıldıysa kullanın.
+                  </span>
+                </form>
+
+                <form
+                  action={markOdOrderCancelledAction.bind(null, order.id)}
+                  style={{ display: "flex", gap: 8, alignItems: "center" }}
+                >
+                  <input
+                    type="text"
+                    name="reason"
+                    placeholder="İptal sebebi (opsiyonel)"
+                    className="od-input od-input-sm"
+                    style={{ flex: 1, maxWidth: 320 }}
+                  />
+                  <button
+                    type="submit"
+                    className="od-btn od-btn-ghost od-btn-sm"
+                  >
+                    ✕ Siparişi iptal et
+                  </button>
+                </form>
+              </>
+            )}
+
+            {order.status === "PAID" && (
+              <form
+                action={markOdOrderRefundedAction.bind(null, order.id)}
+                style={{ display: "flex", gap: 8, alignItems: "center" }}
+              >
+                <input
+                  type="text"
+                  name="reason"
+                  placeholder="İade sebebi (opsiyonel)"
+                  className="od-input od-input-sm"
+                  style={{ flex: 1, maxWidth: 320 }}
+                />
+                <button
+                  type="submit"
+                  className="od-btn od-btn-sm"
+                  style={{ background: "var(--pd-warn, #f59e0b)", color: "#fff" }}
+                >
+                  ↺ Siparişi iade et
+                </button>
+                <span style={{ fontSize: 12, color: "var(--pd-text-muted)" }}>
+                  PayTR API otomatik refund yapmaz — banka tarafında iade
+                  işlemini ayrıca başlatın.
+                </span>
+              </form>
+            )}
+
+            {(order.status === "CANCELLED" || order.status === "REFUNDED") && (
+              <div style={{ fontSize: 13, color: "var(--pd-text-muted)" }}>
+                Bu sipariş için ek aksiyon mevcut değil.
+              </div>
+            )}
+          </div>
         </CardBody>
       </Card>
     </>

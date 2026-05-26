@@ -6,6 +6,10 @@ import { redirect } from "next/navigation";
 import { AttendanceStatus, AssignmentStatus } from "@prisma/client";
 import { notifyUser } from "@/lib/realtime";
 import { getNextPendingSubmissionId } from "@/lib/teacher-utils";
+import { logAudit } from "@/lib/audit";
+import { canStart, canEnd, canCancel } from "@/lib/lessons/lifecycle";
+import { resolveMeetingLink, isValidMeetingUrl } from "@/lib/lessons/meeting-provider";
+import { computeAutoAttendanceForLesson } from "@/lib/lessons/auto-attendance";
 
 function readStr(fd: FormData, key: string): string {
   const v = fd.get(key);
@@ -271,4 +275,210 @@ export async function sendAnnouncementAction(fd: FormData) {
     }).catch(() => null)));
   }
   revalidatePath("/panel/ogretmen/duyurular");
+}
+
+// ─── Sprint 6 — Lesson lifecycle (start/end/cancel) ─────────────────────────
+//
+// Aynı sessionGroupId'ye sahip fan-out satırlarının HEPSİ tek bir öğretmen
+// işlemiyle aynı duruma geçer (öğretmen UI'da seansı tek satır olarak görür).
+// Solo derslerde sadece o satır etkilenir.
+async function _loadTeacherAndLesson(lessonId: string) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    select: {
+      id: true, teacherId: true, status: true, scheduledAt: true, duration: true,
+      sessionGroupId: true, classroomId: true,
+      meetingProvider: true, meetingRoomId: true,
+      meetingJoinUrl: true, meetingHostUrl: true, googleMeetLink: true,
+    },
+  });
+  if (!lesson) throw new Error("Ders bulunamadı");
+  if (lesson.teacherId !== teacher.id) throw new Error("Bu derse yetkiniz yok");
+  return { ctx, teacher, lesson };
+}
+
+function _targetWhere(lesson: { id: string; sessionGroupId: string | null }) {
+  return lesson.sessionGroupId
+    ? { sessionGroupId: lesson.sessionGroupId }
+    : { id: lesson.id };
+}
+
+async function _notifyStudentsOfSession(args: {
+  lessonId: string;
+  sessionGroupId: string | null;
+  title: string;
+  body: string;
+  type: "LESSON";
+  href: string;
+  priority?: "NORMAL" | "HIGH";
+}) {
+  const where = args.sessionGroupId ? { sessionGroupId: args.sessionGroupId } : { id: args.lessonId };
+  const rows = await prisma.lesson.findMany({
+    where,
+    select: { student: { select: { userId: true } } },
+  });
+  const userIds = Array.from(new Set(rows.map((r) => r.student.userId).filter((x): x is string => !!x)));
+  await Promise.all(
+    userIds.map((uid) =>
+      notifyUser({
+        userId: uid,
+        title: args.title,
+        body: args.body,
+        href: args.href,
+        type: args.type,
+        priority: args.priority ?? "NORMAL",
+      }).catch(() => null),
+    ),
+  );
+}
+
+export async function startLessonAction(lessonId: string) {
+  const { ctx, lesson } = await _loadTeacherAndLesson(lessonId);
+  const meeting = resolveMeetingLink(lesson);
+  const guard = canStart({
+    status: lesson.status,
+    scheduledAt: lesson.scheduledAt,
+    duration: lesson.duration,
+    meetingJoinUrl: meeting.joinUrl,
+  });
+  if (!guard.ok) throw new Error(guard.message);
+
+  const now = new Date();
+  await prisma.lesson.updateMany({
+    where: { ..._targetWhere(lesson), status: "SCHEDULED" },
+    data: { status: "LIVE", startedAt: now },
+  });
+
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Lesson",
+    entityId: lesson.id,
+    action: "LESSON_START",
+    summary: `Ders başlatıldı (${lesson.sessionGroupId ? "seans" : "solo"})`,
+    payload: { sessionGroupId: lesson.sessionGroupId, scheduledAt: lesson.scheduledAt.toISOString() },
+  });
+
+  await _notifyStudentsOfSession({
+    lessonId: lesson.id,
+    sessionGroupId: lesson.sessionGroupId,
+    title: "Dersin başladı",
+    body: "Öğretmenin canlı bağlandı. 'Katıl' butonuna tıklayabilirsin.",
+    type: "LESSON",
+    href: "/panel/ogrenci/ders-programi",
+    priority: "HIGH",
+  });
+
+  revalidatePath("/panel/ogretmen/ders-programi");
+  revalidatePath("/panel/ogrenci/ders-programi");
+  revalidatePath("/panel/veli/ders-programi");
+  revalidatePath(`/panel/ogretmen/canli-ders/${lesson.id}`);
+}
+
+export async function endLessonAction(lessonId: string) {
+  const { ctx, lesson } = await _loadTeacherAndLesson(lessonId);
+  const guard = canEnd({ status: lesson.status });
+  if (!guard.ok) throw new Error(guard.message);
+
+  const now = new Date();
+  await prisma.lesson.updateMany({
+    where: { ..._targetWhere(lesson), status: "LIVE" },
+    data: { status: "ENDED", endedAt: now },
+  });
+
+  // Auto-attendance hesapla (her etkilenen Lesson satırı için).
+  const affected = await prisma.lesson.findMany({
+    where: _targetWhere(lesson),
+    select: { id: true },
+  });
+  await Promise.all(
+    affected.map((l) =>
+      computeAutoAttendanceForLesson(prisma, { lessonId: l.id }).catch((e) => {
+        console.error("[auto-attendance] failed", l.id, e);
+        return null;
+      }),
+    ),
+  );
+
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Lesson",
+    entityId: lesson.id,
+    action: "LESSON_END",
+    summary: `Ders bitirildi (${lesson.sessionGroupId ? "seans" : "solo"})`,
+    payload: { sessionGroupId: lesson.sessionGroupId, affectedCount: affected.length },
+  });
+
+  revalidatePath("/panel/ogretmen/ders-programi");
+  revalidatePath("/panel/ogrenci/ders-programi");
+  revalidatePath("/panel/veli/ders-programi");
+  revalidatePath("/panel/ogretmen/yoklama");
+  revalidatePath(`/panel/ogretmen/canli-ders/${lesson.id}`);
+}
+
+export async function cancelLessonByTeacherAction(lessonId: string, fd: FormData) {
+  const { ctx, lesson } = await _loadTeacherAndLesson(lessonId);
+  const guard = canCancel({ status: lesson.status });
+  if (!guard.ok) throw new Error(guard.message);
+  const reason = readStr(fd, "reason") || "Öğretmen iptali";
+
+  await prisma.lesson.updateMany({
+    where: { ..._targetWhere(lesson), status: { in: ["SCHEDULED", "LIVE"] } },
+    data: { status: "CANCELLED" },
+  });
+
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Lesson",
+    entityId: lesson.id,
+    action: "LESSON_CANCEL_BY_TEACHER",
+    summary: `Ders iptal: ${reason}`,
+    payload: { sessionGroupId: lesson.sessionGroupId, reason },
+  });
+
+  await _notifyStudentsOfSession({
+    lessonId: lesson.id,
+    sessionGroupId: lesson.sessionGroupId,
+    title: "Ders iptal edildi",
+    body: reason,
+    type: "LESSON",
+    href: "/panel/ogrenci/ders-programi",
+    priority: "HIGH",
+  });
+
+  revalidatePath("/panel/ogretmen/ders-programi");
+  revalidatePath("/panel/ogrenci/ders-programi");
+  revalidatePath("/panel/veli/ders-programi");
+}
+
+/** Öğretmen meet link'ini Live'a geçmeden önce set/güncelleyebilir. */
+export async function setLessonMeetingLinkAction(lessonId: string, fd: FormData) {
+  const { ctx, lesson } = await _loadTeacherAndLesson(lessonId);
+  const url = readStr(fd, "joinUrl");
+  if (!url) throw new Error("Bağlantı zorunlu");
+  if (!isValidMeetingUrl(url)) throw new Error("Geçersiz URL (https://… formatında olmalı).");
+  if (lesson.status !== "SCHEDULED" && lesson.status !== "LIVE") {
+    throw new Error("Bitmiş/iptal edilmiş derste link değişmez.");
+  }
+  const hostUrl = readStr(fd, "hostUrl") || null;
+  await prisma.lesson.updateMany({
+    where: _targetWhere(lesson),
+    data: {
+      meetingProvider: "MANUAL",
+      meetingJoinUrl: url,
+      meetingHostUrl: hostUrl,
+    },
+  });
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Lesson",
+    entityId: lesson.id,
+    action: "LESSON_SET_MEETING_LINK",
+    summary: "Ders bağlantısı güncellendi",
+    payload: { sessionGroupId: lesson.sessionGroupId },
+  });
+  revalidatePath("/panel/ogretmen/ders-programi");
+  revalidatePath(`/panel/ogretmen/canli-ders/${lesson.id}`);
 }

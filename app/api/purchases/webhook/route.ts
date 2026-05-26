@@ -5,6 +5,19 @@ import { purchaseWebhookSchema } from "@/lib/validators";
 import { logAudit } from "@/lib/audit";
 import { log } from "@/lib/logger";
 
+/**
+ * @deprecated Sprint 5 (FAZ 1) itibarıyla — OD/ODK PayTR akışı **artık** unified
+ * `/api/paytr/callback` üzerinden yürür. Bu endpoint sadece eski entegrasyonlar
+ * (lead-style PurchaseIntent) için backward-compat amacıyla tutuluyor.
+ *
+ * Yeni satın alma akışlarında:
+ *   - OD  → /api/od/checkout/start  → /api/paytr/callback (handleOd)
+ *   - ODK → /api/odk/checkout/...   → /api/paytr/callback (handleOdk)
+ *
+ * Her çağrıda WARN log atılır. İlerideki sprintlerde bu endpoint kaldırılacaktır.
+ * Source of truth: `app/api/paytr/callback/route.ts`.
+ */
+
 function isAuthorized(request: Request) {
   const secret = process.env.PAYMENT_WEBHOOK_SECRET;
 
@@ -20,6 +33,12 @@ function isAuthorized(request: Request) {
 }
 
 export async function POST(request: Request) {
+  log.warn("webhook.purchase.deprecated_call", {
+    ua: request.headers.get("user-agent") ?? null,
+    referer: request.headers.get("referer") ?? null,
+    hint: "Use /api/paytr/callback instead. This endpoint will be removed in a future sprint.",
+  });
+
   if (!isAuthorized(request)) {
     log.warn("webhook.purchase.unauthorized", { ua: request.headers.get("user-agent") ?? null });
     return NextResponse.json({ error: "Yetkisiz istek." }, { status: 401 });

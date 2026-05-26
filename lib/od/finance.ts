@@ -208,3 +208,161 @@ export async function markOdOrderPaid(
     intentId: result.intentId,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Refund / Cancel — Sprint 5 / FAZ 1
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * OD siparişi REFUNDED yapar — idempotent.
+ *
+ *  1. OdOrder.status = REFUNDED (sadece daha önce PAID ise)
+ *  2. En son SUCCEEDED OdPayment → REFUNDED (varsa)
+ *  3. Reversal AccountingEntry yaz (idempotent: refType="OdOrderRefund")
+ *  4. Linked PurchaseIntent.status = REFUNDED (varsa)
+ *
+ * ÖNEMLİ: StudentPackage **otomatik revoke EDİLMEZ**. OD'de paket admin
+ * manuel atandığı için iade sonrası erişimi admin manuel kontrol eder
+ * (admin UI'da uyarı banner gösterilir).
+ *
+ * @returns refundEntryId — yeni yazılan accounting reversal entry id (yoksa null)
+ */
+export async function markOdOrderRefunded(
+  orderId: string,
+  options: { actorUserId?: string | null; reason?: string | null } = {},
+): Promise<{ orderId: string; refundEntryId: string | null }> {
+  return await prisma.$transaction(async (tx) => {
+    const order = await tx.odOrder.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        totalCents: true,
+        packageName: true,
+        packageId: true,
+        intentId: true,
+      },
+    });
+    if (!order) throw new Error("OD sipariş bulunamadı.");
+
+    // Idempotency: zaten REFUNDED ise tekrar yazma
+    if (order.status !== "REFUNDED") {
+      // Sadece PAID → REFUNDED geçişine izin ver
+      if (order.status !== "PAID") {
+        throw new Error(
+          `Sadece PAID siparişler iade edilebilir (mevcut: ${order.status}).`,
+        );
+      }
+      await tx.odOrder.update({
+        where: { id: order.id },
+        data: { status: "REFUNDED" },
+      });
+    }
+
+    // En son SUCCEEDED ödemeyi REFUNDED yap
+    const lastPaid = await tx.odPayment.findFirst({
+      where: { orderId: order.id, status: "SUCCEEDED" },
+      orderBy: { paidAt: "desc" },
+      select: { id: true },
+    });
+    if (lastPaid) {
+      await tx.odPayment.update({
+        where: { id: lastPaid.id },
+        data: { status: "REFUNDED" },
+      });
+    }
+
+    // Reversal accounting entry (idempotent)
+    const existing = await tx.accountingEntry.findFirst({
+      where: { refType: "OdOrderRefund", refId: order.id },
+      select: { id: true },
+    });
+    let refundEntryId: string | null = existing?.id ?? null;
+    if (!existing && order.totalCents > 0) {
+      const entry = await tx.accountingEntry.create({
+        data: {
+          service: "OD",
+          type: "EXPENSE",
+          category: "OTHER_EXPENSE",
+          amount: order.totalCents,
+          occurredAt: new Date(),
+          description: [
+            `OD iade: ${order.packageName}`,
+            options.reason ? `Sebep: ${options.reason}` : null,
+          ]
+            .filter(Boolean)
+            .join(" — "),
+          refType: "OdOrderRefund",
+          refId: order.id,
+          packageId: order.packageId ?? null,
+          createdById: options.actorUserId ?? null,
+        },
+        select: { id: true },
+      });
+      refundEntryId = entry.id;
+    }
+
+    // Bağlı PurchaseIntent: status enum'da REFUNDED yok (PENDING/PAID/FAILED).
+    // Muhasebe izi reversal AccountingEntry'de tutuluyor. PurchaseIntent
+    // factual olarak "ödenmişti" — status PAID kalır; admin notunda iade
+    // bilgisi audit log'tan izlenir.
+
+    return { orderId: order.id, refundEntryId };
+  });
+}
+
+/**
+ * OD siparişi CANCELLED yapar — idempotent.
+ *
+ *  1. Sadece PENDING → CANCELLED (PAID iptal edilemez, refund kullanılır).
+ *  2. Tüm PENDING OdPayment satırları → FAILED (failureReason=options.reason).
+ *  3. **AccountingEntry yazılmaz** (sipariş ödenmeden iptal — ters kayıt yok).
+ *  4. Linked PurchaseIntent.status = CANCELLED (varsa).
+ */
+export async function markOdOrderCancelled(
+  orderId: string,
+  options: { actorUserId?: string | null; reason?: string | null } = {},
+): Promise<{ orderId: string }> {
+  return await prisma.$transaction(async (tx) => {
+    const order = await tx.odOrder.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true, intentId: true },
+    });
+    if (!order) throw new Error("OD sipariş bulunamadı.");
+
+    if (order.status === "CANCELLED") {
+      return { orderId: order.id };
+    }
+    if (order.status !== "PENDING") {
+      throw new Error(
+        `Sadece PENDING siparişler iptal edilebilir (mevcut: ${order.status}). Ödenmiş siparişler için iade kullanın.`,
+      );
+    }
+
+    await tx.odOrder.update({
+      where: { id: order.id },
+      data: { status: "CANCELLED" },
+    });
+
+    await tx.odPayment.updateMany({
+      where: { orderId: order.id, status: "PENDING" },
+      data: {
+        status: "FAILED",
+        failureReason: options.reason || "Admin tarafından iptal edildi",
+      },
+    });
+
+    // PENDING siparişlerin normalde PurchaseIntent'i yoktur (intent yalnızca
+    // markOdOrderPaid içinde yaratılıyor). Defensive: link varsa FAILED yap
+    // (PurchaseStatus enum'da CANCELLED yok).
+    if (order.intentId) {
+      await tx.purchaseIntent.update({
+        where: { id: order.intentId },
+        data: { status: "FAILED" },
+      });
+    }
+
+    return { orderId: order.id };
+  });
+}

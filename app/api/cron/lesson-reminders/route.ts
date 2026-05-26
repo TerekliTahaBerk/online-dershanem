@@ -8,6 +8,11 @@ export const dynamic = "force-dynamic";
 /**
  * 15 dk önce başlayacak dersler için push hatırlatma.
  * Çalıştırma: Vercel Cron (her 5 dk) → header `Authorization: Bearer ${CRON_SECRET}`.
+ *
+ * Sprint 6 — Fan-out dedup: aynı sessionGroupId paylaşan satırlar için
+ * öğretmen push'u yalnızca BİR KEZ gönderilir (öğretmen aynı seansın N
+ * öğrenci satırı için N kez bildirim almasın). Öğrenci push'u DEĞİŞMEDİ —
+ * her öğrenci kendi Lesson satırından kendi push'unu alır.
  */
 function isAuthorized(req: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -37,11 +42,26 @@ export async function GET(req: Request) {
     },
   });
 
+  // Öğretmen-bazlı dedup: aynı sessionGroupId'de öğretmene tek push.
+  const teacherPushed = new Set<string>(); // key = teacherUserId|sessionKey
   let pushed = 0;
+  let teacherDeduped = 0;
+
   for (const l of lessons) {
     const userIds: string[] = [];
     if (l.student.userId) userIds.push(l.student.userId);
-    if (l.teacher.userId) userIds.push(l.teacher.userId);
+
+    if (l.teacher.userId) {
+      const sessionKey = l.sessionGroupId ?? `solo:${l.id}`;
+      const tkey = `${l.teacher.userId}|${sessionKey}`;
+      if (!teacherPushed.has(tkey)) {
+        teacherPushed.add(tkey);
+        userIds.push(l.teacher.userId);
+      } else {
+        teacherDeduped += 1;
+      }
+    }
+
     if (userIds.length === 0) continue;
 
     const minutesLeft = Math.round((l.scheduledAt.getTime() - now.getTime()) / 60000);
@@ -49,12 +69,17 @@ export async function GET(req: Request) {
       userIds,
       title: "Ders yaklaşıyor",
       body: `${l.title ?? l.subject ?? "Ders"} ${minutesLeft} dk sonra başlayacak.`,
-      data: { lessonId: l.id, meetLink: l.googleMeetLink, type: "LESSON" },
+      data: {
+        lessonId: l.id,
+        meetLink: l.meetingJoinUrl ?? l.googleMeetLink,
+        meetingJoinUrl: l.meetingJoinUrl,
+        type: "LESSON",
+      },
       category: "LESSON",
       priority: "high",
     });
     pushed += 1;
   }
 
-  return NextResponse.json({ ok: true, count: lessons.length, pushed });
+  return NextResponse.json({ ok: true, count: lessons.length, pushed, teacherDeduped });
 }

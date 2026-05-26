@@ -78,12 +78,14 @@ export type CreatePaytrTokenResult =
  * `merchant_oid` için güvenli string üretir (alfanumerik, max 32 char).
  * Prefix ile servis ayrımı yapılır: "ODK..." veya "OD..."
  * (Callback router merchant_oid prefix'ine göre doğru handler'a yönlendirir.)
+ *
+ * Implementation `lib/odk/paytr-merchant-oid.ts` içindedir (server-only değil,
+ * unit-test edilebilir). Bu modül sadece re-export yapar.
  */
-export function buildMerchantOid(orderId: string, prefix: "ODK" | "OD" = "ODK"): string {
-  // PayTR sadece alfanumerik kabul eder. cuid zaten uyumlu ama defensive olalım.
-  const safe = orderId.replace(/[^a-zA-Z0-9]/g, "");
-  return `${prefix}${safe}`.slice(0, 32);
-}
+export {
+  buildMerchantOid,
+  detectPaytrService,
+} from "./paytr-merchant-oid";
 
 /**
  * Step 1 — PayTR'den iframe token alır.

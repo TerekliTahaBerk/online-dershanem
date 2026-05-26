@@ -21,8 +21,10 @@ import { log } from "@/lib/logger";
 import { logAudit } from "@/lib/audit";
 import { markOdkOrderPaid } from "@/lib/odk/finance";
 import { markOdOrderPaid } from "@/lib/od/finance";
+import { notifyUser, expireRelatedNotifications } from "@/lib/notifications";
 import {
   verifyPaytrCallbackHash,
+  detectPaytrService,
   type PaytrCallbackPayload,
 } from "@/lib/odk/paytr";
 
@@ -34,12 +36,6 @@ function plain(body: string, status = 200): Response {
     status,
     headers: { "content-type": "text/plain; charset=utf-8" },
   });
-}
-
-function detectService(merchantOid: string): "ODK" | "OD" | "UNKNOWN" {
-  if (merchantOid.startsWith("ODK")) return "ODK";
-  if (merchantOid.startsWith("OD")) return "OD";
-  return "UNKNOWN";
 }
 
 export async function POST(req: Request) {
@@ -85,7 +81,7 @@ export async function POST(req: Request) {
     return plain("PAYTR notification failed: bad hash", 400);
   }
 
-  const service = detectService(payload.merchant_oid);
+  const service = detectPaytrService(payload.merchant_oid);
 
   if (service === "ODK") {
     return handleOdk(payload);
@@ -267,6 +263,29 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
           testMode: payload.test_mode,
         },
       });
+
+      // In-app + push notification (idempotent via expireRelatedNotifications)
+      // Tx dışında, fire-and-forget — markOdOrderPaid email zaten gönderiyor.
+      try {
+        await expireRelatedNotifications({
+          relatedEntityType: "OdOrder",
+          relatedEntityIds: [payment.orderId],
+        });
+        await notifyUser({
+          userId: payment.order.userId,
+          type: "PAYMENT",
+          priority: "HIGH",
+          category: "FINANCE",
+          inboxPriority: "HIGH",
+          title: "Ödemeniz alındı",
+          body: `OD paket satın alımınız onaylandı (${(totalCents / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} ₺). Hocalarımız 24 saat içinde planlama için sizinle iletişime geçecek.`,
+          href: "/panel/ogrenci",
+          relatedEntityType: "OdOrder",
+          relatedEntityId: payment.orderId,
+        });
+      } catch (notifyErr) {
+        log.warn("paytr.callback.od.notify_failed", { orderId: payment.orderId, err: String(notifyErr) });
+      }
     } catch (err) {
       log.error("paytr.callback.od.success_handler_error", err, { orderId: payment.orderId });
     }
@@ -299,6 +318,24 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
           msg: payload.failed_reason_msg,
         },
       });
+
+      // Failure notification (NORMAL priority — user yeniden deneyebilir)
+      try {
+        await notifyUser({
+          userId: payment.order.userId,
+          type: "PAYMENT",
+          priority: "NORMAL",
+          category: "FINANCE",
+          inboxPriority: "NORMAL",
+          title: "Ödeme tamamlanamadı",
+          body: `OD paket ödemeniz başarısız oldu: ${payload.failed_reason_msg ?? "Bilinmeyen hata"}. Tekrar denemek için paketler sayfasından devam edebilirsiniz.`,
+          href: "/paketler",
+          relatedEntityType: "OdOrder",
+          relatedEntityId: payment.orderId,
+        });
+      } catch (notifyErr) {
+        log.warn("paytr.callback.od.notify_failed", { orderId: payment.orderId, err: String(notifyErr) });
+      }
     } catch (err) {
       log.error("paytr.callback.od.failed_handler_error", err);
     }

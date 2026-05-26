@@ -128,6 +128,7 @@ model User {
   assignedStudentPackages StudentPackage[]         @relation("StudentPackageAssignedBy")
   studentTagAssignments   StudentTag[]             @relation("StudentTagAssignedBy")
   attendanceRecords       Attendance[]             @relation("AttendanceRecorder")
+  lessonJoinEvents        LessonJoinEvent[]
   inboxReceived           InboxMessage[]           @relation("InboxRecipient")
   inboxSent               InboxMessage[]           @relation("InboxCreator")
   studentNotesAuthored    StudentNote[]            @relation("StudentNoteAuthor")
@@ -264,6 +265,7 @@ model Student {
   classrooms         ClassroomStudent[]
   tags               StudentTag[]
   attendances        Attendance[]
+  lessonJoinEvents   LessonJoinEvent[]
   studentNotes       StudentNote[]
   comments           TeacherComment[]
   files              StudentFile[]
@@ -300,8 +302,17 @@ enum TeacherStatus {
 
 enum LessonStatus {
   SCHEDULED
+  LIVE
+  ENDED
   COMPLETED
   CANCELLED
+  MISSED
+}
+
+enum JoinEventKind {
+  JOIN
+  LEAVE
+  HEARTBEAT
 }
 
 enum CampCategory {
@@ -478,38 +489,72 @@ model Camp {
 }
 
 model Lesson {
-  id             String       @id @default(cuid())
-  studentId      String
-  teacherId      String
-  packageId      String?
-  classroomId    String?
-  courseId       String?
-  seriesId       String?
-  sessionGroupId String?
-  location       String?
-  title          String?
-  subject        String?
-  scheduledAt    DateTime
-  duration       Int          @default(60)
-  googleMeetLink String?
-  status         LessonStatus @default(SCHEDULED)
-  notes          String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  teacher        Teacher      @relation(fields: [teacherId], references: [id], onDelete: Restrict)
-  package        Package?     @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  classroom      Classroom?   @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  course         Course?      @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  attendances    Attendance[]
+  id              String            @id @default(cuid())
+  studentId       String
+  teacherId       String
+  packageId       String?
+  classroomId     String?
+  courseId        String?
+  seriesId        String?
+  sessionGroupId  String?
+  location        String?
+  title           String?
+  subject         String?
+  scheduledAt     DateTime
+  duration        Int               @default(60)
+  googleMeetLink  String?
+  status          LessonStatus      @default(SCHEDULED)
+  notes           String?
+  // ── Sprint 6 / FAZ 2 — Canlı ders yaşam döngüsü ─────────────────────────
+  startedAt       DateTime?
+  endedAt         DateTime?
+  meetingProvider String?
+  meetingRoomId   String?
+  meetingJoinUrl  String?
+  meetingHostUrl  String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher         Teacher           @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  package         Package?          @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  classroom       Classroom?        @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+  course          Course?           @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  attendances     Attendance[]
+  joinEvents      LessonJoinEvent[]
 
   @@index([studentId, scheduledAt])
   @@index([teacherId, scheduledAt])
   @@index([status, scheduledAt])
+  @@index([status, startedAt])
   @@index([classroomId, scheduledAt])
   @@index([courseId, scheduledAt])
   @@index([seriesId])
   @@index([sessionGroupId])
+}
+
+/// Sprint 6 — Canlı ders join/leave/heartbeat ham olayları.
+/// Polymorphic: `lessonId` her zaman dolu (fan-out korunduğu için her öğrenciye
+/// ayrı Lesson satırı vardır); `sessionGroupId` sınıf seansının tüm fan-out
+/// satırlarını gruplamak için kullanılır. `lib/lessons/auto-attendance.ts`
+/// bu event'leri `Attendance(source=AUTO)` kayıtlarına dönüştürür.
+model LessonJoinEvent {
+  id             String        @id @default(cuid())
+  lessonId       String
+  sessionGroupId String?
+  studentId      String?
+  userId         String
+  kind           JoinEventKind
+  ts             DateTime      @default(now())
+  ip             String?
+  ua             String?
+  lesson         Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student        Student?      @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId, ts])
+  @@index([sessionGroupId, ts])
+  @@index([userId, ts])
+  @@index([kind, ts])
 }
 
 model StudentPackageEnrollment {
@@ -1248,6 +1293,14 @@ enum AttendanceContext {
   CLASSROOM_SESSION
 }
 
+/// Sprint 6 — Manuel öğretmen girişi (default) vs cron'un join event'lerinden
+/// otomatik ürettiği kayıtları ayırt etmek için. AUTO kayıtlar MANUEL kayıtların
+/// üzerine YAZMAZ.
+enum AttendanceSource {
+  MANUAL
+  AUTO
+}
+
 /// Veli kaydı. Opsiyonel olarak `User` (role=PARENT) ile bağlanır; bağlanırsa
 /// veli paneline (`/veli`) erişebilir. Bir veli birden fazla öğrenciye
 /// (kardeşler) bağlanabilir — `ParentStudent` join modeline bakın.
@@ -1370,26 +1423,31 @@ model StudentTag {
 /// CLASSROOM_SESSION` ise `classroomId` doludur ve aynı gün için birden fazla
 /// satır olabilir.
 model Attendance {
-  id           String            @id @default(cuid())
-  studentId    String
-  context      AttendanceContext @default(LESSON)
-  lessonId     String?
-  classroomId  String?
-  sessionDate  DateTime
-  status       AttendanceStatus
-  minutesLate  Int?
-  notes        String?
-  recordedById String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  student      Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  lesson       Lesson?           @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  classroom    Classroom?        @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  recordedBy   User?             @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+  id            String            @id @default(cuid())
+  studentId     String
+  context       AttendanceContext @default(LESSON)
+  lessonId      String?
+  classroomId   String?
+  sessionDate   DateTime
+  status        AttendanceStatus
+  minutesLate   Int?
+  notes         String?
+  recordedById  String?
+  // ── Sprint 6 / FAZ 2 — Otomatik vs manuel kaynak ────────────────────────
+  source        AttendanceSource  @default(MANUAL)
+  firstJoinedAt DateTime?
+  durationSec   Int?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  student       Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson        Lesson?           @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  classroom     Classroom?        @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+  recordedBy    User?             @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
 
   @@index([studentId, sessionDate])
   @@index([classroomId, sessionDate])
   @@index([status])
+  @@index([source])
 }
 
 // ─── Inbox System (Faz 1) ────────────────────────────────────────────────────

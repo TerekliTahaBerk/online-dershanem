@@ -4,6 +4,9 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { LessonLifecycleButtons } from "@/components/panel/lessons/lifecycle-buttons";
+import { lessonStatusLabel, lessonStatusTone } from "@/lib/lessons/lifecycle";
+import { resolveMeetingLink } from "@/lib/lessons/meeting-provider";
 
 export const dynamic = "force-dynamic";
 
@@ -35,23 +38,34 @@ export default async function TeacherSchedule() {
       <PageHeader title="Ders programım" subtitle={`Önümüzdeki 30 gün — ${rows.length} seans`} />
       <Card>
         <table className="od-table">
-          <thead><tr><th>Tarih</th><th>Konu</th><th>Öğrenci/Sınıf</th><th>Lokasyon</th><th>Süre</th><th>Durum</th><th>Link</th></tr></thead>
+          <thead><tr><th>Tarih</th><th>Konu</th><th>Öğrenci/Sınıf</th><th>Lokasyon</th><th>Süre</th><th>Durum</th><th>Canlı</th></tr></thead>
           <tbody>
-            {rows.map(({ head, count }) => (
-              <tr key={head.id}>
-                <td className="od-mono">{new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(head.scheduledAt)}</td>
-                <td>{head.course?.title ?? head.title ?? head.subject ?? "—"}</td>
-                <td>
-                  {head.classroom?.name
-                    ? <>{head.classroom.name} <Badge tone="teal">{count} öğr.</Badge></>
-                    : head.student?.fullName ?? "—"}
-                </td>
-                <td>{head.location ?? <span className="od-muted">—</span>}</td>
-                <td className="od-mono">{head.duration} dk</td>
-                <td><Badge tone={head.status === "COMPLETED" ? "ok" : head.status === "CANCELLED" ? "bad" : "teal"}>{head.status}</Badge></td>
-                <td>{head.googleMeetLink ? <a className="od-mono" href={head.googleMeetLink} target="_blank" rel="noreferrer">Bağlan</a> : <span className="od-muted">—</span>}</td>
-              </tr>
-            ))}
+            {rows.map(({ head, count }) => {
+              const meeting = resolveMeetingLink(head);
+              return (
+                <tr key={head.id}>
+                  <td className="od-mono">{new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(head.scheduledAt)}</td>
+                  <td>{head.course?.title ?? head.title ?? head.subject ?? "—"}</td>
+                  <td>
+                    {head.classroom?.name
+                      ? <>{head.classroom.name} <Badge tone="teal">{count} öğr.</Badge></>
+                      : head.student?.fullName ?? "—"}
+                  </td>
+                  <td>{head.location ?? <span className="od-muted">—</span>}</td>
+                  <td className="od-mono">{head.duration} dk</td>
+                  <td><Badge tone={lessonStatusTone(head.status)}>{lessonStatusLabel(head.status)}</Badge></td>
+                  <td>
+                    <LessonLifecycleButtons
+                      lessonId={head.id}
+                      status={head.status}
+                      joinUrl={meeting.joinUrl}
+                      hostUrl={meeting.hostUrl}
+                      meetingHref={`/panel/ogretmen/canli-ders/${head.id}`}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </Card>
