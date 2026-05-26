@@ -128,7 +128,10 @@ body {
   margin: 0;
   padding: 0;
   max-width: 100%;
-  overflow-x: hidden;
+  /* `clip` yatay taşmayı engeller ama `hidden`'in aksine yeni bir scroll
+     container oluşturmaz — bu sayede panel sidebar'ındaki `position: sticky`
+     viewport'a doğru yapışır ve sayfa scroll edilince kaybolmaz. */
+  overflow-x: clip;
 }
 
 html {
@@ -1985,10 +1988,9 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 
 /* Lead inbox: already single-col at 1023px (see above), fine on mobile */
 
-/* Ensure overflow-x hidden doesn't clip sidebar slide-in */
-@media (max-width: 1023px) {
-  body { overflow-x: clip; }
-}
+/* NOT: Yatay taşma `html, body { overflow-x: clip }` ile global olarak
+   engelleniyor (bkz. satır ~125). `clip` sticky'i bozmadığı için ayrı bir
+   mobile breakpoint override'a gerek kalmadı. */
 
 /* ── Opennote-style marquee for trust strip ───────────────────────── */
 @keyframes marquee {
