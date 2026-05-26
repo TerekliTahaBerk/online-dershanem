@@ -6,6 +6,7 @@ import type { UserRole } from "@prisma/client";
 import { Sidebar } from "@/components/panel/shell/sidebar";
 import { Topbar } from "@/components/panel/shell/topbar";
 import { CommandPalette } from "@/components/panel/shell/command-palette";
+import { KeyboardShortcuts } from "@/components/panel/shell/keyboard-shortcuts";
 import type { ProductSections } from "@/components/panel/shell/sections";
 import type { NavCommand } from "@/lib/panel-nav";
 import type { AccessFlags } from "@/lib/access/odk";
@@ -111,6 +112,7 @@ export function PanelShellClient({
         <div className="od-panel-body">{children}</div>
       </main>
       <CommandPalette role={role} commands={commands} />
+      <KeyboardShortcuts role={role} />
     </div>
   );
 }

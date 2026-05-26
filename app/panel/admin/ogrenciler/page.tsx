@@ -6,13 +6,31 @@ import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { SearchInput } from "@/components/panel/ui/search-input";
 import { ExportButton } from "@/components/panel/ui/export-button";
+import { QuickFilters } from "@/components/panel/ui/quick-filters";
+import { SmartTableShell, SortableTh } from "@/components/panel/ui/smart-table";
+import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
 import { getStudentProductFlags } from "@/lib/access/student-product-flags";
+import type { StudentStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminStudents({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+const SORT_MAP: Record<string, "fullName" | "city" | "updatedAt" | "status" | "classLevel"> = {
+  name: "fullName",
+  city: "city",
+  updated: "updatedAt",
+  status: "status",
+  class: "classLevel",
+};
+
+export default async function AdminStudents({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; status?: string; sort?: string; dir?: string; page?: string; pageSize?: string }>;
+}) {
   await requirePanelRole("admin");
-  const { q } = await searchParams;
+  const sp = await searchParams;
+  const { q, status, sort, dir } = sp;
+  const { page, pageSize, skip, take } = parsePagination(sp, { pageSize: 50, maxPageSize: 200 });
   const now = new Date();
 
   const odkOnlyExclusion = {
@@ -57,47 +75,62 @@ export default async function AdminStudents({ searchParams }: { searchParams: Pr
     },
   };
 
-  const baseWhere = q
-    ? {
-        AND: [
-          odkOnlyExclusion,
-          {
-            OR: [
-              { fullName: { contains: q, mode: "insensitive" as const } },
-              { email: { contains: q, mode: "insensitive" as const } },
-              { phone: { contains: q } },
-              { city: { contains: q, mode: "insensitive" as const } },
-              { schoolName: { contains: q, mode: "insensitive" as const } },
-            ],
-          },
-        ],
-      }
-    : odkOnlyExclusion;
+  const filters: Record<string, unknown>[] = [odkOnlyExclusion];
+  if (q) {
+    filters.push({
+      OR: [
+        { fullName: { contains: q, mode: "insensitive" as const } },
+        { email: { contains: q, mode: "insensitive" as const } },
+        { phone: { contains: q } },
+        { city: { contains: q, mode: "insensitive" as const } },
+        { schoolName: { contains: q, mode: "insensitive" as const } },
+      ],
+    });
+  }
+  const VALID_STATUS: StudentStatus[] = ["NEW", "FOLLOW_UP", "ACTIVE", "AT_RISK", "COMPLETED", "INACTIVE"];
+  if (status && (VALID_STATUS as string[]).includes(status)) {
+    filters.push({ status: status as StudentStatus });
+  }
+  const baseWhere = filters.length > 1 ? { AND: filters } : odkOnlyExclusion;
 
-  const students = await prisma.student.findMany({
-    where: baseWhere,
-    orderBy: { updatedAt: "desc" },
-    take: 200,
-    select: {
-      id: true,
-      fullName: true,
-      phone: true,
-      email: true,
-      classLevel: true,
-      examType: true,
-      status: true,
-      city: true,
-      updatedAt: true,
-    },
-  });
+  const sortField = sort && SORT_MAP[sort] ? SORT_MAP[sort] : "updatedAt";
+  const sortDir: "asc" | "desc" = dir === "asc" ? "asc" : "desc";
 
+  // count + page'ı paralel çek (1000+ kayıtta da hızlı: status,updatedAt indexli)
+  const [total, students] = await Promise.all([
+    prisma.student.count({ where: baseWhere }),
+    prisma.student.findMany({
+      where: baseWhere,
+      orderBy: { [sortField]: sortDir },
+      skip,
+      take,
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        email: true,
+        classLevel: true,
+        examType: true,
+        status: true,
+        city: true,
+        updatedAt: true,
+      },
+    }),
+  ]);
+
+  // Sayfa boyunda flag çek — büyük dataset'lerde de güvenli (her zaman ≤ pageSize)
   const flagsMap = await getStudentProductFlags(students.map((s) => s.id));
+
+  // Sayfa numarası total'ı geçtiyse son sayfaya kayıyor olabiliriz — display için clamp
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, totalPages);
 
   return (
     <>
       <PageHeader
         title="OD Öğrencileri"
-        subtitle={`${students.length} öğrenci${q ? ` · "${q}"` : ""} · OnlineDershanem bağlamı`}
+        breadcrumbs={[{ label: "Admin", href: "/panel/admin" }, { label: "Öğrenciler" }]}
+        subtitle={`${total.toLocaleString("tr-TR")} öğrenci${q ? ` · "${q}"` : ""}${status ? ` · ${status}` : ""} · sayfa ${safePage}/${totalPages}`}
         right={
           <div style={{ display: "flex", gap: 8 }}>
             <SearchInput placeholder="Ad, email, telefon, şehir, okul…" />
@@ -116,64 +149,99 @@ export default async function AdminStudents({ searchParams }: { searchParams: Pr
         }
       />
       <Card>
-        <table className="od-table">
-          <thead>
-            <tr>
-              <th>Ad Soyad</th>
-              <th>Telefon</th>
-              <th>Email</th>
-              <th>Sınıf</th>
-              <th>Sınav</th>
-              <th>Şehir</th>
-              <th>Erişim</th>
-              <th>Durum</th>
-              <th>Güncel</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((s) => {
-              const f = flagsMap.get(s.id);
-              return (
-                <tr key={s.id}>
-                  <td>
-                    <Link href={`/panel/admin/ogrenciler/${s.id}`} className="od-cell-user">
-                      <span className="n">{s.fullName}</span>
-                    </Link>
-                  </td>
-                  <td className="od-mono">{s.phone}</td>
-                  <td className="od-muted">{s.email ?? "—"}</td>
-                  <td>{s.classLevel ?? "—"}</td>
-                  <td>{s.examType ?? "—"}</td>
-                  <td>{s.city ?? "—"}</td>
-                  <td>
-                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                      <Badge tone={f?.hasOD ? "teal" : "neutral"}>{f?.hasOD ? "OD" : "OD ✗"}</Badge>
-                      {f?.hasODK ? <Badge tone="purple">ODK</Badge> : null}
-                    </div>
-                  </td>
-                  <td>
-                    <Badge
-                      tone={
-                        s.status === "ACTIVE"
-                          ? "ok"
-                          : s.status === "AT_RISK"
-                          ? "bad"
-                          : s.status === "NEW"
-                          ? "teal"
-                          : "neutral"
-                      }
-                    >
-                      {s.status}
-                    </Badge>
-                  </td>
-                  <td className="od-mono od-muted">
-                    {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(s.updatedAt)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <SmartTableShell
+          tableId="admin.ogrenciler"
+          columns={[
+            { id: "name",    label: "Ad Soyad", hideable: false },
+            { id: "phone",   label: "Telefon" },
+            { id: "email",   label: "Email" },
+            { id: "class",   label: "Sınıf" },
+            { id: "exam",    label: "Sınav" },
+            { id: "city",    label: "Şehir" },
+            { id: "access",  label: "Erişim" },
+            { id: "status",  label: "Durum" },
+            { id: "updated", label: "Güncel" },
+          ]}
+          toolbarLeft={
+            <QuickFilters
+              param="status"
+              label="Durum"
+              options={[
+                { value: "",           label: "Tümü" },
+                { value: "ACTIVE",     label: "Aktif",     tone: "ok"   },
+                { value: "AT_RISK",    label: "Risk",      tone: "bad"  },
+                { value: "FOLLOW_UP",  label: "Takip" },
+                { value: "NEW",        label: "Yeni" },
+                { value: "INACTIVE",   label: "Pasif" },
+              ]}
+            />
+          }
+        >
+          <table className="od-table">
+            <thead>
+              <tr>
+                <SortableTh field="name"    label="Ad Soyad" />
+                <th data-col="phone">Telefon</th>
+                <th data-col="email">Email</th>
+                <SortableTh field="class"   label="Sınıf" />
+                <th data-col="exam">Sınav</th>
+                <SortableTh field="city"    label="Şehir" />
+                <th data-col="access">Erişim</th>
+                <SortableTh field="status"  label="Durum" />
+                <SortableTh field="updated" label="Güncel" defaultDir="desc" />
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((s) => {
+                const f = flagsMap.get(s.id);
+                return (
+                  <tr key={s.id}>
+                    <td data-col="name">
+                      <Link href={`/panel/admin/ogrenciler/${s.id}`} className="od-cell-user">
+                        <span className="n">{s.fullName}</span>
+                      </Link>
+                    </td>
+                    <td data-col="phone" className="od-mono">{s.phone}</td>
+                    <td data-col="email" className="od-muted">{s.email ?? "—"}</td>
+                    <td data-col="class">{s.classLevel ?? "—"}</td>
+                    <td data-col="exam">{s.examType ?? "—"}</td>
+                    <td data-col="city">{s.city ?? "—"}</td>
+                    <td data-col="access">
+                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                        <Badge tone={f?.hasOD ? "teal" : "neutral"}>{f?.hasOD ? "OD" : "OD ✗"}</Badge>
+                        {f?.hasODK ? <Badge tone="purple">ODK</Badge> : null}
+                      </div>
+                    </td>
+                    <td data-col="status">
+                      <Badge
+                        tone={
+                          s.status === "ACTIVE"
+                            ? "ok"
+                            : s.status === "AT_RISK"
+                            ? "bad"
+                            : s.status === "NEW"
+                            ? "teal"
+                            : "neutral"
+                        }
+                      >
+                        {s.status}
+                      </Badge>
+                    </td>
+                    <td data-col="updated" className="od-mono od-muted">
+                      {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(s.updatedAt)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </SmartTableShell>
+        <Pagination
+          total={total}
+          page={safePage}
+          pageSize={pageSize}
+          rowCount={students.length}
+        />
       </Card>
     </>
   );

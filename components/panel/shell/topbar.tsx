@@ -67,6 +67,19 @@ export function Topbar({ role, actualRole, isViewingAs, userId, onMenuClick }: P
       <div className="od-topbar-spacer" />
 
       <div className="od-topbar-actions">
+        {/* Görünür arama tetikleyici — keşfedilebilirlik için */}
+        <button
+          type="button"
+          className="od-topbar-search"
+          onClick={() => window.dispatchEvent(new Event("od:open-palette"))}
+          aria-label="Hızlı ara veya komut"
+          title="Hızlı ara (⌘K)"
+        >
+          <PanelIcon name="search" size={14} />
+          <span className="od-topbar-search-label">Ara veya komut…</span>
+          <kbd className="od-kbd">⌘K</kbd>
+        </button>
+
         {actualRole === "ADMIN" ? (
           <select
             className="od-select"
