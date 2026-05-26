@@ -63,16 +63,16 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#0E0E10] text-white">
+      <header className="sticky top-0 z-40 w-full border-b border-[#E5E5E0] bg-white text-[#0E0E10]">
         <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-8">
-          <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center text-white">
+          <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center text-[#0E0E10]">
             <Image
               src="/onlinedershanem_.png"
               alt="Online Dershanem"
               width={1050}
               height={200}
               priority
-              className="h-7 w-auto object-contain sm:h-8 [filter:invert(1)_brightness(2)]"
+              className="h-7 w-auto object-contain sm:h-8"
             />
           </Link>
 
@@ -82,7 +82,7 @@ export function Navbar() {
                 key={l.href}
                 href={l.href}
                 className={`text-[14.5px] transition-colors ${
-                  isActive(l.href) ? "text-white" : "text-white/65 hover:text-white"
+                  isActive(l.href) ? "text-[#0E0E10]" : "text-[#5A5A5F] hover:text-[#0E0E10]"
                 }`}
               >
                 {l.label}
@@ -97,7 +97,7 @@ export function Navbar() {
                   <button
                     type="button"
                     onClick={() => setPanelOpen((v) => !v)}
-                    className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-[13.5px] font-medium text-white transition hover:border-white/40 hover:bg-white/10"
+                    className="flex items-center gap-1.5 rounded-full border border-[#0E0E10]/15 bg-white px-4 py-2 text-[13.5px] font-medium text-[#0E0E10] transition hover:border-[#0E0E10]/30 hover:bg-[#F6F6F2]"
                     aria-haspopup="menu"
                     aria-expanded={panelOpen}
                   >
@@ -105,7 +105,7 @@ export function Navbar() {
                     <ChevronDown size={14} className={`transition-transform ${panelOpen ? "rotate-180" : ""}`} />
                   </button>
                   {panelOpen ? (
-                    <div className="absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl border border-[#E5E5E0] bg-white p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.45)]" role="menu">
+                    <div className="absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl border border-[#E5E5E0] bg-white p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.18)]" role="menu">
                       <div className="px-3 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-wider text-[#9A9A9F]">Ürünler</div>
                       <Link
                         href={panelHref}
@@ -140,12 +140,12 @@ export function Navbar() {
             ) : (
               <Link
                 href="/giris"
-                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-white px-5 py-2 text-[13.5px] font-medium text-[#0E0E10] shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-white/90"
+                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-[#0E0E10] px-5 py-2 text-[13.5px] font-medium text-white shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-[#0E0E10]/90"
               >
                 <span className="relative z-10">Başla</span>
                 <span
                   aria-hidden
-                  className="relative z-10 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#0E0E10]/10 text-[#0E0E10] transition-transform group-hover:translate-x-0.5"
+                  className="relative z-10 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-white transition-transform group-hover:translate-x-0.5"
                 >
                   <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
                     <path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -153,7 +153,7 @@ export function Navbar() {
                 </span>
                 <span
                   aria-hidden
-                  className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[#0E0E10]/10 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+                  className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full"
                 />
               </Link>
             )}
@@ -163,14 +163,14 @@ export function Navbar() {
             {status === "loading" ? null : status === "authenticated" ? (
               <Link
                 href={panelHref}
-                className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[12.5px] font-medium text-white"
+                className="rounded-full border border-[#0E0E10]/15 bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#0E0E10]"
               >
                 {panelLabel}
               </Link>
             ) : (
               <Link
                 href="/giris"
-                className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-[#0E0E10]"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#0E0E10] px-3.5 py-1.5 text-[12.5px] font-medium text-white"
               >
                 Başla
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
@@ -181,7 +181,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setOpen((o) => !o)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#0E0E10]/15 bg-white text-[#0E0E10]"
               aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
               aria-expanded={open}
             >
@@ -193,8 +193,8 @@ export function Navbar() {
 
       {open && (
         <>
-          <div className="fixed inset-0 top-16 z-30 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />
-          <div className="fixed inset-x-0 top-16 z-40 border-b border-white/10 bg-[#0E0E10] text-white lg:hidden">
+          <div className="fixed inset-0 top-16 z-30 bg-[#0E0E10]/30 lg:hidden" onClick={() => setOpen(false)} />
+          <div className="fixed inset-x-0 top-16 z-40 border-b border-[#E5E5E0] bg-white text-[#0E0E10] lg:hidden">
             <nav className="flex flex-col gap-1 px-5 py-4">
               {links.map((l) => (
                 <Link
@@ -203,8 +203,8 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                   className={`rounded-xl px-3 py-3 text-[15px] transition ${
                     isActive(l.href)
-                      ? "bg-white/10 text-white"
-                      : "text-white/65 hover:bg-white/5 hover:text-white"
+                      ? "bg-[#F2F2EF] text-[#0E0E10]"
+                      : "text-[#5A5A5F] hover:bg-[#F6F6F2] hover:text-[#0E0E10]"
                   }`}
                 >
                   {l.label}
@@ -212,36 +212,36 @@ export function Navbar() {
               ))}
             </nav>
             {status === "unauthenticated" && (
-              <div className="flex flex-col gap-2 border-t border-white/10 px-5 py-4">
+              <div className="flex flex-col gap-2 border-t border-[#E5E5E0] px-5 py-4">
                 <Link
                   href="/giris"
                   onClick={() => setOpen(false)}
-                  className="rounded-full border border-white/20 bg-white/5 py-3 text-center text-[14.5px] font-medium text-white"
+                  className="rounded-full border border-[#0E0E10]/15 bg-white py-3 text-center text-[14.5px] font-medium text-[#0E0E10]"
                 >
                   Giriş Yap
                 </Link>
                 <Link
                   href="/kayit"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-white py-3 text-center text-[14.5px] font-medium text-[#0E0E10]"
+                  className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
                 >
                   Hemen Kayıt Ol
                 </Link>
               </div>
             )}
             {status === "authenticated" && (
-              <div className="flex flex-col gap-2 border-t border-white/10 px-5 py-4">
+              <div className="flex flex-col gap-2 border-t border-[#E5E5E0] px-5 py-4">
                 <Link
                   href={panelHref}
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-white py-3 text-center text-[14.5px] font-medium text-[#0E0E10]"
+                  className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
                 >
                   {panelLabel}
                 </Link>
                 <Link
                   href={odkHref}
                   onClick={() => setOpen(false)}
-                  className="rounded-full border border-amber-300/40 bg-amber-500/15 py-3 text-center text-[14.5px] font-medium text-amber-200"
+                  className="rounded-full border border-amber-200 bg-amber-50 py-3 text-center text-[14.5px] font-medium text-amber-700"
                 >
                   OnlineDenemeKulübü
                 </Link>
