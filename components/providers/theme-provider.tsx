@@ -15,17 +15,18 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "od-theme";
 
 function readInitialTheme(): ThemeMode {
-  if (typeof document === "undefined") return "light";
+  if (typeof document === "undefined") return "dark";
   const attr = document.documentElement.getAttribute("data-theme");
   if (attr === "dark" || attr === "light") return attr;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "dark" || stored === "light") return stored;
   } catch {}
-  if (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
-    return "dark";
+  if (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches) {
+    return "light";
   }
-  return "light";
+  // Varsayılan: dark
+  return "dark";
 }
 
 function applyTheme(theme: ThemeMode) {
@@ -37,20 +38,16 @@ function applyTheme(theme: ThemeMode) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>("light");
+  const [theme, setThemeState] = useState<ThemeMode>("dark");
 
   useEffect(() => {
     // On mount: pick up stored / system preference and apply to <html>
     const initial = readInitialTheme();
     setThemeState(initial);
     applyTheme(initial);
-    // On unmount (e.g. navigating from panel back to public site):
-    // reset to light so the public site is always light themed.
-    return () => {
-      if (typeof document !== "undefined") {
-        document.documentElement.setAttribute("data-theme", "light");
-      }
-    };
+    // NOT: Daha önce unmount'ta `data-theme=light` zorlanıyordu; bu kullanıcı
+    // tercihini eziyor ve panelden public siteye geçişte temayı bozuyordu.
+    // Artık tema seçimi tüm site genelinde korunur (varsayılan: dark).
   }, []);
 
   const setTheme = useCallback((next: ThemeMode) => {
@@ -78,7 +75,7 @@ export function useTheme(): ThemeContextValue {
   if (!ctx) {
     // Safe fallback for components rendered outside provider
     return {
-      theme: "light",
+      theme: "dark",
       setTheme: () => {},
       toggleTheme: () => {}
     };
