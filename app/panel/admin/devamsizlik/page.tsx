@@ -5,7 +5,14 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { KpiCard } from "@/components/panel/ui/kpi-card";
 import { SearchInput } from "@/components/panel/ui/search-input";
-import type { Prisma } from "@prisma/client";
+import { SavedViewsBar } from "@/components/panel/ui/saved-views";
+import {
+  ATTENDANCE_DISPLAY_ORDER,
+  getAttendanceStatusLabel,
+  getAttendanceStatusCssVar,
+  isWritableAttendanceStatus,
+} from "@/lib/attendance";
+import type { Prisma, AttendanceStatus } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -25,13 +32,10 @@ function formatDateTime(d: Date): string {
 }
 
 function statusLabel(s: string): { label: string; tone: string } {
-  switch (s) {
-    case "PRESENT": return { label: "Geldi", tone: "var(--pd-good)" };
-    case "ABSENT": return { label: "Gelmedi", tone: "var(--pd-bad)" };
-    case "LATE": return { label: "Geç", tone: "var(--pd-warn)" };
-    case "EXCUSED": return { label: "Mazeretli", tone: "var(--pd-text-muted)" };
-    default: return { label: s, tone: "var(--pd-text-muted)" };
-  }
+  return {
+    label: getAttendanceStatusLabel(s),
+    tone: `var(${getAttendanceStatusCssVar(s)})`,
+  };
 }
 
 export default async function AdminAttendancePage({
@@ -44,8 +48,8 @@ export default async function AdminAttendancePage({
   const page = Math.max(1, parseInt(sp.page || "1", 10) || 1);
 
   const where: Prisma.AttendanceWhereInput = {};
-  if (sp.status && ["PRESENT", "ABSENT", "LATE", "EXCUSED"].includes(sp.status)) {
-    where.status = sp.status as Prisma.AttendanceWhereInput["status"];
+  if (sp.status && isWritableAttendanceStatus(sp.status)) {
+    where.status = sp.status;
   }
   if (sp.from || sp.to) {
     where.sessionDate = {};
@@ -98,12 +102,16 @@ export default async function AdminAttendancePage({
     ABSENT: 0,
     LATE: 0,
     EXCUSED: 0,
-  } as Record<string, number>;
+    LEFT_EARLY: 0,
+  } as Record<AttendanceStatus, number>;
   for (const row of kpiAgg) kpi[row.status] = row._count._all;
   const sum = Object.values(kpi).reduce((a, b) => a + b, 0) || 1;
-  const attendanceRate = ((kpi.PRESENT + kpi.LATE) / sum) * 100;
+  // PRESENT, LATE, LEFT_EARLY all count as "showed up" for the rate calc.
+  const attendanceRate = ((kpi.PRESENT + kpi.LATE + kpi.LEFT_EARLY) / sum) * 100;
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const weekAgoIso = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
 
   const buildHref = (overrides: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
@@ -130,14 +138,32 @@ export default async function AdminAttendancePage({
         <KpiCard label="Devam oranı" value={`%${attendanceRate.toFixed(1)}`} meta={`${sum} toplam`} />
       </div>
 
+      <div style={{ marginBottom: 12 }}>
+        <SavedViewsBar
+          scope="attendance"
+          presets={[
+            { name: "Tümü", filter: {} },
+            { name: "Bu hafta devamsız", filter: { status: "ABSENT", from: weekAgoIso } },
+            { name: "Geç kalanlar", filter: { status: "LATE" } },
+            { name: "Erken ayrılanlar", filter: { status: "LEFT_EARLY" } },
+            { name: "Mazeret bekleyenler", filter: { status: "EXCUSED" } },
+          ]}
+        />
+      </div>
+
       <Card>
         <div style={{ padding: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", borderBottom: "1px solid var(--pd-border)" }}>
           <span style={{ fontSize: 12, color: "var(--pd-text-muted)" }}>Filtre:</span>
           <Link href={buildHref({ status: undefined })} className={`od-btn od-btn-sm ${!sp.status ? "od-btn-primary" : "od-btn-ghost"}`}>Tümü</Link>
-          <Link href={buildHref({ status: "PRESENT" })} className={`od-btn od-btn-sm ${sp.status === "PRESENT" ? "od-btn-primary" : "od-btn-ghost"}`}>Geldi</Link>
-          <Link href={buildHref({ status: "LATE" })} className={`od-btn od-btn-sm ${sp.status === "LATE" ? "od-btn-primary" : "od-btn-ghost"}`}>Geç</Link>
-          <Link href={buildHref({ status: "ABSENT" })} className={`od-btn od-btn-sm ${sp.status === "ABSENT" ? "od-btn-primary" : "od-btn-ghost"}`}>Gelmedi</Link>
-          <Link href={buildHref({ status: "EXCUSED" })} className={`od-btn od-btn-sm ${sp.status === "EXCUSED" ? "od-btn-primary" : "od-btn-ghost"}`}>Mazeretli</Link>
+          {ATTENDANCE_DISPLAY_ORDER.map((st) => (
+            <Link
+              key={st}
+              href={buildHref({ status: st })}
+              className={`od-btn od-btn-sm ${sp.status === st ? "od-btn-primary" : "od-btn-ghost"}`}
+            >
+              {getAttendanceStatusLabel(st)}
+            </Link>
+          ))}
 
           <span style={{ marginLeft: 12, fontSize: 12, color: "var(--pd-text-muted)" }}>Sınıf:</span>
           <form method="GET" style={{ display: "inline-flex", gap: 6 }}>

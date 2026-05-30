@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody, CardHeader } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { cancelLessonAction, deleteLessonAction } from "../_actions";
+import { bulkMarkAttendanceAction } from "../../devamsizlik/_actions";
+import { AttendanceQuickTakeButton } from "@/components/panel/attendance/attendance-quick-take";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +41,26 @@ export default async function LessonDetailPage({
     ? await prisma.lesson.count({ where: { seriesId: lesson.seriesId } })
     : 0;
 
+  // Yoklama roster'ı: peers veya solo
+  const rosterLessonIds = sessionPeers.length > 0 ? sessionPeers.map((p) => p.id) : [lesson.id];
+  const existingAttendance = await prisma.attendance.findMany({
+    where: { lessonId: { in: rosterLessonIds } },
+    select: { lessonId: true, studentId: true, status: true, minutesLate: true, notes: true },
+  });
+  const attendanceByStudent = new Map(existingAttendance.map((a) => [a.studentId, a]));
+  const roster = (sessionPeers.length > 0
+    ? sessionPeers.map((p) => ({ studentId: p.studentId, studentName: p.student.fullName }))
+    : [{ studentId: lesson.student.id, studentName: lesson.student.fullName }]
+  ).map((r) => {
+    const a = attendanceByStudent.get(r.studentId);
+    return {
+      ...r,
+      current: a
+        ? { status: a.status, minutesLate: a.minutesLate ?? null, notes: a.notes ?? null }
+        : null,
+    };
+  });
+
   const fmt = new Intl.DateTimeFormat("tr-TR", {
     weekday: "long", day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
   });
@@ -51,6 +73,12 @@ export default async function LessonDetailPage({
         right={
           <div style={{ display: "flex", gap: 8 }}>
             <Link href="/panel/admin/ders-programi" className="od-btn od-btn-ghost od-btn-sm">← Programa</Link>
+            <AttendanceQuickTakeButton
+              lessonId={lesson.id}
+              lessonLabel={(lesson.course?.title ?? lesson.title ?? lesson.subject ?? "Ders") + " · " + fmt.format(lesson.scheduledAt)}
+              roster={roster}
+              action={bulkMarkAttendanceAction.bind(null, lesson.id)}
+            />
             <Link href={`/panel/admin/ders-programi/${lesson.id}/duzenle`} className="od-btn od-btn-primary od-btn-sm">
               Düzenle
             </Link>

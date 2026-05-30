@@ -6,6 +6,17 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
 import { updateParentAction, deleteParentAction, linkChildAction, unlinkChildAction } from "../../_actions";
+import {
+  regenerateParentInviteAction,
+  revokeParentInviteAction,
+} from "../../../ogrenciler/_actions";
+import { ParentInviteCard } from "@/components/panel/parents/parent-invite-card";
+import {
+  buildParentInviteUrl,
+  getParentRelationshipLabel,
+  PARENT_RELATIONSHIP_TYPES,
+  getCanonicalRelationshipLabel,
+} from "@/lib/parents";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +26,12 @@ export default async function EditParent({ params }: { params: Promise<{ id: str
   const [p, allStudents] = await Promise.all([
     prisma.parent.findUnique({
       where: { id },
-      include: { students: { include: { student: { select: { id: true, fullName: true } } } } },
+      include: {
+        students: {
+          include: { student: { select: { id: true, fullName: true } } },
+        },
+        user: { select: { passwordHash: true } },
+      },
     }),
     prisma.student.findMany({ orderBy: { fullName: "asc" }, select: { id: true, fullName: true, classLevel: true } }),
   ]);
@@ -25,12 +41,43 @@ export default async function EditParent({ params }: { params: Promise<{ id: str
   const update = updateParentAction.bind(null, id);
   const del = deleteParentAction.bind(null, id);
   const linkChild = linkChildAction.bind(null, id);
+  const regenerate = regenerateParentInviteAction.bind(null, id);
+  const revoke = revokeParentInviteAction.bind(null, id);
+
+  // Phase 1.5 — onboarding state inputs.
+  const inviteValid =
+    !!p.parentInviteToken &&
+    (!p.parentInviteTokenExpiresAt || p.parentInviteTokenExpiresAt.getTime() > Date.now());
+  const initialInviteUrl = inviteValid && p.parentInviteToken
+    ? buildParentInviteUrl(p.parentInviteToken)
+    : null;
   return (
     <>
       <PageHeader
         title={`Düzenle: ${p.fullName}`}
         right={<Link href="/panel/admin/veliler" className="od-btn od-btn-ghost od-btn-sm">← Liste</Link>}
       />
+
+      <Card>
+        <CardBody>
+          <ParentInviteCard
+            parent={{
+              id: p.id,
+              userId: p.userId,
+              phone: p.phone,
+              lastLoginAt: null,
+              hasPassword: p.user ? !!p.user.passwordHash : null,
+              parentInviteToken: p.parentInviteToken,
+              parentInviteTokenExpiresAt: p.parentInviteTokenExpiresAt,
+              parentInviteSentAt: p.parentInviteSentAt,
+            }}
+            initialInviteUrl={initialInviteUrl}
+            regenerateAction={regenerate}
+            revokeAction={revoke}
+          />
+        </CardBody>
+      </Card>
+
       <Card>
         <CardBody>
           <form action={update} className="od-grid g-2" style={{ gap: 12 }}>
@@ -52,7 +99,7 @@ export default async function EditParent({ params }: { params: Promise<{ id: str
                 {p.students.map((c) => (
                   <tr key={c.student.id}>
                     <td>{c.student.fullName}</td>
-                    <td className="od-muted">{c.relationship ?? "—"}</td>
+                    <td className="od-muted">{getParentRelationshipLabel(c.relationshipType, c.relationship)}</td>
                     <td>{c.isPrimary ? "✓" : "—"}</td>
                     <td>
                       <form action={unlinkChildAction.bind(null, id, c.student.id)} style={{ display: "inline" }}>
@@ -75,7 +122,14 @@ export default async function EditParent({ params }: { params: Promise<{ id: str
                 ))}
               </Select>
             </Field>
-            <Field label="İlişki"><Input name="relationship" placeholder="Anne / Baba / Vasi" /></Field>
+            <Field label="Yakınlık">
+              <Select name="relationshipType" defaultValue="MOTHER">
+                {PARENT_RELATIONSHIP_TYPES.map((t) => (
+                  <option key={t} value={t}>{getCanonicalRelationshipLabel(t)}</option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Yakınlık (özel)"><Input name="relationship" placeholder="Yalnızca 'Diğer' için" /></Field>
             <Field label="Birincil"><label style={{ fontSize: 13 }}><input type="checkbox" name="isPrimary" /> Birincil iletişim</label></Field>
             <div style={{ gridColumn: "1 / -1" }}>
               <FormActions><button className="od-btn od-btn-primary od-btn-sm" type="submit">Bağla</button></FormActions>

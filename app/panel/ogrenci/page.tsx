@@ -1,100 +1,131 @@
-import { prisma } from "@/lib/prisma";
-import { requirePanelRole } from "@/lib/panel-access";
+import Link from "next/link";
 import { PageHeader } from "@/components/panel/ui/page-header";
-import { KpiCard } from "@/components/panel/ui/kpi-card";
-import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
+import { Card, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
-import { Badge } from "@/components/panel/ui/badge";
-import { LineChartCard, BarChartCard } from "@/components/panel/charts/recharts";
+import { requireStudent } from "@/lib/panel-student";
+import {
+  getStudentNextLesson,
+  getStudentTodayChecklist,
+  getStudentHomeworkFocus,
+  getStudentAttendanceSnapshot,
+  getStudentRecentResults,
+  getStudentSuggestedFocus,
+  getStudentStudySummary,
+} from "@/lib/panel/student-dashboard";
+import { StudentNextLessonCard } from "@/components/panel/student/dashboard/student-next-lesson";
+import { StudentTodayChecklist } from "@/components/panel/student/dashboard/student-today-checklist";
+import { StudentHomeworkFocusCard } from "@/components/panel/student/dashboard/student-homework-focus";
+import { StudentAttendanceSnapshotCard } from "@/components/panel/student/dashboard/student-attendance-snapshot";
+import { StudentRecentResultsCard } from "@/components/panel/student/dashboard/student-recent-results";
+import { StudentSuggestedFocusCard } from "@/components/panel/student/dashboard/student-suggested-focus";
+import { StudentStudySummaryCard } from "@/components/panel/student/study-room/study-summary-card";
 
 export const dynamic = "force-dynamic";
 
+const TODAY_FMT = new Intl.DateTimeFormat("tr-TR", {
+  weekday: "long", day: "2-digit", month: "long", year: "numeric",
+});
+
+/**
+ * Student Dashboard — Phase 2 / Session 4.
+ *
+ * Operational, student-centered cockpit. Every helper is scoped to the
+ * authenticated student via requireStudent(); there is no cross-student
+ * URL surface to forge. The previous shallow KPI grid + recharts dashboard
+ * was replaced; existing detailed sub-pages (/odevler, /ders-programi,
+ * /odk, /performansim, /profilim, /sinifim, ...) are preserved and linked
+ * to from the cockpit.
+ */
 export default async function StudentDashboard() {
-  const ctx = await requirePanelRole("ogrenci");
-  const student = await prisma.student.findFirst({
-    where: { userId: ctx.userId },
-    include: {
-      examResults: { orderBy: { takenAt: "desc" }, take: 10 },
-      _count: { select: { submissions: true, attendances: true } },
-    },
-  });
+  const { student } = await requireStudent();
 
   if (!student) {
     return (
       <>
         <PageHeader title="Öğrenci Paneli" />
         <Card>
-          <EmptyState
-            icon="user"
-            title="Öğrenci profili bulunamadı"
-            description="Hesabın bir öğrenci kaydına bağlanmamış. Yöneticinden bağlama yapmasını isteyebilirsin."
-          />
+          <CardBody>
+            <EmptyState
+              icon="user"
+              title="Öğrenci profili bulunamadı"
+              description="Hesabın henüz bir öğrenci kaydına bağlanmamış. Yöneticinden eşleştirme yapmasını isteyebilirsin."
+              action={
+                <Link href="/iletisim" className="od-btn od-btn-primary od-btn-sm">
+                  İletişime geç
+                </Link>
+              }
+            />
+          </CardBody>
         </Card>
       </>
     );
   }
 
-  const [pendingAssignments, attendance30] = await Promise.all([
-    prisma.assignment.count({
-      where: {
-        OR: [
-          { studentId: student.id },
-          { classroom: { students: { some: { studentId: student.id } } } },
-        ],
-        dueAt: { gte: new Date() },
-        submissions: { none: { studentId: student.id, submittedAt: { not: null } } },
-      },
-    }),
-    prisma.attendance.count({
-      where: { studentId: student.id, sessionDate: { gte: new Date(Date.now() - 30 * 86400000) } },
-    }),
-  ]);
-  const last = student.examResults[0];
-  const netSeries = [...student.examResults]
-    .reverse()
-    .map((r) => ({ x: new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short" }).format(r.takenAt), y: r.net ? Number(r.net) : 0 }));
+  const firstName = student.fullName.split(" ")[0];
+
+  const [nextLesson, checklist, homework, attendance, results, focus, study] =
+    await Promise.all([
+      getStudentNextLesson(student.id),
+      getStudentTodayChecklist(student.id, student.userId),
+      getStudentHomeworkFocus(student.id),
+      getStudentAttendanceSnapshot(student.id),
+      getStudentRecentResults(student.id, student.userId),
+      getStudentSuggestedFocus(student.id),
+      getStudentStudySummary(student.id),
+    ]);
 
   return (
     <>
-      <PageHeader title={`Hoş geldin, ${student.fullName}`} subtitle={`${student.classLevel ?? "—"} · ${student.examType ?? "—"}`} />
-      <div className="od-grid g-4" style={{ marginBottom: 16 }}>
-        <KpiCard label="Bekleyen ödev" value={pendingAssignments} meta="Süresi geçmemiş" />
-        <KpiCard label="Son 30 gün yoklama" value={attendance30} meta="Tüm dersler" />
-        <KpiCard label="Toplam gönderim" value={student._count.submissions} meta="Ödev gönderimleri" />
-        <KpiCard label="Son net" value={last ? (last.net?.toString() ?? "—") : "—"} meta={last?.title ?? "Henüz deneme yok"} />
-      </div>
-
-      <div className="od-grid g-2" style={{ marginBottom: 16 }}>
-        <Card>
-          <CardHeader title="Net trendi" subtitle={`Son ${netSeries.length} deneme`} />
-          <CardBody>
-            {netSeries.length > 0 ? <LineChartCard data={netSeries} /> : <EmptyState icon="chart" title="Henüz deneme yok" description="İlk denemen kaydedilince grafik burada görünecek." />}
-          </CardBody>
-        </Card>
-        <Card>
-          <CardHeader title="Doğru / Yanlış / Boş" subtitle="Son denemen" />
-          <CardBody>
-            {last ? (
-              <BarChartCard data={[
-                { x: "Doğru", y: last.correctCount },
-                { x: "Yanlış", y: last.wrongCount },
-                { x: "Boş", y: last.blankCount },
-              ]} />
-            ) : <EmptyState icon="chart" title="Veri yok" />}
-          </CardBody>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader title="Hedef ve durum" />
-        <CardBody>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <div><span className="od-muted">Hedef: </span>{student.targetGoal ?? "—"}</div>
-            <div><span className="od-muted">Hedef okul: </span>{student.targetSchool ?? "—"}</div>
-            <div><Badge tone="accent">{student.status}</Badge></div>
+      <PageHeader
+        title={`Merhaba ${firstName}`}
+        subtitle={`${TODAY_FMT.format(new Date())}${student.classLevel ? ` · ${student.classLevel}` : ""}${student.examType ? ` · ${student.examType}` : ""}`}
+        right={
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <Link href="/panel/ogrenci/calisma-odasi" className="od-btn od-btn-primary od-btn-sm">
+              {study.active ? "Çalışma odasına dön" : "Çalışma başlat"}
+            </Link>
+            <Link href="/panel/ogrenci/odevler" className="od-btn od-btn-ghost od-btn-sm">Ödevlerim</Link>
+            <Link href="/panel/ogrenci/ders-programi" className="od-btn od-btn-ghost od-btn-sm">Ders programı</Link>
+            <Link href="/panel/ogrenci/odk/denemeler" className="od-btn od-btn-ghost od-btn-sm">Denemelerim</Link>
           </div>
-        </CardBody>
-      </Card>
+        }
+        meta={
+          student.targetGoal ? (
+            <span className="od-muted" style={{ fontSize: 12 }}>
+              🎯 Hedefin: {student.targetGoal}
+              {student.targetSchool ? ` · ${student.targetSchool}` : ""}
+            </span>
+          ) : null
+        }
+      />
+
+      <div style={{ marginBottom: 12 }}>
+        <StudentNextLessonCard lesson={nextLesson} />
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <StudentTodayChecklist items={checklist} firstName={firstName} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12, marginBottom: 12 }}>
+        <StudentAttendanceSnapshotCard snapshot={attendance} />
+        <StudentHomeworkFocusCard focus={homework} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12, marginBottom: 12 }}>
+        <StudentRecentResultsCard items={results.items} averageNet={results.averageNet} />
+        <StudentSuggestedFocusCard items={focus} />
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <StudentStudySummaryCard summary={study} />
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Link href="/panel/ogrenci/profilim" className="od-btn od-btn-ghost od-btn-sm">
+          Profilim →
+        </Link>
+      </div>
     </>
   );
 }

@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { LessonQuickPlanButton } from "@/components/panel/lessons/lesson-quick-plan-modal";
+import { createLessonAction } from "./_actions";
 
 export const dynamic = "force-dynamic";
 
@@ -85,9 +87,12 @@ export default async function AdminSchedule({
         title="Ders programı"
         subtitle={days + " gün · " + lessons.length + " ders satırı · " + rows.length + " seans"}
         right={
-          <Link href="/panel/admin/ders-programi/yeni" className="od-btn od-btn-primary od-btn-sm">
-            + Yeni planlama
-          </Link>
+          <div style={{ display: "flex", gap: 8 }}>
+            <LessonQuickPlanButton action={createLessonAction} />
+            <Link href="/panel/admin/ders-programi/yeni" className="od-btn od-btn-primary od-btn-sm">
+              + Yeni planlama
+            </Link>
+          </div>
         }
       />
 

@@ -1,48 +1,38 @@
+/**
+ * Student detail page — refactored into 8 tabs.
+ *
+ * Pattern: each tab's data fetch is guarded by a conditional `await
+ * Promise.all([...])` that returns `undefined` on inactive tabs. We don't
+ * pay the database cost for tabs the user isn't viewing.
+ *
+ * The presentation layer lives in `components/panel/students/student-360-tabs.tsx`.
+ */
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
-import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
-import { EmptyState } from "@/components/panel/ui/empty-state";
-import { KpiCard } from "@/components/panel/ui/kpi-card";
 import { getStudentProductFlags } from "@/lib/access/student-product-flags";
 import { computeStudentRisk } from "@/lib/analytics/risk";
 import { RiskBadge, InsightList } from "@/components/panel/analytics";
-import { attendanceInsights, assignmentInsights, sortInsights } from "@/lib/analytics/insights";
+import { sortInsights } from "@/lib/analytics/insights";
+import {
+  Student360TabBar,
+  StudentOverviewTab,
+  StudentEducationTab,
+  StudentAttendanceTab,
+  StudentHomeworkTab,
+  StudentOdkTab,
+  StudentFinanceTab,
+  StudentNotesTab,
+  StudentLogsTab,
+  parseStudentTab,
+  type StudentTab,
+} from "@/components/panel/students/student-360-tabs";
 
 export const dynamic = "force-dynamic";
-
-type Tab =
-  | "genel" | "sinif" | "dersler" | "program" | "odevler"
-  | "devamsizlik" | "paket" | "odemeler" | "bildirimler" | "islem";
-
-const TAB_LABELS: Record<Tab, string> = {
-  genel: "Genel Bilgiler",
-  sinif: "Sınıf",
-  dersler: "Dersler",
-  program: "Ders Programı",
-  odevler: "Ödevler",
-  devamsizlik: "Devamsızlık",
-  paket: "OD Paket",
-  odemeler: "OD Ödemeler",
-  bildirimler: "Bildirimler",
-  islem: "İşlem Geçmişi",
-};
-
-function parseTab(raw: string | undefined): Tab {
-  const valid = Object.keys(TAB_LABELS) as Tab[];
-  if (raw && (valid as string[]).includes(raw)) return raw as Tab;
-  return "genel";
-}
-
-const fmtDate = (d: Date | null | undefined) =>
-  d ? new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", year: "numeric" }).format(d) : "—";
-const fmtDateTime = (d: Date | null | undefined) =>
-  d ? new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(d) : "—";
-const fmtTRY = (c: number) =>
-  new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(c / 100);
 
 export default async function StudentDetail({
   params,
@@ -54,7 +44,7 @@ export default async function StudentDetail({
   await requirePanelRole("admin");
   const { id } = await params;
   const { tab: tabRaw } = await searchParams;
-  const tab = parseTab(tabRaw);
+  const tab: StudentTab = parseStudentTab(tabRaw);
 
   const student = await prisma.student.findUnique({
     where: { id },
@@ -63,86 +53,164 @@ export default async function StudentDetail({
       city: true, district: true, schoolName: true,
       classLevel: true, department: true, examType: true,
       targetGoal: true, targetSchool: true,
-      status: true, activePackage: true,
-      createdAt: true, updatedAt: true,
-      userId: true,
-      user: { select: { id: true, email: true, role: true } },
+      status: true, createdAt: true, userId: true,
     },
   });
   if (!student) notFound();
 
   const flagsMap = await getStudentProductFlags([student.id]);
   const flags = flagsMap.get(student.id);
+  const risk = tab === "overview" ? await computeStudentRisk(student.id) : null;
 
-  // FAZ 8: Sadece "genel" tab'da risk + insight hesapla
-  const risk = tab === "genel" ? await computeStudentRisk(student.id) : null;
+  // ── Per-tab data ───────────────────────────────────────────────────────
+  const overviewData = tab === "overview"
+    ? await Promise.all([
+        prisma.classroomStudent.findMany({
+          where: { studentId: student.id },
+          include: { classroom: { select: { id: true, name: true, level: true } } },
+        }),
+        prisma.parentStudent.findMany({
+          where: { studentId: student.id },
+          include: { parent: { select: { id: true, fullName: true, phone: true } } },
+        }),
+        prisma.studentPackageEnrollment.findMany({
+          where: { studentId: student.id },
+          orderBy: { createdAt: "desc" },
+          include: { package: { select: { id: true, name: true, price: true } } },
+        }),
+        prisma.studentExamResult.findMany({
+          where: { studentId: student.id },
+          orderBy: { takenAt: "desc" },
+          take: 5,
+        }),
+      ])
+    : undefined;
 
-  const classrooms = (tab === "sinif" || tab === "genel")
-    ? await prisma.classroomStudent.findMany({
-        where: { studentId: student.id },
-        include: { classroom: true },
-      })
-    : [];
+  const educationData = tab === "education"
+    ? await Promise.all([
+        prisma.classroomStudent.findMany({
+          where: { studentId: student.id },
+          include: { classroom: { select: { id: true, name: true, level: true, branch: true } } },
+        }),
+        prisma.lesson.findMany({
+          where: { studentId: student.id, scheduledAt: { gte: new Date() } },
+          orderBy: { scheduledAt: "asc" },
+          take: 30,
+          include: {
+            teacher: { select: { fullName: true } },
+            course: { select: { title: true } },
+          },
+        }),
+        prisma.lesson.findMany({
+          where: { studentId: student.id, scheduledAt: { lt: new Date() } },
+          orderBy: { scheduledAt: "desc" },
+          take: 30,
+          include: {
+            teacher: { select: { fullName: true } },
+            course: { select: { title: true } },
+          },
+        }),
+      ])
+    : undefined;
 
-  const lessons = (tab === "dersler" || tab === "program")
-    ? await prisma.lesson.findMany({
-        where: { studentId: student.id },
-        orderBy: { scheduledAt: "desc" },
-        take: tab === "program" ? 50 : 20,
-        include: { teacher: { select: { fullName: true } }, course: { select: { title: true } } },
-      })
-    : [];
-
-  const submissions = tab === "odevler"
-    ? await prisma.assignmentSubmission.findMany({
-        where: { studentId: student.id },
-        orderBy: { submittedAt: "desc" },
-        take: 30,
-        include: { assignment: { select: { id: true, title: true, dueAt: true } } },
-      })
-    : [];
-
-  const attendances = tab === "devamsizlik"
+  const attendanceRows = tab === "attendance"
     ? await prisma.attendance.findMany({
         where: { studentId: student.id },
         orderBy: { sessionDate: "desc" },
         take: 50,
       })
     : [];
+  const attendanceStats = (() => {
+    if (tab !== "attendance" || attendanceRows.length === 0) return null;
+    const total = attendanceRows.length;
+    const present = attendanceRows.filter((a) => a.status === "PRESENT").length;
+    const absent = attendanceRows.filter((a) => a.status === "ABSENT").length;
+    const late = attendanceRows.filter((a) => a.status === "LATE").length;
+    // LEFT_EARLY counts as a soft warning, not absence; participation rate
+    // includes PRESENT + LATE + LEFT_EARLY + EXCUSED.
+    const leftEarly = attendanceRows.filter((a) => a.status === "LEFT_EARLY").length;
+    const excused = attendanceRows.filter((a) => a.status === "EXCUSED").length;
+    const participated = present + late + leftEarly + excused;
+    return { total, present, absent, late, pct: Math.round((participated / total) * 100) };
+  })();
 
-  const enrollments = (tab === "paket" || tab === "genel")
-    ? await prisma.studentPackageEnrollment.findMany({
-        where: { studentId: student.id },
-        orderBy: { createdAt: "desc" },
-        include: { package: { select: { id: true, name: true, price: true } } },
-      })
-    : [];
+  const homeworkData = tab === "homework"
+    ? await Promise.all([
+        prisma.assignmentSubmission.findMany({
+          where: { studentId: student.id },
+          orderBy: { submittedAt: "desc" },
+          take: 50,
+          include: { assignment: { select: { id: true, title: true, dueAt: true } } },
+        }),
+        prisma.assignmentSubmission.groupBy({
+          by: ["status"],
+          where: { studentId: student.id },
+          _count: { _all: true },
+        }),
+      ])
+    : undefined;
+  const submissionCounts = { PENDING: 0, SUBMITTED: 0, GRADED: 0, LATE: 0, MISSED: 0 };
+  if (homeworkData) {
+    for (const g of homeworkData[1]) {
+      submissionCounts[g.status] = g._count._all;
+    }
+  }
 
-  const examResults = tab === "genel"
-    ? await prisma.studentExamResult.findMany({
-        where: { studentId: student.id },
-        orderBy: { takenAt: "desc" },
-        take: 5,
-      })
-    : [];
+  const odkData = tab === "odk" && student.userId
+    ? await Promise.all([
+        prisma.odkExamAttempt.findMany({
+          where: { userId: student.userId },
+          orderBy: { startedAt: "desc" },
+          take: 10,
+          include: { exam: { select: { id: true, title: true } } },
+        }),
+        prisma.odkUserAccessTag.findMany({
+          where: { userId: student.userId, revokedAt: null },
+          include: { accessTag: { select: { id: true, key: true, title: true } } },
+        }),
+      ])
+    : undefined;
 
-  const accountingEntries = (tab === "odemeler" || tab === "islem")
-    ? await prisma.accountingEntry.findMany({
-        where: { studentId: student.id },
-        orderBy: { occurredAt: "desc" },
-        take: 50,
-      })
-    : [];
+  const financeData = tab === "finance"
+    ? await Promise.all([
+        prisma.studentPackageEnrollment.findMany({
+          where: { studentId: student.id },
+          orderBy: { createdAt: "desc" },
+          include: { package: { select: { id: true, name: true, price: true } } },
+        }),
+        prisma.accountingEntry.findMany({
+          where: { studentId: student.id },
+          orderBy: { occurredAt: "desc" },
+          take: 50,
+        }),
+      ])
+    : undefined;
 
-  const notifications = (tab === "bildirimler" && student.userId)
-    ? await prisma.notification.findMany({
-        where: { userId: student.userId },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-      })
-    : [];
+  const notesData = tab === "notes"
+    ? await Promise.all([
+        prisma.studentNote.findMany({
+          where: { studentId: student.id },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          include: { author: { select: { name: true, email: true } } },
+        }),
+        prisma.teacherComment.findMany({
+          where: { studentId: student.id },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          include: { teacher: { select: { fullName: true } } },
+        }),
+        student.userId
+          ? prisma.notification.findMany({
+              where: { userId: student.userId },
+              orderBy: { createdAt: "desc" },
+              take: 30,
+            })
+          : Promise.resolve([] as Awaited<ReturnType<typeof prisma.notification.findMany>>),
+      ])
+    : undefined;
 
-  const auditLogs = tab === "islem"
+  const auditLogs = tab === "logs"
     ? await prisma.auditLog.findMany({
         where: { entityType: "Student", entityId: student.id },
         orderBy: { createdAt: "desc" },
@@ -151,22 +219,13 @@ export default async function StudentDetail({
       })
     : [];
 
-  const tabHref = (t: Tab) => `?tab=${t}`;
-
-  const attendanceStats = (() => {
-    if (attendances.length === 0) return null;
-    const total = attendances.length;
-    const present = attendances.filter((a) => a.status === "PRESENT").length;
-    const absent = attendances.filter((a) => a.status === "ABSENT").length;
-    const late = attendances.filter((a) => a.status === "LATE").length;
-    return { total, present, absent, late, pct: Math.round((present / total) * 100) };
-  })();
+  const baseHref = `/panel/admin/ogrenciler/${student.id}`;
 
   return (
     <>
       <PageHeader
         title={student.fullName}
-        subtitle={`${student.classLevel ?? "—"} · ${student.examType ?? "—"} · ${student.phone}`}
+        subtitle={`${student.classLevel ?? "—"} · ${student.examType ?? "—"} · ${student.phone ?? "—"}`}
         right={
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <Badge tone={flags?.hasOD ? "teal" : "neutral"}>{flags?.hasOD ? "OD ✓" : "OD ✗"}</Badge>
@@ -177,293 +236,206 @@ export default async function StudentDetail({
                 ODK detayı →
               </Link>
             ) : null}
-            <Link href={`/panel/admin/ogrenciler/${student.id}/duzenle`} className="od-btn od-btn-primary od-btn-sm">
+            <Link href={`${baseHref}/duzenle`} className="od-btn od-btn-primary od-btn-sm">
               Düzenle
             </Link>
           </div>
         }
       />
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", borderBottom: "1px solid var(--pd-line)", paddingBottom: 8 }}>
-        {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
-          <Link key={t} href={tabHref(t)} className={"od-btn od-btn-sm " + (tab === t ? "od-btn-primary" : "od-btn-ghost")}>
-            {TAB_LABELS[t]}
-          </Link>
-        ))}
-      </div>
+      <Student360TabBar current={tab} baseHref={baseHref} />
 
-      {tab === "genel" && risk && risk.signals.length > 0 ? (
+      {tab === "overview" && risk && risk.signals.length > 0 ? (
         <div style={{ marginBottom: 16 }}>
           <InsightList
-            insights={sortInsights([
-              ...risk.signals.map((s, i) => ({
+            insights={sortInsights(
+              risk.signals.map((s, i) => ({
                 id: `risk-${i}`,
                 severity: risk.level === "high" ? "danger" as const : risk.level === "medium" ? "warn" as const : "info" as const,
                 icon: "⚠️",
                 title: s.message,
                 body: `Risk sinyali · ağırlık ${s.weight}`,
               })),
-            ])}
+            )}
           />
         </div>
       ) : null}
 
-      {tab === "genel" ? (
-        <div className="od-grid g-2" style={{ gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Card>
-            <CardHeader title="Kişisel bilgiler" />
-            <CardBody>
-              <dl style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, fontSize: 13, margin: 0 }}>
-                <dt className="od-muted">Telefon</dt><dd className="od-mono">{student.phone}</dd>
-                <dt className="od-muted">E-posta</dt><dd>{student.email ?? "—"}</dd>
-                <dt className="od-muted">Şehir/İlçe</dt><dd>{[student.city, student.district].filter(Boolean).join(" / ") || "—"}</dd>
-                <dt className="od-muted">Okul</dt><dd>{student.schoolName ?? "—"}</dd>
-                <dt className="od-muted">Bölüm</dt><dd>{student.department ?? "—"}</dd>
-                <dt className="od-muted">Hedef</dt><dd>{student.targetGoal ?? "—"}</dd>
-                <dt className="od-muted">Hedef okul</dt><dd>{student.targetSchool ?? "—"}</dd>
-                <dt className="od-muted">Durum</dt>
-                <dd><Badge tone={student.status === "ACTIVE" ? "ok" : student.status === "AT_RISK" ? "bad" : student.status === "NEW" ? "teal" : "neutral"}>{student.status}</Badge></dd>
-                <dt className="od-muted">Kayıt</dt><dd className="od-mono od-muted">{fmtDate(student.createdAt)}</dd>
-              </dl>
-            </CardBody>
-          </Card>
-          <Card>
-            <CardHeader title="Hızlı özet" subtitle="Sınıf · paket · son denemeler" />
-            <CardBody>
-              <div style={{ display: "grid", gap: 12 }}>
-                <div>
-                  <strong style={{ fontSize: 12, color: "var(--pd-muted)" }}>Sınıflar</strong>
-                  <div style={{ marginTop: 4 }}>
-                    {classrooms.length === 0
-                      ? <span className="od-muted">Atanmış sınıf yok</span>
-                      : classrooms.map((c) => <Badge key={c.classroomId} tone="teal">{c.classroom.name}</Badge>)}
-                  </div>
-                </div>
-                <div>
-                  <strong style={{ fontSize: 12, color: "var(--pd-muted)" }}>Aktif OD Paket</strong>
-                  <div style={{ marginTop: 4, fontSize: 13 }}>
-                    {enrollments.length === 0
-                      ? <span className="od-muted">Paket kaydı yok</span>
-                      : <ul style={{ margin: 0, paddingLeft: 18 }}>{enrollments.slice(0, 3).map((e) => <li key={e.id}>{e.package.name} · {fmtTRY(e.package.price)}</li>)}</ul>}
-                  </div>
-                </div>
-                <div>
-                  <strong style={{ fontSize: 12, color: "var(--pd-muted)" }}>Son denemeler</strong>
-                  <div style={{ marginTop: 4, fontSize: 13 }}>
-                    {examResults.length === 0
-                      ? <span className="od-muted">Deneme sonucu yok</span>
-                      : <ul style={{ margin: 0, paddingLeft: 18 }}>{examResults.map((r) => <li key={r.id}>{r.title} · Net {r.net?.toString() ?? "—"} · {fmtDate(r.takenAt)}</li>)}</ul>}
-                  </div>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
+      {tab === "overview" && overviewData ? (
+        <StudentOverviewTab
+          identity={{
+            fullName: student.fullName,
+            phone: student.phone,
+            email: student.email,
+            city: student.city,
+            district: student.district,
+            schoolName: student.schoolName,
+            classLevel: student.classLevel,
+            examType: student.examType,
+            department: student.department,
+            targetGoal: student.targetGoal,
+            targetSchool: student.targetSchool,
+            status: student.status,
+            createdAt: student.createdAt,
+          }}
+          classrooms={overviewData[0].map((c) => ({
+            classroomId: c.classroomId,
+            classroom: c.classroom,
+          }))}
+          parents={overviewData[1].map((p) => ({
+            parentId: p.parentId,
+            relationship: p.relationship,
+            isPrimary: p.isPrimary,
+            parent: p.parent,
+          }))}
+          recentExams={overviewData[3].map((r) => ({
+            id: r.id,
+            title: r.title,
+            net: r.net !== null && r.net !== undefined ? Number(r.net) : null,
+            takenAt: r.takenAt,
+          }))}
+          enrollments={overviewData[2].map((e) => ({ id: e.id, package: e.package }))}
+        />
       ) : null}
 
-      {tab === "sinif" ? (
-        <Card>
-          <CardHeader title="Sınıf bağları" subtitle={`${classrooms.length} sınıf`} />
-          <CardBody>
-            {classrooms.length === 0 ? <EmptyState title="Öğrenci hiçbir sınıfa atanmamış" /> : (
-              <table className="od-table">
-                <thead><tr><th>Sınıf</th><th>Düzey</th><th>Eklendiği tarih</th></tr></thead>
-                <tbody>
-                  {classrooms.map((c) => (
-                    <tr key={c.classroomId}>
-                      <td><strong>{c.classroom.name}</strong></td>
-                      <td><Badge tone="teal">{c.classroom.level}</Badge></td>
-                      <td className="od-mono od-muted">{fmtDate(c.joinedAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardBody>
-        </Card>
+      {tab === "education" && educationData ? (
+        <StudentEducationTab
+          classrooms={educationData[0].map((c) => ({
+            classroomId: c.classroomId,
+            joinedAt: c.joinedAt,
+            classroom: c.classroom,
+          }))}
+          upcomingLessons={educationData[1].map((l) => ({
+            id: l.id,
+            scheduledAt: l.scheduledAt,
+            duration: l.duration,
+            title: l.title,
+            subject: l.subject,
+            status: l.status,
+            teacher: l.teacher,
+            course: l.course,
+          }))}
+          recentLessons={educationData[2].map((l) => ({
+            id: l.id,
+            scheduledAt: l.scheduledAt,
+            duration: l.duration,
+            title: l.title,
+            subject: l.subject,
+            status: l.status,
+            teacher: l.teacher,
+            course: l.course,
+          }))}
+        />
       ) : null}
 
-      {tab === "dersler" || tab === "program" ? (
-        <Card>
-          <CardHeader title={tab === "program" ? "Ders programı" : "Son dersler"} subtitle={`${lessons.length} kayıt`} />
-          <CardBody>
-            {lessons.length === 0 ? <EmptyState title={tab === "program" ? "Planlanmış ders yok" : "Ders kaydı yok"} /> : (
-              <table className="od-table">
-                <thead>
-                  <tr>
-                    <th>Zaman</th><th>Konu</th><th>Öğretmen</th>
-                    {tab === "program" ? <th>Lokasyon</th> : null}
-                    <th>Süre</th><th>Durum</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lessons.map((l) => (
-                    <tr key={l.id}>
-                      <td className="od-mono od-muted">{fmtDateTime(l.scheduledAt)}</td>
-                      <td>{l.title ?? l.course?.title ?? l.subject ?? "—"}</td>
-                      <td>{l.teacher.fullName}</td>
-                      {tab === "program" ? <td className="od-muted" style={{ fontSize: 12 }}>{l.location ?? (l.googleMeetLink ? "Online" : "—")}</td> : null}
-                      <td className="od-mono">{l.duration}dk</td>
-                      <td><Badge tone={l.status === "COMPLETED" ? "ok" : l.status === "CANCELLED" ? "bad" : l.status === "SCHEDULED" ? "teal" : "neutral"}>{l.status}</Badge></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardBody>
-        </Card>
+      {tab === "attendance" ? (
+        <StudentAttendanceTab
+          studentId={student.id}
+          rows={attendanceRows.map((a) => ({
+            id: a.id,
+            sessionDate: a.sessionDate,
+            status: a.status,
+            minutesLate: a.minutesLate,
+            context: a.context,
+            notes: a.notes,
+          }))}
+          stats={attendanceStats}
+        />
       ) : null}
 
-      {tab === "odevler" ? (
-        <Card>
-          <CardHeader title="Ödev gönderimleri" subtitle={`${submissions.length} kayıt`} />
-          <CardBody>
-            {submissions.length === 0 ? <EmptyState title="Ödev gönderimi yok" /> : (
-              <table className="od-table">
-                <thead><tr><th>Ödev</th><th>Son tarih</th><th>Gönderim</th><th>Puan</th></tr></thead>
-                <tbody>
-                  {submissions.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.assignment.title}</td>
-                      <td className="od-mono od-muted">{fmtDate(s.assignment.dueAt)}</td>
-                      <td className="od-mono od-muted">{fmtDateTime(s.submittedAt)}</td>
-                      <td className="od-mono">{s.score !== null ? <Badge tone="ok">{s.score}</Badge> : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardBody>
-        </Card>
+      {tab === "homework" && homeworkData ? (
+        <StudentHomeworkTab
+          submissions={homeworkData[0].map((s) => ({
+            id: s.id,
+            status: s.status,
+            submittedAt: s.submittedAt,
+            score: s.score,
+            assignment: s.assignment,
+          }))}
+          counts={submissionCounts}
+        />
       ) : null}
 
-      {tab === "devamsizlik" ? (
-        <>
-          {attendanceStats ? (
-            <div className="od-kpi-grid" style={{ marginBottom: 12 }}>
-              <KpiCard label="Toplam oturum" value={attendanceStats.total} />
-              <KpiCard label="Devam" value={`${attendanceStats.present} (%${attendanceStats.pct})`} />
-              <KpiCard label="Devamsız" value={attendanceStats.absent} />
-              <KpiCard label="Geç" value={attendanceStats.late} />
-            </div>
-          ) : null}
-          <Card>
-            <CardHeader title="Yoklama kayıtları" subtitle={`${attendances.length} oturum`} />
-            <CardBody>
-              {attendances.length === 0 ? <EmptyState title="Yoklama kaydı yok" /> : (
-                <table className="od-table">
-                  <thead><tr><th>Tarih</th><th>Durum</th><th>Gecikme</th><th>Bağlam</th><th>Not</th></tr></thead>
-                  <tbody>
-                    {attendances.map((a) => (
-                      <tr key={a.id}>
-                        <td className="od-mono od-muted">{fmtDateTime(a.sessionDate)}</td>
-                        <td><Badge tone={a.status === "PRESENT" ? "ok" : a.status === "ABSENT" ? "bad" : a.status === "LATE" ? "warn" : "neutral"}>{a.status}</Badge></td>
-                        <td className="od-mono">{a.minutesLate ? `${a.minutesLate}dk` : "—"}</td>
-                        <td className="od-muted" style={{ fontSize: 12 }}>{a.context}</td>
-                        <td className="od-muted" style={{ fontSize: 12 }}>{a.notes ?? "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </CardBody>
-          </Card>
-        </>
+      {tab === "odk" ? (
+        <StudentOdkTab
+          userId={student.userId}
+          attempts={(odkData?.[0] ?? []).map((a) => ({
+            id: a.id,
+            status: a.status,
+            score: a.score,
+            correctCount: a.correctCount,
+            wrongCount: a.wrongCount,
+            blankCount: a.blankCount,
+            submittedAt: a.submittedAt,
+            startedAt: a.startedAt,
+            autoSubmitted: a.autoSubmitted,
+            exam: a.exam,
+          }))}
+          accessTags={(odkData?.[1] ?? []).map((t) => ({
+            id: t.id,
+            tag: { id: t.accessTag.id, key: t.accessTag.key, label: t.accessTag.title },
+          }))}
+        />
       ) : null}
 
-      {tab === "paket" ? (
-        <Card>
-          <CardHeader title="OD paket kayıtları" subtitle={`${enrollments.length} enrollment`} />
-          <CardBody>
-            {enrollments.length === 0 ? <EmptyState title="Aktif OD paket yok" /> : (
-              <table className="od-table">
-                <thead><tr><th>Paket</th><th>Tutar</th><th>Durum</th><th>Başlangıç</th></tr></thead>
-                <tbody>
-                  {enrollments.map((e) => (
-                    <tr key={e.id}>
-                      <td><Link href={`/panel/admin/paketler/${e.package.id}`}>{e.package.name}</Link></td>
-                      <td className="od-mono">{fmtTRY(e.package.price)}</td>
-                      <td><Badge tone={e.status === "ACTIVE" ? "ok" : "neutral"}>{e.status}</Badge></td>
-                      <td className="od-mono od-muted">{fmtDate(e.startsAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardBody>
-        </Card>
+      {tab === "finance" && financeData ? (
+        <StudentFinanceTab
+          enrollments={financeData[0].map((e) => ({
+            id: e.id,
+            status: e.status,
+            startsAt: e.startsAt,
+            package: e.package,
+          }))}
+          entries={financeData[1].map((e) => ({
+            id: e.id,
+            occurredAt: e.occurredAt,
+            type: e.type,
+            service: e.service,
+            category: e.category,
+            amount: e.amount,
+            description: e.description,
+          }))}
+        />
       ) : null}
 
-      {tab === "odemeler" ? (
-        <Card>
-          <CardHeader title="OD muhasebe izleri" subtitle={`${accountingEntries.filter((e) => e.service === "OD").length} OD kayıt`} />
-          <CardBody>
-            {accountingEntries.length === 0 ? <EmptyState title="Ödeme/muhasebe kaydı yok" /> : (
-              <table className="od-table">
-                <thead><tr><th>Tarih</th><th>Tip</th><th>Servis</th><th>Kategori</th><th>Tutar</th></tr></thead>
-                <tbody>
-                  {accountingEntries.filter((e) => e.service === "OD").map((e) => (
-                    <tr key={e.id}>
-                      <td className="od-mono od-muted">{fmtDate(e.occurredAt)}</td>
-                      <td><Badge tone={e.type === "INCOME" ? "ok" : "bad"}>{e.type}</Badge></td>
-                      <td><Badge tone="teal">{e.service}</Badge></td>
-                      <td>{e.category}</td>
-                      <td className="od-mono">{fmtTRY(e.amount)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardBody>
-        </Card>
+      {tab === "notes" && notesData ? (
+        <StudentNotesTab
+          notes={notesData[0].map((n) => ({
+            id: n.id,
+            content: n.content,
+            isPrivate: n.isPrivate,
+            createdAt: n.createdAt,
+            author: n.author,
+          }))}
+          teacherComments={notesData[1].map((c) => ({
+            id: c.id,
+            content: c.content,
+            rating: c.rating,
+            visibleToParent: c.visibleToParent,
+            createdAt: c.createdAt,
+            teacher: c.teacher,
+          }))}
+          notifications={notesData[2].map((n) => ({
+            id: n.id,
+            type: n.type,
+            title: n.title,
+            createdAt: n.createdAt,
+            readAt: n.readAt,
+          }))}
+          hasUserAccount={!!student.userId}
+        />
       ) : null}
 
-      {tab === "bildirimler" ? (
-        <Card>
-          <CardHeader title="Bildirim geçmişi" subtitle={`${notifications.length} bildirim`} />
-          <CardBody>
-            {!student.userId ? (
-              <EmptyState title="Kullanıcı hesabı yok" description="Bu öğrencinin sisteme bağlı bir User kaydı yok, dolayısıyla bildirim gönderilemez." />
-            ) : notifications.length === 0 ? <EmptyState title="Bildirim yok" /> : (
-              <table className="od-table">
-                <thead><tr><th>Tarih</th><th>Tip</th><th>Başlık</th><th>Okundu</th></tr></thead>
-                <tbody>
-                  {notifications.map((n) => (
-                    <tr key={n.id}>
-                      <td className="od-mono od-muted">{fmtDateTime(n.createdAt)}</td>
-                      <td><Badge tone="neutral">{n.type}</Badge></td>
-                      <td>{n.title}</td>
-                      <td className="od-mono od-muted">{fmtDateTime(n.readAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardBody>
-        </Card>
-      ) : null}
-
-      {tab === "islem" ? (
-        <Card>
-          <CardHeader title="Audit log" subtitle={`${auditLogs.length} işlem`} />
-          <CardBody>
-            {auditLogs.length === 0 ? <EmptyState title="İşlem kaydı yok" /> : (
-              <table className="od-table">
-                <thead><tr><th>Tarih</th><th>Aksiyon</th><th>Özet</th><th>Aktör</th></tr></thead>
-                <tbody>
-                  {auditLogs.map((a) => (
-                    <tr key={a.id}>
-                      <td className="od-mono od-muted">{fmtDateTime(a.createdAt)}</td>
-                      <td><Badge tone="neutral">{a.action}</Badge></td>
-                      <td style={{ fontSize: 12 }}>{a.summary ?? "—"}</td>
-                      <td className="od-muted" style={{ fontSize: 12 }}>{a.actor?.name ?? a.actor?.email ?? "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardBody>
-        </Card>
+      {tab === "logs" ? (
+        <StudentLogsTab
+          logs={auditLogs.map((a) => ({
+            id: a.id,
+            createdAt: a.createdAt,
+            action: a.action,
+            summary: a.summary,
+            actor: a.actor,
+          }))}
+        />
       ) : null}
     </>
   );

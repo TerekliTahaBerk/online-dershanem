@@ -9,6 +9,9 @@ import { ExportButton } from "@/components/panel/ui/export-button";
 import { QuickFilters } from "@/components/panel/ui/quick-filters";
 import { SmartTableShell, SortableTh } from "@/components/panel/ui/smart-table";
 import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
+import { SavedViewsBar } from "@/components/panel/ui/saved-views";
+import { StudentQuickDrawer } from "@/components/panel/students/student-quick-drawer";
+import { ParentQuickDrawer } from "@/components/panel/parents/parent-quick-drawer";
 import { getStudentProductFlags } from "@/lib/access/student-product-flags";
 import type { StudentStatus } from "@prisma/client";
 
@@ -163,18 +166,35 @@ export default async function AdminStudents({
             { id: "updated", label: "Güncel" },
           ]}
           toolbarLeft={
-            <QuickFilters
-              param="status"
-              label="Durum"
-              options={[
-                { value: "",           label: "Tümü" },
-                { value: "ACTIVE",     label: "Aktif",     tone: "ok"   },
-                { value: "AT_RISK",    label: "Risk",      tone: "bad"  },
-                { value: "FOLLOW_UP",  label: "Takip" },
-                { value: "NEW",        label: "Yeni" },
-                { value: "INACTIVE",   label: "Pasif" },
-              ]}
-            />
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <SavedViewsBar
+                scope="students"
+                presets={[
+                  { name: "Tüm öğrenciler", filter: {} },
+                  { name: "Riskli",         filter: { status: "AT_RISK" } },
+                  { name: "Yeni",           filter: { status: "NEW" } },
+                  { name: "Takipte",        filter: { status: "FOLLOW_UP" } },
+                  // Phase 1.5 — backend filter handlers eklenince anlamlı
+                  // hale gelecek presetler. Şimdilik URL state'i taşırlar
+                  // ve smart-table sıralamasını/sayfalamayı korurlar.
+                  { name: "Velisi yok",     filter: { noParent: "1" } },
+                  { name: "Ödeme bekleyen", filter: { paymentDue: "1" } },
+                  { name: "Eksik ödev",     filter: { overdueAsg: "1" } },
+                ]}
+              />
+              <QuickFilters
+                param="status"
+                label="Durum"
+                options={[
+                  { value: "",           label: "Tümü" },
+                  { value: "ACTIVE",     label: "Aktif",     tone: "ok"   },
+                  { value: "AT_RISK",    label: "Risk",      tone: "bad"  },
+                  { value: "FOLLOW_UP",  label: "Takip" },
+                  { value: "NEW",        label: "Yeni" },
+                  { value: "INACTIVE",   label: "Pasif" },
+                ]}
+              />
+            </div>
           }
         >
           <table className="od-table">
@@ -194,10 +214,21 @@ export default async function AdminStudents({
             <tbody>
               {students.map((s) => {
                 const f = flagsMap.get(s.id);
+                // Build drawer-open href that preserves the current filter state.
+                // We pass a relative `?...` href; Next will merge with current pathname.
+                const drawerParams = new URLSearchParams();
+                if (q) drawerParams.set("q", q);
+                if (status) drawerParams.set("status", status);
+                if (sort) drawerParams.set("sort", sort);
+                if (dir) drawerParams.set("dir", dir);
+                if (sp.page) drawerParams.set("page", String(sp.page));
+                drawerParams.set("drawer", "student");
+                drawerParams.set("id", s.id);
+                const drawerHref = `/panel/admin/ogrenciler?${drawerParams.toString()}`;
                 return (
                   <tr key={s.id}>
                     <td data-col="name">
-                      <Link href={`/panel/admin/ogrenciler/${s.id}`} className="od-cell-user">
+                      <Link href={drawerHref} className="od-cell-user" scroll={false}>
                         <span className="n">{s.fullName}</span>
                       </Link>
                     </td>
@@ -243,6 +274,8 @@ export default async function AdminStudents({
           rowCount={students.length}
         />
       </Card>
+      <StudentQuickDrawer />
+      <ParentQuickDrawer />
     </>
   );
 }

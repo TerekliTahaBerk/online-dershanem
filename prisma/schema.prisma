@@ -274,6 +274,8 @@ model Student {
   accountingEntries  AccountingEntry[]          @relation("AccountingStudent")
   // ── Mobile (Faz Mobile) ──
   dailyTasks         StudentDailyTask[]
+  // ── Phase 2 / Session 4 — Study Room ──
+  studySessions      StudySession[]
 
   @@index([status, updatedAt])
 }
@@ -601,6 +603,7 @@ model Course {
   packageCourses     PackageCourse[]
   studentProgress    StudentCourseProgress[]
   lessons            Lesson[]
+  studySessions      StudySession[]
   defaultTeacher     Teacher?                @relation("CourseDefaultTeacher", fields: [defaultTeacherId], references: [id], onDelete: SetNull)
   defaultClassroom   Classroom?              @relation("CourseDefaultClassroom", fields: [defaultClassroomId], references: [id], onDelete: SetNull)
 
@@ -1286,6 +1289,20 @@ enum AttendanceStatus {
   ABSENT
   LATE
   EXCUSED
+  /// Phase 1.5 — öğrenci derse geldi ama erken ayrıldı.
+  /// Risk açısından LATE benzeri "soft warning"; ABSENT sayılmaz.
+  LEFT_EARLY
+}
+
+/// Phase 1.5 — Veli yakınlık tipi. `ParentStudent.relationshipType` üzerinde
+/// kullanılır. Eski `relationship` (free-text) kolonu geriye dönük uyum için
+/// korunur ve `OTHER` seçildiğinde özel etiket olarak kullanılabilir.
+enum ParentRelationship {
+  MOTHER
+  FATHER
+  GUARDIAN
+  SIBLING
+  OTHER
 }
 
 enum AttendanceContext {
@@ -1305,30 +1322,44 @@ enum AttendanceSource {
 /// veli paneline (`/veli`) erişebilir. Bir veli birden fazla öğrenciye
 /// (kardeşler) bağlanabilir — `ParentStudent` join modeline bakın.
 model Parent {
-  id        String          @id @default(cuid())
-  fullName  String
-  phone     String?
+  id                         String          @id @default(cuid())
+  fullName                   String
+  phone                      String?
   /// Telefon numarasının normalize edilmiş hâli (Student.phoneKey ile aynı mantık).
-  phoneKey  String?         @unique
-  email     String?         @unique
-  notes     String?
-  userId    String?         @unique
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  students  ParentStudent[]
+  phoneKey                   String?         @unique
+  email                      String?         @unique
+  notes                      String?
+  userId                     String?         @unique
+  // ── Phase 1.5 — Veli onboarding davet altyapısı ─────────────────────────
+  /// URL-safe rastgele davet token'ı. Null → davet yok / iptal edildi.
+  /// Veli `/veli-davet/<token>` üzerinden şifre belirler.
+  parentInviteToken          String?         @unique
+  /// Token son kullanma tarihi (DEFAULT_PARENT_INVITE_TTL_DAYS = 14 gün).
+  parentInviteTokenExpiresAt DateTime?
+  /// Davet bağlantısı admin tarafından kopyalandığında set edilir;
+  /// `INVITE_PENDING` durumunu ayırt etmek için kullanılır.
+  parentInviteSentAt         DateTime?
+  createdAt                  DateTime        @default(now())
+  updatedAt                  DateTime        @updatedAt
+  user                       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  students                   ParentStudent[]
 }
 
 model ParentStudent {
-  parentId     String
-  studentId    String
-  /// "Anne", "Baba", "Vasi", "Diğer" — serbest metin.
-  relationship String?
+  parentId         String
+  studentId        String
+  /// LEGACY — Phase 1.5 öncesi serbest metin yakınlık ("Anne", "Baba",
+  /// "Vasi", "Dede" vb.). Yeni kayıtlarda boş bırakılabilir; OTHER seçilirse
+  /// özel etiket için kullanılır. Geçmiş veriyi silmemek için tutuyoruz.
+  relationship     String?
+  /// Phase 1.5 — yapısal yakınlık tipi. Null kalabilir (eski kayıtlarda
+  /// `relationship` string yorumlanır); yeni form bu kolonu doldurur.
+  relationshipType ParentRelationship?
   /// Birden fazla veli bağlıyken birincil iletişim kim?
-  isPrimary    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  parent       Parent   @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  isPrimary        Boolean             @default(false)
+  createdAt        DateTime            @default(now())
+  parent           Parent              @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student          Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([parentId, studentId])
   @@index([studentId])
@@ -2058,4 +2089,31 @@ model AccountDeletionRequest {
   @@index([status, scheduledFor])
   @@index([userId, status])
   @@map("account_deletion_requests")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Study Session — Phase 2 / Session 4
+// Student-driven self-study tracking. Powers the Study Room
+// (`/panel/ogrenci/calisma-odasi`). Strictly student-owned.
+// Operational invariant (app-level): at most one row per studentId with
+// endedAt IS NULL — that row is the "active session".
+// ─────────────────────────────────────────────────────────────────────────────
+model StudySession {
+  id              String    @id @default(cuid())
+  studentId       String
+  courseId        String?
+  subject         String?
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  durationSeconds Int?
+  note            String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, startedAt])
+  @@index([studentId, endedAt])
+  @@index([courseId])
 }

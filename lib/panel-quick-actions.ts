@@ -43,6 +43,7 @@ const STUDENT: QuickAction[] = [
   { id: "qa-schedule",      label: "Ders programım",         href: "/panel/ogrenci/ders-programi",   icon: "cal",        shortcut: "g p" },
   { id: "qa-assignments",   label: "Ödevlerim",              href: "/panel/ogrenci/odevler",         icon: "assignment", shortcut: "g o" },
   { id: "qa-odk-exams",     label: "ODK denemeler",          href: "/panel/ogrenci/odk/denemeler",   icon: "target",     shortcut: "g e" },
+  { id: "qa-study",         label: "Çalışma odası",          href: "/panel/ogrenci/calisma-odasi",   icon: "clock",      shortcut: "g r" },
   { id: "qa-performance",   label: "Performansım",           href: "/panel/ogrenci/performansim",    icon: "chart" },
   { id: "qa-package",       label: "Paketim",                href: "/panel/ogrenci/paketim",         icon: "package" },
 ];

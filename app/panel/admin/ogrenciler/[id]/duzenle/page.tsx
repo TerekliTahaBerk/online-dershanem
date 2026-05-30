@@ -14,14 +14,16 @@ import {
   removePackageFromStudentAction,
   linkParentToStudentAction,
   unlinkParentFromStudentAction,
+  createParentAndLinkAction,
 } from "../../_actions";
+import { ParentLinkCard } from "@/components/panel/students/parent-link-card";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditStudent({ params }: { params: Promise<{ id: string }> }) {
   await requirePanelRole("admin");
   const { id } = await params;
-  const [s, allClassrooms, allPackages, allParents] = await Promise.all([
+  const [s, allClassrooms, allPackages] = await Promise.all([
     prisma.student.findUnique({
       where: { id },
       include: {
@@ -32,22 +34,20 @@ export default async function EditStudent({ params }: { params: Promise<{ id: st
     }),
     prisma.classroom.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, branch: true } }),
     prisma.package.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true, type: true } }),
-    prisma.parent.findMany({ orderBy: { fullName: "asc" }, select: { id: true, fullName: true, phone: true } }),
   ]);
   if (!s) notFound();
 
   const linkedClassroomIds = new Set(s.classrooms.map((x) => x.classroom.id));
   const linkedPackageIds = new Set(s.packages.filter((x) => !x.revokedAt).map((x) => x.package.id));
-  const linkedParentIds = new Set(s.parents.map((x) => x.parent.id));
   const availClassrooms = allClassrooms.filter((c) => !linkedClassroomIds.has(c.id));
   const availPackages = allPackages.filter((p) => !linkedPackageIds.has(p.id));
-  const availParents = allParents.filter((p) => !linkedParentIds.has(p.id));
 
   const update = updateStudentAction.bind(null, id);
   const del = deleteStudentAction.bind(null, id);
   const addClassroom = assignStudentToClassroomAction.bind(null, id);
   const addPackage = assignPackageToStudentAction.bind(null, id);
   const linkParent = linkParentToStudentAction.bind(null, id);
+  const createAndLinkParent = createParentAndLinkAction.bind(null, id);
 
   return (
     <>
@@ -181,23 +181,7 @@ export default async function EditStudent({ params }: { params: Promise<{ id: st
               </tbody>
             </table>
           )}
-          {availParents.length > 0 && (
-            <form action={linkParent} className="od-grid g-3" style={{ gap: 12, alignItems: "end", marginTop: 12 }}>
-              <Field label="Veli ekle">
-                <Select name="parentId" required defaultValue="">
-                  <option value="" disabled>Seçin…</option>
-                  {availParents.map((p) => (
-                    <option key={p.id} value={p.id}>{p.fullName}{p.phone ? ` · ${p.phone}` : ""}</option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="İlişki"><Input name="relationship" placeholder="Anne / Baba / Vasi" /></Field>
-              <Field label="Birincil"><label style={{ fontSize: 13 }}><input type="checkbox" name="isPrimary" /> Birincil iletişim</label></Field>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <FormActions><button className="od-btn od-btn-primary od-btn-sm" type="submit">Bağla</button></FormActions>
-              </div>
-            </form>
-          )}
+          <ParentLinkCard linkAction={linkParent} createAndLinkAction={createAndLinkParent} />
 
           <hr style={{ margin: "24px 0 16px", border: 0, borderTop: "1px solid var(--pd-line)" }} />
           <form action={del}>
