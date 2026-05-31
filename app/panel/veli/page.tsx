@@ -110,11 +110,15 @@ export default async function ParentDashboard({
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { label: "Veli", href: "/panel/veli" },
+          { label: "Dashboard" },
+        ]}
         title="Veli Paneli"
-        subtitle={`${parent.fullName} · ${TODAY_FMT.format(new Date())}`}
+        subtitle={`${parent.fullName} · ${firstName} · ${TODAY_FMT.format(new Date())}`}
         right={
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <Link href="/panel/veli/mazeret" className="od-btn od-btn-primary od-btn-sm">
+          <div className="od-dashboard-actions">
+            <Link href="/panel/veli/mazeret" className="od-btn dark sm">
               Mazeret bildir
               {pendingExcuses > 0 ? (
                 <span style={{ marginLeft: 6 }}>
@@ -122,13 +126,13 @@ export default async function ParentDashboard({
                 </span>
               ) : null}
             </Link>
-            <Link href="/panel/veli/odev-takibi" className="od-btn od-btn-ghost od-btn-sm">
+            <Link href="/panel/veli/odev-takibi" className="od-btn ghost sm">
               Ödevleri gör
             </Link>
-            <Link href="/panel/veli/ders-programi" className="od-btn od-btn-ghost od-btn-sm">
+            <Link href="/panel/veli/ders-programi" className="od-btn ghost sm">
               Ders programı
             </Link>
-            <Link href="/panel/veli/odemeler" className="od-btn od-btn-ghost od-btn-sm">
+            <Link href="/panel/veli/odemeler" className="od-btn ghost sm">
               Ödemeler
             </Link>
           </div>
@@ -157,27 +161,13 @@ export default async function ParentDashboard({
       </div>
 
       {/* Row 3 — attendance + homework */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-          gap: 12,
-          marginBottom: 12,
-        }}
-      >
+      <div className="od-dashboard-split-1-1">
         <ParentAttendanceSummaryCard summary={attendance} />
         <ParentHomeworkSummaryCard summary={homework} />
       </div>
 
       {/* Row 4 — payments + odk */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-          gap: 12,
-          marginBottom: 12,
-        }}
-      >
+      <div className="od-dashboard-split-1-1">
         <ParentPaymentSummaryCard summary={payment} />
         <ParentOdkSnapshotCard snapshot={odk} childUserId={child.userId} />
       </div>
@@ -186,7 +176,7 @@ export default async function ParentDashboard({
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
         <Link
           href={`/panel/veli/cocuklarim/${child.studentId}`}
-          className="od-btn od-btn-ghost od-btn-sm"
+          className="od-btn ghost sm"
         >
           {firstName} hakkında detaylı bilgi →
         </Link>

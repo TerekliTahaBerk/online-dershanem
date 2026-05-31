@@ -7,6 +7,11 @@ import { EmptyState } from "@/components/panel/ui/empty-state";
 import { LessonLifecycleButtons } from "@/components/panel/lessons/lifecycle-buttons";
 import { lessonStatusLabel, lessonStatusTone } from "@/lib/lessons/lifecycle";
 import { resolveMeetingLink } from "@/lib/lessons/meeting-provider";
+import {
+  WeeklyScheduleGrid,
+  startOfIsoWeek,
+  weekRangeLabel,
+} from "@/components/panel/lessons/weekly-schedule-grid";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +29,6 @@ export default async function TeacherSchedule() {
     },
   });
 
-  // sessionGroupId paylaşan satırları öğretmen için tek satıra grupla
   const grouped = new Map<string, typeof lessons>();
   for (const l of lessons) {
     const key = l.sessionGroupId ?? `solo:${l.id}`;
@@ -33,10 +37,39 @@ export default async function TeacherSchedule() {
   }
   const rows = Array.from(grouped.values()).map((arr) => ({ head: arr[0], count: arr.length }));
 
+  const weekStart = startOfIsoWeek(new Date());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const weekLessons = lessons.filter((l) => l.scheduledAt >= weekStart && l.scheduledAt < weekEnd);
+
   return (
     <>
-      <PageHeader title="Ders programım" subtitle={`Önümüzdeki 30 gün — ${rows.length} seans`} />
-      <Card>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Öğretmen", href: "/panel/ogretmen" },
+          { label: "Ders Programı" },
+        ]}
+        title={weekRangeLabel(weekStart)}
+        subtitle={`Önümüzdeki 30 gün — ${rows.length} seans`}
+      />
+
+      <WeeklyScheduleGrid
+        lessons={weekLessons.map((l) => ({
+          id: l.id,
+          scheduledAt: l.scheduledAt,
+          duration: l.duration,
+          title: l.title,
+          subject: l.subject,
+          status: l.status,
+          course: l.course,
+          student: l.student,
+          classroom: l.classroom,
+        }))}
+        weekStart={weekStart}
+      />
+
+      <details className="od-week-list-disclosure">
+        <summary>Detaylı liste — {rows.length} seans</summary>
         <table className="od-table">
           <thead><tr><th>Tarih</th><th>Konu</th><th>Öğrenci/Sınıf</th><th>Lokasyon</th><th>Süre</th><th>Durum</th><th>Canlı</th></tr></thead>
           <tbody>
@@ -68,7 +101,7 @@ export default async function TeacherSchedule() {
             })}
           </tbody>
         </table>
-      </Card>
+      </details>
     </>
   );
 }

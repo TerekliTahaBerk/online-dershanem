@@ -11,7 +11,15 @@ export default async function NewTeacher() {
   await requirePanelRole("admin");
   return (
     <>
-      <PageHeader title="Yeni öğretmen" />
+      <PageHeader
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğretmenler", href: "/panel/admin/ogretmenler" },
+          { label: "Yeni" },
+        ]}
+        title="Yeni öğretmen"
+        subtitle="Kimlik bilgileri ve branş tanımı."
+      />
       <Card>
         <CardBody>
           <ToastForm action={createTeacherAction} className="od-grid g-2" style={{ gap: 12 }} successMessage="Öğretmen oluşturuldu">
@@ -27,7 +35,7 @@ export default async function NewTeacher() {
             </Field>
             <div style={{ gridColumn: "1 / -1" }}><Field label="Bio"><Textarea name="bio" /></Field></div>
             <div style={{ gridColumn: "1 / -1" }}>
-              <FormActions><button className="od-btn od-btn-primary" type="submit">Kaydet</button></FormActions>
+              <FormActions><button className="od-btn dark" type="submit">Kaydet</button></FormActions>
             </div>
           </ToastForm>
         </CardBody>

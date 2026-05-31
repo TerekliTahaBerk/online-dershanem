@@ -132,20 +132,20 @@ export default async function AdminStudents({
     <>
       <PageHeader
         title="OD Öğrencileri"
-        breadcrumbs={[{ label: "Admin", href: "/panel/admin" }, { label: "Öğrenciler" }]}
+        breadcrumbs={[{ label: "Yönetim", href: "/panel/admin" }, { label: "Öğrenciler" }]}
         subtitle={`${total.toLocaleString("tr-TR")} öğrenci${q ? ` · "${q}"` : ""}${status ? ` · ${status}` : ""} · sayfa ${safePage}/${totalPages}`}
         right={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="od-list-toolbar">
             <SearchInput placeholder="Ad, email, telefon, şehir, okul…" />
             <ExportButton entity="ogrenciler" />
             <Link
               href="/panel/admin/odk/ogrenciler"
-              className="od-btn od-btn-ghost od-btn-sm"
+              className="od-btn ghost sm"
               title="ODK öğrencileri için ayrı liste"
             >
               ODK Öğrencileri →
             </Link>
-            <Link href="/panel/admin/ogrenciler/yeni" className="od-btn od-btn-primary od-btn-sm">
+            <Link href="/panel/admin/ogrenciler/yeni" className="od-btn dark sm">
               + Yeni öğrenci
             </Link>
           </div>

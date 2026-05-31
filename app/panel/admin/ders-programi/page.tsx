@@ -2,10 +2,13 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
-import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
-import { EmptyState } from "@/components/panel/ui/empty-state";
 import { LessonQuickPlanButton } from "@/components/panel/lessons/lesson-quick-plan-modal";
+import {
+  WeeklyScheduleGrid,
+  startOfIsoWeek,
+  weekRangeLabel,
+} from "@/components/panel/lessons/weekly-schedule-grid";
 import { createLessonAction } from "./_actions";
 
 export const dynamic = "force-dynamic";
@@ -37,14 +40,35 @@ export default async function AdminSchedule({
   const sp = await searchParams;
   const { start, end, days } = getRange(sp.range);
 
+  // Operational range (existing behavior preserved for the detailed list).
   const where: Record<string, unknown> = { scheduledAt: { gte: start, lte: end } };
   if (sp.teacherId) where.teacherId = sp.teacherId;
   if (sp.classroomId) where.classroomId = sp.classroomId;
   if (sp.courseId) where.courseId = sp.courseId;
 
-  const [lessons, teachers, classrooms, courses] = await Promise.all([
+  // Visible week for the grid — always Monday..Sunday of the current week.
+  const weekStart = startOfIsoWeek(new Date());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const weekWhere: Record<string, unknown> = { scheduledAt: { gte: weekStart, lt: weekEnd } };
+  if (sp.teacherId) weekWhere.teacherId = sp.teacherId;
+  if (sp.classroomId) weekWhere.classroomId = sp.classroomId;
+  if (sp.courseId) weekWhere.courseId = sp.courseId;
+
+  const [lessons, weekLessons, teachers, classrooms, courses] = await Promise.all([
     prisma.lesson.findMany({
       where,
+      orderBy: { scheduledAt: "asc" },
+      include: {
+        teacher: { select: { fullName: true } },
+        student: { select: { fullName: true } },
+        classroom: { select: { name: true } },
+        course: { select: { title: true } },
+      },
+      take: 500,
+    }),
+    prisma.lesson.findMany({
+      where: weekWhere,
       orderBy: { scheduledAt: "asc" },
       include: {
         teacher: { select: { fullName: true } },
@@ -80,61 +104,97 @@ export default async function AdminSchedule({
     return "?" + params.toString();
   };
   const active = sp.range ?? "next14";
+  const filtersActive = !!(sp.teacherId || sp.classroomId || sp.courseId);
 
   return (
     <>
       <PageHeader
-        title="Ders programı"
-        subtitle={days + " gün · " + lessons.length + " ders satırı · " + rows.length + " seans"}
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Ders Programı" },
+        ]}
+        title={weekRangeLabel(weekStart)}
+        subtitle="Dersleri, canlı bağlantıları ve yoklama durumlarını haftalık görünümde yönetin."
         right={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <LessonQuickPlanButton action={createLessonAction} />
-            <Link href="/panel/admin/ders-programi/yeni" className="od-btn od-btn-primary od-btn-sm">
+            <Link href="/panel/admin/ders-programi/yeni" className="od-btn dark sm">
               + Yeni planlama
             </Link>
           </div>
         }
       />
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        {(["today", "week", "next14", "month"] as const).map((r) => (
-          <Link
-            key={r}
-            href={rangeLink(r)}
-            className={"od-btn od-btn-sm " + (active === r ? "od-btn-primary" : "od-btn-ghost")}
-          >
-            {r === "today" ? "Bugün" : r === "week" ? "Bu hafta" : r === "next14" ? "14 gün" : "30 gün"}
-          </Link>
-        ))}
-      </div>
-
-      <Card>
-        <form method="GET" style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: 12, borderBottom: "1px solid var(--pd-line)" }}>
+      {/* Compact toolbar: segmented range + filter form */}
+      <div className="od-week-toolbar">
+        <div className="od-segmented" role="tablist" aria-label="Aralık">
+          {(["today", "week", "next14", "month"] as const).map((r) => (
+            <Link
+              key={r}
+              href={rangeLink(r)}
+              className={"od-segmented-item" + (active === r ? " is-active" : "")}
+              role="tab"
+              aria-selected={active === r}
+            >
+              {r === "today" ? "Bugün" : r === "week" ? "Bu hafta" : r === "next14" ? "14 gün" : "30 gün"}
+            </Link>
+          ))}
+        </div>
+        <span className="od-week-toolbar-spacer" />
+        <form
+          method="GET"
+          style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}
+        >
           <input type="hidden" name="range" value={active} />
-          <select name="teacherId" defaultValue={sp.teacherId ?? ""} className="od-select">
+          <select name="teacherId" defaultValue={sp.teacherId ?? ""} className="od-select" aria-label="Öğretmen">
             <option value="">Tüm öğretmenler</option>
             {teachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
           </select>
-          <select name="classroomId" defaultValue={sp.classroomId ?? ""} className="od-select">
+          <select name="classroomId" defaultValue={sp.classroomId ?? ""} className="od-select" aria-label="Sınıf">
             <option value="">Tüm sınıflar</option>
             {classrooms.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select name="courseId" defaultValue={sp.courseId ?? ""} className="od-select">
+          <select name="courseId" defaultValue={sp.courseId ?? ""} className="od-select" aria-label="Ders">
             <option value="">Tüm dersler</option>
             {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
           </select>
-          <button type="submit" className="od-btn od-btn-sm">Filtrele</button>
-          {(sp.teacherId || sp.classroomId || sp.courseId) ? (
-            <Link href={"?range=" + active} className="od-btn od-btn-ghost od-btn-sm">Temizle</Link>
+          <button type="submit" className="od-btn sm">Filtrele</button>
+          {filtersActive ? (
+            <Link href={"?range=" + active} className="od-btn ghost sm">Temizle</Link>
           ) : null}
         </form>
+      </div>
 
+      <WeeklyScheduleGrid
+        lessons={weekLessons.map((l) => ({
+          id: l.id,
+          scheduledAt: l.scheduledAt,
+          duration: l.duration,
+          title: l.title,
+          subject: l.subject,
+          status: l.status,
+          course: l.course,
+          teacher: l.teacher,
+          student: l.student,
+          classroom: l.classroom,
+        }))}
+        weekStart={weekStart}
+        hrefForLesson={(l) => `/panel/admin/ders-programi/${l.id}`}
+        emptyCta={
+          <Link href="/panel/admin/ders-programi/yeni" className="od-btn dark sm">
+            + Yeni ders planla
+          </Link>
+        }
+      />
+
+      {/* Detailed list — preserves all original information & actions. */}
+      <details className="od-week-list-disclosure">
+        <summary>
+          Detaylı liste — {days} gün · {lessons.length} ders satırı · {rows.length} seans
+        </summary>
         {rows.length === 0 ? (
-          <div style={{ padding: 16 }}>
-            <EmptyState
-              title="Bu aralıkta planlanmış ders yok"
-              description="Yeni bir ders planlamak için sağdaki butonu kullanın."
-            />
+          <div style={{ padding: 24, color: "var(--pd-muted)", fontSize: 13 }}>
+            Bu aralıkta planlanmış ders yok.
           </div>
         ) : (
           <table className="od-table">
@@ -172,7 +232,7 @@ export default async function AdminSchedule({
                     </Badge>
                   </td>
                   <td>
-                    <Link href={"/panel/admin/ders-programi/" + head.id} className="od-btn od-btn-ghost od-btn-sm">
+                    <Link href={"/panel/admin/ders-programi/" + head.id} className="od-btn sm">
                       Aç
                     </Link>
                   </td>
@@ -181,7 +241,7 @@ export default async function AdminSchedule({
             </tbody>
           </table>
         )}
-      </Card>
+      </details>
     </>
   );
 }

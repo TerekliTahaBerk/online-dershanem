@@ -52,11 +52,15 @@ export default async function AdminDashboard() {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Dashboard" },
+        ]}
         title="Dashboard"
         subtitle={`Aktif öğrenci: ${studentCount} · Öğretmen: ${teacherCount} · Sınıf: ${classCount}`}
       />
 
-      <div className="od-grid g-4" style={{ marginBottom: 16 }}>
+      <div className="od-dashboard-kpi-row">
         <KpiCard
           label="Toplam Öğrenci"
           value={studentCount}
@@ -68,7 +72,7 @@ export default async function AdminDashboard() {
         <KpiCard label="Aktif sınıf" value={classCount} meta="Tüm dönemler" />
       </div>
 
-      <div className="od-grid g-4" style={{ marginBottom: 16 }}>
+      <div className="od-dashboard-kpi-row">
         <KpiCard label="Son 30 gün lead" value={recentLeads} meta="LeadSubmission" />
         <KpiCard label="Son 30 gün ödeme" value={recentPurchases} meta="Onaylı ödeme" />
         <KpiCard label="Yeni öğrenci" value={recentStudents.length} meta="Son 8 kayıt" />
@@ -76,8 +80,8 @@ export default async function AdminDashboard() {
       </div>
 
       {/* FAZ 8 — OD Intelligence */}
-      <h3 style={{ margin: "16px 0 10px", fontSize: 14, color: "var(--pd-muted)", textTransform: "uppercase", letterSpacing: 0.6 }}>OD Intelligence</h3>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 16 }}>
+      <h3 className="od-dashboard-section-title">OD Intelligence</h3>
+      <div className="od-dashboard-stat-row">
         <StatCard label="Yaklaşan ders (7g)" value={odAnalytics.upcomingCount7} tone="accent" hint="SCHEDULED · önümüzdeki hafta" />
         <StatCard
           label="Eksik ödev oranı"

@@ -5,7 +5,6 @@ import { getOdkAdminExamList } from "@/lib/panel/odk-admin";
 import {
   getOdkCadenceLabel,
   getReadinessLabel,
-  getReadinessTone,
 } from "@/lib/panel/odk-admin-display";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody } from "@/components/panel/ui/card";
@@ -13,6 +12,13 @@ import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { ExportButton } from "@/components/panel/ui/export-button";
 import { OdkAdminExamStatusBadge } from "@/components/panel/odk/admin/odk-admin-exam-status-badge";
+import {
+  ExamBoardCard,
+  adminStatusLabel,
+  adminStatusTone,
+  cadenceTone,
+  readinessTone,
+} from "@/components/panel/odk/exam-board-card";
 import type { OdkExamCadenceFamily, OdkExamStatus } from "@prisma/client";
 
 export const metadata: Metadata = {
@@ -24,18 +30,14 @@ export const dynamic = "force-dynamic";
 
 const STATUS_OPTIONS: Array<{ value: "ALL" | OdkExamStatus; label: string }> = [
   { value: "ALL", label: "Tümü" },
-  { value: "DRAFT", label: "Taslak" },
   { value: "PUBLISHED", label: "Yayında" },
+  { value: "DRAFT", label: "Taslak" },
   { value: "ARCHIVED", label: "Arşiv" },
 ];
 
-const FAMILY_TONE: Record<string, "accent" | "purple" | "teal" | "neutral"> = {
-  TYT: "accent",
-  AYT: "purple",
-  LGS: "teal",
-  KPSS: "neutral",
-  ALES: "neutral",
-};
+const CADENCES: Array<"ALL" | OdkExamCadenceFamily> = [
+  "ALL", "TYT", "AYT", "LGS", "KPSS", "ALES",
+];
 
 function parseStatus(raw: string | undefined): "ALL" | OdkExamStatus {
   if (raw === "DRAFT" || raw === "PUBLISHED" || raw === "ARCHIVED") return raw;
@@ -48,6 +50,12 @@ function parseCadence(raw: string | undefined): "ALL" | OdkExamCadenceFamily {
   }
   return "ALL";
 }
+
+const dateFmt = new Intl.DateTimeFormat("tr-TR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 
 export default async function AdminOdkExamsList({
   searchParams,
@@ -70,57 +78,130 @@ export default async function AdminOdkExamsList({
 
   const filtersActive = status !== "ALL" || cadence !== "ALL" || search.length > 0;
 
+  const link = (next: Partial<{ status: typeof status; cadence: typeof cadence; q: string }>): string => {
+    const params = new URLSearchParams();
+    const s = next.status ?? status;
+    const c = next.cadence ?? cadence;
+    const q = next.q ?? search;
+    if (s !== "ALL") params.set("status", s);
+    if (c !== "ALL") params.set("cadence", c);
+    if (q) params.set("q", q);
+    const qs = params.toString();
+    return qs ? `?${qs}` : "/panel/admin/odk/denemeler";
+  };
+
+  const grouped: Record<OdkExamStatus, typeof exams> = {
+    PUBLISHED: [],
+    DRAFT: [],
+    ARCHIVED: [],
+  };
+  for (const e of exams) grouped[e.status].push(e);
+  const showGroups = status === "ALL";
+  const groupOrder: OdkExamStatus[] = ["PUBLISHED", "DRAFT", "ARCHIVED"];
+
+  function renderCard(e: typeof exams[number]) {
+    const meta: Array<{ icon?: string; label: string }> = [
+      { icon: "⏱", label: `${e.durationMinutes} dk` },
+      { icon: "📚", label: `${e.sectionCount} bölüm` },
+      { icon: "✏️", label: `${e.totalQuestionCount} soru` },
+      { icon: "🏷", label: `${e.accessTagCount} erişim` },
+    ];
+    if (e.classLevel != null) meta.unshift({ icon: "��", label: `${e.classLevel}. sınıf` });
+    return (
+      <ExamBoardCard
+        key={e.id}
+        href={`/panel/admin/odk/denemeler/${e.id}`}
+        eyebrow={
+          <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+            <span
+              className={`soft-pill is-${cadenceTone(e.cadenceFamily)}`}
+              style={{ fontSize: 10, padding: "1px 7px" }}
+            >
+              {getOdkCadenceLabel(e.cadenceFamily)}
+            </span>
+          </span>
+        }
+        title={e.title}
+        slug={e.slug}
+        statusLabel={adminStatusLabel(e.status)}
+        tone={adminStatusTone(e.status)}
+        readiness={{
+          label: getReadinessLabel(e.readiness.overall),
+          tone: readinessTone(e.readiness.overall),
+        }}
+        meta={meta}
+        footnote={
+          e.publishedAt
+            ? `Yayın: ${dateFmt.format(e.publishedAt)} · ${e.attemptCount} deneme`
+            : `Oluşturulma: ${dateFmt.format(e.createdAt)} · ${e.attemptCount} deneme`
+        }
+      />
+    );
+  }
+
   return (
     <>
       <PageHeader
-        title="ODK Denemeler"
-        subtitle={`Toplam ${exams.length} deneme${filtersActive ? " (filtreli)" : ""} · TYT / AYT / LGS dijital sınav yönetimi`}
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "ODK", href: "/panel/admin/odk" },
+          { label: "Denemeler" },
+        ]}
+        title="ODK Denemeleri"
+        subtitle="TYT / AYT / LGS dijital denemelerinizi yönetin, hazırlık durumunu izleyin ve yayınlayın."
         right={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <ExportButton entity="odk-denemeler" label="Excel" />
-            <Link href="/panel/admin/odk/denemeler/yeni" className="od-btn od-btn-primary">
-              Yeni deneme
+            <Link href="/panel/admin/odk/denemeler/yeni" className="od-btn dark sm">
+              + Yeni deneme
             </Link>
           </div>
         }
       />
 
-      <Card style={{ marginBottom: 16 }}>
-        <CardBody>
-          <form
-            method="GET"
-            style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}
-          >
-            <input
-              type="search"
-              name="q"
-              defaultValue={search}
-              placeholder="Başlık veya slug ara…"
-              className="od-input"
-              style={{ flex: "1 1 220px", minWidth: 180 }}
-            />
-            <select name="status" defaultValue={status} className="od-input" style={{ flex: "0 0 auto" }}>
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
-            </select>
-            <select name="cadence" defaultValue={cadence} className="od-input" style={{ flex: "0 0 auto" }}>
-              <option value="ALL">Tüm türler</option>
-              <option value="TYT">TYT</option>
-              <option value="AYT">AYT</option>
-              <option value="LGS">LGS</option>
-              <option value="KPSS">KPSS</option>
-              <option value="ALES">ALES</option>
-            </select>
-            <button type="submit" className="od-btn od-btn-ghost">Filtrele</button>
-            {filtersActive ? (
-              <Link href="/panel/admin/odk/denemeler" className="od-btn od-btn-ghost">
-                Temizle
-              </Link>
-            ) : null}
-          </form>
-        </CardBody>
-      </Card>
+      <div className="od-exam-toolbar">
+        <div className="od-segmented" role="tablist" aria-label="Durum">
+          {STATUS_OPTIONS.map((o) => (
+            <Link
+              key={o.value}
+              href={link({ status: o.value })}
+              className={"od-segmented-item" + (status === o.value ? " is-active" : "")}
+              role="tab"
+              aria-selected={status === o.value}
+            >
+              {o.label}
+            </Link>
+          ))}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }} role="group" aria-label="Tür">
+          {CADENCES.map((c) => (
+            <Link
+              key={c}
+              href={link({ cadence: c })}
+              className={"od-qchip" + (cadence === c ? " is-active" : "")}
+            >
+              {c === "ALL" ? "Tüm türler" : c}
+            </Link>
+          ))}
+        </div>
+        <span className="od-exam-toolbar-spacer" />
+        <form method="GET" style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          {status !== "ALL" ? <input type="hidden" name="status" value={status} /> : null}
+          {cadence !== "ALL" ? <input type="hidden" name="cadence" value={cadence} /> : null}
+          <input
+            type="search"
+            name="q"
+            defaultValue={search}
+            placeholder="Başlık veya slug ara…"
+            className="od-input"
+            style={{ width: 220 }}
+          />
+          <button type="submit" className="od-btn sm">Filtrele</button>
+          {filtersActive ? (
+            <Link href="/panel/admin/odk/denemeler" className="od-btn ghost sm">Temizle</Link>
+          ) : null}
+        </form>
+      </div>
 
       {exams.length === 0 ? (
         <Card>
@@ -136,8 +217,29 @@ export default async function AdminOdkExamsList({
             />
           </CardBody>
         </Card>
+      ) : showGroups ? (
+        <>
+          {groupOrder.map((g) =>
+            grouped[g].length === 0 ? null : (
+              <section key={g}>
+                <h2 className="od-exam-board-title">
+                  {adminStatusLabel(g)}
+                  <span className="od-exam-board-title-count">{grouped[g].length}</span>
+                </h2>
+                <div className="od-exam-grid">{grouped[g].map(renderCard)}</div>
+              </section>
+            )
+          )}
+        </>
       ) : (
-        <Card>
+        <div className="od-exam-grid">{exams.map(renderCard)}</div>
+      )}
+
+      <details className="od-week-list-disclosure" style={{ marginTop: 18 }}>
+        <summary>Detaylı liste — {exams.length} deneme</summary>
+        {exams.length === 0 ? (
+          <div style={{ padding: 24, color: "var(--pd-muted)", fontSize: 13 }}>—</div>
+        ) : (
           <table className="od-table">
             <thead>
               <tr>
@@ -162,29 +264,27 @@ export default async function AdminOdkExamsList({
                     <div className="od-mono od-muted" style={{ fontSize: 11 }}>{e.slug}</div>
                   </td>
                   <td>
-                    <Badge tone={FAMILY_TONE[e.cadenceFamily] ?? "neutral"}>
-                      {getOdkCadenceLabel(e.cadenceFamily)}
-                    </Badge>
+                    <Badge tone="neutral">{getOdkCadenceLabel(e.cadenceFamily)}</Badge>
                   </td>
                   <td>{e.classLevel ?? "—"}</td>
                   <td>{e.durationMinutes} dk</td>
                   <td>{e.sectionCount}</td>
                   <td>{e.attemptCount}</td>
                   <td>
-                    <Badge tone={getReadinessTone(e.readiness.overall)}>
+                    <Badge tone={e.readiness.overall === "ok" ? "ok" : e.readiness.overall === "warn" ? "warn" : "bad"}>
                       {getReadinessLabel(e.readiness.overall)}
                     </Badge>
                   </td>
                   <td><OdkAdminExamStatusBadge status={e.status} /></td>
                   <td className="od-mono od-muted" style={{ fontSize: 11 }}>
-                    {new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", year: "numeric" }).format(e.createdAt)}
+                    {dateFmt.format(e.createdAt)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </Card>
-      )}
+        )}
+      </details>
     </>
   );
 }

@@ -66,17 +66,7 @@ export function Student360TabBar({
   badges?: Partial<Record<StudentTab, number | string>>;
 }) {
   return (
-    <nav
-      aria-label="Öğrenci sekmeleri"
-      style={{
-        display: "flex",
-        gap: 4,
-        marginBottom: 16,
-        flexWrap: "wrap",
-        borderBottom: "1px solid var(--pd-line)",
-        paddingBottom: 8,
-      }}
-    >
+    <nav className="od-360-tabbar" aria-label="Öğrenci sekmeleri">
       {STUDENT_TAB_KEYS.map((t) => {
         const active = t === current;
         const badge = badges?.[t];
@@ -84,12 +74,12 @@ export function Student360TabBar({
           <Link
             key={t}
             href={`${baseHref}?tab=${t}`}
-            className={`od-btn od-btn-sm ${active ? "od-btn-primary" : "od-btn-ghost"}`}
+            className={`od-360-tab${active ? " is-active" : ""}`}
             aria-current={active ? "page" : undefined}
           >
             {TAB_LABELS[t]}
             {badge !== undefined && badge !== 0 && badge !== "" ? (
-              <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.8 }}>{badge}</span>
+              <span className="od-360-tab-badge">{badge}</span>
             ) : null}
           </Link>
         );

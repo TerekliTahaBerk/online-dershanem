@@ -3801,3 +3801,1361 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 .od-text-bad  { color: var(--pd-bad)  !important; font-weight: 600; }
 .od-text-warn { color: var(--pd-warn) !important; font-weight: 600; }
 .od-text-good { color: var(--pd-good) !important; font-weight: 600; }
+
+/* ==========================================================================
+ * PANEL REDESIGN v2 (2026-05-31) — "Premium SaaS / Apple-light"
+ *
+ * Stage 1 (design tokens & primitives) + Stage 2 (floating app shell).
+ * All rules are ADDITIVE OVERRIDES, scoped to `body:has(.od-panel-app)` so
+ * marketing pages are untouched. Light-theme-first; dark theme retains its
+ * existing tokens unless a rule explicitly targets light mode.
+ *
+ * Goals (matches reference screenshots):
+ *   - Warm gray canvas with rounded floating app shell.
+ *   - Soft tinted sidebar with white-pill active items (no green chip).
+ *   - Pillified buttons; black-pill primary CTA available via `.od-btn.dark`.
+ *   - Softer cards, hairline tables, refined breadcrumbs/segmented controls.
+ *   - Apple system-font stack scoped to the panel.
+ *
+ * NOTHING below changes JSX, server actions, permissions, routes or data —
+ * it only restyles classes already used by existing components. To revert,
+ * delete this block.
+ * ======================================================================== */
+
+/* ─── Apple-like system font scoped to panel only ─────────────────────── */
+body:has(.od-panel-app),
+body:has(.od-panel-app) .od-panel-app {
+  font-family: "Inter var", "Inter", "SF Pro Display", "SF Pro Text",
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui,
+    "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Warm gray canvas + floating shell (light-mode only) ─────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) {
+  background: #DEDEDB;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-panel-app {
+  /* Inset gutter so the shell visually floats on the canvas. */
+  padding: 12px;
+  gap: 0;
+  background: transparent;
+  /* Override original 260px column to keep shell aligned including padding. */
+}
+
+/* The two halves (sidebar + main) act as one rounded shell. They share a
+ * seam in the middle where neither rounds — visually continuous. We do NOT
+ * use `overflow:hidden` on .od-panel-app so existing `position:sticky`
+ * elements (sidebar, topbar) keep working with the window scroll. */
+
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sidebar {
+  background: #F5F5F2;
+  border-right: 1px solid #ECEAE3;
+  border-top-left-radius: 24px;
+  border-bottom-left-radius: 24px;
+  /* Float relative to canvas gutter. */
+  top: 12px;
+  height: calc(100vh - 24px);
+  padding: 18px 12px;
+  /* Soft outer drop shadow (not on the seam side). */
+  box-shadow:
+    -1px 0 0 0 rgba(20, 20, 24, 0.0),
+    0 1px 2px rgba(20, 20, 24, 0.03),
+    0 8px 24px -16px rgba(20, 20, 24, 0.10);
+}
+
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-panel-main {
+  background: #FFFFFF;
+  border-top-right-radius: 24px;
+  border-bottom-right-radius: 24px;
+  box-shadow:
+    1px 0 0 0 rgba(20, 20, 24, 0.0),
+    0 1px 2px rgba(20, 20, 24, 0.03),
+    0 8px 24px -16px rgba(20, 20, 24, 0.10);
+  /* Intentionally NO `overflow: hidden` here so the existing
+     `position: sticky` topbar continues to track the window scroll. The
+     topbar rounds its own top-right corner below to visually clip with
+     main's rounded right edge. */
+}
+
+/* Topbar — light, transparent, sticky inside main, with matching corner. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-topbar {
+  background: #FFFFFF;
+  border-bottom: 1px solid #F1EFEA;
+  padding: 14px 28px;
+  top: 12px; /* aligns with canvas gutter */
+  border-top-right-radius: 24px;
+}
+
+/* Body padding inside the white surface. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-panel-body {
+  padding: 28px 32px 56px;
+}
+
+/* Mobile / tablet: collapse the floating frame back to edge-to-edge so the
+ * existing drawer behavior continues to work without surprises. */
+@media (max-width: 900px) {
+  :root:not([data-theme="dark"]) body:has(.od-panel-app) {
+    background: #FFFFFF;
+  }
+  :root:not([data-theme="dark"]) body:has(.od-panel-app) .od-panel-app {
+    padding: 0;
+  }
+  :root:not([data-theme="dark"]) body:has(.od-panel-app) .od-panel-main,
+  :root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sidebar {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  :root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sidebar {
+    top: 0;
+    height: 100vh;
+    padding: 16px 12px;
+  }
+  :root:not([data-theme="dark"]) body:has(.od-panel-app) .od-topbar {
+    top: 0;
+    padding: 12px 16px;
+  }
+  :root:not([data-theme="dark"]) body:has(.od-panel-app) .od-panel-body {
+    padding: 18px 16px 40px;
+  }
+}
+
+/* ─── Sidebar nav items: white pill active state ───────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-item {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #5A5A52;
+  font-weight: 500;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-item:hover {
+  background: rgba(255, 255, 255, 0.6);
+  color: #14140F;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-item.is-active {
+  background: #FFFFFF;
+  color: #14140F;
+  font-weight: 600;
+  box-shadow:
+    0 1px 2px rgba(20, 20, 24, 0.05),
+    0 0 0 1px rgba(20, 20, 24, 0.04);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-item.is-active .od-sb-ico {
+  color: #14140F;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-ico {
+  width: 15px;
+  height: 15px;
+  flex-basis: 15px;
+  stroke-width: 1.5;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-section {
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  color: #9B9B95;
+  font-weight: 600;
+  padding: 14px 12px 6px;
+}
+
+/* Sidebar quick-search trigger blends into tinted bg. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-search {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(20, 20, 24, 0.06);
+  border-radius: 10px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-search:hover {
+  background: #FFFFFF;
+}
+
+/* Sidebar foot user card pill. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-sb-foot {
+  border-top-color: #ECEAE3;
+}
+
+/* ─── Page header / breadcrumbs ───────────────────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-page-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #14140F;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-page-sub {
+  color: #6F6F6A;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-crumbs {
+  font-size: 11.5px;
+  color: #9B9B95;
+  margin-bottom: 6px;
+}
+
+/* ─── Buttons: pill shape across the panel ────────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn {
+  border-radius: 999px;
+  height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-color: #E5E5E2;
+  background: #FFFFFF;
+  color: #14140F;
+  font-weight: 500;
+  transition: background .12s ease, border-color .12s ease, transform .08s ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn:hover {
+  background: #FAFAF9;
+  border-color: #DCDAD2;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: #6F6F6A;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.ghost:hover {
+  background: #F4F3EF;
+  color: #14140F;
+}
+/* Existing accent-green primary stays for confirm/positive actions. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.primary {
+  border-radius: 999px;
+}
+/* New: black-pill primary CTA per reference (e.g. "Add new event"). Opt-in. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.dark {
+  background: #14140F;
+  color: #FFFFFF;
+  border-color: #14140F;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.dark:hover {
+  background: #242220;
+  border-color: #242220;
+}
+
+/* Topbar icon buttons get a subtle bordered look like the reference. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-iconbtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: #6F6F6A;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-iconbtn:hover {
+  background: #F4F3EF;
+  color: #14140F;
+  border-color: #ECEAE3;
+}
+
+/* Topbar select pillified. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-select {
+  border-radius: 999px;
+  background: #FFFFFF;
+  border-color: #E5E5E2;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12.5px;
+}
+
+/* Topbar inline search trigger blends into the white surface. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-topbar-search {
+  border-radius: 999px;
+  background: #F6F5F1;
+  border-color: #ECEAE3;
+  height: 32px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-topbar-search:hover {
+  background: #EFEEE9;
+}
+
+/* ─── Cards: softer radius, near-zero shadow ─────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-card {
+  border-radius: 16px;
+  border-color: #ECEAE3;
+  box-shadow: 0 1px 2px rgba(20, 20, 24, 0.025);
+  transition: border-color .14s ease, box-shadow .14s ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-card:hover {
+  border-color: #DCDAD2;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-card-padded,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-card-bd {
+  padding: 18px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-card-hd {
+  padding: 14px 18px;
+  border-bottom-color: #F1EFEA;
+}
+
+/* KPI cards: a touch lighter. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-kpi {
+  padding: 18px 20px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-kpi-value {
+  font-size: 28px;
+  letter-spacing: -0.025em;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-kpi-label {
+  font-size: 11.5px;
+  color: #9B9B95;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ─── Tables: soft, dense-but-calm ────────────────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-table th {
+  background: transparent;
+  color: #9B9B95;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  border-bottom: 1px solid #ECEAE3;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-table td {
+  border-bottom: 1px solid #F4F3EF;
+  font-size: 13px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-table tbody tr:hover {
+  background: #FAFAF8;
+}
+
+/* ─── Badges: softer pastel tones (already pastel, just refine size) ──── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-badge {
+  padding: 3px 9px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+}
+
+/* ─── Tabs underline color: keep accent but smoother. ─────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-tabs {
+  border-bottom-color: #ECEAE3;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-tab.is-active {
+  border-bottom-color: #14140F;
+  font-weight: 600;
+}
+
+/* ─── Segmented controls / quick-filter chips: pillier feel. ──────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-segmented {
+  border-radius: 999px;
+  background: #F4F3EF;
+  border-color: #ECEAE3;
+  padding: 3px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-segmented-item {
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-segmented-item.is-active {
+  background: #14140F;
+  color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(20, 20, 24, 0.18);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-qchip {
+  border-color: #ECEAE3;
+  font-size: 11.5px;
+  padding: 5px 11px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-qchip.is-active {
+  background: #14140F;
+  border-color: #14140F;
+  color: #FFFFFF;
+}
+
+/* ─── Saved-views chip group rounder. ─────────────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-savedviews {
+  border-radius: 999px;
+  background: #F4F3EF;
+  border-color: #ECEAE3;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-savedviews-chip {
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-savedviews-chip.is-active {
+  background: #FFFFFF;
+  color: #14140F;
+  box-shadow: 0 1px 2px rgba(20, 20, 24, 0.06);
+}
+
+/* ─── Inputs: soft borders, tighter focus ring. ──────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-input {
+  border-color: #E5E5E2;
+  border-radius: 10px;
+  background: #FFFFFF;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-input:focus {
+  border-color: #14140F;
+  box-shadow: 0 0 0 3px rgba(20, 20, 24, 0.06);
+}
+
+/* ─── Modals/drawers: rounder corners, lighter overlay. ──────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-modal {
+  border-radius: 18px;
+  border-color: #ECEAE3;
+  box-shadow:
+    0 1px 2px rgba(20, 20, 24, 0.05),
+    0 24px 60px -20px rgba(20, 20, 24, 0.25);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-detail-drawer {
+  border-left-color: #ECEAE3;
+  box-shadow: -16px 0 48px -8px rgba(20, 20, 24, 0.18);
+}
+
+/* ─── Reusable shell utility classes (Stage 1 toolkit) ────────────────
+ * Page authors may use these in upcoming page migrations. They are NOT
+ * required by current pages and don't affect existing classes.
+ * ──────────────────────────────────────────────────────────────────── */
+.soft-card {
+  background: #FFFFFF;
+  border: 1px solid #ECEAE3;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(20, 20, 24, 0.025);
+  padding: 18px;
+}
+.soft-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  background: #F4F3EF;
+  color: #14140F;
+  border: 1px solid #ECEAE3;
+  line-height: 1.4;
+}
+.soft-pill.is-dark { background: #14140F; color: #FFFFFF; border-color: #14140F; }
+.soft-pill.is-mint     { background: var(--pd-pastel-mint-bg);     color: var(--pd-pastel-mint-ink);     border-color: transparent; }
+.soft-pill.is-blush    { background: var(--pd-pastel-blush-bg);    color: var(--pd-pastel-blush-ink);    border-color: transparent; }
+.soft-pill.is-yellow   { background: var(--pd-pastel-yellow-bg);   color: var(--pd-pastel-yellow-ink);   border-color: transparent; }
+.soft-pill.is-sky      { background: var(--pd-pastel-sky-bg);      color: var(--pd-pastel-sky-ink);      border-color: transparent; }
+.soft-pill.is-lavender { background: var(--pd-pastel-lavender-bg); color: var(--pd-pastel-lavender-ink); border-color: transparent; }
+
+/* Pastel event card (for upcoming schedule/exam page migrations). */
+.pastel-event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.pastel-event-card .ev-title { font-weight: 600; color: inherit; font-size: 12.5px; }
+.pastel-event-card .ev-time  { font-size: 11px; opacity: 0.78; font-feature-settings: "tnum"; }
+.pastel-event-card.tone-lavender { background: var(--pd-pastel-lavender-bg); color: var(--pd-pastel-lavender-ink); }
+.pastel-event-card.tone-mint     { background: var(--pd-pastel-mint-bg);     color: var(--pd-pastel-mint-ink); }
+.pastel-event-card.tone-blush    { background: var(--pd-pastel-blush-bg);    color: var(--pd-pastel-blush-ink); }
+.pastel-event-card.tone-yellow   { background: var(--pd-pastel-yellow-bg);   color: var(--pd-pastel-yellow-ink); }
+.pastel-event-card.tone-sky      { background: var(--pd-pastel-sky-bg);      color: var(--pd-pastel-sky-ink); }
+
+/* Mini KPI card (smaller variant for dense rows). */
+.mini-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  border: 1px solid #ECEAE3;
+  border-radius: 14px;
+}
+.mini-kpi-card .k-label { font-size: 11px; color: #9B9B95; }
+.mini-kpi-card .k-value { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: #14140F; }
+.mini-kpi-card .k-meta  { font-size: 11px; color: #6F6F6A; }
+
+/* Premium table wrapper helper. */
+.premium-table {
+  background: #FFFFFF;
+  border: 1px solid #ECEAE3;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Page header helper (matches reference top section). */
+.page-header-v2 {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #F1EFEA;
+}
+
+/* Skeleton tone refinement for light surface. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-skel,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-skeleton {
+  background: linear-gradient(90deg, #F4F3EF 0%, #ECEAE3 50%, #F4F3EF 100%);
+  background-size: 200% 100%;
+}
+
+/* End — PANEL REDESIGN v2 */
+
+/* ==========================================================================
+ * STAGE 3A — Weekly schedule grid (Ders Programı)
+ *
+ * Used by the shared `WeeklyScheduleGrid` server component on:
+ *   - /panel/admin/ders-programi
+ *   - /panel/ogretmen/ders-programi
+ *   - /panel/ogrenci/ders-programi
+ *   - /panel/veli/ders-programi
+ *
+ * Pure visual layer — additive only. No JSX / business logic depends on
+ * specific styles here; if removed the grid still renders correctly.
+ * ======================================================================== */
+
+.od-week {
+  background: #FFFFFF;
+  border: 1px solid #ECEAE3;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(20, 20, 24, 0.025);
+}
+
+.od-week-head {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid #ECEAE3;
+  background: #FBFBF9;
+}
+
+.od-week-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px;
+  font-size: 12.5px;
+  color: #6F6F6A;
+  border-left: 1px solid #F1EFEA;
+  text-align: center;
+  letter-spacing: -0.005em;
+}
+.od-week-day-name { font-weight: 500; }
+.od-week-day-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: #14140F;
+  font-feature-settings: "tnum";
+}
+
+.od-week-day-head.is-today {
+  background: #14140F;
+  color: #FFFFFF;
+  border-radius: 0;
+}
+.od-week-day-head.is-today .od-week-day-num,
+.od-week-day-head.is-today .od-week-day-name {
+  color: #FFFFFF;
+}
+
+.od-week-body {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+  position: relative;
+}
+
+.od-week-time-col {
+  position: relative;
+  border-right: 1px solid #ECEAE3;
+  background: #FBFBF9;
+}
+
+.od-week-time-label {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: 10.5px;
+  font-feature-settings: "tnum";
+  color: #9B9B95;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+.od-week-time-label:first-child { transform: translateY(0); }
+
+.od-week-day-col {
+  position: relative;
+  border-left: 1px solid #F1EFEA;
+  background-repeat: repeat-y;
+  background-position: 0 0;
+  min-height: 100%;
+}
+.od-week-day-col.is-today {
+  background-color: rgba(20, 20, 15, 0.015);
+}
+
+.od-week-event {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  z-index: 1;
+}
+
+.od-week-event-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 14px;
+  outline: none;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.od-week-event-link:hover .pastel-event-card {
+  box-shadow: 0 4px 14px -6px rgba(20, 20, 24, 0.18);
+  transform: translateY(-1px);
+}
+.od-week-event-link:focus-visible .pastel-event-card {
+  box-shadow: 0 0 0 3px rgba(20, 20, 24, 0.18);
+}
+
+.od-week-event-card {
+  height: 100%;
+  padding: 8px 10px;
+  gap: 2px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  transition: box-shadow .12s ease, transform .12s ease;
+}
+.od-week-event-card .ev-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.od-week-event-secondary {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.od-week-event-meta {
+  font-size: 11px;
+  opacity: 0.78;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.od-week-event-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 4px;
+}
+.od-week-event-foot .soft-pill {
+  font-size: 10px;
+  padding: 2px 8px;
+  border: 0;
+}
+.od-week-event-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Empty state for an entire empty week. */
+.od-week-empty {
+  background: #FFFFFF;
+  border: 1px dashed #DCDAD2;
+  border-radius: 18px;
+  padding: 56px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #6F6F6A;
+}
+.od-week-empty-ico {
+  font-size: 28px;
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+.od-week-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #14140F;
+}
+.od-week-empty-desc {
+  font-size: 13px;
+  color: #6F6F6A;
+}
+.od-week-empty-cta { margin-top: 10px; }
+
+/* Compact filter strip used above the grid (shared with admin filters card). */
+.od-week-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.od-week-toolbar-spacer { flex: 1; }
+
+/* "Detaylı liste" disclosure (preserves original table view). */
+.od-week-list-disclosure {
+  margin-top: 16px;
+  background: #FFFFFF;
+  border: 1px solid #ECEAE3;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.od-week-list-disclosure > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #6F6F6A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.od-week-list-disclosure > summary::-webkit-details-marker { display: none; }
+.od-week-list-disclosure > summary::before {
+  content: "›";
+  display: inline-block;
+  font-size: 16px;
+  color: #9B9B95;
+  transform: rotate(0deg);
+  transition: transform .15s ease;
+}
+.od-week-list-disclosure[open] > summary::before { transform: rotate(90deg); }
+.od-week-list-disclosure[open] > summary { border-bottom: 1px solid #F1EFEA; }
+
+/* Mobile: horizontal scroll for the grid; preserve the rounded shell. */
+@media (max-width: 900px) {
+  .od-week { overflow-x: auto; }
+  .od-week-head,
+  .od-week-body {
+    min-width: 720px;
+  }
+}
+
+/* End — STAGE 3A weekly schedule grid */
+
+/* ==========================================================================
+ * STAGE 3B — ODK / Exams board (Denemeler)
+ *
+ * Used by `ExamBoardCard` on:
+ *   - /panel/admin/odk/denemeler
+ *   - /panel/ogrenci/odk/denemeler
+ *
+ * Pastel card grid + optional right-side "Yaklaşan denemeler" rail.
+ * Pure visual layer — additive only.
+ * ======================================================================== */
+
+/* Section title used between the toolbar and a board row. */
+.od-exam-board-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 18px 0 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #14140F;
+  letter-spacing: -0.005em;
+}
+.od-exam-board-title-count {
+  font-size: 11.5px;
+  color: #9B9B95;
+  font-weight: 500;
+}
+
+/* The board layout: cards grid, optional right rail. */
+.od-exam-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+.od-exam-layout.has-rail {
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+@media (max-width: 1100px) {
+  .od-exam-layout.has-rail { grid-template-columns: minmax(0, 1fr); }
+}
+
+.od-exam-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+@media (max-width: 720px) {
+  .od-exam-grid { grid-template-columns: 1fr; }
+}
+
+/* Pastel exam card (article). Tone classes use the existing pastel tokens. */
+.od-exam-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  background: #FFFFFF;
+  color: #14140F;
+  transition: transform .12s ease, box-shadow .14s ease, border-color .14s ease;
+  min-height: 152px;
+}
+.od-exam-card.tone-lavender { background: var(--pd-pastel-lavender-bg); color: var(--pd-pastel-lavender-ink); }
+.od-exam-card.tone-mint     { background: var(--pd-pastel-mint-bg);     color: var(--pd-pastel-mint-ink); }
+.od-exam-card.tone-sky      { background: var(--pd-pastel-sky-bg);      color: var(--pd-pastel-sky-ink); }
+.od-exam-card.tone-yellow   { background: var(--pd-pastel-yellow-bg);   color: var(--pd-pastel-yellow-ink); }
+.od-exam-card.tone-blush    { background: var(--pd-pastel-blush-bg);    color: var(--pd-pastel-blush-ink); }
+.od-exam-card.tone-neutral  { background: #F4F3EF;                     color: #14140F; border-color: #ECEAE3; }
+
+.od-exam-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.od-exam-card-link:focus-visible { outline: none; }
+.od-exam-card-link:hover .od-exam-card,
+.od-exam-card-link:focus-visible .od-exam-card {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -8px rgba(20, 20, 24, 0.18);
+}
+
+.od-exam-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.od-exam-card-eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.78;
+}
+.od-exam-card-title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: inherit;
+  /* Clamp to two lines for visual rhythm. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.od-exam-card-slug {
+  font-size: 11px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  opacity: 0.62;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.od-exam-card-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.od-exam-card-pills .soft-pill {
+  font-size: 10.5px;
+  padding: 2px 9px;
+  border: 0;
+}
+
+.od-exam-card-meta {
+  margin: 2px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+.od-exam-card-meta-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.od-exam-card-meta-ico {
+  font-size: 12px;
+  opacity: 0.78;
+}
+
+.od-exam-card-footnote {
+  font-size: 11px;
+  opacity: 0.78;
+  margin-top: 2px;
+}
+
+.od-exam-card-action {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 6px;
+}
+
+/* Right-side rail: "Yaklaşan denemeler" (or any contextual list). */
+.od-exam-rail {
+  background: #FFFFFF;
+  border: 1px solid #ECEAE3;
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: start;
+  position: sticky;
+  top: 96px; /* below the floating topbar */
+}
+.od-exam-rail-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #14140F;
+  letter-spacing: -0.005em;
+  margin: 0 0 2px;
+}
+.od-exam-rail-empty {
+  font-size: 12px;
+  color: #9B9B95;
+  padding: 8px 4px 4px;
+}
+.od-exam-rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.od-exam-rail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #F6F5F1;
+  text-decoration: none;
+  color: #14140F;
+  transition: background .12s ease;
+}
+.od-exam-rail-item:hover { background: #EFEEE9; }
+.od-exam-rail-item-date {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9B9B95;
+  font-weight: 600;
+}
+.od-exam-rail-item-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.od-exam-rail-item-meta {
+  font-size: 11px;
+  color: #6F6F6A;
+}
+
+/* Compact toolbar shared with schedule. */
+.od-exam-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.od-exam-toolbar-spacer { flex: 1; }
+
+/* End — STAGE 3B ODK exams board */
+
+/* ==========================================================================
+ * STAGE 3C — Attendance / Devamsızlık
+ * Pastel KPI tiles + soft toolbar + status board + premium attendance table.
+ * Light-first, scoped to panel app. Additive only.
+ * ========================================================================== */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) {
+
+  /* Toolbar -------------------------------------------------------------- */
+  .od-attendance-toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 10px 12px; margin: 0 0 14px;
+    background: #FFFFFF; border: 1px solid #ECECE6; border-radius: 16px;
+    box-shadow: 0 1px 0 rgba(20,20,15,.02);
+  }
+  .od-attendance-toolbar-label {
+    font-size: 11px; color: #6F6F6A; text-transform: uppercase;
+    letter-spacing: .04em; font-weight: 600;
+  }
+  .od-attendance-toolbar form { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .od-attendance-toolbar .od-input { font-size: 12px; }
+  .od-attendance-toolbar-spacer { flex: 1; }
+
+  /* KPI grid + tile ------------------------------------------------------ */
+  .od-attendance-kpi-grid {
+    display: grid; gap: 10px; margin: 0 0 14px;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+  .od-attendance-kpi {
+    position: relative;
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 12px 14px 14px;
+    background: #FFFFFF;
+    border: 1px solid #ECECE6;
+    border-radius: 16px;
+    box-shadow: 0 1px 0 rgba(20,20,15,.02);
+    overflow: hidden;
+  }
+  .od-attendance-kpi .k-eyebrow {
+    font-size: 10px; letter-spacing: .05em; text-transform: uppercase;
+    font-weight: 600; color: #9B9B95;
+  }
+  .od-attendance-kpi .k-value {
+    font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+    color: #14140F; line-height: 1.1;
+  }
+  .od-attendance-kpi .k-meta { font-size: 11px; color: #6F6F6A; }
+  .od-attendance-kpi .k-bar {
+    position: relative; height: 4px; border-radius: 999px;
+    background: rgba(20,20,15,.04); margin-top: 8px; overflow: hidden;
+  }
+  .od-attendance-kpi .k-bar > span {
+    position: absolute; inset: 0 auto 0 0;
+    border-radius: 999px;
+    background: var(--bar-color, #C9C9C2);
+    transition: width .3s ease;
+  }
+  .od-attendance-kpi.tone-mint   { --bar-color: #B5E4C9; }
+  .od-attendance-kpi.tone-mint   .k-eyebrow { color: #4F8F6E; }
+  .od-attendance-kpi.tone-yellow { --bar-color: #F7D77E; }
+  .od-attendance-kpi.tone-yellow .k-eyebrow { color: #9C7B16; }
+  .od-attendance-kpi.tone-blush  { --bar-color: #F1B5B5; }
+  .od-attendance-kpi.tone-blush  .k-eyebrow { color: #B25656; }
+  .od-attendance-kpi.tone-lavender { --bar-color: #D4C8F0; }
+  .od-attendance-kpi.tone-lavender .k-eyebrow { color: #7359B5; }
+  .od-attendance-kpi.tone-sky    { --bar-color: #BCDBF3; }
+  .od-attendance-kpi.tone-sky    .k-eyebrow { color: #3F76A8; }
+  .od-attendance-kpi.tone-neutral { --bar-color: #D8D8D2; }
+
+  /* Status board (grouped status summary above table) ------------------- */
+  .od-attendance-board {
+    display: grid; gap: 10px; margin: 0 0 14px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+  .od-attendance-board-card {
+    padding: 12px 14px;
+    background: #FFFFFF; border: 1px solid #ECECE6;
+    border-radius: 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 1px 0 rgba(20,20,15,.02);
+  }
+  .od-attendance-board-card .b-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .od-attendance-board-card .b-title {
+    font-size: 12px; font-weight: 600; color: #14140F; letter-spacing: -0.01em;
+  }
+  .od-attendance-board-card .b-count {
+    font-size: 11px; font-weight: 600;
+    padding: 1px 7px; border-radius: 999px;
+    background: rgba(20,20,15,.05); color: #6F6F6A;
+  }
+  .od-attendance-board-card .b-meta { font-size: 11px; color: #6F6F6A; }
+
+  /* Status pill (table cell) -------------------------------------------- */
+  .od-attendance-status {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 500;
+    padding: 2px 9px; border-radius: 999px;
+    background: rgba(20,20,15,.04); color: #4A4A45;
+  }
+  .od-attendance-status.tone-mint   { background: #E2F5EB; color: #2E6B4F; }
+  .od-attendance-status.tone-yellow { background: #FBEEC4; color: #8A6A14; }
+  .od-attendance-status.tone-blush  { background: #FBE0E0; color: #95484A; }
+  .od-attendance-status.tone-lavender { background: #ECE4FA; color: #5E47A0; }
+  .od-attendance-status.tone-sky    { background: #E2EEFA; color: #38679C; }
+
+  /* Filter chip row override (light, scoped) ---------------------------- */
+  .od-attendance-chip {
+    font-size: 12px; padding: 4px 10px; border-radius: 999px;
+    background: rgba(20,20,15,.04); color: #4A4A45;
+    border: 1px solid transparent; transition: background .15s, color .15s;
+  }
+  .od-attendance-chip:hover { background: rgba(20,20,15,.08); }
+  .od-attendance-chip.is-active {
+    background: #14140F; color: #FFFFFF; border-color: #14140F;
+  }
+}
+/* End — STAGE 3C attendance */
+
+/* ==========================================================================
+ * STAGE 3D — Student 360 / Student Detail
+ * Premium hero (avatar + meta), pill segmented tab bar, pastel KPI strip.
+ * Light-first, scoped, additive only.
+ * ========================================================================== */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) {
+
+  /* Header actions row --------------------------------------------------- */
+  .od-360-actions {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+
+  /* Hero strip below page header ---------------------------------------- */
+  .od-360-hero {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px; margin: 0 0 14px;
+    background: #FFFFFF; border: 1px solid #ECECE6; border-radius: 16px;
+    box-shadow: 0 1px 0 rgba(20,20,15,.02);
+  }
+  .od-360-avatar {
+    flex: 0 0 auto;
+    width: 44px; height: 44px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #ECE4FA 0%, #D4C8F0 100%);
+    color: #5E47A0; font-weight: 600; font-size: 15px;
+    letter-spacing: -0.01em;
+    user-select: none;
+  }
+  .od-360-hero-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+  .od-360-hero-status {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 12px; color: #6F6F6A;
+  }
+
+  /* Pill segmented tab bar ---------------------------------------------- */
+  .od-360-tabbar {
+    display: inline-flex; flex-wrap: wrap; gap: 2px;
+    padding: 4px; margin: 0 0 16px;
+    background: #F4F4EE; border: 1px solid #ECECE6;
+    border-radius: 12px;
+  }
+  .od-360-tab {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    font-size: 12.5px; font-weight: 500;
+    color: #4A4A45; background: transparent;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    transition: background .15s, color .15s, border-color .15s;
+    text-decoration: none;
+    line-height: 1;
+  }
+  .od-360-tab:hover { background: rgba(20,20,15,.04); color: #14140F; }
+  .od-360-tab.is-active {
+    background: #FFFFFF; color: #14140F;
+    border-color: #ECECE6;
+    box-shadow: 0 1px 2px rgba(20,20,15,.04);
+  }
+  .od-360-tab-badge {
+    font-size: 10px; font-weight: 600;
+    padding: 1px 6px; border-radius: 999px;
+    background: rgba(20,20,15,.06); color: #6F6F6A;
+  }
+  .od-360-tab.is-active .od-360-tab-badge {
+    background: #14140F; color: #FFFFFF;
+  }
+
+  /* Hero KPI strip (overview tab only) ---------------------------------- */
+  .od-360-hero-kpis {
+    display: grid; gap: 10px; margin: 0 0 16px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  .od-360-kpi {
+    position: relative;
+    padding: 10px 12px 12px;
+    background: #FFFFFF;
+    border: 1px solid #ECECE6;
+    border-radius: 14px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow: hidden;
+  }
+  .od-360-kpi::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+    background: var(--accent, #C9C9C2); opacity: .55;
+  }
+  .od-360-kpi .k-label {
+    font-size: 10px; letter-spacing: .04em; text-transform: uppercase;
+    color: #9B9B95; font-weight: 600;
+  }
+  .od-360-kpi .k-value {
+    font-size: 22px; font-weight: 600; letter-spacing: -0.02em;
+    color: #14140F; line-height: 1.1;
+  }
+  .od-360-kpi .k-meta { font-size: 11px; color: #6F6F6A; }
+
+  .od-360-kpi.tone-mint     { --accent: #B5E4C9; }
+  .od-360-kpi.tone-mint     .k-label { color: #4F8F6E; }
+  .od-360-kpi.tone-yellow   { --accent: #F7D77E; }
+  .od-360-kpi.tone-yellow   .k-label { color: #9C7B16; }
+  .od-360-kpi.tone-blush    { --accent: #F1B5B5; }
+  .od-360-kpi.tone-blush    .k-label { color: #B25656; }
+  .od-360-kpi.tone-lavender { --accent: #D4C8F0; }
+  .od-360-kpi.tone-lavender .k-label { color: #7359B5; }
+  .od-360-kpi.tone-sky      { --accent: #BCDBF3; }
+  .od-360-kpi.tone-sky      .k-label { color: #3F76A8; }
+  .od-360-kpi.tone-neutral  { --accent: #D8D8D2; }
+}
+/* End — STAGE 3D student 360 */
+
+/* ==========================================================================
+ * STAGE 3E — Role dashboards (admin / teacher / student / parent)
+ * Shared dashboard primitives. Light-first, scoped, additive only.
+ * ========================================================================== */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) {
+
+  /* Action row in PageHeader right-slot ---------------------------------- */
+  .od-dashboard-actions {
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+
+  /* KPI strip (auto-fill responsive) ------------------------------------ */
+  .od-dashboard-kpi-row {
+    display: grid; gap: 12px; margin: 0 0 16px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  /* OD Intelligence stat strip ------------------------------------------ */
+  .od-dashboard-stat-row {
+    display: grid; gap: 12px; margin: 0 0 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  /* Section heading (small uppercase muted) ----------------------------- */
+  .od-dashboard-section-title {
+    margin: 18px 0 10px;
+    font-size: 11px; font-weight: 600;
+    color: #9B9B95;
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+
+  /* Two-column splits used across teacher/student/parent dashboards --- */
+  .od-dashboard-split-1-1 {
+    display: grid; gap: 12px; margin: 0 0 12px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .od-dashboard-split-1-4 {
+    display: grid; gap: 12px; margin: 0 0 12px;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  @media (max-width: 880px) {
+    .od-dashboard-split-1-1,
+    .od-dashboard-split-1-4 {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+/* End — STAGE 3E dashboards */
+
+/* ==========================================================================
+ * STAGE 3F — Admin list pages + onboarding wizards
+ * Shared list/wizard primitives. Light-first, scoped, additive only.
+ * ========================================================================== */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) {
+
+  /* List page toolbar (search/filters/CTA row in PageHeader right) ------ */
+  .od-list-toolbar {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+
+  /* Wizard shell (sticky TOC rail + main column) ------------------------ */
+  .od-wizard-shell {
+    display: grid; gap: 24px;
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: flex-start;
+  }
+  @media (max-width: 880px) {
+    .od-wizard-shell { grid-template-columns: 1fr; }
+  }
+  .od-wizard-rail {
+    position: sticky; top: 88px;
+    background: #FFFFFF;
+    border: 1px solid #ECECE6;
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 0 rgba(20,20,15,.02);
+  }
+  .od-wizard-rail-title {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: #9B9B95; margin: 0 0 8px;
+  }
+  .od-wizard-rail ul {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: 4px;
+  }
+  .od-wizard-rail a {
+    display: block;
+    padding: 6px 8px; border-radius: 8px;
+    font-size: 12.5px; color: #4A4A45;
+    text-decoration: none;
+    transition: background .15s, color .15s;
+  }
+  .od-wizard-rail a:hover { background: rgba(20,20,15,.04); color: #14140F; }
+
+  .od-wizard-main {
+    display: grid; gap: 16px;
+  }
+
+  /* Soft section heading inside wizard cards ---------------------------- */
+  .od-wizard-section-title {
+    margin: 0 0 4px; font-size: 14px; font-weight: 600;
+    color: #14140F; letter-spacing: -0.01em;
+  }
+  .od-wizard-section-hint {
+    margin: 0 0 12px; font-size: 12.5px; color: #6F6F6A;
+  }
+
+  /* Duplicate / warning panel ------------------------------------------- */
+  .od-duplicate-panel {
+    padding: 12px 14px; border-radius: 14px;
+    background: #FBEEC4;
+    border: 1px solid #F0D88A;
+    color: #6E5410;
+    font-size: 13px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .od-duplicate-panel strong { color: #4D3A0A; }
+
+  /* Result / success panel ---------------------------------------------- */
+  .od-result-panel {
+    padding: 14px 16px; border-radius: 14px;
+    background: #E8F5EE;
+    border: 1px solid #BFE3CF;
+    color: #2E6B4F;
+    font-size: 13px;
+  }
+  .od-result-panel-title {
+    font-size: 14px; font-weight: 600; color: #1F4F39;
+    margin: 0 0 6px;
+  }
+  .od-result-panel pre {
+    background: rgba(255,255,255,.6);
+    padding: 8px 10px; border-radius: 8px;
+    font-size: 12px; margin: 6px 0 0;
+    overflow-x: auto;
+  }
+
+  /* Soft empty state --------------------------------------------------- */
+  .od-empty-soft {
+    padding: 32px 16px; text-align: center;
+    color: #9B9B95; font-size: 13px;
+  }
+}
+/* End — STAGE 3F admin lists + wizards */

@@ -244,29 +244,121 @@ export default async function StudentDetail({
 
   const baseHref = `/panel/admin/ogrenciler/${student.id}`;
 
+  // Initials for hero avatar
+  const initials = student.fullName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase() ?? "")
+    .join("") || "?";
+
+  // Compute lightweight overview KPIs from already-fetched data only.
+  // No additional DB cost; gracefully renders "—" when not available.
+  const overviewExams = overviewData?.[3] ?? [];
+  const examNets = overviewExams
+    .map((r) => (r.net !== null && r.net !== undefined ? Number(r.net) : null))
+    .filter((n): n is number => typeof n === "number" && Number.isFinite(n));
+  const lastNet = examNets.length > 0 ? examNets[0] : null;
+  const bestNet = examNets.length > 0 ? Math.max(...examNets) : null;
+
+  const heroKpis: Array<{ label: string; value: string; tone: "lavender" | "mint" | "sky" | "yellow" | "blush" | "neutral"; meta?: string }> = [
+    {
+      label: "Sınıflar",
+      value: String(student._count.classrooms),
+      tone: "sky",
+      meta: student._count.classrooms > 0 ? "atanmış" : "yok",
+    },
+    {
+      label: "Veliler",
+      value: String(student._count.parents),
+      tone: "lavender",
+      meta: student._count.parents > 0 ? "bağlı" : "yok",
+    },
+    {
+      label: "Paketler",
+      value: String(student._count.packages),
+      tone: "mint",
+      meta: student._count.packages > 0 ? "kayıtlı" : "yok",
+    },
+    {
+      label: "Son net",
+      value: lastNet !== null ? lastNet.toFixed(2).replace(/\.?0+$/, "") : "—",
+      tone: "yellow",
+      meta: overviewExams.length > 0 ? `${overviewExams.length} deneme` : "deneme yok",
+    },
+    {
+      label: "En iyi net",
+      value: bestNet !== null ? bestNet.toFixed(2).replace(/\.?0+$/, "") : "—",
+      tone: "blush",
+      meta: bestNet !== null ? "tüm zamanlar" : "—",
+    },
+    {
+      label: "Hesap",
+      value: student.userId ? "Aktif" : "Yok",
+      tone: student.userId ? "mint" : "neutral",
+      meta: student.user?.lastLoginAt ? "giriş yaptı" : student.userId ? "henüz giriş yok" : "davet bekliyor",
+    },
+  ];
+
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğrenciler", href: "/panel/admin/ogrenciler" },
+          { label: student.fullName },
+        ]}
         title={student.fullName}
-        subtitle={`${student.classLevel ?? "—"} · ${student.examType ?? "—"} · ${student.phone ?? "—"}`}
+        subtitle={[
+          student.classLevel,
+          student.examType,
+          student.phone,
+          student.email,
+          `Kayıt: ${new Intl.DateTimeFormat("tr-TR", { day: "2-digit", month: "short", year: "numeric" }).format(student.createdAt)}`,
+        ].filter(Boolean).join(" · ")}
         right={
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <Badge tone={flags?.hasOD ? "teal" : "neutral"}>{flags?.hasOD ? "OD ✓" : "OD ✗"}</Badge>
-            <Badge tone={flags?.hasODK ? "purple" : "neutral"}>{flags?.hasODK ? "ODK ✓" : "ODK ✗"}</Badge>
+          <div className="od-360-actions">
+            <span className={`soft-pill is-${flags?.hasOD ? "mint" : "neutral"}`}>{flags?.hasOD ? "OD ✓" : "OD ✗"}</span>
+            <span className={`soft-pill is-${flags?.hasODK ? "lavender" : "neutral"}`}>{flags?.hasODK ? "ODK ✓" : "ODK ✗"}</span>
             {risk ? <RiskBadge level={risk.level} score={risk.score} /> : null}
             {flags?.hasODK && student.userId ? (
-              <Link href={`/panel/admin/odk/ogrenciler/${student.userId}`} className="od-btn od-btn-ghost od-btn-sm">
+              <Link href={`/panel/admin/odk/ogrenciler/${student.userId}`} className="od-btn ghost sm">
                 ODK detayı →
               </Link>
             ) : null}
-            <Link href={`${baseHref}/duzenle`} className="od-btn od-btn-primary od-btn-sm">
+            <Link href={`${baseHref}/duzenle`} className="od-btn dark sm">
               Düzenle
             </Link>
           </div>
         }
       />
 
+      <div className="od-360-hero">
+        <span className="od-360-avatar" aria-hidden>{initials}</span>
+        <div className="od-360-hero-meta">
+          <div className="od-360-hero-status">
+            <Badge tone={student.status === "ACTIVE" ? "ok" : student.status === "AT_RISK" ? "bad" : student.status === "NEW" ? "teal" : "neutral"}>
+              {student.status}
+            </Badge>
+            {student.targetGoal ? <span className="od-muted">Hedef: {student.targetGoal}</span> : null}
+            {student.targetSchool ? <span className="od-muted">· {student.targetSchool}</span> : null}
+          </div>
+        </div>
+      </div>
+
       <Student360TabBar current={tab} baseHref={baseHref} />
+
+      {tab === "overview" ? (
+        <div className="od-360-hero-kpis">
+          {heroKpis.map((k) => (
+            <div key={k.label} className={`od-360-kpi tone-${k.tone}`}>
+              <div className="k-label">{k.label}</div>
+              <div className="k-value">{k.value}</div>
+              {k.meta ? <div className="k-meta">{k.meta}</div> : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {tab === "overview" ? (
         <div style={{ marginBottom: 16 }}>

@@ -6,6 +6,11 @@ import { EmptyState } from "@/components/panel/ui/empty-state";
 import { Badge } from "@/components/panel/ui/badge";
 import { NoChildEmpty } from "@/components/panel/parent/no-child-empty";
 import { lessonStatusLabel, lessonStatusTone } from "@/lib/lessons/lifecycle";
+import {
+  WeeklyScheduleGrid,
+  startOfIsoWeek,
+  weekRangeLabel,
+} from "@/components/panel/lessons/weekly-schedule-grid";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +29,42 @@ export default async function ParentSchedule() {
       course: { select: { title: true } },
     },
   });
+
+  const weekStart = startOfIsoWeek(new Date());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 7);
+  const weekLessons = lessons.filter((l) => l.scheduledAt >= weekStart && l.scheduledAt < weekEnd);
+
   return (
     <>
-      <PageHeader title="Ders programı" subtitle={`Önümüzdeki 14 gün — ${lessons.length} ders`} />
-      <Card>
+      <PageHeader
+        breadcrumbs={[
+          { label: "Veli", href: "/panel/veli" },
+          { label: "Ders Programı" },
+        ]}
+        title={weekRangeLabel(weekStart)}
+        subtitle={`Önümüzdeki 14 gün — ${lessons.length} ders`}
+      />
+
+      <WeeklyScheduleGrid
+        lessons={weekLessons.map((l) => ({
+          id: l.id,
+          scheduledAt: l.scheduledAt,
+          duration: l.duration,
+          title: l.title,
+          subject: l.subject,
+          status: l.status,
+          course: l.course,
+          teacher: l.teacher,
+          student: l.student,
+          location: l.location,
+        }))}
+        weekStart={weekStart}
+        secondaryFor={(l) => l.student?.fullName ?? null}
+      />
+
+      <details className="od-week-list-disclosure">
+        <summary>Detaylı liste — {lessons.length} ders</summary>
         <table className="od-table">
           <thead><tr><th>Tarih</th><th>Çocuk</th><th>Konu</th><th>Öğretmen</th><th>Lokasyon</th><th>Süre</th><th>Durum</th></tr></thead>
           <tbody>
@@ -47,7 +84,7 @@ export default async function ParentSchedule() {
             ))}
           </tbody>
         </table>
-      </Card>
+      </details>
     </>
   );
 }

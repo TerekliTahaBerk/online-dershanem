@@ -26,28 +26,35 @@ export default async function AdminTeachers({ searchParams }: { searchParams: Pr
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğretmenler" },
+        ]}
         title="Öğretmenler"
         subtitle={`${teachers.length} öğretmen${q ? ` · "${q}"` : ""}`}
         right={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="od-list-toolbar">
             <SearchInput placeholder="Ad, email, branş…" />
             <ExportButton entity="ogretmenler" />
-            <Link href="/panel/admin/ogretmenler/yeni" className="od-btn od-btn-primary od-btn-sm">+ Yeni öğretmen</Link>
+            <Link href="/panel/admin/ogretmenler/yeni" className="od-btn dark sm">+ Yeni öğretmen</Link>
           </div>
         }
       />
       <Card>
-        <table className="od-table">
+        <table className="od-table premium-table">
           <thead><tr><th>Ad</th><th>Email</th><th>Branş</th><th>Telefon</th><th>Durum</th><th></th></tr></thead>
           <tbody>
+            {teachers.length === 0 ? (
+              <tr><td colSpan={6} className="od-empty-soft">Öğretmen bulunamadı.</td></tr>
+            ) : null}
             {teachers.map((t) => (
               <tr key={t.id}>
-                <td>{t.fullName}</td>
+                <td style={{ fontWeight: 500 }}>{t.fullName}</td>
                 <td className="od-muted">{t.email ?? "—"}</td>
                 <td>{t.subjects}</td>
                 <td className="od-mono">{t.phone ?? "—"}</td>
                 <td><Badge tone={t.status === "ACTIVE" ? "ok" : "neutral"}>{t.status}</Badge></td>
-                <td><Link href={`/panel/admin/ogretmenler/${t.id}/duzenle`} className="od-btn od-btn-ghost od-btn-sm">Düzenle</Link></td>
+                <td><Link href={`/panel/admin/ogretmenler/${t.id}/duzenle`} className="od-btn ghost sm">Düzenle</Link></td>
               </tr>
             ))}
           </tbody>

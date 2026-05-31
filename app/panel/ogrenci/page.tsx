@@ -99,17 +99,21 @@ export default async function StudentDashboard() {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { label: "Öğrenci", href: "/panel/ogrenci" },
+          { label: "Dashboard" },
+        ]}
         title={`Merhaba ${firstName}`}
-        subtitle={`${TODAY_FMT.format(new Date())}${student.classLevel ? ` · ${student.classLevel}` : ""}${student.examType ? ` · ${student.examType}` : ""}`}
+        subtitle={`Bugün ne yapman gerekiyor? · ${TODAY_FMT.format(new Date())}${student.classLevel ? ` · ${student.classLevel}` : ""}${student.examType ? ` · ${student.examType}` : ""}`}
         right={
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <Link href="/panel/ogrenci/calisma-odasi" className="od-btn od-btn-primary od-btn-sm">
+          <div className="od-dashboard-actions">
+            <Link href="/panel/ogrenci/calisma-odasi" className="od-btn dark sm">
               {study.active ? "Çalışma odasına dön" : "Çalışma başlat"}
             </Link>
-            <Link href="/panel/ogrenci/hedefim" className="od-btn od-btn-ghost od-btn-sm">Hedefim</Link>
-            <Link href="/panel/ogrenci/odevler" className="od-btn od-btn-ghost od-btn-sm">Ödevlerim</Link>
-            <Link href="/panel/ogrenci/ders-programi" className="od-btn od-btn-ghost od-btn-sm">Ders programı</Link>
-            <Link href="/panel/ogrenci/odk/denemeler" className="od-btn od-btn-ghost od-btn-sm">Denemelerim</Link>
+            <Link href="/panel/ogrenci/hedefim" className="od-btn ghost sm">Hedefim</Link>
+            <Link href="/panel/ogrenci/odevler" className="od-btn ghost sm">Ödevlerim</Link>
+            <Link href="/panel/ogrenci/ders-programi" className="od-btn ghost sm">Ders programı</Link>
+            <Link href="/panel/ogrenci/odk/denemeler" className="od-btn ghost sm">Denemelerim</Link>
           </div>
         }
         meta={
@@ -140,12 +144,12 @@ export default async function StudentDashboard() {
         <StudentTodayChecklist items={checklist} firstName={firstName} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12, marginBottom: 12 }}>
+      <div className="od-dashboard-split-1-1">
         <StudentAttendanceSnapshotCard snapshot={attendance} />
         <StudentHomeworkFocusCard focus={homework} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12, marginBottom: 12 }}>
+      <div className="od-dashboard-split-1-1">
         <StudentRecentResultsCard items={results.items} averageNet={results.averageNet} />
         <StudentSuggestedFocusCard items={focus} />
       </div>
@@ -159,7 +163,7 @@ export default async function StudentDashboard() {
       </div>
 
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <Link href="/panel/ogrenci/profilim" className="od-btn od-btn-ghost od-btn-sm">
+        <Link href="/panel/ogrenci/profilim" className="od-btn ghost sm">
           Profilim →
         </Link>
       </div>

@@ -65,40 +65,30 @@ export default async function TeacherDashboard() {
   return (
     <>
       <PageHeader
+        breadcrumbs={[
+          { label: "Öğretmen", href: "/panel/ogretmen" },
+          { label: "Dashboard" },
+        ]}
         title="Öğretmen Paneli"
         subtitle={`${teacher.fullName} · ${TODAY_FMT.format(new Date())}`}
         right={
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            <Link href="/panel/ogretmen/yoklama/yeni" className="od-btn od-btn-primary od-btn-sm">+ Yoklama al</Link>
-            <Link href="/panel/ogretmen/odevler/yeni" className="od-btn od-btn-primary od-btn-sm">+ Ödev oluştur</Link>
-            <Link href="/panel/ogretmen/ders-programi" className="od-btn od-btn-ghost od-btn-sm">Ders programı</Link>
-            <Link href="/panel/ogretmen/siniflarim" className="od-btn od-btn-ghost od-btn-sm">Sınıflarım</Link>
+          <div className="od-dashboard-actions">
+            <Link href="/panel/ogretmen/yoklama/yeni" className="od-btn dark sm">+ Yoklama al</Link>
+            <Link href="/panel/ogretmen/odevler/yeni" className="od-btn dark sm">+ Ödev oluştur</Link>
+            <Link href="/panel/ogretmen/ders-programi" className="od-btn ghost sm">Ders programı</Link>
+            <Link href="/panel/ogretmen/siniflarim" className="od-btn ghost sm">Sınıflarım</Link>
           </div>
         }
       />
 
       {/* Row 1 — today + pending attendance */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
-          gap: 12,
-          marginBottom: 12,
-        }}
-      >
+      <div className="od-dashboard-split-1-4">
         <TodayTimeline lessons={today} />
         <PendingAttendance rows={pending} />
       </div>
 
       {/* Row 2 — homework review + risky students */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-          gap: 12,
-          marginBottom: 12,
-        }}
-      >
+      <div className="od-dashboard-split-1-1">
         <HomeworkReviewQueue rows={reviewQueue} />
         <RiskyStudents rows={risky} />
       </div>

@@ -411,7 +411,7 @@ export function ParentCreateWizard() {
                       </span>
                       <button
                         type="button"
-                        className="od-btn od-btn-ghost"
+                        className="od-btn ghost sm"
                         onClick={() => onRemoveStudent(s.id)}
                         style={{ fontSize: 12 }}
                       >
@@ -479,10 +479,10 @@ export function ParentCreateWizard() {
               warnings={warnings}
             />
             <FormActions>
-              <Link href="/panel/admin/veliler" className="od-btn od-btn-ghost">İptal</Link>
+              <Link href="/panel/admin/veliler" className="od-btn ghost">İptal</Link>
               <button
                 type="button"
-                className="od-btn od-btn-primary"
+                className="od-btn dark"
                 onClick={submit}
                 disabled={!canSubmit}
               >
@@ -632,7 +632,7 @@ function DuplicatesPanel({
                 </span>
               </span>
               {href ? (
-                <Link href={href} className="od-btn od-btn-ghost" style={{ fontSize: 12 }}>
+                <Link href={href} className="od-btn ghost sm" style={{ fontSize: 12 }}>
                   Aç
                 </Link>
               ) : null}

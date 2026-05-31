@@ -280,17 +280,17 @@ export default async function AdminParents({
       <PageHeader
         title="Veliler"
         breadcrumbs={[
-          { label: "Admin", href: "/panel/admin" },
+          { label: "Yönetim", href: "/panel/admin" },
           { label: "Veliler" },
         ]}
         subtitle={`${total} veli${sp.q ? ` · "${sp.q}"` : ""}`}
         right={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="od-list-toolbar">
             <SearchInput placeholder="Ad, email, telefon…" />
             <ExportButton entity="veliler" />
             <Link
               href="/panel/admin/veliler/yeni"
-              className="od-btn od-btn-primary od-btn-sm"
+              className="od-btn dark sm"
             >
               + Yeni veli
             </Link>

@@ -51,34 +51,26 @@ export default async function NewStudent() {
       <PageHeader
         title="Yeni öğrenci"
         breadcrumbs={[
-          { label: "Admin", href: "/panel/admin" },
+          { label: "Yönetim", href: "/panel/admin" },
           { label: "Öğrenciler", href: "/panel/admin/ogrenciler" },
           { label: "Yeni" },
         ]}
         subtitle="Onboarding tamamlandığında: hesap, veli, sınıf, paket ve etiketler tek seferde kurulur."
       />
 
-      <div className="od-grid" style={{ gridTemplateColumns: "220px 1fr", gap: 24, alignItems: "flex-start" }}>
-        <aside style={{ position: "sticky", top: 24 }}>
-          <Card>
-            <CardBody>
-              <div style={{ fontSize: 12, color: "var(--od-muted)", textTransform: "uppercase", marginBottom: 8 }}>
-                Bölümler
-              </div>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6, fontSize: 13 }}>
-                {SECTIONS.map((s) => (
-                  <li key={s.id}>
-                    <Link href={"#" + s.id} style={{ color: "var(--od-text)", textDecoration: "none" }}>
-                      {s.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </CardBody>
-          </Card>
+      <div className="od-wizard-shell">
+        <aside className="od-wizard-rail">
+          <div className="od-wizard-rail-title">Bölümler</div>
+          <ul>
+            {SECTIONS.map((s) => (
+              <li key={s.id}>
+                <Link href={"#" + s.id}>{s.title}</Link>
+              </li>
+            ))}
+          </ul>
         </aside>
 
-        <ToastForm action={createStudentAction} className="od-grid" style={{ gap: 16 }}>
+        <ToastForm action={createStudentAction} className="od-wizard-main">
           <Card><CardBody>
             <h3 id="kimlik" style={{ marginTop: 0 }}>1. Kimlik</h3>
             <p style={{ marginTop: 0, color: "var(--od-muted)", fontSize: 13 }}>
