@@ -33,7 +33,7 @@ import {
   type ParentPayerOption,
   type PaymentPlanInput,
   type StudentEnrollmentSnapshot,
-} from "@/lib/panel/enrollment";
+} from "@/lib/panel/enrollment-shared";
 
 const TRY = (kurus: number) =>
   new Intl.NumberFormat("tr-TR", {

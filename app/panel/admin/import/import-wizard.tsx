@@ -12,7 +12,7 @@ import {
   type ImportEntity,
   type ImportRowStatus,
   type ValidatedRow,
-} from "@/lib/panel/imports";
+} from "@/lib/panel/imports-shared";
 import { dryRunImportAction, commitImportAction } from "./_actions";
 
 const ENTITY_OPTIONS: ReadonlyArray<{

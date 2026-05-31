@@ -30,101 +30,50 @@ import {
   defaultUserInviteExpiresAt,
   type DuplicateMatch,
 } from "@/lib/panel/account-onboarding";
+import {
+  MAX_IMPORT_ROWS,
+  normalizeHeader,
+  getImportRowStatusLabel,
+  getImportRowStatusTone,
+  type ImportEntity,
+  type ImportRowStatus,
+  type ImportRowMessage,
+  type WouldCreateFlags,
+  type ParsedRow,
+  type ValidatedRow,
+  type DryRunSummary,
+  type DryRunResult,
+  type CommitOptions,
+  type CommittedRow,
+  type CommitSummary,
+  type CommitResult,
+  type ImportColumnSpec,
+} from "@/lib/panel/imports-shared";
 
-// ─── Public types ────────────────────────────────────────────────────────────
-
-export type ImportEntity = "students" | "parents" | "teachers";
-
-export const MAX_IMPORT_ROWS = 500;
-
-export type ImportRowStatus = "READY" | "WARNING" | "ERROR" | "SKIPPED_DUPLICATE";
-
-export type ImportRowMessage = {
-  field?: string;
-  message: string;
+// Re-export so existing call sites that imported from `@/lib/panel/imports`
+// keep working without churn.
+export {
+  MAX_IMPORT_ROWS,
+  normalizeHeader,
+  getImportRowStatusLabel,
+  getImportRowStatusTone,
+};
+export type {
+  ImportEntity,
+  ImportRowStatus,
+  ImportRowMessage,
+  WouldCreateFlags,
+  ParsedRow,
+  ValidatedRow,
+  DryRunSummary,
+  DryRunResult,
+  CommitOptions,
+  CommittedRow,
+  CommitSummary,
+  CommitResult,
+  ImportColumnSpec,
 };
 
-export type WouldCreateFlags = {
-  user: boolean;
-  student: boolean;
-  parent: boolean;
-  teacher: boolean;
-  classroomLink: boolean;
-  parentLink: boolean;
-  invite: boolean;
-};
-
-export type ParsedRow = {
-  rowNumber: number; // 1-based, matches CSV (excluding header)
-  raw: Record<string, string>;
-};
-
-export type ValidatedRow = {
-  rowNumber: number;
-  raw: Record<string, string>;
-  /** Normalized canonical values (lowercased email, normalized phone, etc.) */
-  normalized: Record<string, string | null>;
-  status: ImportRowStatus;
-  errors: ImportRowMessage[];
-  warnings: ImportRowMessage[];
-  duplicates: DuplicateMatch[];
-  wouldCreate: WouldCreateFlags;
-};
-
-export type DryRunSummary = {
-  total: number;
-  ready: number;
-  warning: number;
-  error: number;
-  skipped: number;
-};
-
-export type DryRunResult = {
-  entity: ImportEntity;
-  columns: ImportColumnSpec[];
-  rows: ValidatedRow[];
-  summary: DryRunSummary;
-  /** Parser-level errors (header missing, too many rows, malformed CSV). */
-  fatalErrors: string[];
-};
-
-export type CommitOptions = {
-  allowWarnings: boolean;
-};
-
-export type CommittedRow = {
-  rowNumber: number;
-  ok: boolean;
-  /** New entity id (Student/Parent/Teacher). */
-  entityId?: string;
-  /** New User id, when an account was also created. */
-  userId?: string;
-  /** Generated invite token URL (admin-visible once; never persisted in CSV). */
-  inviteUrl?: string;
-  error?: string;
-};
-
-export type CommitSummary = {
-  attempted: number;
-  created: number;
-  skipped: number;
-  failed: number;
-};
-
-export type CommitResult = {
-  entity: ImportEntity;
-  rows: CommittedRow[];
-  summary: CommitSummary;
-};
-
-export type ImportColumnSpec = {
-  /** Header label as written in the template */
-  header: string;
-  /** Canonical (slugified) key used internally */
-  key: string;
-  required: boolean;
-  description?: string;
-};
 
 // ─── Column specs (must stay in sync with /api/panel/import-templates/[entity])
 // ────────────────────────────────────────────────────────────────────────────
@@ -173,43 +122,7 @@ export function getImportTemplateColumns(entity: ImportEntity): ImportColumnSpec
   }
 }
 
-// ─── Status label / tone (UI helpers) ────────────────────────────────────────
-
-export function getImportRowStatusLabel(s: ImportRowStatus): string {
-  switch (s) {
-    case "READY": return "Hazır";
-    case "WARNING": return "Uyarı";
-    case "ERROR": return "Hata";
-    case "SKIPPED_DUPLICATE": return "Atlandı (mükerrer)";
-  }
-}
-export function getImportRowStatusTone(s: ImportRowStatus): "ok" | "warn" | "bad" | "neutral" {
-  switch (s) {
-    case "READY": return "ok";
-    case "WARNING": return "warn";
-    case "ERROR": return "bad";
-    case "SKIPPED_DUPLICATE": return "neutral";
-  }
-}
-
 // ─── Parsing ─────────────────────────────────────────────────────────────────
-
-/**
- * Lowercase, drop diacritics, drop everything but [a-z0-9]. Used to map
- * CSV header strings to canonical column keys without being fragile about
- * casing / accents / extra spaces.
- */
-export function normalizeHeader(raw: string): string {
-  return raw
-    .toLocaleLowerCase("tr-TR")
-    .replace(/ı/g, "i")
-    .replace(/ş/g, "s")
-    .replace(/ğ/g, "g")
-    .replace(/ü/g, "u")
-    .replace(/ö/g, "o")
-    .replace(/ç/g, "c")
-    .replace(/[^a-z0-9]+/g, "");
-}
 
 type ParseOk = { ok: true; headers: string[]; rows: ParsedRow[]; delimiter: string };
 type ParseErr = { ok: false; error: string };
