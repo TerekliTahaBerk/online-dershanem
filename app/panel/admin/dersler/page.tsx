@@ -8,7 +8,8 @@ import { Badge } from "@/components/panel/ui/badge";
 import { SearchInput } from "@/components/panel/ui/search-input";
 import { QuickFilters } from "@/components/panel/ui/quick-filters";
 import { SavedViewsBar } from "@/components/panel/ui/saved-views";
-import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
+import { Pagination } from "@/components/panel/ui/pagination";
+import { parsePagination } from "@/components/panel/ui/pagination-utils";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 
 export const dynamic = "force-dynamic";

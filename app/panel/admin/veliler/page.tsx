@@ -31,7 +31,8 @@ import { BulkProvider, BulkRowCheckbox, BulkAllCheckbox, BulkBar } from "@/compo
 import { ParentBulkActions } from "@/components/panel/bulk/parent-bulk-actions";
 import { QuickFilters } from "@/components/panel/ui/quick-filters";
 import { SavedViewsBar } from "@/components/panel/ui/saved-views";
-import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
+import { Pagination } from "@/components/panel/ui/pagination";
+import { parsePagination } from "@/components/panel/ui/pagination-utils";
 import { ParentQuickDrawer } from "@/components/panel/parents/parent-quick-drawer";
 import { StudentQuickDrawer } from "@/components/panel/students/student-quick-drawer";
 import {

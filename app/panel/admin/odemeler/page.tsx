@@ -7,7 +7,8 @@ import { SearchInput } from "@/components/panel/ui/search-input";
 import { ExportButton } from "@/components/panel/ui/export-button";
 import { QuickFilters, DateRangeQuickFilter, rangeToWhere } from "@/components/panel/ui/quick-filters";
 import { SmartTableShell, SortableTh } from "@/components/panel/ui/smart-table";
-import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
+import { Pagination } from "@/components/panel/ui/pagination";
+import { parsePagination } from "@/components/panel/ui/pagination-utils";
 import { setPurchaseStatusAction } from "./_actions";
 
 export const dynamic = "force-dynamic";

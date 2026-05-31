@@ -33,7 +33,8 @@ import { BulkProvider, BulkRowCheckbox, BulkAllCheckbox, BulkBar } from "@/compo
 import { TeacherBulkActions } from "@/components/panel/bulk/teacher-bulk-actions";
 import { QuickFilters } from "@/components/panel/ui/quick-filters";
 import { SavedViewsBar } from "@/components/panel/ui/saved-views";
-import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
+import { Pagination } from "@/components/panel/ui/pagination";
+import { parsePagination } from "@/components/panel/ui/pagination-utils";
 import {
   deriveUserAccountState,
   getUserAccountStateLabel,
