@@ -24,7 +24,7 @@ import {
   getUserAccountStateLabel,
   getUserAccountStateTone,
   type UserAccountState,
-} from "@/lib/panel/account-onboarding";
+} from "@/lib/panel/account-onboarding-shared";
 import { useToast } from "@/components/ui/toast";
 
 type Props = {

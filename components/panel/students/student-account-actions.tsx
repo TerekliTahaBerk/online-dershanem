@@ -15,7 +15,7 @@ import {
   enableStudentAccountAction,
   forceStudentPasswordChangeAction,
 } from "@/app/panel/admin/ogrenciler/_actions";
-import type { UserAccountState } from "@/lib/panel/account-onboarding";
+import type { UserAccountState } from "@/lib/panel/account-onboarding-shared";
 
 type Props = {
   studentId: string;

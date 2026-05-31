@@ -27,7 +27,7 @@ import {
   type ParentRelationshipType,
 } from "@/lib/parents";
 import { createParentWithAccountAction, lookupParentDuplicatesAction } from "@/app/panel/admin/veliler/_actions";
-import type { DuplicateMatch } from "@/lib/panel/account-onboarding";
+import type { DuplicateMatch } from "@/lib/panel/account-onboarding-shared";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
