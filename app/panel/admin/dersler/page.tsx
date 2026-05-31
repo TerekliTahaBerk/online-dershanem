@@ -91,29 +91,41 @@ export default async function DerslerListPage({
   }
   if (ands.length) where.AND = ands;
 
+  const courseFindMany = prisma.course.findMany({
+    where,
+    orderBy: [{ isActive: "desc" }, { subject: "asc" }, { title: "asc" }],
+    skip,
+    take: pageSize,
+    include: {
+      defaultTeacher: { select: { id: true, fullName: true } },
+      defaultClassroom: { select: { id: true, name: true } },
+      _count: { select: { lessons: true, packageCourses: true, materials: true } },
+    },
+  });
+  type CourseRow = Awaited<typeof courseFindMany>[number];
+
   const [total, rows, subjectsRaw] = await Promise.all([
-    prisma.course.count({ where }),
-    prisma.course.findMany({
-      where,
-      orderBy: [{ isActive: "desc" }, { subject: "asc" }, { title: "asc" }],
-      skip,
-      take: pageSize,
-      include: {
-        defaultTeacher: { select: { id: true, fullName: true } },
-        defaultClassroom: { select: { id: true, name: true } },
-        _count: { select: { lessons: true, packageCourses: true, materials: true } },
-      },
+    prisma.course.count({ where }).catch((err) => {
+      console.error("[dersler] course.count failed", err);
+      return 0;
+    }),
+    courseFindMany.catch((err) => {
+      console.error("[dersler] course.findMany failed", err);
+      return [] as CourseRow[];
     }),
     prisma.course.findMany({
       distinct: ["subject"],
       orderBy: { subject: "asc" },
       select: { subject: true },
       take: 200,
+    }).catch((err) => {
+      console.error("[dersler] subject distinct failed", err);
+      return [] as Array<{ subject: string }>;
     }),
   ]);
 
-  const courseIds = rows.map((r) => r.id);
-  const subjectsForRows = Array.from(new Set(rows.map((r) => r.subject)));
+  const courseIds = rows.map((r: CourseRow) => r.id);
+  const subjectsForRows = Array.from(new Set(rows.map((r: CourseRow) => r.subject).filter(Boolean)));
 
   const [upcomingByCourse, hwBySubject] = await Promise.all([
     courseIds.length
@@ -125,6 +137,9 @@ export default async function DerslerListPage({
             status: { not: "CANCELLED" },
           },
           _count: { _all: true },
+        }).catch((err) => {
+          console.error("[dersler] lesson.groupBy failed", err);
+          return [] as Array<{ courseId: string | null; _count: { _all: number } }>;
         })
       : Promise.resolve([] as Array<{ courseId: string | null; _count: { _all: number } }>),
     subjectsForRows.length
@@ -135,8 +150,11 @@ export default async function DerslerListPage({
             status: "PUBLISHED",
           },
           _count: { _all: true },
+        }).catch((err) => {
+          console.error("[dersler] assignment.groupBy failed", err);
+          return [] as Array<{ subject: string | null; _count: { _all: number } }>;
         })
-      : Promise.resolve([] as Array<{ subject: string; _count: { _all: number } }>),
+      : Promise.resolve([] as Array<{ subject: string | null; _count: { _all: number } }>),
   ]);
 
   const upcomingMap = new Map<string, number>();
