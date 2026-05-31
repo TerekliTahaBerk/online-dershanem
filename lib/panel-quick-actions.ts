@@ -37,6 +37,7 @@ const TEACHER: QuickAction[] = [
   { id: "qa-messages",      label: "Mesajlara git",          href: "/panel/ogretmen/mesajlar",       icon: "msg",        shortcut: "g m" },
   { id: "qa-announce",      label: "Duyuru gönder",          href: "/panel/ogretmen/duyurular",      icon: "megaphone" },
   { id: "qa-students",      label: "Öğrencilerime git",      href: "/panel/ogretmen/ogrencilerim",   icon: "users",      shortcut: "g s" },
+  { id: "qa-materials",     label: "Materyaller",            href: "/panel/ogretmen/materyaller",    icon: "book",       shortcut: "g l" },
 ];
 
 const STUDENT: QuickAction[] = [
@@ -44,6 +45,7 @@ const STUDENT: QuickAction[] = [
   { id: "qa-assignments",   label: "Ödevlerim",              href: "/panel/ogrenci/odevler",         icon: "assignment", shortcut: "g o" },
   { id: "qa-odk-exams",     label: "ODK denemeler",          href: "/panel/ogrenci/odk/denemeler",   icon: "target",     shortcut: "g e" },
   { id: "qa-study",         label: "Çalışma odası",          href: "/panel/ogrenci/calisma-odasi",   icon: "clock",      shortcut: "g r" },
+  { id: "qa-library",       label: "Kütüphane",              href: "/panel/ogrenci/kutuphane",       icon: "book",       shortcut: "g l" },
   { id: "qa-performance",   label: "Performansım",           href: "/panel/ogrenci/performansim",    icon: "chart" },
   { id: "qa-package",       label: "Paketim",                href: "/panel/ogrenci/paketim",         icon: "package" },
 ];

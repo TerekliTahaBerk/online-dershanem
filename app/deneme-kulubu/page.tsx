@@ -208,20 +208,39 @@ function AnalyticsMock() {
 }
 
 export default async function DenemeKulubuPage() {
-  const packages = await prisma.odkPackage.findMany({
-    where: { isActive: true },
-    orderBy: { priceCents: "asc" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      description: true,
-      priceCents: true,
-      originalPriceCents: true,
-      durationDays: true,
-      _count: { select: { packageExams: true } },
-    },
-  });
+  // Phase 2 / Session 19 — defensive fallback for static prerender.
+  // If the build environment can't reach the DB (e.g. CI without secrets),
+  // render with an empty package list rather than crashing the build.
+  // ISR (`revalidate = 300`) re-fetches once production is live.
+  let packages: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    priceCents: number;
+    originalPriceCents: number | null;
+    durationDays: number | null;
+    _count: { packageExams: number };
+  }> = [];
+  try {
+    packages = await prisma.odkPackage.findMany({
+      where: { isActive: true },
+      orderBy: { priceCents: "asc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        priceCents: true,
+        originalPriceCents: true,
+        durationDays: true,
+        _count: { select: { packageExams: true } },
+      },
+    });
+  } catch (err) {
+    console.warn("[deneme-kulubu] package list query failed", err);
+    packages = [];
+  }
 
   const highlightId =
     packages.length > 0

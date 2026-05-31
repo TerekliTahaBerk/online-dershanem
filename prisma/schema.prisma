@@ -103,48 +103,60 @@ model RateLimitEntry {
 }
 
 model User {
-  id                      String                   @id @default(cuid())
-  email                   String                   @unique
-  name                    String?
-  passwordHash            String?
-  role                    UserRole                 @default(ADMIN)
-  onboardingCompletedAt   DateTime?
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  student                 Student?
-  teacher                 Teacher?
-  parent                  Parent?
-  notifications           Notification[]
-  auditLogs               AuditLog[]               @relation("AuditLogActor")
-  createdContent          CourseContent[]          @relation("CourseContentCreator")
-  odkCreatedExams         OdkExam[]                @relation("OdkExamCreator")
-  odkUserAccessTags       OdkUserAccessTag[]
-  odkOrders               OdkOrder[]
-  odkEntitlements         OdkEntitlement[]
-  odkAttempts             OdkExamAttempt[]
-  odOrders                OdOrder[]
-  couponsCreated          Coupon[]                 @relation("CouponCreatedBy")
-  couponRedemptions       CouponRedemption[]       @relation("CouponRedemptionUser")
-  assignedStudentPackages StudentPackage[]         @relation("StudentPackageAssignedBy")
-  studentTagAssignments   StudentTag[]             @relation("StudentTagAssignedBy")
-  attendanceRecords       Attendance[]             @relation("AttendanceRecorder")
-  lessonJoinEvents        LessonJoinEvent[]
-  inboxReceived           InboxMessage[]           @relation("InboxRecipient")
-  inboxSent               InboxMessage[]           @relation("InboxCreator")
-  studentNotesAuthored    StudentNote[]            @relation("StudentNoteAuthor")
-  studentFilesUploaded    StudentFile[]            @relation("StudentFileUploader")
-  accountingEntries       AccountingEntry[]        @relation("AccountingCreator")
-  permissionOverrides     UserPermissionOverride[]
-  refreshTokens           RefreshToken[]
-  savedViews              SavedView[]
-  dashboardLayouts        DashboardLayout[]
+  id                          String                    @id @default(cuid())
+  email                       String                    @unique
+  name                        String?
+  passwordHash                String?
+  role                        UserRole                  @default(ADMIN)
+  onboardingCompletedAt       DateTime?
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @updatedAt
+  student                     Student?
+  teacher                     Teacher?
+  parent                      Parent?
+  notifications               Notification[]
+  auditLogs                   AuditLog[]                @relation("AuditLogActor")
+  createdContent              CourseContent[]           @relation("CourseContentCreator")
+  odkCreatedExams             OdkExam[]                 @relation("OdkExamCreator")
+  odkUserAccessTags           OdkUserAccessTag[]
+  odkOrders                   OdkOrder[]
+  odkEntitlements             OdkEntitlement[]
+  odkAttempts                 OdkExamAttempt[]
+  odOrders                    OdOrder[]
+  couponsCreated              Coupon[]                  @relation("CouponCreatedBy")
+  couponRedemptions           CouponRedemption[]        @relation("CouponRedemptionUser")
+  assignedStudentPackages     StudentPackage[]          @relation("StudentPackageAssignedBy")
+  studentTagAssignments       StudentTag[]              @relation("StudentTagAssignedBy")
+  attendanceRecords           Attendance[]              @relation("AttendanceRecorder")
+  lessonJoinEvents            LessonJoinEvent[]
+  inboxReceived               InboxMessage[]            @relation("InboxRecipient")
+  inboxSent                   InboxMessage[]            @relation("InboxCreator")
+  studentNotesAuthored        StudentNote[]             @relation("StudentNoteAuthor")
+  studentFilesUploaded        StudentFile[]             @relation("StudentFileUploader")
+  accountingEntries           AccountingEntry[]         @relation("AccountingCreator")
+  permissionOverrides         UserPermissionOverride[]
+  refreshTokens               RefreshToken[]
+  savedViews                  SavedView[]
+  dashboardLayouts            DashboardLayout[]
   // ── Mobile (Faz Mobile) ──
-  mobileDevices           MobileDevice[]
-  notificationPrefs       NotificationPreference[]
-  appActivityLogs         AppActivityLog[]
+  mobileDevices               MobileDevice[]
+  notificationPrefs           NotificationPreference[]
+  appActivityLogs             AppActivityLog[]
   // ── Account deletion (KVKK / Faz Production) ──
-  accountDeletionRequests AccountDeletionRequest[] @relation("AccountDeletionRequestUser")
-  accountDeletionReviews  AccountDeletionRequest[] @relation("AccountDeletionRequestReviewer")
+  accountDeletionRequests     AccountDeletionRequest[]  @relation("AccountDeletionRequestUser")
+  accountDeletionReviews      AccountDeletionRequest[]  @relation("AccountDeletionRequestReviewer")
+  // ── Phase 2 / Session 5 — Materials ──
+  materialsCreated            Material[]                @relation("MaterialCreator")
+  // ── Phase 2 / Session 6 — Absence Excuse review ──
+  excuseReviews               AbsenceExcuse[]           @relation("AbsenceExcuseReviewer")
+  // ── Phase 2 / Session 7 — Academic Roadmap ──
+  academicGoalsCreated        StudentAcademicGoal[]     @relation("StudentAcademicGoalCreator")
+  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
+  paymentScheduleItemsCreated PaymentScheduleItem[]     @relation("PaymentScheduleItemCreator")
+  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
+  compensationRulesCreated    TeacherCompensationRule[] @relation("CompensationRuleCreator")
+  payrollPeriodsCreated       TeacherPayrollPeriod[]    @relation("PayrollPeriodCreator")
+  payrollItemsCreated         TeacherPayrollItem[]      @relation("PayrollItemCreator")
 }
 
 model LeadSubmission {
@@ -172,110 +184,118 @@ model LeadSubmission {
 }
 
 model PurchaseIntent {
-  id               String          @id @default(cuid())
-  source           String
-  packageName      String
-  paymentLink      String?
-  studentFullName  String
-  studentPhone     String
-  studentEmail     String
-  schoolName       String
-  city             String
-  district         String
-  classLevel       String
-  department       String?
-  examType         String
-  targetSchool     String?
-  targetRanking    String
-  currentLevel     String
-  currentNet       String
-  weakLessons      String
-  strongLessons    String?
-  needType         String
-  studyStatus      String
-  weeklyStudyHours String
-  parentFullName   String?
-  parentPhone      String?
-  parentEmail      String?
-  notes            String?
-  kvkkConsent      Boolean
-  paymentConsent   Boolean
-  status           PurchaseStatus  @default(PENDING)
-  intakeStatus     IntakeStatus    @default(NEW)
-  adminNotes       String?
-  taskLabel        String?
-  nextActionAt     DateTime?
-  studentId        String?
-  submittedAt      DateTime
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  events           PurchaseEvent[]
-  student          Student?        @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  id                   String                @id @default(cuid())
+  source               String
+  packageName          String
+  paymentLink          String?
+  studentFullName      String
+  studentPhone         String
+  studentEmail         String
+  schoolName           String
+  city                 String
+  district             String
+  classLevel           String
+  department           String?
+  examType             String
+  targetSchool         String?
+  targetRanking        String
+  currentLevel         String
+  currentNet           String
+  weakLessons          String
+  strongLessons        String?
+  needType             String
+  studyStatus          String
+  weeklyStudyHours     String
+  parentFullName       String?
+  parentPhone          String?
+  parentEmail          String?
+  notes                String?
+  kvkkConsent          Boolean
+  paymentConsent       Boolean
+  status               PurchaseStatus        @default(PENDING)
+  intakeStatus         IntakeStatus          @default(NEW)
+  adminNotes           String?
+  taskLabel            String?
+  nextActionAt         DateTime?
+  studentId            String?
+  submittedAt          DateTime
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  events               PurchaseEvent[]
+  student              Student?              @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
+  paymentScheduleItems PaymentScheduleItem[]
 
   @@index([intakeStatus, submittedAt])
 }
 
 model Student {
-  id                 String                     @id @default(cuid())
-  fullName           String
-  phone              String
-  phoneKey           String                     @unique
-  email              String?
-  city               String?
-  district           String?
-  schoolName         String?
-  classLevel         String?
-  department         String?
-  examType           String?
-  currentLevel       String?
-  currentNet         String?
-  targetGoal         String?
-  targetSchool       String?
-  targetRanking      String?
-  strongLessons      String?
-  weakLessons        String?
-  needType           String?
-  studyStatus        String?
-  weeklyStudyHours   String?
-  parentFullName     String?
-  parentPhone        String?
-  parentEmail        String?
-  source             String?
-  activePackage      String?
-  status             StudentStatus              @default(NEW)
-  notes              String?
-  taskLabel          String?
-  nextActionAt       DateTime?
-  submittedAt        DateTime?
-  createdAt          DateTime                   @default(now())
-  updatedAt          DateTime                   @updatedAt
-  userId             String?                    @unique
-  user               User?                      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  leadSubmissions    LeadSubmission[]
-  purchaseIntents    PurchaseIntent[]
-  lessons            Lesson[]
-  packageEnrollments StudentPackageEnrollment[]
-  courseProgress     StudentCourseProgress[]
-  contentProgress    StudentContentProgress[]
-  goals              StudentGoal[]
-  examResults        StudentExamResult[]
-  metricSnapshots    StudentMetricSnapshot[]
-  packages           StudentPackage[]
-  parents            ParentStudent[]
-  classrooms         ClassroomStudent[]
-  tags               StudentTag[]
-  attendances        Attendance[]
-  lessonJoinEvents   LessonJoinEvent[]
-  studentNotes       StudentNote[]
-  comments           TeacherComment[]
-  files              StudentFile[]
-  directAssignments  Assignment[]               @relation("DirectAssignment")
-  submissions        AssignmentSubmission[]
-  accountingEntries  AccountingEntry[]          @relation("AccountingStudent")
+  id                   String                     @id @default(cuid())
+  fullName             String
+  phone                String
+  phoneKey             String                     @unique
+  email                String?
+  city                 String?
+  district             String?
+  schoolName           String?
+  classLevel           String?
+  department           String?
+  examType             String?
+  currentLevel         String?
+  currentNet           String?
+  targetGoal           String?
+  targetSchool         String?
+  targetRanking        String?
+  strongLessons        String?
+  weakLessons          String?
+  needType             String?
+  studyStatus          String?
+  weeklyStudyHours     String?
+  parentFullName       String?
+  parentPhone          String?
+  parentEmail          String?
+  source               String?
+  activePackage        String?
+  status               StudentStatus              @default(NEW)
+  notes                String?
+  taskLabel            String?
+  nextActionAt         DateTime?
+  submittedAt          DateTime?
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  userId               String?                    @unique
+  user                 User?                      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  leadSubmissions      LeadSubmission[]
+  purchaseIntents      PurchaseIntent[]
+  lessons              Lesson[]
+  packageEnrollments   StudentPackageEnrollment[]
+  courseProgress       StudentCourseProgress[]
+  contentProgress      StudentContentProgress[]
+  goals                StudentGoal[]
+  examResults          StudentExamResult[]
+  metricSnapshots      StudentMetricSnapshot[]
+  packages             StudentPackage[]
+  parents              ParentStudent[]
+  classrooms           ClassroomStudent[]
+  tags                 StudentTag[]
+  attendances          Attendance[]
+  lessonJoinEvents     LessonJoinEvent[]
+  studentNotes         StudentNote[]
+  comments             TeacherComment[]
+  files                StudentFile[]
+  directAssignments    Assignment[]               @relation("DirectAssignment")
+  submissions          AssignmentSubmission[]
+  accountingEntries    AccountingEntry[]          @relation("AccountingStudent")
   // ── Mobile (Faz Mobile) ──
-  dailyTasks         StudentDailyTask[]
+  dailyTasks           StudentDailyTask[]
   // ── Phase 2 / Session 4 — Study Room ──
-  studySessions      StudySession[]
+  studySessions        StudySession[]
+  // ── Phase 2 / Session 6 — Absence excuses ──
+  absenceExcuses       AbsenceExcuse[]
+  // ── Phase 2 / Session 7 — Academic Roadmap ──
+  academicGoals        StudentAcademicGoal[]
+  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
+  paymentScheduleItems PaymentScheduleItem[]
 
   @@index([status, updatedAt])
 }
@@ -410,46 +430,53 @@ enum PackageType {
 }
 
 model Teacher {
-  id                String             @id @default(cuid())
+  id                String                    @id @default(cuid())
   fullName          String
-  email             String?            @unique
+  email             String?                   @unique
   phone             String?
   subjects          String
   bio               String?
-  status            TeacherStatus      @default(ACTIVE)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  userId            String?            @unique
-  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status            TeacherStatus             @default(ACTIVE)
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  userId            String?                   @unique
+  user              User?                     @relation(fields: [userId], references: [id], onDelete: SetNull)
   lessons           Lesson[]
   classrooms        ClassroomTeacher[]
   comments          TeacherComment[]
   assignments       Assignment[]
   payrolls          TeacherPayroll[]
-  accountingEntries AccountingEntry[]  @relation("AccountingTeacher")
-  defaultForCourses Course[]           @relation("CourseDefaultTeacher")
+  accountingEntries AccountingEntry[]         @relation("AccountingTeacher")
+  defaultForCourses Course[]                  @relation("CourseDefaultTeacher")
+  // ── Phase 2 / Session 5 — Materials ──
+  materials         Material[]
+  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
+  compensationRules TeacherCompensationRule[]
+  payrollItems      TeacherPayrollItem[]
 
   @@index([status])
 }
 
 model Package {
-  id                String                     @id @default(cuid())
-  name              String
-  type              PackageType                @default(COURSE)
-  description       String?
-  price             Int
-  paytrLink         String?
-  lessonCount       Int
-  subjects          String
-  isActive          Boolean                    @default(true)
-  createdAt         DateTime                   @default(now())
-  updatedAt         DateTime                   @updatedAt
-  lessons           Lesson[]
-  enrollments       StudentPackageEnrollment[]
-  packageCourses    PackageCourse[]
-  studentPackages   StudentPackage[]
-  accountingEntries AccountingEntry[]          @relation("AccountingPackage")
-  odOrders          OdOrder[]
+  id                   String                     @id @default(cuid())
+  name                 String
+  type                 PackageType                @default(COURSE)
+  description          String?
+  price                Int
+  paytrLink            String?
+  lessonCount          Int
+  subjects             String
+  isActive             Boolean                    @default(true)
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  lessons              Lesson[]
+  enrollments          StudentPackageEnrollment[]
+  packageCourses       PackageCourse[]
+  studentPackages      StudentPackage[]
+  accountingEntries    AccountingEntry[]          @relation("AccountingPackage")
+  odOrders             OdOrder[]
+  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
+  paymentScheduleItems PaymentScheduleItem[]
 
   @@index([isActive])
   @@index([type, isActive])
@@ -491,7 +518,7 @@ model Camp {
 }
 
 model Lesson {
-  id              String            @id @default(cuid())
+  id              String               @id @default(cuid())
   studentId       String
   teacherId       String
   packageId       String?
@@ -503,9 +530,9 @@ model Lesson {
   title           String?
   subject         String?
   scheduledAt     DateTime
-  duration        Int               @default(60)
+  duration        Int                  @default(60)
   googleMeetLink  String?
-  status          LessonStatus      @default(SCHEDULED)
+  status          LessonStatus         @default(SCHEDULED)
   notes           String?
   // ── Sprint 6 / FAZ 2 — Canlı ders yaşam döngüsü ─────────────────────────
   startedAt       DateTime?
@@ -514,15 +541,21 @@ model Lesson {
   meetingRoomId   String?
   meetingJoinUrl  String?
   meetingHostUrl  String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  teacher         Teacher           @relation(fields: [teacherId], references: [id], onDelete: Restrict)
-  package         Package?          @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  classroom       Classroom?        @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  course          Course?           @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  student         Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher         Teacher              @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  package         Package?             @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  classroom       Classroom?           @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+  course          Course?              @relation(fields: [courseId], references: [id], onDelete: SetNull)
   attendances     Attendance[]
   joinEvents      LessonJoinEvent[]
+  // ── Phase 2 / Session 6 — Absence excuses linked to this lesson ──
+  absenceExcuses  AbsenceExcuse[]
+  // ── Phase 2 / Session 9 — Attached learning materials ────────────
+  materials       LessonMaterial[]
+  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
+  payrollItems    TeacherPayrollItem[]
 
   @@index([studentId, scheduledAt])
   @@index([teacherId, scheduledAt])
@@ -584,28 +617,31 @@ model StudentPackageEnrollment {
 }
 
 model Course {
-  id                 String                  @id @default(cuid())
+  id                 String                    @id @default(cuid())
   title              String
-  slug               String                  @unique
+  slug               String                    @unique
   description        String?
   subject            String
   examType           String?
   levelLabel         String?
   estimatedMinutes   Int?
-  status             CourseStatus            @default(DRAFT)
-  isActive           Boolean                 @default(true)
+  status             CourseStatus              @default(DRAFT)
+  isActive           Boolean                   @default(true)
   coverImageUrl      String?
   defaultTeacherId   String?
   defaultClassroomId String?
-  createdAt          DateTime                @default(now())
-  updatedAt          DateTime                @updatedAt
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
   modules            CourseModule[]
   packageCourses     PackageCourse[]
   studentProgress    StudentCourseProgress[]
   lessons            Lesson[]
   studySessions      StudySession[]
-  defaultTeacher     Teacher?                @relation("CourseDefaultTeacher", fields: [defaultTeacherId], references: [id], onDelete: SetNull)
-  defaultClassroom   Classroom?              @relation("CourseDefaultClassroom", fields: [defaultClassroomId], references: [id], onDelete: SetNull)
+  materials          Material[]
+  defaultTeacher     Teacher?                  @relation("CourseDefaultTeacher", fields: [defaultTeacherId], references: [id], onDelete: SetNull)
+  defaultClassroom   Classroom?                @relation("CourseDefaultClassroom", fields: [defaultClassroomId], references: [id], onDelete: SetNull)
+  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
+  compensationRules  TeacherCompensationRule[]
 
   @@index([status, subject])
   @@index([defaultTeacherId])
@@ -1322,27 +1358,31 @@ enum AttendanceSource {
 /// veli paneline (`/veli`) erişebilir. Bir veli birden fazla öğrenciye
 /// (kardeşler) bağlanabilir — `ParentStudent` join modeline bakın.
 model Parent {
-  id                         String          @id @default(cuid())
+  id                         String                @id @default(cuid())
   fullName                   String
   phone                      String?
   /// Telefon numarasının normalize edilmiş hâli (Student.phoneKey ile aynı mantık).
-  phoneKey                   String?         @unique
-  email                      String?         @unique
+  phoneKey                   String?               @unique
+  email                      String?               @unique
   notes                      String?
-  userId                     String?         @unique
+  userId                     String?               @unique
   // ── Phase 1.5 — Veli onboarding davet altyapısı ─────────────────────────
   /// URL-safe rastgele davet token'ı. Null → davet yok / iptal edildi.
   /// Veli `/veli-davet/<token>` üzerinden şifre belirler.
-  parentInviteToken          String?         @unique
+  parentInviteToken          String?               @unique
   /// Token son kullanma tarihi (DEFAULT_PARENT_INVITE_TTL_DAYS = 14 gün).
   parentInviteTokenExpiresAt DateTime?
   /// Davet bağlantısı admin tarafından kopyalandığında set edilir;
   /// `INVITE_PENDING` durumunu ayırt etmek için kullanılır.
   parentInviteSentAt         DateTime?
-  createdAt                  DateTime        @default(now())
-  updatedAt                  DateTime        @updatedAt
-  user                       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt                  DateTime              @default(now())
+  updatedAt                  DateTime              @updatedAt
+  user                       User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
   students                   ParentStudent[]
+  // ── Phase 2 / Session 6 — Absence excuses ──
+  absenceExcuses             AbsenceExcuse[]
+  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
+  paymentScheduleItems       PaymentScheduleItem[]
 }
 
 model ParentStudent {
@@ -1368,21 +1408,25 @@ model ParentStudent {
 /// Sınıf/şube. İleride grup dersleri (`Lesson.classroomId`) ve sınıf bazlı
 /// yoklama (`Attendance.classroomId`) için temel.
 model Classroom {
-  id                String             @id @default(cuid())
+  id                String                    @id @default(cuid())
   name              String
   branch            String?
-  level             ClassroomLevel     @default(MIXED)
-  capacity          Int                @default(30)
+  level             ClassroomLevel            @default(MIXED)
+  capacity          Int                       @default(30)
   description       String?
-  isActive          Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  isActive          Boolean                   @default(true)
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
   teachers          ClassroomTeacher[]
   students          ClassroomStudent[]
   attendances       Attendance[]
   lessons           Lesson[]
   assignments       Assignment[]
-  defaultForCourses Course[]           @relation("CourseDefaultClassroom")
+  defaultForCourses Course[]                  @relation("CourseDefaultClassroom")
+  // ── Phase 2 / Session 5 — Materials ──
+  materials         Material[]
+  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
+  compensationRules TeacherCompensationRule[]
 
   @@unique([name, branch])
   @@index([isActive])
@@ -1617,6 +1661,8 @@ model Assignment {
   classroom     Classroom?             @relation(fields: [classroomId], references: [id], onDelete: SetNull)
   student       Student?               @relation("DirectAssignment", fields: [studentId], references: [id], onDelete: SetNull)
   submissions   AssignmentSubmission[]
+  // ── Phase 2 / Session 9 — Attached learning materials ────────────
+  materials     AssignmentMaterial[]
 
   @@index([teacherId, status])
   @@index([classroomId, status])
@@ -1673,25 +1719,29 @@ enum PayrollStatus {
 /// `refType`/`refId` polymorphic kaynak referansı (örn. PurchaseIntent, TeacherPayroll).
 /// `service` = OD veya ODK — ürün bazlı muhasebe ayrımı (FAZ 4).
 model AccountingEntry {
-  id          String        @id @default(cuid())
-  service     AccessService @default(OD)
-  type        EntryType
-  category    EntryCategory @default(OTHER_INCOME)
-  amount      Int
-  occurredAt  DateTime      @default(now())
-  description String?
-  refType     String?
-  refId       String?
-  studentId   String?
-  packageId   String?
-  teacherId   String?
-  createdById String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  student     Student?      @relation("AccountingStudent", fields: [studentId], references: [id], onDelete: SetNull)
-  package     Package?      @relation("AccountingPackage", fields: [packageId], references: [id], onDelete: SetNull)
-  teacher     Teacher?      @relation("AccountingTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  createdBy   User?         @relation("AccountingCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  id                   String                @id @default(cuid())
+  service              AccessService         @default(OD)
+  type                 EntryType
+  category             EntryCategory         @default(OTHER_INCOME)
+  amount               Int
+  occurredAt           DateTime              @default(now())
+  description          String?
+  refType              String?
+  refId                String?
+  studentId            String?
+  packageId            String?
+  teacherId            String?
+  createdById          String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  student              Student?              @relation("AccountingStudent", fields: [studentId], references: [id], onDelete: SetNull)
+  package              Package?              @relation("AccountingPackage", fields: [packageId], references: [id], onDelete: SetNull)
+  teacher              Teacher?              @relation("AccountingTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  createdBy            User?                 @relation("AccountingCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
+  paymentScheduleItems PaymentScheduleItem[]
+  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
+  payrollItems         TeacherPayrollItem[]
 
   @@index([type, occurredAt])
   @@index([category, occurredAt])
@@ -2116,4 +2166,363 @@ model StudySession {
   @@index([studentId, startedAt])
   @@index([studentId, endedAt])
   @@index([courseId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Material Library — Phase 2 / Session 5
+// Shared course/class learning materials. URL-first; file uploads via
+// Vercel Blob are deferred. Permission boundary is enforced in
+// lib/panel/materials.ts (the DB just stores the row + indexes).
+// ─────────────────────────────────────────────────────────────────────────────
+enum MaterialType {
+  PDF
+  VIDEO
+  LINK
+  FILE
+  NOTE
+}
+
+enum MaterialVisibility {
+  CLASSROOM
+  STUDENTS
+  TEACHERS
+  PRIVATE
+}
+
+model Material {
+  id          String             @id @default(cuid())
+  title       String
+  description String?
+  type        MaterialType       @default(LINK)
+  url         String?
+  fileUrl     String?
+  subject     String?
+  courseId    String?
+  classroomId String?
+  teacherId   String?
+  createdById String?
+  visibility  MaterialVisibility @default(CLASSROOM)
+  isPublished Boolean            @default(true)
+  isArchived  Boolean            @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  classroom Classroom? @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+  teacher   Teacher?   @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  createdBy User?      @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // ── Phase 2 / Session 9 — Reverse links to attachment join rows ──
+  assignments AssignmentMaterial[]
+  lessons     LessonMaterial[]
+
+  @@index([classroomId, isPublished, createdAt])
+  @@index([courseId, isPublished])
+  @@index([teacherId, createdAt])
+  @@index([createdById])
+  @@index([visibility, isPublished])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 2 / Session 9 — Material attachments
+// Join rows that connect existing Material records to Assignment / Lesson.
+// Permission is enforced at the helper layer (lib/panel/material-attachments).
+// Cascade on both sides so a deleted assignment / lesson / material cleans up
+// its attachment rows automatically.
+// ─────────────────────────────────────────────────────────────────────────────
+model AssignmentMaterial {
+  assignmentId String
+  materialId   String
+  createdAt    DateTime @default(now())
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  material   Material   @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@id([assignmentId, materialId])
+  @@index([materialId])
+  @@map("assignment_materials")
+}
+
+model LessonMaterial {
+  lessonId   String
+  materialId String
+  createdAt  DateTime @default(now())
+
+  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, materialId])
+  @@index([materialId])
+  @@map("lesson_materials")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Absence Excuse — Phase 2 / Session 6
+// Persistent parent-submitted absence excuse with teacher/admin review.
+// On APPROVE the application code (lib/panel/absence-excuses.ts) writes
+// EXCUSED rows to Attendance for affected lessons in [startsAt, endsAt],
+// but only where existing attendance is missing or ABSENT — manual
+// PRESENT/LATE/LEFT_EARLY readings are sacred and never overwritten.
+// ─────────────────────────────────────────────────────────────────────────────
+enum AbsenceExcuseReason {
+  ILLNESS
+  FAMILY
+  TECHNICAL
+  TRAVEL
+  OTHER
+}
+
+enum AbsenceExcuseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model AbsenceExcuse {
+  id            String              @id @default(cuid())
+  parentId      String
+  studentId     String
+  lessonId      String?
+  startsAt      DateTime
+  endsAt        DateTime
+  reason        AbsenceExcuseReason
+  note          String?
+  attachmentUrl String?
+  status        AbsenceExcuseStatus @default(PENDING)
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  parent     Parent  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lesson     Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  reviewedBy User?   @relation("AbsenceExcuseReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, status, startsAt])
+  @@index([parentId, createdAt])
+  @@index([lessonId])
+  @@index([status, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Phase 2 / Session 7 — Student Academic Goal (Roadmap / Target Tracker)
+// ─────────────────────────────────────────────────────────────────────────
+
+enum AcademicGoalExamType {
+  TYT
+  AYT
+  LGS
+  YKS
+  OTHER
+}
+
+model StudentAcademicGoal {
+  id               String                @id @default(cuid())
+  studentId        String
+  examType         AcademicGoalExamType?
+  targetUniversity String?
+  targetDepartment String?
+  targetSchool     String?
+  targetScore      Decimal?              @db.Decimal(8, 2)
+  targetNet        Decimal?              @db.Decimal(8, 2)
+  targetRank       Int?
+  targetDate       DateTime?
+  note             String?
+  isActive         Boolean               @default(true)
+  createdById      String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation("StudentAcademicGoalCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, isActive])
+  @@index([targetDate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 2 / Session 10 — Parent Finance Due Tracking
+//
+// Minimal additive due/installment model. Stores **base** statuses only:
+//   PENDING | PAID | CANCELLED | PARTIAL
+// OVERDUE is **derived in lib/panel/parent-finance.ts** at read time
+// (PENDING + dueDate < today) so we never depend on a cron job to keep
+// status fresh. Amounts are kuruş (Int), matching AccountingEntry and
+// TeacherPayroll. Currency is implicitly TRY.
+//
+// `accountingEntryId` optionally links the row to an INCOME ledger entry
+// produced when an admin marks the schedule item paid. Historical
+// accounting entries are NEVER mutated by this model — pruning a schedule
+// item only nulls the FK on its side.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PaymentScheduleStatus {
+  PENDING
+  PAID
+  CANCELLED
+  PARTIAL
+}
+
+model PaymentScheduleItem {
+  id                String                @id @default(cuid())
+  studentId         String?
+  parentId          String?
+  purchaseIntentId  String?
+  packageId         String?
+  title             String
+  amount            Int // kuruş
+  paidAmount        Int                   @default(0) // kuruş, partial sum
+  dueDate           DateTime
+  status            PaymentScheduleStatus @default(PENDING)
+  paidAt            DateTime?
+  accountingEntryId String?
+  paymentLink       String?
+  note              String?
+  createdById       String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  student         Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  parent          Parent?          @relation(fields: [parentId], references: [id], onDelete: SetNull)
+  purchaseIntent  PurchaseIntent?  @relation(fields: [purchaseIntentId], references: [id], onDelete: SetNull)
+  package         Package?         @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  accountingEntry AccountingEntry? @relation(fields: [accountingEntryId], references: [id], onDelete: SetNull)
+  createdBy       User?            @relation("PaymentScheduleItemCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, dueDate])
+  @@index([parentId, dueDate])
+  @@index([status, dueDate])
+  @@index([purchaseIntentId])
+  @@index([packageId])
+  @@index([accountingEntryId])
+}
+
+// ─── Phase 2 / Session 11 — Teacher Payroll Hub ─────────────────────────────
+//
+// Lesson-level payroll layer that lives ALONGSIDE the existing manual
+// flat-period `TeacherPayroll` model. The legacy model stays untouched
+// at `/panel/admin/maaslar`. This new layer powers
+// `/panel/admin/ogretmen-hakedisleri`.
+//
+// Money is `Int` (kuruş), matching `AccountingEntry.amount`.
+// Idempotent generation: at most one row per (period, teacher, lesson).
+
+enum TeacherPayrollPeriodStatus {
+  DRAFT
+  REVIEWED
+  LOCKED
+  PAID
+  CANCELLED
+}
+
+enum TeacherPayrollItemStatus {
+  DRAFT
+  REVIEWED
+  APPROVED
+  PAID
+  EXCLUDED
+}
+
+/// Bir öğretmenin saatlik ücreti. Course/Classroom opsiyoneldir; bu sayede
+/// "Ahmet Hoca için varsayılan saatlik X" + "Ahmet Hoca'nın LGS Matematik
+/// dersinde saatlik Y" gibi hiyerarşik kurallar tanımlanabilir.
+/// Eşleştirme öncelik sırası `lib/panel/teacher-payroll.ts` içinde:
+///   1) (teacher, course, classroom) tam eşleşme
+///   2) (teacher, course)
+///   3) (teacher, classroom)
+///   4) (teacher) varsayılanı
+model TeacherCompensationRule {
+  id          String    @id @default(cuid())
+  teacherId   String
+  courseId    String?
+  classroomId String?
+  /// Saatlik ücret (kuruş). 60 dakika = bu değer.
+  hourlyRate  Int
+  isActive    Boolean   @default(true)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  note        String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  teacher      Teacher              @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  course       Course?              @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  classroom    Classroom?           @relation(fields: [classroomId], references: [id], onDelete: SetNull)
+  createdBy    User?                @relation("CompensationRuleCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  payrollItems TeacherPayrollItem[]
+
+  @@index([teacherId, isActive])
+  @@index([courseId])
+  @@index([classroomId])
+}
+
+/// Bordro dönemi (örn. "Mart 2026"). Status DRAFT'ta items üretilir/yenilenir;
+/// LOCKED olunca sadece görüntüleme ve "ödendi" işlemi mümkündür. PAID dönemin
+/// items'ı yeniden üretilemez (idempotency korunur).
+model TeacherPayrollPeriod {
+  id          String                     @id @default(cuid())
+  title       String
+  startsAt    DateTime
+  endsAt      DateTime
+  status      TeacherPayrollPeriodStatus @default(DRAFT)
+  lockedAt    DateTime?
+  paidAt      DateTime?
+  note        String?
+  createdById String?
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+
+  createdBy User?                @relation("PayrollPeriodCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  items     TeacherPayrollItem[]
+
+  @@index([status, startsAt])
+  @@index([startsAt, endsAt])
+}
+
+/// Tek bir hakediş satırı. `lessonId` dolu ise ders bazlıdır
+/// ((periodId, teacherId, lessonId) partial-unique migration'da). NULL ise
+/// elle eklenmiş ayar/düzeltme satırıdır.
+///
+/// Tutar mantığı:
+///   grossAmount     = hourlyRate * (minutes / 60), Math.round
+///   finalAmount     = grossAmount + adjustmentAmount
+///
+/// `rateMissing=true` olan satırlar için hourlyRate=0; ödendi olarak
+/// işaretlenmesine helper engel olur.
+model TeacherPayrollItem {
+  id                 String                   @id @default(cuid())
+  periodId           String
+  teacherId          String
+  lessonId           String?
+  compensationRuleId String?
+  minutes            Int                      @default(0)
+  hourlyRate         Int                      @default(0)
+  grossAmount        Int                      @default(0)
+  adjustmentAmount   Int                      @default(0)
+  finalAmount        Int                      @default(0)
+  status             TeacherPayrollItemStatus @default(DRAFT)
+  rateMissing        Boolean                  @default(false)
+  attendanceMissing  Boolean                  @default(false)
+  note               String?
+  accountingEntryId  String?
+  createdById        String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  period           TeacherPayrollPeriod     @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  teacher          Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  lesson           Lesson?                  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  compensationRule TeacherCompensationRule? @relation(fields: [compensationRuleId], references: [id], onDelete: SetNull)
+  accountingEntry  AccountingEntry?         @relation(fields: [accountingEntryId], references: [id], onDelete: SetNull)
+  createdBy        User?                    @relation("PayrollItemCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([teacherId, status])
+  @@index([periodId, teacherId])
+  @@index([lessonId])
+  @@index([status])
 }

@@ -7,12 +7,13 @@ import { redirect } from "next/navigation";
 import { StudentStatus } from "@prisma/client";
 import type { ParentRelationship } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
+import { isParentRelationshipType } from "@/lib/parents";
 import {
-  isParentRelationshipType,
   generateParentInviteToken,
   defaultParentInviteExpiresAt,
   buildParentInviteUrl,
-} from "@/lib/parents";
+} from "@/lib/parent-invites";
+import { enforceMutation } from "@/lib/security/mutation-guard";
 
 function readStr(fd: FormData, key: string): string {
   const v = fd.get(key);
@@ -306,6 +307,14 @@ export async function regenerateParentInviteAction(parentId: string): Promise<{
   ok: true; token: string; url: string; expiresAt: Date;
 }> {
   const ctx = await requirePanelRole("admin");
+  // Phase 2 / Session 17 — abuse hardening: per-admin rate-limit + same-origin.
+  // 30 token rotation / saat — operatif iş için bol, brute-force token tahmini için sıkı.
+  await enforceMutation({
+    action: "parent-invite.generate",
+    userId: ctx.userId,
+    requireSameOrigin: true,
+    rateLimit: { max: 30, windowMs: 60 * 60_000 },
+  });
   const parent = await prisma.parent.findUnique({
     where: { id: parentId },
     select: { id: true, fullName: true, phone: true, email: true },

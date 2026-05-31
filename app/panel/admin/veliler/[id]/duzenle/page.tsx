@@ -11,8 +11,8 @@ import {
   revokeParentInviteAction,
 } from "../../../ogrenciler/_actions";
 import { ParentInviteCard } from "@/components/panel/parents/parent-invite-card";
+import { buildParentInviteUrl } from "@/lib/parent-invites";
 import {
-  buildParentInviteUrl,
   getParentRelationshipLabel,
   PARENT_RELATIONSHIP_TYPES,
   getCanonicalRelationshipLabel,

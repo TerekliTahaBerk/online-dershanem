@@ -29,6 +29,10 @@
       "schedule": "0 5 * * 1"
     },
     {
+      "path": "/api/cron/scheduled-reminders",
+      "schedule": "30 8 * * *"
+    },
+    {
       "path": "/api/cron/rate-limit-prune",
       "schedule": "0 4 * * *"
     },

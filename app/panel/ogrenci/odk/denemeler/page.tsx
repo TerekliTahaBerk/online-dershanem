@@ -1,14 +1,21 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireOdkPanel } from "@/lib/access/odk-panel";
-import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/panel/ui/page-header";
-import { Card, CardBody, CardHeader } from "@/components/panel/ui/card";
-import { Badge } from "@/components/panel/ui/badge";
+import { Card, CardBody } from "@/components/panel/ui/card";
 import { EmptyState } from "@/components/panel/ui/empty-state";
+import { Badge } from "@/components/panel/ui/badge";
+import {
+  getStudentOdkContext,
+  getAvailableOdkExamsForStudent,
+  getStudentOdkAttempts,
+  getStudentOdkSummary,
+} from "@/lib/panel/odk-student";
+import { OdkExamCard } from "@/components/panel/odk/student/odk-exam-card";
+import { OdkAttemptList } from "@/components/panel/odk/student/odk-attempt-list";
 
 export const metadata: Metadata = {
-  title: "ODK Denemeleri",
+  title: "Denemelerim · ODK",
   robots: { index: false, follow: false },
 };
 
@@ -16,120 +23,124 @@ export const dynamic = "force-dynamic";
 
 export default async function StudentOdkExamsPage() {
   const ctx = await requireOdkPanel("ogrenci");
+  const studentCtx = await getStudentOdkContext(ctx.userId, ctx.actualRole);
 
-  // Kullanıcının aktif ODK tagları
-  const userTagRows = await prisma.odkUserAccessTag.findMany({
-    where: {
-      userId: ctx.userId,
-      revokedAt: null,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-      accessTag: { isActive: true, service: "ODK" },
-    },
-    select: { accessTagId: true },
-  });
-  const tagIds = userTagRows.map((t) => t.accessTagId);
-
-  const exams = ctx.actualRole === "ADMIN"
-    ? await prisma.odkExam.findMany({
-        where: { status: "PUBLISHED" },
-        orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-        select: examSelect(ctx.userId),
-      })
-    : tagIds.length === 0
-      ? []
-      : await prisma.odkExam.findMany({
-          where: {
-            status: "PUBLISHED",
-            examAccessTags: { some: { accessTagId: { in: tagIds } } },
-          },
-          orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-          select: examSelect(ctx.userId),
-        });
+  const [exams, attempts, summary] = await Promise.all([
+    getAvailableOdkExamsForStudent(studentCtx),
+    getStudentOdkAttempts(ctx.userId, { take: 10, onlySubmitted: true }),
+    getStudentOdkSummary(ctx.userId, ctx.actualRole),
+  ]);
 
   return (
     <>
-      <PageHeader title="ODK Denemeleri" subtitle="Erişim hakkınız olan denemelerin listesi" />
+      <PageHeader
+        title="Denemelerim"
+        subtitle={`${ctx.name ?? ""} · Erişebileceğin denemelerin ve son sonuçların`}
+        right={
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <Link
+              href="/panel/ogrenci/odk/gelisim"
+              className="od-btn od-btn-ghost od-btn-sm"
+            >
+              Gelişim
+            </Link>
+            <Link
+              href="/panel/ogrenci/odk/kazanim-analizim"
+              className="od-btn od-btn-ghost od-btn-sm"
+            >
+              Kazanım analizi
+            </Link>
+            <Link
+              href="/panel/ogrenci/hedefim"
+              className="od-btn od-btn-ghost od-btn-sm"
+            >
+              Hedefim
+            </Link>
+          </div>
+        }
+      />
 
+      <div className="od-grid g-4" style={{ marginBottom: 16 }}>
+        <Kpi
+          label="Erişilebilir deneme"
+          value={String(summary.availableCount)}
+        />
+        <Kpi label="Tamamlanan" value={String(summary.completedCount)} />
+        <Kpi
+          label="Son net"
+          value={summary.latestNet != null ? summary.latestNet.toFixed(2) : "—"}
+        />
+        <Kpi
+          label="En iyi net"
+          value={summary.bestNet != null ? summary.bestNet.toFixed(2) : "—"}
+        />
+      </div>
+
+      {summary.inProgressAttempt ? (
+        <Card style={{ marginBottom: 16 }}>
+          <CardBody>
+            <div
+              className="od-row od-row-between"
+              style={{ gap: 12, alignItems: "center" }}
+            >
+              <div>
+                <Badge tone="warn">Devam ediyor</Badge>{" "}
+                <strong style={{ marginLeft: 6 }}>
+                  {summary.inProgressAttempt.examTitle}
+                </strong>
+              </div>
+              <Link
+                href={`/panel/ogrenci/odk/cozum/${summary.inProgressAttempt.id}`}
+                className="od-btn od-btn-primary od-btn-sm"
+              >
+                Devam et
+              </Link>
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      <h2 style={{ fontSize: 16, margin: "0 0 8px" }}>
+        Erişebileceğin denemeler
+      </h2>
       {exams.length === 0 ? (
-        <Card>
+        <Card style={{ marginBottom: 16 }}>
           <CardBody>
             <EmptyState
-              title="Henüz çözebileceğin deneme yok"
-              description="Erişim tagların aktif olduğunda yeni denemeler burada görünecek. Soru için danışmanına yaz."
+              icon="folder"
+              title="Henüz erişilebilir deneme yok"
+              description="Erişim tagların aktif olduğunda yeni denemeler burada görünür. Sorun varsa danışmanına yaz."
             />
           </CardBody>
         </Card>
       ) : (
-        <div className="od-grid g-2">
-          {exams.map((e) => {
-            const totalQuestions = e.sections.reduce((a, s) => a + s.questionCount, 0);
-            const last = e.attempts[0] ?? null;
-            return (
-              <Card key={e.id}>
-                <CardHeader
-                  title={e.title}
-                  right={<Badge tone="accent">{e.cadenceFamily}</Badge>}
-                  subtitle={`${e.classLevel ? `${e.classLevel}. sınıf · ` : ""}${e.durationMinutes} dk · ${totalQuestions} soru`}
-                />
-                <CardBody>
-                  {last ? (
-                    last.status === "IN_PROGRESS" ? (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                        <span style={{ fontSize: 13 }}>
-                          Devam eden bir çözümün var.
-                        </span>
-                        <Link href={`/panel/ogrenci/odk/cozum/${last.id}`} className="od-btn od-btn-primary">
-                          Devam et
-                        </Link>
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                        <div>
-                          <Badge tone="ok">Tamamlandı</Badge>
-                          <div style={{ fontSize: 12, marginTop: 4 }} className="od-muted">
-                            Net: <strong>{last.score ? Number(last.score).toFixed(2) : "—"}</strong>
-                          </div>
-                        </div>
-                        <Link href={`/panel/ogrenci/odk/sonuc/${last.id}`} className="od-btn od-btn-ghost">
-                          Sonucu gör
-                        </Link>
-                      </div>
-                    )
-                  ) : (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                      <span className="od-muted" style={{ fontSize: 13 }}>Henüz başlamadın.</span>
-                      <form action={`/panel/ogrenci/odk/baslat/${e.id}`} method="post">
-                        <Link href={`/panel/ogrenci/odk/baslat/${e.id}`} className="od-btn od-btn-primary">
-                          Sınava başla
-                        </Link>
-                      </form>
-                    </div>
-                  )}
-                </CardBody>
-              </Card>
-            );
-          })}
+        <div className="od-grid g-2" style={{ marginBottom: 16 }}>
+          {exams.map((e) => (
+            <OdkExamCard key={e.id} exam={e} />
+          ))}
         </div>
       )}
+
+      <h2 style={{ fontSize: 16, margin: "0 0 8px" }}>Son denemeler</h2>
+      <OdkAttemptList attempts={attempts} showCheatHints />
     </>
   );
 }
 
-function examSelect(userId: string) {
-  return {
-    id: true,
-    title: true,
-    slug: true,
-    cadenceFamily: true,
-    classLevel: true,
-    durationMinutes: true,
-    publishedAt: true,
-    sections: { select: { questionCount: true } },
-    attempts: {
-      where: { userId },
-      orderBy: { startedAt: "desc" as const },
-      take: 1,
-      select: { id: true, status: true, score: true, submittedAt: true },
-    },
-  };
+function Kpi({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        background: "white",
+        padding: 16,
+        borderRadius: 12,
+        border: "1px solid var(--pd-line)",
+      }}
+    >
+      <div className="od-muted" style={{ fontSize: 12, fontWeight: 600 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 800, marginTop: 4 }}>{value}</div>
+    </div>
+  );
 }

@@ -17,6 +17,10 @@ import { ClassAttendanceSummaryCard } from "@/components/panel/teacher/class/cla
 import { ClassHomeworkSummaryCard } from "@/components/panel/teacher/class/class-homework-summary";
 import { ClassUpcomingLessons } from "@/components/panel/teacher/class/class-upcoming-lessons";
 import { ClassRecentActivity } from "@/components/panel/teacher/class/class-recent-activity";
+import { ClassroomMaterialsSection } from "@/components/panel/materials/class-materials-section";
+import { ReviewerExcuseList } from "@/components/panel/absence-excuses/teacher-pending-excuses";
+import { CardBody, CardHeader } from "@/components/panel/ui/card";
+import { getPendingExcusesForClassroom } from "@/lib/panel/absence-excuses";
 
 export const dynamic = "force-dynamic";
 
@@ -55,11 +59,12 @@ export default async function TeacherClassroomDetail({
   const detail = await getTeacherClassDetail(teacher.id, classroomId);
   if (!detail) notFound();
 
-  const [riskRows, upcoming, attendance, homework] = await Promise.all([
+  const [riskRows, upcoming, attendance, homework, classroomExcuses] = await Promise.all([
     getTeacherClassRiskRows(teacher.id, classroomId),
     getTeacherClassUpcomingLessons(teacher.id, classroomId),
     getTeacherClassAttendanceSummary(teacher.id, classroomId),
     getTeacherClassHomeworkSummary(teacher.id, classroomId),
+    getPendingExcusesForClassroom(teacher.id, classroomId, 10),
   ]);
 
   const todayDate = new Date().toISOString().slice(0, 10);
@@ -131,7 +136,35 @@ export default async function TeacherClassroomDetail({
         <ClassUpcomingLessons classroomId={classroomId} lessons={upcoming} />
       </div>
 
-      {/* Row 4 — recent activity (deferred — empty state) */}
+      {/* Row 4 — materials */}
+      <div style={{ marginBottom: 12 }}>
+        <ClassroomMaterialsSection
+          teacherId={teacher.id}
+          classroomId={classroomId}
+          classroomName={detail.name}
+        />
+      </div>
+
+      {/* Row 4.5 — pending absence excuses for this classroom */}
+      {classroomExcuses.length > 0 ? (
+        <div style={{ marginBottom: 12 }}>
+          <Card>
+            <CardHeader
+              title="Sınıfın bekleyen mazeretleri"
+              subtitle={`${classroomExcuses.length} kayıt`}
+            />
+            <CardBody>
+              <ReviewerExcuseList
+                excuses={classroomExcuses}
+                allowReview
+                variant="teacher"
+              />
+            </CardBody>
+          </Card>
+        </div>
+      ) : null}
+
+      {/* Row 5 — recent activity (deferred — empty state) */}
       <ClassRecentActivity />
     </>
   );

@@ -10,6 +10,9 @@ import {
   formatStudyDuration,
 } from "@/lib/panel/student-dashboard";
 import { StudyRoomTimer } from "@/components/panel/student/study-room/study-room-timer";
+import { StudyRoomRelatedMaterials } from "@/components/panel/materials/study-room-related-materials";
+import { StudyRoomGoalNudge } from "@/components/panel/academic-roadmap/study-room-goal-nudge";
+import { getStudentRoadmapCompactSummary } from "@/lib/panel/academic-roadmap";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +61,11 @@ export default async function StudyRoomPage() {
     getStudentCourseOptions(student.id),
   ]);
 
+  const roadmap = await getStudentRoadmapCompactSummary(
+    student.id,
+    student.userId,
+  );
+
   const activeForClient = summary.active
     ? {
         id: summary.active.id,
@@ -99,8 +107,16 @@ export default async function StudyRoomPage() {
           marginBottom: 12,
         }}
       >
-        <div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <StudyRoomTimer active={activeForClient} courseOptions={courseOptions} />
+          <StudyRoomGoalNudge recommendation={roadmap.topRecommendation} />
+          {summary.active?.courseId ? (
+            <StudyRoomRelatedMaterials
+              studentId={student.id}
+              courseId={summary.active.courseId}
+              courseTitle={summary.active.courseTitle}
+            />
+          ) : null}
         </div>
 
         <Card>

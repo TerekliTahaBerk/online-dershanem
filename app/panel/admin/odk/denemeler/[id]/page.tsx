@@ -3,10 +3,14 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireOdkPanel } from "@/lib/access/odk-panel";
 import { prisma } from "@/lib/prisma";
+import { getOdkAdminExamDetail } from "@/lib/panel/odk-admin";
+import { getOdkCadenceLabel } from "@/lib/panel/odk-admin-display";
 import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card, CardBody, CardHeader } from "@/components/panel/ui/card";
-import { Badge } from "@/components/panel/ui/badge";
 import { ExamDetailEditor } from "@/components/panel/odk/admin/exam-detail-editor";
+import { OdkAdminExamStatusBadge } from "@/components/panel/odk/admin/odk-admin-exam-status-badge";
+import { OdkExamReadinessChecklist } from "@/components/panel/odk/admin/odk-exam-readiness-checklist";
+import { OdkExamActionBar } from "@/components/panel/odk/admin/odk-exam-action-bar";
 
 export const metadata: Metadata = {
   title: "Deneme Detayı · ODK",
@@ -15,17 +19,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const STATUS_TONE: Record<string, "ok" | "warn" | "neutral"> = {
-  PUBLISHED: "ok",
-  DRAFT: "warn",
-  ARCHIVED: "neutral",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  PUBLISHED: "Yayında",
-  DRAFT: "Taslak",
-  ARCHIVED: "Arşiv",
-};
+const dateFmt = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" });
 
 export default async function AdminOdkExamDetail({
   params,
@@ -35,56 +29,43 @@ export default async function AdminOdkExamDetail({
   await requireOdkPanel("admin");
   const { id } = await params;
 
-  const exam = await prisma.odkExam.findUnique({
-    where: { id },
-    include: {
-      sections: { orderBy: { orderIndex: "asc" } },
-      files: true,
-      examAccessTags: { include: { accessTag: true } },
-      _count: { select: { attempts: true } },
-    },
-  });
-  if (!exam) notFound();
+  // Aggregated detail (rules + sections + access + attempts) from helper.
+  const detail = await getOdkAdminExamDetail(id);
+  if (!detail) notFound();
 
-  const [accessTags, kazanimReady, kazanimMissingCount, officialAnswerCount] = await Promise.all([
+  // Bits the existing ExamDetailEditor still needs that the helper does not
+  // currently expose — fetched separately to keep the helper focused.
+  const [accessTags, files, examAccessTags] = await Promise.all([
     prisma.odkAccessTag.findMany({
       where: { isActive: true, service: "ODK" },
       orderBy: { title: "asc" },
       select: { id: true, key: true, title: true, description: true },
     }),
-    prisma.odkExamOfficialAnswer.count({
-      where: { examId: id, learningOutcomeCode: { not: null } },
-    }),
-    prisma.odkExamOfficialAnswer.count({
-      where: { examId: id, learningOutcomeCode: null },
-    }),
-    prisma.odkExamOfficialAnswer.count({
+    prisma.odkExamFile.findMany({
       where: { examId: id },
+      select: { fileType: true, publicUrl: true, originalFileName: true, byteSize: true },
+    }),
+    prisma.odkExamAccessTag.findMany({
+      where: { examId: id },
+      select: { accessTagId: true },
     }),
   ]);
 
-  const totalSlots = exam.sections.reduce((a, s) => a + s.questionCount, 0);
-  const bookletFile = exam.files.find((f) => f.fileType === "BOOKLET_PDF");
-  const answerKeyFile = exam.files.find((f) => f.fileType === "ANSWER_KEY_PDF");
-  const linkedTagIds = exam.examAccessTags.map((t) => t.accessTagId);
+  const bookletFile = files.find((f) => f.fileType === "BOOKLET_PDF") ?? null;
+  const answerKeyFile = files.find((f) => f.fileType === "ANSWER_KEY_PDF") ?? null;
+  const linkedTagIds = examAccessTags.map((t) => t.accessTagId);
 
-  // Yayın için checklist
-  const publishChecklist = [
-    { ok: !!bookletFile, label: "Deneme PDF'i yüklü" },
-    { ok: officialAnswerCount === totalSlots && totalSlots > 0, label: `Cevap anahtarı ${officialAnswerCount}/${totalSlots} soru` },
-    { ok: kazanimMissingCount === 0 && kazanimReady > 0, label: `Tüm sorular için kazanım atanmış (${kazanimReady}/${officialAnswerCount})` },
-    { ok: linkedTagIds.length > 0, label: "En az 1 erişim tagı bağlı" },
-  ];
+  const numFmt = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 });
 
   return (
     <>
       <PageHeader
-        title={exam.title}
-        subtitle={`${exam.cadenceFamily}${exam.classLevel ? ` · ${exam.classLevel}. sınıf` : ""} · ${exam.durationMinutes} dk`}
+        title={detail.title}
+        subtitle={`${getOdkCadenceLabel(detail.cadenceFamily)}${detail.classLevel ? ` · ${detail.classLevel}. sınıf` : ""} · ${detail.durationMinutes} dk`}
         right={
           <>
-            <Badge tone={STATUS_TONE[exam.status]}>{STATUS_LABEL[exam.status]}</Badge>
-            <Link href={`/panel/admin/odk/denemeler/${exam.id}/cozumler`} className="od-btn od-btn-ghost">
+            <OdkAdminExamStatusBadge status={detail.status} />
+            <Link href={`/panel/admin/odk/denemeler/${detail.id}/cozumler`} className="od-btn od-btn-ghost">
               Çözümler
             </Link>
             <Link href="/panel/admin/odk/denemeler" className="od-btn od-btn-ghost">
@@ -94,37 +75,35 @@ export default async function AdminOdkExamDetail({
         }
       />
 
+      <Card style={{ marginBottom: 16 }}>
+        <CardHeader title="Yaşam döngüsü" subtitle="Yayınla, arşivle, geri al — geçmiş çözümler her durumda korunur." />
+        <CardBody>
+          <OdkExamActionBar
+            examId={detail.id}
+            status={detail.status}
+            readiness={detail.readiness}
+          />
+        </CardBody>
+      </Card>
+
       <div className="od-grid g-2" style={{ marginBottom: 16 }}>
-        <Card>
-          <CardHeader title="Yayın hazırlığı" subtitle="Tüm maddeler tamamlanmadan deneme yayınlanamaz." />
-          <CardBody>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-              {publishChecklist.map((c, i) => (
-                <li key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                  <span style={{
-                    width: 18, height: 18, borderRadius: "50%",
-                    background: c.ok ? "#16a34a" : "#cbd5e1",
-                    color: "white", display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 700,
-                  }}>{c.ok ? "✓" : "•"}</span>
-                  <span style={{ color: c.ok ? "var(--pd-ink-1)" : "var(--pd-ink-3)" }}>{c.label}</span>
-                </li>
-              ))}
-            </ul>
-          </CardBody>
-        </Card>
+        <OdkExamReadinessChecklist readiness={detail.readiness} />
+
         <Card>
           <CardHeader title="Genel" />
           <CardBody>
             <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", fontSize: 13, margin: 0 }}>
-              <dt className="od-muted">Slug</dt><dd className="od-mono">{exam.slug}</dd>
-              <dt className="od-muted">Bölüm</dt><dd>{exam.sections.length} bölüm · {totalSlots} soru</dd>
-              <dt className="od-muted">Çözüm</dt><dd>{exam._count.attempts}</dd>
-              <dt className="od-muted">Oluşturulma</dt><dd>{new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(exam.createdAt)}</dd>
-              {exam.publishedAt ? (
+              <dt className="od-muted">Slug</dt><dd className="od-mono">{detail.slug}</dd>
+              <dt className="od-muted">Bölüm</dt><dd>{detail.sections.length} bölüm · {detail.totalQuestionCount} soru</dd>
+              <dt className="od-muted">Cevap anahtarı</dt><dd>{detail.answerKeyRowCount} / {detail.totalQuestionCount}</dd>
+              <dt className="od-muted">Kazanım</dt><dd>{detail.outcomeReadyCount} hazır · {detail.outcomeMissingCount} eksik</dd>
+              <dt className="od-muted">Erişim tagı</dt><dd>{detail.access.tagCount} tag · {detail.access.grantedUserCount} grant (örtüşmeli)</dd>
+              <dt className="od-muted">Çözüm</dt><dd>{detail.attempts.totalCount}</dd>
+              <dt className="od-muted">Oluşturulma</dt><dd>{dateFmt.format(detail.createdAt)}</dd>
+              {detail.publishedAt ? (
                 <>
-                  <dt className="od-muted">Yayın</dt>
-                  <dd>{new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(exam.publishedAt)}</dd>
+                  <dt className="od-muted">İlk yayın</dt>
+                  <dd>{dateFmt.format(detail.publishedAt)}</dd>
                 </>
               ) : null}
             </dl>
@@ -132,15 +111,163 @@ export default async function AdminOdkExamDetail({
         </Card>
       </div>
 
+      <div className="od-grid g-2" style={{ marginBottom: 16 }}>
+        <Card>
+          <CardHeader
+            title="Bölüm dağılımı"
+            subtitle={`${detail.sections.length} bölüm · ${detail.totalQuestionCount} soru`}
+          />
+          <CardBody>
+            {detail.sections.length === 0 ? (
+              <div className="od-muted" style={{ fontSize: 13 }}>Henüz bölüm tanımlanmamış.</div>
+            ) : (
+              <table className="od-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Bölüm</th>
+                    <th>Soru</th>
+                    <th>Cevap</th>
+                    <th>Kazanım</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detail.sections.map((s) => (
+                    <tr key={s.id}>
+                      <td className="od-mono">{s.orderIndex + 1}</td>
+                      <td>{s.title}</td>
+                      <td>{s.questionCount}</td>
+                      <td>
+                        {s.answerCount} / {s.questionCount}
+                        {s.missingAnswerCount > 0 ? (
+                          <span className="od-muted" style={{ marginLeft: 6, fontSize: 11 }}>
+                            ({s.missingAnswerCount} eksik)
+                          </span>
+                        ) : null}
+                      </td>
+                      <td>
+                        {s.outcomeReadyCount} / {s.questionCount}
+                        {s.missingOutcomeCount > 0 ? (
+                          <span className="od-muted" style={{ marginLeft: 6, fontSize: 11 }}>
+                            ({s.missingOutcomeCount} eksik)
+                          </span>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader
+            title="Erişim tagı özeti"
+            subtitle={
+              detail.access.tagCount === 0
+                ? "Bağlı tag yok — yayınlama bloke."
+                : `${detail.access.tagCount} tag bağlı`
+            }
+          />
+          <CardBody>
+            {detail.access.tags.length === 0 ? (
+              <div className="od-muted" style={{ fontSize: 13 }}>
+                Henüz erişim tagı bağlanmamış. Aşağıdaki düzenleyiciden ekleyin.
+              </div>
+            ) : (
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                {detail.access.tags.map((t) => (
+                  <li key={t.id} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 13 }}>
+                    <span>
+                      <strong>{t.title}</strong>{" "}
+                      <span className="od-mono od-muted" style={{ fontSize: 11 }}>{t.key}</span>
+                    </span>
+                    <span className="od-muted" style={{ fontSize: 12 }}>
+                      {t.grantedUserCount} kullanıcı
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      <Card style={{ marginBottom: 16 }}>
+        <CardHeader
+          title="Çözüm özeti"
+          subtitle={
+            detail.attempts.totalCount === 0
+              ? "Henüz çözüm yok."
+              : `Toplam ${detail.attempts.totalCount} · ${detail.attempts.submittedCount} tamamlanmış · ${detail.attempts.inProgressCount} devam · ${detail.attempts.abandonedCount} terkedilmiş`
+          }
+          right={
+            <Link href={`/panel/admin/odk/denemeler/${detail.id}/cozumler`} className="od-btn od-btn-ghost">
+              Tümünü gör
+            </Link>
+          }
+        />
+        <CardBody>
+          {detail.attempts.totalCount === 0 ? (
+            <div className="od-muted" style={{ fontSize: 13 }}>Henüz çözüm yok.</div>
+          ) : (
+            <>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 12, fontSize: 13 }}>
+                <span><strong>Ortalama puan:</strong>{" "}
+                  {detail.attempts.averageScore == null ? "—" : numFmt.format(detail.attempts.averageScore)}
+                </span>
+                <span><strong>İhlal işaretli:</strong> {detail.attempts.flaggedCount}</span>
+              </div>
+              {detail.attempts.recent.length > 0 ? (
+                <table className="od-table">
+                  <thead>
+                    <tr>
+                      <th>Öğrenci</th>
+                      <th>Durum</th>
+                      <th>Başladı</th>
+                      <th>Bitti</th>
+                      <th>Puan</th>
+                      <th>İhlal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detail.attempts.recent.map((a) => (
+                      <tr key={a.id}>
+                        <td>
+                          <div style={{ fontWeight: 500 }}>{a.userName}</div>
+                          {a.userEmail ? (
+                            <div className="od-mono od-muted" style={{ fontSize: 11 }}>{a.userEmail}</div>
+                          ) : null}
+                        </td>
+                        <td>{a.status}</td>
+                        <td className="od-mono od-muted" style={{ fontSize: 11 }}>
+                          {a.startedAt ? dateFmt.format(a.startedAt) : "—"}
+                        </td>
+                        <td className="od-mono od-muted" style={{ fontSize: 11 }}>
+                          {a.submittedAt ? dateFmt.format(a.submittedAt) : "—"}
+                        </td>
+                        <td>{a.score == null ? "—" : numFmt.format(a.score)}</td>
+                        <td>{a.cheatViolationCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : null}
+            </>
+          )}
+        </CardBody>
+      </Card>
+
       <ExamDetailEditor
         exam={{
-          id: exam.id,
-          title: exam.title,
-          status: exam.status,
-          totalSlots,
-          officialAnswerCount,
-          kazanimReady,
-          kazanimMissingCount,
+          id: detail.id,
+          title: detail.title,
+          status: detail.status,
+          totalSlots: detail.totalQuestionCount,
+          officialAnswerCount: detail.answerKeyRowCount,
+          kazanimReady: detail.outcomeReadyCount,
+          kazanimMissingCount: detail.outcomeMissingCount,
           bookletFile: bookletFile
             ? { url: bookletFile.publicUrl, name: bookletFile.originalFileName, byteSize: bookletFile.byteSize }
             : null,

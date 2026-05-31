@@ -5,6 +5,8 @@ import { Card, CardBody } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { createTeacherAssignmentAction } from "../../_actions";
+import { getAttachableMaterialsForTeacher } from "@/lib/panel/material-attachments";
+import { MaterialAttachmentPicker } from "@/components/panel/materials/material-attachment-picker";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +14,8 @@ export const dynamic = "force-dynamic";
 export default async function NewTeacherAssignment() {
   const { teacher } = await requireTeacher();
   if (!teacher) return <Card><EmptyState icon="user" title="Öğretmen profili yok" /></Card>;
-  // Teacher's classrooms + students
-  const [classrooms, students] = await Promise.all([
+  // Teacher's classrooms + students + attachable materials
+  const [classrooms, students, materials] = await Promise.all([
     prisma.classroom.findMany({
       where: { teachers: { some: { teacherId: teacher.id } } },
       orderBy: { name: "asc" },
@@ -29,6 +31,7 @@ export default async function NewTeacherAssignment() {
       orderBy: { fullName: "asc" },
       select: { id: true, fullName: true, classLevel: true },
     }),
+    getAttachableMaterialsForTeacher(teacher.id, { take: 60 }),
   ]);
 
   return (
@@ -67,6 +70,17 @@ export default async function NewTeacherAssignment() {
             </Field>
             <div style={{ gridColumn: "1 / -1" }}>
               <Field label="Açıklama"><Textarea name="description" rows={4} /></Field>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Field label="Çalışma materyalleri (opsiyonel)">
+                <MaterialAttachmentPicker
+                  mode="form-field"
+                  name="materialIds"
+                  materials={materials}
+                  hint="Kütüphanenden seçtiğin materyaller bu ödeve bağlanır. Öğrenci ödevin içinden tek tıkla erişir."
+                  emptyText="Henüz kütüphanende materyal yok. Kütüphane → Yeni materyal sayfasından ekleyebilirsin."
+                />
+              </Field>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <FormActions>

@@ -139,11 +139,13 @@ function adminSections(): SidebarGroup[] {
       { id: "veliler", label: "Veliler", icon: "parent", href: base(seg, "veliler") },
     ]},
     { title: "Finans", items: [
+      { id: "finans-raporlar", label: "Finans Raporları", icon: "report", href: "/panel/admin/finans/raporlar" },
       { id: "paketler", label: "Paketler", icon: "package", href: base(seg, "paketler") },
       { id: "od-siparisler", label: "OD Siparişleri", icon: "money", href: base(seg, "od-siparisler") },
       { id: "indirim-kodlari", label: "İndirim Kodları", icon: "tag", href: base(seg, "indirim-kodlari") },
-      { id: "odemeler", label: "Ödemeler", icon: "money", href: base(seg, "odemeler") },
+      { id: "odemeler", label: "Vadeli Ödemeler", icon: "money", href: base(seg, "odemeler") },
       { id: "maaslar", label: "Öğretmen ödemeleri", icon: "money", href: base(seg, "maaslar") },
+      { id: "ogretmen-hakedisleri", label: "Öğretmen Hakedişleri", icon: "money", href: base(seg, "ogretmen-hakedisleri") },
       { id: "muhasebe", label: "Muhasebe", icon: "report", href: `${base(seg, "muhasebe")}?service=OD` },
     ]},
     { title: "Analiz", items: [
@@ -172,6 +174,7 @@ function teacherSections(): SidebarGroup[] {
       { id: "yoklama", label: "Yoklama", icon: "check", href: base(seg, "yoklama") },
       { id: "odevler", label: "Ödevler", icon: "assignment", href: base(seg, "odevler") },
       { id: "karne", label: "Karne", icon: "chart", href: base(seg, "karne") },
+      { id: "materyaller", label: "Materyaller", icon: "book", href: base(seg, "materyaller") },
     ]},
     { title: "İletişim", items: [
       { id: "mesajlar", label: "Mesajlar", icon: "inbox", href: base(seg, "mesajlar") },
@@ -179,6 +182,7 @@ function teacherSections(): SidebarGroup[] {
     ]},
     { title: "Hesap", items: [
       { id: "kazanclarim", label: "Kazançlarım", icon: "money", href: base(seg, "kazanclarim") },
+      { id: "hakedislerim", label: "Hakedişlerim", icon: "money", href: base(seg, "hakedislerim") },
       { id: "profilim", label: "Profilim", icon: "user", href: base(seg, "profilim") },
     ]},
   ];
@@ -197,6 +201,7 @@ function studentSections(): SidebarGroup[] {
       { id: "ders-programi", label: "Ders programı", icon: "cal", href: base(seg, "ders-programi") },
       { id: "odevler", label: "Ödevler", icon: "assignment", href: base(seg, "odevler") },
       { id: "performansim", label: "Performansım", icon: "chart", href: base(seg, "performansim") },
+      { id: "kutuphane", label: "Kütüphane", icon: "book", href: base(seg, "kutuphane") },
     ]},
     { title: "Hesap", items: [
       { id: "paketim", label: "Paketim", icon: "package", href: base(seg, "paketim") },

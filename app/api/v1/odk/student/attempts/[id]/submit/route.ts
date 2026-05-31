@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSessionApi, apiOk, apiErr } from "@/lib/odk/api";
 import { scoreAttempt } from "@/lib/odk/scoring";
+import { guardMutation } from "@/lib/security/mutation-guard";
+import { getRateLimitKeyComposite } from "@/lib/security/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,24 @@ export async function POST(
   const { id: attemptId } = await ctx.params;
   const auth = await requireSessionApi();
   if (!auth.ok) return auth.response;
+
+  // Phase 2 / Session 17 — abuse hardening: per-user-per-attempt rate-limit
+  // + same-origin guard. Idempotency for the legitimate path is already
+  // handled below (`status !== IN_PROGRESS` → 409).
+  const guard = await guardMutation({
+    action: "odk.attempt.submit",
+    requireSameOrigin: true,
+    headers: req.headers,
+    rateLimitKey: getRateLimitKeyComposite(
+      auth.userId,
+      "odk.attempt.submit",
+      attemptId,
+    ),
+    rateLimit: { max: 5, windowMs: 60_000 },
+  });
+  if (!guard.ok) {
+    return apiErr(guard.message, guard.code === "RATE_LIMIT" ? 429 : 403);
+  }
 
   let body: unknown = undefined;
   try { body = await req.json(); } catch { /* body opsiyonel */ }

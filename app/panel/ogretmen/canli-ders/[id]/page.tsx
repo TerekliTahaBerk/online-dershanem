@@ -5,9 +5,18 @@ import { PageHeader } from "@/components/panel/ui/page-header";
 import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { LessonLifecycleButtons } from "@/components/panel/lessons/lifecycle-buttons";
-import { setLessonMeetingLinkAction } from "@/app/panel/ogretmen/_actions";
+import {
+  setLessonMeetingLinkAction,
+  attachLessonMaterialsAction,
+  detachLessonMaterialAction,
+} from "@/app/panel/ogretmen/_actions";
 import { lessonStatusLabel, lessonStatusTone } from "@/lib/lessons/lifecycle";
 import { resolveMeetingLink } from "@/lib/lessons/meeting-provider";
+import {
+  getMaterialsForLesson,
+  getAttachableMaterialsForTeacher,
+} from "@/lib/panel/material-attachments";
+import { LessonMaterialsSection } from "@/components/panel/materials/lesson-materials-section";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +77,13 @@ export default async function TeacherLiveLessonPage({ params }: { params: Promis
     `${lesson.duration} dk`,
     lesson.classroom?.name ?? lesson.student.fullName,
   ].filter(Boolean).join(" • ");
+
+  // ── Phase 2 / Session 9 — Lesson material attachments ───────────────
+  const attachedLessonMaterials = await getMaterialsForLesson(lesson.id);
+  const pickableLessonMaterials = await getAttachableMaterialsForTeacher(teacher.id, {
+    take: 60,
+    excludeMaterialIds: attachedLessonMaterials.map((m) => m.id),
+  });
 
   return (
     <>
@@ -150,6 +166,16 @@ export default async function TeacherLiveLessonPage({ params }: { params: Promis
           </tbody>
         </table>
       </Card>
+
+      <LessonMaterialsSection
+        lessonId={lesson.id}
+        attached={attachedLessonMaterials}
+        edit={{
+          pickable: pickableLessonMaterials,
+          attachAction: attachLessonMaterialsAction.bind(null, lesson.id),
+          detachAction: detachLessonMaterialAction,
+        }}
+      />
 
       <Card>
         <h3 className="od-h3">Son katılım olayları (son 1 saat)</h3>

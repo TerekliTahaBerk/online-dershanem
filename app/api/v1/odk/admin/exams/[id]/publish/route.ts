@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApi, apiOk, apiErr } from "@/lib/odk/api";
+import { notifyUsers } from "@/lib/notifications";
+import { guardMutation } from "@/lib/security/mutation-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,18 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
   const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
   const { id } = await ctx.params;
+
+  // Phase 2 / Session 17 — abuse hardening: per-admin rate-limit + same-origin.
+  const guard = await guardMutation({
+    action: "odk.exam.publish",
+    userId: auth.userId,
+    requireSameOrigin: true,
+    headers: _req.headers,
+    rateLimit: { max: 30, windowMs: 60 * 60_000 },
+  });
+  if (!guard.ok) {
+    return apiErr(guard.message, guard.code === "RATE_LIMIT" ? 429 : 403);
+  }
 
   const exam = await prisma.odkExam.findUnique({
     where: { id },
@@ -60,8 +74,42 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ id: strin
   const updated = await prisma.odkExam.update({
     where: { id },
     data: { status: "PUBLISHED", publishedAt: now },
-    select: { id: true, status: true, publishedAt: true },
+    select: { id: true, status: true, publishedAt: true, title: true },
   });
+
+  // Phase 2 / Session 16 — Notify entitled students. Best-effort: failures
+  // here MUST NOT roll back the publish above. Audience = active
+  // OdkUserAccessTag rows whose accessTagId is linked to this exam.
+  try {
+    const tagIds = exam.examAccessTags.map((t) => t.accessTagId);
+    if (tagIds.length > 0) {
+      const grants = await prisma.odkUserAccessTag.findMany({
+        where: {
+          accessTagId: { in: tagIds },
+          revokedAt: null,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+        select: { userId: true },
+      });
+      const recipientIds = Array.from(new Set(grants.map((g) => g.userId)));
+      if (recipientIds.length > 0) {
+        await notifyUsers(recipientIds, {
+          title: "Yeni deneme yayında",
+          body: `${updated.title} adlı deneme yayına alındı. Çözmeye hemen başlayabilirsiniz.`,
+          href: `/odk/denemeler/${id}`,
+          type: "ANNOUNCEMENT",
+          priority: "NORMAL",
+          category: "ANNOUNCEMENT",
+          inboxPriority: "NORMAL",
+          relatedEntityType: "OdkExam",
+          relatedEntityId: id,
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("[odk/exam/publish] notification fan-out failed", err);
+  }
+
   return apiOk({ exam: updated });
 }
 

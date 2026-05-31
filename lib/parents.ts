@@ -13,7 +13,10 @@
  *     manually until Phase 2 ships providers.
  */
 
-import { randomBytes } from "node:crypto";
+// Phase 2 / Session 13 — Invite token primitives (using `node:crypto`)
+// were moved to `lib/parent-invites.ts` so this module can be safely
+// imported from `"use client"` components. Re-exported below for
+// backwards compatibility with server callers.
 
 /**
  * Phase-1.5 relationship enum at the application boundary. The DB column
@@ -162,34 +165,6 @@ export function deriveParentOnboardingState(p: {
 }
 
 // ── Invite token primitives ──────────────────────────────────────────────
-
-/** Default invite TTL: 14 days. Configurable per call. */
-export const DEFAULT_PARENT_INVITE_TTL_DAYS = 14;
-
-/**
- * Generates a URL-safe random token. 24 bytes → 32 chars base64url.
- * Caller is responsible for storing it in `Parent.parentInviteToken`.
- */
-export function generateParentInviteToken(): string {
-  return randomBytes(24).toString("base64url");
-}
-
-/**
- * Returns the public URL where a parent can set their password. The exact
- * route is created in Phase 2 (`app/(auth)/veli-davet/[token]/page.tsx`),
- * but the URL contract is fixed now so admin can copy/paste the link.
- *
- * If `NEXT_PUBLIC_APP_URL` is unset, the link is relative — admin tools that
- * paste it into WhatsApp will need to prefix the domain themselves.
- */
-export function buildParentInviteUrl(token: string, base?: string): string {
-  const origin = (base ?? process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-  return `${origin}/veli-davet/${token}`;
-}
-
-/** Expiry helper. */
-export function defaultParentInviteExpiresAt(ttlDays = DEFAULT_PARENT_INVITE_TTL_DAYS): Date {
-  const d = new Date();
-  d.setDate(d.getDate() + ttlDays);
-  return d;
-}
+// Moved to `lib/parent-invites.ts` (server-only). Server callers must import
+// directly from `@/lib/parent-invites` — we deliberately do NOT re-export
+// here so that this module stays client-bundle safe.

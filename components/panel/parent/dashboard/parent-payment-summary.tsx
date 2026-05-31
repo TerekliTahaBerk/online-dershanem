@@ -28,7 +28,8 @@ type Props = { summary: ParentPaymentSummary };
 export function ParentPaymentSummaryCard({ summary }: Props) {
   const empty =
     summary.recentIntents.length === 0 &&
-    summary.recentPaidEntries.length === 0;
+    summary.recentPaidEntries.length === 0 &&
+    summary.dueSummary === null;
 
   return (
     <Card>
@@ -52,14 +53,72 @@ export function ParentPaymentSummaryCard({ summary }: Props) {
           />
         ) : (
           <>
-            {/* Honest deferred state for "due tracking" */}
-            <div style={{
-              padding: "8px 10px", borderRadius: 8, marginBottom: 10,
-              background: "var(--pd-soft)", fontSize: 12,
-            }} className="od-muted">
-              ℹ Vadeli/taksitli ödeme takibi henüz aktif değil. Aşağıda yalnızca
-              gerçek ödeme ve fatura kayıtları gösteriliyor.
-            </div>
+            {/* Phase 2 / Session 10 — gerçek vade özeti veya dürüst boş durum */}
+            {summary.dueSummary ? (
+              <div
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  marginBottom: 10,
+                  background:
+                    summary.dueSummary.overdueCount > 0
+                      ? "rgba(244, 63, 94, 0.08)"
+                      : "var(--pd-soft)",
+                  fontSize: 13,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 6,
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: 11, opacity: 0.7 }}>
+                    Toplam bekleyen
+                  </div>
+                  <div style={{ fontWeight: 700 }}>
+                    {fmt(summary.dueSummary.totalOutstandingKurus)}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, opacity: 0.7 }}>
+                    Yaklaşan / Geciken
+                  </div>
+                  <div style={{ fontWeight: 700 }}>
+                    {summary.dueSummary.upcomingCount} /{" "}
+                    <span
+                      style={{
+                        color:
+                          summary.dueSummary.overdueCount > 0
+                            ? "#be123c"
+                            : "inherit",
+                      }}
+                    >
+                      {summary.dueSummary.overdueCount}
+                    </span>
+                  </div>
+                </div>
+                {summary.dueSummary.nextDueDate ? (
+                  <div style={{ gridColumn: "1 / -1", fontSize: 12, opacity: 0.8 }}>
+                    Sıradaki:{" "}
+                    <strong>{summary.dueSummary.nextDueTitle ?? "—"}</strong>{" "}
+                    — {DATE_FMT.format(summary.dueSummary.nextDueDate)}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  marginBottom: 10,
+                  background: "var(--pd-soft)",
+                  fontSize: 12,
+                }}
+                className="od-muted"
+              >
+                ℹ Bu öğrenci için tanımlı vade kaydı yok. Aşağıda yalnızca
+                gerçek ödeme ve fatura kayıtları gösteriliyor.
+              </div>
+            )}
 
             {summary.recentPaidEntries.length > 0 ? (
               <>

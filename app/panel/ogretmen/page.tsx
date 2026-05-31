@@ -17,6 +17,8 @@ import { HomeworkReviewQueue } from "@/components/panel/teacher/dashboard/homewo
 import { ClassesOverview } from "@/components/panel/teacher/dashboard/classes-overview";
 import { RiskyStudents } from "@/components/panel/teacher/dashboard/risky-students";
 import { UpcomingWeek } from "@/components/panel/teacher/dashboard/upcoming-week";
+import { TeacherPendingExcuses } from "@/components/panel/absence-excuses/teacher-pending-excuses";
+import { getPendingExcusesForTeacher } from "@/lib/panel/absence-excuses";
 
 export const dynamic = "force-dynamic";
 
@@ -50,13 +52,14 @@ export default async function TeacherDashboard() {
     );
   }
 
-  const [today, pending, reviewQueue, classes, risky, upcoming] = await Promise.all([
+  const [today, pending, reviewQueue, classes, risky, upcoming, pendingExcuses] = await Promise.all([
     getTeacherTodayLessons(teacher.id),
     getTeacherPendingAttendance(teacher.id),
     getTeacherHomeworkReviewQueue(teacher.id),
     getTeacherClassesOverview(teacher.id),
     getTeacherRiskyStudents(teacher.id),
     getTeacherUpcomingLessons(teacher.id),
+    getPendingExcusesForTeacher(teacher.id, 8),
   ]);
 
   return (
@@ -104,6 +107,13 @@ export default async function TeacherDashboard() {
       <div style={{ marginBottom: 12 }}>
         <ClassesOverview rows={classes} />
       </div>
+
+      {/* Row 3.5 — pending absence excuses (parent submitted) */}
+      {pendingExcuses.length > 0 ? (
+        <div style={{ marginBottom: 12 }}>
+          <TeacherPendingExcuses excuses={pendingExcuses} />
+        </div>
+      ) : null}
 
       {/* Row 4 — upcoming week */}
       <UpcomingWeek lessons={upcoming} />

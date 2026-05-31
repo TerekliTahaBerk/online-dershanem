@@ -160,3 +160,213 @@ export async function expireRelatedNotifications(opts: {
   }
 }
 
+// ───────────────────────────────────────────────────────────────────────────
+// Phase 2 / Session 16 — Inbox + recipient resolution helpers.
+// All helpers are best-effort: if a query fails or some recipients have no
+// userId we silently drop them rather than blocking the parent write.
+// ───────────────────────────────────────────────────────────────────────────
+
+/** Find every active admin User.id. De-duplicated. */
+export async function getAdminUserIds(): Promise<string[]> {
+  try {
+    const rows = await prisma.user.findMany({
+      where: { role: "ADMIN" },
+      select: { id: true },
+    });
+    return Array.from(new Set(rows.map((r) => r.id)));
+  } catch (err) {
+    console.warn("[getAdminUserIds] failed", err);
+    return [];
+  }
+}
+
+/** Resolve a Teacher.id → User.id, or null if unlinked. Alias kept for clarity. */
+export const getTeacherUserId = resolveTeacherUserId;
+
+/** Resolve a Student.id → User.id, or null if unlinked. */
+export async function getStudentUserId(studentId: string): Promise<string | null> {
+  try {
+    const s = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { userId: true },
+    });
+    return s?.userId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Resolve a Student.id → list of linked active parent User.ids (deduped). */
+export async function getParentUserIdsForStudent(studentId: string): Promise<string[]> {
+  try {
+    const links = await prisma.parentStudent.findMany({
+      where: { studentId },
+      select: { parent: { select: { userId: true } } },
+    });
+    return Array.from(
+      new Set(
+        links
+          .map((l) => l.parent?.userId ?? null)
+          .filter((x): x is string => !!x),
+      ),
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** Get teacher User.ids for a classroom (lead + all assigned subject teachers). */
+export async function getTeacherUserIdsForClassroom(classroomId: string): Promise<string[]> {
+  try {
+    const links = await prisma.classroomTeacher.findMany({
+      where: { classroomId },
+      select: { teacher: { select: { userId: true } } },
+    });
+    return Array.from(
+      new Set(
+        links.map((l) => l.teacher?.userId ?? null).filter((x): x is string => !!x),
+      ),
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** Get active student User.ids for a classroom (excludes left). */
+export async function getStudentUserIdsForClassroom(classroomId: string): Promise<string[]> {
+  try {
+    const links = await prisma.classroomStudent.findMany({
+      where: { classroomId, leftAt: null },
+      select: { student: { select: { userId: true } } },
+    });
+    return Array.from(
+      new Set(
+        links.map((l) => l.student?.userId ?? null).filter((x): x is string => !!x),
+      ),
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** Get parent User.ids for every active student in a classroom (deduped). */
+export async function getParentUserIdsForClassroom(classroomId: string): Promise<string[]> {
+  try {
+    const links = await prisma.classroomStudent.findMany({
+      where: { classroomId, leftAt: null },
+      select: {
+        student: {
+          select: {
+            parents: { select: { parent: { select: { userId: true } } } },
+          },
+        },
+      },
+    });
+    const ids: string[] = [];
+    for (const l of links) {
+      for (const ps of l.student?.parents ?? []) {
+        if (ps.parent?.userId) ids.push(ps.parent.userId);
+      }
+    }
+    return Array.from(new Set(ids));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Notify every admin user. Best-effort; admins with no User row are skipped.
+ * `payload.priority` defaults to NORMAL; pass HIGH/URGENT for ops-critical events.
+ */
+export async function notifyAdmins(
+  payload: Omit<Parameters<typeof notifyUser>[0], "userId">,
+) {
+  const ids = await getAdminUserIds();
+  if (ids.length === 0) return;
+  await notifyUsers(ids, payload);
+}
+
+// ─── Inbox read API ────────────────────────────────────────────────────────
+
+export type InboxFilter = {
+  /** "all" | "unread" | "archived". Default "all". */
+  view?: "all" | "unread" | "archived";
+  /** Filter on `category` (one of `InboxCategory`). */
+  category?: import("@prisma/client").InboxCategory | null;
+  /** Pagination. Default 50, max 200. */
+  take?: number;
+  skip?: number;
+};
+
+/**
+ * Fetch inbox messages for a single user with optional filters.
+ * Always scoped by `recipientUserId` — never returns another user's row.
+ */
+export async function getInboxMessagesForUser(userId: string, filter: InboxFilter = {}) {
+  const view = filter.view ?? "all";
+  const where: Record<string, unknown> = { recipientUserId: userId };
+  if (view === "unread") {
+    where.readAt = null;
+    where.archivedAt = null;
+  } else if (view === "archived") {
+    where.archivedAt = { not: null };
+  } else {
+    // "all" excludes archived by default — admins can opt in via view=archived.
+    where.archivedAt = null;
+  }
+  if (filter.category) where.category = filter.category;
+  const take = Math.min(Math.max(filter.take ?? 50, 1), 200);
+  const skip = Math.max(filter.skip ?? 0, 0);
+  return prisma.inboxMessage.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take,
+    skip,
+    include: { createdBy: { select: { name: true, email: true } } },
+  });
+}
+
+/** Count unread (and not archived) inbox messages for a user. */
+export async function getUnreadInboxCount(userId: string): Promise<number> {
+  try {
+    return await prisma.inboxMessage.count({
+      where: { recipientUserId: userId, readAt: null, archivedAt: null },
+    });
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Mark a single message as read. Returns true if the row belonged to `userId`
+ * and was updated; false otherwise (no leakage, no error to caller).
+ */
+export async function markInboxMessageReadById(
+  userId: string,
+  messageId: string,
+): Promise<boolean> {
+  try {
+    const res = await prisma.inboxMessage.updateMany({
+      where: { id: messageId, recipientUserId: userId, readAt: null },
+      data: { readAt: new Date() },
+    });
+    return res.count > 0;
+  } catch (err) {
+    console.warn("[markInboxMessageReadById] failed", err);
+    return false;
+  }
+}
+
+/** Mark every unread message in this user's inbox as read. */
+export async function markAllInboxMessagesRead(userId: string): Promise<number> {
+  try {
+    const res = await prisma.inboxMessage.updateMany({
+      where: { recipientUserId: userId, readAt: null, archivedAt: null },
+      data: { readAt: new Date() },
+    });
+    return res.count;
+  } catch (err) {
+    console.warn("[markAllInboxMessagesRead] failed", err);
+    return 0;
+  }
+}

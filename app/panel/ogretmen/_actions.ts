@@ -10,6 +10,7 @@ import { logAudit } from "@/lib/audit";
 import { canStart, canEnd, canCancel } from "@/lib/lessons/lifecycle";
 import { resolveMeetingLink, isValidMeetingUrl } from "@/lib/lessons/meeting-provider";
 import { computeAutoAttendanceForLesson } from "@/lib/lessons/auto-attendance";
+import { enforceMutation } from "@/lib/security/mutation-guard";
 
 function readStr(fd: FormData, key: string): string {
   const v = fd.get(key);
@@ -18,12 +19,41 @@ function readStr(fd: FormData, key: string): string {
 
 export async function recordAttendanceAction(fd: FormData) {
   const ctx = await requirePanelRole("ogretmen");
+  // Phase 2 / Session 17 — abuse hardening (per-teacher).
+  await enforceMutation({
+    action: "attendance.record",
+    userId: ctx.userId,
+    requireSameOrigin: true,
+    rateLimit: { max: 120, windowMs: 60_000 },
+  });
   const studentId = readStr(fd, "studentId");
   const lessonId = readStr(fd, "lessonId");
   const status = (readStr(fd, "status") as AttendanceStatus) || "PRESENT";
   if (!studentId || !lessonId) throw new Error("Öğrenci ve ders zorunlu");
-  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
+  // Phase 2 / Session 12 — ownership guards.
+  // The teacher must own the lesson, and the studentId must actually
+  // belong to the lesson (direct studentId or active classroom membership).
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+    select: { id: true, teacherId: true, scheduledAt: true, studentId: true, classroomId: true },
+  });
   if (!lesson) throw new Error("Ders bulunamadı");
+  if (lesson.teacherId !== teacher.id) throw new Error("Bu derse yetkiniz yok");
+  if (lesson.studentId && lesson.studentId !== studentId) {
+    // Solo lesson — student must match exactly.
+    if (!lesson.classroomId) throw new Error("Bu öğrenci bu derse ait değil");
+  }
+  if (lesson.classroomId) {
+    const enrolled = await prisma.classroomStudent.findFirst({
+      where: { classroomId: lesson.classroomId, studentId, leftAt: null },
+      select: { studentId: true },
+    });
+    if (!enrolled && lesson.studentId !== studentId) {
+      throw new Error("Bu öğrenci bu sınıfta değil");
+    }
+  }
   await prisma.attendance.create({
     data: {
       studentId, lessonId,
@@ -58,6 +88,28 @@ export async function createTeacherAssignmentAction(fd: FormData) {
       status: (readStr(fd, "status") as AssignmentStatus) || "PUBLISHED",
     },
   });
+
+  // ── Phase 2 / Session 9 — Attach selected library materials ──────────
+  // Permission-checked per id via canTeacherAttachMaterialToAssignment.
+  const rawIds = fd.getAll("materialIds").filter((v): v is string => typeof v === "string");
+  const materialIds = Array.from(new Set(rawIds.map((s) => s.trim()).filter(Boolean)));
+  if (materialIds.length > 0) {
+    const { attachMaterialToAssignment } = await import("@/lib/panel/material-attachments");
+    const attached: string[] = [];
+    for (const mid of materialIds) {
+      const r = await attachMaterialToAssignment(teacher.id, created.id, mid);
+      if (r.ok) attached.push(mid);
+    }
+    if (attached.length > 0) {
+      await logAudit({
+        entityType: "Assignment",
+        entityId: created.id,
+        actorUserId: ctx.userId,
+        action: "MATERIAL_ATTACH_TO_ASSIGNMENT",
+        payload: { materialIds: attached, source: "create" },
+      });
+    }
+  }
 
   // Notify affected students (only if PUBLISHED)
   if (created.status === "PUBLISHED") {
@@ -192,6 +244,12 @@ export async function deleteTeacherAssignmentAction(id: string) {
 // ─── Classroom session attendance (bulk) ────────────────────────────────────
 export async function recordClassroomAttendanceAction(fd: FormData) {
   const ctx = await requirePanelRole("ogretmen");
+  await enforceMutation({
+    action: "attendance.record.bulk",
+    userId: ctx.userId,
+    requireSameOrigin: true,
+    rateLimit: { max: 30, windowMs: 60_000 },
+  });
   const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
   if (!teacher) throw new Error("Öğretmen profili yok");
   const classroomId = readStr(fd, "classroomId");
@@ -481,4 +539,95 @@ export async function setLessonMeetingLinkAction(lessonId: string, fd: FormData)
   });
   revalidatePath("/panel/ogretmen/ders-programi");
   revalidatePath(`/panel/ogretmen/canli-ders/${lesson.id}`);
+}
+// ─── Phase 2 / Session 9 — Material attachments ────────────────────────────
+// Attach / detach existing Material records to/from Assignment + Lesson.
+// All four actions are permission-checked inside lib/panel/material-attachments.
+
+export async function attachAssignmentMaterialsAction(assignmentId: string, fd: FormData) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const rawIds = fd.getAll("materialIds").filter((v): v is string => typeof v === "string");
+  const ids = Array.from(new Set(rawIds.map((s) => s.trim()).filter(Boolean)));
+  if (ids.length === 0) return;
+  const { attachMaterialToAssignment } = await import("@/lib/panel/material-attachments");
+  const ok: string[] = [];
+  for (const mid of ids) {
+    const r = await attachMaterialToAssignment(teacher.id, assignmentId, mid);
+    if (r.ok) ok.push(mid);
+  }
+  if (ok.length > 0) {
+    await logAudit({
+      actorUserId: ctx.userId,
+      entityType: "Assignment",
+      entityId: assignmentId,
+      action: "MATERIAL_ATTACH_TO_ASSIGNMENT",
+      payload: { materialIds: ok },
+    });
+  }
+  revalidatePath(`/panel/ogretmen/odevler/${assignmentId}`);
+  revalidatePath("/panel/ogretmen/odevler");
+}
+
+export async function detachAssignmentMaterialAction(assignmentId: string, materialId: string) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const { detachMaterialFromAssignment } = await import("@/lib/panel/material-attachments");
+  const r = await detachMaterialFromAssignment(teacher.id, assignmentId, materialId);
+  if (!r.ok) throw new Error("Yetki yok");
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Assignment",
+    entityId: assignmentId,
+    action: "MATERIAL_DETACH_FROM_ASSIGNMENT",
+    payload: { materialId },
+  });
+  revalidatePath(`/panel/ogretmen/odevler/${assignmentId}`);
+  revalidatePath("/panel/ogretmen/odevler");
+}
+
+export async function attachLessonMaterialsAction(lessonId: string, fd: FormData) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const rawIds = fd.getAll("materialIds").filter((v): v is string => typeof v === "string");
+  const ids = Array.from(new Set(rawIds.map((s) => s.trim()).filter(Boolean)));
+  if (ids.length === 0) return;
+  const { attachMaterialToLesson } = await import("@/lib/panel/material-attachments");
+  const ok: string[] = [];
+  for (const mid of ids) {
+    const r = await attachMaterialToLesson(teacher.id, lessonId, mid);
+    if (r.ok) ok.push(mid);
+  }
+  if (ok.length > 0) {
+    await logAudit({
+      actorUserId: ctx.userId,
+      entityType: "Lesson",
+      entityId: lessonId,
+      action: "MATERIAL_ATTACH_TO_LESSON",
+      payload: { materialIds: ok },
+    });
+  }
+  revalidatePath("/panel/ogretmen/ders-programi");
+  revalidatePath(`/panel/ogretmen/canli-ders/${lessonId}`);
+}
+
+export async function detachLessonMaterialAction(lessonId: string, materialId: string) {
+  const ctx = await requirePanelRole("ogretmen");
+  const teacher = await prisma.teacher.findFirst({ where: { userId: ctx.userId } });
+  if (!teacher) throw new Error("Öğretmen profili yok");
+  const { detachMaterialFromLesson } = await import("@/lib/panel/material-attachments");
+  const r = await detachMaterialFromLesson(teacher.id, lessonId, materialId);
+  if (!r.ok) throw new Error("Yetki yok");
+  await logAudit({
+    actorUserId: ctx.userId,
+    entityType: "Lesson",
+    entityId: lessonId,
+    action: "MATERIAL_DETACH_FROM_LESSON",
+    payload: { materialId },
+  });
+  revalidatePath("/panel/ogretmen/ders-programi");
+  revalidatePath(`/panel/ogretmen/canli-ders/${lessonId}`);
 }

@@ -20,6 +20,8 @@ import { ParentAttendanceSummaryCard } from "@/components/panel/parent/dashboard
 import { ParentHomeworkSummaryCard } from "@/components/panel/parent/dashboard/parent-homework-summary";
 import { ParentPaymentSummaryCard } from "@/components/panel/parent/dashboard/parent-payment-summary";
 import { ParentOdkSnapshotCard } from "@/components/panel/parent/dashboard/parent-odk-snapshot";
+import { countParentPendingExcuses } from "@/lib/panel/absence-excuses";
+import { Badge } from "@/components/panel/ui/badge";
 
 export const dynamic = "force-dynamic";
 
@@ -93,13 +95,14 @@ export default async function ParentDashboard({
   // pickSelectedStudent never returns null when roster is non-empty.
   const child = selected!;
 
-  const [timeline, upcoming, attendance, homework, payment, odk] = await Promise.all([
+  const [timeline, upcoming, attendance, homework, payment, odk, pendingExcuses] = await Promise.all([
     getParentTodayTimeline(parent.id, child.studentId, child.userId),
     getParentUpcomingLessons(parent.id, child.studentId),
     getParentAttendanceSummary(parent.id, child.studentId),
     getParentHomeworkSummary(parent.id, child.studentId),
     getParentPaymentSummary(parent.id, child.studentId),
     getParentOdkSnapshot(parent.id, child.studentId, child.userId),
+    countParentPendingExcuses(parent.id, child.studentId),
   ]);
 
   const firstName = child.fullName.split(" ")[0];
@@ -113,6 +116,11 @@ export default async function ParentDashboard({
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             <Link href="/panel/veli/mazeret" className="od-btn od-btn-primary od-btn-sm">
               Mazeret bildir
+              {pendingExcuses > 0 ? (
+                <span style={{ marginLeft: 6 }}>
+                  <Badge tone="warn">{pendingExcuses}</Badge>
+                </span>
+              ) : null}
             </Link>
             <Link href="/panel/veli/odev-takibi" className="od-btn od-btn-ghost od-btn-sm">
               Ödevleri gör

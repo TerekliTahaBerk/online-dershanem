@@ -23,20 +23,37 @@ const priceFormatter = new Intl.NumberFormat("tr-TR", {
  * page reflects the same pricing source as the full landing.
  */
 export async function HomeOdkPreview() {
-  const packages = await prisma.odkPackage.findMany({
-    where: { isActive: true },
-    orderBy: { priceCents: "asc" },
-    take: 3,
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      priceCents: true,
-      originalPriceCents: true,
-      durationDays: true,
-      _count: { select: { packageExams: true } },
-    },
-  });
+  // Phase 2 / Session 19 — defensive fallback for static prerender.
+  // The homepage shouldn't crash builds when the DB is unreachable
+  // (e.g. CI without secrets). ISR re-fetches once production is live.
+  let packages: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    priceCents: number;
+    originalPriceCents: number | null;
+    durationDays: number | null;
+    _count: { packageExams: number };
+  }> = [];
+  try {
+    packages = await prisma.odkPackage.findMany({
+      where: { isActive: true },
+      orderBy: { priceCents: "asc" },
+      take: 3,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        priceCents: true,
+        originalPriceCents: true,
+        durationDays: true,
+        _count: { select: { packageExams: true } },
+      },
+    });
+  } catch (err) {
+    console.warn("[HomeOdkPreview] package list query failed", err);
+    packages = [];
+  }
 
   return (
     <section className="bg-[var(--od-cream)] py-24 sm:py-28">

@@ -3,6 +3,8 @@ import { Card, CardHeader, CardBody } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import type { StudentNextLesson } from "@/lib/panel/student-dashboard";
+import type { MaterialRow } from "@/lib/panel/materials";
+import { getMaterialOpenUrl, getMaterialTypeGlyph } from "@/lib/panel/materials";
 
 const TIME_FMT = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
 const DATE_FMT = new Intl.DateTimeFormat("tr-TR", { weekday: "long", day: "2-digit", month: "long" });
@@ -16,7 +18,15 @@ const STATUS_LABEL: Record<string, string> = {
   COMPLETED: "Tamamlandı", CANCELLED: "İptal", MISSED: "Kaçırıldı",
 };
 
-type Props = { lesson: StudentNextLesson | null };
+type Props = {
+  lesson: StudentNextLesson | null;
+  /**
+   * Phase 2 / Session 9 — Up to ~3 materials the teacher attached to
+   * this lesson, surfaced inline so the student doesn't have to dig.
+   * Pass `[]` (or omit) to render the card unchanged.
+   */
+  attachedMaterials?: MaterialRow[];
+};
 
 function formatRelative(target: Date, now = new Date()): string {
   const ms = target.getTime() - now.getTime();
@@ -29,7 +39,7 @@ function formatRelative(target: Date, now = new Date()): string {
   return `${d} gün sonra`;
 }
 
-export function StudentNextLessonCard({ lesson }: Props) {
+export function StudentNextLessonCard({ lesson, attachedMaterials = [] }: Props) {
   if (!lesson) {
     return (
       <Card>
@@ -118,6 +128,34 @@ export function StudentNextLessonCard({ lesson }: Props) {
             )}
           </div>
         </div>
+        {attachedMaterials.length > 0 ? (
+          <div style={{ marginTop: 10 }}>
+            <div className="od-muted" style={{ fontSize: 11, marginBottom: 4 }}>
+              📎 Bu ders için materyaller
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {attachedMaterials.slice(0, 4).map((m) => {
+                const url = getMaterialOpenUrl(m);
+                const label = `${getMaterialTypeGlyph(m.type)} ${m.title}`;
+                return url ? (
+                  <a
+                    key={m.id}
+                    href={url}
+                    target={url.startsWith("http") ? "_blank" : undefined}
+                    rel={url.startsWith("http") ? "noreferrer noopener" : undefined}
+                    className="od-chip"
+                    title={m.title}
+                    style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  >
+                    {label}
+                  </a>
+                ) : (
+                  <span key={m.id} className="od-chip" title={m.title}>{label}</span>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </CardBody>
     </Card>
   );

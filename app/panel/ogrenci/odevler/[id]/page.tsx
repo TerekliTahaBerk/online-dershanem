@@ -9,6 +9,9 @@ import { Badge } from "@/components/panel/ui/badge";
 import { EmptyState } from "@/components/panel/ui/empty-state";
 import { ToastForm } from "@/components/ui/toast-form";
 import { submitAssignmentExtendedAction } from "../../_actions";
+import { getMaterialsForAssignment } from "@/lib/panel/material-attachments";
+import { canStudentAccessMaterial } from "@/lib/panel/materials";
+import { AssignmentMaterialsSection } from "@/components/panel/materials/assignment-materials-section";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +37,13 @@ export default async function StudentAssignmentDetail({ params }: { params: Prom
   const closed = a.status === "CLOSED";
   const submit = submitAssignmentExtendedAction.bind(null, a.id);
 
+  // ── Phase 2 / Session 9 — Attached materials filtered by student access.
+  const attachedAll = await getMaterialsForAssignment(a.id);
+  const visibilityChecks = await Promise.all(
+    attachedAll.map((m) => canStudentAccessMaterial(student.id, m.id)),
+  );
+  const attached = attachedAll.filter((_, i) => visibilityChecks[i]);
+
   return (
     <>
       <PageHeader
@@ -52,6 +62,10 @@ export default async function StudentAssignmentDetail({ params }: { params: Prom
           {a.description ? <div style={{ marginTop: 12, fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{a.description}</div> : null}
         </CardBody>
       </Card>
+
+      <div style={{ marginTop: 16 }}>
+        <AssignmentMaterialsSection assignmentId={a.id} attached={attached} />
+      </div>
 
       {sub && sub.status === "GRADED" ? (
         <Card style={{ marginTop: 16, borderColor: "var(--pd-good)" }}>

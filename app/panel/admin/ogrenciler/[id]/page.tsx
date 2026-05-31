@@ -31,6 +31,7 @@ import {
   parseStudentTab,
   type StudentTab,
 } from "@/components/panel/students/student-360-tabs";
+import { StudentAcademicSummaryCard } from "@/components/panel/academic-roadmap/student-academic-summary-card";
 
 export const dynamic = "force-dynamic";
 
@@ -296,6 +297,15 @@ export default async function StudentDetail({
           }))}
           enrollments={overviewData[2].map((e) => ({ id: e.id, package: e.package }))}
         />
+      ) : null}
+
+      {tab === "overview" ? (
+        <div style={{ marginTop: 16 }}>
+          <StudentAcademicSummaryCard
+            studentId={student.id}
+            studentUserId={student.userId}
+          />
+        </div>
       ) : null}
 
       {tab === "education" && educationData ? (

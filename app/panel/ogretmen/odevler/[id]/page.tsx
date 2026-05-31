@@ -11,7 +11,14 @@ import {
   gradeMySubmissionAction,
   toggleAssignmentStatusAction,
   deleteTeacherAssignmentAction,
+  attachAssignmentMaterialsAction,
+  detachAssignmentMaterialAction,
 } from "../../_actions";
+import {
+  getMaterialsForAssignment,
+  getAttachableMaterialsForTeacher,
+} from "@/lib/panel/material-attachments";
+import { AssignmentMaterialsSection } from "@/components/panel/materials/assignment-materials-section";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +38,13 @@ export default async function TeacherAssignmentDetail({ params }: { params: Prom
     },
   });
   if (!a) notFound();
+
+  // ── Phase 2 / Session 9 — Material attachments ──────────────────────
+  const attachedMaterials = await getMaterialsForAssignment(a.id);
+  const pickableMaterials = await getAttachableMaterialsForTeacher(teacher.id, {
+    take: 60,
+    excludeMaterialIds: attachedMaterials.map((m) => m.id),
+  });
 
   // Compute expected students if classroom-wide
   let expected: { id: string; fullName: string }[] = [];
@@ -78,6 +92,18 @@ export default async function TeacherAssignmentDetail({ params }: { params: Prom
           ) : null}
         </CardBody>
       </Card>
+
+      <div style={{ marginTop: 16 }}>
+        <AssignmentMaterialsSection
+          assignmentId={a.id}
+          attached={attachedMaterials}
+          edit={{
+            pickable: pickableMaterials,
+            attachAction: attachAssignmentMaterialsAction.bind(null, a.id),
+            detachAction: detachAssignmentMaterialAction,
+          }}
+        />
+      </div>
 
       <Card style={{ marginTop: 16 }}>
         <CardHeader title="Gönderimler & Puanlama" subtitle={`${a.submissions.length} gönderim`} />

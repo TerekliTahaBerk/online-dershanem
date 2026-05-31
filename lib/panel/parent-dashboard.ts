@@ -655,10 +655,19 @@ export type ParentPaymentSummary = {
   /** Son 90 günde alınmış toplam ödeme (kuruş). Tahmini değil — gerçek INCOME kayıtları. */
   paidLast90DaysKurus: number;
   /**
-   * "Vadesi gelen / geçen" konsepti veri modelinde yok. UI bu alanı
-   * "deferred" işaretlemek için kullanır.
+   * Phase 2 / Session 10 — gerçek vade takibi. `null` ise ya öğrenciye
+   * bağlı kayıt yok ya da veli bu öğrenciye erişim sahibi değil. UI
+   * boş durumda eski "deferred" mesajını gösterir.
    */
-  hasDueTracking: false;
+  dueSummary: {
+    upcomingCount: number;
+    overdueCount: number;
+    totalOutstandingKurus: number;
+    nextDueDate: Date | null;
+    nextDueTitle: string | null;
+  } | null;
+  /** Geriye dönük uyumluluk: `dueSummary !== null` ile aynı. */
+  hasDueTracking: boolean;
 };
 
 export async function getParentPaymentSummary(
@@ -668,7 +677,8 @@ export async function getParentPaymentSummary(
   if (!(await ownsStudent(parentId, studentId))) {
     return {
       recentIntents: [], recentPaidEntries: [],
-      pendingIntentCount: 0, paidLast90DaysKurus: 0, hasDueTracking: false,
+      pendingIntentCount: 0, paidLast90DaysKurus: 0,
+      dueSummary: null, hasDueTracking: false,
     };
   }
   const since = daysAgo(90);
@@ -697,6 +707,58 @@ export async function getParentPaymentSummary(
   });
   const paidLast90DaysKurus = allIncome.reduce((s, e) => s + e.amount, 0);
 
+  // ── Phase 2 / Session 10 — vade özeti ────────────────────────────
+  // Yalnızca bu öğrenciye bağlı kayıtlar. Veli erişimi yukarıda
+  // `ownsStudent` ile zaten doğrulandı. OVERDUE türetilir, kolonda yok.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const scheduleItems = await prisma.paymentScheduleItem.findMany({
+    where: {
+      studentId,
+      status: { in: ["PENDING", "PARTIAL"] },
+    },
+    select: {
+      title: true,
+      amount: true,
+      paidAmount: true,
+      dueDate: true,
+      status: true,
+    },
+    orderBy: { dueDate: "asc" },
+  });
+  let dueSummary: ParentPaymentSummary["dueSummary"] = null;
+  // Also count whether *any* schedule row exists (paid or otherwise) so we
+  // can switch the widget to "real" mode.
+  const anyScheduleCount = await prisma.paymentScheduleItem.count({
+    where: { studentId },
+  });
+  if (anyScheduleCount > 0) {
+    let upcomingCount = 0;
+    let overdueCount = 0;
+    let totalOutstandingKurus = 0;
+    let nextDueDate: Date | null = null;
+    let nextDueTitle: string | null = null;
+    for (const it of scheduleItems) {
+      const remaining = Math.max(0, it.amount - it.paidAmount);
+      totalOutstandingKurus += remaining;
+      const isOverdue =
+        it.status === "PENDING" && it.dueDate.getTime() < today.getTime();
+      if (isOverdue) overdueCount += 1;
+      else upcomingCount += 1;
+      if (!nextDueDate || it.dueDate.getTime() < nextDueDate.getTime()) {
+        nextDueDate = it.dueDate;
+        nextDueTitle = it.title;
+      }
+    }
+    dueSummary = {
+      upcomingCount,
+      overdueCount,
+      totalOutstandingKurus,
+      nextDueDate,
+      nextDueTitle,
+    };
+  }
+
   return {
     recentIntents: intents.map((i) => ({
       id: i.id,
@@ -718,7 +780,8 @@ export async function getParentPaymentSummary(
     })),
     pendingIntentCount: pendingCount,
     paidLast90DaysKurus,
-    hasDueTracking: false,
+    dueSummary,
+    hasDueTracking: dueSummary !== null,
   };
 }
 
