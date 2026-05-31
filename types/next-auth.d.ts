@@ -7,6 +7,12 @@ declare module "next-auth" {
     user: DefaultSession["user"] & {
       id: string;
       role: UserRole;
+      /**
+       * Phase 3 / Session 2 — when true, the panel server-guard redirects
+       * every panel request (except the change-password page itself) to
+       * `/panel/sifre-degistir`. Cached on the JWT, refreshed at sign-in.
+       */
+      mustChangePassword: boolean;
     };
   }
 
@@ -18,5 +24,6 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     role?: UserRole;
+    mustChangePassword?: boolean;
   }
 }

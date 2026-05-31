@@ -32,6 +32,7 @@ import {
   type StudentTab,
 } from "@/components/panel/students/student-360-tabs";
 import { StudentAcademicSummaryCard } from "@/components/panel/academic-roadmap/student-academic-summary-card";
+import { StudentOnboardingCard } from "@/components/panel/students/student-onboarding-card";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,27 @@ export default async function StudentDetail({
       classLevel: true, department: true, examType: true,
       targetGoal: true, targetSchool: true,
       status: true, createdAt: true, userId: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+          passwordHash: true,
+          passwordChangedAt: true,
+          lastLoginAt: true,
+          mustChangePassword: true,
+          accountDisabledAt: true,
+          userInviteToken: true,
+          userInviteTokenExpiresAt: true,
+          userInviteSentAt: true,
+        },
+      },
+      _count: {
+        select: {
+          parents: true,
+          classrooms: true,
+          packages: true,
+        },
+      },
     },
   });
   if (!student) notFound();
@@ -245,6 +267,27 @@ export default async function StudentDetail({
       />
 
       <Student360TabBar current={tab} baseHref={baseHref} />
+
+      {tab === "overview" ? (
+        <div style={{ marginBottom: 16 }}>
+          <StudentOnboardingCard
+            studentId={student.id}
+            hasAccount={!!student.userId}
+            input={{
+              fullName: student.fullName,
+              phone: student.phone,
+              email: student.email,
+              targetGoal: student.targetGoal,
+              targetSchool: student.targetSchool,
+              user: student.user,
+              parentLinkCount: student._count.parents,
+              classroomLinkCount: student._count.classrooms,
+              packageLinkCount: student._count.packages,
+              hasAnyAccessTag: !!flags?.hasOD || !!flags?.hasODK,
+            }}
+          />
+        </div>
+      ) : null}
 
       {tab === "overview" && risk && risk.signals.length > 0 ? (
         <div style={{ marginBottom: 16 }}>

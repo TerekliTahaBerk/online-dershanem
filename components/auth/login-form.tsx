@@ -44,11 +44,15 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         | "STUDENT"
         | "PARENT"
         | undefined;
+      const mustChange = !!session?.user?.mustChangePassword;
       const segment =
         role === "ADMIN" ? "admin" :
         role === "TEACHER" ? "ogretmen" :
         role === "PARENT" ? "veli" : "ogrenci";
-      window.location.href = callbackUrl ?? `/panel/${segment}`;
+      const destination = mustChange
+        ? "/panel/sifre-degistir"
+        : (callbackUrl ?? `/panel/${segment}`);
+      window.location.href = destination;
     } catch {
       window.location.href = callbackUrl ?? "/panel/ogrenci";
     }

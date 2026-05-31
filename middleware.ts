@@ -45,6 +45,23 @@ export default withAuth(
       return NextResponse.next();
     }
 
+    // /panel/sifre-degistir → role-agnostic. Hem ADMIN hem diğer roller
+    // (mustChangePassword=true iken) buraya direkt erişebilmeli. Aksi halde
+    // segment-mismatch redirect'i forced-change ekranına ulaşmayı engeller.
+    if (pathname === "/panel/sifre-degistir" || pathname.startsWith("/panel/sifre-degistir/")) {
+      return NextResponse.next();
+    }
+
+    // Phase 3 / Session 2 — defense-in-depth. JWT'de mustChangePassword
+    // varsa, server-guard'a güvenmek yerine middleware burada da
+    // /panel/sifre-degistir'e çevirir. JWT eskimişse (DB değişmiş ama
+    // token tazelenmemiş) server-guard yine yakalar.
+    if (token?.mustChangePassword === true) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/panel/sifre-degistir";
+      return NextResponse.redirect(url);
+    }
+
     // /panel veya /panel/ -> sayfa kendi redirect'ini yapacak
     const parts = pathname.split("/").filter(Boolean); // ["panel", "<seg>", ...]
     if (parts.length < 2) {

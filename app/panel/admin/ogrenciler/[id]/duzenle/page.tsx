@@ -14,9 +14,14 @@ import {
   removePackageFromStudentAction,
   linkParentToStudentAction,
   unlinkParentFromStudentAction,
-  createParentAndLinkAction,
 } from "../../_actions";
-import { ParentLinkCard } from "@/components/panel/students/parent-link-card";
+import { StudentParentSection } from "@/components/panel/students/student-parent-section";
+import {
+  deriveUserAccountState,
+  getUserAccountStateLabel,
+  getUserAccountStateTone,
+} from "@/lib/panel/account-onboarding";
+import type { ParentRelationshipType } from "@/lib/parents";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +34,29 @@ export default async function EditStudent({ params }: { params: Promise<{ id: st
       include: {
         classrooms: { include: { classroom: { select: { id: true, name: true, branch: true } } } },
         packages: { include: { package: { select: { id: true, name: true, type: true } } } },
-        parents: { include: { parent: { select: { id: true, fullName: true, phone: true } } } },
+        parents: {
+          include: {
+            parent: {
+              select: {
+                id: true,
+                fullName: true,
+                phone: true,
+                email: true,
+                _count: { select: { students: true } },
+                user: {
+                  select: {
+                    passwordHash: true,
+                    lastLoginAt: true,
+                    mustChangePassword: true,
+                    accountDisabledAt: true,
+                    userInviteToken: true,
+                    userInviteTokenExpiresAt: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     }),
     prisma.classroom.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, branch: true } }),
@@ -47,7 +74,32 @@ export default async function EditStudent({ params }: { params: Promise<{ id: st
   const addClassroom = assignStudentToClassroomAction.bind(null, id);
   const addPackage = assignPackageToStudentAction.bind(null, id);
   const linkParent = linkParentToStudentAction.bind(null, id);
-  const createAndLinkParent = createParentAndLinkAction.bind(null, id);
+  const unlinkParent = (parentId: string) => unlinkParentFromStudentAction(id, parentId);
+
+  // Pre-derive parent account states server-side; the client component
+  // cannot import the prisma-backed onboarding helpers directly.
+  const parentRows = s.parents.map((ps) => {
+    const u = ps.parent.user;
+    const state = deriveUserAccountState(u);
+    return {
+      parentId: ps.parent.id,
+      isPrimary: ps.isPrimary,
+      relationship: ps.relationship,
+      relationshipType: (ps.relationshipType ?? null) as ParentRelationshipType | null,
+      parent: {
+        id: ps.parent.id,
+        fullName: ps.parent.fullName,
+        phone: ps.parent.phone,
+        email: ps.parent.email,
+        childrenCount: ps.parent._count.students,
+        accountStateLabel: getUserAccountStateLabel(state),
+        accountStateTone: getUserAccountStateTone(state),
+        lastLoginAt: u?.lastLoginAt ?? null,
+        inviteExpiresAt: u?.userInviteTokenExpiresAt ?? null,
+        hasInvite: !!u?.userInviteToken,
+      },
+    };
+  });
 
   return (
     <>
@@ -158,30 +210,12 @@ export default async function EditStudent({ params }: { params: Promise<{ id: st
           )}
 
           <hr style={{ margin: "24px 0 16px", border: 0, borderTop: "1px solid var(--pd-line)" }} />
-          <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Veliler</h3>
-          {s.parents.length === 0 ? (
-            <div className="od-muted" style={{ fontSize: 13 }}>Henüz veli bağlı değil.</div>
-          ) : (
-            <table className="od-table">
-              <thead><tr><th>Veli</th><th>Telefon</th><th>İlişki</th><th>Birincil</th><th></th></tr></thead>
-              <tbody>
-                {s.parents.map((ps) => (
-                  <tr key={ps.parent.id}>
-                    <td>{ps.parent.fullName}</td>
-                    <td className="od-muted">{ps.parent.phone ?? "—"}</td>
-                    <td className="od-muted">{ps.relationship ?? "—"}</td>
-                    <td>{ps.isPrimary ? "✓" : "—"}</td>
-                    <td>
-                      <form action={unlinkParentFromStudentAction.bind(null, id, ps.parent.id)} style={{ display: "inline" }}>
-                        <button type="submit" className="od-btn od-btn-ghost od-btn-sm" style={{ color: "var(--pd-bad)" }}>Bağı Kaldır</button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <ParentLinkCard linkAction={linkParent} createAndLinkAction={createAndLinkParent} />
+          <StudentParentSection
+            studentId={id}
+            parents={parentRows}
+            linkExistingAction={linkParent}
+            unlinkAction={unlinkParent}
+          />
 
           <hr style={{ margin: "24px 0 16px", border: 0, borderTop: "1px solid var(--pd-line)" }} />
           <form action={del}>

@@ -56,6 +56,20 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Phase 3 / Session 1 — devre dışı bırakılmış hesaplar login olamaz.
+        if (user.accountDisabledAt) {
+          log.warn("auth.login_failed", { email, ip, reason: "account_disabled" });
+          void logAudit({
+            actorUserId: user.id,
+            entityType: "User",
+            entityId: user.id,
+            action: "LOGIN_BLOCKED_DISABLED",
+            summary: `${email} — devre dışı hesap giriş denedi`,
+            payload: { email, ip },
+          });
+          return null;
+        }
+
         const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!ok) {
           const res = await recordFailedAttempt(email);
@@ -75,6 +89,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         log.info("auth.login_ok", { userId: user.id, role: user.role, ip });
+        // Phase 3 / Session 1 — `lastLoginAt` panel onboarding card +
+        // parent/student account state derivation için gerekli. Hata olsa
+        // bile login akışını kırmayalım (fire-and-forget).
+        void prisma.user
+          .update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+          .catch((e) => log.warn("auth.lastLoginAt_update_failed", { userId: user.id, error: String(e) }));
         void logAudit({
           actorUserId: user.id,
           entityType: "User",
@@ -101,12 +121,26 @@ export const authOptions: NextAuthOptions = {
 
       const currentUser = await prisma.user.findUnique({
         where: { id: token.sub },
-        select: { role: true, name: true },
+        select: {
+          role: true,
+          name: true,
+          mustChangePassword: true,
+          accountDisabledAt: true,
+        },
       });
       if (!currentUser) return token;
 
+      // Disabled accounts: clear the role so any role-guarded route
+      // rejects, and the next /panel hit redirects to /giris.
+      if (currentUser.accountDisabledAt) {
+        delete (token as { role?: unknown }).role;
+        token.mustChangePassword = false;
+        return token;
+      }
+
       token.role = currentUser.role;
       token.name = currentUser.name ?? token.name;
+      token.mustChangePassword = !!currentUser.mustChangePassword;
       return token;
     },
     async session({ session, token }) {
@@ -115,6 +149,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role =
           (token.role as "ADMIN" | "STUDENT" | "TEACHER" | "PARENT") ?? "STUDENT";
         session.user.name = token.name ?? session.user.name;
+        session.user.mustChangePassword = !!token.mustChangePassword;
       }
       return session;
     },

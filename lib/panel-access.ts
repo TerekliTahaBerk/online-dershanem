@@ -1,7 +1,17 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import { getServerAuthSession } from "@/lib/auth";
+
+/**
+ * Paths that remain reachable when `mustChangePassword=true`. Anything else
+ * under `/panel/*` will bounce to `/panel/sifre-degistir`.
+ */
+export const FORCED_PASSWORD_CHANGE_PATH = "/panel/sifre-degistir" as const;
+const FORCED_PASSWORD_BYPASS = new Set<string>([
+  FORCED_PASSWORD_CHANGE_PATH,
+  "/giris",
+]);
 
 /**
  * Panel rol & yonlendirme yardimcilari.
@@ -79,10 +89,22 @@ export type EffectiveRole = {
  * dikkate alir, panel rolunun segmentini birlikte dondurur. Login yoksa
  * /giris\'e yonlendirir.
  */
-export async function requirePanelSession(): Promise<EffectiveRole & { userId: string; email: string; name: string | null }> {
+export async function requirePanelSession(): Promise<EffectiveRole & { userId: string; email: string; name: string | null; mustChangePassword: boolean }> {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
     redirect("/giris");
+  }
+
+  // Phase 3 / Session 2 — force the password change flow before any other
+  // panel content renders. We read the current pathname from the request
+  // headers (set by Next on the server). The change-password page itself is
+  // exempt so the user can actually complete the change.
+  if (session.user.mustChangePassword) {
+    const h = await headers();
+    const pathname = h.get("x-invoke-path") ?? h.get("x-pathname") ?? h.get("next-url") ?? "";
+    if (!FORCED_PASSWORD_BYPASS.has(pathname)) {
+      redirect(FORCED_PASSWORD_CHANGE_PATH);
+    }
   }
 
   const actualRole = (session.user.role ?? "STUDENT") as UserRole;
@@ -109,6 +131,7 @@ export async function requirePanelSession(): Promise<EffectiveRole & { userId: s
     userId: session.user.id,
     email: session.user.email ?? "",
     name: session.user.name ?? null,
+    mustChangePassword: !!session.user.mustChangePassword,
   };
 }
 

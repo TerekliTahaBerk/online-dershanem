@@ -109,6 +109,19 @@ model User {
   passwordHash                String?
   role                        UserRole                  @default(ADMIN)
   onboardingCompletedAt       DateTime?
+  // ── Phase 3 / Session 1 — account onboarding state ──────────────────────
+  /// Davet token'ı (öğrenci/öğretmen). Veli için ayrı kolonlar `Parent`'ta
+  /// (mirror'un canlısı). `lib/panel/account-onboarding.ts` üretir/yakar.
+  userInviteToken             String?                   @unique
+  userInviteTokenExpiresAt    DateTime?
+  userInviteSentAt            DateTime?
+  /// İlk girişte zorunlu şifre değişimi. Geçici şifre verildiyse `true`.
+  mustChangePassword          Boolean                   @default(false)
+  passwordChangedAt           DateTime?
+  /// `lib/auth.ts::authorize` her başarılı girişte günceller.
+  lastLoginAt                 DateTime?
+  /// Operasyonel olarak devre dışı (silinmedi). Login engellenir.
+  accountDisabledAt           DateTime?
   createdAt                   DateTime                  @default(now())
   updatedAt                   DateTime                  @updatedAt
   student                     Student?

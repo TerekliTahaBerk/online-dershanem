@@ -3053,3 +3053,127 @@ with the real `DATABASE_URL`.**
 | Env vars documented | ✅ |
 | Smoke checklist executable | ✅ role-ordered |
 | Release notes | ✅ `docs/release-notes-phase-2.md` |
+
+---
+
+## §30 — Phase 3 / Session 1 — Student Onboarding (2026-06)
+
+Status: **shipped, typecheck/lint/build clean** (52/52 static).
+
+Detailed audit & plan: `docs/phase-3-operational-crud-audit.md`.
+
+### What changed
+
+* **Schema (migration `0036_user_account_onboarding`)** — additive only:
+  `User.userInviteToken @unique`, `User.userInviteTokenExpiresAt`,
+  `User.userInviteSentAt`, `User.mustChangePassword (default false)`,
+  `User.passwordChangedAt`, `User.lastLoginAt`, `User.accountDisabledAt`.
+* **Auth (`lib/auth.ts`)** — `authorize` now rejects users with
+  `accountDisabledAt` set (audited as `LOGIN_BLOCKED_DISABLED`) and updates
+  `lastLoginAt` on every successful sign-in (fire-and-forget).
+* **`lib/panel/account-onboarding.ts`** (new) — exposes:
+  invite token primitives (`generateUserInviteToken`,
+  `defaultUserInviteExpiresAt`, `buildUserInviteUrl`), temp password
+  generator (`generateTemporaryPassword`), derived state machine
+  (`deriveUserAccountState`, `getUserAccountStateLabel/Tone`), checklist
+  helpers (`deriveStudentOnboardingChecklist`,
+  `summarizeOnboardingChecklist`), duplicate detection
+  (`findStudentDuplicates`), and mutating helpers
+  (`createUserAccountForStudent`, `regenerateUserInvite`,
+  `revokeUserInvite`, `disableUserAccount`, `enableUserAccount`,
+  `forceUserPasswordChange`). All mutators write audit + notify.
+* **`app/panel/admin/ogrenciler/yeni/page.tsx`** — rewritten as a sectioned
+  single-page wizard (7 sections + sticky TOC). Server component, dynamic.
+* **`app/panel/admin/ogrenciler/_actions.ts`** —
+  `createStudentAction` rewritten as a transactional creator that:
+  validates → checks duplicates → creates Student → optionally creates User
+  (rolled back on failure) → optionally attaches classroom / parent /
+  package / tag → audits → notifies admins. Adds 5 new actions:
+  `createStudentAccountAction`, `regenerateStudentInviteAction`,
+  `revokeStudentInviteAction`, `disableStudentAccountAction`,
+  `enableStudentAccountAction`, `forceStudentPasswordChangeAction`.
+  All protected by `enforceMutation` rate-limits.
+* **`linkParentToStudentAction`** now audits (`STUDENT_PARENT_LINK`) and
+  notifies the parent's user account (if any).
+* **`components/panel/students/student-onboarding-card.tsx`** (new) —
+  derived 8-item checklist with required/recommended badges + account state
+  chip. Rendered on the overview tab of `/panel/admin/ogrenciler/[id]`.
+* **`components/panel/students/student-account-actions.tsx`** (new) —
+  client widget for the 6 account actions; reveals invite URL / temp
+  password in-place with copy-to-clipboard.
+* **`docs/manual-smoke-checklist.md`** — appended Phase 3 Session 1
+  section with 14 smoke cases and SQL cleanup recipe.
+* **`docs/phase-3-operational-crud-audit.md`** (new) — Phase 3 audit doc
+  and per-session roadmap.
+
+### Deferred to later Phase 3 sessions (explicit)
+
+* Bulk actions toolbar + 17 advanced filter facets + 9 saved views — **Session 4**.
+* `/davet/[token]` user invite consumer page + `mustChangePassword`
+  middleware redirect + `/veli-davet/[token]` parent consumer — **Session 6**.
+* Email/WhatsApp delivery of invite URLs — **Phase 4**.
+
+### Verification
+
+* `npx tsc --noEmit` → 0 errors.
+* `npm run lint` → 3 pre-existing warnings, no new ones.
+* `npm run build:nomigrate` (with fake DATABASE_URL) → `✓ Compiled
+  successfully · 52/52 static pages`.
+* Migration `0036_user_account_onboarding/migration.sql` is pure additive
+  `ALTER TABLE` — zero data risk.
+
+
+---
+
+## Phase 3 — Session 2 — Invite Acceptance + First Login Password Enforcement (shipped 2026-06)
+
+Closes the consumer side of the account lifecycle started in Session 1.
+After this session, admins **issue** invites/temp-passwords and users
+**accept** them — end-to-end.
+
+### What shipped
+
+* `/davet/[token]` — server component + atomic single-use server action.
+* `/panel/sifre-degistir` — forced password change (also usable
+  voluntarily).
+* Reusable `components/auth/password-setup-form.tsx` powering both
+  flows.
+* `mustChangePassword` exposed on JWT + session; enforced in
+  `requirePanelSession()` (primary) and `middleware.ts` (defense-in-depth).
+* `lib/panel/account-onboarding.ts` gained `validateInviteToken`,
+  `consumeUserInviteToken`, `changePasswordForUser`,
+  `getPostLoginRedirectForRole`, `validateNewPassword`,
+  `MIN_PASSWORD_LENGTH`.
+* Disabled accounts mid-session are bounced to `/giris` on the very next
+  request (JWT callback clears `token.role`).
+* Login form now reads `mustChangePassword` after sign-in and skips the
+  extra hop straight to `/panel/sifre-degistir`.
+
+### Architectural decisions
+
+* `mustChangePassword` lives on the JWT (refreshed on every request by
+  the existing `lib/auth.ts` DB-read) and is enforced **twice**:
+  middleware short-circuits the page load; `requirePanelSession()`
+  re-checks server-side. See `docs/phase-3-operational-crud-audit.md`
+  Phase 3 Session 2 §2.
+* Invite tokens are atomically consumed via
+  `prisma.user.updateMany({ where: { id, userInviteToken, … } })` — the
+  token is part of the WHERE clause, so only one concurrent request can
+  win. See §3.
+* Min password length: **8** (was 6 in legacy `/api/auth/reset-password`;
+  the new helper is what gates all new flows).
+* `/veli-davet/[token]` legacy redirect: NOT NEEDED. The route never
+  existed in this codebase; parent-user invite token columns currently
+  sit unused.
+
+### Verification
+
+* `npx tsc --noEmit` → 0 errors.
+* `npm run lint` → 3 pre-existing warnings, no new ones.
+* `npm run build:nomigrate` (with fake DATABASE_URL) → `✓ Compiled
+  successfully`, two new dynamic routes (`/davet/[token]`,
+  `/panel/sifre-degistir`); static-page count ≥ 52.
+* No new migration in Session 2 — uses the schema added by
+  `0036_user_account_onboarding`.
+* Smoke checklist: `docs/manual-smoke-checklist.md` "Phase 3 — Session 2"
+  (13 new cases).

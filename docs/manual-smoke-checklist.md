@@ -288,3 +288,269 @@ These MUST pass. If any fails, roll back per
 | Reviewer | | | |
 
 End.
+
+---
+
+## Phase 3 — Session 1 — Student Onboarding (2026-06)
+
+> 14 smoke cases for the new student creation wizard, onboarding card and
+> account action surface. Run as ADMIN against a clean DB (or a tenant whose
+> deletion is allowed).
+
+1.  **Wizard renders** — `/panel/admin/ogrenciler/yeni` shows 7 sections,
+    sticky side TOC, all dropdowns populated (classrooms / parents /
+    packages / tags).
+2.  **Minimal create (no account)** — Submit with Ad Soyad + Telefon only,
+    Hesap modu = `none`. Redirects to the new student detail page.
+    No `User` row was created.
+3.  **Full create with invite** — Submit with email + classroom + parent +
+    package + tag + `accountMode=invite`. Detail page renders, onboarding
+    card shows ALL required items ✓, and the invite link is visible on the
+    parent's audit row.
+4.  **Duplicate phone blocks create** — Try to create a second student with
+    the same telephone. Toast shows the structured error ("Duplicate kayıt:
+    Student "X" (phoneKey)…"). No partial student is left in DB.
+5.  **Duplicate email blocks create** — Try to create a student with an email
+    that already belongs to a `User`. Toast shows ("User "X" (user.email)…").
+6.  **Onboarding card — required items** — On a student with no parent, no
+    classroom, no package, the card shows correct `2/3` (or similar) required
+    progress, ⚠️ warning chip on each missing required step.
+7.  **Onboarding card — recommended items** — Recommended items render with
+    "Önerilen" badge and don't block "Onboarding tamam" status as long as
+    required items are done.
+8.  **Account create from detail** — On a student created without account
+    (#2), click "Davet linki üret". Server action runs, link is shown,
+    "Panoya kopyala" copies it. Page re-renders showing INVITE_PENDING.
+9.  **Temp password from detail** — Click "Geçici şifre ver" instead.
+    Returned password is displayed with a "won't be shown again" warning,
+    `mustChangePassword=true` is set on the user.
+10. **Force password change** — Click "Şifre değişimi zorunlu kıl" on an
+    active account. `mustChangePassword` flips to true; user is notified
+    (check inbox).
+11. **Disable account** — Click "Hesabı devre dışı bırak". `accountDisabledAt`
+    is set; the user can no longer log in (try `/giris` in incognito —
+    should fail silently).
+12. **Re-enable account** — On the disabled account, click "Hesabı
+    aktifleştir". `accountDisabledAt` cleared; user can log in again.
+    Their `lastLoginAt` is updated after a successful login (verify by
+    re-loading the student detail page — onboarding card shows ACTIVE).
+13. **Bidirectional parent link** — On the student detail page, link a
+    parent. The parent's detail page shows the student. Audit log on the
+    student has STUDENT_PARENT_LINK; parent user (if any) has an inbox
+    notification.
+14. **Rate-limit enforcement** — Try to generate 31 invite links for the
+    same student in <1h (use a script). The 31st call returns a rate-limit
+    error from the mutation guard.
+
+### Cleanup after Session 1 smoke
+
+```sql
+DELETE FROM "User"    WHERE email      LIKE 'smoke-phase3-%';
+DELETE FROM "Student" WHERE "phoneKey" LIKE '+90555900%';
+DELETE FROM "Parent"  WHERE phone      LIKE '+90555901%';
+```
+
+## Phase 3 — Session 2 — Invite acceptance + forced password change (2026-06)
+
+> Run against a fresh user from Session 1 smoke (steps 8–10).
+
+1.  **Invite happy path** — Admin clicks "Davet linki üret" on a fresh
+    student. Open the link in incognito. The `/davet/[token]` page
+    greets the student by name and shows the password setup form.
+    Enter a strong password twice, submit. Page redirects to
+    `/giris?callbackUrl=/panel/ogrenci`. Audit log gets
+    `USER_INVITE_ACCEPT`; the student receives an `ANNOUNCEMENT`
+    inbox notification ("Hesabınız aktif").
+2.  **Invite single-use** — Open the same link in a second incognito
+    tab BEFORE submitting in tab #1. Submit in tab #1 (succeeds), then
+    submit in tab #2. Tab #2 shows "Davet bağlantısı geçersiz veya
+    başka bir sekmede kullanıldı."
+3.  **Invite expired** — Manually `UPDATE "User" SET
+    "userInviteTokenExpiresAt" = NOW() - INTERVAL '1 day' WHERE …`.
+    Visit the link. Page shows "Davet bağlantısının süresi dolmuş."
+    plus a "Yöneticiden yeni davet isteyin" CTA.
+4.  **Invite invalid token** — Visit `/davet/abc`. Page shows the
+    generic invalid-token error (no token enumeration: same message
+    as expired/not-found).
+5.  **Invite for disabled account** — Disable the account from the
+    admin panel. Visit the invite link. Page shows
+    "Bu hesap devre dışı bırakılmış."
+6.  **Login + forced change (temp password flow)** — Admin issues a
+    temp password (step 9 from Session 1 smoke). Use that password to
+    log in via `/giris`. After successful login, browser lands on
+    `/panel/sifre-degistir` (not the role dashboard). Title says
+    "Şifrenizi belirleyin".
+7.  **Forced change happy path** — On `/panel/sifre-degistir`, enter
+    the temp password as "Mevcut şifre" and a new strong password
+    twice. Submit. Redirects to `/panel/ogrenci` (or the appropriate
+    segment). Audit log gets `USER_PASSWORD_CHANGE`. The
+    `mustChangePassword` column flips to false; `passwordChangedAt`
+    is set.
+8.  **Forced change — wrong current password** — Re-issue a temp
+    password (admin), log in, enter a wrong "Mevcut şifre". Error
+    shows "Mevcut şifre hatalı." User stays on the page.
+9.  **Forced change — same as old rejected** — Log in with temp
+    password, attempt to set the new password equal to the temp.
+    Error: "Yeni şifre eskisiyle aynı olamaz."
+10. **Forced change — weak password rejected** — Try `1234`. Error:
+    "Şifre en az 8 karakter olmalı." (and HTML5 minLength also
+    blocks).
+11. **`mustChangePassword` bypass attempt** — While `mustChangePassword=true`,
+    try to navigate to `/panel/ogrenci/odk` (or any panel route).
+    Should redirect to `/panel/sifre-degistir`. Both middleware and
+    `requirePanelSession()` enforce this; turning off either one
+    should still leave the other gate active.
+12. **Disabled account mid-session** — Log in (`mustChangePassword=false`).
+    From the admin panel, disable the account. Reload any panel page.
+    Within at most one request, the user is bounced to `/giris` (JWT
+    callback drops `token.role` for disabled users).
+13. **Voluntary change (no temp flow)** — As a normal active user with
+    `mustChangePassword=false`, navigate manually to
+    `/panel/sifre-degistir`. Page title reads "Şifreyi değiştir".
+    Change succeeds; user is redirected to their role dashboard.
+
+
+# Session 3 — Parent operational management
+
+Run after Session 1 + 2 smoke. Cases 14–28. Each case starts from a clean
+admin login at `/panel/admin/veliler` unless stated otherwise.
+
+## Wizard (D2)
+
+14. **Wizard happy path — invite flow** — Visit
+    `/panel/admin/veliler/yeni`. Fill name + phone + email. Section
+    "Hesap" → choose **"Davet linki gönder"**. Section "Öğrenciler" →
+    add one student via combobox + relationship "Anne". Submit.
+    Result panel shows the parent, the invite URL, and a
+    "Velinin paneline git" link. Copy-once button works.
+15. **Wizard happy path — temp password flow** — Same flow but in
+    "Hesap" choose **"Geçici şifre üret"**. Result panel shows
+    a one-time temp password + a "Kopyalandı" toast on click.
+16. **Wizard happy path — no account** — Choose **"Hesap oluşturma"**.
+    Parent is created without a `User`; result panel shows
+    "Hesap oluşturulmadı" and a CTA to open the detail page.
+17. **Wizard duplicate detection — phone** — Type a phone that already
+    exists. Within ~350 ms a yellow info card surfaces with the
+    matching parent's name + a link to their detail page. Submit
+    button stays enabled but the warning is loud.
+18. **Wizard duplicate detection — email** — Same, with email.
+19. **Wizard validation** — Empty name → submit blocked with
+    "Ad gerekli". Invalid email → "Geçerli bir e-posta girin".
+
+## Detail cockpit (D3)
+
+20. **Detail — link a child** — On `[id]/duzenle`, "Bağlı çocuklar"
+    card → search a student via combobox → choose relationship →
+    submit. Row appears immediately. `ParentStudent` row exists.
+    Audit log gets `PARENT_STUDENT_LINK`.
+21. **Detail — change relationship inline** — Click "Düzenle" on an
+    existing row. Change "Anne" → "Vasi". Save. Badge updates.
+    No page reload required.
+22. **Detail — unlink child** — Click "Bağlantıyı kaldır". Confirm
+    dialog appears. After confirm, row disappears. Audit log gets
+    `PARENT_STUDENT_UNLINK`.
+23. **Detail — issue invite from cockpit** — Right rail
+    "Hesap" card → "Davet bağlantısı oluştur". Token + URL appear in
+    a copy-once block. Status badge flips to "Davet bekliyor".
+24. **Detail — disable / enable** — Click "Hesabı devre dışı bırak".
+    Status badge → "Devre dışı". Re-enable. Status returns to prior
+    derived state. Both produce audit rows.
+25. **Detail — force password change** — Click "Şifre değişimi zorla".
+    Confirm. Card shows a yellow note + temp password copy block.
+    Next time that user logs in, they are routed through
+    `/panel/sifre-degistir` (Session 2 case 6).
+
+## List filters + saved views (D4)
+
+26. **List filter — Hesabı olmayan veliler** — Click the saved view
+    chip. URL now contains `?access=no`. Every visible row shows
+    badge "Hesap yok". Counts update in pagination footer.
+27. **List filter — Davet bekleyenler** — Click chip. Only rows with
+    a non-expired invite token are shown. Badge "Davet bekliyor".
+    "Hesap durumu" hint reads "Davet: DD.MM.YYYY sonuna kadar".
+28. **List filter — Hiç giriş yapmayanlar** — Click chip. URL
+    contains `?access=yes&lastLogin=never`. All rows have an account
+    but `lastLoginAt` is null; meta hint says "Henüz giriş yapmadı".
+29. **List filter — Çocuğu bağlanmamış veliler** — Click chip. Only
+    rows whose parent has zero `ParentStudent` rows are shown. The
+    "Bağlı çocuklar" cell is empty (em-dash).
+30. **List search — phone** — Type `0532` (or a partial phone) into
+    the search box. List narrows to matches in `phone`. Diacritic-
+    insensitive match works for `email` / `fullName` too.
+31. **List search — email** — Type `gmail` → list narrows to email
+    matches. Combine with `?state=ACTIVE` chip → AND semantics: only
+    active accounts whose email contains `gmail`.
+32. **List → detail handoff** — Click any row. Lands on `[id]/duzenle`
+    with the same parent. Back button preserves filters in the URL.
+33. **List — invite expired row** — For a parent whose invite has
+    expired, badge reads "Davet süresi doldu". Hint shows the
+    expiry date in the past. Saved view "Daveti süresi dolanlar"
+    surfaces only these rows.
+34. **List — disabled account row** — For a parent with
+    `accountDisabledAt` set, badge reads "Devre dışı". Hint shows
+    "Devre dışı: DD.MM.YYYY". Saved view "Devre dışı hesaplar"
+    surfaces only these rows.
+35. **List — empty state copy** — Use a filter combination with no
+    matches (e.g. `?state=DISABLED&missing=phone&q=zzz`). Empty
+    state copy reads "Bu filtrelere uyan veli yok" (not the new-
+    tenant copy). Clear the filters → list returns.
+
+
+# Session 3 — D7 Student 360 inline parent management
+
+Run from `/panel/admin/ogrenciler/[id]/duzenle` for an admin user.
+Cases 36–43.
+
+36. **Student → link existing parent** — Open the edit page of a
+    student with no parents. The "Veli ata" panel is open by
+    default. Stay on **"Mevcut veliyi bağla"**, search a parent,
+    pick relationship "Anne", check "Birincil iletişim", click
+    "Bağla". The parent card appears in the grid with the
+    "Birincil iletişim" subtitle. The audit log gets
+    `STUDENT_PARENT_LINK`.
+37. **Student → create new parent without account** — Click
+    "+ Veli ata" if closed, switch to **"Yeni veli oluştur ve
+    bağla"** tab. Fill name + phone, leave email empty. Account
+    section: leave "Hesap oluşturma". Choose relationship "Baba".
+    Click "Oluştur ve bağla". Result panel shows
+    "✓ {name} oluşturuldu ve bağlandı" with **no** invite URL and
+    **no** temp password block. The parent card appears with badge
+    "Hesap yok". Audit log: `PARENT_CREATE` + `PARENT_STUDENT_LINK_BATCH`.
+38. **Student → create new parent with invite link** — Same flow
+    but provide email and choose **"Davet bağlantısı oluştur"**.
+    Submit. Result panel shows a copyable invite URL. Click
+    "Kopyala" — value lands on the clipboard. Parent card badge
+    reads "Davet bekliyor"; hint reads "Davet: DD.MM.YYYY sonuna
+    kadar".
+39. **Student → create new parent with temp password** — Same flow
+    with **"Geçici şifre üret"**. Result panel shows a one-time
+    password (8+ chars). Copy works. Parent card badge reads
+    "Şifre değiştirmesi gerekli" once the parent first logs in
+    (Session 2 forced-change flow takes over).
+40. **Student → duplicate parent warning** — In create mode, type
+    a phone or email that matches an existing parent. Within
+    ~350 ms a yellow box shows "⚠ Aynı telefon ile veli mevcut"
+    with the existing parent name + a "veliyi aç →" link and a
+    "Mevcut veliyi seç" button. Clicking the button flips back to
+    pick mode (no parent pre-selected). Submit while the warning
+    is present is allowed only with different fields; the server
+    will reject true duplicates with
+    `Cakisan kayit mevcut: …`.
+41. **Student → parent card account status** — A linked parent
+    with a verified active account shows badge "Aktif" and the
+    hint "Son giriş: N gün önce". A linked parent with
+    `accountDisabledAt` shows "Devre dışı". A parent with no
+    `User` row shows "Hesap yok".
+42. **Student → open parent in detail cockpit** — Click the
+    parent's name (link) or the "Veli detayı →" button on a
+    card. Lands on `/panel/admin/veliler/{id}/duzenle` with the
+    same parent loaded. Heavy actions (rotate invite, force
+    change, disable) are available there.
+43. **Student → edit relationship inline** — On a parent card,
+    click "İlişkiyi düzenle". Inline editor shows current
+    relationship + primary. Change "Anne" → "Vasi", uncheck
+    primary, click "Kaydet". Card subtitle updates. Re-checking
+    primary on a different parent transfers the marker (last
+    write wins via the upsert; admin should be aware only one
+    primary makes sense per student but the UI does not enforce
+    a single-primary invariant — documented limitation).

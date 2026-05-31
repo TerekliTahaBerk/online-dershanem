@@ -100,25 +100,31 @@ export function inferRelationshipType(free: string | null | undefined): {
 
 export type ParentOnboardingState =
   | "ACTIVE"
+  | "DISABLED"
+  | "MUST_CHANGE_PASSWORD"
   | "INVITE_PENDING"
   | "INVITE_NOT_SENT"
   | "PASSWORD_NOT_SET"
   | "PHONE_MISSING";
 
 const ONBOARDING_LABELS: Record<ParentOnboardingState, string> = {
-  ACTIVE:           "Aktif",
-  INVITE_PENDING:   "Davet gönderildi",
-  INVITE_NOT_SENT:  "Davet gönderilmedi",
-  PASSWORD_NOT_SET: "Şifre belirlemedi",
-  PHONE_MISSING:    "Telefon eksik",
+  ACTIVE:               "Aktif",
+  DISABLED:             "Devre dışı",
+  MUST_CHANGE_PASSWORD: "Şifre değiştirmeli",
+  INVITE_PENDING:       "Davet gönderildi",
+  INVITE_NOT_SENT:      "Davet gönderilmedi",
+  PASSWORD_NOT_SET:     "Şifre belirlemedi",
+  PHONE_MISSING:        "Telefon eksik",
 };
 
 const ONBOARDING_TONES: Record<ParentOnboardingState, "good" | "warn" | "bad" | "neutral"> = {
-  ACTIVE:           "good",
-  INVITE_PENDING:   "warn",
-  INVITE_NOT_SENT:  "neutral",
-  PASSWORD_NOT_SET: "warn",
-  PHONE_MISSING:    "bad",
+  ACTIVE:               "good",
+  DISABLED:             "bad",
+  MUST_CHANGE_PASSWORD: "warn",
+  INVITE_PENDING:       "warn",
+  INVITE_NOT_SENT:      "neutral",
+  PASSWORD_NOT_SET:     "warn",
+  PHONE_MISSING:        "bad",
 };
 
 export function getParentOnboardingLabel(s: ParentOnboardingState): string {
@@ -132,21 +138,26 @@ export function getParentOnboardingTone(s: ParentOnboardingState): "good" | "war
 /**
  * Derives onboarding state from a parent record's known fields. Tolerant of
  * databases that haven't yet received migration 0028 — every invite field is
- * optional.
+ * optional. Phase 3 / Session 3 adds DISABLED + MUST_CHANGE_PASSWORD branches
+ * (sourced from the linked User row's `accountDisabledAt` / `mustChangePassword`).
  *
  * Priority (top wins):
- *   1. Hiç giriş yapmadı: userId set ama lastLoginAt yok ve invite gönderilmemiş
- *   2. PHONE_MISSING: phone is null AND no userId yet (can't invite without contact)
- *   3. ACTIVE:        user account exists and lastLoginAt is set
- *   4. PASSWORD_NOT_SET: user account exists but no passwordHash / lastLoginAt
- *   5. INVITE_PENDING: inviteToken exists and not expired
- *   6. INVITE_NOT_SENT: no userId, has phone, no invite token
+ *   1. DISABLED:             linked User has accountDisabledAt set
+ *   2. MUST_CHANGE_PASSWORD: linked User has mustChangePassword=true
+ *   3. ACTIVE:               user account exists and lastLoginAt is set
+ *   4. PASSWORD_NOT_SET:     user account exists but no passwordHash / lastLoginAt
+ *   5. INVITE_PENDING:       inviteToken exists and not expired
+ *   6. PHONE_MISSING:        phone is null AND no userId yet (can't invite)
+ *   7. INVITE_NOT_SENT:      no userId, has phone, no invite token
  */
 export function deriveParentOnboardingState(p: {
   userId?: string | null;
   phone?: string | null;
   lastLoginAt?: Date | null;
   hasPassword?: boolean | null;
+  /** Phase 3 / Session 3 — derived from the linked User row. */
+  accountDisabledAt?: Date | null;
+  mustChangePassword?: boolean | null;
   parentInviteToken?: string | null;
   parentInviteTokenExpiresAt?: Date | null;
   parentInviteSentAt?: Date | null;
@@ -156,6 +167,9 @@ export function deriveParentOnboardingState(p: {
     !!p.parentInviteToken &&
     (!p.parentInviteTokenExpiresAt || p.parentInviteTokenExpiresAt.getTime() > now);
 
+  // Phase 3 / Session 3 — User-row flags take precedence over invite trio.
+  if (p.userId && p.accountDisabledAt) return "DISABLED";
+  if (p.userId && p.mustChangePassword) return "MUST_CHANGE_PASSWORD";
   if (p.userId && p.lastLoginAt) return "ACTIVE";
   if (p.userId && p.hasPassword === false) return "PASSWORD_NOT_SET";
   if (p.userId && !p.lastLoginAt) return "PASSWORD_NOT_SET";
