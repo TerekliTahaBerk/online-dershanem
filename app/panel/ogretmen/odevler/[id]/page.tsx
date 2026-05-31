@@ -67,11 +67,16 @@ export default async function TeacherAssignmentDetail({ params }: { params: Prom
       <PageHeader
         title={a.title}
         subtitle={`${a.subject ?? "Genel"} · ${a.classroom?.name ?? a.student?.fullName ?? "Bireysel"}`}
+        breadcrumbs={[
+          { label: "Öğretmen", href: "/panel/ogretmen" },
+          { label: "Ödevler", href: "/panel/ogretmen/odevler" },
+          { label: a.title },
+        ]}
         right={
           <div style={{ display: "flex", gap: 8 }}>
-            <Link href="/panel/ogretmen/odevler" className="od-btn od-btn-ghost od-btn-sm">← Liste</Link>
+            <Link href="/panel/ogretmen/odevler" className="od-btn ghost sm">← Liste</Link>
             <form action={toggleAssignmentStatusAction.bind(null, a.id, nextStatus)} style={{ display: "inline" }}>
-              <button type="submit" className="od-btn od-btn-ghost od-btn-sm">
+              <button type="submit" className="od-btn ghost sm">
                 {a.status === "PUBLISHED" ? "Kapat" : a.status === "DRAFT" ? "Yayınla" : "Yeniden aç"}
               </button>
             </form>

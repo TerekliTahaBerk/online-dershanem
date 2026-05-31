@@ -31,7 +31,7 @@ export function MaterialsList({
     );
   }
   return (
-    <div className="od-stack" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div className="od-material-grid">
       {materials.map((m) => (
         <MaterialCard
           key={m.id}

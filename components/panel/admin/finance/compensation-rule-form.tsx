@@ -42,19 +42,15 @@ export function CompensationRuleForm({
     ? updateCompensationRuleAction.bind(null, defaults!.id!)
     : createCompensationRuleAction;
   return (
-    <form
-      action={action}
-      className="space-y-4 rounded-xl border border-slate-200 bg-white p-5"
-    >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <form action={action} className="od-finance-card">
+      <div className="od-finance-form-grid">
         {!isEdit ? (
-          <label className="block text-sm">
-            <span className="font-medium text-slate-700">Öğretmen *</span>
+          <label className="full">
+            <span>Öğretmen *</span>
             <select
               name="teacherId"
               required
               defaultValue={defaults?.teacherId ?? ""}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             >
               <option value="">— Seçilmedi —</option>
               {options.teachers.map((t) => (
@@ -65,8 +61,8 @@ export function CompensationRuleForm({
             </select>
           </label>
         ) : null}
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Saatlik Ücret (₺) *</span>
+        <label>
+          <span>Saatlik Ücret (₺) *</span>
           <input
             name="hourlyRate"
             required
@@ -77,16 +73,11 @@ export function CompensationRuleForm({
                 : ""
             }
             placeholder="350.00"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Ders (opsiyonel)</span>
-          <select
-            name="courseId"
-            defaultValue={defaults?.courseId ?? ""}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-          >
+        <label>
+          <span>Ders (opsiyonel)</span>
+          <select name="courseId" defaultValue={defaults?.courseId ?? ""}>
             <option value="">Tümü</option>
             {options.courses.map((c) => (
               <option key={c.id} value={c.id}>
@@ -95,12 +86,11 @@ export function CompensationRuleForm({
             ))}
           </select>
         </label>
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Sınıf (opsiyonel)</span>
+        <label>
+          <span>Sınıf (opsiyonel)</span>
           <select
             name="classroomId"
             defaultValue={defaults?.classroomId ?? ""}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           >
             <option value="">Tümü</option>
             {options.classrooms.map((c) => (
@@ -110,49 +100,38 @@ export function CompensationRuleForm({
             ))}
           </select>
         </label>
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Başlangıç</span>
+        <label>
+          <span>Başlangıç</span>
           <input
             type="date"
             name="startsAt"
             defaultValue={dateInputValue(defaults?.startsAt)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Bitiş</span>
+        <label>
+          <span>Bitiş</span>
           <input
             type="date"
             name="endsAt"
             defaultValue={dateInputValue(defaults?.endsAt)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <label className="block text-sm sm:col-span-2">
-          <span className="font-medium text-slate-700">Not</span>
-          <textarea
-            name="note"
-            rows={2}
-            defaultValue={defaults?.note ?? ""}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-          />
+        <label className="full">
+          <span>Not</span>
+          <textarea name="note" rows={2} defaultValue={defaults?.note ?? ""} />
         </label>
-        <label className="inline-flex items-center gap-2 text-sm">
+        <label className="full checkbox-row">
           <input
             type="checkbox"
             name="isActive"
             value="1"
             defaultChecked={defaults?.isActive ?? true}
-            className="h-4 w-4 rounded border-slate-300"
           />
-          <span>Aktif</span>
+          <span style={{ margin: 0 }}>Aktif</span>
         </label>
       </div>
-      <div className="pt-2">
-        <button
-          type="submit"
-          className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
-        >
+      <div style={{ marginTop: 14 }}>
+        <button type="submit" className="od-btn dark sm">
           {isEdit ? "Güncelle" : "Kural Oluştur"}
         </button>
       </div>

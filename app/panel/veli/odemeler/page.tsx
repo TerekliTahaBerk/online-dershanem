@@ -55,20 +55,17 @@ export default async function ParentPayments({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Ödemeler" subtitle={subtitle} />
+      <PageHeader
+        title="Ödemeler"
+        subtitle={subtitle}
+        breadcrumbs={[{ label: "Veli", href: "/panel/veli" }, { label: "Ödemeler" }]}
+      />
 
       {ctx.childOptions.length > 1 ? (
-        <form
-          method="GET"
-          className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-3"
-        >
-          <label className="block text-sm">
-            <span className="font-medium text-slate-700">Öğrenci</span>
-            <select
-              name="studentId"
-              defaultValue={ctx.selectedChildId ?? ""}
-              className="mt-1 block rounded-md border border-slate-300 px-3 py-2 text-sm"
-            >
+        <form method="GET" className="od-form-card od-form-grid">
+          <label>
+            <span>Öğrenci</span>
+            <select name="studentId" defaultValue={ctx.selectedChildId ?? ""}>
               <option value="">Tümü</option>
               {ctx.childOptions.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -77,12 +74,11 @@ export default async function ParentPayments({
               ))}
             </select>
           </label>
-          <button
-            type="submit"
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-          >
-            Filtrele
-          </button>
+          <div>
+            <button type="submit" className="od-btn dark sm">
+              Filtrele
+            </button>
+          </div>
         </form>
       ) : null}
 
@@ -105,7 +101,7 @@ export default async function ParentPayments({
         </>
       ) : null}
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+      <div className="od-soft-alert">
         <strong>Not:</strong> Ödeme durum güncellemeleri yalnızca yönetim
         tarafından, banka/transfer onayı sonrası yapılır.
       </div>

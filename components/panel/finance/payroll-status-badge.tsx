@@ -1,44 +1,49 @@
 /**
  * Phase 2 / Session 11 — Payroll status pill (admin + teacher).
+ * Stage 3H: Migrated to v2 `soft-pill is-{tone}` vocabulary.
  */
-import {
-  getPayrollStatusLabel,
-  getPayrollStatusTone,
-} from "@/lib/panel/teacher-payroll-display";
+import { getPayrollStatusLabel } from "@/lib/panel/teacher-payroll-display";
 import type {
   TeacherPayrollPeriodStatus,
   TeacherPayrollItemStatus,
 } from "@prisma/client";
 
-const TONE_CLASSES: Record<string, string> = {
-  ok: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  accent: "bg-sky-50 text-sky-700 ring-sky-200",
-  warn: "bg-amber-50 text-amber-700 ring-amber-200",
-  bad: "bg-rose-50 text-rose-700 ring-rose-200",
-  neutral: "bg-slate-100 text-slate-600 ring-slate-200",
-};
+type Status =
+  | TeacherPayrollItemStatus
+  | TeacherPayrollPeriodStatus
+  | "EMPTY";
 
-export function PayrollStatusBadge({
-  status,
-}: {
-  status: TeacherPayrollItemStatus | TeacherPayrollPeriodStatus | "EMPTY";
-}) {
-  if (status === "EMPTY") {
-    return (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${TONE_CLASSES.neutral}`}>
-        —
-      </span>
-    );
+/**
+ * Map raw status → soft-pill tone (per Stage 3H D1 spec):
+ *   DRAFT → lavender · REVIEWED → sky · APPROVED → mint
+ *   LOCKED → dark · PAID → mint · EXCLUDED → muted (default)
+ *   CANCELLED → blush
+ */
+function pillTone(status: Status): string {
+  switch (status) {
+    case "DRAFT":
+      return "is-lavender";
+    case "REVIEWED":
+      return "is-sky";
+    case "APPROVED":
+    case "PAID":
+      return "is-mint";
+    case "LOCKED":
+      return "is-dark";
+    case "CANCELLED":
+      return "is-blush";
+    case "EXCLUDED":
+    case "EMPTY":
+    default:
+      return "";
   }
-  const tone = getPayrollStatusTone(status);
+}
+
+export function PayrollStatusBadge({ status }: { status: Status }) {
+  if (status === "EMPTY") {
+    return <span className="soft-pill">—</span>;
+  }
   const label = getPayrollStatusLabel(status);
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${
-        TONE_CLASSES[tone] ?? TONE_CLASSES.neutral
-      }`}
-    >
-      {label}
-    </span>
-  );
+  const tone = pillTone(status);
+  return <span className={`soft-pill ${tone}`.trim()}>{label}</span>;
 }

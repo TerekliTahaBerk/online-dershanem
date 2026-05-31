@@ -67,8 +67,12 @@ export default async function AdminPayrollsPage({ searchParams }: { searchParams
       <PageHeader
         title="Öğretmen Ödemeleri"
         subtitle={`${total} kayıt${sp.status ? ` · ${sp.status}` : ""}`}
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğretmen Ödemeleri" },
+        ]}
         right={
-          <Link href="/panel/admin/maaslar/yeni" className="od-btn od-btn-primary od-btn-sm">
+          <Link href="/panel/admin/maaslar/yeni" className="od-btn dark sm">
             + Yeni ödeme
           </Link>
         }
@@ -95,10 +99,10 @@ export default async function AdminPayrollsPage({ searchParams }: { searchParams
       <Card>
         <div style={{ padding: 12, display: "flex", gap: 8, alignItems: "center", borderBottom: "1px solid var(--pd-border)" }}>
           <span style={{ fontSize: 12, color: "var(--pd-text-muted)" }}>Durum:</span>
-          <Link href={buildHref({ status: undefined })} className={`od-btn od-btn-sm ${!sp.status ? "od-btn-primary" : "od-btn-ghost"}`}>Tümü</Link>
-          <Link href={buildHref({ status: "DUE" })} className={`od-btn od-btn-sm ${sp.status === "DUE" ? "od-btn-primary" : "od-btn-ghost"}`}>Bekleyen</Link>
-          <Link href={buildHref({ status: "PAID" })} className={`od-btn od-btn-sm ${sp.status === "PAID" ? "od-btn-primary" : "od-btn-ghost"}`}>Ödenen</Link>
-          <Link href={buildHref({ status: "CANCELLED" })} className={`od-btn od-btn-sm ${sp.status === "CANCELLED" ? "od-btn-primary" : "od-btn-ghost"}`}>İptal</Link>
+          <Link href={buildHref({ status: undefined })} className={`od-btn sm ${!sp.status ? "dark" : "ghost"}`}>Tümü</Link>
+          <Link href={buildHref({ status: "DUE" })} className={`od-btn sm ${sp.status === "DUE" ? "dark" : "ghost"}`}>Bekleyen</Link>
+          <Link href={buildHref({ status: "PAID" })} className={`od-btn sm ${sp.status === "PAID" ? "dark" : "ghost"}`}>Ödenen</Link>
+          <Link href={buildHref({ status: "CANCELLED" })} className={`od-btn sm ${sp.status === "CANCELLED" ? "dark" : "ghost"}`}>İptal</Link>
         </div>
 
         <table className="od-table">
@@ -138,18 +142,18 @@ export default async function AdminPayrollsPage({ searchParams }: { searchParams
                   <td style={{ fontSize: 12 }}>{fmtDate(p.paidAt)}</td>
                   <td style={{ fontSize: 12, color: "var(--pd-text-muted)" }}>{p.notes || "—"}</td>
                   <td style={{ display: "flex", gap: 6 }}>
-                    <Link href={`/panel/admin/maaslar/${p.id}/duzenle`} className="od-btn od-btn-ghost od-btn-sm">
+                    <Link href={`/panel/admin/maaslar/${p.id}/duzenle`} className="od-btn ghost sm">
                       Düzenle
                     </Link>
                     {!isPaid && !isCancelled && (
                       <form action={markPayrollPaidAction.bind(null, p.id)} style={{ display: "inline" }}>
-                        <button type="submit" className="od-btn od-btn-primary od-btn-sm">
+                        <button type="submit" className="od-btn dark sm">
                           Ödendi işaretle
                         </button>
                       </form>
                     )}
                     <form action={deletePayrollAction.bind(null, p.id)} style={{ display: "inline" }}>
-                      <button type="submit" className="od-btn od-btn-ghost od-btn-sm" style={{ color: "var(--pd-bad)" }}>
+                      <button type="submit" className="od-btn ghost sm" style={{ color: "var(--pd-bad)" }}>
                         Sil
                       </button>
                     </form>
@@ -164,7 +168,7 @@ export default async function AdminPayrollsPage({ searchParams }: { searchParams
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <Link key={p} href={buildHref({ page: p === 1 ? undefined : String(p) })} className={`od-btn od-btn-sm ${p === page ? "od-btn-primary" : "od-btn-ghost"}`}>
+            <Link key={p} href={buildHref({ page: p === 1 ? undefined : String(p) })} className={`od-btn sm ${p === page ? "dark" : "ghost"}`}>
               {p}
             </Link>
           ))}

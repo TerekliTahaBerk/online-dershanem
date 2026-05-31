@@ -38,7 +38,12 @@ export default async function NewTeacherAssignment() {
     <>
       <PageHeader
         title="Yeni ödev"
-        right={<Link href="/panel/ogretmen/odevler" className="od-btn od-btn-ghost od-btn-sm">← Liste</Link>}
+        breadcrumbs={[
+          { label: "Öğretmen", href: "/panel/ogretmen" },
+          { label: "Ödevler", href: "/panel/ogretmen/odevler" },
+          { label: "Yeni" },
+        ]}
+        right={<Link href="/panel/ogretmen/odevler" className="od-btn ghost sm">← Liste</Link>}
       />
       <Card>
         <CardBody>

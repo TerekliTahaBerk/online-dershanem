@@ -554,3 +554,456 @@ Cases 36–43.
     write wins via the upsert; admin should be aware only one
     primary makes sense per student but the UI does not enforce
     a single-primary invariant — documented limitation).
+
+
+---
+
+## Phase 3 — Session 4 — Teacher onboarding (2026-06)
+
+Run as a **panel admin** unless stated otherwise. Reset URL filter chips
+between cases. Each case lists the route(s) involved.
+
+### S4-01 — Create teacher without account
+* Route: `/panel/admin/ogretmenler/yeni`.
+* Fill name + branch (subjects), pick **Hesap oluşturma** = `Hesap oluşturma`,
+  no classroom, no compensation rule.
+* Submit. **Expected:** redirect to detail page; "Hesap durumu" card shows
+  "Hesabı yok" with two "Hesap oluştur" buttons; audit log shows
+  `TEACHER_CREATE`.
+
+### S4-02 — Create teacher with invite link
+* Wizard with **Hesap oluşturma** = `Davet bağlantısı`. Email is required.
+* Submit. **Expected:** result panel reveals invite URL once with copy-once
+  UX. Audit shows `TEACHER_CREATE` + `USER_CREATE_VIA_INVITE`. List filter
+  "Davet bekleyenler" includes the new teacher.
+
+### S4-03 — Create teacher with temporary password
+* Wizard with **Hesap oluşturma** = `Geçici şifre`. Email is required.
+* Submit. **Expected:** result panel reveals temp password once. Audit shows
+  `TEACHER_CREATE` + `USER_CREATE_VIA_TEMP_PASSWORD`.
+
+### S4-04 — Duplicate email is blocked
+* Wizard with an email that already exists on a Teacher OR a User.
+* **Expected:** the live duplicates panel shows the match before submit;
+  if you submit anyway the action returns `Bu e-posta başka bir kayıtta…`
+  and no Teacher/User row is created.
+
+### S4-05 — Teacher uses `/davet/[token]` to set password
+* Open the invite URL from S4-02 in a private window.
+* Set a password. **Expected:** redirected to `/panel/ogretmen` (teacher
+  panel) on success. The User row shows `userInviteTokenUsedAt` set;
+  `mustChangePassword=false`.
+
+### S4-06 — Temp-password teacher is forced to change password
+* Log in as the S4-03 teacher with the revealed temp password.
+* **Expected:** redirected to `/panel/sifre-degistir`; cannot reach
+  `/panel/ogretmen` until password is changed; after change,
+  `mustChangePassword=false`.
+
+### S4-07 — Disabled teacher cannot access panel
+* On a teacher with an active account, click **Hesabı devre dışı bırak**.
+* **Expected:** confirm dialog → success toast; account state badge becomes
+  "Devre dışı"; logging in as that teacher redirects out of the panel; audit
+  shows `USER_ACCOUNT_DISABLE`.
+
+### S4-08 — Assign teacher to classroom
+* On detail, "Sınıf / ders ataması" card → pick a classroom + branch + lead.
+* **Expected:** row appears in the table; `ClassroomTeacher` exists in DB;
+  audit shows `TEACHER_CLASSROOM_ASSIGN`. Re-adding the same classroom
+  updates instead of throwing (composite-PK upsert).
+
+### S4-09 — Remove teacher from classroom
+* Click **Kaldır** on an existing assignment row, confirm.
+* **Expected:** row disappears; `ClassroomTeacher` row deleted;
+  related `Lesson` rows are not touched (verify a sample lesson still
+  exists with `teacherId` intact); audit shows `TEACHER_CLASSROOM_REMOVE`.
+
+### S4-10 — Teacher can see assigned classroom only
+* Log in as the assigned teacher.
+* **Expected:** `/panel/ogretmen` lists only their assigned classrooms;
+  unassigned classrooms are not visible. (Sanity for `panel-teacher.ts`
+  scoping; nothing here has changed but session-4 changes assignment shape.)
+
+### S4-11 — Teacher list filter "Hesabı olmayan"
+* `/panel/admin/ogretmenler` → saved view "Hesabı olmayan öğretmenler".
+* **Expected:** every row shows account state "Hesabı yok"; URL has
+  `access=no`.
+
+### S4-12 — Teacher list filter "Sınıf atanmamış"
+* Saved view "Sınıf atanmamış öğretmenler".
+* **Expected:** every row shows Sınıf = "0"; URL has `classroom=no`.
+
+### S4-13 — Teacher list filter "Hakediş kuralı eksik"
+* Saved view "Hakediş kuralı eksik".
+* **Expected:** every row shows Hakediş = warn badge; URL has `compRule=no`.
+
+### S4-14 — Compensation rule created and visible
+* Detail → "Hakediş kuralları" card → inline form: rate (TRY), optional
+  classroom/course scope, save.
+* **Expected:** rule appears in active list with formatted ₺ rate; audit
+  shows `PAYROLL_RULE_CREATE`; teacher list "Hakediş kuralı eksik" view no
+  longer includes them. Adding a second identical active rule is rejected.
+
+### S4-15 — Teacher detail payroll snapshot renders or honestly empty
+* Detail → "Bordro özeti" KPI card.
+* **Expected:** shows live counts (lessons / assignments / payroll items)
+  for teachers with data; for fresh teachers shows "Henüz bordro kaydı yok"
+  (no fake numbers). The "Bordroya git" link goes to
+  `/panel/admin/ogretmen-hakedisleri?teacher={id}` and the page filters
+  correctly.
+
+
+---
+
+## Phase 3 — Session 5 — Enrollment & Payment plan (2026-06)
+
+Run as a **panel admin** unless stated otherwise. Each case lists the
+route and the row(s) that should appear in DB / UI on success.
+
+### S5-01 — Start enrollment from student detail
+* Open `/panel/admin/ogrenciler/{id}` → click **+ Kayıt / Paket**.
+* **Expected:** redirected to `/panel/admin/kayitlar/yeni?student={id}`;
+  the "Öğrenci" section shows the student name pre-filled (no combobox);
+  active enrollments + pending payment counts are visible underneath.
+
+### S5-02 — Start enrollment from standalone route
+* Go to `/panel/admin/kayitlar/yeni` directly.
+* **Expected:** "Öğrenci" section shows a search combobox; selecting an
+  existing student loads the snapshot block underneath (re-render fine
+  via client state).
+
+### S5-03 — Select package
+* Pick any active package in the dropdown.
+* **Expected:** plan amount auto-fills to the package price (in TRY,
+  comma-decimal); type (Kurs/Sınav) and ders sayısı render as muted text.
+
+### S5-04 — Select payer parent
+* If the student has linked parents, pick one from the payer dropdown.
+* If not, an info alert with a "Veli bağla →" CTA renders.
+* **Expected:** dropdown lists parents primary-first, with "hesap yok"
+  marker for parents without a User account.
+
+### S5-05 — Create one-time payment plan
+* Choose **Tek seferlik**, total = 1.500,00, due = today.
+* **Expected:** preview shows 1 row "{Paket} ödemesi · {today} · 1.500,00 TL";
+  on submit, exactly 1 `PaymentScheduleItem` row appears in DB with
+  status=PENDING, amount=150000, paidAmount=0.
+
+### S5-06 — Create installment payment plan
+* Choose **Taksitli**, total = 1.500,00, 4 taksit, ilk vade = today.
+* **Expected:** preview shows 4 rows, monthly intervals, sum = 1.500,00.
+  Last row carries any kuruş remainder (so display sum equals total exactly).
+
+### S5-07 — PaymentScheduleItem rows appear in admin payment page
+* After S5-05 / S5-06, open `/panel/admin/odemeler/vadeler`.
+* **Expected:** new rows are visible with the chosen titles and dueDates;
+  status badge "Bekliyor"; package linked.
+
+### S5-08 — Parent sees dues in parent finance page
+* Log in as the payer parent; open `/panel/veli/odemeler`.
+* **Expected:** the same rows appear in upcoming list with student name;
+  there is **no** "ödendi olarak işaretle" button (parents cannot
+  self-mark paid).
+
+### S5-09 — Student detail finance tab reflects enrollment
+* Reload `/panel/admin/ogrenciler/{id}?tab=finance`.
+* **Expected:** new `StudentPackageEnrollment` row appears with package
+  name + price; the existing AccountingEntry list is unchanged (no
+  ledger entry created at enrollment time).
+
+### S5-10 — Existing-active enrollment soft-warn
+* Run wizard for the same student + package again.
+* **Expected:** package dropdown row shows "⚠️ aktif kayıt var"; the
+  Önizleme section shows a warning bullet "Bu paket için aktif/açık
+  başka bir kayıt zaten var (mükerrer kayıt).". Submit is **allowed**
+  (admin override) — verify a second `StudentPackageEnrollment` is
+  written.
+
+### S5-11 — Missing parent warning
+* Pick a student with 0 linked parents and try to create a plan.
+* **Expected:** payer section shows the info alert "Bu öğrenciye bağlı
+  bir veli yok." with a "Veli bağla →" CTA. Önizleme bullet warns
+  "Ödeme planı oluşturuluyor ama ödeyici veli seçilmedi.".
+
+### S5-12 — Missing amount blocks submit
+* Choose **Tek seferlik** but leave amount empty.
+* **Expected:** the submit button stays disabled. Forcing the form
+  (e.g. via DevTools removal of `disabled`) hits the server action and
+  receives `Tek seferlik tutar geçersiz`.
+
+### S5-13 — ODK access tag assignment works
+* Pick a student with `userId` set. Tick one ODK access tag in section 3.
+* **Expected:** on submit, `OdkUserAccessTag` row exists with
+  `(userId=student.userId, accessTagId=…, revokedAt=null)`. Audit
+  shows `ODK_ACCESS_TAG_GRANT_BATCH`. Re-running with the same tag is
+  idempotent (upsert clears `revokedAt`).
+
+### S5-14 — No payment marked paid automatically
+* For all of S5-05 / S5-06 / S5-13, query
+  `select status, paidAt, paidAmount from "PaymentScheduleItem"
+   where "createdAt" > now() - interval '5 minutes'`.
+* **Expected:** every row has status='PENDING', paidAt=null,
+  paidAmount=0. No AccountingEntry rows referencing these items.
+
+### S5-15 — Parent cannot self-mark paid
+* As the payer parent, attempt to POST to any of
+  `markPaymentScheduleItemPaidAction` / `markPaymentScheduleItemPartialAction` /
+  `cancelPaymentScheduleItemAction`.
+* **Expected:** rejected by `requirePanelRole("admin")` — no DB mutation
+  occurs. The parent UI does not surface these actions.
+
+
+---
+
+## Phase 3 — Session 6 — Enrollment detail / lifecycle (2026-06)
+
+Run as a **panel admin** unless stated otherwise.
+
+### S6-01 — Open enrollment detail from list
+* Open `/panel/admin/kayitlar` → click **Detay →** on any row.
+* **Expected:** redirected to `/panel/admin/kayitlar/{id}`. Header shows
+  breadcrumb, status badge, quick links (Öğrenci 360, Vadeler, Veli
+  detayı, Paket).
+
+### S6-02 — Open enrollment detail from Student 360
+* Open `/panel/admin/ogrenciler/{id}?tab=finance`.
+* In the "Paket kayıtları" table, click **Detay →** on a row.
+* **Expected:** lands on `/panel/admin/kayitlar/{enrollmentId}`.
+
+### S6-03 — Change ACTIVE → PAUSED
+* On an ACTIVE enrollment, click **Duraklat** → confirm.
+* **Expected:** badge becomes "Duraklatıldı"; row in DB has
+  `status='PAUSED'`; audit row `ENROLLMENT_STATUS_UPDATE` with
+  `payload.from='ACTIVE'`, `payload.to='PAUSED'`. **Zero**
+  `PaymentScheduleItem` writes (verify by SELECT diff).
+
+### S6-04 — Change PAUSED → ACTIVE
+* On the same row, click **Devam ettir**.
+* **Expected:** badge becomes "Aktif"; audit row records `PAUSED → ACTIVE`.
+  Payment rows untouched.
+
+### S6-05 — Cancel enrollment; payment rows remain unchanged
+* On an enrollment with payment plan, click **İptal et** → confirm.
+* **Expected:** status=CANCELLED; PaymentScheduleItem rows: same count,
+  same status, same dueDate, same amount, same paidAmount.
+
+### S6-06 — Complete enrollment; payment rows remain unchanged
+* On an ACTIVE/PAUSED enrollment, click **Tamamla** → confirm.
+* **Expected:** status=COMPLETED; PaymentScheduleItem rows untouched.
+
+### S6-07 — Update start/end dates
+* Edit "Tarihler" form: change startsAt and endsAt.
+* **Expected:** values persist; submitting endsAt < startsAt rejects
+  with "Bitiş tarihi başlangıçtan önce olamaz". Audit row
+  `ENROLLMENT_DATES_UPDATE` with `payload.from`/`payload.to`.
+
+### S6-08 — Update note
+* Edit "Notlar" form: set billingPeriodLabel + notes.
+* **Expected:** values persist; audit row `ENROLLMENT_NOTE_UPDATE`.
+
+### S6-09 — Payment plan section shows pending rows
+* For an enrollment with installments, the "Ödeme planı" table lists
+  every row sorted by dueDate; status badge "Bekliyor" for unpaid
+  future rows.
+
+### S6-10 — Overdue rows show derived status
+* For a PENDING row whose dueDate < today, the status badge becomes
+  "Gecikmiş" (red). The DB column still reads `PENDING` (derived only).
+
+### S6-11 — Payer section links to parent detail
+* If all PaymentScheduleItem rows have the same `parentId`, the inferred
+  payer subtitle shows their name; the parents table includes "Aç →"
+  buttons opening `/panel/admin/veliler/{id}/duzenle`.
+
+### S6-12 — ODK access tags display
+* For an enrollment whose student has `userId` and active
+  `OdkUserAccessTag` rows, the "ODK erişim etiketleri" card lists titles
+  as purple badges + "ODK detayı →" link.
+* Without userId: honest empty card.
+
+### S6-13 — Audit rows appear after status update
+* After S6-03/S6-04/S6-05/S6-06/S6-07/S6-08, scroll to "Son aktivite".
+* **Expected:** the new actions appear at the top of the table with
+  actor name/email and Turkish-formatted timestamps.
+
+### S6-14 — Non-admin cannot open/modify enrollment detail
+* Log in as a non-admin (parent or teacher) and visit the URL.
+* **Expected:** `requirePanelRole("admin")` rejects → redirect /
+  forbidden. POSTing any of the lifecycle actions returns auth error.
+
+### S6-15 — No AccountingEntry is created by status change
+* Capture `select count(*) from "AccountingEntry"` before S6-03/S6-05/S6-06.
+* **Expected:** count is identical after each status change. The only
+  ledger writes happen via the dedicated mark-paid action on
+  `/panel/admin/odemeler/vadeler`, which Session 6 does not invoke.
+
+---
+
+## Sprint 8 — Bulk Actions / Import / Export
+
+Pre-conditions: logged in as an admin user; at least 5 students, 3 parents
+and 3 teachers in the database; at least one active `Classroom`; at least
+one active `OdkAccessTag`.
+
+### S8-01 — Selection primitive renders
+* Open `/panel/admin/ogrenciler`.
+* **Expected:** the leftmost column shows a "select-all" checkbox, every row
+  shows a per-row checkbox. `BulkBar` is hidden until a row is selected.
+
+### S8-02 — Select-all is page-scoped
+* Click the header checkbox.
+* **Expected:** all rows on the current page get checked; the bulk bar
+  appears showing `<n> satır seçildi`. Going to page 2 shows zero selection
+  for that page (selection state lives in the client and is preserved
+  across pagination only when ids carry over).
+
+### S8-03 — Generate invites idempotent
+* Select 3 students that already have a User account.
+* Click `✉️ Davet üret`.
+* **Expected:** result panel shows `3/3 işlem tamamlandı` with the
+  `Davet linklerini göster` `<details>` showing 3 URLs. Click again on the
+  same selection: result is `3/3` again (rotation), and the `AuditLog`
+  table has 3 new `USER_INVITE_GENERATE` rows + one
+  `STUDENT_BULK_GENERATE_INVITES` summary row per click.
+
+### S8-04 — Generate invites skips when no User
+* Select a mixed set: one student with no User account, two with accounts.
+* Click `✉️ Davet üret`.
+* **Expected:** `2/3 tamamlandı (1 atlandı)`. The skipped row shows
+  "Bu öğrencinin kullanıcı hesabı yok." in the warnings list.
+
+### S8-05 — Force password change
+* Select 3 active students.
+* Click `🔑 Şifre değişimini zorla`.
+* **Expected:** `3/3` succeeded; running the same action again immediately
+  shows `0/3 tamamlandı (3 atlandı — Zaten zorunlu işaretli.)`.
+
+### S8-06 — Disable then enable round-trip
+* Select 2 students. Type "smoke" in the reason field. Click `⛔ Devre dışı bırak`.
+* **Expected:** `2/2` succeeded; the `Hesap durumu` filter `state=DISABLED`
+  shows both rows. Re-select them and click `✅ Aktifleştir`.
+* **Expected:** `2/2` succeeded; both are removed from the `DISABLED` filter.
+* Verify `AuditLog` rows for both `USER_ACCOUNT_DISABLE` (with
+  `payload.reason = "smoke"`) and `USER_ACCOUNT_ENABLE` exist.
+
+### S8-07 — Bulk classroom assignment is idempotent
+* Select 4 students. Pick a classroom from the dropdown. Click `🏫 Sınıfa ekle`.
+* **Expected:** `4/4` succeeded. Re-run the same action on the same
+  selection.
+* **Expected:** `0/4 tamamlandı (4 atlandı — "Bu sınıfta zaten kayıtlı")`.
+  The `ClassroomStudent` join row count is unchanged (no duplicates).
+
+### S8-08 — ODK access tag grant is idempotent
+* Select 3 students with User accounts. Pick an active ODK tag. Set an
+  `expiresAt` 7 days in the future. Click `🏷️ Etiket ver`.
+* **Expected:** `3/3` succeeded; per-target `USER_ACCESS_TAG_GRANT` rows in
+  `AuditLog`. Re-run: `0/3 (3 atlandı — Etiket zaten verilmiş)`.
+
+### S8-09 — Selected-row export
+* On `/panel/admin/ogrenciler`, search for a substring that returns 6 rows.
+  Select 3 of them. Click `⬇ Seçilenleri indir`.
+* **Expected:** browser downloads `ogrenciler-<date>.xlsx` containing
+  exactly 3 rows (Ad Soyad column matches selection).
+
+### S8-10 — Filter-aware export still works
+* Filter `status=AT_RISK`. Click the toolbar `⬇ Excel` button (no rows selected).
+* **Expected:** XLSX contains only `AT_RISK` rows; the `?q=` filter is
+  honoured. (`ids=` is omitted by this path.)
+
+### S8-11 — Parent list bulk actions
+* Open `/panel/admin/veliler`. Select 2 parents that have a User account.
+* Click `✉️ Davet üret`. **Expected:** `2/2`.
+* Click `🔑 Şifre değişimini zorla`. **Expected:** `2/2`.
+* Click `⛔ Devre dışı bırak`. **Expected:** `2/2`.
+* Click `✅ Aktifleştir`. **Expected:** `2/2`.
+
+### S8-12 — Teacher list bulk actions
+* Open `/panel/admin/ogretmenler`. Select 2 teachers with User accounts.
+* Run the four operations in turn. **Expected:** each `2/2`. The bar shows
+  the disclaimer about classroom/comp-rule mutations being deferred.
+
+### S8-13 — Import template download
+* Click `📥 Şablon` on each of the three list pages.
+* **Expected:** browser downloads
+  `ogrenci-import-sablonu.csv`, `veli-import-sablonu.csv`,
+  `ogretmen-import-sablonu.csv`. Each file opens in Excel as Turkish
+  text without character corruption (BOM is in place). The first row is
+  the header; the second row is a `# hint` line; no real data is leaked.
+
+### S8-14 — Non-admin role cannot run bulk actions
+* Re-login as a teacher account. Visit `/panel/admin/ogrenciler`.
+* **Expected:** the page itself redirects/403s before reaching the bulk
+  bar (admin-only via `requirePanelRole("admin")`). Manually `POST`ing to
+  the bulk action endpoint also rejects.
+
+### S8-15 — Bulk grant access tag respects User-less students
+* Pick 4 students of which 2 have no User account. Grant a tag.
+* **Expected:** `2/4 tamamlandı (2 atlandı — "Kullanıcı hesabı olmayan
+  öğrenciye etiket verilmedi.")`. No orphan `OdkUserAccessTag` rows.
+
+---
+
+## Session 9 — Course / Subject / Curriculum
+
+### Course list (`/panel/admin/dersler`)
+1. Open list; verify default sort puts active courses first, then by subject/title.
+2. Apply preset **Sınıfsız dersler** → only courses with no `defaultClassroom` are shown; "Default sınıf" column displays a yellow `Yok` badge.
+3. Apply preset **Ödevsiz dersler** → only courses whose `subject` has zero PUBLISHED assignments are shown.
+4. Apply preset **Materyalsiz dersler** → only courses with zero non-archived materials are shown.
+5. Combine `q=mat` + `status=PUBLISHED` + `active=true` → result narrows correctly; URL keys round-trip.
+6. Save current filter as a personal view → preset chip appears with the right filter and clicking restores it.
+7. Click **Program** action on any row → navigates to `/panel/admin/ders-programi/yeni?courseId=…` with prefilled teacher/classroom when defaults exist.
+
+### Course create (`/panel/admin/dersler/yeni`)
+8. Submit form with title="Matematik" + subject="Matematik" → if a course with same `(title, subject)` exists, the action throws an Error with the duplicate id.
+9. Tick **"Yine de oluştur"** and resubmit → record is created; `AuditLog` shows a fresh `COURSE_CREATE` row referencing the new course.
+10. Submit with `defaultClassroomId` set to a non-existent id (e.g. by editing the form) → server throws "Seçilen default sınıf bulunamadı" (no DB write).
+
+### Course detail cockpit (`/panel/admin/dersler/[id]`)
+11. Open a course bound to a default classroom + default teacher with upcoming lessons and at least one PUBLISHED assignment with same `subject` → KPI cards show non-zero values; "Yakın 14 gün — planlanan dersler" lists the upcoming rows; "Son ödevler" lists assignments with that subject.
+12. Open a course with no `defaultClassroomId` and no `defaultTeacherId` → "Operasyonel uyarı" callout renders both bullet points.
+13. Click **"+ Ödev oluştur"** action → navigates to `/panel/admin/odevler/yeni?subject=<course.subject>`.
+14. Click **"+ Ders planla"** action → navigates to `/panel/admin/ders-programi/yeni?courseId=…` with `teacherId`/`classroomId` query when defaults exist.
+
+### Course edit + lifecycle (`/panel/admin/dersler/[id]/duzenle`)
+15. Edit title to one that collides with another course's `(title, subject)` → server throws duplicate warning. Tick **"Yine de kaydet"** → save succeeds; `AuditLog` shows `COURSE_UPDATE` with `payload.diff.title` from→to.
+16. Active course → **Arşivle (pasifleştir)** button visible. Click → course becomes `ARCHIVED + isActive=false`; `AuditLog` shows `COURSE_ARCHIVE`. Page now shows **Yeniden yayınla** button instead.
+17. Click **Yeniden yayınla** → course becomes `PUBLISHED + isActive=true`; `AuditLog` shows `COURSE_REACTIVATE`.
+18. Delete a course that has zero lessons / packages / modules / progress / materials → row is hard-deleted; `AuditLog` `COURSE_DELETE` with `payload.hard=true`. Delete a course bound to anything → soft-archive path; `AuditLog` `COURSE_SOFT_DELETE` with `payload.reason="in-use"` and the counts.
+
+---
+
+## Session 10 — Safe Import Wizard (`/panel/admin/import`)
+
+### Access & navigation
+1. Login as **non-admin** (öğretmen / veli / öğrenci) → navigating to `/panel/admin/import` redirects to that user's panel root. Admin sidebar shows the new **"İçe Aktar"** entry under Sistem.
+
+### Templates
+2. From the wizard pick **Öğrenciler** → click **"Şablonu indir"** → CSV downloads with header row `Ad Soyad,Telefon,Email,…` and a `# Zorunlu: …` hint line. Repeat for **Veliler** and **Öğretmenler**; each downloads its own template.
+
+### Dry-run — happy path
+3. Upload a clean students CSV (3 rows, fresh phones + emails). Click **"Önizle"** → all 3 rows show **Hazır**, summary `Toplam=3, Hazır=3`. **No DB writes** — verify Student count unchanged.
+
+### Dry-run — schema errors
+4. Upload a students CSV missing the **"Ad Soyad"** column entirely → wizard shows fatal error `Zorunlu sütun eksik: "Ad Soyad"`. No row table rendered.
+5. Upload a students CSV with rows missing `Ad Soyad`, missing `Telefon`, invalid email format, garbage phone → each row shown as **Hata** with field-level message. Commit button disabled (or commits 0 rows when summary.ready=0).
+
+### Dry-run — duplicates
+6. Upload a students CSV where row 2 has the same phone as an existing Student → that row is **Atlandı (mükerrer)**. Row 3 has same phone as row 2 → row 3 is **Hata** "Bu telefon aynı dosyada satır 2'de zaten var".
+7. Upload a teachers CSV where one row's email matches an existing User (different role, e.g. an admin) **with `Hesap Modu=invite`** → row is **Hata** "Aynı emaille User zaten var".
+
+### Dry-run — warnings
+8. Upload a students CSV where one row has `Sınıf` set to a name that doesn't match any active Classroom → row is **Uyarı** "Sınıf bulunamadı: … (atama yapılmayacak)". With **"Uyarılı satırları da içe aktar"** toggled OFF, commit count excludes that row; toggled ON, includes it but the unmatched classroom is silently not linked.
+
+### Account modes
+9. Students CSV with `Hesap Modu=invite` and a fresh email → after commit, a User row exists with role STUDENT, `userInviteToken` set, `userInviteSentAt` set; result page shows the `/davet/<token>` URL once. Refresh → token is **not** re-shown.
+10. CSV with `Hesap Modu=tempPassword` → row marked **Hata** "Geçici şifre desteklenmiyor; bireysel öğrenci/öğretmen sayfasından kullanın". Never committed.
+11. CSV with `Hesap Modu=disabled` and a fresh email → after commit, a User row exists with `accountDisabledAt` set and no invite token; login attempts with that email are blocked.
+12. CSV with `Hesap Modu=invite` but **empty Email** → row marked **Hata** "Hesap oluşturmak için Email zorunlu".
+
+### Commit safety
+13. Run a successful commit of N students. Re-upload the **exact same CSV** → wizard now shows N rows as **Atlandı (mükerrer)**, summary.created=0 on commit. No double-creation.
+14. While the dry-run preview is on screen, in another tab create a Student with the same phone as one of the preview rows. Click commit → that row fails with row-level error "Aynı telefonla öğrenci zaten var". Other rows still commit.
+
+### Audit + observability
+15. After dry-run, `AuditLog` shows `IMPORT_DRY_RUN` with `entityType=ImportBatch`, `entityId=students|parents|teachers`, summary string, and JSON payload with counts. After commit, `IMPORT_COMMIT` is logged with the per-row created/failed lists. Failed/sorunlu rows are downloadable as a CSV via **"Sorunlu satırları indir"** with a UTF-8 BOM and original column values plus a "Hatalar/Uyarılar" column.

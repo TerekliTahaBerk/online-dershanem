@@ -157,6 +157,7 @@ function adminSections(): SidebarGroup[] {
       { id: "yetkiler", label: "Yetkiler", icon: "shield", href: base(seg, "yetkiler") },
       { id: "hesap-silme", label: "Hesap silme talepleri", icon: "shield", href: base(seg, "hesap-silme-talepleri") },
       { id: "audit", label: "Audit logs", icon: "log", href: base(seg, "audit") },
+      { id: "import", label: "İçe Aktar", icon: "log", href: base(seg, "import") },
     ]},
   ];
 }

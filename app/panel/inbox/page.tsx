@@ -76,10 +76,11 @@ export default async function InboxPage({
       <PageHeader
         title="Inbox"
         subtitle={subtitleParts.join(" · ")}
+        breadcrumbs={[{ label: "Panel", href: "/panel" }, { label: "Bildirimler" }]}
         right={
           unreadTotal > 0 ? (
             <form action={markAllInboxMessagesReadAction}>
-              <button type="submit" className="od-btn od-btn-ghost">
+              <button type="submit" className="od-btn ghost sm">
                 Tümünü okundu işaretle
               </button>
             </form>
@@ -91,9 +92,9 @@ export default async function InboxPage({
         <CardBody>
           <form
             method="GET"
-            style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}
+            style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}
           >
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <div className="od-segment" role="tablist" aria-label="Görünüm">
               {INBOX_VIEWS.map((v) => {
                 const active = v === view;
                 return (
@@ -102,7 +103,8 @@ export default async function InboxPage({
                     type="submit"
                     name="view"
                     value={v}
-                    className={active ? "od-btn od-btn-primary" : "od-btn od-btn-ghost"}
+                    className={`od-segment-item${active ? " is-active" : ""}`}
+                    aria-pressed={active}
                   >
                     {getInboxViewLabel(v)}
                   </button>
@@ -123,7 +125,7 @@ export default async function InboxPage({
               ))}
             </select>
             <input type="hidden" name="view" value={view} />
-            <button type="submit" className="od-btn od-btn-ghost">
+            <button type="submit" className="od-btn ghost sm">
               Filtrele
             </button>
           </form>
@@ -141,84 +143,47 @@ export default async function InboxPage({
           </CardBody>
         </Card>
       ) : (
-        <Card>
-          <table className="od-table">
-            <thead>
-              <tr>
-                <th style={{ width: 32 }}></th>
-                <th>Başlık</th>
-                <th>Kategori</th>
-                <th>Öncelik</th>
-                <th>Gönderen</th>
-                <th>Tarih</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {messages.map((m) => {
-                const isUnread = !m.readAt;
-                return (
-                  <tr key={m.id} style={{ opacity: isUnread ? 1 : 0.6 }}>
-                    <td>
-                      {isUnread ? (
-                        <span
-                          aria-label="Okunmamış"
-                          title="Okunmamış"
-                          style={{
-                            display: "inline-block",
-                            width: 8,
-                            height: 8,
-                            borderRadius: "50%",
-                            background: "var(--pd-accent, #2563eb)",
-                          }}
-                        />
-                      ) : null}
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: isUnread ? 600 : 400 }}>{m.title}</div>
-                      <div className="od-muted" style={{ fontSize: 12, lineHeight: 1.3 }}>
-                        {m.body}
-                      </div>
-                    </td>
-                    <td>
-                      <Badge tone={getInboxCategoryTone(m.category)}>
-                        {getInboxCategoryLabel(m.category)}
-                      </Badge>
-                    </td>
-                    <td>
-                      <Badge tone={getInboxPriorityTone(m.priority)}>
-                        {getInboxPriorityLabel(m.priority)}
-                      </Badge>
-                    </td>
-                    <td className="od-muted" style={{ fontSize: 12 }}>
-                      {m.createdBy?.name ?? m.createdBy?.email ?? "Sistem"}
-                    </td>
-                    <td className="od-mono od-muted" style={{ fontSize: 11, whiteSpace: "nowrap" }}>
-                      {dateFmt.format(m.createdAt)}
-                    </td>
-                    <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                      {m.href ? (
-                        <Link href={m.href} className="od-btn od-btn-ghost od-btn-sm">
-                          Aç
-                        </Link>
-                      ) : null}
-                      {isUnread ? (
-                        <form
-                          action={markInboxMessageReadAction.bind(null, m.id)}
-                          style={{ display: "inline-block", marginLeft: 4 }}
-                        >
-                          <button type="submit" className="od-btn od-btn-ghost od-btn-sm">
-                            Okundu
-                          </button>
-                        </form>
-                      ) : null}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </Card>
+        <ul className="od-inbox-list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          {messages.map((m) => {
+            const isUnread = !m.readAt;
+            return (
+              <li
+                key={m.id}
+                className={`od-inbox-item${isUnread ? " od-inbox-unread" : ""}`}
+              >
+                <span className="od-inbox-accent" aria-hidden />
+                <div style={{ minWidth: 0 }}>
+                  <div className="od-inbox-title">{m.title}</div>
+                  {m.body ? <div className="od-inbox-body">{m.body}</div> : null}
+                  <div className="od-inbox-meta">
+                    <Badge tone={getInboxCategoryTone(m.category)}>
+                      {getInboxCategoryLabel(m.category)}
+                    </Badge>
+                    <Badge tone={getInboxPriorityTone(m.priority)}>
+                      {getInboxPriorityLabel(m.priority)}
+                    </Badge>
+                    <span>· {m.createdBy?.name ?? m.createdBy?.email ?? "Sistem"}</span>
+                    <span className="od-mono">· {dateFmt.format(m.createdAt)}</span>
+                  </div>
+                </div>
+                <div className="od-inbox-actions">
+                  {m.href ? (
+                    <Link href={m.href} className="od-btn ghost sm">
+                      Aç →
+                    </Link>
+                  ) : null}
+                  {isUnread ? (
+                    <form action={markInboxMessageReadAction.bind(null, m.id)}>
+                      <button type="submit" className="od-btn ghost sm">
+                        Okundu
+                      </button>
+                    </form>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </>
   );

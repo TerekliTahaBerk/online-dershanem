@@ -4,6 +4,8 @@
  * Server component. Read-only. Each row deep-links to the admin payment-
  * schedule page with the row id as a search param so the existing list view
  * can scroll to / highlight it. We don't introduce a new detail route here.
+ *
+ * Stage 3H: migrated to v2 `od-finance-card` + `od-table` + soft-pill.
  */
 import Link from "next/link";
 import {
@@ -32,19 +34,27 @@ function statusLabel(s: ReceivableRow["status"]): string {
   }
 }
 
-function statusToneClass(s: ReceivableRow["status"]): string {
+function statusPillClass(s: ReceivableRow["status"]): string {
   switch (s) {
     case "OVERDUE":
-      return "bg-rose-50 text-rose-700 ring-rose-200";
+      return "is-blush";
     case "PARTIAL":
-      return "bg-amber-50 text-amber-700 ring-amber-200";
+      return "is-yellow";
     case "PAID":
-      return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+      return "is-mint";
     case "CANCELLED":
-      return "bg-slate-100 text-slate-600 ring-slate-200";
+      return "";
     default:
-      return "bg-sky-50 text-sky-700 ring-sky-200";
+      return "is-sky";
   }
+}
+
+function rowAlertClass(s: ReceivableRow["status"], variant: "overdue" | "upcoming"): string {
+  if (s === "OVERDUE") return "od-finance-row-alert is-overdue";
+  if (s === "PAID") return "od-finance-row-alert is-paid";
+  if (s === "CANCELLED") return "od-finance-row-alert is-cancelled";
+  if (variant === "upcoming") return "od-finance-row-alert is-upcoming";
+  return "";
 }
 
 export function FinanceReceivablesTable({
@@ -59,30 +69,30 @@ export function FinanceReceivablesTable({
   variant: "overdue" | "upcoming";
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
-      <header className="mb-3 flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+    <section className="od-finance-card">
+      <div className="od-finance-card-header">
+        <h3 className="od-finance-card-title">{title}</h3>
         <Link
           href="/panel/admin/odemeler"
-          className="text-xs font-medium text-sky-700 hover:underline"
+          className="od-btn ghost sm"
         >
           Tüm vadeli ödemeler →
         </Link>
-      </header>
+      </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">{emptyLabel}</p>
+        <p className="od-money-muted" style={{ fontSize: 13 }}>{emptyLabel}</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+        <div style={{ overflowX: "auto" }}>
+          <table className="od-table">
             <thead>
-              <tr className="text-left text-xs uppercase text-slate-500">
-                <th className="py-1 pr-3">Başlık</th>
-                <th className="py-1 pr-3">Öğrenci / Veli</th>
-                <th className="py-1 pr-3">Vade</th>
-                <th className="py-1 pr-3 text-right">Tutar</th>
-                <th className="py-1 pr-3 text-right">Kalan</th>
-                <th className="py-1 pr-3">Durum</th>
+              <tr>
+                <th>Başlık</th>
+                <th>Öğrenci / Veli</th>
+                <th>Vade</th>
+                <th style={{ textAlign: "right" }}>Tutar</th>
+                <th style={{ textAlign: "right" }}>Kalan</th>
+                <th>Durum</th>
               </tr>
             </thead>
             <tbody>
@@ -97,27 +107,27 @@ export function FinanceReceivablesTable({
                 const who =
                   r.studentFullName ?? r.parentFullName ?? "—";
                 return (
-                  <tr key={r.id} className="border-t border-slate-100">
-                    <td className="py-1.5 pr-3 text-slate-700">
+                  <tr key={r.id} className={rowAlertClass(r.status, variant)}>
+                    <td>
                       {r.title}
                       {r.packageName ? (
-                        <span className="ml-2 text-xs text-slate-500">{r.packageName}</span>
+                        <span className="od-money-muted" style={{ marginLeft: 8, fontSize: 11.5 }}>
+                          {r.packageName}
+                        </span>
                       ) : null}
                     </td>
-                    <td className="py-1.5 pr-3 text-slate-700">{who}</td>
-                    <td className="py-1.5 pr-3 text-slate-600">{dueLabel}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-slate-800">
+                    <td className="od-money-muted">{who}</td>
+                    <td className={r.status === "OVERDUE" ? "od-money-negative" : "od-money-muted"}>
+                      {dueLabel}
+                    </td>
+                    <td style={{ textAlign: "right", fontFeatureSettings: '"tnum"' }}>
                       {formatFinanceMoney(r.amountKurus)}
                     </td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-slate-900">
+                    <td style={{ textAlign: "right", fontFeatureSettings: '"tnum"', fontWeight: 600 }}>
                       {formatFinanceMoney(r.remainingKurus)}
                     </td>
-                    <td className="py-1.5 pr-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${statusToneClass(
-                          r.status,
-                        )}`}
-                      >
+                    <td>
+                      <span className={`soft-pill ${statusPillClass(r.status)}`.trim()}>
                         {statusLabel(r.status)}
                       </span>
                     </td>

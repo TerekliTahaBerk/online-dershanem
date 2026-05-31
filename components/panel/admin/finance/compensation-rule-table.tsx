@@ -28,35 +28,34 @@ export function CompensationRuleTable({
   const [pending, start] = useTransition();
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
-        Henüz tanımlanmış kural yok.
-      </div>
+      <div className="od-empty-soft">Henüz tanımlanmış kural yok.</div>
     );
   }
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
-          <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="px-3 py-2">Öğretmen</th>
-            <th className="px-3 py-2">Kapsam</th>
-            <th className="px-3 py-2">Saatlik</th>
-            <th className="px-3 py-2">Aralık</th>
-            <th className="px-3 py-2">Aktif</th>
-            <th className="px-3 py-2">İşlem</th>
+    <div className="premium-table" style={{ overflowX: "auto" }}>
+      <table className="od-table">
+        <thead>
+          <tr>
+            <th>Öğretmen</th>
+            <th>Kapsam</th>
+            <th>Saatlik</th>
+            <th>Aralık</th>
+            <th>Aktif</th>
+            <th>İşlem</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200">
+        <tbody>
           {rows.map((row) => (
-            <tr key={row.id} className={row.isActive ? "" : "bg-slate-50/60"}>
-              <td className="px-3 py-2 font-medium text-slate-900">
-                {row.teacherName}
-              </td>
-              <td className="px-3 py-2 text-slate-600">{scopeLabel(row)}</td>
-              <td className="px-3 py-2 font-semibold text-slate-900">
+            <tr
+              key={row.id}
+              className={row.isActive ? "" : "od-finance-row-alert is-cancelled"}
+            >
+              <td style={{ fontWeight: 500 }}>{row.teacherName}</td>
+              <td className="od-money-muted">{scopeLabel(row)}</td>
+              <td className="od-money-positive">
                 {formatPayrollMoney(row.hourlyRateKurus)} / saat
               </td>
-              <td className="px-3 py-2 text-xs text-slate-500">
+              <td className="od-money-muted" style={{ fontSize: 11.5 }}>
                 {row.startsAt
                   ? new Date(row.startsAt).toLocaleDateString("tr-TR")
                   : "—"}
@@ -65,26 +64,20 @@ export function CompensationRuleTable({
                   ? new Date(row.endsAt).toLocaleDateString("tr-TR")
                   : "—"}
               </td>
-              <td className="px-3 py-2">
-                <span
-                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                    row.isActive
-                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                      : "bg-slate-100 text-slate-500 ring-1 ring-slate-200"
-                  }`}
-                >
+              <td>
+                <span className={`soft-pill ${row.isActive ? "is-mint" : ""}`.trim()}>
                   {row.isActive ? "Aktif" : "Pasif"}
                 </span>
               </td>
-              <td className="px-3 py-2">
-                <div className="flex gap-2">
+              <td>
+                <div className="od-finance-inline-actions">
                   <button
                     type="button"
                     disabled={pending}
                     onClick={() =>
                       start(() => toggleCompensationRuleActiveAction(row.id))
                     }
-                    className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                    className="od-btn ghost sm"
                   >
                     {row.isActive ? "Pasifleştir" : "Aktifleştir"}
                   </button>
@@ -100,7 +93,8 @@ export function CompensationRuleTable({
                         return;
                       start(() => deleteCompensationRuleAction(row.id));
                     }}
-                    className="rounded-md border border-rose-300 bg-white px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-60"
+                    className="od-btn ghost sm"
+                    style={{ color: "var(--pd-pastel-blush-ink, #B25758)" }}
                   >
                     Sil
                   </button>

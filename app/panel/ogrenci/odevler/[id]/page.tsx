@@ -49,7 +49,12 @@ export default async function StudentAssignmentDetail({ params }: { params: Prom
       <PageHeader
         title={a.title}
         subtitle={`${a.teacher.fullName} · ${a.subject ?? "Genel"}`}
-        right={<Link href="/panel/ogrenci/odevler" className="od-btn od-btn-ghost od-btn-sm">← Liste</Link>}
+        breadcrumbs={[
+          { label: "Öğrenci", href: "/panel/ogrenci" },
+          { label: "Ödevlerim", href: "/panel/ogrenci/odevler" },
+          { label: a.title },
+        ]}
+        right={<Link href="/panel/ogrenci/odevler" className="od-btn ghost sm">← Liste</Link>}
       />
       <Card>
         <CardHeader title="Detay" />

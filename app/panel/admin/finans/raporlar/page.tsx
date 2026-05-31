@@ -38,28 +38,19 @@ export default async function AdminFinanceReports({
         subtitle="Beklenen tahsilat, gerçekleşen gelir, hakediş yükümlülüğü ve net nakit akışı."
         breadcrumbs={[
           { label: "Panel", href: "/panel" },
-          { label: "Admin", href: "/panel/admin" },
+          { label: "Yönetim", href: "/panel/admin" },
           { label: "Finans Raporları" },
         ]}
         secondary={<FinanceRangeFilter basePath={BASE_PATH} current={dashboard.range.preset} />}
         right={
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Link
-              href="/panel/admin/odemeler"
-              className="rounded-full bg-white px-3 py-1 font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
-            >
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/panel/admin/odemeler" className="od-btn ghost sm">
               Vadeli ödemeler
             </Link>
-            <Link
-              href="/panel/admin/ogretmen-hakedisleri"
-              className="rounded-full bg-white px-3 py-1 font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
-            >
+            <Link href="/panel/admin/ogretmen-hakedisleri" className="od-btn ghost sm">
               Öğretmen hakedişleri
             </Link>
-            <Link
-              href="/panel/admin/muhasebe?service=OD"
-              className="rounded-full bg-white px-3 py-1 font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
-            >
+            <Link href="/panel/admin/muhasebe?service=OD" className="od-btn ghost sm">
               Muhasebe kayıtları
             </Link>
           </div>
@@ -68,11 +59,11 @@ export default async function AdminFinanceReports({
 
       <div className="space-y-4">
         {/* Disclaimer / data-source notes (subtle) */}
-        <aside className="rounded-lg border border-slate-200 bg-slate-50/60 p-3 text-xs leading-relaxed text-slate-600">
+        <aside className="od-finance-warning">
           <p>
-            <strong className="font-semibold text-slate-700">Beklenen tahsilat</strong>{" "}
+            <strong>Beklenen tahsilat</strong>{" "}
             vadeli ödeme kayıtlarından (PaymentScheduleItem),{" "}
-            <strong className="font-semibold text-slate-700">gerçekleşen gelir</strong>{" "}
+            <strong>gerçekleşen gelir</strong>{" "}
             muhasebe kayıtlarından (AccountingEntry) hesaplanır. Çifte sayımı
             önlemek için iki tutar ayrı gösterilir, toplam alınmaz.
           </p>

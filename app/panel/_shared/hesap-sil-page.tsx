@@ -43,8 +43,13 @@ export async function HesapSilPage({ segment }: { segment: PanelRole }) {
       <PageHeader
         title="Hesabımı sil"
         subtitle="KVKK 11. madde — kişisel verilerin silinmesini talep et"
+        breadcrumbs={[
+          { label: "Panel", href: `/panel/${segment}` },
+          { label: "Profilim", href: `/panel/${segment}/profilim` },
+          { label: "Hesabımı sil" },
+        ]}
         right={
-          <Link href={`/panel/${segment}/profilim`} className="od-btn od-btn-ghost od-btn-sm">
+          <Link href={`/panel/${segment}/profilim`} className="od-btn ghost sm">
             ← Profilime dön
           </Link>
         }

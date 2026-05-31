@@ -9,6 +9,7 @@ import {
   getTeacherPayrollItems,
 } from "@/lib/panel/teacher-payroll";
 import { requirePanelRole } from "@/lib/panel-access";
+import { PageHeader } from "@/components/panel/ui/page-header";
 import { PayrollSummaryCards } from "@/components/panel/admin/finance/payroll-summary-cards";
 import { PayrollItemReviewTable } from "@/components/panel/admin/finance/payroll-item-review-table";
 
@@ -43,29 +44,30 @@ export default async function AdminPayrollPeriodDetail({
     summary.status === "CANCELLED";
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
+    <div className="space-y-6">
+      <PageHeader
+        title={summary.title}
+        subtitle="Bu dönemdeki tüm satırlar. PAID/EXCLUDED satırlar değiştirilemez."
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğretmen Hakedişleri", href: "/panel/admin/ogretmen-hakedisleri" },
+          { label: summary.title },
+        ]}
+        right={
           <Link
             href="/panel/admin/ogretmen-hakedisleri"
-            className="text-xs text-slate-500 hover:text-slate-700"
+            className="od-btn ghost sm"
           >
             ← Hakediş Hub
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-            {summary.title}
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Bu dönemdeki tüm satırlar. PAID/EXCLUDED satırlar değiştirilemez.
-          </p>
-        </div>
-      </header>
+        }
+      />
 
       <PayrollSummaryCards summary={summary} />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        <span className="uppercase tracking-wide text-slate-500">Durum:</span>
+      <div className="od-payroll-period-strip">
+        <span className="od-payroll-period-strip-label">Durum:</span>
         {[
           { id: "", label: "Tümü" },
           { id: "DRAFT", label: "Taslak" },
@@ -83,11 +85,7 @@ export default async function AdminPayrollPeriodDetail({
             <Link
               key={f.id || "all"}
               href={href}
-              className={`rounded-full border px-2.5 py-0.5 ${
-                active
-                  ? "border-sky-300 bg-sky-50 text-sky-800"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
+              className={`od-payroll-period-pill ${active ? "is-active" : ""}`}
             >
               {f.label}
             </Link>
@@ -98,7 +96,7 @@ export default async function AdminPayrollPeriodDetail({
             href={`/panel/admin/ogretmen-hakedisleri/${periodId}${
               sp.status ? `?status=${sp.status}` : ""
             }`}
-            className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-slate-600 hover:bg-slate-50"
+            className="od-payroll-period-pill"
           >
             Öğretmen filtresini kaldır ✕
           </Link>

@@ -1,45 +1,41 @@
+/**
+ * Phase 3 / Session 4 — D2: Teacher Creation Wizard page.
+ * Server shell — fetches classroom + course options, delegates the
+ * sectioned form to the client wizard.
+ */
+import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
 import { PageHeader } from "@/components/panel/ui/page-header";
-import { Card, CardBody } from "@/components/panel/ui/card";
-import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
-import { ToastForm } from "@/components/ui/toast-form";
-import { createTeacherAction } from "../_actions";
+import { TeacherCreateWizard } from "@/components/panel/teachers/teacher-create-wizard";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewTeacher() {
   await requirePanelRole("admin");
+  const [classrooms, courses] = await Promise.all([
+    prisma.classroom.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, branch: true },
+    }),
+    prisma.course.findMany({
+      where: { isActive: true },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
+  ]);
   return (
     <>
       <PageHeader
+        title="Yeni öğretmen"
         breadcrumbs={[
           { label: "Yönetim", href: "/panel/admin" },
           { label: "Öğretmenler", href: "/panel/admin/ogretmenler" },
           { label: "Yeni" },
         ]}
-        title="Yeni öğretmen"
-        subtitle="Kimlik bilgileri ve branş tanımı."
+        subtitle="Kimlik · hesap erişimi · sınıf ataması · hakediş kuralı tek seferde."
       />
-      <Card>
-        <CardBody>
-          <ToastForm action={createTeacherAction} className="od-grid g-2" style={{ gap: 12 }} successMessage="Öğretmen oluşturuldu">
-            <Field label="Ad Soyad *"><Input name="fullName" required /></Field>
-            <Field label="Branş *"><Input name="subjects" required placeholder="Matematik, Fizik" /></Field>
-            <Field label="Email"><Input name="email" type="email" /></Field>
-            <Field label="Telefon"><Input name="phone" /></Field>
-            <Field label="Durum">
-              <Select name="status" defaultValue="ACTIVE">
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </Select>
-            </Field>
-            <div style={{ gridColumn: "1 / -1" }}><Field label="Bio"><Textarea name="bio" /></Field></div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <FormActions><button className="od-btn dark" type="submit">Kaydet</button></FormActions>
-            </div>
-          </ToastForm>
-        </CardBody>
-      </Card>
+      <TeacherCreateWizard classrooms={classrooms} courses={courses} />
     </>
   );
 }

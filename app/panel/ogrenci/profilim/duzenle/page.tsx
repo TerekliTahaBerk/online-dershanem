@@ -16,7 +16,12 @@ export default async function EditStudentProfile() {
     <>
       <PageHeader
         title="Profili düzenle"
-        right={<Link href="/panel/ogrenci/profilim" className="od-btn od-btn-ghost od-btn-sm">← Geri</Link>}
+        breadcrumbs={[
+          { label: "Öğrenci", href: "/panel/ogrenci" },
+          { label: "Profilim", href: "/panel/ogrenci/profilim" },
+          { label: "Düzenle" },
+        ]}
+        right={<Link href="/panel/ogrenci/profilim" className="od-btn ghost sm">← Geri</Link>}
       />
       <Card>
         <CardBody>

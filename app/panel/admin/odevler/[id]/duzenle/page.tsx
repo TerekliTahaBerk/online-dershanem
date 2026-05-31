@@ -30,7 +30,12 @@ export default async function EditAssignment({ params }: { params: Promise<{ id:
     <>
       <PageHeader
         title={`Düzenle: ${a.title}`}
-        right={<Link href="/panel/admin/odevler" className="od-btn od-btn-ghost od-btn-sm">← Liste</Link>}
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Ödevler", href: "/panel/admin/odevler" },
+          { label: "Düzenle" },
+        ]}
+        right={<Link href="/panel/admin/odevler" className="od-btn ghost sm">← Liste</Link>}
       />
       <Card>
         <CardBody>

@@ -88,8 +88,8 @@ export function deriveUserAccountState(u: {
 // ─── Duplicate match shape (pure type) ─────────────────────────────────
 
 export type DuplicateMatch = {
-  field: "phoneKey" | "email" | "user.email";
+  field: "phoneKey" | "email" | "user.email" | "phone" | "fullName";
   existingId: string;
   existingLabel: string;
-  entity: "Student" | "Parent" | "User";
+  entity: "Student" | "Parent" | "User" | "Teacher";
 };

@@ -104,34 +104,9 @@ export function HomeworkProgressBar({ stats }: { stats: SubmissionStats }) {
   const gradedPct = Math.round((stats.graded / total) * 100);
   return (
     <div title={`${done}/${stats.expected} teslim · %${pct} · %${gradedPct} değerlendirildi`}>
-      <div
-        style={{
-          height: 6,
-          borderRadius: 999,
-          background: "var(--pd-bg-muted, var(--pd-line))",
-          overflow: "hidden",
-          position: "relative",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: `${pct}%`,
-            background: "var(--pd-accent, var(--pd-primary, var(--pd-good)))",
-            transition: "width 200ms ease",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: `${gradedPct}%`,
-            background: "var(--pd-good)",
-            transition: "width 200ms ease",
-            opacity: 0.85,
-          }}
-        />
+      <div className="od-task-progress">
+        <div className="pct" style={{ width: `${pct}%`, opacity: 0.45 }} />
+        <div className="graded" style={{ width: `${gradedPct}%` }} />
       </div>
       <div
         style={{
@@ -159,24 +134,18 @@ function HomeworkCard({ a }: { a: BoardAssignment }) {
     a.classroom?.name ??
     (a.student ? `🎯 ${a.student.fullName}` : "Tüm öğrenciler");
   return (
-    <article className="od-hw-card">
+    <article className="od-task-card">
       <header style={{ display: "flex", gap: 6, alignItems: "flex-start", justifyContent: "space-between" }}>
         <Link
           href={`/panel/admin/odevler/${a.id}/duzenle`}
-          style={{
-            color: "var(--pd-ink)",
-            textDecoration: "none",
-            fontWeight: 600,
-            fontSize: 13,
-            lineHeight: 1.3,
-          }}
+          className="od-task-title"
         >
           {a.title}
         </Link>
         <Badge tone={getAssignmentStatusTone(op)}>{getAssignmentStatusLabel(op)}</Badge>
       </header>
 
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11, color: "var(--pd-muted)" }}>
+      <div className="od-content-meta">
         {a.subject ? <span>{a.subject}</span> : null}
         {a.subject && a.teacher ? <span aria-hidden="true">·</span> : null}
         {a.teacher ? <span>{a.teacher.fullName}</span> : null}
@@ -189,16 +158,16 @@ function HomeworkCard({ a }: { a: BoardAssignment }) {
 
       <HomeworkProgressBar stats={a.stats} />
 
-      <footer style={{ display: "flex", gap: 4, fontSize: 11, alignItems: "center", flexWrap: "wrap" }}>
-        {a.stats.pending > 0 ? <span className="od-pill od-pill-neutral" title="Beklemede">{a.stats.pending} bekliyor</span> : null}
-        {a.stats.submitted > 0 ? <span className="od-pill od-pill-warn" title="Kontrol bekliyor">{a.stats.submitted} kontrol</span> : null}
-        {a.stats.late > 0 ? <span className="od-pill od-pill-warn" title="Geç teslim">{a.stats.late} geç</span> : null}
-        {a.stats.missed > 0 ? <span className="od-pill od-pill-bad" title="Teslim edilmedi">{a.stats.missed} eksik</span> : null}
-        {a.stats.graded > 0 ? <span className="od-pill od-pill-good" title="Değerlendirildi">✓ {a.stats.graded}</span> : null}
+      <footer className="od-content-action-row" style={{ fontSize: 11, gap: 4 }}>
+        {a.stats.pending > 0 ? <span className="soft-pill" title="Beklemede">{a.stats.pending} bekliyor</span> : null}
+        {a.stats.submitted > 0 ? <span className="soft-pill is-yellow" title="Kontrol bekliyor">{a.stats.submitted} kontrol</span> : null}
+        {a.stats.late > 0 ? <span className="soft-pill is-yellow" title="Geç teslim">{a.stats.late} geç</span> : null}
+        {a.stats.missed > 0 ? <span className="soft-pill is-blush" title="Teslim edilmedi">{a.stats.missed} eksik</span> : null}
+        {a.stats.graded > 0 ? <span className="soft-pill is-mint" title="Değerlendirildi">✓ {a.stats.graded}</span> : null}
         <Link
           href={`/panel/admin/odevler/${a.id}/duzenle`}
-          className="od-btn od-btn-ghost od-btn-sm"
-          style={{ marginLeft: "auto", height: 24, padding: "0 8px", fontSize: 11 }}
+          className="od-btn ghost sm"
+          style={{ marginLeft: "auto" }}
         >
           Aç →
         </Link>
@@ -209,15 +178,15 @@ function HomeworkCard({ a }: { a: BoardAssignment }) {
 
 function HomeworkBoardColumn({ col }: { col: BoardColumn }) {
   return (
-    <section className="od-hw-col">
-      <header className="od-hw-col-header">
+    <section className="od-task-column">
+      <header className="od-task-column-header">
         <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
           {col.href ? (
-            <Link href={col.href} style={{ color: "var(--pd-ink)", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
-              {col.label}
+            <Link href={col.href} style={{ color: "var(--pd-ink)", textDecoration: "none" }}>
+              <strong>{col.label}</strong>
             </Link>
           ) : (
-            <strong style={{ fontSize: 13 }}>{col.label}</strong>
+            <strong>{col.label}</strong>
           )}
           <span style={{ fontSize: 11, color: "var(--pd-muted)" }}>{col.assignments.length}</span>
         </div>
@@ -226,15 +195,11 @@ function HomeworkBoardColumn({ col }: { col: BoardColumn }) {
         ) : null}
       </header>
 
-      <div className="od-hw-col-body">
-        {col.assignments.length === 0 ? (
-          <div style={{ fontSize: 12, color: "var(--pd-muted)", padding: "16px 8px", textAlign: "center" }}>
-            Bu sınıfa atanmış ödev yok.
-          </div>
-        ) : (
-          col.assignments.map((a) => <HomeworkCard key={a.id} a={a} />)
-        )}
-      </div>
+      {col.assignments.length === 0 ? (
+        <div className="od-task-empty">Bu sınıfa atanmış ödev yok.</div>
+      ) : (
+        col.assignments.map((a) => <HomeworkCard key={a.id} a={a} />)
+      )}
     </section>
   );
 }
@@ -246,7 +211,7 @@ export function HomeworkBoard({ columns, totalCount, createHref }: Props) {
         title="Henüz ödev yok"
         description="İlk ödevini oluştur. Sınıfa veya tek öğrenciye atayabilirsin."
         action={
-          <Link href={createHref} className="od-btn od-btn-primary od-btn-sm">
+          <Link href={createHref} className="od-btn dark sm">
             + Ödev oluştur
           </Link>
         }
@@ -255,7 +220,7 @@ export function HomeworkBoard({ columns, totalCount, createHref }: Props) {
   }
 
   return (
-    <div className="od-hw-board">
+    <div className="od-task-board">
       {columns.map((col) => (
         <HomeworkBoardColumn key={col.key} col={col} />
       ))}

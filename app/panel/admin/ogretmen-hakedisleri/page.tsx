@@ -6,6 +6,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
+import { PageHeader } from "@/components/panel/ui/page-header";
 import {
   getAdminPayrollDashboard,
   formatPayrollMoney,
@@ -48,33 +49,32 @@ export default async function AdminPayrollHubPage({
 
   if (!activePeriodId) {
     return (
-      <div className="space-y-6 p-6">
-        <header className="flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Öğretmen Hakedişleri
-            </h1>
-            <p className="mt-1 text-sm text-slate-600">
-              Ders bazlı hakediş hesaplama, inceleme ve ödeme. Tutarlar
-              muhasebeleştirilmedikçe gider olarak yansımaz.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Link
-              href="/panel/admin/ogretmen-hakedisleri/kurallar"
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Saatlik Ücret Kuralları
-            </Link>
-            <Link
-              href="/panel/admin/ogretmen-hakedisleri/yeni"
-              className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700"
-            >
-              + Yeni Dönem
-            </Link>
-          </div>
-        </header>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-sm text-slate-600">
+      <div className="space-y-6">
+        <PageHeader
+          title="Öğretmen Hakedişleri"
+          subtitle="Ders bazlı hakediş hesaplama, inceleme ve ödeme. Tutarlar muhasebeleştirilmedikçe gider olarak yansımaz."
+          breadcrumbs={[
+            { label: "Yönetim", href: "/panel/admin" },
+            { label: "Öğretmen Hakedişleri" },
+          ]}
+          right={
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/panel/admin/ogretmen-hakedisleri/kurallar"
+                className="od-btn ghost sm"
+              >
+                Saatlik Ücret Kuralları
+              </Link>
+              <Link
+                href="/panel/admin/ogretmen-hakedisleri/yeni"
+                className="od-btn dark sm"
+              >
+                + Yeni Dönem
+              </Link>
+            </div>
+          }
+        />
+        <div className="od-empty-soft">
           Henüz tanımlanmış bir bordro dönemi yok. Üstten <strong>Yeni Dönem</strong> ile başlayabilirsiniz.
         </div>
       </div>
@@ -91,53 +91,47 @@ export default async function AdminPayrollHubPage({
   const canCancel = period.status !== "PAID";
 
   return (
-    <div className="space-y-6 p-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Öğretmen Hakedişleri
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Ders bazlı hakediş hesaplama, inceleme ve ödeme. Eski sayfa{" "}
+    <div className="space-y-6">
+      <PageHeader
+        title="Öğretmen Hakedişleri"
+        subtitle="Ders bazlı hakediş hesaplama, inceleme ve ödeme. Tutarlar muhasebeleştirilmedikçe gider olarak yansımaz."
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğretmen Hakedişleri" },
+        ]}
+        right={
+          <div className="flex flex-wrap gap-2">
             <Link
-              href="/panel/admin/maaslar"
-              className="underline hover:text-slate-900"
+              href="/panel/admin/ogretmen-hakedisleri/kurallar"
+              className="od-btn ghost sm"
             >
-              Öğretmen Ödemeleri
-            </Link>{" "}
-            (manuel kayıtlar) korunmaktadır.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/panel/admin/ogretmen-hakedisleri/kurallar"
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Saatlik Ücret Kuralları
-          </Link>
-          <Link
-            href="/panel/admin/ogretmen-hakedisleri/yeni"
-            className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700"
-          >
-            + Yeni Dönem
-          </Link>
-        </div>
-      </header>
+              Saatlik Ücret Kuralları
+            </Link>
+            <Link
+              href="/panel/admin/ogretmen-hakedisleri/yeni"
+              className="od-btn dark sm"
+            >
+              + Yeni Dönem
+            </Link>
+          </div>
+        }
+      />
+      <p className="text-xs text-slate-500 -mt-2">
+        Eski sayfa{" "}
+        <Link href="/panel/admin/maaslar" className="underline hover:text-slate-900">
+          Öğretmen Ödemeleri
+        </Link>{" "}
+        (manuel kayıtlar) korunmaktadır.
+      </p>
 
       {/* Period switcher */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs uppercase tracking-wide text-slate-500">
-          Dönem:
-        </span>
+      <div className="od-payroll-period-strip">
+        <span className="od-payroll-period-strip-label">Dönem:</span>
         {periods.map((p) => (
           <Link
             key={p.id}
             href={`/panel/admin/ogretmen-hakedisleri?periodId=${p.id}`}
-            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${
-              p.id === activePeriodId
-                ? "border-sky-300 bg-sky-50 text-sky-800"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-            }`}
+            className={`od-payroll-period-pill ${p.id === activePeriodId ? "is-active" : ""}`}
           >
             <span>{p.title}</span>
             <PayrollStatusBadge status={p.status} />
@@ -148,25 +142,19 @@ export default async function AdminPayrollHubPage({
       <PayrollSummaryCards summary={period} />
 
       {/* Action bar */}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
+      <div className="od-payroll-period-card">
         {isMutable ? (
           <form
             action={generatePayrollPeriodItemsAction.bind(null, period.periodId)}
           >
-            <button
-              type="submit"
-              className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
-            >
+            <button type="submit" className="od-btn dark sm">
               Hakedişleri Üret / Güncelle
             </button>
           </form>
         ) : null}
         {canLock ? (
           <form action={lockPayrollPeriodAction.bind(null, period.periodId)}>
-            <button
-              type="submit"
-              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-            >
+            <button type="submit" className="od-btn ghost sm">
               Dönemi Kilitle
             </button>
           </form>
@@ -174,30 +162,22 @@ export default async function AdminPayrollHubPage({
         {canPay ? (
           <form action={markPayrollPeriodPaidAction.bind(null, period.periodId)}>
             <input type="hidden" name="writeAccounting" value="1" />
-            <button
-              type="submit"
-              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
-            >
+            <button type="submit" className="od-btn dark sm" style={{ background: "#2E6B4F", borderColor: "#2E6B4F" }}>
               Onaylı Satırları Ödendi İşaretle (Muhasebe)
             </button>
           </form>
         ) : null}
+        <div className="spacer" />
         {canCancel ? (
-          <form
-            action={cancelPayrollPeriodAction.bind(null, period.periodId)}
-            className="ml-auto"
-          >
-            <button
-              type="submit"
-              className="rounded-md border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50"
-            >
+          <form action={cancelPayrollPeriodAction.bind(null, period.periodId)}>
+            <button type="submit" className="od-btn ghost sm" style={{ color: "var(--pd-bad, #B25758)" }}>
               Dönemi İptal Et
             </button>
           </form>
         ) : null}
         <Link
           href={`/panel/admin/ogretmen-hakedisleri/${period.periodId}`}
-          className="ml-auto rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          className="od-btn ghost sm"
         >
           Tüm Satırlar →
         </Link>

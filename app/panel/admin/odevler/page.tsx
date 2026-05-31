@@ -200,11 +200,12 @@ export default async function AdminAssignments({
       <PageHeader
         title="Odevler"
         subtitle={`${assignments.length} odev - ${columns.length} sutun${sp.q ? ` - "${sp.q}"` : ""}`}
+        breadcrumbs={[{ label: "Yönetim", href: "/panel/admin" }, { label: "Ödevler" }]}
         right={
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <SearchInput placeholder="Baslik, ders..." />
             <ExportButton entity="odevler" />
-            <Link href="/panel/admin/odevler/yeni" className="od-btn od-btn-primary od-btn-sm">
+            <Link href="/panel/admin/odevler/yeni" className="od-btn dark sm">
               + Yeni odev
             </Link>
           </div>
@@ -231,7 +232,7 @@ export default async function AdminAssignments({
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <button type="submit" className="od-btn od-btn-ghost od-btn-sm">Filtrele</button>
+          <button type="submit" className="od-btn ghost sm">Filtrele</button>
         </form>
       </div>
 

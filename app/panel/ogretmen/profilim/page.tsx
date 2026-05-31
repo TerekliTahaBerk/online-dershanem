@@ -16,7 +16,8 @@ export default async function TeacherProfile() {
       <PageHeader
         title="Profilim"
         subtitle={teacher.fullName}
-        right={<Link href="/panel/ogretmen/profilim/duzenle" className="od-btn od-btn-primary od-btn-sm">Düzenle</Link>}
+        breadcrumbs={[{ label: "Öğretmen", href: "/panel/ogretmen" }, { label: "Profilim" }]}
+        right={<Link href="/panel/ogretmen/profilim/duzenle" className="od-btn dark sm">Düzenle</Link>}
       />
       <Card>
         <CardHeader title="Bilgiler" />

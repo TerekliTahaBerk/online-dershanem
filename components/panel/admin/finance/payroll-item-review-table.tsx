@@ -1,6 +1,7 @@
 /**
  * Phase 2 / Session 11 — Per-item review table for the period detail page.
  * Allows admin to approve / review / exclude / adjust / mark paid.
+ * Stage 3H: migrated to v2 `premium-table` + soft action buttons.
  */
 "use client";
 
@@ -29,28 +30,26 @@ export function PayrollItemReviewTable({
   const [pending, start] = useTransition();
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
-        Bu filtreyle eşleşen satır yok.
-      </div>
+      <div className="od-empty-soft">Bu filtreyle eşleşen satır yok.</div>
     );
   }
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
-          <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="px-3 py-2">Öğretmen / Ders</th>
-            <th className="px-3 py-2">Tarih</th>
-            <th className="px-3 py-2">Dakika</th>
-            <th className="px-3 py-2">Saatlik</th>
-            <th className="px-3 py-2">Brüt</th>
-            <th className="px-3 py-2">Düzeltme</th>
-            <th className="px-3 py-2">Net</th>
-            <th className="px-3 py-2">Durum</th>
-            <th className="px-3 py-2">İşlem</th>
+    <div className="premium-table" style={{ overflowX: "auto" }}>
+      <table className="od-table">
+        <thead>
+          <tr>
+            <th>Öğretmen / Ders</th>
+            <th>Tarih</th>
+            <th>Dakika</th>
+            <th>Saatlik</th>
+            <th>Brüt</th>
+            <th>Düzeltme</th>
+            <th>Net</th>
+            <th>Durum</th>
+            <th>İşlem</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200">
+        <tbody>
           {rows.map((row) => {
             const flags: string[] = [];
             if (row.rateMissing) flags.push("Saatlik ücret yok");
@@ -58,58 +57,68 @@ export function PayrollItemReviewTable({
             const canMutate =
               !locked && row.status !== "PAID" && row.status !== "EXCLUDED";
             const canApprove = canMutate && !row.rateMissing;
+            const isExcluded = row.status === "EXCLUDED";
             return (
-              <tr key={row.id}>
-                <td className="px-3 py-2">
-                  <div className="font-medium text-slate-900">
+              <tr
+                key={row.id}
+                className={
+                  isExcluded
+                    ? "od-finance-row-alert is-cancelled"
+                    : row.status === "PAID"
+                      ? "od-finance-row-alert is-paid"
+                      : ""
+                }
+              >
+                <td>
+                  <div style={{ fontWeight: 500, color: "#14140F" }}>
                     {row.teacherName}
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="od-money-muted" style={{ fontSize: 11.5 }}>
                     {row.lessonTitle ?? row.courseTitle ?? "Manuel satır"}
                     {row.classroomName ? ` • ${row.classroomName}` : ""}
                     {row.studentName ? ` • ${row.studentName}` : ""}
                   </div>
                   {flags.length > 0 ? (
-                    <div className="mt-0.5 text-xs text-amber-700">
-                      ⚠ {flags.join(" • ")}
+                    <div style={{ marginTop: 4 }}>
+                      <span className="od-finance-flag-chip">
+                        ⚠ {flags.join(" · ")}
+                      </span>
                     </div>
                   ) : null}
                   {row.note ? (
-                    <div className="mt-0.5 text-xs text-slate-500">
+                    <div className="od-money-muted" style={{ fontSize: 11.5, marginTop: 2 }}>
                       Not: {row.note}
                     </div>
                   ) : null}
                 </td>
-                <td className="px-3 py-2 text-xs text-slate-600">
+                <td className="od-money-muted">
                   {row.scheduledAt
                     ? new Date(row.scheduledAt).toLocaleDateString("tr-TR")
                     : "—"}
                 </td>
-                <td className="px-3 py-2 text-slate-600">{row.minutes}</td>
-                <td className="px-3 py-2 text-slate-600">
+                <td className="od-money-muted">{row.minutes}</td>
+                <td className="od-money-muted">
                   {row.rateMissing
                     ? "—"
                     : formatPayrollMoney(row.hourlyRateKurus)}
                 </td>
-                <td className="px-3 py-2 text-slate-700">
-                  {formatPayrollMoney(row.grossAmountKurus)}
-                </td>
-                <td className="px-3 py-2 text-slate-700">
+                <td>{formatPayrollMoney(row.grossAmountKurus)}</td>
+                <td>
                   {row.adjustmentAmountKurus !== 0
                     ? formatPayrollMoney(row.adjustmentAmountKurus)
                     : "—"}
                 </td>
-                <td className="px-3 py-2 font-semibold text-slate-900">
+                <td className="od-money-positive">
                   {formatPayrollMoney(row.finalAmountKurus)}
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   <PayrollStatusBadge status={row.status} />
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   {!canMutate ? (
-                    <span className="text-xs text-slate-400">—</span>
+                    <span className="od-money-muted">—</span>
                   ) : (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="od-finance-inline-actions">
                       {canApprove ? (
                         <button
                           type="button"
@@ -117,7 +126,7 @@ export function PayrollItemReviewTable({
                           onClick={() =>
                             start(() => approvePayrollItemAction(row.id))
                           }
-                          className="rounded-md bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                          className="od-btn dark sm"
                         >
                           Onayla
                         </button>
@@ -128,7 +137,7 @@ export function PayrollItemReviewTable({
                         onClick={() =>
                           start(() => reviewPayrollItemAction(row.id))
                         }
-                        className="rounded-md border border-slate-300 bg-white px-2 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                        className="od-btn ghost sm"
                       >
                         İncele
                       </button>
@@ -145,7 +154,7 @@ export function PayrollItemReviewTable({
                           fd.set("adjustment", v);
                           start(() => adjustPayrollItemAction(row.id, fd));
                         }}
-                        className="rounded-md border border-slate-300 bg-white px-2 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                        className="od-btn ghost sm"
                       >
                         Düzelt
                       </button>
@@ -159,7 +168,8 @@ export function PayrollItemReviewTable({
                           if (r) fd.set("reason", r);
                           start(() => excludePayrollItemAction(row.id, fd));
                         }}
-                        className="rounded-md border border-rose-300 bg-white px-2 py-0.5 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-60"
+                        className="od-btn ghost sm"
+                        style={{ color: "var(--pd-pastel-blush-ink, #B25758)" }}
                       >
                         Hariç
                       </button>
@@ -180,7 +190,7 @@ export function PayrollItemReviewTable({
                               markPayrollItemPaidAction(row.id, fd),
                             );
                           }}
-                          className="rounded-md bg-slate-900 px-2 py-0.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+                          className="od-btn dark sm"
                         >
                           Ödendi
                         </button>

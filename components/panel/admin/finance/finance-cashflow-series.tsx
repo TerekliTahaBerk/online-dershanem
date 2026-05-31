@@ -3,6 +3,8 @@
  *
  * Deliberately a table, not a chart. The codebase doesn't currently bundle a
  * charting dependency and Session 14 is not the place to add one.
+ *
+ * Stage 3H: migrated to v2 `od-finance-card` + `od-table` + money classes.
  */
 import {
   formatFinanceMoney,
@@ -12,48 +14,53 @@ import {
 export function FinanceCashflowSeries({ points }: { points: CashflowMonthPoint[] }) {
   if (!points.length) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
-        <h3 className="mb-2 text-sm font-semibold text-slate-900">Aylık nakit akışı</h3>
-        <p className="text-sm text-slate-500">Bu aralıkta muhasebe kaydı yok.</p>
+      <section className="od-finance-card">
+        <div className="od-finance-card-header">
+          <h3 className="od-finance-card-title">Aylık nakit akışı</h3>
+        </div>
+        <p className="od-money-muted" style={{ fontSize: 13 }}>
+          Bu aralıkta muhasebe kaydı yok.
+        </p>
       </section>
     );
   }
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
-      <header className="mb-3 flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-semibold text-slate-900">Aylık nakit akışı</h3>
-        <span className="text-xs text-slate-500">
+    <section className="od-finance-card">
+      <div className="od-finance-card-header">
+        <h3 className="od-finance-card-title">Aylık nakit akışı</h3>
+        <span className="od-finance-card-meta">
           Gerçekleşen muhasebe kayıtları (kuruş bazında)
         </span>
-      </header>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table className="od-table">
           <thead>
-            <tr className="text-left text-xs uppercase text-slate-500">
-              <th className="py-1 pr-3">Ay</th>
-              <th className="py-1 pr-3 text-right">Gelir</th>
-              <th className="py-1 pr-3 text-right">Gider</th>
-              <th className="py-1 pr-3 text-right">Net</th>
+            <tr>
+              <th>Ay</th>
+              <th style={{ textAlign: "right" }}>Gelir</th>
+              <th style={{ textAlign: "right" }}>Gider</th>
+              <th style={{ textAlign: "right" }}>Net</th>
             </tr>
           </thead>
           <tbody>
             {points.map((p) => (
-              <tr key={p.monthKey} className="border-t border-slate-100">
-                <td className="py-1.5 pr-3 text-slate-700">{p.monthLabel}</td>
-                <td className="py-1.5 pr-3 text-right tabular-nums text-emerald-700">
+              <tr key={p.monthKey}>
+                <td>{p.monthLabel}</td>
+                <td className="od-money-positive" style={{ textAlign: "right", fontFeatureSettings: '"tnum"' }}>
                   {formatFinanceMoney(p.incomeKurus)}
                 </td>
-                <td className="py-1.5 pr-3 text-right tabular-nums text-rose-700">
+                <td className="od-money-negative" style={{ textAlign: "right", fontFeatureSettings: '"tnum"' }}>
                   {formatFinanceMoney(p.expenseKurus)}
                 </td>
                 <td
-                  className={`py-1.5 pr-3 text-right tabular-nums font-medium ${
+                  className={
                     p.netKurus < 0
-                      ? "text-rose-700"
+                      ? "od-money-negative"
                       : p.netKurus > 0
-                        ? "text-emerald-700"
-                        : "text-slate-700"
-                  }`}
+                        ? "od-money-positive"
+                        : "od-money-muted"
+                  }
+                  style={{ textAlign: "right", fontFeatureSettings: '"tnum"', fontWeight: 600 }}
                 >
                   {formatFinanceMoney(p.netKurus)}
                 </td>

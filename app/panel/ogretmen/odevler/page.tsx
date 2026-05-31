@@ -24,7 +24,8 @@ export default async function TeacherAssignments() {
       <PageHeader
         title="Ödevler"
         subtitle={`${list.length} ödev`}
-        right={<Link href="/panel/ogretmen/odevler/yeni" className="od-btn od-btn-primary od-btn-sm">+ Yeni ödev</Link>}
+        breadcrumbs={[{ label: "Öğretmen", href: "/panel/ogretmen" }, { label: "Ödevler" }]}
+        right={<Link href="/panel/ogretmen/odevler/yeni" className="od-btn dark sm">+ Yeni ödev</Link>}
       />
       <Card>
         <table className="od-table">
@@ -38,7 +39,7 @@ export default async function TeacherAssignments() {
                 <td className="od-mono od-muted">{a.dueAt ? new Intl.DateTimeFormat("tr-TR").format(a.dueAt) : "—"}</td>
                 <td className="od-mono">{a._count.submissions}</td>
                 <td><Badge tone={a.status === "PUBLISHED" ? "ok" : a.status === "CLOSED" ? "neutral" : "warn"}>{a.status}</Badge></td>
-                <td><Link href={`/panel/ogretmen/odevler/${a.id}`} className="od-btn od-btn-ghost od-btn-sm">Aç</Link></td>
+                <td><Link href={`/panel/ogretmen/odevler/${a.id}`} className="od-btn ghost sm">Aç</Link></td>
               </tr>
             ))}
             {list.length === 0 ? <tr><td colSpan={7} style={{ padding: 24, textAlign: "center" }} className="od-muted">Henüz ödev yok.</td></tr> : null}

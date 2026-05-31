@@ -16,7 +16,14 @@ export default async function NewAssignment() {
   ]);
   return (
     <>
-      <PageHeader title="Yeni ödev" />
+      <PageHeader
+        title="Yeni ödev"
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Ödevler", href: "/panel/admin/odevler" },
+          { label: "Yeni" },
+        ]}
+      />
       <Card>
         <CardBody>
           <ToastForm action={createAssignmentAction} className="od-grid g-2" style={{ gap: 12 }}>

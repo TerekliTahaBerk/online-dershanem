@@ -67,7 +67,7 @@ export default async function AdminPayments({
     <>
       <PageHeader
         title="Ödemeler"
-        breadcrumbs={[{ label: "Admin", href: "/panel/admin" }, { label: "Ödemeler" }]}
+        breadcrumbs={[{ label: "Yönetim", href: "/panel/admin" }, { label: "Ödemeler" }]}
         subtitle={metaParts.join(" · ")}
         right={
           <div style={{ display: "flex", gap: 8 }}>
@@ -122,17 +122,17 @@ export default async function AdminPayments({
                   <td data-col="actions" style={{ display: "flex", gap: 6 }}>
                     {p.status !== "PAID" && (
                       <form action={setPurchaseStatusAction.bind(null, p.id, "PAID")} style={{ display: "inline" }}>
-                        <button type="submit" className="od-btn od-btn-ghost od-btn-sm" style={{ color: "var(--pd-ok)" }}>Ödendi</button>
+                        <button type="submit" className="od-btn ghost sm" style={{ color: "var(--pd-ok)" }}>Ödendi</button>
                       </form>
                     )}
                     {p.status !== "FAILED" && (
                       <form action={setPurchaseStatusAction.bind(null, p.id, "FAILED")} style={{ display: "inline" }}>
-                        <button type="submit" className="od-btn od-btn-ghost od-btn-sm" style={{ color: "var(--pd-bad)" }}>İptal</button>
+                        <button type="submit" className="od-btn ghost sm" style={{ color: "var(--pd-bad)" }}>İptal</button>
                       </form>
                     )}
                     {p.status !== "PENDING" && (
                       <form action={setPurchaseStatusAction.bind(null, p.id, "PENDING")} style={{ display: "inline" }}>
-                        <button type="submit" className="od-btn od-btn-ghost od-btn-sm">Beklemede</button>
+                        <button type="submit" className="od-btn ghost sm">Beklemede</button>
                       </form>
                     )}
                   </td>

@@ -3,6 +3,8 @@
  *
  * Server component. Shows aggregate KPIs + the latest in-flight items.
  * Cross-links to the existing payroll hub.
+ *
+ * Stage 3H: migrated to v2 `od-finance-card` + `mini-kpi-card` + soft-pill.
  */
 import Link from "next/link";
 import {
@@ -32,18 +34,17 @@ function statusLabel(s: PayrollObligationRow["status"]): string {
   }
 }
 
-function statusToneClass(s: PayrollObligationRow["status"]): string {
+function statusPillClass(s: PayrollObligationRow["status"]): string {
   switch (s) {
     case "PAID":
-      return "bg-emerald-50 text-emerald-700 ring-emerald-200";
     case "APPROVED":
-      return "bg-sky-50 text-sky-700 ring-sky-200";
+      return "is-mint";
     case "REVIEWED":
-      return "bg-indigo-50 text-indigo-700 ring-indigo-200";
+      return "is-sky";
     case "EXCLUDED":
-      return "bg-rose-50 text-rose-700 ring-rose-200";
+      return "is-blush";
     default:
-      return "bg-amber-50 text-amber-700 ring-amber-200";
+      return "is-lavender";
   }
 }
 
@@ -55,67 +56,72 @@ export function FinancePayrollObligations({
   rows: PayrollObligationRow[];
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
-      <header className="mb-3 flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-semibold text-slate-900">
+    <section className="od-finance-card">
+      <div className="od-finance-card-header">
+        <h3 className="od-finance-card-title">
           Öğretmen hakediş yükümlülükleri
         </h3>
         <Link
           href="/panel/admin/ogretmen-hakedisleri"
-          className="text-xs font-medium text-sky-700 hover:underline"
+          className="od-btn ghost sm"
         >
-          Hakediş hub'ına git →
+          Hakediş hub&apos;ına git →
         </Link>
-      </header>
+      </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <div className="rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2">
-          <div className="text-xs text-slate-500">Onaylı · ödenmemiş</div>
-          <div className="text-base font-semibold text-slate-900">
+      <div className="od-finance-kpi-grid" style={{ marginBottom: 14 }}>
+        <div className="mini-kpi-card">
+          <div className="k-label">Onaylı · ödenmemiş</div>
+          <div
+            className={`k-value ${
+              summary.approvedUnpaidKurus > 0 ? "od-money-negative" : "od-money-muted"
+            }`}
+          >
             {formatFinanceMoney(summary.approvedUnpaidKurus)}
           </div>
-          <div className="text-xs text-slate-500">{summary.approvedUnpaidCount} satır</div>
+          <div className="k-meta">{summary.approvedUnpaidCount} satır</div>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-          <div className="text-xs text-slate-500">Taslak / İncelendi</div>
-          <div className="text-base font-semibold text-slate-900">
+        <div className="mini-kpi-card">
+          <div className="k-label">Taslak / İncelendi</div>
+          <div className="k-value">
             {formatFinanceMoney(summary.draftReviewKurus)}
           </div>
-          <div className="text-xs text-slate-500">{summary.draftReviewCount} satır</div>
+          <div className="k-meta">{summary.draftReviewCount} satır</div>
         </div>
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
-          <div className="text-xs text-slate-500">Ödendi (seçili aralık)</div>
-          <div className="text-base font-semibold text-slate-900">
+        <div className="mini-kpi-card">
+          <div className="k-label">Ödendi (seçili aralık)</div>
+          <div className="k-value od-money-positive">
             {formatFinanceMoney(summary.paidInRangeKurus)}
           </div>
-          <div className="text-xs text-slate-500">{summary.paidInRangeCount} satır</div>
+          <div className="k-meta">{summary.paidInRangeCount} satır</div>
         </div>
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">
+        <p className="od-money-muted" style={{ fontSize: 13 }}>
           Onay bekleyen ya da incelenen hakediş satırı yok.
         </p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
+        <div style={{ overflowX: "auto" }}>
+          <table className="od-table">
             <thead>
-              <tr className="text-left text-xs uppercase text-slate-500">
-                <th className="py-1 pr-3">Öğretmen</th>
-                <th className="py-1 pr-3">Dönem</th>
-                <th className="py-1 pr-3">Ders</th>
-                <th className="py-1 pr-3 text-right">Tutar</th>
-                <th className="py-1 pr-3">Durum</th>
+              <tr>
+                <th>Öğretmen</th>
+                <th>Dönem</th>
+                <th>Ders</th>
+                <th style={{ textAlign: "right" }}>Tutar</th>
+                <th>Durum</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.itemId} className="border-t border-slate-100">
-                  <td className="py-1.5 pr-3 text-slate-700">
+                <tr key={r.itemId}>
+                  <td>
                     {r.teacherFullName}
                     {r.rateMissing || r.attendanceMissing ? (
                       <span
-                        className="ml-2 inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-200"
+                        className="od-finance-flag-chip"
+                        style={{ marginLeft: 8 }}
                         title={[
                           r.rateMissing ? "Saat ücreti tanımlı değil" : null,
                           r.attendanceMissing ? "Yoklama eksik" : null,
@@ -127,7 +133,7 @@ export function FinancePayrollObligations({
                       </span>
                     ) : null}
                   </td>
-                  <td className="py-1.5 pr-3 text-slate-600">
+                  <td className="od-money-muted">
                     <Link
                       href={`/panel/admin/ogretmen-hakedisleri/${r.periodId}`}
                       className="hover:underline"
@@ -135,18 +141,14 @@ export function FinancePayrollObligations({
                       {r.periodTitle}
                     </Link>
                   </td>
-                  <td className="py-1.5 pr-3 text-slate-600">
+                  <td className="od-money-muted">
                     {r.scheduledAt ? DATE_FMT.format(r.scheduledAt) : "—"}
                   </td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums font-medium text-slate-900">
+                  <td style={{ textAlign: "right", fontFeatureSettings: '"tnum"', fontWeight: 600 }}>
                     {formatFinanceMoney(r.finalAmountKurus)}
                   </td>
-                  <td className="py-1.5 pr-3">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${statusToneClass(
-                        r.status,
-                      )}`}
-                    >
+                  <td>
+                    <span className={`soft-pill ${statusPillClass(r.status)}`.trim()}>
                       {statusLabel(r.status)}
                     </span>
                   </td>

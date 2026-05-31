@@ -26,11 +26,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ enti
   await requirePanelRole("admin");
   const { entity } = await params;
   const q = req.nextUrl.searchParams.get("q") ?? "";
+  const idsRaw = req.nextUrl.searchParams.get("ids") ?? "";
+  // Phase 3 / Session 8 — when caller passes `?ids=a,b,c`, restrict the
+  // export to just those rows (used by selected-row export from list bulk
+  // bar). Hard-cap at 1000 ids to match BULK_MAX_IDS×2 sanity.
+  const ids = idsRaw
+    ? Array.from(new Set(idsRaw.split(",").map((s) => s.trim()).filter(Boolean))).slice(0, 1000)
+    : [];
   const today = new Date().toISOString().slice(0, 10);
 
   switch (entity as Entity) {
     case "ogrenciler": {
-      const where = q ? { OR: [{ fullName: ci(q) }, { email: ci(q) }, { phone: { contains: q } }, { city: ci(q) }, { schoolName: ci(q) }] } : {};
+      const filters: Record<string, unknown>[] = [];
+      if (q) filters.push({ OR: [{ fullName: ci(q) }, { email: ci(q) }, { phone: { contains: q } }, { city: ci(q) }, { schoolName: ci(q) }] });
+      if (ids.length > 0) filters.push({ id: { in: ids } });
+      const where = filters.length === 0 ? {} : filters.length === 1 ? filters[0] : { AND: filters };
       const list = await prisma.student.findMany({ where, orderBy: { updatedAt: "desc" } });
       const rows = list.map((s) => ({
         "Ad Soyad": s.fullName, Telefon: s.phone, Email: s.email ?? "",
@@ -41,7 +51,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ enti
       return rowsToXlsxResponse(rows, "Öğrenciler", `ogrenciler-${today}.xlsx`);
     }
     case "ogretmenler": {
-      const where = q ? { OR: [{ fullName: ci(q) }, { email: ci(q) }, { phone: { contains: q } }, { subjects: ci(q) }] } : {};
+      const filters: Record<string, unknown>[] = [];
+      if (q) filters.push({ OR: [{ fullName: ci(q) }, { email: ci(q) }, { phone: { contains: q } }, { subjects: ci(q) }] });
+      if (ids.length > 0) filters.push({ id: { in: ids } });
+      const where = filters.length === 0 ? {} : filters.length === 1 ? filters[0] : { AND: filters };
       const list = await prisma.teacher.findMany({ where, orderBy: { createdAt: "desc" } });
       const rows = list.map((t) => ({
         "Ad Soyad": t.fullName, Email: t.email ?? "", Telefon: t.phone ?? "",
@@ -50,7 +63,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ enti
       return rowsToXlsxResponse(rows, "Öğretmenler", `ogretmenler-${today}.xlsx`);
     }
     case "veliler": {
-      const where = q ? { OR: [{ fullName: ci(q) }, { email: ci(q) }, { phone: { contains: q } }] } : {};
+      const filters: Record<string, unknown>[] = [];
+      if (q) filters.push({ OR: [{ fullName: ci(q) }, { email: ci(q) }, { phone: { contains: q } }] });
+      if (ids.length > 0) filters.push({ id: { in: ids } });
+      const where = filters.length === 0 ? {} : filters.length === 1 ? filters[0] : { AND: filters };
       const list = await prisma.parent.findMany({
         where, orderBy: { createdAt: "desc" },
         include: { students: { include: { student: { select: { fullName: true } } } } },

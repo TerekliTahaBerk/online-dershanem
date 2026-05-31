@@ -5,6 +5,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
+import { PageHeader } from "@/components/panel/ui/page-header";
 import { getTeacherPayrollReadOnlySummary } from "@/lib/panel/teacher-payroll";
 import { TeacherPayrollSummary } from "@/components/panel/teacher/teacher-payroll-summary";
 
@@ -23,15 +24,15 @@ export default async function TeacherPayrollPage() {
   }
   const data = await getTeacherPayrollReadOnlySummary(teacher.id);
   return (
-    <div className="space-y-6 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold text-slate-900">Hakedişlerim</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Bu sayfa yalnızca okunur bir özettir. Tutarlar yönetim onayından
-          sonra kesinleşir; eksik yoklama veya tanımsız saatlik ücret olduğunda
-          ilgili satırlar incelemededir.
-        </p>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        title="Hakedişlerim"
+        subtitle="Bu sayfa yalnızca okunur bir özettir. Tutarlar yönetim onayından sonra kesinleşir; eksik yoklama veya tanımsız saatlik ücret olduğunda ilgili satırlar incelemededir."
+        breadcrumbs={[
+          { label: "Öğretmen", href: "/panel/ogretmen" },
+          { label: "Hakedişlerim" },
+        ]}
+      />
       <TeacherPayrollSummary data={data} />
     </div>
   );

@@ -3,6 +3,7 @@
  */
 import Link from "next/link";
 import { requirePanelRole } from "@/lib/panel-access";
+import { PageHeader } from "@/components/panel/ui/page-header";
 import { createPayrollPeriodAction } from "../_actions";
 
 export const dynamic = "force-dynamic";
@@ -21,69 +22,65 @@ export default async function AdminNewPayrollPeriodPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <header>
-        <Link
-          href="/panel/admin/ogretmen-hakedisleri"
-          className="text-xs text-slate-500 hover:text-slate-700"
-        >
-          ← Hakediş Hub
-        </Link>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-          Yeni Bordro Dönemi
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Dönem oluşturulduktan sonra <strong>Hakedişleri Üret</strong> butonu
-          ile uygun dersler tarandığı esnada dakikadan tutar hesaplanır.
-        </p>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        title="Yeni Bordro Dönemi"
+        subtitle="Dönem oluşturulduktan sonra Hakedişleri Üret butonu ile uygun dersler tarandığı esnada dakikadan tutar hesaplanır."
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğretmen Hakedişleri", href: "/panel/admin/ogretmen-hakedisleri" },
+          { label: "Yeni Dönem" },
+        ]}
+        right={
+          <Link
+            href="/panel/admin/ogretmen-hakedisleri"
+            className="od-btn ghost sm"
+          >
+            ← Hakediş Hub
+          </Link>
+        }
+      />
 
       <form
         action={createPayrollPeriodAction}
-        className="grid max-w-2xl grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2"
+        className="od-form-card od-form-grid"
+        style={{ maxWidth: 720 }}
       >
-        <label className="block text-sm sm:col-span-2">
-          <span className="font-medium text-slate-700">Başlık *</span>
+        <label className="full">
+          <span>Başlık *</span>
           <input
             name="title"
             required
             defaultValue={titleDefault}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Başlangıç *</span>
+        <label>
+          <span>Başlangıç *</span>
           <input
             type="date"
             name="startsAt"
             required
             defaultValue={fmt(firstPrevMonth)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Bitiş *</span>
+        <label>
+          <span>Bitiş *</span>
           <input
             type="date"
             name="endsAt"
             required
             defaultValue={fmt(firstThisMonth)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <label className="block text-sm sm:col-span-2">
-          <span className="font-medium text-slate-700">Not</span>
+        <label className="full">
+          <span>Not</span>
           <textarea
             name="note"
             rows={2}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <div className="sm:col-span-2">
-          <button
-            type="submit"
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
-          >
+        <div className="full">
+          <button type="submit" className="od-btn dark sm">
             Dönemi Oluştur
           </button>
         </div>

@@ -27,6 +27,8 @@ import { Card } from "@/components/panel/ui/card";
 import { Badge } from "@/components/panel/ui/badge";
 import { SearchInput } from "@/components/panel/ui/search-input";
 import { ExportButton } from "@/components/panel/ui/export-button";
+import { BulkProvider, BulkRowCheckbox, BulkAllCheckbox, BulkBar } from "@/components/panel/ui/smart-table";
+import { ParentBulkActions } from "@/components/panel/bulk/parent-bulk-actions";
 import { QuickFilters } from "@/components/panel/ui/quick-filters";
 import { SavedViewsBar } from "@/components/panel/ui/saved-views";
 import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
@@ -288,6 +290,14 @@ export default async function AdminParents({
           <div className="od-list-toolbar">
             <SearchInput placeholder="Ad, email, telefon…" />
             <ExportButton entity="veliler" />
+            <a
+              href="/api/panel/import-templates/veliler"
+              className="od-btn od-btn-ghost od-btn-sm"
+              download
+              title="Toplu içe aktarma için CSV şablonu indir"
+            >
+              📥 Şablon
+            </a>
             <Link
               href="/panel/admin/veliler/yeni"
               className="od-btn dark sm"
@@ -419,6 +429,7 @@ export default async function AdminParents({
 
       {/* Table */}
       <Card>
+        <BulkProvider>
         {parents.length === 0 ? (
           <div
             style={{
@@ -436,6 +447,9 @@ export default async function AdminParents({
           <table className="od-table">
             <thead>
               <tr>
+                <th style={{ width: 32 }}>
+                  <BulkAllCheckbox ids={parents.map((p) => p.id)} />
+                </th>
                 <th>Veli</th>
                 <th>Hesap durumu</th>
                 <th>Bağlı çocuklar</th>
@@ -472,6 +486,9 @@ export default async function AdminParents({
 
                 return (
                   <tr key={p.id}>
+                    <td style={{ width: 32 }}>
+                      <BulkRowCheckbox id={p.id} label={p.fullName} />
+                    </td>
                     <td>
                       <Link
                         href={`/panel/admin/veliler/${p.id}/duzenle`}
@@ -541,6 +558,8 @@ export default async function AdminParents({
             </tbody>
           </table>
         )}
+        <BulkBar>{() => <ParentBulkActions />}</BulkBar>
+        </BulkProvider>
       </Card>
 
       <div style={{ marginTop: 12 }}>

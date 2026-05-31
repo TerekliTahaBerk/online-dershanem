@@ -7,7 +7,8 @@ import { Badge } from "@/components/panel/ui/badge";
 import { SearchInput } from "@/components/panel/ui/search-input";
 import { ExportButton } from "@/components/panel/ui/export-button";
 import { QuickFilters } from "@/components/panel/ui/quick-filters";
-import { SmartTableShell, SortableTh } from "@/components/panel/ui/smart-table";
+import { SmartTableShell, SortableTh, BulkProvider, BulkRowCheckbox, BulkAllCheckbox, BulkBar } from "@/components/panel/ui/smart-table";
+import { StudentBulkActions } from "@/components/panel/bulk/student-bulk-actions";
 import { Pagination, parsePagination } from "@/components/panel/ui/pagination";
 import { SavedViewsBar } from "@/components/panel/ui/saved-views";
 import { StudentQuickDrawer } from "@/components/panel/students/student-quick-drawer";
@@ -124,6 +125,23 @@ export default async function AdminStudents({
   // Sayfa boyunda flag çek — büyük dataset'lerde de güvenli (her zaman ≤ pageSize)
   const flagsMap = await getStudentProductFlags(students.map((s) => s.id));
 
+  // Phase 3 / Session 8 — Bulk action toolbar fixtures (admin-only)
+  const [bulkClassrooms, bulkAccessTags] = await Promise.all([
+    prisma.classroom.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+      take: 200,
+    }),
+    prisma.odkAccessTag.findMany({
+      where: { isActive: true },
+      select: { id: true, key: true, service: true },
+      orderBy: [{ service: "asc" }, { key: "asc" }],
+      take: 200,
+    }),
+  ]);
+  const pageStudentIds = students.map((s) => s.id);
+
   // Sayfa numarası total'ı geçtiyse son sayfaya kayıyor olabiliriz — display için clamp
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -138,6 +156,14 @@ export default async function AdminStudents({
           <div className="od-list-toolbar">
             <SearchInput placeholder="Ad, email, telefon, şehir, okul…" />
             <ExportButton entity="ogrenciler" />
+            <a
+              href="/api/panel/import-templates/ogrenciler"
+              className="od-btn od-btn-ghost od-btn-sm"
+              download
+              title="Toplu içe aktarma için CSV şablonu indir"
+            >
+              📥 Şablon
+            </a>
             <Link
               href="/panel/admin/odk/ogrenciler"
               className="od-btn ghost sm"
@@ -152,9 +178,11 @@ export default async function AdminStudents({
         }
       />
       <Card>
+        <BulkProvider>
         <SmartTableShell
           tableId="admin.ogrenciler"
           columns={[
+            { id: "select",  label: "Seç", hideable: false },
             { id: "name",    label: "Ad Soyad", hideable: false },
             { id: "phone",   label: "Telefon" },
             { id: "email",   label: "Email" },
@@ -200,6 +228,9 @@ export default async function AdminStudents({
           <table className="od-table">
             <thead>
               <tr>
+                <th data-col="select" style={{ width: 32 }}>
+                  <BulkAllCheckbox ids={pageStudentIds} />
+                </th>
                 <SortableTh field="name"    label="Ad Soyad" />
                 <th data-col="phone">Telefon</th>
                 <th data-col="email">Email</th>
@@ -227,6 +258,9 @@ export default async function AdminStudents({
                 const drawerHref = `/panel/admin/ogrenciler?${drawerParams.toString()}`;
                 return (
                   <tr key={s.id}>
+                    <td data-col="select">
+                      <BulkRowCheckbox id={s.id} label={s.fullName} />
+                    </td>
                     <td data-col="name">
                       <Link href={drawerHref} className="od-cell-user" scroll={false}>
                         <span className="n">{s.fullName}</span>
@@ -267,6 +301,15 @@ export default async function AdminStudents({
             </tbody>
           </table>
         </SmartTableShell>
+        <BulkBar>
+          {() => (
+            <StudentBulkActions
+              classrooms={bulkClassrooms}
+              accessTags={bulkAccessTags}
+            />
+          )}
+        </BulkBar>
+        </BulkProvider>
         <Pagination
           total={total}
           page={safePage}

@@ -35,11 +35,11 @@ function MaterialRowItem({ m }: { m: MaterialRow }) {
         </div>
       </div>
       {href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" className="od-btn od-btn-sm">
+        <a href={href} target="_blank" rel="noopener noreferrer" className="od-btn dark sm">
           Aç
         </a>
       ) : (
-        <Link href="/panel/ogrenci/kutuphane" className="od-btn od-btn-sm od-btn-ghost">
+        <Link href="/panel/ogrenci/kutuphane" className="od-btn ghost sm">
           Oku
         </Link>
       )}
@@ -65,7 +65,7 @@ export function StudentSuggestedMaterialsCard({ recommendations }: Props) {
             : "Henüz erişebileceğin materyal yok"
         }
         right={
-          <Link href="/panel/ogrenci/kutuphane" className="od-btn od-btn-ghost od-btn-sm">
+          <Link href="/panel/ogrenci/kutuphane" className="od-btn ghost sm">
             Kütüphane →
           </Link>
         }

@@ -2,6 +2,8 @@
  * Phase 2 / Session 14 — Finance activity list (recent AccountingEntry).
  *
  * Server component, read-only. Cross-links to `/panel/admin/muhasebe`.
+ *
+ * Stage 3H: migrated to v2 `od-finance-card` + `od-finance-timeline` + soft-pill.
  */
 import Link from "next/link";
 import {
@@ -21,53 +23,46 @@ const DATETIME_FMT = new Intl.DateTimeFormat("tr-TR", {
 
 export function FinanceActivityList({ rows }: { rows: FinanceActivityRow[] }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
-      <header className="mb-3 flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-semibold text-slate-900">Son finans hareketleri</h3>
+    <section className="od-finance-card">
+      <div className="od-finance-card-header">
+        <h3 className="od-finance-card-title">Son finans hareketleri</h3>
         <Link
           href="/panel/admin/muhasebe?service=OD"
-          className="text-xs font-medium text-sky-700 hover:underline"
+          className="od-btn ghost sm"
         >
           Muhasebe defterine git →
         </Link>
-      </header>
+      </div>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">Hareket yok.</p>
+        <p className="od-money-muted" style={{ fontSize: 13 }}>Hareket yok.</p>
       ) : (
-        <ul className="divide-y divide-slate-100 text-sm">
+        <ul className="od-finance-timeline">
           {rows.map((r) => {
             const isIncome = r.type === "INCOME";
             const subject =
               r.studentName ?? r.teacherName ?? r.packageName ?? r.description ?? "—";
             return (
-              <li
-                key={r.id}
-                className="flex flex-col gap-1 py-2 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <div className="truncate text-slate-900">
-                    <span
-                      className={`mr-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${
-                        isIncome
-                          ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-                          : "bg-rose-50 text-rose-700 ring-rose-200"
-                      }`}
-                    >
+              <li key={r.id}>
+                <div className="od-finance-timeline-body">
+                  <div className="od-finance-timeline-title">
+                    <span className={`soft-pill ${isIncome ? "is-mint" : "is-blush"}`}>
                       {isIncome ? "Gelir" : "Gider"}
                     </span>
-                    <span className="font-medium">{getEntryCategoryLabel(r.category)}</span>
-                    <span className="ml-2 text-xs text-slate-500">
+                    <span style={{ fontWeight: 500 }}>
+                      {getEntryCategoryLabel(r.category)}
+                    </span>
+                    <span className="od-money-muted" style={{ fontSize: 11.5 }}>
                       {getAccessServiceLabel(r.service)}
                     </span>
                   </div>
-                  <div className="truncate text-xs text-slate-500">
+                  <div className="od-finance-timeline-meta">
                     {DATETIME_FMT.format(r.occurredAt)} · {subject}
                   </div>
                 </div>
                 <div
-                  className={`shrink-0 text-right tabular-nums font-medium ${
-                    isIncome ? "text-emerald-700" : "text-rose-700"
+                  className={`od-finance-timeline-amount ${
+                    isIncome ? "od-money-positive" : "od-money-negative"
                   }`}
                 >
                   {isIncome ? "+" : "−"}

@@ -67,8 +67,9 @@ export default async function TeacherMaterialsPage({
       <PageHeader
         title="Materyaller"
         subtitle={`${counts.total} kayıt · ${counts.published} yayında · ${counts.draft} taslak`}
+        breadcrumbs={[{ label: "Öğretmen", href: "/panel/ogretmen" }, { label: "Materyaller" }]}
         right={
-          <Link href="/panel/ogretmen/materyaller/yeni" className="od-btn od-btn-primary od-btn-sm">
+          <Link href="/panel/ogretmen/materyaller/yeni" className="od-btn dark sm">
             + Yeni materyal
           </Link>
         }
@@ -91,9 +92,9 @@ export default async function TeacherMaterialsPage({
               </option>
             ))}
           </select>
-          <button type="submit" className="od-btn od-btn-sm">Filtrele</button>
+          <button type="submit" className="od-btn ghost sm">Filtrele</button>
           {(filterType || q) ? (
-            <Link href="/panel/ogretmen/materyaller" className="od-btn od-btn-sm od-btn-ghost">
+            <Link href="/panel/ogretmen/materyaller" className="od-btn ghost sm">
               Temizle
             </Link>
           ) : null}
@@ -109,7 +110,7 @@ export default async function TeacherMaterialsPage({
               title="Henüz materyal yok"
               description="İlk materyalinizi ekleyerek öğrencilerinizle paylaşmaya başlayabilirsiniz."
               action={
-                <Link href="/panel/ogretmen/materyaller/yeni" className="od-btn od-btn-primary od-btn-sm">
+                <Link href="/panel/ogretmen/materyaller/yeni" className="od-btn dark sm">
                   + Yeni materyal
                 </Link>
               }

@@ -120,43 +120,34 @@ export default async function AdminPaymentSchedules({
       <PageHeader
         title="Vadeli Ödemeler"
         subtitle="Veli ve öğrencilere atanmış vade kayıtları. OVERDUE durumu otomatik türetilir."
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Ödemeler", href: "/panel/admin/odemeler" },
+          { label: "Vadeli Ödemeler" },
+        ]}
         right={
           <Link
             href="/panel/admin/odemeler/vadeler/yeni"
-            className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-700"
+            className="od-btn dark sm"
           >
             + Yeni Vade
           </Link>
         }
       />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
-            Toplam Bekleyen
-          </div>
-          <div className="mt-1 text-2xl font-semibold text-slate-900">
-            {formatMoneyTRY(totalOutstanding)}
-          </div>
+      <div className="od-finance-kpi-grid">
+        <div className="mini-kpi-card">
+          <div className="k-label">Toplam Bekleyen</div>
+          <div className="k-value">{formatMoneyTRY(totalOutstanding)}</div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
-            Gösterilen Kayıt
-          </div>
-          <div className="mt-1 text-2xl font-semibold text-slate-900">
-            {rows.length}
-          </div>
-          <div className="text-xs text-slate-500">son 200 kayıt</div>
+        <div className="mini-kpi-card">
+          <div className="k-label">Gösterilen Kayıt</div>
+          <div className="k-value">{rows.length}</div>
+          <div className="k-meta">son 200 kayıt</div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
-            Geciken
-          </div>
-          <div
-            className={`mt-1 text-2xl font-semibold ${
-              overdueCount > 0 ? "text-rose-700" : "text-slate-900"
-            }`}
-          >
+        <div className="mini-kpi-card">
+          <div className="k-label">Geciken</div>
+          <div className={`k-value ${overdueCount > 0 ? "od-money-negative" : ""}`}>
             {overdueCount}
           </div>
         </div>
@@ -164,15 +155,11 @@ export default async function AdminPaymentSchedules({
 
       <form
         method="GET"
-        className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4"
+        className="od-form-card od-form-grid"
       >
-        <label className="block text-sm">
-          <span className="font-medium text-slate-700">Durum</span>
-          <select
-            name="status"
-            defaultValue={status}
-            className="mt-1 block rounded-md border border-slate-300 px-3 py-2 text-sm"
-          >
+        <label>
+          <span>Durum</span>
+          <select name="status" defaultValue={status}>
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -180,22 +167,20 @@ export default async function AdminPaymentSchedules({
             ))}
           </select>
         </label>
-        <label className="block flex-1 text-sm">
-          <span className="font-medium text-slate-700">Ara</span>
+        <label className="full">
+          <span>Ara</span>
           <input
             type="text"
             name="q"
             defaultValue={q}
             placeholder="Başlık, öğrenci, paket"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
           />
         </label>
-        <button
-          type="submit"
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          Filtrele
-        </button>
+        <div className="full">
+          <button type="submit" className="od-btn dark sm">
+            Filtrele
+          </button>
+        </div>
       </form>
 
       <AdminPaymentScheduleTable rows={rows} />

@@ -97,6 +97,12 @@ export default async function NewCoursePage() {
               <input type="checkbox" name="isActive" defaultChecked id="isActive" />
               <label htmlFor="isActive">Aktif</label>
             </div>
+            <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 8 }}>
+              <input type="checkbox" name="allowDuplicate" value="1" id="allowDuplicate" />
+              <label htmlFor="allowDuplicate" className="od-muted" style={{ fontSize: 12 }}>
+                Aynı başlık &amp; branşa sahip bir ders olsa bile yine de oluştur (uyarı sonrası işaretleyin)
+              </label>
+            </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <FormActions>
                 <Link href="/panel/admin/dersler" className="od-btn od-btn-ghost">İptal</Link>

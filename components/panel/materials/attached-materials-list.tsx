@@ -82,7 +82,7 @@ export function AttachedMaterialsList({ materials, detach, emptyText }: Props) {
                 href={openUrl}
                 target={openUrl.startsWith("http") ? "_blank" : undefined}
                 rel={openUrl.startsWith("http") ? "noreferrer noopener" : undefined}
-                className="od-btn od-btn-ghost od-btn-sm"
+                className="od-btn ghost sm"
               >
                 Aç →
               </Link>
@@ -92,7 +92,7 @@ export function AttachedMaterialsList({ materials, detach, emptyText }: Props) {
                 action={detach.action.bind(null, detach.parentId, m.id)}
                 style={{ display: "inline" }}
               >
-                <button type="submit" className="od-btn od-btn-ghost od-btn-sm" title="Kaldır">
+                <button type="submit" className="od-btn ghost sm" title="Kaldır">
                   Kaldır
                 </button>
               </form>

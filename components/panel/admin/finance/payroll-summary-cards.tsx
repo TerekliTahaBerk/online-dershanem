@@ -1,5 +1,6 @@
 /**
  * Phase 2 / Session 11 — Admin payroll period KPI cards.
+ * Stage 3H: migrated to v2 `mini-kpi-card` + money tone helpers.
  */
 import {
   formatPayrollMoney,
@@ -7,34 +8,22 @@ import {
 } from "@/lib/panel/teacher-payroll-display";
 import { PayrollStatusBadge } from "@/components/panel/finance/payroll-status-badge";
 
-function Card({
+function MiniKpi({
   label,
   value,
   hint,
-  tone = "neutral",
+  valueClass,
 }: {
   label: string;
   value: string;
   hint?: string | null;
-  tone?: "neutral" | "warn" | "bad" | "ok" | "accent";
+  valueClass?: string;
 }) {
-  const cls =
-    tone === "warn"
-      ? "border-amber-200 bg-amber-50/40"
-      : tone === "bad"
-        ? "border-rose-200 bg-rose-50/40"
-        : tone === "ok"
-          ? "border-emerald-200 bg-emerald-50/40"
-          : tone === "accent"
-            ? "border-sky-200 bg-sky-50/40"
-            : "border-slate-200 bg-white";
   return (
-    <div className={`rounded-xl border p-4 ${cls}`}>
-      <div className="text-xs uppercase tracking-wide text-slate-500">
-        {label}
-      </div>
-      <div className="mt-1 text-2xl font-semibold text-slate-900">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
+    <div className="mini-kpi-card">
+      <div className="k-label">{label}</div>
+      <div className={`k-value ${valueClass ?? ""}`.trim()}>{value}</div>
+      {hint ? <div className="k-meta">{hint}</div> : null}
     </div>
   );
 }
@@ -48,41 +37,38 @@ export function PayrollSummaryCards({
   const hours = (t.totalMinutes / 60).toLocaleString("tr-TR", {
     maximumFractionDigits: 1,
   });
+  const issueCount = t.rateMissingCount + t.attendanceMissingCount;
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+      <div className="od-payroll-status-row">
         <PayrollStatusBadge status={summary.status} />
-        <span>{summary.title}</span>
-        <span className="text-xs text-slate-400">
+        <strong>{summary.title}</strong>
+        <span className="od-money-muted">
           {new Date(summary.startsAt).toLocaleDateString("tr-TR")} —{" "}
           {new Date(summary.endsAt).toLocaleDateString("tr-TR")}
         </span>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card
+      <div className="od-finance-kpi-grid">
+        <MiniKpi
           label="Tahmini Hakediş"
           value={formatPayrollMoney(t.estimatedKurus)}
           hint={`${t.itemCount} satır • ${t.teacherCount} öğretmen • ${hours} saat`}
         />
-        <Card
+        <MiniKpi
           label="Onaylı Tutar"
           value={formatPayrollMoney(t.approvedKurus)}
-          tone="accent"
+          valueClass="od-money-positive"
         />
-        <Card
+        <MiniKpi
           label="Ödenen"
           value={formatPayrollMoney(t.paidKurus)}
-          tone="ok"
+          valueClass="od-money-positive"
         />
-        <Card
+        <MiniKpi
           label="İncelemede"
-          value={`${t.rateMissingCount + t.attendanceMissingCount}`}
+          value={`${issueCount}`}
           hint={`Ücret eksik: ${t.rateMissingCount} • Yoklama eksik: ${t.attendanceMissingCount}`}
-          tone={
-            t.rateMissingCount + t.attendanceMissingCount > 0
-              ? "warn"
-              : "neutral"
-          }
+          valueClass={issueCount > 0 ? "od-money-negative" : "od-money-muted"}
         />
       </div>
     </div>

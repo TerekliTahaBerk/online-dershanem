@@ -24,7 +24,11 @@ export default async function StudentAssignments() {
   const now = Date.now();
   return (
     <>
-      <PageHeader title="Ödevlerim" subtitle={`${assignments.length} ödev`} />
+      <PageHeader
+        title="Ödevlerim"
+        subtitle={`${assignments.length} ödev`}
+        breadcrumbs={[{ label: "Öğrenci", href: "/panel/ogrenci" }, { label: "Ödevlerim" }]}
+      />
       <Card>
         <table className="od-table">
           <thead><tr><th>Başlık</th><th>Ders</th><th>Son teslim</th><th>Gönderim</th><th>Puan</th></tr></thead>

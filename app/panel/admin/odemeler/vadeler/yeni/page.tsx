@@ -39,10 +39,16 @@ export default async function NewPaymentSchedule() {
       <PageHeader
         title="Yeni Vade"
         subtitle="Veli/öğrenci/pakete bağlı bir ödeme planı kaydı oluşturun. Tutar TL cinsinden, kuruşlu yazılabilir."
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Ödemeler", href: "/panel/admin/odemeler" },
+          { label: "Vadeli Ödemeler", href: "/panel/admin/odemeler/vadeler" },
+          { label: "Yeni" },
+        ]}
         right={
           <Link
             href="/panel/admin/odemeler/vadeler"
-            className="text-sm font-medium text-sky-700 hover:underline"
+            className="od-btn ghost sm"
           >
             ← Listeye dön
           </Link>

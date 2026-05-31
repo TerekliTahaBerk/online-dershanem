@@ -7,7 +7,8 @@ import { Card, CardBody, CardHeader } from "@/components/panel/ui/card";
 import { Field, Input, Select, Textarea, FormActions } from "@/components/panel/ui/form";
 import {
   updateCourseAction,
-  toggleCourseActiveAction,
+  archiveCourseAction,
+  reactivateCourseAction,
   deleteCourseAction,
 } from "../../_actions";
 
@@ -39,7 +40,8 @@ export default async function EditCoursePage({
   if (!course) notFound();
 
   const update = updateCourseAction.bind(null, course.id);
-  const toggle = toggleCourseActiveAction.bind(null, course.id, !course.isActive);
+  const archive = archiveCourseAction.bind(null, course.id);
+  const reactivate = reactivateCourseAction.bind(null, course.id);
   const remove = deleteCourseAction.bind(null, course.id);
   const totalUsage = course._count.lessons + course._count.packageCourses + course._count.modules;
 
@@ -114,6 +116,12 @@ export default async function EditCoursePage({
                 <input type="checkbox" name="isActive" defaultChecked={course.isActive} id="isActive" />
                 <label htmlFor="isActive">Aktif</label>
               </div>
+              <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 8 }}>
+                <input type="checkbox" name="allowDuplicate" value="1" id="allowDuplicate" />
+                <label htmlFor="allowDuplicate" className="od-muted" style={{ fontSize: 12 }}>
+                  Aynı başlık &amp; branşa sahip başka bir ders olsa bile yine de kaydet (uyarı sonrası işaretleyin)
+                </label>
+              </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <FormActions>
                   <Link href={`/panel/admin/dersler/${course.id}`} className="od-btn od-btn-ghost">İptal</Link>
@@ -129,11 +137,19 @@ export default async function EditCoursePage({
             <CardHeader title="Tehlikeli bölge" />
             <CardBody>
               <div style={{ display: "grid", gap: 10 }}>
-                <form action={toggle}>
-                  <button type="submit" className="od-btn" style={{ width: "100%" }}>
-                    {course.isActive ? "Pasifleştir" : "Aktifleştir"}
-                  </button>
-                </form>
+                {course.isActive ? (
+                  <form action={archive}>
+                    <button type="submit" className="od-btn" style={{ width: "100%" }}>
+                      Arşivle (pasifleştir)
+                    </button>
+                  </form>
+                ) : (
+                  <form action={reactivate}>
+                    <button type="submit" className="od-btn" style={{ width: "100%" }}>
+                      Yeniden yayınla
+                    </button>
+                  </form>
+                )}
                 <form action={remove}>
                   <button type="submit" className="od-btn" style={{ width: "100%", color: "var(--pd-bad, #b91c1c)" }}>
                     {totalUsage > 0 ? "Pasifleştirerek arşivle" : "Sil"}

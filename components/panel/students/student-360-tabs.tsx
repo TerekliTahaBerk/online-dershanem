@@ -642,7 +642,7 @@ export function StudentFinanceTab({ enrollments, entries }: FinanceProps) {
             <EmptyTabState title="Aktif OD paket yok" />
           ) : (
             <table className="od-table">
-              <thead><tr><th>Paket</th><th>Tutar</th><th>Durum</th><th>Başlangıç</th></tr></thead>
+              <thead><tr><th>Paket</th><th>Tutar</th><th>Durum</th><th>Başlangıç</th><th></th></tr></thead>
               <tbody>
                 {enrollments.map((e) => (
                   <tr key={e.id}>
@@ -650,6 +650,9 @@ export function StudentFinanceTab({ enrollments, entries }: FinanceProps) {
                     <td className="od-mono">{fmtTRY(e.package.price)}</td>
                     <td><Badge tone={e.status === "ACTIVE" ? "ok" : "neutral"}>{e.status}</Badge></td>
                     <td className="od-mono od-muted">{fmtDate(e.startsAt)}</td>
+                    <td style={{ textAlign: "right" }}>
+                      <Link href={`/panel/admin/kayitlar/${e.id}`} className="od-btn ghost sm">Detay →</Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

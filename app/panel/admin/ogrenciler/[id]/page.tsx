@@ -326,6 +326,9 @@ export default async function StudentDetail({
                 ODK detayı →
               </Link>
             ) : null}
+            <Link href={`/panel/admin/kayitlar/yeni?student=${student.id}`} className="od-btn ghost sm">
+              + Kayıt / Paket
+            </Link>
             <Link href={`${baseHref}/duzenle`} className="od-btn dark sm">
               Düzenle
             </Link>

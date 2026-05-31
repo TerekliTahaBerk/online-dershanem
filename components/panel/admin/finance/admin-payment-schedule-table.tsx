@@ -33,64 +33,76 @@ export function AdminPaymentScheduleTable({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
-        Bu filtreyle eşleşen vade kaydı yok.
-      </div>
+      <div className="od-empty-soft">Bu filtreyle eşleşen vade kaydı yok.</div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
-          <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="px-3 py-2">Başlık</th>
-            <th className="px-3 py-2">Öğrenci / Veli</th>
-            <th className="px-3 py-2">Vade</th>
-            <th className="px-3 py-2">Tutar</th>
-            <th className="px-3 py-2">Durum</th>
-            <th className="px-3 py-2">İşlemler</th>
+    <div className="premium-table" style={{ overflowX: "auto" }}>
+      <table className="od-table">
+        <thead>
+          <tr>
+            <th>Başlık</th>
+            <th>Öğrenci / Veli</th>
+            <th>Vade</th>
+            <th>Tutar</th>
+            <th>Durum</th>
+            <th>İşlemler</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200">
+        <tbody>
           {rows.map((row) => {
             const isPaid = row.displayStatus === "PAID";
             const isCancelled = row.displayStatus === "CANCELLED";
+            const isOverdue = row.displayStatus === "OVERDUE";
+            const rowAlertClass = isPaid
+              ? "od-finance-row-alert is-paid"
+              : isCancelled
+                ? "od-finance-row-alert is-cancelled"
+                : isOverdue
+                  ? "od-finance-row-alert is-overdue"
+                  : "";
             return (
-              <tr key={row.id} className={isCancelled ? "bg-slate-50/50" : ""}>
-                <td className="px-3 py-2">
-                  <div className="font-medium text-slate-900">{row.title}</div>
+              <tr key={row.id} className={rowAlertClass}>
+                <td>
+                  <div style={{ fontWeight: 500, color: "#14140F" }}>
+                    {row.title}
+                  </div>
                   {row.packageName ? (
-                    <div className="text-xs text-slate-500">
+                    <div className="od-money-muted" style={{ fontSize: 11.5 }}>
                       {row.packageName}
                     </div>
                   ) : null}
                   {row.note ? (
-                    <div className="text-xs text-slate-500">Not: {row.note}</div>
+                    <div className="od-money-muted" style={{ fontSize: 11.5 }}>
+                      Not: {row.note}
+                    </div>
                   ) : null}
                 </td>
-                <td className="px-3 py-2 text-slate-600">
+                <td className="od-money-muted">
                   {row.studentFullName ?? "—"}
                 </td>
-                <td className="px-3 py-2 text-slate-600">{dueLabel(row)}</td>
-                <td className="px-3 py-2">
-                  <div className="font-semibold text-slate-900">
+                <td className={isOverdue ? "od-money-negative" : "od-money-muted"}>
+                  {dueLabel(row)}
+                </td>
+                <td>
+                  <div style={{ fontWeight: 600, color: "#14140F" }}>
                     {formatMoneyTRY(row.amountKurus)}
                   </div>
                   {row.paidAmountKurus > 0 ? (
-                    <div className="text-xs text-slate-500">
+                    <div className="od-money-muted" style={{ fontSize: 11.5 }}>
                       Ödenen: {formatMoneyTRY(row.paidAmountKurus)}
                     </div>
                   ) : null}
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   <PaymentStatusBadge status={row.displayStatus} />
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   {isPaid || isCancelled ? (
-                    <span className="text-xs text-slate-400">—</span>
+                    <span className="od-money-muted">—</span>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="od-finance-inline-actions">
                       <button
                         type="button"
                         disabled={pending}
@@ -107,7 +119,7 @@ export function AdminPaymentScheduleTable({
                             markPaymentScheduleItemPaidAction(row.id, fd),
                           );
                         }}
-                        className="rounded-md bg-emerald-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                        className="od-btn dark sm"
                       >
                         Ödendi
                       </button>
@@ -128,7 +140,7 @@ export function AdminPaymentScheduleTable({
                             markPaymentScheduleItemPartialAction(row.id, fd),
                           );
                         }}
-                        className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                        className="od-btn ghost sm"
                       >
                         Kısmi
                       </button>
@@ -147,7 +159,8 @@ export function AdminPaymentScheduleTable({
                             cancelPaymentScheduleItemAction(row.id, fd),
                           );
                         }}
-                        className="rounded-md border border-rose-300 bg-white px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-60"
+                        className="od-btn ghost sm"
+                        style={{ color: "var(--pd-pastel-blush-ink, #B25758)" }}
                       >
                         İptal
                       </button>

@@ -58,6 +58,7 @@ export default async function StudentLibraryPage({
       <PageHeader
         title="Kütüphane"
         subtitle="Sınıflarınız ve derslerinizle paylaşılan materyaller"
+        breadcrumbs={[{ label: "Öğrenci", href: "/panel/ogrenci" }, { label: "Kütüphane" }]}
         right={<Badge tone="accent">{materials.length} kayıt</Badge>}
       />
 
@@ -81,7 +82,7 @@ export default async function StudentLibraryPage({
             <option value="7">Son 7 gün</option>
             <option value="30">Son 30 gün</option>
           </select>
-          <button type="submit" className="od-btn od-btn-sm">Filtrele</button>
+          <button type="submit" className="od-btn ghost sm">Filtrele</button>
         </form>
       </Card>
 
@@ -90,7 +91,7 @@ export default async function StudentLibraryPage({
           <MaterialsList
             materials={materials}
             emptyTitle="Henüz materyal yok"
-            emptyDescription="Sınıf veya ders öğretmeniniz materyal paylaştığında burada görünür."
+            emptyDescription="Henüz paylaşılan materyal yok."
           />
         </CardBody>
       </Card>

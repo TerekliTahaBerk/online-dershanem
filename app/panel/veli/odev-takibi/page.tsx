@@ -20,7 +20,11 @@ export default async function ParentAssignments() {
   });
   return (
     <>
-      <PageHeader title="Ödev takibi" subtitle={`${subs.length} kayıt`} />
+      <PageHeader
+        title="Ödev takibi"
+        subtitle={`${subs.length} kayıt`}
+        breadcrumbs={[{ label: "Veli", href: "/panel/veli" }, { label: "Ödev takibi" }]}
+      />
       <Card>
         <table className="od-table">
           <thead><tr><th>Çocuk</th><th>Ödev</th><th>Ders</th><th>Son teslim</th><th>Durum</th><th>Puan</th></tr></thead>

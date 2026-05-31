@@ -13,7 +13,8 @@ export default async function ParentProfile() {
     <>
       <PageHeader
         title="Profilim"
-        right={<Link href="/panel/veli/profilim/duzenle" className="od-btn od-btn-primary od-btn-sm">Düzenle</Link>}
+        breadcrumbs={[{ label: "Veli", href: "/panel/veli" }, { label: "Profilim" }]}
+        right={<Link href="/panel/veli/profilim/duzenle" className="od-btn dark sm">Düzenle</Link>}
       />
       <Card>
         <CardHeader title={parent.fullName} subtitle={ctx.email ?? "—"} />

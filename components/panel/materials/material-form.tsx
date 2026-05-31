@@ -167,10 +167,10 @@ export function MaterialForm({ classrooms, courses }: Props) {
       </div>
 
       <div className="od-row" style={{ gap: 8, justifyContent: "flex-end" }}>
-        <Link href="/panel/ogretmen/materyaller" className="od-btn od-btn-ghost od-btn-sm">
+        <Link href="/panel/ogretmen/materyaller" className="od-btn ghost sm">
           Vazgeç
         </Link>
-        <button type="submit" className="od-btn od-btn-primary od-btn-sm" disabled={pending}>
+        <button type="submit" className="od-btn dark sm" disabled={pending}>
           {pending ? "Kaydediliyor…" : "Kaydet"}
         </button>
       </div>

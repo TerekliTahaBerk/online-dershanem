@@ -1,6 +1,7 @@
 /**
  * Phase 2 / Session 11 — Per-teacher payroll roll-up table.
  * Shown on the admin period detail page.
+ * Stage 3H: migrated to v2 `premium-table` + `od-table`.
  */
 import Link from "next/link";
 import {
@@ -18,28 +19,28 @@ export function PayrollTeacherTable({
 }) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
+      <div className="od-empty-soft">
         Bu dönem için hakediş verisi yok. Önce &quot;Üret&quot; butonuna basın.
       </div>
     );
   }
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50">
-          <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="px-3 py-2">Öğretmen</th>
-            <th className="px-3 py-2">Ders</th>
-            <th className="px-3 py-2">Saat</th>
-            <th className="px-3 py-2">Tahmini</th>
-            <th className="px-3 py-2">Onaylı</th>
-            <th className="px-3 py-2">Ödenen</th>
-            <th className="px-3 py-2">Eksik</th>
-            <th className="px-3 py-2">Durum</th>
-            <th className="px-3 py-2">İşlem</th>
+    <div className="premium-table" style={{ overflowX: "auto" }}>
+      <table className="od-table">
+        <thead>
+          <tr>
+            <th>Öğretmen</th>
+            <th>Ders</th>
+            <th>Saat</th>
+            <th>Tahmini</th>
+            <th>Onaylı</th>
+            <th>Ödenen</th>
+            <th>Eksik</th>
+            <th>Durum</th>
+            <th>İşlem</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200">
+        <tbody>
           {rows.map((row) => {
             const hours = (row.totalMinutes / 60).toLocaleString("tr-TR", {
               maximumFractionDigits: 1,
@@ -47,40 +48,36 @@ export function PayrollTeacherTable({
             const issueCount = row.rateMissingCount + row.attendanceMissingCount;
             return (
               <tr key={row.teacherId}>
-                <td className="px-3 py-2 font-medium text-slate-900">
-                  {row.teacherName}
-                </td>
-                <td className="px-3 py-2 text-slate-600">{row.lessonCount}</td>
-                <td className="px-3 py-2 text-slate-600">{hours} sa</td>
-                <td className="px-3 py-2 font-semibold text-slate-900">
+                <td style={{ fontWeight: 500 }}>{row.teacherName}</td>
+                <td className="od-money-muted">{row.lessonCount}</td>
+                <td className="od-money-muted">{hours} sa</td>
+                <td className="od-money-positive">
                   {formatPayrollMoney(row.estimatedKurus)}
                 </td>
-                <td className="px-3 py-2 text-slate-700">
-                  {formatPayrollMoney(row.approvedKurus)}
-                </td>
-                <td className="px-3 py-2 text-emerald-700">
+                <td>{formatPayrollMoney(row.approvedKurus)}</td>
+                <td className="od-money-positive">
                   {formatPayrollMoney(row.paidKurus)}
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   {issueCount > 0 ? (
-                    <span className="text-amber-700">
+                    <span className="od-finance-flag-chip">
                       {row.rateMissingCount > 0 ? `Ücret: ${row.rateMissingCount}` : ""}
-                      {row.rateMissingCount > 0 && row.attendanceMissingCount > 0 ? " • " : ""}
+                      {row.rateMissingCount > 0 && row.attendanceMissingCount > 0 ? " · " : ""}
                       {row.attendanceMissingCount > 0
                         ? `Yoklama: ${row.attendanceMissingCount}`
                         : ""}
                     </span>
                   ) : (
-                    <span className="text-slate-400">—</span>
+                    <span className="od-money-muted">—</span>
                   )}
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   <PayrollStatusBadge status={row.status} />
                 </td>
-                <td className="px-3 py-2">
+                <td>
                   <Link
                     href={`/panel/admin/ogretmen-hakedisleri/${periodId}?teacherId=${row.teacherId}`}
-                    className="text-xs font-medium text-sky-700 hover:underline"
+                    className="od-btn ghost sm"
                   >
                     Detay →
                   </Link>

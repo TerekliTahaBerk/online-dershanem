@@ -25,7 +25,7 @@ export async function StudyRoomRelatedMaterials({ studentId, courseId, courseTit
         title="Bu derse ait materyaller"
         subtitle={courseTitle ?? undefined}
         right={
-          <Link href="/panel/ogrenci/kutuphane" className="od-btn od-btn-ghost od-btn-sm">
+          <Link href="/panel/ogrenci/kutuphane" className="od-btn ghost sm">
             Kütüphane →
           </Link>
         }

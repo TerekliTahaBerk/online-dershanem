@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/panel-access";
+import { PageHeader } from "@/components/panel/ui/page-header";
 import { getTeacherCompensationRules } from "@/lib/panel/teacher-payroll";
 import { CompensationRuleForm } from "@/components/panel/admin/finance/compensation-rule-form";
 import { CompensationRuleTable } from "@/components/panel/admin/finance/compensation-rule-table";
@@ -31,23 +32,24 @@ export default async function AdminCompensationRulesPage() {
   ]);
 
   return (
-    <div className="space-y-6 p-6">
-      <header>
-        <Link
-          href="/panel/admin/ogretmen-hakedisleri"
-          className="text-xs text-slate-500 hover:text-slate-700"
-        >
-          ← Hakediş Hub
-        </Link>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-          Saatlik Ücret Kuralları
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Bir öğretmen için <strong>(öğretmen, ders, sınıf)</strong> üçlüsünden
-          en spesifik aktif kural uygulanır. Eşleşme yoksa hesaplama
-          ücret-eksik olarak işaretlenir; sistem tahmin yapmaz.
-        </p>
-      </header>
+    <div className="space-y-6">
+      <PageHeader
+        title="Saatlik Ücret Kuralları"
+        subtitle="Bir öğretmen için (öğretmen, ders, sınıf) üçlüsünden en spesifik aktif kural uygulanır. Eşleşme yoksa hesaplama ücret-eksik olarak işaretlenir; sistem tahmin yapmaz."
+        breadcrumbs={[
+          { label: "Yönetim", href: "/panel/admin" },
+          { label: "Öğretmen Hakedişleri", href: "/panel/admin/ogretmen-hakedisleri" },
+          { label: "Saatlik Ücret Kuralları" },
+        ]}
+        right={
+          <Link
+            href="/panel/admin/ogretmen-hakedisleri"
+            className="od-btn ghost sm"
+          >
+            ← Hakediş Hub
+          </Link>
+        }
+      />
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_3fr]">
         <div className="space-y-3">

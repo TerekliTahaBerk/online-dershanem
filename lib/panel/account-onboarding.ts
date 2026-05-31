@@ -223,10 +223,10 @@ export function summarizeOnboardingChecklist(items: OnboardingCheckItem[]): Onbo
 // ─── Duplicate detection ─────────────────────────────────────────────────────
 
 export type DuplicateMatch = {
-  field: "phoneKey" | "email" | "user.email";
+  field: "phoneKey" | "email" | "user.email" | "phone" | "fullName";
   existingId: string;
   existingLabel: string;
-  entity: "Student" | "Parent" | "User";
+  entity: "Student" | "Parent" | "User" | "Teacher";
 };
 
 /**
@@ -924,4 +924,114 @@ export function getPostLoginRedirectForRole(role: UserRole): string {
     case "STUDENT": return "/panel/ogrenci";
     case "PARENT":  return "/panel/veli";
   }
+}
+
+// ─── Phase 3 / Session 4 — Teacher onboarding helpers ────────────────────────
+
+/**
+ * Phase 3 / Session 4 — duplicate detection for teachers.
+ *
+ * Teacher.email is @unique; Teacher.phone is NOT unique (free string). So we:
+ *   - hard-block on Teacher.email match
+ *   - hard-block on User.email (would block account creation)
+ *   - soft-warn on Teacher.phone substring match
+ *   - soft-warn on identical Teacher.fullName (case-insensitive)
+ */
+export async function findTeacherDuplicates(opts: {
+  phone: string | null;
+  email: string | null;
+  fullName: string | null;
+  excludeTeacherId?: string;
+}): Promise<DuplicateMatch[]> {
+  const { phone, email, fullName, excludeTeacherId } = opts;
+  const matches: DuplicateMatch[] = [];
+
+  if (email) {
+    const lower = email.toLowerCase();
+    const t = await prisma.teacher.findUnique({
+      where: { email: lower },
+      select: { id: true, fullName: true },
+    });
+    if (t && t.id !== excludeTeacherId) {
+      matches.push({ field: "email", existingId: t.id, existingLabel: t.fullName, entity: "Teacher" });
+    }
+    const u = await prisma.user.findUnique({
+      where: { email: lower },
+      select: { id: true, name: true, email: true },
+    });
+    if (u) {
+      matches.push({
+        field: "user.email",
+        existingId: u.id,
+        existingLabel: u.name ?? u.email,
+        entity: "User",
+      });
+    }
+  }
+
+  if (phone && phone.trim().length >= 6) {
+    const ts = await prisma.teacher.findMany({
+      where: {
+        phone: { contains: phone.trim() },
+        ...(excludeTeacherId ? { NOT: { id: excludeTeacherId } } : {}),
+      },
+      select: { id: true, fullName: true },
+      take: 5,
+    });
+    for (const t of ts) {
+      matches.push({ field: "phone", existingId: t.id, existingLabel: t.fullName, entity: "Teacher" });
+    }
+  }
+
+  if (fullName && fullName.trim().length >= 3) {
+    const ts = await prisma.teacher.findMany({
+      where: {
+        fullName: { equals: fullName.trim(), mode: "insensitive" },
+        ...(excludeTeacherId ? { NOT: { id: excludeTeacherId } } : {}),
+      },
+      select: { id: true, fullName: true },
+      take: 5,
+    });
+    for (const t of ts) {
+      // de-dupe with email/phone hits
+      if (matches.some((m) => m.entity === "Teacher" && m.existingId === t.id)) continue;
+      matches.push({ field: "fullName", existingId: t.id, existingLabel: t.fullName, entity: "Teacher" });
+    }
+  }
+
+  return matches;
+}
+
+/**
+ * Phase 3 / Session 4 — Creates a `User` row (role=TEACHER) for a Teacher
+ * that doesn't have one yet, optionally issuing an invite token or a
+ * temporary password. Mirrors `createUserAccountForParent`.
+ */
+export async function createUserAccountForTeacher(opts: {
+  teacherId: string;
+  email: string;
+  fullName: string;
+  mode: AccountCreateMode;
+  actorUserId: string;
+}): Promise<AccountCreateResult> {
+  const { teacherId, mode, actorUserId } = opts;
+  const email = opts.email.toLowerCase().trim();
+  const fullName = opts.fullName.trim();
+
+  const teacher = await prisma.teacher.findUnique({
+    where: { id: teacherId },
+    select: { id: true, userId: true, fullName: true },
+  });
+  if (!teacher) throw new Error("Öğretmen bulunamadı");
+  if (teacher.userId) throw new Error("Bu öğretmenin hesabı zaten var");
+  if (mode === "none") return { ok: true, mode: "none", userId: null };
+  if (!email) throw new Error("Email zorunlu (hesap oluşturmak için)");
+
+  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (existing) throw new Error(`Bu email zaten kullanılıyor (User ${existing.id})`);
+
+  if (mode === "invite") {
+    return createWithInvite({ teacherId, email, fullName, actorUserId, role: "TEACHER" });
+  }
+  return createWithTempPassword({ teacherId, email, fullName, actorUserId, role: "TEACHER" });
 }

@@ -25,6 +25,11 @@ export default async function NewMaterialPage() {
       <PageHeader
         title="Yeni materyal"
         subtitle="URL ile bağlantı, video veya not paylaşın"
+        breadcrumbs={[
+          { label: "Öğretmen", href: "/panel/ogretmen" },
+          { label: "Materyaller", href: "/panel/ogretmen/materyaller" },
+          { label: "Yeni" },
+        ]}
       />
       <Card>
         <CardBody>

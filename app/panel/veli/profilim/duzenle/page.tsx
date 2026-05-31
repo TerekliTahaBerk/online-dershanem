@@ -16,7 +16,12 @@ export default async function EditParentProfile() {
     <>
       <PageHeader
         title="Profili düzenle"
-        right={<Link href="/panel/veli/profilim" className="od-btn od-btn-ghost od-btn-sm">← Geri</Link>}
+        breadcrumbs={[
+          { label: "Veli", href: "/panel/veli" },
+          { label: "Profilim", href: "/panel/veli/profilim" },
+          { label: "Düzenle" },
+        ]}
+        right={<Link href="/panel/veli/profilim" className="od-btn ghost sm">← Geri</Link>}
       />
       <Card>
         <CardBody>

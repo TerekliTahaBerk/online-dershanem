@@ -112,7 +112,7 @@ export function MaterialAttachmentPicker(props: Props) {
                 href={openUrl}
                 target={openUrl.startsWith("http") ? "_blank" : undefined}
                 rel={openUrl.startsWith("http") ? "noreferrer noopener" : undefined}
-                className="od-btn od-btn-ghost od-btn-sm"
+                className="od-btn ghost sm"
               >
                 Önizle
               </Link>
@@ -146,7 +146,7 @@ export function MaterialAttachmentPicker(props: Props) {
       ) : null}
       {checkboxes("materialIds")}
       <div>
-        <button type="submit" className="od-btn od-btn-primary od-btn-sm">
+        <button type="submit" className="od-btn dark sm">
           {props.submitLabel ?? "Seçilenleri ekle"}
         </button>
       </div>

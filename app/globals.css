@@ -5159,3 +5159,656 @@ body:has(.od-panel-app) .od-panel-app {
   }
 }
 /* End — STAGE 3F admin lists + wizards */
+
+/* ============================================================
+   STAGE 3G — Finance / Payroll / Reports (visual-only, additive)
+   Pastel money tiles, soft warning bands, payroll period cards.
+   Light-first; scoped to .od-panel-app to avoid leakage.
+   ============================================================ */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) {
+  /* Finance KPI grid -------------------------------------------------- */
+  .od-finance-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  /* Subtle finance surface card -------------------------------------- */
+  .od-finance-card {
+    background: #FFFFFF;
+    border: 1px solid #ECEAE3;
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .od-finance-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .od-finance-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #14140F;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .od-finance-card-meta {
+    font-size: 11px;
+    color: #9B9B95;
+  }
+
+  /* Soft warning / disclaimer band ------------------------------------ */
+  .od-finance-warning {
+    background: #FFF8E1;
+    border: 1px solid #F2E2A8;
+    color: #6B5512;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .od-finance-warning strong {
+    color: #4F3D08;
+    font-weight: 600;
+  }
+
+  /* Money tone helpers (numeric emphasis only) ------------------------ */
+  .od-money-positive { color: #2E6B4F; font-weight: 600; }
+  .od-money-negative { color: #B25758; font-weight: 600; }
+  .od-money-muted    { color: #6F6F6A; }
+
+  /* Finance reading table ------------------------------------------- */
+  .od-finance-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+  }
+  .od-finance-table thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9B9B95;
+    padding: 8px 10px;
+    border-bottom: 1px solid #ECEAE3;
+    background: transparent;
+  }
+  .od-finance-table tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #F4F3EF;
+    color: #14140F;
+  }
+  .od-finance-table tbody tr:last-child td { border-bottom: none; }
+
+  /* Payroll period switcher pill row -------------------------------- */
+  .od-payroll-period-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .od-payroll-period-strip-label {
+    font-size: 11px;
+    color: #9B9B95;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 4px;
+  }
+  .od-payroll-period-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 4px 12px;
+    border-radius: 999px;
+    border: 1px solid #ECEAE3;
+    background: #FFFFFF;
+    font-size: 12px;
+    color: #6F6F6A;
+    transition: background .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .od-payroll-period-pill:hover {
+    background: #FAFAF9;
+    color: #14140F;
+  }
+  .od-payroll-period-pill.is-active {
+    background: #14140F;
+    border-color: #14140F;
+    color: #FFFFFF;
+  }
+  .od-payroll-period-pill.is-active:hover {
+    background: #242220;
+  }
+
+  /* Payroll period card (overview "hub") ----------------------------- */
+  .od-payroll-period-card {
+    background: #FFFFFF;
+    border: 1px solid #ECEAE3;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .od-payroll-period-card .spacer { flex: 1; }
+
+  /* Period status chip mini-badge ----------------------------------- */
+  .od-payroll-status-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #6F6F6A;
+  }
+  .od-payroll-status-row strong {
+    color: #14140F;
+    font-weight: 600;
+  }
+}
+/* End — STAGE 3G finance / payroll / reports */
+
+/* ============================================================
+   STAGE 3H — Finance components polish (visual-only, additive)
+   Form grids, soft row alerts, calm activity timeline.
+   Light-first; scoped to .od-panel-app.
+   ============================================================ */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) {
+  /* Form grid for finance/payroll create/edit forms ----------------- */
+  .od-finance-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .od-finance-form-grid .full {
+    grid-column: 1 / -1;
+  }
+  .od-finance-form-grid label {
+    display: block;
+    font-size: 12.5px;
+    color: #14140F;
+  }
+  .od-finance-form-grid label > span {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #6F6F6A;
+    margin-bottom: 4px;
+    letter-spacing: 0.01em;
+  }
+  .od-finance-form-grid input[type="text"],
+  .od-finance-form-grid input[type="date"],
+  .od-finance-form-grid input:not([type]),
+  .od-finance-form-grid input[inputmode],
+  .od-finance-form-grid select,
+  .od-finance-form-grid textarea {
+    width: 100%;
+    border: 1px solid #ECEAE3;
+    border-radius: 10px;
+    background: #FFFFFF;
+    padding: 8px 11px;
+    font-size: 13px;
+    color: #14140F;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .od-finance-form-grid input:focus,
+  .od-finance-form-grid select:focus,
+  .od-finance-form-grid textarea:focus {
+    outline: none;
+    border-color: #C9C7BE;
+    box-shadow: 0 0 0 3px rgba(20, 20, 15, 0.05);
+  }
+  .od-finance-form-grid textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  .od-finance-form-grid .checkbox-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #14140F;
+  }
+
+  /* Inline action buttons row inside tables/lists ------------------- */
+  .od-finance-inline-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  /* Row tinting for receivables / payment schedule ------------------ */
+  .od-finance-row-alert.is-overdue td,
+  tr.od-finance-row-alert.is-overdue td {
+    background: var(--pd-pastel-blush-bg, #FBE9E9);
+  }
+  .od-finance-row-alert.is-paid td,
+  tr.od-finance-row-alert.is-paid td {
+    background: var(--pd-pastel-mint-bg, #E5F2EB);
+  }
+  .od-finance-row-alert.is-upcoming td,
+  tr.od-finance-row-alert.is-upcoming td {
+    background: var(--pd-pastel-yellow-bg, #FAF1D5);
+  }
+  .od-finance-row-alert.is-cancelled td,
+  tr.od-finance-row-alert.is-cancelled td {
+    background: #F8F7F3;
+    color: #9B9B95;
+  }
+
+  /* Calm activity timeline list ------------------------------------- */
+  .od-finance-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .od-finance-timeline > li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid #F4F3EF;
+  }
+  .od-finance-timeline > li:last-child {
+    border-bottom: none;
+  }
+  .od-finance-timeline-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .od-finance-timeline-title {
+    font-size: 13px;
+    color: #14140F;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .od-finance-timeline-meta {
+    font-size: 11.5px;
+    color: #9B9B95;
+    margin-top: 2px;
+  }
+  .od-finance-timeline-amount {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    font-feature-settings: "tnum";
+    text-align: right;
+  }
+
+  /* Soft warning chip used for missing-rate / attendance flags ------ */
+  .od-finance-flag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--pd-pastel-yellow-bg, #FAF1D5);
+    color: var(--pd-pastel-yellow-ink, #6B5512);
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+}
+/* End — STAGE 3H finance components polish */
+
+
+/* ─────────────────────────────────────────────────────────────────────
+ * STAGE 3I — Homework / Materials / Inbox polish
+ *
+ *  • Adds aliases for legacy hyphenated button classes
+ *      (.od-btn-primary / .od-btn-ghost / .od-btn-sm) so existing pages
+ *      pick up v2 styling without mass class-rename churn.
+ *  • Introduces shared visual utilities for task boards, material grids
+ *      and inbox lists. All scoped to `body:has(.od-panel-app)`.
+ *  • Light-first; dark refinements deferred.
+ *  • No layout regressions to non-panel surfaces.
+ * ───────────────────────────────────────────────────────────────────── */
+
+/* Legacy hyphenated button aliases — map onto the working v2 modifiers.
+   Scoped to panel so we don't disturb marketing/auth styling. */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.od-btn-primary,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn-primary {
+  background: #14140F;
+  color: #FFFFFF;
+  border-color: #14140F;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.od-btn-primary:hover,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn-primary:hover {
+  background: #000000;
+  border-color: #000000;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.od-btn-ghost,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--pd-ink);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.od-btn-ghost:hover,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn-ghost:hover {
+  background: var(--pd-bg-subtle);
+  border-color: var(--pd-line);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn.od-btn-sm,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-btn-sm {
+  padding: 5px 9px;
+  font-size: 12px;
+  border-radius: 999px;
+  height: auto;
+}
+
+/* Shared content rows */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-content-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--pd-muted);
+  align-items: center;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-content-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── Task board / homework cards ───────────────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-board {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: flex-start;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-column {
+  border: 1px solid var(--pd-line);
+  border-radius: 14px;
+  background: var(--pd-bg-subtle);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-column-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 2px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-column-header strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-card {
+  background: #FFFFFF;
+  border: 1px solid var(--pd-line);
+  border-radius: 12px;
+  padding: 11px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 140ms ease, border-color 140ms ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-card:hover {
+  border-color: var(--pd-line-2);
+  box-shadow: 0 6px 18px rgba(20, 20, 15, 0.05);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-card a.od-task-title {
+  color: var(--pd-ink);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.35;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-card a.od-task-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pd-bg-muted, var(--pd-line));
+  overflow: hidden;
+  position: relative;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-progress > .pct {
+  position: absolute;
+  inset: 0;
+  background: var(--pd-pastel-mint-ink);
+  opacity: 0.85;
+  transition: width 200ms ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-progress > .graded {
+  position: absolute;
+  inset: 0;
+  background: var(--pd-pastel-mint-ink);
+  transition: width 200ms ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-task-empty {
+  font-size: 12px;
+  color: var(--pd-muted);
+  padding: 18px 8px;
+  text-align: center;
+  border: 1px dashed var(--pd-line);
+  border-radius: 10px;
+  background: #FFFFFF;
+}
+
+/* ── Material grid / cards ─────────────────────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-material-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-material-card {
+  border: 1px solid var(--pd-line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-material-card:hover {
+  border-color: var(--pd-line-2);
+  box-shadow: 0 6px 16px rgba(20, 20, 15, 0.04);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-material-card.is-archived,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-material-card.is-draft {
+  background: var(--pd-bg-subtle);
+  opacity: 0.85;
+}
+
+/* ── Inbox list ────────────────────────────────────────────────────── */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-item {
+  display: grid;
+  grid-template-columns: 4px 1fr auto;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1px solid var(--pd-line);
+  border-radius: 12px;
+  background: #FFFFFF;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-item:hover {
+  border-color: var(--pd-line-2);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-item .od-inbox-accent {
+  align-self: stretch;
+  border-radius: 999px;
+  background: transparent;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-item.od-inbox-unread {
+  background: var(--pd-pastel-sky-bg);
+  border-color: transparent;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-item.od-inbox-unread .od-inbox-accent {
+  background: var(--pd-pastel-sky-ink);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-item.od-inbox-unread .od-inbox-title {
+  font-weight: 600;
+  color: var(--pd-ink);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-item:not(.od-inbox-unread) {
+  opacity: 0.78;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--pd-ink);
+  line-height: 1.35;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-body {
+  font-size: 12px;
+  color: var(--pd-muted);
+  line-height: 1.45;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--pd-muted);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-inbox-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Segmented filter pills (inbox views) */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-segment {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--pd-line);
+  border-radius: 999px;
+  background: var(--pd-bg-subtle);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-segment .od-segment-item {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pd-muted);
+  cursor: pointer;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-segment .od-segment-item.is-active {
+  background: #14140F;
+  color: #FFFFFF;
+  border-color: #14140F;
+}
+
+/* End — STAGE 3I homework / materials / inbox polish */
+
+
+/* ─────────────────────────────────────────────────────────────────────
+ * STAGE 3J — Final visual sweep: detail / forms / settings polish
+ *
+ *  • Adds shared form-card + form-grid utilities so remaining legacy
+ *      Tailwind forms (Tailwind raw inputs / slate-300 borders) can be
+ *      migrated with minimal markup churn.
+ *  • Adds a soft-alert utility for muted disclaimers.
+ *  • Light-first; dark refinements deferred.
+ *  • Scoped to `body:has(.od-panel-app)` — no public-page regression.
+ * ───────────────────────────────────────────────────────────────────── */
+
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-card {
+  background: #FFFFFF;
+  border: 1px solid var(--pd-line);
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+  display: grid;
+  gap: 12px;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  align-items: end;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid .full {
+  grid-column: 1 / -1;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--pd-muted);
+  font-weight: 500;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid label > span {
+  color: var(--pd-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid input,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid select,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid textarea {
+  background: #FFFFFF;
+  border: 1px solid var(--pd-line);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--pd-ink);
+  width: 100%;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid input:focus,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid select:focus,
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-form-grid textarea:focus {
+  outline: none;
+  border-color: #14140F;
+  box-shadow: 0 0 0 3px rgba(20, 20, 15, 0.08);
+}
+
+/* Soft disclaimer / info alert */
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-soft-alert {
+  border: 1px solid var(--pd-line);
+  background: var(--pd-bg-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: var(--pd-muted);
+  line-height: 1.5;
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-soft-alert strong {
+  color: var(--pd-ink);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-soft-alert.is-info {
+  background: var(--pd-pastel-sky-bg);
+  border-color: transparent;
+  color: var(--pd-pastel-sky-ink);
+}
+:root:not([data-theme="dark"]) body:has(.od-panel-app) .od-soft-alert.is-info strong {
+  color: var(--pd-pastel-sky-ink);
+}
+
+/* End — STAGE 3J final sweep */

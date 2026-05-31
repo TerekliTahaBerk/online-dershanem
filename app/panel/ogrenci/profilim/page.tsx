@@ -16,7 +16,8 @@ export default async function StudentProfile() {
       <PageHeader
         title="Profilim"
         subtitle={student.fullName}
-        right={<Link href="/panel/ogrenci/profilim/duzenle" className="od-btn od-btn-primary od-btn-sm">Düzenle</Link>}
+        breadcrumbs={[{ label: "Öğrenci", href: "/panel/ogrenci" }, { label: "Profilim" }]}
+        right={<Link href="/panel/ogrenci/profilim/duzenle" className="od-btn dark sm">Düzenle</Link>}
       />
       <div className="od-grid g-2">
         <Card>
