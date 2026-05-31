@@ -5,7 +5,74 @@
 > Use a freshly created test account per role where possible (clean up
 > at the end via `DELETE FROM "User" WHERE email LIKE 'smoke-%'`).
 
-Last updated: Session 19 (2026-05-31).
+Last updated: Phase 3 Session 14 RC (2026-05-31).
+
+---
+
+## Phase 3 RC Smoke Path (run first, post-deploy, ≤ 90 min)
+
+> Mandatory before sign-off on Phase 3 production. Each row references
+> the detailed § for full re-validation if a check is suspicious. Use
+> seeded test accounts on staging or `smoke-*@…` accounts on prod.
+
+### Anonymous (3 checks)
+
+- [ ] `/` home renders without console errors. (§1.1)
+- [ ] `/giris` login form renders, invalid creds show
+      Turkish error, no stack trace. (§1.1)
+- [ ] `/davet/this-token-is-not-real` shows the
+      "geçersiz davet" page (no 500). (§1.1)
+
+### Admin (10 checks)
+
+- [ ] Login → lands on `/panel/admin` dashboard. (§1.2)
+- [ ] `/panel/admin/ogrenciler/yeni` creates a student via wizard;
+      shows generated invite URL. (§1.2)
+- [ ] Re-issue invite from student detail page; new token differs.
+- [ ] Force password change on a parent user; that user is bounced
+      to `/panel/sifre-degistir` on next login. (§1.2)
+- [ ] Bulk classroom assign (≥ 2 students) returns
+      `succeeded > 0`, idempotent on re-run. (§1.2)
+- [ ] Bulk ODK access tag grant returns
+      `succeeded + skipped == totalIds` on re-run. (§1.2.c)
+- [ ] Import wizard: dry-run a 5-row CSV, fix one error, commit;
+      `committedCount == validCount`. (§1.2)
+- [ ] Export students XLSX; open file; verify no `passwordHash`,
+      no `userInviteToken`, no JWT-shaped strings. (§1.2)
+- [ ] Enrollment wizard creates `Enrollment` + `PaymentScheduleItem`
+      rows in `PENDING`. (§1.6)
+- [ ] Audit log (`/panel/admin/audit`) shows entries for the
+      mutations above. (§1.2)
+
+### Teacher (4 checks)
+
+- [ ] Login → lands on `/panel/ogretmen`. (§1.3)
+- [ ] Assigned classroom detail loads; assignment list renders.
+- [ ] Unassigned classroom URL returns 404 (manual URL tweak).
+- [ ] No `/panel/admin/*` route is reachable (returns 403/redirect).
+
+### Parent (5 checks)
+
+- [ ] Accept invite via `/davet/<token>` → forced
+      `/panel/sifre-degistir` → set new password → `/panel/veli`. (§1.5)
+- [ ] Sees only linked child(ren); no other students leak.
+- [ ] `/panel/veli/odemeler` shows own dues only; **no
+      "Ödeme al / mark paid" button** present.
+- [ ] `/panel/veli/faturalar` returns < 500.
+- [ ] No `/panel/admin/*` route reachable.
+
+### Student (3 checks)
+
+- [ ] Login → lands on `/panel/ogrenci`. (§1.4)
+- [ ] `/panel/ogrenci/odk` shows assigned ODK packages.
+- [ ] `/panel/ogrenci/odevler` lists own assignments only;
+      submission for an unrelated assignment is rejected.
+
+### Sign-off
+
+- [ ] All 25 checks above ticked.
+- [ ] Phase 3 RC sign-off recorded in `docs/release-notes-phase-3.md
+      > Final Go/No-Go`.
 
 ---
 

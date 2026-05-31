@@ -1,10 +1,37 @@
-# Production Deploy Checklist — Phase 2 (2026-05-30)
+# Production Deploy Checklist — Phase 3 RC (2026-05-31)
 
-> Verbatim, paranoid checklist for deploying `onlinedershanem` to Vercel
-> after a Phase 2 session. Tick every box _before_ promoting a build to
-> production. If anything fails, **STOP** and roll back rather than guess.
+> Verbatim, paranoid checklist for deploying `onlinedershanem` to Vercel.
+> Tick every box _before_ promoting a build to production. If anything
+> fails, **STOP** and roll back rather than guess.
 
-Last updated: Session 13 (2026-05-30).
+Last updated: Phase 3 Session 14 RC (2026-05-31). See
+`docs/release-notes-phase-3.md` for the GO/NO-GO decision matrix.
+
+---
+
+## 0.A · Required environment variables (production)
+
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | ✅ | Postgres connection (pooled). Used at runtime. |
+| `DIRECT_URL` | ✅ | Direct connection used by `prisma migrate deploy`. |
+| `NEXTAUTH_SECRET` | ✅ | ≥32 chars. Rotating invalidates all sessions. |
+| `NEXTAUTH_URL` | ✅ | Canonical URL, e.g. `https://onlinedershanem.com`. |
+| `CRON_SECRET` | ✅ | Required for `/api/cron/*` Bearer auth. Without this, runner falls open in dev only — **must** be set in prod. |
+| `BLOB_READ_WRITE_TOKEN` | ⚠ if used | Vercel Blob; only if attachments are enabled. |
+| `RESEND_API_KEY` / `SENDGRID_API_KEY` | ⚠ optional | Email delivery. Phase 3 admin flows do not depend on it. |
+| `E2E_PASSWORD` / `E2E_DATABASE_URL` | ❌ prod | Staging only — drives `db:seed:e2e` + Playwright. |
+
+## 0.B · Phase 3 RC pre-deploy gates (staging)
+
+These cannot run on a dev box and **must** pass on staging before
+promoting to production:
+
+- [ ] `npm run scan:links` exits 0 against the staging URL.
+- [ ] `npm run test:e2e:smoke` exits 0 against staging
+      (with `PLAYWRIGHT_BASE_URL` + seeded test DB).
+- [ ] `docs/manual-smoke-checklist.md > Phase 3 RC Smoke Path`
+      run end-to-end (≤ 90 min, all roles).
 
 ---
 
@@ -224,5 +251,32 @@ passes against production.
 | ---- | ---- | ---- |
 | Engineer running deploy | | |
 | Reviewer (post-smoke) | | |
+
+## Pre-deploy E2E gate (Phase 3 / Session 11)
+
+Detay: [`docs/e2e-test-plan.md`](./e2e-test-plan.md).
+
+- [ ] Test DB seed: `DATABASE_URL=$E2E_DATABASE_URL npm run db:seed:e2e` ✅ (production URL'inde abort etmeli).
+- [ ] Smoke set: `npm run test:e2e:smoke` exit 0.
+- [ ] `cron-protection.spec.ts` skip edilmediyse 200 dönüyor; skip edildiyse staging'te ayrıca el ile `curl -H "Authorization: Bearer $CRON_SECRET" $URL/api/cron/scheduled-reminders` doğrula.
+- [ ] Yeni admin sayfası eklendiyse `tests/e2e/route-smoke.spec.ts > ADMIN_ROUTES` listesini güncelle.
+- [ ] Yeni rol/kapı eklendiyse `tests/e2e/access-boundaries.spec.ts` veya `role-routing.spec.ts`'a satır ekle.
+
+### Session 12 — Coverage genişletme
+
+- [ ] `invite-acceptance.spec.ts` 200 (token üretim + reuse block).
+- [ ] `forced-password-change.spec.ts` 200 (flag temizleniyor).
+- [ ] `import-commit.spec.ts` 200 (öğrenci + veli; duplicate re-upload skip).
+- [ ] `bulk-classroom-idempotency.spec.ts` 200 (composite PK upsert + UI surface).
+- [ ] `export-content-safety.spec.ts` 200 (XLSX magic + secret needle scan).
+- [ ] `parent-journey.spec.ts` / `teacher-journey.spec.ts` / `student-journey.spec.ts` 200.
+
+### Session 13 — Bulk/ODK/Export hardening
+
+- [ ] `npm run db:seed:e2e` çıktısında `OdkAccessTag e2e-tag-1` + `ODK grants pruned (clean slate)` görünüyor.
+- [ ] `bulk-odk-idempotency.spec.ts` 200 (UI flow + DB invariant idempotent).
+- [ ] `bulk-classroom-ui.spec.ts` 200 (UI sınıfa ata × 2 → row stable).
+- [ ] `export-deep-content.spec.ts` 200 (XLSX parse + kolon/leak invariantları + `?ids=` filter).
+- [ ] Yeni admin sayfasına `BulkRowCheckbox`/`BulkBar` eklenirse `data-testid` attribute'ları korunmalı (Session 13 selector politikası).
 
 End.

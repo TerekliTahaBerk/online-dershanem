@@ -137,6 +137,7 @@ export function StudentBulkActions({ classrooms, accessTags }: Props) {
             value={classroomId}
             onChange={(e) => setClassroomId(e.target.value)}
             style={{ minWidth: 140 }}
+            data-testid="bulk-classroom-select"
           >
             <option value="">Sınıf seç…</option>
             {classrooms.map((c) => (
@@ -150,6 +151,7 @@ export function StudentBulkActions({ classrooms, accessTags }: Props) {
             className="od-btn od-btn-sm"
             disabled={ids.length === 0 || !classroomId || anyPending}
             title="Seçili öğrencileri sınıfa ata"
+            data-testid="bulk-classroom-submit"
           >
             🏫 Sınıfa ekle
           </button>
@@ -165,6 +167,7 @@ export function StudentBulkActions({ classrooms, accessTags }: Props) {
               value={accessTagId}
               onChange={(e) => setAccessTagId(e.target.value)}
               style={{ minWidth: 140 }}
+              data-testid="bulk-access-tag-select"
             >
               <option value="">Etiket seç…</option>
               {accessTags.map((t) => (
@@ -185,6 +188,7 @@ export function StudentBulkActions({ classrooms, accessTags }: Props) {
               className="od-btn od-btn-sm"
               disabled={ids.length === 0 || !accessTagId || anyPending}
               title="Erişim etiketi ver"
+              data-testid="bulk-access-tag-submit"
             >
               🏷️ Etiket ver
             </button>

@@ -38,6 +38,7 @@ export function BulkOperationResultPanel({ result, onDismiss }: Props) {
       role="status"
       aria-live="polite"
       style={{ marginTop: 16 }}
+      data-testid="bulk-result-panel"
     >
       <div
         style={{

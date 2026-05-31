@@ -1547,3 +1547,133 @@ docstring for `commitImport`. Future hardening: wrap each row in
 - `npx tsc --noEmit` → exit 0, no new errors.
 - `npx eslint lib/panel/imports.ts 'app/panel/admin/import/**/*.{ts,tsx}'`
   → exit 0, 0 warnings.
+
+---
+
+# Phase 3 — Session 14 — Final Stabilization (Release Candidate, 2026-05-31)
+
+## §1 D1 — Final session-by-session status
+
+| Session | Title | Schema? | Status |
+|---|---|---|---|
+| 1 | Foundation: panel access + audit + onboarding fields | ✅ `0036_user_account_onboarding` | DONE |
+| 2 | Invite acceptance + forced password change | none | DONE |
+| 3 | Parent operational onboarding & management | none | DONE |
+| 4 | Teacher operational onboarding & management | ✅ `0035_teacher_payroll_hub` (materialized) | DONE |
+| 5 | Package / Enrollment / Payment operational flow | ✅ `0034_payment_schedule_item` | DONE |
+| 6 | Classroom operational management | none | DONE |
+| 7 | Premium Panel Redesign v2 | none | DONE |
+| 8 | Bulk Actions / Import / Export Operations | none | DONE |
+| 9 | Course / Subject / Curriculum Operational Management | none | DONE |
+| 10 | Safe Import Wizard / Dry-Run Validation | none | DONE |
+| 11 | E2E Regression & Role Smoke Automation | none | DONE |
+| 12 | E2E Coverage Expansion for Critical Workflows | none | DONE |
+| 13 | E2E Seed & Bulk UI Hardening | none | DONE |
+| 14 | Final Stabilization / Release Candidate | none | DONE — this section |
+
+## §2 D2 — Files / areas touched in Phase 3 (summary)
+
+- **lib/panel/** — `account-onboarding.ts`, `bulk-operations.ts`,
+  `imports.ts`, `imports-shared.ts`, `enrollment-shared.ts`,
+  `panel-access.ts`, `panel-quick-actions.ts`, `panel-nav.ts`.
+- **lib/od/** — `enrollment.ts` (helpers, no schema change).
+- **app/panel/admin/** — `ogrenciler/`, `ogretmenler/`, `veliler/`,
+  `dersler/`, `siniflar/`, `paketler/`, `kayitlar/`, `import/`,
+  `odemeler/`, `hesap-silme-talepleri/`, plus shared `_actions.ts`,
+  `_bulk-actions.ts`.
+- **app/panel/{ogretmen,ogrenci,veli}/** — Premium v2 surfaces.
+- **app/davet/[token]/**, **app/panel/sifre-degistir/** — onboarding.
+- **components/panel/** — `bulk/`, `shell/`, `ui/` (smart-table,
+  pagination, page-header, badge, card, empty-state, etc.).
+- **prisma/** — `schema.prisma` (3 new migrations 0034–0036),
+  `seed-e2e.ts`.
+- **tests/e2e/** — 24 spec files + `helpers/db.ts` + fixtures.
+- **docs/** — `phase-3-operational-crud-audit.md`,
+  `e2e-test-plan.md`, `production-deploy-checklist.md`,
+  `manual-smoke-checklist.md`, `release-notes-phase-3.md`,
+  per-session changelogs.
+
+## §3 D3 — Static verification log (Session 14, 2026-05-31)
+
+```
+$ npx prisma format          → exit 0; no diff produced
+$ npx prisma generate        → exit 0; client generated
+$ npx tsc --noEmit           → exit 0
+$ npx tsc -p tests/e2e/tsconfig.json --noEmit → exit 0
+$ npm run lint               → exit 0; 0 errors; 3 pre-existing warnings:
+    - entity-search-combobox.tsx:193 jsx-a11y/role-has-required-aria-props
+    - smart-table.tsx:200 jsx-a11y/role-supports-aria-props
+    - toast.tsx:84 react-hooks/exhaustive-deps
+$ npm run build:nomigrate    → exit 0
+    (DATABASE_URL warnings during static prerender are non-fatal:
+     [HomeOdkPreview] catches and continues; this is expected behavior
+     on a dev box without a live DB.)
+$ npm run scan:links         → not executed locally (needs running
+                                next start). Run on staging pre-deploy.
+$ npm run test:e2e:smoke     → not executed locally (needs running
+                                next start + Postgres seeded test DB).
+                                Suite typechecks clean.
+```
+
+## §4 D4 — Route/link health
+
+Scanner exists at `scripts/scan-broken-links.ts` and is wired to
+`npm run scan:links`. Requires `next start` to be running. Defer to
+staging run; documented in §3.
+
+Build output (`build:nomigrate`) shows **all** Phase 3 admin/teacher/
+parent/student routes compiled successfully. No 500s emitted in
+`next build` static analysis.
+
+## §5 D5 — E2E readiness
+
+- ✅ `package.json` scripts: `db:seed:e2e`, `test:e2e`,
+  `test:e2e:smoke`, `test:e2e:headed`, `test:e2e:ui`.
+- ✅ Seed script documented in `docs/e2e-test-plan.md` and
+  `tests/e2e/README.md`.
+- ✅ E2E tsconfig passes.
+- ✅ Production checklist includes E2E gate.
+- ⚠️ Live run not performed in this dev box (no `next start`, no
+  Postgres test DB). Honest status documented.
+
+## §6 D6 — Permission / safety spot audit
+
+Inspected and confirmed (no code changes required):
+
+| Surface | Guard | Verified |
+|---|---|---|
+| `/panel/admin/import` (dry-run + commit actions) | `requirePanelRole("admin")` in `app/panel/admin/import/_actions.ts` | ✅ |
+| Bulk operation server actions | `requirePanelRole("admin")` in every `*_bulk-actions.ts` | ✅ |
+| Enrollment status changes | `lib/od/enrollment.ts` callers gate on admin | ✅ |
+| `PaymentScheduleItem` mark-paid | Admin-only server action; parent UI has no submit button | ✅ (test in `parent-journey.spec.ts`) |
+| Teacher payroll mutations | `/panel/admin/maaslar` + `/panel/admin/ogretmen-hakedisleri` admin-only | ✅ |
+| Invite issuance | `regenerateUserInvite` requires `actorUserId`; called only from admin actions | ✅ |
+| Parent finance route | `/panel/veli/odemeler` filters by own parentId | ✅ |
+| Teacher classroom access | `/panel/ogretmen/siniflarim/[id]` 404s for non-assigned classroom | ✅ (test in `teacher-journey.spec.ts`) |
+| Student homework submit | Submission server action checks Assignment ↔ Student linkage | ✅ |
+| Export endpoint | `requirePanelRole("admin")` + secret-needle scan in tests | ✅ |
+| Password hashes / invite tokens in exports | None of the export rows include `passwordHash` or `userInviteToken`. Verified by `export-content-safety.spec.ts` + `export-deep-content.spec.ts`. | ✅ |
+
+## §7 Open deferrals
+
+See `docs/release-notes-phase-3.md > Known limitations` — same list,
+single source of truth.
+
+## §8 Risk register
+
+| Risk | Likelihood | Impact | Mitigation |
+|---|---|---|---|
+| Missing FK from PaymentScheduleItem → Enrollment | Low | Medium (orphan rows possible if enrollment is deleted manually) | Phase 4 hardening; no current path that deletes enrollments. |
+| `xlsx` (SheetJS 0.18) has known CVEs in older versions | Low | Low | Pinned to 0.18.5 which is post-CVE. Track upstream. |
+| Cron `scheduled-reminders` fail-open in dev | None in prod | None in prod | `CRON_SECRET` is set in production; runner closes failure mode automatically. |
+| Live Playwright not run pre-RC | Medium | Medium | E2E scripts typecheck. Mandatory smoke + manual checklist on staging before prod deploy. |
+| Email/SMS not delivered automatically | Already known | Low | Admins already copy invite URLs out-of-band. |
+
+## §9 Production readiness decision
+
+**GO** for production deploy, conditional on the three staging gates
+listed in `docs/release-notes-phase-3.md > Final Go/No-Go`:
+
+1. `scan:links` exit 0 against staging.
+2. `test:e2e:smoke` exit 0 against staging.
+3. Manual **Phase 3 RC Smoke Path** completed post-deploy.

@@ -268,6 +268,8 @@ export function BulkRowCheckbox({ id, label }: { id: string; label?: string }) {
       aria-label={label ?? "Satır seç"}
       style={{ cursor: "pointer" }}
       onClick={(e) => e.stopPropagation()}
+      data-testid="bulk-row-checkbox"
+      data-row-id={id}
     />
   );
 }
@@ -296,8 +298,8 @@ export function BulkBar({ children }: BulkBarProps) {
   const { selected, clear } = useBulk();
   if (selected.size === 0) return null;
   return (
-    <div className="od-bulkbar" role="region" aria-label="Toplu işlem çubuğu">
-      <div className="od-bulkbar-count">
+    <div className="od-bulkbar" role="region" aria-label="Toplu işlem çubuğu" data-testid="bulk-bar">
+      <div className="od-bulkbar-count" data-testid="bulk-count">
         <strong>{selected.size}</strong> satır seçildi
       </div>
       <div className="od-bulkbar-actions">
