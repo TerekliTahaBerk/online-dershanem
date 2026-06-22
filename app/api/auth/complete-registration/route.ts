@@ -3,8 +3,17 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/auth-utils";
 import { sendSelfRegistrationWelcome } from "@/lib/email";
+import {
+  isPublicRegisterEnabled,
+  PUBLIC_REGISTER_DISABLED_ERROR,
+} from "@/lib/panel-config";
 
 export async function POST(request: Request) {
+  // Yeni ürün kuralı: public self-register kapalı. Hesaplar admin/invite ile
+  // açılır. Reversible: PUBLIC_REGISTER_ENABLED=true ile eski akış geri gelir.
+  if (!isPublicRegisterEnabled()) {
+    return NextResponse.json(PUBLIC_REGISTER_DISABLED_ERROR, { status: 403 });
+  }
   try {
     const body = await request.json();
     const { email, code, fullName, phone, password } = body as {

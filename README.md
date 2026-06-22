@@ -22,6 +22,49 @@ cp .env.example .env.local
 - `ADMIN_NAME`
 - `PAYMENT_WEBHOOK_SECRET`
 
+## Panel Feature Flag
+
+Eski panel (öğrenci / öğretmen / veli / admin) geçici olarak kapalıdır. Yeni
+panel geliştirilirken public site (landing, paketler, blog, ödeme/lead akışları)
+çalışmaya devam eder.
+
+```env
+PANEL_ENABLED=false
+NEXT_PUBLIC_PANEL_ENABLED=false
+PUBLIC_REGISTER_ENABLED=false
+```
+
+### Public Self-Register Kapalı (yeni ürün kuralı)
+
+Public tarafta kullanıcı **kendi kendine kayıt olmaz**. Akış:
+
+1. Kullanıcı public siteden paket satın alır (**guest checkout** — login zorunlu
+   değil). Öğrenci/veli bilgileri ödeme kaydıyla (`PurchaseIntent`) saklanır.
+2. Ödeme başarılı olunca kayıt "ödemesi alınmış, hesap açılacak" olarak admin/
+   onboarding kuyruğunda kalır (mevcut DB modelinde; yeni tablo eklenmedi).
+3. Admin daha sonra öğrenci/veli hesabını oluşturur ve kullanıcıya geçici şifre
+   veya tek kullanımlık davet linki verir (mevcut `User.userInviteToken` /
+   `mustChangePassword` alanları kullanılır).
+4. Kullanıcı `/giris` ile giriş yapar; ilk girişte zorunlu şifre değişimi
+   (`mustChangePassword`) korunur.
+
+`PUBLIC_REGISTER_ENABLED=false` (default) iken `/kayit`, `/api/auth/send-code`
+(REGISTER) ve `/api/auth/complete-registration` self-register'ı kapatır.
+`PASSWORD_RESET` / davet / ilk giriş akışları **etkilenmez**. Eski self-register'ı
+test için `PUBLIC_REGISTER_ENABLED=true` ile geri açabilirsiniz.
+
+> Not: Canlı PayTR iframe checkout'u (`OdOrder`/`OdkOrder`) şu an login gerektirir
+> (`/paketler/satin-al`, `/odk-paketleri/[slug]/satin-al` → `/giris`). Guest
+> checkout'a tam geçiş ödeme-kritik kodu (`userId` nullable migration,
+> `markOdOrderPaid`, callback `notifyUser`) etkilediğinden ayrı bir adıma
+> bırakıldı. Mevcut guest `PurchaseIntent` akışı (`/api/purchases`) bozulmadı.
+
+- Varsayılan: kapalı. Panel kapalıyken `/panel/*`, `/giris`, `/kayit`,
+  `/sifremi-unuttum` → `/panel-yenileniyor` sayfasına yönlenir; panel/admin
+  API'leri `503` JSON döner.
+- İleride eski paneli test etmek için `PANEL_ENABLED=true` (ve client linkleri
+  için `NEXT_PUBLIC_PANEL_ENABLED=true`) yapılabilir; eski davranış aynen döner.
+
 ## Vercel Prisma Postgres
 
 Prisma Postgres'i Vercel Storage uzerinden kullanacaksaniz repo artik

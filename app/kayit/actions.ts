@@ -5,9 +5,16 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone, readString } from "@/lib/auth-utils";
 import { sendSelfRegistrationWelcome } from "@/lib/email";
+import { isPublicRegisterEnabled, PANEL_MAINTENANCE_PATH } from "@/lib/panel-config";
 
 
 export async function registerAction(formData: FormData) {
+  // Yeni ürün kuralı: public self-register kapalı (legacy server action).
+  // Reversible: PUBLIC_REGISTER_ENABLED=true ile eski akış geri gelir.
+  if (!isPublicRegisterEnabled()) {
+    redirect(PANEL_MAINTENANCE_PATH);
+  }
+
   const fullName = readString(formData, "fullName");
   const phone = readString(formData, "phone");
   const email = readString(formData, "email").toLowerCase();

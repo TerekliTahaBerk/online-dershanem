@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationCode } from "@/lib/email";
+import {
+  isPublicRegisterEnabled,
+  PUBLIC_REGISTER_DISABLED_ERROR,
+} from "@/lib/panel-config";
 
 function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -13,6 +17,12 @@ export async function POST(request: Request) {
 
     if (!email || !type || !["REGISTER", "PASSWORD_RESET"].includes(type)) {
       return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    }
+
+    // Public self-register kapalı → REGISTER kodu üretilmez. PASSWORD_RESET
+    // (davet/ilk giriş, şifre sıfırlama) etkilenmez. Reversible: PUBLIC_REGISTER_ENABLED=true.
+    if (type === "REGISTER" && !isPublicRegisterEnabled()) {
+      return NextResponse.json(PUBLIC_REGISTER_DISABLED_ERROR, { status: 403 });
     }
 
     const normalizedEmail = email.trim().toLowerCase();

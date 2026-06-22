@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { isPanelEnabledClient, PANEL_MAINTENANCE_PATH } from "@/lib/panel-config";
 
 const links = [
   { label: "Misyonumuz", href: "/misyonumuz/" },
@@ -52,8 +53,13 @@ export function Navbar() {
     role === "ADMIN" ? "admin" :
     role === "TEACHER" ? "ogretmen" :
     role === "PARENT" ? "veli" : "ogrenci";
-  const panelHref = `/panel/${panelSegment}`;
-  const odkHref = `/panel/${panelSegment}/odk`;
+  // Panel kapalıyken tüm panel/giriş hedefleri bakım sayfasına gider.
+  // Tasarım/markup aynı kalır; yalnızca href değişir.
+  const panelEnabled = isPanelEnabledClient();
+  const panelHref = panelEnabled ? `/panel/${panelSegment}` : PANEL_MAINTENANCE_PATH;
+  const odkHref = panelEnabled ? `/panel/${panelSegment}/odk` : PANEL_MAINTENANCE_PATH;
+  const loginHref = panelEnabled ? "/giris" : PANEL_MAINTENANCE_PATH;
+  const registerHref = panelEnabled ? "/kayit" : PANEL_MAINTENANCE_PATH;
   const panelLabel =
     role === "ADMIN" ? "Admin Panel" :
     role === "TEACHER" ? "Öğretmen Paneli" :
@@ -139,7 +145,7 @@ export function Navbar() {
               </>
             ) : (
               <Link
-                href="/giris"
+                href={loginHref}
                 className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-[#0E0E10] px-5 py-2 text-[13.5px] font-medium text-white shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-[#0E0E10]/90"
               >
                 <span className="relative z-10">Başla</span>
@@ -169,7 +175,7 @@ export function Navbar() {
               </Link>
             ) : (
               <Link
-                href="/giris"
+                href={loginHref}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#0E0E10] px-3.5 py-1.5 text-[12.5px] font-medium text-white"
               >
                 Başla
@@ -214,14 +220,14 @@ export function Navbar() {
             {status === "unauthenticated" && (
               <div className="flex flex-col gap-2 border-t border-[#E5E5E0] px-5 py-4">
                 <Link
-                  href="/giris"
+                  href={loginHref}
                   onClick={() => setOpen(false)}
                   className="rounded-full border border-[#0E0E10]/15 bg-white py-3 text-center text-[14.5px] font-medium text-[#0E0E10]"
                 >
                   Giriş Yap
                 </Link>
                 <Link
-                  href="/kayit"
+                  href={registerHref}
                   onClick={() => setOpen(false)}
                   className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
                 >
