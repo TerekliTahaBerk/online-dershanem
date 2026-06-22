@@ -26,7 +26,7 @@ type Tx = Prisma.TransactionClient;
 export async function markOdkOrderPaid(
   orderId: string,
   options: { actorUserId?: string | null } = {},
-): Promise<{ entitlementId: string; accountingEntryId: string | null }> {
+): Promise<{ entitlementId: string | null; accountingEntryId: string | null }> {
   const result = await prisma.$transaction(async (tx) => {
     const order = await tx.odkOrder.findUnique({
       where: { id: orderId },
@@ -54,34 +54,43 @@ export async function markOdkOrderPaid(
       ? new Date(now.getTime() + order.package.durationDays * DAY)
       : null;
 
-    // Entitlement upsert (orderId @unique).
-    const entitlement = await tx.odkEntitlement.upsert({
-      where: { orderId: order.id },
-      create: {
-        userId: order.userId,
-        packageId: order.packageId,
-        orderId: order.id,
-        status: "ACTIVE",
-        startsAt: now,
-        expiresAt,
-      },
-      update: {
-        // Re-activate eğer revoked/expired ise + expiry uzat.
-        status: "ACTIVE",
-        revokedAt: null,
-        expiresAt,
-      },
-    });
-
-    // Pakete bağlı tagları kullanıcıya ata (idempotent).
-    for (const link of order.package.packageAccessTags) {
-      await grantTagToUser(tx, {
-        userId: order.userId,
-        accessTagId: link.accessTagId,
-        entitlementId: entitlement.id,
-        expiresAt,
-        source: "PURCHASE",
+    // ── Guest order (userId=null) ──────────────────────────────────────────
+    // Entitlement ve access-tag userId gerektirir. Guest ödemede henüz hesap
+    // yoktur; erişim açma admin onboarding'e (order'ı kullanıcıya bağlama)
+    // ertelenir. Bu nedenle entitlement/tag SADECE userId varsa oluşturulur.
+    // Order yine PAID + accounting yazılır → onboarding kuyruğuna düşer.
+    let entitlementId: string | null = null;
+    if (order.userId) {
+      // Entitlement upsert (orderId @unique).
+      const entitlement = await tx.odkEntitlement.upsert({
+        where: { orderId: order.id },
+        create: {
+          userId: order.userId,
+          packageId: order.packageId,
+          orderId: order.id,
+          status: "ACTIVE",
+          startsAt: now,
+          expiresAt,
+        },
+        update: {
+          // Re-activate eğer revoked/expired ise + expiry uzat.
+          status: "ACTIVE",
+          revokedAt: null,
+          expiresAt,
+        },
       });
+      entitlementId = entitlement.id;
+
+      // Pakete bağlı tagları kullanıcıya ata (idempotent).
+      for (const link of order.package.packageAccessTags) {
+        await grantTagToUser(tx, {
+          userId: order.userId,
+          accessTagId: link.accessTagId,
+          entitlementId: entitlement.id,
+          expiresAt,
+          source: "PURCHASE",
+        });
+      }
     }
 
     // AccountingEntry — duplicate koruması.
@@ -109,11 +118,11 @@ export async function markOdkOrderPaid(
     }
 
     return {
-      entitlementId: entitlement.id,
+      entitlementId,
       accountingEntryId,
       _emailPayload: {
-        userEmail: order.user.email,
-        userName: order.user.name,
+        userEmail: order.user?.email ?? null,
+        userName: order.user?.name ?? null,
         packageName: order.package.title,
         totalCents: order.totalCents,
         buyerInfo: (order.buyerInfo ?? {}) as Record<string, string | null | undefined>,
@@ -290,6 +299,9 @@ export async function adminGrantOdkPackage(input: {
   const { entitlementId } = await markOdkOrderPaid(order.id, {
     actorUserId: input.actorUserId,
   });
+  // Admin manuel grant her zaman gerçek bir userId ile çağrılır → entitlement
+  // mutlaka oluşur. Guest yolu (entitlementId=null) buraya düşmez.
+  if (!entitlementId) throw new Error("Entitlement oluşturulamadı (beklenmeyen guest order).");
   return { orderId: order.id, entitlementId };
 }
 

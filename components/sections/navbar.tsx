@@ -10,11 +10,12 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import { isPanelEnabledClient, PANEL_MAINTENANCE_PATH } from "@/lib/panel-config";
 
 const links = [
-  { label: "Misyonumuz", href: "/misyonumuz/" },
-  { label: "Paketler", href: "/paketler/" },
+  { label: "Ana Sayfa", href: "/" },
+  { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "Blog", href: "/blog/" },
-  { label: "Kariyer", href: "/kariyer/" }
+  { label: "Paketler", href: "/paketler/" },
+  { label: "Misyon", href: "/misyonumuz/" },
+  { label: "İletişim", href: "/iletisim/" }
 ];
 
 export function Navbar() {
@@ -59,7 +60,6 @@ export function Navbar() {
   const panelHref = panelEnabled ? `/panel/${panelSegment}` : PANEL_MAINTENANCE_PATH;
   const odkHref = panelEnabled ? `/panel/${panelSegment}/odk` : PANEL_MAINTENANCE_PATH;
   const loginHref = panelEnabled ? "/giris" : PANEL_MAINTENANCE_PATH;
-  const registerHref = panelEnabled ? "/kayit" : PANEL_MAINTENANCE_PATH;
   const panelLabel =
     role === "ADMIN" ? "Admin Panel" :
     role === "TEACHER" ? "Öğretmen Paneli" :
@@ -220,18 +220,18 @@ export function Navbar() {
             {status === "unauthenticated" && (
               <div className="flex flex-col gap-2 border-t border-[#E5E5E0] px-5 py-4">
                 <Link
+                  href="/paketler/"
+                  onClick={() => setOpen(false)}
+                  className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
+                >
+                  Matematik Paketlerini İncele
+                </Link>
+                <Link
                   href={loginHref}
                   onClick={() => setOpen(false)}
                   className="rounded-full border border-[#0E0E10]/15 bg-white py-3 text-center text-[14.5px] font-medium text-[#0E0E10]"
                 >
                   Giriş Yap
-                </Link>
-                <Link
-                  href={registerHref}
-                  onClick={() => setOpen(false)}
-                  className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
-                >
-                  Hemen Kayıt Ol
                 </Link>
               </div>
             )}

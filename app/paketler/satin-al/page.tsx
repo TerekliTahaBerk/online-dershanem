@@ -46,19 +46,11 @@ export default async function OdCheckoutFormPage({
     [category, subject].filter(Boolean).join(" ").trim() ||
     "Paket";
 
+  // Guest checkout: login zorunlu değil. Session varsa form öğrenci bilgileriyle
+  // ön-doldurulur; yoksa boş gelir. Defaults zaten `user?.` ile null-safe.
   const session = await getServerAuthSession();
-  const nextUrl = `/paketler/satin-al?${new URLSearchParams({
-    cat: category,
-    subj: subject,
-    name: explicitName,
-    price: priceLabel,
-  }).toString()}`;
-
-  if (!session?.user?.id) {
-    redirect(`/giris?callbackUrl=${encodeURIComponent(nextUrl)}`);
-  }
-
-  const user = await prisma.user.findUnique({
+  const user = session?.user?.id
+    ? await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
       id: true,
@@ -80,7 +72,8 @@ export default async function OdCheckoutFormPage({
         },
       },
     },
-  });
+      })
+    : null;
 
   const defaults = {
     fullName: user?.student?.fullName || user?.name || "",

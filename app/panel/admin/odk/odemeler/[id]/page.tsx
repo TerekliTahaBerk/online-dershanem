@@ -65,7 +65,7 @@ export default async function OdkPaymentDetailPage({
           " · " +
           payment.status +
           " · " +
-          (payment.order.user.name ?? payment.order.user.email)
+          (payment.order.user?.name ?? payment.order.user?.email ?? "(guest — hesap açılacak)")
         }
         right={
           <div style={{ display: "flex", gap: 8 }}>
@@ -95,8 +95,8 @@ export default async function OdkPaymentDetailPage({
               </dd>
               <dt className="od-muted">Kullanıcı</dt>
               <dd>
-                {payment.order.user.name ?? "—"}
-                <div className="od-muted" style={{ fontSize: 11 }}>{payment.order.user.email}</div>
+                {payment.order.user?.name ?? "(guest — hesap açılacak)"}
+                <div className="od-muted" style={{ fontSize: 11 }}>{payment.order.user?.email ?? "—"}</div>
               </dd>
               <dt className="od-muted">Tutar</dt>
               <dd className="od-mono"><strong>{fmtTRY(payment.amountCents)}</strong></dd>

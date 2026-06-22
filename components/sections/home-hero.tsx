@@ -1,24 +1,51 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Users, LineChart, FileText, Map } from "lucide-react";
 
 /**
- * Opennote-inspired hero.
+ * Ana sayfa hero — büyük merkezi başlık + iki CTA + çevresinde organik
+ * matematik bilgi kartları. Mesaj net: bu bir online MATEMATİK dershanesi.
  *
- * Layout:
- *  - cream background with a faint doodle illustration tiled behind everything
- *  - small navbar-friendly spacer (handled by parent)
- *  - centered illustrative doodle clip on top
- *  - massive serif headline with italic accent
- *  - single dark CTA pill
+ * Görseller mevcut marka varlıklarından (doodle backdrop) gelir; ek stok
+ * görsel eklenmez.
  */
+
+const INFO_CARDS = [
+  {
+    Icon: Users,
+    title: "Maks. 4 kişilik grup",
+    text: "Öğrenci derste görünür; soru sorar, çözüme katılır.",
+    bg: "var(--od-sky-soft)",
+    pos: "sm:-rotate-2",
+  },
+  {
+    Icon: LineChart,
+    title: "Ders + deneme takibi",
+    text: "Canlı matematik dersi ve düzenli denemeler tek sistemde.",
+    bg: "#EAF1E8",
+    pos: "sm:rotate-1",
+  },
+  {
+    Icon: FileText,
+    title: "Veliye gelişim özeti",
+    text: "Çocuğunuzun matematikte nerede olduğunu net görürsünüz.",
+    bg: "var(--od-yellow-soft)",
+    pos: "sm:-rotate-1",
+  },
+  {
+    Icon: Map,
+    title: "Eksik konu haritası",
+    text: "Matematikte tam olarak nerede takıldığını görüyoruz.",
+    bg: "var(--od-blush)",
+    pos: "sm:rotate-2",
+  },
+];
+
 export function HomeHero() {
   return (
     <section className="relative isolate overflow-hidden bg-[var(--od-cream)]">
-      {/* Soft pastel backdrop — sky blue → cream gradient with faint doodle */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-      >
+      {/* Soft pastel backdrop — doodle + gradient */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div
           className="absolute inset-0"
           style={{
@@ -43,41 +70,62 @@ export function HomeHero() {
         />
       </div>
 
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-5 pt-20 pb-24 sm:pt-28 sm:pb-28">
-        <div className="flex max-w-2xl flex-col items-center text-center">
-          <h1 className="font-display text-[38px] font-normal leading-[1.1] tracking-[0.005em] text-[var(--od-ink)] [word-spacing:0.04em] xs:text-[42px] sm:text-[64px] sm:leading-[1.1]">
-            Seninle birlikte
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-5 pt-20 pb-20 sm:pt-28 sm:pb-24">
+        <div className="flex max-w-3xl flex-col items-center text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--od-line)] bg-white/70 px-3.5 py-1.5 text-[12.5px] font-medium text-[var(--od-olive)] backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--od-olive)]" />
+            Online matematik dershanesi
+          </span>
+
+          <h1 className="mt-6 font-display text-[38px] font-normal leading-[1.08] tracking-[0.005em] text-[var(--od-ink)] xs:text-[44px] sm:text-[64px]">
+            Matematikte nerede
             <br />
-            düşünen <em className="italic text-[var(--od-olive)]">dershane.</em>
+            takıldığını{" "}
+            <em className="italic text-[var(--od-olive)]">görüyoruz.</em>
           </h1>
 
-          <p className="mt-8 max-w-xl text-[16px] leading-[1.8] text-[var(--od-ink-soft)] [word-spacing:0.02em] sm:text-[17.5px]">
-            Sınava hazırlık tek paket dayatmasıyla, kalabalık sınıflarla ve
-            ezbere planlarla olmaz. Burada sadece ihtiyacın olan dersi
-            seçersin; en fazla{" "}
-            <strong className="font-medium text-[var(--od-ink)]">dört kişilik</strong>{" "}
-            butik grupta hocan adınla seslenir, haftan senin için kurulur,
-            ilerleyişin hafta hafta ölçülebilir hâle gelir.
+          <p className="mt-7 max-w-xl text-[16px] leading-[1.8] text-[var(--od-ink-soft)] sm:text-[17.5px]">
+            Çocuğunuzun matematikteki eksiklerini{" "}
+            <strong className="font-medium text-[var(--od-ink)]">butik canlı dersler</strong>,
+            düzenli denemeler ve veliye açık gelişim takibiyle kapatıyoruz.
+            Ders ve denemeyle birlikte, aynı hafta geri dönüyoruz.
           </p>
 
-          <p className="mt-4 max-w-xl text-[15px] leading-[1.7] italic text-[var(--od-olive)] sm:text-[16px]">
-            Birebir özel dersin yakınlığını, dershane ekonomisiyle.
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/paketler/"
               className="inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-7 py-3.5 text-[14.5px] font-medium tracking-[0.01em] text-white shadow-[0_10px_30px_-12px_rgba(20,20,15,0.45)] transition hover:bg-[#2A2A22]"
             >
-              Paketleri İncele
+              Matematik Paketlerini İncele
             </Link>
             <Link
-              href="/kayit"
+              href="/iletisim/"
               className="inline-flex items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3.5 text-[14.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
             >
-              Hemen Kayıt Ol
+              Bize Ulaşın
             </Link>
           </div>
+        </div>
+
+        {/* Organik matematik bilgi kartları — mobilde stack, masaüstünde dağınık his */}
+        <div className="grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {INFO_CARDS.map(({ Icon, title, text, bg, pos }) => (
+            <div
+              key={title}
+              className={`flex flex-col gap-3 rounded-[24px] border border-[var(--od-line)] bg-white/85 p-5 shadow-[0_18px_40px_-28px_rgba(20,20,15,0.25)] backdrop-blur transition hover:-translate-y-1 ${pos}`}
+            >
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl"
+                style={{ background: bg }}
+              >
+                <Icon size={18} strokeWidth={1.8} className="text-[var(--od-olive)]" />
+              </span>
+              <h3 className="font-display text-[17px] leading-tight text-[var(--od-ink)]">
+                {title}
+              </h3>
+              <p className="text-[13px] leading-snug text-[var(--od-ink-soft)]">{text}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

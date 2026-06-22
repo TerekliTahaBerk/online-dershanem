@@ -151,8 +151,8 @@ export default async function AdminOdOrdersPage({ searchParams }: { searchParams
                 <tr key={o.id}>
                   <td style={{ fontSize: 12 }}>{formatDateTime(o.createdAt)}</td>
                   <td>
-                    <div style={{ fontWeight: 500 }}>{o.user.name || "—"}</div>
-                    <div style={{ fontSize: 11, color: "var(--pd-text-muted)" }}>{o.user.email}</div>
+                    <div style={{ fontWeight: 500 }}>{o.user?.name || (buyer.fullName as string) || "—"}</div>
+                    <div style={{ fontSize: 11, color: "var(--pd-text-muted)" }}>{o.user?.email ?? (buyer.email as string) ?? "(guest — hesap açılacak)"}</div>
                   </td>
                   <td>
                     <div>{o.packageName}</div>

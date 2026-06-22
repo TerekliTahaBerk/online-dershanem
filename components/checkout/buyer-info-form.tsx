@@ -177,7 +177,7 @@ export function BuyerInfoForm({
           type="email"
           defaultValue={defaults.email}
           required
-          help="Satın alma bu e-posta hesabına tanımlanır."
+          help="Ödeme sonrası hesabınız ekibimiz tarafından bu e-posta ile oluşturulur."
         />
         <Field
           name="phone"

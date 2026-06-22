@@ -1,85 +1,86 @@
 export const siteUrl = "https://onlinedershanem.com";
 
 export const navLinks = [
-  { label: "Paketler", href: "/#paket-karsilastirma" },
-  { label: "Kamplar", href: "/kamplar/" },
+  { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "Blog", href: "/blog/" }
+  { label: "Paketler", href: "/paketler/" },
+  { label: "Misyon", href: "/misyonumuz/" },
+  { label: "İletişim", href: "/iletisim/" }
 ];
 
 export const hero = {
-  headline: "Küçük grupta, gerçekten takip edilen bir hazırlık",
+  headline: "Matematikte nerede takıldığını görüyor, birlikte kapatıyoruz",
   subheadline:
-    "Online Dershanem'de öğrenciler kalabalık içinde görünmez kalmaz. Küçük grup yapısında öğretmen dersi anlatıp geçmez; öğrencinin nerede takıldığını görür, eksik kalan noktalara aynı hafta döner ve ilerlemeyi her hafta ölçülebilir biçimde paylaşır.",
+    "Online Dershanem, öğrencinin matematikteki eksiklerini butik canlı dersler, düzenli denemeler ve veliye açık gelişim takibiyle kapatan online matematik dershanesidir. En fazla 4 kişilik grupta öğrencinin matematikte tam olarak nerede zorlandığını görür, ders ve denemeyle aynı hafta geri döneriz.",
   detail:
-    "Hedefimiz konu bitirmek değil, kalıcı bir çalışma düzeni kurmak. Canlı ders, koçluk ve deneme analizini tek bir sisteme bağlıyoruz; öğrenci her hafta nerede olduğunu, sıradaki adımın ne olduğunu net biçimde görüyor.",
+    "Hedefimiz sadece konu bitirmek değil; matematikte kalıcı bir gelişim kurmak. Canlı matematik dersi, düzenli deneme analizi ve veliye anlaşılır gelişim özetini tek sisteme bağlıyoruz; öğrenci her hafta matematikte nerede olduğunu net görüyor.",
   points: [
-    "Küçük grup yapısı sayesinde öğretmen-öğrenci etkileşimi yüksek",
-    "Google Meet üzerinden canlı dersler, aktif soru-cevap ve birlikte çözüm",
-    "Koçluk desteğiyle haftalık plan, takip ve çalışma düzeni",
-    "Deneme analiziyle hata türü, süre yönetimi ve net hedefleri netleştirme"
+    "En fazla 4 kişilik butik matematik grubunda yakın takip",
+    "Google Meet üzerinden canlı matematik dersi ve birlikte çözüm",
+    "Düzenli matematik denemeleri ve kazanım bazlı analiz",
+    "Veliye açık, anlaşılır matematik gelişim özeti"
   ]
 };
 
 export const stats = [
   {
     value: "1000+",
-    label: "Aktif ve mezun öğrenci",
-    detail: "Farklı sınav gruplarında haftalık takiple ilerleyen öğrenci kitlesi."
+    label: "Matematikte ilerleyen öğrenci",
+    detail: "Canlı ders ve deneme takibiyle matematikte düzenli gelişen öğrenci kitlesi."
   },
   {
     value: "%98",
     label: "Öğrenci ve veli memnuniyeti",
-    detail: "Şeffaf süreç, düzenli geri bildirim ve sürdürülebilir takip sistemine dayalı memnuniyet."
+    detail: "Şeffaf süreç, düzenli geri bildirim ve veliye açık matematik gelişim takibine dayalı memnuniyet."
   },
   {
-    value: "50+",
-    label: "Branş öğretmeni",
-    detail: "Branşında deneyimli, öğrenciyle iletişimi güçlü ve sınav odaklı öğretmen kadrosu."
+    value: "4",
+    label: "Maksimum grup mevcudu",
+    detail: "Her matematik grubunda en fazla 4 öğrenci; öğretmen herkesi adıyla tanır ve yakından takip eder."
   }
 ];
 
 export const programs = [
   {
-    name: "TYT-AYT Matematik Grup Özel Ders",
-    desc: "Matematikte konu eksiğini kapatıp soru çözüm hızını artırmak isteyen öğrenciler için küçük gruplu, odaklı ders yapısı.",
-    focus: "90 dakika blok ders, en fazla 4 kişi, seviyeye göre grup",
-    outcome: "Kalabalık sınıf yerine doğrudan konuya odaklanır, derste daha fazla bireysel ilgi alırsın."
+    name: "Matematik Ders Paketi",
+    desc: "Matematikte konu eksiğini kapatıp soru çözüm hızını artırmak isteyen öğrenciler için butik, canlı ve yakından takip edilen matematik dersi.",
+    focus: "Canlı matematik dersi, en fazla 4 kişilik butik grup, ders sonrası ödevlendirme",
+    outcome: "Kalabalık online sınıf yerine derste görünür olur, soru sorar ve eksik konularını birlikte kapatırsın."
   },
   {
-    name: "TYT-AYT Fen Dersleri Grup Özel Ders",
-    desc: "Fizik, Kimya ve Biyoloji'de konu tarama, soru çözüm ve kazanım takibini ders bazlı ilerletmek isteyenler için.",
-    focus: "Ders bazlı seçim, küçük grup etkileşimi, düzenli mini quiz ve takip",
-    outcome: "İhtiyaç duyduğun dersi ayrı seçer, gereksiz toplu paket maliyetine girmeden ilerlersin."
+    name: "Matematik Deneme Kulübü",
+    desc: "Dijital matematik denemeleri, kazanım bazlı analiz ve net gelişim takibiyle matematikte tam olarak nerede eksik olduğunu görmek isteyenler için.",
+    focus: "Dijital matematik denemeleri, kazanım analizi, eksik konu raporu, veliye gelişim özeti",
+    outcome: "Sadece deneme çözmekle kalmaz; hangi kazanımda eksik olduğunu görür ve ona göre çalışırsın."
   },
   {
-    name: "LGS Ders Bazlı Grup Özel Ders",
-    desc: "LGS Matematik ve Fen Bilimleri için kazanım bazlı, küçük grupta yakın takiple yürütülen ders modeli.",
-    focus: "En fazla 4 kişilik grup, seviyeye göre yerleşim, düzenli ilerleme kontrolü",
-    outcome: "LGS sürecinde odak kaybetmeden, ders ders net bir gelişim yolu görürsün."
+    name: "Matematik Tam Destek Paketi",
+    desc: "Matematik Ders Paketi ile Matematik Deneme Kulübü'nü birleştiren, veli için en güvenli ve en avantajlı komple matematik çözümü.",
+    focus: "Canlı ders + deneme kulübü, eksik konu kapatma, veliye açık gelişim takibi",
+    outcome: "Öğrenmeyi ve ölçmeyi tek pakette toplar; matematikte hem ilerler hem de gelişimini net görürsün."
   }
 ];
 
 export const howItWorks = [
   {
-    title: "Seviye ve Hedef Analizi",
-    desc: "Ön görüşmede mevcut seviyeni ve hedefini birlikte değerlendiriyoruz; net artışını en hızlı getirecek dersleri birlikte belirliyoruz."
+    title: "Matematik Seviye Analizi",
+    desc: "Ön görüşmede öğrencinin matematik seviyesini ve hedefini birlikte değerlendiriyoruz; hangi konulardan başlamak gerektiğini netleştiriyoruz."
   },
   {
-    title: "Seviyene Uygun Gruba Yerleşim",
-    desc: "Seçtiğin derslerde seninle aynı seviyedeki öğrencilerle küçük bir gruba yerleşirsin. Tempo sana uygun, dikkatin dağılmaz."
+    title: "Seviyeye Uygun Butik Gruba Yerleşim",
+    desc: "Öğrenci, matematikte benzer seviyedeki en fazla 4 kişilik bir gruba yerleşir. Tempo ona uygun olur, dikkati dağılmaz."
   },
   {
-    title: "Etkileşimli Canlı Ders",
-    desc: "Haftalık 90 dakikalık oturumlarda sadece dinlemezsin; soru sorar, birlikte çözer ve konuyu derste bitirme alışkanlığı kazanırsın."
+    title: "Etkileşimli Canlı Matematik Dersi",
+    desc: "Canlı derslerde öğrenci sadece dinlemez; soru sorar, birlikte çözer ve konuyu derste bitirme alışkanlığı kazanır."
   },
   {
-    title: "Düzenli Takip ve Geri Bildirim",
-    desc: "Ödev kontrolleri ve mini quizlerle gelişimin haftalık olarak izlenir. Nerede ilerlediğini ve nerede tıkandığını net şekilde görürsün."
+    title: "Deneme ve Kazanım Takibi",
+    desc: "Düzenli matematik denemeleri ve kazanım analiziyle gelişim izlenir. Öğrencinin hangi konuda eksik olduğu net biçimde ortaya çıkar."
   },
   {
-    title: "Esnek Genişleme",
-    desc: "Süreç içinde ihtiyaç duydukça yeni ders ekleyebilir, planını kendi temponda büyütebilirsin. Toplu paket zorunluluğu yok."
+    title: "Veliye Açık Gelişim Özeti",
+    desc: "Eksik konu raporu ve anlaşılır gelişim özeti veliyle düzenli paylaşılır. Veli, matematikteki ilerlemeyi her aşamada görür."
   }
 ];
 
@@ -90,44 +91,44 @@ export const teachers = [
     uni: "Boğaziçi Üniversitesi (YKS Derecesi)",
     exp: "12+ yıl deneyim · 500'den fazla derece çıkaran öğrenci",
     quote:
-      "Matematik ezber kalıplarla değil, doğru düşünme alışkanlığıyla kalıcı hale gelir. Öğrencinin tam olarak nerede takıldığını bulmak ve oradan kurmak benim için işin özü.",
-    tag: "Küçük grupta yakın takip"
+      "Matematik ezber kalıplarla değil, doğru düşünme alışkanlığıyla kalıcı hale gelir. Öğrencinin matematikte tam olarak nerede takıldığını bulmak ve oradan kurmak benim için işin özü.",
+    tag: "Butik grupta yakın matematik takibi"
   },
   {
     name: "Can Demir",
-    branch: "Türkçe / Edebiyat",
-    uni: "Marmara Üniversitesi (Edebiyat Fakültesi)",
-    exp: "10+ yıl deneyim · paragraf ve hız çalışmalarında uzman",
+    branch: "Matematik",
+    uni: "ODTÜ (Matematik Bölümü)",
+    exp: "10+ yıl deneyim · problem ve hız çalışmalarında uzman",
     quote:
-      "Paragraf netleri tesadüf değil, sistemin ürünüdür. Doğru okuma teknikleri ve düzenli deneme analiziyle hem net hem çözüm hızı kalıcı şekilde artıyor.",
-    tag: "LGS / YKS odaklı net çalışması"
+      "Matematik neti tesadüf değil, sistemin ürünüdür. Doğru soru çözüm teknikleri ve düzenli deneme analiziyle hem net hem çözüm hızı kalıcı şekilde artıyor.",
+    tag: "LGS / YKS matematik net çalışması"
   },
   {
     name: "Ece Aydın",
-    branch: "Fen Bilimleri / Fizik",
-    uni: "ODTÜ (Eğitim Fakültesi)",
+    branch: "Matematik",
+    uni: "İstanbul Üniversitesi (Eğitim Fakültesi · Matematik)",
     exp: "9+ yıl deneyim · pratik soru çözüm yaklaşımı",
     quote:
-      "Fen derslerinde fark yaratan asıl şey, soruda neyin sorulduğunu hızlı görebilmek. Bu refleksi adım adım birlikte kuruyoruz.",
+      "Matematikte fark yaratan asıl şey, soruda neyin sorulduğunu hızlı görebilmek. Bu refleksi öğrenciyle adım adım birlikte kuruyoruz.",
     tag: "Konuyu anlatıp pratiğe bağlayan yaklaşım"
   }
 ];
 
 export const whyUs = [
   {
-    title: "Sadece İhtiyacın Olan Derse Ödeme",
+    title: "Tek Odak: Matematik",
     content:
-      "Zaten bildiğin konular için paket almak zorunda değilsin. İhtiyacın olan dersi seçer, bütçeni ve zamanını verimli yönetirsin."
+      "Dağılmadan, sadece matematiğe odaklanırsın. Tüm ders, deneme ve takip sistemi matematikte gelişimini hızlandırmak için kurulmuştur."
   },
   {
-    title: "Küçük Grupta Yakın Takip",
+    title: "En Fazla 4 Kişilik Butik Grup",
     content:
-      "Kalabalık sınıfta görünmez kalmak yok. Soru sorabildiğin, hocanın seni tanıdığı küçük gruplarda hem öğrenme hem motivasyon yüksek kalır."
+      "Kalabalık online sınıfta görünmez kalmak yok. Soru sorabildiğin, öğretmenin seni tanıdığı butik matematik grubunda hem öğrenme hem motivasyon yüksek kalır."
   },
   {
-    title: "Düzenli Takip ve Şeffaf İletişim",
+    title: "Veliye Açık Gelişim Takibi",
     content:
-      "Haftalık gelişim raporları, kayıtlı dersler ve veli bilgilendirmesi tek panelde toplanır. Süreç hem öğrenci hem veli için takip edilebilir."
+      "Matematik deneme analizleri, eksik konu raporu ve anlaşılır gelişim özeti veliyle düzenli paylaşılır. Süreç hem öğrenci hem veli için takip edilebilir."
   }
 ];
 
@@ -249,253 +250,184 @@ export const packageFilters = [
   { key: "ALES", label: "ALES" }
 ] as const;
 
+/**
+ * Matematik paket kataloğu — sitenin TEK fiyat/ürün kaynağı.
+ *
+ * ÖNEMLİ (ödeme kritik): `category` + `subject` çifti sepet kimliği ve
+ * checkout fiyat doğrulamasının anahtarıdır (`getPackagePriceCents`). Bu
+ * çiftleri değiştirmeden önce `lib/od/checkout.ts` ve cart akışını gözden geçir.
+ * `discountedPrice` Türkçe formatı `parsePriceToCents` ile kuruşa çevrilir.
+ *
+ * Ürün modeli: üç matematik paketi — Deneme Kulübü, Ders Paketi, Tam Destek.
+ * Hepsi mevcut OD sepeti → /paketler/satin-al → dinamik PayTR iframe akışından
+ * satılır; ayrı PayTR linki gerekmez.
+ */
 export const subjectPackageGroups = [
   {
-    key: "TYT-AYT",
-    title: "TYT-AYT Grup Özel Ders Paketleri",
-    subtitle: "İhtiyacın olan dersi seç, küçük grupta odaklı ilerle.",
+    key: "Matematik",
+    title: "Matematik Paketleri",
+    subtitle:
+      "Tek odak matematik. İster denemeyle gelişimini ölç, ister canlı derse katıl, ister ikisini birden al.",
     packages: [
       {
-        subject: "Matematik",
-        category: "TYT-AYT",
-        badge: "EN POPÜLER",
-        quota: "Son 2 kontenjan",
-        oldPrice: "₺3.500,00",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺2.000,00 / Ay",
-        perLessonPrice: "Ders başı ücret: ₺500,00",
-        features: [
-          "Haftalık müfredat takibi",
-          "90 dakikalık odaklı canlı ders",
-          "En fazla 4 kişilik küçük grupta yakın takip",
-          "Aynı seviyedeki öğrencilerle dengeli grup",
-          "Haftalık performans raporu ve veli bilgilendirmesi"
-        ],
-        cta: "Satın Al"
-      },
-      {
-        subject: "Fizik",
-        category: "TYT-AYT",
+        id: "matematik-deneme-kulubu",
+        name: "Matematik Deneme Kulübü",
+        accent: "analytics",
+        subject: "Deneme Kulübü",
+        category: "Matematik",
         badge: "",
-        quota: "Son 1 kontenjan",
-        oldPrice: "₺3.500,00",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "1.500,00₺ / Ay",
-        perLessonPrice: "Ders başı ücret: ₺375,00",
+        tagline: "Sadece deneme çözmek değil, eksiğini görmek.",
+        audience:
+          "Matematikte düzenli deneme çözüp hangi kazanımda eksik olduğunu net görmek isteyen öğrenciler için.",
+        quota: "Aylık abonelik",
+        oldPrice: "",
+        discountLabel: "",
+        discountedPrice: "₺750/ay",
+        priceCents: 75000,
+        perLessonPrice: "",
         features: [
-          "Haftalık müfredat takibi",
-          "90 dakikalık odaklı canlı ders",
-          "Düzenli geri bildirim ve ölçme",
-          "Kazanım bazlı eksik takibi",
-          "Haftalık performans raporu ve veli bilgilendirmesi"
+          "Dijital matematik denemeleri",
+          "Kazanım bazlı analiz",
+          "Net gelişim takibi",
+          "Eksik konu raporu",
+          "Veliye anlaşılır gelişim özeti"
         ],
-        cta: "Satın Al"
+        cta: "Sepete Ekle"
       },
       {
-        subject: "Kimya",
-        category: "TYT-AYT",
-        badge: "ÖĞRENCİ FAVORİSİ",
-        quota: "Son 3 kontenjan",
-        oldPrice: "₺3.000,00",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺1.500,00 / Ay",
-        perLessonPrice: "Ders başı ücret: ₺375,00",
-        features: [
-          "Haftalık müfredat takibi",
-          "90 dakikalık odaklı canlı ders",
-          "Görsel anlatım destekli özet materyaller",
-          "Kazanım bazlı eksik takibi",
-          "Haftalık performans raporu ve veli bilgilendirmesi"
-        ],
-        cta: "Satın Al"
-      },
-      {
-        subject: "Biyoloji",
-        category: "TYT-AYT",
-        badge: "ÖĞRENCİ FAVORİSİ",
-        quota: "Son 2 kontenjan",
-        oldPrice: "₺3.000,00",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺1.500,00 / Ay",
-        perLessonPrice: "Ders başı ücret: ₺375,00",
-        features: [
-          "Haftalık müfredat takibi",
-          "90 dakikalık odaklı canlı ders",
-          "Görsel anlatım destekli özet materyaller",
-          "Düzenli geri bildirim ve ölçme",
-          "Haftalık performans raporu ve veli bilgilendirmesi"
-        ],
-        cta: "Satın Al"
-      }
-    ]
-  },
-  {
-    key: "LGS",
-    title: "LGS Grup Özel Ders Paketleri",
-    subtitle: "Ders ders seçim yap, kazanım bazlı yakın takiple ilerle.",
-    packages: [
-      {
-        subject: "Matematik",
-        category: "LGS",
-        badge: "ERKEN KAYIT AVANTAJI",
-        quota: "Son 1 kontenjan",
-        oldPrice: "₺2.800,00",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺1.500,00 / Ay",
-        perLessonPrice: "Ders başı ücret: ₺375,00",
-        features: [
-          "Haftalık müfredat takibi",
-          "90 dakikalık odaklı canlı ders",
-          "En fazla 4 kişilik küçük grupta yakın takip",
-          "Kazanım bazlı eksik takibi",
-          "Haftalık performans raporu ve veli bilgilendirmesi"
-        ],
-        cta: "Satın Al"
-      },
-      {
-        subject: "Fen Bilimleri",
-        category: "LGS",
+        id: "matematik-ders-paketi",
+        name: "Matematik Ders Paketi",
+        accent: "live",
+        subject: "Ders Paketi",
+        category: "Matematik",
         badge: "",
-        quota: "Son 3 kontenjan",
-        oldPrice: "₺2.500,00",
+        tagline: "Butik grupta canlı matematik dersi.",
+        audience:
+          "Matematikte konu eksiğini canlı ders ve öğretmen takibiyle kapatmak isteyen öğrenciler için.",
+        quota: "Maks. 4 kişilik grup",
+        oldPrice: "₺5.000/ay",
         discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺1.500,00 / Ay",
-        perLessonPrice: "Ders başı ücret: ₺375,00",
+        discountedPrice: "₺3.000/ay",
+        priceCents: 300000,
+        perLessonPrice: "",
         features: [
-          "Haftalık müfredat takibi",
-          "90 dakikalık odaklı canlı ders",
-          "Kazanım bazlı eksik takibi",
-          "Düzenli geri bildirim ve ölçme",
-          "Haftalık performans raporu ve veli bilgilendirmesi"
+          "Canlı matematik dersi",
+          "Maksimum 4 kişilik butik grup",
+          "Öğretmen takibi",
+          "Ders sonrası ödevlendirme",
+          "Eksik konu kapatma"
         ],
-        cta: "Satın Al"
+        cta: "Sepete Ekle"
+      },
+      {
+        id: "matematik-tam-destek",
+        name: "Matematik Tam Destek Paketi",
+        accent: "premium",
+        subject: "Tam Destek",
+        category: "Matematik",
+        badge: "EN ÇOK ÖNERİLEN",
+        featured: true,
+        tagline: "Ders + Deneme Kulübü birlikte. Veli için en güvenli tercih.",
+        audience:
+          "Matematikte hem öğrenmeyi hem ölçmeyi tek pakette isteyen, en avantajlı ve komple çözümü arayan veliler için.",
+        quota: "En avantajlı paket",
+        oldPrice: "",
+        discountLabel: "",
+        discountedPrice: "₺3.500/ay",
+        priceCents: 350000,
+        perLessonPrice: "Ders Paketi (₺3.000) + Deneme Kulübü (₺750) birlikte",
+        features: [
+          "Matematik Ders Paketi'nin tamamı",
+          "Matematik Deneme Kulübü'nün tamamı",
+          "Canlı ders + düzenli deneme analizi",
+          "Eksik konu kapatma ve raporlama",
+          "Veliye açık tek gelişim takibi"
+        ],
+        cta: "Sepete Ekle"
       }
     ]
   }
 ] as const;
 
-export const packagePaymentLinks = {
-  "TYT-AYT:Matematik": "https://www.paytr.com/link/Y4PCm3L",
-  "TYT-AYT:Fizik": "https://www.paytr.com/link/O0tKPpt",
-  "TYT-AYT:Kimya": "https://www.paytr.com/link/H7AopnH",
-  "TYT-AYT:Biyoloji": "https://www.paytr.com/link/SSKgXWn",
-  "LGS:Matematik": "https://www.paytr.com/link/JWN7y0f",
-  "LGS:Fen Bilimleri": "https://www.paytr.com/link/FaZ0Tuv"
-} as const;
+/**
+ * Eski per-branş PayTR direct-link haritası kaldırıldı. Yeni matematik
+ * paketleri dinamik PayTR iframe akışından satıldığı için statik link
+ * gerekmez. Fonksiyon geriye dönük uyumluluk için korunur; her zaman null
+ * döner ve çağıranlar sepet/checkout akışına yönlenir.
+ */
+export const packagePaymentLinks = {} as Record<string, string>;
 
-export function getPackagePaymentLink(category: string, subject: string) {
-  const key = `${category}:${subject}` as keyof typeof packagePaymentLinks;
-  return packagePaymentLinks[key] ?? null;
+export function getPackagePaymentLink(_category: string, _subject: string): string | null {
+  return null;
 }
 
 export const pricing = [
   {
-    title: "LGS Odak Paketi",
-    category: "LGS",
-    price: "3.290 TL / ay",
-    quota: "Son 6 kontenjan",
-    audience: "LGS hazırlığında temel netlerini hızlı ve düzenli biçimde yükseltmek isteyen öğrenciler için",
-    seats: "8 kişilik LGS butik sınıf",
+    title: "Matematik Deneme Kulübü",
+    category: "Matematik",
+    price: "₺750/ay",
+    quota: "Aylık abonelik",
+    audience: "Matematikte düzenli deneme çözüp hangi kazanımda eksik olduğunu görmek isteyen öğrenciler için",
+    seats: "Dijital deneme + analiz",
     features: [
-      "Haftada 10 canlı ders (Türkçe, Matematik, Fen)",
-      "Haftalık LGS mini deneme + analiz oturumu",
-      "Aylık veli geri bildirim raporu",
-      "Koçluk eşliğinde çalışma planı güncelleme"
+      "Dijital matematik denemeleri",
+      "Kazanım bazlı analiz",
+      "Net gelişim takibi ve eksik konu raporu",
+      "Veliye anlaşılır gelişim özeti"
     ],
     weeklyPlan: [
-      "Pazartesi: Türkçe paragraf + hız çalışması",
-      "Salı: Matematik problem kampı ve canlı çözüm",
-      "Çarşamba: Fen yorum soruları + kısa tekrar",
-      "Perşembe: Karışık soru seti ve öğretmen geri bildirimi",
-      "Cumartesi: Mini deneme + detaylı analiz oturumu"
+      "Dijital matematik denemeleri yayınlanır",
+      "Her denemede kazanım bazlı analiz çıkarılır",
+      "Net gelişim grafiği güncellenir",
+      "Eksik konu listesi oluşturulur",
+      "Veliye okunabilir gelişim raporu paylaşılır"
     ],
-    note: "LGS hazırlığında en dengeli başlangıç"
+    note: "Matematikte ölçme ve takip için ideal başlangıç"
   },
   {
-    title: "YKS Master Paketi",
-    category: "YKS",
-    price: "3.990 TL / ay",
-    quota: "Son 4 kontenjan",
-    audience: "TYT + AYT sürecinde yüksek tempo ve sıkı takip isteyen öğrenciler için",
-    seats: "8 kişilik YKS odak sınıf",
+    title: "Matematik Ders Paketi",
+    category: "Matematik",
+    price: "₺3.000/ay",
+    quota: "Maks. 4 kişilik grup",
+    audience: "Matematikte konu eksiğini canlı ders ve öğretmen takibiyle kapatmak isteyen öğrenciler için",
+    seats: "En fazla 4 kişilik butik grup",
     features: [
-      "Haftada 12 canlı ders (TYT + AYT planı)",
-      "Branş bazlı deneme analizi ve soru çözüm seansı",
-      "Haftalık performans takip raporu",
-      "Koçlukla bireysel hedef kontrolü"
+      "Canlı matematik dersi",
+      "Maksimum 4 kişilik butik grup",
+      "Öğretmen takibi ve ders sonrası ödevlendirme",
+      "Eksik konu kapatma"
     ],
     weeklyPlan: [
-      "Pazartesi: TYT Türkçe + Matematik tempo dersi",
-      "Salı: AYT branş derinleşme oturumu",
-      "Çarşamba: TYT deneme analizi ve hataya dönüş",
-      "Perşembe: Soru çözüm grubu + eksik konu tekrarı",
-      "Pazar: TYT/AYT karma deneme ve yeni hafta planı"
+      "Butik grupta canlı matematik dersi",
+      "Derste soru-cevap ve birlikte çözüm",
+      "Ders sonrası ödevlendirme",
+      "Eksik konuya göre ilerleme",
+      "Öğretmen takibiyle düzenli geri bildirim"
     ],
-    note: "En yoğun talep gören paket",
+    note: "Eski fiyat ₺5.000 — şimdi ₺3.000"
+  },
+  {
+    title: "Matematik Tam Destek Paketi",
+    category: "Matematik",
+    price: "₺3.500/ay",
+    quota: "En avantajlı paket",
+    audience: "Matematikte hem öğrenmeyi hem ölçmeyi tek pakette isteyen veliler için en güvenli tercih",
+    seats: "Ders Paketi + Deneme Kulübü",
+    features: [
+      "Matematik Ders Paketi'nin tamamı",
+      "Matematik Deneme Kulübü'nün tamamı",
+      "Canlı ders + düzenli deneme analizi",
+      "Veliye açık tek gelişim takibi"
+    ],
+    weeklyPlan: [
+      "Butik grupta canlı matematik dersi",
+      "Düzenli dijital matematik denemeleri",
+      "Kazanım analizi ve eksik konu raporu",
+      "Ders ve denemeyle eksik konu kapatma",
+      "Veliye tek noktadan gelişim özeti"
+    ],
+    note: "Ders Paketi (₺3.000) + Deneme Kulübü (₺750) birlikte ₺3.500",
     featured: true
-  },
-  {
-    title: "Ara Sınıf Akademik Paket",
-    category: "ARA",
-    price: "2.790 TL / ay",
-    quota: "Son 8 kontenjan",
-    audience: "9-10-11. sınıfta okul başarısını yükseltirken sınav altyapısı kurmak isteyen öğrenciler için",
-    seats: "8-10 kişilik akademik destek sınıfı",
-    features: [
-      "Haftada 8 canlı ders",
-      "Okul yazılılarına destekleyici konu tekrarları",
-      "Aylık ölçme ve gelişim değerlendirmesi",
-      "Temel eksiklere özel yönlendirme"
-    ],
-    weeklyPlan: [
-      "Pazartesi: Okul müfredatına paralel konu anlatımı",
-      "Salı: Branş bazlı soru çözüm saati",
-      "Çarşamba: Haftalık eksik konu tekrarı",
-      "Perşembe: Yazılı odaklı mini değerlendirme",
-      "Cumartesi: Karma test + öğretmen geri bildirimi"
-    ]
-  },
-  {
-    title: "KPSS Sistem Paketi",
-    category: "KPSS",
-    price: "3.590 TL / ay",
-    quota: "Son 5 kontenjan",
-    audience: "KPSS müfredatını planlı yönetmek isteyen adaylar için",
-    seats: "8 kişilik KPSS odak sınıf",
-    features: [
-      "Genel Yetenek + Genel Kültür canlı ders planı",
-      "Haftalık deneme ve ayrıntılı analiz",
-      "Konu tekrar takvimi ve soru maratonu",
-      "Süre yönetimi odaklı sınav simülasyonları"
-    ],
-    weeklyPlan: [
-      "Pazartesi: Genel Yetenek konu anlatımı",
-      "Salı: Genel Kültür kısa tekrar + soru çözümü",
-      "Çarşamba: Karma test ve yanlış analizi",
-      "Perşembe: Deneme stratejisi + süre çalışması",
-      "Cumartesi: KPSS denemesi ve bireysel iyileştirme planı"
-    ]
-  },
-  {
-    title: "ALES Strateji Paketi",
-    category: "ALES",
-    price: "3.190 TL / ay",
-    quota: "Son 7 kontenjan",
-    audience: "ALES'te mantık ve hız dengesini güçlendirmek isteyen adaylar için",
-    seats: "8 kişilik ALES strateji sınıfı",
-    features: [
-      "Sayısal ve sözel mantık canlı dersleri",
-      "Hız odaklı soru çözüm atölyeleri",
-      "Haftalık performans takip dosyası",
-      "Zayıf soru tiplerine özel tekrar planı"
-    ],
-    weeklyPlan: [
-      "Pazartesi: Sayısal mantık temel set",
-      "Salı: Sözel mantık teknik oturumu",
-      "Çarşamba: Zaman baskılı soru sprinti",
-      "Perşembe: Yanlış tiplerine özel tekrar dersi",
-      "Cumartesi: ALES simülasyon denemesi + geri bildirim"
-    ]
   }
 ];
 
@@ -1106,32 +1038,32 @@ export const blogPosts = [
 
 export const faq = [
   {
-    q: "Bu sistem klasik bir online dershane paketi mi?",
-    a: "Hayır. Bizde tüm dersleri içeren tek bir paket dayatması yok. Sadece eksik olduğun dersleri seçer, kendi planını oluşturur ve zamanını verimli kullanırsın."
+    q: "Online Dershanem sadece matematik mi?",
+    a: "Evet. Tek odağımız matematik. Tüm ders, deneme ve takip sistemimiz öğrencinin matematikteki eksiklerini kapatmak için kurulmuştur."
   },
   {
     q: "Gruplar kaç kişilik?",
-    a: "Gruplarımız en fazla 4 kişilik. Bu sayede öğretmen seninle birebir ilgilenir; soru sormak, çözüm yaptırmak ve takılan noktalara geri dönmek için yeterli süre kalır."
+    a: "Matematik gruplarımız en fazla 4 kişilik. Bu sayede öğretmen seninle yakından ilgilenir; soru sormak, çözüm yaptırmak ve takılan noktalara geri dönmek için yeterli süre kalır."
   },
   {
     q: "Seviyeye göre gruplandırma yapılıyor mu?",
-    a: "Evet. Kayıt öncesi yapılan kısa değerlendirmeyle seninle aynı seviyedeki ve benzer hedeflere sahip öğrencilerle eşleşirsin. Tempo ne çok yavaş ne de çok hızlı kalır."
+    a: "Evet. Kısa bir matematik değerlendirmesiyle seninle aynı seviyedeki ve benzer hedeflere sahip öğrencilerle eşleşirsin. Tempo ne çok yavaş ne de çok hızlı kalır."
   },
   {
-    q: "Sadece ihtiyacım olan dersi alabilir miyim?",
-    a: "Evet. İster yalnızca TYT Matematik, ister sadece LGS Fen Bilimleri seçebilirsin. Süreç içinde ihtiyaç duyduğun başka dersleri de paketine ekleyebilirsin."
+    q: "Sadece deneme veya sadece ders paketi alabilir miyim?",
+    a: "Evet. Matematik Deneme Kulübü ile denemeyle gelişimini ölçebilir, Matematik Ders Paketi ile canlı derse katılabilir ya da Tam Destek Paketi ile ikisini birden alabilirsin."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. Müfredat; konu anlatımı, yeni nesil soru çözümü ve düzenli takiple sınavda net üretmeye göre planlanıyor. Sadece konu bitirmek değil, ilerlemeni ölçmek esas."
+    a: "Evet. Matematik; konu anlatımı, yeni nesil soru çözümü ve düzenli denemelerle TYT, AYT ve LGS'te net üretmeye göre planlanıyor. Sadece konu bitirmek değil, ilerlemeni ölçmek esas."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
-    a: "Evet. Özellikle LGS sürecinde veliler düzenli olarak bilgilendirilir. Devam durumu, genel ilerleme ve eksik kalan alanlar hakkında geri bildirim paylaşılır."
+    a: "Evet. Veliye matematikteki gelişimi anlaşılır bir özetle düzenli paylaşılır: deneme analizi, eksik konu raporu ve genel ilerleme."
   },
   {
     q: "Paket seçiminde kararsızsam ne yapmalıyım?",
-    a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Mevcut seviyeni ve hedefini konuşur, sana en uygun ders kombinasyonunu birlikte belirleriz."
+    a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Öğrencinin matematik seviyesini ve hedefini konuşur, deneme/ders/tam destekten hangisinin uygun olduğunu birlikte belirleriz."
   }
 ];
 
@@ -1144,24 +1076,23 @@ export const contact = {
 
 export const seoKeywords = [
   "online dershanem",
-  "online dershane",
-  "özel ders",
-  "online özel ders",
-  "yks hazırlık",
-  "yks özel ders",
-  "tyt hazırlık",
-  "tyt özel ders",
-  "ayt hazırlık",
-  "ayt özel ders",
-  "lgs hazırlık",
-  "lgs özel ders",
-  "grup özel ders",
-  "lgs online kurs",
-  "tyt grup özel ders",
-  "ayt grup özel ders",
-  "ders bazlı paket",
-  "google meet canlı ders",
-  "küçük grup ders"
+  "online matematik dershanesi",
+  "online matematik dersi",
+  "matematik özel ders",
+  "matematik deneme kulübü",
+  "matematik deneme",
+  "canlı matematik dersi",
+  "butik matematik dersi",
+  "tyt matematik",
+  "ayt matematik",
+  "lgs matematik",
+  "matematik net artırma",
+  "matematik kazanım analizi",
+  "küçük grup matematik dersi",
+  "google meet matematik dersi",
+  "matematik eksik konu",
+  "veliye gelişim takibi",
+  "matematik ders paketi"
 ];
 
 /**
@@ -1201,7 +1132,10 @@ export function getPackagePriceCents(
   for (const group of subjectPackageGroups) {
     for (const pkg of group.packages) {
       if (pkg.category === category && pkg.subject === subject) {
-        return parsePriceToCents(pkg.discountedPrice);
+        // Açık priceCents tercih edilir; yoksa Türkçe etiketten parse edilir.
+        return pkg.priceCents > 0
+          ? pkg.priceCents
+          : parsePriceToCents(pkg.discountedPrice);
       }
     }
   }

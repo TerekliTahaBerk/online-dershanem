@@ -4,29 +4,29 @@ import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
-  title: "LGS Grup Özel Ders Paketleri",
+  title: "LGS Matematik Paketleri",
   description:
-    "LGS Matematik ve Fen için ders bazlı küçük grup özel ders paketleri: takip modeli, fiyatlar ve butik grup yapısı.",
+    "LGS matematik için butik canlı dersler, matematik deneme kulübü ve veliye açık gelişim takibi. En fazla 4 kişilik grupta kazanım bazlı ilerleme.",
   alternates: {
     canonical: "/lgs"
   },
   openGraph: {
-    title: "LGS Grup Özel Ders Paketleri | Online Dershanem",
-    description: "LGS ders bazlı paket fiyatlarını inceleyin ve seviyeye uygun küçük gruba başvurun.",
+    title: "LGS Matematik Paketleri | Online Dershanem",
+    description: "LGS matematik paketlerini inceleyin: butik canlı ders, deneme kulübü ve veliye açık gelişim takibi.",
     url: `${siteUrl}/lgs`
   }
 };
 
 export default function LGSLandingPage() {
   const courseLd = courseJsonLd({
-    name: "LGS Grup Özel Ders",
+    name: "LGS Matematik",
     description:
-      "LGS Matematik ve Fen Bilimleri için ders bazlı küçük grup (maks. 4 kişi) özel ders. Kazanım takibi ve düzenli mini quiz yapısıyla.",
+      "LGS matematik için butik canlı ders (maks. 4 kişi), düzenli matematik denemeleri ve kazanım bazlı gelişim takibi.",
     url: "/lgs/",
   });
   const breadcrumbLd = breadcrumbJsonLd([
     { name: "Ana Sayfa", url: "/" },
-    { name: "LGS Grup Özel Ders", url: "/lgs/" },
+    { name: "LGS Matematik", url: "/lgs/" },
   ]);
   return (
     <>
@@ -35,27 +35,27 @@ export default function LGSLandingPage() {
       <ExamSalesLanding
       data={{
         examKey: "LGS",
-        heroBadge: "LGS Grup Özel Ders",
-        heroTitle: "LGS'de ders bazlı küçük grup paketleriyle düzenli ilerleme",
+        heroBadge: "LGS Matematik",
+        heroTitle: "LGS matematikte butik canlı ders ve deneme takibiyle düzenli ilerleme",
         heroText:
-          "LGS sürecinde öğrenciler tüm dersleri toplu almak zorunda değildir. Matematik veya Fen Bilimleri paketini ayrı seçerek odaklı ve verimli şekilde ilerleyebilir.",
+          "LGS matematikte öğrenciyi butik canlı dersler, düzenli matematik denemeleri ve veliye açık gelişim takibiyle ilerletiyoruz. Çocuğunuzun matematikte nerede takıldığını görüp ders ve denemeyle birlikte kapatıyoruz.",
         highlights: [
-          "Maksimum 4 kişilik sınıf ile daha fazla bireysel ilgi",
-          "Kazanım bazlı takip ve düzenli mini quiz yapısı",
-          "Veliye net ve anlaşılır süreç bilgilendirmesi"
+          "Maksimum 4 kişilik matematik grubunda daha fazla bireysel ilgi",
+          "Kazanım bazlı matematik takibi ve düzenli denemeler",
+          "Veliye net ve anlaşılır gelişim bilgilendirmesi"
         ],
         faq: [
           {
-            q: "LGS öğrencisi tek ders paketi alabilir mi?",
-            a: "Evet. Matematik veya Fen Bilimleri paketini ayrı seçebilirsin. İhtiyaca göre ikinci ders sonradan eklenebilir."
+            q: "Sadece deneme veya sadece ders paketi alabilir miyim?",
+            a: "Evet. Matematik Deneme Kulübü ile sadece denemeyle ölçebilir, Matematik Ders Paketi ile canlı derse katılabilir ya da Tam Destek ile ikisini birden alabilirsin."
           },
           {
             q: "Dersler kalabalık sınıf şeklinde mi?",
-            a: "Hayır. Tüm paketler küçük grup (maks. 4 kişi) modelindedir. Bu sayede öğretmen takibi daha yakın ilerler."
+            a: "Hayır. Matematik dersleri en fazla 4 kişilik butik grup modelindedir. Bu sayede öğretmen takibi daha yakın ilerler."
           },
           {
             q: "Ders kaçırılırsa süreç nasıl ilerliyor?",
-            a: "Kayıt ve telafi planı ile öğrenci aynı hafta içinde akışa geri alınır, kazanım takibi kesintiye uğratılmaz."
+            a: "Telafi planı ile öğrenci aynı hafta içinde akışa geri alınır, matematik kazanım takibi kesintiye uğratılmaz."
           }
         ]
       }}

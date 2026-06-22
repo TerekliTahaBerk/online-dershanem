@@ -39,13 +39,11 @@ function asBool(v: unknown): boolean {
 const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function POST(req: Request) {
+  // Guest checkout: oturum ZORUNLU DEĞİL. Session varsa order kullanıcıya
+  // bağlanır; yoksa userId=null guest order oluşur (ödeme sonrası entitlement
+  // admin onboarding'e ertelenir). Bkz. lib/odk/finance.ts.
   const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { ok: false, error: "Oturum açmanız gerekiyor." },
-      { status: 401 },
-    );
-  }
+  const userId = session?.user?.id ?? null;
 
   let body: unknown;
   try {
@@ -117,18 +115,21 @@ export async function POST(req: Request) {
     capturedAt: new Date().toISOString(),
   };
 
-  // Idempotency: reuse PENDING order from last 30 min if exists
+  // Idempotency: reuse PENDING order from last 30 min if exists. Guest'te
+  // (userId=null) güvenilir reuse anahtarı yok → her zaman yeni order oluştur.
   const cutoff = new Date(Date.now() - PENDING_REUSE_MS);
-  let order = await prisma.odkOrder.findFirst({
-    where: {
-      userId: session.user.id,
-      packageId: pkg.id,
-      status: "PENDING",
-      createdAt: { gt: cutoff },
-    },
-    orderBy: { createdAt: "desc" },
-    select: { id: true },
-  });
+  let order = userId
+    ? await prisma.odkOrder.findFirst({
+        where: {
+          userId,
+          packageId: pkg.id,
+          status: "PENDING",
+          createdAt: { gt: cutoff },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      })
+    : null;
 
   if (order) {
     await prisma.odkOrder.update({
@@ -138,7 +139,7 @@ export async function POST(req: Request) {
   } else {
     order = await prisma.odkOrder.create({
       data: {
-        userId: session.user.id,
+        userId,
         packageId: pkg.id,
         status: "PENDING",
         subtotalCents: pkg.priceCents,
@@ -152,7 +153,7 @@ export async function POST(req: Request) {
 
   log.info("odk.checkout.form_captured", {
     orderId: order.id,
-    userId: session.user.id,
+    userId,
     packageId: pkg.id,
   });
 

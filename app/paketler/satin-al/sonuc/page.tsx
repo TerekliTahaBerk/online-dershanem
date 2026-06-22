@@ -32,20 +32,17 @@ export default async function OdCheckoutThankYouPage({
           {normalizedStatus === "success" && (
             <CheckoutResultCard
               status="success"
-              eyebrow="Online Dershane"
+              eyebrow="Online Matematik Dershanesi"
+              description="Ödemeniz alındı. Ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacak."
               nextStepNote={
                 <>
-                  <strong>Sıradaki adım:</strong> Hocalarımız{" "}
-                  <strong>24 saat içinde</strong> sizinle iletişime geçerek
-                  programınızı planlayacak. Henüz öğrenci için ders veya
-                  öğretmen ataması yapılmadı; planlama birlikte yapılır.
+                  <strong>Sıradaki adım:</strong> Hesap açmanıza gerek yok.
+                  Ekibimiz <strong>24 saat içinde</strong> sizinle iletişime
+                  geçerek öğrenci hesabınızı oluşturacak ve matematik programınızı
+                  birlikte planlayacak.
                 </>
               }
-              primaryAction={{
-                href: "/panel/ogrenci",
-                label: "Panele Git",
-                variant: "primary",
-              }}
+              primaryAction={{ href: "/", label: "Ana Sayfa", variant: "primary" }}
               secondaryAction={{ href: "/iletisim", label: "İletişim" }}
             />
           )}
@@ -53,14 +50,10 @@ export default async function OdCheckoutThankYouPage({
           {normalizedStatus === "pending" && (
             <CheckoutResultCard
               status="pending"
-              eyebrow="Online Dershane"
+              eyebrow="Online Matematik Dershanesi"
               title="Bilgileriniz alındı"
-              description="Talebiniz kayıt altına alındı. Hocalarımız 24 saat içinde sizinle iletişime geçecek."
-              primaryAction={{
-                href: "/panel/ogrenci",
-                label: "Panele Git",
-                variant: "primary",
-              }}
+              description="Talebiniz kayıt altına alındı. Ekibimiz 24 saat içinde sizinle iletişime geçecek."
+              primaryAction={{ href: "/", label: "Ana Sayfa", variant: "primary" }}
               secondaryAction={{ href: "/iletisim", label: "İletişim" }}
             />
           )}
@@ -68,7 +61,7 @@ export default async function OdCheckoutThankYouPage({
           {normalizedStatus === "failed" && (
             <CheckoutResultCard
               status="failed"
-              eyebrow="Online Dershane"
+              eyebrow="Online Matematik Dershanesi"
               primaryAction={{
                 href: "/paketler",
                 label: "Paketlere Dön",

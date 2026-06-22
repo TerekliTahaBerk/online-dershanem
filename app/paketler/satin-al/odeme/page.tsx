@@ -29,19 +29,17 @@ export default async function OdPaymentPage({
     redirect("/paketler");
   }
 
+  // Guest checkout: login zorunlu değil. Order'ı id ile çek; sahiplik kontrolü:
+  //  - Guest order (userId=null) → cuid orderId tahmin edilemez bir bearer'dır,
+  //    id ile erişime izin verilir.
+  //  - Kullanıcıya bağlı order → yalnızca o kullanıcı görebilir (başkasının
+  //    order'ı okunamaz). Aksi halde 404.
   const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    redirect(
-      `/giris?callbackUrl=${encodeURIComponent(
-        `/paketler/satin-al/odeme?orderId=${orderId}`
-      )}`
-    );
-  }
-
-  const order = await prisma.odOrder.findFirst({
-    where: { id: orderId, userId: session.user.id },
+  const order = await prisma.odOrder.findUnique({
+    where: { id: orderId },
     select: {
       id: true,
+      userId: true,
       status: true,
       totalCents: true,
       packageName: true,
@@ -52,6 +50,10 @@ export default async function OdPaymentPage({
   });
 
   if (!order) {
+    notFound();
+  }
+
+  if (order.userId && order.userId !== session?.user?.id) {
     notFound();
   }
 
@@ -75,9 +77,9 @@ export default async function OdPaymentPage({
         orderId: order.id,
         userEmail:
           buyer.email ||
-          session.user.email ||
-          `user-${session.user.id}@onlinedershanem.com`,
-        userName: buyer.fullName || session.user.name || "Müşteri",
+          session?.user?.email ||
+          `order-${order.id}@onlinedershanem.com`,
+        userName: buyer.fullName || session?.user?.name || "Müşteri",
         userPhone: buyer.phone || "+905555555555",
         userAddress:
           [buyer.district, buyer.city].filter(Boolean).join(", ") || "Türkiye",

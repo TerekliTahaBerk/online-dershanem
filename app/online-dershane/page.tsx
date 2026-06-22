@@ -7,16 +7,16 @@ import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Online Dershane | Küçük Grup ve Haftalık Takip",
+  title: "Online Matematik Dershanesi | Butik Grup ve Gelişim Takibi",
   description:
-    "Online dershane modelinde maksimum 4 kişilik küçük grup, ders bazlı seçim ve haftalık takip sistemiyle LGS-YKS öğrencileri için net artışı hızlandır.",
+    "Online matematik dershanesi: en fazla 4 kişilik butik grup, canlı matematik dersi, düzenli denemeler ve veliye açık gelişim takibiyle matematikte net artışı.",
   alternates: {
     canonical: "/online-dershane/"
   },
   openGraph: {
-    title: "Online Dershane | Online Dershanem",
+    title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "Online dershane sisteminde küçük grup ders, haftalık analiz ve ölçülebilir net artışı modeli.",
+      "Butik grupta canlı matematik dersi, deneme analizi ve ölçülebilir net artışı modeli.",
     url: `${siteUrl}/online-dershane/`
   }
 };
@@ -28,13 +28,13 @@ export default function OnlineDershanePage() {
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>
           <section className="rounded-3xl border border-line bg-white p-7 shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Online Dershane</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Online Matematik Dershanesi</p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-              Online Dershane ile Kalabalıktan Çık, Net Artışını Hızlandır
+              Online Matematik Dershanesiyle Kalabalıktan Çık, Net Artışını Hızlandır
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
-              Bu sistem klasik kalabalık online ders değil. Öğrenci ders bazlı seçim yapar, maksimum 4 kişilik grupta ilerler ve
-              her hafta deneme analizine göre güncellenen bir planla takip edilir.
+              Bu sistem klasik kalabalık online ders değil. Öğrenci matematikte en fazla 4 kişilik butik grupta ilerler,
+              düzenli denemelerle ölçülür ve veliye açık gelişim takibiyle desteklenir.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <LeadFunnelTrigger
@@ -55,9 +55,9 @@ export default function OnlineDershanePage() {
 
           <section className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              "Maksimum 4 kişilik küçük grup ile bireysel geri bildirim",
-              "Sadece ihtiyaç olan derse kayıt imkanı (ders bazlı model)",
-              "Haftalık deneme analizi ve veli-öğrenci takip raporu"
+              "Maksimum 4 kişilik butik matematik grubu ile bireysel geri bildirim",
+              "Deneme, canlı ders veya ikisini birlikte seçebilme",
+              "Matematik deneme analizi ve veliye açık gelişim takibi"
             ].map((item) => (
               <article key={item} className="rounded-2xl border border-line bg-white p-5 text-sm font-medium text-muted shadow-soft">
                 {item}
@@ -66,11 +66,11 @@ export default function OnlineDershanePage() {
           </section>
 
           <section className="mt-8 rounded-3xl border border-line bg-white p-6 shadow-soft">
-            <h2 className="text-2xl font-bold tracking-tight text-ink">Online Dershane Kimler İçin Uygun?</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-ink">Online Matematik Dershanesi Kimler İçin Uygun?</h2>
             <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted">
-              <li>Tek başına çalışırken planını sürdüremeyen öğrenciler</li>
-              <li>Birden fazla derste dağınıklık yaşayan LGS ve YKS adayları</li>
-              <li>Haftalık takip ve net hedefleriyle ilerlemek isteyenler</li>
+              <li>Matematikte tek başına çalışırken planını sürdüremeyen öğrenciler</li>
+              <li>Matematikte eksik konuları biriken LGS ve YKS adayları</li>
+              <li>Matematikte düzenli takip ve net hedefleriyle ilerlemek isteyenler</li>
             </ul>
           </section>
 

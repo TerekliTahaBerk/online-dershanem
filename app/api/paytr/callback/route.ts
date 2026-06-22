@@ -266,25 +266,31 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
 
       // In-app + push notification (idempotent via expireRelatedNotifications)
       // Tx dışında, fire-and-forget — markOdOrderPaid email zaten gönderiyor.
-      try {
-        await expireRelatedNotifications({
-          relatedEntityType: "OdOrder",
-          relatedEntityIds: [payment.orderId],
-        });
-        await notifyUser({
-          userId: payment.order.userId,
-          type: "PAYMENT",
-          priority: "HIGH",
-          category: "FINANCE",
-          inboxPriority: "HIGH",
-          title: "Ödemeniz alındı",
-          body: `OD paket satın alımınız onaylandı (${(totalCents / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} ₺). Hocalarımız 24 saat içinde planlama için sizinle iletişime geçecek.`,
-          href: "/panel/ogrenci",
-          relatedEntityType: "OdOrder",
-          relatedEntityId: payment.orderId,
-        });
-      } catch (notifyErr) {
-        log.warn("paytr.callback.od.notify_failed", { orderId: payment.orderId, err: String(notifyErr) });
+      // Guest order (userId=null) → kullanıcı henüz yok; in-app bildirim atlanır.
+      // markOdOrderPaid zaten admin e-postası gönderdi (onboarding bildirimi).
+      // Hesap admin tarafından açılıp order bağlandığında bilgilendirme yapılır.
+      if (payment.order.userId) {
+        const orderUserId = payment.order.userId;
+        try {
+          await expireRelatedNotifications({
+            relatedEntityType: "OdOrder",
+            relatedEntityIds: [payment.orderId],
+          });
+          await notifyUser({
+            userId: orderUserId,
+            type: "PAYMENT",
+            priority: "HIGH",
+            category: "FINANCE",
+            inboxPriority: "HIGH",
+            title: "Ödemeniz alındı",
+            body: `OD paket satın alımınız onaylandı (${(totalCents / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2 })} ₺). Hocalarımız 24 saat içinde planlama için sizinle iletişime geçecek.`,
+            href: "/panel/ogrenci",
+            relatedEntityType: "OdOrder",
+            relatedEntityId: payment.orderId,
+          });
+        } catch (notifyErr) {
+          log.warn("paytr.callback.od.notify_failed", { orderId: payment.orderId, err: String(notifyErr) });
+        }
       }
     } catch (err) {
       log.error("paytr.callback.od.success_handler_error", err, { orderId: payment.orderId });
@@ -319,22 +325,26 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
         },
       });
 
-      // Failure notification (NORMAL priority — user yeniden deneyebilir)
-      try {
-        await notifyUser({
-          userId: payment.order.userId,
-          type: "PAYMENT",
-          priority: "NORMAL",
-          category: "FINANCE",
-          inboxPriority: "NORMAL",
-          title: "Ödeme tamamlanamadı",
-          body: `OD paket ödemeniz başarısız oldu: ${payload.failed_reason_msg ?? "Bilinmeyen hata"}. Tekrar denemek için paketler sayfasından devam edebilirsiniz.`,
-          href: "/paketler",
-          relatedEntityType: "OdOrder",
-          relatedEntityId: payment.orderId,
-        });
-      } catch (notifyErr) {
-        log.warn("paytr.callback.od.notify_failed", { orderId: payment.orderId, err: String(notifyErr) });
+      // Failure notification (NORMAL priority — user yeniden deneyebilir).
+      // Guest order (userId=null) → in-app bildirim atlanır.
+      if (payment.order.userId) {
+        const orderUserId = payment.order.userId;
+        try {
+          await notifyUser({
+            userId: orderUserId,
+            type: "PAYMENT",
+            priority: "NORMAL",
+            category: "FINANCE",
+            inboxPriority: "NORMAL",
+            title: "Ödeme tamamlanamadı",
+            body: `OD paket ödemeniz başarısız oldu: ${payload.failed_reason_msg ?? "Bilinmeyen hata"}. Tekrar denemek için paketler sayfasından devam edebilirsiniz.`,
+            href: "/paketler",
+            relatedEntityType: "OdOrder",
+            relatedEntityId: payment.orderId,
+          });
+        } catch (notifyErr) {
+          log.warn("paytr.callback.od.notify_failed", { orderId: payment.orderId, err: String(notifyErr) });
+        }
       }
     } catch (err) {
       log.error("paytr.callback.od.failed_handler_error", err);

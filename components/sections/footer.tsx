@@ -7,8 +7,9 @@ import { ContactLink } from "@/components/ui/contact-link";
 /* ── Link groups (kept in sync with original site IA) ─────────────── */
 
 const productLinks = [
-  { label: "Paketler", href: "/paketler/" },
+  { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
+  { label: "Paketler", href: "/paketler/" },
   { label: "Kamplar", href: "/kamplar/" },
   { label: "Blog", href: "/blog/" },
 ];
@@ -104,8 +105,8 @@ export function Footer() {
             </Link>
 
             <p className="max-w-sm text-[13.5px] leading-6 text-[#7A7A6F]">
-              Butik sınıf online dershane. Sadece ihtiyacın olan dersi seç,
-              küçük grupta odaklı ilerle.
+              Online matematik dershanesi. Butik canlı dersler, matematik deneme
+              kulübü ve veliye açık gelişim takibi.
             </p>
 
             {/* Contact details */}

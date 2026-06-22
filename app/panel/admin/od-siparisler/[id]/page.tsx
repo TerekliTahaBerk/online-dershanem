@@ -64,7 +64,7 @@ export default async function OdOrderDetailPage({
     <>
       <PageHeader
         title={`Sipariş ${order.id.slice(0, 10)}…`}
-        subtitle={`${order.user.email} · ${order.status}`}
+        subtitle={`${order.user?.email ?? (buyer.email as string) ?? "(guest — hesap açılacak)"} · ${order.status}`}
         right={
           <Link href="/panel/admin/od-siparisler" className="od-btn od-btn-ghost od-btn-sm">
             ← Liste
@@ -75,7 +75,7 @@ export default async function OdOrderDetailPage({
       <Card>
         <CardBody>
           <Row label="Tarih" value={formatDateTime(order.createdAt)} />
-          <Row label="Müşteri" value={<>{order.user.name || "—"} · {order.user.email}</>} />
+          <Row label="Müşteri" value={<>{order.user?.name || (buyer.fullName as string) || "—"} · {order.user?.email ?? (buyer.email as string) ?? "(guest — hesap açılacak)"}</>} />
           <Row label="Paket" value={
             <>
               {order.packageName}
