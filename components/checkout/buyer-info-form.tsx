@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ShoppingBag } from "lucide-react";
 
 export type BuyerInfoFormDefaults = {
   fullName?: string;
@@ -47,6 +48,29 @@ type ApiResult =
   | { ok: true; redirectUrl?: string; paymentLink?: string }
   | { ok: false; error: string };
 
+/**
+ * Checkout başlatma hatasını console'a anlamlı ama HASSAS BİLGİSİZ logla.
+ * Loglanan: endpoint, status, response özeti, sepet kalem sayısı, toplam tutar,
+ * fromCart. Loglanmayan: kart bilgisi, hash/secret, ad/email/telefon gibi PII.
+ * Prod'da tek-satır JSON, dev'de okunabilir grup.
+ */
+function logCheckoutError(meta: {
+  endpoint: string;
+  service: "OD" | "ODK";
+  status: number;
+  responseSnippet: string;
+  itemCount: number;
+  totalCents: number;
+  fromCart: string | null;
+}) {
+  if (process.env.NODE_ENV === "production") {
+    // Vercel/log aggregator'ların parse edebileceği tek satır.
+    console.error(JSON.stringify({ event: "checkout.start_failed", ...meta }));
+  } else {
+    console.error("[checkout.start_failed]", meta);
+  }
+}
+
 export function BuyerInfoForm({
   action,
   packageLabel,
@@ -60,7 +84,7 @@ export function BuyerInfoForm({
   onSuccess,
 }: BuyerInfoFormProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -113,36 +137,91 @@ export function BuyerInfoForm({
       return;
     }
 
-    startTransition(async () => {
-      try {
-        const res = await fetch(action, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const json: ApiResult = await res.json();
-        if (!res.ok || !json.ok) {
-          setError(
-            (json as { error?: string }).error ||
-              "Bir hata oluştu. Lütfen tekrar deneyin.",
-          );
-          return;
+    // Guard: çift gönderimi engelle (React 18'de async submit boyunca pending
+    // güvenilir kalsın diye useTransition yerine explicit state kullanıyoruz).
+    if (isPending) return;
+    setIsPending(true);
+
+    // Loglama için hassas olmayan özet metadata (PII / sırlar HARİÇ).
+    const items = Array.isArray(extraPayload?.items)
+      ? (extraPayload!.items as Array<{ priceCents?: number; qty?: number }>)
+      : [];
+    const totalCents = items.reduce(
+      (acc, i) => acc + (Number(i.priceCents) || 0) * (Number(i.qty) || 0),
+      0,
+    );
+    const fromCart =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("fromCart")
+        : null;
+
+    try {
+      const res = await fetch(action, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      // res.ok kontrolü yapmadan json() parse ETME. Hata response'ları HTML
+      // (500 sayfası) veya boş gövde olabilir → önce text oku, sonra güvenli
+      // parse et. Aksi halde res.json() yakalanmayan promise üretir.
+      const contentType = res.headers.get("content-type") || "";
+      const raw = await res.text();
+      let json: ApiResult | null = null;
+      if (raw && contentType.includes("application/json")) {
+        try {
+          json = JSON.parse(raw) as ApiResult;
+        } catch {
+          json = null;
         }
-        if (submitMode === "external" && json.paymentLink) {
-          onSuccess?.();
-          window.location.href = json.paymentLink;
-          return;
-        }
-        if (json.redirectUrl) {
-          onSuccess?.();
-          router.push(json.redirectUrl);
-          return;
-        }
-        setError("Sunucudan yönlendirme adresi alınamadı.");
-      } catch (err) {
-        setError("Bağlantı hatası. Lütfen tekrar deneyin.");
       }
-    });
+
+      if (!res.ok || !json || json.ok !== true) {
+        logCheckoutError({
+          endpoint: action,
+          service,
+          status: res.status,
+          responseSnippet: raw.slice(0, 300),
+          itemCount: items.length,
+          totalCents,
+          fromCart,
+        });
+        setError(
+          (json as { error?: string } | null)?.error ||
+            "Ödeme başlatılamadı. Lütfen tekrar deneyin veya bizimle iletişime geçin.",
+        );
+        return;
+      }
+
+      if (submitMode === "external" && json.paymentLink) {
+        onSuccess?.();
+        window.location.href = json.paymentLink;
+        return;
+      }
+      if (json.redirectUrl) {
+        onSuccess?.();
+        router.push(json.redirectUrl);
+        return;
+      }
+      setError("Sunucudan yönlendirme adresi alınamadı. Lütfen tekrar deneyin.");
+    } catch (err) {
+      logCheckoutError({
+        endpoint: action,
+        service,
+        status: 0,
+        responseSnippet: err instanceof Error ? err.message : String(err),
+        itemCount: items.length,
+        totalCents,
+        fromCart,
+      });
+      setError(
+        "Ödeme başlatılamadı. Lütfen tekrar deneyin veya bizimle iletişime geçin.",
+      );
+    } finally {
+      // Yönlendirme yapılmadıysa (hata) butonu tekrar aktifleştir; başarıyla
+      // redirect olduysa sayfa zaten değişir, bu güvenli bir no-op'tur.
+      setIsPending(false);
+    }
   }
 
   return (
@@ -152,7 +231,9 @@ export function BuyerInfoForm({
       ))}
 
       <div className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4 flex items-start gap-3">
-        <div className="text-2xl">🛒</div>
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--od-olive)]">
+          <ShoppingBag size={18} strokeWidth={1.7} />
+        </div>
         <div className="flex-1">
           <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--od-olive)] font-semibold mb-1">
             Sepetiniz
@@ -349,7 +430,7 @@ export function BuyerInfoForm({
       <div className="rounded-xl border border-[var(--od-yellow)]/40 bg-[var(--od-yellow-soft)] px-4 py-3 text-[13.5px] text-[var(--od-ink)]">
         <strong>Bilgi:</strong>{" "}
         {service === "OD"
-          ? "Ödemeniz alındıktan sonra hocalarımız 24 saat içinde sizinle iletişime geçerek programınızı planlayacaktır. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
+          ? "Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacaktır. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
           : "Ödeme tamamlandığında ODK erişiminiz otomatik aktive olur. Deneme planınız için hocalarımız sizinle iletişime geçecektir."}
       </div>
 

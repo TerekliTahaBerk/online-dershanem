@@ -64,8 +64,8 @@ export default async function OdCheckoutThankYouPage({
               status="failed"
               eyebrow="Online Matematik Dershanesi"
               primaryAction={{
-                href: "/paketler",
-                label: "Paketlere Dön",
+                href: "/#matematik-ders-paketi",
+                label: "Matematik Dersine Dön",
                 variant: "primary",
               }}
               secondaryAction={{ href: "/iletisim", label: "İletişim" }}

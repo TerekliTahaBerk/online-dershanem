@@ -11,8 +11,8 @@ export default async function Image() {
   return new ImageResponse(
     (
       <OgTemplate
-        title="Matematikte nerede takıldığını görüyoruz"
-        subtitle="Butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi."
+        title="Online matematik dersi"
+        subtitle="Maksimum 4 kişilik canlı matematik dersi, ders sonrası takip ve veli bilgilendirmesi."
         badge="Online Dershanem"
         variant="default"
       />

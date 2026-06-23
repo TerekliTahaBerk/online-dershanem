@@ -142,20 +142,20 @@ html {
 body {
   background-color: var(--pd-bg);
   color: var(--pd-ink);
-  font-family: "Tiempos Text Regular", "Tiempos Text", Georgia, "Times New Roman", serif;
+  font-family: var(--font-sans), var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  letter-spacing: -0.011em;
+  letter-spacing: 0;
 }
 
-/* Display serif gets a touch more breathing room across the site */
 .font-display {
-  letter-spacing: 0.005em;
-  word-spacing: 0.04em;
+  font-family: var(--font-sans), var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  word-spacing: 0;
 }
 .font-display em,
 .font-display i {
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 a {

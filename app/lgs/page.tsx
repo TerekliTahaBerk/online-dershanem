@@ -4,15 +4,15 @@ import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
-  title: "LGS Matematik Paketleri",
+  title: "LGS Matematik Dersi",
   description:
-    "LGS matematik için butik canlı dersler, matematik deneme kulübü ve veliye açık gelişim takibi. En fazla 4 kişilik grupta kazanım bazlı ilerleme.",
+    "LGS matematik için maksimum 4 kişilik butik canlı ders, ders sonrası takip ve veli bilgilendirmesi.",
   alternates: {
     canonical: "/lgs"
   },
   openGraph: {
-    title: "LGS Matematik Paketleri | Online Dershanem",
-    description: "LGS matematik paketlerini inceleyin: butik canlı ders, deneme kulübü ve veliye açık gelişim takibi.",
+    title: "LGS Matematik Dersi | Online Dershanem",
+    description: "LGS matematik için butik canlı ders, ders sonrası takip ve veli bilgilendirmesi.",
     url: `${siteUrl}/lgs`
   }
 };
@@ -21,7 +21,7 @@ export default function LGSLandingPage() {
   const courseLd = courseJsonLd({
     name: "LGS Matematik",
     description:
-      "LGS matematik için butik canlı ders (maks. 4 kişi), düzenli matematik denemeleri ve kazanım bazlı gelişim takibi.",
+      "LGS matematik için butik canlı ders (maksimum 4 kişi), ders sonrası takip ve kazanım odaklı çalışma.",
     url: "/lgs/",
   });
   const breadcrumbLd = breadcrumbJsonLd([
@@ -36,18 +36,18 @@ export default function LGSLandingPage() {
       data={{
         examKey: "LGS",
         heroBadge: "LGS Matematik",
-        heroTitle: "LGS matematikte butik canlı ders ve deneme takibiyle düzenli ilerleme",
+        heroTitle: "LGS matematikte küçük grupla düzenli ilerleme",
         heroText:
-          "LGS matematikte öğrenciyi butik canlı dersler, düzenli matematik denemeleri ve veliye açık gelişim takibiyle ilerletiyoruz. Çocuğunuzun matematikte nerede takıldığını görüp ders ve denemeyle birlikte kapatıyoruz.",
+          "LGS matematikte öğrenciyi maksimum 4 kişilik canlı dersler ve veliye açık gelişim takibiyle ilerletiyoruz. Çocuğunuzun matematikte nerede takıldığını görüp ders sonrası yönlendirmeyle kapatıyoruz.",
         highlights: [
           "Maksimum 4 kişilik matematik grubunda daha fazla bireysel ilgi",
-          "Kazanım bazlı matematik takibi ve düzenli denemeler",
+          "Ders sonrası ödevlendirme ve konu takibi",
           "Veliye net ve anlaşılır gelişim bilgilendirmesi"
         ],
         faq: [
           {
-            q: "Sadece deneme veya sadece ders paketi alabilir miyim?",
-            a: "Evet. Matematik Deneme Kulübü ile sadece denemeyle ölçebilir, Matematik Ders Paketi ile canlı derse katılabilir ya da Tam Destek ile ikisini birden alabilirsin."
+            q: "LGS öğrencisi için tek satış ürünü nedir?",
+            a: "Public satışta yalnızca Matematik Ders Paketi var. Öğrenci seviyesine göre küçük canlı ders grubuna yerleştirilir."
           },
           {
             q: "Dersler kalabalık sınıf şeklinde mi?",

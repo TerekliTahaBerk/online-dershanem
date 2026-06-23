@@ -9,7 +9,7 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Online Matematik Özel Ders | Butik Küçük Grup Modeli",
   description:
-    "Online matematik özel ders: butik canlı dersler, matematik deneme kulübü ve haftalık takip ile matematikte net artışını hızlandır.",
+    "Online matematik özel ders: butik canlı dersler, ders sonrası takip ve veli bilgilendirmesiyle matematikte düzenli ilerleme.",
   alternates: {
     canonical: "/online-ozel-ders/"
   },
@@ -40,22 +40,23 @@ export default function OnlineOzelDersPage() {
               <LeadFunnelTrigger
                 source="online_ozel_ders_hero_cta"
                 eventName="landing_cta_click"
+                href="/#matematik-ders-paketi"
                 className="inline-flex rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white"
               >
-                Paketleri İncele
+                Matematik Dersini İncele
               </LeadFunnelTrigger>
               <Link
-                href="/paketler/"
+                href="/#matematik-ders-paketi"
                 className="inline-flex rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink"
               >
-                Ders Bazlı Paketleri İncele
+                Ders Paketini İncele
               </Link>
             </div>
           </section>
 
           <section className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              "Matematikte deneme, canlı ders veya ikisini birlikte seçebilme",
+              "Matematikte canlı ders ve ders sonrası takip",
               "Maksimum 4 kişilik matematik grubunda daha yoğun soru-cevap imkanı",
               "Ders sonrası kısa analiz ve haftalık matematik ilerleme kontrolü"
             ].map((item) => (

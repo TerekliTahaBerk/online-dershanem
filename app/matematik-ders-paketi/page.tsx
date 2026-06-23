@@ -76,8 +76,8 @@ const lessonFlow = [
 const faq = [
   { q: "Grup gerçekten en fazla 4 kişi mi?", a: "Evet. Matematik Ders Paketi en fazla 4 kişilik butik grup modelidir. Bu sayede öğretmen her öğrenciyle yeterince ilgilenebilir." },
   { q: "Dersler nasıl işleniyor?", a: "Dersler Google Meet üzerinden canlı yapılır. Konu anlatımı, birlikte soru çözümü ve aktif soru-cevap bir aradadır; ders sonunda ödevlendirme yapılır." },
-  { q: "Sadece ders mi, deneme de var mı?", a: "Matematik Ders Paketi canlı ders odaklıdır. Deneme takibi de istiyorsan Tam Destek Paketi ile Ders Paketi ve Deneme Kulübü'nü birlikte alabilirsin." },
-  { q: "Fiyat aylık mı?", a: "Evet. Matematik Ders Paketi aylık ₺3.000'dir (eski fiyat ₺5.000). Tam Destek Paketi ₺3.500/ay'dır." },
+  { q: "Public satışta başka paket var mı?", a: "Hayır. Şu anda public satışta yalnızca Matematik Ders Paketi var. Odak canlı matematik dersi, küçük grup ve ders sonrası takiptir." },
+  { q: "Fiyat aylık mı?", a: "Evet. Matematik Ders Paketi aylık ₺3.000'dir (eski fiyat ₺5.000)." },
   { q: "Hesap açmam gerekiyor mu?", a: "Hayır. Ödeme öncesi hesap açmanıza gerek yok. Ödeme sonrası öğrenci hesabınız ekibimiz tarafından oluşturulur ve giriş bilgileri sizinle paylaşılır." },
 ];
 

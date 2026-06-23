@@ -9,12 +9,12 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Misyonumuz",
   description:
-    "Bir insanın geleceğinin maddi imkanlarla değil; merakı, emeği ve potansiyeliyle şekillendiği bir sistem inşa ediyoruz.",
+    "Online Dershanem'in misyonu: matematikte zorlanan öğrenciyi küçük grup canlı derslerle görünür ve takip edilebilir hale getirmek.",
   alternates: { canonical: "/misyonumuz/" },
   openGraph: {
     title: "Misyonumuz | Online Dershanem",
     description:
-      "Kaliteli eğitimi bir hak olarak yeniden tanımlamak için kurulduk. Akademik dayanışma modeline dair manifestomuz.",
+      "Matematikte zorlanan öğrenciyi küçük grup canlı derslerle görünür ve takip edilebilir hale getirme misyonumuz.",
     url: `${siteUrl}/misyonumuz/`,
   },
 };
@@ -55,11 +55,11 @@ export default function MissionPage() {
             </p>
 
             <p>
-              Bugün Türkiye’de en başarılı öğrencilerin büyük bir kısmı kaliteli
-              eğitime ulaşmakta zorlanırken, ülkenin en yetenekli üniversite
-              öğrencileri ise kendi potansiyellerini geliştirmek yerine geçinmek
-              için farklı işlerde çalışmak zorunda kalıyor. Sorun yetenek
-              eksikliği değil; sistemin onlara başka bir seçenek sunmaması.
+              Bugün Türkiye’de çok sayıda öğrenci kaliteli matematik desteğine
+              ulaşmakta zorlanırken, güçlü genç eğitmenler de bilgilerini
+              sürdürülebilir ve takip edilebilir bir öğrenme modeline
+              dönüştürmekte zorlanıyor. Sorun yetenek eksikliği değil; doğru
+              yapının eksikliği.
             </p>
 
             <p>
@@ -74,9 +74,9 @@ export default function MissionPage() {
               <strong className="font-medium text-[var(--od-ink)]">
                 Misyonumuz;
               </strong>{" "}
-              bilgiyi, o yolu yakın zamanda başarıyla geçmiş öğrencilerle şimdi
-              öğrenmeye çalışan öğrenciler arasında doğrudan buluşturan yeni bir
-              öğrenme modeli kurmak.
+              matematikte yolu yakın zamanda başarıyla geçmiş güçlü eğitmenlerle
+              bugün zorlanan öğrencileri küçük, takip edilebilir canlı ders
+              gruplarında buluşturmak.
             </p>
 
             <p>
@@ -91,8 +91,9 @@ export default function MissionPage() {
             </p>
 
             <p>
-              Bu yüzden başarılı üniversite öğrencileriyle öğrenmek isteyen
-              gençleri bir araya getiriyoruz.
+              Bu yüzden öğrencinin derste görünür olduğu, soru sorabildiği ve
+              ders sonrası ne çalışacağını bildiği bir matematik dersi modeli
+              kuruyoruz.
             </p>
 
             <Pull>Çünkü bu yalnızca ders anlatmak değil.</Pull>
@@ -158,15 +159,15 @@ export default function MissionPage() {
                   Matematikte yolu yakın zamanda yürümüş bir hocayla tanış.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  Matematikte nerede olursan ol, sana en uygun butik matematik
-                  paketini birlikte belirleyelim.
+                  Matematikte nerede olursa olsun, öğrenciniz için en uygun
+                  küçük grup başlangıcını birlikte belirleyelim.
                 </p>
               </div>
               <Link
-                href="/paketler/"
+                href="/#matematik-ders-paketi"
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
               >
-                Paketleri İncele
+                Matematik Dersini İncele
                 <ArrowRight size={15} strokeWidth={1.8} />
               </Link>
             </div>

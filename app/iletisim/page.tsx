@@ -8,7 +8,7 @@ import { contact } from "@/lib/content";
 export const metadata: Metadata = {
   title: "İletişim",
   description:
-    "Online Dershanem ekibine ulaş — telefon, e-posta, WhatsApp ve sosyal medya kanallarımız.",
+    "Öğrenciniz için en doğru matematik grubunu birlikte belirlemek üzere Online Dershanem ekibine ulaşın.",
   alternates: { canonical: "/iletisim/" },
 };
 
@@ -54,11 +54,12 @@ export default function ContactPage() {
               İletişim
             </span>
             <h1 className="mt-5 font-display text-[42px] font-normal leading-[1.05] tracking-tight sm:text-[60px]">
-              Konuşalım.
+              Öğrenciniz için en doğru matematik grubunu birlikte belirleyelim.
             </h1>
             <p className="mt-6 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              Paketler, ödeme, deneme dersleri, kontenjan — aklında ne varsa
-              dilediğin kanaldan bize ulaş. Genelde dakikalar içinde dönüyoruz.
+              Öğrencinin sınıfını, hedefini ve matematikte zorlandığı konuları
+              konuşalım. Uygun küçük grup başlangıcını ve ödeme sonrası hesap
+              hazırlama sürecini net şekilde anlatalım.
             </p>
           </div>
         </section>
@@ -126,17 +127,18 @@ export default function ContactPage() {
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-display text-[26px] leading-tight text-[var(--od-ink)] sm:text-[30px]">
-                  Önce paketlere bakmak ister misin?
+                  Önce Matematik Ders Paketi'ni incelemek ister misiniz?
                 </h3>
                 <p className="mt-2 max-w-md text-[14.5px] text-[var(--od-ink-soft)]">
-                  Ders bazlı paketleri, kontenjanları ve ödeme seçeneklerini incele.
+                  Maksimum 4 kişilik canlı matematik dersi, ders sonrası takip
+                  ve veli bilgilendirmesi kapsamını inceleyin.
                 </p>
               </div>
               <Link
-                href="/paketler/"
+                href="/#matematik-ders-paketi"
                 className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
               >
-                Paketleri gör
+                Matematik Dersini İncele
               </Link>
             </div>
           </div>

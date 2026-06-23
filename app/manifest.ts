@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Online Dershanem",
     short_name: "Online Dershanem",
-    description: "Online matematik dershanesi: butik canlı matematik dersleri ve matematik deneme kulübü.",
+    description: "Online matematik dershanesi: butik canlı matematik dersleri ve ders sonrası takip.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

@@ -4,18 +4,13 @@ import { Instagram, Linkedin, Send, MessageCircle, Mail, Phone, MapPin } from "l
 import { contact } from "@/lib/content";
 import { ContactLink } from "@/components/ui/contact-link";
 
-/* ── Link groups (kept in sync with original site IA) ─────────────── */
-
 const productLinks = [
   { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
-  { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "Paketler", href: "/paketler/" },
   { label: "Misyonumuz", href: "/misyonumuz/" },
+  { label: "İletişim", href: "/iletisim/" },
 ];
 const supportLinks = [
   { label: "Sıkça Sorulanlar", href: "/sss/" },
-  { label: "İletişim", href: "/iletisim/" },
-  { label: "Kariyer", href: "/kariyer/" },
   { label: "İade Politikası", href: "/iade/" },
   { label: "Gizlilik", href: "/gizlilik/" },
   { label: "KVKK", href: "/kvkk/" },
@@ -49,39 +44,9 @@ const SOCIALS = [
   },
 ];
 
-/**
- * Site-wide footer (Opennote-inspired pastel theme).
- *
- * Preserves every original data hook from the legacy footer:
- *  - contact info (phone, email, whatsapp, address)
- *  - product / corporate / support link groups
- *  - <ContactLink/> tracking on the phone CTA
- *  - <PaymentTrustStrip/> at the bottom
- *  - social handles (Instagram, TikTok, WhatsApp, email)
- *
- * Visual: cream background, soft doodle backdrop, "od." mono mark and wordmark.
- */
 export function Footer() {
   return (
     <footer className="relative overflow-hidden border-t border-[var(--od-line)] bg-[var(--od-cream)] text-[var(--od-ink)]">
-      {/* Soft doodle backdrop */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <Image
-          src="/v991-nt-35.jpg"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover opacity-[0.10] mix-blend-multiply"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(180deg, var(--od-cream) 0%, rgba(255,253,245,0.7) 25%, rgba(255,253,245,0.92) 100%)",
-          }}
-        />
-      </div>
-
       <div className="mx-auto max-w-6xl px-5 pt-16 pb-8 sm:pt-20">
         <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]">
           {/* Brand + contact */}
@@ -104,8 +69,8 @@ export function Footer() {
             </Link>
 
             <p className="max-w-sm text-[13.5px] leading-6 text-[#7A7A6F]">
-              Online matematik dershanesi. Butik canlı dersler, matematik deneme
-              kulübü ve veliye açık gelişim takibi.
+              Online matematik dershanesi. Maksimum 4 kişilik canlı matematik
+              dersleri, ders sonrası takip ve veliye açık bilgilendirme.
             </p>
 
             {/* Contact details */}

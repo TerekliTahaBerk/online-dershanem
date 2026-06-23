@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { Home, ArrowLeft, Search } from "lucide-react";
 
 const POPULAR_LINKS = [
-  { href: "/yks/", label: "TYT-AYT Paketleri" },
-  { href: "/lgs/", label: "LGS Paketleri" },
-  { href: "/deneme-kulubu/", label: "Deneme Kulübü" },
-  { href: "/odk-paketleri/", label: "ODK Paketleri" },
+  { href: "/#matematik-ders-paketi", label: "Matematik Ders Paketi" },
+  { href: "/yks/", label: "TYT-AYT Matematik" },
+  { href: "/lgs/", label: "LGS Matematik" },
+  { href: "/misyonumuz/", label: "Misyonumuz" },
   { href: "/iletisim/", label: "İletişim" },
   { href: "/sss/", label: "Sıkça Sorulan Sorular" },
 ];

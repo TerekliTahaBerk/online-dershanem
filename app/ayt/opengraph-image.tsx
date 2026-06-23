@@ -11,9 +11,9 @@ export default async function Image() {
   return new ImageResponse(
     (
       <OgTemplate
-        title="AYT Hazırlık"
-        subtitle="Sayısal, Eşit Ağırlık ve Sözel için alan-odaklı küçük grup dersleri ile net üretimi."
-        badge="AYT"
+        title="AYT Matematik"
+        subtitle="AYT matematik için küçük grup canlı ders, konu takibi ve ders sonrası yönlendirme."
+        badge="AYT Matematik"
       />
     ),
     { ...size },

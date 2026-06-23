@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart, type OdCartItem } from "@/components/cart/cart-provider";
 import { trackConversionEvent } from "@/lib/tracking";
-import { buildOdSuggestions, type Suggestion } from "@/lib/cross-sell";
 
 function tryFormat(cents: number): string {
   return new Intl.NumberFormat("tr-TR", {
@@ -18,13 +17,7 @@ function tryFormat(cents: number): string {
 
 export function CartPageClient() {
   const router = useRouter();
-  const { items, count, totalCents, setQty, remove, clear, add, hydrated } = useCart();
-
-  // Cross-sell önerileri sepete göre hesapla
-  const suggestions = useMemo<Suggestion[]>(
-    () => buildOdSuggestions(items, 3),
-    [items],
-  );
+  const { items, count, totalCents, setQty, remove, clear, hydrated } = useCart();
 
   const finalCents = totalCents;
 
@@ -66,17 +59,11 @@ export function CartPageClient() {
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/paketler"
+            href="/#matematik-ders-paketi"
             className="inline-flex items-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-3 text-[13.5px] font-medium text-white transition hover:bg-black"
           >
-            Paketleri Keşfet
+            Matematik Dersini İncele
             <ArrowRight size={14} />
-          </Link>
-          <Link
-            href="/deneme-kulubu"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
-          >
-            ODK Paketleri
           </Link>
         </div>
       </div>
@@ -117,39 +104,6 @@ export function CartPageClient() {
             />
           ))}
 
-          {/* Suggestions */}
-          {suggestions.length > 0 && (
-            <div className="mt-10 rounded-3xl border border-[var(--od-line)] bg-[var(--od-cream-2)] p-6">
-              <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">
-                Programınıza uygun tamamlayıcılar
-              </span>
-              <h2 className="mt-2 font-display text-[24px] leading-tight tracking-tight text-[var(--od-ink)]">
-                Bu paketler de sepetinizle uyum sağlar.
-              </h2>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-                {suggestions.map((s) => (
-                  <SuggestionCard
-                    key={s.id}
-                    suggestion={s}
-                    onAdd={() => {
-                      add(
-                        {
-                          id: s.id,
-                          name: s.name,
-                          category: s.category,
-                          subject: s.subject,
-                          priceCents: s.priceCents,
-                          priceLabel: s.priceLabel,
-                        },
-                        1,
-                      );
-                      trackConversionEvent("cross_sell_add", { suggestionId: s.id });
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* RIGHT: summary */}
@@ -221,7 +175,7 @@ function CartItemRow({
           {item.category}
         </div>
         <div className="mt-1 font-display text-[22px] leading-tight tracking-tight text-[var(--od-ink)]">
-          {item.subject}
+          {item.name}
         </div>
         <div className="mt-0.5 text-[12.5px] text-[var(--od-ink-soft)]">{item.priceLabel}</div>
       </div>
@@ -265,57 +219,5 @@ function CartItemRow({
         </button>
       </div>
     </article>
-  );
-}
-
-// ─── Suggestion card ───────────────────────────────────────────────────────
-
-function SuggestionCard({
-  suggestion,
-  onAdd,
-}: {
-  suggestion: Suggestion;
-  onAdd: () => void;
-}) {
-  const [added, setAdded] = useState(false);
-  return (
-    <div className="rounded-2xl border border-[var(--od-line)] bg-white p-4 flex flex-col">
-      {suggestion.badge && (
-        <span className="self-start mb-2 rounded-full bg-[var(--od-yellow-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--od-ink)]">
-          {suggestion.badge}
-        </span>
-      )}
-      <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">
-        {suggestion.category}
-      </div>
-      <div className="mt-1 font-display text-[19px] leading-tight tracking-tight text-[var(--od-ink)]">
-        {suggestion.subject}
-      </div>
-      <p className="mt-2 text-[12px] leading-relaxed text-[var(--od-ink-soft)] flex-1">
-        {suggestion.reason}
-      </p>
-      <div className="mt-3 flex items-baseline gap-2">
-        <span className="font-display text-[18px] text-[var(--od-ink)]">
-          {suggestion.priceLabel}
-        </span>
-        {suggestion.oldPriceLabel && (
-          <span className="text-[11px] text-[var(--od-ink-soft)] line-through">
-            {suggestion.oldPriceLabel}
-          </span>
-        )}
-      </div>
-      <button
-        type="button"
-        onClick={() => {
-          onAdd();
-          setAdded(true);
-          window.setTimeout(() => setAdded(false), 1600);
-        }}
-        className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-full border border-[var(--od-ink)]/15 bg-[var(--od-cream-2)] px-3 py-2 text-[12px] font-medium text-[var(--od-ink)] hover:border-[var(--od-ink)]/40 transition data-[added=true]:bg-emerald-50 data-[added=true]:text-emerald-700 data-[added=true]:border-emerald-200"
-        data-added={added}
-      >
-        {added ? <><Check size={12} /> Sepete Eklendi</> : <>Sepete Ekle <Plus size={12} /></>}
-      </button>
-    </div>
   );
 }

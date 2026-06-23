@@ -8,15 +8,18 @@ import { useSession } from "next-auth/react";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { isPanelEnabledClient, PANEL_MAINTENANCE_PATH } from "@/lib/panel-config";
+import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
+import { subjectPackageGroups } from "@/lib/content";
 
 const links = [
   { label: "Ana Sayfa", href: "/" },
-  { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
-  { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "Paketler", href: "/paketler/" },
-  { label: "Misyon", href: "/misyonumuz/" },
+  { label: "Misyonumuz", href: "/misyonumuz/" },
   { label: "İletişim", href: "/iletisim/" }
 ];
+
+const lessonPkg = subjectPackageGroups[0].packages.find(
+  (p) => p.subject === "Ders Paketi",
+)!;
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -58,14 +61,13 @@ export function Navbar() {
   // Tasarım/markup aynı kalır; yalnızca href değişir.
   const panelEnabled = isPanelEnabledClient();
   const panelHref = panelEnabled ? `/panel/${panelSegment}` : PANEL_MAINTENANCE_PATH;
-  const odkHref = panelEnabled ? `/panel/${panelSegment}/odk` : PANEL_MAINTENANCE_PATH;
-  const loginHref = panelEnabled ? "/giris" : PANEL_MAINTENANCE_PATH;
   const panelLabel =
     role === "ADMIN" ? "Admin Panel" :
     role === "TEACHER" ? "Öğretmen Paneli" :
     role === "PARENT" ? "Veli Paneli" : "Öğrenci Paneli";
 
-  const isActive = (href: string) => pathname.startsWith(href.replace(/\/$/, ""));
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href.replace(/\/$/, ""));
 
   return (
     <>
@@ -77,7 +79,7 @@ export function Navbar() {
               alt="Online Dershanem"
               width={1050}
               height={200}
-              priority
+              sizes="170px"
               className="h-7 w-auto object-contain sm:h-8"
             />
           </Link>
@@ -112,7 +114,7 @@ export function Navbar() {
                   </button>
                   {panelOpen ? (
                     <div className="absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl border border-[#E5E5E0] bg-white p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.18)]" role="menu">
-                      <div className="px-3 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-wider text-[#9A9A9F]">Ürünler</div>
+                      <div className="px-3 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-wider text-[#9A9A9F]">Panel</div>
                       <Link
                         href={panelHref}
                         onClick={() => setPanelOpen(false)}
@@ -124,31 +126,22 @@ export function Navbar() {
                           <span className="text-[11.5px] text-[#5A5A5F]">{panelLabel}</span>
                         </span>
                       </Link>
-                      <Link
-                        href={odkHref}
-                        onClick={() => setPanelOpen(false)}
-                        className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-[#F2F2EF]"
-                      >
-                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#f59e0b]" aria-hidden />
-                        <span className="flex flex-col">
-                          <span className="flex items-center gap-1.5 text-[13.5px] font-semibold text-[#0E0E10]">
-                            OnlineDenemeKulübü
-                            <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wider text-amber-700">ODK</span>
-                          </span>
-                          <span className="text-[11.5px] text-[#5A5A5F]">Matematik denemeleri</span>
-                        </span>
-                      </Link>
                     </div>
                   ) : null}
                 </div>
                 <LogoutButton />
               </>
             ) : (
-              <Link
-                href="/paketler/"
+              <PurchaseFunnelTrigger
+                source="navbar_desktop_cta"
+                packageName={lessonPkg.name}
+                category={lessonPkg.category}
+                subject={lessonPkg.subject}
+                priceLabel={lessonPkg.discountedPrice}
+                paymentLink=""
                 className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-[#0E0E10] px-5 py-2 text-[13.5px] font-medium text-white shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-[#0E0E10]/90"
               >
-                <span className="relative z-10">Başla</span>
+                <span className="relative z-10">Matematik Dersini Satın Al</span>
                 <span
                   aria-hidden
                   className="relative z-10 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-white transition-transform group-hover:translate-x-0.5"
@@ -161,7 +154,7 @@ export function Navbar() {
                   aria-hidden
                   className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full"
                 />
-              </Link>
+              </PurchaseFunnelTrigger>
             )}
           </div>
 
@@ -174,15 +167,20 @@ export function Navbar() {
                 {panelLabel}
               </Link>
             ) : (
-              <Link
-                href="/paketler/"
+              <PurchaseFunnelTrigger
+                source="navbar_mobile_cta"
+                packageName={lessonPkg.name}
+                category={lessonPkg.category}
+                subject={lessonPkg.subject}
+                priceLabel={lessonPkg.discountedPrice}
+                paymentLink=""
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#0E0E10] px-3.5 py-1.5 text-[12.5px] font-medium text-white"
               >
-                Başla
+                Satın Al
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
                   <path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-              </Link>
+              </PurchaseFunnelTrigger>
             )}
             <button
               type="button"
@@ -219,20 +217,17 @@ export function Navbar() {
             </nav>
             {status === "unauthenticated" && (
               <div className="flex flex-col gap-2 border-t border-[#E5E5E0] px-5 py-4">
-                <Link
-                  href="/paketler/"
-                  onClick={() => setOpen(false)}
+                <PurchaseFunnelTrigger
+                  source="navbar_mobile_menu_cta"
+                  packageName={lessonPkg.name}
+                  category={lessonPkg.category}
+                  subject={lessonPkg.subject}
+                  priceLabel={lessonPkg.discountedPrice}
+                  paymentLink=""
                   className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
                 >
-                  Matematik Paketlerini İncele
-                </Link>
-                <Link
-                  href={loginHref}
-                  onClick={() => setOpen(false)}
-                  className="rounded-full border border-[#0E0E10]/15 bg-white py-3 text-center text-[14.5px] font-medium text-[#0E0E10]"
-                >
-                  Giriş Yap
-                </Link>
+                  Matematik Dersini Satın Al
+                </PurchaseFunnelTrigger>
               </div>
             )}
             {status === "authenticated" && (
@@ -243,13 +238,6 @@ export function Navbar() {
                   className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
                 >
                   {panelLabel}
-                </Link>
-                <Link
-                  href={odkHref}
-                  onClick={() => setOpen(false)}
-                  className="rounded-full border border-amber-200 bg-amber-50 py-3 text-center text-[14.5px] font-medium text-amber-700"
-                >
-                  OnlineDenemeKulübü
                 </Link>
                 <div className="flex justify-center">
                   <LogoutButton />

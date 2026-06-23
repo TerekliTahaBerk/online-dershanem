@@ -8,7 +8,7 @@ import { contact } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Panelimizi yeniliyoruz | Online Dershanem",
   description:
-    "Online Dershanem öğrenci, veli ve öğretmen panelleri yeni matematik takip sistemi için hazırlanıyor. Paketleri inceleyebilir, satın alma işleminizi güvenle tamamlayabilirsiniz.",
+    "Online Dershanem öğrenci, veli ve öğretmen panelleri yeni matematik takip sistemi için hazırlanıyor. Matematik Ders Paketi'ni satın alma işleminizi güvenle tamamlayabilirsiniz.",
   robots: { index: false, follow: false },
 };
 
@@ -30,7 +30,7 @@ export default function PanelMaintenancePage() {
 
           <p className="mt-5 text-[16px] leading-relaxed text-[var(--od-ink-soft)]">
             Online Dershanem öğrenci, veli ve öğretmen panelleri yeni matematik
-            takip sistemi için hazırlanıyor. Bu süreçte paketleri inceleyebilir,
+            takip sistemi için hazırlanıyor. Bu süreçte Matematik Ders Paketi'ni inceleyebilir,
             satın alma işleminizi güvenle tamamlayabilirsiniz.
           </p>
 
@@ -41,10 +41,10 @@ export default function PanelMaintenancePage() {
 
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/paketler"
+              href="/#matematik-ders-paketi"
               className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black sm:w-auto"
             >
-              Matematik Paketlerini İncele
+              Matematik Dersini İncele
               <ArrowRight size={15} />
             </Link>
             <Link

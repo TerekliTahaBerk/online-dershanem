@@ -1,23 +1,21 @@
 export const siteUrl = "https://onlinedershanem.com";
 
 export const navLinks = [
-  { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
-  { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
-  { label: "Paketler", href: "/paketler/" },
-  { label: "Misyon", href: "/misyonumuz/" },
+  { label: "Ana Sayfa", href: "/" },
+  { label: "Misyonumuz", href: "/misyonumuz/" },
   { label: "İletişim", href: "/iletisim/" }
 ];
 
 export const hero = {
   headline: "Matematikte nerede takıldığını görüyor, birlikte kapatıyoruz",
   subheadline:
-    "Online Dershanem, öğrencinin matematikteki eksiklerini butik canlı dersler, düzenli denemeler ve veliye açık gelişim takibiyle kapatan online matematik dershanesidir. En fazla 4 kişilik grupta öğrencinin matematikte tam olarak nerede zorlandığını görür, ders ve denemeyle aynı hafta geri döneriz.",
+    "Online Dershanem, öğrencinin matematikteki eksiklerini butik canlı dersler ve veliye açık gelişim takibiyle kapatan online matematik dershanesidir. En fazla 4 kişilik grupta öğrencinin matematikte tam olarak nerede zorlandığını görür, ders sonrası aynı hafta geri döneriz.",
   detail:
-    "Hedefimiz sadece konu bitirmek değil; matematikte kalıcı bir gelişim kurmak. Canlı matematik dersi, düzenli deneme analizi ve veliye anlaşılır gelişim özetini tek sisteme bağlıyoruz; öğrenci her hafta matematikte nerede olduğunu net görüyor.",
+    "Hedefimiz sadece konu bitirmek değil; matematikte kalıcı bir gelişim kurmak. Canlı matematik dersi, ders sonrası ödevlendirme ve veliye anlaşılır gelişim özetini tek sisteme bağlıyoruz; öğrenci her hafta matematikte nerede olduğunu net görüyor.",
   points: [
     "En fazla 4 kişilik butik matematik grubunda yakın takip",
     "Google Meet üzerinden canlı matematik dersi ve birlikte çözüm",
-    "Düzenli matematik denemeleri ve kazanım bazlı analiz",
+    "Ders sonrası ödevlendirme ve eksik konu yönlendirmesi",
     "Veliye açık, anlaşılır matematik gelişim özeti"
   ]
 };
@@ -46,18 +44,6 @@ export const programs = [
     desc: "Matematikte konu eksiğini kapatıp soru çözüm hızını artırmak isteyen öğrenciler için butik, canlı ve yakından takip edilen matematik dersi.",
     focus: "Canlı matematik dersi, en fazla 4 kişilik butik grup, ders sonrası ödevlendirme",
     outcome: "Kalabalık online sınıf yerine derste görünür olur, soru sorar ve eksik konularını birlikte kapatırsın."
-  },
-  {
-    name: "Matematik Deneme Kulübü",
-    desc: "Dijital matematik denemeleri, kazanım bazlı analiz ve net gelişim takibiyle matematikte tam olarak nerede eksik olduğunu görmek isteyenler için.",
-    focus: "Dijital matematik denemeleri, kazanım analizi, eksik konu raporu, veliye gelişim özeti",
-    outcome: "Sadece deneme çözmekle kalmaz; hangi kazanımda eksik olduğunu görür ve ona göre çalışırsın."
-  },
-  {
-    name: "Matematik Tam Destek Paketi",
-    desc: "Matematik Ders Paketi ile Matematik Deneme Kulübü'nü birleştiren, veli için en güvenli ve en avantajlı komple matematik çözümü.",
-    focus: "Canlı ders + deneme kulübü, eksik konu kapatma, veliye açık gelişim takibi",
-    outcome: "Öğrenmeyi ve ölçmeyi tek pakette toplar; matematikte hem ilerler hem de gelişimini net görürsün."
   }
 ];
 
@@ -75,8 +61,8 @@ export const howItWorks = [
     desc: "Canlı derslerde öğrenci sadece dinlemez; soru sorar, birlikte çözer ve konuyu derste bitirme alışkanlığı kazanır."
   },
   {
-    title: "Deneme ve Kazanım Takibi",
-    desc: "Düzenli matematik denemeleri ve kazanım analiziyle gelişim izlenir. Öğrencinin hangi konuda eksik olduğu net biçimde ortaya çıkar."
+    title: "Ders Sonrası Takip",
+    desc: "Ödev, eksik konu ve bir sonraki hafta çalışması netleşir. Öğrenci dersten sonra ne yapacağını bilir."
   },
   {
     title: "Veliye Açık Gelişim Özeti",
@@ -258,42 +244,17 @@ export const packageFilters = [
  * çiftleri değiştirmeden önce `lib/od/checkout.ts` ve cart akışını gözden geçir.
  * `discountedPrice` Türkçe formatı `parsePriceToCents` ile kuruşa çevrilir.
  *
- * Ürün modeli: üç matematik paketi — Deneme Kulübü, Ders Paketi, Tam Destek.
- * Hepsi mevcut OD sepeti → /paketler/satin-al → dinamik PayTR iframe akışından
+ * Ürün modeli: tek public satış ürünü — Matematik Ders Paketi.
+ * Mevcut OD sepeti → /paketler/satin-al → dinamik PayTR iframe akışından
  * satılır; ayrı PayTR linki gerekmez.
  */
 export const subjectPackageGroups = [
   {
     key: "Matematik",
-    title: "Matematik Paketleri",
+    title: "Matematik Ders Paketi",
     subtitle:
-      "Tek odak matematik. İster denemeyle gelişimini ölç, ister canlı derse katıl, ister ikisini birden al.",
+      "Tek odak matematik. Canlı ders, küçük grup ve ders sonrası takip aynı pakette.",
     packages: [
-      {
-        id: "matematik-deneme-kulubu",
-        name: "Matematik Deneme Kulübü",
-        accent: "analytics",
-        subject: "Deneme Kulübü",
-        category: "Matematik",
-        badge: "",
-        tagline: "Sadece deneme çözmek değil, eksiğini görmek.",
-        audience:
-          "Matematikte düzenli deneme çözüp hangi kazanımda eksik olduğunu net görmek isteyen öğrenciler için.",
-        quota: "Aylık abonelik",
-        oldPrice: "",
-        discountLabel: "",
-        discountedPrice: "₺750/ay",
-        priceCents: 75000,
-        perLessonPrice: "",
-        features: [
-          "Dijital matematik denemeleri",
-          "Kazanım bazlı analiz",
-          "Net gelişim takibi",
-          "Eksik konu raporu",
-          "Veliye anlaşılır gelişim özeti"
-        ],
-        cta: "Sepete Ekle"
-      },
       {
         id: "matematik-ders-paketi",
         name: "Matematik Ders Paketi",
@@ -313,35 +274,11 @@ export const subjectPackageGroups = [
         features: [
           "Canlı matematik dersi",
           "Maksimum 4 kişilik butik grup",
-          "Öğretmen takibi",
+          "Haftalık konu takibi",
           "Ders sonrası ödevlendirme",
-          "Eksik konu kapatma"
-        ],
-        cta: "Sepete Ekle"
-      },
-      {
-        id: "matematik-tam-destek",
-        name: "Matematik Tam Destek Paketi",
-        accent: "premium",
-        subject: "Tam Destek",
-        category: "Matematik",
-        badge: "EN ÇOK ÖNERİLEN",
-        featured: true,
-        tagline: "Ders + Deneme Kulübü birlikte. Veli için en güvenli tercih.",
-        audience:
-          "Matematikte hem öğrenmeyi hem ölçmeyi tek pakette isteyen, en avantajlı ve komple çözümü arayan veliler için.",
-        quota: "En avantajlı paket",
-        oldPrice: "",
-        discountLabel: "",
-        discountedPrice: "₺3.500/ay",
-        priceCents: 350000,
-        perLessonPrice: "Ders Paketi (₺3.000) + Deneme Kulübü (₺750) birlikte",
-        features: [
-          "Matematik Ders Paketi'nin tamamı",
-          "Matematik Deneme Kulübü'nün tamamı",
-          "Canlı ders + düzenli deneme analizi",
-          "Eksik konu kapatma ve raporlama",
-          "Veliye açık tek gelişim takibi"
+          "Öğretmen geri bildirimi",
+          "Veli bilgilendirmesi",
+          "Ödeme sonrası öğrenci hesabı ekibimiz tarafından hazırlanır"
         ],
         cta: "Sepete Ekle"
       }
@@ -363,28 +300,6 @@ export function getPackagePaymentLink(_category: string, _subject: string): stri
 
 export const pricing = [
   {
-    title: "Matematik Deneme Kulübü",
-    category: "Matematik",
-    price: "₺750/ay",
-    quota: "Aylık abonelik",
-    audience: "Matematikte düzenli deneme çözüp hangi kazanımda eksik olduğunu görmek isteyen öğrenciler için",
-    seats: "Dijital deneme + analiz",
-    features: [
-      "Dijital matematik denemeleri",
-      "Kazanım bazlı analiz",
-      "Net gelişim takibi ve eksik konu raporu",
-      "Veliye anlaşılır gelişim özeti"
-    ],
-    weeklyPlan: [
-      "Dijital matematik denemeleri yayınlanır",
-      "Her denemede kazanım bazlı analiz çıkarılır",
-      "Net gelişim grafiği güncellenir",
-      "Eksik konu listesi oluşturulur",
-      "Veliye okunabilir gelişim raporu paylaşılır"
-    ],
-    note: "Matematikte ölçme ve takip için ideal başlangıç"
-  },
-  {
     title: "Matematik Ders Paketi",
     category: "Matematik",
     price: "₺3.000/ay",
@@ -395,6 +310,7 @@ export const pricing = [
       "Canlı matematik dersi",
       "Maksimum 4 kişilik butik grup",
       "Öğretmen takibi ve ders sonrası ödevlendirme",
+      "Veli bilgilendirmesi",
       "Eksik konu kapatma"
     ],
     weeklyPlan: [
@@ -404,30 +320,8 @@ export const pricing = [
       "Eksik konuya göre ilerleme",
       "Öğretmen takibiyle düzenli geri bildirim"
     ],
-    note: "Eski fiyat ₺5.000 — şimdi ₺3.000"
-  },
-  {
-    title: "Matematik Tam Destek Paketi",
-    category: "Matematik",
-    price: "₺3.500/ay",
-    quota: "En avantajlı paket",
-    audience: "Matematikte hem öğrenmeyi hem ölçmeyi tek pakette isteyen veliler için en güvenli tercih",
-    seats: "Ders Paketi + Deneme Kulübü",
-    features: [
-      "Matematik Ders Paketi'nin tamamı",
-      "Matematik Deneme Kulübü'nün tamamı",
-      "Canlı ders + düzenli deneme analizi",
-      "Veliye açık tek gelişim takibi"
-    ],
-    weeklyPlan: [
-      "Butik grupta canlı matematik dersi",
-      "Düzenli dijital matematik denemeleri",
-      "Kazanım analizi ve eksik konu raporu",
-      "Ders ve denemeyle eksik konu kapatma",
-      "Veliye tek noktadan gelişim özeti"
-    ],
-    note: "Ders Paketi (₺3.000) + Deneme Kulübü (₺750) birlikte ₺3.500",
-    featured: true
+    note: "Eski fiyat ₺5.000 — şimdi ₺3.000",
+    featured: false
   }
 ];
 
@@ -1039,7 +933,7 @@ export const blogPosts = [
 export const faq = [
   {
     q: "Online Dershanem sadece matematik mi?",
-    a: "Evet. Tek odağımız matematik. Tüm ders, deneme ve takip sistemimiz öğrencinin matematikteki eksiklerini kapatmak için kurulmuştur."
+    a: "Evet. Tek odağımız matematik. Canlı ders ve takip sistemimiz öğrencinin matematikteki eksiklerini kapatmak için kurulmuştur."
   },
   {
     q: "Gruplar kaç kişilik?",
@@ -1050,20 +944,20 @@ export const faq = [
     a: "Evet. Kısa bir matematik değerlendirmesiyle seninle aynı seviyedeki ve benzer hedeflere sahip öğrencilerle eşleşirsin. Tempo ne çok yavaş ne de çok hızlı kalır."
   },
   {
-    q: "Sadece deneme veya sadece ders paketi alabilir miyim?",
-    a: "Evet. Matematik Deneme Kulübü ile denemeyle gelişimini ölçebilir, Matematik Ders Paketi ile canlı derse katılabilir ya da Tam Destek Paketi ile ikisini birden alabilirsin."
+    q: "Satışta hangi paket var?",
+    a: "Şu anda public satışta yalnızca Matematik Ders Paketi var. Paket aylık ₺3.000 ve maksimum 4 kişilik canlı matematik dersi üzerine kurulu."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. Matematik; konu anlatımı, yeni nesil soru çözümü ve düzenli denemelerle TYT, AYT ve LGS'te net üretmeye göre planlanıyor. Sadece konu bitirmek değil, ilerlemeni ölçmek esas."
+    a: "Evet. Matematik; konu anlatımı, yeni nesil soru çözümü ve ders sonrası ödevlendirmeyle TYT, AYT ve LGS matematik hedeflerine göre planlanıyor. Sadece konu bitirmek değil, öğrenciyi takip etmek esas."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
-    a: "Evet. Veliye matematikteki gelişimi anlaşılır bir özetle düzenli paylaşılır: deneme analizi, eksik konu raporu ve genel ilerleme."
+    a: "Evet. Veliye öğrencinin matematikteki durumu, ders sonrası çalışması ve eksik konuları anlaşılır şekilde aktarılır."
   },
   {
     q: "Paket seçiminde kararsızsam ne yapmalıyım?",
-    a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Öğrencinin matematik seviyesini ve hedefini konuşur, deneme/ders/tam destekten hangisinin uygun olduğunu birlikte belirleriz."
+    a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Öğrencinin matematik seviyesini, sınıfını ve hedefini konuşur, doğru küçük grup başlangıcını netleştiririz."
   }
 ];
 
@@ -1079,15 +973,12 @@ export const seoKeywords = [
   "online matematik dershanesi",
   "online matematik dersi",
   "matematik özel ders",
-  "matematik deneme kulübü",
-  "matematik deneme",
   "canlı matematik dersi",
   "butik matematik dersi",
   "tyt matematik",
   "ayt matematik",
   "lgs matematik",
   "matematik net artırma",
-  "matematik kazanım analizi",
   "küçük grup matematik dersi",
   "google meet matematik dersi",
   "matematik eksik konu",

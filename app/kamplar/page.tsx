@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 
-// Kamp ürünü matematik-odaklı yeni katalogda yer almıyor (eski ₺2.000 fiyatlı
-// içerik). Sayfa /paketler'e kalıcı yönlendirilir.
+// Kamp ürünü matematik-odaklı yeni katalogda yer almıyor.
+// Sayfa ana matematik ders akışına kalıcı yönlendirilir.
 export const metadata: Metadata = {
   alternates: {
-    canonical: "/paketler/"
+    canonical: "/"
   },
   robots: {
     index: false,
@@ -14,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function CampsRedirectPage() {
-  permanentRedirect("/paketler/");
+  permanentRedirect("/");
 }

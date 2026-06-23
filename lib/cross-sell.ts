@@ -1,14 +1,13 @@
 /**
  * Cross-sell sepete önerilen ürünler.
  * OD: subjectPackageGroups'tan, sepette olmayan paketler.
- * ODK: yakında dinamik DB sorgusu (şu an statik fallback).
  */
 import { subjectPackageGroups, getPackagePriceCents, parsePriceToCents } from "@/lib/content";
 import type { OdCartItem } from "@/components/cart/cart-provider";
 
 export type Suggestion = {
   id: string;
-  service: "OD" | "ODK";
+  service: "OD";
   category: string;
   subject: string;
   name: string;
@@ -38,11 +37,7 @@ export function buildOdSuggestions(
       if (priceCents <= 0) continue;
       // Premium dilli reason
       let reason = "Matematikteki gelişimini tamamlayabilir.";
-      if (pkg.badge === "EN ÇOK ÖNERİLEN") {
-        reason = "Veli için en güvenli ve en avantajlı tercih.";
-      } else if (pkg.subject === "Deneme Kulübü") {
-        reason = "Dersini denemeyle ölç; eksik konularını net gör.";
-      } else if (pkg.subject === "Ders Paketi") {
+      if (pkg.subject === "Ders Paketi") {
         reason = "Butik grupta canlı matematik dersiyle eksiklerini kapat.";
       }
       all.push({

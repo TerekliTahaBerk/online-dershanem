@@ -4,15 +4,15 @@ import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
-  title: "TYT-AYT Matematik Paketleri",
+  title: "TYT-AYT Matematik Dersi",
   description:
-    "TYT ve AYT matematik için butik canlı dersler, matematik deneme kulübü ve veliye açık gelişim takibi. En fazla 4 kişilik grupta net odaklı ilerleme.",
+    "TYT ve AYT matematik için maksimum 4 kişilik butik canlı ders, ders sonrası takip ve veli bilgilendirmesi.",
   alternates: {
     canonical: "/yks/"
   },
   openGraph: {
-    title: "TYT-AYT Matematik Paketleri | Online Dershanem",
-    description: "TYT-AYT matematik paketlerini inceleyin: butik canlı ders, deneme kulübü ve veliye açık gelişim takibi.",
+    title: "TYT-AYT Matematik Dersi | Online Dershanem",
+    description: "TYT-AYT matematik için butik canlı ders, ders sonrası takip ve veli bilgilendirmesi.",
     url: `${siteUrl}/yks/`
   }
 };
@@ -21,7 +21,7 @@ export default function TYTLandingPage() {
   const courseLd = courseJsonLd({
     name: "TYT-AYT Matematik",
     description:
-      "TYT ve AYT matematik için butik canlı ders (maks. 4 kişi), düzenli matematik denemeleri ve net odaklı gelişim takibi.",
+      "TYT ve AYT matematik için butik canlı ders (maksimum 4 kişi), ders sonrası takip ve net odaklı çalışma planı.",
     url: "/yks/",
   });
   const breadcrumbLd = breadcrumbJsonLd([
@@ -36,18 +36,18 @@ export default function TYTLandingPage() {
       data={{
         examKey: "TYT-AYT",
         heroBadge: "TYT-AYT Matematik",
-        heroTitle: "TYT-AYT matematikte canlı ders ve denemeyle net artışına odaklan",
+        heroTitle: "TYT-AYT matematikte küçük grupla takip edilebilir ilerleme",
         heroText:
-          "TYT ve AYT matematikte öğrenciyi butik canlı dersler, düzenli matematik denemeleri ve veliye açık gelişim takibiyle ilerletiyoruz. Matematikte nerede takıldığını görüp ders ve denemeyle birlikte kapatıyoruz.",
+          "TYT ve AYT matematikte öğrenciyi maksimum 4 kişilik canlı dersler ve veliye açık gelişim takibiyle ilerletiyoruz. Matematikte nerede takıldığını görüp ders sonrası yönlendirmeyle kapatıyoruz.",
         highlights: [
           "Maksimum 4 kişilik butik matematik grubu",
-          "Düzenli matematik denemeleri ve kazanım analizi",
-          "TYT hız + AYT derinlik dengesine uygun matematik planı"
+          "Ders sonrası ödevlendirme ve konu takibi",
+          "TYT hız + AYT derinlik dengesine uygun matematik çalışması"
         ],
         faq: [
           {
-            q: "Sadece deneme veya sadece ders paketi alabilir miyim?",
-            a: "Evet. Matematik Deneme Kulübü ile denemeyle ölçebilir, Matematik Ders Paketi ile canlı derse katılabilir ya da Tam Destek ile ikisini birden alabilirsin."
+            q: "TYT ve AYT matematik aynı pakette mi ilerliyor?",
+            a: "Evet. Matematik Ders Paketi öğrencinin seviyesine göre TYT temelini ve AYT derinliğini aynı canlı ders takibinde planlar."
           },
           {
             q: "Gruplar nasıl oluşturuluyor?",
@@ -55,7 +55,7 @@ export default function TYTLandingPage() {
           },
           {
             q: "Paket ücretleri aylık mı?",
-            a: "Evet. Matematik paketlerinin fiyatları aylıktır: Deneme Kulübü ₺750/ay, Ders Paketi ₺3.000/ay, Tam Destek ₺3.500/ay."
+            a: "Evet. Matematik Ders Paketi aylık ₺3.000'dir."
           }
         ]
       }}

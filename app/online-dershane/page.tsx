@@ -9,14 +9,14 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Online Matematik Dershanesi | Butik Grup ve Gelişim Takibi",
   description:
-    "Online matematik dershanesi: en fazla 4 kişilik butik grup, canlı matematik dersi, düzenli denemeler ve veliye açık gelişim takibiyle matematikte net artışı.",
+    "Online matematik dershanesi: en fazla 4 kişilik butik grup, canlı matematik dersi, ders sonrası takip ve veliye açık bilgilendirmeyle matematikte düzenli ilerleme.",
   alternates: {
     canonical: "/online-dershane/"
   },
   openGraph: {
     title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "Butik grupta canlı matematik dersi, deneme analizi ve ölçülebilir net artışı modeli.",
+      "Butik grupta canlı matematik dersi, ders sonrası takip ve veliye açık bilgilendirme modeli.",
     url: `${siteUrl}/online-dershane/`
   }
 };
@@ -34,21 +34,22 @@ export default function OnlineDershanePage() {
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
               Bu sistem klasik kalabalık online ders değil. Öğrenci matematikte en fazla 4 kişilik butik grupta ilerler,
-              düzenli denemelerle ölçülür ve veliye açık gelişim takibiyle desteklenir.
+              ders sonrası yönlendirme ve veliye açık gelişim takibiyle desteklenir.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <LeadFunnelTrigger
                 source="online_dershane_hero_cta"
                 eventName="landing_cta_click"
+                href="/#matematik-ders-paketi"
                 className="inline-flex rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white"
               >
-                Paketleri İncele
+                Matematik Dersini İncele
               </LeadFunnelTrigger>
               <Link
-                href="/paketler/"
+                href="/#matematik-ders-paketi"
                 className="inline-flex rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink"
               >
-                Ders Paketlerini Gör
+                Ders Paketini Gör
               </Link>
             </div>
           </section>
@@ -56,8 +57,8 @@ export default function OnlineDershanePage() {
           <section className="mt-8 grid gap-4 md:grid-cols-3">
             {[
               "Maksimum 4 kişilik butik matematik grubu ile bireysel geri bildirim",
-              "Deneme, canlı ders veya ikisini birlikte seçebilme",
-              "Matematik deneme analizi ve veliye açık gelişim takibi"
+              "Canlı ders, ödevlendirme ve öğretmen geri bildirimi",
+              "Veliye açık matematik gelişim bilgilendirmesi"
             ].map((item) => (
               <article key={item} className="rounded-2xl border border-line bg-white p-5 text-sm font-medium text-muted shadow-soft">
                 {item}
@@ -75,7 +76,7 @@ export default function OnlineDershanePage() {
           </section>
 
           <section className="mt-8 rounded-3xl border border-brand/30 bg-mint p-6">
-            <h2 className="text-2xl font-bold tracking-tight text-ink">Blogdan Başlamak İstersen</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-ink">Matematik dersine başlamadan önce</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <Link href="/blog/online-dershane-nedir/" className="rounded-2xl border border-line bg-white p-4 text-sm font-semibold text-ink">
                 Online dershane nedir?

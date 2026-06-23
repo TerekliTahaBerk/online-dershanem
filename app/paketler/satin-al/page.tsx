@@ -96,8 +96,8 @@ export default async function OdCheckoutFormPage({
       <main className="bg-[var(--od-cream)] min-h-screen py-10">
         <div className="max-w-6xl mx-auto px-4">
           <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
-            <Link href="/paketler" className="hover:text-[var(--od-ink)]">
-              Paketler
+            <Link href="/#matematik-ders-paketi" className="hover:text-[var(--od-ink)]">
+              Matematik Ders Paketi
             </Link>
             <span className="mx-2">/</span>
             <span className="text-[var(--od-ink)]">Satın Al</span>
@@ -135,7 +135,7 @@ export default async function OdCheckoutFormPage({
                 },
               ]}
               backHref="/paketler"
-              backLabel="← Paketlere dön"
+              backLabel="← Matematik dersine dön"
             />
           </div>
         </div>

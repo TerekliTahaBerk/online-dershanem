@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     template: "%s | Online Dershanem"
   },
   description:
-    "Butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi. Çocuğunuzun matematikte nerede takıldığını görüp ders ve denemeyle birlikte kapatıyoruz.",
+    "Maksimum 4 kişilik canlı matematik dersleri, ders sonrası takip ve veli bilgilendirmesi. Çocuğunuzun matematikte nerede takıldığını görüp birlikte kapatıyoruz.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "Butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi. En fazla 4 kişilik grupta yakın takip.",
+      "Maksimum 4 kişilik canlı matematik dersleri, ders sonrası takip ve veli bilgilendirmesi.",
     url: `${siteUrl}/`,
     siteName: "Online Dershanem",
     locale: "tr_TR",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Online Matematik Dershanesi | Online Dershanem",
-    description: "Butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi.",
+    description: "Maksimum 4 kişilik canlı matematik dersleri ve ders sonrası takip.",
     images: ["/logo.png"]
   },
   icons: {

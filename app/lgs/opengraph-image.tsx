@@ -11,9 +11,9 @@ export default async function Image() {
   return new ImageResponse(
     (
       <OgTemplate
-        title="LGS Hazırlık"
-        subtitle="8. sınıf öğrencileri için küçük grup canlı ders, deneme programı ve koçluk desteği."
-        badge="LGS"
+        title="LGS Matematik"
+        subtitle="LGS matematik için küçük grup canlı ders, ders sonrası takip ve veli bilgilendirmesi."
+        badge="LGS Matematik"
       />
     ),
     { ...size },

@@ -12,7 +12,7 @@ export function PackagesPageContent() {
   return (
     <div className="mx-auto max-w-6xl px-5">
       {/* Grid */}
-      <div className="mt-6 grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto mt-6 grid max-w-xl items-stretch gap-5">
         {packages.map((pkg) => {
           const featured = "featured" in pkg && pkg.featured;
           return (
@@ -150,12 +150,11 @@ export function PackagesPageContent() {
         <div className="grid gap-6 p-8 sm:grid-cols-[1.4fr_auto] sm:items-center sm:p-12">
           <div>
             <h3 className="font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[34px]">
-              Hangi paketin uygun olduğunu birlikte belirleyelim.
+              Öğrenci için doğru matematik grubunu birlikte belirleyelim.
             </h3>
             <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-              Öğrencinin matematik seviyesini ve hedefini konuşalım; deneme,
-              ders veya tam destekten hangisinin doğru başlangıç olduğunu
-              birlikte netleştirelim.
+              Öğrencinin matematik seviyesini, sınıfını ve hedefini konuşalım;
+              canlı ders grubuna nasıl başlamasının doğru olacağını birlikte netleştirelim.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
