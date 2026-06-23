@@ -14,7 +14,6 @@ import {
   ListChecks,
   PieChart,
   ShieldCheck,
-  Sparkles,
   Smartphone,
   Target,
   TimerReset,
@@ -107,7 +106,7 @@ const studentBenefits = [
   { icon: TimerReset, title: "Hızlı sonuç", body: "Denemeyi bitirdiğin an raporun açılır. Beklemek yok." },
   { icon: ListChecks, title: "Eksik konu takibi", body: "Tekrarlayan matematik eksikleri zamanla saydam hâle gelir." },
   { icon: Target, title: "Gelişim odaklı yapı", body: "Amaç çok deneme çözmek değil; doğru kazanıma zaman ayırmak." },
-  { icon: Sparkles, title: "Sade panel deneyimi", body: "Karmaşık menü yok; öğrenci ne yapması gerektiğini anlayarak girer." },
+  { icon: Eye, title: "Sade panel deneyimi", body: "Karmaşık menü yok; öğrenci ne yapması gerektiğini anlayarak girer." },
 ];
 
 const parentFeatures = [
@@ -269,11 +268,7 @@ export default function DenemeKulubuPage() {
 
           <div className="mx-auto grid max-w-6xl gap-12 px-5 pt-28 pb-16 sm:pt-36 sm:pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--od-olive)]" />
-                Matematik Deneme Kulübü
-              </span>
-              <h1 className="mt-5 font-display text-[40px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[64px]">
+              <h1 className="font-display text-[40px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[64px]">
                 Sadece deneme çözmek değil,{" "}
                 <em className="italic text-[var(--od-olive)]">eksiğini görmek</em>.
               </h1>
@@ -387,7 +382,6 @@ export default function DenemeKulubuPage() {
             <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
               <FadeIn>
                 <div>
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Deneme Kulübü nedir?</span>
                   <h2 className="mt-3 font-display text-[34px] leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
                     Sadece sınav değil;{" "}
                     <em className="italic text-[var(--od-olive)]">veriyle çalışan</em> bir sistem.
@@ -428,7 +422,6 @@ export default function DenemeKulubuPage() {
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Sistem akışı</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">Bir hafta nasıl işler?</h2>
                 <p className="mt-4 text-[15px] leading-7 text-[var(--od-ink-soft)]">
                   Beş adımlık, basit ama tutarlı bir döngü. Her hafta aynı ritim; öğrencinin tek odaklanması gereken çözmek ve eksiğine geri dönmek.
@@ -459,7 +452,6 @@ export default function DenemeKulubuPage() {
             <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
               <FadeIn>
                 <div>
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Dijital deneme deneyimi</span>
                   <h2 className="mt-3 font-display text-[34px] leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
                     Gerçek sınav hissi,{" "}
                     <em className="italic text-[var(--od-olive)]">dijitalin hızıyla</em>.
@@ -533,7 +525,6 @@ export default function DenemeKulubuPage() {
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Kazanım bazlı analiz</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">Bu sadece bir deneme sistemi değil.</h2>
                 <p className="mt-4 text-[15px] leading-7 text-[var(--od-ink-soft)]">
                   Net sayısı bir başlangıç. Matematik Deneme Kulübü; konu ve kazanım düzeyinde analiz çıkarır, net gelişim grafiğiyle birleştirir; öğrencinin nereye çalışacağını tahminden çıkarır.
@@ -564,7 +555,6 @@ export default function DenemeKulubuPage() {
             <div className="mt-14 rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6 sm:p-8">
               <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
                 <div>
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Fark</span>
                   <h3 className="mt-3 font-display text-[26px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[32px]">
                     Klasik deneme mantığı{" "}
                     <em className="italic text-[var(--od-olive)]">değil</em>.
@@ -598,7 +588,6 @@ export default function DenemeKulubuPage() {
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Öğrenciye faydası</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">Öğrencinin işini kolaylaştıran sekiz şey.</h2>
               </div>
             </FadeIn>
@@ -625,7 +614,6 @@ export default function DenemeKulubuPage() {
             <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
               <FadeIn>
                 <div>
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Veliye gelişim takibi</span>
                   <h2 className="mt-3 font-display text-[34px] leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
                     Çocuğunun matematikteki gelişimini{" "}
                     <em className="italic text-[var(--od-olive)]">veriden</em> takip et.
@@ -678,7 +666,6 @@ export default function DenemeKulubuPage() {
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Paket</span>
                 <h2 className="mt-3 font-display text-[36px] font-normal leading-[1.06] tracking-tight text-[var(--od-ink)] sm:text-[48px]">
                   Matematikte gelişimini{" "}
                   <em className="italic text-[var(--od-olive)]">ölç ve gör</em>.
@@ -749,7 +736,6 @@ export default function DenemeKulubuPage() {
           <div className="mx-auto max-w-4xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Sık sorulanlar</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[42px]">Merak edilenler.</h2>
               </div>
             </FadeIn>
@@ -800,8 +786,7 @@ export default function DenemeKulubuPage() {
                 </div>
 
                 <div className="rounded-[20px] border border-white/10 bg-white/5 p-6">
-                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
-                    <Sparkles className="h-4 w-4 text-[#cfcbb8]" />
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/60">
                     Bugün başladığında
                   </div>
                   <div className="mt-5 space-y-3 text-[14px] text-white/80">

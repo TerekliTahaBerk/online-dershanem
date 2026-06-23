@@ -13,10 +13,11 @@ import { CartFab } from "@/components/cart/cart-fab";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
-// Erken inline-script: hydration'dan ÖNCE doğru tema attribute'unu yerleştirir
-// → flash of wrong theme (FOUC) yaşanmaz. Öncelik:
-//   1) localStorage('od-theme')  2) prefers-color-scheme  3) 'dark' (varsayılan)
-const themeInitScript = `(()=>{try{var s=localStorage.getItem('od-theme');if(s!=='light'&&s!=='dark'){s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',s);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
+// Public marketing sitesi krem/açık tema için tasarlandı; panel kapalı olduğundan
+// tüm site açık temaya sabitlenir. İşletim sistemi koyu modda olsa bile site krem
+// render edilir (düşük kontrast / "white-on-white" sorunlarının kök çözümü).
+// Inline-script FOUC'u önler; data-theme="light" zaten <html>'de de set edilir.
+const themeInitScript = `(()=>{try{document.documentElement.setAttribute('data-theme','light');}catch(e){}})();`;
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -38,10 +39,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAFAF7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0E0E0C" },
-  ],
+  themeColor: "#FAFAF7",
 };
 
 export const metadata: Metadata = {
@@ -100,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="tr"
+      data-theme="light"
       className={`${GeistSans.variable} ${fraunces.variable} ${inter.variable}`}
       suppressHydrationWarning
     >

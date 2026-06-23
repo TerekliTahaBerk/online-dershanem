@@ -135,7 +135,7 @@ export function Navbar() {
                             OnlineDenemeKulübü
                             <span className="rounded-full bg-amber-100 px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wider text-amber-700">ODK</span>
                           </span>
-                          <span className="text-[11.5px] text-[#5A5A5F]">TYT · AYT · LGS denemeleri</span>
+                          <span className="text-[11.5px] text-[#5A5A5F]">Matematik denemeleri</span>
                         </span>
                       </Link>
                     </div>
@@ -145,7 +145,7 @@ export function Navbar() {
               </>
             ) : (
               <Link
-                href={loginHref}
+                href="/paketler/"
                 className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-[#0E0E10] px-5 py-2 text-[13.5px] font-medium text-white shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-[#0E0E10]/90"
               >
                 <span className="relative z-10">Başla</span>
@@ -175,7 +175,7 @@ export function Navbar() {
               </Link>
             ) : (
               <Link
-                href={loginHref}
+                href="/paketler/"
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#0E0E10] px-3.5 py-1.5 text-[12.5px] font-medium text-white"
               >
                 Başla

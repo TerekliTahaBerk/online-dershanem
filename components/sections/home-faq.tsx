@@ -12,10 +12,7 @@ export function HomeFAQ() {
     <section className="bg-[var(--od-cream)] py-24 sm:py-32">
       <div className="mx-auto max-w-3xl px-5">
         <header className="text-center">
-          <span className="text-[12.5px] font-medium uppercase tracking-[0.18em] text-[#8B8B7E]">
-            S.S.S.
-          </span>
-          <h2 className="mt-4 font-display text-[32px] font-normal leading-[1.15] tracking-tight text-[var(--od-ink)] sm:text-[40px]">
+          <h2 className="font-display text-[32px] font-normal leading-[1.15] tracking-tight text-[var(--od-ink)] sm:text-[40px]">
             Merak edilenler.
           </h2>
         </header>

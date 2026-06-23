@@ -3,14 +3,10 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, Minus, Plus, ShoppingBag, Sparkles, Tag, Trash2, X } from "lucide-react";
+import { ArrowRight, Check, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart, type OdCartItem } from "@/components/cart/cart-provider";
 import { trackConversionEvent } from "@/lib/tracking";
 import { buildOdSuggestions, type Suggestion } from "@/lib/cross-sell";
-
-type Props = {
-  isLoggedIn: boolean;
-};
 
 function tryFormat(cents: number): string {
   return new Intl.NumberFormat("tr-TR", {
@@ -20,7 +16,7 @@ function tryFormat(cents: number): string {
   }).format(cents / 100);
 }
 
-export function CartPageClient({ isLoggedIn }: Props) {
+export function CartPageClient() {
   const router = useRouter();
   const { items, count, totalCents, setQty, remove, clear, add, hydrated } = useCart();
 
@@ -30,84 +26,22 @@ export function CartPageClient({ isLoggedIn }: Props) {
     [items],
   );
 
-  // Coupon state
-  const [code, setCode] = useState("");
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [coupon, setCoupon] = useState<{
-    code: string;
-    discountCents: number;
-    kindLabel: string;
-    description: string | null;
-  } | null>(null);
-  const [couponError, setCouponError] = useState<string | null>(null);
-
-  // Discounted total
-  const discountCents = coupon ? Math.min(coupon.discountCents, totalCents) : 0;
-  const finalCents = Math.max(0, totalCents - discountCents);
-
-  const applyCoupon = useCallback(async () => {
-    if (!code.trim()) return;
-    if (!isLoggedIn) {
-      router.push(`/giris?callbackUrl=${encodeURIComponent("/sepet")}`);
-      return;
-    }
-    setCouponLoading(true);
-    setCouponError(null);
-    try {
-      const res = await fetch("/api/coupons/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: code.trim(),
-          service: "OD",
-          subtotalCents: totalCents,
-        }),
-      });
-      const json = await res.json();
-      if (!json.ok) {
-        setCouponError(json.error || "Kod uygulanamadı.");
-        setCoupon(null);
-        return;
-      }
-      setCoupon({
-        code: json.code,
-        discountCents: json.discountCents,
-        kindLabel: json.kindLabel,
-        description: json.description,
-      });
-      trackConversionEvent("coupon_applied", { code: json.code, discountCents: json.discountCents });
-    } catch {
-      setCouponError("Bağlantı hatası. Tekrar deneyin.");
-    } finally {
-      setCouponLoading(false);
-    }
-  }, [code, isLoggedIn, router, totalCents]);
+  const finalCents = totalCents;
 
   // Sepet snapshot'ını localStorage'a yaz (sessionStorage sekmeler arası paylaşılmaz),
-  // aynı sekmede /sepet/satin-al'a yönlendir.
+  // aynı sekmede /sepet/satin-al'a yönlendir. Guest checkout: login GEREKMEZ.
   const handleCheckout = useCallback(() => {
-    if (!isLoggedIn) {
-      router.push(`/giris?callbackUrl=${encodeURIComponent("/sepet")}`);
-      return;
-    }
     if (items.length === 0) return;
-    const params = new URLSearchParams();
-    params.set("fromCart", "1");
-    if (coupon) params.set("coupon", coupon.code);
     try {
       localStorage.setItem(
         "od_checkout_cart",
-        JSON.stringify({
-          items,
-          coupon: coupon ? { code: coupon.code } : null,
-          ts: Date.now(),
-        }),
+        JSON.stringify({ items, coupon: null, ts: Date.now() }),
       );
     } catch {/* ignore */}
-    trackConversionEvent("cart_checkout_open", { count, totalCents, coupon: coupon?.code });
+    trackConversionEvent("cart_checkout_open", { count, totalCents });
     // Aynı sekmede aç — kullanıcı geri tuşu ile sepete dönebilir
-    router.push(`/sepet/satin-al?${params.toString()}`);
-  }, [isLoggedIn, items, coupon, router, count, totalCents]);
+    router.push("/sepet/satin-al?fromCart=1");
+  }, [items, router, count, totalCents]);
 
   // ── Empty state ──
   if (!hydrated) {
@@ -125,10 +59,10 @@ export function CartPageClient({ isLoggedIn }: Props) {
           <ShoppingBag size={36} className="text-[var(--od-olive)]" strokeWidth={1.6} />
         </div>
         <h1 className="mt-6 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)]">
-          Sepetiniz boş.
+          Henüz paket seçmediniz.
         </h1>
         <p className="mt-2 text-[14.5px] text-[var(--od-ink-soft)]">
-          Programınıza uygun paketleri kataloğumuzdan ekleyebilirsiniz.
+          Matematik paketlerini inceleyin, size uygun olanı sepete ekleyin.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
@@ -186,12 +120,9 @@ export function CartPageClient({ isLoggedIn }: Props) {
           {/* Suggestions */}
           {suggestions.length > 0 && (
             <div className="mt-10 rounded-3xl border border-[var(--od-line)] bg-[var(--od-cream-2)] p-6">
-              <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-[var(--od-olive)]" />
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">
-                  Programınıza uygun tamamlayıcılar
-                </span>
-              </div>
+              <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">
+                Programınıza uygun tamamlayıcılar
+              </span>
               <h2 className="mt-2 font-display text-[24px] leading-tight tracking-tight text-[var(--od-ink)]">
                 Bu paketler de sepetinizle uyum sağlar.
               </h2>
@@ -233,79 +164,12 @@ export function CartPageClient({ isLoggedIn }: Props) {
                 <span className="text-[var(--od-ink-soft)]">Ara Toplam</span>
                 <span className="font-medium text-[var(--od-ink)]">{tryFormat(totalCents)}</span>
               </div>
-              {coupon && discountCents > 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-emerald-700 inline-flex items-center gap-1.5">
-                    <Tag size={13} />
-                    İndirim ({coupon.code})
-                  </span>
-                  <span className="font-medium text-emerald-700">
-                    −{tryFormat(discountCents)}
-                  </span>
-                </div>
-              )}
               <div className="border-t border-dashed border-[var(--od-line)] pt-3 flex items-baseline justify-between">
                 <span className="text-[15px] font-semibold text-[var(--od-ink)]">Toplam</span>
                 <span className="font-display text-[28px] leading-none text-[var(--od-ink)]">
                   {tryFormat(finalCents)}
                 </span>
               </div>
-            </div>
-
-            {/* Coupon */}
-            <div className="mt-5 rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream)] p-4">
-              <div className="flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-wider text-[var(--od-ink-soft)] mb-2">
-                <Tag size={12} />
-                İndirim Kodu
-              </div>
-              {coupon ? (
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-[14px] font-semibold text-emerald-800 flex items-center gap-1.5">
-                      <Check size={14} /> {coupon.code}
-                    </div>
-                    <div className="text-[12px] text-[var(--od-ink-soft)] truncate">
-                      {coupon.kindLabel}
-                      {coupon.description ? ` · ${coupon.description}` : ""}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCoupon(null);
-                      setCode("");
-                    }}
-                    className="inline-flex items-center justify-center h-7 w-7 rounded-full border border-[var(--od-line)] bg-white text-[var(--od-ink-soft)] hover:text-rose-600"
-                    aria-label="Kuponu kaldır"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.toUpperCase())}
-                      placeholder="KOD"
-                      maxLength={60}
-                      className="flex-1 rounded-lg border border-[var(--od-line)] bg-white px-3 py-2 text-[13px] uppercase tracking-wider text-[var(--od-ink)] outline-none focus:border-[var(--od-olive)] focus:ring-1 focus:ring-[var(--od-olive)]"
-                    />
-                    <button
-                      type="button"
-                      onClick={applyCoupon}
-                      disabled={couponLoading || !code.trim()}
-                      className="rounded-lg bg-[var(--od-ink)] px-4 text-[12.5px] font-semibold text-white hover:bg-black disabled:opacity-50"
-                    >
-                      {couponLoading ? "..." : "Uygula"}
-                    </button>
-                  </div>
-                  {couponError && (
-                    <div className="mt-2 text-[12px] text-rose-700">{couponError}</div>
-                  )}
-                </>
-              )}
             </div>
 
             {/* CTA */}
@@ -322,7 +186,12 @@ export function CartPageClient({ isLoggedIn }: Props) {
               Bilgi formunu doldurun, PayTR güvenli ödeme sayfasına geçilir.
             </div>
 
-            <ul className="mt-5 space-y-1.5 text-[11.5px] text-[var(--od-ink-soft)]">
+            <p className="mt-4 rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream)] p-3.5 text-[12px] leading-relaxed text-[var(--od-ink-soft)]">
+              Ödeme sonrası ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi
+              sizinle paylaşacaktır. Satın alma için kayıt olmanız gerekmez.
+            </p>
+
+            <ul className="mt-4 space-y-1.5 text-[11.5px] text-[var(--od-ink-soft)]">
               <li>· PayTR ile 256-bit SSL güvenli ödeme</li>
               <li>· 1, 3, 6 ve 9 taksit seçenekleri</li>
               <li>· Kart bilgileriniz sitemizde saklanmaz</li>

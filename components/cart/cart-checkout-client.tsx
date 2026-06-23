@@ -93,16 +93,7 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
     <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
       {/* SOL: Form */}
       <div>
-        <CheckoutPageHeader
-          subtitle={
-            <>
-              Bilgileri eksiksiz doldurun, güvenli ödeme sayfasına yönlendireceğiz.
-              {snapshot.coupon && (
-                <> İndirim kodu <strong className="text-emerald-700">{snapshot.coupon.code}</strong> uygulanacak.</>
-              )}
-            </>
-          }
-        />
+        <CheckoutPageHeader subtitle="Bilgileri eksiksiz doldurun, güvenli ödeme sayfasına yönlendireceğiz. Satın alma için kayıt olmanız gerekmez." />
 
         <BuyerInfoForm
           action="/api/od/checkout/start"
@@ -126,7 +117,6 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
               priceCents: i.priceCents,
               qty: i.qty,
             })),
-            couponCode: snapshot.coupon?.code ?? null,
           }}
           defaults={defaults}
           onSuccess={() => {
@@ -150,7 +140,6 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
           priceCents: i.priceCents,
           qty: i.qty,
         }))}
-        couponCode={snapshot.coupon?.code ?? null}
         backHref="/sepet"
       />
     </div>

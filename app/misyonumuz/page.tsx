@@ -154,10 +154,7 @@ export default function MissionPage() {
           <div className="overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)] p-8 sm:p-12">
             <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
               <div>
-                <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                  Bu hikâyenin parçası ol
-                </span>
-                <h3 className="mt-3 font-display text-[26px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[34px]">
+                <h3 className="font-display text-[26px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[34px]">
                   Matematikte yolu yakın zamanda yürümüş bir hocayla tanış.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">

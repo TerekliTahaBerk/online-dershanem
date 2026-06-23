@@ -6,7 +6,6 @@ import {
   ListChecks,
   LineChart,
   CalendarClock,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 
@@ -104,18 +103,14 @@ export function HomeFeatures() {
 
       <div className="mx-auto max-w-6xl px-5">
         <header className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[12px] font-medium text-[var(--od-olive)] backdrop-blur">
-            <Sparkles size={12} />
-            Matematik, tek akışta
-          </span>
-          <h2 className="mt-6 font-display text-[34px] font-normal leading-[1.12] tracking-tight text-[var(--od-ink)] sm:text-[48px]">
-            Matematikte ilerlemen için
-            <br />
-            gereken her şey, <em className="italic text-[var(--od-olive)]">tek</em> akışta.
+          <h2 className="font-display text-[34px] font-normal leading-[1.12] tracking-tight text-[var(--od-ink)] sm:text-[46px]">
+            Ders, deneme ve veli takibi
+            <br className="hidden sm:block" /> aynı matematik planında buluşur.
           </h2>
           <p className="mt-6 text-[15.5px] leading-[1.85] text-[var(--od-ink-soft)]">
-            Canlı matematik dersi, soru çözümü, denemeler, takvim ve öğretmenin —
-            sekme açıp kapatmadan tek ekranda. Sen sadece çalış; gerisini biz kuruyoruz.
+            Canlı ders, deneme analizi, eksik konu listesi, haftalık plan ve veliye
+            açık gelişim özeti — sekme açıp kapatmadan tek akışta. Sen sadece çalış;
+            gerisini biz kuruyoruz.
           </p>
         </header>
 
@@ -151,9 +146,6 @@ export function HomeFeatures() {
         <div className="mt-12 overflow-hidden rounded-[36px] border border-[var(--od-line)] bg-white shadow-[0_40px_90px_-40px_rgba(20,20,15,0.18)]">
           <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="flex flex-col justify-center gap-5 p-8 sm:p-12">
-              <span className="text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                {current.eyebrow}
-              </span>
               <h3 className="font-display text-[28px] font-normal leading-[1.12] tracking-tight text-[var(--od-ink)] sm:text-[34px]">
                 {current.title}
               </h3>

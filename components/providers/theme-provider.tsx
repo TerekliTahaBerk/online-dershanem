@@ -15,18 +15,12 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "od-theme";
 
 function readInitialTheme(): ThemeMode {
-  if (typeof document === "undefined") return "dark";
+  // Public site açık temaya sabitlendi (panel kapalı). <html data-theme="light">
+  // attribute'u öncelikli okunur; aksi her durumda varsayılan light.
+  if (typeof document === "undefined") return "light";
   const attr = document.documentElement.getAttribute("data-theme");
   if (attr === "dark" || attr === "light") return attr;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "dark" || stored === "light") return stored;
-  } catch {}
-  if (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches) {
-    return "light";
-  }
-  // Varsayılan: dark
-  return "dark";
+  return "light";
 }
 
 function applyTheme(theme: ThemeMode) {
@@ -38,7 +32,7 @@ function applyTheme(theme: ThemeMode) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>("dark");
+  const [theme, setThemeState] = useState<ThemeMode>("light");
 
   useEffect(() => {
     // On mount: pick up stored / system preference and apply to <html>
@@ -75,7 +69,7 @@ export function useTheme(): ThemeContextValue {
   if (!ctx) {
     // Safe fallback for components rendered outside provider
     return {
-      theme: "dark",
+      theme: "light",
       setTheme: () => {},
       toggleTheme: () => {}
     };

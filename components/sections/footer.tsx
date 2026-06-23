@@ -10,8 +10,7 @@ const productLinks = [
   { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
   { label: "Deneme Kulübü", href: "/deneme-kulubu/" },
   { label: "Paketler", href: "/paketler/" },
-  { label: "Kamplar", href: "/kamplar/" },
-  { label: "Blog", href: "/blog/" },
+  { label: "Misyonumuz", href: "/misyonumuz/" },
 ];
 const supportLinks = [
   { label: "Sıkça Sorulanlar", href: "/sss/" },

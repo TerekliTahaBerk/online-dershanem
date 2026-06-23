@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  BarChart3,
-  CheckCircle2,
-  ListChecks,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { FadeIn } from "@/components/ui/fade-in";
 import { subjectPackageGroups } from "@/lib/content";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
@@ -39,12 +33,8 @@ export function HomeOdkPreview() {
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <FadeIn>
             <div>
-              <span className="text-[12.5px] font-medium uppercase tracking-[0.18em] text-[#8B8B7E]">
-                Matematik Deneme Kulübü
-              </span>
-              <h2 className="mt-3 font-display text-[32px] font-normal leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-                Sadece deneme çözmek değil,{" "}
-                <em className="italic text-[var(--od-olive)]">eksiğini görmek.</em>
+              <h2 className="font-display text-[32px] font-normal leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
+                Sadece deneme çözmek değil, eksiğini görmek.
               </h2>
               <p className="mt-4 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
                 Dijital matematik denemeleri, kazanım bazlı analiz ve net gelişim
@@ -54,18 +44,15 @@ export function HomeOdkPreview() {
 
               <ul className="mt-6 grid gap-2 sm:grid-cols-2">
                 {[
-                  { icon: BarChart3, label: "Dijital matematik denemeleri" },
-                  { icon: ListChecks, label: "Kazanım bazlı analiz" },
-                  { icon: TrendingUp, label: "Net gelişim grafiği" },
-                  { icon: CheckCircle2, label: "Veliye gelişim özeti" },
-                ].map(({ icon: Icon, label }) => (
+                  "Dijital matematik denemeleri",
+                  "Kazanım bazlı analiz",
+                  "Net gelişim grafiği",
+                  "Veliye gelişim özeti",
+                ].map((label) => (
                   <li
                     key={label}
-                    className="flex items-center gap-3 rounded-2xl border border-[var(--od-line)] bg-white px-4 py-3 text-[13.5px] text-[var(--od-ink)]"
+                    className="rounded-2xl border border-[var(--od-line)] bg-white px-4 py-3 text-[13.5px] text-[var(--od-ink)]"
                   >
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
-                      <Icon className="h-4 w-4" />
-                    </span>
                     {label}
                   </li>
                 ))}
@@ -74,17 +61,9 @@ export function HomeOdkPreview() {
           </FadeIn>
 
           <FadeIn delay={0.05}>
-            <article className="relative overflow-hidden rounded-[32px] border border-[var(--od-ink)] bg-white p-7 shadow-[0_40px_90px_-40px_rgba(20,20,15,0.3)] sm:p-9">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full"
-                style={{ background: "var(--od-sky-soft)" }}
-              />
+            <article className="relative overflow-hidden rounded-[32px] border border-[var(--od-line)] bg-white p-7 shadow-[0_30px_70px_-44px_rgba(20,20,15,0.22)] sm:p-9">
               <div className="relative">
-                <div className="text-[11.5px] font-medium uppercase tracking-wider text-[#8B8B7E]">
-                  Matematik Paketi
-                </div>
-                <h3 className="mt-1 font-display text-[24px] font-normal text-[var(--od-ink)]">
+                <h3 className="font-display text-[24px] font-normal text-[var(--od-ink)]">
                   {club.name}
                 </h3>
                 <div className="mt-4 flex items-baseline gap-1.5">

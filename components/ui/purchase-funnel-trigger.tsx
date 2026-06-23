@@ -3,6 +3,8 @@
 import { MouseEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { trackConversionEvent } from "@/lib/tracking";
+import { useCart } from "@/components/cart/cart-provider";
+import { getPackagePriceCents, parsePriceToCents } from "@/lib/content";
 
 type PurchaseFunnelTriggerProps = {
   children: ReactNode;
@@ -12,8 +14,8 @@ type PurchaseFunnelTriggerProps = {
   className?: string;
   analyticsId?: string;
   /**
-   * Optional explicit overrides for the cart form. If not provided we try
-   * to derive category/subject from the analytics source string.
+   * Optional explicit overrides for the cart item. If not provided we try
+   * to derive category/subject from the package name.
    */
   category?: string;
   subject?: string;
@@ -21,16 +23,16 @@ type PurchaseFunnelTriggerProps = {
 };
 
 /**
- * Purchase CTA — sends the user to our in-house cart/info form
- * (`/paketler/satin-al?...`) before forwarding them to the actual PayTR
- * payment link. This lets us capture buyer info + KVKK consent and
- * persist a `PurchaseIntent` row for the admin team.
+ * "Satın Al" CTA — sepet-merkezli akış.
+ *
+ * Tıklandığında ürünü sepete ekler ve `/sepet`'i açar. Tüm ödemeler sepet →
+ * checkout → PayTR üzerinden, login/register/panel teması olmadan ilerler.
+ * Guest checkout: kayıt gerekmez; ödeme sonrası admin onboarding kuyruğuna düşer.
  */
 export function PurchaseFunnelTrigger({
   children,
   source,
   packageName,
-  paymentLink,
   className = "",
   analyticsId,
   category,
@@ -38,9 +40,9 @@ export function PurchaseFunnelTrigger({
   priceLabel,
 }: PurchaseFunnelTriggerProps) {
   const router = useRouter();
+  const { add } = useCart();
 
-  // Try to extract "<Category> <Subject>" from packageName
-  // (e.g. "TYT-AYT Matematik") if explicit values not supplied.
+  // "<Category> <Subject>"'i packageName'den türet (açık değer verilmediyse).
   const derived = (() => {
     if (category || subject) {
       return { cat: category || "", subj: subject || "" };
@@ -52,23 +54,31 @@ export function PurchaseFunnelTrigger({
     return { cat: "", subj: packageName };
   })();
 
-  const target = `/paketler/satin-al?${new URLSearchParams({
-    cat: derived.cat,
-    subj: derived.subj,
-    name: packageName,
-    price: priceLabel || "",
-    link: paymentLink || "",
-  }).toString()}`;
+  // Fiyatı önce katalogdan çöz; bulunamazsa priceLabel'dan parse et.
+  const priceCents =
+    getPackagePriceCents(derived.cat, derived.subj) ||
+    (priceLabel ? parsePriceToCents(priceLabel) : 0);
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
+    add(
+      {
+        id: `${derived.cat}__${derived.subj}`,
+        name: packageName,
+        category: derived.cat,
+        subject: derived.subj,
+        priceCents,
+        priceLabel: priceLabel || "",
+      },
+      1,
+    );
     trackConversionEvent("purchase_cta_click", { source, packageName });
-    router.push(target);
+    router.push("/sepet");
   };
 
   return (
     <a
-      href={target}
+      href="/sepet"
       onClick={handleClick}
       className={className}
       data-analytics-id={analyticsId ?? source}

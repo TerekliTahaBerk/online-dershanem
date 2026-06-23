@@ -34,21 +34,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     { url: `${siteUrl}/`, lastModified, changeFrequency: "weekly", priority: 1 },
-    // Exam prep — high SEO value
-    { url: `${siteUrl}/tyt/`, lastModified, changeFrequency: "weekly", priority: 0.92 },
-    { url: `${siteUrl}/ayt/`, lastModified, changeFrequency: "weekly", priority: 0.92 },
+    // Exam prep — high SEO value (matematik odaklı landing'ler).
+    // /tyt ve /ayt → /yks'e redirect (noindex) olduğundan sitemap'te yer almaz.
     { url: `${siteUrl}/yks/`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/lgs/`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     // Services
     { url: `${siteUrl}/online-dershane/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
     { url: `${siteUrl}/online-ozel-ders/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
-    { url: `${siteUrl}/kamplar/`, lastModified, changeFrequency: "weekly", priority: 0.72 },
     { url: `${siteUrl}/paketler/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
     { url: `${siteUrl}/matematik-ders-paketi/`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/deneme-kulubu/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
-    // ODK
-    { url: `${siteUrl}/odk/`, lastModified, changeFrequency: "weekly", priority: 0.85 },
-    { url: `${siteUrl}/odk-paketleri/`, lastModified, changeFrequency: "weekly", priority: 0.85 },
+    // ODK — /odk ve /odk-paketleri kökleri /deneme-kulubu'ya redirect; yalnız
+    // canlı (DB) paket slug sayfaları sitemap'te kalır.
     ...odkPackageEntries,
     // About / Info
     { url: `${siteUrl}/misyonumuz/`, lastModified, changeFrequency: "monthly", priority: 0.6 },

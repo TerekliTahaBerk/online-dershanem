@@ -88,11 +88,8 @@ export default async function OdPaymentPage({
       })
     : null;
 
-  const editHref = `/paketler/satin-al?${new URLSearchParams({
-    cat: order.category || "",
-    subj: order.subject || "",
-    name: order.packageName,
-  }).toString()}`;
+  // Sepet-merkezli akış: düzenleme sepette yapılır.
+  const editHref = "/sepet";
 
   return (
     <>

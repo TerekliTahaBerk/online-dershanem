@@ -3,8 +3,11 @@ import { faq, siteUrl } from "@/lib/content";
 import { Navbar } from "@/components/sections/navbar";
 import { HomeHero } from "@/components/sections/home-hero";
 import { UniversityStrip } from "@/components/sections/university-strip";
+import { HomeProblem } from "@/components/sections/home-problem";
 import { HomeFeatures } from "@/components/sections/home-features";
 import { HomePricing } from "@/components/sections/home-pricing";
+import { HomeHowItWorks } from "@/components/sections/home-how-it-works";
+import { HomeParentTrust } from "@/components/sections/home-parent-trust";
 import { HomeOdkPreview } from "@/components/sections/home-odk-preview";
 import { HomeTestimonials } from "@/components/sections/home-testimonials";
 import { HomeFAQ } from "@/components/sections/home-faq";
@@ -68,8 +71,11 @@ export default function HomePage() {
       <main>
         <HomeHero />
         <UniversityStrip />
+        <HomeProblem />
         <HomeFeatures />
         <HomePricing />
+        <HomeHowItWorks />
+        <HomeParentTrust />
         <HomeOdkPreview />
         <HomeTestimonials />
         <HomeFAQ />

@@ -1,26 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ArrowRight, LineChart, Video, Sparkles } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { subjectPackageGroups } from "@/lib/content";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 
 /**
  * Matematik paketleri — üç paket, üç farklı karakter.
- *  - Deneme Kulübü: analiz/rapor odaklı (sky)
- *  - Ders Paketi:   canlı ders/öğretmen odaklı (mint)
- *  - Tam Destek:    premium komple çözüm, "EN ÇOK ÖNERİLEN" (koyu)
+ *  - Deneme Kulübü: analiz/rapor odaklı
+ *  - Ders Paketi:   canlı ders/öğretmen odaklı
+ *  - Tam Destek:    komple çözüm, "En çok önerilen" (koyu kart)
+ *
+ * Sade editorial dil: kartlarda dekoratif ikon/rozet yok; öne çıkan paket
+ * koyu kart + ince üst etiketle ayrışır.
  *
  * Ödeme: her kart sepete ekleme + PurchaseFunnelTrigger ile mevcut OD
  * checkout akışına bağlanır (category/subject açıkça geçilir).
  */
-
-const ACCENTS = {
-  analytics: { Icon: LineChart, ring: "var(--od-sky)", soft: "var(--od-sky-soft)" },
-  live: { Icon: Video, ring: "var(--od-mint)", soft: "#EAF1E8" },
-  premium: { Icon: Sparkles, ring: "var(--od-yellow)", soft: "var(--od-yellow-soft)" },
-} as const;
 
 export function HomePricing() {
   const packages = subjectPackageGroups[0]?.packages ?? [];
@@ -29,11 +26,8 @@ export function HomePricing() {
     <section id="paketler-on-izleme" className="bg-[var(--od-cream-2)] py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-5">
         <header className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <span className="text-[12.5px] font-medium uppercase tracking-[0.18em] text-[#8B8B7E]">
-            Matematik Paketleri
-          </span>
-          <h2 className="mt-3 font-display text-[32px] font-normal leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-            Matematikte <em className="italic text-[var(--od-olive)]">ilerle</em>, gelişimini gör.
+          <h2 className="font-display text-[32px] font-normal leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[44px]">
+            Matematikte ilerle, gelişimini gör.
           </h2>
           <p className="mt-4 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
             İster denemeyle eksiğini ölç, ister butik grupta canlı derse katıl,
@@ -43,8 +37,6 @@ export function HomePricing() {
 
         <div className="mt-14 grid items-stretch gap-5 lg:grid-cols-3">
           {packages.map((pkg) => {
-            const accent = ACCENTS[pkg.accent as keyof typeof ACCENTS] ?? ACCENTS.analytics;
-            const Icon = accent.Icon;
             const isFeatured = "featured" in pkg && pkg.featured;
             const cartItem = {
               id: `${pkg.category}__${pkg.subject}`,
@@ -64,24 +56,12 @@ export function HomePricing() {
                 }`}
               >
                 {pkg.badge ? (
-                  <span className="absolute -top-3 left-7 inline-flex items-center gap-1.5 rounded-full bg-[var(--od-yellow)] px-3 py-1 text-[10.5px] font-semibold uppercase tracking-wider text-[var(--od-ink)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--od-ink)]" />
+                  <span className="mb-4 inline-block text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--od-yellow)]">
                     {pkg.badge}
                   </span>
                 ) : null}
 
-                <span
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl"
-                  style={{ background: isFeatured ? "rgba(255,255,255,0.1)" : accent.soft }}
-                >
-                  <Icon
-                    size={20}
-                    strokeWidth={1.8}
-                    className={isFeatured ? "text-[var(--od-yellow)]" : "text-[var(--od-olive)]"}
-                  />
-                </span>
-
-                <h3 className="mt-5 font-display text-[23px] font-normal leading-tight">
+                <h3 className="font-display text-[23px] font-normal leading-tight">
                   {pkg.name}
                 </h3>
                 <p

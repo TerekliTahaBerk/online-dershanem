@@ -58,6 +58,9 @@ export function PricingComparisonSection() {
                 <PurchaseFunnelTrigger
                   source={`home_subject_package_${pkg.groupKey}_${pkg.subject}`}
                   packageName={`${pkg.category} ${pkg.subject}`}
+                  category={pkg.category}
+                  subject={pkg.subject}
+                  priceLabel={pkg.discountedPrice}
                   paymentLink={paymentLink}
                   className={`pd-btn ${isFeatured ? "pd-home-pricing-cta-featured" : "pd-btn-ghost"} pd-home-pricing-cta`}
                   analyticsId={`home_subject_package_${pkg.groupKey}_${pkg.subject}`}

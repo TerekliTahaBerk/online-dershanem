@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { prisma } from "@/lib/prisma";
@@ -15,33 +14,33 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CartCheckoutPage() {
+  // Guest checkout: login zorunlu DEĞİL. Session varsa form öğrenci bilgileriyle
+  // ön-doldurulur; yoksa boş gelir (defaults zaten `user?.` ile null-safe).
   const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    redirect(`/giris?callbackUrl=${encodeURIComponent("/sepet")}`);
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      email: true,
-      name: true,
-      student: {
+  const user = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
         select: {
-          fullName: true,
-          phone: true,
-          city: true,
-          district: true,
-          schoolName: true,
-          classLevel: true,
-          department: true,
-          examType: true,
-          targetSchool: true,
-          parentFullName: true,
-          parentPhone: true,
+          email: true,
+          name: true,
+          student: {
+            select: {
+              fullName: true,
+              phone: true,
+              city: true,
+              district: true,
+              schoolName: true,
+              classLevel: true,
+              department: true,
+              examType: true,
+              targetSchool: true,
+              parentFullName: true,
+              parentPhone: true,
+            },
+          },
         },
-      },
-    },
-  });
+      })
+    : null;
 
   const defaults = {
     fullName: user?.student?.fullName || user?.name || "",

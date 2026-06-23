@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Clock3, Phone } from "lucide-react";
+import { ArrowRight, Phone } from "lucide-react";
 import { contact, subjectPackageGroups } from "@/lib/content";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
@@ -26,24 +26,15 @@ export function PackagesPageContent() {
             >
               {pkg.badge ? (
                 <span
-                  className={`absolute -top-2.5 left-7 inline-flex items-center rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] ${
-                    featured
-                      ? "bg-[var(--od-yellow)] text-[var(--od-ink)]"
-                      : "bg-[var(--od-yellow-soft)] text-[var(--od-ink)]"
+                  className={`mb-3 inline-block text-[11px] font-medium uppercase tracking-[0.18em] ${
+                    featured ? "text-[var(--od-yellow)]" : "text-[var(--od-olive)]"
                   }`}
                 >
                   {pkg.badge}
                 </span>
               ) : null}
 
-              <span
-                className={`text-[11.5px] font-medium uppercase tracking-[0.16em] ${
-                  featured ? "text-[var(--od-yellow)]" : "text-[var(--od-olive)]"
-                }`}
-              >
-                {pkg.category}
-              </span>
-              <h2 className="mt-2 font-display text-[26px] font-normal leading-[1.1] tracking-tight">
+              <h2 className="font-display text-[26px] font-normal leading-[1.1] tracking-tight">
                 {pkg.name}
               </h2>
               <p
@@ -55,14 +46,11 @@ export function PackagesPageContent() {
               </p>
 
               <div
-                className={`mt-4 inline-flex items-center gap-1.5 self-start rounded-full border px-2.5 py-1 text-[11.5px] ${
-                  featured
-                    ? "border-white/20 text-white/75"
-                    : "border-[var(--od-line)] bg-[var(--od-cream-2)] text-[#7A7A6F]"
+                className={`mt-3 text-[12.5px] ${
+                  featured ? "text-white/70" : "text-[#7A7A6F]"
                 }`}
               >
-                <Clock3 size={11} strokeWidth={1.8} />
-                <span>{pkg.quota}</span>
+                {pkg.quota}
               </div>
 
               <div className="mt-6 flex items-baseline gap-3">
@@ -161,10 +149,7 @@ export function PackagesPageContent() {
       <div className="mt-16 overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)]">
         <div className="grid gap-6 p-8 sm:grid-cols-[1.4fr_auto] sm:items-center sm:p-12">
           <div>
-            <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)]">
-              Kararsız mısınız?
-            </span>
-            <h3 className="mt-3 font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[34px]">
+            <h3 className="font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[34px]">
               Hangi paketin uygun olduğunu birlikte belirleyelim.
             </h3>
             <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">

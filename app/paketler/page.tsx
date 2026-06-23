@@ -44,12 +44,8 @@ export default function PackagesPage() {
           </div>
 
           <div className="mx-auto max-w-4xl px-5 pt-28 pb-16 sm:pt-36 sm:pb-20 text-center">
-            <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
-              Matematik Paketleri
-            </span>
-            <h1 className="mt-5 font-display text-[38px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[68px]">
-              Matematikte{" "}
-              <em className="italic text-[var(--od-olive)]">ilerle</em>.
+            <h1 className="font-display text-[38px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[64px]">
+              Matematikte ilerlemenin üç yolu.
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
               Üç paket, tek odak: matematik. İster denemeyle eksiğini ölç, ister

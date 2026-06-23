@@ -104,11 +104,7 @@ export default function MatematikDersPaketiPage() {
         <section className="relative overflow-hidden border-b border-[var(--od-line)]">
           <div className="mx-auto grid max-w-6xl gap-12 px-5 pt-28 pb-16 sm:pt-36 sm:pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--od-olive)]" />
-                Matematik Ders Paketi
-              </span>
-              <h1 className="mt-5 font-display text-[40px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
+              <h1 className="font-display text-[40px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
                 Butik grupta{" "}
                 <em className="italic text-[var(--od-olive)]">canlı matematik</em> dersi.
               </h1>
@@ -191,7 +187,6 @@ export default function MatematikDersPaketiPage() {
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Neden butik?</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
                   Kalabalık sınıf değil, gerçek takip.
                 </h2>
@@ -218,7 +213,6 @@ export default function MatematikDersPaketiPage() {
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="max-w-2xl">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Bir ders nasıl işler?</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
                   Anlatım, çözüm, ödev, takip.
                 </h2>
@@ -243,7 +237,6 @@ export default function MatematikDersPaketiPage() {
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Matematik öğretmenleri</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
                   Deneyimli, yalnızca matematik.
                 </h2>
@@ -328,7 +321,6 @@ export default function MatematikDersPaketiPage() {
           <div className="mx-auto max-w-4xl px-5 py-20 sm:py-24">
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">Sık sorulanlar</span>
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[42px]">Merak edilenler.</h2>
               </div>
             </FadeIn>
