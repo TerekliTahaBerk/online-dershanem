@@ -154,8 +154,8 @@ export default async function OdkOrdersPage({
                       {new Intl.DateTimeFormat("tr-TR").format(o.createdAt)}
                     </td>
                     <td>
-                      <div>{o.user.name ?? "—"}</div>
-                      <div className="od-muted" style={{ fontSize: 11 }}>{o.user.email}</div>
+                      <div>{o.user?.name ?? "(guest — hesap açılacak)"}</div>
+                      <div className="od-muted" style={{ fontSize: 11 }}>{o.user?.email ?? "—"}</div>
                     </td>
                     <td>{o.package.title}</td>
                     <td className="od-mono">{fmtTRY(o.totalCents)}</td>

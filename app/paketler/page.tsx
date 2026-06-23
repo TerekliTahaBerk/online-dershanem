@@ -6,14 +6,14 @@ import { siteUrl } from "@/lib/content";
 import { PackagesPageContent } from "@/components/sections/packages-page-content";
 
 export const metadata: Metadata = {
-  title: "Ders Bazlı Grup Özel Ders Paketleri",
+  title: "Matematik Paketleri",
   description:
-    "TYT-AYT ve LGS için ders bazlı Grup Özel Ders paketlerini inceleyin.",
+    "Matematik Deneme Kulübü (₺750/ay), Matematik Ders Paketi (₺3.000/ay) ve Matematik Tam Destek (₺3.500/ay) paketlerini inceleyin.",
   alternates: { canonical: "/paketler/" },
   openGraph: {
-    title: "Ders Bazlı Grup Özel Ders Paketleri | Online Dershanem",
+    title: "Matematik Paketleri | Online Dershanem",
     description:
-      "TYT-AYT ve LGS için ders bazlı Grup Özel Ders paketlerini inceleyin.",
+      "Matematik Deneme Kulübü, Matematik Ders Paketi ve Tam Destek paketlerini inceleyin.",
     url: `${siteUrl}/paketler/`,
   },
 };
@@ -45,15 +45,15 @@ export default function PackagesPage() {
 
           <div className="mx-auto max-w-4xl px-5 pt-28 pb-16 sm:pt-36 sm:pb-20 text-center">
             <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
-              Paketler
+              Matematik Paketleri
             </span>
             <h1 className="mt-5 font-display text-[38px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[68px]">
-              İhtiyacın olan derse{" "}
-              <em className="italic text-[var(--od-olive)]">odaklan</em>.
+              Matematikte{" "}
+              <em className="italic text-[var(--od-olive)]">ilerle</em>.
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              Tek paket zorunluluğu yok. Sadece eksik olduğun derslere yatırım
-              yap; bütçeni ve zamanını en verimli şekilde yönet.
+              Üç paket, tek odak: matematik. İster denemeyle eksiğini ölç, ister
+              butik grupta canlı derse katıl, ister Tam Destek ile ikisini birden al.
             </p>
           </div>
         </section>

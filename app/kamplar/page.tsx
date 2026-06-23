@@ -6,14 +6,14 @@ import { siteUrl } from "@/lib/content";
 import { CampsPageContent } from "@/components/sections/camps-page-content";
 
 export const metadata: Metadata = {
-  title: "Kamplar",
-  description: "YKS ve LGS için butik kamp planları: planlanan kamplar, içerik detayları ve ön başvuru.",
+  title: "Matematik Kampları",
+  description: "TYT, AYT ve LGS matematik için butik kamp planları: yoğun konu tekrarı, soru çözümü ve net artışı.",
   alternates: {
     canonical: "/kamplar/"
   },
   openGraph: {
-    title: "Kamplar | Online Dershanem",
-    description: "Geleceğin başarı planı: butik kamplarımız. İçerikleri inceleyip ön başvuru yapın.",
+    title: "Matematik Kampları | Online Dershanem",
+    description: "Butik matematik kampları: yoğun konu tekrarı ve net artışı. İçerikleri inceleyin.",
     url: `${siteUrl}/kamplar/`
   }
 };

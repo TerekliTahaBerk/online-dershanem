@@ -37,25 +37,23 @@ export function buildOdSuggestions(
         parsePriceToCents(pkg.discountedPrice);
       if (priceCents <= 0) continue;
       // Premium dilli reason
-      let reason = "Akademik dengenizi tamamlayabilir.";
-      if (cartCategories.has(pkg.category) && !cartSubjects.has(pkg.subject)) {
-        reason = `${pkg.category} hazırlığınızı bir adım öne taşır.`;
-      } else if (pkg.badge === "EN POPÜLER") {
-        reason = "Öğrencilerin en çok tercih ettiği program.";
-      } else if (pkg.badge === "ÖĞRENCİ FAVORİSİ") {
-        reason = "Aynı seviyedeki öğrencilerin sıkça eklediği paket.";
-      } else if (pkg.category === "LGS") {
-        reason = "Sınava odaklı, kazanım takipli LGS programı.";
+      let reason = "Matematikteki gelişimini tamamlayabilir.";
+      if (pkg.badge === "EN ÇOK ÖNERİLEN") {
+        reason = "Veli için en güvenli ve en avantajlı tercih.";
+      } else if (pkg.subject === "Deneme Kulübü") {
+        reason = "Dersini denemeyle ölç; eksik konularını net gör.";
+      } else if (pkg.subject === "Ders Paketi") {
+        reason = "Butik grupta canlı matematik dersiyle eksiklerini kapat.";
       }
       all.push({
         id,
         service: "OD",
         category: pkg.category,
         subject: pkg.subject,
-        name: `${pkg.category} ${pkg.subject}`,
+        name: pkg.name,
         priceCents,
         priceLabel: pkg.discountedPrice,
-        oldPriceLabel: pkg.oldPrice,
+        oldPriceLabel: pkg.oldPrice || undefined,
         badge: pkg.badge || undefined,
         reason,
       });

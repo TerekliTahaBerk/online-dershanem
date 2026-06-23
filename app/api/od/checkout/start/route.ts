@@ -74,13 +74,11 @@ function asBool(v: unknown): boolean {
 const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function POST(req: Request) {
+  // Guest checkout: oturum ZORUNLU DEĞİL. Session varsa order kullanıcıya
+  // bağlanır; yoksa userId=null guest order oluşur (ödeme sonrası admin
+  // onboarding kuyruğuna düşer). Bkz. lib/od/finance.ts.
   const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { ok: false, error: "Oturum açmanız gerekiyor." },
-      { status: 401 },
-    );
-  }
+  const userId = session?.user?.id ?? null;
 
   let body: unknown;
   try {
@@ -203,9 +201,22 @@ export async function POST(req: Request) {
   let couponId: string | null = null;
   let couponCode: string | null = null;
   if (d.couponCode && d.couponCode.trim()) {
+    // Kuponlar user-scoped (kullanım limiti/redemption userId'ye bağlı). Guest
+    // checkout'ta kontrollü hata döndür — ödemeyi engellemeden kullanıcıyı
+    // bilgilendir (kuponsuz devam edebilir).
+    if (!userId) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "İndirim kodu kullanmak için giriş yapmanız gerekir. Kodu kaldırıp ödemeye devam edebilirsiniz.",
+        },
+        { status: 400 },
+      );
+    }
     const cv = await validateCoupon({
       code: d.couponCode,
-      userId: session.user.id,
+      userId,
       service: "OD",
       subtotalCents: priceCents,
     });
@@ -278,19 +289,23 @@ export async function POST(req: Request) {
       : null,
   };
 
-  // Idempotency: aynı user+packageName+total için son 30dk PENDING varsa reuse
+  // Idempotency: aynı user+packageName+total için son 30dk PENDING varsa reuse.
+  // Guest'te (userId=null) güvenilir bir reuse anahtarı yok → her zaman yeni
+  // order oluştur (cuid orderId guest için bearer görevi görür).
   const cutoff = new Date(Date.now() - PENDING_REUSE_MS);
-  let order = await prisma.odOrder.findFirst({
-    where: {
-      userId: session.user.id,
-      packageName,
-      totalCents,
-      status: "PENDING",
-      createdAt: { gt: cutoff },
-    },
-    orderBy: { createdAt: "desc" },
-    select: { id: true },
-  });
+  let order = userId
+    ? await prisma.odOrder.findFirst({
+        where: {
+          userId,
+          packageName,
+          totalCents,
+          status: "PENDING",
+          createdAt: { gt: cutoff },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      })
+    : null;
 
   if (order) {
     await prisma.odOrder.update({
@@ -308,7 +323,7 @@ export async function POST(req: Request) {
   } else {
     order = await prisma.odOrder.create({
       data: {
-        userId: session.user.id,
+        userId,
         packageName,
         category,
         subject,
@@ -325,7 +340,7 @@ export async function POST(req: Request) {
 
   log.info("od.checkout.form_captured", {
     orderId: order.id,
-    userId: session.user.id,
+    userId,
     packageName,
     subtotalCents: priceCents,
     discountCents,

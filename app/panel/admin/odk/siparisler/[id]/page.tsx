@@ -100,7 +100,7 @@ export default async function OdkOrderDetailPage({
           " · " +
           order.status +
           " · " +
-          (order.user.name ?? order.user.email)
+          (order.user?.name ?? order.user?.email ?? "(guest — hesap açılacak)")
         }
         right={
           <div style={{ display: "flex", gap: 8 }}>
@@ -128,8 +128,8 @@ export default async function OdkOrderDetailPage({
               <dd className="od-mono" style={{ fontSize: 11 }}>{order.id}</dd>
               <dt className="od-muted">Kullanıcı</dt>
               <dd>
-                {order.user.name ?? "—"}
-                <div className="od-muted" style={{ fontSize: 11 }}>{order.user.email}</div>
+                {order.user?.name ?? "(guest — hesap açılacak)"}
+                <div className="od-muted" style={{ fontSize: 11 }}>{order.user?.email ?? "—"}</div>
               </dd>
               <dt className="od-muted">Paket</dt>
               <dd>

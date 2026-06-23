@@ -154,9 +154,9 @@ export default async function OdkPaymentsPage({
                   </td>
                   <td className="od-mono" style={{ fontSize: 11 }}>{p.id.slice(0, 10)}…</td>
                   <td>
-                    <div>{p.order.user.name ?? "—"}</div>
+                    <div>{p.order.user?.name ?? "(guest — hesap açılacak)"}</div>
                     <div className="od-muted" style={{ fontSize: 11 }}>
-                      {p.order.user.email}
+                      {p.order.user?.email ?? "—"}
                     </div>
                   </td>
                   <td>{p.order.package.title}</td>

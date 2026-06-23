@@ -7,16 +7,16 @@ import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Online Özel Ders | Ders Bazlı Küçük Grup Modeli",
+  title: "Online Matematik Özel Ders | Butik Küçük Grup Modeli",
   description:
-    "Online özel ders yaklaşımında ders bazlı seçim, küçük grup etkileşimi ve haftalık takip ile hedef odaklı net artışını hızlandır.",
+    "Online matematik özel ders: butik canlı dersler, matematik deneme kulübü ve haftalık takip ile matematikte net artışını hızlandır.",
   alternates: {
     canonical: "/online-ozel-ders/"
   },
   openGraph: {
-    title: "Online Özel Ders | Online Dershanem",
+    title: "Online Matematik Özel Ders | Online Dershanem",
     description:
-      "Online özel ders modelinde öğrencinin seviyesine göre ders planı, küçük grup desteği ve düzenli performans takibi.",
+      "Matematikte öğrencinin seviyesine göre ders planı, butik grup desteği ve veliye açık gelişim takibi.",
     url: `${siteUrl}/online-ozel-ders/`
   }
 };
@@ -28,13 +28,13 @@ export default function OnlineOzelDersPage() {
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>
           <section className="rounded-3xl border border-line bg-white p-7 shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Online Özel Ders</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Online Matematik Özel Ders</p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-              Online Özel Ders ile İhtiyacın Olan Derse Odaklan
+              Online Matematik Özel Ders ile Eksik Konularına Odaklan
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
-              Online özel ders modelinde öğrenci gereksiz toplu pakete girmez. Hangi derste eksik varsa o dersten başlar,
-              küçük grupta daha fazla soru çözüm desteği alır ve haftalık performans raporuyla ilerler.
+              Matematikte öğrenci, eksik olduğu konudan başlar; en fazla 4 kişilik butik grupta
+              daha fazla soru çözüm desteği alır ve veliye açık haftalık gelişim takibiyle ilerler.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <LeadFunnelTrigger
@@ -55,9 +55,9 @@ export default function OnlineOzelDersPage() {
 
           <section className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              "Matematik, fizik, kimya, biyoloji veya LGS derslerini ayrı seçebilme",
-              "Maksimum 4 kişilik sınıfta daha yoğun soru-cevap imkanı",
-              "Ders sonrası kısa analiz ve haftalık ilerleme kontrolü"
+              "Matematikte deneme, canlı ders veya ikisini birlikte seçebilme",
+              "Maksimum 4 kişilik matematik grubunda daha yoğun soru-cevap imkanı",
+              "Ders sonrası kısa analiz ve haftalık matematik ilerleme kontrolü"
             ].map((item) => (
               <article key={item} className="rounded-2xl border border-line bg-white p-5 text-sm font-medium text-muted shadow-soft">
                 {item}

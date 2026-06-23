@@ -23,11 +23,10 @@ export type CheckoutResult =
   | { ok: true; orderId: string; iframeUrl: string }
   | { ok: false; reason: string; userMessage: string };
 
-const PENDING_REUSE_WINDOW_MS = 30 * 60_000;
-
 export async function createOdkCheckoutSession(input: {
-  userId: string;
-  packageId: string;
+  // Order `/api/odk/checkout/start` tarafından önceden oluşturuldu. Guest
+  // uyumluluğu için userId yerine orderId ile çalışırız (OD ile aynı desen).
+  orderId: string;
   userEmail: string;
   userName: string;
   userPhone: string;
@@ -43,48 +42,29 @@ export async function createOdkCheckoutSession(input: {
     };
   }
 
-  const pkg = await prisma.odkPackage.findUnique({
-    where: { id: input.packageId, isActive: true },
-    select: { id: true, title: true, priceCents: true, slug: true },
+  const order = await prisma.odkOrder.findUnique({
+    where: { id: input.orderId },
+    select: {
+      id: true,
+      status: true,
+      totalCents: true,
+      package: { select: { title: true, slug: true, isActive: true } },
+    },
   });
-  if (!pkg) {
-    return { ok: false, reason: "package_not_found", userMessage: "Paket bulunamadı." };
+  if (!order || !order.package?.isActive) {
+    return { ok: false, reason: "order_not_found", userMessage: "Sipariş bulunamadı." };
   }
-  if (pkg.priceCents <= 0) {
+  if (order.status !== "PENDING") {
+    return { ok: false, reason: "order_not_pending", userMessage: "Bu sipariş zaten işlenmiş." };
+  }
+  if (order.totalCents <= 0) {
     return {
       ok: false,
       reason: "invalid_price",
       userMessage: "Bu paketin fiyatı tanımlı değil. Lütfen iletişime geçin.",
     };
   }
-
-  // Idempotency: aynı kullanıcı + paket için son 30dk içinde PENDING order
-  const cutoff = new Date(Date.now() - PENDING_REUSE_WINDOW_MS);
-  let order = await prisma.odkOrder.findFirst({
-    where: {
-      userId: input.userId,
-      packageId: pkg.id,
-      status: "PENDING",
-      createdAt: { gt: cutoff },
-    },
-    orderBy: { createdAt: "desc" },
-    select: { id: true, totalCents: true },
-  });
-
-  if (!order) {
-    const created = await prisma.odkOrder.create({
-      data: {
-        userId: input.userId,
-        packageId: pkg.id,
-        status: "PENDING",
-        subtotalCents: pkg.priceCents,
-        discountCents: 0,
-        totalCents: pkg.priceCents,
-      },
-      select: { id: true, totalCents: true },
-    });
-    order = created;
-  }
+  const pkg = { title: order.package.title, slug: order.package.slug };
 
   const merchantOid = buildMerchantOid(order.id);
 
@@ -111,7 +91,7 @@ export async function createOdkCheckoutSession(input: {
   }
 
   const basket: PaytrBasketItem[] = [
-    [pkg.title.slice(0, 200), (pkg.priceCents / 100).toFixed(2), 1],
+    [pkg.title.slice(0, 200), (order.totalCents / 100).toFixed(2), 1],
   ];
 
   const okUrl = `${input.origin}/odk-paketleri/${pkg.slug}/satin-al/sonuc?status=success`;

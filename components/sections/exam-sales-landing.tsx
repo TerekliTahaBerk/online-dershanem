@@ -6,10 +6,9 @@ import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 
-type PackageGroupKey = "TYT-AYT" | "LGS";
-
 type ExamSalesLandingData = {
-  examKey: PackageGroupKey;
+  // Yalnızca analitik/source etiketi için; ürün kataloğu tek matematik grubudur.
+  examKey: string;
   heroBadge: string;
   heroTitle: string;
   heroText: string;
@@ -18,9 +17,8 @@ type ExamSalesLandingData = {
 };
 
 export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
-  const packageGroup = subjectPackageGroups.find((group) => group.key === data.examKey);
-
-  if (!packageGroup) return null;
+  // Tek matematik paket grubu — tüm sınav landing'leri aynı kataloğu gösterir.
+  const packageGroup = subjectPackageGroups[0];
 
   return (
     <>
@@ -81,21 +79,25 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted/80">{pkg.category}</p>
-                      <h3 className="mt-1 text-2xl font-bold text-ink">{pkg.subject}</h3>
+                      <h3 className="mt-1 text-2xl font-bold text-ink">{pkg.name}</h3>
                     </div>
                     {pkg.badge ? (
                       <span className="inline-flex rounded-full bg-mint px-3 py-1 text-[11px] font-semibold text-pine">{pkg.badge}</span>
                     ) : null}
                   </div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{pkg.tagline}</p>
 
                   <div className="mt-4 rounded-2xl border border-line bg-soft p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand">{pkg.discountLabel}</p>
-                    <p className="mt-1 inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-semibold text-rose-700">
+                    <p className="inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-semibold text-rose-700">
                       {pkg.quota}
                     </p>
-                    <p className="mt-1 text-sm font-medium text-muted line-through">{pkg.oldPrice}</p>
+                    {pkg.oldPrice ? (
+                      <p className="mt-1 text-sm font-medium text-muted line-through">{pkg.oldPrice}</p>
+                    ) : null}
                     <p className="mt-1 text-2xl font-bold text-anchor">{pkg.discountedPrice}</p>
-                    <p className="mt-1 text-xs font-semibold text-muted">{pkg.perLessonPrice}</p>
+                    {pkg.perLessonPrice ? (
+                      <p className="mt-1 text-xs font-semibold text-muted">{pkg.perLessonPrice}</p>
+                    ) : null}
                   </div>
 
                   <ul className="mt-5 space-y-2 text-sm text-muted">
@@ -109,7 +111,10 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
 
                   <PurchaseFunnelTrigger
                     source={`${data.examKey.toLowerCase()}_${pkg.subject}_package_cta`}
-                    packageName={`${pkg.category} ${pkg.subject}`}
+                    packageName={pkg.name}
+                    category={pkg.category}
+                    subject={pkg.subject}
+                    priceLabel={pkg.discountedPrice}
                     paymentLink={getPackagePaymentLink(pkg.category, pkg.subject) ?? ""}
                     className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-pine"
                     analyticsId={`${data.examKey.toLowerCase()}_${pkg.subject}_package_cta`}

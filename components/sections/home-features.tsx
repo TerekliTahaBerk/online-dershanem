@@ -106,16 +106,16 @@ export function HomeFeatures() {
         <header className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[12px] font-medium text-[var(--od-olive)] backdrop-blur">
             <Sparkles size={12} />
-            Her şey tek yerde
+            Matematik, tek akışta
           </span>
           <h2 className="mt-6 font-display text-[34px] font-normal leading-[1.12] tracking-tight text-[var(--od-ink)] sm:text-[48px]">
-            Hazırlığın için ihtiyacın olan
+            Matematikte ilerlemen için
             <br />
-            her şey, <em className="italic text-[var(--od-olive)]">tek</em> bir akışta.
+            gereken her şey, <em className="italic text-[var(--od-olive)]">tek</em> akışta.
           </h2>
           <p className="mt-6 text-[15.5px] leading-[1.85] text-[var(--od-ink-soft)]">
-            Notlar, sorular, denemeler, takvim ve hocan — sekme açıp kapatmadan
-            tek bir ekranda. Sen sadece çalış; gerisini biz kuruyoruz.
+            Canlı matematik dersi, soru çözümü, denemeler, takvim ve öğretmenin —
+            sekme açıp kapatmadan tek ekranda. Sen sadece çalış; gerisini biz kuruyoruz.
           </p>
         </header>
 
@@ -294,11 +294,11 @@ function PlanMock() {
   const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
   const events = [
     { d: 0, t: "TYT Matematik", short: "TYT Mat", c: "var(--od-ink)" },
-    { d: 1, t: "AYT Fizik", short: "AYT Fz", c: "var(--od-olive)" },
+    { d: 1, t: "AYT Matematik", short: "AYT Mat", c: "var(--od-olive)" },
     { d: 1, t: "Soru Çözüm", short: "Soru", c: "#8B8B7E" },
-    { d: 3, t: "TYT Türkçe", short: "TYT Tü", c: "var(--od-ink)" },
-    { d: 4, t: "Deneme", short: "Dnm", c: "#1E8C5C" },
-    { d: 6, t: "Koçluk", short: "Koç", c: "var(--od-olive)" },
+    { d: 3, t: "Konu Tekrarı", short: "Tekrar", c: "var(--od-ink)" },
+    { d: 4, t: "Matematik Denemesi", short: "Deneme", c: "#1E8C5C" },
+    { d: 6, t: "Eksik Konu", short: "Eksik", c: "var(--od-olive)" },
   ];
   return (
     <div className="rounded-2xl border border-[var(--od-line)] bg-white p-3 sm:p-5">

@@ -78,7 +78,16 @@ export async function markOdOrderPaid(
       | { id?: string; code?: string; discountCents?: number }
       | null
       | undefined;
-    if (couponRaw && couponRaw.id && couponRaw.discountCents && couponRaw.discountCents > 0) {
+    // Coupon redemption user-scoped'tur (CouponRedemption.userId zorunlu). Guest
+    // order'da userId yoktur; kupon zaten guest'e kapalı (checkout/start guest'te
+    // kupon reddeder). Null-safe: userId yoksa redemption atlanır.
+    if (
+      order.userId &&
+      couponRaw &&
+      couponRaw.id &&
+      couponRaw.discountCents &&
+      couponRaw.discountCents > 0
+    ) {
       await redeemCoupon(tx, {
         couponId: couponRaw.id,
         userId: order.userId,
@@ -97,9 +106,9 @@ export async function markOdOrderPaid(
           source: `od_paid_${(order.category || "GEN").toLowerCase()}`,
           packageName: order.packageName,
           paymentLink: null,
-          studentFullName: buyer.fullName || order.user.name || "—",
+          studentFullName: buyer.fullName || order.user?.name || "—",
           studentPhone: buyer.phone || "—",
-          studentEmail: buyer.email || order.user.email || "—",
+          studentEmail: buyer.email || order.user?.email || "—",
           schoolName: buyer.schoolName || "—",
           city: buyer.city || "—",
           district: buyer.district || "—",
@@ -120,7 +129,7 @@ export async function markOdOrderPaid(
           parentEmail: null,
           notes: [
             `OD Order: ${order.id}`,
-            `userId: ${order.userId}`,
+            order.userId ? `userId: ${order.userId}` : "userId: (guest — hesap açılacak)",
             buyer.address ? `Adres: ${buyer.address}` : null,
             buyer.tcKimlik ? `TC: ${buyer.tcKimlik}` : null,
           ]
@@ -152,8 +161,8 @@ export async function markOdOrderPaid(
       intentId,
       // Email payload (captured inside tx for consistent buyer view)
       _emailPayload: {
-        userEmail: order.user.email,
-        userName: order.user.name,
+        userEmail: order.user?.email ?? null,
+        userName: order.user?.name ?? null,
         packageName: order.packageName,
         totalCents: order.totalCents,
         buyerInfo: (order.buyerInfo ?? {}) as Record<string, string | null | undefined>,

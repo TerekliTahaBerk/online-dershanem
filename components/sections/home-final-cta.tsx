@@ -8,8 +8,8 @@ export function HomeFinalCTA() {
           Hazırlığın <em className="italic text-[#3A4A2C]">bugün</em> başlasın.
         </h2>
         <p className="mx-auto mt-4 max-w-md text-[15px] leading-7 text-[var(--od-ink-soft)]">
-          Kontenjanlar dolmadan yerini al. Tüm derslerimizde butik grup,
-          haftalık takip ve şeffaf raporlama standarttır.
+          Kontenjanlar dolmadan yerini al. Matematik derslerimizde butik grup,
+          düzenli deneme takibi ve veliye açık raporlama standarttır.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link

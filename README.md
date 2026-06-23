@@ -53,11 +53,38 @@ Public tarafta kullanıcı **kendi kendine kayıt olmaz**. Akış:
 `PASSWORD_RESET` / davet / ilk giriş akışları **etkilenmez**. Eski self-register'ı
 test için `PUBLIC_REGISTER_ENABLED=true` ile geri açabilirsiniz.
 
-> Not: Canlı PayTR iframe checkout'u (`OdOrder`/`OdkOrder`) şu an login gerektirir
-> (`/paketler/satin-al`, `/odk-paketleri/[slug]/satin-al` → `/giris`). Guest
-> checkout'a tam geçiş ödeme-kritik kodu (`userId` nullable migration,
-> `markOdOrderPaid`, callback `notifyUser`) etkilediğinden ayrı bir adıma
-> bırakıldı. Mevcut guest `PurchaseIntent` akışı (`/api/purchases`) bozulmadı.
+### Guest Checkout (OD/ODK canlı PayTR iframe)
+
+Canlı PayTR iframe checkout'u artık **login gerektirmez** (guest checkout):
+
+- `/paketler/satin-al` ve `/odk-paketleri/[slug]/satin-al` sayfaları guest'e
+  açıktır; `/giris` redirect'i kaldırıldı. Form öğrenci/veli/iletişim bilgilerini
+  `buyer_info` JSON'una yazar (purchaserName/parentName/studentName/email/phone/
+  sınıf — ayrı kolon eklenmedi).
+- `/api/od/checkout/start` ve `/api/odk/checkout/start` session yoksa
+  `user_id=null` ile order oluşturur; session varsa kullanıcıya bağlar.
+- `OdOrder.user_id` / `OdkOrder.user_id` artık **nullable**; FK `ON DELETE SET
+  NULL` (migration `0037` — kullanıcı silinse bile ödenmiş order + muhasebe izi
+  korunur). Yeni tablo/enum eklenmedi.
+- PayTR callback (`/api/paytr/callback`) **null-safe**: response formatı ("OK")
+  değişmedi, başarılı ödeme order'ı `PAID` yapar. Guest'te `notifyUser` atlanır
+  (admin e-postası gönderilir); ODK entitlement/access-tag açma, hesap bağlanınca
+  yapılmak üzere ertelenir.
+- Kuponlar user-scoped'tur → guest checkout'ta kupon kullanımı kontrollü hata ile
+  reddedilir (kullanıcı kuponsuz ödemeye devam edebilir).
+
+**Admin onboarding kuyruğu:** "ödemesi alınmış, hesap açılacak" kayıtlar şu
+sorguyla bulunur — yeni tablo gerekmez:
+
+```ts
+// OD: prisma.odOrder.findMany({ where: { status: "PAID", userId: null } })
+// ODK: prisma.odkOrder.findMany({ where: { status: "PAID", userId: null } })
+```
+
+Admin daha sonra bu ödemeden öğrenci/veli hesabı oluşturur, order'ı kullanıcıya
+bağlar (`userId` set eder) ve geçici şifre / tek kullanımlık davet linki verir
+(`User.userInviteToken` + `mustChangePassword`). İlk girişte zorunlu şifre
+değişimi korunur. Public register kapalıdır (yukarı bkz.).
 
 - Varsayılan: kapalı. Panel kapalıyken `/panel/*`, `/giris`, `/kayit`,
   `/sifremi-unuttum` → `/panel-yenileniyor` sayfasına yönlenir; panel/admin

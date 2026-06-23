@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Online Dershanem",
     short_name: "Online Dershanem",
-    description: "TYT-AYT ve LGS için küçük grup online özel ders platformu.",
+    description: "Online matematik dershanesi: butik canlı matematik dersleri ve matematik deneme kulübü.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { prisma } from "@/lib/prisma";
@@ -51,52 +51,47 @@ export default async function OdkCheckoutFormPage({
     notFound();
   }
 
+  // Guest checkout: login zorunlu değil. Session varsa form ön-doldurulur.
   const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    redirect(`/giris?callbackUrl=/odk-paketleri/${slug}/satin-al`);
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      student: {
+  const user = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
         select: {
-          fullName: true,
-          phone: true,
-          city: true,
-          district: true,
-          schoolName: true,
-          classLevel: true,
-          department: true,
-          examType: true,
-          targetSchool: true,
-          parentFullName: true,
-          parentPhone: true,
+          id: true,
+          email: true,
+          name: true,
+          student: {
+            select: {
+              fullName: true,
+              phone: true,
+              city: true,
+              district: true,
+              schoolName: true,
+              classLevel: true,
+              department: true,
+              examType: true,
+              targetSchool: true,
+              parentFullName: true,
+              parentPhone: true,
+            },
+          },
         },
-      },
-    },
-  });
-
-  if (!user) {
-    redirect(`/giris?callbackUrl=/odk-paketleri/${slug}/satin-al`);
-  }
+      })
+    : null;
 
   const defaults = {
-    fullName: user.student?.fullName || user.name || "",
-    email: user.email || "",
-    phone: user.student?.phone || "",
-    city: user.student?.city || "",
-    district: user.student?.district || "",
-    schoolName: user.student?.schoolName || "",
-    classLevel: user.student?.classLevel || "",
-    department: user.student?.department || "",
-    examType: user.student?.examType || "",
-    targetSchool: user.student?.targetSchool || "",
-    parentFullName: user.student?.parentFullName || "",
-    parentPhone: user.student?.parentPhone || "",
+    fullName: user?.student?.fullName || user?.name || "",
+    email: user?.email || "",
+    phone: user?.student?.phone || "",
+    city: user?.student?.city || "",
+    district: user?.student?.district || "",
+    schoolName: user?.student?.schoolName || "",
+    classLevel: user?.student?.classLevel || "",
+    department: user?.student?.department || "",
+    examType: user?.student?.examType || "",
+    targetSchool: user?.student?.targetSchool || "",
+    parentFullName: user?.student?.parentFullName || "",
+    parentPhone: user?.student?.parentPhone || "",
   };
 
   return (

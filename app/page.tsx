@@ -12,9 +12,9 @@ import { Footer } from "@/components/sections/footer";
 import { HomeYellowCTA } from "@/components/sections/home-yellow-cta";
 
 export const metadata: Metadata = {
-  title: "TYT-AYT ve LGS için Küçük Grup Online Özel Ders",
+  title: "Online Matematik Dershanesi | Butik Canlı Ders ve Deneme Kulübü",
   description:
-    "Toplu paket zorunluluğu olmadan ihtiyacın olan dersi seç. TYT-AYT ve LGS için küçük gruplarda canlı ders, haftalık takip ve düzenli ilerleme.",
+    "Online matematik dershanesi: en fazla 4 kişilik butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi. Çocuğunuzun matematikte nerede takıldığını görüp birlikte kapatıyoruz.",
   alternates: {
     canonical: "/"
   }
@@ -36,8 +36,10 @@ export default function HomePage() {
 
   const orgJsonLd = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "EducationalOrganization",
     name: "Online Dershanem",
+    description:
+      "Online matematik dershanesi: butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi.",
     url: siteUrl,
     logo: `${siteUrl}/logo.png`,
     contactPoint: {
@@ -51,10 +53,10 @@ export default function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Online Dershanem",
-    alternateName: "Online Dershanem Grup Ozel Ders",
+    alternateName: "Online Matematik Dershanesi",
     url: siteUrl,
     inLanguage: "tr-TR",
-    keywords: "online dershanem, online dershane, özel ders, yks, tyt, ayt, lgs"
+    keywords: "online matematik dershanesi, matematik özel ders, matematik deneme kulübü, tyt matematik, ayt matematik, lgs matematik"
   };
 
   return (

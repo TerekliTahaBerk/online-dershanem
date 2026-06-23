@@ -158,11 +158,11 @@ export default function MissionPage() {
                   Bu hikâyenin parçası ol
                 </span>
                 <h3 className="mt-3 font-display text-[26px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[34px]">
-                  Yolu yakın zamanda yürümüş bir hocayla tanış.
+                  Matematikte yolu yakın zamanda yürümüş bir hocayla tanış.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  Hangi sınava hazırlanırsan hazırlan, sana en uygun butik
-                  grup paketini birlikte belirleyelim.
+                  Matematikte nerede olursan ol, sana en uygun butik matematik
+                  paketini birlikte belirleyelim.
                 </p>
               </div>
               <Link

@@ -31,7 +31,7 @@ const STATUS_CONFIG = {
     borderClass: "border-emerald-200",
     defaultTitle: "Ödemeniz alındı!",
     defaultDescription:
-      "Ödemeniz başarıyla tamamlandı. Sipariş ve hesap detaylarınız aşağıda; teşekkür ederiz.",
+      "Ödemeniz başarıyla tamamlandı. Ekibimiz en kısa sürede sizinle iletişime geçecek; teşekkür ederiz.",
   },
   failed: {
     icon: AlertTriangle,

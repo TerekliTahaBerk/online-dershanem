@@ -12,13 +12,13 @@ type ProgramTarget = {
 };
 
 function getProgramTarget(programName: string): ProgramTarget {
-  if (programName.includes("LGS")) {
-    return { href: "/lgs/", label: "LGS özel landing sayfasına git" };
+  if (programName.includes("Deneme Kulübü")) {
+    return { href: "/deneme-kulubu/", label: "Matematik Deneme Kulübü'nü incele" };
   }
-  if (programName.includes("TYT-AYT")) {
-    return { href: "/yks/", label: "TYT-AYT özel sayfalarına git" };
+  if (programName.includes("Ders Paketi")) {
+    return { href: "/matematik-ders-paketi/", label: "Matematik Ders Paketi'ni incele" };
   }
-  return { href: "/#paket-karsilastirma", label: "Ders bazlı paketleri incele" };
+  return { href: "/paketler/", label: "Matematik paketlerini incele" };
 }
 
 export function ProgramsSection() {
@@ -34,10 +34,10 @@ export function ProgramsSection() {
     <section id="programlar" className="py-16 sm:py-20">
       <Container>
         <FadeIn>
-          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Ders Bazlı Grup Özel Ders Modeli</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">Matematik Paket Modeli</h2>
           <p className="mt-3 max-w-3xl text-muted">
-            Bu yapı klasik “tüm dersleri içeren online paket” değildir. TYT-AYT ve LGS tarafında ihtiyaç duyduğun dersi ayrı seçer,
-            küçük gruplarda daha odaklı ve daha verimli bir öğrenme süreci yaşarsın.
+            Tek odak matematik. İster denemeyle eksiğini ölç, ister butik grupta canlı derse katıl,
+            ister Tam Destek ile ikisini birden al; matematikte daha odaklı ve verimli ilerlersin.
           </p>
         </FadeIn>
         <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">

@@ -34,9 +34,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       subtitle="Bıraktığın sayfa, çözdüğün son soru, kurduğun plan — hepsi seni bekliyor."
       footer={
         <p>
-          İlk kez mi geliyorsun?{" "}
-          <Link href="/kayit" className="font-semibold text-white hover:underline">
-            Hesap oluştur
+          Henüz öğrencimiz değil misiniz?{" "}
+          <Link href="/paketler/" className="font-semibold text-white hover:underline">
+            Matematik paketlerini inceleyin
           </Link>
         </p>
       }

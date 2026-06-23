@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
-import { Instrument_Serif, Inter } from "next/font/google";
+import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/content";
 
@@ -20,9 +20,9 @@ const themeInitScript = `(()=>{try{var s=localStorage.getItem('od-theme');if(s!=
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const instrumentSerif = Instrument_Serif({
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-display",
   display: "swap",
@@ -48,19 +48,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   manifest: "/manifest.webmanifest",
   title: {
-    default: "TYT-AYT ve LGS Online Dershane | Küçük Grup Özel Ders",
+    default: "Online Matematik Dershanesi | Online Dershanem",
     template: "%s | Online Dershanem"
   },
   description:
-    "TYT-AYT ve LGS için küçük grup online özel ders. Seviyene uygun sınıf, canlı ders, haftalık takip ve net odaklı çalışma planı.",
+    "Butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi. Çocuğunuzun matematikte nerede takıldığını görüp ders ve denemeyle birlikte kapatıyoruz.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"
   },
   openGraph: {
-    title: "TYT-AYT ve LGS Online Dershane | Küçük Grup Özel Ders",
+    title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "Seviyene uygun küçük grupla canlı derse katıl, haftalık takip ve net odaklı planla düzenli ilerle.",
+      "Butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi. En fazla 4 kişilik grupta yakın takip.",
     url: `${siteUrl}/`,
     siteName: "Online Dershanem",
     locale: "tr_TR",
@@ -70,14 +70,14 @@ export const metadata: Metadata = {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Online Dershanem"
+        alt: "Online Dershanem · Online Matematik Dershanesi"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Online Dershanem",
-    description: "TYT-AYT ve LGS için küçük grup canlı ders, haftalık takip ve ders bazlı özel ders planı.",
+    title: "Online Matematik Dershanesi | Online Dershanem",
+    description: "Butik canlı matematik dersleri, matematik deneme kulübü ve veliye açık gelişim takibi.",
     images: ["/logo.png"]
   },
   icons: {
@@ -100,7 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="tr"
-      className={`${GeistSans.variable} ${instrumentSerif.variable} ${inter.variable}`}
+      className={`${GeistSans.variable} ${fraunces.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
       <head>

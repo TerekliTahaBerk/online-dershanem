@@ -1154,7 +1154,9 @@ model OdkPackageAccessTag {
 
 model OdkOrder {
   id            String           @id @default(cuid())
-  userId        String           @map("user_id")
+  // Guest checkout: bkz. OdOrder.userId notu. `status=PAID AND userId IS NULL`
+  // = admin onboarding kuyruğu. Entitlement/access-tag, hesap bağlanınca açılır.
+  userId        String?          @map("user_id")
   packageId     String           @map("package_id")
   status        OdkOrderStatus   @default(PENDING)
   subtotalCents Int              @map("subtotal_cents")
@@ -1163,7 +1165,8 @@ model OdkOrder {
   buyerInfo     Json?            @map("buyer_info")
   createdAt     DateTime         @default(now()) @map("created_at")
   updatedAt     DateTime         @updatedAt @map("updated_at")
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // onDelete: SetNull → ödenmiş guest/onboarding order'ı koru (Cascade KULLANMA).
+  user          User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   package       OdkPackage       @relation(fields: [packageId], references: [id], onDelete: Cascade)
   payments      OdkPayment[]
   entitlements  OdkEntitlement[]
@@ -2011,7 +2014,10 @@ model AppActivityLog {
 
 model OdOrder {
   id            String         @id @default(cuid())
-  userId        String         @map("user_id")
+  // Guest checkout: ödeme bir hesaba bağlı olmak zorunda değil. Ödeme alındıktan
+  // sonra admin öğrenci/veli hesabı oluşturup order'ı kullanıcıya bağlar.
+  // `status=PAID AND userId IS NULL` = "hesap açılacak" onboarding kuyruğu.
+  userId        String?        @map("user_id")
   packageId     String?        @map("package_id")
   packageName   String         @map("package_name")
   category      String?
@@ -2024,7 +2030,9 @@ model OdOrder {
   intentId      String?        @map("intent_id")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // onDelete: SetNull → kullanıcı silinse bile ödenmiş order (ve muhasebe izi)
+  // korunur; order guest'e geri döner. Cascade KULLANMA (ödeme kaybı riski).
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   package       Package?       @relation(fields: [packageId], references: [id], onDelete: SetNull)
   payments      OdPayment[]
 

@@ -43,8 +43,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/online-dershane/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
     { url: `${siteUrl}/online-ozel-ders/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
     { url: `${siteUrl}/kamplar/`, lastModified, changeFrequency: "weekly", priority: 0.72 },
-    { url: `${siteUrl}/paketler/`, lastModified, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${siteUrl}/deneme-kulubu/`, lastModified, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${siteUrl}/paketler/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
+    { url: `${siteUrl}/matematik-ders-paketi/`, lastModified, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteUrl}/deneme-kulubu/`, lastModified, changeFrequency: "weekly", priority: 0.88 },
     // ODK
     { url: `${siteUrl}/odk/`, lastModified, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteUrl}/odk-paketleri/`, lastModified, changeFrequency: "weekly", priority: 0.85 },
