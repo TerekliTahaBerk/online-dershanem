@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     template: "%s | Online Dershanem"
   },
   description:
-    "Maksimum 4 kişilik canlı matematik dersleri, ders sonrası takip ve veli bilgilendirmesi. Çocuğunuzun matematikte nerede takıldığını görüp birlikte kapatıyoruz.",
+    "En fazla 4 öğrencilik canlı matematik dersleri, ders içi soru-cevap, ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "Maksimum 4 kişilik canlı matematik dersleri, ders sonrası takip ve veli bilgilendirmesi.",
+      "En fazla 4 öğrencilik canlı matematik dersleri, ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
     url: `${siteUrl}/`,
     siteName: "Online Dershanem",
     locale: "tr_TR",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Online Matematik Dershanesi | Online Dershanem",
-    description: "Maksimum 4 kişilik canlı matematik dersleri ve ders sonrası takip.",
+    description: "En fazla 4 öğrencilik canlı matematik dersleri ve ders sonrası net çalışma yönü.",
     images: ["/logo.png"]
   },
   icons: {

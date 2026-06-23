@@ -253,7 +253,7 @@ export const subjectPackageGroups = [
     key: "Matematik",
     title: "Matematik Ders Paketi",
     subtitle:
-      "Tek odak matematik. Canlı ders, küçük grup ve ders sonrası takip aynı pakette.",
+      "En fazla dört öğrenci. Aynı öğretmen, aynı tempo, ders sonrası net çalışma yönü.",
     packages: [
       {
         id: "matematik-ders-paketi",
@@ -262,10 +262,10 @@ export const subjectPackageGroups = [
         subject: "Ders Paketi",
         category: "Matematik",
         badge: "",
-        tagline: "Butik grupta canlı matematik dersi.",
+        tagline: "Küçük grupta, öğretmenin öğrenciyi gerçekten duyduğu canlı matematik dersi.",
         audience:
-          "Matematikte konu eksiğini canlı ders ve öğretmen takibiyle kapatmak isteyen öğrenciler için.",
-        quota: "Maks. 4 kişilik grup",
+          "Derste soru sorabilmeye, çözümünü gösterebilmeye ve hafta sonunda ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
+        quota: "En fazla 4 öğrenci",
         oldPrice: "₺5.000/ay",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺3.000/ay",
@@ -273,11 +273,11 @@ export const subjectPackageGroups = [
         perLessonPrice: "",
         features: [
           "Canlı matematik dersi",
-          "Maksimum 4 kişilik butik grup",
-          "Haftalık konu takibi",
-          "Ders sonrası ödevlendirme",
-          "Öğretmen geri bildirimi",
-          "Veli bilgilendirmesi",
+          "En fazla 4 öğrencilik grup",
+          "Derste soru-cevap ve birlikte çözüm",
+          "Ders sonrası çalışma yönü",
+          "Ödevlendirme ve öğretmen notu",
+          "Veliye sade gelişim özeti",
           "Ödeme sonrası öğrenci hesabı ekibimiz tarafından hazırlanır"
         ],
         cta: "Sepete Ekle"
@@ -305,20 +305,20 @@ export const pricing = [
     price: "₺3.000/ay",
     quota: "Maks. 4 kişilik grup",
     audience: "Matematikte konu eksiğini canlı ders ve öğretmen takibiyle kapatmak isteyen öğrenciler için",
-    seats: "En fazla 4 kişilik butik grup",
+    seats: "En fazla 4 öğrencilik grup",
     features: [
       "Canlı matematik dersi",
-      "Maksimum 4 kişilik butik grup",
-      "Öğretmen takibi ve ders sonrası ödevlendirme",
-      "Veli bilgilendirmesi",
-      "Eksik konu kapatma"
+      "En fazla 4 öğrencilik grup",
+      "Ders sırasında soru-cevap",
+      "Ders sonrası ödevlendirme",
+      "Veliye sade gelişim özeti"
     ],
     weeklyPlan: [
-      "Butik grupta canlı matematik dersi",
+      "Küçük grupta canlı matematik dersi",
       "Derste soru-cevap ve birlikte çözüm",
       "Ders sonrası ödevlendirme",
-      "Eksik konuya göre ilerleme",
-      "Öğretmen takibiyle düzenli geri bildirim"
+      "Bir sonraki hafta için net çalışma yönü",
+      "Öğretmen notuyla düzenli geri bildirim"
     ],
     note: "Eski fiyat ₺5.000 — şimdi ₺3.000",
     featured: false
@@ -808,7 +808,7 @@ export const blogPosts = [
       },
       {
         h2: "Küçük grup desteği ne kazandırır?",
-        paragraphs: ["Maksimum 4 kişilik sınıfta öğretmen öğrencinin işlem hatasını hızlı fark eder ve anında müdahale eder."],
+        paragraphs: ["En fazla 4 öğrencilik sınıfta öğretmen öğrencinin işlem hatasını hızlı fark eder ve anında müdahale eder."],
         links: [{ label: "LGS için online dershane modelini gör", href: "/online-dershane/" }]
       }
     ],
@@ -933,11 +933,11 @@ export const blogPosts = [
 export const faq = [
   {
     q: "Online Dershanem sadece matematik mi?",
-    a: "Evet. Tek odağımız matematik. Canlı ders ve takip sistemimiz öğrencinin matematikteki eksiklerini kapatmak için kurulmuştur."
+    a: "Evet. Public tarafta tek odağımız matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz."
   },
   {
     q: "Gruplar kaç kişilik?",
-    a: "Matematik gruplarımız en fazla 4 kişilik. Bu sayede öğretmen seninle yakından ilgilenir; soru sormak, çözüm yaptırmak ve takılan noktalara geri dönmek için yeterli süre kalır."
+    a: "Her matematik grubunda en fazla 4 öğrenci olur. Öğretmen öğrenciyi adıyla tanır; soru sormaya, çözümü göstermeye ve derste geri dönüş almaya zaman kalır."
   },
   {
     q: "Seviyeye göre gruplandırma yapılıyor mu?",
@@ -945,15 +945,15 @@ export const faq = [
   },
   {
     q: "Satışta hangi paket var?",
-    a: "Şu anda public satışta yalnızca Matematik Ders Paketi var. Paket aylık ₺3.000 ve maksimum 4 kişilik canlı matematik dersi üzerine kurulu."
+    a: "Şu anda public satışta yalnızca Matematik Ders Paketi var. Paket aylık ₺3.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. Matematik; konu anlatımı, yeni nesil soru çözümü ve ders sonrası ödevlendirmeyle TYT, AYT ve LGS matematik hedeflerine göre planlanıyor. Sadece konu bitirmek değil, öğrenciyi takip etmek esas."
+    a: "Evet. TYT, AYT ve LGS hedefleri dikkate alınır. Derste konu anlatımı ve soru çözümü birlikte ilerler; ders sonunda öğrencinin ne çalışacağı netleşir."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
-    a: "Evet. Veliye öğrencinin matematikteki durumu, ders sonrası çalışması ve eksik konuları anlaşılır şekilde aktarılır."
+    a: "Evet. Veli sadece sonuç görmez; çocuğunun hangi konuda zorlandığını anlayacak kadar sade bir özet alır."
   },
   {
     q: "Paket seçiminde kararsızsam ne yapmalıyım?",

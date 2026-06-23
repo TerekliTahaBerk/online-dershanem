@@ -17,7 +17,7 @@ export function HomeFAQ() {
           </h2>
         </header>
 
-        <ul className="mt-14 divide-y divide-[#E5E5E0] border-y border-[var(--od-line)]">
+        <ul className="mt-14 overflow-hidden rounded-[24px] border border-[var(--od-line)] bg-white">
           {items.map((it, idx) => {
             const isOpen = open === idx;
             return (
@@ -26,21 +26,21 @@ export function HomeFAQ() {
                   type="button"
                   onClick={() => setOpen(isOpen ? null : idx)}
                   aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-6 py-6 text-left transition hover:bg-[var(--od-cream-2)]/50"
+                  className="flex w-full items-center justify-between gap-6 px-5 py-6 text-left transition hover:bg-[var(--od-sky-soft)]/55 sm:px-6"
                 >
                   <span className="font-display text-[18px] font-normal text-[var(--od-ink)] sm:text-[20px]">
                     {it.q}
                   </span>
                   <span
                     className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--od-line)] text-[var(--od-ink)] transition ${
-                      isOpen ? "bg-[#0E0E10] text-white" : "bg-white"
+                      isOpen ? "bg-[var(--od-olive)] text-white" : "bg-white"
                     }`}
                   >
                     {isOpen ? <Minus size={14} /> : <Plus size={14} />}
                   </span>
                 </button>
                 {isOpen ? (
-                  <p className="pb-7 text-[15px] leading-[1.85] text-[var(--od-ink-soft)]">{it.a}</p>
+                  <p className="px-5 pb-7 text-[15px] leading-[1.85] text-[var(--od-ink-soft)] sm:px-6">{it.a}</p>
                 ) : null}
               </li>
             );

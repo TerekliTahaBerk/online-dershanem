@@ -12,7 +12,7 @@ export default async function Image() {
     (
       <OgTemplate
         title="Online matematik dersi"
-        subtitle="Maksimum 4 kişilik canlı matematik dersi, ders sonrası takip ve veli bilgilendirmesi."
+        subtitle="En fazla 4 öğrencilik canlı matematik dersi, ders sonrası çalışma yönü ve veliye sade özet."
         badge="Online Dershanem"
         variant="default"
       />

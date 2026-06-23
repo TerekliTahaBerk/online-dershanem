@@ -144,7 +144,7 @@ export function ExamLandingTemplate({ data }: { data: ExamLandingData }) {
             <div className="rounded-3xl border border-line bg-white p-7 shadow-soft sm:p-10">
               <h2 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">{data.examKey} için doğru ders paketini birlikte seçelim</h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-                Seviyene uygun butik gruba yerleşim ve ders bazlı paket fiyatlarını netleştirelim. Tüm paketlerimizde haftalık takip ve şeffaf raporlama standarttır.
+                Seviyene uygun küçük gruba yerleşim ve ders paketi fiyatını netleştirelim. Ders sonunda ne çalışacağını, veli de sürecin sade özetini bilir.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <LeadFunnelTrigger

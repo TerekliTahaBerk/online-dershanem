@@ -20,12 +20,12 @@ import { siteUrl, subjectPackageGroups, teachers } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Matematik Ders Paketi — Butik Canlı Matematik Dersi",
   description:
-    "En fazla 4 kişilik butik grupta canlı matematik dersi, öğretmen takibi, ders sonrası ödevlendirme ve eksik konu kapatma. Aylık ₺3.000.",
+    "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti. Aylık ₺3.000.",
   alternates: { canonical: "/matematik-ders-paketi/" },
   openGraph: {
     title: "Matematik Ders Paketi | Online Dershanem",
     description:
-      "Maksimum 4 kişilik butik grupta canlı matematik dersi, öğretmen takibi ve eksik konu kapatma.",
+      "En fazla 4 öğrencilik grupta canlı matematik dersi, öğretmen notu ve ders sonrası net çalışma yönü.",
     url: `${siteUrl}/matematik-ders-paketi/`,
   },
 };
@@ -46,8 +46,8 @@ const cartItem = {
 const pillars = [
   {
     icon: Users,
-    title: "En fazla 4 kişi",
-    body: "Kalabalık online sınıf yok. Öğretmen her öğrenciyi adıyla tanır ve yakından takip eder.",
+    title: "En fazla 4 öğrenci",
+    body: "Kalabalık online sınıf yok. Öğretmen her öğrenciyi adıyla ve çözüm tarzıyla tanır.",
   },
   {
     icon: Video,
@@ -61,22 +61,22 @@ const pillars = [
   },
   {
     icon: Target,
-    title: "Eksiğe göre ilerleme",
-    body: "Tempo sınıfa değil, öğrencinin eksik konularına göre belirlenir.",
+    title: "Net çalışma yönü",
+    body: "Ders sonunda öğrenci hangi konuyu, hangi sorularla çalışacağını bilir.",
   },
 ];
 
 const lessonFlow = [
-  { t: "Seviye analizi", d: "Öğrencinin matematik seviyesi ve eksikleri belirlenir, doğru gruba yerleşir." },
+  { t: "Seviye analizi", d: "Öğrencinin matematik seviyesi ve hedefi dinlenir, doğru gruba yerleşir." },
   { t: "Canlı ders", d: "Butik grupta konu anlatımı, birlikte çözüm ve aktif soru-cevap." },
-  { t: "Ödevlendirme", d: "Ders sonrası seviyeye uygun ödev verilir; çözüm takip edilir." },
-  { t: "Eksik kapatma", d: "Anlaşılmayan konuya geri dönülür; öğretmen ilerlemeyi izler." },
+  { t: "Ödevlendirme", d: "Ders sonrası seviyeye uygun ödev verilir; öğrenci ne çalışacağını bilir." },
+  { t: "Veli özeti", d: "Veliye çocuğunun nerede zorlandığını anlatan kısa ve sade bir not gider." },
 ];
 
 const faq = [
-  { q: "Grup gerçekten en fazla 4 kişi mi?", a: "Evet. Matematik Ders Paketi en fazla 4 kişilik butik grup modelidir. Bu sayede öğretmen her öğrenciyle yeterince ilgilenebilir." },
+  { q: "Grup gerçekten en fazla 4 kişi mi?", a: "Evet. Matematik Ders Paketi en fazla 4 öğrencilik küçük grup modelidir. Bu sayede öğretmen her öğrenciyle yeterince ilgilenebilir." },
   { q: "Dersler nasıl işleniyor?", a: "Dersler Google Meet üzerinden canlı yapılır. Konu anlatımı, birlikte soru çözümü ve aktif soru-cevap bir aradadır; ders sonunda ödevlendirme yapılır." },
-  { q: "Public satışta başka paket var mı?", a: "Hayır. Şu anda public satışta yalnızca Matematik Ders Paketi var. Odak canlı matematik dersi, küçük grup ve ders sonrası takiptir." },
+  { q: "Public satışta başka paket var mı?", a: "Hayır. Şu anda public satışta yalnızca Matematik Ders Paketi var. Odak canlı matematik dersi, küçük grup ve ders sonrası net çalışma yönüdür." },
   { q: "Fiyat aylık mı?", a: "Evet. Matematik Ders Paketi aylık ₺3.000'dir (eski fiyat ₺5.000)." },
   { q: "Hesap açmam gerekiyor mu?", a: "Hayır. Ödeme öncesi hesap açmanıza gerek yok. Ödeme sonrası öğrenci hesabınız ekibimiz tarafından oluşturulur ve giriş bilgileri sizinle paylaşılır." },
 ];
@@ -101,7 +101,7 @@ export default function MatematikDersPaketiPage() {
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* HERO — split, teacher/student focused */}
-        <section className="relative overflow-hidden border-b border-[var(--od-line)]">
+        <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[var(--od-cream)]">
           <div className="mx-auto grid max-w-6xl gap-12 px-5 pt-28 pb-16 sm:pt-36 sm:pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
               <h1 className="font-display text-[40px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
@@ -109,9 +109,9 @@ export default function MatematikDersPaketiPage() {
                 <em className="italic text-[var(--od-olive)]">canlı matematik</em> dersi.
               </h1>
               <p className="mt-6 max-w-xl text-[16px] leading-7 text-[var(--od-ink-soft)]">
-                En fazla 4 kişilik grupta öğrenci derste görünür olur, soru sorar
-                ve eksik konularını öğretmen takibiyle kapatır. Kalabalık online
-                sınıf algısını kırıyoruz.
+                En fazla 4 öğrencilik grupta öğrenci derste görünür olur,
+                soru sorar ve çözümünü öğretmenle birlikte düzeltir. Kalabalık
+                online sınıf hissini bilinçli olarak geride bırakıyoruz.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <PurchaseFunnelTrigger
@@ -122,7 +122,7 @@ export default function MatematikDersPaketiPage() {
                   priceLabel={lessonPkg.discountedPrice}
                   paymentLink=""
                   analyticsId="ders_paketi_hero"
-                  className="inline-flex items-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
+                  className="inline-flex items-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
                 >
                   Satın Al · {lessonPkg.discountedPrice}
                   <ArrowRight size={15} strokeWidth={1.8} />
@@ -143,17 +143,17 @@ export default function MatematikDersPaketiPage() {
             </div>
 
             <FadeIn delay={0.05}>
-              <div className="rounded-[24px] border border-[var(--od-line)] bg-white p-6 shadow-[0_36px_80px_-40px_rgba(20,20,15,0.35)]">
+              <div className="rounded-[24px] border border-[var(--od-line)] bg-white p-6 shadow-[0_24px_60px_-44px_rgba(20,20,15,0.28)]">
                 <div className="flex items-center gap-2 border-b border-[var(--od-line)] pb-4">
                   <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#E54848]" />
                   <span className="text-[12.5px] font-medium text-[var(--od-ink)]">Canlı · AYT Matematik · Türev</span>
                   <span className="ml-auto text-[11.5px] text-[#8B8B7E]">04 / 04 öğrenci</span>
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-[1.5fr_1fr]">
-                  <div className="rounded-xl bg-[var(--od-ink)] p-4 font-mono text-[12.5px] leading-6 text-[#E8E8DA]">
+                  <div className="rounded-xl border border-[var(--od-line)] bg-[var(--od-sky-soft)] p-4 font-mono text-[12.5px] leading-6 text-[var(--od-ink)]">
                     <div className="opacity-60">f(x) = 3x² − 12x + 7</div>
                     <div>f&apos;(x) = 6x − 12</div>
-                    <div>6x − 12 = 0 ⇒ <span className="text-[#F4D86A]">x = 2</span></div>
+                    <div>6x − 12 = 0 ⇒ <span className="text-[var(--od-olive)]">x = 2</span></div>
                   </div>
                   <ul className="space-y-1.5 text-[12px]">
                     {["Elif K.", "Ahmet T.", "Sena B.", "Yusuf M."].map((n, i) => (
@@ -163,7 +163,7 @@ export default function MatematikDersPaketiPage() {
                           i === 0 ? "bg-[var(--od-yellow-soft)] text-[var(--od-ink)]" : "text-[var(--od-ink-soft)]"
                         }`}
                       >
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--od-ink)] text-[10px] font-medium text-white">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--od-olive)] text-[10px] font-medium text-white">
                           {n.charAt(0)}
                         </span>
                         {n}
@@ -188,14 +188,14 @@ export default function MatematikDersPaketiPage() {
             <FadeIn>
               <div className="mx-auto max-w-2xl text-center">
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-                  Kalabalık sınıf değil, gerçek takip.
+                  Kalabalık sınıf değil, derste gerçek temas.
                 </h2>
               </div>
             </FadeIn>
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {pillars.map(({ icon: Icon, title, body }, i) => (
                 <FadeIn key={title} delay={i * 0.04}>
-                  <div className="h-full rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream)] p-6">
+                  <div className="h-full rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[var(--od-olive)]">
                       <Icon className="h-5 w-5" strokeWidth={1.8} />
                     </span>
@@ -214,14 +214,14 @@ export default function MatematikDersPaketiPage() {
             <FadeIn>
               <div className="max-w-2xl">
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-                  Anlatım, çözüm, ödev, takip.
+                  Anlatım, çözüm, ödev, sade geri bildirim.
                 </h2>
               </div>
             </FadeIn>
             <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {lessonFlow.map((step, i) => (
                 <FadeIn key={step.t} delay={i * 0.05}>
-                  <div className="flex h-full flex-col rounded-[20px] border border-[var(--od-line)] bg-white p-6">
+                  <div className="flex h-full flex-col rounded-[22px] border border-[var(--od-line)] bg-white p-6">
                     <span className="font-display text-[28px] leading-none text-[var(--od-olive)]">0{i + 1}</span>
                     <h3 className="mt-5 font-display text-[18px] leading-tight text-[var(--od-ink)]">{step.t}</h3>
                     <p className="mt-2 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">{step.d}</p>
@@ -263,7 +263,7 @@ export default function MatematikDersPaketiPage() {
         {/* PRICE */}
         <section className="border-b border-[var(--od-line)]">
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
-            <div className="mx-auto max-w-md rounded-[24px] border border-[var(--od-ink)] bg-[var(--od-ink)] p-8 text-white shadow-[0_36px_80px_-36px_rgba(20,20,15,0.4)]">
+            <div className="mx-auto max-w-md rounded-[24px] border border-[var(--od-line)] bg-[var(--od-olive)] p-8 text-white shadow-[0_28px_70px_-46px_rgba(20,20,15,0.36)]">
               <h3 className="font-display text-[24px] leading-tight tracking-tight">{lessonPkg.name}</h3>
               <p className="mt-2 text-[13.5px] leading-6 text-white/70">{lessonPkg.tagline}</p>
               <div className="mt-5 flex items-baseline gap-2">
@@ -300,7 +300,7 @@ export default function MatematikDersPaketiPage() {
                   className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-white/25 px-5 py-2.5 text-[13px] font-medium text-white transition hover:border-white/50"
                 />
               </div>
-              <p className="mt-4 text-center text-[12px] leading-6 text-white/60">
+              <p className="mt-4 text-center text-[12px] leading-6 text-white/70">
                 Ödeme sonrası hesabınız ekibimiz tarafından oluşturulur.
               </p>
             </div>

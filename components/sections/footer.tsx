@@ -69,8 +69,8 @@ export function Footer() {
             </Link>
 
             <p className="max-w-sm text-[13.5px] leading-6 text-[#7A7A6F]">
-              Online matematik dershanesi. Maksimum 4 kişilik canlı matematik
-              dersleri, ders sonrası takip ve veliye açık bilgilendirme.
+              Online matematik dershanesi. En fazla 4 öğrencilik canlı
+              matematik dersleri, ders sonrası çalışma yönü ve veliye sade özet.
             </p>
 
             {/* Contact details */}

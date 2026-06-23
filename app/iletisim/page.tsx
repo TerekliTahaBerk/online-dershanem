@@ -8,7 +8,7 @@ import { contact } from "@/lib/content";
 export const metadata: Metadata = {
   title: "İletişim",
   description:
-    "Öğrenciniz için en doğru matematik grubunu birlikte belirlemek üzere Online Dershanem ekibine ulaşın.",
+    "Öğrenciniz için doğru matematik temposunu birlikte belirlemek üzere Online Dershanem ekibine ulaşın.",
   alternates: { canonical: "/iletisim/" },
 };
 
@@ -54,10 +54,10 @@ export default function ContactPage() {
               İletişim
             </span>
             <h1 className="mt-5 font-display text-[42px] font-normal leading-[1.05] tracking-tight sm:text-[60px]">
-              Öğrenciniz için en doğru matematik grubunu birlikte belirleyelim.
+              Öğrenciniz için doğru matematik temposunu birlikte belirleyelim.
             </h1>
             <p className="mt-6 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              Öğrencinin sınıfını, hedefini ve matematikte zorlandığı konuları
+              Öğrencinin sınıfını, hedefini ve derste nerede zorlandığını
               konuşalım. Uygun küçük grup başlangıcını ve ödeme sonrası hesap
               hazırlama sürecini net şekilde anlatalım.
             </p>
@@ -73,7 +73,7 @@ export default function ContactPage() {
                 href={href}
                 target={href.startsWith("http") ? "_blank" : undefined}
                 rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="group flex flex-col gap-4 rounded-3xl border border-[var(--od-line)] bg-white p-7 transition hover:border-[var(--od-ink)]/30 hover:shadow-[0_24px_60px_-32px_rgba(20,20,15,0.18)]"
+                className="group flex flex-col gap-4 rounded-[24px] border border-[var(--od-line)] bg-white p-7 transition hover:border-[var(--od-ink)]/30 hover:shadow-[0_20px_50px_-36px_rgba(20,20,15,0.18)]"
               >
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
                   <Icon size={20} strokeWidth={1.6} />
@@ -92,7 +92,7 @@ export default function ContactPage() {
           </div>
 
           {/* Address */}
-          <div className="mt-10 grid gap-6 rounded-3xl border border-[var(--od-line)] bg-white p-8 sm:grid-cols-[1fr_auto] sm:items-center sm:p-10">
+          <div className="mt-10 grid gap-6 rounded-[24px] border border-[var(--od-line)] bg-white p-8 sm:grid-cols-[1fr_auto] sm:items-center sm:p-10">
             <div className="flex items-start gap-4">
               <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
                 <MapPin size={20} strokeWidth={1.6} />
@@ -123,22 +123,22 @@ export default function ContactPage() {
           </div>
 
           {/* Soft CTA */}
-          <div className="mt-10 rounded-3xl border border-[var(--od-line)] bg-[var(--od-yellow-soft)] p-8 sm:p-10">
+          <div className="mt-10 rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/65 p-8 sm:p-10">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-display text-[26px] leading-tight text-[var(--od-ink)] sm:text-[30px]">
-                  Önce Matematik Ders Paketi'ni incelemek ister misiniz?
+                  Önce ders paketini birlikte değerlendirelim mi?
                 </h3>
                 <p className="mt-2 max-w-md text-[14.5px] text-[var(--od-ink-soft)]">
-                  Maksimum 4 kişilik canlı matematik dersi, ders sonrası takip
-                  ve veli bilgilendirmesi kapsamını inceleyin.
+                  En fazla 4 öğrencilik canlı matematik dersi, ders sonrası
+                  çalışma yönü ve veliye sade özet kapsamını inceleyin.
                 </p>
               </div>
               <Link
                 href="/#matematik-ders-paketi"
-                className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
+                className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
               >
-                Matematik Dersini İncele
+                Ders Paketini İncele
               </Link>
             </div>
           </div>

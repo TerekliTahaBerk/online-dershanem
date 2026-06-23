@@ -18,10 +18,10 @@ export function PackagesPageContent() {
           return (
             <article
               key={pkg.id}
-              className={`relative flex flex-col rounded-3xl border p-7 transition hover:-translate-y-0.5 ${
+              className={`relative flex flex-col rounded-[24px] border p-7 transition hover:-translate-y-0.5 ${
                 featured
-                  ? "border-[var(--od-ink)] bg-[var(--od-ink)] text-white shadow-[0_36px_80px_-36px_rgba(20,20,15,0.4)]"
-                  : "border-[var(--od-line)] bg-white shadow-[0_18px_44px_-32px_rgba(20,20,15,0.16)]"
+                  ? "border-[var(--od-line)] bg-[var(--od-olive)] text-white shadow-[0_28px_70px_-46px_rgba(20,20,15,0.38)]"
+                  : "border-[var(--od-line)] bg-white shadow-[0_18px_44px_-36px_rgba(20,20,15,0.14)]"
               }`}
             >
               {pkg.badge ? (
@@ -88,7 +88,7 @@ export function PackagesPageContent() {
               <ul
                 className={`mt-5 space-y-2 border-t border-dashed pt-5 text-[13.5px] ${
                   featured
-                    ? "border-white/15 text-white/90"
+                    ? "border-white/20 text-white/90"
                     : "border-[var(--od-line)] text-[var(--od-ink)]"
                 }`}
               >
@@ -117,7 +117,7 @@ export function PackagesPageContent() {
                 className={`mt-7 inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[13.5px] font-medium transition ${
                   featured
                     ? "bg-[var(--od-yellow)] text-[var(--od-ink)] hover:bg-[#F0CE52]"
-                    : "bg-[var(--od-ink)] text-white hover:bg-black"
+                    : "bg-[var(--od-olive)] text-white hover:bg-[#2E3B24]"
                 }`}
               >
                 Satın Al
@@ -146,23 +146,23 @@ export function PackagesPageContent() {
       </div>
 
       {/* Help band */}
-      <div className="mt-16 overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)]">
+      <div className="mt-16 overflow-hidden rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/65">
         <div className="grid gap-6 p-8 sm:grid-cols-[1.4fr_auto] sm:items-center sm:p-12">
           <div>
             <h3 className="font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[34px]">
-              Öğrenci için doğru matematik grubunu birlikte belirleyelim.
+              Öğrenci için doğru matematik temposunu birlikte belirleyelim.
             </h3>
             <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-              Öğrencinin matematik seviyesini, sınıfını ve hedefini konuşalım;
-              canlı ders grubuna nasıl başlamasının doğru olacağını birlikte netleştirelim.
+              Sınıfını, hedefini ve derste nerede zorlandığını konuşalım;
+              küçük gruba nasıl başlamasının doğru olacağını birlikte netleştirelim.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
             <Link
               href="/iletisim/"
-              className="inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
             >
-              Bizimle İletişime Geç
+              Ön Görüşme Talep Et
             </Link>
             <a
               href={`tel:${contact.phone}`}

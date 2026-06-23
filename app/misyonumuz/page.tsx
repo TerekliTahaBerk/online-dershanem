@@ -9,12 +9,12 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Misyonumuz",
   description:
-    "Online Dershanem'in misyonu: matematikte zorlanan öğrenciyi küçük grup canlı derslerle görünür ve takip edilebilir hale getirmek.",
+    "Online Dershanem'in misyonu: matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirmek.",
   alternates: { canonical: "/misyonumuz/" },
   openGraph: {
     title: "Misyonumuz | Online Dershanem",
     description:
-      "Matematikte zorlanan öğrenciyi küçük grup canlı derslerle görünür ve takip edilebilir hale getirme misyonumuz.",
+      "Matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirme misyonumuz.",
     url: `${siteUrl}/misyonumuz/`,
   },
 };
@@ -57,7 +57,7 @@ export default function MissionPage() {
             <p>
               Bugün Türkiye’de çok sayıda öğrenci kaliteli matematik desteğine
               ulaşmakta zorlanırken, güçlü genç eğitmenler de bilgilerini
-              sürdürülebilir ve takip edilebilir bir öğrenme modeline
+              sürdürülebilir ve insani bir öğrenme modeline
               dönüştürmekte zorlanıyor. Sorun yetenek eksikliği değil; doğru
               yapının eksikliği.
             </p>
@@ -75,7 +75,7 @@ export default function MissionPage() {
                 Misyonumuz;
               </strong>{" "}
               matematikte yolu yakın zamanda başarıyla geçmiş güçlü eğitmenlerle
-              bugün zorlanan öğrencileri küçük, takip edilebilir canlı ders
+              bugün zorlanan öğrencileri küçük, sesini duyurabildiği canlı ders
               gruplarında buluşturmak.
             </p>
 
@@ -152,22 +152,22 @@ export default function MissionPage() {
 
         {/* CTA */}
         <section className="mx-auto max-w-3xl px-5 pb-24 pt-6">
-          <div className="overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)] p-8 sm:p-12">
+          <div className="overflow-hidden rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/65 p-8 sm:p-12">
             <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
               <div>
                 <h3 className="font-display text-[26px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[34px]">
                   Matematikte yolu yakın zamanda yürümüş bir hocayla tanış.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  Matematikte nerede olursa olsun, öğrenciniz için en uygun
+                  Matematikte nerede olursa olsun, öğrenciniz için doğru
                   küçük grup başlangıcını birlikte belirleyelim.
                 </p>
               </div>
               <Link
                 href="/#matematik-ders-paketi"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
               >
-                Matematik Dersini İncele
+                Ders Paketini İncele
                 <ArrowRight size={15} strokeWidth={1.8} />
               </Link>
             </div>

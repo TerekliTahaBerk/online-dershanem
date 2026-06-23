@@ -9,14 +9,14 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Online Matematik Özel Ders | Butik Küçük Grup Modeli",
   description:
-    "Online matematik özel ders: butik canlı dersler, ders sonrası takip ve veli bilgilendirmesiyle matematikte düzenli ilerleme.",
+    "Online matematik özel ders arayanlar için küçük grup modeli: en fazla 4 öğrenci, derste soru-cevap ve ders sonrası net çalışma yönü.",
   alternates: {
     canonical: "/online-ozel-ders/"
   },
   openGraph: {
     title: "Online Matematik Özel Ders | Online Dershanem",
     description:
-      "Matematikte öğrencinin seviyesine göre ders planı, butik grup desteği ve veliye açık gelişim takibi.",
+      "Matematikte öğrencinin seviyesine göre küçük grup desteği, ders içi soru-cevap ve veliye sade gelişim özeti.",
     url: `${siteUrl}/online-ozel-ders/`
   }
 };
@@ -27,61 +27,61 @@ export default function OnlineOzelDersPage() {
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>
-          <section className="rounded-3xl border border-line bg-white p-7 shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">Online Matematik Özel Ders</p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-              Online Matematik Özel Ders ile Eksik Konularına Odaklan
+          <section className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/55 p-7 sm:p-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--od-olive)]">Online Matematik Özel Ders</p>
+            <h1 className="mt-3 text-3xl font-bold tracking-normal text-[var(--od-ink)] sm:text-4xl">
+              Özel derse yakın ilgi, küçük grubun sürdürülebilir temposu.
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted sm:text-base">
-              Matematikte öğrenci, eksik olduğu konudan başlar; en fazla 4 kişilik butik grupta
-              daha fazla soru çözüm desteği alır ve veliye açık haftalık gelişim takibiyle ilerler.
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[var(--od-ink-soft)] sm:text-base">
+              Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik
+              grupta daha çok soru-cevap alanı bulur ve ders sonunda ne çalışacağını bilir.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <LeadFunnelTrigger
                 source="online_ozel_ders_hero_cta"
                 eventName="landing_cta_click"
                 href="/#matematik-ders-paketi"
-                className="inline-flex rounded-full bg-anchor px-6 py-3 text-sm font-semibold text-white"
+                className="inline-flex rounded-full bg-[var(--od-olive)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#2E3B24]"
               >
-                Matematik Dersini İncele
+                Ders Paketini İncele
               </LeadFunnelTrigger>
               <Link
                 href="/#matematik-ders-paketi"
-                className="inline-flex rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-ink"
+                className="inline-flex rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-sm font-semibold text-[var(--od-ink)]"
               >
-                Ders Paketini İncele
+                Fiyatı Gör
               </Link>
             </div>
           </section>
 
           <section className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              "Matematikte canlı ders ve ders sonrası takip",
-              "Maksimum 4 kişilik matematik grubunda daha yoğun soru-cevap imkanı",
-              "Ders sonrası kısa analiz ve haftalık matematik ilerleme kontrolü"
+              "Canlı matematik dersi ve ders sonrası net çalışma yönü",
+              "En fazla 4 öğrencilik grupta daha yoğun soru-cevap alanı",
+              "Ders sonrası öğretmen notu ve veliye kısa özet"
             ].map((item) => (
-              <article key={item} className="rounded-2xl border border-line bg-white p-5 text-sm font-medium text-muted shadow-soft">
+              <article key={item} className="rounded-2xl border border-[var(--od-line)] bg-white p-5 text-sm font-medium text-[var(--od-ink-soft)] shadow-[0_16px_40px_-34px_rgba(20,20,15,0.18)]">
                 {item}
               </article>
             ))}
           </section>
 
-          <section className="mt-8 rounded-3xl border border-line bg-white p-6 shadow-soft">
-            <h2 className="text-2xl font-bold tracking-tight text-ink">Hangi Öğrenciler İçin Daha Uygun?</h2>
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted">
-              <li>Belirli derslerde hızlı toparlanma ihtiyacı olanlar</li>
+          <section className="mt-8 rounded-[24px] border border-[var(--od-line)] bg-white p-6 shadow-[0_16px_40px_-34px_rgba(20,20,15,0.18)]">
+            <h2 className="text-2xl font-bold tracking-normal text-[var(--od-ink)]">Hangi Öğrenciler İçin Daha Uygun?</h2>
+            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[var(--od-ink-soft)]">
+              <li>Matematikte belirli konularda hızlı toparlanma ihtiyacı olanlar</li>
               <li>Soru çözüm ve yanlış analizi desteğini artırmak isteyenler</li>
-              <li>Haftalık hedeflerini ölçülebilir şekilde takip etmek isteyen öğrenciler</li>
+              <li>Ders sonunda net bir çalışma yönüyle devam etmek isteyen öğrenciler</li>
             </ul>
           </section>
 
-          <section className="mt-8 rounded-3xl border border-brand/30 bg-mint p-6">
-            <h2 className="text-2xl font-bold tracking-tight text-ink">İlgili Rehber Yazılar</h2>
+          <section className="mt-8 rounded-[24px] border border-[var(--od-line)] bg-[var(--od-mint)]/65 p-6">
+            <h2 className="text-2xl font-bold tracking-normal text-[var(--od-ink)]">İlgili Rehber Yazılar</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link href="/blog/online-ozel-ders-mi-dershane-mi/" className="rounded-2xl border border-line bg-white p-4 text-sm font-semibold text-ink">
+              <Link href="/blog/online-ozel-ders-mi-dershane-mi/" className="rounded-2xl border border-[var(--od-line)] bg-white p-4 text-sm font-semibold text-[var(--od-ink)]">
                 Online özel ders mi dershane mi?
               </Link>
-              <Link href="/blog/yks-online-ders-calisma-plani/" className="rounded-2xl border border-line bg-white p-4 text-sm font-semibold text-ink">
+              <Link href="/blog/yks-online-ders-calisma-plani/" className="rounded-2xl border border-[var(--od-line)] bg-white p-4 text-sm font-semibold text-[var(--od-ink)]">
                 YKS online ders çalışma planı
               </Link>
             </div>

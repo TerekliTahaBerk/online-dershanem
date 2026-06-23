@@ -6,13 +6,13 @@ import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 export const metadata: Metadata = {
   title: "LGS Matematik Dersi",
   description:
-    "LGS matematik için maksimum 4 kişilik butik canlı ders, ders sonrası takip ve veli bilgilendirmesi.",
+    "LGS matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve veliye sade gelişim özeti.",
   alternates: {
     canonical: "/lgs"
   },
   openGraph: {
     title: "LGS Matematik Dersi | Online Dershanem",
-    description: "LGS matematik için butik canlı ders, ders sonrası takip ve veli bilgilendirmesi.",
+    description: "LGS matematik için küçük grup canlı ders, ders içi soru-cevap ve veliye sade gelişim özeti.",
     url: `${siteUrl}/lgs`
   }
 };
@@ -21,7 +21,7 @@ export default function LGSLandingPage() {
   const courseLd = courseJsonLd({
     name: "LGS Matematik",
     description:
-      "LGS matematik için butik canlı ders (maksimum 4 kişi), ders sonrası takip ve kazanım odaklı çalışma.",
+      "LGS matematik için küçük grup canlı ders (en fazla 4 öğrenci), ders sonrası çalışma yönü ve kazanım odaklı çalışma.",
     url: "/lgs/",
   });
   const breadcrumbLd = breadcrumbJsonLd([
@@ -36,13 +36,13 @@ export default function LGSLandingPage() {
       data={{
         examKey: "LGS",
         heroBadge: "LGS Matematik",
-        heroTitle: "LGS matematikte küçük grupla düzenli ilerleme",
+        heroTitle: "LGS matematikte öğrencinin sesinin duyulduğu küçük grup.",
         heroText:
-          "LGS matematikte öğrenciyi maksimum 4 kişilik canlı dersler ve veliye açık gelişim takibiyle ilerletiyoruz. Çocuğunuzun matematikte nerede takıldığını görüp ders sonrası yönlendirmeyle kapatıyoruz.",
+          "LGS matematikte öğrenci çözümünü derste gösterir, sorusunu bekletmeden sorar ve hafta sonunda ne çalışacağını bilir. Veliye de çocuğunun nerede zorlandığını anlatan sade bir özet gider.",
         highlights: [
-          "Maksimum 4 kişilik matematik grubunda daha fazla bireysel ilgi",
-          "Ders sonrası ödevlendirme ve konu takibi",
-          "Veliye net ve anlaşılır gelişim bilgilendirmesi"
+          "En fazla 4 öğrencilik matematik grubunda daha fazla bireysel temas",
+          "Ders sonrası ödevlendirme ve net çalışma yönü",
+          "Veliye kısa ve anlaşılır gelişim özeti"
         ],
         faq: [
           {
@@ -51,7 +51,7 @@ export default function LGSLandingPage() {
           },
           {
             q: "Dersler kalabalık sınıf şeklinde mi?",
-            a: "Hayır. Matematik dersleri en fazla 4 kişilik butik grup modelindedir. Bu sayede öğretmen takibi daha yakın ilerler."
+            a: "Hayır. Matematik dersleri en fazla 4 öğrencilik küçük grup modelindedir. Bu sayede öğretmen öğrencinin çözümünü derste görebilir."
           },
           {
             q: "Ders kaçırılırsa süreç nasıl ilerliyor?",

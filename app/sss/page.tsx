@@ -6,7 +6,7 @@ import { HomeFAQ } from "@/components/sections/home-faq";
 export const metadata: Metadata = {
   title: "Sıkça Sorulanlar",
   description:
-    "Online Dershanem hakkında sık sorulan sorular: dersler nasıl işliyor, ödeme, kontenjan, deneme dersleri ve daha fazlası.",
+    "Online Dershanem hakkında sık sorulan sorular: dersler nasıl işliyor, ödeme, küçük grup düzeni ve hesap oluşturma süreci.",
   alternates: { canonical: "/sss/" },
 };
 
@@ -24,8 +24,8 @@ export default function SssPage() {
               Sıkça <em className="italic text-[var(--od-olive)]">sorulanlar</em>.
             </h1>
             <p className="mt-6 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              Aklındaki sorunun cevabı muhtemelen aşağıda. Bulamazsan iletişim
-              sayfasından bize ulaşabilirsin — aynı gün dönüyoruz.
+              Ders, ödeme ve küçük grup düzeniyle ilgili en çok sorulanları
+              burada topladık. Cevabını bulamazsan bize yazabilirsin.
             </p>
           </div>
         </section>

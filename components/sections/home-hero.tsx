@@ -11,7 +11,7 @@ import Link from "next/link";
 
 const INFO_CARDS = [
   {
-    title: "Maksimum 4 kişilik grup",
+    title: "En fazla 4 öğrenci",
     text: "Öğrenci derste görünür; soru sorar, çözüme katılır.",
   },
   {
@@ -65,7 +65,7 @@ export function HomeHero() {
           </h1>
 
           <p className="mt-7 max-w-xl text-[16px] leading-[1.8] text-[var(--od-ink-soft)] sm:text-[17.5px]">
-            Çocuğunuzun matematikteki eksiklerini{" "}
+            Çocuğunuzun matematikte nerede koptuğunu{" "}
             <strong className="font-medium text-[var(--od-ink)]">butik canlı dersler</strong>,
             düzenli denemeler ve veliye açık gelişim takibiyle kapatıyoruz.
             Ders ve denemeyle birlikte, aynı hafta geri dönüyoruz.

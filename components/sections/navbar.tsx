@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { LogoutButton } from "@/components/auth/logout-button";
-import { isPanelEnabledClient, PANEL_MAINTENANCE_PATH } from "@/lib/panel-config";
-import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { subjectPackageGroups } from "@/lib/content";
+import { Menu, X } from "lucide-react";
 
 const links = [
   { label: "Ana Sayfa", href: "/" },
@@ -17,63 +12,22 @@ const links = [
   { label: "İletişim", href: "/iletisim/" }
 ];
 
-const lessonPkg = subjectPackageGroups[0].packages.find(
-  (p) => p.subject === "Ders Paketi",
-)!;
-
 export function Navbar() {
   const [open, setOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
-  const { data: session, status } = useSession();
 
   useEffect(() => {
     setOpen(false);
-    setPanelOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    if (!panelOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setPanelOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setPanelOpen(false); };
-    window.addEventListener("mousedown", onClick);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("mousedown", onClick);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [panelOpen]);
-
-  const role = session?.user?.role as
-    | "ADMIN"
-    | "TEACHER"
-    | "STUDENT"
-    | "PARENT"
-    | undefined;
-  const panelSegment =
-    role === "ADMIN" ? "admin" :
-    role === "TEACHER" ? "ogretmen" :
-    role === "PARENT" ? "veli" : "ogrenci";
-  // Panel kapalıyken tüm panel/giriş hedefleri bakım sayfasına gider.
-  // Tasarım/markup aynı kalır; yalnızca href değişir.
-  const panelEnabled = isPanelEnabledClient();
-  const panelHref = panelEnabled ? `/panel/${panelSegment}` : PANEL_MAINTENANCE_PATH;
-  const panelLabel =
-    role === "ADMIN" ? "Admin Panel" :
-    role === "TEACHER" ? "Öğretmen Paneli" :
-    role === "PARENT" ? "Veli Paneli" : "Öğrenci Paneli";
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href.replace(/\/$/, ""));
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-[#E5E5E0] bg-white text-[#0E0E10]">
+      <header className="sticky top-0 z-40 w-full border-b border-[#E4E1D8] bg-[#FBFAF6]/92 text-[var(--od-ink)] backdrop-blur-xl">
         <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-8">
-          <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center text-[#0E0E10]">
+          <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center text-[var(--od-ink)]">
             <Image
               src="/onlinedershanem_.png"
               alt="Online Dershanem"
@@ -90,7 +44,7 @@ export function Navbar() {
                 key={l.href}
                 href={l.href}
                 className={`text-[14.5px] transition-colors ${
-                  isActive(l.href) ? "text-[#0E0E10]" : "text-[#5A5A5F] hover:text-[#0E0E10]"
+                  isActive(l.href) ? "text-[var(--od-ink)]" : "text-[var(--od-ink-soft)] hover:text-[var(--od-ink)]"
                 }`}
               >
                 {l.label}
@@ -98,94 +52,13 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-2 lg:flex">
-            {status === "loading" ? null : status === "authenticated" ? (
-              <>
-                <div className="relative" ref={panelRef}>
-                  <button
-                    type="button"
-                    onClick={() => setPanelOpen((v) => !v)}
-                    className="flex items-center gap-1.5 rounded-full border border-[#0E0E10]/15 bg-white px-4 py-2 text-[13.5px] font-medium text-[#0E0E10] transition hover:border-[#0E0E10]/30 hover:bg-[#F6F6F2]"
-                    aria-haspopup="menu"
-                    aria-expanded={panelOpen}
-                  >
-                    {panelLabel}
-                    <ChevronDown size={14} className={`transition-transform ${panelOpen ? "rotate-180" : ""}`} />
-                  </button>
-                  {panelOpen ? (
-                    <div className="absolute right-0 mt-2 w-72 overflow-hidden rounded-2xl border border-[#E5E5E0] bg-white p-2 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.18)]" role="menu">
-                      <div className="px-3 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-wider text-[#9A9A9F]">Panel</div>
-                      <Link
-                        href={panelHref}
-                        onClick={() => setPanelOpen(false)}
-                        className="flex items-start gap-3 rounded-xl px-3 py-2.5 hover:bg-[#F2F2EF]"
-                      >
-                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#2563eb]" aria-hidden />
-                        <span className="flex flex-col">
-                          <span className="text-[13.5px] font-semibold text-[#0E0E10]">OnlineDershanem</span>
-                          <span className="text-[11.5px] text-[#5A5A5F]">{panelLabel}</span>
-                        </span>
-                      </Link>
-                    </div>
-                  ) : null}
-                </div>
-                <LogoutButton />
-              </>
-            ) : (
-              <PurchaseFunnelTrigger
-                source="navbar_desktop_cta"
-                packageName={lessonPkg.name}
-                category={lessonPkg.category}
-                subject={lessonPkg.subject}
-                priceLabel={lessonPkg.discountedPrice}
-                paymentLink=""
-                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-[#0E0E10] px-5 py-2 text-[13.5px] font-medium text-white shadow-[0_1px_0_rgba(0,0,0,0.04)] transition hover:bg-[#0E0E10]/90"
-              >
-                <span className="relative z-10">Matematik Dersini Satın Al</span>
-                <span
-                  aria-hidden
-                  className="relative z-10 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/15 text-white transition-transform group-hover:translate-x-0.5"
-                >
-                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span
-                  aria-hidden
-                  className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full"
-                />
-              </PurchaseFunnelTrigger>
-            )}
-          </div>
+          <div className="hidden lg:block" />
 
           <div className="flex items-center gap-1.5 lg:hidden">
-            {status === "loading" ? null : status === "authenticated" ? (
-              <Link
-                href={panelHref}
-                className="rounded-full border border-[#0E0E10]/15 bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#0E0E10]"
-              >
-                {panelLabel}
-              </Link>
-            ) : (
-              <PurchaseFunnelTrigger
-                source="navbar_mobile_cta"
-                packageName={lessonPkg.name}
-                category={lessonPkg.category}
-                subject={lessonPkg.subject}
-                priceLabel={lessonPkg.discountedPrice}
-                paymentLink=""
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#0E0E10] px-3.5 py-1.5 text-[12.5px] font-medium text-white"
-              >
-                Satın Al
-                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
-                  <path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </PurchaseFunnelTrigger>
-            )}
             <button
               type="button"
               onClick={() => setOpen((o) => !o)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#0E0E10]/15 bg-white text-[#0E0E10]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white text-[var(--od-ink)]"
               aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
               aria-expanded={open}
             >
@@ -197,8 +70,8 @@ export function Navbar() {
 
       {open && (
         <>
-          <div className="fixed inset-0 top-16 z-30 bg-[#0E0E10]/30 lg:hidden" onClick={() => setOpen(false)} />
-          <div className="fixed inset-x-0 top-16 z-40 border-b border-[#E5E5E0] bg-white text-[#0E0E10] lg:hidden">
+          <div className="fixed inset-0 top-16 z-30 bg-[var(--od-ink)]/18 lg:hidden" onClick={() => setOpen(false)} />
+          <div className="fixed inset-x-0 top-16 z-40 border-b border-[var(--od-line)] bg-[#FBFAF6] text-[var(--od-ink)] lg:hidden">
             <nav className="flex flex-col gap-1 px-5 py-4">
               {links.map((l) => (
                 <Link
@@ -207,43 +80,14 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                   className={`rounded-xl px-3 py-3 text-[15px] transition ${
                     isActive(l.href)
-                      ? "bg-[#F2F2EF] text-[#0E0E10]"
-                      : "text-[#5A5A5F] hover:bg-[#F6F6F2] hover:text-[#0E0E10]"
+                      ? "bg-[var(--od-mint)]/55 text-[var(--od-ink)]"
+                      : "text-[var(--od-ink-soft)] hover:bg-white hover:text-[var(--od-ink)]"
                   }`}
                 >
                   {l.label}
                 </Link>
               ))}
             </nav>
-            {status === "unauthenticated" && (
-              <div className="flex flex-col gap-2 border-t border-[#E5E5E0] px-5 py-4">
-                <PurchaseFunnelTrigger
-                  source="navbar_mobile_menu_cta"
-                  packageName={lessonPkg.name}
-                  category={lessonPkg.category}
-                  subject={lessonPkg.subject}
-                  priceLabel={lessonPkg.discountedPrice}
-                  paymentLink=""
-                  className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
-                >
-                  Matematik Dersini Satın Al
-                </PurchaseFunnelTrigger>
-              </div>
-            )}
-            {status === "authenticated" && (
-              <div className="flex flex-col gap-2 border-t border-[#E5E5E0] px-5 py-4">
-                <Link
-                  href={panelHref}
-                  onClick={() => setOpen(false)}
-                  className="rounded-full bg-[#0E0E10] py-3 text-center text-[14.5px] font-medium text-white"
-                >
-                  {panelLabel}
-                </Link>
-                <div className="flex justify-center">
-                  <LogoutButton />
-                </div>
-              </div>
-            )}
           </div>
         </>
       )}
