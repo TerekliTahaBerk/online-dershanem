@@ -62,10 +62,49 @@ const systemSteps = [
 ];
 
 const checkoutSteps = [
-  "Paketi seç",
-  "Sepete ekle",
-  "Ödemeyi tamamla",
-  "Ekibimiz hesabı hazırlar",
+  "Paketi seç ve sepete ekle",
+  "Ödemeyi güvenle tamamla",
+  "Ekibimiz sizinle iletişime geçer",
+  "Kısa seviye görüşmesi yapılır",
+  "Öğrenci uygun gruba yerleşir",
+  "İlk canlı matematik dersi",
+];
+
+const levelFit = [
+  {
+    tag: "LGS",
+    title: "8. sınıf matematiği",
+    body: "Konu eksiklerini kapatma, yeni nesil soru ve süre yönetimi; sınav temposuna birlikte alışma.",
+  },
+  {
+    tag: "TYT",
+    title: "Temel matematik",
+    body: "TYT matematik ve temel konularda hız ile doğruluk; düzenli deneme analiziyle net artışı.",
+  },
+  {
+    tag: "AYT",
+    title: "İleri matematik",
+    body: "AYT matematik konularında derinleşme, soru tipi tanıma ve çözüm stratejisi.",
+  },
+];
+
+const trustSignals = [
+  {
+    title: "Google Meet'te canlı ders",
+    body: "Kayıt video değil; gerçek zamanlı ders. Öğrenci soru sorar, çözümünü gösterir.",
+  },
+  {
+    title: "PayTR ile güvenli ödeme",
+    body: "256-bit SSL korumalı ödeme. Kart bilgileriniz bizimle paylaşılmaz.",
+  },
+  {
+    title: "En fazla 4 öğrenci",
+    body: "Grup mevcudu net ve sınırlı; kalabalık sınıfta kaybolma yok.",
+  },
+  {
+    title: "Ödeme sonrası net süreç",
+    body: "Hesabı ekibimiz hazırlar, giriş bilgilerini sizinle paylaşır.",
+  },
 ];
 
 const confidenceQuestions = [
@@ -250,6 +289,39 @@ export default function HomePage() {
           </div>
         </section>
 
+        <section className="border-b border-[var(--od-line)] bg-white">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+            <div className="max-w-3xl">
+              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
+                LGS, TYT ve AYT matematiği — öğrencinin seviyesine göre.
+              </h2>
+              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
+                Önce kısa bir değerlendirmeyle öğrencinin nerede olduğunu görür,
+                dersi tam o seviyeden kurarız. Aynı grupta benzer seviye ve
+                hedefteki öğrenciler bir arada ilerler.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
+              {levelFit.map((lvl) => (
+                <div
+                  key={lvl.tag}
+                  className="rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6"
+                >
+                  <div className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[var(--od-olive)]">
+                    {lvl.tag}
+                  </div>
+                  <h3 className="mt-3 text-[19px] font-bold leading-tight text-[var(--od-ink)]">
+                    {lvl.title}
+                  </h3>
+                  <p className="mt-2 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+                    {lvl.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="matematik-ders-paketi" className="border-b border-[var(--od-line)] bg-white">
           <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <div className="lg:sticky lg:top-24">
@@ -291,7 +363,13 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <p className="mt-6 border-t border-[var(--od-line)] pt-5 text-[13px] leading-6 text-[var(--od-ink-soft)]">
+                Kalabalık online sınıf ile birebir özel ders arasında butik bir
+                orta yol: aylık sabit <strong className="font-semibold text-[var(--od-ink)]">₺3.000</strong>,
+                en fazla 4 kişilik grupta düzenli canlı matematik dersi ve ders
+                sonrası takip.
+              </p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <PurchaseFunnelTrigger
                   source="home_package_primary"
                   packageName={lessonPkg.name}
@@ -318,12 +396,13 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr]">
             <div>
               <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Satın almak için hesap oluşturmanız gerekmez.
+                Ödemeden ilk derse, adım adım.
               </h2>
               <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Paketi seçer, bilgilerinizi girer ve ödemenizi güvenle
-                tamamlarsınız. Ardından ekibimiz sizinle iletişime geçerek öğrenci
-                hesabınızı hazırlar ve giriş bilgilerinizi paylaşır.
+                Satın almak için hesap oluşturmanıza gerek yok. Paketi seçer,
+                ödemenizi güvenle tamamlarsınız; ardından ekibimiz sizinle
+                iletişime geçer, öğrenciyi doğru gruba yerleştirir ve ilk canlı
+                dersi birlikte planlarız.
               </p>
             </div>
             <div className="grid gap-3">
@@ -347,6 +426,25 @@ export default function HomePage() {
                 <div key={item.q} className="rounded-[20px] border border-[var(--od-line)] bg-[var(--od-cream)] p-5">
                   <h3 className="text-[18px] font-extrabold text-[var(--od-ink)]">{item.q}</h3>
                   <p className="mt-3 text-[15px] leading-7 text-[var(--od-ink-soft)]">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+            <h2 className="max-w-3xl text-[34px] font-black leading-[1.05] tracking-normal sm:text-[48px]">
+              Velinin güvenle başlaması için.
+            </h2>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {trustSignals.map((s) => (
+                <div
+                  key={s.title}
+                  className="rounded-[20px] border border-[var(--od-line)] bg-white p-5"
+                >
+                  <h3 className="text-[16px] font-extrabold text-[var(--od-ink)]">{s.title}</h3>
+                  <p className="mt-2 text-[14px] leading-7 text-[var(--od-ink-soft)]">{s.body}</p>
                 </div>
               ))}
             </div>
