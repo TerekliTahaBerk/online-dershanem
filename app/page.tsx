@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  CheckCircle2,
-  ClipboardCheck,
-  MessageCircle,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
@@ -48,56 +42,56 @@ export const metadata: Metadata = {
 };
 
 const trustPoints = [
-  "En fazla 4 öğrenci",
+  "En fazla 4 kişilik grup",
   "Canlı matematik dersi",
-  "Derste soru-cevap",
+  "Ders sonrası takip",
   "Hesabı ekibimiz hazırlar",
 ];
 
 const problems = [
-  "Çocuk çalışıyor ama hangi adımda koptuğunu tarif edemiyor.",
-  "Kalabalık derste soru sormadan oturumu kapatabiliyor.",
-  "Veli sonuç görüyor, fakat nedenini anlayacak sade bir özet alamıyor.",
-  "Ders bitince öğrencinin önünde net bir çalışma yönü kalmıyor.",
+  "Kalabalık sınıfta öğrenci kolayca sessizleşir.",
+  "Veli çoğu zaman hangi konunun eksik olduğunu göremez.",
+  "Ders biter ama öğrencinin ne çalışacağı netleşmez.",
 ];
 
 const systemSteps = [
-  "Öğrencinin seviyesini ve sınav hedefini dinleriz.",
-  "Benzer tempodaki küçük gruba yerleştiririz.",
-  "Canlı derste çözümü öğrencinin sesiyle kurarız.",
-  "Ders sonunda ne çalışacağını kısa ve net bırakırız.",
-];
-
-const lessonHighlights = [
-  "Öğretmen öğrenciyi adıyla ve çözüm tarzıyla tanır.",
-  "Soru sormak dersin doğal parçasıdır.",
-  "Öğrenci çözümünü gösterir, hatasını derste görür.",
-  "Veli, haftanın matematik resmini sade şekilde alır.",
+  "Seviyeyi ve hedefi anlarız.",
+  "Uygun küçük gruba yerleştiririz.",
+  "Canlı derste eksikleri işleriz.",
+  "Ders sonrası çalışma yönünü netleştiririz.",
 ];
 
 const checkoutSteps = [
   "Paketi seç",
   "Sepete ekle",
   "Ödemeyi tamamla",
-  "Ekibimiz öğrenci hesabını hazırlar",
+  "Ekibimiz hesabı hazırlar",
 ];
 
 const confidenceQuestions = [
   {
-    q: "Öğrenci kaç kişilik grupta olacak?",
-    a: "Matematik dersleri en fazla 4 öğrencilik küçük gruplarla ilerler.",
+    q: "Dersler kaç kişilik?",
+    a: "Matematik dersleri en fazla 4 öğrencilik küçük gruplarla ilerler; öğretmen her öğrenciyi adıyla tanır.",
   },
   {
-    q: "Dersler nasıl işlenecek?",
-    a: "Canlı derste konu anlatımı, birlikte soru çözümü ve öğrencinin takıldığı noktaya geri dönüş aynı oturumda yapılır.",
+    q: "Öğrenci derste soru sorabiliyor mu?",
+    a: "Evet. Soru sormak dersin doğal parçasıdır. Öğrenci çözümünü gösterir, takıldığı yeri aynı derste birlikte açarız.",
   },
   {
     q: "Ödeme sonrası ne olacak?",
-    a: "Satın alma tamamlandıktan sonra ekibimiz sizinle iletişime geçer, öğrenci hesabını hazırlar ve giriş bilgilerini paylaşır.",
+    a: "Ödeme tamamlandıktan sonra ekibimiz sizinle iletişime geçer, öğrenci hesabını hazırlar ve giriş bilgilerini paylaşır.",
+  },
+  {
+    q: "Hesap bilgileri nasıl verilecek?",
+    a: "Giriş bilgilerini ekibimiz hazırlayıp size iletir. Satın almak için önceden hesap oluşturmanız gerekmez.",
   },
   {
     q: "Ders başlamadan önce görüşebilir miyiz?",
-    a: "Evet. Kararsızsanız öğrencinin sınıfı, hedefi ve derste nerede zorlandığını önce birlikte değerlendirebiliriz.",
+    a: "Evet. Öğrencinin sınıfını, hedefini ve matematikte nerede zorlandığını başlamadan önce birlikte değerlendirebiliriz.",
+  },
+  {
+    q: "Çocuğum matematikte çok gerideyse uygun mu?",
+    a: "Uygundur. Önce eksiğin nerede başladığını görürüz ve dersi tam o noktadan kurarız; tempo öğrenciye göre ayarlanır.",
   },
 ];
 
@@ -154,85 +148,46 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
-        <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[linear-gradient(180deg,#FBFAF6_0%,#F4F0E8_100%)]">
-          <div className="relative mx-auto grid max-w-6xl gap-12 px-5 pb-16 pt-24 sm:pb-20 sm:pt-32 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-            <div>
-              <h1 className="max-w-4xl text-[42px] font-black leading-[1.02] tracking-normal text-[var(--od-ink)] sm:text-[68px] lg:text-[78px]">
-                Matematikte nerede koptuğunu bulup derste geri bağlıyoruz.
-              </h1>
-              <p className="mt-7 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[19px]">
-                En fazla dört öğrencilik canlı matematik derslerinde öğrenci
-                çözümünü gösterir, sorusunu sorar ve ders sonunda bir sonraki
-                adımını bilir. Veliye de sonucu değil, nedeni anlatan sade bir
-                özet gider.
-              </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <PurchaseFunnelTrigger
-                  source="home_hero_primary"
-                  packageName={lessonPkg.name}
-                  category={lessonPkg.category}
-                  subject={lessonPkg.subject}
-                  priceLabel={lessonPkg.discountedPrice}
-                  paymentLink=""
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
-                >
-                  Ders Paketini İncele
-                  <ArrowRight size={17} />
-                </PurchaseFunnelTrigger>
-                <Link
-                  href="/iletisim/"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white/90 px-6 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
-                >
-                  Ön Görüşme Talep Et
-                  <MessageCircle size={17} />
-                </Link>
-              </div>
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {trustPoints.map((point) => (
-                  <div key={point} className="flex items-start gap-3 border-t border-[var(--od-line)] pt-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[var(--od-olive)]" />
-                    <span className="text-[14px] font-semibold leading-6 text-[var(--od-ink)]">{point}</span>
-                  </div>
-                ))}
-              </div>
+        <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[linear-gradient(180deg,#FFFEFB_0%,#F6F0E2_100%)]">
+          <div className="relative mx-auto max-w-4xl px-5 pb-16 pt-24 text-center sm:pb-24 sm:pt-32">
+            <h1 className="mx-auto max-w-4xl text-[40px] font-black leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[64px] lg:text-[72px]">
+              Çocuğunuz matematikte nerede takıldığını bilsin; biz tam oradan başlayalım.
+            </h1>
+            <p className="mx-auto mt-7 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[19px]">
+              Maksimum 4 kişilik canlı matematik dersleriyle öğrencinin
+              eksiklerini takip eder, ders sonrası ne çalışacağını netleştirir ve
+              veliyi süreçten haberdar ederiz.
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <PurchaseFunnelTrigger
+                source="home_hero_primary"
+                packageName={lessonPkg.name}
+                category={lessonPkg.category}
+                subject={lessonPkg.subject}
+                priceLabel={lessonPkg.discountedPrice}
+                paymentLink=""
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-7 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
+              >
+                Matematik Dersini Satın Al
+                <ArrowRight size={17} />
+              </PurchaseFunnelTrigger>
+              <Link
+                href="/iletisim/"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white/90 px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
+              >
+                Önce Bizimle Görüşün
+              </Link>
             </div>
-
-            <div className="rounded-[24px] border border-[var(--od-line)] bg-white/92 p-5 shadow-[0_24px_60px_-42px_rgba(20,20,15,0.32)]">
-              <div className="flex items-center justify-between border-b border-[var(--od-line)] pb-4">
-                <div>
-                  <div className="text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                    Canlı Ders Sonrası
-                  </div>
-                  <div className="mt-1 text-[18px] font-extrabold text-[var(--od-ink)]">
-                    Haftanın çalışma yönü
-                  </div>
+            <p className="mx-auto mt-4 max-w-xl text-[13.5px] leading-6 text-[var(--od-ink-soft)]">
+              Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası
+              ekibimiz öğrenci hesabınızı hazırlar.
+            </p>
+            <div className="mx-auto mt-12 grid max-w-3xl gap-x-8 gap-y-5 border-t border-[var(--od-line)] pt-8 sm:grid-cols-2 lg:grid-cols-4">
+              {trustPoints.map((point) => (
+                <div key={point} className="text-center sm:text-left">
+                  <span className="text-[14px] font-semibold leading-6 text-[var(--od-ink)]">{point}</span>
                 </div>
-                <ClipboardCheck className="h-7 w-7 text-[var(--od-olive)]" />
-              </div>
-              <div className="mt-5 rounded-2xl border border-[var(--od-line)] bg-[var(--od-sky-soft)] p-5 font-mono text-[13px] leading-7 text-[var(--od-ink)]">
-                <div className="text-[var(--od-olive)]">f(x) = 3x^2 - 12x + 7</div>
-                <div>f&apos;(x) = 6x - 12</div>
-                <div>6x - 12 = 0 =&gt; x = 2</div>
-                <div className="mt-4 border-t border-white/70 pt-4 text-[var(--od-ink-soft)]">
-                  Bu hafta: Parabol yorumu, türevle ekstremum, 18 hedef soru,
-                  cuma kısa kontrol.
-                </div>
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                {["Seviye", "Katılım", "Ödev", "Veli özeti"].map((label, index) => (
-                  <div key={label} className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream)] p-3">
-                    <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--od-ink-soft)]">
-                      {label}
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-white">
-                      <div
-                        className="h-2 rounded-full bg-[var(--od-olive-soft)]"
-                        style={{ width: `${[68, 82, 74, 90][index]}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -241,8 +196,13 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr]">
             <div>
               <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Matematikte mesele çoğu zaman çalışmamak değil, nerede koptuğunu görememektir.
+                Matematikte sorun çoğu zaman çalışmamak değil, nerede takıldığını görememektir.
               </h2>
+              <p className="mt-6 text-[17px] leading-8 text-[var(--od-ink-soft)]">
+                Öğrenci soru çözer, video izler, defter doldurur; ama aynı konu
+                tekrar karşısına çıktığında yine duraksar. Biz önce o duraksamanın
+                nedenini görünür hale getiririz.
+              </p>
             </div>
             <div className="space-y-3">
               {problems.map((item, index) => (
@@ -259,11 +219,11 @@ export default function HomePage() {
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
             <div className="max-w-3xl">
               <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[54px]">
-                Dersi anlatıp bırakmıyoruz; öğrencinin çözümünü derste görünür kılıyoruz.
+                Dersi anlatıp bırakmıyoruz; öğrencinin matematik yolunu takip ediyoruz.
               </h2>
               <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Ders öncesi seviye, ders içi katılım, ders sonrası ödev ve veli
-                özeti aynı akışta ilerler.
+                Küçük grup dersi, öğretmen gözlemi ve ders sonrası yönlendirme aynı
+                planın içinde ilerler.
               </p>
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-4">
@@ -277,26 +237,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-sky-soft)] text-[var(--od-ink)]">
-          <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[1fr_0.9fr] lg:items-center">
-            <div>
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[54px]">
-                Kalabalık online sınıf değil, öğrencinin sesinin duyulduğu küçük grup.
-              </h2>
-              <p className="mt-5 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                En fazla 4 öğrencilik canlı matematik dersinde öğrenci pasif
-                dinleyiciye dönüşmez. Öğretmen çözümü izler, soruyu derste ele
-                alır ve ders sonrası çalışma yönünü netleştirir.
-              </p>
-            </div>
-            <div className="grid gap-3">
-              {lessonHighlights.map((item) => (
-                <div key={item} className="flex items-center gap-3 rounded-[18px] border border-white/70 bg-white/75 p-4">
-                  <CheckCircle2 className="h-5 w-5 text-[var(--od-olive)]" />
-                  <span className="text-[16px] font-semibold">{item}</span>
-                </div>
-              ))}
-            </div>
+        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
+          <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:py-28">
+            <h2 className="text-[32px] font-black leading-[1.08] tracking-normal text-[var(--od-ink)] sm:text-[48px]">
+              Ders bittiğinde öğrencinin ne çalışacağını bilmesini isteriz.
+            </h2>
+            <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[18px]">
+              Her dersin sonunda konu, ödev ve tekrar yönü sade şekilde netleşir.
+              Öğrenci yalnız kalmaz; veli de sürecin nereye gittiğini daha kolay
+              takip eder.
+            </p>
           </div>
         </section>
 
@@ -318,7 +268,8 @@ export default function HomePage() {
                     {lessonPkg.name}
                   </h3>
                   <p className="mt-2 text-[15px] leading-7 text-[var(--od-ink-soft)]">
-                    En fazla dört öğrenci. Aynı öğretmen, aynı tempo, ders sonrası net çalışma yönü.
+                    Canlı matematik dersi, maksimum 4 kişilik butik grup ve ders
+                    sonrası takip tek pakette.
                   </p>
                 </div>
                 <div className="shrink-0 text-left sm:text-right">
@@ -332,10 +283,10 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-              <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+              <ul className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">
                 {lessonPkg.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[var(--od-olive)]" />
+                  <li key={feature} className="flex items-start gap-3 border-t border-[var(--od-line)] pt-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--od-olive)]" />
                     <span className="text-[15px] font-semibold leading-6 text-[var(--od-ink)]">{feature}</span>
                   </li>
                 ))}
@@ -350,7 +301,7 @@ export default function HomePage() {
                   paymentLink=""
                   className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
                 >
-                  Satın Al
+                  Matematik Dersini Satın Al
                   <ArrowRight size={17} />
                 </PurchaseFunnelTrigger>
                 <AddToCartButton
@@ -366,14 +317,13 @@ export default function HomePage() {
         <section className="border-b border-[var(--od-line)]">
           <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr]">
             <div>
-              <ShieldCheck className="h-9 w-9 text-[var(--od-olive)]" />
-              <h2 className="mt-5 text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Satın almak için önce hesap açmanız gerekmez.
+              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
+                Satın almak için hesap oluşturmanız gerekmez.
               </h2>
               <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Matematik ders paketini sepete ekler, bilgilerinizi girer ve
-                ödemeyi güvenle tamamlarsınız. Ödeme sonrası ekibimiz sizinle
-                iletişime geçerek öğrenci hesabını hazırlar ve giriş bilgisini paylaşır.
+                Paketi seçer, bilgilerinizi girer ve ödemenizi güvenle
+                tamamlarsınız. Ardından ekibimiz sizinle iletişime geçerek öğrenci
+                hesabınızı hazırlar ve giriş bilgilerinizi paylaşır.
               </p>
             </div>
             <div className="grid gap-3">
@@ -390,7 +340,7 @@ export default function HomePage() {
         <section className="border-b border-[var(--od-line)] bg-white">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
             <h2 className="max-w-3xl text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-              Velinin aklındaki soruları en baştan sadeleştiriyoruz.
+              Velilerin karar vermeden önce bilmek istediği şeyler.
             </h2>
             <div className="mt-10 grid gap-4 md:grid-cols-2">
               {confidenceQuestions.map((item) => (
@@ -403,40 +353,28 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:py-24 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Kararsızsanız önce konuşalım.
-              </h2>
-              <p className="mt-4 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Öğrencinin sınıfı, hedefi ve matematikte nerede zorlandığını
-                birlikte değerlendirelim.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+        <section className="bg-[var(--od-yellow-soft)]">
+          <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:py-28">
+            <h2 className="text-[32px] font-black leading-[1.06] tracking-normal text-[var(--od-ink)] sm:text-[52px]">
+              Kararsızsanız önce konuşalım.
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)]">
+              Öğrencinin sınıfını, hedefini ve matematikte zorlandığı konuları
+              birlikte değerlendirelim. Size en doğru yönlendirmeyi yapalım.
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/iletisim/"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--od-olive)] px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-[#2E3B24]"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--od-olive)] px-7 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
               >
-                Ön Görüşme Talep Et
+                İletişime Geç
               </Link>
               <a
                 href={`https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`}
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--od-ink)]/20 bg-white px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
               >
                 WhatsApp&apos;tan Yazın
               </a>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-[var(--od-blush)]/65">
-          <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-16 sm:py-20 lg:flex-row lg:items-center lg:justify-between">
-            <h2 className="max-w-3xl text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-              Matematikte daha anlaşılır, daha insani bir çalışma yolu açalım.
-            </h2>
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               <PurchaseFunnelTrigger
                 source="home_final_primary"
                 packageName={lessonPkg.name}
@@ -444,17 +382,11 @@ export default function HomePage() {
                 subject={lessonPkg.subject}
                 priceLabel={lessonPkg.discountedPrice}
                 paymentLink=""
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/20 bg-white px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
               >
-                Ders Paketini İncele
-                <ArrowRight size={17} />
+                Matematik Dersini Satın Al
+                <ArrowRight size={16} />
               </PurchaseFunnelTrigger>
-              <Link
-                href="/iletisim/"
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
-              >
-                Ön Görüşme Talep Et
-              </Link>
             </div>
           </div>
         </section>

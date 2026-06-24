@@ -1,15 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Users,
-  MessageCircleQuestion,
-  ClipboardCheck,
-  Target,
-  Video,
-  GraduationCap,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, GraduationCap } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { FadeIn } from "@/components/ui/fade-in";
@@ -45,22 +36,18 @@ const cartItem = {
 
 const pillars = [
   {
-    icon: Users,
     title: "En fazla 4 öğrenci",
     body: "Kalabalık online sınıf yok. Öğretmen her öğrenciyi adıyla ve çözüm tarzıyla tanır.",
   },
   {
-    icon: Video,
     title: "Derste görünür ol",
-    body: "Öğrenci ekranın arkasında kaybolmaz; kamerada, soruda ve çözümde aktif olur.",
+    body: "Öğrenci ekranın arkasında kaybolmaz; soruda ve çözümde aktif olur.",
   },
   {
-    icon: MessageCircleQuestion,
     title: "Soru sorabilmek",
     body: "Takıldığın anda sorarsın. Konu derste bitirilir, ertesi güne soru işareti kalmaz.",
   },
   {
-    icon: Target,
     title: "Net çalışma yönü",
     body: "Ders sonunda öğrenci hangi konuyu, hangi sorularla çalışacağını bilir.",
   },
@@ -100,85 +87,44 @@ export default function MatematikDersPaketiPage() {
       />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* HERO — split, teacher/student focused */}
+        {/* HERO — sade, ortalı, editorial */}
         <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto grid max-w-6xl gap-12 px-5 pt-28 pb-16 sm:pt-36 sm:pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-            <div>
-              <h1 className="font-display text-[40px] font-normal leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
-                Butik grupta{" "}
-                <em className="italic text-[var(--od-olive)]">canlı matematik</em> dersi.
-              </h1>
-              <p className="mt-6 max-w-xl text-[16px] leading-7 text-[var(--od-ink-soft)]">
-                En fazla 4 öğrencilik grupta öğrenci derste görünür olur,
-                soru sorar ve çözümünü öğretmenle birlikte düzeltir. Kalabalık
-                online sınıf hissini bilinçli olarak geride bırakıyoruz.
-              </p>
-              <div className="mt-9 flex flex-wrap items-center gap-3">
-                <PurchaseFunnelTrigger
-                  source="ders_paketi_hero"
-                  packageName={lessonPkg.name}
-                  category={lessonPkg.category}
-                  subject={lessonPkg.subject}
-                  priceLabel={lessonPkg.discountedPrice}
-                  paymentLink=""
-                  analyticsId="ders_paketi_hero"
-                  className="inline-flex items-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
-                >
-                  Satın Al · {lessonPkg.discountedPrice}
-                  <ArrowRight size={15} strokeWidth={1.8} />
-                </PurchaseFunnelTrigger>
-                <Link
-                  href="/iletisim/"
-                  className="inline-flex items-center rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[14px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
-                >
-                  Bize Ulaşın
-                </Link>
-              </div>
-              <div className="mt-5 flex items-center gap-2 text-[13px] text-[var(--od-ink-soft)]">
-                <span className="font-display text-[22px] text-[var(--od-ink)]">{lessonPkg.discountedPrice}</span>
-                {lessonPkg.oldPrice ? (
-                  <span className="text-[13px] text-[#A0A095] line-through">{lessonPkg.oldPrice}</span>
-                ) : null}
-              </div>
+          <div className="mx-auto max-w-3xl px-5 pt-28 pb-16 text-center sm:pt-36 sm:pb-24">
+            <h1 className="text-[38px] font-black leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[58px]">
+              Butik grupta canlı matematik dersi.
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-[16px] leading-7 text-[var(--od-ink-soft)] sm:text-[18px]">
+              En fazla 4 öğrencilik grupta öğrenci derste görünür olur, soru
+              sorar ve çözümünü öğretmenle birlikte düzeltir. Kalabalık online
+              sınıf hissini bilinçli olarak geride bırakıyoruz.
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <PurchaseFunnelTrigger
+                source="ders_paketi_hero"
+                packageName={lessonPkg.name}
+                category={lessonPkg.category}
+                subject={lessonPkg.subject}
+                priceLabel={lessonPkg.discountedPrice}
+                paymentLink=""
+                analyticsId="ders_paketi_hero"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--od-olive)] px-7 py-3 text-[14.5px] font-bold text-white transition hover:bg-[#2E3B24]"
+              >
+                Matematik Dersini Satın Al
+                <ArrowRight size={15} strokeWidth={2} />
+              </PurchaseFunnelTrigger>
+              <Link
+                href="/iletisim/"
+                className="inline-flex items-center rounded-full border border-[var(--od-ink)]/15 bg-white px-7 py-3 text-[14.5px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
+              >
+                Önce Bizimle Görüşün
+              </Link>
             </div>
-
-            <FadeIn delay={0.05}>
-              <div className="rounded-[24px] border border-[var(--od-line)] bg-white p-6 shadow-[0_24px_60px_-44px_rgba(20,20,15,0.28)]">
-                <div className="flex items-center gap-2 border-b border-[var(--od-line)] pb-4">
-                  <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-[#E54848]" />
-                  <span className="text-[12.5px] font-medium text-[var(--od-ink)]">Canlı · AYT Matematik · Türev</span>
-                  <span className="ml-auto text-[11.5px] text-[#8B8B7E]">04 / 04 öğrenci</span>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-[1.5fr_1fr]">
-                  <div className="rounded-xl border border-[var(--od-line)] bg-[var(--od-sky-soft)] p-4 font-mono text-[12.5px] leading-6 text-[var(--od-ink)]">
-                    <div className="opacity-60">f(x) = 3x² − 12x + 7</div>
-                    <div>f&apos;(x) = 6x − 12</div>
-                    <div>6x − 12 = 0 ⇒ <span className="text-[var(--od-olive)]">x = 2</span></div>
-                  </div>
-                  <ul className="space-y-1.5 text-[12px]">
-                    {["Elif K.", "Ahmet T.", "Sena B.", "Yusuf M."].map((n, i) => (
-                      <li
-                        key={n}
-                        className={`flex items-center gap-2 rounded-lg px-2 py-1.5 ${
-                          i === 0 ? "bg-[var(--od-yellow-soft)] text-[var(--od-ink)]" : "text-[var(--od-ink-soft)]"
-                        }`}
-                      >
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--od-olive)] text-[10px] font-medium text-white">
-                          {n.charAt(0)}
-                        </span>
-                        {n}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mt-4 flex items-center justify-between rounded-xl border border-dashed border-[var(--od-line)] bg-[var(--od-cream)] px-4 py-3 text-[12px]">
-                  <span className="text-[var(--od-ink-soft)]">Ders sonrası ödev hazır</span>
-                  <span className="inline-flex items-center gap-1 font-medium text-[var(--od-olive)]">
-                    <ClipboardCheck className="h-4 w-4" /> Atandı
-                  </span>
-                </div>
-              </div>
-            </FadeIn>
+            <div className="mt-6 flex items-center justify-center gap-2 text-[14px]">
+              <span className="text-[22px] font-black text-[var(--od-ink)]">{lessonPkg.discountedPrice}</span>
+              {lessonPkg.oldPrice ? (
+                <span className="text-[13px] text-[#A0A095] line-through">{lessonPkg.oldPrice}</span>
+              ) : null}
+            </div>
           </div>
         </section>
 
@@ -193,13 +139,10 @@ export default function MatematikDersPaketiPage() {
               </div>
             </FadeIn>
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {pillars.map(({ icon: Icon, title, body }, i) => (
+              {pillars.map(({ title, body }, i) => (
                 <FadeIn key={title} delay={i * 0.04}>
                   <div className="h-full rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[var(--od-olive)]">
-                      <Icon className="h-5 w-5" strokeWidth={1.8} />
-                    </span>
-                    <h3 className="mt-4 font-display text-[18px] leading-tight text-[var(--od-ink)]">{title}</h3>
+                    <h3 className="font-display text-[18px] font-medium leading-tight text-[var(--od-ink)]">{title}</h3>
                     <p className="mt-2 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">{body}</p>
                   </div>
                 </FadeIn>
@@ -289,10 +232,10 @@ export default function MatematikDersPaketiPage() {
                   priceLabel={lessonPkg.discountedPrice}
                   paymentLink=""
                   analyticsId="ders_paketi_price"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--od-yellow)] px-5 py-3 text-[14px] font-medium text-[var(--od-ink)] transition hover:bg-[#F0CE52]"
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--od-yellow)] px-5 py-3 text-[14px] font-bold text-[var(--od-ink)] transition hover:bg-[#F0CE52]"
                 >
-                  Satın Al
-                  <ArrowRight size={14} strokeWidth={1.8} />
+                  Matematik Dersini Satın Al
+                  <ArrowRight size={14} strokeWidth={2} />
                 </PurchaseFunnelTrigger>
                 <AddToCartButton
                   item={cartItem}

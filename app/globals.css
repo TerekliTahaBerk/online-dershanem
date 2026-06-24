@@ -13,10 +13,10 @@
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
-  /* Off-white palette — Opennote-inspired */
-  --od-cream: #FAFAF7;
-  --od-cream-2: #F1EFE9;
-  --od-paper: #FBFBF8;
+  /* Warm cream palette — butik matematik kurumu tonu (sıcak beyaz/krem) */
+  --od-cream: #FBF8F0;
+  --od-cream-2: #F3EEE1;
+  --od-paper: #FFFEFB;
   --od-yellow: #F4D86A;
   --od-yellow-soft: #FCEDB4;
   --od-mint: #D7E5D5;
@@ -28,7 +28,7 @@
   --od-olive-soft: #6F8458;
   --od-ink: #14140F;
   --od-ink-soft: #5A5A4F;
-  --od-line: #E5E3DC;
+  --od-line: #E8E3D6;
 
   /* Premium design tokens — LIGHT THEME (default)
      Beyaz tabanlı, site dilini panele taşır.
