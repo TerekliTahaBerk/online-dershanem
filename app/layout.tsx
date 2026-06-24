@@ -10,6 +10,7 @@ import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartFab } from "@/components/cart/cart-fab";
+import { WhatsAppFab } from "@/components/ui/whatsapp-fab";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
@@ -119,6 +120,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Suspense>
                 <Pixels />
                 {children}
+                <WhatsAppFab />
                 <CartFab />
                 <Analytics />
                 <SpeedInsights />

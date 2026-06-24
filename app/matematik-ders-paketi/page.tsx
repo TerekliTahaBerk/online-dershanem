@@ -6,7 +6,7 @@ import { Footer } from "@/components/sections/footer";
 import { FadeIn } from "@/components/ui/fade-in";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
-import { siteUrl, subjectPackageGroups, teachers } from "@/lib/content";
+import { siteUrl, subjectPackageGroups } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Matematik Ders Paketi — Butik Canlı Matematik Dersi",
@@ -58,6 +58,22 @@ const lessonFlow = [
   { t: "Canlı ders", d: "Butik grupta konu anlatımı, birlikte çözüm ve aktif soru-cevap." },
   { t: "Ödevlendirme", d: "Ders sonrası seviyeye uygun ödev verilir; öğrenci ne çalışacağını bilir." },
   { t: "Veli özeti", d: "Veliye çocuğunun nerede zorlandığını anlatan kısa ve sade bir not gider." },
+];
+
+// Dürüst, iddiasız kadro bloğu — sahte isim/üniversite/derece iddiası yok.
+const faculty = [
+  {
+    title: "Yalnızca matematik",
+    body: "Kadromuzdaki her öğretmen tek branşa odaklanır: matematik. Dağılma yok; tüm hazırlık tek derse kurulur.",
+  },
+  {
+    title: "Sınav müfredatına hâkim",
+    body: "LGS, TYT ve AYT matematik konuları ve güncel soru tipleriyle düzenli çalışan öğretmenlerle dersler kurulur.",
+  },
+  {
+    title: "Adıyla tanıyan takip",
+    body: "En fazla 4 kişilik grupta öğretmen her öğrencinin çözüm tarzını ve takıldığı noktaları yakından izler.",
+  },
 ];
 
 const faq = [
@@ -175,7 +191,7 @@ export default function MatematikDersPaketiPage() {
           </div>
         </section>
 
-        {/* TEACHERS */}
+        {/* FACULTY — dürüst, iddiasız kadro yaklaşımı */}
         <section className="border-b border-[var(--od-line)] bg-[var(--od-cream-2)]">
           <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
             <FadeIn>
@@ -183,19 +199,21 @@ export default function MatematikDersPaketiPage() {
                 <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
                   Deneyimli, yalnızca matematik.
                 </h2>
+                <p className="mt-4 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+                  Tek branşa odaklanan, butik grupta öğrenciyi yakından takip eden
+                  matematik öğretmenleriyle çalışıyoruz.
+                </p>
               </div>
             </FadeIn>
             <div className="mt-12 grid gap-4 md:grid-cols-3">
-              {teachers.map((t, i) => (
-                <FadeIn key={t.name} delay={i * 0.05}>
+              {faculty.map((f, i) => (
+                <FadeIn key={f.title} delay={i * 0.05}>
                   <div className="flex h-full flex-col rounded-2xl border border-[var(--od-line)] bg-white p-6">
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
                       <GraduationCap className="h-5 w-5" strokeWidth={1.7} />
                     </span>
-                    <h3 className="mt-4 font-display text-[19px] leading-tight text-[var(--od-ink)]">{t.name}</h3>
-                    <div className="mt-1 text-[12.5px] font-medium text-[var(--od-olive)]">{t.branch} · {t.uni}</div>
-                    <p className="mt-3 flex-1 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">“{t.quote}”</p>
-                    <div className="mt-4 text-[12px] text-[#8B8B7E]">{t.exp}</div>
+                    <h3 className="mt-4 font-display text-[19px] leading-tight text-[var(--od-ink)]">{f.title}</h3>
+                    <p className="mt-3 flex-1 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">{f.body}</p>
                   </div>
                 </FadeIn>
               ))}
@@ -215,6 +233,10 @@ export default function MatematikDersPaketiPage() {
                   <span className="text-[14px] text-white/50 line-through">{lessonPkg.oldPrice}</span>
                 ) : null}
               </div>
+              <p className="mt-3 text-[12.5px] leading-6 text-white/70">
+                Kalabalık dershane ile birebir özel ders arasında butik bir orta
+                yol — aylık sabit fiyat, en fazla 4 kişilik grup.
+              </p>
               <ul className="mt-6 space-y-3">
                 {lessonPkg.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-2.5 text-[13.5px] leading-6 text-white/90">
@@ -249,10 +271,10 @@ export default function MatematikDersPaketiPage() {
             </div>
             <div className="mt-6 text-center">
               <Link
-                href="/paketler/"
+                href="/iletisim/"
                 className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-[var(--od-olive)] hover:text-[var(--od-ink)]"
               >
-                Tam Destek Paketi ile karşılaştır
+                Sorularınız mı var? Önce bizimle görüşün
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>

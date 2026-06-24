@@ -5,10 +5,12 @@ import { siteUrl } from "@/lib/content";
 import { PackagesPageContent } from "@/components/sections/packages-page-content";
 
 export const metadata: Metadata = {
-  title: "Matematik Ders Paketi",
+  title: "Matematik Ders Paketi — Fiyat ve İçerik",
   description:
     "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti. Aylık ₺3.000.",
-  alternates: { canonical: "/paketler/" },
+  // Asıl ürün sayfası /matematik-ders-paketi/ — sıralama sinyalleri orada
+  // toplansın diye canonical oraya işaret eder (keyword cannibalization fix).
+  alternates: { canonical: "/matematik-ders-paketi/" },
   openGraph: {
     title: "Matematik Ders Paketi | Online Dershanem",
     description:
