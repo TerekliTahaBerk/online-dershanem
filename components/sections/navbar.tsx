@@ -31,7 +31,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-[var(--od-line)] bg-[#FBF8F0]/92 text-[var(--od-ink)] backdrop-blur-xl">
+      <header className="sticky top-0 z-40 w-full border-b border-[var(--od-line)] bg-[#FBFAF5]/92 text-[var(--od-ink)] backdrop-blur-xl">
         <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-8">
           <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center text-[var(--od-ink)]">
             <Image
@@ -89,7 +89,7 @@ export function Navbar() {
       {open && (
         <>
           <div className="fixed inset-0 top-16 z-30 bg-[var(--od-ink)]/18 lg:hidden" onClick={() => setOpen(false)} />
-          <div className="fixed inset-x-0 top-16 z-40 border-b border-[var(--od-line)] bg-[#FBF8F0] text-[var(--od-ink)] lg:hidden">
+          <div className="fixed inset-x-0 top-16 z-40 border-b border-[var(--od-line)] bg-[#FBFAF5] text-[var(--od-ink)] lg:hidden">
             <nav className="flex flex-col gap-1 px-5 py-4">
               {links.map((l) => (
                 <Link

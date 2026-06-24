@@ -13,10 +13,10 @@
   --paper: var(--color-off-white);
   --grid: rgba(9, 20, 19, 0.06);
 
-  /* Warm cream palette — butik matematik kurumu tonu (sıcak beyaz/krem) */
-  --od-cream: #FBF8F0;
-  --od-cream-2: #F3EEE1;
-  --od-paper: #FFFEFB;
+  /* Kemik beyazı palet — beyaza çok yakın, hafif sıcak (fazla sarı değil) */
+  --od-cream: #FBFAF5;
+  --od-cream-2: #F4F2EB;
+  --od-paper: #FFFFFE;
   --od-yellow: #F4D86A;
   --od-yellow-soft: #FCEDB4;
   --od-mint: #D7E5D5;

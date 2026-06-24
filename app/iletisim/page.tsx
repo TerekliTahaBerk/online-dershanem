@@ -65,7 +65,8 @@ export default function ContactPage() {
         </section>
 
         {/* Channels grid */}
-        <section className="mx-auto max-w-5xl px-5 py-16 sm:py-20">
+        <section>
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
           <div className="grid gap-4 sm:grid-cols-3">
             {channels.map(({ label, value, href, Icon, note }) => (
               <a
@@ -141,6 +142,7 @@ export default function ContactPage() {
                 Ders Paketini İncele
               </Link>
             </div>
+          </div>
           </div>
         </section>
       </main>
