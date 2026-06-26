@@ -6,6 +6,12 @@ import { Footer } from "@/components/sections/footer";
 import { FadeIn } from "@/components/ui/fade-in";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import {
+  breadcrumbJsonLd,
+  courseJsonLd,
+  productJsonLd,
+} from "@/lib/seo/jsonld";
 import { siteUrl, subjectPackageGroups } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -95,12 +101,30 @@ export default function MatematikDersPaketiPage() {
     })),
   };
 
+  const productLd = productJsonLd({
+    name: lessonPkg.name,
+    description:
+      "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti.",
+    url: "/matematik-ders-paketi/",
+    priceCents: lessonPkg.priceCents,
+    sku: lessonPkg.id,
+  });
+
+  const courseLd = courseJsonLd({
+    name: lessonPkg.name,
+    description:
+      "LGS, TYT ve AYT hedeflerine göre, en fazla 4 öğrencilik küçük grupta canlı matematik dersi.",
+    url: "/matematik-ders-paketi/",
+  });
+
+  const breadcrumbLd = breadcrumbJsonLd([
+    { name: "Ana Sayfa", url: "/" },
+    { name: "Matematik Ders Paketi", url: "/matematik-ders-paketi/" },
+  ]);
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-      />
+      <SchemaJsonLd schema={[faqJsonLd, productLd, courseLd, breadcrumbLd]} />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* HERO — sade, ortalı, editorial */}

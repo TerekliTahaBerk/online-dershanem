@@ -150,6 +150,20 @@ export function CartPageClient() {
               <li>· 1, 3, 6 ve 9 taksit seçenekleri</li>
               <li>· Kart bilgileriniz sitemizde saklanmaz</li>
             </ul>
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--od-line)] pt-3 text-[11.5px] text-[var(--od-ink-soft)]">
+              <Link href="/iade/" className="underline-offset-2 transition hover:text-[var(--od-ink)] hover:underline">
+                İade Politikası
+              </Link>
+              <span aria-hidden="true" className="text-[var(--od-line)]">·</span>
+              <Link href="/kvkk/" className="underline-offset-2 transition hover:text-[var(--od-ink)] hover:underline">
+                KVKK
+              </Link>
+              <span aria-hidden="true" className="text-[var(--od-line)]">·</span>
+              <Link href="/gizlilik/" className="underline-offset-2 transition hover:text-[var(--od-ink)] hover:underline">
+                Gizlilik
+              </Link>
+            </div>
           </div>
         </aside>
       </div>

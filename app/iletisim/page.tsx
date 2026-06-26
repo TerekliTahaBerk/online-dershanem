@@ -3,6 +3,9 @@ import Link from "next/link";
 import { Phone, Mail, MapPin, MessageCircle, Instagram, Linkedin, Send } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { ContactLeadForm } from "@/components/sections/contact-lead-form";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { contact } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -45,6 +48,12 @@ const socials = [
 export default function ContactPage() {
   return (
     <>
+      <SchemaJsonLd
+        schema={breadcrumbJsonLd([
+          { name: "Ana Sayfa", url: "/" },
+          { name: "İletişim", url: "/iletisim/" },
+        ])}
+      />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* Hero */}
@@ -61,6 +70,13 @@ export default function ContactPage() {
               konuşalım. Uygun küçük grup başlangıcını ve ödeme sonrası hesap
               hazırlama sürecini net şekilde anlatalım.
             </p>
+          </div>
+        </section>
+
+        {/* Ön görüşme formu */}
+        <section className="border-b border-[var(--od-line)]">
+          <div className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+            <ContactLeadForm />
           </div>
         </section>
 

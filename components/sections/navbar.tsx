@@ -10,6 +10,8 @@ import { subjectPackageGroups } from "@/lib/content";
 
 const links = [
   { label: "Ana Sayfa", href: "/" },
+  { label: "Paket", href: "/matematik-ders-paketi/" },
+  { label: "SSS", href: "/sss/" },
   { label: "Misyonumuz", href: "/misyonumuz/" },
   { label: "İletişim", href: "/iletisim/" }
 ];

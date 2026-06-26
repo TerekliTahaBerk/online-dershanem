@@ -4,6 +4,8 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -24,6 +26,12 @@ export const metadata: Metadata = {
 export default function OnlineOzelDersPage() {
   return (
     <>
+      <SchemaJsonLd
+        schema={breadcrumbJsonLd([
+          { name: "Ana Sayfa", url: "/" },
+          { name: "Online Özel Ders", url: "/online-ozel-ders/" },
+        ])}
+      />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
         <Container>

@@ -3,6 +3,8 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { siteUrl } from "@/lib/content";
 import { PackagesPageContent } from "@/components/sections/packages-page-content";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "Matematik Ders Paketi — Fiyat ve İçerik",
@@ -22,6 +24,12 @@ export const metadata: Metadata = {
 export default function PackagesPage() {
   return (
     <>
+      <SchemaJsonLd
+        schema={breadcrumbJsonLd([
+          { name: "Ana Sayfa", url: "/" },
+          { name: "Matematik Ders Paketi", url: "/paketler/" },
+        ])}
+      />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[var(--od-sky-soft)]/70">

@@ -5,6 +5,8 @@ import type { LucideIcon } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { blogPosts, siteUrl } from "@/lib/content";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "Online Dershanem Blog",
@@ -176,6 +178,12 @@ export default function BlogPage() {
 
   return (
     <>
+      <SchemaJsonLd
+        schema={breadcrumbJsonLd([
+          { name: "Ana Sayfa", url: "/" },
+          { name: "Blog", url: "/blog/" },
+        ])}
+      />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* Hero */}

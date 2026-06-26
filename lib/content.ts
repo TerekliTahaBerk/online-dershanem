@@ -659,6 +659,114 @@ export const faq = [
   }
 ];
 
+// Kategori bazlı SSS — /sss sayfası ve FAQPage JSON-LD bu listeyi kullanır.
+// Operasyonel rakamlar (süre/sıklık) ekip tarafından netleştirilecek; cevaplar
+// rakam uydurmadan ön görüşme / kayıt sonrası sürece yönlendirir.
+export const faqCategories = [
+  {
+    category: "Ders modeli",
+    items: [
+      {
+        q: "Online Dershanem sadece matematik mi?",
+        a: "Evet. Public tarafta tek odağımız matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
+      },
+      {
+        q: "Dersler LGS, TYT ve AYT odaklı mı?",
+        a: "Evet. Öğrencinin sınıfına ve hedefine göre LGS, TYT veya AYT matematiği üzerine kurgulanır. Konu anlatımı ve soru çözümü birlikte ilerler.",
+      },
+      {
+        q: "Dersler canlı mı yoksa kayıt mı?",
+        a: "Dersler Google Meet üzerinden gerçek zamanlı ve canlıdır. Hazır video izlemezsiniz; öğrenci soru sorar, çözümünü gösterir ve aynı derste geri dönüş alır.",
+      },
+      {
+        q: "Öğrenci derste soru sorabilir mi?",
+        a: "Evet. Soru sormak dersin doğal parçasıdır. En fazla 4 öğrencilik grupta her öğrencinin soru sormaya ve çözümünü göstermeye zamanı olur.",
+      },
+      {
+        q: "Dersler kaç dakika ve haftada kaç ders var?",
+        a: "Ders süresi ve haftalık ders sayısı, öğrencinin seviyesine ve hedefine göre planlanır; net program ön görüşmede ve ödeme sonrası ekibimizce paylaşılır.",
+      },
+    ],
+  },
+  {
+    category: "Seviye ve grup yerleşimi",
+    items: [
+      {
+        q: "Gruplar kaç kişilik?",
+        a: "Her matematik grubunda en fazla 4 öğrenci olur. Öğretmen öğrenciyi adıyla tanır; kalabalık sınıfta kaybolma olmaz.",
+      },
+      {
+        q: "Seviyeye göre gruplandırma yapılıyor mu?",
+        a: "Evet. Kısa bir matematik değerlendirmesiyle öğrenci benzer seviye ve hedefteki öğrencilerle eşleşir. Tempo ne çok yavaş ne de çok hızlı kalır.",
+      },
+      {
+        q: "Öğretmenler nasıl seçiliyor?",
+        a: "Dersler, alanında deneyimli matematik öğretmenleriyle yürütülür. Öğretmen-grup eşleşmesinde öğrencinin seviyesi ve hedefi gözetilir.",
+      },
+    ],
+  },
+  {
+    category: "Ödeme ve iade",
+    items: [
+      {
+        q: "Ödeme sonrası ne olur?",
+        a: "Ödeme tamamlandıktan sonra ekibimiz sizinle iletişime geçer, öğrenci hesabını hazırlar ve giriş bilgilerini sizinle paylaşır. Satın almak için önceden hesap oluşturmanız gerekmez.",
+      },
+      {
+        q: "Hesap bilgileri nasıl veriliyor?",
+        a: "Giriş bilgilerini ekibimiz hazırlayıp güvenli şekilde size iletir. İlk girişte şifrenizi kendiniz belirlersiniz.",
+      },
+      {
+        q: "İptal ve iade koşulları nedir?",
+        a: "İade koşullarının tamamı İade Politikası sayfamızda yer alır. Sorularınız için ödeme öncesi bizimle iletişime geçebilirsiniz.",
+      },
+    ],
+  },
+  {
+    category: "Veli takibi",
+    items: [
+      {
+        q: "Veli süreçten nasıl haberdar olur?",
+        a: "Veli yalnızca sonuç görmez; çocuğunun hangi konuda zorlandığını anlayacak kadar sade bir gelişim özeti alır.",
+      },
+      {
+        q: "Ders sonrası takip nasıl işliyor?",
+        a: "Her dersin sonunda konu, ödev ve tekrar yönü netleşir. Öğrenci ne çalışacağını bilir; veli de sürecin nereye gittiğini kolayca takip eder.",
+      },
+      {
+        q: "Telafi dersi var mı?",
+        a: "Telafi ve devamsızlık durumları için izlenecek yolu ön görüşmede ve kayıt sonrası ekibimiz net olarak paylaşır.",
+      },
+    ],
+  },
+  {
+    category: "Teknik gereksinimler",
+    items: [
+      {
+        q: "Hangi teknik ekipman gerekiyor?",
+        a: "İnternet bağlantısı olan bir bilgisayar veya tablet, çalışan bir mikrofon ve Google Meet yeterlidir. Kamera tavsiye edilir ama zorunlu değildir.",
+      },
+      {
+        q: "Derse nereden bağlanılıyor?",
+        a: "Dersler Google Meet bağlantısı üzerinden yapılır. Bağlantı ve ders saatleri ekibimiz tarafından önceden paylaşılır.",
+      },
+    ],
+  },
+  {
+    category: "Uygunluk",
+    items: [
+      {
+        q: "Öğrenci matematikte çok gerideyse uygun mu?",
+        a: "Uygundur. Önce eksiğin nerede başladığını görürüz ve dersi tam o noktadan kurarız; tempo öğrenciye göre ayarlanır.",
+      },
+      {
+        q: "Paket seçiminde kararsızsam ne yapmalıyım?",
+        a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Öğrencinin matematik seviyesini, sınıfını ve hedefini konuşur, doğru başlangıcı netleştiririz.",
+      },
+    ],
+  },
+];
+
 export const contact = {
   phone: "+90 537 795 44 34",
   email: "iletisim@onlinedershanem.com",

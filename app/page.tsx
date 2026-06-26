@@ -5,6 +5,7 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { contact, faq, siteUrl, subjectPackageGroups } from "@/lib/content";
 
 const lessonPkg = subjectPackageGroups[0].packages.find(
@@ -134,6 +135,54 @@ const confidenceQuestions = [
   },
 ];
 
+const comparison = {
+  columns: ["Birebir özel ders", "Klasik online dershane", "Online Dershanem"],
+  rows: [
+    {
+      label: "Grup mevcudu",
+      values: ["1 öğrenci", "Kalabalık sınıf (20+)", "En fazla 4 öğrenci"],
+    },
+    {
+      label: "Aylık maliyet",
+      values: ["Yüksek", "Düşük", "₺3.000 / ay"],
+    },
+    {
+      label: "Derste soru sorma",
+      values: ["Her an", "Sınırlı", "Rahatça, sırası gelir"],
+    },
+    {
+      label: "Ders sonrası takip",
+      values: ["Öğretmene göre değişir", "Genelde yok", "Her ders sonu net çalışma yönü"],
+    },
+    {
+      label: "Veli bilgilendirme",
+      values: ["Sözlü, düzensiz", "Sınırlı", "Sade gelişim özeti"],
+    },
+    {
+      label: "Seviyeye göre grup",
+      values: ["—", "Genelde yok", "Benzer seviye ve hedefe göre"],
+    },
+  ],
+};
+
+const sampleReport = [
+  { label: "Öğrenci", value: "8. sınıf (örnek / temsilî)" },
+  { label: "Konu", value: "Üslü sayılar — çarpma ve bölme kuralları" },
+  {
+    label: "Gözlem",
+    value:
+      "Tanımı doğru biliyor; negatif üslerde işaret hatasını tekrarlıyor. Kuralı uygularken acele ediyor.",
+  },
+  {
+    label: "Bu hafta ödev",
+    value: "Karışık 20 soruluk set + 2 yeni nesil problem",
+  },
+  {
+    label: "Sonraki hedef",
+    value: "Köklü sayılara geçiş; üslü–köklü ilişkisini kurmak",
+  },
+];
+
 export default function HomePage() {
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -182,9 +231,7 @@ export default function HomePage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <SchemaJsonLd schema={[faqJsonLd, orgJsonLd, productJsonLd]} />
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[linear-gradient(180deg,#FFFFFE_0%,#F5F3EC_100%)]">
@@ -198,23 +245,18 @@ export default function HomePage() {
               veliyi süreçten haberdar ederiz.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <PurchaseFunnelTrigger
-                source="home_hero_primary"
-                packageName={lessonPkg.name}
-                category={lessonPkg.category}
-                subject={lessonPkg.subject}
-                priceLabel={lessonPkg.discountedPrice}
-                paymentLink=""
+              <Link
+                href="/matematik-ders-paketi/"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-7 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
               >
-                Matematik Dersini Satın Al
+                Matematik Ders Paketini İncele
                 <ArrowRight size={17} />
-              </PurchaseFunnelTrigger>
+              </Link>
               <Link
                 href="/iletisim/"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white/90 px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
               >
-                Önce Bizimle Görüşün
+                Ön Görüşme Talep Et
               </Link>
             </div>
             <p className="mx-auto mt-4 max-w-xl text-[13.5px] leading-6 text-[var(--od-ink-soft)]">
@@ -290,6 +332,41 @@ export default function HomePage() {
         </section>
 
         <section className="border-b border-[var(--od-line)] bg-white">
+          <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <div>
+              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
+                Veli, sonuç değil; çocuğunun nerede olduğunu görür.
+              </h2>
+              <p className="mt-6 text-[17px] leading-8 text-[var(--od-ink-soft)]">
+                Karne ya da çıplak net yerine sade bir gelişim özeti paylaşırız:
+                hangi konu çalışıldı, öğrenci nerede zorlandı, bu hafta ne
+                yapacak ve sıradaki hedef ne. Aşağıdaki örnek temsilîdir.
+              </p>
+            </div>
+            <figure className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6 shadow-[0_24px_60px_-46px_rgba(20,20,15,0.28)] sm:p-8">
+              <figcaption className="flex items-center justify-between border-b border-[var(--od-line)] pb-4">
+                <span className="text-[15px] font-extrabold text-[var(--od-ink)]">
+                  Veli Gelişim Özeti
+                </span>
+                <span className="rounded-full bg-[var(--od-olive)]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--od-olive)]">
+                  Örnek
+                </span>
+              </figcaption>
+              <dl className="mt-5 space-y-4">
+                {sampleReport.map((row) => (
+                  <div key={row.label} className="grid grid-cols-[110px_1fr] gap-3">
+                    <dt className="text-[12.5px] font-semibold uppercase tracking-[0.1em] text-[#8B8B7E]">
+                      {row.label}
+                    </dt>
+                    <dd className="text-[14.5px] leading-7 text-[var(--od-ink)]">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </figure>
+          </div>
+        </section>
+
+        <section className="border-b border-[var(--od-line)] bg-white">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
             <div className="max-w-3xl">
               <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
@@ -316,6 +393,104 @@ export default function HomePage() {
                   <p className="mt-2 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
                     {lvl.body}
                   </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+            <div className="max-w-3xl">
+              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
+                Özel ders kadar yakın, online dershane kadar erişilebilir.
+              </h2>
+              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
+                Birebir özel dersin maliyeti ile kalabalık online sınıfın
+                mesafesi arasında butik bir orta yol. Üç modeli aynı ölçütlerle
+                karşılaştırın.
+              </p>
+            </div>
+
+            {/* Desktop: tablo */}
+            <div className="mt-10 hidden overflow-hidden rounded-[22px] border border-[var(--od-line)] bg-white md:block">
+              <table className="w-full border-collapse text-left">
+                <caption className="sr-only">
+                  Birebir özel ders, klasik online dershane ve Online Dershanem
+                  karşılaştırması
+                </caption>
+                <thead>
+                  <tr className="border-b border-[var(--od-line)]">
+                    <th scope="col" className="px-5 py-4 text-[13px] font-semibold text-[var(--od-ink-soft)]">
+                      Ölçüt
+                    </th>
+                    {comparison.columns.map((col, i) => (
+                      <th
+                        key={col}
+                        scope="col"
+                        className={`px-5 py-4 text-[14px] font-extrabold ${
+                          i === comparison.columns.length - 1
+                            ? "bg-[var(--od-olive)] text-white"
+                            : "text-[var(--od-ink)]"
+                        }`}
+                      >
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparison.rows.map((row) => (
+                    <tr key={row.label} className="border-b border-[var(--od-line)] last:border-b-0">
+                      <th scope="row" className="px-5 py-4 text-[14px] font-semibold text-[var(--od-ink)]">
+                        {row.label}
+                      </th>
+                      {row.values.map((val, i) => (
+                        <td
+                          key={comparison.columns[i]}
+                          className={`px-5 py-4 text-[14px] leading-6 ${
+                            i === row.values.length - 1
+                              ? "bg-[var(--od-olive)]/[0.06] font-semibold text-[var(--od-ink)]"
+                              : "text-[var(--od-ink-soft)]"
+                          }`}
+                        >
+                          {val}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobil: kart layout */}
+            <div className="mt-8 grid gap-3 md:hidden">
+              {comparison.rows.map((row) => (
+                <div key={row.label} className="rounded-[18px] border border-[var(--od-line)] bg-white p-4">
+                  <div className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-[var(--od-olive)]">
+                    {row.label}
+                  </div>
+                  <dl className="mt-3 space-y-1.5">
+                    {row.values.map((val, i) => (
+                      <div
+                        key={comparison.columns[i]}
+                        className={`flex items-start justify-between gap-4 rounded-lg px-2.5 py-1.5 ${
+                          i === row.values.length - 1 ? "bg-[var(--od-olive)]/[0.07]" : ""
+                        }`}
+                      >
+                        <dt className="text-[12.5px] text-[var(--od-ink-soft)]">{comparison.columns[i]}</dt>
+                        <dd
+                          className={`text-right text-[13px] ${
+                            i === row.values.length - 1
+                              ? "font-bold text-[var(--od-ink)]"
+                              : "font-medium text-[var(--od-ink)]"
+                          }`}
+                        >
+                          {val}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
               ))}
             </div>

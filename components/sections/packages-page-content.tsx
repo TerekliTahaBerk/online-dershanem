@@ -1,12 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Phone } from "lucide-react";
+import { ArrowRight, Check, MessageCircle, Phone, X } from "lucide-react";
 import { contact, subjectPackageGroups } from "@/lib/content";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 
 const packages = subjectPackageGroups[0].packages;
+
+const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
+
+// Operasyonel detaylar ekip tarafından netleştirilecek; metin placeholder.
+const operationDetails = [
+  { label: "Ders sıklığı", value: "[Net ders sıklığı buraya girilecek]" },
+  { label: "Ders süresi", value: "[Net ders süresi buraya girilecek]" },
+  {
+    label: "İlk ders planlama",
+    value: "Ödeme sonrası ekibimiz sizinle iletişime geçer.",
+  },
+];
+
+const included = [
+  "Canlı matematik dersi (Google Meet)",
+  "En fazla 4 öğrencilik küçük grup",
+  "Derste soru-cevap ve birlikte çözüm",
+  "Ders sonrası çalışma yönü ve ödevlendirme",
+  "Öğretmen notu",
+  "Veliye sade gelişim özeti",
+  "Ödeme sonrası ekibimizin hazırladığı öğrenci hesabı",
+];
+
+const excluded = [
+  "Birebir özel ders (dersler küçük grup hâlinde işlenir)",
+  "Matematik dışındaki branşlar",
+  "Ders dışı sınırsız bireysel mesajlaşma",
+  "Başarı ya da net artışı garantisi",
+];
+
+const legalLinks = [
+  { label: "İade Politikası", href: "/iade/" },
+  { label: "KVKK", href: "/kvkk/" },
+  { label: "Gizlilik", href: "/gizlilik/" },
+];
 
 export function PackagesPageContent() {
   return (
@@ -55,6 +90,7 @@ export function PackagesPageContent() {
 
               <div className="mt-6 flex items-baseline gap-3">
                 <span className="font-display text-[34px] leading-none">
+                  <span className="sr-only">Güncel fiyat: </span>
                   {pkg.discountedPrice}
                 </span>
                 {pkg.oldPrice ? (
@@ -63,10 +99,20 @@ export function PackagesPageContent() {
                       featured ? "text-white/50" : "text-[#A0A095]"
                     }`}
                   >
+                    <span className="sr-only">Kampanya öncesi referans fiyat: </span>
                     {pkg.oldPrice}
                   </span>
                 ) : null}
               </div>
+              {pkg.oldPrice ? (
+                <p
+                  className={`mt-1 text-[11.5px] ${
+                    featured ? "text-white/55" : "text-[#9A9A8E]"
+                  }`}
+                >
+                  Referans / kampanya öncesi fiyat: {pkg.oldPrice}
+                </p>
+              ) : null}
               {pkg.perLessonPrice ? (
                 <div
                   className={`mt-1 text-[12.5px] ${
@@ -143,6 +189,85 @@ export function PackagesPageContent() {
             </article>
           );
         })}
+      </div>
+
+      {/* Kapsar / Kapsamaz */}
+      <div className="mt-12 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-[22px] border border-[var(--od-line)] bg-white p-7">
+          <h3 className="font-display text-[22px] font-normal leading-tight tracking-tight text-[var(--od-ink)]">
+            Paket neleri kapsar?
+          </h3>
+          <ul className="mt-5 space-y-2.5 text-[14px] text-[var(--od-ink)]">
+            {included.map((item) => (
+              <li key={item} className="flex items-start gap-2.5">
+                <Check
+                  size={16}
+                  strokeWidth={2.2}
+                  className="mt-0.5 shrink-0 text-[var(--od-olive)]"
+                  aria-hidden="true"
+                />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream-2)] p-7">
+          <h3 className="font-display text-[22px] font-normal leading-tight tracking-tight text-[var(--od-ink)]">
+            Paket neleri kapsamaz?
+          </h3>
+          <ul className="mt-5 space-y-2.5 text-[14px] text-[var(--od-ink-soft)]">
+            {excluded.map((item) => (
+              <li key={item} className="flex items-start gap-2.5">
+                <X
+                  size={16}
+                  strokeWidth={2.2}
+                  className="mt-0.5 shrink-0 text-[#B0392F]"
+                  aria-hidden="true"
+                />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Operasyon detayları (placeholder) */}
+      <dl className="mt-4 grid gap-4 rounded-[22px] border border-[var(--od-line)] bg-white p-7 sm:grid-cols-3">
+        {operationDetails.map(({ label, value }) => (
+          <div key={label}>
+            <dt className="text-[12px] font-medium uppercase tracking-[0.14em] text-[#8B8B7E]">
+              {label}
+            </dt>
+            <dd className="mt-1.5 text-[14px] leading-6 text-[var(--od-ink)]">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {/* Legal linkler + WhatsApp */}
+      <div className="mt-4 flex flex-col gap-4 rounded-[22px] border border-[var(--od-line)] bg-white p-7 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+          <span className="text-[var(--od-ink-soft)]">Satın almadan önce:</span>
+          {legalLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="font-medium text-[var(--od-ink)] underline-offset-2 transition hover:text-[var(--od-olive)] hover:underline"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+        <a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-[var(--od-cream-2)] px-5 py-2.5 text-[13.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
+        >
+          <MessageCircle size={15} strokeWidth={1.8} aria-hidden="true" />
+          Kararsızsanız WhatsApp&apos;tan sorun
+        </a>
       </div>
 
       {/* Help band */}
