@@ -14,6 +14,7 @@ type FormState = {
   goal: string;
   topic: string;
   channel: string;
+  preferredTime: string;
   kvkk: boolean;
 };
 
@@ -27,6 +28,7 @@ const initial: FormState = {
   goal: "",
   topic: "",
   channel: "WhatsApp",
+  preferredTime: "Fark etmez",
   kvkk: false,
 };
 
@@ -43,6 +45,12 @@ const grades = [
   "Mezun",
 ];
 const channels = ["WhatsApp", "Telefon", "E-posta"];
+const preferredTimes = [
+  "Fark etmez",
+  "Sabah (09:00–12:00)",
+  "Öğleden sonra (12:00–17:00)",
+  "Akşam (17:00–21:00)",
+];
 
 const whatsappDigits = contact.whatsapp.replace(/[^\d]/g, "");
 
@@ -56,6 +64,7 @@ function buildMessage(f: FormState): string {
     `Hedef: ${f.goal}`,
     `Zorlanılan konu: ${f.topic || "-"}`,
     `Tercih edilen kanal: ${f.channel}`,
+    `Uygun iletişim zamanı: ${f.preferredTime}`,
   ].join("\n");
 }
 
@@ -278,6 +287,22 @@ export function ContactLeadForm() {
             {channels.map((c) => (
               <option key={c} value={c}>
                 {c}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field id="preferredTime" label="Uygun iletişim zamanı">
+          <select
+            id="preferredTime"
+            name="preferredTime"
+            value={form.preferredTime}
+            onChange={(e) => update("preferredTime", e.target.value)}
+            className={inputClass(false)}
+          >
+            {preferredTimes.map((t) => (
+              <option key={t} value={t}>
+                {t}
               </option>
             ))}
           </select>

@@ -14,6 +14,17 @@ type ExamSalesLandingData = {
   heroText: string;
   highlights: string[];
   faq: Array<{ q: string; a: string }>;
+  // Opsiyonel zenginleştirme blokları — verilmezse render edilmez.
+  approach?: { heading: string; items: Array<{ title: string; body: string }> };
+  plan?: {
+    heading: string;
+    note?: string;
+    steps: Array<{ label: string; text: string }>;
+  };
+  sampleSummary?: {
+    heading: string;
+    rows: Array<{ label: string; value: string }>;
+  };
 };
 
 export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
@@ -64,6 +75,98 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
             </div>
           </Container>
         </section>
+
+        {data.approach ? (
+          <section className="border-b border-[var(--od-line)] py-12 sm:py-14">
+            <Container>
+              <h2 className="max-w-3xl text-3xl font-bold tracking-normal text-[var(--od-ink)] sm:text-4xl">
+                {data.approach.heading}
+              </h2>
+              <div className="mt-7 grid gap-4 md:grid-cols-3">
+                {data.approach.items.map((item) => (
+                  <div
+                    key={item.title}
+                    className="rounded-[20px] border border-[var(--od-line)] bg-white p-6"
+                  >
+                    <h3 className="text-base font-bold text-[var(--od-ink)]">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-[var(--od-ink-soft)]">{item.body}</p>
+                  </div>
+                ))}
+              </div>
+            </Container>
+          </section>
+        ) : null}
+
+        {data.plan ? (
+          <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)] py-12 sm:py-14">
+            <Container>
+              <h2 className="max-w-3xl text-3xl font-bold tracking-normal text-[var(--od-ink)] sm:text-4xl">
+                {data.plan.heading}
+              </h2>
+              {data.plan.note ? (
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--od-ink-soft)]">
+                  {data.plan.note}
+                </p>
+              ) : null}
+              <ol className="mt-7 grid gap-3 sm:grid-cols-2">
+                {data.plan.steps.map((step, i) => (
+                  <li
+                    key={step.label}
+                    className="grid grid-cols-[40px_1fr] items-start gap-2 rounded-[18px] border border-[var(--od-line)] bg-white p-4"
+                  >
+                    <span className="text-lg font-black text-[var(--od-olive)]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span>
+                      <span className="block text-sm font-bold text-[var(--od-ink)]">{step.label}</span>
+                      <span className="mt-0.5 block text-[13px] leading-relaxed text-[var(--od-ink-soft)]">
+                        {step.text}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </Container>
+          </section>
+        ) : null}
+
+        {data.sampleSummary ? (
+          <section className="border-b border-[var(--od-line)] py-12 sm:py-14">
+            <Container>
+              <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-normal text-[var(--od-ink)] sm:text-4xl">
+                    Veliye giden sade gelişim özeti.
+                  </h2>
+                  <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--od-ink-soft)]">
+                    Veli, çıplak net yerine çocuğunun matematikte nerede olduğunu
+                    anlatan kısa bir özet alır. Aşağıdaki örnek temsilîdir.
+                  </p>
+                </div>
+                <figure className="rounded-[22px] border border-[var(--od-line)] bg-white p-6 shadow-[0_22px_54px_-42px_rgba(20,20,15,0.24)]">
+                  <figcaption className="flex items-center justify-between border-b border-[var(--od-line)] pb-3">
+                    <span className="text-sm font-extrabold text-[var(--od-ink)]">
+                      {data.sampleSummary.heading}
+                    </span>
+                    <span className="rounded-full bg-[var(--od-olive)]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--od-olive)]">
+                      Örnek
+                    </span>
+                  </figcaption>
+                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {data.sampleSummary.rows.map((row) => (
+                      <div key={row.label} className="rounded-[14px] border border-[var(--od-line)] bg-[var(--od-cream)] p-3.5">
+                        <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8B8B7E]">
+                          {row.label}
+                        </dt>
+                        <dd className="mt-1 text-[13px] leading-6 text-[var(--od-ink)]">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </figure>
+              </div>
+            </Container>
+          </section>
+        ) : null}
 
         <section id="paketler" className="scroll-mt-24 py-12 sm:py-14">
           <Container>
@@ -138,6 +241,12 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                 </details>
               ))}
             </div>
+            <a
+              href="/sss/"
+              className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--od-olive)] underline-offset-2 hover:underline"
+            >
+              Tüm soru ve cevaplar — Sıkça Sorulanlar
+            </a>
           </Container>
         </section>
 

@@ -683,8 +683,16 @@ export const faqCategories = [
         a: "Evet. Soru sormak dersin doğal parçasıdır. En fazla 4 öğrencilik grupta her öğrencinin soru sormaya ve çözümünü göstermeye zamanı olur.",
       },
       {
+        q: "Dersler birebir mi yoksa grup hâlinde mi?",
+        a: "Dersler en fazla 4 öğrencilik küçük grup hâlinde işlenir. Birebir özel ders değildir; amaç birebir maliyetine çıkmadan, kalabalık sınıfta kaybolmadan yakın takip sağlamaktır.",
+      },
+      {
         q: "Dersler kaç dakika ve haftada kaç ders var?",
         a: "Ders süresi ve haftalık ders sayısı, öğrencinin seviyesine ve hedefine göre planlanır; net program ön görüşmede ve ödeme sonrası ekibimizce paylaşılır.",
+      },
+      {
+        q: "Ödev veriliyor ve kontrol ediliyor mu?",
+        a: "Evet. Her dersin sonunda seviyeye uygun ödev verilir ve takip edilir; öğrenci bir sonraki derse ne çalışacağını bilerek gelir.",
       },
     ],
   },
@@ -717,6 +725,10 @@ export const faqCategories = [
         a: "Giriş bilgilerini ekibimiz hazırlayıp güvenli şekilde size iletir. İlk girişte şifrenizi kendiniz belirlersiniz.",
       },
       {
+        q: "Ödeme sonrası beni kim arar ve ilk ders ne zaman başlar?",
+        a: "Ödeme sonrası ekibimiz sizinle iletişime geçer, kısa bir seviye değerlendirmesi yapar ve uygun gruba göre ilk dersin başlangıcını birlikte planlar.",
+      },
+      {
         q: "İptal ve iade koşulları nedir?",
         a: "İade koşullarının tamamı İade Politikası sayfamızda yer alır. Sorularınız için ödeme öncesi bizimle iletişime geçebilirsiniz.",
       },
@@ -728,6 +740,10 @@ export const faqCategories = [
       {
         q: "Veli süreçten nasıl haberdar olur?",
         a: "Veli yalnızca sonuç görmez; çocuğunun hangi konuda zorlandığını anlayacak kadar sade bir gelişim özeti alır.",
+      },
+      {
+        q: "Veli gelişim özeti ne zaman gönderilir?",
+        a: "Gelişim özeti ders sürecine bağlı olarak düzenli paylaşılır; içeriğinde işlenen konu, öğrencinin zorlandığı yer, verilen ödev ve sonraki hedef yer alır.",
       },
       {
         q: "Ders sonrası takip nasıl işliyor?",

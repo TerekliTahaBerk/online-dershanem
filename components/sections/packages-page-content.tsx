@@ -10,13 +10,20 @@ const packages = subjectPackageGroups[0].packages;
 
 const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
-// Operasyonel detaylar ekip tarafından netleştirilecek; metin placeholder.
+// Operasyonel detaylar öğrenci seviyesine/grup planına göre değiştiği için
+// kesin rakam yerine güvenli, dürüst açıklama gösterilir.
 const operationDetails = [
-  { label: "Ders sıklığı", value: "[Net ders sıklığı buraya girilecek]" },
-  { label: "Ders süresi", value: "[Net ders süresi buraya girilecek]" },
+  {
+    label: "Ders sıklığı",
+    value: "Öğrencinin seviyesine ve uygun grup planına göre ön görüşmede netleştirilir.",
+  },
+  {
+    label: "Ders süresi",
+    value: "Grup düzenine göre planlanır; ön görüşmede net olarak paylaşılır.",
+  },
   {
     label: "İlk ders planlama",
-    value: "Ödeme sonrası ekibimiz sizinle iletişime geçer.",
+    value: "Ödeme sonrası ekibimiz sizinle iletişime geçer ve uygun grubu birlikte belirleriz.",
   },
 ];
 
@@ -110,9 +117,23 @@ export function PackagesPageContent() {
                     featured ? "text-white/55" : "text-[#9A9A8E]"
                   }`}
                 >
-                  Referans / kampanya öncesi fiyat: {pkg.oldPrice}
+                  Kampanya öncesi referans fiyat: {pkg.oldPrice}. Kontenjan ve
+                  grup uygunluğuna göre kayıt alınır.
                 </p>
               ) : null}
+
+              <p
+                className={`mt-4 rounded-2xl border p-4 text-[12.5px] leading-6 ${
+                  featured
+                    ? "border-white/20 bg-white/5 text-white/80"
+                    : "border-[var(--od-line)] bg-[var(--od-cream-2)] text-[var(--od-ink-soft)]"
+                }`}
+              >
+                Birebir özel dersin maliyetine çıkmadan, kalabalık online sınıfta
+                kaybolmadan düzenli matematik takibi. Canlı ders, soru-cevap,
+                ödev yönlendirmesi, öğretmen notu ve veli gelişim özeti tek
+                <span className={featured ? "font-semibold text-white" : "font-semibold text-[var(--od-ink)]"}> aylık ₺3.000</span> pakette.
+              </p>
               {pkg.perLessonPrice ? (
                 <div
                   className={`mt-1 text-[12.5px] ${

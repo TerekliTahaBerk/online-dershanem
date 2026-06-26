@@ -3,9 +3,12 @@
 import { useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowRight, MessageCircle, Minus, Plus, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart, type OdCartItem } from "@/components/cart/cart-provider";
+import { contact } from "@/lib/content";
 import { trackConversionEvent } from "@/lib/tracking";
+
+const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
 function tryFormat(cents: number): string {
   return new Intl.NumberFormat("tr-TR", {
@@ -52,19 +55,28 @@ export function CartPageClient() {
           <ShoppingBag size={36} className="text-[var(--od-olive)]" strokeWidth={1.6} />
         </div>
         <h1 className="mt-6 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)]">
-          Henüz paket seçmediniz.
+          Sepetiniz boş.
         </h1>
         <p className="mt-2 text-[14.5px] text-[var(--od-ink-soft)]">
-          Matematik paketlerini inceleyin, size uygun olanı sepete ekleyin.
+          Matematik Ders Paketini inceleyerek başlayabilirsiniz.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/#matematik-ders-paketi"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-3 text-[13.5px] font-medium text-white transition hover:bg-black"
+            href="/matematik-ders-paketi/"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[13.5px] font-semibold text-white transition hover:bg-[#2E3B24]"
           >
-            Matematik Dersini İncele
+            Paketi İncele
             <ArrowRight size={14} />
           </Link>
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
+          >
+            <MessageCircle size={14} aria-hidden="true" />
+            WhatsApp&apos;tan sorun
+          </a>
         </div>
       </div>
     );
@@ -140,16 +152,34 @@ export function CartPageClient() {
               Bilgi formunu doldurun, PayTR güvenli ödeme sayfasına geçilir.
             </div>
 
-            <p className="mt-4 rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream)] p-3.5 text-[12px] leading-relaxed text-[var(--od-ink-soft)]">
-              Ödeme sonrası ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi
-              sizinle paylaşacaktır. Satın alma için kayıt olmanız gerekmez.
-            </p>
+            {/* Checkout trust box */}
+            <div className="mt-4 rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream)] p-4">
+              <div className="flex items-center gap-2 text-[13px] font-semibold text-[var(--od-ink)]">
+                <ShieldCheck size={16} className="text-[var(--od-olive)]" aria-hidden="true" />
+                Güvenli ödeme
+              </div>
+              <p className="mt-2 text-[12px] leading-relaxed text-[var(--od-ink-soft)]">
+                Ödeme PayTR altyapısı ile alınır. Kart bilgileriniz Online
+                Dershanem tarafından saklanmaz. Ödeme sonrası ekibimiz sizinle
+                iletişime geçer; satın alma için kayıt olmanız gerekmez.
+              </p>
+              <ul className="mt-3 space-y-1.5 text-[11.5px] text-[var(--od-ink-soft)]">
+                <li>· 256-bit SSL korumalı ödeme</li>
+                <li>· 1, 3, 6 ve 9 taksit seçenekleri</li>
+                <li>· Kart bilgileriniz sitemizde saklanmaz</li>
+              </ul>
+            </div>
 
-            <ul className="mt-4 space-y-1.5 text-[11.5px] text-[var(--od-ink-soft)]">
-              <li>· PayTR ile 256-bit SSL güvenli ödeme</li>
-              <li>· 1, 3, 6 ve 9 taksit seçenekleri</li>
-              <li>· Kart bilgileriniz sitemizde saklanmaz</li>
-            </ul>
+            {/* WhatsApp destek */}
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white px-5 py-2.5 text-[12.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
+            >
+              <MessageCircle size={14} aria-hidden="true" />
+              Ödeme öncesi sorunuz mu var? WhatsApp&apos;tan yazın
+            </a>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--od-line)] pt-3 text-[11.5px] text-[var(--od-ink-soft)]">
               <Link href="/iade/" className="underline-offset-2 transition hover:text-[var(--od-ink)] hover:underline">

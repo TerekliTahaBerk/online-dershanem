@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check, X } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
+import { TeachersSection } from "@/components/sections/teachers-section";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
@@ -165,23 +166,42 @@ const comparison = {
   ],
 };
 
-const sampleReport = [
-  { label: "Öğrenci", value: "8. sınıf (örnek / temsilî)" },
-  { label: "Konu", value: "Üslü sayılar — çarpma ve bölme kuralları" },
-  {
-    label: "Gözlem",
-    value:
-      "Tanımı doğru biliyor; negatif üslerde işaret hatasını tekrarlıyor. Kuralı uygularken acele ediyor.",
-  },
-  {
-    label: "Bu hafta ödev",
-    value: "Karışık 20 soruluk set + 2 yeni nesil problem",
-  },
-  {
-    label: "Sonraki hedef",
-    value: "Köklü sayılara geçiş; üslü–köklü ilişkisini kurmak",
-  },
+const suitableFor = [
+  "Derste soru sorup çözümünü göstermek isteyen öğrenciler",
+  "Kalabalık sınıfta sessizleşen, geri planda kalan öğrenciler",
+  "Eksiğinin nerede başladığını görmek isteyen öğrenciler",
+  "LGS, TYT veya AYT matematiğinde düzenli takip arayan veliler",
 ];
+
+const notSuitableFor = [
+  "Tek seferlik, sınav öncesi “hap” çözüm bekleyenler",
+  "Hiç canlı derse katılmadan yalnızca kayıt video isteyenler",
+  "Matematik dışında çoklu branş desteği arayanlar",
+  "Tamamen kişiye özel birebir program bekleyenler",
+];
+
+const sampleReport = {
+  student: "8. sınıf öğrencisi",
+  date: "Hafta 3 · Matematik",
+  fields: [
+    {
+      label: "Bu derste işlenen konu",
+      value: "Üslü sayılar — çarpma ve bölme kuralları",
+    },
+    {
+      label: "Öğrencinin zorlandığı yer",
+      value: "Negatif üslerde işaret hatası; kuralı uygularken acele ediyor.",
+    },
+    {
+      label: "Bu hafta ödevi",
+      value: "Karışık 20 soruluk set + 2 yeni nesil problem",
+    },
+    {
+      label: "Sonraki ders hedefi",
+      value: "Köklü sayılara geçiş; üslü–köklü ilişkisini kurmak",
+    },
+  ],
+};
 
 export default function HomePage() {
   const faqJsonLd = {
@@ -343,26 +363,91 @@ export default function HomePage() {
                 yapacak ve sıradaki hedef ne. Aşağıdaki örnek temsilîdir.
               </p>
             </div>
-            <figure className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6 shadow-[0_24px_60px_-46px_rgba(20,20,15,0.28)] sm:p-8">
-              <figcaption className="flex items-center justify-between border-b border-[var(--od-line)] pb-4">
-                <span className="text-[15px] font-extrabold text-[var(--od-ink)]">
-                  Veli Gelişim Özeti
+            <figure className="overflow-hidden rounded-[24px] border border-[var(--od-line)] bg-white shadow-[0_30px_70px_-44px_rgba(20,20,15,0.34)]">
+              {/* Pencere başlık çubuğu — ürün ekranı hissi */}
+              <div className="flex items-center gap-2 border-b border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-3">
+                <span className="flex gap-1.5" aria-hidden="true">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#E0DCCB]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#E0DCCB]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#E0DCCB]" />
                 </span>
-                <span className="rounded-full bg-[var(--od-olive)]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--od-olive)]">
-                  Örnek
+                <span className="ml-1 text-[12px] font-semibold text-[var(--od-ink-soft)]">
+                  Veli Paneli
                 </span>
-              </figcaption>
-              <dl className="mt-5 space-y-4">
-                {sampleReport.map((row) => (
-                  <div key={row.label} className="grid grid-cols-[110px_1fr] gap-3">
-                    <dt className="text-[12.5px] font-semibold uppercase tracking-[0.1em] text-[#8B8B7E]">
-                      {row.label}
-                    </dt>
-                    <dd className="text-[14.5px] leading-7 text-[var(--od-ink)]">{row.value}</dd>
+              </div>
+              <div className="p-6 sm:p-7">
+                <figcaption className="flex items-start justify-between gap-3">
+                  <div>
+                    <span className="block text-[17px] font-extrabold text-[var(--od-ink)]">
+                      Ders Sonrası Veli Özeti
+                    </span>
+                    <span className="mt-0.5 block text-[12.5px] text-[var(--od-ink-soft)]">
+                      {sampleReport.student} · {sampleReport.date}
+                    </span>
                   </div>
-                ))}
-              </dl>
+                  <span className="shrink-0 rounded-full bg-[var(--od-olive)]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--od-olive)]">
+                    Örnek / Temsilî
+                  </span>
+                </figcaption>
+                <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {sampleReport.fields.map((row) => (
+                    <div
+                      key={row.label}
+                      className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-cream)] p-4"
+                    >
+                      <dt className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-[#8B8B7E]">
+                        {row.label}
+                      </dt>
+                      <dd className="mt-1.5 text-[14px] leading-6 text-[var(--od-ink)]">
+                        {row.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-5 border-t border-[var(--od-line)] pt-4 text-[12.5px] leading-6 text-[var(--od-ink-soft)]">
+                  Bu özet, velinin çocuğunun matematikte nerede olduğunu takip
+                  edebilmesi için sadeleştirilmiştir.
+                </p>
+              </div>
             </figure>
+          </div>
+        </section>
+
+        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+            <div className="max-w-3xl">
+              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
+                Bu model kimler için uygun, kimler için değil?
+              </h2>
+              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
+                Dürüst olmak en doğrusu: küçük grupta canlı matematik takibi her
+                öğrenci için doğru tercih olmayabilir. İşte net çerçeve.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-[22px] border border-[var(--od-line)] bg-white p-7">
+                <h3 className="text-[18px] font-extrabold text-[var(--od-ink)]">Uygun</h3>
+                <ul className="mt-5 space-y-2.5 text-[14.5px] text-[var(--od-ink)]">
+                  {suitableFor.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <Check size={16} strokeWidth={2.2} className="mt-0.5 shrink-0 text-[var(--od-olive)]" aria-hidden="true" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-[22px] border border-[var(--od-line)] bg-white p-7">
+                <h3 className="text-[18px] font-extrabold text-[var(--od-ink)]">Şimdilik uygun değil</h3>
+                <ul className="mt-5 space-y-2.5 text-[14.5px] text-[var(--od-ink-soft)]">
+                  {notSuitableFor.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5">
+                      <X size={16} strokeWidth={2.2} className="mt-0.5 shrink-0 text-[#B0392F]" aria-hidden="true" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -412,8 +497,9 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Desktop: tablo */}
-            <div className="mt-10 hidden overflow-hidden rounded-[22px] border border-[var(--od-line)] bg-white md:block">
+            {/* Semantik tablo — ekran okuyucu için tek kaynak (mobilde sr-only,
+                desktop'ta görünür). Mobil kart versiyonu aria-hidden. */}
+            <div className="mt-10 overflow-hidden rounded-[22px] border border-[var(--od-line)] bg-white sr-only md:not-sr-only md:block">
               <table className="w-full border-collapse text-left">
                 <caption className="sr-only">
                   Birebir özel ders, klasik online dershane ve Online Dershanem
@@ -463,8 +549,8 @@ export default function HomePage() {
               </table>
             </div>
 
-            {/* Mobil: kart layout */}
-            <div className="mt-8 grid gap-3 md:hidden">
+            {/* Mobil: kart layout — görsel; AT için tablo okunur (aria-hidden) */}
+            <div className="mt-8 grid gap-3 md:hidden" aria-hidden="true">
               {comparison.rows.map((row) => (
                 <div key={row.label} className="rounded-[18px] border border-[var(--od-line)] bg-white p-4">
                   <div className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-[var(--od-olive)]">
@@ -625,6 +711,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <TeachersSection />
 
         <section className="bg-[var(--od-yellow-soft)]">
           <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:py-28">

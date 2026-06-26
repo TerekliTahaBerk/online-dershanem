@@ -44,6 +44,42 @@ export default function TYTLandingPage() {
           "Ders sonrası ödevlendirme ve net çalışma yönü",
           "TYT hız + AYT derinlik dengesine uygun matematik çalışması"
         ],
+        approach: {
+          heading: "TYT-AYT matematiğinde dengeyi nasıl kuruyoruz?",
+          items: [
+            {
+              title: "TYT mi, AYT mi önce?",
+              body: "Temel eksiği olan öğrencide önce TYT matematiği sağlamlaştırılır; ardından hedef bölüme göre AYT derinliği eklenir."
+            },
+            {
+              title: "Temel eksiği olan öğrenci",
+              body: "Lise konuları üst üste bindiyse önce eksik temel kapatılır; öğrenci konuyu anlamadan soru ezberlemez."
+            },
+            {
+              title: "Deneme analizi",
+              body: "Her denemede hangi konuda ve hangi soru tipinde kaybedildiğini birlikte çıkarır, çalışmayı tam o noktaya yönlendiririz."
+            }
+          ]
+        },
+        plan: {
+          heading: "Örnek haftalık TYT-AYT matematik akışı",
+          note: "Plan temsilîdir; öğrencinin seviyesine ve hedef bölümüne göre ön görüşmede uyarlanır.",
+          steps: [
+            { label: "1. blok", text: "Konu anlatımı ve birlikte çözüm (canlı ders)." },
+            { label: "2. blok", text: "TYT hız çalışması: temel soru tipleri ve süre." },
+            { label: "3. blok", text: "AYT derinlik: seçili konuda zor soru pratiği." },
+            { label: "4. blok", text: "Deneme analizi ve sonraki hafta planı." }
+          ]
+        },
+        sampleSummary: {
+          heading: "Örnek TYT-AYT veli özeti",
+          rows: [
+            { label: "İşlenen konu", value: "Türev — artan/azalan ve ekstremum" },
+            { label: "Zorlandığı yer", value: "İşaret tablosunu yorumlama" },
+            { label: "Bu hafta ödevi", value: "AYT seçmeli 15 soru + 1 TYT deneme bölümü" },
+            { label: "Sonraki hedef", value: "İntegral girişine hazırlık" }
+          ]
+        },
         faq: [
           {
             q: "TYT ve AYT matematik aynı pakette mi ilerliyor?",
@@ -56,6 +92,14 @@ export default function TYTLandingPage() {
           {
             q: "Paket ücretleri aylık mı?",
             a: "Evet. Matematik Ders Paketi aylık ₺3.000'dir."
+          },
+          {
+            q: "Deneme analizi nasıl takip ediliyor?",
+            a: "Öğrencinin denemelerinde kaybettiği konu ve soru tipleri birlikte değerlendirilir; haftalık çalışma bu analize göre yönlendirilir."
+          },
+          {
+            q: "Ödeme sonrası ne oluyor?",
+            a: "Ödeme sonrası ekibimiz sizinle iletişime geçer, seviye değerlendirmesi yapar ve uygun gruba yerleştirip ilk dersi planlar."
           }
         ]
       }}
