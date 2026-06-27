@@ -19,3 +19,9 @@ Thumbs.db
 
 # TypeScript incremental build cache
 tsconfig.tsbuildinfo
+
+# Playwright artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
