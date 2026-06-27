@@ -660,8 +660,8 @@ export const faq = [
 ];
 
 // Kategori bazlı SSS — /sss sayfası ve FAQPage JSON-LD bu listeyi kullanır.
-// Operasyonel rakamlar (süre/sıklık) ekip tarafından netleştirilecek; cevaplar
-// rakam uydurmadan ön görüşme / kayıt sonrası sürece yönlendirir.
+// Operasyonel cevaplar (ders süresi 60 dk, haftada 1 ders, telafi yerine ders
+// kaydı paylaşımı) ekip tarafından onaylanan rakamlarla yazılmıştır.
 export const faqCategories = [
   {
     category: "Ders modeli",
@@ -688,7 +688,7 @@ export const faqCategories = [
       },
       {
         q: "Dersler kaç dakika ve haftada kaç ders var?",
-        a: "Ders süresi ve haftalık ders sayısı, öğrencinin seviyesine ve hedefine göre planlanır; net program ön görüşmede ve ödeme sonrası ekibimizce paylaşılır.",
+        a: "Her matematik dersi 60 dakikadır. Aylık ₺3.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
       },
       {
         q: "Ödev veriliyor ve kontrol ediliyor mu?",
@@ -751,7 +751,7 @@ export const faqCategories = [
       },
       {
         q: "Telafi dersi var mı?",
-        a: "Telafi ve devamsızlık durumları için izlenecek yolu ön görüşmede ve kayıt sonrası ekibimiz net olarak paylaşır.",
+        a: "Ayrı bir telafi dersi yapılmaz. Bunun yerine, öğrenci bir derse katılamadığında o dersin kaydını ve ders sonu özetini paylaşırız; öğrenci işlenen konuyu ve verilen ödevi bu şekilde takip eder. Düzenli devamsızlık durumunda ekibimiz sizinle iletişime geçer.",
       },
     ],
   },

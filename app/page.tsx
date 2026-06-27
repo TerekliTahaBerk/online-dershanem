@@ -5,22 +5,12 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { TeachersSection } from "@/components/sections/teachers-section";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { contact, faq, siteUrl, subjectPackageGroups } from "@/lib/content";
 
 const lessonPkg = subjectPackageGroups[0].packages.find(
   (p) => p.subject === "Ders Paketi",
 )!;
-
-const cartItem = {
-  id: `${lessonPkg.category}__${lessonPkg.subject}`,
-  name: lessonPkg.name,
-  category: lessonPkg.category,
-  subject: lessonPkg.subject,
-  priceCents: lessonPkg.priceCents,
-  priceLabel: lessonPkg.discountedPrice,
-};
 
 export const metadata: Metadata = {
   title: "Online Matematik Dersi | Online Dershanem",
@@ -630,7 +620,7 @@ export default function HomePage() {
                 en fazla 4 kişilik grupta düzenli canlı matematik dersi ve ders
                 sonrası takip.
               </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6">
                 <PurchaseFunnelTrigger
                   source="home_package_primary"
                   packageName={lessonPkg.name}
@@ -638,16 +628,11 @@ export default function HomePage() {
                   subject={lessonPkg.subject}
                   priceLabel={lessonPkg.discountedPrice}
                   paymentLink=""
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
                 >
                   Matematik Dersini Satın Al
                   <ArrowRight size={17} />
                 </PurchaseFunnelTrigger>
-                <AddToCartButton
-                  item={cartItem}
-                  analyticsSource="home_package_add_to_cart"
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40 data-[justadded=1]:border-emerald-300 data-[justadded=1]:bg-emerald-50 data-[justadded=1]:text-emerald-800"
-                />
               </div>
             </article>
           </div>

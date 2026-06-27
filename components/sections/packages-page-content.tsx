@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowRight, Check, MessageCircle, Phone, X } from "lucide-react";
 import { contact, subjectPackageGroups } from "@/lib/content";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 
 const packages = subjectPackageGroups[0].packages;
 
@@ -190,23 +189,6 @@ export function PackagesPageContent() {
                 Satın Al
                 <ArrowRight size={14} />
               </PurchaseFunnelTrigger>
-
-              <AddToCartButton
-                analyticsSource={`packages_page_${pkg.id}`}
-                item={{
-                  id: `${pkg.category}__${pkg.subject}`,
-                  name: pkg.name,
-                  category: pkg.category,
-                  subject: pkg.subject,
-                  priceCents: pkg.priceCents,
-                  priceLabel: pkg.discountedPrice,
-                }}
-                className={`mt-3 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[12.5px] font-medium transition data-[justadded=1]:bg-[#dcfce7] data-[justadded=1]:border-emerald-300 data-[justadded=1]:text-emerald-800 ${
-                  featured
-                    ? "border border-white/25 text-white hover:border-white/50"
-                    : "border border-[var(--od-ink)]/12 bg-[var(--od-cream-2)] text-[var(--od-ink)] hover:bg-white hover:border-[var(--od-ink)]/30"
-                }`}
-              />
             </article>
           );
         })}

@@ -5,7 +5,6 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { FadeIn } from "@/components/ui/fade-in";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import {
   breadcrumbJsonLd,
@@ -30,15 +29,6 @@ export const metadata: Metadata = {
 const lessonPkg = subjectPackageGroups[0].packages.find(
   (p) => p.subject === "Ders Paketi",
 )!;
-
-const cartItem = {
-  id: `${lessonPkg.category}__${lessonPkg.subject}`,
-  name: lessonPkg.name,
-  category: lessonPkg.category,
-  subject: lessonPkg.subject,
-  priceCents: lessonPkg.priceCents,
-  priceLabel: lessonPkg.discountedPrice,
-};
 
 const pillars = [
   {
@@ -283,11 +273,6 @@ export default function MatematikDersPaketiPage() {
                   Matematik Dersini Satın Al
                   <ArrowRight size={14} strokeWidth={2} />
                 </PurchaseFunnelTrigger>
-                <AddToCartButton
-                  item={cartItem}
-                  analyticsSource="ders_paketi_price"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-white/25 px-5 py-2.5 text-[13px] font-medium text-white transition hover:border-white/50"
-                />
               </div>
               <p className="mt-4 text-center text-[12px] leading-6 text-white/70">
                 Ödeme sonrası hesabınız ekibimiz tarafından oluşturulur.
