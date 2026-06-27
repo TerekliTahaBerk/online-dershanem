@@ -68,10 +68,24 @@ function buildMessage(f: FormState): string {
   ].join("\n");
 }
 
+// LeadSubmission modelinde ayrı sütunu olmayan alanları tek notes metninde topla.
+function buildNotes(f: FormState): string {
+  return [
+    f.email ? `E-posta: ${f.email}` : null,
+    f.topic ? `Zorlanılan konu: ${f.topic}` : null,
+    `Tercih edilen kanal: ${f.channel}`,
+    `Uygun iletişim zamanı: ${f.preferredTime}`,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+}
+
 export function ContactLeadForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  // Sunucuya kayıt yapıldı mı — success ekranındaki metni buna göre uyarlarız.
+  const [saved, setSaved] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const update = (key: keyof FormState, value: string | boolean) => {
@@ -96,7 +110,7 @@ export function ContactLeadForm() {
     return e;
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const e = validate();
     if (Object.keys(e).length > 0) {
@@ -110,22 +124,34 @@ export function ContactLeadForm() {
     }
 
     setStatus("loading");
-    try {
-      const message = buildMessage(form);
-      trackConversionEvent("trial_cta_click", { source: "contact_lead_form", goal: form.goal });
+    trackConversionEvent("trial_cta_click", { source: "contact_lead_form", goal: form.goal });
 
-      if (form.channel === "E-posta") {
-        const subject = encodeURIComponent("Ön görüşme talebi — Online Dershanem");
-        const body = encodeURIComponent(message);
-        window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-      } else {
-        const url = `https://wa.me/${whatsappDigits}?text=${encodeURIComponent(message)}`;
-        window.open(url, "_blank", "noopener,noreferrer");
-      }
-      setStatus("success");
+    // Önce gerçek /api/leads ucuna kaydet; başarısız olursa WhatsApp/mailto
+    // fallback'i success ekranındaki butonlarla devreye girer.
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: form.parentName.trim(),
+          phone: form.phone.trim(),
+          classLevel: form.grade,
+          examType: form.goal,
+          targetGoal: form.goal,
+          currentNet: "Belirtilmedi",
+          kvkkConsent: true,
+          source: "contact_lead_form",
+          formType: "INLINE",
+          notes: buildNotes(form),
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+      setSaved(res.ok);
     } catch {
-      setStatus("error");
+      setSaved(false);
     }
+
+    setStatus("success");
   };
 
   if (status === "success") {
@@ -136,12 +162,12 @@ export function ContactLeadForm() {
           <Check size={24} strokeWidth={2.2} aria-hidden="true" />
         </span>
         <h2 className="mt-5 font-display text-[26px] leading-tight text-[var(--od-ink)]">
-          Talebiniz hazır.
+          {saved ? "Talebiniz bize ulaştı." : "Talebiniz hazır."}
         </h2>
         <p className="mt-2 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-          {form.channel === "E-posta"
-            ? "E-posta uygulamanız hazır mesajla açıldı. Açılmadıysa aşağıdaki butonları kullanabilirsiniz."
-            : "WhatsApp hazır mesajla açıldı. Açılmadıysa aşağıdaki butonları kullanabilirsiniz."}
+          {saved
+            ? "Talebinizi aldık; ekibimiz tercih ettiğiniz kanaldan en kısa sürede size dönecek. Dilerseniz aşağıdan doğrudan da yazabilirsiniz."
+            : "Bağlantı kurulamadı, ancak talebinizi aşağıdaki butonlarla doğrudan bize iletebilirsiniz."}
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <a
@@ -166,6 +192,7 @@ export function ContactLeadForm() {
           onClick={() => {
             setForm(initial);
             setStatus("idle");
+            setSaved(false);
           }}
           className="mt-5 text-[13px] text-[var(--od-ink-soft)] underline-offset-2 hover:text-[var(--od-ink)] hover:underline"
         >
