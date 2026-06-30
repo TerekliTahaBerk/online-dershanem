@@ -1,11 +1,5 @@
 export const siteUrl = "https://onlinedershanem.com";
 
-export const navLinks = [
-  { label: "Ana Sayfa", href: "/" },
-  { label: "Misyonumuz", href: "/misyonumuz/" },
-  { label: "İletişim", href: "/iletisim/" }
-];
-
 /**
  * Matematik paket kataloğu — sitenin TEK fiyat/ürün kaynağı.
  *
@@ -234,7 +228,7 @@ export const blogPosts = [
     metaDescription:
       "LGS netlerini artırmak için 8 haftalık uygulanabilir bir plan: düzenli çalışma, deneme analizi ve doğru ölçme sistemiyle ilerleme.",
     excerpt:
-      "LGS'de net artırmak istiyorsan en büyük engel plansız ve dağınık çalışmak. Bu yazıda 8 haftalık net çalışma planını adım adım anlatıyoruz.",
+      "LGS'de net artırmak istiyorsan en büyük engel plansız ve dağınık çalışmak. Bu yazıda 8 haftalık somut çalışma planını adım adım anlatıyoruz.",
     cardSnippet: "LGS net artırmak için 8 haftalık uygulanabilir plan ve analiz sistemi.",
     featured: false,
     sections: [

@@ -300,7 +300,7 @@ export default function HomePage() {
               <p className="mt-6 text-[17px] leading-8 text-[var(--od-ink-soft)]">
                 Öğrenci soru çözer, video izler, defter doldurur; ama aynı konu
                 tekrar karşısına çıktığında yine duraksar. Biz önce o duraksamanın
-                nedenini görünür hale getiririz.
+                nedenini açığa çıkarırız.
               </p>
             </div>
             <div className="space-y-3">
@@ -356,7 +356,7 @@ export default function HomePage() {
                 Veli, sonuç değil; çocuğunun nerede olduğunu görür.
               </h2>
               <p className="mt-6 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Karne ya da çıplak net yerine her hafta anlaşılır bir durum notu
+                Karne ya da çıplak net yerine her hafta yalın bir durum notu
                 paylaşırız: hangi konu çalışıldı, çocuğunuz hangi adımda zorlandı,
                 bu hafta ne yapacak ve sıradaki hedef ne. Aşağıdaki örnek temsilîdir.
               </p>
