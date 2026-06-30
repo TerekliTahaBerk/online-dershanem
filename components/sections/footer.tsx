@@ -70,8 +70,8 @@ export function Footer() {
             </Link>
 
             <p className="max-w-sm text-[13.5px] leading-6 text-[#7A7A6F]">
-              Online matematik dershanesi. En fazla 4 öğrencilik canlı
-              matematik dersleri, ders sonrası çalışma yönü ve veliye sade özet.
+              Online matematik dershanesi. En fazla 4 öğrencilik canlı dersler,
+              her ders sonunda net çalışma planı ve veliye anlaşılır haftalık not.
             </p>
 
             {/* Contact details */}

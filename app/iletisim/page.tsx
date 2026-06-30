@@ -147,8 +147,9 @@ export default function ContactPage() {
                   Önce ders paketini birlikte değerlendirelim mi?
                 </h3>
                 <p className="mt-2 max-w-md text-[14.5px] text-[var(--od-ink-soft)]">
-                  En fazla 4 öğrencilik canlı matematik dersi, ders sonrası
-                  çalışma yönü ve veliye sade özet kapsamını inceleyin.
+                  En fazla 4 öğrencilik canlı matematik dersi, her ders sonunda
+                  net çalışma planı ve veliye anlaşılır haftalık not kapsamını
+                  inceleyin.
                 </p>
               </div>
               <Link
