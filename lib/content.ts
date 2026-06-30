@@ -790,6 +790,95 @@ export const contact = {
   address: "Yıldız Teknik Üniversitesi Davutpaşa Kampüsü"
 };
 
+/**
+ * Matematik konu kampları — tamamlayıcı ürün (ana ürün hâlâ Matematik Ders Paketi).
+ *
+ * ÖNEMLİ: Bunlar şu an SATIN ALINABİLİR ÜRÜN DEĞİLDİR. Fiyatlandırma
+ * netleşmediği için sepete/PayTR'ye bağlanmaz; tüm CTA'lar iletişim / ön kayıt
+ * akışına gider. Ödeme-kritik `subjectPackageGroups` kataloğuyla KARIŞTIRMA;
+ * burada bilerek `priceCents`/`category`+`subject` checkout kimliği yoktur.
+ *
+ * Sadece matematik. Fizik/Kimya/Biyoloji/ODK kampı eklenmez.
+ */
+export type MathCamp = {
+  id: string;
+  name: string;
+  goal: string;
+  durationLabel: string;
+  lessonsLabel: string;
+  levelLabel: string;
+  levelTag: string;
+  featured: boolean;
+};
+
+export const mathCamps: MathCamp[] = [
+  {
+    id: "problemler",
+    name: "Problemler Kampı",
+    goal: "TYT ve LGS problem sorularında hız ve yorum gücü kazanmak.",
+    durationLabel: "2 hafta",
+    lessonsLabel: "4 canlı ders",
+    levelLabel: "Orta seviye ve üzeri",
+    levelTag: "TYT · LGS",
+    featured: true,
+  },
+  {
+    id: "fonksiyonlar",
+    name: "Fonksiyonlar Kampı",
+    goal: "AYT Matematik için fonksiyon mantığını sağlam temele oturtmak.",
+    durationLabel: "2 hafta",
+    lessonsLabel: "4 canlı ders",
+    levelLabel: "11. sınıf / AYT hazırlık",
+    levelTag: "AYT",
+    featured: true,
+  },
+  {
+    id: "yeni-nesil",
+    name: "Yeni Nesil Matematik Soruları Kampı",
+    goal: "Yeni nesil problem ve yorum sorularını doğru okuyup çözmek.",
+    durationLabel: "1 hafta",
+    lessonsLabel: "2 canlı ders",
+    levelLabel: "LGS / TYT",
+    levelTag: "LGS · TYT",
+    featured: false,
+  },
+  {
+    id: "temel-toparlama",
+    name: "Temel Matematik Toparlama Kampı",
+    goal: "Matematikte temel eksikleri kapatıp sağlam bir zemin kurmak.",
+    durationLabel: "3 hafta",
+    lessonsLabel: "6 canlı ders",
+    levelLabel: "Temel / orta",
+    levelTag: "Temel",
+    featured: true,
+  },
+  {
+    id: "turev",
+    name: "Türev Kampı",
+    goal: "AYT Matematikte türev kurallarını ve soru çözümünü oturtmak.",
+    durationLabel: "2 hafta",
+    lessonsLabel: "4 canlı ders",
+    levelLabel: "AYT",
+    levelTag: "AYT",
+    featured: false,
+  },
+  {
+    id: "integral",
+    name: "İntegral Kampı",
+    goal: "AYT Matematikte integral mantığı ve temel soru tiplerini kavramak.",
+    durationLabel: "2 hafta",
+    lessonsLabel: "4 canlı ders",
+    levelLabel: "AYT",
+    levelTag: "AYT",
+    featured: false,
+  },
+];
+
+export const featuredMathCamps = mathCamps.filter((c) => c.featured);
+
+/** Tüm kamplarda ortak sabit: kontenjan üst sınırı. */
+export const CAMP_MAX_STUDENTS = 12;
+
 export const seoKeywords = [
   "online dershanem",
   "online matematik dershanesi",

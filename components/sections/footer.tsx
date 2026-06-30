@@ -6,8 +6,8 @@ import { ContactLink } from "@/components/ui/contact-link";
 
 const productLinks = [
   { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
+  { label: "Matematik Kampları", href: "/kamplar/" },
   { label: "Misyonumuz", href: "/misyonumuz/" },
-  { label: "Blog", href: "/blog/" },
   { label: "İletişim", href: "/iletisim/" },
 ];
 const supportLinks = [

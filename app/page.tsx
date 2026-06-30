@@ -6,7 +6,14 @@ import { Footer } from "@/components/sections/footer";
 import { TeachersSection } from "@/components/sections/teachers-section";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { contact, faq, siteUrl, subjectPackageGroups } from "@/lib/content";
+import {
+  contact,
+  faq,
+  siteUrl,
+  subjectPackageGroups,
+  featuredMathCamps,
+  CAMP_MAX_STUDENTS,
+} from "@/lib/content";
 
 const lessonPkg = subjectPackageGroups[0].packages.find(
   (p) => p.subject === "Ders Paketi",
@@ -693,6 +700,57 @@ export default function HomePage() {
                   <p className="mt-2 text-[14px] leading-7 text-[var(--od-ink-soft)]">{s.body}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Matematik Kampları — tamamlayıcı ürün; ana paketi gölgelemeyen sade blok */}
+        <section className="border-b border-[var(--od-line)] bg-white">
+          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
+            <div className="max-w-3xl">
+              <span className="text-[13px] font-extrabold uppercase tracking-[0.16em] text-[var(--od-olive)]">
+                Matematik Kampları
+              </span>
+              <h2 className="mt-4 text-[30px] font-black leading-[1.08] tracking-normal sm:text-[44px]">
+                Belirli bir konuyu hızlıca toparlamak isteyenler için matematik
+                kampları.
+              </h2>
+              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
+                Maksimum {CAMP_MAX_STUDENTS} kişilik online konu kamplarıyla
+                öğrencinin takıldığı başlığı kısa sürede ele alıyoruz. Düzenli
+                takip için ana ürünümüz hâlâ Matematik Ders Paketi.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
+              {featuredMathCamps.map((camp) => (
+                <div
+                  key={camp.id}
+                  className="rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6"
+                >
+                  <div className="text-[12.5px] font-extrabold uppercase tracking-[0.12em] text-[var(--od-olive)]">
+                    {camp.levelTag}
+                  </div>
+                  <h3 className="mt-3 text-[20px] font-black leading-tight text-[var(--od-ink)]">
+                    {camp.name}
+                  </h3>
+                  <p className="mt-2 text-[14px] leading-7 text-[var(--od-ink-soft)]">
+                    {camp.goal}
+                  </p>
+                  <p className="mt-4 border-t border-[var(--od-line)] pt-3 text-[13px] font-semibold text-[var(--od-ink)]">
+                    {camp.durationLabel} · {camp.lessonsLabel} · Maks.{" "}
+                    {CAMP_MAX_STUDENTS} kişi
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-9">
+              <Link
+                href="/kamplar/"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/20 bg-white px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
+              >
+                Kampları İncele
+                <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
         </section>
