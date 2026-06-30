@@ -5811,4 +5811,16 @@ body:has(.od-panel-app) .od-panel-app {
   color: var(--pd-pastel-sky-ink);
 }
 
+/* Defter / kareli kâğıt dokusu — public sayfalarda dekoratif arka plan.
+   Krem tema korunur; çok düşük opaklıkta ince grid. */
+.od-notebook-grid {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: center top;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 88%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 88%);
+}
+
 /* End — STAGE 3J final sweep */

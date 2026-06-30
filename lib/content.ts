@@ -23,7 +23,7 @@ export const subjectPackageGroups = [
     key: "Matematik",
     title: "Matematik Ders Paketi",
     subtitle:
-      "En fazla dört öğrenci. Aynı öğretmen, aynı tempo, ders sonrası net çalışma yönü.",
+      "En fazla dört öğrenci. Aynı öğretmen, aynı tempo, ders sonrası net çalışma planı.",
     packages: [
       {
         id: "matematik-ders-paketi",
@@ -45,9 +45,9 @@ export const subjectPackageGroups = [
           "Canlı matematik dersi",
           "En fazla 4 öğrencilik grup",
           "Derste soru-cevap ve birlikte çözüm",
-          "Ders sonrası çalışma yönü",
+          "Her ders sonunda net çalışma planı",
           "Ödevlendirme ve öğretmen notu",
-          "Veliye sade gelişim özeti",
+          "Veliye anlaşılır haftalık not",
           "Ödeme sonrası öğrenci hesabı ekibimiz tarafından hazırlanır"
         ],
         cta: "Sepete Ekle"
@@ -739,11 +739,11 @@ export const faqCategories = [
     items: [
       {
         q: "Veli süreçten nasıl haberdar olur?",
-        a: "Veli yalnızca sonuç görmez; çocuğunun hangi konuda zorlandığını anlayacak kadar sade bir gelişim özeti alır.",
+        a: "Veli yalnızca sonuç görmez; çocuğunun hangi konuda zorlandığını anlayacak kadar anlaşılır bir haftalık not alır.",
       },
       {
-        q: "Veli gelişim özeti ne zaman gönderilir?",
-        a: "Gelişim özeti ders sürecine bağlı olarak düzenli paylaşılır; içeriğinde işlenen konu, öğrencinin zorlandığı yer, verilen ödev ve sonraki hedef yer alır.",
+        q: "Veli notu ne zaman gönderilir?",
+        a: "Haftalık not ders sürecine bağlı olarak düzenli paylaşılır; içeriğinde işlenen konu, öğrencinin zorlandığı yer, verilen ödev ve sonraki hedef yer alır.",
       },
       {
         q: "Ders sonrası takip nasıl işliyor?",

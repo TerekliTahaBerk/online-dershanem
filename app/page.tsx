@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Online Matematik Dersi | Online Dershanem",
     description:
-      "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap ve veliye sade gelişim özeti.",
+      "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap ve veliye anlaşılır haftalık not.",
     url: `${siteUrl}/`,
   },
   twitter: {
@@ -42,22 +42,22 @@ export const metadata: Metadata = {
 
 const trustPoints = [
   "En fazla 4 kişilik grup",
-  "Canlı matematik dersi",
-  "Ders sonrası takip",
+  "Öğretmen herkesi adıyla tanır",
+  "Her ders sonunda net plan",
   "Hesabı ekibimiz hazırlar",
 ];
 
 const problems = [
-  "Kalabalık sınıfta öğrenci kolayca sessizleşir.",
-  "Veli çoğu zaman hangi konunun eksik olduğunu göremez.",
-  "Ders biter ama öğrencinin ne çalışacağı netleşmez.",
+  "Soru sormaya çekiniyor, kalabalıkta arkaya düşüyor.",
+  "Karne geliyor ama nerede koptuğunu kimse anlatmıyor.",
+  "Ders bitiyor, “şimdi ne çalışayım?” sorusu havada kalıyor.",
 ];
 
 const systemSteps = [
-  "Seviyeyi ve hedefi anlarız.",
-  "Uygun küçük gruba yerleştiririz.",
-  "Canlı derste eksikleri işleriz.",
-  "Ders sonrası çalışma yönünü netleştiririz.",
+  "Seviyeyi ve hedefi birlikte netleştiririz.",
+  "Benzer seviyedeki küçük gruba yerleştiririz.",
+  "Canlı derste eksiği tam yerinden işleriz.",
+  "Dersten çıkarken ne çalışacağı bellidir.",
 ];
 
 const checkoutSteps = [
@@ -150,11 +150,11 @@ const comparison = {
     },
     {
       label: "Ders sonrası takip",
-      values: ["Öğretmene göre değişir", "Genelde yok", "Her ders sonu net çalışma yönü"],
+      values: ["Öğretmene göre değişir", "Genelde yok", "Her ders sonu net çalışma planı"],
     },
     {
       label: "Veli bilgilendirme",
-      values: ["Sözlü, düzensiz", "Sınırlı", "Sade gelişim özeti"],
+      values: ["Sözlü, düzensiz", "Sınırlı", "Anlaşılır haftalık not"],
     },
     {
       label: "Seviyeye göre grup",
@@ -235,7 +235,7 @@ export default function HomePage() {
     "@type": "Product",
     name: lessonPkg.name,
     description:
-      "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti.",
+      "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap, ders sonrası ödevlendirme ve veliye anlaşılır haftalık not.",
     brand: { "@type": "Brand", name: "Online Dershanem" },
     offers: {
       "@type": "Offer",
@@ -252,14 +252,15 @@ export default function HomePage() {
       <Navbar />
       <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
         <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[linear-gradient(180deg,#FFFFFE_0%,#F5F3EC_100%)]">
+          <div className="od-notebook-grid pointer-events-none absolute inset-0" aria-hidden="true" />
           <div className="relative mx-auto max-w-4xl px-5 pb-16 pt-24 text-center sm:pb-24 sm:pt-32">
             <h1 className="mx-auto max-w-4xl text-[40px] font-black leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[64px] lg:text-[72px]">
-              Çocuğunuz matematikte nerede takıldığını bilsin; biz tam oradan başlayalım.
+              Matematikte geri kalmasın. Nerede takıldığını birlikte bulalım.
             </h1>
             <p className="mx-auto mt-7 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[19px]">
-              Maksimum 4 kişilik canlı matematik dersleriyle öğrencinin
-              eksiklerini takip eder, ders sonrası ne çalışacağını netleştirir ve
-              veliyi süreçten haberdar ederiz.
+              En fazla 4 kişilik canlı derslerde öğretmen çocuğunuzu adıyla tanır,
+              eksiğin başladığı noktayı bulur ve her hafta nerede olduğunu sizinle
+              paylaşır.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
@@ -317,11 +318,11 @@ export default function HomePage() {
           <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
             <div className="max-w-3xl">
               <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[54px]">
-                Dersi anlatıp bırakmıyoruz; öğrencinin matematik yolunu takip ediyoruz.
+                Dersi anlatıp bırakmıyoruz; her öğrenciyi tek tek takip ediyoruz.
               </h2>
               <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Küçük grup dersi, öğretmen gözlemi ve ders sonrası yönlendirme aynı
-                planın içinde ilerler.
+                Küçük grup dersi, öğretmenin yakın gözlemi ve haftalık çalışma
+                planı aynı bütünün parçası.
               </p>
             </div>
             <div className="mt-10 grid gap-4 md:grid-cols-4">
@@ -338,12 +339,12 @@ export default function HomePage() {
         <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
           <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:py-28">
             <h2 className="text-[32px] font-black leading-[1.08] tracking-normal text-[var(--od-ink)] sm:text-[48px]">
-              Ders bittiğinde öğrencinin ne çalışacağını bilmesini isteriz.
+              Ders bittiğinde öğrenci eli boş kalkmaz.
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[18px]">
-              Her dersin sonunda konu, ödev ve tekrar yönü sade şekilde netleşir.
-              Öğrenci yalnız kalmaz; veli de sürecin nereye gittiğini daha kolay
-              takip eder.
+              Her ders; çalışılan konu, bu hafta yapılacak ödev ve tekrar başlığıyla
+              birlikte kapanır. Öğrenci yönünü bilir; siz de sürecin nereye gittiğini
+              rahatça görürsünüz.
             </p>
           </div>
         </section>
@@ -355,9 +356,9 @@ export default function HomePage() {
                 Veli, sonuç değil; çocuğunun nerede olduğunu görür.
               </h2>
               <p className="mt-6 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Karne ya da çıplak net yerine sade bir gelişim özeti paylaşırız:
-                hangi konu çalışıldı, öğrenci nerede zorlandı, bu hafta ne
-                yapacak ve sıradaki hedef ne. Aşağıdaki örnek temsilîdir.
+                Karne ya da çıplak net yerine her hafta anlaşılır bir durum notu
+                paylaşırız: hangi konu çalışıldı, çocuğunuz hangi adımda zorlandı,
+                bu hafta ne yapacak ve sıradaki hedef ne. Aşağıdaki örnek temsilîdir.
               </p>
             </div>
             <figure className="overflow-hidden rounded-[24px] border border-[var(--od-line)] bg-white shadow-[0_30px_70px_-44px_rgba(20,20,15,0.34)]">
@@ -376,7 +377,7 @@ export default function HomePage() {
                 <figcaption className="flex items-start justify-between gap-3">
                   <div>
                     <span className="block text-[17px] font-extrabold text-[var(--od-ink)]">
-                      Ders Sonrası Veli Özeti
+                      Haftalık Veli Notu
                     </span>
                     <span className="mt-0.5 block text-[12.5px] text-[var(--od-ink-soft)]">
                       {sampleReport.student} · {sampleReport.date}
@@ -402,8 +403,8 @@ export default function HomePage() {
                   ))}
                 </dl>
                 <p className="mt-5 border-t border-[var(--od-line)] pt-4 text-[12.5px] leading-6 text-[var(--od-ink-soft)]">
-                  Bu özet, velinin çocuğunun matematikte nerede olduğunu takip
-                  edebilmesi için sadeleştirilmiştir.
+                  Bu not, çocuğunuzun matematikte nerede olduğunu zahmetsizce
+                  görebilmeniz için sadeleştirilmiştir.
                 </p>
               </div>
             </figure>
@@ -584,11 +585,11 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <div className="lg:sticky lg:top-24">
               <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[54px]">
-                Tek ürün: Matematik Ders Paketi.
+                Ayda ₺3.000’e ne alıyorsunuz?
               </h2>
               <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Diğer branş ve ek ürünler bu public satış akışında yer almıyor.
-                Odak küçük grupta canlı matematik dersi.
+                Tek bir net paket, gizli ücret yok. Aşağıda ayda tam olarak ne
+                aldığınızı kalem kalem görüyorsunuz.
               </p>
             </div>
             <article className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6 shadow-[0_24px_60px_-46px_rgba(20,20,15,0.28)] sm:p-8">
@@ -603,6 +604,9 @@ export default function HomePage() {
                   </p>
                 </div>
                 <div className="shrink-0 text-left sm:text-right">
+                  <span className="mb-1.5 inline-block rounded-full bg-[var(--od-olive)]/10 px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-[var(--od-olive)]">
+                    Aylık sabit
+                  </span>
                   {lessonPkg.oldPrice ? (
                     <div className="text-[15px] font-semibold text-[var(--od-ink-soft)] line-through">
                       {lessonPkg.oldPrice}
