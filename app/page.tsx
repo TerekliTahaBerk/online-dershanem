@@ -1,23 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check, X } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Minus,
+  Plus,
+  FileText,
+  MessageSquare,
+  Video,
+  Lock,
+  Users,
+  RefreshCw,
+} from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { TeachersSection } from "@/components/sections/teachers-section";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import {
-  contact,
-  faq,
-  siteUrl,
-  subjectPackageGroups,
-  featuredMathCamps,
-  CAMP_MAX_STUDENTS,
-} from "@/lib/content";
+import { contact, siteUrl, subjectPackageGroups } from "@/lib/content";
 
 const lessonPkg = subjectPackageGroups[0].packages.find(
   (p) => p.subject === "Ders Paketi",
 )!;
+
+const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
+const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
+const priceMain = lessonPkg.discountedPrice.replace("/ay", ""); // ₺3.000
+const priceOld = (lessonPkg.oldPrice ?? "").replace("/ay", ""); // ₺5.000
 
 export const metadata: Metadata = {
   title: "Online Matematik Dersi | Online Dershanem",
@@ -40,177 +48,192 @@ export const metadata: Metadata = {
   },
 };
 
-const trustPoints = [
-  "En fazla 4 kişilik grup",
-  "Öğretmen herkesi adıyla tanır",
-  "Her ders sonunda net plan",
-  "Hesabı ekibimiz hazırlar",
-];
+/* ---------- İçerik verisi ---------- */
 
 const problems = [
-  "Soru sormaya çekiniyor, kalabalıkta arkaya düşüyor.",
-  "Karne geliyor ama nerede koptuğunu kimse anlatmıyor.",
-  "Ders bitiyor, “şimdi ne çalışayım?” sorusu havada kalıyor.",
+  {
+    n: "01",
+    title: "Kalabalık sınıfta kaybolmak",
+    body: "30 kişilik dershane sınıfında soru sormaya çekinen çocuk, anlamadığı yerde takılıp kalıyor.",
+  },
+  {
+    n: "02",
+    title: "Birebir dersin maliyeti",
+    body: "Özel ders işe yarıyor ama saatlik ücretler çoğu aile için sürdürülebilir değil.",
+  },
+  {
+    n: "03",
+    title: "“Bugün ne yaptınız?” belirsizliği",
+    body: "Veli olarak çocuğun gerçekten ilerleyip ilerlemediğini göremiyor, sürece dair elinizde somut bir şey olmuyor.",
+  },
 ];
 
-const systemSteps = [
-  "Seviyeyi ve hedefi birlikte netleştiririz.",
-  "Benzer seviyedeki küçük gruba yerleştiririz.",
-  "Canlı derste eksiği tam yerinden işleriz.",
-  "Dersten çıkarken ne çalışacağı bellidir.",
+const lessonSteps = [
+  {
+    step: "ADIM 01",
+    title: "Konu anlatımı",
+    body: "Öğretmen konuyu birlikte, tahta üzerinde işler. En fazla 4 kişi olduğu için herkes görünür.",
+  },
+  {
+    step: "ADIM 02",
+    title: "Birlikte çözüm",
+    body: "Soruları beraber çözeriz. Takıldığı yeri anında sorar; ders donuk bir sunum değil.",
+  },
+  {
+    step: "ADIM 03",
+    title: "Soru-cevap",
+    body: "Anlamadığı her noktayı durup sorabileceği, gerçekten konuştuğu bir ortam.",
+  },
+  {
+    step: "ADIM 04",
+    title: "Plan & ödev",
+    body: "Ders, “ne çalışacağı” netleşmeden bitmez. Çalışma planı ve ödevle kapanır.",
+  },
 ];
 
-const checkoutSteps = [
-  "Paketi seç ve sepete ekle",
-  "Ödemeyi güvenle tamamla",
-  "Ekibimiz sizinle iletişime geçer",
-  "Kısa seviye görüşmesi yapılır",
-  "Öğrenci uygun gruba yerleşir",
-  "İlk canlı matematik dersi",
+const teachers = [
+  { name: "Öğretmen adı", tag: "AYT · İleri matematik" },
+  { name: "Öğretmen adı", tag: "TYT · Temel matematik" },
+  { name: "Öğretmen adı", tag: "LGS · 8. sınıf" },
 ];
 
-const levelFit = [
+const afterLesson = [
+  {
+    icon: FileText,
+    title: "Net çalışma planı",
+    body: "Bu hafta hangi konu, hangi soru tipi.",
+  },
+  {
+    icon: Check,
+    title: "Belirli ödev",
+    body: "“Bol bol çalış” değil; sayılı, takip edilebilir.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Öğretmen notu",
+    body: "Nerede iyi, nerede dikkat — birkaç cümle.",
+  },
+];
+
+const trustStrip = [
+  { icon: Video, title: "Google Meet", sub: "Tanıdık, kurulum yok" },
+  { icon: Lock, title: "PayTR · 256-bit SSL", sub: "Kart bilgisi bizimle paylaşılmaz" },
+  { icon: Users, title: "En fazla 4 öğrenci", sub: "Garantili küçük grup" },
+  { icon: RefreshCw, title: "Ödeme sonrası kurulum", sub: "Hesabı biz oluştururuz" },
+];
+
+const suitable = [
+  "Düzenli, takipli ilerlemek isteyen öğrenciler",
+  "Kalabalıkta çekinen, küçük grupta açılan çocuklar",
+  "Süreci görmek isteyen veliler",
+  "LGS, TYT veya AYT’ye hazırlananlar",
+];
+
+const notSuitable = [
+  "“Bir gecede sınavı kurtaralım” arayanlar",
+  "Tek seferlik soru çözüm hizmeti isteyenler",
+  "Sadece matematik dışı dersler arayanlar",
+  "Hiç ödev/çalışma yapmak istemeyenler",
+];
+
+const levels = [
   {
     tag: "LGS",
-    title: "8. sınıf matematiği",
-    body: "Konu eksiklerini kapatma, yeni nesil soru ve süre yönetimi; sınav temposuna birlikte alışma.",
+    badge: "bg-[var(--od-mint)] text-[#2C3A24]",
+    title: "8. sınıf",
+    body: "Yeni nesil sorulara hazırlık, temel kavramların sağlamlaştırılması ve sınav matematiği.",
   },
   {
     tag: "TYT",
+    badge: "bg-[var(--od-blush)] text-[#6B3F2E]",
     title: "Temel matematik",
-    body: "TYT matematik ve temel konularda hız ile doğruluk; düzenli deneme analiziyle net artışı.",
+    body: "Konu eksiklerini kapatma, hız ve doğruluk dengesi, deneme analizleriyle ilerleme.",
   },
   {
     tag: "AYT",
+    badge: "bg-[var(--od-sky)] text-[#2E4A63]",
     title: "İleri matematik",
-    body: "AYT matematik konularında derinleşme, soru tipi tanıma ve çözüm stratejisi.",
-  },
-];
-
-const trustSignals = [
-  {
-    title: "Google Meet'te canlı ders",
-    body: "Kayıt video değil; gerçek zamanlı ders. Öğrenci soru sorar, çözümünü gösterir.",
-  },
-  {
-    title: "PayTR ile güvenli ödeme",
-    body: "256-bit SSL korumalı ödeme. Kart bilgileriniz bizimle paylaşılmaz.",
-  },
-  {
-    title: "En fazla 4 öğrenci",
-    body: "Grup mevcudu net ve sınırlı; kalabalık sınıfta kaybolma yok.",
-  },
-  {
-    title: "Ödeme sonrası net süreç",
-    body: "Hesabı ekibimiz hazırlar, giriş bilgilerini sizinle paylaşır.",
-  },
-];
-
-const confidenceQuestions = [
-  {
-    q: "Dersler kaç kişilik?",
-    a: "Matematik dersleri en fazla 4 öğrencilik küçük gruplarla ilerler; öğretmen her öğrenciyi adıyla tanır.",
-  },
-  {
-    q: "Öğrenci derste soru sorabiliyor mu?",
-    a: "Evet. Soru sormak dersin doğal parçasıdır. Öğrenci çözümünü gösterir, takıldığı yeri aynı derste birlikte açarız.",
-  },
-  {
-    q: "Ödeme sonrası ne olacak?",
-    a: "Ödeme tamamlandıktan sonra ekibimiz sizinle iletişime geçer, öğrenci hesabını hazırlar ve giriş bilgilerini paylaşır.",
-  },
-  {
-    q: "Hesap bilgileri nasıl verilecek?",
-    a: "Giriş bilgilerini ekibimiz hazırlayıp size iletir. Satın almak için önceden hesap oluşturmanız gerekmez.",
-  },
-  {
-    q: "Ders başlamadan önce görüşebilir miyiz?",
-    a: "Evet. Öğrencinin sınıfını, hedefini ve matematikte nerede zorlandığını başlamadan önce birlikte değerlendirebiliriz.",
-  },
-  {
-    q: "Çocuğum matematikte çok gerideyse uygun mu?",
-    a: "Uygundur. Önce eksiğin nerede başladığını görürüz ve dersi tam o noktadan kurarız; tempo öğrenciye göre ayarlanır.",
+    body: "Türev, integral, limit gibi konularda derinlik; zorlu soru tiplerinde ustalaşma.",
   },
 ];
 
 const comparison = {
-  columns: ["Birebir özel ders", "Klasik online dershane", "Online Dershanem"],
+  columns: ["Birebir özel ders", "Klasik dershane", "Online Dershanem"],
   rows: [
-    {
-      label: "Grup mevcudu",
-      values: ["1 öğrenci", "Kalabalık sınıf (20+)", "En fazla 4 öğrenci"],
-    },
-    {
-      label: "Aylık maliyet",
-      values: ["Yüksek", "Düşük", "₺3.000 / ay"],
-    },
-    {
-      label: "Derste soru sorma",
-      values: ["Her an", "Sınırlı", "Rahatça, sırası gelir"],
-    },
-    {
-      label: "Ders sonrası takip",
-      values: ["Öğretmene göre değişir", "Genelde yok", "Her ders sonu net çalışma planı"],
-    },
-    {
-      label: "Veli bilgilendirme",
-      values: ["Sözlü, düzensiz", "Sınırlı", "Anlaşılır haftalık not"],
-    },
-    {
-      label: "Seviyeye göre grup",
-      values: ["—", "Genelde yok", "Benzer seviye ve hedefe göre"],
-    },
+    { label: "Grup büyüklüğü", values: ["1 kişi", "20–30 kişi", "En fazla 4 kişi"] },
+    { label: "Aylık maliyet", values: ["Çok yüksek", "Orta–yüksek", "₺3.000/ay"] },
+    { label: "Bireysel ilgi", values: ["Yüksek", "Düşük", "Yüksek"] },
+    { label: "Veliye düzenli not", values: ["Değişken", "Genelde yok", "Her hafta"] },
   ],
 };
 
-const suitableFor = [
-  "Derste soru sorup çözümünü göstermek isteyen öğrenciler",
-  "Kalabalık sınıfta sessizleşen, geri planda kalan öğrenciler",
-  "Eksiğinin nerede başladığını görmek isteyen öğrenciler",
-  "LGS, TYT veya AYT matematiğinde düzenli takip arayan veliler",
+const priceFeatures = [
+  "En fazla 4 öğrencilik canlı grup dersi",
+  "Google Meet üzerinden, soru-cevaplı",
+  "Her ders sonunda plan + ödev + not",
+  "Veliye haftalık durum notu",
 ];
 
-const notSuitableFor = [
-  "Tek seferlik, sınav öncesi “hap” çözüm bekleyenler",
-  "Hiç canlı derse katılmadan yalnızca kayıt video isteyenler",
-  "Matematik dışında çoklu branş desteği arayanlar",
-  "Tamamen kişiye özel birebir program bekleyenler",
+const paymentSteps = [
+  { step: "ADIM 1", title: "Satın al", body: "PayTR ile güvenli ödemeyi tamamlayın." },
+  { step: "ADIM 2", title: "Biz ararız", body: "Çocuğun seviyesini ve hedefini konuşuruz." },
+  { step: "ADIM 3", title: "Hesabı oluştururuz", body: "Giriş bilgilerini size iletiriz." },
+  { step: "ADIM 4", title: "Gruba yerleştiririz", body: "Seviyeye uygun, en fazla 4 kişilik gruba." },
+  { step: "ADIM 5", title: "İlk ders", body: "Google Meet’te ilk canlı ders başlar." },
+  { step: "ADIM 6", title: "Haftalık takip", body: "Plan, ödev ve veliye durum notu." },
 ];
 
-const sampleReport = {
-  student: "8. sınıf öğrencisi",
-  date: "Hafta 3 · Matematik",
-  fields: [
-    {
-      label: "Bu derste işlenen konu",
-      value: "Üslü sayılar — çarpma ve bölme kuralları",
-    },
-    {
-      label: "Öğrencinin zorlandığı yer",
-      value: "Negatif üslerde işaret hatası; kuralı uygularken acele ediyor.",
-    },
-    {
-      label: "Bu hafta ödevi",
-      value: "Karışık 20 soruluk set + 2 yeni nesil problem",
-    },
-    {
-      label: "Sonraki ders hedefi",
-      value: "Köklü sayılara geçiş; üslü–köklü ilişkisini kurmak",
-    },
-  ],
-};
+const faqs = [
+  {
+    q: "Satın almak için hesap açmam gerekiyor mu?",
+    a: "Hayır. Ödemeyi yaptıktan sonra öğrenci hesabını ekibimiz oluşturur ve giriş bilgilerini size iletir. Sizin tek yapmanız gereken ödemeyi tamamlamak.",
+  },
+  {
+    q: "Grupta gerçekten en fazla 4 kişi mi oluyor?",
+    a: "Evet. Her grup en fazla 4 öğrencidir; bu bizim temel sözümüz. Küçük grup, herkesin görünür olmasını ve soru sorabilmesini sağlar.",
+  },
+  {
+    q: "Dersler nerede ve nasıl yapılıyor?",
+    a: "Tüm dersler Google Meet üzerinden canlı yapılır. Ayrı bir uygulama indirmenize gerek yok; bağlantıyı paylaşırız, tıklayıp katılırsınız.",
+  },
+  {
+    q: "Ödeme güvenli mi?",
+    a: "Ödemeler PayTR altyapısı ve 256-bit SSL ile alınır. Kart bilgileriniz bizimle paylaşılmaz; doğrudan güvenli ödeme sağlayıcısında işlenir.",
+  },
+  {
+    q: "Veli olarak süreci nasıl takip ederim?",
+    a: "Her hafta size sade bir durum notu iletiriz: bu hafta ne işlendi, çocuğunuz nerede iyi, neye dikkat etmeli. Resmî bir karne değil, sürecin kısa özeti.",
+  },
+  {
+    q: "İstediğim zaman bırakabilir miyim?",
+    a: "Paket aylıktır. Uzun vadeli zorunlu taahhüt yoktur; devam edip etmemeye her ay siz karar verirsiniz. Detaylar için bize ulaşabilirsiniz.",
+  },
+];
+
+const kampTags = [
+  "Problemler",
+  "Fonksiyonlar",
+  "Türev",
+  "İntegral",
+  "Yeni Nesil",
+  "Temel Toparlama",
+];
+
+/* ---------- Ortak sınıflar ---------- */
+
+const SECTION = "mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(56px,8vw,104px)]";
+const EYEBROW = "text-[14px] font-medium tracking-[0.04em] text-[var(--od-olive-soft)]";
+const H2 =
+  "font-display text-[clamp(28px,4vw,42px)] font-medium leading-[1.1] tracking-[-0.02em]";
 
 export default function HomePage() {
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faq.map((item) => ({
+    mainEntity: faqs.map((item) => ({
       "@type": "Question",
       name: item.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.a,
-      },
+      acceptedAnswer: { "@type": "Answer", text: item.a },
     })),
   };
 
@@ -250,542 +273,595 @@ export default function HomePage() {
     <>
       <SchemaJsonLd schema={[faqJsonLd, orgJsonLd, productJsonLd]} />
       <Navbar />
-      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto max-w-[1080px] px-5 py-16 sm:px-8 sm:py-24">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[var(--od-line)] bg-[var(--od-cream-2)] px-3 py-1.5 text-[13px] font-medium text-[var(--od-ink-soft)]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--od-olive)]" aria-hidden="true" />
-              LGS · TYT · AYT matematik
-            </div>
-            <h1 className="max-w-[17ch] text-[40px] leading-[1.04] text-[var(--od-ink)] sm:text-[58px] lg:text-[68px]">
-              Matematikte geri kalmasın. Nerede takıldığını birlikte bulalım.
-            </h1>
-            <p className="mt-7 max-w-[54ch] text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[19px]">
-              En fazla 4 kişilik canlı derslerde öğretmen çocuğunuzu adıyla tanır,
-              eksiğin başladığı noktayı bulur ve her hafta nerede olduğunu sizinle
-              paylaşır.
-            </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/matematik-ders-paketi/"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-7 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
-              >
-                Matematik Ders Paketini İncele
-                <ArrowRight size={17} />
-              </Link>
-              <Link
-                href="/iletisim/"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white/90 px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
-              >
-                Ön Görüşme Talep Et
-              </Link>
-            </div>
-            <p className="mt-4 max-w-xl text-[13.5px] leading-6 text-[var(--od-ink-soft)]">
-              Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası
-              ekibimiz öğrenci hesabınızı hazırlar.
-            </p>
-            <div className="mt-12 grid max-w-4xl gap-x-8 gap-y-5 border-t border-[var(--od-line)] pt-8 sm:grid-cols-2 lg:grid-cols-4">
-              {trustPoints.map((point) => (
-                <div key={point}>
-                  <span className="text-[14px] font-semibold leading-6 text-[var(--od-ink)]">{point}</span>
-                </div>
-              ))}
-            </div>
+      <main className="od-public overflow-x-hidden bg-[var(--od-cream)] text-[var(--od-ink)]">
+        {/* 1 · HERO */}
+        <section className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] pb-[clamp(40px,6vw,72px)] pt-[clamp(48px,8vw,96px)]">
+          <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-[var(--od-line)] bg-[var(--od-cream-2)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--od-ink-soft)]">
+            <span className="h-[7px] w-[7px] rounded-full bg-[var(--od-olive)]" aria-hidden="true" />
+            LGS · TYT · AYT matematik
+          </div>
+          <h1 className="max-w-[17ch] font-display text-[clamp(38px,6.4vw,68px)] font-medium leading-[1.04] tracking-[-0.025em]">
+            En fazla <em className="font-normal italic">4 kişilik</em> canlı matematik dersi.
+          </h1>
+          <p className="mt-6 max-w-[54ch] text-[clamp(17px,2.2vw,20px)] leading-[1.55] text-[var(--od-ink-soft)]">
+            Çocuğunuz kalabalıkta kaybolmaz, birebir kadar da pahalı değil. Google
+            Meet&apos;te canlı çözüm, her ders sonunda net çalışma planı ve size
+            haftalık sade bir durum notu.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <PurchaseFunnelTrigger
+              source="home_hero_primary"
+              packageName={lessonPkg.name}
+              category={lessonPkg.category}
+              subject={lessonPkg.subject}
+              priceLabel={lessonPkg.discountedPrice}
+              paymentLink=""
+              className="inline-flex min-h-12 items-center gap-2.5 rounded-[11px] bg-[var(--od-olive)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
+            >
+              Satın Al — {priceMain}
+              <span className="font-normal opacity-70">/ay</span>
+            </PurchaseFunnelTrigger>
+            <Link
+              href="/iletisim/"
+              className="inline-flex min-h-12 items-center gap-2.5 rounded-[11px] border border-[var(--od-ink)] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-ink)] transition-colors hover:bg-[var(--od-cream-2)]"
+            >
+              Önce ön görüşme
+            </Link>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2.5 text-[14px] text-[var(--od-ink-soft)]">
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[var(--od-mint)] text-[#2C3A24]">
+                <Check size={11} strokeWidth={2.4} aria-hidden="true" />
+              </span>
+              <span>
+                <strong className="font-semibold text-[var(--od-ink)]">Hesap açmanıza gerek yok</strong> — ödeme sonrası hesabı biz oluştururuz
+              </span>
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[var(--od-mint)] text-[#2C3A24]">
+                <Check size={11} strokeWidth={2.4} aria-hidden="true" />
+              </span>
+              PayTR ile 256-bit SSL ödeme
+            </span>
           </div>
         </section>
 
-        <section className="border-b border-[var(--od-line)] bg-white">
-          <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr]">
-            <div>
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Matematikte sorun çoğu zaman çalışmamak değil, nerede takıldığını görememektir.
-              </h2>
-              <p className="mt-6 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Öğrenci soru çözer, video izler, defter doldurur; ama aynı konu
-                tekrar karşısına çıktığında yine duraksar. Biz önce o duraksamanın
-                nedenini açığa çıkarırız.
-              </p>
-            </div>
-            <div className="space-y-3">
-              {problems.map((item, index) => (
-                <div key={item} className="grid grid-cols-[44px_1fr] items-start border-t border-[var(--od-line)] py-5">
-                  <span className="text-[15px] font-extrabold text-[var(--od-olive)]">0{index + 1}</span>
-                  <p className="text-[18px] font-semibold leading-7 text-[var(--od-ink)]">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <div className="max-w-3xl">
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[54px]">
-                Dersi anlatıp bırakmıyoruz; her öğrenciyi tek tek takip ediyoruz.
-              </h2>
-              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Küçük grup dersi, öğretmenin yakın gözlemi ve haftalık çalışma
-                planı aynı bütünün parçası.
-              </p>
-            </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-4">
-              {systemSteps.map((step, index) => (
-                <div key={step} className="min-h-[190px] rounded-[22px] border border-[var(--od-line)] bg-white p-5">
-                  <div className="text-[30px] font-black text-[var(--od-olive)]">0{index + 1}</div>
-                  <p className="mt-8 text-[17px] font-bold leading-7 text-[var(--od-ink)]">{step}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:py-28">
-            <h2 className="text-[32px] font-black leading-[1.08] tracking-normal text-[var(--od-ink)] sm:text-[48px]">
-              Ders bittiğinde öğrenci eli boş kalkmaz.
+        {/* 2 · PROBLEM */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className={SECTION}>
+            <p className={`${EYEBROW} mb-4`}>TANIDIK GELİYOR MU?</p>
+            <h2 className={`${H2} mb-12 max-w-[20ch]`}>
+              Matematik, çoğu evde sessiz bir gerginlik kaynağı.
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[18px]">
-              Her ders; çalışılan konu, bu hafta yapılacak ödev ve tekrar başlığıyla
-              birlikte kapanır. Öğrenci yönünü bilir; siz de sürecin nereye gittiğini
-              rahatça görürsünüz.
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {problems.map((p) => (
+                <div
+                  key={p.n}
+                  className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)] p-7"
+                >
+                  <div className="mb-3.5 font-display text-[32px] text-[var(--od-olive-soft)]">
+                    {p.n}
+                  </div>
+                  <h3 className="mb-2 text-[18px] font-semibold">{p.title}</h3>
+                  <p className="text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">{p.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 3 · BİR DERS NASIL İŞLER */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className={SECTION}>
+            <p className={`${EYEBROW} mb-4`}>BİR DERS NASIL İŞLER</p>
+            <h2 className={`${H2} mb-12 max-w-[22ch]`}>
+              Dört kişilik küçük bir masa, <em className="font-normal italic">net</em> bir akış.
+            </h2>
+            <div className="grid gap-px overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-line)] sm:grid-cols-2 lg:grid-cols-4">
+              {lessonSteps.map((s) => (
+                <div key={s.step} className="bg-[var(--od-cream)] p-7">
+                  <div className="mb-6 text-[13px] font-semibold text-[var(--od-olive-soft)]">
+                    {s.step}
+                  </div>
+                  <h3 className="mb-2 text-[17px] font-semibold">{s.title}</h3>
+                  <p className="text-[14px] leading-[1.6] text-[var(--od-ink-soft)]">{s.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Editoryal mola · pull-quote */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className="mx-auto max-w-[900px] px-[clamp(20px,4vw,40px)] py-[clamp(52px,7vw,96px)] text-center">
+            <p className="font-display text-[clamp(24px,3.8vw,38px)] font-normal italic leading-[1.28] tracking-[-0.01em]">
+              Kalabalık değil, birebir de değil — <span className="not-italic text-[var(--od-olive)]">arada</span>, çocuğunuzun görünür olduğu bir yer.
             </p>
           </div>
         </section>
 
-        <section className="border-b border-[var(--od-line)] bg-white">
-          <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        {/* 4 · ÖĞRETMENLER */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className={SECTION}>
+            <p className={`${EYEBROW} mb-4`}>EKİP</p>
+            <h2 className={`${H2} mb-3.5 max-w-[18ch]`}>Dersi verenler.</h2>
+            <p className="mb-11 max-w-[48ch] text-[17px] leading-[1.6] text-[var(--od-ink-soft)]">
+              Alanında deneyimli, sınav sistemini ve öğrenciyle birebir iletişimi bilen
+              matematik öğretmenleri.
+            </p>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {teachers.map((t, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream)] p-6"
+                >
+                  <div
+                    className="mb-[18px] flex aspect-[4/3] w-full items-end rounded-xl p-3"
+                    style={{
+                      background:
+                        "repeating-linear-gradient(135deg,#F4F2EB,#F4F2EB 8px,#EFEDE4 8px,#EFEDE4 16px)",
+                    }}
+                  >
+                    <span className="text-[11px] text-[#8A8A7E]">öğretmen portresi</span>
+                  </div>
+                  <h3 className="mb-0.5 text-[16px] font-semibold">{t.name}</h3>
+                  <p className="text-[14px] text-[var(--od-ink-soft)]">{t.tag}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-5 text-[13px] italic text-[#8A8A7E]">
+              Öğretmen isimleri, portreleri ve uzmanlık alanları sizden gelen bilgiyle
+              doldurulacak.
+            </p>
+          </div>
+        </section>
+
+        {/* 5 · ELİ BOŞ KALKMAZ */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
+          <div className="mx-auto grid max-w-[1120px] items-center gap-[clamp(40px,6vw,80px)] px-[clamp(20px,4vw,40px)] py-[clamp(56px,8vw,104px)] lg:grid-cols-2">
             <div>
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Veli, sonuç değil; çocuğunun nerede olduğunu görür.
+              <p className="mb-4 text-[14px] font-medium tracking-[0.04em] text-[#A9BD93]">
+                DERS SONRASI
+              </p>
+              <h2 className="mb-5 font-display text-[clamp(28px,4vw,44px)] font-medium leading-[1.08] tracking-[-0.02em]">
+                Çocuğunuz dersten <em className="font-normal italic">eli boş</em> kalkmaz.
               </h2>
-              <p className="mt-6 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Karne ya da çıplak net yerine her hafta yalın bir durum notu
-                paylaşırız: hangi konu çalışıldı, çocuğunuz hangi adımda zorlandı,
-                bu hafta ne yapacak ve sıradaki hedef ne. Aşağıdaki örnek temsilîdir.
+              <p className="max-w-[46ch] text-[17px] leading-[1.6] text-[#D8DCCF]">
+                Her dersin sonunda elinde ne çalışacağını bilen, ödevi belli, öğretmeninin
+                notunu almış bir öğrenci olur. Belirsizlik biter.
               </p>
             </div>
-            <figure className="overflow-hidden rounded-[24px] border border-[var(--od-line)] bg-white shadow-[0_30px_70px_-44px_rgba(20,20,15,0.34)]">
-              {/* Pencere başlık çubuğu — ürün ekranı hissi */}
-              <div className="flex items-center gap-2 border-b border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-3">
-                <span className="flex gap-1.5" aria-hidden="true">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#E0DCCB]" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#E0DCCB]" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#E0DCCB]" />
-                </span>
-                <span className="ml-1 text-[12px] font-semibold text-[var(--od-ink-soft)]">
-                  Veli Paneli
-                </span>
-              </div>
-              <div className="p-6 sm:p-7">
-                <figcaption className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className="block text-[17px] font-extrabold text-[var(--od-ink)]">
-                      Haftalık Veli Notu
+            <div className="flex flex-col gap-3.5">
+              {afterLesson.map((f) => {
+                const Icon = f.icon;
+                return (
+                  <div
+                    key={f.title}
+                    className="flex items-start gap-4 rounded-[14px] border border-[var(--od-cream)]/15 bg-[var(--od-cream)]/[0.07] px-5 py-5"
+                  >
+                    <span className="mt-0.5 shrink-0 text-[#A9BD93]">
+                      <Icon size={20} strokeWidth={1.6} aria-hidden="true" />
                     </span>
-                    <span className="mt-0.5 block text-[12.5px] text-[var(--od-ink-soft)]">
-                      {sampleReport.student} · {sampleReport.date}
-                    </span>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-[var(--od-olive)]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--od-olive)]">
-                    Örnek / Temsilî
-                  </span>
-                </figcaption>
-                <dl className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {sampleReport.fields.map((row) => (
-                    <div
-                      key={row.label}
-                      className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-cream)] p-4"
-                    >
-                      <dt className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-[#8B8B7E]">
-                        {row.label}
-                      </dt>
-                      <dd className="mt-1.5 text-[14px] leading-6 text-[var(--od-ink)]">
-                        {row.value}
-                      </dd>
+                    <div>
+                      <div className="mb-0.5 text-[16px] font-semibold">{f.title}</div>
+                      <div className="text-[14px] leading-[1.5] text-[#C7CCBC]">{f.body}</div>
                     </div>
-                  ))}
-                </dl>
-                <p className="mt-5 border-t border-[var(--od-line)] pt-4 text-[12.5px] leading-6 text-[var(--od-ink-soft)]">
-                  Bu not, çocuğunuzun matematikte nerede olduğunu zahmetsizce
-                  görebilmeniz için sadeleştirilmiştir.
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* 6 · VELİ PANELİ ÖRNEK */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className={SECTION}>
+            <div className="grid items-center gap-[clamp(32px,5vw,64px)] lg:grid-cols-2">
+              <div>
+                <p className={`${EYEBROW} mb-4`}>VELİYE HAFTALIK NOT</p>
+                <h2 className={`${H2} mb-5 max-w-[18ch]`}>
+                  Sürece dair elinizde somut bir şey olur.
+                </h2>
+                <p className="mb-4 max-w-[46ch] text-[17px] leading-[1.6] text-[var(--od-ink-soft)]">
+                  Her hafta size sade bir durum notu gönderiririz: bu hafta ne işlendi,
+                  çocuğunuz nerede iyi gidiyor, neye dikkat etmeli. Karne değil — birlikte
+                  yürüdüğümüz yolun kısa bir özeti.
+                </p>
+                <p className="text-[13px] italic text-[#8A8A7E]">
+                  Yandaki kart temsilîdir; gerçek veriden oluşturulmamıştır.
                 </p>
               </div>
-            </figure>
-          </div>
-        </section>
-
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <div className="max-w-3xl">
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Bu model kimler için uygun, kimler için değil?
-              </h2>
-              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Dürüst olmak en doğrusu: küçük grupta canlı matematik takibi her
-                öğrenci için doğru tercih olmayabilir. İşte net çerçeve.
-              </p>
-            </div>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[22px] border border-[var(--od-line)] bg-white p-7">
-                <h3 className="text-[18px] font-extrabold text-[var(--od-ink)]">Uygun</h3>
-                <ul className="mt-5 space-y-2.5 text-[14.5px] text-[var(--od-ink)]">
-                  {suitableFor.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5">
-                      <Check size={16} strokeWidth={2.2} className="mt-0.5 shrink-0 text-[var(--od-olive)]" aria-hidden="true" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="rounded-[22px] border border-[var(--od-line)] bg-white p-7">
-                <h3 className="text-[18px] font-extrabold text-[var(--od-ink)]">Şimdilik uygun değil</h3>
-                <ul className="mt-5 space-y-2.5 text-[14.5px] text-[var(--od-ink-soft)]">
-                  {notSuitableFor.map((item) => (
-                    <li key={item} className="flex items-start gap-2.5">
-                      <X size={16} strokeWidth={2.2} className="mt-0.5 shrink-0 text-[#B0392F]" aria-hidden="true" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="rounded-[18px] border border-[var(--od-line)] bg-[var(--od-paper)] p-[26px] shadow-[0_2px_12px_rgba(20,20,15,0.05)]">
+                <div className="mb-[18px] flex items-center justify-between border-b border-[var(--od-line)] pb-[18px]">
+                  <div>
+                    <div className="text-[15px] font-semibold">Haftalık Durum Notu</div>
+                    <div className="text-[13px] text-[var(--od-ink-soft)]">3–9 Mart · 8. sınıf</div>
+                  </div>
+                  <span className="rounded-full bg-[var(--od-mint)] px-2.5 py-1 text-[12px] font-medium text-[#2C3A24]">
+                    Örnek
+                  </span>
+                </div>
+                <div className="flex flex-col gap-3.5">
+                  <div>
+                    <div className="mb-1.5 text-[12px] text-[var(--od-ink-soft)]">Bu hafta işlenen</div>
+                    <div className="text-[15px] font-medium">Çarpanlara ayırma · Özdeşlikler</div>
+                  </div>
+                  <div>
+                    <div className="mb-1.5 text-[12px] text-[var(--od-ink-soft)]">Devam &amp; katılım</div>
+                    <div className="flex gap-1.5" aria-hidden="true">
+                      <span className="h-2 w-[26px] rounded bg-[var(--od-olive)]" />
+                      <span className="h-2 w-[26px] rounded bg-[var(--od-olive)]" />
+                      <span className="h-2 w-[26px] rounded bg-[var(--od-line)]" />
+                      <span className="h-2 w-[26px] rounded bg-[var(--od-olive)]" />
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-[var(--od-cream-2)] p-4">
+                    <div className="mb-1.5 text-[12px] text-[var(--od-ink-soft)]">Öğretmen notu</div>
+                    <div className="text-[14px] leading-[1.55]">
+                      “Özdeşliklerde belirgin ilerleme var. Bu hafta işlem hızında biraz daha
+                      pratik iyi olur — ödev buna göre.”
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="border-b border-[var(--od-line)] bg-white">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <div className="max-w-3xl">
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                LGS, TYT ve AYT matematiği — öğrencinin seviyesine göre.
-              </h2>
-              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Önce kısa bir değerlendirmeyle öğrencinin nerede olduğunu görür,
-                dersi tam o seviyeden kurarız. Aynı grupta benzer seviye ve
-                hedefteki öğrenciler bir arada ilerler.
-              </p>
+        {/* 7 · GÜVEN ŞERİDİ */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(44px,6vw,72px)]">
+            <div className="grid overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-paper)] sm:grid-cols-2 lg:grid-cols-4">
+              {trustStrip.map((t) => {
+                const Icon = t.icon;
+                return (
+                  <div
+                    key={t.title}
+                    className="flex items-center gap-4 border-b border-[var(--od-line)] px-7 py-[26px] last:border-b-0 sm:[&:nth-last-child(-n+2)]:border-b-0 lg:border-b-0 lg:border-l lg:first:border-l-0"
+                  >
+                    <span className="shrink-0 text-[var(--od-olive)]">
+                      <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
+                    </span>
+                    <div>
+                      <div className="text-[15px] font-semibold">{t.title}</div>
+                      <div className="text-[13px] text-[var(--od-ink-soft)]">{t.sub}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
-              {levelFit.map((lvl) => (
+          </div>
+        </section>
+
+        {/* 8 · KİMLER İÇİN */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className={SECTION}>
+            <p className={`${EYEBROW} mb-4`}>DÜRÜST KONUŞALIM</p>
+            <h2 className={`${H2} mb-12 max-w-[20ch]`}>Herkese uygun değiliz, bu da iyi.</h2>
+            <div className="grid gap-[clamp(32px,5vw,72px)] sm:grid-cols-2">
+              <div>
+                <h3 className="mb-[22px] flex items-center gap-2.5 border-b border-[var(--od-line)] pb-4 text-[16px] font-semibold text-[#2C3A24]">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--od-mint)]">
+                    <Check size={13} strokeWidth={2.4} aria-hidden="true" />
+                  </span>
+                  Uygun
+                </h3>
+                <ul className="flex flex-col gap-4">
+                  {suitable.map((item) => (
+                    <li
+                      key={item}
+                      className="relative pl-4 text-[15px] leading-[1.5] text-[#3A3A32]"
+                    >
+                      <span className="absolute left-0 text-[var(--od-olive-soft)]">·</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 className="mb-[22px] flex items-center gap-2.5 border-b border-[var(--od-line)] pb-4 text-[16px] font-semibold text-[#6B3F2E]">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--od-blush)]">
+                    <Minus size={13} strokeWidth={2.4} aria-hidden="true" />
+                  </span>
+                  Uygun değil
+                </h3>
+                <ul className="flex flex-col gap-4">
+                  {notSuitable.map((item) => (
+                    <li
+                      key={item}
+                      className="relative pl-4 text-[15px] leading-[1.5] text-[#3A3A32]"
+                    >
+                      <span className="absolute left-0 text-[#C0907E]">·</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 9 · LGS / TYT / AYT */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className={SECTION}>
+            <h2 className={`${H2} mb-3.5`}>Her seviyeye göre.</h2>
+            <p className="mb-11 max-w-[48ch] text-[17px] leading-[1.6] text-[var(--od-ink-soft)]">
+              Aynı düzen, sınava göre uyarlanmış içerik. Hangi seviyede olduğunuzu söyleyin,
+              gerisini birlikte planlayalım.
+            </p>
+            <div className="grid overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-paper)] sm:grid-cols-2 lg:grid-cols-3">
+              {levels.map((lvl) => (
                 <div
                   key={lvl.tag}
-                  className="rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6"
+                  className="border-b border-[var(--od-line)] p-8 last:border-b-0 sm:[&:nth-last-child(-n+1)]:border-b-0 lg:border-b-0"
                 >
-                  <div className="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[var(--od-olive)]">
+                  <span
+                    className={`mb-5 inline-block rounded-full px-3 py-1 text-[12px] font-semibold ${lvl.badge}`}
+                  >
                     {lvl.tag}
-                  </div>
-                  <h3 className="mt-3 text-[19px] font-bold leading-tight text-[var(--od-ink)]">
-                    {lvl.title}
-                  </h3>
-                  <p className="mt-2 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                    {lvl.body}
-                  </p>
+                  </span>
+                  <h3 className="mb-2 font-display text-[22px] font-medium">{lvl.title}</h3>
+                  <p className="text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">{lvl.body}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <div className="max-w-3xl">
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Özel ders kadar yakın, online dershane kadar erişilebilir.
-              </h2>
-              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Birebir özel dersin maliyeti ile kalabalık online sınıfın
-                mesafesi arasında butik bir orta yol. Üç modeli aynı ölçütlerle
-                karşılaştırın.
-              </p>
-            </div>
-
-            {/* Semantik tablo — ekran okuyucu için tek kaynak (mobilde sr-only,
-                desktop'ta görünür). Mobil kart versiyonu aria-hidden. */}
-            <div className="mt-10 overflow-hidden rounded-[22px] border border-[var(--od-line)] bg-white sr-only md:not-sr-only md:block">
-              <table className="w-full border-collapse text-left">
+        {/* 10 · KARŞILAŞTIRMA TABLOSU */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className={SECTION}>
+            <h2 className={`${H2} mb-11 max-w-[16ch]`}>
+              Ortada, <em className="font-normal italic">bilinçli</em> bir yerde.
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] border-collapse overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-paper)] text-left">
                 <caption className="sr-only">
-                  Birebir özel ders, klasik online dershane ve Online Dershanem
-                  karşılaştırması
+                  Birebir özel ders, klasik dershane ve Online Dershanem karşılaştırması
                 </caption>
                 <thead>
-                  <tr className="border-b border-[var(--od-line)]">
-                    <th scope="col" className="px-5 py-4 text-[13px] font-semibold text-[var(--od-ink-soft)]">
-                      Ölçüt
-                    </th>
-                    {comparison.columns.map((col, i) => (
-                      <th
-                        key={col}
-                        scope="col"
-                        className={`px-5 py-4 text-[14px] font-extrabold ${
-                          i === comparison.columns.length - 1
-                            ? "bg-[var(--od-olive)] text-white"
-                            : "text-[var(--od-ink)]"
-                        }`}
-                      >
-                        {col}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparison.rows.map((row) => (
-                    <tr key={row.label} className="border-b border-[var(--od-line)] last:border-b-0">
-                      <th scope="row" className="px-5 py-4 text-[14px] font-semibold text-[var(--od-ink)]">
-                        {row.label}
-                      </th>
-                      {row.values.map((val, i) => (
-                        <td
-                          key={comparison.columns[i]}
-                          className={`px-5 py-4 text-[14px] leading-6 ${
-                            i === row.values.length - 1
-                              ? "bg-[var(--od-olive)]/[0.06] font-semibold text-[var(--od-ink)]"
+                  <tr>
+                    <th scope="col" className="border-b border-[var(--od-line)] px-6 py-5" />
+                    {comparison.columns.map((col, i) => {
+                      const isUs = i === comparison.columns.length - 1;
+                      return (
+                        <th
+                          key={col}
+                          scope="col"
+                          className={`border-b border-l border-[var(--od-line)] px-4 py-5 text-center text-[14px] font-semibold ${
+                            isUs
+                              ? "bg-[var(--od-olive)] text-[var(--od-cream)]"
                               : "text-[var(--od-ink-soft)]"
                           }`}
                         >
-                          {val}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobil: kart layout — görsel; AT için tablo okunur (aria-hidden) */}
-            <div className="mt-8 grid gap-3 md:hidden" aria-hidden="true">
-              {comparison.rows.map((row) => (
-                <div key={row.label} className="rounded-[18px] border border-[var(--od-line)] bg-white p-4">
-                  <div className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-[var(--od-olive)]">
-                    {row.label}
-                  </div>
-                  <dl className="mt-3 space-y-1.5">
-                    {row.values.map((val, i) => (
-                      <div
-                        key={comparison.columns[i]}
-                        className={`flex items-start justify-between gap-4 rounded-lg px-2.5 py-1.5 ${
-                          i === row.values.length - 1 ? "bg-[var(--od-olive)]/[0.07]" : ""
-                        }`}
-                      >
-                        <dt className="text-[12.5px] text-[var(--od-ink-soft)]">{comparison.columns[i]}</dt>
-                        <dd
-                          className={`text-right text-[13px] ${
-                            i === row.values.length - 1
-                              ? "font-bold text-[var(--od-ink)]"
-                              : "font-medium text-[var(--od-ink)]"
+                          {col}
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparison.rows.map((row, ri) => {
+                    const last = ri === comparison.rows.length - 1;
+                    return (
+                      <tr key={row.label}>
+                        <th
+                          scope="row"
+                          className={`px-6 py-[18px] text-[15px] font-medium ${
+                            last ? "" : "border-b border-[var(--od-line)]"
                           }`}
                         >
-                          {val}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-              ))}
+                          {row.label}
+                        </th>
+                        {row.values.map((val, i) => {
+                          const isUs = i === row.values.length - 1;
+                          return (
+                            <td
+                              key={comparison.columns[i]}
+                              className={`border-l border-[var(--od-line)] px-4 py-[18px] text-center text-[14px] ${
+                                last ? "" : "border-b"
+                              } ${
+                                isUs
+                                  ? "bg-[#F7F8F3] font-semibold text-[var(--od-olive)]"
+                                  : "text-[var(--od-ink-soft)]"
+                              }`}
+                            >
+                              {val}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
 
-        <section id="matematik-ders-paketi" className="border-b border-[var(--od-line)] bg-white">
-          <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-            <div className="lg:sticky lg:top-24">
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[54px]">
-                Ayda ₺3.000’e ne alıyorsunuz?
-              </h2>
-              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Tek bir net paket, gizli ücret yok. Aşağıda ayda tam olarak ne
-                aldığınızı kalem kalem görüyorsunuz.
-              </p>
-            </div>
-            <article className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6 shadow-[0_24px_60px_-46px_rgba(20,20,15,0.28)] sm:p-8">
-              <div className="flex flex-col gap-5 border-b border-[var(--od-line)] pb-6 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h3 className="text-[30px] font-black leading-tight text-[var(--od-ink)]">
-                    {lessonPkg.name}
-                  </h3>
-                  <p className="mt-2 text-[15px] leading-7 text-[var(--od-ink-soft)]">
-                    Canlı matematik dersi, maksimum 4 kişilik butik grup ve ders
-                    sonrası takip tek pakette.
-                  </p>
-                </div>
-                <div className="shrink-0 text-left sm:text-right">
-                  <span className="mb-1.5 inline-block rounded-full bg-[var(--od-olive)]/10 px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-[var(--od-olive)]">
-                    Aylık sabit
-                  </span>
-                  {lessonPkg.oldPrice ? (
-                    <div className="text-[15px] font-semibold text-[var(--od-ink-soft)] line-through">
-                      {lessonPkg.oldPrice}
-                    </div>
-                  ) : null}
-                  <div className="text-[40px] font-black leading-none text-[var(--od-ink)]">
-                    {lessonPkg.discountedPrice}
-                  </div>
-                </div>
+        {/* 11 · FİYAT / PAKET */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className={SECTION}>
+            <div className="grid items-center gap-[clamp(32px,5vw,56px)] lg:grid-cols-2">
+              <div>
+                <p className={`${EYEBROW} mb-4`}>TEK PAKET, NET FİYAT</p>
+                <h2 className="mb-5 max-w-[14ch] font-display text-[clamp(28px,4vw,44px)] font-medium leading-[1.08] tracking-[-0.02em]">
+                  Matematik Ders Paketi.
+                </h2>
+                <p className="mb-6 max-w-[44ch] text-[17px] leading-[1.6] text-[var(--od-ink-soft)]">
+                  Karmaşık paket seçenekleri yok. Tek bir net teklif — aylık, istediğiniz
+                  zaman bırakabilirsiniz.
+                </p>
+                <Link
+                  href="/matematik-ders-paketi/"
+                  className="inline-flex items-center gap-2 border-b border-[var(--od-olive-soft)] pb-0.5 text-[15px] font-medium text-[var(--od-olive)]"
+                >
+                  Paketin tüm detayını gör
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
               </div>
-              <ul className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                {lessonPkg.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3 border-t border-[var(--od-line)] pt-3">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--od-olive)]" />
-                    <span className="text-[15px] font-semibold leading-6 text-[var(--od-ink)]">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-6 border-t border-[var(--od-line)] pt-5 text-[13px] leading-6 text-[var(--od-ink-soft)]">
-                Kalabalık online sınıf ile birebir özel ders arasında butik bir
-                orta yol: aylık sabit <strong className="font-semibold text-[var(--od-ink)]">₺3.000</strong>,
-                en fazla 4 kişilik grupta düzenli canlı matematik dersi ve ders
-                sonrası takip.
-              </p>
-              <div className="mt-6">
+              <div className="rounded-[20px] bg-[var(--od-olive)] p-[clamp(28px,4vw,40px)] text-[var(--od-cream)] shadow-[0_4px_24px_rgba(58,74,44,0.18)]">
+                <div className="mb-1.5 flex items-end gap-3">
+                  <span className="font-display text-[clamp(40px,6vw,52px)] font-medium leading-none">
+                    {priceMain}
+                  </span>
+                  <span className="mb-2 text-[16px] text-[#C7CCBC]">/ ay</span>
+                </div>
+                <div className="mb-7 flex items-center gap-2.5">
+                  {priceOld ? (
+                    <span className="text-[16px] text-[#A9BD93] line-through">{priceOld}</span>
+                  ) : null}
+                  <span className="rounded-full bg-[var(--od-cream)]/[0.16] px-2.5 py-1 text-[13px] font-medium">
+                    İndirimli
+                  </span>
+                </div>
+                <ul className="mb-7 flex flex-col gap-3">
+                  {priceFeatures.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-[15px] text-[#E6E9DE]">
+                      <span className="mt-0.5 text-[#A9BD93]">
+                        <Check size={18} strokeWidth={1.8} aria-hidden="true" />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
                 <PurchaseFunnelTrigger
-                  source="home_package_primary"
+                  source="home_price_primary"
                   packageName={lessonPkg.name}
                   category={lessonPkg.category}
                   subject={lessonPkg.subject}
                   priceLabel={lessonPkg.discountedPrice}
                   paymentLink=""
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
+                  className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
                 >
-                  Matematik Dersini Satın Al
-                  <ArrowRight size={17} />
+                  Satın Al
                 </PurchaseFunnelTrigger>
+                <p className="mt-3.5 text-center text-[13px] text-[#A9BD93]">
+                  Hesap açmanıza gerek yok · PayTR güvenli ödeme
+                </p>
               </div>
-            </article>
-          </div>
-        </section>
-
-        <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-[0.95fr_1.05fr]">
-            <div>
-              <h2 className="text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-                Ödemeden ilk derse, adım adım.
-              </h2>
-              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Satın almak için hesap oluşturmanıza gerek yok. Paketi seçer,
-                ödemenizi güvenle tamamlarsınız; ardından ekibimiz sizinle
-                iletişime geçer, öğrenciyi doğru gruba yerleştirir ve ilk canlı
-                dersi birlikte planlarız.
-              </p>
-            </div>
-            <div className="grid gap-3">
-              {checkoutSteps.map((step, index) => (
-                <div key={step} className="grid grid-cols-[52px_1fr] items-center rounded-[18px] border border-[var(--od-line)] bg-white p-4">
-                  <span className="text-[18px] font-black text-[var(--od-olive)]">0{index + 1}</span>
-                  <span className="text-[17px] font-bold text-[var(--od-ink)]">{step}</span>
-                </div>
-              ))}
             </div>
           </div>
         </section>
 
-        <section className="border-b border-[var(--od-line)] bg-white">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <h2 className="max-w-3xl text-[34px] font-black leading-[1.05] tracking-normal sm:text-[52px]">
-              Velilerin karar vermeden önce bilmek istediği şeyler.
-            </h2>
-            <div className="mt-10 grid gap-4 md:grid-cols-2">
-              {confidenceQuestions.map((item) => (
-                <div key={item.q} className="rounded-[20px] border border-[var(--od-line)] bg-[var(--od-cream)] p-5">
-                  <h3 className="text-[18px] font-extrabold text-[var(--od-ink)]">{item.q}</h3>
-                  <p className="mt-3 text-[15px] leading-7 text-[var(--od-ink-soft)]">{item.a}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <h2 className="max-w-3xl text-[34px] font-black leading-[1.05] tracking-normal sm:text-[48px]">
-              Velinin güvenle başlaması için.
-            </h2>
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {trustSignals.map((s) => (
-                <div
-                  key={s.title}
-                  className="rounded-[20px] border border-[var(--od-line)] bg-white p-5"
-                >
-                  <h3 className="text-[16px] font-extrabold text-[var(--od-ink)]">{s.title}</h3>
-                  <p className="mt-2 text-[14px] leading-7 text-[var(--od-ink-soft)]">{s.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Matematik Kampları — tamamlayıcı ürün; ana paketi gölgelemeyen sade blok */}
-        <section className="border-b border-[var(--od-line)] bg-white">
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-24">
-            <div className="max-w-3xl">
-              <span className="text-[13px] font-extrabold uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                Matematik Kampları
-              </span>
-              <h2 className="mt-4 text-[30px] font-black leading-[1.08] tracking-normal sm:text-[44px]">
-                Belirli bir konuyu hızlıca toparlamak isteyenler için matematik
-                kampları.
-              </h2>
-              <p className="mt-5 text-[17px] leading-8 text-[var(--od-ink-soft)]">
-                Maksimum {CAMP_MAX_STUDENTS} kişilik online konu kamplarıyla
-                öğrencinin takıldığı başlığı kısa sürede ele alıyoruz. Düzenli
-                takip için ana ürünümüz hâlâ Matematik Ders Paketi.
-              </p>
-            </div>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
-              {featuredMathCamps.map((camp) => (
-                <div
-                  key={camp.id}
-                  className="rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6"
-                >
-                  <div className="text-[12.5px] font-extrabold uppercase tracking-[0.12em] text-[var(--od-olive)]">
-                    {camp.levelTag}
+        {/* 12 · ÖDEMEDEN DERSE */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className={SECTION}>
+            <p className={`${EYEBROW} mb-4`}>ÖDEMEDEN İLK DERSE</p>
+            <h2 className={`${H2} mb-12 max-w-[18ch]`}>Hesap derdi yok. Altı adım.</h2>
+            <div className="grid gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
+              {paymentSteps.map((s, i) => (
+                <div key={s.step}>
+                  <div className="mb-4 flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--od-olive)]" />
+                    {i !== paymentSteps.length - 1 ? (
+                      <span className="h-px flex-1 bg-[var(--od-line)]" />
+                    ) : null}
                   </div>
-                  <h3 className="mt-3 text-[20px] font-black leading-tight text-[var(--od-ink)]">
-                    {camp.name}
-                  </h3>
-                  <p className="mt-2 text-[14px] leading-7 text-[var(--od-ink-soft)]">
-                    {camp.goal}
-                  </p>
-                  <p className="mt-4 border-t border-[var(--od-line)] pt-3 text-[13px] font-semibold text-[var(--od-ink)]">
-                    {camp.durationLabel} · {camp.lessonsLabel} · Maks.{" "}
-                    {CAMP_MAX_STUDENTS} kişi
-                  </p>
+                  <div className="mb-1.5 text-[12px] font-semibold tracking-[0.04em] text-[var(--od-olive-soft)]">
+                    {s.step}
+                  </div>
+                  <div className="mb-1.5 text-[16px] font-semibold">{s.title}</div>
+                  <p className="text-[14px] leading-[1.55] text-[var(--od-ink-soft)]">{s.body}</p>
                 </div>
               ))}
-            </div>
-            <div className="mt-9">
-              <Link
-                href="/kamplar/"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/20 bg-white px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
-              >
-                Kampları İncele
-                <ArrowRight size={16} />
-              </Link>
             </div>
           </div>
         </section>
 
-        <TeachersSection />
-
-        <section className="bg-[var(--od-yellow-soft)]">
-          <div className="mx-auto max-w-3xl px-5 py-20 text-center sm:py-28">
-            <h2 className="text-[32px] font-black leading-[1.06] tracking-normal text-[var(--od-ink)] sm:text-[52px]">
-              Kararsızsanız önce konuşalım.
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)]">
-              Öğrencinin sınıfını, hedefini ve matematikte zorlandığı konuları
-              birlikte değerlendirelim. Size en doğru yönlendirmeyi yapalım.
-            </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                href="/iletisim/"
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--od-olive)] px-7 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
-              >
-                İletişime Geç
-              </Link>
+        {/* 13 · SSS */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className="mx-auto max-w-[760px] px-[clamp(20px,4vw,40px)] py-[clamp(56px,8vw,104px)]">
+            <h2 className={`${H2} mb-10 text-center`}>Sık sorulanlar</h2>
+            <div className="overflow-hidden rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)]">
+              {faqs.map((item, i) => (
+                <details
+                  key={item.q}
+                  className="group border-b border-[var(--od-line)] last:border-b-0"
+                  open={i === 0}
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-[22px] [&::-webkit-details-marker]:hidden">
+                    <span className="text-[16px] font-semibold">{item.q}</span>
+                    <span className="shrink-0 text-[var(--od-olive-soft)] transition-transform duration-200 group-open:rotate-45">
+                      <Plus size={20} strokeWidth={1.6} aria-hidden="true" />
+                    </span>
+                  </summary>
+                  <div className="px-6 pb-[22px] text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">
+                    {item.a}
+                  </div>
+                </details>
+              ))}
+            </div>
+            <p className="mt-7 text-center text-[15px] text-[var(--od-ink-soft)]">
+              Başka sorunuz mu var?{" "}
               <a
-                href={`https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`}
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--od-ink)]/20 bg-white px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
+                href={waHref}
+                className="border-b border-[var(--od-olive-soft)] font-medium text-[var(--od-olive)]"
               >
-                WhatsApp&apos;tan Yazın
+                WhatsApp&apos;tan yazın
+              </a>{" "}
+              veya{" "}
+              <a
+                href={telHref}
+                className="border-b border-[var(--od-olive-soft)] font-medium text-[var(--od-olive)]"
+              >
+                arayın
               </a>
+              .
+            </p>
+          </div>
+        </section>
+
+        {/* 14 · KAMPLAR TEASER */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className={SECTION}>
+            <div className="grid items-center gap-[clamp(28px,4vw,48px)] rounded-[20px] border border-[var(--od-line)] bg-[var(--od-paper)] p-[clamp(28px,4vw,48px)] lg:grid-cols-2">
+              <div>
+                <span className="mb-[18px] inline-block rounded-full bg-[var(--od-lavender)] px-3 py-1 text-[12px] font-semibold text-[#473A63]">
+                  Yeni · Matematik Kampları
+                </span>
+                <h2 className="mb-3.5 max-w-[20ch] font-display text-[clamp(24px,3.4vw,34px)] font-medium leading-[1.12] tracking-[-0.02em]">
+                  Tek bir konuyu kısa sürede toparlamak için.
+                </h2>
+                <p className="max-w-[48ch] text-[16px] leading-[1.6] text-[var(--od-ink-soft)]">
+                  Problemler, Fonksiyonlar, Türev gibi konuları 1–3 haftada toparlayan, en
+                  fazla 12 kişilik online kamplar. Düzenli takip için ana ürünümüz hâlâ{" "}
+                  <strong className="font-semibold text-[var(--od-ink)]">Matematik Ders Paketi</strong>.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap gap-2.5">
+                  {kampTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-[10px] bg-[var(--od-cream-2)] px-3.5 py-2 text-[14px] font-medium"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <Link
+                  href="/kamplar/"
+                  className="mt-1.5 inline-flex items-center gap-2 self-start border-b border-[var(--od-olive-soft)] pb-0.5 text-[15px] font-medium text-[var(--od-olive)]"
+                >
+                  Kampları incele &amp; ön kayıt
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 15 · KAPANIŞ CTA */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
+          <div className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(64px,9vw,120px)] text-center">
+            <h2 className="mx-auto mb-5 max-w-[18ch] font-display text-[clamp(30px,5vw,52px)] font-medium leading-[1.06] tracking-[-0.025em]">
+              Matematiği netleştirmenin <em className="font-normal italic">en kolay</em> yolu.
+            </h2>
+            <p className="mx-auto mb-9 max-w-[42ch] text-[18px] leading-[1.55] text-[#D8DCCF]">
+              Hesap açmaya gerek yok. Ödeyin, gerisini biz kuralım.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
               <PurchaseFunnelTrigger
                 source="home_final_primary"
                 packageName={lessonPkg.name}
@@ -793,11 +869,16 @@ export default function HomePage() {
                 subject={lessonPkg.subject}
                 priceLabel={lessonPkg.discountedPrice}
                 paymentLink=""
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/20 bg-white px-7 py-3 text-[15px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
+                className="inline-flex min-h-12 items-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
               >
-                Matematik Dersini Satın Al
-                <ArrowRight size={16} />
+                Satın Al — {priceMain}/ay
               </PurchaseFunnelTrigger>
+              <a
+                href={waHref}
+                className="inline-flex min-h-12 items-center gap-2 rounded-[11px] border border-[var(--od-cream)]/[0.28] bg-[var(--od-cream)]/10 px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[var(--od-cream)]/[0.18]"
+              >
+                WhatsApp&apos;tan sor
+              </a>
             </div>
           </div>
         </section>

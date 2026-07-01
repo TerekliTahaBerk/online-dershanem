@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Phone, Mail, MapPin, MessageCircle, Instagram, Linkedin, Send } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
@@ -15,35 +15,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/iletisim/" },
 };
 
-const channels = [
-  {
-    label: "Telefon",
-    value: contact.phone,
-    href: `tel:${contact.phone}`,
-    Icon: Phone,
-    note: "Hafta içi 09:00 — 21:00",
-  },
-  {
-    label: "WhatsApp",
-    value: contact.whatsapp,
-    href: `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`,
-    Icon: MessageCircle,
-    note: "En hızlı dönüş",
-  },
-  {
-    label: "E-posta",
-    value: contact.email,
-    href: `mailto:${contact.email}`,
-    Icon: Mail,
-    note: "Aynı gün yanıt",
-  },
-];
-
-const socials = [
-  { label: "Instagram", href: "https://www.instagram.com/onlinedershanem.tr/", Icon: Instagram },
-  { label: "TikTok", href: "https://www.tiktok.com/@onlinedershanem.tr", Icon: Send },
-  { label: "LinkedIn", href: "https://www.linkedin.com/company/onlinedershanem", Icon: Linkedin },
-];
+const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
 export default function ContactPage() {
   return (
@@ -55,108 +27,94 @@ export default function ContactPage() {
         ])}
       />
       <Navbar />
-      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* Hero + ön görüşme: desktop'ta iki kolon, mobilde tek akış */}
-        <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto grid max-w-[1080px] gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-            <div className="lg:sticky lg:top-28">
-              <span className="od-public-eyebrow">İletişim</span>
-              <h1 className="mt-5 text-[40px] leading-[1.04] sm:text-[54px]">
-                Bize <em className="font-normal italic text-[var(--od-olive)]">ulaşmak</em> çok kolay.
-              </h1>
-              <p className="mt-6 text-[16px] leading-7 text-[var(--od-ink-soft)]">
-                Öğrencinin sınıfını, hedefini ve derste nerede zorlandığını konuşalım.
-                Uygun küçük grup başlangıcını birlikte netleştirelim.
-              </p>
-              <div className="mt-8 space-y-3 border-t border-[var(--od-line)] pt-6 text-[14px] text-[var(--od-ink-soft)]">
-                <p>Formu doldurun; tercih ettiğiniz kanaldan size dönelim.</p>
-                <p>WhatsApp, telefon ve e-posta seçenekleri aşağıda.</p>
-              </div>
-            </div>
-            <ContactLeadForm />
+      <main className="od-public overflow-x-hidden bg-[var(--od-cream)] text-[var(--od-ink)]">
+        <section className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] pb-[clamp(48px,7vw,88px)] pt-[clamp(44px,7vw,84px)]">
+          {/* Başlık */}
+          <div className="mb-[clamp(36px,5vw,56px)] max-w-[52ch]">
+            <h1 className="mb-[18px] font-display text-[clamp(32px,5vw,52px)] font-medium leading-[1.04] tracking-[-0.025em]">
+              Bize <em className="font-normal italic">ulaşmak</em> çok kolay.
+            </h1>
+            <p className="text-[clamp(17px,2.2vw,19px)] leading-[1.6] text-[var(--od-ink-soft)]">
+              En hızlısı WhatsApp veya telefon. Aşağıdaki formu doldurursanız da biz sizi
+              ararız — sadece adınız ve numaranız yeter, gerisini görüşmede konuşuruz.
+            </p>
           </div>
-        </section>
 
-        {/* Channels grid */}
-        <section>
-          <div className="mx-auto max-w-[1080px] px-5 py-16 sm:px-8 sm:py-20">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {channels.map(({ label, value, href, Icon, note }) => (
+          <div className="grid items-start gap-[clamp(24px,4vw,40px)] lg:grid-cols-[1fr_1fr]">
+            {/* Sol: çalışan lead formu */}
+            <ContactLeadForm />
+
+            {/* Sağ: kanallar */}
+            <div className="flex flex-col gap-3.5">
               <a
-                key={label}
-                href={href}
-                target={href.startsWith("http") ? "_blank" : undefined}
-                rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                className="group flex flex-col gap-4 rounded-[24px] border border-[var(--od-line)] bg-white p-7 transition hover:border-[var(--od-ink)]/30 hover:shadow-[0_20px_50px_-36px_rgba(20,20,15,0.18)]"
+                href={waHref}
+                className="flex items-center gap-4 rounded-2xl bg-[var(--od-mint)] px-6 py-[22px] transition-opacity hover:opacity-90"
               >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
-                  <Icon size={20} strokeWidth={1.6} />
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--od-cream)] text-[#2C3A24]">
+                  <MessageCircle size={18} strokeWidth={1.6} aria-hidden="true" />
                 </span>
                 <div>
-                  <span className="text-[12px] font-medium uppercase tracking-[0.14em] text-[#8B8B7E]">
-                    {label}
-                  </span>
-                  <p className="mt-1.5 font-display text-[22px] leading-tight text-[var(--od-ink)] transition group-hover:text-[var(--od-olive)]">
-                    {value}
-                  </p>
-                  <p className="mt-2 text-[13px] text-[var(--od-ink-soft)]">{note}</p>
+                  <div className="text-[16px] font-semibold">WhatsApp</div>
+                  <div className="text-[14px] text-[#3B5232]">En hızlısı — hemen yazın</div>
                 </div>
+                <ArrowRight size={18} strokeWidth={1.7} className="ml-auto text-[#3B5232]" aria-hidden="true" />
               </a>
-            ))}
-          </div>
 
-          {/* Address */}
-          <div className="mt-10 grid gap-6 rounded-[24px] border border-[var(--od-line)] bg-white p-8 sm:grid-cols-[1fr_auto] sm:items-center sm:p-10">
-            <div className="flex items-start gap-4">
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
-                <MapPin size={20} strokeWidth={1.6} />
-              </span>
-              <div>
-                <span className="text-[12px] font-medium uppercase tracking-[0.14em] text-[#8B8B7E]">
-                  Merkezimiz
-                </span>
-                <p className="mt-1.5 font-display text-[22px] leading-tight text-[var(--od-ink)]">
-                  {contact.address}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {socials.map(({ label, href, Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--od-line)] bg-white text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
-                >
-                  <Icon size={16} />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Soft CTA */}
-          <div className="mt-10 rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/65 p-8 sm:p-10">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 className="font-display text-[26px] leading-tight text-[var(--od-ink)] sm:text-[30px]">
-                  Önce ders paketini birlikte değerlendirelim mi?
-                </h3>
-                <p className="mt-2 max-w-md text-[14.5px] text-[var(--od-ink-soft)]">
-                  En fazla 4 öğrencilik canlı matematik dersi, her ders sonunda
-                  net çalışma planı ve veliye anlaşılır haftalık not kapsamını
-                  inceleyin.
-                </p>
-              </div>
-              <Link
-                href="/#matematik-ders-paketi"
-                className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
+              <a
+                href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}
+                className="flex items-center gap-4 rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)] px-6 py-[22px] transition-colors hover:border-[var(--od-ink)]/30"
               >
-                Ders Paketini İncele
-              </Link>
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
+                  <Phone size={18} strokeWidth={1.6} aria-hidden="true" />
+                </span>
+                <div>
+                  <div className="text-[16px] font-semibold">Telefon</div>
+                  <div className="text-[14px] text-[var(--od-ink-soft)]">{contact.phone}</div>
+                </div>
+                <ArrowRight size={18} strokeWidth={1.7} className="ml-auto text-[var(--od-ink-soft)]" aria-hidden="true" />
+              </a>
+
+              <a
+                href={`mailto:${contact.email}`}
+                className="flex items-center gap-4 rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)] px-6 py-[22px] transition-colors hover:border-[var(--od-ink)]/30"
+              >
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
+                  <Mail size={18} strokeWidth={1.6} aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[16px] font-semibold">E-posta</div>
+                  <div className="truncate text-[14px] text-[var(--od-ink-soft)]">{contact.email}</div>
+                </div>
+                <ArrowRight size={18} strokeWidth={1.7} className="ml-auto shrink-0 text-[var(--od-ink-soft)]" aria-hidden="true" />
+              </a>
+
+              <div className="flex items-center gap-4 rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)] px-6 py-[22px]">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
+                  <MapPin size={18} strokeWidth={1.6} aria-hidden="true" />
+                </span>
+                <div>
+                  <div className="text-[16px] font-semibold">Konum</div>
+                  <div className="text-[14px] text-[var(--od-ink-soft)]">{contact.address}</div>
+                </div>
+              </div>
+
+              {/* Cross-sell */}
+              <div className="mt-1.5 rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream-2)] px-6 py-[22px]">
+                <div className="mb-1.5 text-[15px] font-semibold">
+                  Önce paketi incelemek ister misiniz?
+                </div>
+                <p className="mb-3.5 text-[14px] leading-[1.55] text-[var(--od-ink-soft)]">
+                  Fiyat, kapsam ve “hesap gerekmez” akışının tümü tek sayfada.
+                </p>
+                <Link
+                  href="/matematik-ders-paketi/"
+                  className="inline-flex items-center gap-2 border-b border-[var(--od-olive-soft)] pb-0.5 text-[14px] font-medium text-[var(--od-olive)]"
+                >
+                  Matematik Ders Paketi&apos;ne git
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
+              </div>
             </div>
-          </div>
           </div>
         </section>
       </main>

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { siteUrl } from "@/lib/content";
@@ -19,156 +17,117 @@ export const metadata: Metadata = {
   },
 };
 
+const principles = [
+  {
+    n: "01",
+    title: "Küçük grup, gerçek ilgi",
+    body: "En fazla 4 öğrenci. Herkesin soru sorabildiği, kimsenin arkada kaybolmadığı bir masa.",
+  },
+  {
+    n: "02",
+    title: "Şeffaflık, abartı değil",
+    body: "Neyi verip neyi vermediğimizi açıkça yazarız. Haftalık notla süreci gözünüzün önüne getiririz.",
+  },
+  {
+    n: "03",
+    title: "Erişilebilir olmak",
+    body: "Kaliteli takibi, birebir dersin maliyetine mahkûm etmeden, sürdürülebilir bir fiyatta sunmak.",
+  },
+];
+
 export default function MissionPage() {
   return (
     <>
       <Navbar />
-      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* Hero with founders animation */}
-        <section className="relative overflow-hidden">
-          <div className="mx-auto max-w-3xl px-5 pt-20 pb-12 text-center sm:pt-28">
-            {/* Founders animation — clean, container-less */}
-            <Image
-              src="/founders.webp"
-              alt="Online Dershanem kurucuları"
-              width={900}
-              height={620}
-              unoptimized
-              priority
-              className="mx-auto block h-auto w-full max-w-[560px] object-contain"
-            />
+      <main className="od-public overflow-x-hidden bg-[var(--od-cream)] text-[var(--od-ink)]">
+        {/* EDITORYAL AÇILIŞ */}
+        <section className="mx-auto max-w-[820px] px-[clamp(20px,4vw,40px)] pb-[clamp(40px,6vw,64px)] pt-[clamp(56px,9vw,120px)]">
+          <p className="mb-7 text-[14px] font-medium uppercase tracking-[0.06em] text-[var(--od-olive-soft)]">
+            Misyonumuz
+          </p>
+          <h1 className="max-w-[22ch] font-display text-[clamp(30px,5vw,52px)] font-normal leading-[1.16] tracking-[-0.02em]">
+            Matematiği, bir çocuğun <em className="italic">korktuğu</em> ders olmaktan
+            çıkarmak istedik.
+          </h1>
+        </section>
 
-            <h1 className="mt-14 font-display text-[34px] font-normal leading-[1.08] tracking-tight text-[var(--od-ink)] sm:text-[60px] sm:leading-[1.04]">
-              Potansiyelin maddi koşullarla{" "}
-              <em className="italic text-[var(--od-olive)]">sınırlanamayacağı</em>{" "}
-              bir sistem.
-            </h1>
+        {/* PROSE */}
+        <section className="mx-auto max-w-[680px] px-[clamp(20px,4vw,40px)] pb-[clamp(48px,7vw,80px)]">
+          <div className="flex flex-col gap-7 text-[19px] leading-[1.7] text-[#2E2E28]">
+            <p>
+              Online Dershanem, kalabalık dershane sıralarında kaybolan ya da birebir
+              özel dersin maliyetine ulaşamayan öğrenciler için kuruldu. İkisinin
+              arasında, bilinçli bir yer aradık: yeterince küçük ki her öğrenci görünür
+              olsun, yeterince erişilebilir ki her aile sürdürebilsin.
+            </p>
+            <p>
+              Matematiğin bir yetenek meselesi değil, bir{" "}
+              <em className="font-display italic">düzen</em> meselesi olduğuna
+              inanıyoruz. Doğru büyüklükte bir grup, takip edilen bir plan ve dürüst bir
+              geri bildirim — çoğu öğrenci için gereken bu.
+            </p>
+            <p>
+              Abartılı vaatler vermiyoruz. “Garantili puan” veya “bir ayda zirve”
+              demiyoruz. Bunun yerine, her hafta çocuğunuzun nerede olduğunu size sade bir
+              dille anlatıyor, sürecin içine sizi de alıyoruz. Güven, gösterişle değil
+              şeffaflıkla kurulur.
+            </p>
           </div>
         </section>
 
-        {/* Manifesto body */}
-        <section className="mx-auto max-w-2xl px-5 pb-12">
-          <div className="space-y-6 text-[15.5px] leading-[1.85] text-[var(--od-ink-soft)] sm:text-[16.5px]">
-            <p>
-              Biz bu platformu, potansiyelin hiçbir zaman maddi koşullarla
-              sınırlanmaması gerektiğine inanarak kurduk.
+        {/* PULL QUOTE */}
+        <section className="border-y border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className="mx-auto max-w-[820px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,88px)] text-center">
+            <p className="font-display text-[clamp(24px,4vw,36px)] font-normal italic leading-[1.3] tracking-[-0.01em]">
+              “Çocuğun dersten eli boş kalkmasın. Ne çalışacağını bilsin, veli de süreci
+              görsün. Kurduğumuz her şey bu basit cümlenin etrafında.”
             </p>
-
-            <p>
-              Bugün Türkiye’de çok sayıda öğrenci kaliteli matematik desteğine
-              ulaşmakta zorlanırken, güçlü genç eğitmenler de bilgilerini
-              sürdürülebilir ve insani bir öğrenme modeline
-              dönüştürmekte zorlanıyor. Sorun yetenek eksikliği değil; doğru
-              yapının eksikliği.
+            <p className="mt-6 text-[14px] text-[var(--od-ink-soft)]">
+              — Online Dershanem, kurucu ekip
             </p>
-
-            <p>
-              Aynı zamanda eğitim her geçen gün daha pahalı, daha parçalı ve
-              daha erişilmez hale geliyor. İyi eğitim bir hak olmaktan çıkıp
-              ayrıcalığa dönüşüyor.
-            </p>
-
-            <Pull>Biz bunun farklı olabileceğine inanıyoruz.</Pull>
-
-            <p>
-              <strong className="font-medium text-[var(--od-ink)]">
-                Misyonumuz;
-              </strong>{" "}
-              matematikte yolu yakın zamanda başarıyla geçmiş güçlü eğitmenlerle
-              bugün zorlanan öğrencileri küçük, sesini duyurabildiği canlı ders
-              gruplarında buluşturmak.
-            </p>
-
-            <p>
-              Daha erişilebilir, daha samimi ve daha sürdürülebilir bir eğitim
-              sistemi inşa etmek.
-            </p>
-
-            <p>
-              Çünkü bazen en iyi anlatan kişiler, aynı süreci en yakın zamanda
-              yaşamış olanlardır. Sınav baskısını, kafa karışıklığını, öğrenme
-              sürecini ve başarıya giden yolu gerçekten bilenler.
-            </p>
-
-            <p>
-              Bu yüzden öğrencinin derste görünür olduğu, soru sorabildiği ve
-              ders sonrası ne çalışacağını bildiği bir matematik dersi modeli
-              kuruyoruz.
-            </p>
-
-            <Pull>Çünkü bu yalnızca ders anlatmak değil.</Pull>
-
-            <p>
-              Bu; öğrencilerin kendi bilgileriyle değer üretebildiği, gençlerin
-              ekonomik olarak güçlenebildiği ve kaliteli eğitimin daha
-              ulaşılabilir hale geldiği yeni bir{" "}
-              <em className="italic text-[var(--od-ink)]">
-                akademik dayanışma modeli
-              </em>
-              .
-            </p>
-
-            <p>
-              Biz teknolojinin insan öğrenmesinin yerine geçmesine değil, onu
-              daha kişisel, daha verimli ve daha erişilebilir hale getirmesine
-              inanıyoruz.
-            </p>
-
-            <p>Çünkü mesele yalnızca sınav kazanmak değil.</p>
-
-            <p>
-              <strong className="font-medium text-[var(--od-ink)]">
-                Mesele; kaybolup gidecek potansiyelleri ortaya çıkarmak.
-              </strong>
-            </p>
-
-            <p>
-              Genç insanların öğrenirken aynı zamanda üretebildiği,
-              öğretebildiği ve birlikte büyüyebildiği bir gelecek kurmak.
-            </p>
-
-            {/* Closing pull-quote in serif */}
-            <div className="my-10 border-t border-[var(--od-line)] pt-10">
-              <p className="text-[12.5px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
-                Ve en önemlisi
-              </p>
-              <p className="mt-5 font-display text-[26px] font-normal leading-[1.25] tracking-tight text-[var(--od-ink)] sm:text-[32px]">
-                Bir insanın geleceğinin, sahip olduğu maddi imkanlarla değil;{" "}
-                <em className="italic text-[var(--od-olive)]">merakı</em>,{" "}
-                <em className="italic text-[var(--od-olive)]">emeği</em> ve{" "}
-                <em className="italic text-[var(--od-olive)]">potansiyeliyle</em>{" "}
-                şekillendiği bir sistem inşa etmek.
-              </p>
-            </div>
-
-            {/* Signature */}
-            <div className="flex flex-col items-start gap-1 pt-2 text-left">
-              <p className="text-[14px] font-medium text-[var(--od-ink)]">
-                — Taha Berk, Furkan &amp; Melih
-              </p>
-            </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="mx-auto max-w-3xl px-5 pb-24 pt-6">
-          <div className="overflow-hidden rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/65 p-8 sm:p-12">
-            <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
-              <div>
-                <h3 className="font-display text-[26px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[34px]">
-                  Matematikte yolu yakın zamanda yürümüş bir hocayla tanış.
-                </h3>
-                <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  Matematikte nerede olursa olsun, öğrenciniz için doğru
-                  küçük grup başlangıcını birlikte belirleyelim.
-                </p>
+        {/* DEĞERLER */}
+        <section className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,88px)]">
+          <h2 className="mb-11 font-display text-[clamp(24px,3.4vw,34px)] font-medium tracking-[-0.02em]">
+            Bize yön veren üç ilke
+          </h2>
+          <div className="grid gap-px overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-line)] sm:grid-cols-2 lg:grid-cols-3">
+            {principles.map((p) => (
+              <div key={p.n} className="bg-[var(--od-cream)] p-8">
+                <div className="mb-5 font-display text-[30px] text-[var(--od-olive-soft)]">
+                  {p.n}
+                </div>
+                <h3 className="mb-2.5 text-[18px] font-semibold">{p.title}</h3>
+                <p className="text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">{p.body}</p>
               </div>
+            ))}
+          </div>
+        </section>
+
+        {/* KAPANIŞ */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
+          <div className="mx-auto max-w-[820px] px-[clamp(20px,4vw,40px)] py-[clamp(56px,8vw,104px)] text-center">
+            <h2 className="mb-5 font-display text-[clamp(26px,4vw,42px)] font-medium leading-[1.1] tracking-[-0.02em]">
+              Tanışalım mı?
+            </h2>
+            <p className="mx-auto mb-8 max-w-[42ch] text-[17px] leading-[1.6] text-[#D8DCCF]">
+              Çocuğunuz için doğru yer miyiz, en iyisi konuşarak anlaşılır. Bir ön görüşme
+              her zaman ücretsiz.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
               <Link
-                href="/#matematik-ders-paketi"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
+                href="/iletisim/"
+                className="inline-flex min-h-12 items-center rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
               >
-                Ders Paketini İncele
-                <ArrowRight size={15} strokeWidth={1.8} />
+                İletişime geç
+              </Link>
+              <Link
+                href="/matematik-ders-paketi/"
+                className="inline-flex min-h-12 items-center rounded-[11px] border border-[var(--od-cream)]/[0.28] bg-[var(--od-cream)]/10 px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[var(--od-cream)]/[0.18]"
+              >
+                Paketi incele
               </Link>
             </div>
           </div>
@@ -176,13 +135,5 @@ export default function MissionPage() {
       </main>
       <Footer />
     </>
-  );
-}
-
-function Pull({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="font-display text-[22px] font-normal italic leading-[1.4] tracking-tight text-[var(--od-ink)] sm:text-[26px]">
-      {children}
-    </p>
   );
 }

@@ -55,18 +55,16 @@ export function Footer() {
             <Link
               href="/"
               aria-label="Online Dershanem"
-              className="inline-flex items-center gap-2.5 text-[var(--od-cream)]"
+              className="inline-flex items-center text-[var(--od-cream)]"
             >
-              <span className="inline-flex items-center justify-center rounded-[8px] bg-[var(--od-olive-soft)] p-1">
-                <Image
-                  src="/icon-192.png"
-                  alt=""
-                  width={192}
-                  height={192}
-                  className="h-7 w-7 rounded-[6px] object-contain"
-                />
-              </span>
-              <span className="font-display text-[19px] font-medium tracking-[-0.01em]">Online Dershanem</span>
+              <Image
+                src="/onlinedershanem_.png"
+                alt="Online Dershanem"
+                width={1050}
+                height={200}
+                sizes="180px"
+                className="h-7 w-auto [filter:brightness(0)_invert(1)]"
+              />
             </Link>
 
             <p className="max-w-sm text-[13.5px] leading-6 text-[#A8A89E]">

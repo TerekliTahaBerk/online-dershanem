@@ -36,16 +36,16 @@ export function Navbar() {
     <>
       <header className="sticky top-0 z-40 w-full border-b border-[var(--od-line)] bg-[#FBFAF5]/92 text-[var(--od-ink)] backdrop-blur-xl">
         <div className="relative mx-auto flex h-16 w-full max-w-[1080px] items-center justify-between gap-4 px-5 sm:px-8">
-          <Link href="/" aria-label="Online Dershanem ana sayfa" className="flex shrink-0 items-center gap-2.5 text-[var(--od-ink)]">
+          <Link href="/" aria-label="Online Dershanem ana sayfa" className="flex shrink-0 items-center">
             <Image
-              src="/icon-192.png"
-              alt=""
-              width={192}
-              height={192}
-              sizes="28px"
-              className="h-7 w-7 rounded-[8px] object-contain"
+              src="/onlinedershanem_.png"
+              alt="Online Dershanem"
+              width={1050}
+              height={200}
+              priority
+              sizes="150px"
+              className="h-[26px] w-auto"
             />
-            <span className="font-display text-[18px] font-medium tracking-[-0.01em]">Online Dershanem</span>
           </Link>
 
           <nav aria-label="Ana menü" className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 xl:flex">
