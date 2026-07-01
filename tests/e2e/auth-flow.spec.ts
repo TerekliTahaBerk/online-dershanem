@@ -33,10 +33,14 @@ test("giriş formu render oluyor", async ({ page }) => {
   await expect(page.locator('button[type="submit"]')).toBeVisible();
 });
 
-test("kayıt formu render oluyor", async ({ page }) => {
+test("kayıt route'u feature flag davranışını uygular", async ({ page }) => {
   await page.goto("/kayit");
-  await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible();
-  await expect(page.locator('input[type="password"], input[name="password"]')).toBeVisible();
+  if (process.env.PUBLIC_REGISTER_ENABLED === "true") {
+    await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible();
+    await expect(page.locator('input[type="password"], input[name="password"]')).toBeVisible();
+  } else {
+    await expect(page).toHaveURL(/\/panel-yenileniyor\/?$/);
+  }
 });
 
 test("şifremi unuttum sayfası açılıyor", async ({ page }) => {

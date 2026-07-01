@@ -37,9 +37,9 @@ test.describe("D6 — Access boundaries @smoke", () => {
     // Öğrenci kendi panelinde sadece kendi verisini görmeli.
     await ogrenciPage.goto("/panel/ogrenci/odk/paketim?studentId=forged-id-xyz");
     // URL'de query param görünebilir ama sayfa kendi verisini render etmeli.
-    // Body içinde "forged-id-xyz" stringi görünmemeli (data leak yok).
-    const html = await ogrenciPage.content();
-    expect(html).not.toContain("forged-id-xyz");
+    // Next.js ham HTML'i route/search-param metadata'sı içerir; güvenlik
+    // invariant'ı kullanıcıya render edilen içerikte doğrulanmalı.
+    await expect(ogrenciPage.locator("body")).not.toContainText("forged-id-xyz");
     // Yetkisiz/kırık değil — 200 + kendi paketim sayfası
     await expect(ogrenciPage.locator("body")).toContainText(/paket|deneme/i);
   });

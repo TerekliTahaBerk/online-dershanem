@@ -29,8 +29,7 @@ test.describe("D10 — Student role journey @smoke", () => {
     // Olmayan veya kendisine ait olmayan assignment ID
     const fake = "forged-asg-id-xyz";
     await ogrenciPage.goto(`/panel/ogrenci/odevler/${fake}`);
-    const html = await ogrenciPage.content();
-    expect(html).not.toContain(fake);
+    await expect(ogrenciPage.locator("body")).not.toContainText(fake);
     // 5xx atmadı; sayfa sahip olduğu ödevler listesini gösteriyor olabilir
     await expect(ogrenciPage.locator("body")).toBeVisible();
   });

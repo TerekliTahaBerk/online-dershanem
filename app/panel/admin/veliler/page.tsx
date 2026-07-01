@@ -559,7 +559,7 @@ export default async function AdminParents({
             </tbody>
           </table>
         )}
-        <BulkBar>{() => <ParentBulkActions />}</BulkBar>
+        <BulkBar><ParentBulkActions /></BulkBar>
         </BulkProvider>
       </Card>
 

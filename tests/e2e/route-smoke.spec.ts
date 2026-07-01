@@ -26,9 +26,11 @@ test.describe("D10 — Admin route smoke @smoke", () => {
       const res = await adminPage.goto(route.path, { waitUntil: "domcontentloaded" });
       expect(res, `${route.path}: response yok`).not.toBeNull();
       expect(res!.status(), `${route.path}: status`).toBeLessThan(500);
-      await expect(adminPage.locator("body")).toBeVisible();
+      const content = adminPage.locator(".od-panel-body");
+      await expect(content).toBeVisible();
+      await expect(content.getByRole("heading", { name: "Bir şeyler ters gitti" })).toHaveCount(0);
       if (route.keyword) {
-        await expect(adminPage.locator("body")).toContainText(route.keyword);
+        await expect(content).toContainText(route.keyword);
       }
     });
   }

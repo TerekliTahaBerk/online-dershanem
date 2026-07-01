@@ -290,8 +290,7 @@ export function BulkAllCheckbox({ ids, label = "Tümünü seç" }: { ids: string
 }
 
 type BulkBarProps = {
-  /** Render fn — argümanlar: seçili id'ler, temizle */
-  children: (args: { ids: string[]; clear: () => void }) => React.ReactNode;
+  children: React.ReactNode;
 };
 
 export function BulkBar({ children }: BulkBarProps) {
@@ -303,7 +302,7 @@ export function BulkBar({ children }: BulkBarProps) {
         <strong>{selected.size}</strong> satır seçildi
       </div>
       <div className="od-bulkbar-actions">
-        {children({ ids: Array.from(selected), clear })}
+        {children}
         <button type="button" className="od-btn od-btn-ghost od-btn-sm" onClick={clear}>
           Temizle
         </button>

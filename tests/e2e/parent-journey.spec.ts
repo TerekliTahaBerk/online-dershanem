@@ -27,8 +27,7 @@ test.describe("D8 — Parent role journey @smoke", () => {
 
   test("veli forge edilen studentId ile başka çocuk verisini sızdıramıyor", async ({ veliPage }) => {
     await veliPage.goto("/panel/veli/cocuklarim?studentId=forged-veli-xyz");
-    const html = await veliPage.content();
-    expect(html).not.toContain("forged-veli-xyz");
+    await expect(veliPage.locator("body")).not.toContainText("forged-veli-xyz");
     // Yetkisiz/kırık değil — kendi sayfası açılıyor
     await expect(veliPage.locator("body")).toContainText(/çocu/i);
   });

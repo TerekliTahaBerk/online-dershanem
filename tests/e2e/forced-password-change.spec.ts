@@ -39,9 +39,13 @@ test.describe("D2 — Forced password change", () => {
       // Step 2: yönlendirme → /panel/sifre-degistir (login → /panel → middleware redirect)
       await page.waitForURL(/\/panel\/sifre-degistir/, { timeout: 10_000 });
 
-      // Step 3: rol paneline gitmeyi dene → yine /panel/sifre-degistir
-      await page.goto("/panel/veli");
-      await page.waitForURL(/\/panel\/sifre-degistir/, { timeout: 10_000 });
+      // Step 3: oturum çerezini paylaşan request context ile middleware
+      // redirect'ini doğrula; form sayfasında ikinci bir navigation yarışı yaratma.
+      const gateResponse = await page.context().request.get("/panel/veli", {
+        maxRedirects: 0,
+      });
+      expect(gateResponse.status()).toBe(307);
+      expect(gateResponse.headers().location).toContain("/panel/sifre-degistir");
 
       // Step 4: form doldur — current + new + confirm
       await page.locator('input[autocomplete="current-password"]').fill(tempPassword);

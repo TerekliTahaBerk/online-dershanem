@@ -52,7 +52,6 @@ test.describe("D4 — Role routing & lockout @smoke", () => {
       await loginAs(page, email);
       // Login başarılı, ama bir panel sayfasına gittiğimizde force-pw redirect
       await page.goto("/panel/ogretmen");
-      await page.waitForLoadState("networkidle");
       await expect(page).toHaveURL(/\/panel\/sifre-degistir/);
     } finally {
       await testPrisma.user.update({
