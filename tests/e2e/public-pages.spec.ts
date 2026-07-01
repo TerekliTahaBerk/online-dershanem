@@ -24,7 +24,8 @@ const PUBLIC_ROUTES = [
   { path: "/misyonumuz", keyword: /misyon|hakk|kuruluş|biz/i },
   { path: "/kariyer", keyword: /kariyer|pozisyon|ekip/i },
   { path: "/giris", keyword: /giriş|şifre|e-posta|hesab/i },
-  { path: "/kayit", keyword: /kayıt|hesap|şifre|e-posta/i },
+  // Public self-register kapalıyken /panel-yenileniyor'a yönlenir.
+  { path: "/kayit", keyword: /kayıt|hesap|şifre|e-posta|panelimizi yeniliyoruz/i },
 ];
 
 for (const route of PUBLIC_ROUTES) {

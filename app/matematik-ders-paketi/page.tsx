@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, GraduationCap } from "lucide-react";
+import { ArrowRight, Check, Minus, Plus } from "lucide-react";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { FadeIn } from "@/components/ui/fade-in";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import {
@@ -11,80 +10,110 @@ import {
   courseJsonLd,
   productJsonLd,
 } from "@/lib/seo/jsonld";
-import { siteUrl, subjectPackageGroups } from "@/lib/content";
-
-export const metadata: Metadata = {
-  title: "Matematik Ders Paketi — Butik Canlı Matematik Dersi",
-  description:
-    "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti. Aylık ₺3.000.",
-  alternates: { canonical: "/matematik-ders-paketi/" },
-  openGraph: {
-    title: "Matematik Ders Paketi | Online Dershanem",
-    description:
-      "En fazla 4 öğrencilik grupta canlı matematik dersi, öğretmen notu ve ders sonrası net çalışma yönü.",
-    url: `${siteUrl}/matematik-ders-paketi/`,
-  },
-};
+import { contact, siteUrl, subjectPackageGroups } from "@/lib/content";
 
 const lessonPkg = subjectPackageGroups[0].packages.find(
   (p) => p.subject === "Ders Paketi",
 )!;
 
+const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
+const priceMain = lessonPkg.discountedPrice.replace("/ay", ""); // ₺3.000
+const priceOld = (lessonPkg.oldPrice ?? "").replace("/ay", ""); // ₺5.000
+
+export const metadata: Metadata = {
+  title: "Matematik Ders Paketi — Butik Canlı Matematik Dersi",
+  description:
+    "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu. Aylık ₺3.000.",
+  alternates: { canonical: "/matematik-ders-paketi/" },
+  openGraph: {
+    title: "Matematik Ders Paketi | Online Dershanem",
+    description:
+      "En fazla 4 öğrencilik grupta canlı matematik dersi, öğretmen notu ve ders sonrası çalışma yönü.",
+    url: `${siteUrl}/matematik-ders-paketi/`,
+  },
+};
+
 const pillars = [
   {
-    title: "En fazla 4 öğrenci",
-    body: "Kalabalık online sınıf yok. Öğretmen her öğrenciyi adıyla ve çözüm tarzıyla tanır.",
+    title: "En fazla 4 kişilik grup",
+    body: "Herkesin görünür olduğu, soru sorabildiği küçük canlı sınıf.",
   },
   {
-    title: "Derste görünür ol",
-    body: "Öğrenci ekranın arkasında kaybolmaz; soruda ve çözümde aktif olur.",
+    title: "Google Meet’te canlı",
+    body: "Kurulum yok. Bağlantıya tıkla, derse katıl. Soru-cevap ve birlikte çözüm.",
   },
   {
-    title: "Soru sorabilmek",
-    body: "Takıldığın anda sorarsın. Konu derste bitirilir, ertesi güne soru işareti kalmaz.",
+    title: "Plan + ödev + not",
+    body: "Her ders, öğrenci ne çalışacağını bilerek biter. Ödev sayılı ve takip edilebilir.",
   },
   {
-    title: "Net çalışma yönü",
-    body: "Ders sonunda öğrenci hangi konuyu, hangi sorularla çalışacağını bilir.",
+    title: "Veliye haftalık not",
+    body: "Bu hafta ne işlendi, nerede iyi, neye dikkat — kısa bir durum özeti.",
   },
 ];
 
-const lessonFlow = [
-  { t: "Seviye analizi", d: "Öğrencinin matematik seviyesi ve hedefi dinlenir, doğru gruba yerleşir." },
-  { t: "Canlı ders", d: "Butik grupta konu anlatımı, birlikte çözüm ve aktif soru-cevap." },
-  { t: "Ödevlendirme", d: "Ders sonrası seviyeye uygun ödev verilir; öğrenci ne çalışacağını bilir." },
-  { t: "Veli özeti", d: "Veliye çocuğunun nerede zorlandığını anlatan kısa ve sade bir not gider." },
+const kapsar = [
+  "Haftalık canlı grup dersleri",
+  "Konu anlatımı + birlikte soru çözümü",
+  "Ders sonu çalışma planı ve ödev",
+  "Öğretmen notu ile geri bildirim",
+  "Veliye haftalık durum notu",
 ];
 
-// Dürüst, iddiasız kadro bloğu — sahte isim/üniversite/derece iddiası yok.
-const faculty = [
+const kapsamaz = [
+  "Matematik dışı dersler",
+  "Birebir özel ders garantisi",
+  "Sınav başarısı taahhüdü / “garantili puan”",
+  "Resmî karne / not belgesi",
+  "7/24 birebir soru çözüm hattı",
+];
+
+const priceFeatures = [
+  { strong: true, text: "Hesap açmanıza gerek yok" },
+  { strong: false, text: "Ödeme sonrası hesabı biz oluştururuz" },
+  { strong: false, text: "PayTR · 256-bit SSL güvenli ödeme" },
+  { strong: false, text: "Aylık — uzun taahhüt yok" },
+];
+
+const flow = [
+  { step: "1", title: "Ödeme", body: "PayTR üzerinden güvenle tamamlanır." },
+  { step: "2", title: "Biz ararız", body: "Seviye ve hedefi konuşuruz." },
+  { step: "3", title: "Hesabı açarız", body: "Giriş bilgilerini iletiriz." },
+  { step: "4", title: "İlk ders", body: "Gruba katılır, başlarız." },
+];
+
+const faqs = [
   {
-    title: "Yalnızca matematik",
-    body: "Kadromuzdaki her öğretmen tek branşa odaklanır: matematik. Dağılma yok; tüm hazırlık tek derse kurulur.",
+    q: "Aylık ücrete neler dahil?",
+    a: "Haftalık canlı grup dersleri, her ders sonunda çalışma planı ve ödev, öğretmen notu ve veliye haftalık durum notu. Yukarıdaki “Kapsar” listesi tam içeriği gösterir.",
   },
   {
-    title: "Sınav müfredatına hâkim",
-    body: "LGS, TYT ve AYT matematik konuları ve güncel soru tipleriyle düzenli çalışan öğretmenlerle dersler kurulur.",
+    q: "₺5.000 fiyatı ne, neden ₺3.000 ödüyorum?",
+    a: "₺5.000, paketin referans aldığımız liste fiyatıdır. ₺3.000/ay ise şu anda geçerli olan güncel fiyattır.",
   },
   {
-    title: "Adıyla tanıyan takip",
-    body: "En fazla 4 kişilik grupta öğretmen her öğrencinin çözüm tarzını ve takıldığı noktaları yakından izler.",
+    q: "Satın alınca hemen hesap mı açmam gerekiyor?",
+    a: "Hayır. Ödeme sırasında yalnızca ad-soyad ve iletişim bilgisi istenir. Öğrenci hesabını ödeme sonrası ekibimiz oluşturur ve giriş bilgilerini size iletir.",
+  },
+  {
+    q: "Çocuğumun sınıfını / hedefini ne zaman soruyorsunuz?",
+    a: "Ödeme sonrası sizi aradığımızda. Seviyeyi ve hedefi birlikte konuşup en uygun gruba yerleştiririz. Ödeme anında bu bilgileri girmenize gerek yok.",
+  },
+  {
+    q: "İstediğim zaman bırakabilir miyim?",
+    a: "Paket aylıktır ve uzun vadeli zorunlu taahhüt içermez. Ayrıntılar için bize her zaman ulaşabilirsiniz.",
   },
 ];
 
-const faq = [
-  { q: "Grup gerçekten en fazla 4 kişi mi?", a: "Evet. Matematik Ders Paketi en fazla 4 öğrencilik küçük grup modelidir. Bu sayede öğretmen her öğrenciyle yeterince ilgilenebilir." },
-  { q: "Dersler nasıl işleniyor?", a: "Dersler Google Meet üzerinden canlı yapılır. Konu anlatımı, birlikte soru çözümü ve aktif soru-cevap bir aradadır; ders sonunda ödevlendirme yapılır." },
-  { q: "Public satışta başka paket var mı?", a: "Hayır. Şu anda public satışta yalnızca Matematik Ders Paketi var. Odak canlı matematik dersi, küçük grup ve ders sonrası net çalışma yönüdür." },
-  { q: "Fiyat aylık mı?", a: "Evet. Matematik Ders Paketi aylık ₺3.000'dir (eski fiyat ₺5.000)." },
-  { q: "Hesap açmam gerekiyor mu?", a: "Hayır. Ödeme öncesi hesap açmanıza gerek yok. Ödeme sonrası öğrenci hesabınız ekibimiz tarafından oluşturulur ve giriş bilgileri sizinle paylaşılır." },
-];
+const SECTION_H2 =
+  "font-display text-[clamp(26px,3.6vw,38px)] font-medium leading-[1.1] tracking-[-0.02em]";
+const LABEL_H2 = "text-[14px] font-semibold tracking-[0.02em]";
 
 export default function MatematikDersPaketiPage() {
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faq.map((f) => ({
+    mainEntity: faqs.map((f) => ({
       "@type": "Question",
       name: f.q,
       acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -94,7 +123,7 @@ export default function MatematikDersPaketiPage() {
   const productLd = productJsonLd({
     name: lessonPkg.name,
     description:
-      "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti.",
+      "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu.",
     url: "/matematik-ders-paketi/",
     priceCents: lessonPkg.priceCents,
     sku: lessonPkg.id,
@@ -116,198 +145,225 @@ export default function MatematikDersPaketiPage() {
     <>
       <SchemaJsonLd schema={[faqJsonLd, productLd, courseLd, breadcrumbLd]} />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* HERO — sade, ortalı, editorial */}
-        <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[var(--od-cream)]">
-          <div className="mx-auto max-w-3xl px-5 pt-28 pb-16 text-center sm:pt-36 sm:pb-24">
-            <h1 className="text-[38px] font-black leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[58px]">
-              Butik grupta canlı matematik dersi.
-            </h1>
-            <p className="mx-auto mt-6 max-w-xl text-[16px] leading-7 text-[var(--od-ink-soft)] sm:text-[18px]">
-              En fazla 4 öğrencilik grupta öğrenci derste görünür olur, soru
-              sorar ve çözümünü öğretmenle birlikte düzeltir. Kalabalık online
-              sınıf hissini bilinçli olarak geride bırakıyoruz.
-            </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <PurchaseFunnelTrigger
-                source="ders_paketi_hero"
-                packageName={lessonPkg.name}
-                category={lessonPkg.category}
-                subject={lessonPkg.subject}
-                priceLabel={lessonPkg.discountedPrice}
-                paymentLink=""
-                analyticsId="ders_paketi_hero"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--od-olive)] px-7 py-3 text-[14.5px] font-bold text-white transition hover:bg-[#2E3B24]"
-              >
-                Matematik Dersini Satın Al
-                <ArrowRight size={15} strokeWidth={2} />
-              </PurchaseFunnelTrigger>
+      <main className="od-public overflow-x-hidden bg-[var(--od-cream)] text-[var(--od-ink)]">
+        {/* HERO + STICKY PRICE */}
+        <section className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(40px,6vw,72px)]">
+          <div className="grid items-start gap-[clamp(32px,5vw,64px)] lg:grid-cols-2">
+            {/* Sol: detay */}
+            <div>
               <Link
-                href="/iletisim/"
-                className="inline-flex items-center rounded-full border border-[var(--od-ink)]/15 bg-white px-7 py-3 text-[14.5px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40"
+                href="/"
+                className="mb-6 inline-block text-[13px] text-[var(--od-ink-soft)]"
               >
-                Önce Bizimle Görüşün
+                ← Ana sayfa
               </Link>
-            </div>
-            <div className="mt-6 flex items-center justify-center gap-2 text-[14px]">
-              <span className="text-[22px] font-black text-[var(--od-ink)]">{lessonPkg.discountedPrice}</span>
-              {lessonPkg.oldPrice ? (
-                <span className="text-[13px] text-[#A0A095] line-through">{lessonPkg.oldPrice}</span>
-              ) : null}
-            </div>
-          </div>
-        </section>
-
-        {/* PILLARS */}
-        <section className="border-b border-[var(--od-line)] bg-white">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
-            <FadeIn>
-              <div className="mx-auto max-w-2xl text-center">
-                <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-                  Kalabalık sınıf değil, derste gerçek temas.
-                </h2>
+              <div>
+                <span className="mb-5 inline-block rounded-full border border-[var(--od-line)] bg-[var(--od-cream-2)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--od-ink-soft)]">
+                  Tek satış paketimiz
+                </span>
               </div>
-            </FadeIn>
-            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {pillars.map(({ title, body }, i) => (
-                <FadeIn key={title} delay={i * 0.04}>
-                  <div className="h-full rounded-[22px] border border-[var(--od-line)] bg-[var(--od-cream)] p-6">
-                    <h3 className="font-display text-[18px] font-medium leading-tight text-[var(--od-ink)]">{title}</h3>
-                    <p className="mt-2 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">{body}</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* LESSON FLOW */}
-        <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
-            <FadeIn>
-              <div className="max-w-2xl">
-                <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-                  Anlatım, çözüm, ödev, sade geri bildirim.
-                </h2>
-              </div>
-            </FadeIn>
-            <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {lessonFlow.map((step, i) => (
-                <FadeIn key={step.t} delay={i * 0.05}>
-                  <div className="flex h-full flex-col rounded-[22px] border border-[var(--od-line)] bg-white p-6">
-                    <span className="font-display text-[28px] leading-none text-[var(--od-olive)]">0{i + 1}</span>
-                    <h3 className="mt-5 font-display text-[18px] leading-tight text-[var(--od-ink)]">{step.t}</h3>
-                    <p className="mt-2 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">{step.d}</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FACULTY — dürüst, iddiasız kadro yaklaşımı */}
-        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream-2)]">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
-            <FadeIn>
-              <div className="mx-auto max-w-2xl text-center">
-                <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[44px]">
-                  Deneyimli, yalnızca matematik.
-                </h2>
-                <p className="mt-4 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  Tek branşa odaklanan, butik grupta öğrenciyi yakından takip eden
-                  matematik öğretmenleriyle çalışıyoruz.
-                </p>
-              </div>
-            </FadeIn>
-            <div className="mt-12 grid gap-4 md:grid-cols-3">
-              {faculty.map((f, i) => (
-                <FadeIn key={f.title} delay={i * 0.05}>
-                  <div className="flex h-full flex-col rounded-2xl border border-[var(--od-line)] bg-white p-6">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
-                      <GraduationCap className="h-5 w-5" strokeWidth={1.7} />
-                    </span>
-                    <h3 className="mt-4 font-display text-[19px] leading-tight text-[var(--od-ink)]">{f.title}</h3>
-                    <p className="mt-3 flex-1 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">{f.body}</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* PRICE */}
-        <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
-            <div className="mx-auto max-w-md rounded-[24px] border border-[var(--od-line)] bg-[var(--od-olive)] p-8 text-white shadow-[0_28px_70px_-46px_rgba(20,20,15,0.36)]">
-              <h3 className="font-display text-[24px] leading-tight tracking-tight">{lessonPkg.name}</h3>
-              <p className="mt-2 text-[13.5px] leading-6 text-white/70">{lessonPkg.tagline}</p>
-              <div className="mt-5 flex items-baseline gap-2">
-                <span className="font-display text-[40px] leading-none tracking-tight">{lessonPkg.discountedPrice}</span>
-                {lessonPkg.oldPrice ? (
-                  <span className="text-[14px] text-white/50 line-through">{lessonPkg.oldPrice}</span>
-                ) : null}
-              </div>
-              <p className="mt-3 text-[12.5px] leading-6 text-white/70">
-                Kalabalık dershane ile birebir özel ders arasında butik bir orta
-                yol — aylık sabit fiyat, en fazla 4 kişilik grup.
+              <h1 className="mb-5 max-w-[15ch] font-display text-[clamp(34px,5.4vw,54px)] font-medium leading-[1.04] tracking-[-0.025em]">
+                Matematik <em className="font-normal italic">Ders Paketi</em>
+              </h1>
+              <p className="mb-10 max-w-[52ch] text-[clamp(17px,2.2vw,19px)] leading-[1.6] text-[var(--od-ink-soft)]">
+                En fazla 4 öğrencilik canlı grup dersi. Google Meet&apos;te birlikte
+                çözüm, her ders sonunda çalışma planı ve veliye haftalık durum notu —
+                aynı öğretmenle, düzenli aralıklarla.
               </p>
-              <ul className="mt-6 space-y-3">
-                {lessonPkg.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5 text-[13.5px] leading-6 text-white/90">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--od-yellow)]" />
-                    {feature}
-                  </li>
+
+              {/* Pakette neler var */}
+              <h2 className={`${LABEL_H2} mb-5`}>PAKETTE NELER VAR</h2>
+              <div className="mb-14 grid gap-4 sm:grid-cols-2">
+                {pillars.map((p) => (
+                  <div
+                    key={p.title}
+                    className="rounded-[14px] border border-[var(--od-line)] bg-[var(--od-paper)] p-[22px]"
+                  >
+                    <div className="mb-1.5 text-[15px] font-semibold">{p.title}</div>
+                    <p className="text-[14px] leading-[1.55] text-[var(--od-ink-soft)]">{p.body}</p>
+                  </div>
                 ))}
-              </ul>
-              <div className="mt-7 flex flex-col gap-2">
+              </div>
+
+              {/* Kapsar / kapsamaz */}
+              <h2 className={`${LABEL_H2} mb-2`}>PAKETTE OLAN VE OLMAYAN</h2>
+              <p className="mb-5 max-w-[48ch] text-[15px] text-[var(--od-ink-soft)]">
+                Neyi verdiğimizi ve neyi vermediğimizi açıkça yazıyoruz. Sürpriz yok.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)] p-[26px]">
+                  <h3 className="mb-[18px] flex items-center gap-2.5 text-[16px] font-semibold">
+                    <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--od-mint)] text-[#2C3A24]">
+                      <Check size={13} strokeWidth={2.4} aria-hidden="true" />
+                    </span>
+                    Kapsar
+                  </h3>
+                  <ul className="flex flex-col gap-3">
+                    {kapsar.map((item) => (
+                      <li
+                        key={item}
+                        className="relative pl-[18px] text-[14px] leading-[1.5] text-[#3A3A32]"
+                      >
+                        <span className="absolute left-0 text-[var(--od-olive-soft)]">·</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)] p-[26px]">
+                  <h3 className="mb-[18px] flex items-center gap-2.5 text-[16px] font-semibold">
+                    <span className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-[var(--od-blush)] text-[#6B3F2E]">
+                      <Minus size={13} strokeWidth={2.4} aria-hidden="true" />
+                    </span>
+                    Kapsamaz
+                  </h3>
+                  <ul className="flex flex-col gap-3">
+                    {kapsamaz.map((item) => (
+                      <li
+                        key={item}
+                        className="relative pl-[18px] text-[14px] leading-[1.5] text-[#3A3A32]"
+                      >
+                        <span className="absolute left-0 text-[#C0907E]">·</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Sağ: sticky fiyat kartı */}
+            <div className="lg:sticky lg:top-[88px]">
+              <div className="rounded-[20px] bg-[var(--od-olive)] p-[clamp(28px,4vw,36px)] text-[var(--od-cream)] shadow-[0_4px_24px_rgba(58,74,44,0.18)]">
+                <div className="mb-3 text-[14px] text-[#A9BD93]">Matematik Ders Paketi</div>
+                <div className="mb-1.5 flex items-end gap-3">
+                  <span className="font-display text-[clamp(40px,6vw,52px)] font-medium leading-none">
+                    {priceMain}
+                  </span>
+                  <span className="mb-2 text-[16px] text-[#C7CCBC]">/ ay</span>
+                </div>
+                <div className="mb-[26px] flex items-center gap-2.5">
+                  {priceOld ? (
+                    <span className="text-[16px] text-[#A9BD93] line-through">{priceOld}</span>
+                  ) : null}
+                  <span className="rounded-full bg-[var(--od-cream)]/[0.16] px-2.5 py-1 text-[13px] font-medium">
+                    Aylık sabit fiyat
+                  </span>
+                </div>
                 <PurchaseFunnelTrigger
-                  source="ders_paketi_price"
+                  source="ders_paketi_card"
                   packageName={lessonPkg.name}
                   category={lessonPkg.category}
                   subject={lessonPkg.subject}
                   priceLabel={lessonPkg.discountedPrice}
                   paymentLink=""
-                  analyticsId="ders_paketi_price"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--od-yellow)] px-5 py-3 text-[14px] font-bold text-[var(--od-ink)] transition hover:bg-[#F0CE52]"
+                  className="mb-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-4 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
                 >
-                  Matematik Dersini Satın Al
-                  <ArrowRight size={14} strokeWidth={2} />
+                  Sepete Ekle
                 </PurchaseFunnelTrigger>
+                <a
+                  href={waHref}
+                  className="flex min-h-12 items-center justify-center gap-2.5 rounded-[11px] border border-[var(--od-cream)]/[0.24] bg-[var(--od-cream)]/10 px-5 py-3.5 text-[15px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[var(--od-cream)]/[0.18]"
+                >
+                  <span className="h-[7px] w-[7px] rounded-full bg-[#A9BD93]" aria-hidden="true" />
+                  Önce WhatsApp&apos;tan sor
+                </a>
+                <div className="my-6 h-px bg-[var(--od-cream)]/[0.14]" />
+                <ul className="flex flex-col gap-3">
+                  {priceFeatures.map((f) => (
+                    <li key={f.text} className="flex items-start gap-2.5 text-[14px] text-[#E6E9DE]">
+                      <span className="text-[#A9BD93]">
+                        <Check size={18} strokeWidth={2} aria-hidden="true" />
+                      </span>
+                      {f.strong ? (
+                        <strong className="font-semibold">{f.text}</strong>
+                      ) : (
+                        f.text
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p className="mt-4 text-center text-[12px] leading-6 text-white/70">
-                Ödeme sonrası hesabınız ekibimiz tarafından oluşturulur.
+              <p className="mt-3.5 text-center text-[12px] text-[#8A8A7E]">
+                Kart bilgileriniz bizimle paylaşılmaz.
               </p>
-            </div>
-            <div className="mt-6 text-center">
-              <Link
-                href="/iletisim/"
-                className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-[var(--od-olive)] hover:text-[var(--od-ink)]"
-              >
-                Sorularınız mı var? Önce bizimle görüşün
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
             </div>
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="bg-white">
-          <div className="mx-auto max-w-4xl px-5 py-20 sm:py-24">
-            <FadeIn>
-              <div className="mx-auto max-w-2xl text-center">
-                <h2 className="mt-3 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[42px]">Merak edilenler.</h2>
-              </div>
-            </FadeIn>
-            <div className="mt-10 divide-y divide-[var(--od-line)] overflow-hidden rounded-[20px] border border-[var(--od-line)] bg-[var(--od-cream)]">
-              {faq.map((item) => (
-                <details key={item.q} className="group px-5 py-5 sm:px-6">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-[15px] font-medium text-[var(--od-ink)]">
-                    {item.q}
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--od-line)] bg-white text-[var(--od-olive)] transition group-open:rotate-45">+</span>
+        {/* ÖDEMEDEN DERSE */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
+          <div className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,88px)]">
+            <h2 className={`${SECTION_H2} mb-10 max-w-[20ch]`}>
+              Ödemeden ilk derse.
+            </h2>
+            <div className="grid gap-[18px] sm:grid-cols-2 lg:grid-cols-4">
+              {flow.map((s) => (
+                <div key={s.step}>
+                  <div className="mb-2.5 font-display text-[26px] text-[var(--od-olive-soft)]">
+                    {s.step}
+                  </div>
+                  <div className="mb-1 text-[15px] font-semibold">{s.title}</div>
+                  <p className="text-[14px] leading-[1.5] text-[var(--od-ink-soft)]">{s.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* SSS */}
+        <section className="border-t border-[var(--od-line)]">
+          <div className="mx-auto max-w-[760px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,88px)]">
+            <h2 className={`${SECTION_H2} mb-9 text-center`}>Paket hakkında</h2>
+            <div className="overflow-hidden rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)]">
+              {faqs.map((item, i) => (
+                <details
+                  key={item.q}
+                  className="group border-b border-[var(--od-line)] last:border-b-0"
+                  open={i === 0}
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-[22px] [&::-webkit-details-marker]:hidden">
+                    <span className="text-[16px] font-semibold">{item.q}</span>
+                    <span className="shrink-0 text-[var(--od-olive-soft)] transition-transform duration-200 group-open:rotate-45">
+                      <Plus size={20} strokeWidth={1.6} aria-hidden="true" />
+                    </span>
                   </summary>
-                  <p className="mt-3 max-w-3xl text-[14px] leading-7 text-[var(--od-ink-soft)]">{item.a}</p>
+                  <div className="px-6 pb-[22px] text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">
+                    {item.a}
+                  </div>
                 </details>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* KAPANIŞ CTA */}
+        <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
+          <div className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(56px,8vw,104px)] text-center">
+            <h2 className="mx-auto mb-5 max-w-[16ch] font-display text-[clamp(28px,4.6vw,46px)] font-medium leading-[1.08] tracking-[-0.025em]">
+              Paket hazır; gerisini birlikte planlarız.
+            </h2>
+            <p className="mx-auto mb-8 max-w-[40ch] text-[17px] text-[#D8DCCF]">
+              {priceMain}/ay · PayTR güvenli ödeme.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <PurchaseFunnelTrigger
+                source="ders_paketi_final"
+                packageName={lessonPkg.name}
+                category={lessonPkg.category}
+                subject={lessonPkg.subject}
+                priceLabel={lessonPkg.discountedPrice}
+                paymentLink=""
+                className="inline-flex min-h-12 items-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
+              >
+                Sepete Ekle
+              </PurchaseFunnelTrigger>
+              <a
+                href={waHref}
+                className="inline-flex min-h-12 items-center gap-2 rounded-[11px] border border-[var(--od-cream)]/[0.28] bg-[var(--od-cream)]/10 px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[var(--od-cream)]/[0.18]"
+              >
+                WhatsApp&apos;tan sor
+              </a>
             </div>
           </div>
         </section>

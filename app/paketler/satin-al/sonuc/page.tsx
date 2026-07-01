@@ -27,7 +27,7 @@ export default async function OdCheckoutThankYouPage({
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] min-h-screen py-16">
+      <main className="od-public min-h-screen bg-[var(--od-cream)] py-16">
         <div className="px-4">
           {normalizedStatus === "success" && (
             <CheckoutResultCard

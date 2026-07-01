@@ -42,7 +42,7 @@ export function PaytrIframeShell({
   checkout,
 }: Props) {
   return (
-    <div className="max-w-3xl mx-auto px-4">
+    <div className="mx-auto max-w-3xl px-5 sm:px-8">
       {/* Breadcrumb */}
       <nav
         aria-label="Breadcrumb"
@@ -75,7 +75,7 @@ export function PaytrIframeShell({
       {/* Order summary header */}
       <section
         aria-label="Sipariş özeti"
-        className="rounded-3xl border border-[var(--od-line)] bg-white p-6 sm:p-8 mb-6 shadow-sm"
+        className="mb-6 rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-8"
       >
         {eyebrow && (
           <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--od-olive)] font-semibold mb-2">
@@ -103,7 +103,7 @@ export function PaytrIframeShell({
       {!paytrReady && (
         <div
           role="alert"
-          className="rounded-3xl border border-amber-200 bg-amber-50/70 p-6 mb-6 flex gap-4"
+          className="mb-6 flex gap-4 rounded-[16px] border border-amber-200 bg-amber-50/70 p-6"
         >
           <Wrench className="size-5 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden />
           <div>
@@ -124,7 +124,7 @@ export function PaytrIframeShell({
       {checkout && !checkout.ok && (
         <div
           role="alert"
-          className="rounded-3xl border border-rose-200 bg-rose-50/70 p-6 mb-6 flex gap-4"
+          className="mb-6 flex gap-4 rounded-[16px] border border-rose-200 bg-rose-50/70 p-6"
         >
           <AlertTriangle className="size-5 text-rose-700 flex-shrink-0 mt-0.5" aria-hidden />
           <div>
@@ -146,7 +146,7 @@ export function PaytrIframeShell({
       {checkout && checkout.ok && (
         <section
           aria-label="Güvenli ödeme"
-          className="rounded-3xl border border-[var(--od-line)] bg-white overflow-hidden shadow-sm"
+          className="overflow-hidden rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] shadow-[0_1px_2px_rgba(20,20,15,0.04)]"
         >
           <iframe
             src={checkout.iframeUrl}

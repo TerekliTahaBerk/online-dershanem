@@ -20,7 +20,7 @@ type Search = Promise<{
 }>;
 
 export const metadata: Metadata = {
-  title: "Satın Al · Online Dershanem",
+  title: "Ödeme · Online Dershanem",
   robots: { index: false, follow: false },
 };
 
@@ -93,20 +93,20 @@ export default async function OdCheckoutFormPage({
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] min-h-screen py-10">
-        <div className="max-w-6xl mx-auto px-4">
+      <main className="od-public min-h-screen bg-[var(--od-cream)] py-10">
+        <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
           <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
             <Link href="/#matematik-ders-paketi" className="hover:text-[var(--od-ink)]">
               Matematik Ders Paketi
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-[var(--od-ink)]">Satın Al</span>
+            <span className="text-[var(--od-ink)]">Ödeme</span>
           </nav>
 
           <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
             <div>
               <CheckoutPageHeader
-                subtitle="Aşağıdaki bilgileri doldurun, güvenli ödeme sayfasına yönlendireceğiz."
+                subtitle="Bilgilerinizi paylaştıktan sonra güvenli ödeme sayfası açılır."
               />
               <BuyerInfoForm
                 action="/api/od/checkout/start"

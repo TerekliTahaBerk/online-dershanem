@@ -230,8 +230,8 @@ export function BuyerInfoForm({
         <input key={k} type="hidden" name={k} value={v} />
       ))}
 
-      <div className="rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4 flex items-start gap-3">
-        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--od-olive)]">
+      <div className="flex items-start gap-3 rounded-[14px] border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[var(--od-paper)] text-[var(--od-olive)]">
           <ShoppingBag size={18} strokeWidth={1.7} />
         </div>
         <div className="flex-1">
@@ -370,14 +370,14 @@ export function BuyerInfoForm({
         />
       </Section>
 
-      <div className="space-y-3 rounded-2xl border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4">
+      <div className="space-y-3 rounded-[14px] border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
             name="kvkkConsent"
             value="1"
             required
-            className="mt-1 h-4 w-4 rounded border-[var(--od-line)]"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--od-line)] accent-[var(--od-olive)]"
           />
           <span className="text-sm text-[var(--od-ink-soft)]">
             <Link
@@ -396,7 +396,7 @@ export function BuyerInfoForm({
             type="checkbox"
             name="marketingConsent"
             value="1"
-            className="mt-1 h-4 w-4 rounded border-[var(--od-line)]"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--od-line)] accent-[var(--od-olive)]"
           />
           <span className="text-sm text-[var(--od-ink-soft)]">
             Kampanya, duyuru ve eğitim içerikleri için elektronik ileti
@@ -409,7 +409,7 @@ export function BuyerInfoForm({
             name="paymentConsent"
             value="1"
             required
-            className="mt-1 h-4 w-4 rounded border-[var(--od-line)]"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--od-line)] accent-[var(--od-olive)]"
           />
           <span className="text-sm text-[var(--od-ink-soft)]">
             <Link href="/iade" target="_blank" className="text-[var(--od-olive)] underline font-medium">
@@ -437,7 +437,7 @@ export function BuyerInfoForm({
       <button
         type="submit"
         disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-[var(--od-ink)] px-6 py-4 text-[15px] font-semibold text-white shadow-sm transition hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--od-olive)] px-6 py-4 text-[15px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "İşleniyor..." : submitLabel} →
       </button>
@@ -453,8 +453,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-[var(--od-line)] bg-white p-5">
-      <h2 className="text-[15px] font-semibold text-[var(--od-ink)] mb-4 tracking-tight">{title}</h2>
+    <section className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)]">
+      <h2 className="mb-4 text-[22px] font-medium tracking-[-0.015em] text-[var(--od-ink)]">{title}</h2>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </section>
   );
@@ -501,7 +501,7 @@ function Field({
           placeholder={placeholder}
           rows={rows}
           maxLength={maxLength}
-          className="w-full rounded-lg border border-[var(--od-line)] bg-white px-3 py-2.5 text-[14px] text-[var(--od-ink)] shadow-sm focus:border-[var(--od-olive)] focus:ring-1 focus:ring-[var(--od-olive)] outline-none transition"
+          className="min-h-12 w-full rounded-[10px] border border-[var(--od-line)] bg-[var(--od-paper)] px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
         />
       ) : (
         <input
@@ -511,7 +511,7 @@ function Field({
           defaultValue={defaultValue}
           placeholder={placeholder}
           maxLength={maxLength}
-          className="w-full rounded-lg border border-[var(--od-line)] bg-white px-3 py-2.5 text-[14px] text-[var(--od-ink)] shadow-sm focus:border-[var(--od-olive)] focus:ring-1 focus:ring-[var(--od-olive)] outline-none transition"
+          className="min-h-12 w-full rounded-[10px] border border-[var(--od-line)] bg-[var(--od-paper)] px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
         />
       )}
       {help && <span className="block text-[11.5px] text-[var(--od-ink-soft)] mt-1">{help}</span>}
@@ -542,7 +542,7 @@ function SelectField({
         name={name}
         required={required}
         defaultValue={defaultValue ?? ""}
-        className="w-full rounded-lg border border-[var(--od-line)] bg-white px-3 py-2.5 text-[14px] text-[var(--od-ink)] shadow-sm focus:border-[var(--od-olive)] focus:ring-1 focus:ring-[var(--od-olive)] outline-none transition bg-white"
+        className="min-h-12 w-full rounded-[10px] border border-[var(--od-line)] bg-[var(--od-paper)] px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
       >
         {options.map((o) => (
           <option key={o.v} value={o.v}>

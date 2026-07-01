@@ -56,13 +56,13 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
   );
 
   if (!loaded) {
-    return <div className="h-40 animate-pulse rounded-2xl bg-[var(--od-cream-2)]" />;
+    return <div className="h-40 animate-pulse rounded-[16px] bg-[var(--od-cream-2)]" />;
   }
 
   if (!snapshot || snapshot.items.length === 0) {
     return (
-      <div className="rounded-3xl border border-[var(--od-line)] bg-white p-10 text-center">
-        <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--od-cream-2)]">
+      <div className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-10 text-center">
+        <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-[14px] bg-[var(--od-cream-2)]">
           <ShoppingBag size={28} className="text-[var(--od-olive)]" strokeWidth={1.6} />
         </div>
         <h1 className="mt-5 font-display text-[26px] text-[var(--od-ink)]">
@@ -73,7 +73,7 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
         </p>
         <Link
           href="/sepet"
-          className="mt-5 inline-flex items-center rounded-full bg-[var(--od-ink)] px-5 py-2.5 text-[13px] font-medium text-white hover:bg-black"
+          className="mt-5 inline-flex min-h-12 items-center rounded-[10px] bg-[var(--od-olive)] px-5 py-2.5 text-[13px] font-medium text-[var(--od-cream)] hover:bg-[#2C3A21]"
         >
           Sepete Dön
         </Link>

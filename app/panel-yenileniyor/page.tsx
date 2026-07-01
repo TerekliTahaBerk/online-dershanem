@@ -18,7 +18,7 @@ export default function PanelMaintenancePage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-[70vh] bg-[var(--od-cream)] px-5 py-20 sm:py-28">
+      <main className="od-public min-h-[70vh] bg-[var(--od-cream)] px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <span className="text-[12px] font-semibold uppercase tracking-[0.22em] text-[var(--od-olive)]">
             Online Dershanem

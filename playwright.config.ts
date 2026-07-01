@@ -17,9 +17,14 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  // CI'da tek retry hem flaky testleri görünür kılar hem de ilk retry'da
+  // trace/video üretmek için yeterlidir. İki retry toplam süreyi 3 kata
+  // kadar çıkarıyor ve gerçek kararsızlıkları maskeleyebiliyordu.
+  retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? [["html", { open: "never" }], ["github"]] : "list",
+  // Blob raporları shard'lardan sonra tek bir HTML raporunda birleştirilir.
+  // GitHub reporter ise hata anotasyonlarını doğrudan PR ekranına yazar.
+  reporter: process.env.CI ? [["blob"], ["github"]] : "list",
   timeout: 30_000,
   expect: { timeout: 5_000 },
   use: {

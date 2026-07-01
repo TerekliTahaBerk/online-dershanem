@@ -11,14 +11,14 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Online Matematik Dershanesi | Butik Grup ve Gelişim Takibi",
   description:
-    "Online matematik dershanesi: en fazla 4 öğrencilik canlı ders, derste soru-cevap, ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
+    "En fazla 4 öğrencilik canlı matematik dersi, derste soru-cevap, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
   alternates: {
     canonical: "/online-dershane/"
   },
   openGraph: {
     title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "Küçük grupta canlı matematik dersi, ders sonrası çalışma yönü ve veliye sade bilgilendirme modeli.",
+      "Küçük grupta canlı matematik dersi, ders sonrası çalışma yönü ve veliye kısa bilgilendirme notu.",
     url: `${siteUrl}/online-dershane/`
   }
 };
@@ -33,7 +33,7 @@ export default function OnlineDershanePage() {
         ])}
       />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
+      <main className="od-public bg-[var(--od-cream)] py-14 text-[var(--od-ink)] sm:py-20">
         <Container>
           <section className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-sky-soft)]/70 p-7 sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--od-olive)]">Online Matematik Dershanesi</p>
@@ -67,7 +67,7 @@ export default function OnlineDershanePage() {
             {[
               "En fazla 4 öğrencilik matematik grubu ile derste bireysel temas",
               "Canlı ders, ödevlendirme ve öğretmen notu",
-              "Veliye çocuğunun nerede zorlandığını anlatan sade özet"
+              "Veliye çocuğunun nerede zorlandığını anlatan kısa özet"
             ].map((item) => (
               <article key={item} className="rounded-2xl border border-[var(--od-line)] bg-white p-5 text-sm font-medium text-[var(--od-ink-soft)] shadow-[0_16px_40px_-34px_rgba(20,20,15,0.18)]">
                 {item}

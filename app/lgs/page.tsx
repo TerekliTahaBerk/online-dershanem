@@ -6,13 +6,13 @@ import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 export const metadata: Metadata = {
   title: "LGS Matematik Dersi",
   description:
-    "LGS matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve veliye sade gelişim özeti.",
+    "LGS matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve veliye kısa gelişim notu.",
   alternates: {
     canonical: "/lgs"
   },
   openGraph: {
     title: "LGS Matematik Dersi | Online Dershanem",
-    description: "LGS matematik için küçük grup canlı ders, ders içi soru-cevap ve veliye sade gelişim özeti.",
+    description: "LGS matematik için küçük grup canlı ders, ders içi soru-cevap ve veliye kısa gelişim notu.",
     url: `${siteUrl}/lgs`
   }
 };
@@ -38,10 +38,10 @@ export default function LGSLandingPage() {
         heroBadge: "LGS Matematik",
         heroTitle: "LGS matematikte öğrencinin sesinin duyulduğu küçük grup.",
         heroText:
-          "LGS matematikte öğrenci çözümünü derste gösterir, sorusunu bekletmeden sorar ve hafta sonunda ne çalışacağını bilir. Veliye de çocuğunun nerede zorlandığını anlatan sade bir özet gider.",
+          "LGS matematikte öğrenci çözümünü derste gösterir, sorusunu bekletmeden sorar ve hafta sonunda ne çalışacağını bilir. Veliye de çocuğunun nerede zorlandığını anlatan kısa bir özet gider.",
         highlights: [
           "En fazla 4 öğrencilik matematik grubunda daha fazla bireysel temas",
-          "Ders sonrası ödevlendirme ve net çalışma yönü",
+          "Ders sonrası ödevlendirme ve belirli bir çalışma yönü",
           "Veliye kısa ve anlaşılır gelişim özeti"
         ],
         approach: {
@@ -53,7 +53,7 @@ export default function LGSLandingPage() {
             },
             {
               title: "Bu model 8. sınıf için ne zaman doğru?",
-              body: "Konu eksiği birikmeye başladıysa, deneme netleri oturmuyorsa ve öğrenci derste soru sormaktan çekiniyorsa küçük grup modeli işe yarar."
+              body: "Konu eksiği birikmeye başladıysa, deneme netleri oturmuyorsa ve öğrenci derste soru sormaktan çekiniyorsa küçük grup modeli bu noktada anlamlı olur."
             },
             {
               title: "Küçük grup avantajı",
@@ -91,7 +91,7 @@ export default function LGSLandingPage() {
           },
           {
             q: "Ders kaçırılırsa süreç nasıl ilerliyor?",
-            a: "Telafi planı ile öğrenci aynı hafta içinde akışa geri alınır, matematik kazanım takibi kesintiye uğratılmaz."
+            a: "Telafi planıyla öğrenci aynı hafta içinde derse geri döner; konu takibi aksamaz."
           },
           {
             q: "Dersler canlı mı, kayıt mı?",

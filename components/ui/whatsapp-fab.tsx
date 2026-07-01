@@ -15,10 +15,10 @@ export function WhatsAppFab() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="WhatsApp'tan ön görüşme"
-      className="fixed bottom-5 left-5 z-50 hidden items-center gap-2.5 rounded-full bg-[#25D366] pl-3 pr-4 py-2.5 text-white shadow-2xl shadow-black/25 transition-all hover:bg-[#1ebe5a] lg:flex"
+      className="fixed bottom-5 left-5 z-50 hidden h-12 w-12 items-center justify-center rounded-[10px] bg-[#25D366] text-white shadow-[0_12px_30px_-14px_rgba(20,20,15,0.45)] transition-colors hover:bg-[#1ebe5a] lg:flex"
     >
       <MessageCircle size={20} strokeWidth={2} />
-      <span className="hidden text-[13px] font-semibold leading-tight sm:block">
+      <span className="sr-only">
         WhatsApp&apos;tan sorun
       </span>
     </a>

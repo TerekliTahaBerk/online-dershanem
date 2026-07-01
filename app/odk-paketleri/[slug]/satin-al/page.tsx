@@ -97,8 +97,8 @@ export default async function OdkCheckoutFormPage({
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] min-h-screen py-10">
-        <div className="max-w-6xl mx-auto px-4">
+      <main className="od-public min-h-screen bg-[var(--od-cream)] py-10">
+        <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
           <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
             <Link href="/deneme-kulubu" className="hover:text-[var(--od-ink)]">
               ODK Paketleri

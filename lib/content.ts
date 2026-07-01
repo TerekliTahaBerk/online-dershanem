@@ -17,7 +17,7 @@ export const subjectPackageGroups = [
     key: "Matematik",
     title: "Matematik Ders Paketi",
     subtitle:
-      "En fazla dört öğrenci. Aynı öğretmen, aynı tempo, ders sonrası net çalışma planı.",
+      "En fazla dört öğrenci. Aynı öğretmen, aynı tempo, ders sonunda ne çalışılacağı bellidir.",
     packages: [
       {
         id: "matematik-ders-paketi",
@@ -39,7 +39,7 @@ export const subjectPackageGroups = [
           "Canlı matematik dersi",
           "En fazla 4 öğrencilik grup",
           "Derste soru-cevap ve birlikte çözüm",
-          "Her ders sonunda net çalışma planı",
+          "Ders sonunda haftalık çalışma planı",
           "Ödevlendirme ve öğretmen notu",
           "Veliye anlaşılır haftalık not",
           "Ödeme sonrası öğrenci hesabı ekibimiz tarafından hazırlanır"
@@ -641,15 +641,15 @@ export const faq = [
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. TYT, AYT ve LGS hedefleri dikkate alınır. Derste konu anlatımı ve soru çözümü birlikte ilerler; ders sonunda öğrencinin ne çalışacağı netleşir."
+    a: "Evet. TYT, AYT ve LGS hedefleri dikkate alınır. Derste konu anlatımı ve soru çözümü birlikte ilerler; ders sonunda öğrencinin ne çalışacağı bellidir."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
-    a: "Evet. Veli sadece sonuç görmez; çocuğunun hangi konuda zorlandığını anlayacak kadar sade bir özet alır."
+    a: "Evet. Veli sadece sonucu görmez; çocuğunun hangi konuda zorlandığını anlamaya yetecek kısa bir özet alır."
   },
   {
     q: "Paket seçiminde kararsızsam ne yapmalıyım?",
-    a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Öğrencinin matematik seviyesini, sınıfını ve hedefini konuşur, doğru küçük grup başlangıcını netleştiririz."
+    a: "Kısa bir ön görüşmede öğrencinin matematik seviyesini, sınıfını ve hedefini konuşuruz; doğru küçük grup başlangıcına birlikte karar veririz."
   }
 ];
 
@@ -741,7 +741,7 @@ export const faqCategories = [
       },
       {
         q: "Ders sonrası takip nasıl işliyor?",
-        a: "Her dersin sonunda konu, ödev ve tekrar yönü netleşir. Öğrenci ne çalışacağını bilir; veli de sürecin nereye gittiğini kolayca takip eder.",
+        a: "Her dersin sonunda konu, ödev ve tekrar yönü bellidir. Öğrenci ne çalışacağını bilir; veli de sürecin nereye gittiğini kolayca takip eder.",
       },
       {
         q: "Telafi dersi var mı?",
@@ -771,7 +771,7 @@ export const faqCategories = [
       },
       {
         q: "Paket seçiminde kararsızsam ne yapmalıyım?",
-        a: "Kısa bir ön görüşmeyle birlikte değerlendirebiliriz. Öğrencinin matematik seviyesini, sınıfını ve hedefini konuşur, doğru başlangıcı netleştiririz.",
+        a: "Kısa bir ön görüşmede öğrencinin matematik seviyesini, sınıfını ve hedefini konuşuruz; doğru başlangıca birlikte karar veririz.",
       },
     ],
   },

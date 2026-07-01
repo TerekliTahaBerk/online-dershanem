@@ -18,7 +18,7 @@ const operationDetails = [
   },
   {
     label: "Ders süresi",
-    value: "Grup düzenine göre planlanır; ön görüşmede net olarak paylaşılır.",
+    value: "Grup düzenine göre planlanır; ön görüşmede açıkça paylaşılır.",
   },
   {
     label: "İlk ders planlama",
@@ -32,7 +32,7 @@ const included = [
   "Derste soru-cevap ve birlikte çözüm",
   "Ders sonrası çalışma yönü ve ödevlendirme",
   "Öğretmen notu",
-  "Veliye sade gelişim özeti",
+  "Veliye kısa gelişim özeti",
   "Ödeme sonrası ekibimizin hazırladığı öğrenci hesabı",
 ];
 
@@ -105,7 +105,7 @@ export function PackagesPageContent() {
                       featured ? "text-white/50" : "text-[#A0A095]"
                     }`}
                   >
-                    <span className="sr-only">Kampanya öncesi referans fiyat: </span>
+                    <span className="sr-only">Referans liste fiyatı: </span>
                     {pkg.oldPrice}
                   </span>
                 ) : null}
@@ -116,8 +116,8 @@ export function PackagesPageContent() {
                     featured ? "text-white/55" : "text-[#9A9A8E]"
                   }`}
                 >
-                  Kampanya öncesi referans fiyat: {pkg.oldPrice}. Kontenjan ve
-                  grup uygunluğuna göre kayıt alınır.
+                  {pkg.oldPrice}, paketin referans aldığımız liste fiyatıdır.
+                  Kontenjan ve grup uygunluğuna göre kayıt alınır.
                 </p>
               ) : null}
 
@@ -130,8 +130,8 @@ export function PackagesPageContent() {
               >
                 Birebir özel dersin maliyetine çıkmadan, kalabalık online sınıfta
                 kaybolmadan düzenli matematik takibi. Canlı ders, soru-cevap,
-                ödev yönlendirmesi, öğretmen notu ve veli gelişim özeti tek
-                <span className={featured ? "font-semibold text-white" : "font-semibold text-[var(--od-ink)]"}> aylık ₺3.000</span> pakette.
+                ödev yönlendirmesi, öğretmen notu ve veli gelişim özeti aynı
+                pakette yer alır.
               </p>
               {pkg.perLessonPrice ? (
                 <div
@@ -186,7 +186,7 @@ export function PackagesPageContent() {
                     : "bg-[var(--od-olive)] text-white hover:bg-[#2E3B24]"
                 }`}
               >
-                Satın Al
+                Sepete Ekle
                 <ArrowRight size={14} />
               </PurchaseFunnelTrigger>
             </article>
@@ -251,7 +251,7 @@ export function PackagesPageContent() {
       {/* Legal linkler + WhatsApp */}
       <div className="mt-4 flex flex-col gap-4 rounded-[22px] border border-[var(--od-line)] bg-white p-7 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
-          <span className="text-[var(--od-ink-soft)]">Satın almadan önce:</span>
+          <span className="text-[var(--od-ink-soft)]">Ödeme öncesi bilgiler:</span>
           {legalLinks.map((l) => (
             <Link
               key={l.href}
@@ -269,7 +269,7 @@ export function PackagesPageContent() {
           className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-[var(--od-cream-2)] px-5 py-2.5 text-[13.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
         >
           <MessageCircle size={15} strokeWidth={1.8} aria-hidden="true" />
-          Kararsızsanız WhatsApp&apos;tan sorun
+          Sorunuz varsa WhatsApp&apos;tan yazabilirsiniz
         </a>
       </div>
 
@@ -282,7 +282,7 @@ export function PackagesPageContent() {
             </h3>
             <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
               Sınıfını, hedefini ve derste nerede zorlandığını konuşalım;
-              küçük gruba nasıl başlamasının doğru olacağını birlikte netleştirelim.
+              hangi küçük grubun uygun olacağına birlikte bakalım.
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:items-end">
@@ -290,7 +290,7 @@ export function PackagesPageContent() {
               href="/iletisim/"
               className="inline-flex items-center justify-center rounded-full bg-[var(--od-olive)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-[#2E3B24]"
             >
-              Ön Görüşme Talep Et
+              Ön Görüşme
             </Link>
             <a
               href={`tel:${contact.phone}`}

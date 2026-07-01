@@ -17,7 +17,7 @@ export default function DenemeKulubuPausedPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-[70vh] bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public min-h-[70vh] bg-[var(--od-cream)] text-[var(--od-ink)]">
         <section className="mx-auto max-w-3xl px-5 py-24 text-center sm:py-32">
           <h1 className="text-[38px] font-black leading-[1.05] tracking-normal sm:text-[58px]">
             Deneme Kulübü şu anda yayında değil.

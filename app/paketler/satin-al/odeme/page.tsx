@@ -94,7 +94,7 @@ export default async function OdPaymentPage({
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] min-h-screen py-10 sm:py-14">
+      <main className="od-public min-h-screen bg-[var(--od-cream)] py-10 sm:py-14">
         <PaytrIframeShell
           breadcrumb={[
             { label: "Matematik Ders Paketi", href: "/#matematik-ders-paketi" },

@@ -149,8 +149,8 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-sans), var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  letter-spacing: 0;
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  letter-spacing: -0.02em;
   word-spacing: 0;
 }
 .font-display em,
@@ -160,6 +160,11 @@ body {
 
 a {
   text-underline-offset: 2px;
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--od-olive);
+  outline-offset: 3px;
 }
 
 @keyframes sectionTargetPulse {
@@ -5824,3 +5829,147 @@ body:has(.od-panel-app) .od-panel-app {
 }
 
 /* End — STAGE 3J final sweep */
+
+/* ─────────────────────────────────────────────────────────────────────
+ * PUBLIC SITE V2 — cream / olive editorial system
+ * Scoped to `.od-public` so auth and role-based panel surfaces keep their
+ * product UI typography and density.
+ * ───────────────────────────────────────────────────────────────────── */
+.od-public {
+  --od-content: 1080px;
+  min-height: 60vh;
+  background: var(--od-cream);
+  color: var(--od-ink);
+  font-family: var(--font-sans), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.od-public :where(h1, h2, .od-editorial-title) {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.od-public :where(h3, h4, p) {
+  text-wrap: pretty;
+}
+
+.od-public :where(button, a, input, select, textarea) {
+  transition-duration: 120ms;
+}
+
+.od-public :where(input, select, textarea) {
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .od-public :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea, button[type="submit"]) {
+    min-height: 48px;
+  }
+  .od-public :where(input[type="checkbox"], input[type="radio"]) {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+  }
+}
+
+.od-public .max-w-6xl {
+  max-width: var(--od-content);
+}
+
+.od-public :where(
+  .rounded-3xl,
+  [class*="rounded-[24px]"],
+  [class*="rounded-[22px]"],
+  [class*="rounded-[20px]"]
+) {
+  border-radius: 16px;
+}
+
+.od-public :where(a.rounded-full, button.rounded-full) {
+  min-height: 48px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* Legacy public utility aliases mapped onto the v2 palette. */
+.od-public .bg-anchor { background-color: var(--od-olive); }
+.od-public .bg-mint { background-color: var(--od-mint); }
+.od-public .bg-soft { background-color: var(--od-cream-2); }
+.od-public .text-brand { color: var(--od-olive); }
+.od-public .text-muted { color: var(--od-ink-soft); }
+.od-public .text-ink { color: var(--od-ink); }
+.od-public .border-line { border-color: var(--od-line); }
+.od-public .border-line-strong { border-color: var(--od-ink); }
+
+.od-public-shell {
+  width: min(100% - 40px, var(--od-content));
+  margin-inline: auto;
+}
+
+.od-public-section {
+  padding-block: clamp(64px, 8vw, 104px);
+  border-bottom: 1px solid var(--od-line);
+}
+
+.od-public-card {
+  border: 1px solid var(--od-line);
+  border-radius: 16px;
+  background: var(--od-paper);
+  box-shadow: 0 1px 2px rgba(20, 20, 15, 0.04);
+}
+
+.od-public-primary,
+.od-public-secondary {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.od-public-primary {
+  border: 1px solid var(--od-olive);
+  background: var(--od-olive);
+  color: var(--od-cream);
+}
+.od-public-primary:hover { background: #2c3a21; border-color: #2c3a21; }
+
+.od-public-secondary {
+  border: 1px solid var(--od-ink);
+  background: var(--od-cream);
+  color: var(--od-ink);
+}
+.od-public-secondary:hover { background: var(--od-cream-2); }
+
+.od-public-eyebrow {
+  color: var(--od-olive-soft);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .od-public-shell { width: min(100% - 32px, var(--od-content)); }
+  .od-public-section { padding-block: 56px; }
+  .od-public-primary,
+  .od-public-secondary { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .od-public *,
+  .od-public *::before,
+  .od-public *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* End — PUBLIC SITE V2 */
