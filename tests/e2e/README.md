@@ -68,24 +68,17 @@ Oluşturulan hesaplar:
 
 ## CI Entegrasyonu
 
-`.github/workflows/e2e.yml` (öneri):
+`.github/workflows/e2e.yml` tüm suite'i üç izole shard'a böler. Her shard kendi
+PostgreSQL service container'ını, seed verisini ve tek Playwright worker'ını
+kullanır; böylece testler paralel hızlanırken ortak DB yarışları oluşmaz.
 
-```yaml
-- run: npm ci
-- run: npx playwright install --with-deps chromium
-- run: npm run build
-  env:
-    DATABASE_URL: ${{ secrets.E2E_DATABASE_URL }}
-- run: npm run e2e
-```
-
-## Auth Gerektiren Senaryolar (TODO)
-
-Şu anki testler sadece smoke seviyesinde. Tam akış için:
-
-1. Test kullanıcıları için `prisma/seed-e2e.mjs` yazılmalı
-2. `tests/e2e/fixtures/auth.ts` ile `storageState` cache'lensin
-3. Login → panel navigasyon → ödev gönderme → log out senaryosu eklensin
+- Bir hata en fazla bir kez retry edilir; ilk retry trace kaydını üretir.
+- Shard'lar `fail-fast: false` ile tamamlanır, böylece tek hata diğer
+  shard'lardaki teşhis bilgisini kaybettirmez.
+- Blob raporları son `Playwright Tests` job'unda tek HTML raporuna çevrilir.
+- PR'daki `playwright-report` artifact'ı hata adımları, screenshot, video ve
+  trace ayrıntılarını içerir.
+- Required check adı `E2E (Playwright) / Playwright Tests` olarak korunur.
 
 ## Bilinen Sınırlar
 
