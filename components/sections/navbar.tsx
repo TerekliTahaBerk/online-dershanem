@@ -10,8 +10,10 @@ import { subjectPackageGroups } from "@/lib/content";
 
 const links = [
   { label: "Ana Sayfa", href: "/" },
+  { label: "Ders Paketi", href: "/matematik-ders-paketi/" },
   { label: "Kamplar", href: "/kamplar/" },
   { label: "Misyonumuz", href: "/misyonumuz/" },
+  { label: "SSS", href: "/sss/" },
   { label: "İletişim", href: "/iletisim/" }
 ];
 
@@ -33,25 +35,27 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-[var(--od-line)] bg-[#FBFAF5]/92 text-[var(--od-ink)] backdrop-blur-xl">
-        <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-8">
-          <Link href="/" aria-label="Online Dershanem" className="flex shrink-0 items-center text-[var(--od-ink)]">
+        <div className="relative mx-auto flex h-16 w-full max-w-[1080px] items-center justify-between gap-4 px-5 sm:px-8">
+          <Link href="/" aria-label="Online Dershanem ana sayfa" className="flex shrink-0 items-center gap-2.5 text-[var(--od-ink)]">
             <Image
-              src="/onlinedershanem_.png"
-              alt="Online Dershanem"
-              width={1050}
-              height={200}
-              sizes="170px"
-              className="h-7 w-auto object-contain sm:h-8"
+              src="/icon-192.png"
+              alt=""
+              width={192}
+              height={192}
+              sizes="28px"
+              className="h-7 w-7 rounded-[8px] object-contain"
             />
+            <span className="font-display text-[18px] font-medium tracking-[-0.01em]">Online Dershanem</span>
           </Link>
 
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex">
+          <nav aria-label="Ana menü" className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 xl:flex">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`text-[14.5px] transition-colors ${
-                  isActive(l.href) ? "text-[var(--od-ink)]" : "text-[var(--od-ink-soft)] hover:text-[var(--od-ink)]"
+                aria-current={isActive(l.href) ? "page" : undefined}
+                className={`rounded-md px-1 py-2 text-[13.5px] transition-colors ${
+                  isActive(l.href) ? "font-medium text-[var(--od-ink)]" : "text-[var(--od-ink-soft)] hover:text-[var(--od-ink)]"
                 }`}
               >
                 {l.label}
@@ -59,7 +63,7 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             <PurchaseFunnelTrigger
               source="navbar_cta"
               packageName={lessonPkg.name}
@@ -67,17 +71,17 @@ export function Navbar() {
               subject={lessonPkg.subject}
               priceLabel={lessonPkg.discountedPrice}
               paymentLink=""
-              className="inline-flex items-center justify-center rounded-full bg-[var(--od-olive)] px-5 py-2 text-[13.5px] font-semibold text-white transition hover:bg-[#2E3B24]"
+              className="inline-flex min-h-10 items-center justify-center rounded-[9px] bg-[var(--od-olive)] px-4 py-2 text-[13.5px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
             >
-              Matematik Dersini Satın Al
+              Satın Al
             </PurchaseFunnelTrigger>
           </div>
 
-          <div className="flex items-center gap-1.5 lg:hidden">
+          <div className="flex items-center gap-1.5 xl:hidden">
             <button
               type="button"
               onClick={() => setOpen((o) => !o)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white text-[var(--od-ink)]"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border border-[var(--od-line)] bg-[var(--od-paper)] text-[var(--od-ink)]"
               aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
               aria-expanded={open}
             >
@@ -89,9 +93,14 @@ export function Navbar() {
 
       {open && (
         <>
-          <div className="fixed inset-0 top-16 z-30 bg-[var(--od-ink)]/18 lg:hidden" onClick={() => setOpen(false)} />
-          <div className="fixed inset-x-0 top-16 z-40 border-b border-[var(--od-line)] bg-[#FBFAF5] text-[var(--od-ink)] lg:hidden">
-            <nav className="flex flex-col gap-1 px-5 py-4">
+          <button
+            type="button"
+            aria-label="Menüyü kapat"
+            className="fixed inset-0 top-16 z-30 bg-[var(--od-ink)]/18 xl:hidden"
+            onClick={() => setOpen(false)}
+          />
+          <div className="fixed inset-x-0 top-16 z-40 border-b border-[var(--od-line)] bg-[#FBFAF5] text-[var(--od-ink)] shadow-[0_18px_40px_-28px_rgba(20,20,15,0.35)] xl:hidden">
+            <nav aria-label="Mobil menü" className="mx-auto flex max-w-[1080px] flex-col gap-1 px-5 py-4 sm:px-8">
               {links.map((l) => (
                 <Link
                   key={l.href}
@@ -99,8 +108,8 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                   className={`rounded-xl px-3 py-3 text-[15px] transition ${
                     isActive(l.href)
-                      ? "bg-[var(--od-mint)]/55 text-[var(--od-ink)]"
-                      : "text-[var(--od-ink-soft)] hover:bg-white hover:text-[var(--od-ink)]"
+                      ? "bg-[var(--od-cream-2)] font-medium text-[var(--od-ink)]"
+                      : "text-[var(--od-ink-soft)] hover:bg-[var(--od-paper)] hover:text-[var(--od-ink)]"
                   }`}
                 >
                   {l.label}
@@ -113,9 +122,9 @@ export function Navbar() {
                 subject={lessonPkg.subject}
                 priceLabel={lessonPkg.discountedPrice}
                 paymentLink=""
-                className="mt-2 inline-flex items-center justify-center rounded-full bg-[var(--od-olive)] px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#2E3B24]"
+                className="mt-2 inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[var(--od-olive)] px-5 py-3 text-[15px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
               >
-                Matematik Dersini Satın Al
+                Satın Al
               </PurchaseFunnelTrigger>
             </nav>
           </div>

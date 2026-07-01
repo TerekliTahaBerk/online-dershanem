@@ -16,7 +16,7 @@ export function CartFab() {
     <Link
       href="/sepet"
       aria-label={`Sepetim — ${count} ürün`}
-      className="fixed bottom-5 right-5 z-50 group hidden items-center gap-3 rounded-full bg-[#091413] pl-4 pr-5 py-3 text-white shadow-2xl shadow-black/30 hover:bg-black transition-all lg:flex"
+      className="group fixed bottom-5 right-5 z-50 hidden min-h-12 items-center gap-3 rounded-[10px] bg-[var(--od-ink)] py-3 pl-4 pr-5 text-[var(--od-cream)] shadow-[0_12px_30px_-14px_rgba(20,20,15,0.5)] transition-colors hover:bg-black lg:flex"
     >
       <span className="relative inline-flex items-center justify-center">
         <ShoppingBag size={20} strokeWidth={1.8} />

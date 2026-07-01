@@ -14,7 +14,7 @@ export default function SepetPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[var(--od-cream)]">
+      <main className="od-public min-h-screen bg-[var(--od-cream)]">
         <CartPageClient />
       </main>
       <Footer />

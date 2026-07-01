@@ -34,7 +34,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         <section className="border-b border-[var(--od-line)] bg-[var(--od-sky-soft)]/65 pb-12 pt-14 sm:pt-20">
           <Container>
             <div className="grid gap-6 lg:grid-cols-[1.12fr_0.88fr] lg:items-center">

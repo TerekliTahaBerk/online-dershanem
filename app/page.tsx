@@ -250,19 +250,22 @@ export default function HomePage() {
     <>
       <SchemaJsonLd schema={[faqJsonLd, orgJsonLd, productJsonLd]} />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
-        <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[linear-gradient(180deg,#FFFFFE_0%,#F5F3EC_100%)]">
-          <div className="od-notebook-grid pointer-events-none absolute inset-0" aria-hidden="true" />
-          <div className="relative mx-auto max-w-4xl px-5 pb-16 pt-24 text-center sm:pb-24 sm:pt-32">
-            <h1 className="mx-auto max-w-4xl text-[40px] font-black leading-[1.04] tracking-tight text-[var(--od-ink)] sm:text-[64px] lg:text-[72px]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
+        <section className="border-b border-[var(--od-line)] bg-[var(--od-cream)]">
+          <div className="mx-auto max-w-[1080px] px-5 py-16 sm:px-8 sm:py-24">
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[var(--od-line)] bg-[var(--od-cream-2)] px-3 py-1.5 text-[13px] font-medium text-[var(--od-ink-soft)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--od-olive)]" aria-hidden="true" />
+              LGS · TYT · AYT matematik
+            </div>
+            <h1 className="max-w-[17ch] text-[40px] leading-[1.04] text-[var(--od-ink)] sm:text-[58px] lg:text-[68px]">
               Matematikte geri kalmasın. Nerede takıldığını birlikte bulalım.
             </h1>
-            <p className="mx-auto mt-7 max-w-2xl text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[19px]">
+            <p className="mt-7 max-w-[54ch] text-[17px] leading-8 text-[var(--od-ink-soft)] sm:text-[19px]">
               En fazla 4 kişilik canlı derslerde öğretmen çocuğunuzu adıyla tanır,
               eksiğin başladığı noktayı bulur ve her hafta nerede olduğunu sizinle
               paylaşır.
             </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/matematik-ders-paketi/"
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-7 py-3 text-[15px] font-bold text-white transition hover:bg-[#2E3B24]"
@@ -277,13 +280,13 @@ export default function HomePage() {
                 Ön Görüşme Talep Et
               </Link>
             </div>
-            <p className="mx-auto mt-4 max-w-xl text-[13.5px] leading-6 text-[var(--od-ink-soft)]">
+            <p className="mt-4 max-w-xl text-[13.5px] leading-6 text-[var(--od-ink-soft)]">
               Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası
               ekibimiz öğrenci hesabınızı hazırlar.
             </p>
-            <div className="mx-auto mt-12 grid max-w-3xl gap-x-8 gap-y-5 border-t border-[var(--od-line)] pt-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-12 grid max-w-4xl gap-x-8 gap-y-5 border-t border-[var(--od-line)] pt-8 sm:grid-cols-2 lg:grid-cols-4">
               {trustPoints.map((point) => (
-                <div key={point} className="text-center sm:text-left">
+                <div key={point}>
                   <span className="text-[14px] font-semibold leading-6 text-[var(--od-ink)]">{point}</span>
                 </div>
               ))}

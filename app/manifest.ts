@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Online matematik dershanesi: butik canlı matematik dersleri ve ders sonrası takip.",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#ffffff",
+    background_color: "#FBFAF5",
+    theme_color: "#FBFAF5",
     icons: [
       {
         src: "/icon-192.png",

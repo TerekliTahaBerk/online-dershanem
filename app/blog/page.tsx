@@ -185,7 +185,7 @@ export default function BlogPage() {
         ])}
       />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* Hero */}
         <section className="relative border-b border-[var(--od-line)]">
           <div className="mx-auto max-w-3xl px-5 pt-24 pb-12 sm:pt-32 sm:pb-16 text-center">

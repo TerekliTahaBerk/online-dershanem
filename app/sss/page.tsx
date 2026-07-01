@@ -41,7 +41,7 @@ export default function SssPage() {
         ]}
       />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         <section className="border-b border-[var(--od-line)]">
           <div className="mx-auto max-w-3xl px-5 pt-28 pb-14 sm:pt-36 sm:pb-20 text-center">
             <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">

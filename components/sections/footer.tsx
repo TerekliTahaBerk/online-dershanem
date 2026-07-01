@@ -47,42 +47,42 @@ const SOCIALS = [
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-[var(--od-line)] bg-[var(--od-cream)] text-[var(--od-ink)]">
-      <div className="mx-auto max-w-6xl px-5 pt-16 pb-8 sm:pt-20">
-        <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]">
+    <footer className="relative overflow-hidden bg-[var(--od-ink)] text-[#C7C7BD]">
+      <div className="mx-auto max-w-[1080px] px-5 pb-8 pt-16 sm:px-8 sm:pt-20">
+        <div className="grid gap-12 lg:grid-cols-[1.35fr_1fr]">
           {/* Brand + contact */}
           <div className="flex flex-col gap-5">
             <Link
               href="/"
               aria-label="Online Dershanem"
-              className="inline-flex items-center gap-2.5"
+              className="inline-flex items-center gap-2.5 text-[var(--od-cream)]"
             >
-              <span className="inline-flex items-center justify-center rounded-xl bg-[#FBFBF8] p-1 ring-1 ring-black/5 shadow-sm">
+              <span className="inline-flex items-center justify-center rounded-[8px] bg-[var(--od-olive-soft)] p-1">
                 <Image
                   src="/icon-192.png"
-                  alt="Online Dershanem"
+                  alt=""
                   width={192}
                   height={192}
-                  className="h-8 w-8 object-contain"
+                  className="h-7 w-7 rounded-[6px] object-contain"
                 />
               </span>
-              <span className="text-[15px] font-semibold tracking-tight text-[var(--od-ink)]">Online Dershanem</span>
+              <span className="font-display text-[19px] font-medium tracking-[-0.01em]">Online Dershanem</span>
             </Link>
 
-            <p className="max-w-sm text-[13.5px] leading-6 text-[#7A7A6F]">
+            <p className="max-w-sm text-[13.5px] leading-6 text-[#A8A89E]">
               Online matematik dershanesi. En fazla 4 öğrencilik canlı dersler,
               her ders sonunda net çalışma planı ve veliye anlaşılır haftalık not.
             </p>
 
             {/* Contact details */}
-            <ul className="mt-1 space-y-2.5 text-[13.5px] text-[var(--od-ink)]">
+            <ul className="mt-1 space-y-2.5 text-[13.5px] text-[#D6D6CD]">
               <li className="flex items-center gap-2.5">
                 <Phone size={14} className="text-[var(--od-olive)]" />
                 <ContactLink
                   href={`tel:${contact.phone}`}
                   channel="phone"
                   placement="footer_phone"
-                  className="transition hover:text-[var(--od-olive)]"
+                  className="transition-colors hover:text-[var(--od-cream)]"
                 >
                   {contact.phone}
                 </ContactLink>
@@ -91,12 +91,12 @@ export function Footer() {
                 <Mail size={14} className="text-[var(--od-olive)]" />
                 <a
                   href={`mailto:${contact.email}`}
-                  className="transition hover:text-[var(--od-olive)]"
+                  className="transition-colors hover:text-[var(--od-cream)]"
                 >
                   {contact.email}
                 </a>
               </li>
-              <li className="flex items-start gap-2.5 text-[#7A7A6F]">
+              <li className="flex items-start gap-2.5 text-[#A8A89E]">
                 <MapPin size={14} className="mt-0.5 shrink-0 text-[var(--od-olive)]" />
                 <span>{contact.address}</span>
               </li>
@@ -111,7 +111,7 @@ export function Footer() {
                   aria-label={label}
                   target={href.startsWith("http") ? "_blank" : undefined}
                   rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--od-line)] bg-white/85 text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/40 hover:bg-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-[10px] border border-white/15 bg-white/5 text-[#D6D6CD] transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white"
                 >
                   <Icon size={15} />
                 </a>
@@ -120,26 +120,26 @@ export function Footer() {
           </div>
 
           {/* Link cols */}
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-8 lg:justify-self-end lg:gap-16">
             <FooterCol title="Ürün" links={productLinks} />
             <FooterCol title="Destek" links={supportLinks} />
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[var(--od-line)] pt-6 text-[12.5px] text-[#7A7A6F] sm:flex-row">
+        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-[12.5px] text-[#85857B] sm:flex-row">
           <span>
             © {new Date().getFullYear()} Online Dershanem · Tüm hakları saklıdır.
           </span>
           <span className="flex items-center gap-3">
-            <Link href="/gizlilik/" className="hover:text-[var(--od-ink)]">
+            <Link href="/gizlilik/" className="hover:text-[var(--od-cream)]">
               Gizlilik
             </Link>
-            <span className="text-[#C8C8B5]">·</span>
-            <Link href="/kvkk/" className="hover:text-[var(--od-ink)]">
+            <span className="text-[#5F5F58]">·</span>
+            <Link href="/kvkk/" className="hover:text-[var(--od-cream)]">
               KVKK
             </Link>
-            <span className="text-[#C8C8B5]">·</span>
-            <Link href="/iade/" className="hover:text-[var(--od-ink)]">
+            <span className="text-[#5F5F58]">·</span>
+            <Link href="/iade/" className="hover:text-[var(--od-cream)]">
               İade
             </Link>
           </span>
@@ -158,7 +158,7 @@ function FooterCol({
 }) {
   return (
     <div>
-      <h5 className="text-[12px] font-medium uppercase tracking-[0.16em] text-[#8B8B7E]">
+      <h5 className="text-[12px] font-medium uppercase tracking-[0.14em] text-[#85857B]">
         {title}
       </h5>
       <ul className="mt-4 space-y-2.5">
@@ -166,7 +166,7 @@ function FooterCol({
           <li key={l.href}>
             <Link
               href={l.href}
-              className="text-[14px] text-[var(--od-ink)] transition hover:text-[var(--od-olive)]"
+              className="text-[14px] text-[#D6D6CD] transition-colors hover:text-[var(--od-cream)]"
             >
               {l.label}
             </Link>

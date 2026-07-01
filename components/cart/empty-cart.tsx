@@ -12,8 +12,8 @@ const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
  */
 export function EmptyCart() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-20 text-center">
-      <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-[var(--od-cream-2)]">
+    <div className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8">
+      <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)]">
         <ShoppingBag size={36} className="text-[var(--od-olive)]" strokeWidth={1.6} />
       </div>
       <h1 className="mt-6 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)]">
@@ -25,7 +25,7 @@ export function EmptyCart() {
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
         <Link
           href="/matematik-ders-paketi/"
-          className="inline-flex items-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3 text-[13.5px] font-semibold text-white transition hover:bg-[#2E3B24]"
+          className="inline-flex min-h-12 items-center gap-2 rounded-[10px] bg-[var(--od-olive)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
         >
           Paketi İncele
           <ArrowRight size={14} />
@@ -34,7 +34,7 @@ export function EmptyCart() {
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
+          className="inline-flex min-h-12 items-center gap-2 rounded-[10px] border border-[var(--od-ink)] bg-[var(--od-cream)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] transition-colors hover:bg-[var(--od-cream-2)]"
         >
           <MessageCircle size={14} aria-hidden="true" />
           WhatsApp&apos;tan sorun

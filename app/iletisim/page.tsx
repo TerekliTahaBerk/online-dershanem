@@ -55,34 +55,31 @@ export default function ContactPage() {
         ])}
       />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* Hero */}
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
+        {/* Hero + ön görüşme: desktop'ta iki kolon, mobilde tek akış */}
         <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto max-w-3xl px-5 pt-28 pb-14 sm:pt-36 sm:pb-20 text-center">
-            <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
-              İletişim
-            </span>
-            <h1 className="mt-5 font-display text-[42px] font-normal leading-[1.05] tracking-tight sm:text-[60px]">
-              Öğrenciniz için doğru matematik temposunu birlikte belirleyelim.
-            </h1>
-            <p className="mt-6 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              Öğrencinin sınıfını, hedefini ve derste nerede zorlandığını
-              konuşalım. Uygun küçük grup başlangıcını ve ödeme sonrası hesap
-              hazırlama sürecini net şekilde anlatalım.
-            </p>
-          </div>
-        </section>
-
-        {/* Ön görüşme formu */}
-        <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+          <div className="mx-auto grid max-w-[1080px] gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div className="lg:sticky lg:top-28">
+              <span className="od-public-eyebrow">İletişim</span>
+              <h1 className="mt-5 text-[40px] leading-[1.04] sm:text-[54px]">
+                Bize <em className="font-normal italic text-[var(--od-olive)]">ulaşmak</em> çok kolay.
+              </h1>
+              <p className="mt-6 text-[16px] leading-7 text-[var(--od-ink-soft)]">
+                Öğrencinin sınıfını, hedefini ve derste nerede zorlandığını konuşalım.
+                Uygun küçük grup başlangıcını birlikte netleştirelim.
+              </p>
+              <div className="mt-8 space-y-3 border-t border-[var(--od-line)] pt-6 text-[14px] text-[var(--od-ink-soft)]">
+                <p>Formu doldurun; tercih ettiğiniz kanaldan size dönelim.</p>
+                <p>WhatsApp, telefon ve e-posta seçenekleri aşağıda.</p>
+              </div>
+            </div>
             <ContactLeadForm />
           </div>
         </section>
 
         {/* Channels grid */}
         <section>
-          <div className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+          <div className="mx-auto max-w-[1080px] px-5 py-16 sm:px-8 sm:py-20">
           <div className="grid gap-4 sm:grid-cols-3">
             {channels.map(({ label, value, href, Icon, note }) => (
               <a

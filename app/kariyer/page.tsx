@@ -45,7 +45,7 @@ export default function CareersPage() {
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* Hero */}
         <section className="relative overflow-hidden">
           <div className="mx-auto max-w-3xl px-5 pt-24 pb-14 sm:pt-32 sm:pb-20 text-center">

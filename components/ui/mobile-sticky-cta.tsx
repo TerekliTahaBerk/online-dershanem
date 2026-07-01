@@ -26,19 +26,19 @@ export function MobileStickyCta() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--od-line)] bg-[#FBFAF5]/95 backdrop-blur-md lg:hidden">
-      <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+      <div className="mx-auto flex max-w-[1080px] items-center gap-2 px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
         <a
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="WhatsApp'tan sorun"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] bg-[#25D366] text-white"
         >
           <MessageCircle size={20} strokeWidth={2} aria-hidden="true" />
         </a>
         <Link
           href="/iletisim/"
-          className="flex h-11 flex-1 items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white px-3 text-[13.5px] font-semibold text-[var(--od-ink)]"
+          className="flex h-12 flex-1 items-center justify-center rounded-[10px] border border-[var(--od-ink)] bg-[var(--od-paper)] px-3 text-[13.5px] font-medium text-[var(--od-ink)]"
         >
           Ön Görüşme
         </Link>
@@ -49,7 +49,7 @@ export function MobileStickyCta() {
           subject={lessonPkg.subject}
           priceLabel={lessonPkg.discountedPrice}
           paymentLink=""
-          className="flex h-11 flex-1 items-center justify-center rounded-full bg-[var(--od-olive)] px-3 text-[13.5px] font-bold text-white"
+          className="flex h-12 flex-1 items-center justify-center rounded-[10px] bg-[var(--od-olive)] px-3 text-[13.5px] font-medium text-[var(--od-cream)]"
         >
           Satın Al
         </PurchaseFunnelTrigger>

@@ -23,7 +23,7 @@ export default function MissionPage() {
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* Hero with founders animation */}
         <section className="relative overflow-hidden">
           <div className="mx-auto max-w-3xl px-5 pt-20 pb-12 text-center sm:pt-28">

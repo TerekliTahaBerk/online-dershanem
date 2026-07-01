@@ -22,7 +22,7 @@ export function ExamLandingTemplate({ data }: { data: ExamLandingData }) {
   return (
     <>
       <Navbar />
-      <main>
+      <main className="od-public">
         <section className="pb-10 pt-14 sm:pt-20">
           <Container>
             <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">

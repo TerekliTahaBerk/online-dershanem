@@ -22,7 +22,7 @@ export function LegalPageTemplate({
   return (
     <>
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* Hero */}
         <section className="border-b border-[var(--od-line)]">
           <div className="mx-auto max-w-3xl px-5 pt-28 pb-14 sm:pt-36 sm:pb-20 text-center">

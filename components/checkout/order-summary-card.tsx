@@ -74,7 +74,7 @@ export function OrderSummaryCard({
 
   return (
     <aside className={`lg:sticky lg:top-24 lg:self-start ${className}`.trim()}>
-      <div className="rounded-3xl border border-[var(--od-line)] bg-white p-6 shadow-sm">
+      <div className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-[20px] tracking-tight text-[var(--od-ink)]">
             {title}
@@ -87,7 +87,7 @@ export function OrderSummaryCard({
         <ul className="mt-5 space-y-4 divide-y divide-[var(--od-line)]">
           {items.map((it, idx) => (
             <li key={it.id ?? idx} className="flex gap-3 pt-4 first:pt-0">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--od-cream-2)] text-[var(--od-olive)]">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[10px] bg-[var(--od-cream-2)] text-[var(--od-olive)]">
                 <ShoppingBag size={18} strokeWidth={1.6} />
               </div>
               <div className="flex-1 min-w-0">
@@ -140,7 +140,7 @@ export function OrderSummaryCard({
           </div>
         </div>
 
-        <div className="mt-5 flex items-start gap-2 rounded-xl bg-[var(--od-cream-2)] p-3 text-[11.5px] text-[var(--od-ink-soft)]">
+        <div className="mt-5 flex items-start gap-2 rounded-[10px] bg-[var(--od-cream-2)] p-3 text-[11.5px] text-[var(--od-ink-soft)]">
           <ShieldCheck
             size={16}
             className="mt-0.5 flex-shrink-0 text-emerald-700"

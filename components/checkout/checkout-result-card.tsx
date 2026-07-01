@@ -68,7 +68,7 @@ export function CheckoutResultCard({
 
   return (
     <div
-      className={`mx-auto max-w-xl rounded-3xl border bg-white p-8 sm:p-10 shadow-sm text-center ${cfg.borderClass}`}
+      className={`mx-auto max-w-xl rounded-[16px] border bg-[var(--od-paper)] p-8 text-center shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-10 ${cfg.borderClass}`}
     >
       <div
         className={`mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full ${cfg.iconBg}`}
@@ -115,8 +115,8 @@ export function CheckoutResultCard({
               href={primaryAction.href}
               className={
                 (primaryAction.variant ?? "primary") === "primary"
-                  ? "inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[13.5px] font-medium text-white hover:bg-black transition"
-                  : "inline-flex items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] hover:border-[var(--od-ink)]/40 transition"
+                  ? "inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[var(--od-olive)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
+                  : "inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[var(--od-ink)] bg-[var(--od-paper)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] transition-colors hover:bg-[var(--od-cream-2)]"
               }
             >
               {primaryAction.label}
@@ -127,8 +127,8 @@ export function CheckoutResultCard({
               href={secondaryAction.href}
               className={
                 (secondaryAction.variant ?? "ghost") === "primary"
-                  ? "inline-flex items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[13.5px] font-medium text-white hover:bg-black transition"
-                  : "inline-flex items-center justify-center rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] hover:border-[var(--od-ink)]/40 transition"
+                  ? "inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[var(--od-olive)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
+                  : "inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[var(--od-ink)] bg-[var(--od-paper)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] transition-colors hover:bg-[var(--od-cream-2)]"
               }
             >
               {secondaryAction.label}

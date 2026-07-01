@@ -33,7 +33,7 @@ export default function OnlineDershanePage() {
         ])}
       />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
+      <main className="od-public bg-[var(--od-cream)] py-14 text-[var(--od-ink)] sm:py-20">
         <Container>
           <section className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-sky-soft)]/70 p-7 sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--od-olive)]">Online Matematik Dershanesi</p>

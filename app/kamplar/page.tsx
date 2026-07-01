@@ -139,7 +139,7 @@ export default function CampsPage() {
         ]}
       />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* 1 — Hero */}
         <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[linear-gradient(180deg,#FFFFFE_0%,#F5F3EC_100%)]">
           <div className="mx-auto max-w-5xl px-5 pb-16 pt-20 sm:pb-24 sm:pt-28">

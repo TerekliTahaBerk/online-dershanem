@@ -116,7 +116,7 @@ export default function MatematikDersPaketiPage() {
     <>
       <SchemaJsonLd schema={[faqJsonLd, productLd, courseLd, breadcrumbLd]} />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
         {/* HERO — sade, ortalı, editorial */}
         <section className="relative overflow-hidden border-b border-[var(--od-line)] bg-[var(--od-cream)]">
           <div className="mx-auto max-w-3xl px-5 pt-28 pb-16 text-center sm:pt-36 sm:pb-24">
@@ -268,7 +268,7 @@ export default function MatematikDersPaketiPage() {
                   priceLabel={lessonPkg.discountedPrice}
                   paymentLink=""
                   analyticsId="ders_paketi_price"
-                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--od-yellow)] px-5 py-3 text-[14px] font-bold text-[var(--od-ink)] transition hover:bg-[#F0CE52]"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-1.5 rounded-[10px] bg-[var(--od-cream)] px-5 py-3 text-[14px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
                 >
                   Matematik Dersini Satın Al
                   <ArrowRight size={14} strokeWidth={2} />

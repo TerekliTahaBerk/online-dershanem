@@ -74,7 +74,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <Navbar />
-      <main className="bg-[var(--od-cream)] text-[var(--od-ink)] py-14 sm:py-20">
+      <main className="od-public bg-[var(--od-cream)] py-14 text-[var(--od-ink)] sm:py-20">
         <Container>
           <article className="mx-auto max-w-4xl rounded-3xl border border-line bg-white p-6 shadow-soft sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-wide text-brand">{post.category}</p>
