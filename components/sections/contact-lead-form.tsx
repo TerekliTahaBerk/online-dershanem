@@ -95,18 +95,18 @@ export function ContactLeadForm() {
 
   const validate = (): Errors => {
     const e: Errors = {};
-    if (!form.parentName.trim()) e.parentName = "Lütfen adınızı girin.";
+    if (!form.parentName.trim()) e.parentName = "Adınızı paylaşmanız gerekiyor.";
     if (!form.phone.trim()) {
-      e.phone = "Lütfen telefon numaranızı girin.";
+      e.phone = "Telefon numaranızı paylaşmanız gerekiyor.";
     } else if (form.phone.replace(/[^\d]/g, "").length < 10) {
-      e.phone = "Geçerli bir telefon numarası girin.";
+      e.phone = "Telefon numarası eksik veya hatalı görünüyor.";
     }
     if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      e.email = "Geçerli bir e-posta adresi girin.";
+      e.email = "E-posta adresi eksik veya hatalı görünüyor.";
     }
-    if (!form.grade) e.grade = "Öğrencinin sınıfını seçin.";
-    if (!form.goal) e.goal = "Bir hedef seçin.";
-    if (!form.kvkk) e.kvkk = "Devam etmek için onay vermelisiniz.";
+    if (!form.grade) e.grade = "Öğrencinin sınıf bilgisi eksik.";
+    if (!form.goal) e.goal = "Hedef bilgisi eksik.";
+    if (!form.kvkk) e.kvkk = "İletişim talebini iletebilmemiz için KVKK onayı gerekiyor.";
     return e;
   };
 
@@ -166,8 +166,8 @@ export function ContactLeadForm() {
         </h2>
         <p className="mt-2 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
           {saved
-            ? "Talebinizi aldık; ekibimiz tercih ettiğiniz kanaldan en kısa sürede size dönecek. Dilerseniz aşağıdan doğrudan da yazabilirsiniz."
-            : "Bağlantı kurulamadı, ancak talebinizi aşağıdaki butonlarla doğrudan bize iletebilirsiniz."}
+            ? "Talebinizi aldık. Ekibimiz tercih ettiğiniz kanaldan size dönecek; isterseniz aşağıdan doğrudan da yazabilirsiniz."
+            : "Formu kaydedemedik. Talebinizi aşağıdaki seçeneklerden biriyle doğrudan bize iletebilirsiniz."}
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <a
@@ -213,7 +213,7 @@ export function ContactLeadForm() {
         Kısa ön görüşme talebi
       </h2>
       <p className="mt-2 text-[14px] leading-7 text-[var(--od-ink-soft)]">
-        Bilgileri bırakın; tercih ettiğiniz kanaldan size dönelim. Bu form bir
+        Bilgilerinizi paylaşırsanız tercih ettiğiniz kanaldan size döneriz. Bu form bir
         ödeme adımı değildir.
       </p>
 
@@ -379,8 +379,8 @@ export function ContactLeadForm() {
 
       {status === "error" ? (
         <p className="mt-5 rounded-xl border border-[#B0392F]/30 bg-[#B0392F]/5 px-4 py-3 text-[13.5px] text-[#B0392F]" role="alert">
-          Bir şeyler ters gitti. WhatsApp&apos;tan {contact.whatsapp} numarasına
-          doğrudan yazabilirsiniz.
+          Formu şu anda iletemedik. {contact.whatsapp} numaralı WhatsApp hattımızdan
+          bize ulaşabilirsiniz.
         </p>
       ) : null}
 

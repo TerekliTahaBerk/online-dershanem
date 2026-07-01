@@ -11,7 +11,7 @@ import { contact } from "@/lib/content";
 export const metadata: Metadata = {
   title: "İletişim",
   description:
-    "Öğrenciniz için doğru matematik temposunu birlikte belirlemek üzere Online Dershanem ekibine ulaşın.",
+    "Öğrencinizin matematikte nerede zorlandığını ve uygun ders temposunu konuşmak için bize ulaşabilirsiniz.",
   alternates: { canonical: "/iletisim/" },
 };
 
@@ -32,11 +32,11 @@ export default function ContactPage() {
           {/* Başlık */}
           <div className="mb-[clamp(36px,5vw,56px)] max-w-[52ch]">
             <h1 className="mb-[18px] font-display text-[clamp(32px,5vw,52px)] font-medium leading-[1.04] tracking-[-0.025em]">
-              Bize <em className="font-normal italic">ulaşmak</em> çok kolay.
+              Aklınızdakileri <em className="font-normal italic">konuşalım.</em>
             </h1>
             <p className="text-[clamp(17px,2.2vw,19px)] leading-[1.6] text-[var(--od-ink-soft)]">
-              En hızlısı WhatsApp veya telefon. Aşağıdaki formu doldurursanız da biz sizi
-              ararız — sadece adınız ve numaranız yeter, gerisini görüşmede konuşuruz.
+              WhatsApp veya telefonla doğrudan ulaşabilirsiniz. Formu tercih ederseniz
+              adınızı ve numaranızı bırakmanız yeter; sizi arayıp gerisini birlikte konuşuruz.
             </p>
           </div>
 
@@ -55,7 +55,7 @@ export default function ContactPage() {
                 </span>
                 <div>
                   <div className="text-[16px] font-semibold">WhatsApp</div>
-                  <div className="text-[14px] text-[#3B5232]">En hızlısı — hemen yazın</div>
+                  <div className="text-[14px] text-[#3B5232]">En hızlısı — buradan yazabilirsiniz</div>
                 </div>
                 <ArrowRight size={18} strokeWidth={1.7} className="ml-auto text-[#3B5232]" aria-hidden="true" />
               </a>
@@ -104,7 +104,7 @@ export default function ContactPage() {
                   Önce paketi incelemek ister misiniz?
                 </div>
                 <p className="mb-3.5 text-[14px] leading-[1.55] text-[var(--od-ink-soft)]">
-                  Fiyat, kapsam ve “hesap gerekmez” akışının tümü tek sayfada.
+                  Fiyatı, derslerin kapsamını ve ödeme sonrası süreci tek sayfada görebilirsiniz.
                 </p>
                 <Link
                   href="/matematik-ders-paketi/"

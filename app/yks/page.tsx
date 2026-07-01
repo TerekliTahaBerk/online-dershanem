@@ -6,13 +6,13 @@ import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 export const metadata: Metadata = {
   title: "TYT-AYT Matematik Dersi",
   description:
-    "TYT ve AYT matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve ders sonrası net çalışma yönü.",
+    "TYT ve AYT matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve ders sonrası çalışma yönü.",
   alternates: {
     canonical: "/yks/"
   },
   openGraph: {
     title: "TYT-AYT Matematik Dersi | Online Dershanem",
-    description: "TYT-AYT matematik için küçük grup canlı ders, ders içi soru-cevap ve sade veli özeti.",
+    description: "TYT-AYT matematik için küçük grup canlı ders, ders içi soru-cevap ve veliye kısa gelişim notu.",
     url: `${siteUrl}/yks/`
   }
 };
@@ -38,10 +38,10 @@ export default function TYTLandingPage() {
         heroBadge: "TYT-AYT Matematik",
         heroTitle: "TYT-AYT matematikte derste görünen, hafta içinde yönünü bilen öğrenci.",
         heroText:
-          "TYT ve AYT matematikte öğrenci sadece dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda hangi çalışmayla devam edeceğini bilir. Veliye de süreç sade bir dille aktarılır.",
+          "TYT ve AYT matematikte öğrenci sadece dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda hangi çalışmayla devam edeceğini bilir. Veliye de süreç yalın bir dille aktarılır.",
         highlights: [
           "En fazla 4 öğrencilik matematik grubu",
-          "Ders sonrası ödevlendirme ve net çalışma yönü",
+          "Ders sonrası ödevlendirme ve açık bir çalışma yönü",
           "TYT hız + AYT derinlik dengesine uygun matematik çalışması"
         ],
         approach: {

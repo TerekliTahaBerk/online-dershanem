@@ -73,7 +73,7 @@ export function Navbar() {
               paymentLink=""
               className="inline-flex min-h-10 items-center justify-center rounded-[9px] bg-[var(--od-olive)] px-4 py-2 text-[13.5px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
             >
-              Satın Al
+              Sepete Ekle
             </PurchaseFunnelTrigger>
           </div>
 
@@ -124,7 +124,7 @@ export function Navbar() {
                 paymentLink=""
                 className="mt-2 inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[var(--od-olive)] px-5 py-3 text-[15px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
               >
-                Satın Al
+                Sepete Ekle
               </PurchaseFunnelTrigger>
             </nav>
           </div>

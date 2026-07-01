@@ -9,14 +9,14 @@ import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 export const metadata: Metadata = {
   title: "Matematik Ders Paketi — Fiyat ve İçerik",
   description:
-    "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti. Aylık ₺3.000.",
+    "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu. Aylık ₺3.000.",
   // Asıl ürün sayfası /matematik-ders-paketi/ — sıralama sinyalleri orada
   // toplansın diye canonical oraya işaret eder (keyword cannibalization fix).
   alternates: { canonical: "/matematik-ders-paketi/" },
   openGraph: {
     title: "Matematik Ders Paketi | Online Dershanem",
     description:
-      "En fazla 4 öğrencilik canlı matematik dersi ve ders sonrası net çalışma yönü.",
+      "En fazla 4 öğrencilik canlı matematik dersi ve ders sonrası çalışma yönü.",
     url: `${siteUrl}/paketler/`,
   },
 };
@@ -38,8 +38,8 @@ export default function PackagesPage() {
               Matematik Ders Paketi.
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              Tek public satış ürünü: en fazla dört öğrencilik canlı matematik
-              dersi, derste soru-cevap, ders sonrası çalışma yönü ve veliye sade özet.
+              Siteden kayıt olunabilen ders paketimiz: en fazla dört öğrencilik canlı matematik
+              dersi, derste soru-cevap, ders sonrası çalışma yönü ve veliye kısa özet.
             </p>
           </div>
         </section>

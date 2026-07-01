@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     template: "%s | Online Dershanem"
   },
   description:
-    "En fazla 4 öğrencilik canlı matematik dersleri, ders içi soru-cevap, ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
+    "En fazla 4 öğrencilik canlı matematik dersleri, ders içi soru-cevap, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "En fazla 4 öğrencilik canlı matematik dersleri, ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
+      "En fazla 4 öğrencilik canlı matematik dersleri, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
     url: `${siteUrl}/`,
     siteName: "Online Dershanem",
     locale: "tr_TR",
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Online Matematik Dershanesi | Online Dershanem",
-    description: "En fazla 4 öğrencilik canlı matematik dersleri ve ders sonrası net çalışma yönü.",
+    description: "En fazla 4 öğrencilik canlı matematik dersleri ve ders sonrası belirli bir çalışma yönü.",
     images: ["/logo.png"]
   },
   icons: {

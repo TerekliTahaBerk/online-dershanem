@@ -44,8 +44,8 @@ const suitableFor = [
 const processSteps = [
   {
     n: "1",
-    title: "Ön kayıt bırakın",
-    body: "İlgilendiğiniz kampı seçip iletişim bırakın.",
+    title: "Ön kayıt",
+    body: "İlgilendiğiniz kampı seçer, iletişim bilginizi bırakırsınız.",
   },
   {
     n: "2",
@@ -234,7 +234,7 @@ export default function CampsPage() {
                 href="/iletisim/"
                 className="inline-flex min-h-12 items-center gap-2 rounded-[11px] bg-[var(--od-olive)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
               >
-                Kamp için ön kayıt bırak
+                Kamp için ön kayıt
               </Link>
             </div>
           </div>

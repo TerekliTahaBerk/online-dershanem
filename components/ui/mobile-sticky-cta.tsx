@@ -17,7 +17,7 @@ const HIDDEN_PREFIXES = ["/sepet", "/panel", "/giris", "/kayit", "/sifremi-unutt
 
 /**
  * Mobil (lg altı) için ekranın altına sabitlenen birincil eylem barı:
- * WhatsApp · Ön Görüşme · Satın Al. Desktop'ta gizli — orada floating FAB'lar
+ * WhatsApp · Ön Görüşme · Sepete Ekle. Desktop'ta gizli — orada floating FAB'lar
  * (WhatsAppFab / CartFab) görünür. Çakışmayı önlemek için FAB'lar `hidden lg:flex`.
  */
 export function MobileStickyCta() {
@@ -51,7 +51,7 @@ export function MobileStickyCta() {
           paymentLink=""
           className="flex h-12 flex-1 items-center justify-center rounded-[10px] bg-[var(--od-olive)] px-3 text-[13.5px] font-medium text-[var(--od-cream)]"
         >
-          Satın Al
+          Sepete Ekle
         </PurchaseFunnelTrigger>
       </div>
     </div>

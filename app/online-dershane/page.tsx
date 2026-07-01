@@ -11,14 +11,14 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Online Matematik Dershanesi | Butik Grup ve Gelişim Takibi",
   description:
-    "Online matematik dershanesi: en fazla 4 öğrencilik canlı ders, derste soru-cevap, ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
+    "En fazla 4 öğrencilik canlı matematik dersi, derste soru-cevap, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
   alternates: {
     canonical: "/online-dershane/"
   },
   openGraph: {
     title: "Online Matematik Dershanesi | Online Dershanem",
     description:
-      "Küçük grupta canlı matematik dersi, ders sonrası çalışma yönü ve veliye sade bilgilendirme modeli.",
+      "Küçük grupta canlı matematik dersi, ders sonrası çalışma yönü ve veliye kısa bilgilendirme notu.",
     url: `${siteUrl}/online-dershane/`
   }
 };
@@ -67,7 +67,7 @@ export default function OnlineDershanePage() {
             {[
               "En fazla 4 öğrencilik matematik grubu ile derste bireysel temas",
               "Canlı ders, ödevlendirme ve öğretmen notu",
-              "Veliye çocuğunun nerede zorlandığını anlatan sade özet"
+              "Veliye çocuğunun nerede zorlandığını anlatan kısa özet"
             ].map((item) => (
               <article key={item} className="rounded-2xl border border-[var(--od-line)] bg-white p-5 text-sm font-medium text-[var(--od-ink-soft)] shadow-[0_16px_40px_-34px_rgba(20,20,15,0.18)]">
                 {item}

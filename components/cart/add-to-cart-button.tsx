@@ -12,7 +12,7 @@ type Props = {
 };
 
 /**
- * "Sepete Ekle" düğmesi — paket kartlarında "Satın Al" yanına konur.
+ * "Sepete Ekle" düğmesi paket kartlarında satın alma akışını başlatır.
  * Tıklandığında 1.6sn boyunca "Eklendi ✓" feedback'i gösterir.
  */
 export function AddToCartButton({ item, className = "", analyticsSource }: Props) {

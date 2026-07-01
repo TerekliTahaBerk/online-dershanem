@@ -56,14 +56,14 @@ export default function SssPage() {
               href={waHref}
               className="border-b border-[var(--od-olive-soft)] font-medium text-[var(--od-olive)]"
             >
-              WhatsApp&apos;tan yazın
+              WhatsApp&apos;tan yazabilirsiniz
             </a>{" "}
             veya{" "}
             <a
               href={telHref}
               className="border-b border-[var(--od-olive-soft)] font-medium text-[var(--od-olive)]"
             >
-              arayın
+              bizi arayabilirsiniz
             </a>
             .
           </p>
@@ -105,14 +105,14 @@ export default function SssPage() {
               Sorunuz hâlâ duruyor mu?
             </h2>
             <p className="mx-auto mb-7 max-w-[40ch] text-[16px] text-[#D8DCCF]">
-              Bir cümlelik soru bile olsa yazın — hemen yanıtlarız.
+              Kısa bir soru için de yazabilirsiniz; ilk fırsatta yanıtlarız.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <a
                 href={waHref}
                 className="inline-flex min-h-12 items-center rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[15px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
               >
-                WhatsApp&apos;tan yaz
+                WhatsApp&apos;tan ulaşabilirsiniz
               </a>
               <a
                 href={telHref}

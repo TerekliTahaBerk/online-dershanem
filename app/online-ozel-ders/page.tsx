@@ -11,14 +11,14 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Online Matematik Özel Ders | Butik Küçük Grup Modeli",
   description:
-    "Online matematik özel ders arayanlar için küçük grup modeli: en fazla 4 öğrenci, derste soru-cevap ve ders sonrası net çalışma yönü.",
+    "Online matematik desteği arayanlar için en fazla 4 öğrencilik grup, derste soru-cevap ve ders sonrası çalışma yönü.",
   alternates: {
     canonical: "/online-ozel-ders/"
   },
   openGraph: {
     title: "Online Matematik Özel Ders | Online Dershanem",
     description:
-      "Matematikte öğrencinin seviyesine göre küçük grup desteği, ders içi soru-cevap ve veliye sade gelişim özeti.",
+      "Matematikte öğrencinin seviyesine göre küçük grup desteği, ders içi soru-cevap ve veliye kısa gelişim notu.",
     url: `${siteUrl}/online-ozel-ders/`
   }
 };
@@ -38,7 +38,7 @@ export default function OnlineOzelDersPage() {
           <section className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/55 p-7 sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--od-olive)]">Online Matematik Özel Ders</p>
             <h1 className="mt-3 text-3xl font-bold tracking-normal text-[var(--od-ink)] sm:text-4xl">
-              Özel derse yakın ilgi, küçük grubun sürdürülebilir temposu.
+              Özel derse yakın ilgi, küçük grubun temposuyla.
             </h1>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[var(--od-ink-soft)] sm:text-base">
               Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik
@@ -64,7 +64,7 @@ export default function OnlineOzelDersPage() {
 
           <section className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              "Canlı matematik dersi ve ders sonrası net çalışma yönü",
+              "Canlı matematik dersi ve ders sonrası çalışma yönü",
               "En fazla 4 öğrencilik grupta daha yoğun soru-cevap alanı",
               "Ders sonrası öğretmen notu ve veliye kısa özet"
             ].map((item) => (
@@ -79,7 +79,7 @@ export default function OnlineOzelDersPage() {
             <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[var(--od-ink-soft)]">
               <li>Matematikte belirli konularda hızlı toparlanma ihtiyacı olanlar</li>
               <li>Soru çözüm ve yanlış analizi desteğini artırmak isteyenler</li>
-              <li>Ders sonunda net bir çalışma yönüyle devam etmek isteyen öğrenciler</li>
+              <li>Ders sonunda belirli bir çalışma yönüyle devam etmek isteyen öğrenciler</li>
             </ul>
           </section>
 

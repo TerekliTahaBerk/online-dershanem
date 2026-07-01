@@ -114,7 +114,7 @@ export function CartPageClient() {
             </button>
 
             <div className="mt-3 text-[11.5px] text-center text-[var(--od-ink-soft)]">
-              Bilgi formunu doldurun, PayTR güvenli ödeme sayfasına geçilir.
+              Bilgi formunun ardından PayTR güvenli ödeme sayfası açılır.
             </div>
 
             {/* Checkout trust box */}
@@ -125,13 +125,13 @@ export function CartPageClient() {
               </div>
               <p className="mt-2 text-[12px] leading-relaxed text-[var(--od-ink-soft)]">
                 Ödeme PayTR altyapısı ile alınır. Kart bilgileriniz Online
-                Dershanem tarafından saklanmaz. Ödeme sonrası ekibimiz sizinle
-                iletişime geçer; satın alma için kayıt olmanız gerekmez.
+                Dershanem tarafından saklanmaz. Hesap açmadan ödeme yapabilirsiniz;
+                sonrasında ekibimiz sizinle iletişime geçer.
               </p>
               <ul className="mt-3 space-y-1.5 text-[11.5px] text-[var(--od-ink-soft)]">
                 <li>· 256-bit SSL korumalı ödeme</li>
                 <li>· 1, 3, 6 ve 9 taksit seçenekleri</li>
-                <li>· Kart bilgileriniz sitemizde saklanmaz</li>
+                <li>· Ödeme PayTR tarafından işlenir</li>
               </ul>
             </div>
 
@@ -143,7 +143,7 @@ export function CartPageClient() {
               className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[10px] border border-[var(--od-ink)] bg-[var(--od-paper)] px-5 py-2.5 text-[12.5px] font-medium text-[var(--od-ink)] transition-colors hover:bg-[var(--od-cream-2)]"
             >
               <MessageCircle size={14} aria-hidden="true" />
-              Ödeme öncesi sorunuz mu var? WhatsApp&apos;tan yazın
+              Ödeme öncesi sorularınız için WhatsApp
             </a>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--od-line)] pt-3 text-[11.5px] text-[var(--od-ink-soft)]">

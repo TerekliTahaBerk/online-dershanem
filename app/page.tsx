@@ -87,7 +87,7 @@ const lessonSteps = [
   {
     step: "ADIM 04",
     title: "Plan & ödev",
-    body: "Ders, “ne çalışacağı” netleşmeden bitmez. Çalışma planı ve ödevle kapanır.",
+    body: "Ders, öğrenci ne çalışacağını bilmeden bitmez. Çalışma planı ve ödevle kapanır.",
   },
 ];
 
@@ -100,7 +100,7 @@ const teachers = [
 const afterLesson = [
   {
     icon: FileText,
-    title: "Net çalışma planı",
+    title: "Çalışma planı",
     body: "Bu hafta hangi konu, hangi soru tipi.",
   },
   {
@@ -117,8 +117,8 @@ const afterLesson = [
 
 const trustStrip = [
   { icon: Video, title: "Google Meet", sub: "Tanıdık, kurulum yok" },
-  { icon: Lock, title: "PayTR · 256-bit SSL", sub: "Kart bilgisi bizimle paylaşılmaz" },
-  { icon: Users, title: "En fazla 4 öğrenci", sub: "Garantili küçük grup" },
+  { icon: Lock, title: "PayTR · 256-bit SSL", sub: "Ödeme PayTR üzerinden işlenir" },
+  { icon: Users, title: "En fazla 4 öğrenci", sub: "Sabit küçük grup" },
   { icon: RefreshCw, title: "Ödeme sonrası kurulum", sub: "Hesabı biz oluştururuz" },
 ];
 
@@ -175,7 +175,7 @@ const priceFeatures = [
 ];
 
 const paymentSteps = [
-  { step: "ADIM 1", title: "Satın al", body: "PayTR ile güvenli ödemeyi tamamlayın." },
+  { step: "ADIM 1", title: "Ödeme", body: "Ödemeyi PayTR üzerinden güvenle tamamlarsınız." },
   { step: "ADIM 2", title: "Biz ararız", body: "Çocuğun seviyesini ve hedefini konuşuruz." },
   { step: "ADIM 3", title: "Hesabı oluştururuz", body: "Giriş bilgilerini size iletiriz." },
   { step: "ADIM 4", title: "Gruba yerleştiririz", body: "Seviyeye uygun, en fazla 4 kişilik gruba." },
@@ -202,7 +202,7 @@ const faqs = [
   },
   {
     q: "Veli olarak süreci nasıl takip ederim?",
-    a: "Her hafta size sade bir durum notu iletiriz: bu hafta ne işlendi, çocuğunuz nerede iyi, neye dikkat etmeli. Resmî bir karne değil, sürecin kısa özeti.",
+    a: "Her hafta size işlenen konuyu, çocuğunuzun zorlandığı noktayı ve dikkat edilmesi gerekeni birkaç cümleyle yazarız. Resmî bir karne değil, sürecin kısa özeti.",
   },
   {
     q: "İstediğim zaman bırakabilir miyim?",
@@ -285,8 +285,8 @@ export default function HomePage() {
           </h1>
           <p className="mt-6 max-w-[54ch] text-[clamp(17px,2.2vw,20px)] leading-[1.55] text-[var(--od-ink-soft)]">
             Çocuğunuz kalabalıkta kaybolmaz, birebir kadar da pahalı değil. Google
-            Meet&apos;te canlı çözüm, her ders sonunda net çalışma planı ve size
-            haftalık sade bir durum notu.
+            Meet&apos;te canlı çözüm, her ders sonunda o hafta ne çalışılacağı belli
+            olur ve size haftalık kısa bir durum notu gider.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <PurchaseFunnelTrigger
@@ -298,7 +298,7 @@ export default function HomePage() {
               paymentLink=""
               className="inline-flex min-h-12 items-center gap-2.5 rounded-[11px] bg-[var(--od-olive)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
             >
-              Satın Al — {priceMain}
+              Sepete Ekle — {priceMain}
               <span className="font-normal opacity-70">/ay</span>
             </PurchaseFunnelTrigger>
             <Link
@@ -314,7 +314,7 @@ export default function HomePage() {
                 <Check size={11} strokeWidth={2.4} aria-hidden="true" />
               </span>
               <span>
-                <strong className="font-semibold text-[var(--od-ink)]">Hesap açmanıza gerek yok</strong> — ödeme sonrası hesabı biz oluştururuz
+                <strong className="font-semibold text-[var(--od-ink)]">Öğrenci hesabını ödeme sonrasında biz hazırlarız</strong> — önceden kayıt gerekmez
               </span>
             </span>
             <span className="inline-flex items-center gap-2">
@@ -355,7 +355,7 @@ export default function HomePage() {
           <div className={SECTION}>
             <p className={`${EYEBROW} mb-4`}>BİR DERS NASIL İŞLER</p>
             <h2 className={`${H2} mb-12 max-w-[22ch]`}>
-              Dört kişilik küçük bir masa, <em className="font-normal italic">net</em> bir akış.
+              Dört kişilik küçük bir masa, <em className="font-normal italic">belli</em> bir akış.
             </h2>
             <div className="grid gap-px overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-line)] sm:grid-cols-2 lg:grid-cols-4">
               {lessonSteps.map((s) => (
@@ -428,7 +428,7 @@ export default function HomePage() {
               </h2>
               <p className="max-w-[46ch] text-[17px] leading-[1.6] text-[#D8DCCF]">
                 Her dersin sonunda elinde ne çalışacağını bilen, ödevi belli, öğretmeninin
-                notunu almış bir öğrenci olur. Belirsizlik biter.
+                notunu almış bir öğrenci olur.
               </p>
             </div>
             <div className="flex flex-col gap-3.5">
@@ -463,9 +463,9 @@ export default function HomePage() {
                   Sürece dair elinizde somut bir şey olur.
                 </h2>
                 <p className="mb-4 max-w-[46ch] text-[17px] leading-[1.6] text-[var(--od-ink-soft)]">
-                  Her hafta size sade bir durum notu gönderiririz: bu hafta ne işlendi,
+                  Her hafta size kısa bir durum notu gönderiririz: bu hafta ne işlendi,
                   çocuğunuz nerede iyi gidiyor, neye dikkat etmeli. Karne değil — birlikte
-                  yürüdüğümüz yolun kısa bir özeti.
+                  yürüdüğümüz yolun özeti.
                 </p>
                 <p className="text-[13px] italic text-[#8A8A7E]">
                   Yandaki kart temsilîdir; gerçek veriden oluşturulmamıştır.
@@ -536,7 +536,7 @@ export default function HomePage() {
         {/* 8 · KİMLER İÇİN */}
         <section className="border-t border-[var(--od-line)]">
           <div className={SECTION}>
-            <p className={`${EYEBROW} mb-4`}>DÜRÜST KONUŞALIM</p>
+            <p className={`${EYEBROW} mb-4`}>KİMLER İÇİN UYGUN</p>
             <h2 className={`${H2} mb-12 max-w-[20ch]`}>Herkese uygun değiliz, bu da iyi.</h2>
             <div className="grid gap-[clamp(32px,5vw,72px)] sm:grid-cols-2">
               <div>
@@ -684,12 +684,12 @@ export default function HomePage() {
           <div className={SECTION}>
             <div className="grid items-center gap-[clamp(32px,5vw,56px)] lg:grid-cols-2">
               <div>
-                <p className={`${EYEBROW} mb-4`}>TEK PAKET, NET FİYAT</p>
+                <p className={`${EYEBROW} mb-4`}>TEK PAKET, SABİT FİYAT</p>
                 <h2 className="mb-5 max-w-[14ch] font-display text-[clamp(28px,4vw,44px)] font-medium leading-[1.08] tracking-[-0.02em]">
                   Matematik Ders Paketi.
                 </h2>
                 <p className="mb-6 max-w-[44ch] text-[17px] leading-[1.6] text-[var(--od-ink-soft)]">
-                  Karmaşık paket seçenekleri yok. Tek bir net teklif — aylık, istediğiniz
+                  Karmaşık paket seçenekleri yok. Tek bir teklif var — aylık, istediğiniz
                   zaman bırakabilirsiniz.
                 </p>
                 <Link
@@ -712,7 +712,7 @@ export default function HomePage() {
                     <span className="text-[16px] text-[#A9BD93] line-through">{priceOld}</span>
                   ) : null}
                   <span className="rounded-full bg-[var(--od-cream)]/[0.16] px-2.5 py-1 text-[13px] font-medium">
-                    İndirimli
+                    Aylık sabit fiyat
                   </span>
                 </div>
                 <ul className="mb-7 flex flex-col gap-3">
@@ -734,7 +734,7 @@ export default function HomePage() {
                   paymentLink=""
                   className="flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
                 >
-                  Satın Al
+                  Sepete Ekle
                 </PurchaseFunnelTrigger>
                 <p className="mt-3.5 text-center text-[13px] text-[#A9BD93]">
                   Hesap açmanıza gerek yok · PayTR güvenli ödeme
@@ -748,7 +748,7 @@ export default function HomePage() {
         <section className="border-t border-[var(--od-line)]">
           <div className={SECTION}>
             <p className={`${EYEBROW} mb-4`}>ÖDEMEDEN İLK DERSE</p>
-            <h2 className={`${H2} mb-12 max-w-[18ch]`}>Hesap derdi yok. Altı adım.</h2>
+            <h2 className={`${H2} mb-12 max-w-[18ch]`}>Ödemeden derse, altı adım.</h2>
             <div className="grid gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
               {paymentSteps.map((s, i) => (
                 <div key={s.step}>
@@ -856,10 +856,10 @@ export default function HomePage() {
         <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
           <div className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(64px,9vw,120px)] text-center">
             <h2 className="mx-auto mb-5 max-w-[18ch] font-display text-[clamp(30px,5vw,52px)] font-medium leading-[1.06] tracking-[-0.025em]">
-              Matematiği netleştirmenin <em className="font-normal italic">en kolay</em> yolu.
+              Küçük grupta, <em className="font-normal italic">düzenli</em> bir matematik dersi.
             </h2>
             <p className="mx-auto mb-9 max-w-[42ch] text-[18px] leading-[1.55] text-[#D8DCCF]">
-              Hesap açmaya gerek yok. Ödeyin, gerisini biz kuralım.
+              Kayıt olduktan sonra ekibimiz sizinle iletişime geçer, süreci birlikte başlatırız.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <PurchaseFunnelTrigger
@@ -871,7 +871,7 @@ export default function HomePage() {
                 paymentLink=""
                 className="inline-flex min-h-12 items-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
               >
-                Satın Al — {priceMain}/ay
+                Sepete Ekle — {priceMain}/ay
               </PurchaseFunnelTrigger>
               <a
                 href={waHref}

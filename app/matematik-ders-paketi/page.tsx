@@ -23,12 +23,12 @@ const priceOld = (lessonPkg.oldPrice ?? "").replace("/ay", ""); // ₺5.000
 export const metadata: Metadata = {
   title: "Matematik Ders Paketi — Butik Canlı Matematik Dersi",
   description:
-    "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti. Aylık ₺3.000.",
+    "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu. Aylık ₺3.000.",
   alternates: { canonical: "/matematik-ders-paketi/" },
   openGraph: {
     title: "Matematik Ders Paketi | Online Dershanem",
     description:
-      "En fazla 4 öğrencilik grupta canlı matematik dersi, öğretmen notu ve ders sonrası net çalışma yönü.",
+      "En fazla 4 öğrencilik grupta canlı matematik dersi, öğretmen notu ve ders sonrası çalışma yönü.",
     url: `${siteUrl}/matematik-ders-paketi/`,
   },
 };
@@ -44,11 +44,11 @@ const pillars = [
   },
   {
     title: "Plan + ödev + not",
-    body: "Her ders, ne çalışacağı netleşerek biter. Ödev sayılı ve takip edilebilir.",
+    body: "Her ders, öğrenci ne çalışacağını bilerek biter. Ödev sayılı ve takip edilebilir.",
   },
   {
     title: "Veliye haftalık not",
-    body: "Bu hafta ne işlendi, nerede iyi, neye dikkat — sade bir durum özeti.",
+    body: "Bu hafta ne işlendi, nerede iyi, neye dikkat — kısa bir durum özeti.",
   },
 ];
 
@@ -76,7 +76,7 @@ const priceFeatures = [
 ];
 
 const flow = [
-  { step: "1", title: "Satın al", body: "PayTR ile güvenli ödeme." },
+  { step: "1", title: "Ödeme", body: "PayTR üzerinden güvenle tamamlanır." },
   { step: "2", title: "Biz ararız", body: "Seviye ve hedefi konuşuruz." },
   { step: "3", title: "Hesabı açarız", body: "Giriş bilgilerini iletiriz." },
   { step: "4", title: "İlk ders", body: "Gruba katılır, başlarız." },
@@ -89,7 +89,7 @@ const faqs = [
   },
   {
     q: "₺5.000 fiyatı ne, neden ₺3.000 ödüyorum?",
-    a: "₺5.000 referans (liste) fiyatımızdır. Güncel kampanyayla paketi ₺3.000/ay olarak sunuyoruz.",
+    a: "₺5.000, paketin referans aldığımız liste fiyatıdır. ₺3.000/ay ise şu anda geçerli olan güncel fiyattır.",
   },
   {
     q: "Satın alınca hemen hesap mı açmam gerekiyor?",
@@ -123,7 +123,7 @@ export default function MatematikDersPaketiPage() {
   const productLd = productJsonLd({
     name: lessonPkg.name,
     description:
-      "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye sade gelişim özeti.",
+      "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu.",
     url: "/matematik-ders-paketi/",
     priceCents: lessonPkg.priceCents,
     sku: lessonPkg.id,
@@ -167,8 +167,8 @@ export default function MatematikDersPaketiPage() {
               </h1>
               <p className="mb-10 max-w-[52ch] text-[clamp(17px,2.2vw,19px)] leading-[1.6] text-[var(--od-ink-soft)]">
                 En fazla 4 öğrencilik canlı grup dersi. Google Meet&apos;te birlikte
-                çözüm, her ders sonunda net plan ve veliye haftalık durum notu.
-                Düzenli, takipli, sürdürülebilir bir matematik düzeni.
+                çözüm, her ders sonunda çalışma planı ve veliye haftalık durum notu —
+                aynı öğretmenle, düzenli aralıklarla.
               </p>
 
               {/* Pakette neler var */}
@@ -185,8 +185,8 @@ export default function MatematikDersPaketiPage() {
                 ))}
               </div>
 
-              {/* Dürüstlük listesi */}
-              <h2 className={`${LABEL_H2} mb-2`}>DÜRÜSTLÜK LİSTESİ</h2>
+              {/* Kapsar / kapsamaz */}
+              <h2 className={`${LABEL_H2} mb-2`}>PAKETTE OLAN VE OLMAYAN</h2>
               <p className="mb-5 max-w-[48ch] text-[15px] text-[var(--od-ink-soft)]">
                 Neyi verdiğimizi ve neyi vermediğimizi açıkça yazıyoruz. Sürpriz yok.
               </p>
@@ -247,7 +247,7 @@ export default function MatematikDersPaketiPage() {
                     <span className="text-[16px] text-[#A9BD93] line-through">{priceOld}</span>
                   ) : null}
                   <span className="rounded-full bg-[var(--od-cream)]/[0.16] px-2.5 py-1 text-[13px] font-medium">
-                    %40 indirim
+                    Aylık sabit fiyat
                   </span>
                 </div>
                 <PurchaseFunnelTrigger
@@ -259,7 +259,7 @@ export default function MatematikDersPaketiPage() {
                   paymentLink=""
                   className="mb-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-4 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
                 >
-                  Satın Al
+                  Sepete Ekle
                 </PurchaseFunnelTrigger>
                 <a
                   href={waHref}
@@ -295,7 +295,7 @@ export default function MatematikDersPaketiPage() {
         <section className="border-t border-[var(--od-line)] bg-[var(--od-cream-2)]">
           <div className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,88px)]">
             <h2 className={`${SECTION_H2} mb-10 max-w-[20ch]`}>
-              Ödemeden ilk derse — hesap derdi yok.
+              Ödemeden ilk derse.
             </h2>
             <div className="grid gap-[18px] sm:grid-cols-2 lg:grid-cols-4">
               {flow.map((s) => (
@@ -341,10 +341,10 @@ export default function MatematikDersPaketiPage() {
         <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
           <div className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(56px,8vw,104px)] text-center">
             <h2 className="mx-auto mb-5 max-w-[16ch] font-display text-[clamp(28px,4.6vw,46px)] font-medium leading-[1.08] tracking-[-0.025em]">
-              Bugün başlayın, gerisini biz kuralım.
+              Paket hazır; gerisini birlikte planlarız.
             </h2>
             <p className="mx-auto mb-8 max-w-[40ch] text-[17px] text-[#D8DCCF]">
-              {priceMain}/ay · hesap açmaya gerek yok · PayTR güvenli ödeme.
+              {priceMain}/ay · PayTR güvenli ödeme.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <PurchaseFunnelTrigger
@@ -356,7 +356,7 @@ export default function MatematikDersPaketiPage() {
                 paymentLink=""
                 className="inline-flex min-h-12 items-center gap-2 rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
               >
-                Satın Al
+                Sepete Ekle
               </PurchaseFunnelTrigger>
               <a
                 href={waHref}

@@ -68,8 +68,8 @@ export default function MissionPage() {
             </p>
             <p>
               Abartılı vaatler vermiyoruz. “Garantili puan” veya “bir ayda zirve”
-              demiyoruz. Bunun yerine, her hafta çocuğunuzun nerede olduğunu size sade bir
-              dille anlatıyor, sürecin içine sizi de alıyoruz. Güven, gösterişle değil
+              demiyoruz. Bunun yerine, her hafta çocuğunuzun nerede olduğunu kısa bir
+              notla anlatıyor, sürecin içine sizi de alıyoruz. Güven, gösterişle değil
               şeffaflıkla kurulur.
             </p>
           </div>
@@ -121,13 +121,13 @@ export default function MissionPage() {
                 href="/iletisim/"
                 className="inline-flex min-h-12 items-center rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
               >
-                İletişime geç
+              İletişim
               </Link>
               <Link
                 href="/matematik-ders-paketi/"
                 className="inline-flex min-h-12 items-center rounded-[11px] border border-[var(--od-cream)]/[0.28] bg-[var(--od-cream)]/10 px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[var(--od-cream)]/[0.18]"
               >
-                Paketi incele
+                Ders paketi
               </Link>
             </div>
           </div>

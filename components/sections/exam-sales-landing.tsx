@@ -136,7 +136,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
               <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
                 <div>
                   <h2 className="text-3xl font-bold tracking-normal text-[var(--od-ink)] sm:text-4xl">
-                    Veliye giden sade gelişim özeti.
+                    Veliye giden kısa gelişim özeti.
                   </h2>
                   <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--od-ink-soft)]">
                     Veli, çıplak net yerine çocuğunun matematikte nerede olduğunu
