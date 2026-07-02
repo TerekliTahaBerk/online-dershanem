@@ -3,7 +3,7 @@ import { permanentRedirect } from "next/navigation";
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: "/yks/"
+    canonical: "/yks"
   },
   robots: {
     index: false,

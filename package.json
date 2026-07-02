@@ -4,14 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && next build",
     "build:nomigrate": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "typecheck": "tsc --noEmit",
+    "test:unit": "node --import tsx --test lib/od/*.test.ts lib/odk/*.test.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
+    "release:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
@@ -22,6 +24,7 @@
     "e2e:debug": "playwright test --debug",
     "e2e:install": "playwright install chromium",
     "test:e2e": "playwright test",
+    "lighthouse:ci": "lhci autorun",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:smoke": "playwright test --grep @smoke"
@@ -58,7 +61,7 @@
     "framer-motion": "^11.11.9",
     "geist": "^1.7.0",
     "lucide-react": "^0.460.0",
-    "next": "15.0.7",
+    "next": "^15.5.20",
     "next-auth": "^4.24.13",
     "next-themes": "^0.4.6",
     "prisma": "^6.15.0",
@@ -75,16 +78,18 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.49.0",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
-    "eslint-config-next": "15.0.7",
+    "eslint-config-next": "^15.5.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
     "tsx": "^4.21.0",
-    "typescript": "^5.6.3",
-    "@playwright/test": "^1.49.0"
+    "typescript": "^5.6.3"
   }
 }

@@ -8,12 +8,13 @@ export const metadata: Metadata = {
   title: "Misyonumuz",
   description:
     "Online Dershanem'in misyonu: matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirmek.",
-  alternates: { canonical: "/misyonumuz/" },
+  alternates: { canonical: "/misyonumuz" },
   openGraph: {
     title: "Misyonumuz | Online Dershanem",
     description:
       "Matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirme misyonumuz.",
-    url: `${siteUrl}/misyonumuz/`,
+    url: `${siteUrl}/misyonumuz`,
+    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Misyonumuz" }],
   },
 };
 

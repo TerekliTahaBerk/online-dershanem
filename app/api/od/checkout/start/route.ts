@@ -18,8 +18,13 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { log } from "@/lib/logger";
-import { getPackagePriceCents, parsePriceToCents } from "@/lib/content";
+import { priceCatalogItems, priceCatalogSelection } from "@/lib/od/checkout-pricing";
 import { validateCoupon } from "@/lib/discount";
+import {
+  assertRateLimit,
+  getRateLimitKeyFromIp,
+  RateLimitError,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,6 +79,22 @@ function asBool(v: unknown): boolean {
 const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function POST(req: Request) {
+  try {
+    await assertRateLimit(getRateLimitKeyFromIp(req.headers, "checkout:od"), {
+      max: 8,
+      windowMs: 10 * 60_000,
+      message: "Çok fazla ödeme denemesi yapıldı. Lütfen 10 dakika sonra tekrar deneyin.",
+    });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { ok: false, error: error.message },
+        { status: 429, headers: { "Retry-After": "600" } },
+      );
+    }
+    throw error;
+  }
+
   // Guest checkout: oturum ZORUNLU DEĞİL. Session varsa order kullanıcıya
   // bağlanır; yoksa userId=null guest order oluşur (ödeme sonrası admin
   // onboarding kuyruğuna düşer). Bkz. lib/od/finance.ts.
@@ -129,25 +150,10 @@ export async function POST(req: Request) {
 
   if (d.items && d.items.length > 0) {
     // Re-validate prices server-side against catalog to prevent tampering.
-    const validated = d.items.map((it) => {
-      const catalogCents = getPackagePriceCents(it.category, it.subject);
-      const trusted =
-        catalogCents > 0
-          ? catalogCents
-          : it.priceLabel
-            ? parsePriceToCents(it.priceLabel)
-            : it.priceCents;
-      return {
-        name: it.name,
-        category: it.category,
-        subject: it.subject,
-        priceCents: trusted,
-        qty: it.qty,
-      };
-    });
-    if (validated.some((v) => v.priceCents <= 0)) {
+    const validated = priceCatalogItems(d.items);
+    if (!validated) {
       return NextResponse.json(
-        { ok: false, error: "Sepetinizdeki bazı paketler için fiyat bulunamadı." },
+        { ok: false, error: "Sepetinizde artık satışta olmayan veya geçersiz bir paket var." },
         { status: 400 },
       );
     }
@@ -174,15 +180,10 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    packageName = d.packageName;
+    packageName = `${d.category ?? ""} ${d.subject ?? ""}`.trim();
     category = d.category || null;
     subject = d.subject || null;
-    if (d.category && d.subject) {
-      priceCents = getPackagePriceCents(d.category, d.subject);
-    }
-    if (priceCents <= 0 && d.priceLabel) {
-      priceCents = parsePriceToCents(d.priceLabel);
-    }
+    priceCents = priceCatalogSelection({ category, subject });
   }
 
   if (priceCents <= 0) {
@@ -263,9 +264,10 @@ export async function POST(req: Request) {
     }
   }
 
+  const normalizedEmail = d.email.trim().toLowerCase();
   const buyerInfo = {
     fullName: d.fullName,
-    email: d.email,
+    email: normalizedEmail,
     phone: d.phone,
     tcKimlik: d.tcKimlik || null,
     city: d.city,
@@ -305,7 +307,18 @@ export async function POST(req: Request) {
         orderBy: { createdAt: "desc" },
         select: { id: true },
       })
-    : null;
+    : await prisma.odOrder.findFirst({
+        where: {
+          userId: null,
+          packageName,
+          totalCents,
+          status: "PENDING",
+          createdAt: { gt: cutoff },
+          buyerInfo: { path: ["email"], equals: normalizedEmail },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      });
 
   if (order) {
     await prisma.odOrder.update({

@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   title: "Kariyer",
   description:
     "Online Dershanem'de açık pozisyonlar. Butik matematik dersi modelini birlikte büyütecek ekip arkadaşlarıyla tanışmak istiyoruz.",
-  alternates: { canonical: "/kariyer/" },
+  alternates: { canonical: "/kariyer" },
   robots: { index: false, follow: true },
   openGraph: {
     title: "Kariyer | Online Dershanem",
     description:
       "Eğitimin geleceğini birlikte kurmak için Online Dershanem ekibine katıl.",
-    url: `${siteUrl}/kariyer/`
+    url: `${siteUrl}/kariyer`
   }
 };
 

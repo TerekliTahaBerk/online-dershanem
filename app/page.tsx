@@ -402,14 +402,14 @@ export default function HomePage() {
                         "repeating-linear-gradient(135deg,#F4F2EB,#F4F2EB 8px,#EFEDE4 8px,#EFEDE4 16px)",
                     }}
                   >
-                    <span className="text-[11px] text-[#8A8A7E]">öğretmen portresi</span>
+                    <span className="text-[11px] text-[var(--od-ink-soft)]">öğretmen portresi</span>
                   </div>
                   <h3 className="mb-0.5 text-[16px] font-semibold">{t.name}</h3>
                   <p className="text-[14px] text-[var(--od-ink-soft)]">{t.tag}</p>
                 </div>
               ))}
             </div>
-            <p className="mt-5 text-[13px] italic text-[#8A8A7E]">
+            <p className="mt-5 text-[13px] italic text-[var(--od-ink-soft)]">
               Öğretmen isimleri, portreleri ve uzmanlık alanları sizden gelen bilgiyle
               doldurulacak.
             </p>
@@ -467,7 +467,7 @@ export default function HomePage() {
                   çocuğunuz nerede iyi gidiyor, neye dikkat etmeli. Karne değil — birlikte
                   yürüdüğümüz yolun özeti.
                 </p>
-                <p className="text-[13px] italic text-[#8A8A7E]">
+                <p className="text-[13px] italic text-[var(--od-ink-soft)]">
                   Yandaki kart temsilîdir; gerçek veriden oluşturulmamıştır.
                 </p>
               </div>
@@ -614,7 +614,12 @@ export default function HomePage() {
             <h2 className={`${H2} mb-11 max-w-[16ch]`}>
               Ortada, <em className="font-normal italic">bilinçli</em> bir yerde.
             </h2>
-            <div className="overflow-x-auto">
+            <div
+              className="overflow-x-auto"
+              tabIndex={0}
+              role="region"
+              aria-label="Ders modelleri karşılaştırma tablosu; yatay kaydırılabilir"
+            >
               <table className="w-full min-w-[640px] border-collapse overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-paper)] text-left">
                 <caption className="sr-only">
                   Birebir özel ders, klasik dershane ve Online Dershanem karşılaştırması

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "İletişim",
   description:
     "Öğrencinizin matematikte nerede zorlandığını ve uygun ders temposunu konuşmak için bize ulaşabilirsiniz.",
-  alternates: { canonical: "/iletisim/" },
+  alternates: { canonical: "/iletisim" },
 };
 
 const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
