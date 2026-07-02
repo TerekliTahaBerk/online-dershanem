@@ -476,7 +476,7 @@ export default async function AdminTeachers({ searchParams }: { searchParams: Pr
             })}
           </tbody>
         </table>
-        <BulkBar>{() => <TeacherBulkActions />}</BulkBar>
+        <BulkBar><TeacherBulkActions /></BulkBar>
         </BulkProvider>
       </Card>
 

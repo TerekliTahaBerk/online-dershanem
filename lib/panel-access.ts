@@ -101,7 +101,12 @@ export async function requirePanelSession(): Promise<EffectiveRole & { userId: s
   // exempt so the user can actually complete the change.
   if (session.user.mustChangePassword) {
     const h = await headers();
-    const pathname = h.get("x-invoke-path") ?? h.get("x-pathname") ?? h.get("next-url") ?? "";
+    const pathname =
+      h.get("x-od-pathname") ??
+      h.get("x-invoke-path") ??
+      h.get("x-pathname") ??
+      h.get("next-url") ??
+      "";
     if (!FORCED_PASSWORD_BYPASS.has(pathname)) {
       redirect(FORCED_PASSWORD_CHANGE_PATH);
     }

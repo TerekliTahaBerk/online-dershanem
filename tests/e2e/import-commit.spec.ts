@@ -55,7 +55,7 @@ test.describe("D3+D4 — Import commit & parent linking", () => {
 
     // Step 1: open wizard
     await adminPage.goto("/panel/admin/import?entity=students");
-    await expect(adminPage.locator("body")).toContainText(/içe aktar/i);
+    await expect(adminPage.getByRole("heading", { name: "İçe Aktar" })).toBeVisible();
 
     // Step 2: dosyayı yükle (sr-only file input)
     const fileInput = adminPage.locator('input[type="file"]');
@@ -72,7 +72,8 @@ test.describe("D3+D4 — Import commit & parent linking", () => {
     await expect(adminPage.locator("body")).toContainText(/Hazır/i);
 
     // Step 4: commit ("İçe aktar (N satır)" buton)
-    const commitBtn = adminPage.getByRole("button", { name: /içe aktar.*satır/i });
+    const commitBtn = adminPage.getByRole("button", { name: /İçe aktar.*satır/i });
+    adminPage.once("dialog", (dialog) => dialog.accept());
     await commitBtn.click();
     await expect(adminPage.locator("body")).toContainText(/Sonuç/i, { timeout: 10_000 });
     await expect(adminPage.locator("body")).toContainText(/Oluşturulan/i);
@@ -85,7 +86,7 @@ test.describe("D3+D4 — Import commit & parent linking", () => {
     expect(created?.phoneKey).toBe(newPhone.replace(/\D/g, ""));
 
     // Step 6: aynı CSV tekrar yüklenirse tümü SKIPPED_DUPLICATE / oluşturulan 0
-    await adminPage.getByRole("button", { name: /yeni içe aktarma/i }).click();
+    await adminPage.getByRole("button", { name: /Yeni içe aktarma/i }).click();
     const fileInput2 = adminPage.locator('input[type="file"]');
     await fileInput2.setInputFiles({
       name: "students.csv",
@@ -127,8 +128,9 @@ test.describe("D3+D4 — Import commit & parent linking", () => {
     await adminPage.getByRole("button", { name: /önizle.*dry-run/i }).click();
     await expect(adminPage.locator("body")).toContainText(/Toplam/i, { timeout: 10_000 });
 
-    const commitBtn = adminPage.getByRole("button", { name: /içe aktar.*satır/i });
+    const commitBtn = adminPage.getByRole("button", { name: /İçe aktar.*satır/i });
     if (await commitBtn.isEnabled()) {
+      adminPage.once("dialog", (dialog) => dialog.accept());
       await commitBtn.click();
       await expect(adminPage.locator("body")).toContainText(/Sonuç/i, { timeout: 10_000 });
 
@@ -142,7 +144,7 @@ test.describe("D3+D4 — Import commit & parent linking", () => {
       expect(linkedToSeededStudent).toBe(true);
 
       // Re-upload → duplicate, yeni link/yeni veli yok
-      await adminPage.getByRole("button", { name: /yeni içe aktarma/i }).click();
+      await adminPage.getByRole("button", { name: /Yeni içe aktarma/i }).click();
       const fileInput2 = adminPage.locator('input[type="file"]');
       await fileInput2.setInputFiles({
         name: "parents.csv",

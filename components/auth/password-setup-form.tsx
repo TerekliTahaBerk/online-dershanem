@@ -65,6 +65,10 @@ export function PasswordSetupForm({
     startTransition(async () => {
       const res = await action(fd);
       if (res.ok) {
+        // Middleware reads the JWT cookie directly. Refresh the NextAuth
+        // session once so the DB-backed mustChangePassword=false value is
+        // encoded before navigating away from the forced-change page.
+        await fetch("/api/auth/session", { cache: "no-store" });
         window.location.href = res.redirectTo;
       } else {
         setError(res.message);

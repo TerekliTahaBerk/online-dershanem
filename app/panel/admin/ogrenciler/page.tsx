@@ -303,12 +303,10 @@ export default async function AdminStudents({
           </table>
         </SmartTableShell>
         <BulkBar>
-          {() => (
-            <StudentBulkActions
-              classrooms={bulkClassrooms}
-              accessTags={bulkAccessTags}
-            />
-          )}
+          <StudentBulkActions
+            classrooms={bulkClassrooms}
+            accessTags={bulkAccessTags}
+          />
         </BulkBar>
         </BulkProvider>
         <Pagination

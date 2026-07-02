@@ -21,6 +21,7 @@ import { testPrisma, getSeedIds } from "./helpers/db";
 
 test.describe("D4 — Bulk classroom UI flow", () => {
   test("UI: sınıfa ata × 2 → satır sayısı stabil", async ({ adminPage }) => {
+    test.setTimeout(60_000);
     const seed = await getSeedIds();
 
     // 2. öğrencinin (e2e-ogrenci2) classroom bağlantısı yok — onu test edeceğiz

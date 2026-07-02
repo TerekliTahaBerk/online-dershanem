@@ -30,8 +30,14 @@ export type TestRole = keyof typeof TEST_USERS;
  */
 export async function loginAs(page: Page, email: string, password = TEST_PASSWORD): Promise<void> {
   await page.goto("/giris");
-  await page.locator('input[type="email"]').fill(email);
-  await page.locator('input[type="password"]').fill(password);
+  await expect(page, "Giriş route'u bakım sayfasına veya beklenmeyen bir route'a yönlendi").toHaveURL(/\/giris\/?$/);
+
+  const emailInput = page.locator('input[type="email"], input[name="email"]');
+  const passwordInput = page.locator('input[type="password"], input[name="password"]');
+  await expect(emailInput, "Giriş formunda e-posta alanı bulunamadı").toBeVisible();
+  await expect(passwordInput, "Giriş formunda şifre alanı bulunamadı").toBeVisible();
+  await emailInput.fill(email);
+  await passwordInput.fill(password);
   await Promise.all([
     page.waitForURL(/\/panel(\/|$)/, { timeout: 15_000 }),
     page.locator('button[type="submit"]').click(),

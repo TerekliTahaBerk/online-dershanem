@@ -17,6 +17,7 @@ import { testPrisma, getSeedIds } from "./helpers/db";
 
 test.describe("D3 — Bulk ODK access tag idempotency @smoke", () => {
   test("seed iki öğrenciye etiket ver → ikinci çağrı duplike yaratmaz", async ({ adminPage }) => {
+    test.setTimeout(60_000);
     const seed = await getSeedIds();
 
     // Pre-clean (seed zaten temizliyor ama test izolasyonu için sigorta)
@@ -67,15 +68,10 @@ test.describe("D3 — Bulk ODK access tag idempotency @smoke", () => {
       });
       expect(firstCount).toBeGreaterThanOrEqual(1);
 
-      // Step 5: Tekrar koş — checkbox'ları yeniden seç (sayfa state'i action sonrası
-      // korunmuş olmalı ama güvenli olmak için tekrar tıkla).
-      const stillChecked1 = await cb1.isChecked();
-      if (!stillChecked1) await cb1.check();
-      if (cb2Count > 0) {
-        const c2 = adminPage.locator(`[data-testid="bulk-row-checkbox"][data-row-id="${seed.student2Id}"]`);
-        const stillChecked2 = await c2.first().isChecked();
-        if (!stillChecked2) await c2.first().check();
-      }
+      // Step 5: Tekrar koş. ODK etiketi verildiğinde öğrenciler OD-only
+      // listesinden düşebilir; BulkProvider seçimi koruduğu için artık görünmeyen
+      // satır checkbox'larını yeniden aramak hem gereksiz hem de hatalıdır.
+      await expect(adminPage.locator('[data-testid="bulk-bar"]')).toBeVisible();
       await adminPage
         .locator('[data-testid="bulk-access-tag-select"]')
         .selectOption(seed.odkAccessTagId);

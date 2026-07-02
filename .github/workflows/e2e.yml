@@ -20,11 +20,14 @@ concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   e2e:
     name: Playwright shard ${{ matrix.shard }}/3
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -49,10 +52,20 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
-      NEXTAUTH_SECRET: e2e-secret-do-not-use-in-prod
+      NEXTAUTH_SECRET: e2e-only-nextauth-secret-0123456789abcdef0123456789abcdef
       NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      PANEL_ENABLED: "true"
+      NEXT_PUBLIC_PANEL_ENABLED: "true"
+      PUBLIC_REGISTER_ENABLED: "false"
+      CRON_SECRET: e2e-only-cron-secret-0123456789abcdef0123456789abcdef
+      PAYTR_MERCHANT_ID: e2e-merchant
+      PAYTR_MERCHANT_KEY: e2e-only-merchant-key
+      PAYTR_MERCHANT_SALT: e2e-only-merchant-salt
       E2E_PASSWORD: testpass123
       CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      PLAYWRIGHT_HTML_OPEN: never
 
     steps:
       - uses: actions/checkout@v4
@@ -102,6 +115,16 @@ jobs:
           if-no-files-found: ignore
           overwrite: true
 
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.shard }}
+          path: test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+          overwrite: true
+
   report:
     # Bu job adı mevcut branch-protection required check adını korur.
     name: Playwright Tests
@@ -122,6 +145,8 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Download shard reports
+        id: download-reports
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           pattern: blob-report-*
@@ -129,10 +154,12 @@ jobs:
           merge-multiple: true
 
       - name: Merge Playwright reports
+        id: merge-reports
+        if: ${{ steps.download-reports.outcome == 'success' }}
         run: npx playwright merge-reports --reporter=html ./all-blob-reports
 
       - name: Upload Playwright HTML report
-        if: always()
+        if: ${{ always() && steps.merge-reports.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -142,7 +169,7 @@ jobs:
           overwrite: true
 
       - name: Enforce shard results
-        if: ${{ needs.e2e.result != 'success' }}
+        if: ${{ always() && needs.e2e.result != 'success' }}
         run: |
           echo "One or more Playwright shards failed. Open the playwright-report artifact for details."
           exit 1

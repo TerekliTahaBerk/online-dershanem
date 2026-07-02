@@ -4,6 +4,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest, NextFetchEvent } from "next/server";
 import { isPanelEnabled, PANEL_MAINTENANCE_PATH } from "@/lib/panel-config";
 
+function nextWithPathname(req: NextRequest): NextResponse {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-od-pathname", req.nextUrl.pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
 /**
  * /panel/* ve admin API'lerini korur.
  *
@@ -44,19 +50,19 @@ const authMiddleware = withAuth(
           { status: 403 },
         );
       }
-      return NextResponse.next();
+      return nextWithPathname(req);
     }
 
     // ─── Panel sayfa koruması ────────────────────────────────────────
     if (!pathname.startsWith("/panel")) {
-      return NextResponse.next();
+      return nextWithPathname(req);
     }
 
     // /panel/sifre-degistir → role-agnostic. Hem ADMIN hem diğer roller
     // (mustChangePassword=true iken) buraya direkt erişebilmeli. Aksi halde
     // segment-mismatch redirect'i forced-change ekranına ulaşmayı engeller.
     if (pathname === "/panel/sifre-degistir" || pathname.startsWith("/panel/sifre-degistir/")) {
-      return NextResponse.next();
+      return nextWithPathname(req);
     }
 
     // Phase 3 / Session 2 — defense-in-depth. JWT'de mustChangePassword
@@ -72,12 +78,12 @@ const authMiddleware = withAuth(
     // /panel veya /panel/ -> sayfa kendi redirect'ini yapacak
     const parts = pathname.split("/").filter(Boolean); // ["panel", "<seg>", ...]
     if (parts.length < 2) {
-      return NextResponse.next();
+      return nextWithPathname(req);
     }
 
     const segment = parts[1];
 
-    if (role === "ADMIN") return NextResponse.next();
+    if (role === "ADMIN") return nextWithPathname(req);
 
     const allowedSegment =
       role === "TEACHER" ? "ogretmen" :
@@ -96,7 +102,7 @@ const authMiddleware = withAuth(
       return NextResponse.redirect(url);
     }
 
-    return NextResponse.next();
+    return nextWithPathname(req);
   },
   {
     pages: { signIn: "/giris" },
