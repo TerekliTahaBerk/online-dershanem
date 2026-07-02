@@ -10,31 +10,38 @@ const directDatabaseCandidates = [
   "STORAGE_PRISMA_DATABASE_URL",
   "STORAGE_POSTGRES_URL",
   "STORAGE_DATABASE_URL",
+  // CI/release environments sometimes expose only DATABASE_URL. Prisma still
+  // requires directUrl to resolve while parsing the schema, so use the runtime
+  // URL as the final fallback. Production should continue to provide
+  // DIRECT_URL when DATABASE_URL points at a transaction pooler.
+  "DATABASE_URL",
 ] as const;
 
-function firstDefined(keys: readonly string[]) {
+type PrismaEnv = Record<string, string | undefined>;
+
+function firstDefined(keys: readonly string[], env: PrismaEnv) {
   for (const key of keys) {
-    const value = process.env[key];
+    const value = env[key];
     if (value) return value;
   }
 
   return undefined;
 }
 
-export function normalizePrismaEnv() {
-  const databaseUrl = firstDefined(runtimeDatabaseCandidates);
-  const directUrl = firstDefined(directDatabaseCandidates);
+export function normalizePrismaEnv(env: PrismaEnv = process.env) {
+  const databaseUrl = firstDefined(runtimeDatabaseCandidates, env);
+  const directUrl = firstDefined(directDatabaseCandidates, env);
 
-  if (!process.env.DATABASE_URL && databaseUrl) {
-    process.env.DATABASE_URL = databaseUrl;
+  if (!env.DATABASE_URL && databaseUrl) {
+    env.DATABASE_URL = databaseUrl;
   }
 
-  if (!process.env.DIRECT_URL && directUrl) {
-    process.env.DIRECT_URL = directUrl;
+  if (!env.DIRECT_URL && directUrl) {
+    env.DIRECT_URL = directUrl;
   }
 
   return {
-    databaseUrl: process.env.DATABASE_URL,
-    directUrl: process.env.DIRECT_URL,
+    databaseUrl: env.DATABASE_URL,
+    directUrl: env.DIRECT_URL,
   };
 }
