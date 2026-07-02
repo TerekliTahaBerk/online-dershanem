@@ -81,7 +81,11 @@ const campFaq = [
 const SECTION_H2 =
   "font-display text-[clamp(24px,3.4vw,34px)] font-medium leading-[1.12] tracking-[-0.02em]";
 
+const highlightedCampIds = new Set(["turev", "yeni-nesil"]);
+
 export default function CampsPage() {
+  const highlightedCamps = mathCamps.filter((camp) => highlightedCampIds.has(camp.id));
+  const otherCamps = mathCamps.filter((camp) => !highlightedCampIds.has(camp.id));
   const courseSchemas = mathCamps.map((camp) =>
     courseJsonLd({
       name: `${camp.name} — Online Matematik Kampı`,
@@ -133,39 +137,92 @@ export default function CampsPage() {
 
         {/* KAMP KARTLARI */}
         <section className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] pb-[clamp(48px,7vw,88px)]">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {mathCamps.map((camp) => (
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-4">
+            <h2 className="text-[14px] font-semibold uppercase tracking-[0.04em] text-[var(--od-olive-soft)]">
+              En çok tercih edilen
+            </h2>
+            <span className="text-[13px] text-[#8A8A7E]">
+              Tümü Google Meet · maks. {CAMP_MAX_STUDENTS} kişi
+            </span>
+          </div>
+
+          <div className="mb-10 grid gap-5 lg:grid-cols-2">
+            {highlightedCamps.map((camp, index) => (
               <div
                 key={camp.id}
-                className="flex flex-col rounded-[18px] border border-[var(--od-line)] bg-[var(--od-paper)] p-7"
+                className="flex flex-col rounded-[20px] border border-[var(--od-line)] bg-[var(--od-paper)] p-[clamp(28px,3.5vw,36px)] shadow-[0_1px_2px_rgba(20,20,15,0.04)]"
               >
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-[18px] flex items-center justify-between gap-3">
                   <span
-                    className={`rounded-full px-2.5 py-1.5 text-[12px] font-semibold ${badgeClass(camp.levelTag)}`}
+                    className={`rounded-full px-[11px] py-[5px] text-[12px] font-semibold ${badgeClass(camp.levelTag)}`}
                   >
                     {camp.levelTag}
                   </span>
-                  <span className="text-[12px] text-[#8A8A7E]">Maks. {CAMP_MAX_STUDENTS} kişi</span>
+                  <span className="inline-flex items-center gap-[7px] text-right text-[12px] font-semibold text-[var(--od-olive-soft)]">
+                    <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-[var(--od-olive-soft)]" />
+                    {index === 0 ? "En çok talep edilen" : "Geniş kitle"}
+                  </span>
                 </div>
-                <h3 className="mb-2 font-display text-[23px] font-medium tracking-[-0.01em]">
+                <h3 className="mb-3 font-display text-[clamp(26px,3vw,32px)] font-medium tracking-[-0.015em]">
                   {camp.name.replace(/ Kampı$/, "")}
                 </h3>
-                <p className="mb-5 text-[14px] leading-[1.6] text-[var(--od-ink-soft)]">
+                <p className="mb-[22px] max-w-[42ch] text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">
                   {camp.goal}
                 </p>
-                <div className="mt-auto flex items-center justify-between border-t border-[var(--od-line)] pt-[18px]">
-                  <span className="text-[13px] text-[var(--od-ink-soft)]">
-                    {camp.durationLabel} · {camp.lessonsLabel}
-                  </span>
-                  <Link
-                    href="/iletisim/"
-                    className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[var(--od-olive)]"
-                  >
-                    Ön kayıt
-                    <ArrowRight size={15} strokeWidth={1.7} aria-hidden="true" />
-                  </Link>
+                <div className="mb-6 flex flex-wrap gap-2">
+                  {[camp.durationLabel, camp.levelLabel, `Maks. ${CAMP_MAX_STUDENTS} kişi`].map((label) => (
+                    <span
+                      key={label}
+                      className="rounded-lg bg-[var(--od-cream-2)] px-3 py-[7px] text-[13px] text-[#3A3A32]"
+                    >
+                      {label}
+                    </span>
+                  ))}
                 </div>
+                <Link
+                  href="/iletisim/"
+                  className="mt-auto inline-flex min-h-12 items-center justify-center gap-2 rounded-[11px] bg-[var(--od-olive)] px-5 py-3.5 text-[15px] font-medium text-[var(--od-cream)] transition-colors duration-150 hover:bg-[#2C3A21]"
+                >
+                  Ön kayıt bırak
+                  <ArrowRight size={15} strokeWidth={1.7} aria-hidden="true" />
+                </Link>
               </div>
+            ))}
+          </div>
+
+          <h2 className="mb-4 text-[14px] font-semibold uppercase tracking-[0.04em] text-[var(--od-olive-soft)]">
+            Diğer kamplar
+          </h2>
+          <div className="overflow-hidden rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)]">
+            {otherCamps.map((camp) => (
+              <Link
+                key={camp.id}
+                href="/iletisim/"
+                className="group flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--od-line)] px-5 py-5 transition-colors duration-150 last:border-b-0 hover:bg-[var(--od-cream)] sm:flex-nowrap sm:px-6"
+              >
+                <span
+                  className={`w-[74px] shrink-0 rounded-full py-[5px] text-center text-[11px] font-semibold ${badgeClass(camp.levelTag)}`}
+                >
+                  {camp.levelTag === "Temel" ? "Tüm sev." : camp.levelTag}
+                </span>
+                <span className="min-w-0 basis-[calc(100%-90px)] sm:flex-1 sm:basis-auto">
+                  <span className="block font-display text-[19px] font-medium tracking-[-0.01em]">
+                    {camp.name.replace(/ Kampı$/, "")}
+                  </span>
+                  <span className="mt-0.5 block text-[14px] leading-[1.5] text-[var(--od-ink-soft)]">
+                    {camp.goal}
+                  </span>
+                </span>
+                <span className="ml-[90px] shrink-0 whitespace-nowrap text-[13px] text-[#8A8A7E] sm:ml-0">
+                  {camp.durationLabel}
+                </span>
+                <ArrowRight
+                  size={16}
+                  strokeWidth={1.7}
+                  className="ml-auto shrink-0 text-[var(--od-olive)]"
+                  aria-hidden="true"
+                />
+              </Link>
             ))}
           </div>
         </section>
@@ -219,7 +276,7 @@ export default function CampsPage() {
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-[22px] [&::-webkit-details-marker]:hidden">
                     <span className="text-[16px] font-semibold">{item.q}</span>
-                    <span className="shrink-0 text-[var(--od-olive-soft)] transition-transform duration-200 group-open:rotate-45">
+                    <span className="shrink-0 text-[var(--od-olive-soft)] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
                       <Plus size={20} strokeWidth={1.6} aria-hidden="true" />
                     </span>
                   </summary>

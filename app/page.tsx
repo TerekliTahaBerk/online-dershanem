@@ -782,7 +782,7 @@ export default function HomePage() {
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-[22px] [&::-webkit-details-marker]:hidden">
                     <span className="text-[16px] font-semibold">{item.q}</span>
-                    <span className="shrink-0 text-[var(--od-olive-soft)] transition-transform duration-200 group-open:rotate-45">
+                    <span className="shrink-0 text-[var(--od-olive-soft)] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
                       <Plus size={20} strokeWidth={1.6} aria-hidden="true" />
                     </span>
                   </summary>
