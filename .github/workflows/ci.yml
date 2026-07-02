@@ -25,10 +25,14 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Validate Prisma schema with DATABASE_URL only
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
+        run: npx prisma validate
+
       - name: Prisma generate
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
-          DIRECT_URL: postgresql://user:pass@localhost:5432/db?schema=public
         run: npx prisma generate
 
       - name: Type-check
@@ -36,3 +40,6 @@ jobs:
 
       - name: Lint
         run: npm run lint --if-present
+
+      - name: Unit tests
+        run: npm run test:unit
