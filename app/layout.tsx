@@ -121,8 +121,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </Suspense>
                 <Pixels />
                 {children}
-                {/* Mobil sticky CTA barının içeriği kapatmaması için alt boşluk */}
-                <div className="h-[68px] lg:hidden" aria-hidden="true" />
                 <WhatsAppFab />
                 <CartFab />
                 <MobileStickyCta />

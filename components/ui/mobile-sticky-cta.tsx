@@ -12,8 +12,9 @@ const lessonPkg = subjectPackageGroups[0].packages.find(
 
 const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
-// Sticky bar'ın gizleneceği rotalar — sepet/checkout akışında kendi CTA'ları var.
-const HIDDEN_PREFIXES = ["/sepet", "/panel", "/giris", "/kayit", "/sifremi-unuttum"];
+// Tasarım kararına göre sticky bar yalnızca satın alma niyetinin en yüksek olduğu
+// iki satış sayfasında görünür. Diğer sayfalardaki kendi CTA'ları yeterlidir.
+const VISIBLE_PATHS = new Set(["/", "/matematik-ders-paketi", "/matematik-ders-paketi/"]);
 
 /**
  * Mobil (lg altı) için ekranın altına sabitlenen birincil eylem barı:
@@ -22,11 +23,13 @@ const HIDDEN_PREFIXES = ["/sepet", "/panel", "/giris", "/kayit", "/sifremi-unutt
  */
 export function MobileStickyCta() {
   const pathname = usePathname();
-  if (HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) return null;
+  if (!VISIBLE_PATHS.has(pathname)) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--od-line)] bg-[#FBFAF5]/95 backdrop-blur-md lg:hidden">
-      <div className="mx-auto flex max-w-[1080px] items-center gap-2 px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+    <>
+      <div className="h-[68px] md:hidden" aria-hidden="true" />
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--od-line)] bg-[#FBFAF5]/95 backdrop-blur-md md:hidden">
+        <div className="mx-auto flex max-w-[1080px] items-center gap-2 px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
         <a
           href={whatsappHref}
           target="_blank"
@@ -53,7 +56,8 @@ export function MobileStickyCta() {
         >
           Sepete Ekle
         </PurchaseFunnelTrigger>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

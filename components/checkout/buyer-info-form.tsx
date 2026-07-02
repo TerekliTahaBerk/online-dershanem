@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
+import { CircleAlert, ShoppingBag } from "lucide-react";
 
 export type BuyerInfoFormDefaults = {
   fullName?: string;
@@ -86,10 +86,12 @@ export function BuyerInfoForm({
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
     const form = e.currentTarget;
     const fd = new FormData(form);
     const payload: Record<string, unknown> = {};
@@ -104,36 +106,27 @@ export function BuyerInfoForm({
     }
 
     // Client-side validation
-    const required = [
-      "fullName",
-      "email",
-      "phone",
-      "city",
-      "district",
-      "address",
-      "schoolName",
-      "classLevel",
-      "examType",
-      "kvkkConsent",
-      "paymentConsent",
-    ];
-    for (const k of required) {
-      if (!payload[k]) {
-        setError("Lütfen tüm zorunlu (★) alanları doldurun.");
-        return;
-      }
+    const nextFieldErrors: Record<string, string> = {};
+    const required = ["fullName", "email", "phone", "city", "district", "address", "schoolName", "classLevel", "examType"];
+    for (const key of required) {
+      if (!payload[key]) nextFieldErrors[key] = "Bu alan gerekli.";
     }
+    if (!payload.kvkkConsent) nextFieldErrors.kvkkConsent = "Devam etmek için onaylayın.";
+    if (!payload.paymentConsent) nextFieldErrors.paymentConsent = "Devam etmek için onaylayın.";
     if (!String(payload.email).includes("@")) {
-      setError("Geçerli bir e-posta adresi girin.");
-      return;
+      nextFieldErrors.email = payload.email ? "Geçerli bir e-posta adresi girin." : "Bu alan gerekli.";
     }
     const phoneDigits = String(payload.phone).replace(/\D/g, "");
     if (phoneDigits.length < 10) {
-      setError("Geçerli bir telefon numarası girin (en az 10 hane).");
-      return;
+      nextFieldErrors.phone = payload.phone ? "Geçerli bir telefon numarası girin (en az 10 hane)." : "Bu alan gerekli.";
     }
     if (payload.tcKimlik && String(payload.tcKimlik).replace(/\D/g, "").length !== 11) {
-      setError("T.C. Kimlik No 11 hane olmalı veya boş bırakılmalı.");
+      nextFieldErrors.tcKimlik = "T.C. Kimlik No 11 hane olmalı veya boş bırakılmalı.";
+    }
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      const firstInvalid = form.elements.namedItem(Object.keys(nextFieldErrors)[0]);
+      if (firstInvalid instanceof HTMLElement) firstInvalid.focus();
       return;
     }
 
@@ -225,7 +218,20 @@ export function BuyerInfoForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6" noValidate>
+    <form
+      onSubmit={onSubmit}
+      onChange={(event) => {
+        const target = event.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+        if (!target.name || !fieldErrors[target.name]) return;
+        setFieldErrors((current) => {
+          const next = { ...current };
+          delete next[target.name];
+          return next;
+        });
+      }}
+      className="space-y-6"
+      noValidate
+    >
       {Object.entries(hiddenFields).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
@@ -251,6 +257,7 @@ export function BuyerInfoForm({
           label="Ad Soyad"
           defaultValue={defaults.fullName}
           required
+          error={fieldErrors.fullName}
         />
         <Field
           name="email"
@@ -258,6 +265,7 @@ export function BuyerInfoForm({
           type="email"
           defaultValue={defaults.email}
           required
+          error={fieldErrors.email}
           help="Ödeme sonrası hesabınız ekibimiz tarafından bu e-posta ile oluşturulur."
         />
         <Field
@@ -267,21 +275,24 @@ export function BuyerInfoForm({
           placeholder="05XX XXX XX XX"
           defaultValue={defaults.phone}
           required
+          error={fieldErrors.phone}
         />
         <Field
           name="tcKimlik"
           label="T.C. Kimlik No (opsiyonel)"
           maxLength={11}
+          error={fieldErrors.tcKimlik}
         />
       </Section>
 
       <Section title="Adres Bilgileri">
-        <Field name="city" label="İl" defaultValue={defaults.city} required />
+        <Field name="city" label="İl" defaultValue={defaults.city} required error={fieldErrors.city} />
         <Field
           name="district"
           label="İlçe"
           defaultValue={defaults.district}
           required
+          error={fieldErrors.district}
         />
         <Field
           name="address"
@@ -289,6 +300,7 @@ export function BuyerInfoForm({
           textarea
           rows={2}
           required
+          error={fieldErrors.address}
         />
       </Section>
 
@@ -298,12 +310,14 @@ export function BuyerInfoForm({
           label="Okul"
           defaultValue={defaults.schoolName}
           required
+          error={fieldErrors.schoolName}
         />
         <SelectField
           name="classLevel"
           label="Sınıf Düzeyi"
           defaultValue={defaults.classLevel}
           required
+          error={fieldErrors.classLevel}
           options={[
             { v: "", l: "Seçin" },
             { v: "9", l: "9. Sınıf" },
@@ -328,6 +342,7 @@ export function BuyerInfoForm({
           label="Hedef Sınav"
           required
           defaultValue={defaults.examType}
+          error={fieldErrors.examType}
           options={[
             { v: "", l: "Seçin" },
             { v: "TYT", l: "TYT" },
@@ -377,7 +392,9 @@ export function BuyerInfoForm({
             name="kvkkConsent"
             value="1"
             required
-            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--od-line)] accent-[var(--od-olive)]"
+            aria-invalid={!!fieldErrors.kvkkConsent}
+            aria-describedby={fieldErrors.kvkkConsent ? "kvkkConsent-error" : undefined}
+            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--od-olive)] ${fieldErrors.kvkkConsent ? "outline outline-2 outline-[#C06A52]" : "border-[var(--od-line)]"}`}
           />
           <span className="text-sm text-[var(--od-ink-soft)]">
             <Link
@@ -391,6 +408,9 @@ export function BuyerInfoForm({
             <span className="text-rose-600">★</span>
           </span>
         </label>
+        {fieldErrors.kvkkConsent ? (
+          <FieldError id="kvkkConsent-error">{fieldErrors.kvkkConsent}</FieldError>
+        ) : null}
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
@@ -409,7 +429,9 @@ export function BuyerInfoForm({
             name="paymentConsent"
             value="1"
             required
-            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--od-line)] accent-[var(--od-olive)]"
+            aria-invalid={!!fieldErrors.paymentConsent}
+            aria-describedby={fieldErrors.paymentConsent ? "paymentConsent-error" : undefined}
+            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--od-olive)] ${fieldErrors.paymentConsent ? "outline outline-2 outline-[#C06A52]" : "border-[var(--od-line)]"}`}
           />
           <span className="text-sm text-[var(--od-ink-soft)]">
             <Link href="/iade" target="_blank" className="text-[var(--od-olive)] underline font-medium">
@@ -419,6 +441,9 @@ export function BuyerInfoForm({
             başlatılacaktır. <span className="text-rose-600">★</span>
           </span>
         </label>
+        {fieldErrors.paymentConsent ? (
+          <FieldError id="paymentConsent-error">{fieldErrors.paymentConsent}</FieldError>
+        ) : null}
       </div>
 
       {error && (
@@ -433,7 +458,6 @@ export function BuyerInfoForm({
           ? "Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacaktır. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
           : "Ödeme tamamlandığında ODK erişiminiz otomatik aktive olur. Deneme planınız için hocalarımız sizinle iletişime geçecektir."}
       </div>
-
       <button
         type="submit"
         disabled={isPending}
@@ -471,6 +495,7 @@ type FieldProps = {
   textarea?: boolean;
   rows?: number;
   maxLength?: number;
+  error?: string;
 };
 
 function Field({
@@ -484,7 +509,13 @@ function Field({
   textarea,
   rows = 3,
   maxLength,
+  error,
 }: FieldProps) {
+  const fieldClass = `min-h-12 w-full rounded-[10px] border px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 ${
+    error
+      ? "border-[#C06A52] bg-[#FBEDE7] focus:border-[#C06A52] focus:ring-2 focus:ring-[#C06A52]/20"
+      : "border-[var(--od-line)] bg-[var(--od-paper)] focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
+  }`;
   return (
     <label
       className={`block ${textarea ? "sm:col-span-2" : ""}`}
@@ -501,7 +532,9 @@ function Field({
           placeholder={placeholder}
           rows={rows}
           maxLength={maxLength}
-          className="min-h-12 w-full rounded-[10px] border border-[var(--od-line)] bg-[var(--od-paper)] px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
+          aria-invalid={!!error}
+          aria-describedby={error ? `${name}-error` : undefined}
+          className={fieldClass}
         />
       ) : (
         <input
@@ -511,10 +544,13 @@ function Field({
           defaultValue={defaultValue}
           placeholder={placeholder}
           maxLength={maxLength}
-          className="min-h-12 w-full rounded-[10px] border border-[var(--od-line)] bg-[var(--od-paper)] px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
+          aria-invalid={!!error}
+          aria-describedby={error ? `${name}-error` : undefined}
+          className={fieldClass}
         />
       )}
       {help && <span className="block text-[11.5px] text-[var(--od-ink-soft)] mt-1">{help}</span>}
+      {error ? <FieldError id={`${name}-error`}>{error}</FieldError> : null}
     </label>
   );
 }
@@ -524,12 +560,14 @@ function SelectField({
   label,
   required,
   defaultValue,
+  error,
   options,
 }: {
   name: string;
   label: string;
   required?: boolean;
   defaultValue?: string;
+  error?: string;
   options: Array<{ v: string; l: string }>;
 }) {
   return (
@@ -542,7 +580,9 @@ function SelectField({
         name={name}
         required={required}
         defaultValue={defaultValue ?? ""}
-        className="min-h-12 w-full rounded-[10px] border border-[var(--od-line)] bg-[var(--od-paper)] px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
+        aria-invalid={!!error}
+        aria-describedby={error ? `${name}-error` : undefined}
+        className={`min-h-12 w-full rounded-[10px] border px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 ${error ? "border-[#C06A52] bg-[#FBEDE7] focus:ring-2 focus:ring-[#C06A52]/20" : "border-[var(--od-line)] bg-[var(--od-paper)] focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"}`}
       >
         {options.map((o) => (
           <option key={o.v} value={o.v}>
@@ -550,6 +590,16 @@ function SelectField({
           </option>
         ))}
       </select>
+      {error ? <FieldError id={`${name}-error`}>{error}</FieldError> : null}
     </label>
+  );
+}
+
+function FieldError({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <span id={id} role="alert" className="mt-[7px] flex items-center gap-1.5 text-[12px] text-[#9A3B2C]">
+      <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
+      {children}
+    </span>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { MessageCircle, Mail, Check } from "lucide-react";
+import { MessageCircle, Mail, Check, CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { contact } from "@/lib/content";
 import { trackConversionEvent } from "@/lib/tracking";
@@ -371,7 +371,8 @@ export function ContactLeadForm() {
           </span>
         </label>
         {errors.kvkk ? (
-          <p id="kvkk-error" className="mt-1.5 text-[12.5px] text-[#B0392F]">
+          <p id="kvkk-error" className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[#9A3B2C]" role="alert">
+            <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
             {errors.kvkk}
           </p>
         ) : null}
@@ -416,7 +417,8 @@ function Field({
       </label>
       <div className="mt-1.5">{children}</div>
       {error ? (
-        <p id={`${id}-error`} className="mt-1.5 text-[12.5px] text-[#B0392F]">
+        <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[#9A3B2C]" role="alert">
+          <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
           {error}
         </p>
       ) : null}
@@ -425,7 +427,7 @@ function Field({
 }
 
 function inputClass(hasError: boolean): string {
-  return `w-full rounded-xl border bg-white px-4 py-2.5 text-[14.5px] text-[var(--od-ink)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--od-olive)] focus-visible:ring-offset-1 ${
-    hasError ? "border-[#B0392F]" : "border-[var(--od-ink)]/15 hover:border-[var(--od-ink)]/30"
+  return `w-full rounded-xl border px-4 py-2.5 text-[14.5px] text-[var(--od-ink)] transition-[border-color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--od-olive)] focus-visible:ring-offset-1 ${
+    hasError ? "border-[#C06A52] bg-[#FBEDE7] focus-visible:ring-[#C06A52]/20" : "border-[var(--od-ink)]/15 bg-white hover:border-[var(--od-ink)]/30"
   }`;
 }
