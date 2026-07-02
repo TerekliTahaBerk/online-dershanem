@@ -13,13 +13,13 @@ export const metadata: Metadata = {
   description:
     "En fazla 4 öğrencilik canlı matematik dersi, derste soru-cevap, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
   alternates: {
-    canonical: "/online-dershane/"
+    canonical: "/online-dershane"
   },
   openGraph: {
     title: "Online Matematik Dershanesi | Online Dershanem",
     description:
       "Küçük grupta canlı matematik dersi, ders sonrası çalışma yönü ve veliye kısa bilgilendirme notu.",
-    url: `${siteUrl}/online-dershane/`
+    url: `${siteUrl}/online-dershane`
   }
 };
 

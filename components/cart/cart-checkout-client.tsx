@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { BuyerInfoForm, type BuyerInfoFormDefaults } from "@/components/checkout/buyer-info-form";
 import { OrderSummaryCard, CheckoutPageHeader } from "@/components/checkout/order-summary-card";
+import { parseCheckoutCartSnapshot } from "@/lib/od/cart-storage";
 
 type CartSnapshot = {
   items: {
@@ -39,11 +40,11 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
         localStorage.getItem("od_checkout_cart") ??
         sessionStorage.getItem("od_checkout_cart");
       if (raw) {
-        const parsed = JSON.parse(raw) as CartSnapshot;
-        // 1 saat TTL — bayat snapshot'ı reddet
-        const fresh = parsed?.ts && Date.now() - parsed.ts < 60 * 60 * 1000;
-        if (parsed?.items?.length && fresh) {
-          setSnapshot(parsed);
+        const parsed = parseCheckoutCartSnapshot(JSON.parse(raw));
+        if (parsed) setSnapshot(parsed);
+        else {
+          localStorage.removeItem("od_checkout_cart");
+          sessionStorage.removeItem("od_checkout_cart");
         }
       }
     } catch {/* ignore */}
@@ -119,14 +120,6 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
             })),
           }}
           defaults={defaults}
-          onSuccess={() => {
-            try {
-              localStorage.removeItem("od_checkout_cart");
-              sessionStorage.removeItem("od_checkout_cart");
-              localStorage.removeItem("od_cart_v1");
-              window.dispatchEvent(new CustomEvent("od-cart-change"));
-            } catch {/* ignore */}
-          }}
         />
       </div>
 

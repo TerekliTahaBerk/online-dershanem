@@ -25,9 +25,13 @@ type Tx = Prisma.TransactionClient;
  */
 export async function markOdkOrderPaid(
   orderId: string,
-  options: { actorUserId?: string | null } = {},
+  options: {
+    actorUserId?: string | null;
+    transaction?: Tx;
+    afterCommit?: Array<() => void>;
+  } = {},
 ): Promise<{ entitlementId: string | null; accountingEntryId: string | null }> {
-  const result = await prisma.$transaction(async (tx) => {
+  const execute = async (tx: Tx) => {
     const order = await tx.odkOrder.findUnique({
       where: { id: orderId },
       include: {
@@ -128,42 +132,51 @@ export async function markOdkOrderPaid(
         buyerInfo: (order.buyerInfo ?? {}) as Record<string, string | null | undefined>,
       },
     };
-  });
+  };
 
-  // Fire-and-forget bildirim e-postaları (outbox zaten retry yapıyor)
-  try {
-    const p = result._emailPayload;
-    if (p.userEmail) {
-      void sendOrderPaidUserEmail({
-        to: p.userEmail,
-        name: p.userName,
+  const result = options.transaction
+    ? await execute(options.transaction)
+    : await prisma.$transaction(execute);
+
+  const dispatchEmails = () => {
+    // Fire-and-forget bildirim e-postaları (outbox zaten retry yapıyor)
+    try {
+      const p = result._emailPayload;
+      if (p.userEmail) {
+        void sendOrderPaidUserEmail({
+          to: p.userEmail,
+          name: p.userName,
+          service: "ODK",
+          orderId,
+          packageName: p.packageName,
+          totalCents: p.totalCents,
+        }).catch((e) => console.error("[odk.finance] user email failed:", e));
+      }
+
+      void sendOrderPaidAdminEmail({
         service: "ODK",
         orderId,
         packageName: p.packageName,
         totalCents: p.totalCents,
-      }).catch((e) => console.error("[odk.finance] user email failed:", e));
+        buyer: {
+          fullName: p.buyerInfo.fullName || p.userName || "—",
+          email: p.buyerInfo.email || p.userEmail || "—",
+          phone: p.buyerInfo.phone || null,
+          city: p.buyerInfo.city || null,
+          district: p.buyerInfo.district || null,
+          classLevel: p.buyerInfo.classLevel || null,
+          examType: p.buyerInfo.examType || null,
+          schoolName: p.buyerInfo.schoolName || null,
+          parentPhone: p.buyerInfo.parentPhone || null,
+        },
+      }).catch((e) => console.error("[odk.finance] admin email failed:", e));
+    } catch (e) {
+      console.error("[odk.finance] email dispatch failed:", e);
     }
+  };
 
-    void sendOrderPaidAdminEmail({
-      service: "ODK",
-      orderId,
-      packageName: p.packageName,
-      totalCents: p.totalCents,
-      buyer: {
-        fullName: p.buyerInfo.fullName || p.userName || "—",
-        email: p.buyerInfo.email || p.userEmail || "—",
-        phone: p.buyerInfo.phone || null,
-        city: p.buyerInfo.city || null,
-        district: p.buyerInfo.district || null,
-        classLevel: p.buyerInfo.classLevel || null,
-        examType: p.buyerInfo.examType || null,
-        schoolName: p.buyerInfo.schoolName || null,
-        parentPhone: p.buyerInfo.parentPhone || null,
-      },
-    }).catch((e) => console.error("[odk.finance] admin email failed:", e));
-  } catch (e) {
-    console.error("[odk.finance] email dispatch failed:", e);
-  }
+  if (options.afterCommit) options.afterCommit.push(dispatchEmails);
+  else dispatchEmails();
 
   return {
     entitlementId: result.entitlementId,

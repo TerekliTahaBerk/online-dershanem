@@ -17,18 +17,11 @@ import {
   useMemo,
   useState,
 } from "react";
+import { sanitizeCartItems, type StoredCartItem } from "@/lib/od/cart-storage";
 
 const STORAGE_KEY = "od_cart_v1";
 
-export type OdCartItem = {
-  id: string;          // unique key — "<category>__<subject>" or freeform
-  name: string;        // display "TYT-AYT Matematik"
-  category: string;    // "TYT-AYT", "LGS" ...
-  subject: string;     // "Matematik" ...
-  priceCents: number;  // unit price
-  priceLabel: string;  // "₺2.000,00 / Ay"
-  qty: number;
-};
+export type OdCartItem = StoredCartItem;
 
 type CartContextValue = {
   items: OdCartItem[];
@@ -53,17 +46,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          setItems(
-            parsed.filter(
-              (x: unknown): x is OdCartItem =>
-                !!x &&
-                typeof x === "object" &&
-                typeof (x as OdCartItem).id === "string" &&
-                typeof (x as OdCartItem).priceCents === "number",
-            ),
-          );
-        }
+        const validItems = sanitizeCartItems(parsed);
+        if (validItems) setItems(validItems);
+        else window.localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
       /* corrupted storage — start fresh */
@@ -88,8 +73,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
       try {
-        const next = e.newValue ? JSON.parse(e.newValue) : [];
-        if (Array.isArray(next)) setItems(next);
+        const next = e.newValue ? sanitizeCartItems(JSON.parse(e.newValue)) : [];
+        if (next) setItems(next);
       } catch {
         /* ignore */
       }
@@ -144,13 +129,4 @@ export function useCart(): CartContextValue {
     throw new Error("useCart() must be used within <CartProvider>");
   }
   return ctx;
-}
-
-/**
- * Provider gerektirmeyen yardımcı — yalnızca count okur (FAB için).
- * Hidrate olmadan 0 döner; layout shift olmaz çünkü FAB sayı 0 ise gizli.
- */
-export function useCartCountSafe(): number {
-  const ctx = useContext(CartContext);
-  return ctx?.count ?? 0;
 }

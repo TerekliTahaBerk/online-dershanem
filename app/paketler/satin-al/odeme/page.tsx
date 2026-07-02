@@ -12,7 +12,8 @@ import { getClientIp, isPaytrConfigured } from "@/lib/odk/paytr";
 type Search = Promise<{ orderId?: string }>;
 
 export const metadata: Metadata = {
-  title: "Güvenli Ödeme · Online Dershanem",
+  title: "Güvenli Ödeme",
+  alternates: { canonical: "/paketler/satin-al/odeme" },
   robots: { index: false, follow: false },
 };
 

@@ -8,21 +8,23 @@ import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 import { mathCamps, CAMP_MAX_STUDENTS, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Online Matematik Kampları | Online Dershanem",
+  title: "Online Matematik Kampları",
   description:
     "Maksimum 12 kişilik online matematik konu kamplarıyla öğrencinizin problem, fonksiyon, türev, integral ve temel matematik eksiklerini kısa sürede toparlamasına destek olun.",
-  alternates: { canonical: "/kamplar/" },
+  alternates: { canonical: "/kamplar" },
   openGraph: {
     title: "Online Matematik Kampları | Online Dershanem",
     description:
       "Belirli bir matematik konusunda eksiği olan öğrenciler için maksimum 12 kişilik online, konu odaklı canlı kamplar.",
-    url: `${siteUrl}/kamplar/`,
+    url: `${siteUrl}/kamplar`,
+    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Online Matematik Kampları" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Online Matematik Kampları | Online Dershanem",
     description:
       "Maksimum 12 kişilik online matematik konu kamplarıyla takılınan konuyu kısa sürede toparlayın.",
+    images: [`${siteUrl}/opengraph-image`],
   },
 };
 
@@ -90,7 +92,7 @@ export default function CampsPage() {
     courseJsonLd({
       name: `${camp.name} — Online Matematik Kampı`,
       description: `${camp.goal} ${camp.durationLabel}, ${camp.lessonsLabel}, en fazla ${CAMP_MAX_STUDENTS} öğrencilik online canlı grup.`,
-      url: `${siteUrl}/kamplar/`,
+      url: `${siteUrl}/kamplar`,
     }),
   );
 
@@ -141,7 +143,7 @@ export default function CampsPage() {
             <h2 className="text-[14px] font-semibold uppercase tracking-[0.04em] text-[var(--od-olive-soft)]">
               En çok tercih edilen
             </h2>
-            <span className="text-[13px] text-[#8A8A7E]">
+            <span className="text-[13px] text-[var(--od-ink-soft)]">
               Tümü Google Meet · maks. {CAMP_MAX_STUDENTS} kişi
             </span>
           </div>
@@ -213,7 +215,7 @@ export default function CampsPage() {
                     {camp.goal}
                   </span>
                 </span>
-                <span className="ml-[90px] shrink-0 whitespace-nowrap text-[13px] text-[#8A8A7E] sm:ml-0">
+                <span className="ml-[90px] shrink-0 whitespace-nowrap text-[13px] text-[var(--od-ink-soft)] sm:ml-0">
                   {camp.durationLabel}
                 </span>
                 <ArrowRight

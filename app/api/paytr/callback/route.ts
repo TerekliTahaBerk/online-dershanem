@@ -27,6 +27,7 @@ import {
   detectPaytrService,
   type PaytrCallbackPayload,
 } from "@/lib/odk/paytr";
+import { validatePaytrPaymentInvariant } from "@/lib/odk/paytr-callback-validation";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -110,7 +111,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, userId: true } },
+      order: { select: { status: true, userId: true, totalCents: true } },
     },
   });
 
@@ -136,17 +137,49 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
   const totalCents = parseInt(payload.total_amount, 10);
 
   if (payload.status === "success") {
-    try {
-      await prisma.odkPayment.update({
-        where: { id: payment.id },
-        data: {
-          status: "SUCCEEDED",
-          amountCents: Number.isFinite(totalCents) ? totalCents : undefined,
-          paidAt: new Date(),
-          failureReason: null,
+    const invariant = validatePaytrPaymentInvariant({
+      expectedAmountCents: payment.order.totalCents,
+      paymentAmount: payload.payment_amount,
+      currency: payload.currency,
+    });
+    if (!invariant.ok) {
+      log.error("paytr.callback.odk.payment_invariant_failed", {
+        orderId: payment.orderId,
+        merchantOid: payload.merchant_oid,
+        reason: invariant.reason,
+      });
+      void logAudit({
+        actorUserId: null,
+        actorType: "SYSTEM",
+        entityType: "OdkOrder",
+        entityId: payment.orderId,
+        action: "PAYTR_PAYMENT_INVARIANT_FAILED",
+        summary: `ODK ödeme tutarı/para birimi doğrulanamadı: ${invariant.reason}`,
+        payload: {
+          merchantOid: payload.merchant_oid,
+          reason: invariant.reason,
+          paymentAmount: payload.payment_amount,
+          currency: payload.currency,
         },
       });
-      await markOdkOrderPaid(payment.orderId);
+      return plain("PAYTR notification failed: payment invariant", 400);
+    }
+
+    const afterCommit: Array<() => void> = [];
+    try {
+      await prisma.$transaction(async (tx) => {
+        await markOdkOrderPaid(payment.orderId, { transaction: tx, afterCommit });
+        await tx.odkPayment.update({
+          where: { id: payment.id },
+          data: {
+            status: "SUCCEEDED",
+            amountCents: invariant.paymentAmountCents,
+            paidAt: new Date(),
+            failureReason: null,
+          },
+        });
+      }, { isolationLevel: "Serializable" });
+      afterCommit.forEach((run) => run());
       log.info("paytr.callback.odk.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
       void logAudit({
         actorUserId: null,
@@ -165,6 +198,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
       });
     } catch (err) {
       log.error("paytr.callback.odk.success_handler_error", err, { orderId: payment.orderId });
+      return plain("PAYTR notification failed: processing error", 500);
     }
   } else {
     try {
@@ -210,7 +244,7 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, userId: true } },
+      order: { select: { status: true, userId: true, totalCents: true } },
     },
   });
 
@@ -236,17 +270,49 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
   const totalCents = parseInt(payload.total_amount, 10);
 
   if (payload.status === "success") {
-    try {
-      await prisma.odPayment.update({
-        where: { id: payment.id },
-        data: {
-          status: "SUCCEEDED",
-          amountCents: Number.isFinite(totalCents) ? totalCents : undefined,
-          paidAt: new Date(),
-          failureReason: null,
+    const invariant = validatePaytrPaymentInvariant({
+      expectedAmountCents: payment.order.totalCents,
+      paymentAmount: payload.payment_amount,
+      currency: payload.currency,
+    });
+    if (!invariant.ok) {
+      log.error("paytr.callback.od.payment_invariant_failed", {
+        orderId: payment.orderId,
+        merchantOid: payload.merchant_oid,
+        reason: invariant.reason,
+      });
+      void logAudit({
+        actorUserId: null,
+        actorType: "SYSTEM",
+        entityType: "OdOrder",
+        entityId: payment.orderId,
+        action: "PAYTR_PAYMENT_INVARIANT_FAILED",
+        summary: `OD ödeme tutarı/para birimi doğrulanamadı: ${invariant.reason}`,
+        payload: {
+          merchantOid: payload.merchant_oid,
+          reason: invariant.reason,
+          paymentAmount: payload.payment_amount,
+          currency: payload.currency,
         },
       });
-      await markOdOrderPaid(payment.orderId);
+      return plain("PAYTR notification failed: payment invariant", 400);
+    }
+
+    const afterCommit: Array<() => void> = [];
+    try {
+      await prisma.$transaction(async (tx) => {
+        await markOdOrderPaid(payment.orderId, { transaction: tx, afterCommit });
+        await tx.odPayment.update({
+          where: { id: payment.id },
+          data: {
+            status: "SUCCEEDED",
+            amountCents: invariant.paymentAmountCents,
+            paidAt: new Date(),
+            failureReason: null,
+          },
+        });
+      }, { isolationLevel: "Serializable" });
+      afterCommit.forEach((run) => run());
       log.info("paytr.callback.od.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
       void logAudit({
         actorUserId: null,
@@ -294,6 +360,7 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
       }
     } catch (err) {
       log.error("paytr.callback.od.success_handler_error", err, { orderId: payment.orderId });
+      return plain("PAYTR notification failed: processing error", 500);
     }
   } else {
     try {

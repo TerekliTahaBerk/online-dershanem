@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: "Sıkça Sorulanlar",
   description:
     "Online Dershanem hakkında sık sorulan sorular: ders modeli, seviye ve grup yerleşimi, ödeme ve iade, veli takibi, teknik gereksinimler ve uygunluk.",
-  alternates: { canonical: "/sss/" },
+  alternates: { canonical: "/sss" },
 };
 
 const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;

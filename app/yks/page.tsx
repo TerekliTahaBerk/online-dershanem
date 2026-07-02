@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   description:
     "TYT ve AYT matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve ders sonrası çalışma yönü.",
   alternates: {
-    canonical: "/yks/"
+    canonical: "/yks"
   },
   openGraph: {
     title: "TYT-AYT Matematik Dersi | Online Dershanem",
     description: "TYT-AYT matematik için küçük grup canlı ders, ders içi soru-cevap ve veliye kısa gelişim notu.",
-    url: `${siteUrl}/yks/`
+    url: `${siteUrl}/yks`
   }
 };
 

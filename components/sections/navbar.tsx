@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,6 +25,10 @@ const lessonPkg = subjectPackageGroups[0].packages.find(
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -33,15 +37,40 @@ export function Navbar() {
 
   useEffect(() => {
     if (!open) return;
+    const trigger = menuButtonRef.current;
+    const header = headerRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    header?.setAttribute("inert", "");
+    const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => {
       document.body.style.overflow = previousOverflow;
+      header?.removeAttribute("inert");
+      window.clearTimeout(focusTimer);
       window.removeEventListener("keydown", closeOnEscape);
+      trigger?.focus();
     };
   }, [open]);
 
@@ -50,7 +79,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-[var(--od-line)] bg-[#FBFAF5]/92 text-[var(--od-ink)] backdrop-blur-xl">
+      <header ref={headerRef} className="sticky top-0 z-40 w-full border-b border-[var(--od-line)] bg-[#FBFAF5]/92 text-[var(--od-ink)] backdrop-blur-xl">
         <div className="relative mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
           <Link href="/" aria-label="Online Dershanem ana sayfa" className="flex shrink-0 items-center">
             <Image
@@ -113,19 +142,26 @@ export function Navbar() {
               Sepete Ekle
             </PurchaseFunnelTrigger>
             <button
+              ref={menuButtonRef}
               type="button"
               onClick={() => setOpen((o) => !o)}
               className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[10px] border border-[var(--od-line)] bg-transparent text-[var(--od-ink)]"
               aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
               aria-expanded={open}
+              aria-controls="mobile-navigation-dialog"
             >
-              <Menu size={20} strokeWidth={1.6} />
+              <Menu size={20} strokeWidth={1.6} aria-hidden="true" />
             </button>
           </div>
         </div>
       </header>
 
       <div
+        ref={dialogRef}
+        id="mobile-navigation-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobil menü"
         aria-hidden={!open}
         className={`fixed inset-0 z-[100] flex flex-col bg-[var(--od-cream)] text-[var(--od-ink)] transition-[opacity,transform,visibility] md:hidden ${
           open
@@ -145,12 +181,13 @@ export function Navbar() {
             />
           </Link>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Menüyü kapat"
             className="flex h-[42px] w-[42px] items-center justify-center rounded-[10px] border border-[var(--od-line)]"
           >
-            <X size={20} strokeWidth={1.6} />
+            <X size={20} strokeWidth={1.6} aria-hidden="true" />
           </button>
         </div>
 

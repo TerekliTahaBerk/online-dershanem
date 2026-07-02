@@ -4,7 +4,9 @@ import { Footer } from "@/components/sections/footer";
 import { CartPageClient } from "@/components/cart/cart-page-client";
 
 export const metadata: Metadata = {
-  title: "Sepetim · Online Dershanem",
+  title: "Sepetim",
+  description: "Online Dershanem matematik ders paketi sepetinizi güvenle gözden geçirin.",
+  alternates: { canonical: "/sepet" },
   robots: { index: false, follow: false },
 };
 

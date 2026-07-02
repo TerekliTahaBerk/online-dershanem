@@ -20,7 +20,8 @@ type Search = Promise<{
 }>;
 
 export const metadata: Metadata = {
-  title: "Ödeme · Online Dershanem",
+  title: "Ödeme",
+  alternates: { canonical: "/paketler/satin-al" },
   robots: { index: false, follow: false },
 };
 

@@ -12,12 +12,12 @@ export const metadata: Metadata = {
     "En fazla 4 öğrencilik canlı matematik dersi, ders içi soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu. Aylık ₺3.000.",
   // Asıl ürün sayfası /matematik-ders-paketi/ — sıralama sinyalleri orada
   // toplansın diye canonical oraya işaret eder (keyword cannibalization fix).
-  alternates: { canonical: "/matematik-ders-paketi/" },
+  alternates: { canonical: "/matematik-ders-paketi" },
   openGraph: {
     title: "Matematik Ders Paketi | Online Dershanem",
     description:
       "En fazla 4 öğrencilik canlı matematik dersi ve ders sonrası çalışma yönü.",
-    url: `${siteUrl}/paketler/`,
+    url: `${siteUrl}/matematik-ders-paketi`,
   },
 };
 

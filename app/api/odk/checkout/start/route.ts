@@ -3,6 +3,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/lib/auth";
 import { log } from "@/lib/logger";
+import {
+  assertRateLimit,
+  getRateLimitKeyFromIp,
+  RateLimitError,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,6 +44,22 @@ function asBool(v: unknown): boolean {
 const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function POST(req: Request) {
+  try {
+    await assertRateLimit(getRateLimitKeyFromIp(req.headers, "checkout:odk"), {
+      max: 8,
+      windowMs: 10 * 60_000,
+      message: "Çok fazla ödeme denemesi yapıldı. Lütfen 10 dakika sonra tekrar deneyin.",
+    });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { ok: false, error: error.message },
+        { status: 429, headers: { "Retry-After": "600" } },
+      );
+    }
+    throw error;
+  }
+
   // Guest checkout: oturum ZORUNLU DEĞİL. Session varsa order kullanıcıya
   // bağlanır; yoksa userId=null guest order oluşur (ödeme sonrası entitlement
   // admin onboarding'e ertelenir). Bkz. lib/odk/finance.ts.
@@ -93,9 +114,10 @@ export async function POST(req: Request) {
     );
   }
 
+  const normalizedEmail = d.email.trim().toLowerCase();
   const buyerInfo = {
     fullName: d.fullName,
-    email: d.email,
+    email: normalizedEmail,
     phone: d.phone,
     tcKimlik: d.tcKimlik || null,
     city: d.city,
@@ -129,7 +151,17 @@ export async function POST(req: Request) {
         orderBy: { createdAt: "desc" },
         select: { id: true },
       })
-    : null;
+    : await prisma.odkOrder.findFirst({
+        where: {
+          userId: null,
+          packageId: pkg.id,
+          status: "PENDING",
+          createdAt: { gt: cutoff },
+          buyerInfo: { path: ["email"], equals: normalizedEmail },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true },
+      });
 
   if (order) {
     await prisma.odkOrder.update({

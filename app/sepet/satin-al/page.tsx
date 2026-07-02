@@ -7,7 +7,8 @@ import { getServerAuthSession } from "@/lib/auth";
 import { CartCheckoutClient } from "@/components/cart/cart-checkout-client";
 
 export const metadata: Metadata = {
-  title: "Güvenli Ödeme · Online Dershanem",
+  title: "Güvenli Ödeme",
+  alternates: { canonical: "/sepet/satin-al" },
   robots: { index: false, follow: false },
 };
 

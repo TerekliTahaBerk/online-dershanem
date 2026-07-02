@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CircleAlert, ShoppingBag } from "lucide-react";
@@ -85,6 +85,7 @@ export function BuyerInfoForm({
 }: BuyerInfoFormProps) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
+  const pendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -125,14 +126,17 @@ export function BuyerInfoForm({
     }
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
-      const firstInvalid = form.elements.namedItem(Object.keys(nextFieldErrors)[0]);
-      if (firstInvalid instanceof HTMLElement) firstInvalid.focus();
+      const firstInvalid = form.querySelector<HTMLElement>(
+        `[name="${CSS.escape(Object.keys(nextFieldErrors)[0])}"]`,
+      );
+      firstInvalid?.focus();
       return;
     }
 
     // Guard: çift gönderimi engelle (React 18'de async submit boyunca pending
     // güvenilir kalsın diye useTransition yerine explicit state kullanıyoruz).
-    if (isPending) return;
+    if (pendingRef.current || isPending) return;
+    pendingRef.current = true;
     setIsPending(true);
 
     // Loglama için hassas olmayan özet metadata (PII / sırlar HARİÇ).
@@ -213,6 +217,7 @@ export function BuyerInfoForm({
     } finally {
       // Yönlendirme yapılmadıysa (hata) butonu tekrar aktifleştir; başarıyla
       // redirect olduysa sayfa zaten değişir, bu güvenli bir no-op'tur.
+      pendingRef.current = false;
       setIsPending(false);
     }
   }
@@ -447,7 +452,7 @@ export function BuyerInfoForm({
       </div>
 
       {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+        <div role="alert" aria-live="assertive" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
           {error}
         </div>
       )}
@@ -518,6 +523,7 @@ function Field({
   }`;
   return (
     <label
+      htmlFor={name}
       className={`block ${textarea ? "sm:col-span-2" : ""}`}
     >
       <span className="block text-[12.5px] font-medium text-[var(--od-ink-soft)] mb-1.5 uppercase tracking-wide">
@@ -526,6 +532,7 @@ function Field({
       </span>
       {textarea ? (
         <textarea
+          id={name}
           name={name}
           required={required}
           defaultValue={defaultValue}
@@ -538,6 +545,7 @@ function Field({
         />
       ) : (
         <input
+          id={name}
           name={name}
           type={type}
           required={required}
@@ -571,12 +579,13 @@ function SelectField({
   options: Array<{ v: string; l: string }>;
 }) {
   return (
-    <label className="block">
+    <label htmlFor={name} className="block">
       <span className="block text-[12.5px] font-medium text-[var(--od-ink-soft)] mb-1.5 uppercase tracking-wide">
         {label}
         {required ? <span className="text-rose-600 ml-0.5">★</span> : null}
       </span>
       <select
+        id={name}
         name={name}
         required={required}
         defaultValue={defaultValue ?? ""}

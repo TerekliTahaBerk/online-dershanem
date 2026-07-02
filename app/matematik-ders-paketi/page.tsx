@@ -24,12 +24,13 @@ export const metadata: Metadata = {
   title: "Matematik Ders Paketi — Butik Canlı Matematik Dersi",
   description:
     "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu. Aylık ₺3.000.",
-  alternates: { canonical: "/matematik-ders-paketi/" },
+  alternates: { canonical: "/matematik-ders-paketi" },
   openGraph: {
     title: "Matematik Ders Paketi | Online Dershanem",
     description:
       "En fazla 4 öğrencilik grupta canlı matematik dersi, öğretmen notu ve ders sonrası çalışma yönü.",
-    url: `${siteUrl}/matematik-ders-paketi/`,
+    url: `${siteUrl}/matematik-ders-paketi`,
+    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Matematik Ders Paketi" }],
   },
 };
 
@@ -284,7 +285,7 @@ export default function MatematikDersPaketiPage() {
                   ))}
                 </ul>
               </div>
-              <p className="mt-3.5 text-center text-[12px] text-[#8A8A7E]">
+              <p className="mt-3.5 text-center text-[12px] text-[var(--od-ink-soft)]">
                 Kart bilgileriniz bizimle paylaşılmaz.
               </p>
             </div>

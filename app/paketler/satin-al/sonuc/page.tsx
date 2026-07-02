@@ -5,11 +5,13 @@ import {
   CheckoutResultCard,
   type CheckoutResultStatus,
 } from "@/components/checkout/checkout-result-card";
+import { ClearCartOnPaymentSuccess } from "@/components/cart/clear-cart-on-payment-success";
 
 type Search = Promise<{ status?: string }>;
 
 export const metadata: Metadata = {
-  title: "Teşekkürler · Online Dershanem",
+  title: "Ödeme Sonucu",
+  alternates: { canonical: "/paketler/satin-al/sonuc" },
   robots: { index: false, follow: false },
 };
 
@@ -22,7 +24,7 @@ export default async function OdCheckoutThankYouPage({
 }) {
   const { status } = await searchParams;
   const normalizedStatus: CheckoutResultStatus =
-    status === "failed" ? "failed" : status === "pending" ? "pending" : "success";
+    status === "success" ? "success" : status === "failed" ? "failed" : "pending";
 
   return (
     <>
@@ -30,22 +32,25 @@ export default async function OdCheckoutThankYouPage({
       <main className="od-public min-h-screen bg-[var(--od-cream)] py-16">
         <div className="px-4">
           {normalizedStatus === "success" && (
-            <CheckoutResultCard
-              status="success"
-              eyebrow="Online Matematik Dershanesi"
-              description="Ödemeniz alındı. Ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacak."
-              nextStepNote={
-                <>
-                  <strong>Sıradaki adım:</strong> Hesap açmanıza gerek yok.
-                  Ekibimiz <strong>24 saat içinde</strong> sizinle iletişime
-                  geçerek öğrenci hesabınızı oluşturacak ve matematik programınızı
-                  birlikte planlayacak. Satın alma için ayrıca kayıt olmanız
-                  gerekmez; bilgilendirme telefon veya e-posta üzerinden yapılacaktır.
-                </>
-              }
-              primaryAction={{ href: "/", label: "Ana Sayfa", variant: "primary" }}
-              secondaryAction={{ href: "/iletisim", label: "İletişim" }}
-            />
+            <>
+              <ClearCartOnPaymentSuccess />
+              <CheckoutResultCard
+                status="success"
+                eyebrow="Online Matematik Dershanesi"
+                description="Ödemeniz alındı. Ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacak."
+                nextStepNote={
+                  <>
+                    <strong>Sıradaki adım:</strong> Hesap açmanıza gerek yok.
+                    Ekibimiz <strong>24 saat içinde</strong> sizinle iletişime
+                    geçerek öğrenci hesabınızı oluşturacak ve matematik programınızı
+                    birlikte planlayacak. Satın alma için ayrıca kayıt olmanız
+                    gerekmez; bilgilendirme telefon veya e-posta üzerinden yapılacaktır.
+                  </>
+                }
+                primaryAction={{ href: "/", label: "Ana Sayfa", variant: "primary" }}
+                secondaryAction={{ href: "/iletisim", label: "İletişim" }}
+              />
+            </>
           )}
 
           {normalizedStatus === "pending" && (
