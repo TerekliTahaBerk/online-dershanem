@@ -61,13 +61,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async redirects() {
-    return [
-      // Yeni nav "Ders Paketleri" → mevcut /paketler sayfası (SEO/link güvenliği).
-      { source: "/ders-paketleri", destination: "/paketler", permanent: true },
-      { source: "/ders-paketleri/:path*", destination: "/paketler", permanent: true },
-    ];
-  },
 };
 
 export default nextConfig;

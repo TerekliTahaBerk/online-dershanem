@@ -16,7 +16,7 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 /* ---------------- Navigasyon ---------------- */
 
 export const primaryNav = [
-  { label: "Ders Paketleri", href: "/paketler/" },
+  { label: "Ders Paketleri", href: "/ders-paketleri/" },
   { label: "Kamplar", href: "/kamplar/" },
   { label: "Hakkımızda", href: "/hakkimizda/" },
 ] as const;
@@ -28,73 +28,67 @@ export const navLogin = { label: "Giriş yap", href: "/giris/" } as const;
 /* ---------------- Hero ---------------- */
 
 export const hero = {
-  pill: "Yeni dönem kayıtları başladı",
+  pill: "Maksimum 4 kişilik canlı matematik dersi",
   title: ["Netlerini artırmak", "sandığından daha kolay."],
   subtitle:
-    "En fazla 4 kişilik canlı matematik dersi, kişiye özel çalışma planı ve veliye net gelişim notu — hepsi tek yerde.",
-  primary: { label: "Paketleri İncele", href: "/paketler/" },
+    "Canlı matematik dersleri, küçük grup düzeni ve ders sonrası takip ile öğrencinin neyi, neden çalışacağını netleştiriyoruz.",
+  primary: { label: "Ders Paketlerini İncele", href: "/ders-paketleri/" },
   secondary: { label: "Ücretsiz görüşme", href: "/iletisim/" },
   floatingCards: [
-    { title: "Kişiye özel plan", sub: "Bu hafta ne çalışılacağı belli" },
-    { title: "Haftalık takip", sub: "Ödev ve öğretmen notu" },
-    { title: "Veliye net not", sub: "Süreç somut olarak görünür" },
+    { title: "En fazla 4 öğrenci", sub: "Herkes görünür, herkes soru sorar" },
+    { title: "Canlı matematik dersi", sub: "LGS · TYT · AYT" },
+    { title: "Ders sonrası takip", sub: "Ödev ve çalışma yönü" },
   ],
 } as const;
 
 /* ---------------- Sosyal kanıt (üniversite barı) ---------------- */
 
 export const socialProof = {
-  text: "Türkiye'nin en iyi okullarına giden yolda, sağlam bir matematik temeli.",
-  universities: [
-    { name: "Boğaziçi Üniversitesi", src: "/universities/bogazici-logo.png" },
-    { name: "ODTÜ", src: "/universities/odtu-logo.png" },
-    { name: "İstanbul Teknik Üniversitesi", src: "/universities/itu-logo.png" },
-    { name: "Yıldız Teknik Üniversitesi", src: "/universities/ytu-logo.png" },
-    { name: "Galatasaray Üniversitesi", src: "/universities/gsu-logo.png" },
-  ],
+  text: "LGS, TYT ve AYT matematiğinde öğrenciler seviyesine göre ilerler.",
+  badges: ["LGS", "TYT", "AYT", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip"],
 } as const;
 
 /* ---------------- Ana değer önerisi (iki büyük kart) ---------------- */
 
 export const valueProps = {
   eyebrow: "Neden Online Dershanem",
-  title: "Başarı için her şey tek yerde.",
+  title: "Dersi anlatıp bırakmıyoruz.",
   subtitle:
-    "Deneyimli öğretmenler, kişiye özel plan ve düzenli takip. Hepsi öğrenciyi hedefine sadece bir adım daha yaklaştırmak için bir arada.",
+    "Küçük grup dersi, öğretmen gözlemi ve ders sonrası yönlendirme aynı planın içinde ilerler.",
 } as const;
 
 /* ---------------- İlk 30 gün ---------------- */
 
 export const first30 = {
-  title: ["İlk 30 günde", "neler değişir?"],
+  title: ["İlk 30 günde matematikte", "ne değişir?"],
   timeline: ["Bugün", "7. Gün", "30. Gün"],
   columns: [
     {
       title: "Hemen başla",
       items: [
-        "Seviye ve hedef analizi yapılır",
-        "İlk kişisel çalışma planın çıkar",
-        "Öğretmeninle yol haritan netleşir",
+        "Öğrencinin sınıfı ve hedefi alınır",
+        "Matematikte zorlandığı yerler konuşulur",
+        "Uygun küçük grup planlanır",
       ],
     },
     {
       title: "Rutinini oturt",
       items: [
-        "Haftalık canlı dersler başlar",
-        "Eksiklerin birlikte tespit edilir",
-        "Günlük çalışma düzenin takip edilir",
+        "Canlı derslere düzenli katılır",
+        "Derste soru sorar ve çözümünü gösterir",
+        "Ders sonrası ne çalışacağı netleşir",
       ],
     },
     {
       title: "Farkı gör",
       items: [
-        "Deneme analizlerin netleşir",
-        "Çalışma disiplinin belirginleşir",
-        "Hedefine daha bilinçli ilerlersin",
+        "Konu eksikleri daha görünür olur",
+        "Çalışma düzeni oturur",
+        "Deneme ve ödev takibi anlamlı hale gelir",
       ],
     },
   ],
-  cta: { label: "Ücretsiz tanış", href: "/iletisim/" },
+  cta: { label: "Ücretsiz görüşme", href: "/iletisim/" },
 } as const;
 
 /* ---------------- Başarı hikayeleri (fake foto YOK) ---------------- */
@@ -111,21 +105,21 @@ export const stories: Story[] = [
     tag: "YKS hazırlık",
     quote:
       "Ders sonunda ne çalışacağımı bilmek haftayı çok daha düzenli götürmemi sağladı.",
-    name: "Öğrenci deneyimi",
-    detail: "TYT · AYT Matematik",
+    name: "TYT öğrencisi",
+    detail: "Matematik çalışma düzeni",
   },
   {
     tag: "LGS hazırlık",
     quote:
       "Soru sorabildiğim ve çözümümü gösterebildiğim bir ders düzeni tam aradığım şeydi.",
-    name: "Öğrenci deneyimi",
-    detail: "8. sınıf · Canlı ders",
+    name: "8. sınıf velisi",
+    detail: "Küçük grup canlı ders",
   },
   {
     tag: "Veli görüşü",
     quote:
       "Haftalık kısa notlar, süreci tahmin etmek yerine somut olarak görmemizi sağladı.",
-    name: "Veli deneyimi",
+    name: "LGS öğrencisi velisi",
     detail: "Düzenli takip",
   },
   {
@@ -150,28 +144,36 @@ export type Faq = { q: string; a: string };
 
 export const homeFaqs: Faq[] = [
   {
-    q: "Online Dershanem nasıl çalışıyor?",
-    a: "En fazla 4 öğrencilik canlı matematik dersleri Google Meet üzerinden yapılır. Her ders soru-cevap ve birlikte çözümle ilerler; sonunda haftalık çalışma planı, ödev ve öğretmen notuyla kapanır.",
+    q: "Dersler kaç kişilik?",
+    a: "Canlı matematik dersleri en fazla 4 öğrencilik küçük gruplarda yapılır.",
   },
   {
-    q: "Hangi sınavlara hazırlanabilirim?",
-    a: "LGS, TYT ve AYT matematik için hazırlık sunuyoruz. Ders içeriği öğrencinin seviyesine ve hedeflediği sınava göre uyarlanır.",
+    q: "Öğrenci derste soru sorabiliyor mu?",
+    a: "Evet. Küçük grup düzeni öğrencinin soru sorması, çözümünü göstermesi ve öğretmenden doğrudan geri bildirim alması için kurulmuştur.",
   },
   {
-    q: "Koçluk / takip hizmeti dahil mi?",
-    a: "Evet. Düzenli takip modelin bir parçası: haftalık plan, ödev kontrolü ve veliye anlaşılır gelişim notu her hafta paylaşılır.",
+    q: "Ödeme sonrası ne olacak?",
+    a: "Ekibimiz sizinle iletişime geçer, öğrencinin seviyesini konuşur, uygun küçük grubu belirler ve ilk dersi planlar.",
   },
   {
-    q: "Paketler nasıl başlar?",
-    a: "Ödemeyi PayTR üzerinden güvenle tamamlarsınız; ardından ekibimiz sizinle iletişime geçer, öğrenciyi seviyesine uygun küçük gruba yerleştirir ve ilk dersi planlar. Satın alma için hesap açmanıza gerek yoktur.",
+    q: "Hesap oluşturmak gerekiyor mu?",
+    a: "Hayır. Paketi satın almak ve ilk ders planlamasını yapmak için hesap oluşturmanız gerekmez.",
   },
   {
-    q: "İstediğim zaman bırakabilir miyim?",
-    a: "Evet. Ders Paketi aylık ilerler; taahhüt yoktur, dilediğiniz zaman devam etmemeyi tercih edebilirsiniz.",
+    q: "Ders başlamadan önce görüşebilir miyiz?",
+    a: "Evet. Ücretsiz ön görüşmede öğrencinin sınıfını, seviyesini ve hedefini konuşabiliriz.",
   },
   {
-    q: "Ücretsiz görüşme nasıl yapılır?",
-    a: "İletişim sayfasından bilgilerinizi bırakır veya WhatsApp'tan yazarsınız. Kısa bir ön görüşmede öğrencinin seviyesini ve hedefini konuşur, doğru başlangıca birlikte karar veririz.",
+    q: "Çocuğum matematikte çok gerideyse uygun mu?",
+    a: "Seviyesi ve hedefi ön görüşmede değerlendirilir. Uygun bir grup varsa ders tam öğrencinin ihtiyaç duyduğu noktadan planlanır.",
+  },
+  {
+    q: "LGS, TYT ve AYT için uygun mu?",
+    a: "Evet. Grup ve ders içeriği öğrencinin hazırlandığı sınava ve mevcut seviyesine göre belirlenir.",
+  },
+  {
+    q: "İstediğim zaman iptal edebilir miyim?",
+    a: "Paket aylık ilerler ve taahhüt içermez. Bir sonraki ay devam etmemeyi tercih edebilirsiniz.",
   },
 ];
 
@@ -181,7 +183,7 @@ export const footerColumns = [
   {
     title: "Platform",
     links: [
-      { label: "Ders Paketleri", href: "/paketler/" },
+      { label: "Ders Paketleri", href: "/ders-paketleri/" },
       { label: "Kamplar", href: "/kamplar/" },
       { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
       { label: "Başarı Hikayeleri", href: "/#basari-hikayeleri" },
@@ -208,4 +210,4 @@ export const footerColumns = [
 ] as const;
 
 export const footerTagline =
-  "Koçluk, kişiye özel plan ve akıllı takip sistemiyle matematik hazırlığını sadeleştirir.";
+  "Canlı matematik dersi, küçük grup ve ders sonrası takip sistemiyle öğrencinin yolunu netleştirir.";

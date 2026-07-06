@@ -42,7 +42,7 @@ export const subjectPackageGroups = [
           "Ders sonunda haftalık çalışma planı",
           "Ödevlendirme ve öğretmen notu",
           "Veliye anlaşılır haftalık not",
-          "Ödeme sonrası öğrenci hesabı ekibimiz tarafından hazırlanır"
+          "Ödeme sonrası ilk ders planlaması birlikte yapılır"
         ],
         cta: "Sepete Ekle"
       }

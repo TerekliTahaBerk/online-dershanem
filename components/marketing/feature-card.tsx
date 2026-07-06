@@ -27,20 +27,20 @@ export function FeatureCard({
 }: FeatureCardProps) {
   return (
     <article
-      className={`grid items-center gap-8 overflow-hidden rounded-[28px] border border-[var(--site-line)] p-6 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-9 lg:grid-cols-2 lg:gap-14 lg:p-12 ${
-        tone === "warm" ? "bg-[var(--site-bg-warm)]" : "bg-white"
+      className={`grid items-center gap-10 overflow-hidden rounded-[36px] border border-[var(--site-line)] p-7 shadow-[0_24px_80px_-64px_rgba(20,20,15,0.28)] sm:p-10 lg:min-h-[520px] lg:grid-cols-2 lg:gap-16 lg:p-16 ${
+        tone === "warm" ? "bg-[var(--brand-orange-tint)]" : "bg-[#fcfcfb]"
       }`}
     >
       <div className={reverse ? "lg:order-2" : ""}>
         <p className="site-eyebrow mb-4">{eyebrow}</p>
-        <h3 className="font-display text-[clamp(1.75rem,3.4vw,2.6rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)]">
+        <h3 className="font-display text-[clamp(2rem,3.8vw,3.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--site-ink)]">
           {title}
         </h3>
-        <p className="mt-5 max-w-[46ch] text-[15.5px] leading-7 text-[var(--site-body)]">{body}</p>
+        <p className="mt-6 max-w-[44ch] text-[16px] leading-7 text-[var(--site-body)]">{body}</p>
         {cta ? <div className="mt-7">{cta.node}</div> : null}
       </div>
 
-      <div className={reverse ? "lg:order-1" : ""}>{visual}</div>
+      <div className={`${reverse ? "lg:order-1" : ""} lg:scale-[1.06]`}>{visual}</div>
     </article>
   );
 }

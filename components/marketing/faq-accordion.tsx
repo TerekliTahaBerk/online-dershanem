@@ -16,16 +16,16 @@ type FaqAccordionProps = {
  * içerik id ile ilişkilendirilir. Klavye ile tam erişilebilir.
  */
 export function FaqAccordion({ title = "Sıkça sorulan sorular", items, tone = "warm" }: FaqAccordionProps) {
-  const [open, setOpen] = useState<number | null>(0);
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section className={tone === "warm" ? "bg-[var(--site-bg-warm)]" : "bg-white"}>
-      <div className="site-container py-20 sm:py-28">
-        <h2 className="text-center font-display text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)]">
+    <section id="sss" className={`scroll-mt-24 ${tone === "warm" ? "bg-[var(--site-bg-warm)]" : "bg-white"}`}>
+      <div className="site-container py-24 sm:py-36">
+        <h2 className="font-display text-[clamp(3rem,6vw,5.6rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">
           {title}
         </h2>
 
-        <div className="mx-auto mt-12 max-w-3xl divide-y divide-[var(--site-line)] rounded-[24px] border border-[var(--site-line)] bg-white">
+        <div className="mt-20 divide-y divide-[var(--site-line)] border-b border-[var(--site-line)] bg-white">
           {items.map((item, i) => {
             const isOpen = open === i;
             return (
@@ -37,18 +37,18 @@ export function FaqAccordion({ title = "Sıkça sorulan sorular", items, tone = 
                     aria-expanded={isOpen}
                     aria-controls={`faq-panel-${i}`}
                     id={`faq-trigger-${i}`}
-                    className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+                    className="flex w-full items-center justify-between gap-6 py-8 text-left sm:py-10"
                   >
-                    <span className="text-[16px] font-semibold text-[var(--site-ink)] sm:text-[17px]">
+                    <span className="text-[18px] font-semibold text-[var(--site-ink)] sm:text-[22px]">
                       {item.q}
                     </span>
                     <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-body)] transition-transform duration-200 ${
-                        isOpen ? "rotate-45 border-[var(--brand-orange)] text-[var(--brand-orange-ink)]" : ""
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f5f5f4] text-[var(--site-body)] transition-transform duration-200 sm:h-14 sm:w-14 ${
+                        isOpen ? "rotate-45 bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]" : ""
                       }`}
                       aria-hidden="true"
                     >
-                      <Plus size={18} strokeWidth={1.8} />
+                      <Plus size={24} strokeWidth={1.6} />
                     </span>
                   </button>
                 </h3>
@@ -57,7 +57,7 @@ export function FaqAccordion({ title = "Sıkça sorulan sorular", items, tone = 
                   role="region"
                   aria-labelledby={`faq-trigger-${i}`}
                   hidden={!isOpen}
-                  className="px-6 pb-6 text-[15px] leading-7 text-[var(--site-body)]"
+                  className="max-w-4xl pb-9 pr-16 text-[16px] leading-8 text-[var(--site-body)] sm:text-[18px]"
                 >
                   {item.a}
                 </div>

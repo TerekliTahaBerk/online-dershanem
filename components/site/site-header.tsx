@@ -91,7 +91,7 @@ export function SiteHeader() {
 
               <Link
                 href={navCta.href}
-                className="site-btn site-btn-primary site-btn-sm hidden md:inline-flex"
+                className="site-btn site-btn-primary site-btn-sm !hidden md:!inline-flex"
               >
                 {navCta.label}
               </Link>

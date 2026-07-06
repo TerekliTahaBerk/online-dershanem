@@ -94,7 +94,7 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
     <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
       {/* SOL: Form */}
       <div>
-        <CheckoutPageHeader subtitle="Bilgileri eksiksiz doldurun, güvenli ödeme sayfasına yönlendireceğiz. Satın alma için kayıt olmanız gerekmez." />
+        <CheckoutPageHeader subtitle="Bilgileri eksiksiz doldurun, güvenli ödeme sayfasına yönlendireceğiz. Satın alma için hesap açmanız gerekmez." />
 
         <BuyerInfoForm
           action="/api/od/checkout/start"

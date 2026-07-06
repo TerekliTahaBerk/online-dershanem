@@ -74,19 +74,19 @@
      tüm yeni public site bileşenlerinin tek renk kaynağıdır; adları
      geriye dönük uyumluluk için korunur, değerleri marka yeşilidir.
      ============================================================ */
-  --brand-orange: #3A4A2C;         /* solid CTA — beyaz metin (od-olive) */
-  --brand-orange-hover: #2C3A20;   /* CTA hover — koyu olive */
-  --brand-orange-bright: #5C7342;  /* gradient üst — açık adaçayı */
-  --brand-orange-strong: #2A3720;  /* gradient alt / koyu vurgu */
-  --brand-orange-ink: #3A4A2C;     /* açık zeminde marka metni (AA) */
-  --brand-orange-soft: #E3EAD3;    /* highlight pill zemini — yumuşak adaçayı */
-  --brand-orange-tint: #F1F5E9;    /* çok açık yeşil bölüm zemini */
+  --brand-orange: #3A4A2C;
+  --brand-orange-hover: #2C3A20;
+  --brand-orange-bright: #5C7342;
+  --brand-orange-strong: #2A3720;
+  --brand-orange-ink: #3A4A2C;
+  --brand-orange-soft: #E3EAD3;
+  --brand-orange-tint: #F5F7F2;
 
   --site-ink: #14140F;             /* neredeyse siyah başlık (od-ink) */
   --site-body: #5A5A4F;            /* sakin gövde metni (od-ink-soft) */
   --site-muted: #8A8A80;           /* soluk metin */
   --site-bg: #FFFFFF;              /* beyaz zemin */
-  --site-bg-warm: #FBFAF5;         /* çok açık krem bölüm zemini (od-cream) */
+  --site-bg-warm: #FFFFFF;
   --site-card: #FFFFFF;            /* kart zemini */
   --site-line: #E8E3D6;            /* ince krem kart border (od-line) */
   --site-line-soft: #F1EDE6;       /* daha açık ayraç */
@@ -188,9 +188,9 @@ a {
 }
 .site-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1480px;
   margin-inline: auto;
-  padding-inline: clamp(20px, 5vw, 40px);
+  padding-inline: clamp(20px, 4vw, 48px);
 }
 /* Highlight kelime — yumuşak adaçayı pill zemin (referans: "tek yerden") */
 .site-hl {

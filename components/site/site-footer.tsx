@@ -39,8 +39,8 @@ const socials = [
 export function SiteFooter() {
   return (
     <footer className="site-scope border-t border-[var(--site-line)] bg-[var(--site-bg-warm)]">
-      <div className="site-container py-16 sm:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="site-container py-16 sm:py-24">
+        <div className="grid gap-14 border-t border-[var(--site-line)] pt-16 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:pt-20">
           {/* Marka */}
           <div className="flex max-w-sm flex-col gap-5">
             <Link href="/" aria-label="Online Dershanem ana sayfa" className="inline-flex">
@@ -73,15 +73,15 @@ export function SiteFooter() {
           {/* Kolonlar */}
           {footerColumns.map((col) => (
             <div key={col.title}>
-              <h2 className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--site-muted)]">
+              <h2 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--site-muted)]">
                 {col.title}
               </h2>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-6 space-y-5">
                 {col.links.map((l) => (
                   <li key={l.href}>
                     <Link
                       href={l.href}
-                      className="text-[14.5px] text-[var(--site-body)] transition-colors hover:text-[var(--brand-orange-ink)]"
+                      className="text-[15.5px] text-[var(--site-body)] transition-colors hover:text-[var(--brand-orange-ink)]"
                     >
                       {l.label}
                     </Link>

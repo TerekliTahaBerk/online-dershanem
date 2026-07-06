@@ -43,7 +43,7 @@ export default async function OdCheckoutThankYouPage({
                     <strong>Sıradaki adım:</strong> Hesap açmanıza gerek yok.
                     Ekibimiz <strong>24 saat içinde</strong> sizinle iletişime
                     geçerek öğrenci hesabınızı oluşturacak ve matematik programınızı
-                    birlikte planlayacak. Satın alma için ayrıca kayıt olmanız
+                    birlikte planlayacak. Satın alma için ayrıca hesap açmanız
                     gerekmez; bilgilendirme telefon veya e-posta üzerinden yapılacaktır.
                   </>
                 }

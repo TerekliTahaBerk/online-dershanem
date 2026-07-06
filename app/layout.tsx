@@ -8,9 +8,6 @@ import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { CartProvider } from "@/components/cart/cart-provider";
-import { CartFab } from "@/components/cart/cart-fab";
-import { WhatsAppFab } from "@/components/ui/whatsapp-fab";
-import { MobileStickyCta } from "@/components/ui/mobile-sticky-cta";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
@@ -119,9 +116,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Suspense>
               <Pixels />
               {children}
-              <WhatsAppFab />
-              <CartFab />
-              <MobileStickyCta />
               <Analytics />
               <SpeedInsights />
             </ToastProvider>

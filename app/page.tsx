@@ -5,6 +5,7 @@ import { Hero } from "@/components/marketing/hero";
 import { SocialProof } from "@/components/marketing/social-proof";
 import { ValueProps } from "@/components/marketing/value-props";
 import { ProductTour } from "@/components/marketing/product-tour";
+import { TrustMetrics } from "@/components/marketing/trust-metrics";
 import { ResultsSection } from "@/components/marketing/results-section";
 import { TestimonialsCarousel } from "@/components/marketing/testimonials-carousel";
 import { First30Days } from "@/components/marketing/first-30-days";
@@ -15,17 +16,18 @@ import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { productJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { homeFaqs } from "@/lib/site-content";
 import { lessonPackage } from "@/lib/pricing-content";
+import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
 import { parsePriceToCents, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "YKS ve LGS için Koçluk ve Akıllı Takip",
+  title: { absolute: "Online Dershanem | Küçük Grup Canlı Matematik Dersi" },
   description:
     "En fazla 4 kişilik canlı matematik dersi, kişiye özel çalışma planı ve veliye net gelişim notu. LGS, TYT ve AYT hazırlığını tek yerden yönet.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Online Dershanem | YKS ve LGS için Koçluk ve Akıllı Takip",
     description:
-      "Koçluk, kişiye özel plan ve akıllı takip sistemiyle matematik hazırlığını sadeleştir.",
+      "LGS, TYT ve AYT matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
     url: `${siteUrl}/`,
   },
 };
@@ -54,16 +56,29 @@ export default function HomePage() {
       <main>
         <Hero />
         <SocialProof />
+        <TrustMetrics />
+        <PricingPreview />
+        <First30Days />
+        <TestimonialsCarousel />
+        <ResultsSection />
         <ValueProps />
         <ProductTour />
-        <ResultsSection />
-        <TestimonialsCarousel />
-        <First30Days />
-        <PricingPreview />
         <FaqAccordion items={homeFaqs} />
-        <FooterCta />
+        <FooterCta
+          title="Matematik yolunu birlikte netleştirelim."
+          subtitle="Bugün ilk adımı at. Öğrencinin nerede takıldığını birlikte görelim."
+          ctaLabel="Ücretsiz görüşme"
+          ctaHref="/iletisim/"
+        />
       </main>
       <SiteFooter />
+      <StickyCheckoutBar
+        name={lessonPackage.name}
+        category={lessonPackage.category}
+        subject={lessonPackage.subject}
+        priceLabel={lessonPackage.priceLabel}
+        note="aylık sabit fiyat"
+      />
     </div>
   );
 }

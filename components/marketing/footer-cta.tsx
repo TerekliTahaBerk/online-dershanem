@@ -20,13 +20,13 @@ export function FooterCta({
 }: FooterCtaProps) {
   return (
     <section className="bg-white">
-      <div className="site-container py-24 text-center sm:py-32">
-        <h2 className="mx-auto max-w-3xl font-display text-[clamp(2.4rem,6vw,4.5rem)] leading-[1.03] tracking-[-0.03em] text-[var(--site-ink)]">
+      <div className="site-container py-28 text-center sm:py-44">
+        <h2 className="mx-auto max-w-5xl font-display text-[clamp(3rem,7vw,6.2rem)] leading-[.96] tracking-[-0.045em] text-[var(--site-ink)]">
           {title}
         </h2>
-        <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">{subtitle}</p>
-        <div className="mt-9">
-          <Link href={ctaHref} className="site-btn site-btn-primary site-btn-lg">
+        <p className="mx-auto mt-8 max-w-2xl text-[16.5px] leading-7 text-[var(--site-body)] sm:text-[19px]">{subtitle}</p>
+        <div className="mt-11">
+          <Link href={ctaHref} className="site-btn site-btn-primary site-btn-lg px-10 py-5 text-[17px]">
             {ctaLabel}
             <ArrowUpRight size={18} aria-hidden="true" />
           </Link>

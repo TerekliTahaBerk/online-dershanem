@@ -1,6 +1,6 @@
 import { valueProps } from "@/lib/site-content";
 import { FeatureCard } from "@/components/marketing/feature-card";
-import { TeacherRosterMockup, ReportMockup } from "@/components/marketing/mockups";
+import { ReportMockup, TeacherRosterMockup } from "@/components/marketing/mockups";
 
 /**
  * "Başarı için her şey tek yerde." — bölüm başlığı + iki büyük feature kartı
@@ -9,38 +9,29 @@ import { TeacherRosterMockup, ReportMockup } from "@/components/marketing/mockup
 export function ValueProps() {
   return (
     <section className="bg-white">
-      <div className="site-container py-20 sm:py-28">
-        <div className="mx-auto max-w-2xl text-center">
+      <div className="site-container py-24 sm:py-36">
+        <div className="mx-auto max-w-4xl text-center">
           <p className="site-eyebrow justify-center">{valueProps.eyebrow}</p>
-          <h2 className="mt-4 font-display text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)]">
-            Başarı için <span className="site-hl">her şey</span> tek yerde.
+          <h2 className="mt-4 font-display text-[clamp(2.8rem,6vw,5.5rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">
+            Dersi anlatıp <span className="site-hl">bırakmıyoruz.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
+          <p className="mx-auto mt-7 max-w-2xl text-[16px] leading-7 text-[var(--site-body)] sm:text-[18px]">
             {valueProps.subtitle}
           </p>
         </div>
 
-        <div className="mt-12 flex flex-col gap-5">
+        <div className="mt-14 flex flex-col gap-6">
           <FeatureCard
-            eyebrow="Deneyimli öğretmen kadrosu"
-            title={
-              <>
-                Küçük grupta <span className="site-hl">birebir</span> ilgi.
-              </>
-            }
-            body="Alanında deneyimli öğretmenlerle en fazla 4 kişilik grupta çalış. Yolunu bilen biriyle ilerle; herkes görünür, herkes soru sorar."
+            eyebrow="Küçük grup"
+            title={<>Öğrenci kalabalıkta <span className="site-hl">kaybolmaz.</span></>}
+            body="En fazla 4 kişilik gruplarda öğretmen her öğrenciyi görür; öğrenci soru sorar, çözümünü gösterir ve doğrudan geri bildirim alır."
             visual={<TeacherRosterMockup />}
           />
           <FeatureCard
             reverse
-            tone="warm"
-            eyebrow="Aylık performans raporu"
-            title={
-              <>
-                Gelişimini <span className="site-hl">net</span> olarak gör.
-              </>
-            }
-            body="Deneme, konu ve çalışma verilerini tek raporda takip et. Nerede güçlüsün, nerede eksik var — her ay somut verilerle görünür olur."
+            eyebrow="Sade gelişim özeti"
+            title={<>İlerlemeyi <span className="site-hl">net</span> olarak gör.</>}
+            body="İşlenen konu, verilen çalışma ve öğretmen gözlemi tek bir sade özette birleşir. Süreç tahmin edilmez, görünür olur."
             visual={<ReportMockup />}
           />
         </div>

@@ -9,35 +9,34 @@ import { PricingCard } from "@/components/pricing/pricing-card";
  */
 export function PricingPreview() {
   return (
-    <section id="matematik-ders-paketi" className="scroll-mt-24 bg-white">
-      <div className="site-container py-20 sm:py-28">
-        <div className="mx-auto max-w-2xl text-center">
+    <section id="matematik-ders-paketi" className="scroll-mt-24 bg-[#fafafa]">
+      <div className="site-container py-24 sm:py-36">
+        <div className="mx-auto max-w-4xl text-center">
           <p className="site-eyebrow justify-center">Tek abonelik</p>
-          <h2 className="mt-4 font-display text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)]">
-            Tek abonelik, <span className="site-hl">tüm matematik</span> ihtiyacın.
+          <h2 className="mt-4 font-display text-[clamp(2.8rem,6vw,5.4rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">
+            Tek paket,<br /><span className="site-hl">net bir matematik yolu.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
-            LGS, TYT ve AYT matematik için tek, sade bir paket. Karmaşık seçenek yok; aylık ilerler,
-            istediğin zaman bırakabilirsin.
+            Canlı ders, küçük grup ve ders sonrası takip tek pakette.
           </p>
         </div>
 
-        <div className="mt-14 grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="mt-20 grid items-start gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-24">
           {/* Neler dahil */}
           <div>
-            <h3 className="font-display text-[24px] tracking-[-0.01em] text-[var(--site-ink)]">Neler dahil?</h3>
-            <ul className="mt-6 grid gap-x-6 gap-y-3.5 sm:grid-cols-2 lg:grid-cols-1">
+            <h3 className="font-display text-[clamp(1.8rem,3vw,2.6rem)] tracking-[-0.02em] text-[var(--site-ink)]">Neler dahil?</h3>
+            <ul className="mt-8 grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-1">
               {includedFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-[15px] leading-6 text-[var(--site-body)]">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
-                    <Check size={12} strokeWidth={3} aria-hidden="true" />
+                <li key={f} className="flex items-start gap-3 text-[16px] leading-7 text-[var(--site-body)] sm:text-[18px]">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                    <Check size={13} strokeWidth={3} aria-hidden="true" />
                   </span>
                   {f}
                 </li>
               ))}
             </ul>
             <Link
-              href="/paketler/"
+              href="/ders-paketleri/"
               className="mt-8 inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
             >
               Ders Paketleri sayfasını gör

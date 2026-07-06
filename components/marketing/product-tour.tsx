@@ -12,8 +12,8 @@ import { PlannerMockup, ParentNoteMockup } from "@/components/marketing/mockups"
 export function ProductTour() {
   return (
     <>
-      <section className="bg-[var(--site-bg-warm)]">
-        <div className="site-container py-14 sm:py-20">
+      <section className="bg-white">
+        <div className="site-container pb-6">
           <FeatureCard
             eyebrow="Çalışma takibi"
             title={
@@ -21,28 +21,28 @@ export function ProductTour() {
                 Her şeyi <span className="site-hl">tek yerden</span> yönet.
               </>
             }
-            body="Konu takibi, günlük log ve haftalık plan — çalışmanı tek bir yerden kontrol et. Ne çalışacağını bilerek başla, düzenini koru."
+            body="Her dersin sonunda konu, ödev ve tekrar yönü netleşir. Öğrenci masaya oturduğunda nereden başlayacağını bilir."
             visual={<PlannerMockup />}
           />
         </div>
       </section>
 
       <section className="bg-white">
-        <div className="site-container py-14 sm:py-20">
+        <div className="site-container pb-20 sm:pb-28">
           <FeatureCard
             reverse
-            eyebrow="Veli bilgilendirme"
+            eyebrow="Ders sonrası takip"
             title={
               <>
-                Sürecin her adımında <span className="site-hl">yanında</span>.
+                Ders biter, yönlendirme <span className="site-hl">devam eder.</span>
               </>
             }
-            body="Her hafta kısa bir gelişim notu: ne işlendi, öğrenci nerede iyi gidiyor, neye dikkat etmeli. Süreci tahmin etmek yerine somut olarak görürsün."
+            body="Ne işlendi, öğrenci nerede zorlandı ve sırada ne var? Kısa öğretmen notuyla ders sonrası çalışma yönü açık kalır."
             visual={<ParentNoteMockup />}
             cta={{
               label: "Paketleri incele",
               node: (
-                <Link href="/paketler/" className="site-btn site-btn-primary">
+                <Link href="/ders-paketleri/" className="site-btn site-btn-primary">
                   Paketleri incele
                   <ArrowRight size={16} aria-hidden="true" />
                 </Link>

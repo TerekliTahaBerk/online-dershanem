@@ -1,86 +1,38 @@
 "use client";
 
 import { useRef } from "react";
-import Link from "next/link";
-import { ArrowRight, ArrowLeft, Quote } from "lucide-react";
+import { ArrowLeft, ArrowRight, Quote } from "lucide-react";
 import { stories } from "@/lib/site-content";
 
-/**
- * Başarı hikayeleri — yatay scroll carousel. Sahte kişi fotoğrafı kullanılmaz;
- * baş harf/etiket tabanlı premium kartlar. Prev/next butonları erişilebilir.
- */
 export function TestimonialsCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
-
-  const scrollBy = (dir: 1 | -1) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const amount = Math.min(el.clientWidth * 0.9, 380);
-    el.scrollBy({ left: dir * amount, behavior: "smooth" });
-  };
+  const move = (direction: 1 | -1) => trackRef.current?.scrollBy({ left: direction * 420, behavior: "smooth" });
 
   return (
-    <section id="basari-hikayeleri" className="scroll-mt-24 bg-[var(--site-bg-warm)]">
-      <div className="site-container py-20 sm:py-28">
-        <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
-          <div className="max-w-2xl">
-            <p className="site-eyebrow">Başarı hikayeleri</p>
-            <h2 className="mt-4 font-display text-[clamp(2rem,4.6vw,3.25rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)]">
-              Öğrenciler hedeflerine <span className="site-hl">bizimle</span> yaklaştı.
-            </h2>
-            <p className="mt-4 max-w-lg text-[15.5px] leading-7 text-[var(--site-body)]">
-              Öğrenci ve veli deneyimlerinden derlenen kısa notlar. Süreci birlikte, düzenli ve
-              görünür şekilde yürüttük.
-            </p>
-          </div>
-          <div className="flex shrink-0 gap-2">
-            <button
-              type="button"
-              onClick={() => scrollBy(-1)}
-              aria-label="Önceki hikayeler"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--site-line)] bg-white text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange-ink)]"
-            >
-              <ArrowLeft size={18} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollBy(1)}
-              aria-label="Sonraki hikayeler"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--site-line)] bg-white text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange-ink)]"
-            >
-              <ArrowRight size={18} aria-hidden="true" />
-            </button>
-          </div>
+    <section id="basari-hikayeleri" className="scroll-mt-24 overflow-hidden bg-white py-24 sm:py-36">
+      <div className="site-container text-center">
+        <h2 className="font-display text-[clamp(2.65rem,5.6vw,5.25rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">Öğrenciler matematikte yalnız kalmasın.</h2>
+        <p className="mx-auto mt-5 max-w-2xl text-[15.5px] leading-7 text-[var(--site-body)] sm:text-[17px]">Ders, soru-cevap ve ders sonrası yönlendirme aynı planın içinde ilerler.</p>
+        <div className="mt-7 flex justify-center gap-2">
+          <button type="button" onClick={() => move(-1)} aria-label="Önceki hikayeler" className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--site-line)] bg-white"><ArrowLeft size={18} aria-hidden="true" /></button>
+          <button type="button" onClick={() => move(1)} aria-label="Sonraki hikayeler" className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--site-line)] bg-white"><ArrowRight size={18} aria-hidden="true" /></button>
         </div>
+      </div>
 
-        <div
-          ref={trackRef}
-          className="site-scrollx mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2"
-          tabIndex={0}
-          role="region"
-          aria-label="Başarı hikayeleri; yatay kaydırılabilir"
-        >
-          {stories.map((story, i) => (
-            <article
-              key={i}
-              className="flex min-w-[85%] snap-start flex-col rounded-[24px] border border-[var(--site-line)] bg-white p-7 sm:min-w-[360px]"
-            >
-              <div className="flex h-32 items-end rounded-[18px] bg-[linear-gradient(135deg,var(--brand-orange-soft),var(--site-bg-warm))] p-5">
-                <span className="rounded-full bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--brand-orange-ink)] shadow-sm">
-                  {story.tag}
-                </span>
-              </div>
-              <Quote size={22} className="mt-6 text-[var(--brand-orange)]" aria-hidden="true" />
-              <blockquote className="mt-3 min-h-[92px] text-[15px] leading-7 text-[var(--site-body)]">
-                {story.quote}
-              </blockquote>
-              <div className="mt-5 border-t border-[var(--site-line)] pt-4">
-                <div className="font-display text-[18px] text-[var(--site-ink)]">{story.name}</div>
-                <div className="mt-0.5 text-[12.5px] text-[var(--site-muted)]">{story.detail}</div>
-              </div>
-            </article>
-          ))}
-        </div>
+      <div ref={trackRef} className="site-scrollx mt-14 flex snap-x snap-mandatory gap-5 overflow-x-auto px-[max(20px,calc((100vw-1480px)/2+48px))] pb-4" tabIndex={0} role="region" aria-label="Başarı hikayeleri; yatay kaydırılabilir">
+        {stories.map((story, index) => (
+          <article key={`${story.name}-${index}`} className="min-w-[82vw] snap-start sm:min-w-[360px] lg:min-w-[390px]">
+            <div className="relative flex h-[320px] items-end overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-[linear-gradient(145deg,var(--brand-orange-soft),#fff_58%,var(--brand-orange-tint))] p-6">
+              <div aria-hidden="true" className="absolute -right-8 -top-12 h-56 w-56 rounded-full border-[42px] border-white/70" />
+              <div aria-hidden="true" className="absolute left-7 top-8 font-display text-[112px] leading-none text-[var(--brand-orange)]/10">“</div>
+              <span className="relative rounded-full bg-[var(--brand-orange)] px-4 py-2 text-[12px] font-semibold text-white">{story.tag}</span>
+            </div>
+            <Quote size={20} className="mt-6 text-[var(--brand-orange)]" aria-hidden="true" />
+            <blockquote className="mt-3 min-h-[84px] text-[15px] leading-7 text-[var(--site-body)]">{story.quote}</blockquote>
+            <p className="mt-4 font-display text-[19px] text-[var(--site-ink)]">{story.name}</p>
+            <p className="mt-1 text-[13px] text-[var(--site-muted)]">{story.detail}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
