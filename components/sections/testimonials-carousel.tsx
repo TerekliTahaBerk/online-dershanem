@@ -9,9 +9,9 @@ export function TestimonialsCarousel() {
   return (
     <div className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-6 [scrollbar-width:none] sm:mx-0 sm:px-0">
       {stories.map((story, index) => (
-        <article key={index} className="od-card min-w-[82vw] snap-start p-7 sm:min-w-[350px]">
+        <article key={index} className="min-w-[82vw] snap-start rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)] p-7 sm:min-w-[350px]">
           <div className="flex h-44 items-end rounded-[22px] bg-[linear-gradient(135deg,#f5e2d4,#f8f6f0)] p-5">
-            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[var(--od-orange)]">{story.university}</span>
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[var(--od-olive)]">{story.university}</span>
           </div>
           <blockquote className="mt-6 min-h-[96px] text-[15px] leading-6 text-[var(--od-ink-soft)]">“{story.quote}”</blockquote>
           <div className="mt-5 border-t border-[var(--od-line)] pt-4">

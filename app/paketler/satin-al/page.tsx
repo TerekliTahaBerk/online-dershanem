@@ -7,8 +7,8 @@ import { BuyerInfoForm } from "@/components/checkout/buyer-info-form";
 import {
   OrderSummaryCard,
   CheckoutPageHeader,
-  parseTRYToCents,
 } from "@/components/checkout/order-summary-card";
+import { parsePriceToCents } from "@/lib/content";
 
 type Search = Promise<{
   cat?: string;
@@ -92,7 +92,7 @@ export default async function OdCheckoutFormPage({
                   category: category || undefined,
                   name: subject || packageLabel,
                   subtitle: priceLabel === "Detay için iletişime geçin" ? priceLabel : undefined,
-                  priceCents: parseTRYToCents(priceLabel),
+                  priceCents: parsePriceToCents(priceLabel),
                 },
               ]}
               backHref="/paketler"

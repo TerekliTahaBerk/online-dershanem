@@ -1,17 +1,176 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { BarChart3, Compass, HeartHandshake, Target } from "lucide-react";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { BarChart3, Compass, HeartHandshake, Layers, MessageCircle, Target } from "lucide-react";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
+import { FooterCta } from "@/components/marketing/footer-cta";
+import { TeacherRosterMockup } from "@/components/marketing/mockups";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { siteUrl } from "@/lib/content";
 
-export const metadata: Metadata = { title: "Hakkımızda", description: "Online Dershanem; canlı küçük grup dersini, belirli çalışma yönünü ve anlaşılır takibi tek düzende birleştirir.", alternates: { canonical: "/hakkimizda/" } };
+export const metadata: Metadata = {
+  title: "Hakkımızda",
+  description:
+    "Online Dershanem; canlı küçük grup dersini, kişiye özel çalışma planını ve düzenli takibi tek bir sistemde birleştirir.",
+  alternates: { canonical: "/hakkimizda" },
+  openGraph: {
+    title: "Hakkımızda | Online Dershanem",
+    description:
+      "Öğrencinin yalnız çalışmadığı bir hazırlık sistemi: küçük grup dersi, kişiye özel plan ve düzenli takip.",
+    url: `${siteUrl}/hakkimizda`,
+  },
+};
+
+const approach = [
+  {
+    icon: HeartHandshake,
+    title: "Birebir ilgi",
+    body: "En fazla 4 kişilik grupta öğrenci görünür kalır; soru sorar, çözümünü gösterir.",
+  },
+  {
+    icon: BarChart3,
+    title: "Veriyle takip",
+    body: "Ders, ödev ve deneme verileriyle ilerleme somut ve ölçülebilir hale gelir.",
+  },
+  {
+    icon: Compass,
+    title: "Kişiye özel plan",
+    body: "Her öğrencinin seviyesine göre haftalık plan; ne çalışacağı her zaman belli.",
+  },
+];
+
+const different = [
+  { title: "Tek sistem", body: "Ders, plan, ödev ve veli bilgilendirmesi tek bir düzende yürür." },
+  { title: "Ölçülebilir ilerleme", body: "Gelişimi tahmin etmek yerine haftalık olarak görürsün." },
+  { title: "Kişiye özel plan", body: "Hazır kalıp yok; plan öğrenciye göre kurulur ve güncellenir." },
+  { title: "Düzenli geri bildirim", body: "Öğrenciye öğretmen notu, veliye kısa gelişim özeti." },
+];
 
 export default function AboutPage() {
-  return <><Navbar/><main className="bg-[#fffdf9] text-[var(--od-ink)]">
-    <section className="od-container py-20 text-center sm:py-32"><p className="text-sm font-semibold text-[var(--od-orange)]">Online Dershanem</p><h1 className="mx-auto mt-5 max-w-5xl font-display text-[clamp(3.2rem,7vw,7rem)] leading-[.9] tracking-[-.04em]">Öğrencinin yalnız çalışmadığı bir hazırlık sistemi.</h1><p className="mx-auto mt-8 max-w-2xl text-lg leading-8 text-[var(--od-ink-soft)]">Canlı küçük grup dersini, belirli çalışma yönünü ve anlaşılır takibi tek bir düzende birleştiriyoruz.</p></section>
-    <section className="od-container"><div className="od-card grid overflow-hidden lg:grid-cols-2"><div className="p-8 sm:p-14"><p className="text-sm font-semibold text-[var(--od-orange)]">Misyonumuz</p><h2 className="mt-5 font-display text-5xl leading-none sm:text-7xl">Hedefe giden yolu sadeleştirmek.</h2></div><div className="flex items-center bg-[#f3f1eb] p-8 sm:p-14"><p className="text-lg leading-8 text-[var(--od-ink-soft)]">Öğrencinin derste görünür kaldığı, ne çalışacağını bildiği ve gelişiminin aile için de anlaşılır olduğu sürdürülebilir bir çalışma düzeni kurmak.</p></div></div></section>
-    <section className="od-container py-24"><div className="grid gap-5 md:grid-cols-3">{[[HeartHandshake,"Yakın destek","Öğrencinin soru sorabildiği ve çözümünü gösterebildiği küçük grup."],[BarChart3,"Görünür süreç","Ders sonrası plan, ödev ve kısa gelişim notuyla anlaşılır takip."],[Compass,"Belirli yön","Her dersin sonunda sonraki adımın ne olduğunu bilmek."]].map(([Icon,t,b])=>{const C=Icon as typeof BarChart3; return <article key={String(t)} className="od-card p-8"><div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--od-orange-soft)] text-[var(--od-orange)]"><C size={22}/></div><h2 className="mt-8 font-display text-3xl">{String(t)}</h2><p className="mt-4 text-sm leading-6 text-[var(--od-ink-soft)]">{String(b)}</p></article>})}</div></section>
-    <section className="border-y border-[var(--od-line)] bg-[#f7f6f2]"><div className="od-container grid gap-12 py-24 lg:grid-cols-[.8fr_1.2fr]"><div><p className="text-sm font-semibold text-[var(--od-orange)]">Değerlerimiz</p><h2 className="mt-4 font-display text-5xl leading-none">İlerleme, küçük ama tutarlı adımlarla gelir.</h2></div><div className="grid gap-4 sm:grid-cols-2">{[["Şeffaflık","Pakette ne olduğu ve operasyonun nasıl ilerlediği açıkça paylaşılır."],["Disiplin","Belirli ders ve çalışma ritmi, motivasyondan bağımsız bir zemin kurar."],["Sürdürülebilirlik","Kısa vadeli vaatler yerine uygulanabilir bir çalışma düzenine odaklanırız."],["Ölçülebilirlik","Ders, ödev ve geri bildirim üzerinden süreci görünür kılarız."]].map(([t,b])=><div key={t} className="rounded-2xl border border-[var(--od-line)] bg-white p-6"><h3 className="font-semibold">{t}</h3><p className="mt-2 text-sm leading-6 text-[var(--od-ink-soft)]">{b}</p></div>)}</div></div></section>
-    <section className="od-container py-20 text-center sm:py-28"><Target className="mx-auto text-[var(--od-orange)]" size={32}/><h2 className="mx-auto mt-6 max-w-3xl font-display text-5xl leading-none sm:text-7xl">Hedefini birlikte planlayalım.</h2><Link href="/iletisim/" className="od-button od-button-primary mt-8">Ücretsiz görüşme</Link></section>
-  </main><Footer/></>;
+  return (
+    <div className="site-scope">
+      <SchemaJsonLd
+        schema={breadcrumbJsonLd([
+          { name: "Ana Sayfa", url: "/" },
+          { name: "Hakkımızda", url: "/hakkimizda/" },
+        ])}
+      />
+      <SiteHeader />
+      <main>
+        {/* Başlık */}
+        <section className="bg-white pt-16 sm:pt-24">
+          <div className="site-container text-center">
+            <p className="site-eyebrow justify-center">Hakkımızda</p>
+            <h1 className="mx-auto mt-4 max-w-4xl font-display text-[clamp(2.5rem,6.5vw,4.75rem)] leading-[1.02] tracking-[-0.03em] text-[var(--site-ink)]">
+              Öğrencinin <span className="site-hl">yalnız çalışmadığı</span> bir hazırlık sistemi.
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-[16.5px] leading-7 text-[var(--site-body)]">
+              Online Dershanem; canlı küçük grup dersini, kişiye özel çalışma planını ve düzenli
+              takibi tek bir sistemde birleştirir.
+            </p>
+          </div>
+        </section>
+
+        {/* Misyon */}
+        <section className="bg-white">
+          <div className="site-container py-16 sm:py-20">
+            <div className="grid items-center gap-8 overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-12 lg:grid-cols-2 lg:gap-14">
+              <div>
+                <p className="site-eyebrow mb-4">Misyonumuz</p>
+                <h2 className="font-display text-[clamp(1.9rem,3.6vw,2.8rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
+                  Hedefe giden yolu <span className="site-hl">sadeleştirmek.</span>
+                </h2>
+                <p className="mt-5 max-w-[46ch] text-[15.5px] leading-7 text-[var(--site-body)]">
+                  Öğrencinin derste görünür kaldığı, ne çalışacağını bildiği ve gelişiminin aile için
+                  de anlaşılır olduğu sürdürülebilir bir çalışma düzeni kurmak.
+                </p>
+              </div>
+              <div>
+                <TeacherRosterMockup />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Yaklaşım */}
+        <section className="bg-white">
+          <div className="site-container pb-8">
+            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
+              Yaklaşımımız
+            </h2>
+            <div className="mt-12 grid gap-5 md:grid-cols-3">
+              {approach.map((a) => {
+                const Icon = a.icon;
+                return (
+                  <article key={a.title} className="rounded-[24px] border border-[var(--site-line)] bg-white p-8">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                      <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-6 font-display text-[24px] tracking-[-0.01em] text-[var(--site-ink)]">{a.title}</h3>
+                    <p className="mt-3 text-[14.5px] leading-6 text-[var(--site-body)]">{a.body}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Neden farklı */}
+        <section className="bg-[var(--site-bg-warm)]">
+          <div className="site-container grid gap-12 py-20 sm:py-24 lg:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <p className="site-eyebrow mb-4">Neden farklı?</p>
+              <h2 className="font-display text-[clamp(1.9rem,3.8vw,3rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)]">
+                İlerleme, küçük ama tutarlı adımlarla gelir.
+              </h2>
+              <p className="mt-5 max-w-md text-[15px] leading-7 text-[var(--site-body)]">
+                Kısa vadeli, kanıtlanmamış vaatler yerine; uygulanabilir bir çalışma düzenine ve
+                ölçülebilir gelişime odaklanırız.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {different.map((d) => (
+                <div key={d.title} className="rounded-[20px] border border-[var(--site-line)] bg-white p-6">
+                  <div className="flex items-center gap-2 text-[var(--brand-orange-ink)]">
+                    <Layers size={16} aria-hidden="true" />
+                    <h3 className="text-[15px] font-bold text-[var(--site-ink)]">{d.title}</h3>
+                  </div>
+                  <p className="mt-2.5 text-[14px] leading-6 text-[var(--site-body)]">{d.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Öğretmenler teaser */}
+        <section className="bg-white">
+          <div className="site-container py-20 text-center sm:py-24">
+            <Target className="mx-auto text-[var(--brand-orange)]" size={30} aria-hidden="true" />
+            <h2 className="mx-auto mt-5 max-w-2xl font-display text-[clamp(1.9rem,4vw,3rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
+              Öğretmenlerimiz alanında deneyimli.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
+              Matematiği anlatmayı bilen, öğrenciyi küçük grupta gerçekten duyan öğretmenlerle çalışırız.
+              Öğrencinin seviyesine uygun eşleşmeyi görüşmede birlikte netleştiririz.
+            </p>
+            <a
+              href="/iletisim/"
+              className="mt-8 inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
+            >
+              <MessageCircle size={16} aria-hidden="true" />
+              Bize ulaş
+            </a>
+          </div>
+        </section>
+
+        <FooterCta
+          title="Hedefini birlikte planlayalım."
+          subtitle="Kısa bir ücretsiz görüşmede öğrencinin seviyesini ve hedefini konuşalım."
+          ctaLabel="Ücretsiz görüşme"
+          ctaHref="/iletisim/"
+        />
+      </main>
+      <SiteFooter />
+    </div>
+  );
 }
