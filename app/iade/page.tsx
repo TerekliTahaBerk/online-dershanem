@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   title: "İade Politikası",
   description: "Online Dershanem ders paketleri için ödeme, iptal ve iade koşulları.",
   alternates: {
-    canonical: "/iade/"
+    canonical: "/iade"
   },
   openGraph: {
     title: "İade Politikası | Online Dershanem",
     description: "Ders bazlı paketlerde iptal, iade ve süreç yönetimi hakkında bilgilendirme.",
-    url: `${siteUrl}/iade/`
+    url: `${siteUrl}/iade`
   }
 };
 

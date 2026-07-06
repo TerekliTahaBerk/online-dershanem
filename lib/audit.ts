@@ -1,25 +1,9 @@
 /**
  * Audit log helper.
  *
- * Production-grade requirement: tüm "destructive" veya "para/erişim etkileyici"
- * admin/system action'ları AuditLog tablosuna yazılmalı. Bu helper her zaman
+ * Ödeme ve webhook olaylarını AuditLog tablosuna yazar. Bu helper her zaman
  * non-throwing — audit yazımı asla iş akışını bozmaz.
  *
- * Kullanım:
- *   await logAudit({
- *     actorUserId: session.user.id,
- *     entityType: "OdkOrder",
- *     entityId: order.id,
- *     action: "ORDER_MARKED_PAID",
- *     summary: `Sipariş ${order.id.slice(0,8)} elle ÖDENDİ işaretlendi`,
- *     payload: { packageId: order.packageId, amount: order.amount },
- *   });
- *
- * Geleneksel action isimleri (snake-case SCREAMING):
- *   ACCESS_GRANT, ACCESS_REVOKE, PACKAGE_DELETE, ORDER_MARK_PAID,
- *   ORDER_MARK_CANCELLED, ORDER_MARK_REFUNDED, MANUAL_ORDER_CREATE,
- *   ACCOUNTING_CREATE, ACCOUNTING_UPDATE, ACCOUNTING_DELETE,
- *   STUDENT_DELETE, LESSON_CANCEL, BULK_GRANT_APPLIED, PAYMENT_OVERRIDE.
  */
 import "server-only";
 import type { AuditActorType, Prisma } from "@prisma/client";

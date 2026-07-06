@@ -8,7 +8,7 @@
  * 200 = her şey yeşil. 500 = en az 1 check failed.
  *
  * Test edilen sistemler:
- *  - DB read (User table)
+ *  - DB read (public order table)
  *  - DB write (RateLimitEntry — geçici kayıt, hemen siler)
  *  - Cache (read/write/delete)
  *  - Audit log (yazma)
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 
   // 1. DB read
   checks.push(await timed("db_read", async () => {
-    await prisma.user.findFirst({ select: { id: true } });
+    await prisma.odOrder.findFirst({ select: { id: true } });
   }));
 
   // 2. DB write (smoke marker — anında temizle)

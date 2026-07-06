@@ -12,12 +12,12 @@ export const metadata: Metadata = {
   title: "Online Dershanem Blog",
   description:
     "Online dershane ve online özel ders rehberleri: LGS-YKS çalışma planı, küçük grup ders modeli ve haftalık takip sistemi üzerine yazılar.",
-  alternates: { canonical: "/blog/" },
+  alternates: { canonical: "/blog" },
   openGraph: {
     title: "Online Dershanem Blog",
     description:
       "Sınava hazırlık sürecinde gerçekten işe yarayan rehberler, deneme analizi ipuçları ve haftalık plan örnekleri.",
-    url: `${siteUrl}/blog/`
+    url: `${siteUrl}/blog`
   }
 };
 

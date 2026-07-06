@@ -23,7 +23,7 @@ export function captureError(err: unknown, context?: ErrorContext): void {
 
 /**
  * Server action sarmalayıcı — hata olursa capture + re-throw.
- * NextAuth/Next.js redirect()'i bypass etmek için NEXT_REDIRECT erroru'nu re-throw eder.
+ * Next.js redirect() hatasını normal kontrol akışı olarak yeniden fırlatır.
  */
 export async function withCapture<T>(
   name: string,

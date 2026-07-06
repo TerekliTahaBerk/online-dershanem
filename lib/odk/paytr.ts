@@ -7,7 +7,7 @@
  *  1. Get-token: server → POST https://www.paytr.com/odeme/api/get-token
  *     ↓ token döner
  *     ↓ iframe: https://www.paytr.com/odeme/guvenli/<token>
- *  2. Callback: PayTR → POST /api/odk/paytr/callback
+ *  2. Callback: PayTR → POST /api/paytr/callback
  *     ↓ hash doğrulanır
  *     ↓ "OK" döndürülmesi ZORUNLU (aksi halde PayTR tekrar dener)
  *

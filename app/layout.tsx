@@ -6,7 +6,6 @@ import { seoKeywords, siteUrl } from "@/lib/content";
 
 import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
-import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { CartFab } from "@/components/cart/cart-fab";
@@ -15,8 +14,8 @@ import { MobileStickyCta } from "@/components/ui/mobile-sticky-cta";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
-// Public marketing sitesi krem/açık tema için tasarlandı; panel kapalı olduğundan
-// tüm site açık temaya sabitlenir. İşletim sistemi koyu modda olsa bile site krem
+// Public marketing sitesi krem/açık tema için tasarlandı; tüm site açık temaya
+// sabitlenir. İşletim sistemi koyu modda olsa bile site krem
 // render edilir (düşük kontrast / "white-on-white" sorunlarının kök çözümü).
 // Inline-script FOUC'u önler; data-theme="light" zaten <html>'de de set edilir.
 const themeInitScript = `(()=>{try{document.documentElement.setAttribute('data-theme','light');}catch(e){}})();`;
@@ -112,24 +111,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body>
-        <AuthSessionProvider>
-          <ThemeProvider>
-            <CartProvider>
-              <ToastProvider>
-                <Suspense fallback={null}>
-                  <NavigationProgress />
-                </Suspense>
-                <Pixels />
-                {children}
-                <WhatsAppFab />
-                <CartFab />
-                <MobileStickyCta />
-                <Analytics />
-                <SpeedInsights />
-              </ToastProvider>
-            </CartProvider>
-          </ThemeProvider>
-        </AuthSessionProvider>
+        <ThemeProvider>
+          <CartProvider>
+            <ToastProvider>
+              <Suspense fallback={null}>
+                <NavigationProgress />
+              </Suspense>
+              <Pixels />
+              {children}
+              <WhatsAppFab />
+              <CartFab />
+              <MobileStickyCta />
+              <Analytics />
+              <SpeedInsights />
+            </ToastProvider>
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

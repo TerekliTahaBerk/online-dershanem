@@ -5,7 +5,6 @@ import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
 import { PaytrIframeShell } from "@/components/checkout/paytr-iframe-shell";
 import { prisma } from "@/lib/prisma";
-import { getServerAuthSession } from "@/lib/auth";
 import { createOdkCheckoutSession } from "@/lib/odk/checkout";
 import { getClientIp, isPaytrConfigured } from "@/lib/odk/paytr";
 
@@ -33,14 +32,10 @@ export default async function OdkPaymentPage({
     redirect(`/odk-paketleri/${slug}/satin-al`);
   }
 
-  // Guest checkout: login zorunlu değil. Sahiplik: guest order (userId=null) id
-  // ile erişilebilir (cuid bearer); kullanıcıya bağlı order yalnızca sahibine.
-  const session = await getServerAuthSession();
   const order = await prisma.odkOrder.findUnique({
     where: { id: orderId },
     select: {
       id: true,
-      userId: true,
       status: true,
       totalCents: true,
       buyerInfo: true,
@@ -49,10 +44,6 @@ export default async function OdkPaymentPage({
   });
 
   if (!order || !order.package || !order.package.isActive) {
-    notFound();
-  }
-
-  if (order.userId && order.userId !== session?.user?.id) {
     notFound();
   }
 
@@ -79,8 +70,8 @@ export default async function OdkPaymentPage({
   const checkout = paytrReady
     ? await createOdkCheckoutSession({
         orderId: order.id,
-        userEmail: buyer.email || session?.user?.email || `order-${order.id}@onlinedershanem.com`,
-        userName: buyer.fullName || session?.user?.name || "ODK Üye",
+        userEmail: buyer.email || `order-${order.id}@onlinedershanem.com`,
+        userName: buyer.fullName || "Müşteri",
         userPhone: buyer.phone || "+905555555555",
         userAddress:
           [buyer.address, buyer.district, buyer.city].filter(Boolean).join(", ") ||

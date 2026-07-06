@@ -16,10 +16,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { getServerAuthSession } from "@/lib/auth";
 import { log } from "@/lib/logger";
-import { getPackagePriceCents, parsePriceToCents } from "@/lib/content";
+import { priceCatalogItems, priceCatalogSelection } from "@/lib/od/checkout-pricing";
 import { validateCoupon } from "@/lib/discount";
+import {
+  assertRateLimit,
+  getRateLimitKeyFromIp,
+  RateLimitError,
+} from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,11 +78,21 @@ function asBool(v: unknown): boolean {
 const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function POST(req: Request) {
-  // Guest checkout: oturum ZORUNLU DEĞİL. Session varsa order kullanıcıya
-  // bağlanır; yoksa userId=null guest order oluşur (ödeme sonrası admin
-  // onboarding kuyruğuna düşer). Bkz. lib/od/finance.ts.
-  const session = await getServerAuthSession();
-  const userId = session?.user?.id ?? null;
+  try {
+    await assertRateLimit(getRateLimitKeyFromIp(req.headers, "checkout:od"), {
+      max: 8,
+      windowMs: 10 * 60_000,
+      message: "Çok fazla ödeme denemesi yapıldı. Lütfen 10 dakika sonra tekrar deneyin.",
+    });
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return NextResponse.json(
+        { ok: false, error: error.message },
+        { status: 429, headers: { "Retry-After": "600" } },
+      );
+    }
+    throw error;
+  }
 
   let body: unknown;
   try {
@@ -129,25 +143,10 @@ export async function POST(req: Request) {
 
   if (d.items && d.items.length > 0) {
     // Re-validate prices server-side against catalog to prevent tampering.
-    const validated = d.items.map((it) => {
-      const catalogCents = getPackagePriceCents(it.category, it.subject);
-      const trusted =
-        catalogCents > 0
-          ? catalogCents
-          : it.priceLabel
-            ? parsePriceToCents(it.priceLabel)
-            : it.priceCents;
-      return {
-        name: it.name,
-        category: it.category,
-        subject: it.subject,
-        priceCents: trusted,
-        qty: it.qty,
-      };
-    });
-    if (validated.some((v) => v.priceCents <= 0)) {
+    const validated = priceCatalogItems(d.items);
+    if (!validated) {
       return NextResponse.json(
-        { ok: false, error: "Sepetinizdeki bazı paketler için fiyat bulunamadı." },
+        { ok: false, error: "Sepetinizde artık satışta olmayan veya geçersiz bir paket var." },
         { status: 400 },
       );
     }
@@ -174,15 +173,10 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    packageName = d.packageName;
+    packageName = `${d.category ?? ""} ${d.subject ?? ""}`.trim();
     category = d.category || null;
     subject = d.subject || null;
-    if (d.category && d.subject) {
-      priceCents = getPackagePriceCents(d.category, d.subject);
-    }
-    if (priceCents <= 0 && d.priceLabel) {
-      priceCents = parsePriceToCents(d.priceLabel);
-    }
+    priceCents = priceCatalogSelection({ category, subject });
   }
 
   if (priceCents <= 0) {
@@ -201,22 +195,9 @@ export async function POST(req: Request) {
   let couponId: string | null = null;
   let couponCode: string | null = null;
   if (d.couponCode && d.couponCode.trim()) {
-    // Kuponlar user-scoped (kullanım limiti/redemption userId'ye bağlı). Guest
-    // checkout'ta kontrollü hata döndür — ödemeyi engellemeden kullanıcıyı
-    // bilgilendir (kuponsuz devam edebilir).
-    if (!userId) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "İndirim kodu kullanmak için giriş yapmanız gerekir. Kodu kaldırıp ödemeye devam edebilirsiniz.",
-        },
-        { status: 400 },
-      );
-    }
     const cv = await validateCoupon({
       code: d.couponCode,
-      userId,
+      customerKey: d.email.trim().toLowerCase(),
       service: "OD",
       subtotalCents: priceCents,
     });
@@ -232,7 +213,7 @@ export async function POST(req: Request) {
   }
   const totalCents = Math.max(0, priceCents - discountCents);
 
-  // ── Admin paneldeki Package ile eşleştir (idempotent, slug bazlı) ────────
+  // ── Public ürün kataloğundaki Package ile eşleştir ──────────────────────
   // category+subject varsa "od:tyt-ayt:matematik" gibi slug ile bulunur veya
   // oluşturulur. Çoklu kalem sepette null kalır (cart anchor sipariş).
   let packageId: string | null = null;
@@ -245,7 +226,7 @@ export async function POST(req: Request) {
     });
     if (existingPkg) {
       packageId = existingPkg.id;
-      // Fiyatı senkronla (admin manuel değiştirebilir, üzerine yazma)
+      // Mevcut katalog kaydının fiyatını değiştirme.
     } else {
       const created = await prisma.package.create({
         data: {
@@ -263,9 +244,10 @@ export async function POST(req: Request) {
     }
   }
 
+  const normalizedEmail = d.email.trim().toLowerCase();
   const buyerInfo = {
     fullName: d.fullName,
-    email: d.email,
+    email: normalizedEmail,
     phone: d.phone,
     tcKimlik: d.tcKimlik || null,
     city: d.city,
@@ -289,23 +271,16 @@ export async function POST(req: Request) {
       : null,
   };
 
-  // Idempotency: aynı user+packageName+total için son 30dk PENDING varsa reuse.
-  // Guest'te (userId=null) güvenilir bir reuse anahtarı yok → her zaman yeni
-  // order oluştur (cuid orderId guest için bearer görevi görür).
+  // Idempotency: aynı e-posta, paket ve tutar için son 30 dakikadaki siparişi kullan.
   const cutoff = new Date(Date.now() - PENDING_REUSE_MS);
-  let order = userId
-    ? await prisma.odOrder.findFirst({
-        where: {
-          userId,
-          packageName,
-          totalCents,
-          status: "PENDING",
-          createdAt: { gt: cutoff },
-        },
-        orderBy: { createdAt: "desc" },
-        select: { id: true },
-      })
-    : null;
+  let order = await prisma.odOrder.findFirst({
+    where: {
+      packageName, totalCents, status: "PENDING", createdAt: { gt: cutoff },
+      buyerInfo: { path: ["email"], equals: normalizedEmail },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
 
   if (order) {
     await prisma.odOrder.update({
@@ -323,7 +298,6 @@ export async function POST(req: Request) {
   } else {
     order = await prisma.odOrder.create({
       data: {
-        userId,
         packageName,
         category,
         subject,
@@ -340,7 +314,7 @@ export async function POST(req: Request) {
 
   log.info("od.checkout.form_captured", {
     orderId: order.id,
-    userId,
+    customerEmail: normalizedEmail,
     packageName,
     subtotalCents: priceCents,
     discountCents,

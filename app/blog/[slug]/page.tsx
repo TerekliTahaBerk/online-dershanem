@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     openGraph: {
       title: post.seoTitle,
       description: post.metaDescription,
-      url: `${siteUrl}/blog/${post.slug}/`,
+      url: `${siteUrl}/blog/${post.slug}`,
       type: "article"
     }
   };

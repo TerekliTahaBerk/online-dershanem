@@ -34,7 +34,7 @@ export default async function OdkCheckoutResultPage({
               status="success"
               eyebrow="Deneme Kulübü"
               title="Ödemeniz alındı"
-              description="Siparişiniz onaylandığında paket erişiminiz otomatik aktive olur. Bu işlem genellikle birkaç saniye sürer."
+              description="Ödemeniz kaydedildi. Sipariş detayları e-posta adresinize gönderilecektir."
               nextStepNote={
                 <>
                   <strong>Sıradaki adım:</strong> Deneme planınızı
@@ -44,13 +44,13 @@ export default async function OdkCheckoutResultPage({
                 </>
               }
               primaryAction={{
-                href: "/panel/ogrenci/odk",
-                label: "ODK Panelime Git",
+                href: `/odk-paketleri/${slug}`,
+                label: "Pakete Dön",
                 variant: "primary",
               }}
               secondaryAction={{
-                href: `/odk-paketleri/${slug}`,
-                label: "Pakete Dön",
+                href: "/iletisim",
+                label: "İletişim",
               }}
             />
           ) : (

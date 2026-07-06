@@ -1,11 +1,9 @@
 /**
  * POST /api/coupons/validate
- * Body: { code, service: "OD"|"ODK", subtotalCents }
- * Sepette canlı önizleme için. Auth gerekli (per-user limit doğrulamasında userId).
+ * Body: { code, service: "OD"|"ODK", subtotalCents, email }
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getServerAuthSession } from "@/lib/auth";
 import { validateCoupon } from "@/lib/discount";
 
 export const runtime = "nodejs";
@@ -15,16 +13,10 @@ const Schema = z.object({
   code: z.string().min(2).max(60),
   service: z.enum(["OD", "ODK"]),
   subtotalCents: z.number().int().positive().max(1_000_000_00),
+  email: z.string().email(),
 });
 
 export async function POST(req: Request) {
-  const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { ok: false, error: "Önce giriş yapın." },
-      { status: 401 },
-    );
-  }
   let body: unknown;
   try {
     body = await req.json();
@@ -38,7 +30,7 @@ export async function POST(req: Request) {
 
   const res = await validateCoupon({
     code: parsed.data.code,
-    userId: session.user.id,
+    customerKey: parsed.data.email.trim().toLowerCase(),
     service: parsed.data.service,
     subtotalCents: parsed.data.subtotalCents,
   });

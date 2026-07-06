@@ -10,12 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         disallow: [
-          "/panel/",
           "/api/",
-          "/giris",
-          "/kayit",
-          "/sifremi-unuttum",
-          "/odk/oturum/",
           "/odk-paketleri/*/satin-al",
           // Redirect kabukları — sadece redirect("/") yapıyor, public içerik yok.
           "/odk",

@@ -8,11 +8,6 @@ const optionalTrimmedString = z
   .optional()
   .transform((value) => value || undefined);
 
-export const credentialsSchema = z.object({
-  email: z.string().trim().email(),
-  password: z.string().min(1)
-});
-
 export const leadSubmissionSchema = z.object({
   fullName: trimmedString,
   phone: trimmedString,

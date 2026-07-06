@@ -1,4 +1,4 @@
-export const siteUrl = "https://onlinedershanem.com";
+export const siteUrl = "https://www.onlinedershanem.com";
 
 /**
  * Matematik paket kataloğu — sitenin TEK fiyat/ürün kaynağı.
@@ -56,8 +56,6 @@ export const subjectPackageGroups = [
  * gerekmez. Fonksiyon geriye dönük uyumluluk için korunur; her zaman null
  * döner ve çağıranlar sepet/checkout akışına yönlenir.
  */
-export const packagePaymentLinks = {} as Record<string, string>;
-
 export function getPackagePaymentLink(_category: string, _subject: string): string | null {
   return null;
 }
@@ -867,8 +865,6 @@ export const mathCamps: MathCamp[] = [
     featured: false,
   },
 ];
-
-export const featuredMathCamps = mathCamps.filter((c) => c.featured);
 
 /** Tüm kamplarda ortak sabit: kontenjan üst sınırı. */
 export const CAMP_MAX_STUDENTS = 12;

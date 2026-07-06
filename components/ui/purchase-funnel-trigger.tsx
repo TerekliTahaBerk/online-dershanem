@@ -26,8 +26,7 @@ type PurchaseFunnelTriggerProps = {
  * "Sepete Ekle" CTA — sepet-merkezli akış.
  *
  * Tıklandığında ürünü sepete ekler ve `/sepet`'i açar. Tüm ödemeler sepet →
- * checkout → PayTR üzerinden, login/register/panel teması olmadan ilerler.
- * Guest checkout: kayıt gerekmez; ödeme sonrası admin onboarding kuyruğuna düşer.
+ * checkout → PayTR üzerinden guest olarak ilerler; hesap gerekmez.
  */
 export function PurchaseFunnelTrigger({
   children,

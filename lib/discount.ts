@@ -14,7 +14,7 @@ import type { Prisma } from "@prisma/client";
 
 export type ValidateInput = {
   code: string;
-  userId: string;
+  customerKey: string;
   service: "OD" | "ODK";
   subtotalCents: number;
 };
@@ -124,7 +124,7 @@ export async function validateCoupon(input: ValidateInput): Promise<ValidateResu
   }
   if (coupon.perUserLimit > 0) {
     const used = await prisma.couponRedemption.count({
-      where: { couponId: coupon.id, userId: input.userId },
+      where: { couponId: coupon.id, customerKey: input.customerKey },
     });
     if (used >= coupon.perUserLimit) {
       return {
@@ -159,7 +159,7 @@ export async function redeemCoupon(
   tx: Prisma.TransactionClient,
   input: {
     couponId: string;
-    userId: string;
+    customerKey: string;
     orderService: "OD" | "ODK";
     orderId: string;
     discountCents: number;
@@ -197,7 +197,7 @@ export async function redeemCoupon(
   }
   if (coupon.perUserLimit > 0) {
     const used = await tx.couponRedemption.count({
-      where: { couponId: input.couponId, userId: input.userId },
+      where: { couponId: input.couponId, customerKey: input.customerKey },
     });
     if (used >= coupon.perUserLimit) return { ok: false, reason: "limit_user" };
   }
@@ -205,7 +205,7 @@ export async function redeemCoupon(
   await tx.couponRedemption.create({
     data: {
       couponId: input.couponId,
-      userId: input.userId,
+      customerKey: input.customerKey,
       orderService: input.orderService,
       orderId: input.orderId,
       discountCents: input.discountCents,
