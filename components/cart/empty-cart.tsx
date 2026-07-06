@@ -13,30 +13,27 @@ const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 export function EmptyCart() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8">
-      <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)]">
-        <ShoppingBag size={36} className="text-[var(--od-olive)]" strokeWidth={1.6} />
+      <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[20px] border border-[var(--site-line)] bg-white">
+        <ShoppingBag size={36} className="text-[var(--brand-orange-ink)]" strokeWidth={1.6} />
       </div>
-      <h1 className="mt-6 font-display text-[34px] leading-tight tracking-tight text-[var(--od-ink)]">
+      <h1 className="mt-6 font-display text-[clamp(2rem,4vw,2.4rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
         Sepetiniz boş.
       </h1>
-      <p className="mt-2 text-[14.5px] text-[var(--od-ink-soft)]">
+      <p className="mt-3 text-[15px] text-[var(--site-body)]">
         Matematik Ders Paketini inceleyerek başlayabilirsiniz.
       </p>
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <Link
-          href="/matematik-ders-paketi/"
-          className="inline-flex min-h-12 items-center gap-2 rounded-[10px] bg-[var(--od-olive)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
-        >
+        <Link href="/paketler/" className="site-btn site-btn-primary site-btn-lg">
           Paketi İncele
-          <ArrowRight size={14} />
+          <ArrowRight size={16} />
         </Link>
         <a
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-12 items-center gap-2 rounded-[10px] border border-[var(--od-ink)] bg-[var(--od-cream)] px-6 py-3 text-[13.5px] font-medium text-[var(--od-ink)] transition-colors hover:bg-[var(--od-cream-2)]"
+          className="site-btn site-btn-secondary site-btn-lg"
         >
-          <MessageCircle size={14} aria-hidden="true" />
+          <MessageCircle size={16} aria-hidden="true" />
           WhatsApp&apos;tan sorun
         </a>
       </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { CartPageClient } from "@/components/cart/cart-page-client";
 
 export const metadata: Metadata = {
@@ -14,12 +14,12 @@ export const dynamic = "force-dynamic";
 
 export default function SepetPage() {
   return (
-    <>
-      <Navbar />
-      <main className="od-public min-h-screen bg-[var(--od-cream)]">
+    <div className="site-scope">
+      <SiteHeader />
+      <main className="min-h-screen bg-[var(--site-bg-warm)]">
         <CartPageClient />
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

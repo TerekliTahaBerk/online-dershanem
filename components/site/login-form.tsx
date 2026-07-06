@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Lock, MessageCircle } from "lucide-react";
+import { Lock, MessageCircle, Wrench } from "lucide-react";
 import { waHref } from "@/lib/site-content";
 
 /**
@@ -25,6 +25,11 @@ export function LoginForm() {
       className="mt-8 flex flex-col gap-4"
       noValidate
     >
+      <div className="flex items-center gap-2 rounded-full border border-[var(--brand-orange)]/30 bg-[var(--brand-orange-tint)] px-3.5 py-2 text-[12.5px] font-medium text-[var(--brand-orange-ink)]">
+        <Wrench size={13} aria-hidden="true" />
+        Öğrenci paneli şu anda tadilatta
+      </div>
+
       <div>
         <label htmlFor="login-email" className="sr-only">
           E-posta adresi
@@ -64,26 +69,37 @@ export function LoginForm() {
       {submitted ? (
         <div
           role="status"
-          className="rounded-2xl border border-[var(--site-line)] bg-[var(--brand-orange-tint)] p-4 text-[14px] leading-6 text-[var(--site-body)]"
+          aria-live="polite"
+          className="rounded-2xl border border-[var(--brand-orange)]/35 bg-[var(--brand-orange-tint)] p-4"
         >
-          <p className="font-semibold text-[var(--site-ink)]">Öğrenci girişi ekibimiz üzerinden sağlanıyor.</p>
-          <p className="mt-1">
-            Henüz self-servis giriş bulunmuyor. Giriş bilgilerin veya ders bağlantıların için bize
-            yazabilirsin.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
-            >
-              <MessageCircle size={15} aria-hidden="true" />
-              WhatsApp destek
-            </a>
-            <Link href="/iletisim/" className="text-[14px] font-semibold text-[var(--brand-orange-ink)] hover:underline">
-              İletişim
-            </Link>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+              <Wrench size={17} aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-[15px] font-semibold text-[var(--site-ink)]">
+                Öğrenci paneli şu anda tadilatta.
+              </p>
+              <p className="mt-1 text-[14px] leading-6 text-[var(--site-body)]">
+                Giriş sistemini yeniliyoruz; panel geçici olarak kapalı. Bu sırada giriş
+                bilgilerin, ders bağlantıların veya aklına takılan her şey için bize doğrudan
+                yazabilirsin.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
+                >
+                  <MessageCircle size={15} aria-hidden="true" />
+                  WhatsApp destek
+                </a>
+                <Link href="/iletisim/" className="text-[14px] font-semibold text-[var(--brand-orange-ink)] hover:underline">
+                  İletişim
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       ) : null}

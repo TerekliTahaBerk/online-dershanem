@@ -52,24 +52,22 @@ export function CartPageClient() {
     <div className="mx-auto max-w-[1080px] px-5 py-12 sm:px-8 sm:py-16">
       <div className="mb-8 flex items-end justify-between flex-wrap gap-3">
         <div>
-          <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">
-            Sepetim
-          </span>
-          <h1 className="mt-1 font-display text-[36px] leading-[1.05] tracking-tight text-[var(--od-ink)]">
+          <span className="site-eyebrow">Sepetim</span>
+          <h1 className="mt-2 font-display text-[clamp(2rem,4vw,2.6rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
             {count} ürün · {tryFormat(totalCents)}
           </h1>
         </div>
         <button
           type="button"
           onClick={clear}
-          className="inline-flex items-center gap-1.5 text-[13px] text-[var(--od-ink-soft)] hover:text-rose-600 transition"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--site-line)] bg-white px-3.5 py-2 text-[13px] text-[var(--site-body)] transition-colors hover:border-rose-300 hover:text-rose-600"
         >
           <Trash2 size={14} />
           Sepeti temizle
         </button>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         {/* LEFT: cart items + suggestions */}
         <div className="space-y-3">
           {items.map((it) => (
@@ -85,19 +83,19 @@ export function CartPageClient() {
 
         {/* RIGHT: summary */}
         <aside className="lg:sticky lg:top-6 self-start">
-          <div className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
-            <h2 className="font-display text-[22px] leading-tight text-[var(--od-ink)]">
+          <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
+            <h2 className="font-display text-[22px] leading-tight text-[var(--site-ink)]">
               Sipariş Özeti
             </h2>
 
             <div className="mt-5 space-y-2.5 text-[13.5px]">
               <div className="flex items-center justify-between">
-                <span className="text-[var(--od-ink-soft)]">Ara Toplam</span>
-                <span className="font-medium text-[var(--od-ink)]">{tryFormat(totalCents)}</span>
+                <span className="text-[var(--site-body)]">Ara Toplam</span>
+                <span className="font-medium text-[var(--site-ink)]">{tryFormat(totalCents)}</span>
               </div>
-              <div className="border-t border-dashed border-[var(--od-line)] pt-3 flex items-baseline justify-between">
-                <span className="text-[15px] font-semibold text-[var(--od-ink)]">Toplam</span>
-                <span className="font-display text-[28px] leading-none text-[var(--od-ink)]">
+              <div className="border-t border-dashed border-[var(--site-line)] pt-3 flex items-baseline justify-between">
+                <span className="text-[15px] font-semibold text-[var(--site-ink)]">Toplam</span>
+                <span className="font-display text-[28px] leading-none text-[var(--site-ink)]">
                   {tryFormat(finalCents)}
                 </span>
               </div>
@@ -107,28 +105,28 @@ export function CartPageClient() {
             <button
               type="button"
               onClick={handleCheckout}
-              className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--od-olive)] px-6 py-3.5 text-[14px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21]"
+              className="site-btn site-btn-primary mt-5 w-full"
             >
               Güvenli Ödemeye Geç
-              <ArrowRight size={14} />
+              <ArrowRight size={16} />
             </button>
 
-            <div className="mt-3 text-[11.5px] text-center text-[var(--od-ink-soft)]">
+            <div className="mt-3 text-[11.5px] text-center text-[var(--site-muted)]">
               Bilgi formunun ardından PayTR güvenli ödeme sayfası açılır.
             </div>
 
             {/* Checkout trust box */}
-            <div className="mt-4 rounded-[12px] border border-[var(--od-line)] bg-[var(--od-cream-2)] p-4">
-              <div className="flex items-center gap-2 text-[13px] font-semibold text-[var(--od-ink)]">
-                <ShieldCheck size={16} className="text-[var(--od-olive)]" aria-hidden="true" />
+            <div className="mt-4 rounded-[16px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+              <div className="flex items-center gap-2 text-[13px] font-semibold text-[var(--site-ink)]">
+                <ShieldCheck size={16} className="text-[var(--brand-orange-ink)]" aria-hidden="true" />
                 Güvenli ödeme
               </div>
-              <p className="mt-2 text-[12px] leading-relaxed text-[var(--od-ink-soft)]">
+              <p className="mt-2 text-[12px] leading-relaxed text-[var(--site-body)]">
                 Ödeme PayTR altyapısı ile alınır. Kart bilgileriniz Online
                 Dershanem tarafından saklanmaz. Hesap açmadan ödeme yapabilirsiniz;
                 sonrasında ekibimiz sizinle iletişime geçer.
               </p>
-              <ul className="mt-3 space-y-1.5 text-[11.5px] text-[var(--od-ink-soft)]">
+              <ul className="mt-3 space-y-1.5 text-[11.5px] text-[var(--site-body)]">
                 <li>· 256-bit SSL korumalı ödeme</li>
                 <li>· 1, 3, 6 ve 9 taksit seçenekleri</li>
                 <li>· Ödeme PayTR tarafından işlenir</li>
@@ -140,22 +138,22 @@ export function CartPageClient() {
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[10px] border border-[var(--od-ink)] bg-[var(--od-paper)] px-5 py-2.5 text-[12.5px] font-medium text-[var(--od-ink)] transition-colors hover:bg-[var(--od-cream-2)]"
+              className="site-btn site-btn-secondary mt-3 w-full text-[12.5px]"
             >
               <MessageCircle size={14} aria-hidden="true" />
               Ödeme öncesi sorularınız için WhatsApp
             </a>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--od-line)] pt-3 text-[11.5px] text-[var(--od-ink-soft)]">
-              <Link href="/iade/" className="underline-offset-2 transition hover:text-[var(--od-ink)] hover:underline">
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--site-line)] pt-3 text-[11.5px] text-[var(--site-muted)]">
+              <Link href="/iade/" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
                 İade Politikası
               </Link>
-              <span aria-hidden="true" className="text-[var(--od-line)]">·</span>
-              <Link href="/kvkk/" className="underline-offset-2 transition hover:text-[var(--od-ink)] hover:underline">
+              <span aria-hidden="true" className="text-[var(--site-line)]">·</span>
+              <Link href="/kvkk/" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
                 KVKK
               </Link>
-              <span aria-hidden="true" className="text-[var(--od-line)]">·</span>
-              <Link href="/gizlilik/" className="underline-offset-2 transition hover:text-[var(--od-ink)] hover:underline">
+              <span aria-hidden="true" className="text-[var(--site-line)]">·</span>
+              <Link href="/gizlilik/" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
                 Gizlilik
               </Link>
             </div>
@@ -178,50 +176,50 @@ function CartItemRow({
   onRemove: () => void;
 }) {
   return (
-    <article className="flex flex-col gap-4 rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:flex-row sm:items-center">
+    <article className="flex flex-col gap-4 rounded-[24px] border border-[var(--site-line)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:flex-row sm:items-center">
       <div className="flex-1 min-w-0">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--brand-orange-ink)]">
           {item.category}
         </div>
-        <div className="mt-1 font-display text-[22px] leading-tight tracking-tight text-[var(--od-ink)]">
+        <div className="mt-1 font-display text-[22px] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
           {item.name}
         </div>
-        <div className="mt-0.5 text-[12.5px] text-[var(--od-ink-soft)]">{item.priceLabel}</div>
+        <div className="mt-0.5 text-[12.5px] text-[var(--site-body)]">{item.priceLabel}</div>
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="inline-flex items-center rounded-[10px] border border-[var(--od-line)] bg-[var(--od-cream-2)]">
+        <div className="inline-flex items-center rounded-full border border-[var(--site-line)] bg-[var(--site-bg-warm)]">
           <button
             type="button"
             onClick={() => onQtyChange(item.qty - 1)}
             disabled={item.qty <= 1}
-            className="flex h-11 w-11 items-center justify-center text-[var(--od-ink-soft)] hover:text-[var(--od-ink)] disabled:opacity-30"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-30"
             aria-label="Adet azalt"
           >
             <Minus size={14} />
           </button>
-          <span className="min-w-[2rem] text-center text-[13px] font-semibold text-[var(--od-ink)]">
+          <span className="min-w-[2rem] text-center text-[13px] font-semibold text-[var(--site-ink)]">
             {item.qty}
           </span>
           <button
             type="button"
             onClick={() => onQtyChange(item.qty + 1)}
             disabled={item.qty >= 99}
-            className="flex h-11 w-11 items-center justify-center text-[var(--od-ink-soft)] hover:text-[var(--od-ink)] disabled:opacity-30"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-30"
             aria-label="Adet artır"
           >
             <Plus size={14} />
           </button>
         </div>
 
-        <div className="w-28 text-right font-display text-[18px] leading-none text-[var(--od-ink)]">
+        <div className="w-28 text-right font-display text-[18px] leading-none text-[var(--site-ink)]">
           {tryFormat(item.priceCents * item.qty)}
         </div>
 
         <button
           type="button"
           onClick={onRemove}
-          className="flex h-11 w-11 items-center justify-center rounded-[10px] text-[var(--od-ink-soft)]/60 transition-colors hover:bg-rose-50 hover:text-rose-600"
+          className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--site-muted)] transition-colors hover:bg-rose-50 hover:text-rose-600"
           aria-label="Sepetten çıkar"
         >
           <Trash2 size={16} />
