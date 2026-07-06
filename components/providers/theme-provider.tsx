@@ -15,7 +15,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "od-theme";
 
 function readInitialTheme(): ThemeMode {
-  // Public site açık temaya sabitlendi (panel kapalı). <html data-theme="light">
+  // Public site açık temaya sabitlendi. <html data-theme="light">
   // attribute'u öncelikli okunur; aksi her durumda varsayılan light.
   if (typeof document === "undefined") return "light";
   const attr = document.documentElement.getAttribute("data-theme");
@@ -39,9 +39,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const initial = readInitialTheme();
     setThemeState(initial);
     applyTheme(initial);
-    // NOT: Daha önce unmount'ta `data-theme=light` zorlanıyordu; bu kullanıcı
-    // tercihini eziyor ve panelden public siteye geçişte temayı bozuyordu.
-    // Artık tema seçimi tüm site genelinde korunur (varsayılan: dark).
+    // Tema seçimi site genelinde korunur.
   }, []);
 
   const setTheme = useCallback((next: ThemeMode) => {

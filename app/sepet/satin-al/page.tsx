@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/sections/navbar";
 import { Footer } from "@/components/sections/footer";
-import { prisma } from "@/lib/prisma";
-import { getServerAuthSession } from "@/lib/auth";
 import { CartCheckoutClient } from "@/components/cart/cart-checkout-client";
 
 export const metadata: Metadata = {
@@ -15,47 +13,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CartCheckoutPage() {
-  // Guest checkout: login zorunlu DEĞİL. Session varsa form öğrenci bilgileriyle
-  // ön-doldurulur; yoksa boş gelir (defaults zaten `user?.` ile null-safe).
-  const session = await getServerAuthSession();
-  const user = session?.user?.id
-    ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-          email: true,
-          name: true,
-          student: {
-            select: {
-              fullName: true,
-              phone: true,
-              city: true,
-              district: true,
-              schoolName: true,
-              classLevel: true,
-              department: true,
-              examType: true,
-              targetSchool: true,
-              parentFullName: true,
-              parentPhone: true,
-            },
-          },
-        },
-      })
-    : null;
-
   const defaults = {
-    fullName: user?.student?.fullName || user?.name || "",
-    email: user?.email || "",
-    phone: user?.student?.phone || "",
-    city: user?.student?.city || "",
-    district: user?.student?.district || "",
-    schoolName: user?.student?.schoolName || "",
-    classLevel: user?.student?.classLevel || "",
-    department: user?.student?.department || "",
-    examType: user?.student?.examType || "",
-    targetSchool: user?.student?.targetSchool || "",
-    parentFullName: user?.student?.parentFullName || "",
-    parentPhone: user?.student?.parentPhone || "",
+    fullName: "", email: "", phone: "", city: "", district: "",
+    schoolName: "", classLevel: "", department: "", examType: "",
+    targetSchool: "", parentFullName: "", parentPhone: "",
   };
 
   return (

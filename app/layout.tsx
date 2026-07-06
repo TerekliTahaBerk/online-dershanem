@@ -14,8 +14,8 @@ import { MobileStickyCta } from "@/components/ui/mobile-sticky-cta";
 import { ToastProvider } from "@/components/ui/toast";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
-// Public marketing sitesi krem/açık tema için tasarlandı; panel kapalı olduğundan
-// tüm site açık temaya sabitlenir. İşletim sistemi koyu modda olsa bile site krem
+// Public marketing sitesi krem/açık tema için tasarlandı; tüm site açık temaya
+// sabitlenir. İşletim sistemi koyu modda olsa bile site krem
 // render edilir (düşük kontrast / "white-on-white" sorunlarının kök çözümü).
 // Inline-script FOUC'u önler; data-theme="light" zaten <html>'de de set edilir.
 const themeInitScript = `(()=>{try{document.documentElement.setAttribute('data-theme','light');}catch(e){}})();`;

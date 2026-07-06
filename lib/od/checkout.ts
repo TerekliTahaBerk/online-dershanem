@@ -5,7 +5,7 @@
  * unified callback (/api/paytr/callback) prefix'e göre doğru handler'ı çağırır.
  *
  * Başarılı ödeme sonrası `lib/od/finance.ts → markOdOrderPaid()` çağrılır;
- * entitlement otomatik yok — admin hocaları manuel atayacaktır.
+ * müşteri ve operasyon e-postaları gönderilir.
  */
 import "server-only";
 import { prisma } from "@/lib/prisma";

@@ -2,8 +2,7 @@
  * Phase 2 / Session 17 — Same-origin guard.
  *
  * Lightweight Origin/Referer-based check used as a defence-in-depth layer for
- * mutating server actions and API routes. NextAuth + cookies already provide
- * primary auth; this guard simply rejects cross-site form posts and stray
+ * mutating server actions and API routes. This guard rejects cross-site form posts and stray
  * fetches from foreign origins.
  *
  * Design notes:
@@ -13,8 +12,7 @@
  *  - In dev, localhost variants are always allowed.
  *  - Fail-open ONLY when both `Origin` and `Referer` are absent — server
  *    actions invoked from same-origin browsing contexts always include at
- *    least one. CLI/curl traffic typically omits both; we rely on auth + role
- *    gates upstream for those callers.
+ *    least one. CLI/curl traffic typically omits both.
  */
 
 const isProd = process.env.NODE_ENV === "production";
@@ -37,7 +35,6 @@ export function getAllowedOrigins(): string[] {
   };
 
   push(process.env.NEXT_PUBLIC_APP_URL);
-  push(process.env.NEXTAUTH_URL);
   push(process.env.APP_URL);
   // Vercel exposes the deployment hostname (no scheme).
   push(process.env.VERCEL_URL);
@@ -94,6 +91,6 @@ export function assertSameOrigin(
     }
   }
 
-  // Both missing — likely a non-browser caller. Upstream auth handles it.
+  // Both missing — likely a non-browser caller.
   return { ok: true };
 }

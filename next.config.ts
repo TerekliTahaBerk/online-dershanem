@@ -5,19 +5,19 @@ import type { NextConfig } from "next";
  *
  * - `unsafe-inline` / `unsafe-eval`: Next.js client bundle ve framer-motion için zorunlu.
  *   (Strict CSP'ye geçiş ileride bir round'da nonce-based ile yapılır.)
- * - `frame-src`: PayTR iframe, Google Meet, YouTube embed (blog), PDF iframe (ODK solver).
- * - `connect-src`: NextAuth, Vercel Analytics, Pusher, Upstash (cache), Vercel Blob, Cloudflare Insights beacon.
+ * - `frame-src`: PayTR iframe and YouTube embeds.
+ * - `connect-src`: Vercel Analytics, Upstash, Resend and analytics beacons.
  * - `img-src` / `media-src`: data + blob (avatar/PDF render), Vercel Blob CDN.
  */
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live https://www.googletagmanager.com https://js.pusher.com https://static.cloudflareinsights.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live https://www.googletagmanager.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https: http:",
   "media-src 'self' blob: data:",
-  "connect-src 'self' https://*.vercel-insights.com https://vitals.vercel-insights.com https://*.pusher.com wss://*.pusher.com https://*.upstash.io https://*.public.blob.vercel-storage.com https://api.resend.com https://www.google-analytics.com https://cloudflareinsights.com",
-  "frame-src 'self' https://www.paytr.com https://meet.google.com https://www.youtube.com https://www.youtube-nocookie.com blob:",
+  "connect-src 'self' https://*.vercel-insights.com https://vitals.vercel-insights.com https://*.upstash.io https://api.resend.com https://www.google-analytics.com https://cloudflareinsights.com",
+  "frame-src 'self' https://www.paytr.com https://www.youtube.com https://www.youtube-nocookie.com blob:",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   experimental: {
-    optimizePackageImports: ["lucide-react", "framer-motion"],
+    optimizePackageImports: ["lucide-react"],
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,

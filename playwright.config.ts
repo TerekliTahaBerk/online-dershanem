@@ -2,12 +2,6 @@ import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
-if (process.env.CI && process.env.PANEL_ENABLED !== "true") {
-  throw new Error(
-    "E2E yapılandırma hatası: PANEL_ENABLED=true olmalı. Aksi halde auth ve panel route'ları bakım sayfasına yönlenir.",
-  );
-}
-
 /**
  * Online Dershanem — E2E test yapılandırması
  *
@@ -53,10 +47,6 @@ export default defineConfig({
     : {
         command: "npm run start",
         url: "http://localhost:3000",
-        env: {
-          PANEL_ENABLED: process.env.PANEL_ENABLED ?? "true",
-          NEXT_PUBLIC_PANEL_ENABLED: process.env.NEXT_PUBLIC_PANEL_ENABLED ?? "true",
-        },
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
       },

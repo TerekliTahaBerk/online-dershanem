@@ -8,18 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum UserRole {
-  ADMIN
-  STUDENT
-  TEACHER
-  PARENT
-}
-
-enum VerificationCodeType {
-  REGISTER
-  PASSWORD_RESET
-}
-
 enum PurchaseStatus {
   PENDING
   PAID
@@ -42,394 +30,11 @@ enum PurchaseEventType {
   PAYMENT_FAILED
 }
 
-enum StudentStatus {
-  NEW
-  FOLLOW_UP
-  ACTIVE
-  AT_RISK
-  COMPLETED
-  INACTIVE
-}
-
-model VerificationCode {
-  id        String               @id @default(cuid())
-  email     String
-  code      String
-  type      VerificationCodeType
-  expiresAt DateTime
-  usedAt    DateTime?
-  attempts  Int?                 @default(0)
-  createdAt DateTime             @default(now())
-
-  @@index([email, type])
-}
-
 enum EmailOutboxStatus {
   PENDING
   SENT
   FAILED
   ABANDONED
-}
-
-/// Transactional email outbox — written before the Resend call so delivery
-/// can be retried if the serverless function crashes or Resend is transiently
-/// unavailable. SENT/ABANDONED entries are safe to purge after 7 days.
-model EmailOutbox {
-  id          String            @id @default(cuid())
-  recipients  String // JSON-serialised string[]
-  subject     String
-  html        String
-  status      EmailOutboxStatus @default(PENDING)
-  attempts    Int               @default(0)
-  lastError   String?           @map("last_error")
-  sentAt      DateTime?         @map("sent_at")
-  nextRetryAt DateTime?         @map("next_retry_at")
-  createdAt   DateTime          @default(now()) @map("created_at")
-  updatedAt   DateTime          @updatedAt @map("updated_at")
-
-  @@index([status, nextRetryAt])
-  @@map("email_outbox")
-}
-
-/// Lightweight DB-backed rate limiter — each row is one "token" consumed.
-/// Caller counts rows with a given key in the recent window to enforce limits.
-/// Old rows can be purged periodically (e.g. cron or on-demand).
-model RateLimitEntry {
-  id        String   @id @default(cuid())
-  key       String // e.g. "login:user@example.com" or "login:ip:1.2.3.4"
-  createdAt DateTime @default(now())
-
-  @@index([key, createdAt])
-}
-
-model User {
-  id                          String                    @id @default(cuid())
-  email                       String                    @unique
-  name                        String?
-  passwordHash                String?
-  role                        UserRole                  @default(ADMIN)
-  onboardingCompletedAt       DateTime?
-  // ── Phase 3 / Session 1 — account onboarding state ──────────────────────
-  /// Davet token'ı (öğrenci/öğretmen). Veli için ayrı kolonlar `Parent`'ta
-  /// (mirror'un canlısı). `lib/panel/account-onboarding.ts` üretir/yakar.
-  userInviteToken             String?                   @unique
-  userInviteTokenExpiresAt    DateTime?
-  userInviteSentAt            DateTime?
-  /// İlk girişte zorunlu şifre değişimi. Geçici şifre verildiyse `true`.
-  mustChangePassword          Boolean                   @default(false)
-  passwordChangedAt           DateTime?
-  /// `lib/auth.ts::authorize` her başarılı girişte günceller.
-  lastLoginAt                 DateTime?
-  /// Operasyonel olarak devre dışı (silinmedi). Login engellenir.
-  accountDisabledAt           DateTime?
-  createdAt                   DateTime                  @default(now())
-  updatedAt                   DateTime                  @updatedAt
-  student                     Student?
-  teacher                     Teacher?
-  parent                      Parent?
-  notifications               Notification[]
-  auditLogs                   AuditLog[]                @relation("AuditLogActor")
-  createdContent              CourseContent[]           @relation("CourseContentCreator")
-  odkCreatedExams             OdkExam[]                 @relation("OdkExamCreator")
-  odkUserAccessTags           OdkUserAccessTag[]
-  odkOrders                   OdkOrder[]
-  odkEntitlements             OdkEntitlement[]
-  odkAttempts                 OdkExamAttempt[]
-  odOrders                    OdOrder[]
-  couponsCreated              Coupon[]                  @relation("CouponCreatedBy")
-  couponRedemptions           CouponRedemption[]        @relation("CouponRedemptionUser")
-  assignedStudentPackages     StudentPackage[]          @relation("StudentPackageAssignedBy")
-  studentTagAssignments       StudentTag[]              @relation("StudentTagAssignedBy")
-  attendanceRecords           Attendance[]              @relation("AttendanceRecorder")
-  lessonJoinEvents            LessonJoinEvent[]
-  inboxReceived               InboxMessage[]            @relation("InboxRecipient")
-  inboxSent                   InboxMessage[]            @relation("InboxCreator")
-  studentNotesAuthored        StudentNote[]             @relation("StudentNoteAuthor")
-  studentFilesUploaded        StudentFile[]             @relation("StudentFileUploader")
-  accountingEntries           AccountingEntry[]         @relation("AccountingCreator")
-  permissionOverrides         UserPermissionOverride[]
-  refreshTokens               RefreshToken[]
-  savedViews                  SavedView[]
-  dashboardLayouts            DashboardLayout[]
-  // ── Mobile (Faz Mobile) ──
-  mobileDevices               MobileDevice[]
-  notificationPrefs           NotificationPreference[]
-  appActivityLogs             AppActivityLog[]
-  // ── Account deletion (KVKK / Faz Production) ──
-  accountDeletionRequests     AccountDeletionRequest[]  @relation("AccountDeletionRequestUser")
-  accountDeletionReviews      AccountDeletionRequest[]  @relation("AccountDeletionRequestReviewer")
-  // ── Phase 2 / Session 5 — Materials ──
-  materialsCreated            Material[]                @relation("MaterialCreator")
-  // ── Phase 2 / Session 6 — Absence Excuse review ──
-  excuseReviews               AbsenceExcuse[]           @relation("AbsenceExcuseReviewer")
-  // ── Phase 2 / Session 7 — Academic Roadmap ──
-  academicGoalsCreated        StudentAcademicGoal[]     @relation("StudentAcademicGoalCreator")
-  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
-  paymentScheduleItemsCreated PaymentScheduleItem[]     @relation("PaymentScheduleItemCreator")
-  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
-  compensationRulesCreated    TeacherCompensationRule[] @relation("CompensationRuleCreator")
-  payrollPeriodsCreated       TeacherPayrollPeriod[]    @relation("PayrollPeriodCreator")
-  payrollItemsCreated         TeacherPayrollItem[]      @relation("PayrollItemCreator")
-}
-
-model LeadSubmission {
-  id           String       @id @default(cuid())
-  fullName     String
-  phone        String
-  classLevel   String
-  examType     String
-  targetGoal   String
-  currentNet   String
-  parentPhone  String?
-  kvkkConsent  Boolean
-  source       String
-  intakeStatus IntakeStatus @default(NEW)
-  adminNotes   String?
-  taskLabel    String?
-  nextActionAt DateTime?
-  studentId    String?
-  submittedAt  DateTime
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  student      Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
-
-  @@index([intakeStatus, submittedAt])
-}
-
-model PurchaseIntent {
-  id                   String                @id @default(cuid())
-  source               String
-  packageName          String
-  paymentLink          String?
-  studentFullName      String
-  studentPhone         String
-  studentEmail         String
-  schoolName           String
-  city                 String
-  district             String
-  classLevel           String
-  department           String?
-  examType             String
-  targetSchool         String?
-  targetRanking        String
-  currentLevel         String
-  currentNet           String
-  weakLessons          String
-  strongLessons        String?
-  needType             String
-  studyStatus          String
-  weeklyStudyHours     String
-  parentFullName       String?
-  parentPhone          String?
-  parentEmail          String?
-  notes                String?
-  kvkkConsent          Boolean
-  paymentConsent       Boolean
-  status               PurchaseStatus        @default(PENDING)
-  intakeStatus         IntakeStatus          @default(NEW)
-  adminNotes           String?
-  taskLabel            String?
-  nextActionAt         DateTime?
-  studentId            String?
-  submittedAt          DateTime
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  events               PurchaseEvent[]
-  student              Student?              @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
-  paymentScheduleItems PaymentScheduleItem[]
-
-  @@index([intakeStatus, submittedAt])
-}
-
-model Student {
-  id                   String                     @id @default(cuid())
-  fullName             String
-  phone                String
-  phoneKey             String                     @unique
-  email                String?
-  city                 String?
-  district             String?
-  schoolName           String?
-  classLevel           String?
-  department           String?
-  examType             String?
-  currentLevel         String?
-  currentNet           String?
-  targetGoal           String?
-  targetSchool         String?
-  targetRanking        String?
-  strongLessons        String?
-  weakLessons          String?
-  needType             String?
-  studyStatus          String?
-  weeklyStudyHours     String?
-  parentFullName       String?
-  parentPhone          String?
-  parentEmail          String?
-  source               String?
-  activePackage        String?
-  status               StudentStatus              @default(NEW)
-  notes                String?
-  taskLabel            String?
-  nextActionAt         DateTime?
-  submittedAt          DateTime?
-  createdAt            DateTime                   @default(now())
-  updatedAt            DateTime                   @updatedAt
-  userId               String?                    @unique
-  user                 User?                      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  leadSubmissions      LeadSubmission[]
-  purchaseIntents      PurchaseIntent[]
-  lessons              Lesson[]
-  packageEnrollments   StudentPackageEnrollment[]
-  courseProgress       StudentCourseProgress[]
-  contentProgress      StudentContentProgress[]
-  goals                StudentGoal[]
-  examResults          StudentExamResult[]
-  metricSnapshots      StudentMetricSnapshot[]
-  packages             StudentPackage[]
-  parents              ParentStudent[]
-  classrooms           ClassroomStudent[]
-  tags                 StudentTag[]
-  attendances          Attendance[]
-  lessonJoinEvents     LessonJoinEvent[]
-  studentNotes         StudentNote[]
-  comments             TeacherComment[]
-  files                StudentFile[]
-  directAssignments    Assignment[]               @relation("DirectAssignment")
-  submissions          AssignmentSubmission[]
-  accountingEntries    AccountingEntry[]          @relation("AccountingStudent")
-  // ── Mobile (Faz Mobile) ──
-  dailyTasks           StudentDailyTask[]
-  // ── Phase 2 / Session 4 — Study Room ──
-  studySessions        StudySession[]
-  // ── Phase 2 / Session 6 — Absence excuses ──
-  absenceExcuses       AbsenceExcuse[]
-  // ── Phase 2 / Session 7 — Academic Roadmap ──
-  academicGoals        StudentAcademicGoal[]
-  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
-  paymentScheduleItems PaymentScheduleItem[]
-
-  @@index([status, updatedAt])
-}
-
-model PurchaseEvent {
-  id                String            @id @default(cuid())
-  purchaseIntentId  String
-  eventType         PurchaseEventType
-  status            PurchaseStatus
-  source            String
-  packageName       String
-  paymentLink       String?
-  provider          String?
-  providerReference String?
-  payload           Json?
-  createdAt         DateTime          @default(now())
-  purchaseIntent    PurchaseIntent    @relation(fields: [purchaseIntentId], references: [id], onDelete: Cascade)
-
-  @@index([purchaseIntentId, createdAt])
-}
-
-enum TeacherStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum LessonStatus {
-  SCHEDULED
-  LIVE
-  ENDED
-  COMPLETED
-  CANCELLED
-  MISSED
-}
-
-enum JoinEventKind {
-  JOIN
-  LEAVE
-  HEARTBEAT
-}
-
-enum CampCategory {
-  AYT
-  TYT
-  LGS
-}
-
-enum EnrollmentStatus {
-  LEAD
-  TRIAL
-  ACTIVE
-  PAUSED
-  COMPLETED
-  CANCELLED
-}
-
-enum EnrollmentSource {
-  MANUAL
-  PURCHASE
-  TRIAL
-  CAMP
-  SCHOLARSHIP
-}
-
-enum CourseStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
-enum ContentType {
-  LIVE_SESSION
-  VIDEO
-  NOTE
-  PDF
-  QUIZ
-  ASSIGNMENT
-  LINK
-}
-
-enum StudentContentProgressStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED
-  SKIPPED
-}
-
-enum StudentGoalStatus {
-  ACTIVE
-  COMPLETED
-  MISSED
-  ARCHIVED
-}
-
-enum AssessmentType {
-  DENEME
-  QUIZ
-  HOMEWORK
-  MOCK_INTERVIEW
-}
-
-enum NotificationType {
-  SYSTEM
-  LESSON
-  CONTENT
-  PAYMENT
-  PERFORMANCE
-  ANNOUNCEMENT
-}
-
-enum NotificationPriority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-enum MetricPeriod {
-  DAILY
-  WEEKLY
-  MONTHLY
 }
 
 enum AuditActorType {
@@ -440,475 +45,6 @@ enum AuditActorType {
 enum PackageType {
   COURSE
   EXAM
-}
-
-model Teacher {
-  id                String                    @id @default(cuid())
-  fullName          String
-  email             String?                   @unique
-  phone             String?
-  subjects          String
-  bio               String?
-  status            TeacherStatus             @default(ACTIVE)
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-  userId            String?                   @unique
-  user              User?                     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  lessons           Lesson[]
-  classrooms        ClassroomTeacher[]
-  comments          TeacherComment[]
-  assignments       Assignment[]
-  payrolls          TeacherPayroll[]
-  accountingEntries AccountingEntry[]         @relation("AccountingTeacher")
-  defaultForCourses Course[]                  @relation("CourseDefaultTeacher")
-  // ── Phase 2 / Session 5 — Materials ──
-  materials         Material[]
-  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
-  compensationRules TeacherCompensationRule[]
-  payrollItems      TeacherPayrollItem[]
-
-  @@index([status])
-}
-
-model Package {
-  id                   String                     @id @default(cuid())
-  name                 String
-  type                 PackageType                @default(COURSE)
-  description          String?
-  price                Int
-  paytrLink            String?
-  lessonCount          Int
-  subjects             String
-  isActive             Boolean                    @default(true)
-  createdAt            DateTime                   @default(now())
-  updatedAt            DateTime                   @updatedAt
-  lessons              Lesson[]
-  enrollments          StudentPackageEnrollment[]
-  packageCourses       PackageCourse[]
-  studentPackages      StudentPackage[]
-  accountingEntries    AccountingEntry[]          @relation("AccountingPackage")
-  odOrders             OdOrder[]
-  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
-  paymentScheduleItems PaymentScheduleItem[]
-
-  @@index([isActive])
-  @@index([type, isActive])
-}
-
-model StudentPackage {
-  studentId    String
-  packageId    String
-  assignedAt   DateTime  @default(now())
-  expiresAt    DateTime?
-  revokedAt    DateTime?
-  assignedById String?
-  notes        String?
-  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  package      Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  assignedBy   User?     @relation("StudentPackageAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
-
-  @@id([studentId, packageId])
-  @@index([packageId])
-  @@index([studentId, revokedAt, expiresAt])
-}
-
-model Camp {
-  id            String       @id @default(cuid())
-  name          String
-  detail        String
-  category      CampCategory
-  quota         Int          @default(8)
-  price         Int          @default(200000)
-  originalPrice Int          @default(500000)
-  paytrLink     String?
-  isActive      Boolean      @default(true)
-  startDate     DateTime?
-  endDate       DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@index([category, isActive])
-}
-
-model Lesson {
-  id              String               @id @default(cuid())
-  studentId       String
-  teacherId       String
-  packageId       String?
-  classroomId     String?
-  courseId        String?
-  seriesId        String?
-  sessionGroupId  String?
-  location        String?
-  title           String?
-  subject         String?
-  scheduledAt     DateTime
-  duration        Int                  @default(60)
-  googleMeetLink  String?
-  status          LessonStatus         @default(SCHEDULED)
-  notes           String?
-  // ── Sprint 6 / FAZ 2 — Canlı ders yaşam döngüsü ─────────────────────────
-  startedAt       DateTime?
-  endedAt         DateTime?
-  meetingProvider String?
-  meetingRoomId   String?
-  meetingJoinUrl  String?
-  meetingHostUrl  String?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  student         Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  teacher         Teacher              @relation(fields: [teacherId], references: [id], onDelete: Restrict)
-  package         Package?             @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  classroom       Classroom?           @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  course          Course?              @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  attendances     Attendance[]
-  joinEvents      LessonJoinEvent[]
-  // ── Phase 2 / Session 6 — Absence excuses linked to this lesson ──
-  absenceExcuses  AbsenceExcuse[]
-  // ── Phase 2 / Session 9 — Attached learning materials ────────────
-  materials       LessonMaterial[]
-  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
-  payrollItems    TeacherPayrollItem[]
-
-  @@index([studentId, scheduledAt])
-  @@index([teacherId, scheduledAt])
-  @@index([status, scheduledAt])
-  @@index([status, startedAt])
-  @@index([classroomId, scheduledAt])
-  @@index([courseId, scheduledAt])
-  @@index([seriesId])
-  @@index([sessionGroupId])
-}
-
-/// Sprint 6 — Canlı ders join/leave/heartbeat ham olayları.
-/// Polymorphic: `lessonId` her zaman dolu (fan-out korunduğu için her öğrenciye
-/// ayrı Lesson satırı vardır); `sessionGroupId` sınıf seansının tüm fan-out
-/// satırlarını gruplamak için kullanılır. `lib/lessons/auto-attendance.ts`
-/// bu event'leri `Attendance(source=AUTO)` kayıtlarına dönüştürür.
-model LessonJoinEvent {
-  id             String        @id @default(cuid())
-  lessonId       String
-  sessionGroupId String?
-  studentId      String?
-  userId         String
-  kind           JoinEventKind
-  ts             DateTime      @default(now())
-  ip             String?
-  ua             String?
-  lesson         Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  student        Student?      @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([lessonId, ts])
-  @@index([sessionGroupId, ts])
-  @@index([userId, ts])
-  @@index([kind, ts])
-}
-
-model StudentPackageEnrollment {
-  id                 String                  @id @default(cuid())
-  studentId          String
-  packageId          String
-  source             EnrollmentSource        @default(MANUAL)
-  status             EnrollmentStatus        @default(ACTIVE)
-  startsAt           DateTime                @default(now())
-  endsAt             DateTime?
-  autoRenew          Boolean                 @default(false)
-  listPrice          Int?
-  discountAmount     Int?
-  billingPeriodLabel String?
-  notes              String?
-  createdAt          DateTime                @default(now())
-  updatedAt          DateTime                @updatedAt
-  student            Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  package            Package                 @relation(fields: [packageId], references: [id], onDelete: Restrict)
-  courseProgress     StudentCourseProgress[]
-
-  @@index([studentId, status])
-  @@index([packageId, status])
-  @@index([startsAt, endsAt])
-}
-
-model Course {
-  id                 String                    @id @default(cuid())
-  title              String
-  slug               String                    @unique
-  description        String?
-  subject            String
-  examType           String?
-  levelLabel         String?
-  estimatedMinutes   Int?
-  status             CourseStatus              @default(DRAFT)
-  isActive           Boolean                   @default(true)
-  coverImageUrl      String?
-  defaultTeacherId   String?
-  defaultClassroomId String?
-  createdAt          DateTime                  @default(now())
-  updatedAt          DateTime                  @updatedAt
-  modules            CourseModule[]
-  packageCourses     PackageCourse[]
-  studentProgress    StudentCourseProgress[]
-  lessons            Lesson[]
-  studySessions      StudySession[]
-  materials          Material[]
-  defaultTeacher     Teacher?                  @relation("CourseDefaultTeacher", fields: [defaultTeacherId], references: [id], onDelete: SetNull)
-  defaultClassroom   Classroom?                @relation("CourseDefaultClassroom", fields: [defaultClassroomId], references: [id], onDelete: SetNull)
-  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
-  compensationRules  TeacherCompensationRule[]
-
-  @@index([status, subject])
-  @@index([defaultTeacherId])
-  @@index([defaultClassroomId])
-  @@index([isActive])
-}
-
-model CourseModule {
-  id          String          @id @default(cuid())
-  courseId    String
-  title       String
-  description String?
-  orderIndex  Int             @default(0)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  course      Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  contents    CourseContent[]
-
-  @@unique([courseId, orderIndex])
-  @@index([courseId])
-}
-
-model CourseContent {
-  id              String                   @id @default(cuid())
-  moduleId        String
-  title           String
-  description     String?
-  contentType     ContentType
-  orderIndex      Int                      @default(0)
-  durationMinutes Int?
-  status          CourseStatus             @default(DRAFT)
-  liveStartsAt    DateTime?
-  liveEndsAt      DateTime?
-  videoUrl        String?
-  fileUrl         String?
-  externalUrl     String?
-  createdById     String?
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-  module          CourseModule             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  createdBy       User?                    @relation("CourseContentCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  progress        StudentContentProgress[]
-
-  @@unique([moduleId, orderIndex])
-  @@index([moduleId, status])
-}
-
-model PackageCourse {
-  packageId  String
-  courseId   String
-  isRequired Boolean  @default(true)
-  sortOrder  Int      @default(0)
-  createdAt  DateTime @default(now())
-  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@id([packageId, courseId])
-  @@index([courseId])
-}
-
-model StudentCourseProgress {
-  id                String                    @id @default(cuid())
-  studentId         String
-  courseId          String
-  enrollmentId      String?
-  completionPercent Int                       @default(0)
-  completedContent  Int                       @default(0)
-  totalContent      Int                       @default(0)
-  lastOpenedAt      DateTime?
-  completedAt       DateTime?
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-  student           Student                   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  course            Course                    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  enrollment        StudentPackageEnrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
-
-  @@unique([studentId, courseId])
-  @@index([enrollmentId])
-  @@index([studentId, completionPercent])
-}
-
-model StudentContentProgress {
-  id                String                       @id @default(cuid())
-  studentId         String
-  contentId         String
-  status            StudentContentProgressStatus @default(NOT_STARTED)
-  completionPercent Int                          @default(0)
-  secondsSpent      Int                          @default(0)
-  lastOpenedAt      DateTime?
-  completedAt       DateTime?
-  createdAt         DateTime                     @default(now())
-  updatedAt         DateTime                     @updatedAt
-  student           Student                      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  content           CourseContent                @relation(fields: [contentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, contentId])
-  @@index([studentId, status])
-  @@index([contentId])
-}
-
-model StudentGoal {
-  id           String            @id @default(cuid())
-  studentId    String
-  title        String
-  description  String?
-  unit         String?
-  targetValue  Decimal?          @db.Decimal(8, 2)
-  currentValue Decimal?          @db.Decimal(8, 2)
-  dueAt        DateTime?
-  status       StudentGoalStatus @default(ACTIVE)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  student      Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@index([studentId, status])
-  @@index([dueAt])
-}
-
-model StudentExamResult {
-  id             String                   @id @default(cuid())
-  studentId      String
-  assessmentType AssessmentType           @default(DENEME)
-  examType       String?
-  title          String
-  takenAt        DateTime
-  score          Decimal?                 @db.Decimal(6, 2)
-  net            Decimal?                 @db.Decimal(6, 2)
-  correctCount   Int                      @default(0)
-  wrongCount     Int                      @default(0)
-  blankCount     Int                      @default(0)
-  ranking        Int?
-  notes          String?
-  createdAt      DateTime                 @default(now())
-  updatedAt      DateTime                 @updatedAt
-  student        Student                  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  subjectStats   StudentExamSubjectStat[]
-
-  @@index([studentId, takenAt])
-  @@index([assessmentType, examType])
-}
-
-model StudentExamSubjectStat {
-  id           String                 @id @default(cuid())
-  examResultId String
-  subject      String
-  correctCount Int                    @default(0)
-  wrongCount   Int                    @default(0)
-  blankCount   Int                    @default(0)
-  net          Decimal?               @db.Decimal(6, 2)
-  maxNet       Decimal?               @db.Decimal(6, 2)
-  trendDelta   Decimal?               @db.Decimal(6, 2)
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
-  examResult   StudentExamResult      @relation(fields: [examResultId], references: [id], onDelete: Cascade)
-  topicStats   StudentExamTopicStat[]
-
-  @@unique([examResultId, subject])
-  @@index([subject])
-}
-
-model StudentExamTopicStat {
-  id            String                 @id @default(cuid())
-  subjectStatId String
-  topic         String
-  correctCount  Int                    @default(0)
-  wrongCount    Int                    @default(0)
-  blankCount    Int                    @default(0)
-  net           Decimal?               @db.Decimal(6, 2)
-  masteryPct    Int?
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  subjectStat   StudentExamSubjectStat @relation(fields: [subjectStatId], references: [id], onDelete: Cascade)
-
-  @@unique([subjectStatId, topic])
-  @@index([topic])
-}
-
-model StudentMetricSnapshot {
-  id        String       @id @default(cuid())
-  studentId String
-  metricKey String
-  value     Decimal      @db.Decimal(8, 2)
-  unit      String?
-  period    MetricPeriod
-  startsAt  DateTime
-  endsAt    DateTime
-  createdAt DateTime     @default(now())
-  student   Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@index([studentId, metricKey, period])
-  @@index([startsAt, endsAt])
-}
-
-model Notification {
-  id        String               @id @default(cuid())
-  userId    String
-  type      NotificationType     @default(SYSTEM)
-  priority  NotificationPriority @default(NORMAL)
-  title     String
-  body      String
-  href      String?
-  readAt    DateTime?
-  createdAt DateTime             @default(now())
-  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, readAt, createdAt])
-  @@index([type, priority])
-}
-
-model AuditLog {
-  id          String         @id @default(cuid())
-  actorUserId String?
-  actorType   AuditActorType @default(USER)
-  entityType  String
-  entityId    String
-  action      String
-  summary     String?
-  payload     Json?
-  createdAt   DateTime       @default(now())
-  actor       User?          @relation("AuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
-
-  @@index([actorUserId, createdAt])
-  @@index([entityType, entityId, createdAt])
-}
-
-// ─── ODK Enums ────────────────────────────────────────────────────────────────
-
-enum OdkExamStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-}
-
-enum OdkExamCadenceFamily {
-  TYT
-  AYT
-  LGS
-  KPSS
-  ALES
-}
-
-enum OdkExamFileType {
-  BOOKLET_PDF
-  ANSWER_KEY_PDF
-}
-
-enum OdkAccessTagGrantSource {
-  PURCHASE
-  MANUAL
-}
-
-enum AccessService {
-  OD
-  ODK
 }
 
 enum OdkOrderStatus {
@@ -932,246 +68,189 @@ enum OdkPaymentProvider {
   PAYTR
 }
 
-enum OdkEntitlementStatus {
-  ACTIVE
-  EXPIRED
-  REVOKED
+enum CouponType {
+  PERCENT
+  FIXED
 }
 
-enum OdkAttemptStatus {
-  IN_PROGRESS
-  SUBMITTED
-  ABANDONED
+enum CouponService {
+  OD
+  ODK
+  ALL
 }
 
-// ─── ODK Models ───────────────────────────────────────────────────────────────
+model EmailOutbox {
+  id          String            @id @default(cuid())
+  recipients  String
+  subject     String
+  html        String
+  status      EmailOutboxStatus @default(PENDING)
+  attempts    Int               @default(0)
+  lastError   String?           @map("last_error")
+  sentAt      DateTime?         @map("sent_at")
+  nextRetryAt DateTime?         @map("next_retry_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
 
-model OdkExamSeries {
-  id            String               @id @default(cuid())
-  name          String
-  slug          String               @unique
-  cadenceFamily OdkExamCadenceFamily @map("cadence_family")
-  isActive      Boolean              @default(true) @map("is_active")
-  createdAt     DateTime             @default(now()) @map("created_at")
-  updatedAt     DateTime             @updatedAt @map("updated_at")
-  exams         OdkExam[]
-
-  @@index([cadenceFamily, isActive])
-  @@map("odk_exam_series")
+  @@index([status, nextRetryAt])
+  @@map("email_outbox")
 }
 
-model OdkExam {
-  id                  String               @id @default(cuid())
-  title               String
-  slug                String               @unique
-  description         String?
-  cadenceFamily       OdkExamCadenceFamily @map("cadence_family")
-  classLevel          String?              @map("class_level")
-  examSeriesId        String?              @map("exam_series_id")
-  status              OdkExamStatus        @default(DRAFT)
-  durationMinutes     Int                  @default(120) @map("duration_minutes")
-  startsAt            DateTime?            @map("starts_at")
-  endsAt              DateTime?            @map("ends_at")
-  publishedAt         DateTime?            @map("published_at")
-  answerKeyReleasedAt DateTime?            @map("answer_key_released_at")
-  resultsReleasedAt   DateTime?            @map("results_released_at")
-  googleMeetLink      String?              @map("google_meet_link")
-  /// JSON: { showResultImmediately, showAnswerKeyImmediately, allowReview,
-  /// fullscreenRequired, blockCopyPaste, autoSubmitOnFullscreenExit, warnOnViolation }
-  settings            Json?
-  createdById         String?              @map("created_by_id")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
-  examSeries          OdkExamSeries?       @relation(fields: [examSeriesId], references: [id], onDelete: SetNull)
-  creator             User?                @relation("OdkExamCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  sections            OdkExamSection[]
-  files               OdkExamFile[]
-  attempts            OdkExamAttempt[]
-  examAccessTags      OdkExamAccessTag[]
-  packageExams        OdkPackageExam[]
+model RateLimitEntry {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
 
-  @@index([status])
-  @@index([cadenceFamily, status])
-  @@map("odk_exams")
+  @@index([key, createdAt])
 }
 
-model OdkExamSection {
-  id              String                    @id @default(cuid())
-  examId          String                    @map("exam_id")
-  title           String
-  questionCount   Int                       @map("question_count")
-  orderIndex      Int                       @default(0) @map("order_index")
-  createdAt       DateTime                  @default(now()) @map("created_at")
-  updatedAt       DateTime                  @updatedAt @map("updated_at")
-  exam            OdkExam                   @relation(fields: [examId], references: [id], onDelete: Cascade)
-  officialAnswers OdkExamOfficialAnswer[]
-  opticalAnswers  OdkAttemptOpticalAnswer[]
+model LeadSubmission {
+  id           String       @id @default(cuid())
+  fullName     String
+  phone        String
+  classLevel   String
+  examType     String
+  targetGoal   String
+  currentNet   String
+  parentPhone  String?
+  kvkkConsent  Boolean
+  source       String
+  intakeStatus IntakeStatus @default(NEW)
+  adminNotes   String?
+  taskLabel    String?
+  nextActionAt DateTime?
+  submittedAt  DateTime
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-  @@unique([examId, orderIndex])
-  @@index([examId])
-  @@map("odk_exam_sections")
+  @@index([intakeStatus, submittedAt])
 }
 
-model OdkExamOfficialAnswer {
-  id                  String         @id @default(cuid())
-  examId              String         @map("exam_id")
-  sectionId           String         @map("section_id")
-  questionNumber      Int            @map("question_number")
-  correctOption       String         @map("correct_option")
-  /// Faz-1 legacy: { konu, kazanim, altKazanim? }. Faz-2 zenginleştirilmiş şema:
-  /// { lesson, unit?, topic?, learningOutcomeCode?, learningOutcome?, difficulty? }
-  outcomes            Json?
-  // Faz-2: Zenginleştirilmiş kazanım alanları (nullable; outcomes JSON ile birlikte yazılır).
-  lesson              String?        @map("lesson")
-  unit                String?        @map("unit")
-  topic               String?        @map("topic")
-  learningOutcomeCode String?        @map("learning_outcome_code")
-  learningOutcome     String?        @map("learning_outcome")
-  difficulty          String?        @map("difficulty")
-  createdAt           DateTime       @default(now()) @map("created_at")
-  section             OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-
-  @@unique([sectionId, questionNumber])
-  @@index([examId])
-  @@index([examId, learningOutcomeCode])
-  @@map("odk_exam_official_answers")
-}
-
-model OdkExamFile {
+model PurchaseIntent {
   id               String          @id @default(cuid())
-  examId           String          @map("exam_id")
-  fileType         OdkExamFileType @map("file_type")
-  originalFileName String          @map("original_file_name")
-  publicUrl        String          @map("public_url")
-  byteSize         Int             @default(0) @map("byte_size")
-  uploadedById     String?         @map("uploaded_by_id")
-  createdAt        DateTime        @default(now()) @map("created_at")
-  exam             OdkExam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  source           String
+  packageName      String
+  paymentLink      String?
+  studentFullName  String
+  studentPhone     String
+  studentEmail     String
+  schoolName       String
+  city             String
+  district         String
+  classLevel       String
+  department       String?
+  examType         String
+  targetSchool     String?
+  targetRanking    String
+  currentLevel     String
+  currentNet       String
+  weakLessons      String
+  strongLessons    String?
+  needType         String
+  studyStatus      String
+  weeklyStudyHours String
+  parentFullName   String?
+  parentPhone      String?
+  parentEmail      String?
+  notes            String?
+  kvkkConsent      Boolean
+  paymentConsent   Boolean
+  status           PurchaseStatus  @default(PENDING)
+  intakeStatus     IntakeStatus    @default(NEW)
+  adminNotes       String?
+  taskLabel        String?
+  nextActionAt     DateTime?
+  submittedAt      DateTime
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  events           PurchaseEvent[]
 
-  @@unique([examId, fileType])
-  @@index([examId])
-  @@map("odk_exam_files")
+  @@index([intakeStatus, submittedAt])
 }
 
-model OdkAccessTag {
-  id          String                @id @default(cuid())
-  key         String                @unique
-  title       String
+model PurchaseEvent {
+  id                String            @id @default(cuid())
+  purchaseIntentId  String
+  eventType         PurchaseEventType
+  status            PurchaseStatus
+  source            String
+  packageName       String
+  paymentLink       String?
+  provider          String?
+  providerReference String?
+  payload           Json?
+  createdAt         DateTime          @default(now())
+  purchaseIntent    PurchaseIntent    @relation(fields: [purchaseIntentId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseIntentId, createdAt])
+}
+
+model AuditLog {
+  id          String         @id @default(cuid())
+  actorUserId String?
+  actorType   AuditActorType @default(SYSTEM)
+  entityType  String
+  entityId    String
+  action      String
+  summary     String?
+  payload     Json?
+  createdAt   DateTime       @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+}
+
+model Package {
+  id          String      @id @default(cuid())
+  name        String
+  type        PackageType @default(COURSE)
   description String?
-  service     AccessService         @default(ODK)
-  isActive    Boolean               @default(true) @map("is_active")
-  createdAt   DateTime              @default(now()) @map("created_at")
-  updatedAt   DateTime              @updatedAt @map("updated_at")
-  userTags    OdkUserAccessTag[]
-  examTags    OdkExamAccessTag[]
-  packageTags OdkPackageAccessTag[]
+  price       Int
+  paytrLink   String?
+  lessonCount Int
+  subjects    String
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  odOrders    OdOrder[]
 
   @@index([isActive])
-  @@index([service, isActive])
-  @@map("odk_access_tags")
-}
-
-model OdkUserAccessTag {
-  id            String                  @id @default(cuid())
-  userId        String                  @map("user_id")
-  accessTagId   String                  @map("access_tag_id")
-  source        OdkAccessTagGrantSource @default(MANUAL)
-  grantedById   String?                 @map("granted_by_id")
-  entitlementId String?                 @map("entitlement_id")
-  expiresAt     DateTime?               @map("expires_at")
-  revokedAt     DateTime?               @map("revoked_at")
-  createdAt     DateTime                @default(now()) @map("created_at")
-  updatedAt     DateTime                @updatedAt @map("updated_at")
-  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessTag     OdkAccessTag            @relation(fields: [accessTagId], references: [id], onDelete: Cascade)
-  entitlement   OdkEntitlement?         @relation(fields: [entitlementId], references: [id], onDelete: SetNull)
-
-  @@unique([userId, accessTagId])
-  @@index([userId, revokedAt, expiresAt])
-  @@index([accessTagId])
-  @@map("odk_user_access_tags")
-}
-
-model OdkExamAccessTag {
-  examId      String       @map("exam_id")
-  accessTagId String       @map("access_tag_id")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  exam        OdkExam      @relation(fields: [examId], references: [id], onDelete: Cascade)
-  accessTag   OdkAccessTag @relation(fields: [accessTagId], references: [id], onDelete: Cascade)
-
-  @@id([examId, accessTagId])
-  @@index([accessTagId])
-  @@map("odk_exam_access_tags")
+  @@index([type, isActive])
 }
 
 model OdkPackage {
-  id                 String                @id @default(cuid())
+  id                 String     @id @default(cuid())
   title              String
-  slug               String                @unique
+  slug               String     @unique
   description        String?
-  priceCents         Int                   @map("price_cents")
-  originalPriceCents Int?                  @map("original_price_cents")
-  durationDays       Int?                  @map("duration_days")
-  isActive           Boolean               @default(true) @map("is_active")
-  isFeatured         Boolean               @default(false) @map("is_featured")
-  ctaText            String?               @map("cta_text")
-  createdAt          DateTime              @default(now()) @map("created_at")
-  updatedAt          DateTime              @updatedAt @map("updated_at")
-  packageExams       OdkPackageExam[]
-  packageAccessTags  OdkPackageAccessTag[]
+  priceCents         Int        @map("price_cents")
+  originalPriceCents Int?       @map("original_price_cents")
+  durationDays       Int?       @map("duration_days")
+  isActive           Boolean    @default(true) @map("is_active")
+  isFeatured         Boolean    @default(false) @map("is_featured")
+  ctaText            String?    @map("cta_text")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
   orders             OdkOrder[]
-  entitlements       OdkEntitlement[]
 
   @@index([isActive])
   @@index([isFeatured])
   @@map("odk_packages")
 }
 
-model OdkPackageExam {
-  packageId String     @map("package_id")
-  examId    String     @map("exam_id")
-  sortOrder Int        @default(0) @map("sort_order")
-  createdAt DateTime   @default(now()) @map("created_at")
-  package   OdkPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  exam      OdkExam    @relation(fields: [examId], references: [id], onDelete: Cascade)
-
-  @@id([packageId, examId])
-  @@index([examId])
-  @@map("odk_package_exams")
-}
-
-model OdkPackageAccessTag {
-  packageId   String       @map("package_id")
-  accessTagId String       @map("access_tag_id")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  package     OdkPackage   @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  accessTag   OdkAccessTag @relation(fields: [accessTagId], references: [id], onDelete: Cascade)
-
-  @@id([packageId, accessTagId])
-  @@index([accessTagId])
-  @@map("odk_package_access_tags")
-}
-
 model OdkOrder {
-  id            String           @id @default(cuid())
-  // Guest checkout: bkz. OdOrder.userId notu. `status=PAID AND userId IS NULL`
-  // = admin onboarding kuyruğu. Entitlement/access-tag, hesap bağlanınca açılır.
-  userId        String?          @map("user_id")
-  packageId     String           @map("package_id")
-  status        OdkOrderStatus   @default(PENDING)
-  subtotalCents Int              @map("subtotal_cents")
-  discountCents Int              @default(0) @map("discount_cents")
-  totalCents    Int              @map("total_cents")
-  buyerInfo     Json?            @map("buyer_info")
-  createdAt     DateTime         @default(now()) @map("created_at")
-  updatedAt     DateTime         @updatedAt @map("updated_at")
-  // onDelete: SetNull → ödenmiş guest/onboarding order'ı koru (Cascade KULLANMA).
-  user          User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
-  package       OdkPackage       @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  id            String         @id @default(cuid())
+  packageId     String         @map("package_id")
+  status        OdkOrderStatus @default(PENDING)
+  subtotalCents Int            @map("subtotal_cents")
+  discountCents Int            @default(0) @map("discount_cents")
+  totalCents    Int            @map("total_cents")
+  buyerInfo     Json?          @map("buyer_info")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  package       OdkPackage     @relation(fields: [packageId], references: [id], onDelete: Restrict)
   payments      OdkPayment[]
-  entitlements  OdkEntitlement[]
 
-  @@index([userId, status])
   @@index([status, createdAt])
   @@map("odk_orders")
 }
@@ -1194,830 +273,8 @@ model OdkPayment {
   @@map("odk_payments")
 }
 
-model OdkEntitlement {
-  id             String               @id @default(cuid())
-  userId         String               @map("user_id")
-  packageId      String               @map("package_id")
-  orderId        String?              @unique @map("order_id")
-  status         OdkEntitlementStatus @default(ACTIVE)
-  startsAt       DateTime             @default(now()) @map("starts_at")
-  expiresAt      DateTime?            @map("expires_at")
-  revokedAt      DateTime?            @map("revoked_at")
-  createdAt      DateTime             @default(now()) @map("created_at")
-  updatedAt      DateTime             @updatedAt @map("updated_at")
-  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package        OdkPackage           @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  order          OdkOrder?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  userAccessTags OdkUserAccessTag[]
-  attempts       OdkExamAttempt[]
-
-  @@index([userId, status])
-  @@map("odk_entitlements")
-}
-
-model OdkExamAttempt {
-  id                  String                    @id @default(cuid())
-  userId              String                    @map("user_id")
-  examId              String                    @map("exam_id")
-  entitlementId       String?                   @map("entitlement_id")
-  status              OdkAttemptStatus          @default(IN_PROGRESS)
-  startedAt           DateTime                  @default(now()) @map("started_at")
-  submittedAt         DateTime?                 @map("submitted_at")
-  score               Decimal?                  @db.Decimal(6, 2)
-  correctCount        Int                       @default(0) @map("correct_count")
-  wrongCount          Int                       @default(0) @map("wrong_count")
-  blankCount          Int                       @default(0) @map("blank_count")
-  resultPayload       Json?                     @map("result_payload")
-  sectionScores       Json?                     @map("section_scores")
-  tabSwitchCount      Int                       @default(0) @map("tab_switch_count")
-  cheatViolationCount Int                       @default(0) @map("cheat_violation_count")
-  lastEventAt         DateTime?                 @map("last_event_at")
-  autoSubmitted       Boolean                   @default(false) @map("auto_submitted")
-  durationSeconds     Int?                      @map("duration_seconds")
-  /// Denormalized 0-1 suspicion score derived from integrityFlags at submit time.
-  /// 0 = no signals, 1 = maximally suspicious. Null for auto-submitted attempts
-  /// with no answer-timing data. Use for ORDER BY / filter without JSON parsing.
-  suspiciousScore     Float?                    @map("suspicious_score")
-  createdAt           DateTime                  @default(now()) @map("created_at")
-  updatedAt           DateTime                  @updatedAt @map("updated_at")
-  user                User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exam                OdkExam                   @relation(fields: [examId], references: [id], onDelete: Cascade)
-  entitlement         OdkEntitlement?           @relation(fields: [entitlementId], references: [id], onDelete: SetNull)
-  opticalAnswers      OdkAttemptOpticalAnswer[]
-  events              OdkExamAttemptEvent[]
-
-  @@index([userId, examId])
-  @@index([userId, status])
-  // Compound indexes for admin stats queries (examId + status + time)
-  @@index([examId, status, submittedAt])
-  @@index([examId, status, startedAt])
-  @@map("odk_exam_attempts")
-}
-
-enum OdkAttemptEventType {
-  TAB_BLUR
-  TAB_FOCUS
-  VISIBILITY_HIDDEN
-  VISIBILITY_VISIBLE
-  FULLSCREEN_ENTER
-  FULLSCREEN_EXIT
-  RIGHT_CLICK
-  COPY
-  PASTE
-  CUT
-  PRINT
-  KEY_DEVTOOLS
-  ANSWER_CHANGE
-  NAVIGATE
-  AUTOSAVE
-  NETWORK_DROP
-  NETWORK_RESUME
-  WARNING_SHOWN
-}
-
-/// Cheat / UX olayı (sekme geçişi, fokus kaybı, kopyala-yapıştır vb.).
-/// Submit sonrası audit ve istatistik için saklanır.
-model OdkExamAttemptEvent {
-  id             String              @id @default(cuid())
-  attemptId      String              @map("attempt_id")
-  type           OdkAttemptEventType
-  questionNumber Int?                @map("question_number")
-  payload        Json?
-  occurredAt     DateTime            @default(now()) @map("occurred_at")
-  attempt        OdkExamAttempt      @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-
-  @@index([attemptId, occurredAt])
-  @@index([attemptId, type])
-  @@map("odk_exam_attempt_events")
-}
-
-model OdkAttemptOpticalAnswer {
-  id             String         @id @default(cuid())
-  attemptId      String         @map("attempt_id")
-  sectionId      String         @map("section_id")
-  questionNumber Int            @map("question_number")
-  selectedOption String         @map("selected_option")
-  answeredAt     DateTime       @default(now()) @map("answered_at")
-  attempt        OdkExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  section        OdkExamSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-
-  @@unique([attemptId, sectionId, questionNumber])
-  @@index([attemptId])
-  @@map("odk_attempt_optical_answers")
-}
-
-// ─── Panel Foundation (Faz 0) ────────────────────────────────────────────────
-// Veli (Parent), Sınıf (Classroom), Tag ve Yoklama (Attendance) modelleri.
-// Detaylar: docs/panel-system-master-plan.md
-
-enum ClassroomLevel {
-  LGS
-  TYT
-  AYT
-  YDT
-  MIXED
-}
-
-enum TagColor {
-  GRAY
-  BLUE
-  GREEN
-  YELLOW
-  ORANGE
-  RED
-  PURPLE
-  PINK
-}
-
-enum TagScope {
-  STUDENT
-  TEACHER
-  PARENT
-  GENERAL
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  LATE
-  EXCUSED
-  /// Phase 1.5 — öğrenci derse geldi ama erken ayrıldı.
-  /// Risk açısından LATE benzeri "soft warning"; ABSENT sayılmaz.
-  LEFT_EARLY
-}
-
-/// Phase 1.5 — Veli yakınlık tipi. `ParentStudent.relationshipType` üzerinde
-/// kullanılır. Eski `relationship` (free-text) kolonu geriye dönük uyum için
-/// korunur ve `OTHER` seçildiğinde özel etiket olarak kullanılabilir.
-enum ParentRelationship {
-  MOTHER
-  FATHER
-  GUARDIAN
-  SIBLING
-  OTHER
-}
-
-enum AttendanceContext {
-  LESSON
-  CLASSROOM_SESSION
-}
-
-/// Sprint 6 — Manuel öğretmen girişi (default) vs cron'un join event'lerinden
-/// otomatik ürettiği kayıtları ayırt etmek için. AUTO kayıtlar MANUEL kayıtların
-/// üzerine YAZMAZ.
-enum AttendanceSource {
-  MANUAL
-  AUTO
-}
-
-/// Veli kaydı. Opsiyonel olarak `User` (role=PARENT) ile bağlanır; bağlanırsa
-/// veli paneline (`/veli`) erişebilir. Bir veli birden fazla öğrenciye
-/// (kardeşler) bağlanabilir — `ParentStudent` join modeline bakın.
-model Parent {
-  id                         String                @id @default(cuid())
-  fullName                   String
-  phone                      String?
-  /// Telefon numarasının normalize edilmiş hâli (Student.phoneKey ile aynı mantık).
-  phoneKey                   String?               @unique
-  email                      String?               @unique
-  notes                      String?
-  userId                     String?               @unique
-  // ── Phase 1.5 — Veli onboarding davet altyapısı ─────────────────────────
-  /// URL-safe rastgele davet token'ı. Null → davet yok / iptal edildi.
-  /// Veli `/veli-davet/<token>` üzerinden şifre belirler.
-  parentInviteToken          String?               @unique
-  /// Token son kullanma tarihi (DEFAULT_PARENT_INVITE_TTL_DAYS = 14 gün).
-  parentInviteTokenExpiresAt DateTime?
-  /// Davet bağlantısı admin tarafından kopyalandığında set edilir;
-  /// `INVITE_PENDING` durumunu ayırt etmek için kullanılır.
-  parentInviteSentAt         DateTime?
-  createdAt                  DateTime              @default(now())
-  updatedAt                  DateTime              @updatedAt
-  user                       User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
-  students                   ParentStudent[]
-  // ── Phase 2 / Session 6 — Absence excuses ──
-  absenceExcuses             AbsenceExcuse[]
-  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
-  paymentScheduleItems       PaymentScheduleItem[]
-}
-
-model ParentStudent {
-  parentId         String
-  studentId        String
-  /// LEGACY — Phase 1.5 öncesi serbest metin yakınlık ("Anne", "Baba",
-  /// "Vasi", "Dede" vb.). Yeni kayıtlarda boş bırakılabilir; OTHER seçilirse
-  /// özel etiket için kullanılır. Geçmiş veriyi silmemek için tutuyoruz.
-  relationship     String?
-  /// Phase 1.5 — yapısal yakınlık tipi. Null kalabilir (eski kayıtlarda
-  /// `relationship` string yorumlanır); yeni form bu kolonu doldurur.
-  relationshipType ParentRelationship?
-  /// Birden fazla veli bağlıyken birincil iletişim kim?
-  isPrimary        Boolean             @default(false)
-  createdAt        DateTime            @default(now())
-  parent           Parent              @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student          Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@id([parentId, studentId])
-  @@index([studentId])
-}
-
-/// Sınıf/şube. İleride grup dersleri (`Lesson.classroomId`) ve sınıf bazlı
-/// yoklama (`Attendance.classroomId`) için temel.
-model Classroom {
-  id                String                    @id @default(cuid())
-  name              String
-  branch            String?
-  level             ClassroomLevel            @default(MIXED)
-  capacity          Int                       @default(30)
-  description       String?
-  isActive          Boolean                   @default(true)
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-  teachers          ClassroomTeacher[]
-  students          ClassroomStudent[]
-  attendances       Attendance[]
-  lessons           Lesson[]
-  assignments       Assignment[]
-  defaultForCourses Course[]                  @relation("CourseDefaultClassroom")
-  // ── Phase 2 / Session 5 — Materials ──
-  materials         Material[]
-  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
-  compensationRules TeacherCompensationRule[]
-
-  @@unique([name, branch])
-  @@index([isActive])
-}
-
-model ClassroomTeacher {
-  classroomId String
-  teacherId   String
-  isLead      Boolean   @default(false)
-  subject     String?
-  createdAt   DateTime  @default(now())
-  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
-  teacher     Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-
-  @@id([classroomId, teacherId])
-  @@index([teacherId])
-}
-
-model ClassroomStudent {
-  classroomId String
-  studentId   String
-  joinedAt    DateTime  @default(now())
-  leftAt      DateTime?
-  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
-  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@id([classroomId, studentId])
-  @@index([studentId])
-  @@index([classroomId, leftAt])
-}
-
-/// Genel etiket (tag) modeli. Şu an `StudentTag` üzerinden öğrencilere atanır;
-/// `scope` enum'u ile ileride öğretmen/veli için de kullanılabilir.
-model Tag {
-  id          String       @id @default(cuid())
-  /// URL-safe benzersiz anahtar (örn. "vip", "riskli").
-  key         String       @unique
-  label       String
-  color       TagColor     @default(GRAY)
-  scope       TagScope     @default(STUDENT)
-  description String?
-  /// Sistem tarafından otomatik oluşturulmuş tag ise admin silemez.
-  isSystem    Boolean      @default(false)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  students    StudentTag[]
-
-  @@index([scope])
-}
-
-model StudentTag {
-  studentId    String
-  tagId        String
-  assignedById String?
-  assignedAt   DateTime  @default(now())
-  expiresAt    DateTime?
-  note         String?
-  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tag          Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  assignedBy   User?     @relation("StudentTagAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
-
-  @@id([studentId, tagId])
-  @@index([tagId])
-  @@index([assignedById])
-}
-
-/// Yoklama kaydı. `context=LESSON` ise `lessonId` doludur (her öğrenci-ders
-/// için tek kayıt — partial unique index migration'da tanımlı). `context=
-/// CLASSROOM_SESSION` ise `classroomId` doludur ve aynı gün için birden fazla
-/// satır olabilir.
-model Attendance {
-  id            String            @id @default(cuid())
-  studentId     String
-  context       AttendanceContext @default(LESSON)
-  lessonId      String?
-  classroomId   String?
-  sessionDate   DateTime
-  status        AttendanceStatus
-  minutesLate   Int?
-  notes         String?
-  recordedById  String?
-  // ── Sprint 6 / FAZ 2 — Otomatik vs manuel kaynak ────────────────────────
-  source        AttendanceSource  @default(MANUAL)
-  firstJoinedAt DateTime?
-  durationSec   Int?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  student       Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  lesson        Lesson?           @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  classroom     Classroom?        @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  recordedBy    User?             @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
-
-  @@index([studentId, sessionDate])
-  @@index([classroomId, sessionDate])
-  @@index([status])
-  @@index([source])
-}
-
-// ─── Inbox System (Faz 1) ────────────────────────────────────────────────────
-// Birleşik bildirim/inbox omurgası. Mevcut `Notification` modeli read-only
-// olarak kalır (legacy); yeni event'ler bu modele yazılır.
-//
-// `relatedEntityType` + `relatedEntityId` polymorphic referans tutar; örn.
-// "Lesson" + "<lessonId>" → tıklandığında `/panel/dersler/<id>` linkine atar.
-
-enum InboxCategory {
-  SYSTEM
-  FINANCE
-  EDUCATION
-  ANNOUNCEMENT
-  TEACHER_MESSAGE
-  ATTENDANCE
-  ASSIGNMENT
-}
-
-enum InboxPriority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-model InboxMessage {
-  id                String        @id @default(cuid())
-  recipientUserId   String
-  category          InboxCategory @default(SYSTEM)
-  priority          InboxPriority @default(NORMAL)
-  title             String
-  body              String
-  href              String?
-  relatedEntityType String?
-  relatedEntityId   String?
-  createdById       String?
-  readAt            DateTime?
-  archivedAt        DateTime?
-  createdAt         DateTime      @default(now())
-  recipient         User          @relation("InboxRecipient", fields: [recipientUserId], references: [id], onDelete: Cascade)
-  createdBy         User?         @relation("InboxCreator", fields: [createdById], references: [id], onDelete: SetNull)
-
-  @@index([recipientUserId, readAt, createdAt])
-  @@index([recipientUserId, archivedAt])
-  @@index([category, priority])
-}
-
-// ─── CRM Notes / Comments / Files (Faz 3) ───────────────────────────────────
-
-/// Admin/öğretmen tarafından öğrenci kayıtlarına eklenen iç notlar.
-/// `isPrivate=true` → sadece admin görür; veli/öğretmen görmez.
-model StudentNote {
-  id        String   @id @default(cuid())
-  studentId String
-  authorId  String?
-  content   String
-  isPrivate Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  author    User?    @relation("StudentNoteAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-
-  @@index([studentId, createdAt])
-}
-
-/// Öğretmenin öğrenci için yazdığı veliyle paylaşılabilen yorum/değerlendirme.
-model TeacherComment {
-  id              String   @id @default(cuid())
-  studentId       String
-  teacherId       String
-  content         String
-  rating          Int?
-  visibleToParent Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  teacher         Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-
-  @@index([studentId, createdAt])
-  @@index([teacherId, createdAt])
-}
-
-/// Öğrenci dosyaları (transkript, ödev, kimlik vb.). Vercel Blob URL'i tutar.
-model StudentFile {
-  id           String   @id @default(cuid())
-  studentId    String
-  uploadedById String?
-  fileName     String
-  fileUrl      String
-  byteSize     Int      @default(0)
-  mimeType     String?
-  description  String?
-  createdAt    DateTime @default(now())
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  uploadedBy   User?    @relation("StudentFileUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
-
-  @@index([studentId, createdAt])
-}
-
-// ─── Assignment / Submission (Faz 4) ────────────────────────────────────────
-
-enum AssignmentStatus {
-  DRAFT
-  PUBLISHED
-  CLOSED
-}
-
-enum SubmissionStatus {
-  PENDING
-  SUBMITTED
-  GRADED
-  LATE
-  MISSED
-}
-
-/// Ödev. Üç şekilde dağıtılabilir:
-///   1) classroomId dolu → o sınıftaki tüm öğrenciler
-///   2) studentId dolu (DirectAssignment) → tek öğrenciye
-///   3) ikisi de null → öğretmenin tüm aktif öğrencilerine (geniş)
-model Assignment {
-  id            String                 @id @default(cuid())
-  teacherId     String
-  classroomId   String?
-  studentId     String?
-  title         String
-  description   String?
-  subject       String?
-  dueAt         DateTime?
-  maxScore      Int?
-  attachmentUrl String?
-  status        AssignmentStatus       @default(PUBLISHED)
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  teacher       Teacher                @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  classroom     Classroom?             @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  student       Student?               @relation("DirectAssignment", fields: [studentId], references: [id], onDelete: SetNull)
-  submissions   AssignmentSubmission[]
-  // ── Phase 2 / Session 9 — Attached learning materials ────────────
-  materials     AssignmentMaterial[]
-
-  @@index([teacherId, status])
-  @@index([classroomId, status])
-  @@index([dueAt])
-}
-
-model AssignmentSubmission {
-  id            String           @id @default(cuid())
-  assignmentId  String
-  studentId     String
-  status        SubmissionStatus @default(PENDING)
-  content       String?
-  attachmentUrl String?
-  submittedAt   DateTime?
-  score         Int?
-  feedback      String?
-  gradedAt      DateTime?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  assignment    Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student       Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([assignmentId, studentId])
-  @@index([studentId, status])
-}
-
-// ─── Accounting (Faz 5) ─────────────────────────────────────────────────────
-
-enum EntryType {
-  INCOME
-  EXPENSE
-}
-
-enum EntryCategory {
-  PACKAGE_SALE
-  CAMP_SALE
-  SERVICE_FEE
-  OTHER_INCOME
-  TEACHER_PAYROLL
-  MARKETING
-  RENT
-  TAX
-  OPERATIONAL
-  OTHER_EXPENSE
-}
-
-enum PayrollStatus {
-  DUE
-  PAID
-  CANCELLED
-}
-
-/// Tek satırlık muhasebe kaydı (gelir veya gider). Tutar `Int` (kuruş).
-/// `refType`/`refId` polymorphic kaynak referansı (örn. PurchaseIntent, TeacherPayroll).
-/// `service` = OD veya ODK — ürün bazlı muhasebe ayrımı (FAZ 4).
-model AccountingEntry {
-  id                   String                @id @default(cuid())
-  service              AccessService         @default(OD)
-  type                 EntryType
-  category             EntryCategory         @default(OTHER_INCOME)
-  amount               Int
-  occurredAt           DateTime              @default(now())
-  description          String?
-  refType              String?
-  refId                String?
-  studentId            String?
-  packageId            String?
-  teacherId            String?
-  createdById          String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  student              Student?              @relation("AccountingStudent", fields: [studentId], references: [id], onDelete: SetNull)
-  package              Package?              @relation("AccountingPackage", fields: [packageId], references: [id], onDelete: SetNull)
-  teacher              Teacher?              @relation("AccountingTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  createdBy            User?                 @relation("AccountingCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  // ── Phase 2 / Session 10 — Parent Finance Due Tracking ──
-  paymentScheduleItems PaymentScheduleItem[]
-  // ── Phase 2 / Session 11 — Teacher Payroll Hub ──
-  payrollItems         TeacherPayrollItem[]
-
-  @@index([type, occurredAt])
-  @@index([category, occurredAt])
-  @@index([studentId])
-  @@index([teacherId])
-  @@index([service, occurredAt])
-  @@index([service, type])
-}
-
-/// Öğretmen maaş döngüsü (örn. Mart 2026 maaşı). PAID olduğunda otomatik olarak
-/// bir AccountingEntry (EXPENSE / TEACHER_PAYROLL) yazılır.
-model TeacherPayroll {
-  id          String        @id @default(cuid())
-  teacherId   String
-  periodStart DateTime
-  periodEnd   DateTime
-  amount      Int
-  status      PayrollStatus @default(DUE)
-  paidAt      DateTime?
-  notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  teacher     Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-
-  @@unique([teacherId, periodStart, periodEnd])
-  @@index([teacherId, status])
-  @@index([status, periodEnd])
-}
-
-// ─── Permission System (Faz 0 — Rebuild) ────────────────────────────────────
-// DB-driven RBAC. Defaults seeded from `lib/rbac/matrix.ts` via
-// `prisma/seeds/permissions.ts`. Per-user overrides in `UserPermissionOverride`.
-
-/// Permission key registry. Source of truth is `lib/rbac/matrix.ts` —
-/// seed script upserts these. UI reads via `/api/v1/me/permissions`.
-model Permission {
-  id              String                   @id @default(cuid())
-  /// "students.read", "payments.write", etc.
-  key             String                   @unique
-  category        String
-  description     String?
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-  rolePermissions RolePermission[]
-  userOverrides   UserPermissionOverride[]
-
-  @@index([category])
-}
-
-/// Default permission set per role.
-model RolePermission {
-  role         UserRole
-  permissionId String
-  createdAt    DateTime   @default(now())
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@id([role, permissionId])
-  @@index([permissionId])
-}
-
-/// Per-user override on top of role defaults.
-/// granted=true → ekle, granted=false → çıkar.
-model UserPermissionOverride {
-  userId       String
-  permissionId String
-  granted      Boolean
-  reason       String?
-  createdAt    DateTime   @default(now())
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@id([userId, permissionId])
-  @@index([permissionId])
-}
-
-/// Refresh token — JWT rotation. Faz 0'da tablo eklendi, Faz 4'te kullanılacak.
-model RefreshToken {
-  id        String    @id @default(cuid())
-  userId    String
-  tokenHash String    @unique
-  expiresAt DateTime
-  revokedAt DateTime?
-  userAgent String?
-  ip        String?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, revokedAt])
-  @@index([expiresAt])
-}
-
-/// Saved table filters / segments — admin "VIP öğrenciler", "Geç ödeyenler" gibi.
-model SavedView {
-  id        String   @id @default(cuid())
-  ownerId   String
-  /// "students" | "payments" | "lessons" | ...
-  scope     String
-  name      String
-  filter    Json
-  isShared  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
-  @@index([ownerId, scope])
-  @@index([scope, isShared])
-}
-
-enum DashboardPanelKey {
-  ADMIN
-  TEACHER
-  STUDENT
-  PARENT
-}
-
-/// Per-user dashboard widget layout (react-grid-layout JSON).
-model DashboardLayout {
-  userId    String
-  panel     DashboardPanelKey
-  layout    Json
-  updatedAt DateTime          @updatedAt
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([userId, panel])
-}
-
-/// Realtime event log — Pusher pivot, audit-friendly.
-/// channel format: "user:<id>" | "classroom:<id>" | "panel:<panel>" | "global"
-model RealtimeEvent {
-  id        String   @id @default(cuid())
-  channel   String
-  type      String
-  payload   Json
-  createdAt DateTime @default(now())
-
-  @@index([channel, createdAt])
-  @@index([type, createdAt])
-}
-
-// ─── Mobile (Faz Mobile) ─────────────────────────────────────────────────────
-// Mobil uygulama için additive (mevcut hiçbir tablo değişmez).
-// Detay: mobile-app/docs/BACKEND_GAPS.md
-
-enum MobilePlatform {
-  IOS
-  ANDROID
-  WEB
-}
-
-enum NotificationChannel {
-  PUSH
-  INBOX
-  EMAIL
-}
-
-enum NotificationCategoryKey {
-  LESSON
-  ASSIGNMENT
-  EXAM
-  ANNOUNCEMENT
-  TEACHER_MESSAGE
-  ATTENDANCE
-  PAYMENT
-  SYSTEM
-}
-
-/// Kullanıcının mobil cihazları — push token registry.
-/// Bir kullanıcının birden çok cihazı olabilir (telefon + tablet).
-model MobileDevice {
-  id            String         @id @default(cuid())
-  userId        String         @map("user_id")
-  expoPushToken String         @unique @map("expo_push_token")
-  platform      MobilePlatform
-  appVersion    String         @map("app_version")
-  deviceModel   String?        @map("device_model")
-  osVersion     String?        @map("os_version")
-  locale        String?
-  timezone      String?
-  lastSeenAt    DateTime       @default(now()) @map("last_seen_at")
-  revokedAt     DateTime?      @map("revoked_at")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, revokedAt])
-  @@index([lastSeenAt])
-  @@map("mobile_devices")
-}
-
-/// Kullanıcı bazında bildirim tercihleri (kategori × kanal).
-/// Eksik satır = açık (defansif default).
-model NotificationPreference {
-  id        String                  @id @default(cuid())
-  userId    String                  @map("user_id")
-  category  NotificationCategoryKey
-  channel   NotificationChannel
-  enabled   Boolean                 @default(true)
-  createdAt DateTime                @default(now()) @map("created_at")
-  updatedAt DateTime                @updatedAt @map("updated_at")
-  user      User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, category, channel])
-  @@index([userId])
-  @@map("notification_preferences")
-}
-
-enum DailyTaskSource {
-  ASSIGNMENT
-  LESSON
-  EXAM
-  GOAL
-  MANUAL
-}
-
-/// Mobil-spesifik öğrenci todo. Streak hesabı buradan beslenir.
-model StudentDailyTask {
-  id          String          @id @default(cuid())
-  studentId   String          @map("student_id")
-  title       String
-  description String?
-  sourceType  DailyTaskSource @map("source_type")
-  sourceId    String?         @map("source_id")
-  dueAt       DateTime?       @map("due_at")
-  isDone      Boolean         @default(false) @map("is_done")
-  doneAt      DateTime?       @map("done_at")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
-  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@index([studentId, dueAt])
-  @@index([studentId, isDone])
-  @@map("student_daily_tasks")
-}
-
-/// Mobil ekran görüntüleme / app açılış telemetrisi (streak için).
-model AppActivityLog {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  action    String
-  payload   Json?
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@map("app_activity_logs")
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// Online Dershanem (OD) ödeme akışı — paket bazlı (Package) tek seferlik
-// ödeme. ODK ile aynı PayTR altyapısını kullanır; merchant_oid prefix'i
-// "OD" ile başlar. Başarılı ödeme sonrası entitlement OTOMATİK YOK; admin
-// hocaları manuel atayacaktır. PurchaseIntent kaydı linklenir.
-// ──────────────────────────────────────────────────────────────────────────
-
 model OdOrder {
   id            String         @id @default(cuid())
-  // Guest checkout: ödeme bir hesaba bağlı olmak zorunda değil. Ödeme alındıktan
-  // sonra admin öğrenci/veli hesabı oluşturup order'ı kullanıcıya bağlar.
-  // `status=PAID AND userId IS NULL` = "hesap açılacak" onboarding kuyruğu.
-  userId        String?        @map("user_id")
   packageId     String?        @map("package_id")
   packageName   String         @map("package_name")
   category      String?
@@ -2030,13 +287,9 @@ model OdOrder {
   intentId      String?        @map("intent_id")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
-  // onDelete: SetNull → kullanıcı silinse bile ödenmiş order (ve muhasebe izi)
-  // korunur; order guest'e geri döner. Cascade KULLANMA (ödeme kaybı riski).
-  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   package       Package?       @relation(fields: [packageId], references: [id], onDelete: SetNull)
   payments      OdPayment[]
 
-  @@index([userId, status])
   @@index([status, createdAt])
   @@index([intentId])
   @@map("od_orders")
@@ -2060,46 +313,22 @@ model OdPayment {
   @@map("od_payments")
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Coupon / Discount codes (FAZ 7)
-// Admin tarafından tanımlanır; sepette uygulanır; OD ve/veya ODK için geçerli.
-// ─────────────────────────────────────────────────────────────────────────────
-
-enum CouponType {
-  PERCENT // %20 indirim
-  FIXED // ₺200 sabit indirim
-}
-
-enum CouponService {
-  OD
-  ODK
-  ALL
-}
-
 model Coupon {
   id               String             @id @default(cuid())
   code             String             @unique
   description      String?
   type             CouponType         @default(PERCENT)
   service          CouponService      @default(ALL)
-  // PERCENT için: 1-100 (%)
-  // FIXED   için: kuruş cinsinden indirim tutarı
   value            Int
-  // Sepette minimum tutar (kuruş). 0 = sınır yok.
   minOrderCents    Int                @default(0) @map("min_order_cents")
-  // PERCENT için indirim üst sınırı (kuruş). 0 = sınır yok.
   maxDiscountCents Int                @default(0) @map("max_discount_cents")
-  // Toplam kullanım hakkı. 0 = sınırsız.
   usageLimit       Int                @default(0) @map("usage_limit")
-  // Kullanıcı başı maksimum. 0 = sınırsız.
   perUserLimit     Int                @default(1) @map("per_user_limit")
   startsAt         DateTime?          @map("starts_at")
   expiresAt        DateTime?          @map("expires_at")
   isActive         Boolean            @default(true) @map("is_active")
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
-  createdById      String?            @map("created_by_id")
-  createdBy        User?              @relation("CouponCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   redemptions      CouponRedemption[]
 
   @@index([isActive, expiresAt])
@@ -2109,441 +338,15 @@ model Coupon {
 model CouponRedemption {
   id            String   @id @default(cuid())
   couponId      String   @map("coupon_id")
-  userId        String   @map("user_id")
-  // Hangi siparişte kullanıldı. OdOrder veya OdkOrder id'si — ikisi de String.
-  orderService  String   @map("order_service") // "OD" | "ODK"
+  customerKey   String   @map("customer_key")
+  orderService  String   @map("order_service")
   orderId       String   @map("order_id")
   discountCents Int      @map("discount_cents")
   redeemedAt    DateTime @default(now()) @map("redeemed_at")
   coupon        Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  user          User     @relation("CouponRedemptionUser", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([couponId])
-  @@index([userId])
+  @@index([customerKey])
   @@index([orderService, orderId])
   @@map("coupon_redemptions")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Account Deletion Request (KVKK madde 7 & 11 / Faz Production-Readiness)
-// Kullanıcı hesabını silmek istediğinde 7 günlük bekleme süresi başlar.
-// Admin onayı sonrası cron, kullanıcıyı KVKK uyumlu şekilde anonimleştirir
-// (finansal kayıtlar — sipariş, ödeme, muhasebe — Türk Vergi mevzuatı gereği
-// 5+ yıl saklanmak zorunda olduğu için hard-delete yerine anonimleştirme).
-// ─────────────────────────────────────────────────────────────────────────────
-
-enum AccountDeletionStatus {
-  PENDING // kullanıcı talep etti, admin incelemesi bekleniyor
-  APPROVED // admin onayladı, scheduledFor sonrası cron işleyecek
-  REJECTED // admin reddetti
-  CANCELLED // kullanıcı kendi iptal etti
-  PROCESSED // cron anonimleştirme işlemini tamamladı
-}
-
-model AccountDeletionRequest {
-  id            String                @id @default(cuid())
-  userId        String                @map("user_id")
-  reason        String?
-  status        AccountDeletionStatus @default(PENDING)
-  requestedAt   DateTime              @default(now()) @map("requested_at")
-  scheduledFor  DateTime              @map("scheduled_for") // 7 gün sonrası
-  reviewedById  String?               @map("reviewed_by_id")
-  reviewedAt    DateTime?             @map("reviewed_at")
-  reviewerNotes String?               @map("reviewer_notes")
-  processedAt   DateTime?             @map("processed_at")
-  createdAt     DateTime              @default(now()) @map("created_at")
-  updatedAt     DateTime              @updatedAt @map("updated_at")
-
-  user       User  @relation("AccountDeletionRequestUser", fields: [userId], references: [id], onDelete: Cascade)
-  reviewedBy User? @relation("AccountDeletionRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
-
-  @@index([status, scheduledFor])
-  @@index([userId, status])
-  @@map("account_deletion_requests")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Study Session — Phase 2 / Session 4
-// Student-driven self-study tracking. Powers the Study Room
-// (`/panel/ogrenci/calisma-odasi`). Strictly student-owned.
-// Operational invariant (app-level): at most one row per studentId with
-// endedAt IS NULL — that row is the "active session".
-// ─────────────────────────────────────────────────────────────────────────────
-model StudySession {
-  id              String    @id @default(cuid())
-  studentId       String
-  courseId        String?
-  subject         String?
-  startedAt       DateTime  @default(now())
-  endedAt         DateTime?
-  durationSeconds Int?
-  note            String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  course  Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
-
-  @@index([studentId, startedAt])
-  @@index([studentId, endedAt])
-  @@index([courseId])
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Material Library — Phase 2 / Session 5
-// Shared course/class learning materials. URL-first; file uploads via
-// Vercel Blob are deferred. Permission boundary is enforced in
-// lib/panel/materials.ts (the DB just stores the row + indexes).
-// ─────────────────────────────────────────────────────────────────────────────
-enum MaterialType {
-  PDF
-  VIDEO
-  LINK
-  FILE
-  NOTE
-}
-
-enum MaterialVisibility {
-  CLASSROOM
-  STUDENTS
-  TEACHERS
-  PRIVATE
-}
-
-model Material {
-  id          String             @id @default(cuid())
-  title       String
-  description String?
-  type        MaterialType       @default(LINK)
-  url         String?
-  fileUrl     String?
-  subject     String?
-  courseId    String?
-  classroomId String?
-  teacherId   String?
-  createdById String?
-  visibility  MaterialVisibility @default(CLASSROOM)
-  isPublished Boolean            @default(true)
-  isArchived  Boolean            @default(false)
-  publishedAt DateTime?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  course    Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  classroom Classroom? @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  teacher   Teacher?   @relation(fields: [teacherId], references: [id], onDelete: SetNull)
-  createdBy User?      @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: SetNull)
-
-  // ── Phase 2 / Session 9 — Reverse links to attachment join rows ──
-  assignments AssignmentMaterial[]
-  lessons     LessonMaterial[]
-
-  @@index([classroomId, isPublished, createdAt])
-  @@index([courseId, isPublished])
-  @@index([teacherId, createdAt])
-  @@index([createdById])
-  @@index([visibility, isPublished])
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Phase 2 / Session 9 — Material attachments
-// Join rows that connect existing Material records to Assignment / Lesson.
-// Permission is enforced at the helper layer (lib/panel/material-attachments).
-// Cascade on both sides so a deleted assignment / lesson / material cleans up
-// its attachment rows automatically.
-// ─────────────────────────────────────────────────────────────────────────────
-model AssignmentMaterial {
-  assignmentId String
-  materialId   String
-  createdAt    DateTime @default(now())
-
-  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  material   Material   @relation(fields: [materialId], references: [id], onDelete: Cascade)
-
-  @@id([assignmentId, materialId])
-  @@index([materialId])
-  @@map("assignment_materials")
-}
-
-model LessonMaterial {
-  lessonId   String
-  materialId String
-  createdAt  DateTime @default(now())
-
-  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
-
-  @@id([lessonId, materialId])
-  @@index([materialId])
-  @@map("lesson_materials")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Absence Excuse — Phase 2 / Session 6
-// Persistent parent-submitted absence excuse with teacher/admin review.
-// On APPROVE the application code (lib/panel/absence-excuses.ts) writes
-// EXCUSED rows to Attendance for affected lessons in [startsAt, endsAt],
-// but only where existing attendance is missing or ABSENT — manual
-// PRESENT/LATE/LEFT_EARLY readings are sacred and never overwritten.
-// ─────────────────────────────────────────────────────────────────────────────
-enum AbsenceExcuseReason {
-  ILLNESS
-  FAMILY
-  TECHNICAL
-  TRAVEL
-  OTHER
-}
-
-enum AbsenceExcuseStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
-}
-
-model AbsenceExcuse {
-  id            String              @id @default(cuid())
-  parentId      String
-  studentId     String
-  lessonId      String?
-  startsAt      DateTime
-  endsAt        DateTime
-  reason        AbsenceExcuseReason
-  note          String?
-  attachmentUrl String?
-  status        AbsenceExcuseStatus @default(PENDING)
-  reviewedById  String?
-  reviewedAt    DateTime?
-  reviewNote    String?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-
-  parent     Parent  @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  lesson     Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  reviewedBy User?   @relation("AbsenceExcuseReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
-
-  @@index([studentId, status, startsAt])
-  @@index([parentId, createdAt])
-  @@index([lessonId])
-  @@index([status, createdAt])
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Phase 2 / Session 7 — Student Academic Goal (Roadmap / Target Tracker)
-// ─────────────────────────────────────────────────────────────────────────
-
-enum AcademicGoalExamType {
-  TYT
-  AYT
-  LGS
-  YKS
-  OTHER
-}
-
-model StudentAcademicGoal {
-  id               String                @id @default(cuid())
-  studentId        String
-  examType         AcademicGoalExamType?
-  targetUniversity String?
-  targetDepartment String?
-  targetSchool     String?
-  targetScore      Decimal?              @db.Decimal(8, 2)
-  targetNet        Decimal?              @db.Decimal(8, 2)
-  targetRank       Int?
-  targetDate       DateTime?
-  note             String?
-  isActive         Boolean               @default(true)
-  createdById      String?
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
-
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  createdBy User?   @relation("StudentAcademicGoalCreator", fields: [createdById], references: [id], onDelete: SetNull)
-
-  @@index([studentId, isActive])
-  @@index([targetDate])
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Phase 2 / Session 10 — Parent Finance Due Tracking
-//
-// Minimal additive due/installment model. Stores **base** statuses only:
-//   PENDING | PAID | CANCELLED | PARTIAL
-// OVERDUE is **derived in lib/panel/parent-finance.ts** at read time
-// (PENDING + dueDate < today) so we never depend on a cron job to keep
-// status fresh. Amounts are kuruş (Int), matching AccountingEntry and
-// TeacherPayroll. Currency is implicitly TRY.
-//
-// `accountingEntryId` optionally links the row to an INCOME ledger entry
-// produced when an admin marks the schedule item paid. Historical
-// accounting entries are NEVER mutated by this model — pruning a schedule
-// item only nulls the FK on its side.
-// ─────────────────────────────────────────────────────────────────────────────
-
-enum PaymentScheduleStatus {
-  PENDING
-  PAID
-  CANCELLED
-  PARTIAL
-}
-
-model PaymentScheduleItem {
-  id                String                @id @default(cuid())
-  studentId         String?
-  parentId          String?
-  purchaseIntentId  String?
-  packageId         String?
-  title             String
-  amount            Int // kuruş
-  paidAmount        Int                   @default(0) // kuruş, partial sum
-  dueDate           DateTime
-  status            PaymentScheduleStatus @default(PENDING)
-  paidAt            DateTime?
-  accountingEntryId String?
-  paymentLink       String?
-  note              String?
-  createdById       String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-
-  student         Student?         @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  parent          Parent?          @relation(fields: [parentId], references: [id], onDelete: SetNull)
-  purchaseIntent  PurchaseIntent?  @relation(fields: [purchaseIntentId], references: [id], onDelete: SetNull)
-  package         Package?         @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  accountingEntry AccountingEntry? @relation(fields: [accountingEntryId], references: [id], onDelete: SetNull)
-  createdBy       User?            @relation("PaymentScheduleItemCreator", fields: [createdById], references: [id], onDelete: SetNull)
-
-  @@index([studentId, dueDate])
-  @@index([parentId, dueDate])
-  @@index([status, dueDate])
-  @@index([purchaseIntentId])
-  @@index([packageId])
-  @@index([accountingEntryId])
-}
-
-// ─── Phase 2 / Session 11 — Teacher Payroll Hub ─────────────────────────────
-//
-// Lesson-level payroll layer that lives ALONGSIDE the existing manual
-// flat-period `TeacherPayroll` model. The legacy model stays untouched
-// at `/panel/admin/maaslar`. This new layer powers
-// `/panel/admin/ogretmen-hakedisleri`.
-//
-// Money is `Int` (kuruş), matching `AccountingEntry.amount`.
-// Idempotent generation: at most one row per (period, teacher, lesson).
-
-enum TeacherPayrollPeriodStatus {
-  DRAFT
-  REVIEWED
-  LOCKED
-  PAID
-  CANCELLED
-}
-
-enum TeacherPayrollItemStatus {
-  DRAFT
-  REVIEWED
-  APPROVED
-  PAID
-  EXCLUDED
-}
-
-/// Bir öğretmenin saatlik ücreti. Course/Classroom opsiyoneldir; bu sayede
-/// "Ahmet Hoca için varsayılan saatlik X" + "Ahmet Hoca'nın LGS Matematik
-/// dersinde saatlik Y" gibi hiyerarşik kurallar tanımlanabilir.
-/// Eşleştirme öncelik sırası `lib/panel/teacher-payroll.ts` içinde:
-///   1) (teacher, course, classroom) tam eşleşme
-///   2) (teacher, course)
-///   3) (teacher, classroom)
-///   4) (teacher) varsayılanı
-model TeacherCompensationRule {
-  id          String    @id @default(cuid())
-  teacherId   String
-  courseId    String?
-  classroomId String?
-  /// Saatlik ücret (kuruş). 60 dakika = bu değer.
-  hourlyRate  Int
-  isActive    Boolean   @default(true)
-  startsAt    DateTime?
-  endsAt      DateTime?
-  note        String?
-  createdById String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  teacher      Teacher              @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  course       Course?              @relation(fields: [courseId], references: [id], onDelete: SetNull)
-  classroom    Classroom?           @relation(fields: [classroomId], references: [id], onDelete: SetNull)
-  createdBy    User?                @relation("CompensationRuleCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  payrollItems TeacherPayrollItem[]
-
-  @@index([teacherId, isActive])
-  @@index([courseId])
-  @@index([classroomId])
-}
-
-/// Bordro dönemi (örn. "Mart 2026"). Status DRAFT'ta items üretilir/yenilenir;
-/// LOCKED olunca sadece görüntüleme ve "ödendi" işlemi mümkündür. PAID dönemin
-/// items'ı yeniden üretilemez (idempotency korunur).
-model TeacherPayrollPeriod {
-  id          String                     @id @default(cuid())
-  title       String
-  startsAt    DateTime
-  endsAt      DateTime
-  status      TeacherPayrollPeriodStatus @default(DRAFT)
-  lockedAt    DateTime?
-  paidAt      DateTime?
-  note        String?
-  createdById String?
-  createdAt   DateTime                   @default(now())
-  updatedAt   DateTime                   @updatedAt
-
-  createdBy User?                @relation("PayrollPeriodCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  items     TeacherPayrollItem[]
-
-  @@index([status, startsAt])
-  @@index([startsAt, endsAt])
-}
-
-/// Tek bir hakediş satırı. `lessonId` dolu ise ders bazlıdır
-/// ((periodId, teacherId, lessonId) partial-unique migration'da). NULL ise
-/// elle eklenmiş ayar/düzeltme satırıdır.
-///
-/// Tutar mantığı:
-///   grossAmount     = hourlyRate * (minutes / 60), Math.round
-///   finalAmount     = grossAmount + adjustmentAmount
-///
-/// `rateMissing=true` olan satırlar için hourlyRate=0; ödendi olarak
-/// işaretlenmesine helper engel olur.
-model TeacherPayrollItem {
-  id                 String                   @id @default(cuid())
-  periodId           String
-  teacherId          String
-  lessonId           String?
-  compensationRuleId String?
-  minutes            Int                      @default(0)
-  hourlyRate         Int                      @default(0)
-  grossAmount        Int                      @default(0)
-  adjustmentAmount   Int                      @default(0)
-  finalAmount        Int                      @default(0)
-  status             TeacherPayrollItemStatus @default(DRAFT)
-  rateMissing        Boolean                  @default(false)
-  attendanceMissing  Boolean                  @default(false)
-  note               String?
-  accountingEntryId  String?
-  createdById        String?
-  createdAt          DateTime                 @default(now())
-  updatedAt          DateTime                 @updatedAt
-
-  period           TeacherPayrollPeriod     @relation(fields: [periodId], references: [id], onDelete: Cascade)
-  teacher          Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  lesson           Lesson?                  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  compensationRule TeacherCompensationRule? @relation(fields: [compensationRuleId], references: [id], onDelete: SetNull)
-  accountingEntry  AccountingEntry?         @relation(fields: [accountingEntryId], references: [id], onDelete: SetNull)
-  createdBy        User?                    @relation("PayrollItemCreator", fields: [createdById], references: [id], onDelete: SetNull)
-
-  @@index([teacherId, status])
-  @@index([periodId, teacherId])
-  @@index([lessonId])
-  @@index([status])
 }

@@ -21,12 +21,7 @@ type EnvCheck = {
 
 const CHECKS: EnvCheck[] = [
   { key: "DATABASE_URL", required: true, description: "PostgreSQL bağlantı dizesi" },
-  { key: "NEXTAUTH_SECRET", required: true, description: "NextAuth JWT sign key" },
-  { key: "NEXTAUTH_URL", required: false, prodOnly: true, description: "Public URL (prod'da gerekli)" },
-  { key: "PUSHER_APP_ID", required: false, description: "Realtime (opsiyonel)" },
-  { key: "PUSHER_KEY", required: false, description: "Realtime (opsiyonel)" },
-  { key: "PUSHER_SECRET", required: false, description: "Realtime (opsiyonel)" },
-  { key: "EXPO_ACCESS_TOKEN", required: false, description: "Expo push (opsiyonel, prod'da önerilir)" },
+  { key: "NEXT_PUBLIC_APP_URL", required: false, prodOnly: true, description: "Public site URL" },
   { key: "PAYTR_MERCHANT_ID", required: false, prodOnly: true, description: "PayTR (ödeme alacaksa zorunlu)" },
   { key: "PAYTR_MERCHANT_KEY", required: false, prodOnly: true, description: "PayTR" },
   { key: "PAYTR_MERCHANT_SALT", required: false, prodOnly: true, description: "PayTR" },
@@ -59,12 +54,6 @@ export function validateEnvOnce(): {
     } else if (!v) {
       warnings.push(`${c.key}: tanımsız — ${c.description}`);
     }
-  }
-
-  // Weak secret check
-  const secret = process.env.NEXTAUTH_SECRET;
-  if (isProd && secret && secret.length < 32) {
-    warnings.push("NEXTAUTH_SECRET zayıf (<32 char). En az 32 byte random öneriliyor.");
   }
 
   const banner = [

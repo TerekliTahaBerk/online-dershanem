@@ -1,44 +1,6 @@
 {
   "crons": [
-    {
-      "path": "/api/cron/email-retry",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/notification-digest",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/audit-retention",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/lesson-reminders",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/lesson-lifecycle-tick",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/assignment-reminders",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/parent-weekly-digest",
-      "schedule": "0 5 * * 1"
-    },
-    {
-      "path": "/api/cron/scheduled-reminders",
-      "schedule": "30 8 * * *"
-    },
-    {
-      "path": "/api/cron/rate-limit-prune",
-      "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/cron/account-deletion-process",
-      "schedule": "0 2 * * *"
-    }
+    { "path": "/api/cron/email-retry", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/rate-limit-prune", "schedule": "0 4 * * *" }
   ]
 }

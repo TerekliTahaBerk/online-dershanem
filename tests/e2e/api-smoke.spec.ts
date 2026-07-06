@@ -16,9 +16,9 @@ test("/api/health (varsa) 200 döner", async ({ request }) => {
   expect([200, 404]).toContain(res.status());
 });
 
-test("/api/v1/me/products yetkisiz → 401", async ({ request }) => {
+test("kaldırılan panel API'si 404 döner", async ({ request }) => {
   const res = await request.get("/api/v1/me/products");
-  expect([401, 403]).toContain(res.status());
+  expect(res.status()).toBe(404);
 });
 
 test("OG image endpoint'i — anasayfa", async ({ request }) => {
