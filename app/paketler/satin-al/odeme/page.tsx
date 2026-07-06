@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { PaytrIframeShell } from "@/components/checkout/paytr-iframe-shell";
 import { prisma } from "@/lib/prisma";
 import { createOdCheckoutSession } from "@/lib/od/checkout";
@@ -78,9 +78,9 @@ export default async function OdPaymentPage({
   const editHref = "/sepet";
 
   return (
-    <>
-      <Navbar />
-      <main className="od-public min-h-screen bg-[var(--od-cream)] py-10 sm:py-14">
+    <div className="site-scope">
+      <SiteHeader />
+      <main className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14">
         <PaytrIframeShell
           breadcrumb={[
             { label: "Matematik Ders Paketi", href: "/#matematik-ders-paketi" },
@@ -95,7 +95,7 @@ export default async function OdPaymentPage({
           checkout={checkout}
         />
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

@@ -157,14 +157,14 @@ export function ContactLeadForm() {
   if (status === "success") {
     const message = buildMessage(form);
     return (
-      <div className="rounded-[24px] border border-[var(--od-line)] bg-white p-8 sm:p-10" role="status" aria-live="polite">
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--od-olive)]/10 text-[var(--od-olive)]">
+      <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-8 sm:p-10" role="status" aria-live="polite">
+        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
           <Check size={24} strokeWidth={2.2} aria-hidden="true" />
         </span>
-        <h2 className="mt-5 font-display text-[26px] leading-tight text-[var(--od-ink)]">
+        <h2 className="mt-5 font-display text-[26px] leading-tight text-[var(--site-ink)]">
           {saved ? "Talebiniz bize ulaştı." : "Talebiniz hazır."}
         </h2>
-        <p className="mt-2 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+        <p className="mt-2 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
           {saved
             ? "Talebinizi aldık. Ekibimiz tercih ettiğiniz kanaldan size dönecek; isterseniz aşağıdan doğrudan da yazabilirsiniz."
             : "Formu kaydedemedik. Talebinizi aşağıdaki seçeneklerden biriyle doğrudan bize iletebilirsiniz."}
@@ -181,7 +181,7 @@ export function ContactLeadForm() {
           </a>
           <a
             href={`mailto:${contact.email}?subject=${encodeURIComponent("Ön görüşme talebi — Online Dershanem")}&body=${encodeURIComponent(message)}`}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-[14px] font-semibold text-[var(--od-ink)] transition hover:border-[var(--od-ink)]/35"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--site-line)] bg-white px-6 py-3 text-[14px] font-semibold text-[var(--site-ink)] transition hover:bg-[var(--site-bg-warm)]"
           >
             <Mail size={16} aria-hidden="true" />
             E-posta ile gönder
@@ -194,7 +194,7 @@ export function ContactLeadForm() {
             setStatus("idle");
             setSaved(false);
           }}
-          className="mt-5 text-[13px] text-[var(--od-ink-soft)] underline-offset-2 hover:text-[var(--od-ink)] hover:underline"
+          className="mt-5 text-[13px] text-[var(--site-body)] underline-offset-2 hover:text-[var(--site-ink)] hover:underline"
         >
           Yeni talep oluştur
         </button>
@@ -207,12 +207,12 @@ export function ContactLeadForm() {
       ref={formRef}
       onSubmit={handleSubmit}
       noValidate
-      className="rounded-[24px] border border-[var(--od-line)] bg-white p-7 sm:p-9"
+      className="rounded-[24px] border border-[var(--site-line)] bg-white p-7 sm:p-9"
     >
-      <h2 className="font-display text-[26px] leading-tight text-[var(--od-ink)] sm:text-[30px]">
+      <h2 className="font-display text-[26px] leading-tight text-[var(--site-ink)] sm:text-[30px]">
         Kısa ön görüşme talebi
       </h2>
-      <p className="mt-2 text-[14px] leading-7 text-[var(--od-ink-soft)]">
+      <p className="mt-2 text-[14px] leading-7 text-[var(--site-body)]">
         Bilgilerinizi paylaşırsanız tercih ettiğiniz kanaldan size döneriz. Bu form bir
         ödeme adımı değildir.
       </p>
@@ -351,7 +351,7 @@ export function ContactLeadForm() {
       </div>
 
       <div className="mt-6">
-        <label htmlFor="kvkk" className="flex items-start gap-3 text-[13.5px] leading-6 text-[var(--od-ink-soft)]">
+        <label htmlFor="kvkk" className="flex items-start gap-3 text-[13.5px] leading-6 text-[var(--site-body)]">
           <input
             id="kvkk"
             name="kvkk"
@@ -361,17 +361,17 @@ export function ContactLeadForm() {
             aria-required="true"
             aria-invalid={!!errors.kvkk}
             aria-describedby={errors.kvkk ? "kvkk-error" : undefined}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-[var(--od-ink)]/30 text-[var(--od-olive)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--od-olive)]"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-[var(--site-line)] accent-[var(--brand-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)]"
           />
           <span>
-            <Link href="/kvkk/" className="font-medium text-[var(--od-ink)] underline-offset-2 hover:underline">
+            <Link href="/kvkk/" className="font-medium text-[var(--brand-orange-ink)] underline-offset-2 hover:underline">
               KVKK Aydınlatma Metni
             </Link>
             {" "}kapsamında bilgilerimin iletişim amacıyla işlenmesini onaylıyorum.
           </span>
         </label>
         {errors.kvkk ? (
-          <p id="kvkk-error" className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[#9A3B2C]" role="alert">
+          <p id="kvkk-error" className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-rose-600" role="alert">
             <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
             {errors.kvkk}
           </p>
@@ -379,7 +379,7 @@ export function ContactLeadForm() {
       </div>
 
       {status === "error" ? (
-        <p className="mt-5 rounded-xl border border-[#B0392F]/30 bg-[#B0392F]/5 px-4 py-3 text-[13.5px] text-[#B0392F]" role="alert">
+        <p className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13.5px] text-rose-800" role="alert">
           Formu şu anda iletemedik. {contact.whatsapp} numaralı WhatsApp hattımızdan
           bize ulaşabilirsiniz.
         </p>
@@ -388,7 +388,7 @@ export function ContactLeadForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--od-olive)] px-6 py-3.5 text-[15px] font-semibold text-white transition hover:bg-[#2E3B24] disabled:opacity-60 sm:w-auto sm:px-8"
+        className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--brand-orange)] px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition hover:bg-[var(--brand-orange-hover)] disabled:opacity-60 sm:w-auto sm:px-8"
       >
         {status === "loading" ? "Hazırlanıyor…" : "Ön görüşme talebi gönder"}
       </button>
@@ -411,13 +411,13 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-[13px] font-medium text-[var(--od-ink)]">
+      <label htmlFor={id} className="block text-[13px] font-medium text-[var(--site-ink)]">
         {label}
-        {required ? <span className="text-[#B0392F]"> *</span> : null}
+        {required ? <span className="text-rose-600"> *</span> : null}
       </label>
       <div className="mt-1.5">{children}</div>
       {error ? (
-        <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-[#9A3B2C]" role="alert">
+        <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-rose-600" role="alert">
           <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
           {error}
         </p>
@@ -427,7 +427,7 @@ function Field({
 }
 
 function inputClass(hasError: boolean): string {
-  return `w-full rounded-xl border px-4 py-2.5 text-[14.5px] text-[var(--od-ink)] transition-[border-color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--od-olive)] focus-visible:ring-offset-1 ${
-    hasError ? "border-[#C06A52] bg-[#FBEDE7] focus-visible:ring-[#C06A52]/20" : "border-[var(--od-ink)]/15 bg-white hover:border-[var(--od-ink)]/30"
+  return `w-full rounded-2xl border px-4 py-2.5 text-[14.5px] text-[var(--site-ink)] transition-[border-color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)] focus-visible:ring-offset-1 ${
+    hasError ? "border-rose-400 bg-rose-50 focus-visible:ring-rose-400/20" : "border-[var(--site-line)] bg-[var(--site-bg-warm)] hover:border-[var(--brand-orange)]/40"
   }`;
 }

@@ -32,7 +32,7 @@ export default function GlobalError({
           <p style={{ color: "#4b5563", marginBottom: "1.5rem", lineHeight: 1.6 }}>
             Sayfa yüklenirken bir sorunla karşılaşıldı. Lütfen tekrar deneyin.
             Sorun devam ederse{" "}
-            <a href="/iletisim" style={{ color: "#2563eb", textDecoration: "underline" }}>
+            <a href="/iletisim" style={{ color: "#3A4A2C", textDecoration: "underline" }}>
               bize ulaşın
             </a>
             .
@@ -46,7 +46,7 @@ export default function GlobalError({
             <button
               onClick={reset}
               style={{
-                background: "#2563eb",
+                background: "#3A4A2C",
                 color: "white",
                 padding: "0.5rem 1rem",
                 borderRadius: 6,

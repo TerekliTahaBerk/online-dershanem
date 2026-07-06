@@ -74,40 +74,40 @@ export function OrderSummaryCard({
 
   return (
     <aside className={`lg:sticky lg:top-24 lg:self-start ${className}`.trim()}>
-      <div className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
+      <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[20px] tracking-tight text-[var(--od-ink)]">
+          <h2 className="font-display text-[20px] tracking-tight text-[var(--site-ink)]">
             {title}
           </h2>
-          <span className="text-[12px] text-[var(--od-ink-soft)]">
+          <span className="text-[12px] text-[var(--site-body)]">
             {itemCount} ürün
           </span>
         </div>
 
-        <ul className="mt-5 space-y-4 divide-y divide-[var(--od-line)]">
+        <ul className="mt-5 space-y-4 divide-y divide-[var(--site-line)]">
           {items.map((it, idx) => (
             <li key={it.id ?? idx} className="flex gap-3 pt-4 first:pt-0">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[10px] bg-[var(--od-cream-2)] text-[var(--od-olive)]">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[14px] bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
                 <ShoppingBag size={18} strokeWidth={1.6} />
               </div>
               <div className="flex-1 min-w-0">
                 {it.category && (
-                  <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--od-olive)]">
+                  <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--brand-orange-ink)]">
                     {it.category}
                   </div>
                 )}
-                <div className="text-[13px] font-semibold text-[var(--od-ink)] truncate">
+                <div className="text-[13px] font-semibold text-[var(--site-ink)] truncate">
                   {it.name}
                 </div>
                 {(it.subtitle || (it.qty && it.qty > 1)) && (
-                  <div className="mt-0.5 text-[11.5px] text-[var(--od-ink-soft)]">
+                  <div className="mt-0.5 text-[11.5px] text-[var(--site-body)]">
                     {it.subtitle}
                     {it.subtitle && it.qty && it.qty > 1 ? " · " : ""}
                     {it.qty && it.qty > 1 ? `${it.qty} adet` : ""}
                   </div>
                 )}
               </div>
-              <div className="text-right text-[13px] font-semibold text-[var(--od-ink)] whitespace-nowrap">
+              <div className="text-right text-[13px] font-semibold text-[var(--site-ink)] whitespace-nowrap">
                 {formatTRY(it.priceCents * (it.qty ?? 1))}
               </div>
             </li>
@@ -115,38 +115,38 @@ export function OrderSummaryCard({
         </ul>
 
         {couponCode && (
-          <div className="mt-5 flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2 text-[12.5px]">
-            <span className="text-emerald-800">
+          <div className="mt-5 flex items-center justify-between rounded-full bg-[var(--brand-orange-soft)] px-3.5 py-2 text-[12.5px]">
+            <span className="font-medium text-[var(--brand-orange-ink)]">
               Kupon: <strong>{couponCode}</strong>
             </span>
-            <span className="text-emerald-700 text-[11.5px]">
+            <span className="text-[11.5px] text-[var(--brand-orange-ink)]">
               Ödeme adımında uygulanır
             </span>
           </div>
         )}
 
-        <div className="mt-5 space-y-2 border-t border-[var(--od-line)] pt-4 text-[13px]">
-          <div className="flex justify-between text-[var(--od-ink-soft)]">
+        <div className="mt-5 space-y-2 border-t border-[var(--site-line)] pt-4 text-[13px]">
+          <div className="flex justify-between text-[var(--site-body)]">
             <span>Ara toplam</span>
             <span>{formatTRY(totalCents)}</span>
           </div>
-          <div className="flex items-baseline justify-between pt-2 border-t border-[var(--od-line)]">
-            <span className="text-[14px] font-semibold text-[var(--od-ink)]">
+          <div className="flex items-baseline justify-between pt-2 border-t border-[var(--site-line)]">
+            <span className="text-[14px] font-semibold text-[var(--site-ink)]">
               Toplam
             </span>
-            <span className="font-display text-[22px] text-[var(--od-ink)]">
+            <span className="font-display text-[22px] text-[var(--site-ink)]">
               {formatTRY(totalCents)}
             </span>
           </div>
         </div>
 
-        <div className="mt-5 flex items-start gap-2 rounded-[10px] bg-[var(--od-cream-2)] p-3 text-[11.5px] text-[var(--od-ink-soft)]">
+        <div className="mt-5 flex items-start gap-2 rounded-[16px] bg-[var(--site-bg-warm)] p-3.5 text-[11.5px] text-[var(--site-body)]">
           <ShieldCheck
             size={16}
-            className="mt-0.5 flex-shrink-0 text-emerald-700"
+            className="mt-0.5 flex-shrink-0 text-[var(--brand-orange-ink)]"
           />
           <span>
-            <strong className="text-[var(--od-ink)]">PayTR</strong> ile 256-bit
+            <strong className="text-[var(--site-ink)]">PayTR</strong> ile 256-bit
             SSL güvenli ödeme. Kart bilgileriniz sitemizde saklanmaz; 1/3/6/9
             taksit seçenekleri sunulur.
           </span>
@@ -155,7 +155,7 @@ export function OrderSummaryCard({
         {backHref && (
           <Link
             href={backHref}
-            className="mt-4 block text-center text-[12.5px] text-[var(--od-ink-soft)] hover:text-[var(--od-ink)] transition"
+            className="mt-4 block text-center text-[12.5px] text-[var(--site-body)] hover:text-[var(--site-ink)] transition"
           >
             {backLabel}
           </Link>
@@ -177,14 +177,14 @@ export function CheckoutPageHeader({
 }) {
   return (
     <div className="mb-6">
-      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--od-olive)]">
+      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-orange-ink)]">
         <Lock size={12} /> Güvenli Ödeme
       </span>
-      <h1 className="mt-1 font-display text-[32px] leading-[1.05] tracking-tight text-[var(--od-ink)]">
+      <h1 className="mt-1 font-display text-[32px] leading-[1.05] tracking-tight text-[var(--site-ink)]">
         {title}
       </h1>
       {subtitle && (
-        <p className="mt-1 text-[13.5px] text-[var(--od-ink-soft)]">{subtitle}</p>
+        <p className="mt-1 text-[13.5px] text-[var(--site-body)]">{subtitle}</p>
       )}
     </div>
   );

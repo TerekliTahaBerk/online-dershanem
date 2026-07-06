@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { PaytrIframeShell } from "@/components/checkout/paytr-iframe-shell";
 import { prisma } from "@/lib/prisma";
 import { createOdkCheckoutSession } from "@/lib/odk/checkout";
@@ -82,9 +82,9 @@ export default async function OdkPaymentPage({
     : null;
 
   return (
-    <>
-      <Navbar />
-      <main className="od-public min-h-screen bg-[var(--od-cream)] py-10 sm:py-14">
+    <div className="site-scope">
+      <SiteHeader />
+      <main className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14">
         <PaytrIframeShell
           breadcrumb={[
             { label: "ODK Paketleri", href: "/deneme-kulubu" },
@@ -99,7 +99,7 @@ export default async function OdkPaymentPage({
           checkout={checkout}
         />
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { CartCheckoutClient } from "@/components/cart/cart-checkout-client";
 
 export const metadata: Metadata = {
@@ -20,21 +20,21 @@ export default async function CartCheckoutPage() {
   };
 
   return (
-    <>
-      <Navbar />
-      <main className="od-public min-h-screen bg-[var(--od-cream)] py-10">
+    <div className="site-scope">
+      <SiteHeader />
+      <main className="min-h-screen bg-[var(--site-bg-warm)] py-10">
         <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
-          <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
-            <Link href="/sepet" className="hover:text-[var(--od-ink)]">
+          <nav className="text-[12px] text-[var(--site-body)] mb-4 uppercase tracking-wider">
+            <Link href="/sepet" className="hover:text-[var(--site-ink)]">
               Sepet
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-[var(--od-ink)]">Güvenli Ödeme</span>
+            <span className="text-[var(--site-ink)]">Güvenli Ödeme</span>
           </nav>
           <CartCheckoutClient defaults={defaults} />
         </div>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

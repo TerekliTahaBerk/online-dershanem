@@ -4,10 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ShoppingBag } from "lucide-react";
+import { Menu } from "lucide-react";
 import { primaryNav, navCta, navLogin } from "@/lib/site-content";
 import { MobileMenu } from "@/components/site/mobile-menu";
-import { useCart } from "@/components/cart/cart-provider";
 
 /**
  * Public site header — referans tasarım: sol menü · ortada logo · sağda
@@ -18,8 +17,6 @@ export function SiteHeader() {
   const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const { count, hydrated } = useCart();
-  const cartCount = hydrated ? count : 0;
 
   useEffect(() => {
     setOpen(false);
@@ -90,20 +87,6 @@ export function SiteHeader() {
                 className="hidden text-[14.5px] font-medium text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] md:inline-flex"
               >
                 {navLogin.label}
-              </Link>
-
-              {/* Sepetim */}
-              <Link
-                href="/sepet"
-                aria-label={cartCount > 0 ? `Sepetim — ${cartCount} ürün` : "Sepetim"}
-                className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange-ink)]"
-              >
-                <ShoppingBag size={19} strokeWidth={1.7} aria-hidden="true" />
-                {cartCount > 0 ? (
-                  <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--brand-orange)] px-1 text-[10px] font-bold text-white">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                ) : null}
               </Link>
 
               <Link

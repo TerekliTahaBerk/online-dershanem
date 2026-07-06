@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import {
   CheckoutResultCard,
   type CheckoutResultStatus,
@@ -27,9 +27,9 @@ export default async function OdCheckoutThankYouPage({
     status === "success" ? "success" : status === "failed" ? "failed" : "pending";
 
   return (
-    <>
-      <Navbar />
-      <main className="od-public min-h-screen bg-[var(--od-cream)] py-16">
+    <div className="site-scope">
+      <SiteHeader />
+      <main className="min-h-screen bg-[var(--site-bg-warm)] py-16">
         <div className="px-4">
           {normalizedStatus === "success" && (
             <>
@@ -78,7 +78,7 @@ export default async function OdCheckoutThankYouPage({
           )}
         </div>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

@@ -241,16 +241,16 @@ export function BuyerInfoForm({
         <input key={k} type="hidden" name={k} value={v} />
       ))}
 
-      <div className="flex items-start gap-3 rounded-[14px] border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4">
-        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[var(--od-paper)] text-[var(--od-olive)]">
+      <div className="flex items-start gap-3 rounded-[20px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
           <ShoppingBag size={18} strokeWidth={1.7} />
         </div>
         <div className="flex-1">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--od-olive)] font-semibold mb-1">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-orange-ink)] font-semibold mb-1">
             Sepetiniz
           </div>
-          <div className="text-[var(--od-ink)] font-display text-[22px] leading-tight">{packageLabel}</div>
-          <div className="text-[var(--od-olive)] text-[20px] font-bold mt-1">
+          <div className="text-[var(--site-ink)] font-display text-[22px] leading-tight">{packageLabel}</div>
+          <div className="text-[var(--brand-orange-ink)] text-[20px] font-bold mt-1">
             {priceLabel}
           </div>
         </div>
@@ -390,7 +390,7 @@ export function BuyerInfoForm({
         />
       </Section>
 
-      <div className="space-y-3 rounded-[14px] border border-[var(--od-line)] bg-[var(--od-cream-2)] px-5 py-4">
+      <div className="space-y-3 rounded-[20px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
@@ -399,13 +399,13 @@ export function BuyerInfoForm({
             required
             aria-invalid={!!fieldErrors.kvkkConsent}
             aria-describedby={fieldErrors.kvkkConsent ? "kvkkConsent-error" : undefined}
-            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--od-olive)] ${fieldErrors.kvkkConsent ? "outline outline-2 outline-[#C06A52]" : "border-[var(--od-line)]"}`}
+            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand-orange)] ${fieldErrors.kvkkConsent ? "outline outline-2 outline-rose-400" : "border-[var(--site-line)]"}`}
           />
-          <span className="text-sm text-[var(--od-ink-soft)]">
+          <span className="text-sm text-[var(--site-body)]">
             <Link
               href="/kvkk"
               target="_blank"
-              className="text-[var(--od-olive)] underline font-medium"
+              className="text-[var(--brand-orange-ink)] underline font-medium"
             >
               KVKK Aydınlatma Metni
             </Link>
@@ -421,9 +421,9 @@ export function BuyerInfoForm({
             type="checkbox"
             name="marketingConsent"
             value="1"
-            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--od-line)] accent-[var(--od-olive)]"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--site-line)] accent-[var(--brand-orange)]"
           />
-          <span className="text-sm text-[var(--od-ink-soft)]">
+          <span className="text-sm text-[var(--site-body)]">
             Kampanya, duyuru ve eğitim içerikleri için elektronik ileti
             (SMS/e-posta) almayı kabul ediyorum.
           </span>
@@ -436,10 +436,10 @@ export function BuyerInfoForm({
             required
             aria-invalid={!!fieldErrors.paymentConsent}
             aria-describedby={fieldErrors.paymentConsent ? "paymentConsent-error" : undefined}
-            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--od-olive)] ${fieldErrors.paymentConsent ? "outline outline-2 outline-[#C06A52]" : "border-[var(--od-line)]"}`}
+            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand-orange)] ${fieldErrors.paymentConsent ? "outline outline-2 outline-rose-400" : "border-[var(--site-line)]"}`}
           />
-          <span className="text-sm text-[var(--od-ink-soft)]">
-            <Link href="/iade" target="_blank" className="text-[var(--od-olive)] underline font-medium">
+          <span className="text-sm text-[var(--site-body)]">
+            <Link href="/iade" target="_blank" className="text-[var(--brand-orange-ink)] underline font-medium">
               Ön bilgilendirme ve mesafeli satış sözleşmesini
             </Link>{" "}
             okudum, kabul ediyorum. Hizmet hocalarımız tarafından planlandıktan sonra
@@ -457,7 +457,7 @@ export function BuyerInfoForm({
         </div>
       )}
 
-      <div className="rounded-xl border border-[var(--od-yellow)]/40 bg-[var(--od-yellow-soft)] px-4 py-3 text-[13.5px] text-[var(--od-ink)]">
+      <div className="rounded-[16px] border border-[var(--brand-orange)]/20 bg-[var(--brand-orange-tint)] px-4 py-3 text-[13.5px] text-[var(--site-ink)]">
         <strong>Bilgi:</strong>{" "}
         {service === "OD"
           ? "Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacaktır. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
@@ -466,7 +466,7 @@ export function BuyerInfoForm({
       <button
         type="submit"
         disabled={isPending}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--od-olive)] px-6 py-4 text-[15px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[#2C3A21] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[var(--brand-orange)] px-6 py-4 text-[16px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-[var(--brand-orange-hover)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "İşleniyor..." : submitLabel} →
       </button>
@@ -482,8 +482,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)]">
-      <h2 className="mb-4 text-[22px] font-medium tracking-[-0.015em] text-[var(--od-ink)]">{title}</h2>
+    <section className="rounded-[24px] border border-[var(--site-line)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
+      <h2 className="mb-4 text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">{title}</h2>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </section>
   );
@@ -516,17 +516,17 @@ function Field({
   maxLength,
   error,
 }: FieldProps) {
-  const fieldClass = `min-h-12 w-full rounded-[10px] border px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 ${
+  const fieldClass = `min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:text-[var(--site-muted)] ${
     error
-      ? "border-[#C06A52] bg-[#FBEDE7] focus:border-[#C06A52] focus:ring-2 focus:ring-[#C06A52]/20"
-      : "border-[var(--od-line)] bg-[var(--od-paper)] focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"
+      ? "border-rose-400 bg-rose-50 focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
+      : "border-[var(--site-line)] bg-[var(--site-bg-warm)] focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/15"
   }`;
   return (
     <label
       htmlFor={name}
       className={`block ${textarea ? "sm:col-span-2" : ""}`}
     >
-      <span className="block text-[12.5px] font-medium text-[var(--od-ink-soft)] mb-1.5 uppercase tracking-wide">
+      <span className="block text-[12.5px] font-medium text-[var(--site-body)] mb-1.5 uppercase tracking-wide">
         {label}
         {required ? <span className="text-rose-600 ml-0.5">★</span> : null}
       </span>
@@ -557,7 +557,7 @@ function Field({
           className={fieldClass}
         />
       )}
-      {help && <span className="block text-[11.5px] text-[var(--od-ink-soft)] mt-1">{help}</span>}
+      {help && <span className="block text-[11.5px] text-[var(--site-body)] mt-1">{help}</span>}
       {error ? <FieldError id={`${name}-error`}>{error}</FieldError> : null}
     </label>
   );
@@ -580,7 +580,7 @@ function SelectField({
 }) {
   return (
     <label htmlFor={name} className="block">
-      <span className="block text-[12.5px] font-medium text-[var(--od-ink-soft)] mb-1.5 uppercase tracking-wide">
+      <span className="block text-[12.5px] font-medium text-[var(--site-body)] mb-1.5 uppercase tracking-wide">
         {label}
         {required ? <span className="text-rose-600 ml-0.5">★</span> : null}
       </span>
@@ -591,7 +591,7 @@ function SelectField({
         defaultValue={defaultValue ?? ""}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : undefined}
-        className={`min-h-12 w-full rounded-[10px] border px-3.5 py-3 text-[15px] text-[var(--od-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 ${error ? "border-[#C06A52] bg-[#FBEDE7] focus:ring-2 focus:ring-[#C06A52]/20" : "border-[var(--od-line)] bg-[var(--od-paper)] focus:border-[var(--od-olive)] focus:ring-2 focus:ring-[var(--od-olive)]/15"}`}
+        className={`min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 ${error ? "border-rose-400 bg-rose-50 focus:ring-2 focus:ring-rose-400/20" : "border-[var(--site-line)] bg-[var(--site-bg-warm)] focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/15"}`}
       >
         {options.map((o) => (
           <option key={o.v} value={o.v}>
@@ -606,7 +606,7 @@ function SelectField({
 
 function FieldError({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <span id={id} role="alert" className="mt-[7px] flex items-center gap-1.5 text-[12px] text-[#9A3B2C]">
+    <span id={id} role="alert" className="mt-[7px] flex items-center gap-1.5 text-[12px] text-rose-600">
       <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
       {children}
     </span>

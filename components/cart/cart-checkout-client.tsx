@@ -57,24 +57,24 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
   );
 
   if (!loaded) {
-    return <div className="h-40 animate-pulse rounded-[16px] bg-[var(--od-cream-2)]" />;
+    return <div className="h-40 animate-pulse rounded-[24px] bg-[var(--site-bg-warm)]" />;
   }
 
   if (!snapshot || snapshot.items.length === 0) {
     return (
-      <div className="rounded-[16px] border border-[var(--od-line)] bg-[var(--od-paper)] p-10 text-center">
-        <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-[14px] bg-[var(--od-cream-2)]">
-          <ShoppingBag size={28} className="text-[var(--od-olive)]" strokeWidth={1.6} />
+      <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-10 text-center">
+        <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-[16px] bg-[var(--brand-orange-soft)]">
+          <ShoppingBag size={28} className="text-[var(--brand-orange-ink)]" strokeWidth={1.6} />
         </div>
-        <h1 className="mt-5 font-display text-[26px] text-[var(--od-ink)]">
+        <h1 className="mt-5 font-display text-[26px] text-[var(--site-ink)]">
           Sepet bilgisi bulunamadı.
         </h1>
-        <p className="mt-2 text-[14px] text-[var(--od-ink-soft)]">
+        <p className="mt-2 text-[14px] text-[var(--site-body)]">
           Lütfen önce sepetinize ürün ekleyin.
         </p>
         <Link
           href="/sepet"
-          className="mt-5 inline-flex min-h-12 items-center rounded-[10px] bg-[var(--od-olive)] px-5 py-2.5 text-[13px] font-medium text-[var(--od-cream)] hover:bg-[#2C3A21]"
+          className="mt-6 inline-flex min-h-12 items-center rounded-full bg-[var(--brand-orange)] px-6 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-[var(--brand-orange-hover)]"
         >
           Sepete Dön
         </Link>

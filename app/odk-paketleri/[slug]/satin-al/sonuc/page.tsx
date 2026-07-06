@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { CheckoutResultCard } from "@/components/checkout/checkout-result-card";
 
 type Params = Promise<{ slug: string }>;
@@ -25,9 +25,9 @@ export default async function OdkCheckoutResultPage({
   const isSuccess = status === "success";
 
   return (
-    <>
-      <Navbar />
-      <main className="od-public min-h-screen bg-[var(--od-cream)] py-16">
+    <div className="site-scope">
+      <SiteHeader />
+      <main className="min-h-screen bg-[var(--site-bg-warm)] py-16">
         <div className="px-4">
           {isSuccess ? (
             <CheckoutResultCard
@@ -68,7 +68,7 @@ export default async function OdkCheckoutResultPage({
           )}
         </div>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

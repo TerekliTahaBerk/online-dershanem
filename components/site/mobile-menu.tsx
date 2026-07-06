@@ -3,10 +3,9 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { X, Phone, MessageCircle, ShoppingBag } from "lucide-react";
+import { X, Phone, MessageCircle } from "lucide-react";
 import { primaryNav, navCta, navLogin, waHref, telHref } from "@/lib/site-content";
 import { contact } from "@/lib/content";
-import { useCart } from "@/components/cart/cart-provider";
 
 type MobileMenuProps = {
   open: boolean;
@@ -22,8 +21,6 @@ type MobileMenuProps = {
 export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const { count, hydrated } = useCart();
-  const cartCount = hydrated ? count : 0;
 
   useEffect(() => {
     if (!open) return;
@@ -119,21 +116,6 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
           className="block border-b border-[var(--site-line)] py-5 font-display text-[27px] tracking-[-0.01em] text-[var(--site-ink)]"
         >
           {navLogin.label}
-        </Link>
-        <Link
-          href="/sepet"
-          onClick={onClose}
-          className="flex items-center justify-between gap-3 border-b border-[var(--site-line)] py-5 font-display text-[27px] tracking-[-0.01em] text-[var(--site-ink)]"
-        >
-          <span className="inline-flex items-center gap-3">
-            <ShoppingBag size={24} strokeWidth={1.7} aria-hidden="true" />
-            Sepetim
-          </span>
-          {cartCount > 0 ? (
-            <span className="flex h-7 min-w-[28px] items-center justify-center rounded-full bg-[var(--brand-orange)] px-2 text-[14px] font-sans font-bold text-white">
-              {cartCount > 99 ? "99+" : cartCount}
-            </span>
-          ) : null}
         </Link>
       </nav>
 

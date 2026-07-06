@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { BuyerInfoForm } from "@/components/checkout/buyer-info-form";
 import {
   OrderSummaryCard,
@@ -52,16 +52,16 @@ export default async function OdCheckoutFormPage({
   };
 
   return (
-    <>
-      <Navbar />
-      <main className="od-public min-h-screen bg-[var(--od-cream)] py-10">
+    <div className="site-scope">
+      <SiteHeader />
+      <main className="min-h-screen bg-[var(--site-bg-warm)] py-10">
         <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
-          <nav className="text-[12px] text-[var(--od-ink-soft)] mb-4 uppercase tracking-wider">
-            <Link href="/#matematik-ders-paketi" className="hover:text-[var(--od-ink)]">
+          <nav className="text-[12px] text-[var(--site-body)] mb-4 uppercase tracking-wider">
+            <Link href="/#matematik-ders-paketi" className="hover:text-[var(--site-ink)]">
               Matematik Ders Paketi
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-[var(--od-ink)]">Ödeme</span>
+            <span className="text-[var(--site-ink)]">Ödeme</span>
           </nav>
 
           <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
@@ -101,7 +101,7 @@ export default async function OdCheckoutFormPage({
           </div>
         </div>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }
