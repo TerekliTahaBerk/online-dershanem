@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Compass, GraduationCap, LineChart, NotebookText, PenLine } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { blogPosts, siteUrl } from "@/lib/content";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
@@ -177,51 +177,46 @@ export default function BlogPage() {
   const others = sorted.slice(1);
 
   return (
-    <>
+    <div className="site-scope">
       <SchemaJsonLd
         schema={breadcrumbJsonLd([
           { name: "Ana Sayfa", url: "/" },
           { name: "Blog", url: "/blog/" },
         ])}
       />
-      <Navbar />
-      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
+      <SiteHeader />
+      <main>
         {/* Hero */}
-        <section className="relative border-b border-[var(--od-line)]">
-          <div className="mx-auto max-w-3xl px-5 pt-24 pb-12 sm:pt-32 sm:pb-16 text-center">
+        <section className="border-b border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+          <div className="site-container py-16 text-center sm:py-20">
             <PaperPlaneDoodle className="mx-auto h-24 w-auto sm:h-28" />
-            <span className="mt-6 inline-block text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
-              Yazılar
+            <span className="mt-6 inline-flex">
+              <span className="site-eyebrow">Yazılar</span>
             </span>
-            <h1 className="mt-4 font-display text-[36px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
-              Online Dershanem <em className="italic text-[var(--od-olive)]">Blog</em>
+            <h1 className="mx-auto mt-4 max-w-3xl font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
+              Online Dershanem <span className="site-hl">Blog</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              LGS ve YKS için haftalık rehberler, deneme analizi ipuçları ve
-              sade premium hazırlık modeli üzerine yazılar.
+            <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
+              LGS ve YKS için haftalık rehberler, deneme analizi ipuçları ve sade premium hazırlık
+              modeli üzerine yazılar.
             </p>
           </div>
         </section>
 
         {/* Featured */}
-        <section className="mx-auto max-w-6xl px-5 pb-16 sm:pb-20">
+        <section className="site-container py-16 sm:py-20">
           <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr]">
             <div className="max-w-md">
-              <p className="text-[12.5px] text-[#8B8B7E]">
+              <p className="text-[12.5px] text-[var(--site-muted)]">
                 {getAuthor(featured)} — {formatTrDate(publishedAt[featured.slug])}
               </p>
-              <h2 className="mt-3 font-display text-[28px] font-normal leading-[1.1] tracking-tight text-[var(--od-ink)] sm:text-[36px]">
+              <h2 className="mt-3 font-display text-[28px] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)] sm:text-[36px]">
                 {featured.title}
               </h2>
-              <p className="mt-4 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                {featured.excerpt}
-              </p>
-              <Link
-                href={`/blog/${featured.slug}/`}
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--od-ink)] px-5 py-2.5 text-[13.5px] font-medium text-white transition hover:bg-black"
-              >
+              <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">{featured.excerpt}</p>
+              <Link href={`/blog/${featured.slug}/`} className="site-btn site-btn-primary mt-6">
                 Yazıyı oku
-                <ArrowRight size={14} strokeWidth={1.8} />
+                <ArrowRight size={16} strokeWidth={1.8} aria-hidden="true" />
               </Link>
             </div>
 
@@ -231,21 +226,23 @@ export default function BlogPage() {
           </div>
         </section>
 
-        <hr className="mx-auto max-w-6xl border-t border-[var(--od-line)]" />
+        <div className="site-container">
+          <hr className="border-t border-[var(--site-line)]" />
+        </div>
 
         {/* Grid */}
-        <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+        <section className="site-container py-16 sm:py-20">
           <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
             {others.map((post) => (
               <Link key={post.slug} href={`/blog/${post.slug}/`} className="group flex flex-col">
                 <PostVisual post={post} />
-                <h3 className="mt-5 font-display text-[20px] font-normal leading-[1.2] tracking-tight text-[var(--od-ink)] transition group-hover:text-[var(--od-olive)] sm:text-[22px]">
+                <h3 className="mt-5 font-display text-[20px] leading-[1.2] tracking-[-0.01em] text-[var(--site-ink)] transition-colors group-hover:text-[var(--brand-orange-ink)] sm:text-[22px]">
                   {post.title}
                 </h3>
-                <p className="mt-2 text-[12.5px] text-[#8B8B7E]">
+                <p className="mt-2 text-[12.5px] text-[var(--site-muted)]">
                   {getAuthor(post)} — {formatTrDate(publishedAt[post.slug])}
                 </p>
-                <p className="mt-1 text-[11.5px] font-medium uppercase tracking-[0.14em] text-[var(--od-olive)]">
+                <p className="mt-1 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-orange-ink)]">
                   {post.category}
                 </p>
               </Link>
@@ -254,32 +251,26 @@ export default function BlogPage() {
         </section>
 
         {/* Soft CTA */}
-        <section className="mx-auto max-w-6xl px-5 pb-24">
-          <div className="overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)] p-8 sm:p-12">
+        <section className="site-container pb-24">
+          <div className="overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-12">
             <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
               <div>
-                <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                  Sıradaki adım
-                </span>
-                <h3 className="mt-3 font-display text-[28px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[36px]">
+                <span className="site-eyebrow">Sıradaki adım</span>
+                <h3 className="mt-3 font-display text-[28px] leading-tight tracking-[-0.02em] text-[var(--site-ink)] sm:text-[36px]">
                   Okuduklarını uygulamaya geçirelim.
                 </h3>
-                <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  Sana uygun ders, hoca ve haftalık plan kombinasyonunu birlikte
-                  kuralım.
+                <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
+                  Sana uygun ders, hoca ve haftalık plan kombinasyonunu birlikte kuralım.
                 </p>
               </div>
-              <Link
-                href="/paketler/"
-                className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
-              >
+              <Link href="/paketler/" className="site-btn site-btn-primary shrink-0">
                 Paketleri gör
               </Link>
             </div>
           </div>
         </section>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

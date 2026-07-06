@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { contact, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -43,58 +43,36 @@ export default function CareersPage() {
   );
 
   return (
-    <>
-      <Navbar />
-      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
+    <div className="site-scope">
+      <SiteHeader />
+      <main>
         {/* Hero */}
-        <section className="relative overflow-hidden">
-          <div className="mx-auto max-w-3xl px-5 pt-24 pb-14 sm:pt-32 sm:pb-20 text-center">
-            {/* Cube doodle */}
-            <CubeDoodle className="mx-auto h-24 w-24 sm:h-28 sm:w-28" />
-
-            <h1 className="mt-6 font-display text-[36px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
-              Eğitimin geleceğini{" "}
-              <em className="italic text-[var(--od-olive)]">birlikte</em> inşa
-              edelim.
-            </h1>
-            <p className="mx-auto mt-6 max-w-xl text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              Online Dershanem; öğrencinin yüzlerce kişi içinde
-              kaybolmadığı, hocasının onu adıyla tanıdığı bir model kuruyor. Bu
-              modeli büyütecek küçük ama etkili bir ekiple çalışıyoruz.
-            </p>
-          </div>
+        <section className="site-container pb-8 pt-16 text-center sm:pt-24">
+          <CubeDoodle className="mx-auto h-24 w-24 sm:h-28 sm:w-28" />
+          <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
+            Eğitimin geleceğini <span className="site-hl">birlikte</span> inşa edelim.
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
+            Online Dershanem; öğrencinin yüzlerce kişi içinde kaybolmadığı, hocasının onu adıyla
+            tanıdığı bir model kuruyor. Bu modeli büyütecek küçük ama etkili bir ekiple çalışıyoruz.
+          </p>
         </section>
 
         {/* Open Roles panel */}
-        <section className="relative mx-auto max-w-6xl px-5 pb-20 sm:pb-28">
-          {/* Soft ruled-paper backdrop */}
-          <div
-            aria-hidden
-            className="absolute inset-x-0 top-0 -z-10 h-[120%] bg-[var(--od-cream-2)]"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[120%]"
-            style={{
-              backgroundImage:
-                "linear-gradient(to bottom, transparent 0, transparent 39px, rgba(20,20,15,0.05) 40px)",
-              backgroundSize: "100% 40px"
-            }}
-          />
-
-          <div className="overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-white shadow-[0_28px_70px_-32px_rgba(20,20,15,0.18)] sm:mt-16">
+        <section className="site-container pb-20 sm:pb-28">
+          <div className="overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-white shadow-[0_28px_70px_-40px_rgba(20,20,15,0.2)]">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_2fr]">
-              {/* Left olive intro */}
-              <aside className="relative bg-[var(--od-olive)] p-8 text-white sm:p-10">
-                <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-yellow)]">
+              {/* Left brand intro */}
+              <aside className="relative bg-[var(--brand-orange)] p-8 text-white sm:p-10">
+                <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-white/80">
                   Kariyer
                 </span>
-                <h2 className="mt-3 font-display text-[32px] font-normal leading-tight tracking-tight sm:text-[36px]">
+                <h2 className="mt-3 font-display text-[32px] leading-tight tracking-[-0.01em] sm:text-[36px]">
                   Açık Pozisyonlar
                 </h2>
                 <p className="mt-4 max-w-xs text-[14px] leading-7 text-white/85">
-                  Küçük ve odaklı bir ekipte, yaptığın işin doğrudan binlerce
-                  öğrenciye dokunduğu bir yerde çalış.
+                  Küçük ve odaklı bir ekipte, yaptığın işin doğrudan binlerce öğrenciye dokunduğu
+                  bir yerde çalış.
                 </p>
                 <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-white">
                   {openRoles.length} açık pozisyon
@@ -102,27 +80,27 @@ export default function CareersPage() {
               </aside>
 
               {/* Right roles list */}
-              <div className="divide-y divide-[var(--od-line)] bg-[var(--od-paper)]">
+              <div className="divide-y divide-[var(--site-line)] bg-white">
                 {openRoles.map((role) => (
                   <a
                     key={role.title}
                     href={`mailto:${contact.email}?subject=${mailtoSubject}&body=${mailtoBody}`}
-                    className="group flex items-start justify-between gap-6 px-6 py-6 transition hover:bg-[var(--od-cream-2)] sm:px-8 sm:py-7"
+                    className="group flex items-start justify-between gap-6 px-6 py-6 transition-colors hover:bg-[var(--site-bg-warm)] sm:px-8 sm:py-7"
                   >
                     <div className="min-w-0">
-                      <h3 className="font-display text-[20px] font-normal leading-tight tracking-tight text-[var(--od-ink)] sm:text-[22px]">
+                      <h3 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-[var(--site-ink)] sm:text-[22px]">
                         {role.title}
                       </h3>
-                      <p className="mt-1.5 text-[12.5px] font-medium uppercase tracking-[0.14em] text-[var(--od-ink-soft)]">
+                      <p className="mt-1.5 text-[12.5px] font-semibold uppercase tracking-[0.14em] text-[var(--site-muted)]">
                         <span>{role.location}</span>
-                        <span className="mx-2 text-[var(--od-line)]">·</span>
+                        <span className="mx-2 text-[var(--site-line)]">·</span>
                         <span>{role.type}</span>
                       </p>
-                      <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[var(--od-ink-soft)]">
+                      <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[var(--site-body)]">
                         {role.summary}
                       </p>
                     </div>
-                    <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--od-line)] bg-white text-[var(--od-ink)] transition group-hover:border-[var(--od-olive)] group-hover:bg-[var(--od-olive)] group-hover:text-white">
+                    <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] bg-white text-[var(--site-ink)] transition-colors group-hover:border-[var(--brand-orange)] group-hover:bg-[var(--brand-orange)] group-hover:text-white">
                       <ArrowRight size={15} strokeWidth={1.8} />
                     </span>
                   </a>
@@ -131,8 +109,8 @@ export default function CareersPage() {
             </div>
           </div>
 
-          {/* Aspirational mission card */}
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
+          {/* Aspirational mission cards */}
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
             {[
               {
                 title: "Küçük ekip, büyük etki",
@@ -149,36 +127,32 @@ export default function CareersPage() {
             ].map((item) => (
               <article
                 key={item.title}
-                className="rounded-3xl border border-[var(--od-line)] bg-white p-6 shadow-[0_18px_44px_-32px_rgba(20,20,15,0.16)]"
+                className="rounded-[24px] border border-[var(--site-line)] bg-white p-7"
               >
-                <h3 className="font-display text-[20px] font-normal leading-tight tracking-tight text-[var(--od-ink)]">
+                <h3 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
                   {item.title}
                 </h3>
-                <p className="mt-3 text-[14px] leading-6 text-[var(--od-ink-soft)]">
-                  {item.body}
-                </p>
+                <p className="mt-3 text-[14.5px] leading-6 text-[var(--site-body)]">{item.body}</p>
               </article>
             ))}
           </div>
 
           {/* Footer CTA */}
-          <div className="mt-12 overflow-hidden rounded-[28px] border border-[var(--od-line)] bg-[var(--od-yellow-soft)] p-8 sm:p-12">
+          <div className="mt-4 overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-12">
             <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
               <div>
-                <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-[var(--od-olive)]">
-                  Listede yoksun ama yine de katılmak istiyorsun
-                </span>
-                <h3 className="mt-3 font-display text-[28px] leading-tight tracking-tight text-[var(--od-ink)] sm:text-[36px]">
+                <span className="site-eyebrow">Listede yoksun ama yine de katılmak istiyorsun</span>
+                <h3 className="mt-3 font-display text-[28px] leading-tight tracking-[-0.02em] text-[var(--site-ink)] sm:text-[36px]">
                   Spekülatif başvurunu da bekleriz.
                 </h3>
-                <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
-                  Online eğitime değer katacağına inanıyorsan, kısa bir mesaj
-                  ve özgeçmişini bize gönder. Doğru zaman geldiğinde geri dönelim.
+                <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
+                  Online eğitime değer katacağına inanıyorsan, kısa bir mesaj ve özgeçmişini bize
+                  gönder. Doğru zaman geldiğinde geri dönelim.
                 </p>
               </div>
               <Link
                 href={`mailto:${contact.email}?subject=${mailtoSubject}&body=${mailtoBody}`}
-                className="inline-flex shrink-0 items-center justify-center rounded-full bg-[var(--od-ink)] px-6 py-3 text-[14px] font-medium text-white transition hover:bg-black"
+                className="site-btn site-btn-primary site-btn-lg shrink-0"
               >
                 Bize yaz
               </Link>
@@ -186,8 +160,8 @@ export default function CareersPage() {
           </div>
         </section>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }
 

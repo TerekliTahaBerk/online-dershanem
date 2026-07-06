@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
+import { PageHero } from "@/components/site/page-hero";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { contact, faqCategories } from "@/lib/content";
@@ -33,7 +34,7 @@ export default function SssPage() {
   };
 
   return (
-    <>
+    <div className="site-scope">
       <SchemaJsonLd
         schema={[
           faqJsonLd,
@@ -43,80 +44,74 @@ export default function SssPage() {
           ]),
         ]}
       />
-      <Navbar />
-      <main className="od-public overflow-x-hidden bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* HERO */}
-        <section className="mx-auto max-w-[760px] px-[clamp(20px,4vw,40px)] pb-[clamp(24px,4vw,40px)] pt-[clamp(44px,7vw,84px)] text-center">
-          <h1 className="mb-4 font-display text-[clamp(32px,5vw,52px)] font-medium leading-[1.04] tracking-[-0.025em]">
-            Sık sorulan <em className="font-normal italic">sorular</em>
-          </h1>
-          <p className="text-[clamp(16px,2.2vw,18px)] leading-[1.6] text-[var(--od-ink-soft)]">
-            Aradığınızı bulamazsanız{" "}
-            <a
-              href={waHref}
-              className="border-b border-[var(--od-olive-soft)] font-medium text-[var(--od-olive)]"
-            >
-              WhatsApp&apos;tan yazabilirsiniz
-            </a>{" "}
-            veya{" "}
-            <a
-              href={telHref}
-              className="border-b border-[var(--od-olive-soft)] font-medium text-[var(--od-olive)]"
-            >
-              bizi arayabilirsiniz
-            </a>
-            .
-          </p>
-        </section>
+      <SiteHeader />
+      <main>
+        <PageHero
+          eyebrow="Yardım Merkezi"
+          title={
+            <>
+              Sık sorulan <span className="site-hl">sorular</span>
+            </>
+          }
+          subtitle={
+            <>
+              Aradığınızı bulamazsanız{" "}
+              <a href={waHref} className="font-semibold text-[var(--brand-orange-ink)] hover:underline">
+                WhatsApp&apos;tan yazabilirsiniz
+              </a>{" "}
+              veya{" "}
+              <a href={telHref} className="font-semibold text-[var(--brand-orange-ink)] hover:underline">
+                bizi arayabilirsiniz
+              </a>
+              .
+            </>
+          }
+        />
 
-        {/* KATEGORİLER */}
-        <section className="mx-auto flex max-w-[760px] flex-col gap-9 px-[clamp(20px,4vw,40px)] pb-[clamp(48px,7vw,88px)]">
-          {faqCategories.map((cat) => (
-            <div key={cat.category}>
-              <h2 className="mb-4 text-[14px] font-semibold uppercase tracking-[0.04em] text-[var(--od-olive-soft)]">
-                {cat.category}
-              </h2>
-              <div className="overflow-hidden rounded-2xl border border-[var(--od-line)] bg-[var(--od-paper)]">
-                {cat.items.map((item) => (
-                  <details
-                    key={item.q}
-                    className="group border-b border-[var(--od-line)] last:border-b-0"
-                  >
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-[22px] py-5 [&::-webkit-details-marker]:hidden">
-                      <span className="text-[16px] font-semibold">{item.q}</span>
-                      <span className="shrink-0 text-[var(--od-olive-soft)] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
-                        <Plus size={20} strokeWidth={1.6} aria-hidden="true" />
-                      </span>
-                    </summary>
-                    <div className="px-[22px] pb-5 text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">
-                      {item.a}
-                    </div>
-                  </details>
-                ))}
+        <section className="site-container py-16 sm:py-20">
+          <div className="mx-auto flex max-w-3xl flex-col gap-10">
+            {faqCategories.map((cat) => (
+              <div key={cat.category}>
+                <h2 className="mb-4 text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--brand-orange-ink)]">
+                  {cat.category}
+                </h2>
+                <div className="divide-y divide-[var(--site-line)] overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white">
+                  {cat.items.map((item) => (
+                    <details key={item.q} className="group px-6">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16px] font-semibold text-[var(--site-ink)] [&::-webkit-details-marker]:hidden">
+                        {item.q}
+                        <span className="shrink-0 text-[var(--brand-orange-ink)] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
+                          <Plus size={20} strokeWidth={1.7} aria-hidden="true" />
+                        </span>
+                      </summary>
+                      <p className="pb-5 pr-8 text-[15px] leading-7 text-[var(--site-body)]">{item.a}</p>
+                    </details>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </section>
 
         {/* CTA */}
-        <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
-          <div className="mx-auto max-w-[760px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,80px)] text-center">
-            <h2 className="mb-4 font-display text-[clamp(24px,3.6vw,36px)] font-medium tracking-[-0.02em]">
+        <section className="site-container pb-20">
+          <div className="overflow-hidden rounded-[32px] bg-[var(--brand-orange)] px-8 py-14 text-center text-white sm:px-12 sm:py-16">
+            <h2 className="mx-auto max-w-xl font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-tight tracking-[-0.02em]">
               Sorunuz hâlâ duruyor mu?
             </h2>
-            <p className="mx-auto mb-7 max-w-[40ch] text-[16px] text-[#D8DCCF]">
+            <p className="mx-auto mt-4 max-w-md text-[16px] leading-7 text-white/85">
               Kısa bir soru için de yazabilirsiniz; ilk fırsatta yanıtlarız.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <a
                 href={waHref}
-                className="inline-flex min-h-12 items-center rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[15px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
+                className="inline-flex min-h-12 items-center rounded-full bg-white px-7 py-3.5 text-[15px] font-bold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-tint)]"
               >
-                WhatsApp&apos;tan ulaşabilirsiniz
+                WhatsApp&apos;tan ulaşın
               </a>
               <a
                 href={telHref}
-                className="inline-flex min-h-12 items-center rounded-[11px] border border-[var(--od-cream)]/[0.28] bg-[var(--od-cream)]/10 px-6 py-3.5 text-[15px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[var(--od-cream)]/[0.18]"
+                className="inline-flex min-h-12 items-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-white/20"
               >
                 {contact.phone}
               </a>
@@ -124,7 +119,7 @@ export default function SssPage() {
           </div>
         </section>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

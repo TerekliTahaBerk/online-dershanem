@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { blogPosts, siteUrl } from "@/lib/content";
@@ -70,30 +70,30 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   ]);
 
   return (
-    <>
+    <div className="site-scope">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
-      <Navbar />
-      <main className="od-public bg-[var(--od-cream)] py-14 text-[var(--od-ink)] sm:py-20">
+      <SiteHeader />
+      <main className="bg-[var(--site-bg-warm)] py-14 sm:py-20">
         <Container>
-          <article className="mx-auto max-w-4xl rounded-3xl border border-line bg-white p-6 shadow-soft sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-wide text-brand">{post.category}</p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">{post.title}</h1>
-            <p className="mt-4 text-sm leading-relaxed text-muted">{post.excerpt}</p>
+          <article className="mx-auto max-w-4xl rounded-3xl border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-10">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--brand-orange-ink)]">{post.category}</p>
+            <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">{post.title}</h1>
+            <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">{post.excerpt}</p>
 
             <div className="mt-8 space-y-8">
               {post.sections.map((section) => (
                 <section key={section.h2} className="space-y-4">
-                  <h2 className="text-2xl font-bold tracking-tight text-ink">{section.h2}</h2>
+                  <h2 className="font-display text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">{section.h2}</h2>
 
                   {section.paragraphs?.map((paragraph) => (
-                    <p key={paragraph} className="text-sm leading-relaxed text-muted">
+                    <p key={paragraph} className="text-[15px] leading-7 text-[var(--site-body)]">
                       {paragraph}
                     </p>
                   ))}
 
                   {section.bullets?.length ? (
-                    <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted">
+                    <ul className="list-disc space-y-2 pl-5 text-[15px] leading-7 text-[var(--site-body)]">
                       {section.bullets.map((bullet) => (
                         <li key={bullet}>{bullet}</li>
                       ))}
@@ -101,10 +101,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   ) : null}
 
                   {section.links?.length ? (
-                    <div className="space-y-2 rounded-2xl border border-line bg-soft p-4">
-                      <h3 className="text-sm font-semibold text-ink">İlgili içerikler</h3>
+                    <div className="space-y-2 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+                      <h3 className="text-sm font-semibold text-[var(--site-ink)]">İlgili içerikler</h3>
                       {section.links.map((item) => (
-                        <Link key={item.href} href={item.href} className="block text-sm font-semibold text-brand underline">
+                        <Link key={item.href} href={item.href} className="block text-sm font-semibold text-[var(--brand-orange-ink)] underline">
                           {item.label}
                         </Link>
                       ))}
@@ -114,13 +114,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               ))}
             </div>
 
-            <section className="mt-10 rounded-3xl border border-brand/30 bg-mint p-6">
-              <h2 className="text-2xl font-bold tracking-tight text-ink">{post.cta.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{post.cta.text}</p>
+            <section className="mt-10 rounded-3xl border border-[var(--site-line)] bg-[var(--brand-orange-soft)] p-6 sm:p-8">
+              <h2 className="font-display text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">{post.cta.title}</h2>
+              <p className="mt-2 text-[15px] leading-7 text-[var(--site-body)]">{post.cta.text}</p>
               <LeadFunnelTrigger
                 source={`blog_post_${post.slug}_cta`}
                 eventName="landing_cta_click"
-                className="mt-4 inline-flex rounded-full bg-anchor px-5 py-2.5 text-xs font-semibold text-white"
+                className="site-btn site-btn-primary mt-5"
                 analyticsId={`blog_post_${post.slug}_cta`}
               >
                 {post.cta.buttonLabel}
@@ -128,13 +128,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </section>
 
             <section className="mt-8">
-              <h2 className="text-xl font-bold tracking-tight text-ink">Önerilen Yazılar</h2>
+              <h2 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">Önerilen Yazılar</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {relatedPosts.map((item) => (
                   <Link
                     key={item.slug}
                     href={`/blog/${item.slug}/`}
-                    className="rounded-2xl border border-line bg-white p-4 text-sm font-semibold text-ink transition hover:bg-soft"
+                    className="rounded-2xl border border-[var(--site-line)] bg-white p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
                   >
                     {item.title}
                   </Link>
@@ -143,17 +143,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </section>
           </article>
 
-          <section className="mx-auto mt-8 grid max-w-4xl gap-4 rounded-3xl border border-line bg-white p-6 shadow-soft sm:grid-cols-2">
-            <Link href="/online-dershane/" className="rounded-2xl border border-line bg-soft p-4 text-sm font-semibold text-ink">
+          <section className="mx-auto mt-6 grid max-w-4xl gap-4 rounded-3xl border border-[var(--site-line)] bg-white p-6 sm:grid-cols-2">
+            <Link href="/online-dershane/" className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]">
               Online dershane sayfasına git
             </Link>
-            <Link href="/online-ozel-ders/" className="rounded-2xl border border-line bg-soft p-4 text-sm font-semibold text-ink">
+            <Link href="/online-ozel-ders/" className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]">
               Online özel ders sayfasına git
             </Link>
           </section>
         </Container>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

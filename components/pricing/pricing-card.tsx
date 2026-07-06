@@ -26,7 +26,7 @@ export function PricingCard({
   const [price, per] = splitPrice(data.priceLabel);
   return (
     <div
-      className="relative overflow-hidden rounded-[28px] p-7 text-white shadow-[0_30px_60px_-28px_rgba(216,80,13,0.6)] sm:p-9"
+      className="relative overflow-hidden rounded-[28px] p-7 text-white shadow-[0_30px_60px_-28px_rgba(44,58,32,0.6)] sm:p-9"
       style={{
         background:
           "linear-gradient(160deg, var(--brand-orange-bright) 0%, var(--brand-orange) 55%, var(--brand-orange-strong) 100%)",

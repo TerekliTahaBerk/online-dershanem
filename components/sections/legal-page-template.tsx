@@ -1,5 +1,6 @@
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
+import { PageHero } from "@/components/site/page-hero";
 
 type LegalSection = {
   title: string;
@@ -13,6 +14,10 @@ type LegalPageTemplateProps = {
   sections: LegalSection[];
 };
 
+/**
+ * Yasal sayfa şablonu (KVKK / Gizlilik / İade) — yeni public site dili:
+ * site-scope + büyük serif hero + numaralı, yuvarlak köşeli metin kartları.
+ */
 export function LegalPageTemplate({
   pageTitle,
   intro,
@@ -20,44 +25,37 @@ export function LegalPageTemplate({
   sections,
 }: LegalPageTemplateProps) {
   return (
-    <>
-      <Navbar />
-      <main className="od-public bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* Hero */}
-        <section className="border-b border-[var(--od-line)]">
-          <div className="mx-auto max-w-3xl px-5 pt-28 pb-14 sm:pt-36 sm:pb-20 text-center">
-            <span className="text-[12px] font-medium uppercase tracking-[0.18em] text-[var(--od-olive)]">
-              Yasal Bilgilendirme
-            </span>
-            <h1 className="mt-5 font-display text-[42px] font-normal leading-[1.05] tracking-tight text-[var(--od-ink)] sm:text-[60px]">
-              {pageTitle}
-            </h1>
-            <p className="mt-6 text-[15.5px] leading-7 text-[var(--od-ink-soft)]">
-              {intro}
+    <div className="site-scope">
+      <SiteHeader />
+      <main>
+        <PageHero
+          eyebrow="Yasal Bilgilendirme"
+          title={pageTitle}
+          subtitle={intro}
+          actions={
+            <p className="inline-flex items-center gap-2 rounded-full border border-[var(--site-line)] bg-white px-3.5 py-1.5 text-[13px] text-[var(--site-muted)]">
+              Yürürlük tarihi:
+              <strong className="font-semibold text-[var(--site-ink)]">{effectiveDate}</strong>
             </p>
-            <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-[var(--od-line)] bg-white/70 px-3 py-1 text-[12px] text-[#7A7A6F]">
-              Yürürlük tarihi: <strong className="font-medium text-[var(--od-ink)]">{effectiveDate}</strong>
-            </p>
-          </div>
-        </section>
+          }
+        />
 
-        {/* Body */}
-        <section className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
-          <div className="space-y-10">
+        <section className="site-container py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl space-y-5">
             {sections.map((section, idx) => (
               <article
                 key={section.title}
-                className="border-b border-[var(--od-line)] pb-10 last:border-b-0 last:pb-0"
+                className="rounded-[24px] border border-[var(--site-line)] bg-white p-7 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-9"
               >
                 <div className="flex items-baseline gap-4">
-                  <span className="font-display text-[22px] text-[var(--od-olive)]/70">
+                  <span className="font-display text-[22px] leading-none text-[var(--brand-orange-ink)]">
                     {String(idx + 1).padStart(2, "0")}
                   </span>
-                  <h2 className="font-display text-[24px] font-normal leading-tight tracking-tight text-[var(--od-ink)] sm:text-[28px]">
+                  <h2 className="font-display text-[22px] font-normal leading-tight tracking-[-0.01em] text-[var(--site-ink)] sm:text-[26px]">
                     {section.title}
                   </h2>
                 </div>
-                <div className="mt-5 space-y-4 pl-9 text-[14.5px] leading-7 text-[var(--od-ink-soft)]">
+                <div className="mt-5 space-y-4 text-[15px] leading-7 text-[var(--site-body)]">
                   {section.paragraphs.map((paragraph) => (
                     <p key={paragraph}>{paragraph}</p>
                   ))}
@@ -67,7 +65,7 @@ export function LegalPageTemplate({
           </div>
         </section>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

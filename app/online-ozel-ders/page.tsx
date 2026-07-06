@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
-import { Container } from "@/components/ui/container";
+import { Check, ArrowRight } from "lucide-react";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
+import { PageHero } from "@/components/site/page-hero";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
@@ -25,78 +26,102 @@ export const metadata: Metadata = {
 
 export default function OnlineOzelDersPage() {
   return (
-    <>
+    <div className="site-scope">
       <SchemaJsonLd
         schema={breadcrumbJsonLd([
           { name: "Ana Sayfa", url: "/" },
           { name: "Online Özel Ders", url: "/online-ozel-ders/" },
         ])}
       />
-      <Navbar />
-      <main className="od-public bg-[var(--od-cream)] py-14 text-[var(--od-ink)] sm:py-20">
-        <Container>
-          <section className="rounded-[24px] border border-[var(--od-line)] bg-[var(--od-blush)]/55 p-7 sm:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--od-olive)]">Online Matematik Özel Ders</p>
-            <h1 className="mt-3 text-3xl font-bold tracking-normal text-[var(--od-ink)] sm:text-4xl">
-              Özel derse yakın ilgi, küçük grubun temposuyla.
-            </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[var(--od-ink-soft)] sm:text-base">
-              Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik
-              grupta daha çok soru-cevap alanı bulur ve ders sonunda ne çalışacağını bilir.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+      <SiteHeader />
+      <main>
+        <PageHero
+          eyebrow="Online Matematik Özel Ders"
+          align="left"
+          title={
+            <>
+              Özel derse yakın <span className="site-hl">ilgi</span>, küçük grubun temposuyla.
+            </>
+          }
+          subtitle="Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik grupta daha çok soru-cevap alanı bulur ve ders sonunda ne çalışacağını bilir."
+          actions={
+            <>
               <LeadFunnelTrigger
                 source="online_ozel_ders_hero_cta"
                 eventName="landing_cta_click"
                 href="/#matematik-ders-paketi"
-                className="inline-flex rounded-full bg-[var(--od-olive)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#2E3B24]"
+                className="site-btn site-btn-primary site-btn-lg"
               >
                 Ders Paketini İncele
               </LeadFunnelTrigger>
-              <Link
-                href="/#matematik-ders-paketi"
-                className="inline-flex rounded-full border border-[var(--od-ink)]/15 bg-white px-6 py-3 text-sm font-semibold text-[var(--od-ink)]"
-              >
-                Fiyatı Gör
+              <Link href="/paketler/" className="site-btn site-btn-secondary site-btn-lg">
+                Fiyatı gör
               </Link>
-            </div>
-          </section>
+            </>
+          }
+        />
 
-          <section className="mt-8 grid gap-4 md:grid-cols-3">
+        <section className="site-container py-16 sm:py-20">
+          <div className="grid gap-4 md:grid-cols-3">
             {[
               "Canlı matematik dersi ve ders sonrası çalışma yönü",
               "En fazla 4 öğrencilik grupta daha yoğun soru-cevap alanı",
-              "Ders sonrası öğretmen notu ve veliye kısa özet"
+              "Ders sonrası öğretmen notu ve veliye kısa özet",
             ].map((item) => (
-              <article key={item} className="rounded-2xl border border-[var(--od-line)] bg-white p-5 text-sm font-medium text-[var(--od-ink-soft)] shadow-[0_16px_40px_-34px_rgba(20,20,15,0.18)]">
+              <article
+                key={item}
+                className="flex items-start gap-3 rounded-[22px] border border-[var(--site-line)] bg-white p-6 text-[15px] font-medium leading-6 text-[var(--site-body)]"
+              >
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                  <Check size={13} strokeWidth={2.5} aria-hidden="true" />
+                </span>
                 {item}
               </article>
             ))}
-          </section>
+          </div>
 
-          <section className="mt-8 rounded-[24px] border border-[var(--od-line)] bg-white p-6 shadow-[0_16px_40px_-34px_rgba(20,20,15,0.18)]">
-            <h2 className="text-2xl font-bold tracking-normal text-[var(--od-ink)]">Hangi Öğrenciler İçin Daha Uygun?</h2>
-            <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[var(--od-ink-soft)]">
-              <li>Matematikte belirli konularda hızlı toparlanma ihtiyacı olanlar</li>
-              <li>Soru çözüm ve yanlış analizi desteğini artırmak isteyenler</li>
-              <li>Ders sonunda belirli bir çalışma yönüyle devam etmek isteyen öğrenciler</li>
+          <div className="mt-4 rounded-[24px] border border-[var(--site-line)] bg-white p-7 sm:p-9">
+            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
+              Hangi öğrenciler için daha uygun?
+            </h2>
+            <ul className="mt-5 space-y-3">
+              {[
+                "Matematikte belirli konularda hızlı toparlanma ihtiyacı olanlar",
+                "Soru çözüm ve yanlış analizi desteğini artırmak isteyenler",
+                "Ders sonunda belirli bir çalışma yönüyle devam etmek isteyen öğrenciler",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3 text-[15.5px] leading-7 text-[var(--site-body)]">
+                  <Check className="mt-1 h-4 w-4 shrink-0 text-[var(--brand-orange-ink)]" strokeWidth={2.4} aria-hidden="true" />
+                  <span>{item}</span>
+                </li>
+              ))}
             </ul>
-          </section>
+          </div>
 
-          <section className="mt-8 rounded-[24px] border border-[var(--od-line)] bg-[var(--od-mint)]/65 p-6">
-            <h2 className="text-2xl font-bold tracking-normal text-[var(--od-ink)]">İlgili Rehber Yazılar</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link href="/blog/online-ozel-ders-mi-dershane-mi/" className="rounded-2xl border border-[var(--od-line)] bg-white p-4 text-sm font-semibold text-[var(--od-ink)]">
+          <div className="mt-4 rounded-[24px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-7 sm:p-9">
+            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
+              İlgili rehber yazılar
+            </h2>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <Link
+                href="/blog/online-ozel-ders-mi-dershane-mi/"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+              >
                 Online özel ders mi dershane mi?
+                <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
-              <Link href="/blog/yks-online-ders-calisma-plani/" className="rounded-2xl border border-[var(--od-line)] bg-white p-4 text-sm font-semibold text-[var(--od-ink)]">
+              <Link
+                href="/blog/yks-online-ders-calisma-plani/"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+              >
                 YKS online ders çalışma planı
+                <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
             </div>
-          </section>
-        </Container>
+          </div>
+        </section>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }

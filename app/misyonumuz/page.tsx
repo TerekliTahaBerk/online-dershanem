@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Navbar } from "@/components/sections/navbar";
-import { Footer } from "@/components/sections/footer";
+import { ArrowUpRight } from "lucide-react";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
+import { PageHero } from "@/components/site/page-hero";
 import { siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -38,23 +40,23 @@ const principles = [
 
 export default function MissionPage() {
   return (
-    <>
-      <Navbar />
-      <main className="od-public overflow-x-hidden bg-[var(--od-cream)] text-[var(--od-ink)]">
-        {/* EDITORYAL AÇILIŞ */}
-        <section className="mx-auto max-w-[820px] px-[clamp(20px,4vw,40px)] pb-[clamp(40px,6vw,64px)] pt-[clamp(56px,9vw,120px)]">
-          <p className="mb-7 text-[14px] font-medium uppercase tracking-[0.06em] text-[var(--od-olive-soft)]">
-            Misyonumuz
-          </p>
-          <h1 className="max-w-[22ch] font-display text-[clamp(30px,5vw,52px)] font-normal leading-[1.16] tracking-[-0.02em]">
-            Matematiği, bir çocuğun <em className="italic">korktuğu</em> ders olmaktan
-            çıkarmak istedik.
-          </h1>
-        </section>
+    <div className="site-scope">
+      <SiteHeader />
+      <main>
+        <PageHero
+          eyebrow="Misyonumuz"
+          align="left"
+          title={
+            <>
+              Matematiği, bir çocuğun <span className="site-hl">korktuğu</span> ders olmaktan
+              çıkarmak istedik.
+            </>
+          }
+        />
 
         {/* PROSE */}
-        <section className="mx-auto max-w-[680px] px-[clamp(20px,4vw,40px)] pb-[clamp(48px,7vw,80px)]">
-          <div className="flex flex-col gap-7 text-[19px] leading-[1.7] text-[#2E2E28]">
+        <section className="site-container pt-4 sm:pt-6">
+          <div className="mx-auto flex max-w-2xl flex-col gap-6 text-[18px] leading-8 text-[var(--site-body)]">
             <p>
               Online Dershanem, kalabalık dershane sıralarında kaybolan ya da birebir
               özel dersin maliyetine ulaşamayan öğrenciler için kuruldu. İkisinin
@@ -63,70 +65,67 @@ export default function MissionPage() {
             </p>
             <p>
               Matematiğin bir yetenek meselesi değil, bir{" "}
-              <em className="font-display italic">düzen</em> meselesi olduğuna
-              inanıyoruz. Doğru büyüklükte bir grup, takip edilen bir plan ve dürüst bir
-              geri bildirim — çoğu öğrenci için gereken bu.
+              <em className="font-display italic text-[var(--site-ink)]">düzen</em> meselesi
+              olduğuna inanıyoruz. Doğru büyüklükte bir grup, takip edilen bir plan ve dürüst
+              bir geri bildirim — çoğu öğrenci için gereken bu.
             </p>
             <p>
-              Abartılı vaatler vermiyoruz. “Garantili puan” veya “bir ayda zirve”
-              demiyoruz. Bunun yerine, her hafta çocuğunuzun nerede olduğunu kısa bir
-              notla anlatıyor, sürecin içine sizi de alıyoruz. Güven, gösterişle değil
+              Abartılı vaatler vermiyoruz. &ldquo;Garantili puan&rdquo; veya &ldquo;bir ayda
+              zirve&rdquo; demiyoruz. Bunun yerine, her hafta çocuğunuzun nerede olduğunu kısa
+              bir notla anlatıyor, sürecin içine sizi de alıyoruz. Güven, gösterişle değil
               şeffaflıkla kurulur.
             </p>
           </div>
         </section>
 
         {/* PULL QUOTE */}
-        <section className="border-y border-[var(--od-line)] bg-[var(--od-cream-2)]">
-          <div className="mx-auto max-w-[820px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,88px)] text-center">
-            <p className="font-display text-[clamp(24px,4vw,36px)] font-normal italic leading-[1.3] tracking-[-0.01em]">
-              “Çocuğun dersten eli boş kalkmasın. Ne çalışacağını bilsin, veli de süreci
-              görsün. Kurduğumuz her şey bu basit cümlenin etrafında.”
+        <section className="mt-14 border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+          <div className="site-container py-16 text-center sm:py-20">
+            <p className="mx-auto max-w-3xl font-display text-[clamp(1.5rem,3.5vw,2.3rem)] font-normal italic leading-[1.35] tracking-[-0.01em] text-[var(--site-ink)]">
+              &ldquo;Çocuğun dersten eli boş kalkmasın. Ne çalışacağını bilsin, veli de süreci
+              görsün. Kurduğumuz her şey bu basit cümlenin etrafında.&rdquo;
             </p>
-            <p className="mt-6 text-[14px] text-[var(--od-ink-soft)]">
-              — Online Dershanem, kurucu ekip
-            </p>
+            <p className="mt-6 text-[14px] text-[var(--site-muted)]">— Online Dershanem, kurucu ekip</p>
           </div>
         </section>
 
         {/* DEĞERLER */}
-        <section className="mx-auto max-w-[1120px] px-[clamp(20px,4vw,40px)] py-[clamp(48px,7vw,88px)]">
-          <h2 className="mb-11 font-display text-[clamp(24px,3.4vw,34px)] font-medium tracking-[-0.02em]">
+        <section className="site-container py-16 sm:py-20">
+          <h2 className="mb-10 font-display text-[clamp(1.8rem,3.4vw,2.6rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
             Bize yön veren üç ilke
           </h2>
-          <div className="grid gap-px overflow-hidden rounded-[18px] border border-[var(--od-line)] bg-[var(--od-line)] sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {principles.map((p) => (
-              <div key={p.n} className="bg-[var(--od-cream)] p-8">
-                <div className="mb-5 font-display text-[30px] text-[var(--od-olive-soft)]">
-                  {p.n}
-                </div>
-                <h3 className="mb-2.5 text-[18px] font-semibold">{p.title}</h3>
-                <p className="text-[15px] leading-[1.6] text-[var(--od-ink-soft)]">{p.body}</p>
+              <div key={p.n} className="rounded-[24px] border border-[var(--site-line)] bg-white p-7">
+                <div className="mb-5 font-display text-[30px] text-[var(--brand-orange-ink)]">{p.n}</div>
+                <h3 className="mb-2.5 text-[18px] font-semibold text-[var(--site-ink)]">{p.title}</h3>
+                <p className="text-[15px] leading-7 text-[var(--site-body)]">{p.body}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* KAPANIŞ */}
-        <section className="border-t border-[var(--od-line)] bg-[var(--od-olive)] text-[var(--od-cream)]">
-          <div className="mx-auto max-w-[820px] px-[clamp(20px,4vw,40px)] py-[clamp(56px,8vw,104px)] text-center">
-            <h2 className="mb-5 font-display text-[clamp(26px,4vw,42px)] font-medium leading-[1.1] tracking-[-0.02em]">
+        <section className="site-container pb-20">
+          <div className="overflow-hidden rounded-[32px] bg-[var(--brand-orange)] px-8 py-14 text-center text-white sm:px-12 sm:py-16">
+            <h2 className="mx-auto max-w-xl font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-tight tracking-[-0.02em]">
               Tanışalım mı?
             </h2>
-            <p className="mx-auto mb-8 max-w-[42ch] text-[17px] leading-[1.6] text-[#D8DCCF]">
-              Çocuğunuz için doğru yer miyiz, en iyisi konuşarak anlaşılır. Bir ön görüşme
-              her zaman ücretsiz.
+            <p className="mx-auto mt-4 max-w-md text-[16.5px] leading-7 text-white/85">
+              Çocuğunuz için doğru yer miyiz, en iyisi konuşarak anlaşılır. Bir ön görüşme her
+              zaman ücretsiz.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 href="/iletisim/"
-                className="inline-flex min-h-12 items-center rounded-[11px] bg-[var(--od-cream)] px-6 py-3.5 text-[16px] font-medium text-[var(--od-olive)] transition-colors hover:bg-[var(--od-cream-2)]"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-[16px] font-bold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-tint)]"
               >
-              İletişim
+                İletişim
+                <ArrowUpRight size={18} aria-hidden="true" />
               </Link>
               <Link
-                href="/matematik-ders-paketi/"
-                className="inline-flex min-h-12 items-center rounded-[11px] border border-[var(--od-cream)]/[0.28] bg-[var(--od-cream)]/10 px-6 py-3.5 text-[16px] font-medium text-[var(--od-cream)] transition-colors hover:bg-[var(--od-cream)]/[0.18]"
+                href="/paketler/"
+                className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-[16px] font-semibold text-white transition-colors hover:bg-white/20"
               >
                 Ders paketi
               </Link>
@@ -134,7 +133,7 @@ export default function MissionPage() {
           </div>
         </section>
       </main>
-      <Footer />
-    </>
+      <SiteFooter />
+    </div>
   );
 }
