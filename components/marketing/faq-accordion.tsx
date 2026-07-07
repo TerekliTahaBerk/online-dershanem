@@ -21,7 +21,7 @@ export function FaqAccordion({ title = "Sıkça sorulan sorular", items, tone = 
   return (
     <section id="sss" className={`scroll-mt-24 ${tone === "warm" ? "bg-[var(--site-bg-warm)]" : "bg-white"}`}>
       <div className="site-container py-24 sm:py-36">
-        <h2 className="font-display text-[clamp(3rem,6vw,5.6rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">
+        <h2 className="font-display text-[clamp(3rem,6vw,5.6rem)] leading-[.98] text-[var(--site-ink)]">
           {title}
         </h2>
 
@@ -35,8 +35,8 @@ export function FaqAccordion({ title = "Sıkça sorulan sorular", items, tone = 
                     type="button"
                     onClick={() => setOpen(isOpen ? null : i)}
                     aria-expanded={isOpen}
-                    aria-controls={`faq-panel-${i}`}
-                    id={`faq-trigger-${i}`}
+                    aria-controls={`faq-answer-${i}`}
+                    id={`faq-question-${i}`}
                     className="flex w-full items-center justify-between gap-6 py-8 text-left sm:py-10"
                   >
                     <span className="text-[18px] font-semibold text-[var(--site-ink)] sm:text-[22px]">
@@ -53,9 +53,9 @@ export function FaqAccordion({ title = "Sıkça sorulan sorular", items, tone = 
                   </button>
                 </h3>
                 <div
-                  id={`faq-panel-${i}`}
+                  id={`faq-answer-${i}`}
                   role="region"
-                  aria-labelledby={`faq-trigger-${i}`}
+                  aria-labelledby={`faq-question-${i}`}
                   hidden={!isOpen}
                   className="max-w-4xl pb-9 pr-16 text-[16px] leading-8 text-[var(--site-body)] sm:text-[18px]"
                 >

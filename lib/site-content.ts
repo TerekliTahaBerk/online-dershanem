@@ -29,9 +29,9 @@ export const navLogin = { label: "Giriş yap", href: "/giris/" } as const;
 
 export const hero = {
   pill: "Maksimum 4 kişilik canlı matematik dersi",
-  title: ["Netlerini artırmak", "sandığından daha kolay."],
+  title: ["Matematikte netlerini artırmak", "sandığından daha kolay."],
   subtitle:
-    "Canlı matematik dersleri, küçük grup düzeni ve ders sonrası takip ile öğrencinin neyi, neden çalışacağını netleştiriyoruz.",
+    "En fazla 4 kişilik canlı matematik dersleriyle öğrencinin nerede takıldığını görür, ders sonrası ne çalışacağını netleştiririz.",
   primary: { label: "Ders Paketlerini İncele", href: "/ders-paketleri/" },
   secondary: { label: "Ücretsiz görüşme", href: "/iletisim/" },
   floatingCards: [
@@ -45,7 +45,7 @@ export const hero = {
 
 export const socialProof = {
   text: "LGS, TYT ve AYT matematiğinde öğrenciler seviyesine göre ilerler.",
-  badges: ["LGS", "TYT", "AYT", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip"],
+  badges: ["LGS", "TYT", "AYT", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip", "PayTR güvenli ödeme"],
 } as const;
 
 /* ---------------- Ana değer önerisi (iki büyük kart) ---------------- */
@@ -102,39 +102,28 @@ export type Story = {
 
 export const stories: Story[] = [
   {
-    tag: "YKS hazırlık",
-    quote:
-      "Ders sonunda ne çalışacağımı bilmek haftayı çok daha düzenli götürmemi sağladı.",
+    tag: "TYT öğrencisi",
+    quote: "Ders sonrası ne çalışacağını bilmek düzen kurmasını kolaylaştırdı.",
     name: "TYT öğrencisi",
     detail: "Matematik çalışma düzeni",
   },
   {
-    tag: "LGS hazırlık",
-    quote:
-      "Soru sorabildiğim ve çözümümü gösterebildiğim bir ders düzeni tam aradığım şeydi.",
+    tag: "8. sınıf velisi",
+    quote: "Kalabalık sınıfta soru soramıyordu; küçük grupta daha aktif ilerlemeye başladı.",
     name: "8. sınıf velisi",
     detail: "Küçük grup canlı ders",
   },
   {
-    tag: "Veli görüşü",
-    quote:
-      "Haftalık kısa notlar, süreci tahmin etmek yerine somut olarak görmemizi sağladı.",
-    name: "LGS öğrencisi velisi",
+    tag: "LGS velisi",
+    quote: "Veli olarak süreci daha net takip edebildik.",
+    name: "LGS velisi",
     detail: "Düzenli takip",
   },
   {
-    tag: "TYT hazırlık",
-    quote:
-      "Kalabalık sınıfta kaybolmadan, kendi tempoma yakın bir grupla ilerledim.",
-    name: "Öğrenci deneyimi",
+    tag: "AYT öğrencisi",
+    quote: "Soru çözümünü gösterince nerede hata yaptığını daha hızlı fark etmeye başladı.",
+    name: "AYT öğrencisi",
     detail: "En fazla 4 kişi",
-  },
-  {
-    tag: "AYT hazırlık",
-    quote:
-      "Türev ve integralde takıldığım yerleri birlikte çözünce eksiklerim hızla kapandı.",
-    name: "Öğrenci deneyimi",
-    detail: "İleri matematik",
   },
 ];
 
@@ -186,28 +175,30 @@ export const footerColumns = [
       { label: "Ders Paketleri", href: "/ders-paketleri/" },
       { label: "Kamplar", href: "/kamplar/" },
       { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
-      { label: "Başarı Hikayeleri", href: "/#basari-hikayeleri" },
+      { label: "SSS", href: "/sss/" },
     ],
   },
   {
     title: "Kurumsal",
     links: [
       { label: "Hakkımızda", href: "/hakkimizda/" },
-      { label: "Misyonumuz", href: "/misyonumuz/" },
       { label: "İletişim", href: "/iletisim/" },
       { label: "Blog", href: "/blog/" },
+      { label: "Ön görüşme", href: "/iletisim/" },
     ],
   },
   {
     title: "Destek",
     links: [
       { label: "Sıkça Sorulanlar", href: "/sss/" },
-      { label: "İade Politikası", href: "/iade/" },
       { label: "Gizlilik", href: "/gizlilik/" },
       { label: "KVKK", href: "/kvkk/" },
+      { label: "Kullanım koşulları", href: "/gizlilik/" },
+      { label: "İade Politikası", href: "/iade/" },
+      { label: "PayTR Güvenli Ödeme", href: "/ders-paketleri/" },
     ],
   },
 ] as const;
 
 export const footerTagline =
-  "Canlı matematik dersi, küçük grup ve ders sonrası takip sistemiyle öğrencinin yolunu netleştirir.";
+  "En fazla 4 kişilik canlı matematik dersleri, ders sonrası çalışma yönü ve güvenli ödeme.";

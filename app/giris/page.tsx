@@ -24,11 +24,11 @@ export default function LoginPage() {
                   width={1050}
                   height={200}
                   sizes="180px"
-                  className="h-10 w-auto sm:h-12"
+                  className="h-auto w-[180px] sm:w-[220px]"
                   priority
                 />
               </Link>
-              <h1 className="mt-14 font-display text-[clamp(2.6rem,7vw,4rem)] tracking-[-0.035em] text-[var(--site-ink)]">
+              <h1 className="mt-14 font-display text-[clamp(2.6rem,7vw,4rem)] text-[var(--site-ink)]">
                 Giriş yap
               </h1>
               <p className="mt-7 text-[18px] text-[var(--site-body)] sm:text-[22px]">Lütfen hesabına giriş yap.</p>

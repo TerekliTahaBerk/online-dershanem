@@ -13,7 +13,7 @@ export function PricingPreview() {
       <div className="site-container py-24 sm:py-36">
         <div className="mx-auto max-w-4xl text-center">
           <p className="site-eyebrow justify-center">Tek abonelik</p>
-          <h2 className="mt-4 font-display text-[clamp(2.8rem,6vw,5.4rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">
+          <h2 className="mt-4 font-display text-[clamp(2.8rem,6vw,5.4rem)] leading-[.98] text-[var(--site-ink)]">
             Tek paket,<br /><span className="site-hl">net bir matematik yolu.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
@@ -24,7 +24,7 @@ export function PricingPreview() {
         <div className="mt-20 grid items-start gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-24">
           {/* Neler dahil */}
           <div>
-            <h3 className="font-display text-[clamp(1.8rem,3vw,2.6rem)] tracking-[-0.02em] text-[var(--site-ink)]">Neler dahil?</h3>
+            <h3 className="font-display text-[clamp(1.8rem,3vw,2.6rem)] text-[var(--site-ink)]">Neler dahil?</h3>
             <ul className="mt-8 grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-1">
               {includedFeatures.map((f) => (
                 <li key={f} className="flex items-start gap-3 text-[16px] leading-7 text-[var(--site-body)] sm:text-[18px]">

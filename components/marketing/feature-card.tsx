@@ -33,7 +33,7 @@ export function FeatureCard({
     >
       <div className={reverse ? "lg:order-2" : ""}>
         <p className="site-eyebrow mb-4">{eyebrow}</p>
-        <h3 className="font-display text-[clamp(2rem,3.8vw,3.25rem)] leading-[1.04] tracking-[-0.025em] text-[var(--site-ink)]">
+        <h3 className="font-display text-[clamp(2rem,3.8vw,3.25rem)] leading-[1.04] text-[var(--site-ink)]">
           {title}
         </h3>
         <p className="mt-6 max-w-[44ch] text-[16px] leading-7 text-[var(--site-body)]">{body}</p>

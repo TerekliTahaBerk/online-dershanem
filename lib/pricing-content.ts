@@ -24,13 +24,22 @@ export const lessonPackage = {
   features: [...source.features] as string[],
 };
 
-/** "Neler dahil?" listesi — gerçek paket içeriğine dayanır. */
-export const includedFeatures = lessonPackage.features;
+/** "Neler dahil?" listesi — public ürün gerçekliğini fiyat kaynağından ayırmadan anlatır. */
+export const includedFeatures: string[] = [
+  "Canlı matematik dersi",
+  "En fazla 4 öğrencilik grup",
+  "Derste soru-cevap ve birlikte çözüm",
+  "Ders sonrası çalışma yönü",
+  "Ödevlendirme ve öğretmen notu",
+  "Sade gelişim özeti",
+  "Seviye ve hedefe göre grup planlaması",
+  "PayTR ile güvenli ödeme",
+];
 
 /** Fiyat kartında gösterilen kısa öne çıkanlar. */
 export const cardHighlights: string[] = [
-  "En fazla 4 öğrencilik canlı matematik dersi",
-  "Kişiye özel haftalık çalışma planı",
+  "En fazla 4 öğrencilik grup",
+  "Ders sonrası çalışma yönü",
   "Ödevlendirme ve öğretmen notu",
-  "Veliye anlaşılır haftalık gelişim notu",
+  "PayTR ile güvenli ödeme",
 ];

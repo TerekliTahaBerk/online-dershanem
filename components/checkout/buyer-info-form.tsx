@@ -460,7 +460,7 @@ export function BuyerInfoForm({
       <div className="rounded-[16px] border border-[var(--brand-orange)]/20 bg-[var(--brand-orange-tint)] px-4 py-3 text-[13.5px] text-[var(--site-ink)]">
         <strong>Bilgi:</strong>{" "}
         {service === "OD"
-          ? "Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacaktır. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
+          ? "Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası ekibimiz sizinle iletişime geçer, öğrencinin seviyesini değerlendirir ve ilk ders planlamasını yapar. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
           : "Ödeme tamamlandığında ODK erişiminiz otomatik aktive olur. Deneme planınız için hocalarımız sizinle iletişime geçecektir."}
       </div>
       <button

@@ -58,7 +58,7 @@ export default function CareersPage() {
           </p>
         </section>
 
-        {/* Open Roles panel */}
+        {/* Open roles */}
         <section className="site-container pb-20 sm:pb-28">
           <div className="overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-white shadow-[0_28px_70px_-40px_rgba(20,20,15,0.2)]">
             <div className="grid gap-0 lg:grid-cols-[0.95fr_2fr]">

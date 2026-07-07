@@ -8,7 +8,7 @@ import { lessonPackage, includedFeatures, cardHighlights } from "@/lib/pricing-c
 import { homeFaqs } from "@/lib/site-content";
 
 const steps = [
-  { icon: CreditCard, title: "Ödeme", body: "PayTR üzerinden güvenle tamamlarsın. Hesap açmana gerek yok." },
+  { icon: CreditCard, title: "Ödeme", body: "PayTR üzerinden güvenle tamamlarsın. Satın alma için önceden hesap oluşturman gerekmez." },
   { icon: PhoneCall, title: "Biz ararız", body: "Öğrencinin seviyesini ve hedefini kısaca konuşuruz." },
   { icon: Users, title: "Gruba yerleştirme", body: "Seviyeye uygun, en fazla 4 kişilik gruba yerleştiririz." },
   { icon: Video, title: "İlk ders", body: "Google Meet üzerinden ilk canlı ders başlar." },
@@ -36,7 +36,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
         <section className="bg-[#fafafa] pt-20 sm:pt-32">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">Ders Paketleri</p>
-            <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.8rem,6.2vw,5.6rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">
+            <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.8rem,6.2vw,5.6rem)] leading-[.98] text-[var(--site-ink)]">
               {title}
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">{subtitle}</p>
@@ -52,7 +52,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
 
             <div className="grid items-start gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-24">
               <div>
-                <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] tracking-[-0.02em] text-[var(--site-ink)]">Neler dahil?</h2>
+                <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">Neler dahil?</h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
                   Canlı ders, küçük grup ve ders sonrası takip tek bir aylık pakette.
                 </p>
@@ -89,7 +89,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
         {/* Nasıl başlar */}
         <section className="bg-[var(--site-bg-warm)]">
           <div className="site-container py-20 sm:py-24">
-            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
+            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] text-[var(--site-ink)]">
               Paketler nasıl başlar?
             </h2>
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

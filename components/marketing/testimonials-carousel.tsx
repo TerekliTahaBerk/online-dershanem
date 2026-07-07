@@ -11,8 +11,10 @@ export function TestimonialsCarousel() {
   return (
     <section id="basari-hikayeleri" className="scroll-mt-24 overflow-hidden bg-white py-24 sm:py-36">
       <div className="site-container text-center">
-        <h2 className="font-display text-[clamp(2.65rem,5.6vw,5.25rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">Öğrenciler matematikte yalnız kalmasın.</h2>
-        <p className="mx-auto mt-5 max-w-2xl text-[15.5px] leading-7 text-[var(--site-body)] sm:text-[17px]">Ders, soru-cevap ve ders sonrası yönlendirme aynı planın içinde ilerler.</p>
+        <h2 className="font-display text-[clamp(2.65rem,5.6vw,5.25rem)] leading-[.98] text-[var(--site-ink)]">Öğrenciler matematikte yalnız kalmasın.</h2>
+        <p className="mx-auto mt-5 max-w-2xl text-[15.5px] leading-7 text-[var(--site-body)] sm:text-[17px]">
+          Küçük grup dersleriyle öğrenci soru sorar, çözümünü gösterir ve ders sonrası ne çalışacağını bilir.
+        </p>
         <div className="mt-7 flex justify-center gap-2">
           <button type="button" onClick={() => move(-1)} aria-label="Önceki hikayeler" className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--site-line)] bg-white"><ArrowLeft size={18} aria-hidden="true" /></button>
           <button type="button" onClick={() => move(1)} aria-label="Sonraki hikayeler" className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--site-line)] bg-white"><ArrowRight size={18} aria-hidden="true" /></button>

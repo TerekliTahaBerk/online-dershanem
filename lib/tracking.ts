@@ -1,6 +1,5 @@
 /**
  * Tracking — şu an no-op stub.
- * Eski analitik/dönüşüm pixel'leri panellerle birlikte söküldü.
  * UI bileşenleri arayüzü bozulmasın diye aynı imzalar korunuyor.
  */
 

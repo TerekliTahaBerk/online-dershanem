@@ -11,12 +11,12 @@ import { siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Hakkımızda",
   description:
-    "Online Dershanem; canlı küçük grup dersini, kişiye özel çalışma planını ve düzenli takibi tek bir sistemde birleştirir.",
+    "Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini bir araya getirir.",
   alternates: { canonical: "/hakkimizda" },
   openGraph: {
     title: "Hakkımızda | Online Dershanem",
     description:
-      "Öğrencinin yalnız çalışmadığı bir hazırlık sistemi: küçük grup dersi, kişiye özel plan ve düzenli takip.",
+      "Öğrencinin matematikte yalnız kalmadığı bir sistem: küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesi.",
     url: `${siteUrl}/hakkimizda`,
   },
 };
@@ -61,12 +61,11 @@ export default function AboutPage() {
         <section className="bg-white pt-16 sm:pt-24">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">Hakkımızda</p>
-            <h1 className="mx-auto mt-4 max-w-4xl font-display text-[clamp(2.5rem,6.5vw,4.75rem)] leading-[1.02] tracking-[-0.03em] text-[var(--site-ink)]">
-              Öğrencinin <span className="site-hl">yalnız çalışmadığı</span> bir hazırlık sistemi.
+            <h1 className="mx-auto mt-4 max-w-4xl font-display text-[clamp(2.5rem,6.5vw,4.75rem)] leading-[1.02] text-[var(--site-ink)]">
+              Öğrencinin matematikte yalnız kalmadığı bir sistem.
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-[16.5px] leading-7 text-[var(--site-body)]">
-              Online Dershanem; canlı küçük grup dersini, kişiye özel çalışma planını ve düzenli
-              takibi tek bir sistemde birleştirir.
+              Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini bir araya getirir.
             </p>
           </div>
         </section>

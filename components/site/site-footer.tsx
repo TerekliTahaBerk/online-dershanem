@@ -50,7 +50,7 @@ export function SiteFooter() {
                 width={1050}
                 height={200}
                 sizes="180px"
-                className="h-7 w-auto"
+                className="h-auto w-[180px]"
               />
             </Link>
             <p className="text-[14px] leading-6 text-[var(--site-body)]">{footerTagline}</p>
@@ -78,7 +78,7 @@ export function SiteFooter() {
               </h2>
               <ul className="mt-6 space-y-5">
                 {col.links.map((l) => (
-                  <li key={l.href}>
+                  <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
                       href={l.href}
                       className="text-[15.5px] text-[var(--site-body)] transition-colors hover:text-[var(--brand-orange-ink)]"

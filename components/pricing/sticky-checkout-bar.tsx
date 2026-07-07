@@ -13,7 +13,7 @@ type StickyCheckoutBarProps = {
 
 /**
  * Referanstaki sticky bottom pricing bar. Aşağı kaydırınca belirir; seçili
- * paket özeti + "Sepete Ekle" CTA. Mobilde ekranı boğmayacak kompakt yükseklik.
+ * paket özeti + "Satın al" CTA. Mobilde ekranı boğmayacak kompakt yükseklik.
  */
 export function StickyCheckoutBar({ name, category, subject, priceLabel, note }: StickyCheckoutBarProps) {
   const [visible, setVisible] = useState(false);
@@ -60,7 +60,7 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, note }:
             paymentLink=""
             className="site-btn site-btn-primary shrink-0 px-5 py-3 text-[14px] sm:px-7"
           >
-            Sepete Ekle
+            Satın al
           </PurchaseFunnelTrigger>
         </div>
       </div>

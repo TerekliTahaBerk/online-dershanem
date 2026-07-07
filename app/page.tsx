@@ -22,10 +22,10 @@ import { parsePriceToCents, siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: { absolute: "Online Dershanem | Küçük Grup Canlı Matematik Dersi" },
   description:
-    "En fazla 4 kişilik canlı matematik dersi, kişiye özel çalışma planı ve veliye net gelişim notu. LGS, TYT ve AYT hazırlığını tek yerden yönet.",
+    "LGS, TYT ve AYT matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Online Dershanem | YKS ve LGS için Koçluk ve Akıllı Takip",
+    title: "Online Dershanem | Küçük Grup Canlı Matematik Dersi",
     description:
       "LGS, TYT ve AYT matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
     url: `${siteUrl}/`,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarCheck, FileText, LineChart, Sparkles, Video } from "lucide-react";
 import { hero } from "@/lib/site-content";
-import { PlannerMockup } from "@/components/marketing/mockups";
+import { HeroLessonMockup } from "@/components/marketing/mockups";
 
 const floatingCards = [
   { icon: CalendarCheck, title: hero.floatingCards[0].title, sub: hero.floatingCards[0].sub, className: "left-[7%] top-[62%]" },
@@ -21,7 +21,7 @@ export function Hero() {
               <ArrowRight size={15} className="text-[var(--site-muted)]" aria-hidden="true" />
             </span>
 
-            <h1 className="mt-9 font-display text-[clamp(3.15rem,7vw,6.25rem)] leading-[0.94] tracking-[-0.045em] text-[var(--site-ink)]">
+            <h1 className="mt-9 font-display text-[clamp(3.05rem,7vw,6.25rem)] leading-[0.94] text-[var(--site-ink)]">
               {hero.title[0]}<br />{hero.title[1]}
             </h1>
             <p className="mx-auto mt-6 hidden max-w-2xl text-[15.5px] leading-7 text-[var(--site-body)] sm:block sm:text-[18px]">
@@ -39,9 +39,9 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="absolute inset-x-[4%] bottom-[-70px] z-10 sm:bottom-[-40px] lg:inset-x-[8%] lg:bottom-[-80px]">
+          <div className="relative z-10 mx-auto mt-10 max-w-5xl sm:mt-12 lg:absolute lg:inset-x-[8%] lg:bottom-[-180px] lg:mt-0 lg:max-w-none">
             <div className="rounded-t-[34px] border border-b-0 border-[var(--site-line)] bg-white/92 p-4 shadow-[0_30px_90px_-40px_rgba(20,20,15,.3)] backdrop-blur sm:p-7 lg:p-10">
-              <PlannerMockup />
+              <HeroLessonMockup />
             </div>
           </div>
 

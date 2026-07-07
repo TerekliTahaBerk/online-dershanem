@@ -60,6 +60,8 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
     };
   }, [open, onClose, triggerRef]);
 
+  if (!open) return null;
+
   return (
     <div
       ref={dialogRef}
@@ -67,12 +69,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       role="dialog"
       aria-modal="true"
       aria-label="Menü"
-      aria-hidden={!open}
-      className={`fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] transition-[opacity,transform,visibility] md:hidden ${
-        open
-          ? "visible translate-y-0 opacity-100 duration-200"
-          : "invisible -translate-y-2 opacity-0 duration-200"
-      }`}
+      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] md:hidden"
     >
       <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--site-line)] px-[clamp(20px,6vw,28px)]">
         <Link href="/" onClick={onClose} aria-label="Online Dershanem ana sayfa">
@@ -82,7 +79,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
             width={1050}
             height={200}
             sizes="150px"
-            className="h-[26px] w-auto"
+            className="h-auto w-[150px]"
           />
         </Link>
         <button
@@ -103,7 +100,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
             href={link.href}
             onClick={onClose}
             aria-current={isActive(link.href) ? "page" : undefined}
-            className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] tracking-[-0.01em] ${
+            className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] ${
               isActive(link.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
             }`}
           >
@@ -113,7 +110,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
         <Link
           href={navLogin.href}
           onClick={onClose}
-          className="block border-b border-[var(--site-line)] py-5 font-display text-[27px] tracking-[-0.01em] text-[var(--site-ink)]"
+          className="block border-b border-[var(--site-line)] py-5 font-display text-[27px] text-[var(--site-ink)]"
         >
           {navLogin.label}
         </Link>

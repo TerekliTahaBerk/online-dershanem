@@ -10,7 +10,7 @@ import { MobileMenu } from "@/components/site/mobile-menu";
 
 /**
  * Public site header — referans tasarım: sol menü · ortada logo · sağda
- * "Giriş yap" + turuncu CTA. Minimal, beyaz, hafif sticky.
+ * "Giriş yap" + yeşil CTA. Minimal, beyaz, hafif sticky.
  */
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -76,7 +76,7 @@ export function SiteHeader() {
                 height={200}
                 priority
                 sizes="160px"
-                className="h-[27px] w-auto"
+                className="h-auto w-[150px] sm:w-[160px]"
               />
             </Link>
 

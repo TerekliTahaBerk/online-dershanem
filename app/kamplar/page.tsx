@@ -11,12 +11,12 @@ import { mathCamps, CAMP_MAX_STUDENTS, siteUrl } from "@/lib/content";
 import { waHref } from "@/lib/site-content";
 
 export const metadata: Metadata = {
-  title: "Kamplar",
+  title: "Matematik Kampları",
   description:
     "Belirli bir matematik konusuna odaklanan, öğretmen destekli ve sıkı takip edilen online kamplar. Kısa sürede düzen kurmak isteyenler için.",
   alternates: { canonical: "/kamplar" },
   openGraph: {
-    title: "Kamplar | Online Dershanem",
+    title: "Matematik Kampları | Online Dershanem",
     description:
       "Belirli hedefe odaklanan, öğretmen destekli ve sıkı takip edilen online matematik kampları.",
     url: `${siteUrl}/kamplar`,
@@ -65,20 +65,19 @@ export default function CampsPage() {
         <section className="bg-white pt-16 sm:pt-20">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">Matematik Kampları</p>
-            <h1 className="mx-auto mt-4 max-w-3xl font-display text-[clamp(2.4rem,6vw,4rem)] leading-[1.04] tracking-[-0.03em] text-[var(--site-ink)]">
-              Kısa sürede <span className="site-hl">düzen kurmak</span> isteyenler için kamplar.
+            <h1 className="mx-auto mt-4 max-w-4xl font-display text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.04] text-[var(--site-ink)]">
+              Kısa sürede matematik düzeni kurmak isteyenler için kamplar.
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">
-              Belirli bir konuya odaklanan, öğretmen destekli ve sıkı takip edilen çalışma dönemleri.
-              En fazla {CAMP_MAX_STUDENTS} kişilik online gruplar.
+              LGS, TYT ve AYT matematiğinde belirli hedefe odaklanan küçük grup çalışma dönemleri.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/iletisim/" className="site-btn site-btn-primary site-btn-lg">
-                Ücretsiz görüşme
+                Detaylı bilgi al
                 <ArrowRight size={17} aria-hidden="true" />
               </Link>
               <a href={waHref} target="_blank" rel="noopener noreferrer" className="site-btn site-btn-secondary site-btn-lg">
-                WhatsApp&apos;tan sor
+                Ücretsiz görüşme
               </a>
             </div>
           </div>

@@ -1,9 +1,8 @@
 import { socialProof } from "@/lib/site-content";
 
 /**
- * Sosyal kanıt barı — hero altında yumuşak krem bar + gri üniversite logoları.
- * Gerçek logo asset'leri kullanılır (public/universities). Placement iddiası
- * içermez; hedef okullara giden yolda matematik temeli vurgusu.
+ * Sosyal kanıt barı — gerçek olmayan okul/başarı iddiası yerine ürün kapsamını
+ * ve güven unsurlarını açık badge'lerle gösterir.
  */
 export function SocialProof() {
   return (

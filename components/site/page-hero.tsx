@@ -34,7 +34,7 @@ export function PageHero({
       <div className={`site-container py-16 sm:py-24 ${centered ? "text-center" : ""}`}>
         {eyebrow ? <span className="site-eyebrow">{eyebrow}</span> : null}
         <h1
-          className={`${eyebrow ? "mt-4" : ""} font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.04] tracking-[-0.02em] text-[var(--site-ink)] ${
+          className={`${eyebrow ? "mt-4" : ""} font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.04] text-[var(--site-ink)] ${
             centered ? "mx-auto max-w-3xl" : "max-w-3xl"
           }`}
         >

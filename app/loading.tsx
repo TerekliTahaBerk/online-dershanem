@@ -1,6 +1,6 @@
 /**
  * Root-level loading skeleton — Next.js App Router segmenti yüklenirken görünür.
- * Tüm panel-dışı public sayfalar için varsayılan loading UI.
+ * Public sayfalar için varsayılan loading UI.
  */
 export default function Loading() {
   return (

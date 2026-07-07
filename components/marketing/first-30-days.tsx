@@ -6,7 +6,7 @@ export function First30Days() {
   return (
     <section id="ilk-30-gun" className="scroll-mt-24 bg-white">
       <div className="site-container py-24 sm:py-36">
-        <h2 className="mx-auto max-w-5xl text-center font-display text-[clamp(2.8rem,6.2vw,5.8rem)] leading-[.98] tracking-[-0.04em] text-[var(--site-ink)]">
+        <h2 className="mx-auto max-w-5xl text-center font-display text-[clamp(2.8rem,6.2vw,5.8rem)] leading-[.98] text-[var(--site-ink)]">
           Matematikte <span className="site-hl">ilk 30 günde</span><br />ne değişir?
         </h2>
 

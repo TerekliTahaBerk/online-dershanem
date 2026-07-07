@@ -37,14 +37,15 @@ export default async function OdCheckoutThankYouPage({
               <CheckoutResultCard
                 status="success"
                 eyebrow="Online Matematik Dershanesi"
-                description="Ödemeniz alındı. Ekibimiz öğrenci hesabınızı hazırlayıp giriş bilgilerinizi sizinle paylaşacak."
+                description="Ödemeniz alındı. Ekibimiz sizinle iletişime geçip ilk ders planlamasını yapacak."
                 nextStepNote={
                   <>
-                    <strong>Sıradaki adım:</strong> Hesap açmanıza gerek yok.
-                    Ekibimiz <strong>24 saat içinde</strong> sizinle iletişime
-                    geçerek öğrenci hesabınızı oluşturacak ve matematik programınızı
-                    birlikte planlayacak. Satın alma için ayrıca hesap açmanız
-                    gerekmez; bilgilendirme telefon veya e-posta üzerinden yapılacaktır.
+                    <strong>Sıradaki adım:</strong> Satın alma için ayrıca hesap
+                    açmanıza gerek yok. Ekibimiz <strong>24 saat içinde</strong>{" "}
+                    sizinle iletişime geçerek öğrencinin seviyesini
+                    değerlendirecek, uygun grubu belirleyecek ve ilk canlı dersi
+                    birlikte planlayacak. Bilgilendirme telefon veya e-posta
+                    üzerinden yapılacaktır.
                   </>
                 }
                 primaryAction={{ href: "/", label: "Ana Sayfa", variant: "primary" }}

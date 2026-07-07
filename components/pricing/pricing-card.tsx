@@ -13,8 +13,8 @@ export type PricingCardData = {
 };
 
 /**
- * Öne çıkan turuncu gradient fiyat kartı (referanstaki featured plan kartı).
- * "Sepete Ekle" mevcut checkout akışını (cart → /sepet → PayTR) korur.
+ * Öne çıkan yeşil gradient fiyat kartı (referanstaki featured plan kartı).
+ * Satın alma CTA'sı mevcut checkout akışını (cart → /sepet → PayTR) korur.
  */
 export function PricingCard({
   data,
@@ -69,12 +69,12 @@ export function PricingCard({
         paymentLink=""
         className="mt-8 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-[16px] font-bold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-tint)]"
       >
-        Sepete Ekle
+        Matematik Dersini Satın Al
       </PurchaseFunnelTrigger>
 
       <p className="mt-3.5 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-white/85">
         <Lock size={13} aria-hidden="true" />
-        {data.note ?? "Hesap açmana gerek yok · PayTR güvenli ödeme"}
+        {data.note ?? "PayTR güvenli ödeme · Kart bilgisi paylaşılmaz"}
       </p>
     </div>
   );

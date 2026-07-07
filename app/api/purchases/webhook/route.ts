@@ -115,9 +115,6 @@ export async function POST(request: Request) {
       payload: { providerReference: parsed.data.providerReference },
     });
 
-    // Inbox / muhasebe entegrasyonu paneller sökülürken kaldırıldı.
-    // Paneller sıfırdan kurulurken yeniden eklenecek.
-
     return NextResponse.json({ ok: true });
   } catch (err) {
     log.error("webhook.purchase.unhandled", err);

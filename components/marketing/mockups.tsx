@@ -1,5 +1,64 @@
 import { Check, Star, TrendingUp } from "lucide-react";
 
+export function HeroLessonMockup() {
+  const students = ["LGS", "TYT", "AYT", "Mat"];
+
+  return (
+    <div
+      aria-hidden="true"
+      className="overflow-hidden rounded-[26px] border border-[var(--site-line)] bg-white shadow-[0_24px_60px_-34px_rgba(20,20,15,0.35)]"
+    >
+      <div className="flex items-center justify-between border-b border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-[#ef4444]" />
+          <span className="h-3 w-3 rounded-full bg-[#f59e0b]" />
+          <span className="h-3 w-3 rounded-full bg-[#22c55e]" />
+        </div>
+        <span className="rounded-full bg-[var(--brand-orange-soft)] px-3 py-1 text-[10px] font-bold text-[var(--brand-orange-ink)] sm:text-[12px]">
+          Canlı matematik dersi
+        </span>
+      </div>
+
+      <div className="grid gap-4 p-4 sm:grid-cols-[1.2fr_.8fr] sm:p-6 lg:p-8">
+        <div className="rounded-[22px] bg-[linear-gradient(160deg,var(--brand-orange-tint),#ffffff_48%,#f7f4ea)] p-4 sm:p-6">
+          <div className="flex min-h-[210px] flex-col justify-between rounded-[18px] border border-[var(--site-line)] bg-white p-5">
+            <div>
+              <p className="text-[12px] font-semibold uppercase text-[var(--site-muted)]">Bugünkü ders</p>
+              <h3 className="mt-2 font-display text-[28px] leading-none text-[var(--site-ink)] sm:text-[38px]">
+                Problemler ve birlikte çözüm
+              </h3>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {students.map((student) => (
+                <span
+                  key={student}
+                  className="flex aspect-square items-center justify-center rounded-2xl bg-[var(--brand-orange-soft)] text-[12px] font-bold text-[var(--brand-orange-ink)]"
+                >
+                  {student}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-3">
+          {[
+            ["En fazla 4 öğrenci", "Herkes soru sorar"],
+            ["Ders sonrası takip", "Sıradaki çalışma net"],
+            ["₺3.000 / ay", "Eski fiyat ₺5.000 / ay"],
+            ["LGS / TYT / AYT", "Seviyeye göre grup"],
+          ].map(([title, body]) => (
+            <div key={title} className="rounded-[18px] border border-[var(--site-line)] bg-white p-4">
+              <p className="text-[14px] font-bold text-[var(--site-ink)]">{title}</p>
+              <p className="mt-1 text-[12px] text-[var(--site-muted)]">{body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* Yardımcı: küçük görev/konu çipi */
 function TaskChip({ label, tag, done }: { label: string; tag: string; done?: boolean }) {
   return (
@@ -177,7 +236,7 @@ export function ParentNoteMockup() {
             “Özdeşliklerde belirgin ilerleme var. Bu hafta işlem hızına biraz daha pratik iyi olur — ödev buna göre.”
           </div>
           <div className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-[var(--brand-orange)] p-3 text-[11px] leading-5 text-white shadow-sm">
-            Teşekkürler, süreci net görebiliyoruz. 👏
+            Teşekkürler, süreci net görebiliyoruz.
           </div>
         </div>
       </div>

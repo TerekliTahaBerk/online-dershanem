@@ -23,7 +23,7 @@ type PurchaseFunnelTriggerProps = {
 };
 
 /**
- * "Sepete Ekle" CTA — sepet-merkezli akış.
+ * Satın alma CTA'sı — sepet-merkezli akış.
  *
  * Tıklandığında ürünü sepete ekler ve `/sepet`'i açar. Tüm ödemeler sepet →
  * checkout → PayTR üzerinden guest olarak ilerler; hesap gerekmez.

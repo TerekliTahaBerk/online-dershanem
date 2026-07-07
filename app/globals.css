@@ -68,11 +68,9 @@
   --pd-shadow-xl: 0 20px 50px -18px rgba(20, 20, 24, 0.14);
 
   /* ============================================================
-     PUBLIC MARKETING SITE — editorial / OLIVE brand palette
-     Büyük serif başlıklar, geniş beyaz alan, zeytin-yeşili CTA'lar.
-     Marka rengi = od-olive (#3A4A2C). Aşağıdaki `--brand-*` tokenları
-     tüm yeni public site bileşenlerinin tek renk kaynağıdır; adları
-     geriye dönük uyumluluk için korunur, değerleri marka yeşilidir.
+     PUBLIC MARKETING SITE — editorial / GREEN brand palette
+     Büyük serif başlıklar, geniş beyaz alan, yeşil CTA'lar.
+     Token adları geriye dönük uyumluluk için korunur.
      ============================================================ */
   --brand-orange: #3A4A2C;
   --brand-orange-hover: #2C3A20;
@@ -86,7 +84,7 @@
   --site-body: #5A5A4F;            /* sakin gövde metni (od-ink-soft) */
   --site-muted: #8A8A80;           /* soluk metin */
   --site-bg: #FFFFFF;              /* beyaz zemin */
-  --site-bg-warm: #FFFFFF;
+  --site-bg-warm: #FBFAF5;
   --site-card: #FFFFFF;            /* kart zemini */
   --site-line: #E8E3D6;            /* ince krem kart border (od-line) */
   --site-line-soft: #F1EDE6;       /* daha açık ayraç */
@@ -158,12 +156,15 @@ body {
 
 .font-display {
   font-family: var(--font-display), ui-serif, Georgia, serif;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   word-spacing: 0;
 }
 .font-display em,
 .font-display i {
   letter-spacing: 0;
+}
+.site-scope .font-display {
+  letter-spacing: 0 !important;
 }
 
 a {
@@ -186,6 +187,12 @@ a {
   outline: 2px solid var(--brand-orange);
   outline-offset: 3px;
 }
+.site-scope :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+.site-scope p {
+  text-wrap: pretty;
+}
 .site-container {
   width: 100%;
   max-width: 1480px;
@@ -197,9 +204,13 @@ a {
   background: var(--brand-orange-soft);
   color: var(--brand-orange-ink);
   border-radius: 10px;
-  padding: 0.02em 0.3em;
+  padding: 0 0.28em 0.04em;
+  line-height: 1.08;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
+}
+.site-scope :where(h1, h2, h3).font-display:has(.site-hl) {
+  line-height: 1.14 !important;
 }
 /* Pill / eyebrow etiketi */
 .site-eyebrow {

@@ -20,7 +20,7 @@ const VISIBLE_PATHS = new Set(["/"]);
 
 /**
  * Mobil (lg altı) için ekranın altına sabitlenen birincil eylem barı:
- * WhatsApp · Ön Görüşme · Sepete Ekle. Desktop'ta gizli — orada floating FAB'lar
+ * WhatsApp · Ön Görüşme · Satın Al. Desktop'ta gizli — orada floating FAB'lar
  * (WhatsAppFab / CartFab) görünür. Çakışmayı önlemek için FAB'lar `hidden lg:flex`.
  */
 export function MobileStickyCta() {
@@ -56,7 +56,7 @@ export function MobileStickyCta() {
           paymentLink=""
           className="flex h-12 flex-1 items-center justify-center rounded-full bg-[var(--brand-orange)] px-3 text-[13.5px] font-semibold text-white"
         >
-          Sepete Ekle
+          Satın Al
         </PurchaseFunnelTrigger>
         </div>
       </div>
