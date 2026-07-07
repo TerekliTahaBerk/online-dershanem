@@ -37,7 +37,7 @@ export function buildOdSuggestions(
       if (priceCents <= 0) continue;
       // Premium dilli reason
       let reason = "Matematikteki gelişimini tamamlayabilir.";
-      if (pkg.subject === "Ders Paketi") {
+      if (pkg.subject === "Matematik Ders Paketi") {
         reason = "Butik grupta canlı matematik dersiyle eksiklerini kapat.";
       }
       all.push({

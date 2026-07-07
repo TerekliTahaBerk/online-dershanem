@@ -8,27 +8,27 @@ export const siteUrl = "https://www.onlinedershanem.com";
  * çiftleri değiştirmeden önce `lib/od/checkout.ts` ve cart akışını gözden geçir.
  * `discountedPrice` Türkçe formatı `parsePriceToCents` ile kuruşa çevrilir.
  *
- * Ürün modeli: tek public satış ürünü — Matematik Ders Paketi.
+ * Ürün modeli: iki public satış ürünü — LGS ve YKS Matematik Ders Paketi.
  * Mevcut OD sepeti → /paketler/satin-al → dinamik PayTR iframe akışından
  * satılır; ayrı PayTR linki gerekmez.
  */
 export const subjectPackageGroups = [
   {
     key: "Matematik",
-    title: "Matematik Ders Paketi",
+    title: "Matematik Ders Paketleri",
     subtitle:
-      "En fazla dört öğrenci. Aynı öğretmen, aynı tempo, ders sonunda ne çalışılacağı bellidir.",
+      "LGS ve YKS için iki ayrı matematik paketi. En fazla dört öğrenci, canlı ders ve ders sonrası takip.",
     packages: [
       {
-        id: "matematik-ders-paketi",
-        name: "Matematik Ders Paketi",
+        id: "lgs-matematik-ders-paketi",
+        name: "LGS Matematik Ders Paketi",
         accent: "live",
-        subject: "Ders Paketi",
-        category: "Matematik",
+        subject: "Matematik Ders Paketi",
+        category: "LGS",
         badge: "",
-        tagline: "Küçük grupta, öğretmenin öğrenciyi gerçekten duyduğu canlı matematik dersi.",
+        tagline: "8. sınıf LGS matematiği için küçük grupta canlı ders ve yeni nesil soru pratiği.",
         audience:
-          "Derste soru sorabilmeye, çözümünü gösterebilmeye ve hafta sonunda ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
+          "LGS matematiğinde soru sorabilmeye, çözümünü gösterebilmeye ve hafta sonunda ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
         quota: "En fazla 4 öğrenci",
         oldPrice: "₺5.000/ay",
         discountLabel: "İNDİRİMLİ",
@@ -45,7 +45,35 @@ export const subjectPackageGroups = [
           "Seviye ve hedefe göre grup planlaması",
           "PayTR ile güvenli ödeme"
         ],
-        cta: "Matematik Dersini Satın Al"
+        cta: "LGS Paketini Satın Al"
+      },
+      {
+        id: "yks-matematik-ders-paketi",
+        name: "YKS Matematik Ders Paketi",
+        accent: "live",
+        subject: "Matematik Ders Paketi",
+        category: "YKS",
+        badge: "",
+        tagline: "TYT ve AYT matematiğini aynı takip düzeninde götüren küçük grup canlı ders.",
+        audience:
+          "TYT temelini ve AYT derinliğini birlikte planlamak, deneme analizine göre ilerlemek isteyen YKS öğrencileri için.",
+        quota: "En fazla 4 öğrenci",
+        oldPrice: "₺5.000/ay",
+        discountLabel: "İNDİRİMLİ",
+        discountedPrice: "₺3.000/ay",
+        priceCents: 300000,
+        perLessonPrice: "",
+        features: [
+          "Canlı matematik dersi",
+          "TYT + AYT bütünlüğünde planlama",
+          "En fazla 4 öğrencilik grup",
+          "Derste soru-cevap ve birlikte çözüm",
+          "Ders sonrası çalışma yönü",
+          "Ödevlendirme ve öğretmen notu",
+          "Deneme analizine göre takip",
+          "PayTR ile güvenli ödeme"
+        ],
+        cta: "YKS Paketini Satın Al"
       }
     ]
   }
@@ -636,11 +664,11 @@ export const faq = [
   },
   {
     q: "Satışta hangi paket var?",
-    a: "Şu anda public satışta yalnızca Matematik Ders Paketi var. Paket aylık ₺3.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
+    a: "Public satışta iki paket var: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. İki paket de aylık ₺3.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. TYT, AYT ve LGS hedefleri dikkate alınır. Derste konu anlatımı ve soru çözümü birlikte ilerler; ders sonunda öğrencinin ne çalışacağı bellidir."
+    a: "Evet. LGS veya YKS hedefi dikkate alınır. YKS paketinde TYT ve AYT matematiği birlikte planlanır. Derste konu anlatımı ve soru çözümü birlikte ilerler; ders sonunda öğrencinin ne çalışacağı bellidir."
   },
   {
     q: "Veli olarak süreci takip edebilir miyim?",
@@ -664,8 +692,8 @@ export const faqCategories = [
         a: "Evet. Public tarafta tek odağımız matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
       },
       {
-        q: "Dersler LGS, TYT ve AYT odaklı mı?",
-        a: "Evet. Öğrencinin sınıfına ve hedefine göre LGS, TYT veya AYT matematiği üzerine kurgulanır. Konu anlatımı ve soru çözümü birlikte ilerler.",
+        q: "Dersler LGS ve YKS odaklı mı?",
+        a: "Evet. LGS paketi 8. sınıf matematiğine, YKS paketi TYT ve AYT matematiğine göre kurgulanır. Konu anlatımı ve soru çözümü birlikte ilerler.",
       },
       {
         q: "Dersler canlı mı yoksa kayıt mı?",

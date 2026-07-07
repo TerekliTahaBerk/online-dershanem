@@ -3,12 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle } from "lucide-react";
-import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { contact, subjectPackageGroups } from "@/lib/content";
-
-const lessonPkg = subjectPackageGroups[0].packages.find(
-  (p) => p.subject === "Ders Paketi",
-)!;
+import { contact } from "@/lib/content";
 
 const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
@@ -20,7 +15,7 @@ const VISIBLE_PATHS = new Set(["/"]);
 
 /**
  * Mobil (lg altı) için ekranın altına sabitlenen birincil eylem barı:
- * WhatsApp · Ön Görüşme · Satın Al. Desktop'ta gizli — orada floating FAB'lar
+ * WhatsApp · Ön Görüşme · Paketler. Desktop'ta gizli — orada floating FAB'lar
  * (WhatsAppFab / CartFab) görünür. Çakışmayı önlemek için FAB'lar `hidden lg:flex`.
  */
 export function MobileStickyCta() {
@@ -47,17 +42,12 @@ export function MobileStickyCta() {
         >
           Ön Görüşme
         </Link>
-        <PurchaseFunnelTrigger
-          source="mobile_sticky_cta"
-          packageName={lessonPkg.name}
-          category={lessonPkg.category}
-          subject={lessonPkg.subject}
-          priceLabel={lessonPkg.discountedPrice}
-          paymentLink=""
+        <Link
+          href="/ders-paketleri/"
           className="flex h-12 flex-1 items-center justify-center rounded-full bg-[var(--brand-orange)] px-3 text-[13.5px] font-semibold text-white"
         >
-          Satın Al
-        </PurchaseFunnelTrigger>
+          Paketler
+        </Link>
         </div>
       </div>
     </>

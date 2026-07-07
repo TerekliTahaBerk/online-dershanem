@@ -36,7 +36,7 @@ export const hero = {
   secondary: { label: "Ücretsiz görüşme", href: "/iletisim/" },
   floatingCards: [
     { title: "En fazla 4 öğrenci", sub: "Herkes görünür, herkes soru sorar" },
-    { title: "Canlı matematik dersi", sub: "LGS · TYT · AYT" },
+    { title: "Canlı matematik dersi", sub: "LGS · YKS" },
     { title: "Ders sonrası takip", sub: "Ödev ve çalışma yönü" },
   ],
 } as const;
@@ -44,8 +44,8 @@ export const hero = {
 /* ---------------- Sosyal kanıt (üniversite barı) ---------------- */
 
 export const socialProof = {
-  text: "LGS, TYT ve AYT matematiğinde öğrenciler seviyesine göre ilerler.",
-  badges: ["LGS", "TYT", "AYT", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip", "PayTR güvenli ödeme"],
+  text: "LGS ve YKS matematiğinde öğrenciler seviyesine göre ilerler.",
+  badges: ["LGS", "YKS", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip", "PayTR güvenli ödeme"],
 } as const;
 
 /* ---------------- Ana değer önerisi (iki büyük kart) ---------------- */
@@ -157,8 +157,8 @@ export const homeFaqs: Faq[] = [
     a: "Seviyesi ve hedefi ön görüşmede değerlendirilir. Uygun bir grup varsa ders tam öğrencinin ihtiyaç duyduğu noktadan planlanır.",
   },
   {
-    q: "LGS, TYT ve AYT için uygun mu?",
-    a: "Evet. Grup ve ders içeriği öğrencinin hazırlandığı sınava ve mevcut seviyesine göre belirlenir.",
+    q: "LGS ve YKS için uygun mu?",
+    a: "Evet. İki paket vardır: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. Grup ve ders içeriği öğrencinin hazırlandığı sınava göre belirlenir.",
   },
   {
     q: "İstediğim zaman iptal edebilir miyim?",

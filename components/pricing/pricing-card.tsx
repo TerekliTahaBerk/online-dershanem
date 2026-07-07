@@ -10,6 +10,7 @@ export type PricingCardData = {
   discountLabel?: string; // ör. "İNDİRİMLİ"
   highlights: string[];
   note?: string;
+  ctaLabel?: string;
 };
 
 /**
@@ -69,7 +70,7 @@ export function PricingCard({
         paymentLink=""
         className="mt-8 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-[16px] font-bold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-tint)]"
       >
-        Matematik Dersini Satın Al
+        {data.ctaLabel ?? `${data.category} Paketini Satın Al`}
       </PurchaseFunnelTrigger>
 
       <p className="mt-3.5 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-white/85">

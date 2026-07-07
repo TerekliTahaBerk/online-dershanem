@@ -4,7 +4,7 @@ import { PricingSelector } from "@/components/pricing/pricing-selector";
 import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { FooterCta } from "@/components/marketing/footer-cta";
-import { lessonPackage, includedFeatures, cardHighlights } from "@/lib/pricing-content";
+import { lessonPackages, includedFeatures, cardHighlights } from "@/lib/pricing-content";
 import { homeFaqs } from "@/lib/site-content";
 
 const steps = [
@@ -21,8 +21,8 @@ type PackagesExperienceProps = {
 };
 
 /**
- * Ders Paketleri deneyimi — sınav seçici, "Neler dahil?", öne çıkan gradient
- * fiyat kartı, "nasıl başlar" adımları, FAQ, footer CTA ve sticky checkout bar.
+ * Ders Paketleri deneyimi — LGS/YKS seçici, "Neler dahil?", iki fiyat kartı,
+ * "nasıl başlar" adımları, FAQ, footer CTA ve sticky checkout bar.
  *
  * Hem `/paketler` hem de `/matematik-ders-paketi` bu bileşeni kullanır (tek
  * kaynaktan tutarlı tasarım). FİYAT `lib/content.ts`'ten türetilir; checkout
@@ -50,7 +50,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
               <PricingSelector />
             </div>
 
-            <div className="grid items-start gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-24">
+            <div className="grid items-start gap-12 lg:grid-cols-[.78fr_1.22fr] lg:gap-20">
               <div>
                 <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">Neler dahil?</h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
@@ -68,19 +68,22 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
                 </ul>
               </div>
 
-              <div className="lg:sticky lg:top-24">
-                <PricingCard
-                  source={primarySource}
-                  data={{
-                    name: lessonPackage.name,
-                    category: lessonPackage.category,
-                    subject: lessonPackage.subject,
-                    priceLabel: lessonPackage.priceLabel,
-                    oldPriceLabel: lessonPackage.oldPriceLabel,
-                    discountLabel: lessonPackage.discountLabel,
-                    highlights: cardHighlights,
-                  }}
-                />
+              <div className="grid gap-5 md:grid-cols-2 lg:sticky lg:top-24">
+                {lessonPackages.map((pkg) => (
+                  <PricingCard
+                    key={`${pkg.category}-${pkg.subject}`}
+                    source={`${primarySource}_${pkg.category.toLowerCase()}`}
+                    data={{
+                      name: pkg.name,
+                      category: pkg.category,
+                      subject: pkg.subject,
+                      priceLabel: pkg.priceLabel,
+                      oldPriceLabel: pkg.oldPriceLabel,
+                      discountLabel: pkg.discountLabel,
+                      highlights: cardHighlights,
+                    }}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -117,7 +120,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
             <article className="rounded-[28px] border border-[var(--site-line)] bg-[var(--brand-orange-tint)] p-8 sm:p-10">
               <h2 className="font-display text-[27px] text-[var(--site-ink)]">Kimler için uygun?</h2>
               <ul className="mt-6 space-y-3 text-[14.5px] leading-6 text-[var(--site-body)]">
-                {["Kalabalık sınıfta soru soramayanlar", "Ders sonrası ne çalışacağını netleştirmek isteyenler", "LGS, TYT veya AYT matematiğinde düzen arayanlar"].map((item) => <li key={item} className="flex gap-2.5"><Check size={17} className="mt-1 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />{item}</li>)}
+                {["Kalabalık sınıfta soru soramayanlar", "Ders sonrası ne çalışacağını netleştirmek isteyenler", "LGS veya YKS matematiğinde düzen arayanlar"].map((item) => <li key={item} className="flex gap-2.5"><Check size={17} className="mt-1 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />{item}</li>)}
               </ul>
             </article>
             <article className="rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-10">
@@ -139,10 +142,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
       </main>
 
       <StickyCheckoutBar
-        name={lessonPackage.name}
-        category={lessonPackage.category}
-        subject={lessonPackage.subject}
-        priceLabel={lessonPackage.priceLabel}
+        packages={lessonPackages}
         note="taahhütsüz"
       />
     </>

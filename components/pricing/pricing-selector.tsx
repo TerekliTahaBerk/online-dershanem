@@ -11,24 +11,17 @@ const DEFAULT_OPTIONS: Option[] = [
     description: "8. sınıf öğrencileri için: yeni nesil sorular, temel kavramlar ve sınav matematiği.",
   },
   {
-    key: "tyt",
-    label: "TYT",
-    description: "Temel matematik: konu eksiklerini kapatma, hız–doğruluk dengesi ve deneme analizi.",
-  },
-  {
-    key: "ayt",
-    label: "AYT",
-    description: "İleri matematik: türev, integral, limit gibi konularda derinlik ve zorlu soru tipleri.",
+    key: "yks",
+    label: "YKS",
+    description: "TYT ve AYT matematiğini birlikte götüren: temel, hız, derinlik ve deneme analizi.",
   },
 ];
 
 /**
- * Sınav/seviye seçici — referanstaki sınav seçimine benzer segmented toggle.
- * Yalnızca açıklama metnini günceller; FİYAT ve checkout kimliği DEĞİŞMEZ
- * (tek paket, tüm seviyeler için aynı fiyat).
+ * Sınav/seviye seçici — LGS ve YKS paket dilini hızlı açıklar.
  */
 export function PricingSelector({ options = DEFAULT_OPTIONS }: { options?: Option[] }) {
-  const [active, setActive] = useState(options[1]?.key ?? options[0].key);
+  const [active, setActive] = useState(options[0].key);
   const current = options.find((o) => o.key === active) ?? options[0];
 
   return (

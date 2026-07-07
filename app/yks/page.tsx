@@ -4,29 +4,29 @@ import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = {
-  title: "TYT-AYT Matematik Dersi",
+  title: "YKS Matematik Dersi",
   description:
-    "TYT ve AYT matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve ders sonrası çalışma yönü.",
+    "YKS matematik için en fazla 4 öğrencilik canlı ders, TYT-AYT planı, derste soru-cevap ve ders sonrası çalışma yönü.",
   alternates: {
     canonical: "/yks"
   },
   openGraph: {
-    title: "TYT-AYT Matematik Dersi | Online Dershanem",
-    description: "TYT-AYT matematik için küçük grup canlı ders, ders içi soru-cevap ve veliye kısa gelişim notu.",
+    title: "YKS Matematik Dersi | Online Dershanem",
+    description: "YKS matematik için küçük grup canlı ders, TYT-AYT planı, ders içi soru-cevap ve veliye kısa gelişim notu.",
     url: `${siteUrl}/yks`
   }
 };
 
 export default function TYTLandingPage() {
   const courseLd = courseJsonLd({
-    name: "TYT-AYT Matematik",
+    name: "YKS Matematik",
     description:
-      "TYT ve AYT matematik için küçük grup canlı ders (en fazla 4 öğrenci), ders sonrası çalışma yönü ve sınav odaklı matematik planı.",
+      "YKS matematik için küçük grup canlı ders (en fazla 4 öğrenci), TYT-AYT dengesi, ders sonrası çalışma yönü ve sınav odaklı matematik planı.",
     url: "/yks/",
   });
   const breadcrumbLd = breadcrumbJsonLd([
     { name: "Ana Sayfa", url: "/" },
-    { name: "TYT-AYT Matematik", url: "/yks/" },
+    { name: "YKS Matematik", url: "/yks/" },
   ]);
   return (
     <>
@@ -34,9 +34,9 @@ export default function TYTLandingPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <ExamSalesLanding
       data={{
-        examKey: "TYT-AYT",
-        heroBadge: "TYT-AYT Matematik",
-        heroTitle: "TYT-AYT matematikte derste görünen, hafta içinde yönünü bilen öğrenci.",
+        examKey: "YKS",
+        heroBadge: "YKS Matematik",
+        heroTitle: "YKS matematikte derste görünen, hafta içinde yönünü bilen öğrenci.",
         heroText:
           "TYT ve AYT matematikte öğrenci sadece dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda hangi çalışmayla devam edeceğini bilir. Veliye de süreç yalın bir dille aktarılır.",
         highlights: [
@@ -45,7 +45,7 @@ export default function TYTLandingPage() {
           "TYT hız + AYT derinlik dengesine uygun matematik çalışması"
         ],
         approach: {
-          heading: "TYT-AYT matematiğinde dengeyi nasıl kuruyoruz?",
+          heading: "YKS matematiğinde TYT-AYT dengesini nasıl kuruyoruz?",
           items: [
             {
               title: "TYT mi, AYT mi önce?",
@@ -62,7 +62,7 @@ export default function TYTLandingPage() {
           ]
         },
         plan: {
-          heading: "Örnek haftalık TYT-AYT matematik akışı",
+          heading: "Örnek haftalık YKS matematik akışı",
           note: "Plan temsilîdir; öğrencinin seviyesine ve hedef bölümüne göre ön görüşmede uyarlanır.",
           steps: [
             { label: "1. blok", text: "Konu anlatımı ve birlikte çözüm (canlı ders)." },
@@ -72,7 +72,7 @@ export default function TYTLandingPage() {
           ]
         },
         sampleSummary: {
-          heading: "Örnek TYT-AYT veli özeti",
+          heading: "Örnek YKS veli özeti",
           rows: [
             { label: "İşlenen konu", value: "Türev — artan/azalan ve ekstremum" },
             { label: "Zorlandığı yer", value: "İşaret tablosunu yorumlama" },
@@ -82,8 +82,8 @@ export default function TYTLandingPage() {
         },
         faq: [
           {
-            q: "TYT ve AYT matematik aynı pakette mi ilerliyor?",
-            a: "Evet. Matematik Ders Paketi öğrencinin seviyesine göre TYT temelini ve AYT derinliğini aynı canlı ders takibinde planlar."
+            q: "TYT ve AYT matematik aynı YKS paketinde mi ilerliyor?",
+            a: "Evet. YKS Matematik Ders Paketi öğrencinin seviyesine göre TYT temelini ve AYT derinliğini aynı canlı ders takibinde planlar."
           },
           {
             q: "Gruplar nasıl oluşturuluyor?",
@@ -91,7 +91,7 @@ export default function TYTLandingPage() {
           },
           {
             q: "Paket ücretleri aylık mı?",
-            a: "Evet. Matematik Ders Paketi aylık ₺3.000'dir."
+            a: "Evet. YKS Matematik Ders Paketi aylık ₺3.000'dir."
           },
           {
             q: "Deneme analizi nasıl takip ediliyor?",

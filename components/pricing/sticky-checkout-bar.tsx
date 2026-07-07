@@ -4,10 +4,16 @@ import { useEffect, useState } from "react";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 
 type StickyCheckoutBarProps = {
-  name: string;
-  category: string;
-  subject: string;
-  priceLabel: string;
+  name?: string;
+  category?: string;
+  subject?: string;
+  priceLabel?: string;
+  packages?: Array<{
+    name: string;
+    category: string;
+    subject: string;
+    priceLabel: string;
+  }>;
   note?: string;
 };
 
@@ -15,8 +21,14 @@ type StickyCheckoutBarProps = {
  * Referanstaki sticky bottom pricing bar. Aşağı kaydırınca belirir; seçili
  * paket özeti + "Satın al" CTA. Mobilde ekranı boğmayacak kompakt yükseklik.
  */
-export function StickyCheckoutBar({ name, category, subject, priceLabel, note }: StickyCheckoutBarProps) {
+export function StickyCheckoutBar({ name, category, subject, priceLabel, packages, note }: StickyCheckoutBarProps) {
   const [visible, setVisible] = useState(false);
+  const items =
+    packages && packages.length > 0
+      ? packages
+      : name && category && subject && priceLabel
+        ? [{ name, category, subject, priceLabel }]
+        : [];
 
   useEffect(() => {
     const onScroll = () => {
@@ -33,6 +45,10 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, note }:
     };
   }, []);
 
+  if (!items.length) return null;
+
+  const hasMultiple = items.length > 1;
+
   return (
     <div
       className={`fixed inset-x-0 bottom-0 z-40 transition-[transform,opacity] duration-300 ${
@@ -45,23 +61,30 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, note }:
             ₺
           </div>
           <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between sm:gap-8">
-            <div className="truncate text-[13.5px] font-semibold text-[var(--site-ink)] sm:text-[15px]">{name}</div>
+            <div className="truncate text-[13.5px] font-semibold text-[var(--site-ink)] sm:text-[15px]">
+              {hasMultiple ? "LGS veya YKS paketini seç" : items[0].name}
+            </div>
             <div className="truncate text-[12px] text-[var(--site-muted)] sm:text-[13px]">
-              {priceLabel}
+              {items[0].priceLabel}
               {note ? ` · ${note}` : ""}
             </div>
           </div>
-          <PurchaseFunnelTrigger
-            source="pricing_sticky_bar"
-            packageName={name}
-            category={category}
-            subject={subject}
-            priceLabel={priceLabel}
-            paymentLink=""
-            className="site-btn site-btn-primary shrink-0 px-5 py-3 text-[14px] sm:px-7"
-          >
-            Satın al
-          </PurchaseFunnelTrigger>
+          <div className="flex shrink-0 gap-2">
+            {items.map((item) => (
+              <PurchaseFunnelTrigger
+                key={`${item.category}-${item.subject}`}
+                source={`pricing_sticky_bar_${item.category.toLowerCase()}`}
+                packageName={item.name}
+                category={item.category}
+                subject={item.subject}
+                priceLabel={item.priceLabel}
+                paymentLink=""
+                className="site-btn site-btn-primary px-4 py-3 text-[13px] sm:px-6 sm:text-[14px]"
+              >
+                {hasMultiple ? item.category : "Satın al"}
+              </PurchaseFunnelTrigger>
+            ))}
+          </div>
         </div>
       </div>
     </div>

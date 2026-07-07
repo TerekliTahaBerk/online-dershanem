@@ -2,7 +2,7 @@ import { ClipboardCheck, CreditCard, Users, Video } from "lucide-react";
 
 const metrics = [
   { icon: Users, title: "En fazla 4 öğrenci", body: "Kalabalıkta kaybolmadan canlı ders" },
-  { icon: Video, title: "Canlı matematik dersi", body: "LGS, TYT ve AYT seviyelerine uygun" },
+  { icon: Video, title: "Canlı matematik dersi", body: "LGS ve YKS seviyelerine uygun" },
   { icon: ClipboardCheck, title: "Ders sonrası çalışma yönü", body: "Her ders sonunda sıradaki adım netleşir" },
   { icon: CreditCard, title: "PayTR ile güvenli ödeme", body: "Kart bilgisi bizimle paylaşılmaz" },
 ];

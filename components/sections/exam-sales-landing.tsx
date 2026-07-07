@@ -27,9 +27,10 @@ type ExamSalesLandingData = {
 };
 
 export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
-  // Tek matematik paket grubu — tüm sınav landing'leri aynı kataloğu gösterir.
   const packageGroup = subjectPackageGroups[0];
-  const packages = packageGroup.packages;
+  const examCategory = data.examKey;
+  const matchingPackages = packageGroup.packages.filter((pkg) => pkg.category === examCategory);
+  const packages = matchingPackages.length ? matchingPackages : packageGroup.packages;
   const key = data.examKey.toLowerCase();
 
   return (

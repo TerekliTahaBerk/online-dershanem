@@ -5,7 +5,7 @@ import { PackagesExperience } from "@/components/pricing/packages-experience";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd, courseJsonLd, productJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { siteUrl } from "@/lib/content";
-import { lessonPackage } from "@/lib/pricing-content";
+import { lessonPackages } from "@/lib/pricing-content";
 import { homeFaqs } from "@/lib/site-content";
 
 export const metadata: Metadata = {
@@ -31,21 +31,23 @@ export default function MatematikDersPaketiPage() {
             { name: "Ana Sayfa", url: "/" },
             { name: "Matematik Ders Paketi", url: "/matematik-ders-paketi/" },
           ]),
-          productJsonLd({
-            name: lessonPackage.name,
-            description:
-              "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu.",
-            url: "/matematik-ders-paketi/",
-            image: "/logo.png",
-            priceCents: lessonPackage.priceCents,
-            sku: "matematik-ders-paketi",
-          }),
-          courseJsonLd({
-            name: lessonPackage.name,
-            description:
-              "LGS, TYT ve AYT hedeflerine göre, en fazla 4 öğrencilik küçük grupta canlı matematik dersi.",
-            url: "/matematik-ders-paketi/",
-          }),
+          ...lessonPackages.flatMap((pkg) => [
+            productJsonLd({
+              name: pkg.name,
+              description:
+                "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu.",
+              url: "/matematik-ders-paketi/",
+              image: "/logo.png",
+              priceCents: pkg.priceCents,
+              sku: `${pkg.category.toLowerCase()}-matematik-ders-paketi`,
+            }),
+            courseJsonLd({
+              name: pkg.name,
+              description:
+                "LGS veya YKS hedefine göre, en fazla 4 öğrencilik küçük grupta canlı matematik dersi.",
+              url: "/matematik-ders-paketi/",
+            }),
+          ]),
           faqJsonLd(homeFaqs),
         ]}
       />

@@ -82,8 +82,8 @@ export default function LGSLandingPage() {
         },
         faq: [
           {
-            q: "LGS öğrencisi için tek satış ürünü nedir?",
-            a: "Public satışta yalnızca Matematik Ders Paketi var. Öğrenci seviyesine göre küçük canlı ders grubuna yerleştirilir."
+            q: "LGS öğrencisi için hangi paket var?",
+            a: "LGS öğrencisi için LGS Matematik Ders Paketi var. Öğrenci seviyesine göre küçük canlı ders grubuna yerleştirilir."
           },
           {
             q: "Dersler kalabalık sınıf şeklinde mi?",

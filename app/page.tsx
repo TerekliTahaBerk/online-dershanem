@@ -15,19 +15,19 @@ import { FooterCta } from "@/components/marketing/footer-cta";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { productJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { homeFaqs } from "@/lib/site-content";
-import { lessonPackage } from "@/lib/pricing-content";
+import { lessonPackages } from "@/lib/pricing-content";
 import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
 import { parsePriceToCents, siteUrl } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: { absolute: "Online Dershanem | Küçük Grup Canlı Matematik Dersi" },
   description:
-    "LGS, TYT ve AYT matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
+    "LGS ve YKS matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Online Dershanem | Küçük Grup Canlı Matematik Dersi",
     description:
-      "LGS, TYT ve AYT matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
+      "LGS ve YKS matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
     url: `${siteUrl}/`,
   },
 };
@@ -37,18 +37,20 @@ export default function HomePage() {
     <div className="site-scope">
       <SchemaJsonLd
         schema={[
-          productJsonLd({
-            name: lessonPackage.name,
-            description:
-              "En fazla 4 öğrencilik canlı matematik dersi, kişiye özel haftalık plan, ödevlendirme ve veliye gelişim notu.",
-            url: "/paketler/",
-            image: "/logo.png",
-            priceCents: lessonPackage.priceCents,
-            originalPriceCents: lessonPackage.oldPriceLabel
-              ? parsePriceToCents(lessonPackage.oldPriceLabel)
-              : null,
-            sku: "matematik-ders-paketi",
-          }),
+          ...lessonPackages.map((pkg) =>
+            productJsonLd({
+              name: pkg.name,
+              description:
+                "En fazla 4 öğrencilik canlı matematik dersi, kişiye özel haftalık plan, ödevlendirme ve veliye gelişim notu.",
+              url: "/paketler/",
+              image: "/logo.png",
+              priceCents: pkg.priceCents,
+              originalPriceCents: pkg.oldPriceLabel
+                ? parsePriceToCents(pkg.oldPriceLabel)
+                : null,
+              sku: `${pkg.category.toLowerCase()}-matematik-ders-paketi`,
+            }),
+          ),
           faqJsonLd(homeFaqs),
         ]}
       />
@@ -73,10 +75,7 @@ export default function HomePage() {
       </main>
       <SiteFooter />
       <StickyCheckoutBar
-        name={lessonPackage.name}
-        category={lessonPackage.category}
-        subject={lessonPackage.subject}
-        priceLabel={lessonPackage.priceLabel}
+        packages={lessonPackages}
         note="aylık sabit fiyat"
       />
     </div>
