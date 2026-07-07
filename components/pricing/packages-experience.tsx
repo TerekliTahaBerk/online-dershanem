@@ -8,10 +8,10 @@ import { lessonPackages, includedFeatures, cardHighlights } from "@/lib/pricing-
 import { homeFaqs } from "@/lib/site-content";
 
 const steps = [
-  { icon: CreditCard, title: "Ödeme", body: "PayTR üzerinden güvenle tamamlarsın. Satın alma için önceden hesap oluşturman gerekmez." },
-  { icon: PhoneCall, title: "Biz ararız", body: "Öğrencinin seviyesini ve hedefini kısaca konuşuruz." },
-  { icon: Users, title: "Gruba yerleştirme", body: "Seviyeye uygun, en fazla 4 kişilik gruba yerleştiririz." },
-  { icon: Video, title: "İlk ders", body: "Google Meet üzerinden ilk canlı ders başlar." },
+  { icon: CreditCard, title: "Paketi seç", body: "LGS veya YKS paketini PayTR üzerinden güvenle tamamlarsın." },
+  { icon: PhoneCall, title: "Seni ararız", body: "Öğrencinin seviyesini, sınıfını ve sınav hedefini konuşuruz." },
+  { icon: Users, title: "Grup planlanır", body: "Seviyeye uygun, en fazla 4 kişilik küçük gruba yerleştiririz." },
+  { icon: Video, title: "Ders başlar", body: "Google Meet üzerinden canlı ders ve ders sonrası yönlendirme başlar." },
 ];
 
 type PackagesExperienceProps = {
@@ -54,7 +54,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
               <div>
                 <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">Neler dahil?</h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
-                  Canlı ders, küçük grup ve ders sonrası takip tek bir aylık pakette.
+                  LGS ve YKS paketlerinde aynı butik ders standardı vardır.
                 </p>
                 <ul className="mt-9 grid gap-x-8 gap-y-5">
                   {includedFeatures.map((f) => (
@@ -93,7 +93,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
         <section className="bg-[var(--site-bg-warm)]">
           <div className="site-container py-20 sm:py-24">
             <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] text-[var(--site-ink)]">
-              Paketler nasıl başlar?
+              Paket süreci nasıl başlar?
             </h2>
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {steps.map((s, i) => {
@@ -134,8 +134,8 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
 
         <FaqAccordion items={homeFaqs} tone="plain" />
         <FooterCta
-          title="Doğru başlangıcı birlikte yapalım."
-          subtitle="Kararsızsan kısa bir ücretsiz görüşmede öğrencinin seviyesini konuşalım."
+          title="Hangi paket doğru, birlikte netleştirelim."
+          subtitle="Kararsızsan ücretsiz ön görüşmede öğrencinin seviyesini ve sınav hedefini konuşalım."
           ctaLabel="Ücretsiz görüşme"
           ctaHref="/iletisim/"
         />

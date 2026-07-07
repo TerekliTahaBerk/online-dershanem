@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 export const metadata: Metadata = {
   title: "Deneme Kulübü Yayında Değil",
   description:
-    "Deneme Kulübü şu anda public satışta değildir. Online Dershanem'de satışta LGS ve YKS Matematik Ders Paketleri vardır.",
+    "Deneme Kulübü şu anda yayında değildir. Online Dershanem'de LGS ve YKS Matematik Ders Paketleri satıştadır.",
   robots: {
     index: false,
     follow: true,
@@ -24,8 +24,8 @@ export default function DenemeKulubuPausedPage() {
             Deneme Kulübü şu anda yayında değil.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-8 text-[var(--site-body)]">
-            Public satış akışında şu anda LGS ve YKS Matematik Ders Paketleri yer alıyor. Matematik
-            ders paketini satın alabilir veya öğrenciniz için en doğru küçük grubu birlikte belirlemek
+            Şu anda LGS ve YKS Matematik Ders Paketleri satışta. Matematik
+            ders paketlerini inceleyebilir veya öğrenciniz için en doğru küçük grubu birlikte belirlemek
             üzere bizimle iletişime geçebilirsiniz.
           </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">

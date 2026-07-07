@@ -122,7 +122,7 @@ export function OgTemplate({ title, subtitle, badge, variant = "default" }: OgPr
         }}
       >
         <div>onlinedershanem.com</div>
-        <div style={{ color: accent, fontWeight: 700 }}>TYT · AYT · LGS · ODK</div>
+        <div style={{ color: accent, fontWeight: 700 }}>LGS · YKS · Matematik</div>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export function PricingPreview() {
             LGS ve YKS için<br /><span className="site-hl">net bir matematik yolu.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
-            Canlı ders, küçük grup ve ders sonrası takip iki ayrı sınav paketinde.
+            LGS ve YKS için ayrı paketler; aynı küçük grup disiplini, aynı canlı ders takibi.
           </p>
         </div>
 

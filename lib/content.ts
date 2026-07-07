@@ -17,7 +17,7 @@ export const subjectPackageGroups = [
     key: "Matematik",
     title: "Matematik Ders Paketleri",
     subtitle:
-      "LGS ve YKS için iki ayrı matematik paketi. En fazla dört öğrenci, canlı ders ve ders sonrası takip.",
+      "LGS ve YKS için iki ayrı paket. Her pakette en fazla dört öğrenci, canlı ders ve ders sonrası net çalışma yönü.",
     packages: [
       {
         id: "lgs-matematik-ders-paketi",
@@ -26,9 +26,9 @@ export const subjectPackageGroups = [
         subject: "Matematik Ders Paketi",
         category: "LGS",
         badge: "",
-        tagline: "8. sınıf LGS matematiği için küçük grupta canlı ders ve yeni nesil soru pratiği.",
+        tagline: "8. sınıf LGS matematiği için küçük grupta canlı ders, yeni nesil soru pratiği ve düzenli takip.",
         audience:
-          "LGS matematiğinde soru sorabilmeye, çözümünü gösterebilmeye ve hafta sonunda ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
+          "LGS matematiğinde çözümünü gösterebilmeye, soru sorabilmeye ve hafta içinde ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
         quota: "En fazla 4 öğrenci",
         oldPrice: "₺5.000/ay",
         discountLabel: "İNDİRİMLİ",
@@ -54,9 +54,9 @@ export const subjectPackageGroups = [
         subject: "Matematik Ders Paketi",
         category: "YKS",
         badge: "",
-        tagline: "TYT ve AYT matematiğini aynı takip düzeninde götüren küçük grup canlı ders.",
+        tagline: "TYT ve AYT matematiğini aynı takip düzeninde götüren küçük grup canlı matematik dersi.",
         audience:
-          "TYT temelini ve AYT derinliğini birlikte planlamak, deneme analizine göre ilerlemek isteyen YKS öğrencileri için.",
+          "TYT temelini ve AYT derinliğini birlikte planlamak, deneme analizine göre daha bilinçli ilerlemek isteyen YKS öğrencileri için.",
         quota: "En fazla 4 öğrenci",
         oldPrice: "₺5.000/ay",
         discountLabel: "İNDİRİMLİ",
@@ -652,7 +652,7 @@ export const blogPosts = [
 export const faq = [
   {
     q: "Online Dershanem sadece matematik mi?",
-    a: "Evet. Public tarafta tek odağımız matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz."
+    a: "Evet. Online Dershanem'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz."
   },
   {
     q: "Gruplar kaç kişilik?",
@@ -664,7 +664,7 @@ export const faq = [
   },
   {
     q: "Satışta hangi paket var?",
-    a: "Public satışta iki paket var: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. İki paket de aylık ₺3.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
+    a: "Satışta iki paket var: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. İki paket de aylık ₺3.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
@@ -689,7 +689,7 @@ export const faqCategories = [
     items: [
       {
         q: "Online Dershanem sadece matematik mi?",
-        a: "Evet. Public tarafta tek odağımız matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
+        a: "Evet. Online Dershanem'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
       },
       {
         q: "Dersler LGS ve YKS odaklı mı?",
@@ -845,22 +845,22 @@ export const mathCamps: MathCamp[] = [
   },
   {
     id: "tyt-temel",
-    name: "TYT Temel Matematik Kampı",
-    goal: "TYT matematikte temel becerileri ve problem çözme rutinini güçlendirmek.",
+    name: "YKS Temel Matematik Kampı",
+    goal: "YKS matematikte temel becerileri, problem çözme rutinini ve TYT hızını güçlendirmek.",
     durationLabel: "2 hafta",
     lessonsLabel: "4 canlı ders",
-    levelLabel: "TYT hazırlık",
-    levelTag: "TYT",
+    levelLabel: "YKS hazırlık",
+    levelTag: "YKS",
     featured: true,
   },
   {
     id: "ayt-hizlandirma",
-    name: "AYT Matematik Hızlandırma Kampı",
-    goal: "AYT matematikte yoğun tekrar ve birlikte çözümle eksikleri görünür yapmak.",
+    name: "YKS İleri Matematik Hızlandırma Kampı",
+    goal: "AYT kapsamındaki ileri matematik başlıklarında yoğun tekrar ve birlikte çözümle eksikleri görünür yapmak.",
     durationLabel: "3 hafta",
     lessonsLabel: "6 canlı ders",
-    levelLabel: "AYT hazırlık",
-    levelTag: "AYT",
+    levelLabel: "YKS hazırlık",
+    levelTag: "YKS",
     featured: true,
   },
   {
@@ -869,7 +869,7 @@ export const mathCamps: MathCamp[] = [
     goal: "Yeni döneme başlamadan önce matematik düzenini ve çalışma ritmini kurmak.",
     durationLabel: "2 hafta",
     lessonsLabel: "4 canlı ders",
-    levelLabel: "LGS / TYT / AYT",
+    levelLabel: "LGS / YKS",
     levelTag: "Yaz",
     featured: false,
   },
@@ -879,7 +879,7 @@ export const mathCamps: MathCamp[] = [
     goal: "Dönem içinde biriken eksikleri kısa ve hedefli bir matematik planıyla toparlamak.",
     durationLabel: "1 hafta",
     lessonsLabel: "2 canlı ders",
-    levelLabel: "LGS / TYT / AYT",
+    levelLabel: "LGS / YKS",
     levelTag: "Ara tatil",
     featured: false,
   },

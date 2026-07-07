@@ -39,9 +39,12 @@ export function PricingCard({
         </span>
       ) : null}
 
-      <div className="text-[14px] font-semibold uppercase tracking-[0.08em] text-white/85">{data.name}</div>
+      <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-white/75">{data.category} paketi</div>
+      <h3 className="mt-2 max-w-[12ch] font-display text-[clamp(1.75rem,3.4vw,2.35rem)] leading-[1.04] text-white">
+        {data.name}
+      </h3>
 
-      <div className="mt-4 flex items-end gap-3">
+      <div className="mt-5 flex items-end gap-3">
         <span className="font-display text-[clamp(2.6rem,6vw,3.4rem)] leading-none">{price}</span>
         {per ? <span className="mb-2 text-[16px] text-white/85">/ {per}</span> : null}
       </div>

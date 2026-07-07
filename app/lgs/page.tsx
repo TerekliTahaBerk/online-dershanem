@@ -6,13 +6,13 @@ import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 export const metadata: Metadata = {
   title: "LGS Matematik Dersi",
   description:
-    "LGS matematik için en fazla 4 öğrencilik canlı ders, derste soru-cevap ve veliye kısa gelişim notu.",
+    "LGS matematik için en fazla 4 öğrencilik canlı ders, yeni nesil soru pratiği ve ders sonrası çalışma yönü.",
   alternates: {
     canonical: "/lgs"
   },
   openGraph: {
     title: "LGS Matematik Dersi | Online Dershanem",
-    description: "LGS matematik için küçük grup canlı ders, ders içi soru-cevap ve veliye kısa gelişim notu.",
+    description: "LGS matematik için küçük grup canlı ders, yeni nesil soru pratiği ve ders sonrası çalışma yönü.",
     url: `${siteUrl}/lgs`
   }
 };
@@ -36,24 +36,24 @@ export default function LGSLandingPage() {
       data={{
         examKey: "LGS",
         heroBadge: "LGS Matematik",
-        heroTitle: "LGS matematikte öğrencinin sesinin duyulduğu küçük grup.",
+        heroTitle: "LGS matematikte öğrencinin çözümünün görüldüğü küçük grup.",
         heroText:
-          "LGS matematikte öğrenci çözümünü derste gösterir, sorusunu bekletmeden sorar ve hafta sonunda ne çalışacağını bilir. Veliye de çocuğunun nerede zorlandığını anlatan kısa bir özet gider.",
+          "LGS öğrencisi derste çözümünü gösterir, sorusunu bekletmeden sorar ve hafta içinde hangi çalışmayla devam edeceğini bilir.",
         highlights: [
           "En fazla 4 öğrencilik matematik grubunda daha fazla bireysel temas",
-          "Ders sonrası ödevlendirme ve belirli bir çalışma yönü",
-          "Veliye kısa ve anlaşılır gelişim özeti"
+          "Yeni nesil sorularda birlikte çözüm ve soru-cevap",
+          "Ders sonrası ödevlendirme ve net çalışma yönü"
         ],
         approach: {
           heading: "LGS matematiğinde öğrenciye nasıl yaklaşıyoruz?",
           items: [
             {
               title: "Yeni nesil soruda takılan öğrenci",
-              body: "Yeni nesil sorularda öğrenci çoğu zaman konuyu bilir ama soruyu çözemez. Önce sorunun ne istediğini birlikte ayrıştırır, sonra benzer tipleri derste çözeriz."
+              body: "Yeni nesil sorularda öğrenci çoğu zaman konuyu bilir ama sorunun ne istediğini kaçırır. Önce soruyu birlikte ayrıştırır, sonra benzer tipleri derste çözeriz."
             },
             {
               title: "Bu model 8. sınıf için ne zaman doğru?",
-              body: "Konu eksiği birikmeye başladıysa, deneme netleri oturmuyorsa ve öğrenci derste soru sormaktan çekiniyorsa küçük grup modeli bu noktada anlamlı olur."
+              body: "Konu eksiği birikmeye başladıysa, deneme sonuçları dalgalanıyorsa ve öğrenci derste soru sormaktan çekiniyorsa küçük grup modeli anlamlı olur."
             },
             {
               title: "Küçük grup avantajı",
@@ -83,7 +83,7 @@ export default function LGSLandingPage() {
         faq: [
           {
             q: "LGS öğrencisi için hangi paket var?",
-            a: "LGS öğrencisi için LGS Matematik Ders Paketi var. Öğrenci seviyesine göre küçük canlı ders grubuna yerleştirilir."
+            a: "LGS öğrencisi için LGS Matematik Ders Paketi var. Öğrenci seviyesi ve hedefi konuşulduktan sonra uygun küçük gruba yerleştirilir."
           },
           {
             q: "Dersler kalabalık sınıf şeklinde mi?",

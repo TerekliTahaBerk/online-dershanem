@@ -28,23 +28,23 @@ export const navLogin = { label: "Giriş yap", href: "/giris/" } as const;
 /* ---------------- Hero ---------------- */
 
 export const hero = {
-  pill: "Maksimum 4 kişilik canlı matematik dersi",
-  title: ["Matematikte netlerini artırmak", "sandığından daha kolay."],
+  pill: "LGS ve YKS için en fazla 4 kişilik canlı matematik",
+  title: ["Matematikte eksik nerede,", "çalışma oradan başlar."],
   subtitle:
-    "En fazla 4 kişilik canlı matematik dersleriyle öğrencinin nerede takıldığını görür, ders sonrası ne çalışacağını netleştiririz.",
+    "LGS ve YKS öğrencileri için küçük grup canlı ders, öğretmen geri bildirimi ve ders sonunda net çalışma yönü.",
   primary: { label: "Ders Paketlerini İncele", href: "/ders-paketleri/" },
   secondary: { label: "Ücretsiz görüşme", href: "/iletisim/" },
   floatingCards: [
-    { title: "En fazla 4 öğrenci", sub: "Herkes görünür, herkes soru sorar" },
-    { title: "Canlı matematik dersi", sub: "LGS · YKS" },
-    { title: "Ders sonrası takip", sub: "Ödev ve çalışma yönü" },
+    { title: "En fazla 4 öğrenci", sub: "Öğretmen her çözümü görebilir" },
+    { title: "İki paket", sub: "LGS · YKS" },
+    { title: "Ders sonrası yön", sub: "Ödev, tekrar ve sıradaki adım" },
   ],
 } as const;
 
 /* ---------------- Sosyal kanıt (üniversite barı) ---------------- */
 
 export const socialProof = {
-  text: "LGS ve YKS matematiğinde öğrenciler seviyesine göre ilerler.",
+  text: "İki paket, aynı butik ders disiplini: canlı matematik, küçük grup ve takip.",
   badges: ["LGS", "YKS", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip", "PayTR güvenli ödeme"],
 } as const;
 
@@ -52,9 +52,9 @@ export const socialProof = {
 
 export const valueProps = {
   eyebrow: "Neden Online Dershanem",
-  title: "Dersi anlatıp bırakmıyoruz.",
+  title: "Ders bitince süreç bitmiyor.",
   subtitle:
-    "Küçük grup dersi, öğretmen gözlemi ve ders sonrası yönlendirme aynı planın içinde ilerler.",
+    "Öğrencinin derste nerede takıldığını görür, ders sonrasında hangi çalışmayla devam edeceğini sade biçimde netleştiririz.",
 } as const;
 
 /* ---------------- İlk 30 gün ---------------- */
@@ -64,27 +64,27 @@ export const first30 = {
   timeline: ["Bugün", "7. Gün", "30. Gün"],
   columns: [
     {
-      title: "Hemen başla",
+      title: "Seviyeyi görelim",
       items: [
-        "Öğrencinin sınıfı ve hedefi alınır",
-        "Matematikte zorlandığı yerler konuşulur",
-        "Uygun küçük grup planlanır",
+        "Öğrencinin sınıfı ve sınav hedefi alınır",
+        "Matematikte tıkandığı başlıklar konuşulur",
+        "LGS veya YKS paketine göre grup planlanır",
       ],
     },
     {
-      title: "Rutinini oturt",
+      title: "Ders düzeni otursun",
       items: [
         "Canlı derslere düzenli katılır",
         "Derste soru sorar ve çözümünü gösterir",
-        "Ders sonrası ne çalışacağı netleşir",
+        "Ders sonrası ne çalışacağı yazılı olarak netleşir",
       ],
     },
     {
-      title: "Farkı gör",
+      title: "Takip anlam kazansın",
       items: [
-        "Konu eksikleri daha görünür olur",
+        "Konu eksikleri görünür hale gelir",
         "Çalışma düzeni oturur",
-        "Deneme ve ödev takibi anlamlı hale gelir",
+        "Deneme ve ödev takibi aynı plana bağlanır",
       ],
     },
   ],
@@ -102,9 +102,9 @@ export type Story = {
 
 export const stories: Story[] = [
   {
-    tag: "TYT öğrencisi",
-    quote: "Ders sonrası ne çalışacağını bilmek düzen kurmasını kolaylaştırdı.",
-    name: "TYT öğrencisi",
+    tag: "YKS öğrencisi",
+    quote: "Ders sonrası ne çalışacağını bilmek haftayı daha planlı götürmesini sağladı.",
+    name: "YKS öğrencisi",
     detail: "Matematik çalışma düzeni",
   },
   {
@@ -120,9 +120,9 @@ export const stories: Story[] = [
     detail: "Düzenli takip",
   },
   {
-    tag: "AYT öğrencisi",
+    tag: "YKS öğrencisi",
     quote: "Soru çözümünü gösterince nerede hata yaptığını daha hızlı fark etmeye başladı.",
-    name: "AYT öğrencisi",
+    name: "YKS öğrencisi",
     detail: "En fazla 4 kişi",
   },
 ];
@@ -142,7 +142,7 @@ export const homeFaqs: Faq[] = [
   },
   {
     q: "Ödeme sonrası ne olacak?",
-    a: "Ekibimiz sizinle iletişime geçer, öğrencinin seviyesini konuşur, uygun küçük grubu belirler ve ilk dersi planlar.",
+    a: "Ekibimiz sizinle iletişime geçer, öğrencinin seviyesini ve hedefini konuşur, uygun küçük grubu belirler ve ilk dersi planlar.",
   },
   {
     q: "Hesap oluşturmak gerekiyor mu?",
@@ -150,15 +150,15 @@ export const homeFaqs: Faq[] = [
   },
   {
     q: "Ders başlamadan önce görüşebilir miyiz?",
-    a: "Evet. Ücretsiz ön görüşmede öğrencinin sınıfını, seviyesini ve hedefini konuşabiliriz.",
+    a: "Evet. Ücretsiz ön görüşmede öğrencinin sınıfını, matematik seviyesini ve sınav hedefini konuşabiliriz.",
   },
   {
     q: "Çocuğum matematikte çok gerideyse uygun mu?",
-    a: "Seviyesi ve hedefi ön görüşmede değerlendirilir. Uygun bir grup varsa ders tam öğrencinin ihtiyaç duyduğu noktadan planlanır.",
+    a: "Ön görüşmede seviyeyi birlikte değerlendiririz. Uygun küçük grup varsa ders, öğrencinin ihtiyaç duyduğu noktadan planlanır.",
   },
   {
     q: "LGS ve YKS için uygun mu?",
-    a: "Evet. İki paket vardır: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. Grup ve ders içeriği öğrencinin hazırlandığı sınava göre belirlenir.",
+    a: "Evet. İki paket vardır: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. Ders içeriği ve grup düzeni öğrencinin sınav hedefine göre belirlenir.",
   },
   {
     q: "İstediğim zaman iptal edebilir miyim?",
@@ -174,7 +174,7 @@ export const footerColumns = [
     links: [
       { label: "Ders Paketleri", href: "/ders-paketleri/" },
       { label: "Kamplar", href: "/kamplar/" },
-      { label: "Matematik Ders Paketi", href: "/matematik-ders-paketi/" },
+      { label: "Matematik Ders Paketleri", href: "/matematik-ders-paketi/" },
       { label: "SSS", href: "/sss/" },
     ],
   },
@@ -201,4 +201,4 @@ export const footerColumns = [
 ] as const;
 
 export const footerTagline =
-  "En fazla 4 kişilik canlı matematik dersleri, ders sonrası çalışma yönü ve güvenli ödeme.";
+  "LGS ve YKS için en fazla 4 kişilik canlı matematik dersleri, ders sonrası çalışma yönü ve güvenli ödeme.";

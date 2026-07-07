@@ -22,7 +22,7 @@ export function Hero() {
             </span>
 
             <h1 className="mt-9 font-display text-[clamp(3.05rem,7vw,6.25rem)] leading-[0.94] text-[var(--site-ink)]">
-              {hero.title[0]}<br />{hero.title[1]}
+              {hero.title[0]}{" "}<br />{hero.title[1]}
             </h1>
             <p className="mx-auto mt-6 hidden max-w-2xl text-[15.5px] leading-7 text-[var(--site-body)] sm:block sm:text-[18px]">
               {hero.subtitle}

@@ -22,12 +22,12 @@ import { parsePriceToCents, siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: { absolute: "Online Dershanem | Küçük Grup Canlı Matematik Dersi" },
   description:
-    "LGS ve YKS matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
+    "LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, öğretmen geri bildirimi, ders sonrası yönlendirme ve güvenli ödeme.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Online Dershanem | Küçük Grup Canlı Matematik Dersi",
     description:
-      "LGS ve YKS matematiğinde en fazla 4 kişilik canlı ders, ders sonrası takip ve güvenli ödeme.",
+      "LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, öğretmen geri bildirimi ve ders sonrası yönlendirme.",
     url: `${siteUrl}/`,
   },
 };
@@ -41,7 +41,7 @@ export default function HomePage() {
             productJsonLd({
               name: pkg.name,
               description:
-                "En fazla 4 öğrencilik canlı matematik dersi, kişiye özel haftalık plan, ödevlendirme ve veliye gelişim notu.",
+                "En fazla 4 öğrencilik canlı matematik dersi, ders sonrası çalışma yönü ve öğretmen geri bildirimi.",
               url: "/paketler/",
               image: "/logo.png",
               priceCents: pkg.priceCents,
@@ -68,7 +68,7 @@ export default function HomePage() {
         <FaqAccordion items={homeFaqs} />
         <FooterCta
           title="Matematik yolunu birlikte netleştirelim."
-          subtitle="Bugün ilk adımı at. Öğrencinin nerede takıldığını birlikte görelim."
+          subtitle="Ücretsiz ön görüşmede öğrencinin seviyesini, hedefini ve uygun küçük grup ihtimalini konuşalım."
           ctaLabel="Ücretsiz görüşme"
           ctaHref="/iletisim/"
         />

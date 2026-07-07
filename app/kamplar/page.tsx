@@ -42,7 +42,7 @@ const campFaqs = [
   },
   {
     q: "Paketlerden farkı ne?",
-    a: "Kamplar tek bir konuyu kısa sürede kapatmaya odaklanır ve en fazla 12 kişiliktir. Düzenli, uzun soluklu takip için ana ürünümüz en fazla 4 kişilik Matematik Ders Paketi'dir.",
+    a: "Kamplar tek bir konuyu kısa sürede toparlamaya odaklanır ve en fazla 12 kişiliktir. Düzenli, uzun soluklu takip için LGS ve YKS Matematik Ders Paketleri en fazla 4 kişilik küçük gruplarla ilerler.",
   },
   {
     q: "Online mı ilerler?",
@@ -69,7 +69,7 @@ export default function CampsPage() {
               Kısa sürede matematik düzeni kurmak isteyenler için kamplar.
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">
-              LGS, TYT ve AYT matematiğinde belirli hedefe odaklanan küçük grup çalışma dönemleri.
+              LGS ve YKS matematiğinde belirli hedefe odaklanan kısa süreli çalışma dönemleri.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/iletisim/" className="site-btn site-btn-primary site-btn-lg">

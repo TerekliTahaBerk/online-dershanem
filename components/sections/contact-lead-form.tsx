@@ -32,7 +32,7 @@ const initial: FormState = {
   kvkk: false,
 };
 
-const goals = ["LGS", "TYT", "AYT", "Temel destek"];
+const goals = ["LGS", "YKS (TYT + AYT)", "Temel destek"];
 const grades = [
   "5. sınıf",
   "6. sınıf",

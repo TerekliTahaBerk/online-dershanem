@@ -9,11 +9,11 @@ import { lessonPackages } from "@/lib/pricing-content";
 
 export const metadata: Metadata = {
   title: "Ders Paketleri",
-  description: "LGS ve YKS için canlı matematik dersi, en fazla 4 öğrencilik grup ve ders sonrası takip. Aylık ₺3.000.",
+  description: "LGS ve YKS için en fazla 4 kişilik canlı matematik ders paketleri. Küçük grup, ders sonrası yönlendirme ve güvenli ödeme.",
   alternates: { canonical: "/ders-paketleri" },
   openGraph: {
     title: "Ders Paketleri | Online Dershanem",
-    description: "LGS ve YKS için iki matematik paketi: küçük grup canlı ders ve düzenli takip.",
+    description: "LGS ve YKS için iki matematik paketi: küçük grup canlı ders, öğretmen geri bildirimi ve düzenli takip.",
     url: `${siteUrl}/ders-paketleri`,
   },
 };
@@ -41,8 +41,8 @@ export default function LessonPackagesPage() {
       <SiteHeader />
       <PackagesExperience
         primarySource="lesson_packages_page_primary"
-        title={<>İki paket, <span className="site-hl">net bir matematik yolu.</span></>}
-        subtitle="LGS ve YKS için canlı matematik dersi, küçük grup ve ders sonrası takip."
+        title={<>İki paket, <span className="site-hl">tek net çalışma düzeni.</span></>}
+        subtitle="LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, ders sonrası yönlendirme ve güvenli ödeme."
       />
       <SiteFooter />
     </div>

@@ -2,7 +2,7 @@ const stories = [
   { university: "YKS hazırlık", quote: "Ders sonunda ne çalışacağımı bilmek haftayı daha düzenli götürmemi sağladı.", name: "Öğrenci deneyimi", result: "Küçük grup" },
   { university: "LGS hazırlık", quote: "Soru sorabildiğim ve çözümümü gösterebildiğim bir ders düzeni arıyordum.", name: "Öğrenci deneyimi", result: "Canlı ders" },
   { university: "Veli görüşü", quote: "Haftalık kısa notlar, süreci tahmin etmek yerine görmemize yardımcı oldu.", name: "Veli deneyimi", result: "Düzenli takip" },
-  { university: "TYT hazırlık", quote: "Kalabalık sınıfta kaybolmadan kendi tempoma yakın bir grupla ilerledim.", name: "Öğrenci deneyimi", result: "En fazla 4 kişi" },
+  { university: "YKS hazırlık", quote: "Kalabalık sınıfta kaybolmadan kendi tempoma yakın bir grupla ilerledim.", name: "Öğrenci deneyimi", result: "En fazla 4 kişi" },
 ];
 
 export function TestimonialsCarousel() {

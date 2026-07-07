@@ -134,7 +134,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                   Veliye giden kısa gelişim özeti.
                 </h2>
                 <p className="mt-4 max-w-md text-[16px] leading-7 text-[var(--site-body)]">
-                  Veli, çıplak net yerine çocuğunun matematikte nerede olduğunu anlatan kısa bir özet alır.
+                  Veli, sadece sonuç sayısını değil; öğrencinin matematikte nerede zorlandığını anlatan kısa bir özet alır.
                   Aşağıdaki örnek temsilîdir.
                 </p>
               </div>

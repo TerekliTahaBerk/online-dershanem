@@ -1,7 +1,7 @@
 import { Check, Star, TrendingUp } from "lucide-react";
 
 export function HeroLessonMockup() {
-  const students = ["LGS", "TYT", "AYT", "Mat"];
+  const students = ["LGS", "YKS", "Mat", "Soru"];
 
   return (
     <div
@@ -46,7 +46,7 @@ export function HeroLessonMockup() {
             ["En fazla 4 öğrenci", "Herkes soru sorar"],
             ["Ders sonrası takip", "Sıradaki çalışma net"],
             ["₺3.000 / ay", "Eski fiyat ₺5.000 / ay"],
-            ["LGS / TYT / AYT", "Seviyeye göre grup"],
+            ["LGS / YKS", "Sınava göre grup"],
           ].map(([title, body]) => (
             <div key={title} className="rounded-[18px] border border-[var(--site-line)] bg-white p-4">
               <p className="text-[14px] font-bold text-[var(--site-ink)]">{title}</p>
@@ -85,8 +85,8 @@ function TaskChip({ label, tag, done }: { label: string; tag: string; done?: boo
  */
 export function PlannerMockup() {
   const days = [
-    { day: "Pzt", tasks: [{ l: "Türev — kurallar", t: "AYT", d: true }, { l: "Problemler", t: "TYT" }] },
-    { day: "Sal", tasks: [{ l: "Fonksiyonlar", t: "AYT", d: true }, { l: "Deneme analizi", t: "TYT", d: true }] },
+    { day: "Pzt", tasks: [{ l: "Türev — kurallar", t: "YKS", d: true }, { l: "Problemler", t: "YKS" }] },
+    { day: "Sal", tasks: [{ l: "Fonksiyonlar", t: "YKS", d: true }, { l: "Deneme analizi", t: "YKS", d: true }] },
     { day: "Çar", tasks: [{ l: "Çarpanlara ayırma", t: "LGS" }, { l: "Ödev kontrolü", t: "Plan" }] },
     { day: "Per", tasks: [{ l: "İntegral giriş", t: "AYT" }] },
   ];
@@ -125,8 +125,8 @@ export function PlannerMockup() {
  */
 export function ReportMockup() {
   const rows = [
-    { subject: "TYT Matematik", value: 78 },
-    { subject: "AYT Matematik", value: 64 },
+    { subject: "YKS Temel", value: 78 },
+    { subject: "YKS İleri", value: 64 },
     { subject: "Geometri", value: 52 },
     { subject: "Problemler", value: 71 },
   ];
@@ -175,8 +175,8 @@ export function ReportMockup() {
  */
 export function TeacherRosterMockup() {
   const teachers = [
-    { initials: "AY", role: "Matematik Öğretmeni", tag: "AYT · İleri matematik" },
-    { initials: "MK", role: "Matematik Öğretmeni", tag: "TYT · Temel matematik" },
+    { initials: "AY", role: "Matematik Öğretmeni", tag: "YKS · İleri matematik" },
+    { initials: "MK", role: "Matematik Öğretmeni", tag: "YKS · Temel matematik" },
     { initials: "SD", role: "Matematik Öğretmeni", tag: "LGS · 8. sınıf" },
   ];
   return (
@@ -245,7 +245,7 @@ export function ParentNoteMockup() {
 }
 
 /**
- * Netlerdeki örnek gelişim grafiği — sonuçlar bölümü.
+ * Konu başlıklarında örnek gelişim grafiği — sonuçlar bölümü.
  * Değerler temsilîdir; kesin başarı verisi olarak sunulmaz.
  */
 export function NetGrowthMockup() {
@@ -259,7 +259,7 @@ export function NetGrowthMockup() {
     <div className="rounded-[20px] border border-[var(--site-line)] bg-white p-5">
       <div className="mb-1 flex items-center gap-2 text-[var(--brand-orange-ink)]">
         <TrendingUp size={16} strokeWidth={2} aria-hidden="true" />
-        <span className="text-[12px] font-semibold">Derslere göre örnek gelişim</span>
+        <span className="text-[12px] font-semibold">Konu başlıklarına göre örnek gelişim</span>
       </div>
       <p className="mb-4 text-[11px] text-[var(--site-muted)]">Temsilî görünüm</p>
       <div className="flex h-32 items-end justify-between gap-3" aria-hidden="true">

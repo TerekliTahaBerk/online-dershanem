@@ -9,16 +9,16 @@ import { lessonPackages } from "@/lib/pricing-content";
 import { homeFaqs } from "@/lib/site-content";
 
 export const metadata: Metadata = {
-  title: "Matematik Ders Paketi — Butik Canlı Matematik Dersi",
+  title: "Matematik Ders Paketleri — LGS ve YKS",
   description:
-    "En fazla 4 öğrencilik grupta canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu. Aylık ₺3.000.",
+    "LGS ve YKS için en fazla 4 öğrencilik canlı matematik ders paketleri. Derste soru-cevap, ders sonrası yönlendirme ve aylık ₺3.000 fiyat.",
   alternates: { canonical: "/paketler" },
   openGraph: {
-    title: "Matematik Ders Paketi | Online Dershanem",
+    title: "Matematik Ders Paketleri | Online Dershanem",
     description:
-      "En fazla 4 öğrencilik grupta canlı matematik dersi, öğretmen notu ve ders sonrası çalışma yönü.",
+      "LGS ve YKS için küçük grup canlı matematik dersi, öğretmen geri bildirimi ve ders sonrası çalışma yönü.",
     url: `${siteUrl}/matematik-ders-paketi`,
-    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Matematik Ders Paketi" }],
+    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Matematik Ders Paketleri" }],
   },
 };
 
@@ -29,7 +29,7 @@ export default function MatematikDersPaketiPage() {
         schema={[
           breadcrumbJsonLd([
             { name: "Ana Sayfa", url: "/" },
-            { name: "Matematik Ders Paketi", url: "/matematik-ders-paketi/" },
+            { name: "Matematik Ders Paketleri", url: "/matematik-ders-paketi/" },
           ]),
           ...lessonPackages.flatMap((pkg) => [
             productJsonLd({
@@ -56,10 +56,10 @@ export default function MatematikDersPaketiPage() {
         primarySource="math_package_page_primary"
         title={
           <>
-            <span className="site-hl">Matematik Ders Paketi</span> ile netlerini yükselt.
+            <span className="site-hl">LGS ve YKS paketleri</span> ile matematik düzenini kur.
           </>
         }
-        subtitle="En fazla 4 öğrencilik canlı matematik dersi, derste soru-cevap, ders sonrası ödevlendirme ve veliye kısa gelişim notu."
+        subtitle="En fazla 4 öğrencilik canlı matematik dersi, derste soru-cevap, ders sonrası yönlendirme ve güvenli ödeme."
       />
       <SiteFooter />
     </div>

@@ -6,13 +6,13 @@ import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
 export const metadata: Metadata = {
   title: "YKS Matematik Dersi",
   description:
-    "YKS matematik için en fazla 4 öğrencilik canlı ders, TYT-AYT planı, derste soru-cevap ve ders sonrası çalışma yönü.",
+    "YKS matematik için en fazla 4 öğrencilik canlı ders, TYT-AYT dengesi, deneme analizi ve ders sonrası çalışma yönü.",
   alternates: {
     canonical: "/yks"
   },
   openGraph: {
     title: "YKS Matematik Dersi | Online Dershanem",
-    description: "YKS matematik için küçük grup canlı ders, TYT-AYT planı, ders içi soru-cevap ve veliye kısa gelişim notu.",
+    description: "YKS matematik için küçük grup canlı ders, TYT-AYT dengesi, deneme analizi ve ders sonrası çalışma yönü.",
     url: `${siteUrl}/yks`
   }
 };
@@ -36,13 +36,13 @@ export default function TYTLandingPage() {
       data={{
         examKey: "YKS",
         heroBadge: "YKS Matematik",
-        heroTitle: "YKS matematikte derste görünen, hafta içinde yönünü bilen öğrenci.",
+        heroTitle: "YKS matematikte TYT ve AYT aynı düzende ilerlesin.",
         heroText:
-          "TYT ve AYT matematikte öğrenci sadece dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda hangi çalışmayla devam edeceğini bilir. Veliye de süreç yalın bir dille aktarılır.",
+          "YKS öğrencisi derste yalnızca dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda TYT-AYT çalışmasında hangi adımla devam edeceğini bilir.",
         highlights: [
           "En fazla 4 öğrencilik matematik grubu",
           "Ders sonrası ödevlendirme ve açık bir çalışma yönü",
-          "TYT hız + AYT derinlik dengesine uygun matematik çalışması"
+          "TYT hız ve AYT derinliğini birlikte taşıyan çalışma düzeni"
         ],
         approach: {
           heading: "YKS matematiğinde TYT-AYT dengesini nasıl kuruyoruz?",
@@ -57,7 +57,7 @@ export default function TYTLandingPage() {
             },
             {
               title: "Deneme analizi",
-              body: "Her denemede hangi konuda ve hangi soru tipinde kaybedildiğini birlikte çıkarır, çalışmayı tam o noktaya yönlendiririz."
+              body: "Denemede kaybın hangi konu ve soru tipinden geldiğini birlikte görür, sonraki çalışmayı tam o noktaya yönlendiririz."
             }
           ]
         },
