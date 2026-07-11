@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Boxes } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { contact, siteUrl } from "@/lib/content";
@@ -48,12 +48,14 @@ export default function CareersPage() {
       <main>
         {/* Hero */}
         <section className="site-container pb-8 pt-16 text-center sm:pt-24">
-          <CubeDoodle className="mx-auto h-24 w-24 sm:h-28 sm:w-28" />
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] text-[var(--brand-orange-ink)]">
+            <Boxes size={27} strokeWidth={1.6} aria-hidden="true" />
+          </span>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
             Eğitimin geleceğini <span className="site-hl">birlikte</span> inşa edelim.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
-            Online Dershanem; öğrencinin yüzlerce kişi içinde kaybolmadığı, hocasının onu adıyla
+            Online Dershanem; öğrencinin kalabalık içinde kaybolmadığı, öğretmeninin onu adıyla
             tanıdığı bir model kuruyor. Bu modeli büyütecek küçük ama etkili bir ekiple çalışıyoruz.
           </p>
         </section>
@@ -71,7 +73,7 @@ export default function CareersPage() {
                   Açık Pozisyonlar
                 </h2>
                 <p className="mt-4 max-w-xs text-[14px] leading-7 text-white/85">
-                  Küçük ve odaklı bir ekipte, yaptığın işin doğrudan binlerce öğrenciye dokunduğu
+                  Küçük ve odaklı bir ekipte, yaptığın işin öğrenci deneyimine doğrudan dokunduğu
                   bir yerde çalış.
                 </p>
                 <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-white">
@@ -117,8 +119,8 @@ export default function CareersPage() {
                 body: "Kararlar hızlı alınır, yapılan iş doğrudan öğrencinin haftasına dokunur."
               },
               {
-                title: "Premium standartlar",
-                body: "Hocadan yazılım altyapısına kadar her detayda butik kalite arıyoruz."
+                title: "Özenli standartlar",
+                body: "Öğretmenden yazılım altyapısına kadar her detayda açık ve sürdürülebilir kalite arıyoruz."
               },
               {
                 title: "Şeffaf süreç",
@@ -141,9 +143,9 @@ export default function CareersPage() {
           <div className="mt-4 overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-12">
             <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
               <div>
-                <span className="site-eyebrow">Listede yoksun ama yine de katılmak istiyorsun</span>
+                <span className="site-eyebrow">Açık roller dışında bir alanda katkı sunmak istiyorsan</span>
                 <h3 className="mt-3 font-display text-[28px] leading-tight tracking-[-0.02em] text-[var(--site-ink)] sm:text-[36px]">
-                  Spekülatif başvurunu da bekleriz.
+                  Genel başvurunu da bekleriz.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
                   Online eğitime değer katacağına inanıyorsan, kısa bir mesaj ve özgeçmişini bize
@@ -162,69 +164,5 @@ export default function CareersPage() {
       </main>
       <SiteFooter />
     </div>
-  );
-}
-
-/* ── Cube doodle (Opennote-inspired) ──────────────────────────── */
-function CubeDoodle({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      {/* tiny stars */}
-      <path
-        d="M22 36 l1.5 -3.5 l1.5 3.5 l3.5 1.5 l-3.5 1.5 l-1.5 3.5 l-1.5 -3.5 l-3.5 -1.5z"
-        fill="var(--od-olive)"
-        opacity="0.85"
-      />
-      <path
-        d="M97 18 c2 1 3 2 3 3 c-1 0 -2 1 -3 3 c-1 -2 -2 -3 -3 -3 c1 -1 2 -2 3 -3z"
-        fill="var(--od-olive)"
-        opacity="0.85"
-      />
-
-      {/* cube — top face */}
-      <path
-        d="M60 18 L92 32 L60 46 L28 32 Z"
-        stroke="var(--od-ink)"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-        fill="white"
-      />
-      {/* left face */}
-      <path
-        d="M28 32 L28 68 L60 82 L60 46 Z"
-        stroke="var(--od-ink)"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-        fill="white"
-      />
-      {/* right face */}
-      <path
-        d="M92 32 L92 68 L60 82 L60 46 Z"
-        stroke="var(--od-ink)"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-        fill="white"
-      />
-      {/* highlighted top tile */}
-      <path d="M60 18 L76 25 L60 32 L44 25 Z" fill="var(--od-yellow)" opacity="0.95" />
-      {/* internal grid lines: top */}
-      <path d="M44 25 L44 38 M76 25 L76 38" stroke="var(--od-ink)" strokeWidth="1.2" />
-      <path d="M44 38 L60 32 M76 38 L60 32" stroke="var(--od-ink)" strokeWidth="1.2" />
-      {/* left grid */}
-      <path d="M28 44 L60 58 M28 56 L60 70" stroke="var(--od-ink)" strokeWidth="1.2" />
-      <path d="M44 38 L44 75" stroke="var(--od-ink)" strokeWidth="1.2" />
-      {/* right grid */}
-      <path d="M60 58 L92 44 M60 70 L92 56" stroke="var(--od-ink)" strokeWidth="1.2" />
-      <path d="M76 38 L76 75" stroke="var(--od-ink)" strokeWidth="1.2" />
-
-      {/* shadow */}
-      <ellipse cx="60" cy="100" rx="34" ry="3" fill="var(--od-ink)" opacity="0.08" />
-    </svg>
   );
 }

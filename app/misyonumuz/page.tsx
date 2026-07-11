@@ -1,24 +1,17 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PageHero } from "@/components/site/page-hero";
-import { siteUrl } from "@/lib/content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "Misyonumuz",
   description:
     "Online Dershanem'in misyonu: matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirmek.",
-  alternates: { canonical: "/misyonumuz" },
-  openGraph: {
-    title: "Misyonumuz | Online Dershanem",
-    description:
-      "Matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirme misyonumuz.",
-    url: `${siteUrl}/misyonumuz`,
-    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Misyonumuz" }],
-  },
-};
+  canonical: "/misyonumuz",
+  imageAlt: "Online Dershanem'in matematik eğitimi misyonu",
+});
 
 const principles = [
   {
@@ -124,7 +117,7 @@ export default function MissionPage() {
                 <ArrowUpRight size={18} aria-hidden="true" />
               </Link>
               <Link
-                href="/paketler/"
+                href="/ders-paketleri/"
                 className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-[16px] font-semibold text-white transition-colors hover:bg-white/20"
               >
                 Ders paketi

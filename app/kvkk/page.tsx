@@ -1,19 +1,12 @@
-import type { Metadata } from "next";
-import { siteUrl } from "@/lib/content";
 import { LegalPageTemplate } from "@/components/sections/legal-page-template";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "KVKK Aydınlatma Metni",
   description: "Online Dershanem KVKK aydınlatma metni ve kişisel veri işleme esasları.",
-  alternates: {
-    canonical: "/kvkk"
-  },
-  openGraph: {
-    title: "KVKK Aydınlatma Metni | Online Dershanem",
-    description: "Kişisel verilerin işlenmesi, saklanması ve haklarınıza ilişkin bilgilendirme metni.",
-    url: `${siteUrl}/kvkk`
-  }
-};
+  canonical: "/kvkk",
+  imageAlt: "Online Dershanem KVKK Aydınlatma Metni",
+});
 
 export default function KVKKPage() {
   return (

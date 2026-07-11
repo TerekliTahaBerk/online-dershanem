@@ -31,7 +31,7 @@ export const lessonPackage = lessonPackages[0];
 
 /** "Neler dahil?" listesi — public ürün gerçekliğini fiyat kaynağından ayırmadan anlatır. */
 export const includedFeatures: string[] = [
-  "Canlı matematik dersi",
+  "Ayda 4 × 60 dakika canlı matematik dersi",
   "En fazla 4 öğrencilik grup",
   "Derste soru-cevap ve birlikte çözüm",
   "Ders sonrası çalışma yönü",
@@ -43,8 +43,8 @@ export const includedFeatures: string[] = [
 
 /** Fiyat kartında gösterilen kısa öne çıkanlar. */
 export const cardHighlights: string[] = [
+  "Ayda 4 × 60 dakika canlı ders",
   "En fazla 4 öğrencilik grup",
   "Ders sonrası çalışma yönü",
-  "Ödevlendirme ve öğretmen notu",
-  "PayTR ile güvenli ödeme",
+  "Aylık paket · taahhüt yok",
 ];

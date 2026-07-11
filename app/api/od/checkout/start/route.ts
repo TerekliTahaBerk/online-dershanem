@@ -35,7 +35,7 @@ const CartItemSchema = z.object({
   subject: z.string().min(1).max(80),
   priceCents: z.number().int().positive().max(100_000_000), // <=1.000.000 TL
   priceLabel: z.string().max(60).optional().nullable(),
-  qty: z.number().int().min(1).max(99),
+  qty: z.literal(1),
 });
 
 const InputSchema = z.object({
@@ -45,8 +45,8 @@ const InputSchema = z.object({
   packageName: z.string().max(160).optional().nullable(),
   paymentLink: z.string().max(500).optional().nullable(),
   priceLabel: z.string().max(60).optional().nullable(),
-  // Multi-item cart path
-  items: z.array(CartItemSchema).max(20).optional(),
+  // Single-package cart path
+  items: z.array(CartItemSchema).max(1).optional(),
   // Buyer info
   fullName: z.string().min(2).max(120),
   email: z.string().email(),
@@ -127,8 +127,8 @@ export async function POST(req: Request) {
 
   // ── Determine pricing & summary ──────────────────────────────────────────
   // Two modes:
-  //   (a) Multi-item cart: `items[]` supplied → sum priceCents*qty
-  //   (b) Single-item:     `packageName` + `category`/`subject` (legacy)
+  //   (a) Current cart: exactly one `items[]` entry with qty=1
+  //   (b) Legacy direct form: `packageName` + `category`/`subject`
   let priceCents = 0;
   let packageName = "";
   let category: string | null = null;
@@ -150,21 +150,12 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    priceCents = validated.reduce((acc, v) => acc + v.priceCents * v.qty, 0);
+    const selected = validated[0];
+    priceCents = selected.priceCents;
     cartSnapshot = validated;
-    const totalQty = validated.reduce((a, v) => a + v.qty, 0);
-    packageName =
-      validated.length === 1
-        ? validated[0].name + (validated[0].qty > 1 ? ` × ${validated[0].qty}` : "")
-        : `Sepet (${totalQty} ürün): ${validated
-            .map((v) => v.name)
-            .slice(0, 3)
-            .join(", ")}${validated.length > 3 ? "…" : ""}`;
-    // category/subject left null for multi-item
-    if (validated.length === 1) {
-      category = validated[0].category;
-      subject = validated[0].subject;
-    }
+    packageName = selected.name;
+    category = selected.category;
+    subject = selected.subject;
   } else {
     // Single-item legacy path
     if (!d.packageName) {
@@ -214,8 +205,7 @@ export async function POST(req: Request) {
   const totalCents = Math.max(0, priceCents - discountCents);
 
   // ── Public ürün kataloğundaki Package ile eşleştir ──────────────────────
-  // category+subject varsa "od:tyt-ayt:matematik" gibi slug ile bulunur veya
-  // oluşturulur. Çoklu kalem sepette null kalır (cart anchor sipariş).
+  // category+subject varsa public katalog kaydı bulunur veya oluşturulur.
   let packageId: string | null = null;
   if (category && subject) {
     const pkgName = `${category} ${subject}`;

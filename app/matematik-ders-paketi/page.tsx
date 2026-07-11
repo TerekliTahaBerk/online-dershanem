@@ -1,26 +1,19 @@
-import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PackagesExperience } from "@/components/pricing/packages-experience";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd, courseJsonLd, productJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
-import { siteUrl } from "@/lib/content";
 import { lessonPackages } from "@/lib/pricing-content";
 import { homeFaqs } from "@/lib/site-content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "Matematik Ders Paketleri — LGS ve YKS",
   description:
     "LGS ve YKS için en fazla 4 öğrencilik canlı matematik ders paketleri. Derste soru-cevap, ders sonrası yönlendirme ve aylık ₺3.000 fiyat.",
-  alternates: { canonical: "/paketler" },
-  openGraph: {
-    title: "Matematik Ders Paketleri | Online Dershanem",
-    description:
-      "LGS ve YKS için küçük grup canlı matematik dersi, öğretmen geri bildirimi ve ders sonrası çalışma yönü.",
-    url: `${siteUrl}/matematik-ders-paketi`,
-    images: [{ url: `${siteUrl}/opengraph-image`, width: 1200, height: 630, alt: "Matematik Ders Paketleri" }],
-  },
-};
+  canonical: "/ders-paketleri",
+  imageAlt: "LGS ve YKS Matematik Ders Paketleri",
+});
 
 export default function MatematikDersPaketiPage() {
   return (

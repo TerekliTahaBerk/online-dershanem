@@ -4,7 +4,13 @@
  */
 export default function Loading() {
   return (
-    <div className="site-scope min-h-screen bg-[var(--site-bg-warm)]">
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label="Sayfa yükleniyor"
+      className="site-scope min-h-screen bg-[var(--site-bg-warm)]"
+    >
+      <span className="sr-only">Sayfa yükleniyor, lütfen bekleyin.</span>
       <div className="mx-auto max-w-[1080px] px-5 py-16 sm:px-8">
         {/* Header skeleton */}
         <div className="space-y-4">

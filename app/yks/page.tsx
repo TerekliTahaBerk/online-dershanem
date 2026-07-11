@@ -1,21 +1,15 @@
-import type { Metadata } from "next";
-import { siteUrl } from "@/lib/content";
 import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "YKS Matematik Dersi",
   description:
     "YKS matematik için en fazla 4 öğrencilik canlı ders, TYT-AYT dengesi, deneme analizi ve ders sonrası çalışma yönü.",
-  alternates: {
-    canonical: "/yks"
-  },
-  openGraph: {
-    title: "YKS Matematik Dersi | Online Dershanem",
-    description: "YKS matematik için küçük grup canlı ders, TYT-AYT dengesi, deneme analizi ve ders sonrası çalışma yönü.",
-    url: `${siteUrl}/yks`
-  }
-};
+  canonical: "/yks",
+  imagePath: "/yks/opengraph-image",
+  imageAlt: "YKS Matematik Dersi — Online Dershanem",
+});
 
 export default function TYTLandingPage() {
   const courseLd = courseJsonLd({
@@ -91,7 +85,7 @@ export default function TYTLandingPage() {
           },
           {
             q: "Paket ücretleri aylık mı?",
-            a: "Evet. YKS Matematik Ders Paketi aylık ₺3.000'dir."
+            a: "Evet. YKS Matematik Ders Paketi aylık ilerler; güncel fiyat ve kapsam Ders Paketleri sayfasında açıkça gösterilir."
           },
           {
             q: "Deneme analizi nasıl takip ediliyor?",

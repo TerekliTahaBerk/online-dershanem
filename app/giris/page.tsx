@@ -4,8 +4,8 @@ import Link from "next/link";
 import { LoginForm } from "@/components/site/login-form";
 
 export const metadata: Metadata = {
-  title: "Giriş yap",
-  description: "Online Dershanem öğrenci girişi.",
+  title: "Öğrenci Desteği",
+  description: "Mevcut Online Dershanem öğrencileri için ders, program ve ödeme desteği.",
   alternates: { canonical: "/giris" },
   robots: { index: false, follow: false },
 };
@@ -29,15 +29,17 @@ export default function LoginPage() {
                 />
               </Link>
               <h1 className="mt-14 font-display text-[clamp(2.6rem,7vw,4rem)] text-[var(--site-ink)]">
-                Giriş yap
+                Öğrenci desteği
               </h1>
-              <p className="mt-7 text-[18px] text-[var(--site-body)] sm:text-[22px]">Lütfen hesabına giriş yap.</p>
+              <p className="mt-5 max-w-lg text-[16px] leading-7 text-[var(--site-body)] sm:text-[18px]">
+                Mevcut öğrenciler için ders bağlantısı, program ve ödeme konularında hızlıca yardımcı olalım.
+              </p>
             </div>
 
             <LoginForm />
           </div>
 
-          <p className="mt-10 text-center text-[15px] text-[var(--site-body)] sm:text-[17px]">
+          <p className="mt-8 text-center text-[15px] text-[var(--site-body)] sm:text-[17px]">
             Henüz başlamadın mı?{" "}
             <Link href="/ders-paketleri/" className="font-semibold text-[var(--brand-orange-ink)] hover:underline">
               Ders paketlerini incele

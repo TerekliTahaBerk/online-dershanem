@@ -47,7 +47,7 @@ export default async function OdPaymentPage({
   }
 
   if (order.status === "PAID") {
-    redirect("/paketler/satin-al/sonuc?status=success");
+    redirect(`/paketler/satin-al/sonuc?orderId=${encodeURIComponent(order.id)}&status=success`);
   }
 
   const hdrs = await headers();

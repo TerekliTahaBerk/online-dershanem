@@ -1,4 +1,5 @@
 import { Check, Star, TrendingUp } from "lucide-react";
+import { lessonPackage } from "@/lib/pricing-content";
 
 export function HeroLessonMockup() {
   const students = ["LGS", "YKS", "Mat", "Soru"];
@@ -45,7 +46,12 @@ export function HeroLessonMockup() {
           {[
             ["En fazla 4 öğrenci", "Herkes soru sorar"],
             ["Ders sonrası takip", "Sıradaki çalışma net"],
-            ["₺3.000 / ay", "Eski fiyat ₺5.000 / ay"],
+            [
+              lessonPackage.priceLabel.replace("/ay", " / ay"),
+              lessonPackage.oldPriceLabel
+                ? `Önceki fiyat ${lessonPackage.oldPriceLabel.replace("/ay", " / ay")}`
+                : "Aylık paket",
+            ],
             ["LGS / YKS", "Sınava göre grup"],
           ].map(([title, body]) => (
             <div key={title} className="rounded-[18px] border border-[var(--site-line)] bg-white p-4">

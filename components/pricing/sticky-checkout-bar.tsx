@@ -46,15 +46,12 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, package
   }, []);
 
   if (!items.length) return null;
+  if (!visible) return null;
 
   const hasMultiple = items.length > 1;
 
   return (
-    <div
-      className={`fixed inset-x-0 bottom-0 z-40 transition-[transform,opacity] duration-300 ${
-        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-full opacity-0"
-      }`}
-    >
+    <div className="fixed inset-x-0 bottom-0 z-40">
       <div className="border-t border-[var(--site-line)] bg-white/95 shadow-[0_-12px_35px_-28px_rgba(20,20,15,.4)] backdrop-blur-md">
         <div className="site-container flex items-center gap-3 py-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:gap-5 sm:py-4">
           <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[15px] font-bold text-[var(--brand-orange-ink)] sm:flex">

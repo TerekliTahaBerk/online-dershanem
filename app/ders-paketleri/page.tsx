@@ -1,22 +1,17 @@
-import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PackagesExperience } from "@/components/pricing/packages-experience";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd, productJsonLd } from "@/lib/seo/jsonld";
-import { parsePriceToCents, siteUrl } from "@/lib/content";
+import { parsePriceToCents } from "@/lib/content";
 import { lessonPackages } from "@/lib/pricing-content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "Ders Paketleri",
   description: "LGS ve YKS için en fazla 4 kişilik canlı matematik ders paketleri. Küçük grup, ders sonrası yönlendirme ve güvenli ödeme.",
-  alternates: { canonical: "/ders-paketleri" },
-  openGraph: {
-    title: "Ders Paketleri | Online Dershanem",
-    description: "LGS ve YKS için iki matematik paketi: küçük grup canlı ders, öğretmen geri bildirimi ve düzenli takip.",
-    url: `${siteUrl}/ders-paketleri`,
-  },
-};
+  canonical: "/ders-paketleri",
+});
 
 export default function LessonPackagesPage() {
   return (

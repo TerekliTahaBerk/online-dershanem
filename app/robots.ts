@@ -12,9 +12,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/api/",
           "/odk-paketleri/*/satin-al",
-          // Redirect kabukları — sadece redirect("/") yapıyor, public içerik yok.
-          "/odk",
-          "/odk-paketleri",
         ],
       },
       // Aggressive bot'ları engelle (opsiyonel — bandwidth koruması)

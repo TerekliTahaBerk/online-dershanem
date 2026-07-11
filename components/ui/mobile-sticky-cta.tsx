@@ -8,9 +8,8 @@ import { contact } from "@/lib/content";
 const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
 // Tasarım kararına göre bu global sticky bar yalnızca ana sayfada görünür.
-// Ders Paketleri (/paketler) ve Matematik Ders Paketi (/matematik-ders-paketi)
-// sayfaları kendi StickyCheckoutBar bileşenini render eder; çakışmayı önlemek
-// için burada sadece "/" bırakılır.
+// Canonical Ders Paketleri sayfası kendi StickyCheckoutBar bileşenini render
+// eder; çakışmayı önlemek için burada sadece "/" bırakılır.
 const VISIBLE_PATHS = new Set(["/"]);
 
 /**

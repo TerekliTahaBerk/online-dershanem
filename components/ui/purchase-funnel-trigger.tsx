@@ -60,17 +60,14 @@ export function PurchaseFunnelTrigger({
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    add(
-      {
-        id: `${derived.cat}__${derived.subj}`,
-        name: packageName,
-        category: derived.cat,
-        subject: derived.subj,
-        priceCents,
-        priceLabel: priceLabel || "",
-      },
-      1,
-    );
+    add({
+      id: `${derived.cat}__${derived.subj}`,
+      name: packageName,
+      category: derived.cat,
+      subject: derived.subj,
+      priceCents,
+      priceLabel: priceLabel || "",
+    });
     trackConversionEvent("purchase_cta_click", { source, packageName });
     router.push("/sepet");
   };

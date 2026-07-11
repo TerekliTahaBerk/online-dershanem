@@ -19,7 +19,7 @@ export default function NotFound() {
   return (
     <main className="site-scope flex min-h-screen items-center justify-center bg-[var(--site-bg-warm)] px-5 py-16">
       <div className="text-center max-w-2xl">
-        <p className="select-none font-display text-7xl font-medium text-[var(--site-line)]">404</p>
+        <p className="select-none font-display text-7xl font-medium text-[var(--site-muted)]" aria-hidden="true">404</p>
         <h1 className="mt-4 font-display text-[34px] text-[var(--site-ink)]">Sayfa bulunamadı</h1>
         <p className="mt-3 text-sm leading-relaxed text-[var(--site-body)]">
           Aradığın sayfa taşınmış, silinmiş ya da hiç var olmamış olabilir.

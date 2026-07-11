@@ -27,7 +27,7 @@ export function PricingSelector({ options = DEFAULT_OPTIONS }: { options?: Optio
   return (
     <div>
       <div
-        role="tablist"
+        role="group"
         aria-label="Sınav seviyesi seçimi"
         className="inline-flex rounded-full border border-[var(--site-line)] bg-white p-1"
       >
@@ -37,8 +37,7 @@ export function PricingSelector({ options = DEFAULT_OPTIONS }: { options?: Optio
             <button
               key={o.key}
               type="button"
-              role="tab"
-              aria-selected={isActive}
+              aria-pressed={isActive}
               onClick={() => setActive(o.key)}
               className={`rounded-full px-5 py-2 text-[14px] font-semibold transition-colors ${
                 isActive
@@ -51,7 +50,9 @@ export function PricingSelector({ options = DEFAULT_OPTIONS }: { options?: Optio
           );
         })}
       </div>
-      <p className="mt-4 max-w-lg text-[14.5px] leading-6 text-[var(--site-body)]">{current.description}</p>
+      <p aria-live="polite" className="mt-4 max-w-lg text-[14.5px] leading-6 text-[var(--site-body)]">
+        {current.description}
+      </p>
     </div>
   );
 }

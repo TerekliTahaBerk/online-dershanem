@@ -18,6 +18,21 @@ test("sanitizes valid cart items and rejects invalid numeric fields", () => {
   assert.equal(sanitizeCartItems([{ ...validItem, priceCents: Number.NaN }]), null);
 });
 
+test("normalizes legacy carts to one unit of the last selected package", () => {
+  const replacement = {
+    ...validItem,
+    id: "YKS__Matematik Ders Paketi",
+    name: "YKS Matematik Ders Paketi",
+    category: "YKS",
+    subject: "Matematik Ders Paketi",
+    qty: 7,
+  };
+
+  assert.deepEqual(sanitizeCartItems([validItem, replacement]), [
+    { ...replacement, qty: 1 },
+  ]);
+});
+
 test("checkout snapshot enforces TTL and shape", () => {
   const now = 2_000_000;
   assert.ok(parseCheckoutCartSnapshot({ items: [validItem], coupon: null, ts: now }, now));

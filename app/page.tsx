@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { Hero } from "@/components/marketing/hero";
@@ -16,28 +15,15 @@ import { productJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { homeFaqs } from "@/lib/site-content";
 import { lessonPackages } from "@/lib/pricing-content";
 import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
-import { parsePriceToCents, siteUrl } from "@/lib/content";
+import { parsePriceToCents } from "@/lib/content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-  title: { absolute: "Online Dershanem | Küçük Grup Canlı Matematik Dersi" },
+export const metadata = buildMarketingMetadata({
+  title: "Online Dershanem | Küçük Grup Canlı Matematik Dersi",
   description:
     "LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, öğretmen geri bildirimi, ders sonrası yönlendirme ve güvenli ödeme.",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Online Dershanem | Küçük Grup Canlı Matematik Dersi",
-    description:
-      "LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, öğretmen geri bildirimi ve ders sonrası yönlendirme.",
-    url: `${siteUrl}/`,
-    images: [
-      {
-        url: `${siteUrl}/og.png`,
-        width: 1200,
-        height: 630,
-        alt: "Matematikte kaybolma. Yolun net olsun.",
-      },
-    ],
-  },
-};
+  canonical: "/",
+});
 
 export default function HomePage() {
   return (
@@ -49,7 +35,7 @@ export default function HomePage() {
               name: pkg.name,
               description:
                 "En fazla 4 öğrencilik canlı matematik dersi, ders sonrası çalışma yönü ve öğretmen geri bildirimi.",
-              url: "/paketler/",
+              url: "/ders-paketleri/",
               image: "/logo.png",
               priceCents: pkg.priceCents,
               originalPriceCents: pkg.oldPriceLabel

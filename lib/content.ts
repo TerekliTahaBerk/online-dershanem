@@ -330,10 +330,10 @@ export const blogPosts = [
     featured: false,
     sections: [
       {
-        h2: "Ortalama Fiyatlar",
-        bullets: ["Grup ders: 1000–2500 TL", "Özel ders: çok daha yüksek"],
+        h2: "Fiyatı tek başına okumak yeterli mi?",
+        bullets: ["Sınıf mevcudu", "Canlı ders süresi ve sıklığı", "Ders sonrası takip kapsamı"],
         paragraphs: [
-          "Fiyat aralığı geniş olabilir. Bu yüzden karar verirken sadece rakama değil sistemin gücüne bakmak gerekir."
+          "Piyasadaki rakamlar ders süresi, grup büyüklüğü ve takip kapsamına göre değişir. Bu yüzden yalnız aylık etiketi değil, karşılığında sunulan gerçek ders ve takip düzenini karşılaştırmak gerekir."
         ]
       },
       {

@@ -1,4 +1,5 @@
 import { Check, CreditCard, FileText, Route, Users } from "lucide-react";
+import { lessonPackage } from "@/lib/pricing-content";
 
 const resultCards = [
   {
@@ -37,7 +38,7 @@ const comparison = [
     featured: true,
     items: [
       "En fazla 4 öğrenci",
-      "₺3.000 / ay",
+      lessonPackage.priceLabel.replace("/ay", " / ay"),
       "Her ders sonu net çalışma yönü",
       "Sade gelişim özeti",
       "Benzer seviye ve hedefe göre grup",

@@ -10,7 +10,7 @@ import { MobileMenu } from "@/components/site/mobile-menu";
 
 /**
  * Public site header — referans tasarım: sol menü · ortada logo · sağda
- * "Giriş yap" + yeşil CTA. Minimal, beyaz, hafif sticky.
+ * yardımcı bağlantı + yeşil CTA. Minimal, beyaz, hafif sticky.
  */
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -36,16 +36,22 @@ export function SiteHeader() {
 
   return (
     <>
+      <a
+        href="#main-content"
+        className="fixed left-4 top-3 z-[200] -translate-y-24 rounded-full bg-[var(--site-ink)] px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0"
+      >
+        Ana içeriğe geç
+      </a>
       <header
         ref={headerRef}
         className="sticky top-0 z-50 w-full border-b border-[var(--site-line)] bg-white/85 backdrop-blur-xl"
       >
         <div className="site-container">
-          <div className="flex h-[68px] items-center justify-between gap-4 md:grid md:grid-cols-[1fr_auto_1fr]">
+          <div className="flex h-[68px] items-center justify-between gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
             {/* Sol — masaüstü menü */}
             <nav
               aria-label="Ana menü"
-              className="hidden items-center gap-1 justify-self-start md:flex"
+              className="hidden items-center gap-1 justify-self-start lg:flex"
             >
               {primaryNav.map((link) => (
                 <Link
@@ -84,14 +90,14 @@ export function SiteHeader() {
             <div className="flex items-center gap-2 justify-self-end sm:gap-3">
               <Link
                 href={navLogin.href}
-                className="hidden text-[14.5px] font-medium text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] md:inline-flex"
+                className="hidden text-[14.5px] font-medium text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] lg:inline-flex"
               >
                 {navLogin.label}
               </Link>
 
               <Link
                 href={navCta.href}
-                className="site-btn site-btn-primary site-btn-sm !hidden md:!inline-flex"
+                className="site-btn site-btn-primary site-btn-sm !hidden lg:!inline-flex"
               >
                 {navCta.label}
               </Link>
@@ -100,7 +106,7 @@ export function SiteHeader() {
                 ref={menuButtonRef}
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-ink)] md:hidden"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-ink)] lg:hidden"
                 aria-label="Menüyü aç"
                 aria-expanded={open}
                 aria-controls="site-mobile-menu"
@@ -118,6 +124,7 @@ export function SiteHeader() {
         isActive={isActive}
         triggerRef={menuButtonRef}
       />
+      <span id="main-content" tabIndex={-1} className="sr-only" />
     </>
   );
 }

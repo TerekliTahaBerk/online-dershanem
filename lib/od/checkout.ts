@@ -90,7 +90,7 @@ export async function createOdCheckoutSession(input: {
     });
   }
 
-  // Basket'i sepet snapshot'ından oluştur (çoklu kalem desteği).
+  // Basket'i sipariş oluşturulurken doğrulanmış sepet snapshot'ından oluştur.
   const buyer = (order.buyerInfo ?? {}) as Record<string, unknown>;
   const cart = Array.isArray(buyer.cart)
     ? (buyer.cart as Array<{ name: string; priceCents: number; qty: number }>)
@@ -105,8 +105,9 @@ export async function createOdCheckoutSession(input: {
         ])
       : [[order.packageName.slice(0, 200), (order.totalCents / 100).toFixed(2), 1]];
 
-  const okUrl = `${input.origin}/paketler/satin-al/sonuc?status=success`;
-  const failUrl = `${input.origin}/paketler/satin-al/sonuc?status=failed`;
+  const resultUrl = `${input.origin}/paketler/satin-al/sonuc?orderId=${encodeURIComponent(order.id)}`;
+  const okUrl = `${resultUrl}&status=success`;
+  const failUrl = `${resultUrl}&status=failed`;
 
   const tokenRes = await createPaytrIframeToken({
     merchantOid,

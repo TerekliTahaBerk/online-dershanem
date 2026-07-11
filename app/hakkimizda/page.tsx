@@ -1,25 +1,18 @@
-import type { Metadata } from "next";
+import Image from "next/image";
 import { BarChart3, Compass, HeartHandshake, Layers, MessageCircle, Target } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { FooterCta } from "@/components/marketing/footer-cta";
-import { TeacherRosterMockup } from "@/components/marketing/mockups";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { siteUrl } from "@/lib/content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "Hakkımızda",
   description:
     "Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini bir araya getirir.",
-  alternates: { canonical: "/hakkimizda" },
-  openGraph: {
-    title: "Hakkımızda | Online Dershanem",
-    description:
-      "Öğrencinin matematikte yalnız kalmadığı bir sistem: küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesi.",
-    url: `${siteUrl}/hakkimizda`,
-  },
-};
+  canonical: "/hakkimizda",
+});
 
 const approach = [
   {
@@ -29,20 +22,20 @@ const approach = [
   },
   {
     icon: BarChart3,
-    title: "Veriyle takip",
-    body: "Ders, ödev ve deneme verileriyle ilerleme somut ve ölçülebilir hale gelir.",
+    title: "Düzenli takip",
+    body: "İşlenen konu, verilen ödev ve sonraki hedef kısa öğretmen notlarıyla görünür kalır.",
   },
   {
     icon: Compass,
-    title: "Kişiye özel plan",
-    body: "Her öğrencinin seviyesine göre haftalık plan; ne çalışacağı her zaman belli.",
+    title: "Seviyeye göre plan",
+    body: "Öğrencinin seviyesi ve sınav hedefi dikkate alınır; sıradaki çalışma yönü netleşir.",
   },
 ];
 
 const different = [
   { title: "Tek sistem", body: "Ders, plan, ödev ve veli bilgilendirmesi tek bir düzende yürür." },
-  { title: "Ölçülebilir ilerleme", body: "Gelişimi tahmin etmek yerine haftalık olarak görürsün." },
-  { title: "Kişiye özel plan", body: "Hazır kalıp yok; plan öğrenciye göre kurulur ve güncellenir." },
+  { title: "Görünür ilerleme", body: "İşlenen konu, zorlanılan nokta ve sıradaki hedef haftalık olarak görünür." },
+  { title: "Seviyeye göre plan", body: "Çalışma yönü öğrencinin seviyesi ve sınav hedefine göre güncellenir." },
   { title: "Düzenli geri bildirim", body: "Öğrenciye öğretmen notu, veliye kısa gelişim özeti." },
 ];
 
@@ -84,8 +77,21 @@ export default function AboutPage() {
                   de anlaşılır olduğu sürdürülebilir bir çalışma düzeni kurmak.
                 </p>
               </div>
-              <div>
-                <TeacherRosterMockup />
+              <div className="overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white p-4 shadow-[0_24px_55px_-34px_rgba(20,20,15,.28)]">
+                <Image
+                  src="/founders.webp"
+                  alt="Online Dershanem kurucu ekibi çizimi"
+                  width={420}
+                  height={288}
+                  sizes="(max-width: 1024px) 80vw, 520px"
+                  className="h-auto w-full rounded-[18px]"
+                />
+                <div className="px-2 pb-2 pt-4">
+                  <p className="text-[13px] font-bold text-[var(--site-ink)]">Online Dershanem ekibi</p>
+                  <p className="mt-1 text-[12.5px] leading-5 text-[var(--site-body)]">
+                    Küçük grup matematik modelini öğrenci, öğretmen ve veli için daha açık hâle getirmek üzere çalışıyoruz.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -146,11 +152,11 @@ export default function AboutPage() {
           <div className="site-container py-20 text-center sm:py-24">
             <Target className="mx-auto text-[var(--brand-orange)]" size={30} aria-hidden="true" />
             <h2 className="mx-auto mt-5 max-w-2xl font-display text-[clamp(1.9rem,4vw,3rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
-              Öğretmenlerimiz alanında deneyimli.
+              Öğretmen eşleşmesini öğrencinin seviyesine göre yapıyoruz.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
-              Matematiği anlatmayı bilen, öğrenciyi küçük grupta gerçekten duyan öğretmenlerle çalışırız.
-              Öğrencinin seviyesine uygun eşleşmeyi görüşmede birlikte netleştiririz.
+              Küçük grup dersini yürütecek öğretmen seçiminde matematik alan bilgisi, anlatım yaklaşımı
+              ve öğrencinin seviyesi birlikte değerlendirilir. Uygun eşleşmeyi ön görüşmede netleştiririz.
             </p>
             <a
               href="/iletisim/"

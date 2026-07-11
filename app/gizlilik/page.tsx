@@ -1,19 +1,12 @@
-import type { Metadata } from "next";
-import { siteUrl } from "@/lib/content";
 import { LegalPageTemplate } from "@/components/sections/legal-page-template";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "Gizlilik Politikası",
   description: "Online Dershanem gizlilik politikası, veri güvenliği ve kullanıcı hakları.",
-  alternates: {
-    canonical: "/gizlilik"
-  },
-  openGraph: {
-    title: "Gizlilik Politikası | Online Dershanem",
-    description: "Site kullanımında toplanan veriler, çerezler ve güvenlik yaklaşımı hakkında bilgi.",
-    url: `${siteUrl}/gizlilik`
-  }
-};
+  canonical: "/gizlilik",
+  imageAlt: "Online Dershanem Gizlilik Politikası",
+});
 
 export default function PrivacyPolicyPage() {
   return (

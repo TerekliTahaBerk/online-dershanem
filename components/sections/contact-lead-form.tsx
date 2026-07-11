@@ -32,11 +32,8 @@ const initial: FormState = {
   kvkk: false,
 };
 
-const goals = ["LGS", "YKS (TYT + AYT)", "Temel destek"];
+const goals = ["LGS", "YKS (TYT + AYT)"];
 const grades = [
-  "5. sınıf",
-  "6. sınıf",
-  "7. sınıf",
   "8. sınıf (LGS)",
   "9. sınıf",
   "10. sınıf",
@@ -57,7 +54,7 @@ const whatsappDigits = contact.whatsapp.replace(/[^\d]/g, "");
 function buildMessage(f: FormState): string {
   return [
     "Ön görüşme talebi — Online Dershanem",
-    `Veli adı: ${f.parentName}`,
+    `Ad soyad: ${f.parentName}`,
     `Telefon: ${f.phone}`,
     `E-posta: ${f.email || "-"}`,
     `Öğrenci sınıfı: ${f.grade}`,
@@ -84,8 +81,6 @@ export function ContactLeadForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  // Sunucuya kayıt yapıldı mı — success ekranındaki metni buna göre uyarlarız.
-  const [saved, setSaved] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const update = (key: keyof FormState, value: string | boolean) => {
@@ -146,9 +141,13 @@ export function ContactLeadForm() {
           submittedAt: new Date().toISOString(),
         }),
       });
-      setSaved(res.ok);
+      if (!res.ok) {
+        setStatus("error");
+        return;
+      }
     } catch {
-      setSaved(false);
+      setStatus("error");
+      return;
     }
 
     setStatus("success");
@@ -162,12 +161,10 @@ export function ContactLeadForm() {
           <Check size={24} strokeWidth={2.2} aria-hidden="true" />
         </span>
         <h2 className="mt-5 font-display text-[26px] leading-tight text-[var(--site-ink)]">
-          {saved ? "Talebiniz bize ulaştı." : "Talebiniz hazır."}
+          Talebiniz bize ulaştı.
         </h2>
         <p className="mt-2 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
-          {saved
-            ? "Talebinizi aldık. Ekibimiz tercih ettiğiniz kanaldan size dönecek; isterseniz aşağıdan doğrudan da yazabilirsiniz."
-            : "Formu kaydedemedik. Talebinizi aşağıdaki seçeneklerden biriyle doğrudan bize iletebilirsiniz."}
+          Talebinizi aldık. Ekibimiz tercih ettiğiniz kanaldan size dönecek; isterseniz aşağıdan doğrudan da yazabilirsiniz.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <a
@@ -192,7 +189,6 @@ export function ContactLeadForm() {
           onClick={() => {
             setForm(initial);
             setStatus("idle");
-            setSaved(false);
           }}
           className="mt-5 text-[13px] text-[var(--site-body)] underline-offset-2 hover:text-[var(--site-ink)] hover:underline"
         >
@@ -218,7 +214,7 @@ export function ContactLeadForm() {
       </p>
 
       <div className="mt-7 grid gap-5 sm:grid-cols-2">
-        <Field id="parentName" label="Veli adı" required error={errors.parentName}>
+        <Field id="parentName" label="Ad soyad" required error={errors.parentName}>
           <input
             id="parentName"
             name="parentName"
@@ -379,10 +375,21 @@ export function ContactLeadForm() {
       </div>
 
       {status === "error" ? (
-        <p className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13.5px] text-rose-800" role="alert">
-          Formu şu anda iletemedik. {contact.whatsapp} numaralı WhatsApp hattımızdan
-          bize ulaşabilirsiniz.
-        </p>
+        <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13.5px] text-rose-900" role="alert">
+          <p className="font-semibold">Formu şu anda iletemedik.</p>
+          <p className="mt-1 leading-6">
+            Bilgileriniz kaydedilmedi. Dilerseniz {" "}
+            <a
+              href={`https://wa.me/${whatsappDigits}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-2"
+            >
+              WhatsApp üzerinden doğrudan yazın
+            </a>
+            .
+          </p>
+        </div>
       ) : null}
 
       <button

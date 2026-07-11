@@ -17,13 +17,14 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 
 export const primaryNav = [
   { label: "Ders Paketleri", href: "/ders-paketleri/" },
+  { label: "Kamplar", href: "/kamplar/" },
   { label: "Nasıl Çalışır?", href: "/#nasil-calisir" },
   { label: "Hakkımızda", href: "/hakkimizda/" },
 ] as const;
 
 /** Sağ üst birincil CTA — lead / satış odaklı (self-register yok). */
 export const navCta = { label: "Ücretsiz görüşme", href: "/iletisim/" } as const;
-export const navLogin = { label: "Giriş yap", href: "/giris/" } as const;
+export const navLogin = { label: "Öğrenci desteği", href: "/giris/" } as const;
 
 /* ---------------- Hero ---------------- */
 
@@ -91,38 +92,38 @@ export const first30 = {
   cta: { label: "Ücretsiz görüşme", href: "/iletisim/" },
 } as const;
 
-/* ---------------- Başarı hikayeleri (fake foto YOK) ---------------- */
+/* ---------------- Modelin hedeflediği örnek öğrenci deneyimleri ---------------- */
 
 export type Story = {
   tag: string;
-  quote: string;
-  name: string;
+  title: string;
+  body: string;
   detail: string;
 };
 
 export const stories: Story[] = [
   {
     tag: "YKS öğrencisi",
-    quote: "Ders sonrası ne çalışacağını bilmek haftayı daha planlı götürmesini sağladı.",
-    name: "YKS öğrencisi",
+    title: "Haftalık yön netleşir",
+    body: "Ders sonunda sıradaki konu ve çalışma hedefi yazılı hale gelir; öğrenci haftayı ne yapacağını bilerek planlar.",
     detail: "Matematik çalışma düzeni",
   },
   {
     tag: "8. sınıf velisi",
-    quote: "Kalabalık sınıfta soru soramıyordu; küçük grupta daha aktif ilerlemeye başladı.",
-    name: "8. sınıf velisi",
+    title: "Soru sormak kolaylaşır",
+    body: "En fazla dört kişilik grupta öğrenci çözümünü gösterir, takıldığı adımı öğretmeniyle birlikte görünür kılar.",
     detail: "Küçük grup canlı ders",
   },
   {
     tag: "LGS velisi",
-    quote: "Veli olarak süreci daha net takip edebildik.",
-    name: "LGS velisi",
+    title: "Süreç görünür olur",
+    body: "İşlenen konu, zorlanılan nokta ve sıradaki hedef sade bir özetle paylaşılır; veli süreci daha kolay takip eder.",
     detail: "Düzenli takip",
   },
   {
     tag: "YKS öğrencisi",
-    quote: "Soru çözümünü gösterince nerede hata yaptığını daha hızlı fark etmeye başladı.",
-    name: "YKS öğrencisi",
+    title: "Hata adımı yakalanır",
+    body: "Öğrenci yalnız cevabı değil, çözüm yolunu da gösterir; öğretmen yanlışın başladığı adımı doğrudan ele alır.",
     detail: "En fazla 4 kişi",
   },
 ];
@@ -174,27 +175,28 @@ export const footerColumns = [
     links: [
       { label: "Ders Paketleri", href: "/ders-paketleri/" },
       { label: "Kamplar", href: "/kamplar/" },
-      { label: "Matematik Ders Paketleri", href: "/matematik-ders-paketi/" },
-      { label: "SSS", href: "/sss/" },
+      { label: "LGS Matematik", href: "/lgs/" },
+      { label: "YKS Matematik", href: "/yks/" },
     ],
   },
   {
     title: "Kurumsal",
     links: [
       { label: "Hakkımızda", href: "/hakkimizda/" },
-      { label: "İletişim", href: "/iletisim/" },
+      { label: "Misyonumuz", href: "/misyonumuz/" },
       { label: "Blog", href: "/blog/" },
-      { label: "Ön görüşme", href: "/iletisim/" },
+      { label: "Kariyer", href: "/kariyer/" },
+      { label: "İletişim", href: "/iletisim/" },
     ],
   },
   {
     title: "Destek",
     links: [
       { label: "Sıkça Sorulanlar", href: "/sss/" },
+      { label: "Öğrenci desteği", href: "/giris/" },
+      { label: "İade Politikası", href: "/iade/" },
       { label: "Gizlilik", href: "/gizlilik/" },
       { label: "KVKK", href: "/kvkk/" },
-      { label: "Kullanım koşulları", href: "/gizlilik/" },
-      { label: "İade Politikası", href: "/iade/" },
       { label: "PayTR Güvenli Ödeme", href: "/ders-paketleri/" },
     ],
   },

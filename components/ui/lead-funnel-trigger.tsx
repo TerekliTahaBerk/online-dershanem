@@ -14,9 +14,8 @@ type LeadFunnelTriggerProps = {
 };
 
 /**
- * Premium CTA. Forms have been removed site-wide; this component now
- * routes the user directly to the packages page (or a custom href) while
- * keeping the original analytics surface intact.
+ * Lead CTA. Varsayılan olarak çalışan ücretsiz ön görüşme formuna gider;
+ * içerik veya fiyat CTA'ları gerektiğinde açık bir `href` verebilir.
  */
 export function LeadFunnelTrigger({
   children,
@@ -24,7 +23,7 @@ export function LeadFunnelTrigger({
   className = "",
   eventName = "trial_cta_click",
   analyticsId,
-  href = "/paketler/"
+  href = "/iletisim/"
 }: LeadFunnelTriggerProps) {
   const handleClick = (_event: MouseEvent<HTMLAnchorElement>) => {
     trackConversionEvent(eventName, { source });

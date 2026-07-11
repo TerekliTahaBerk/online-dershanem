@@ -16,7 +16,7 @@ export function FooterCta({
   title = "Hedefine bir adım daha yaklaş.",
   subtitle = "Bugün başla, ilk adımı at. Gerisini birlikte planlayalım.",
   ctaLabel = "Hemen başla",
-  ctaHref = "/paketler/",
+  ctaHref = "/ders-paketleri/",
 }: FooterCtaProps) {
   return (
     <section className="bg-white">

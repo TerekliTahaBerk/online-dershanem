@@ -35,7 +35,7 @@ test("blank checkout shows field errors, focuses the first field and does not su
   expect(startRequests).toHaveLength(0);
 });
 
-test("cart is preserved until an explicit payment success result", async ({ page }) => {
+test("cart is preserved when an unverified success URL is opened", async ({ page }) => {
   await page.goto("/sepet");
   await page.evaluate((snapshot) => {
     localStorage.setItem("od_cart_v1", JSON.stringify(snapshot.items));
@@ -46,13 +46,13 @@ test("cart is preserved until an explicit payment success result", async ({ page
   expect(await page.evaluate(() => localStorage.getItem("od_cart_v1"))).not.toBeNull();
 
   await page.goto("/paketler/satin-al/sonuc?status=success");
-  await expect
-    .poll(() =>
-      page.evaluate(() => {
-        const raw = localStorage.getItem("od_cart_v1");
-        return raw === null || JSON.parse(raw).length === 0;
-      }),
-    )
-    .toBe(true);
-  expect(await page.evaluate(() => localStorage.getItem("od_checkout_cart"))).toBeNull();
+  await expect(page.getByRole("heading", { name: "Sipariş doğrulanamadı" })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("od_cart_v1"))).not.toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem("od_checkout_cart"))).not.toBeNull();
+});
+
+test("new ODK checkout starts are disabled", async ({ request }) => {
+  const response = await request.post("/api/odk/checkout/start", { data: {} });
+  expect(response.status()).toBe(410);
+  expect(await response.json()).toMatchObject({ ok: false });
 });

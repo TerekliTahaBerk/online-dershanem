@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -6,13 +5,15 @@ import { PageHero } from "@/components/site/page-hero";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { contact, faqCategories } from "@/lib/content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "Sıkça Sorulanlar",
   description:
     "Online Dershanem hakkında sık sorulan sorular: ders modeli, seviye ve grup yerleşimi, ödeme ve iade, veli takibi, teknik gereksinimler ve uygunluk.",
-  alternates: { canonical: "/sss" },
-};
+  canonical: "/sss",
+  imageAlt: "Online Dershanem sıkça sorulan sorular",
+});
 
 const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;

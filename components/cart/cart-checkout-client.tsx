@@ -82,12 +82,9 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
     );
   }
 
-  // İlk kalemin kategorisi → form içi hidden field (legacy schema'lar için)
+  // Sepet tek öğrenci için tam olarak bir paket içerir.
   const first = snapshot.items[0];
-  const packageLabel =
-    snapshot.items.length === 1
-      ? `${first.category} ${first.subject}`
-      : `${snapshot.items.length} ürün · Çoklu Paket`;
+  const packageLabel = `${first.category} ${first.subject}`;
   const priceLabel = tryFormat(totalCents);
 
   return (

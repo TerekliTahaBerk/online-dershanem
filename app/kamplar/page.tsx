@@ -1,32 +1,37 @@
-import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Calendar, ClipboardList, LineChart, MessageSquare, Target, Video } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  ClipboardList,
+  Clock3,
+  GraduationCap,
+  LineChart,
+  MessageSquare,
+  Target,
+  Users,
+  Video,
+} from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { FooterCta } from "@/components/marketing/footer-cta";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { mathCamps, CAMP_MAX_STUDENTS, siteUrl } from "@/lib/content";
+import { mathCamps, CAMP_MAX_STUDENTS } from "@/lib/content";
 import { waHref } from "@/lib/site-content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "Matematik Kampları",
   description:
-    "Belirli bir matematik konusuna odaklanan, öğretmen destekli ve sıkı takip edilen online kamplar. Kısa sürede düzen kurmak isteyenler için.",
-  alternates: { canonical: "/kamplar" },
-  openGraph: {
-    title: "Matematik Kampları | Online Dershanem",
-    description:
-      "Belirli hedefe odaklanan, öğretmen destekli ve sıkı takip edilen online matematik kampları.",
-    url: `${siteUrl}/kamplar`,
-  },
-};
+    "LGS ve YKS matematiğinde belirli bir hedefe odaklanan online kamplar için ön kayıt bilgisi. Tarih ve ücretler program netleştiğinde açıklanır.",
+  canonical: "/kamplar",
+});
 
 const howItWorks = [
   { icon: Target, title: "Seviye analizi", body: "Kampın konusunda öğrencinin nerede olduğunu belirleriz." },
   { icon: ClipboardList, title: "Kişisel plan", body: "Kalan eksiklere göre kısa, hedefli bir çalışma planı çıkar." },
-  { icon: Calendar, title: "Günlük takip", body: "Çalışma ritmi gün gün takip edilir, dağılma engellenir." },
+  { icon: Calendar, title: "Günlük takip", body: "Çalışma ritmi gün gün takip edilir ve düzeni korumaya yardımcı olunur." },
   { icon: MessageSquare, title: "Öğretmen görüşmesi", body: "Canlı derslerde soru-cevap ve birlikte çözüm." },
   { icon: LineChart, title: "Raporlama", body: "Kamp sonunda ne toparlandığı özetlenir." },
 ];
@@ -38,7 +43,11 @@ const campFaqs = [
   },
   {
     q: "Ne kadar sürer?",
-    a: "Kamplar konuya göre 1–3 hafta arasında sürer ve birkaç canlı dersten oluşur. Güncel tarih ve program bilgisini görüşmede paylaşırız.",
+    a: "Kamplar konuya göre 1–3 hafta arasında sürer ve birkaç canlı dersten oluşur. Başlangıç tarihleri henüz açıklanmadı; program netleştiğinde ön kayıt talebi bırakanlarla paylaşılır.",
+  },
+  {
+    q: "Kamplar şu anda satın alınabilir mi?",
+    a: "Hayır. Kamplar şu anda ön kayıt ve bilgilendirme aşamasındadır. Tarih, ücret ve kesin program açıklanmadan ödeme alınmaz.",
   },
   {
     q: "Paketlerden farkı ne?",
@@ -71,13 +80,24 @@ export default function CampsPage() {
             <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">
               LGS ve YKS matematiğinde belirli hedefe odaklanan kısa süreli çalışma dönemleri.
             </p>
+            <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4 text-left">
+              <Clock3
+                size={18}
+                className="mt-0.5 shrink-0 text-[var(--brand-orange-ink)]"
+                aria-hidden="true"
+              />
+              <p className="text-[13.5px] leading-6 text-[var(--site-body)]">
+                Kamplar şu anda ön kayıt aşamasında. Kesin başlangıç tarihi ve ücret bilgisi
+                program netleştiğinde paylaşılacak; bu aşamada ödeme alınmıyor.
+              </p>
+            </div>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/iletisim/" className="site-btn site-btn-primary site-btn-lg">
-                Detaylı bilgi al
+                Ön kayıt bilgisi al
                 <ArrowRight size={17} aria-hidden="true" />
               </Link>
               <a href={waHref} target="_blank" rel="noopener noreferrer" className="site-btn site-btn-secondary site-btn-lg">
-                Ücretsiz görüşme
+                WhatsApp&apos;tan sor
               </a>
             </div>
           </div>
@@ -96,9 +116,15 @@ export default function CampsPage() {
                     <span className="rounded-full bg-[var(--brand-orange-soft)] px-3 py-1 text-[12px] font-semibold text-[var(--brand-orange-ink)]">
                       {camp.levelTag}
                     </span>
-                    {camp.featured ? (
-                      <span className="text-[12px] font-semibold text-[var(--site-muted)]">Öne çıkan</span>
-                    ) : null}
+                    <span
+                      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                        camp.featured
+                          ? "bg-[var(--brand-orange)] text-white"
+                          : "border border-[var(--site-line)] bg-[var(--site-bg-warm)] text-[var(--site-muted)]"
+                      }`}
+                    >
+                      {camp.featured ? "Ön kayıt" : "Yakında"}
+                    </span>
                   </div>
                   <h2 className="mt-4 font-display text-[22px] leading-[1.15] tracking-[-0.01em] text-[var(--site-ink)]">
                     {camp.name}
@@ -115,19 +141,49 @@ export default function CampsPage() {
                       <dt className="sr-only">Ders</dt>
                       <dd>{camp.lessonsLabel}</dd>
                     </div>
+                    <div className="flex items-center gap-1.5">
+                      <GraduationCap size={14} className="text-[var(--brand-orange)]" aria-hidden="true" />
+                      <dt className="sr-only">Seviye</dt>
+                      <dd>{camp.levelLabel}</dd>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Users size={14} className="text-[var(--brand-orange)]" aria-hidden="true" />
+                      <dt className="sr-only">Kontenjan</dt>
+                      <dd>En fazla {CAMP_MAX_STUDENTS} kişi</dd>
+                    </div>
+                  </dl>
+
+                  <dl className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-[var(--site-bg-warm)] p-3.5">
+                    <div>
+                      <dt className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                        Başlangıç
+                      </dt>
+                      <dd className="mt-1 text-[12.5px] font-semibold text-[var(--site-ink)]">
+                        Henüz açıklanmadı
+                      </dd>
+                    </div>
+                    <div className="border-l border-[var(--site-line)] pl-3">
+                      <dt className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                        Ücret
+                      </dt>
+                      <dd className="mt-1 text-[12.5px] font-semibold text-[var(--site-ink)]">
+                        Henüz açıklanmadı
+                      </dd>
+                    </div>
                   </dl>
                   <Link
                     href="/iletisim/"
                     className="mt-6 inline-flex items-center gap-2 text-[14.5px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
                   >
-                    Detaylı bilgi al
+                    {camp.featured ? "Ön kayıt bilgisi al" : "Duyurulunca haber ver"}
                     <ArrowRight size={15} aria-hidden="true" />
                   </Link>
                 </article>
               ))}
             </div>
             <p className="mt-8 text-center text-[13.5px] text-[var(--site-muted)]">
-              Kamp tarih ve ücret bilgisi konuya göre değişir; ücretsiz görüşmede güncel programı paylaşırız.
+              Kamplar henüz satışta değildir. Tarih, ücret ve kesin program açıklandıktan sonra
+              ön kayıt talebi bırakanlarla iletişime geçilir.
             </p>
           </div>
         </section>
@@ -157,9 +213,9 @@ export default function CampsPage() {
 
         <FaqAccordion title="Kamplar hakkında" items={campFaqs} tone="plain" />
         <FooterCta
-          title="Hangi kamp sana uygun, birlikte bakalım."
-          subtitle="Öğrencinin eksik olduğu konuyu söyle; doğru kampı ve programı beraber belirleyelim."
-          ctaLabel="Ücretsiz görüşme"
+          title="Kamp duyurularını kaçırmayın."
+          subtitle="Öğrencinin seviyesini ve ilgilendiğiniz kampı paylaşın; kesin program açıklandığında size bilgi verelim."
+          ctaLabel="Ön kayıt bilgisi al"
           ctaHref="/iletisim/"
         />
       </main>

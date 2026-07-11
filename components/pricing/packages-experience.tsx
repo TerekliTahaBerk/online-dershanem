@@ -24,19 +24,18 @@ type PackagesExperienceProps = {
  * Ders Paketleri deneyimi — LGS/YKS seçici, "Neler dahil?", iki fiyat kartı,
  * "nasıl başlar" adımları, FAQ, footer CTA ve sticky checkout bar.
  *
- * Hem `/paketler` hem de `/matematik-ders-paketi` bu bileşeni kullanır (tek
- * kaynaktan tutarlı tasarım). FİYAT `lib/content.ts`'ten türetilir; checkout
- * akışı `PurchaseFunnelTrigger` (sepet → /sepet → PayTR) ile korunur.
+ * Canonical `/ders-paketleri` deneyimi. FİYAT `lib/content.ts`'ten türetilir;
+ * checkout akışı `PurchaseFunnelTrigger` (sepet → /sepet → PayTR) ile korunur.
  */
 export function PackagesExperience({ title, subtitle, primarySource }: PackagesExperienceProps) {
   return (
     <>
       <main>
         {/* Başlık */}
-        <section className="bg-[#fafafa] pt-20 sm:pt-32">
+        <section className="bg-[#fafafa] pt-12 sm:pt-16">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">Ders Paketleri</p>
-            <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.8rem,6.2vw,5.6rem)] leading-[.98] text-[var(--site-ink)]">
+            <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.65rem,5.5vw,5rem)] leading-[.98] text-[var(--site-ink)]">
               {title}
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">{subtitle}</p>
@@ -45,8 +44,8 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
 
         {/* Seçici + kart */}
         <section className="bg-[#fafafa]">
-          <div className="site-container py-16 sm:py-24">
-            <div className="mb-10 flex justify-center">
+          <div className="site-container pb-16 pt-9 sm:pb-24 sm:pt-12">
+            <div className="mb-8 flex justify-center text-center sm:mb-10">
               <PricingSelector />
             </div>
 
@@ -68,7 +67,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
                 </ul>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2 lg:sticky lg:top-24">
+              <div className="order-first grid gap-5 md:grid-cols-2 lg:order-none lg:sticky lg:top-24">
                 {lessonPackages.map((pkg) => (
                   <PricingCard
                     key={`${pkg.category}-${pkg.subject}`}

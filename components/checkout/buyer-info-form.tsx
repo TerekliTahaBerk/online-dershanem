@@ -260,6 +260,7 @@ export function BuyerInfoForm({
         <Field
           name="fullName"
           label="Ad Soyad"
+          autoComplete="section-checkout name"
           defaultValue={defaults.fullName}
           required
           error={fieldErrors.fullName}
@@ -268,6 +269,7 @@ export function BuyerInfoForm({
           name="email"
           label="E-posta"
           type="email"
+          autoComplete="section-checkout email"
           defaultValue={defaults.email}
           required
           error={fieldErrors.email}
@@ -277,6 +279,7 @@ export function BuyerInfoForm({
           name="phone"
           label="Cep Telefonu"
           type="tel"
+          autoComplete="section-checkout tel"
           placeholder="05XX XXX XX XX"
           defaultValue={defaults.phone}
           required
@@ -285,16 +288,26 @@ export function BuyerInfoForm({
         <Field
           name="tcKimlik"
           label="T.C. Kimlik No (opsiyonel)"
+          autoComplete="off"
+          inputMode="numeric"
           maxLength={11}
           error={fieldErrors.tcKimlik}
         />
       </Section>
 
       <Section title="Adres Bilgileri">
-        <Field name="city" label="İl" defaultValue={defaults.city} required error={fieldErrors.city} />
+        <Field
+          name="city"
+          label="İl"
+          autoComplete="section-checkout billing address-level1"
+          defaultValue={defaults.city}
+          required
+          error={fieldErrors.city}
+        />
         <Field
           name="district"
           label="İlçe"
+          autoComplete="section-checkout billing address-level2"
           defaultValue={defaults.district}
           required
           error={fieldErrors.district}
@@ -302,6 +315,7 @@ export function BuyerInfoForm({
         <Field
           name="address"
           label="Açık Adres (fatura için)"
+          autoComplete="section-checkout billing street-address"
           textarea
           rows={2}
           required
@@ -313,6 +327,7 @@ export function BuyerInfoForm({
         <Field
           name="schoolName"
           label="Okul"
+          autoComplete="off"
           defaultValue={defaults.schoolName}
           required
           error={fieldErrors.schoolName}
@@ -320,6 +335,7 @@ export function BuyerInfoForm({
         <SelectField
           name="classLevel"
           label="Sınıf Düzeyi"
+          autoComplete="off"
           defaultValue={defaults.classLevel}
           required
           error={fieldErrors.classLevel}
@@ -339,12 +355,14 @@ export function BuyerInfoForm({
         <Field
           name="department"
           label="Alan / Bölüm"
+          autoComplete="off"
           placeholder="Sayısal, EA, Sözel..."
           defaultValue={defaults.department}
         />
         <SelectField
           name="examType"
           label="Hedef Sınav"
+          autoComplete="off"
           required
           defaultValue={defaults.examType}
           error={fieldErrors.examType}
@@ -362,6 +380,7 @@ export function BuyerInfoForm({
         <Field
           name="targetSchool"
           label="Hedef Üniversite / Lise (opsiyonel)"
+          autoComplete="off"
           defaultValue={defaults.targetSchool}
         />
       </Section>
@@ -370,12 +389,14 @@ export function BuyerInfoForm({
         <Field
           name="parentFullName"
           label="Veli Ad Soyad"
+          autoComplete="section-parent name"
           defaultValue={defaults.parentFullName}
         />
         <Field
           name="parentPhone"
           label="Veli Telefon"
           type="tel"
+          autoComplete="section-parent tel"
           defaultValue={defaults.parentPhone}
         />
       </Section>
@@ -384,6 +405,7 @@ export function BuyerInfoForm({
         <Field
           name="notes"
           label="Eklemek istediğiniz bir şey var mı?"
+          autoComplete="off"
           textarea
           rows={3}
           placeholder="Tercih, müsaitlik, ihtiyaç vb."
@@ -410,7 +432,7 @@ export function BuyerInfoForm({
               KVKK Aydınlatma Metni
             </Link>
             'ni okudum ve onaylıyorum.{" "}
-            <span className="text-rose-600">★</span>
+            <RequiredMark />
           </span>
         </label>
         {fieldErrors.kvkkConsent ? (
@@ -443,7 +465,7 @@ export function BuyerInfoForm({
               Ön bilgilendirme ve mesafeli satış sözleşmesini
             </Link>{" "}
             okudum, kabul ediyorum. Hizmet hocalarımız tarafından planlandıktan sonra
-            başlatılacaktır. <span className="text-rose-600">★</span>
+            başlatılacaktır. <RequiredMark />
           </span>
         </label>
         {fieldErrors.paymentConsent ? (
@@ -493,6 +515,8 @@ type FieldProps = {
   name: string;
   label: string;
   type?: string;
+  autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   required?: boolean;
   defaultValue?: string;
   placeholder?: string;
@@ -507,6 +531,8 @@ function Field({
   name,
   label,
   type = "text",
+  autoComplete,
+  inputMode,
   required,
   defaultValue,
   placeholder,
@@ -516,6 +542,9 @@ function Field({
   maxLength,
   error,
 }: FieldProps) {
+  const describedBy = [help ? `${name}-help` : null, error ? `${name}-error` : null]
+    .filter(Boolean)
+    .join(" ") || undefined;
   const fieldClass = `min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:text-[var(--site-muted)] ${
     error
       ? "border-rose-400 bg-rose-50 focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
@@ -528,19 +557,21 @@ function Field({
     >
       <span className="block text-[12.5px] font-medium text-[var(--site-body)] mb-1.5 uppercase tracking-wide">
         {label}
-        {required ? <span className="text-rose-600 ml-0.5">★</span> : null}
+        {required ? <RequiredMark /> : null}
       </span>
       {textarea ? (
         <textarea
           id={name}
           name={name}
+          autoComplete={autoComplete}
+          inputMode={inputMode}
           required={required}
           defaultValue={defaultValue}
           placeholder={placeholder}
           rows={rows}
           maxLength={maxLength}
           aria-invalid={!!error}
-          aria-describedby={error ? `${name}-error` : undefined}
+          aria-describedby={describedBy}
           className={fieldClass}
         />
       ) : (
@@ -548,16 +579,18 @@ function Field({
           id={name}
           name={name}
           type={type}
+          autoComplete={autoComplete}
+          inputMode={inputMode}
           required={required}
           defaultValue={defaultValue}
           placeholder={placeholder}
           maxLength={maxLength}
           aria-invalid={!!error}
-          aria-describedby={error ? `${name}-error` : undefined}
+          aria-describedby={describedBy}
           className={fieldClass}
         />
       )}
-      {help && <span className="block text-[11.5px] text-[var(--site-body)] mt-1">{help}</span>}
+      {help && <span id={`${name}-help`} className="block text-[11.5px] text-[var(--site-body)] mt-1">{help}</span>}
       {error ? <FieldError id={`${name}-error`}>{error}</FieldError> : null}
     </label>
   );
@@ -566,6 +599,7 @@ function Field({
 function SelectField({
   name,
   label,
+  autoComplete,
   required,
   defaultValue,
   error,
@@ -573,6 +607,7 @@ function SelectField({
 }: {
   name: string;
   label: string;
+  autoComplete?: string;
   required?: boolean;
   defaultValue?: string;
   error?: string;
@@ -582,11 +617,12 @@ function SelectField({
     <label htmlFor={name} className="block">
       <span className="block text-[12.5px] font-medium text-[var(--site-body)] mb-1.5 uppercase tracking-wide">
         {label}
-        {required ? <span className="text-rose-600 ml-0.5">★</span> : null}
+        {required ? <RequiredMark /> : null}
       </span>
       <select
         id={name}
         name={name}
+        autoComplete={autoComplete}
         required={required}
         defaultValue={defaultValue ?? ""}
         aria-invalid={!!error}
@@ -601,6 +637,15 @@ function SelectField({
       </select>
       {error ? <FieldError id={`${name}-error`}>{error}</FieldError> : null}
     </label>
+  );
+}
+
+function RequiredMark() {
+  return (
+    <>
+      <span aria-hidden="true" className="ml-0.5 text-rose-600">★</span>
+      <span className="sr-only"> (zorunlu)</span>
+    </>
   );
 }
 

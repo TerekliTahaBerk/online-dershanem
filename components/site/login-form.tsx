@@ -1,99 +1,53 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { Lock, MessageCircle } from "lucide-react";
+import { ArrowRight, CalendarCheck, MessageCircle, ShieldCheck } from "lucide-react";
 import { waHref } from "@/lib/site-content";
 
+const supportItems = [
+  {
+    icon: CalendarCheck,
+    title: "Ders bağlantısı ve program",
+    body: "Canlı ders saatiniz, grup bilginiz veya bağlantınız için ekibimize yazın.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Ödeme ve paket desteği",
+    body: "Mevcut paketiniz, ödeme kaydınız veya devam süreciniz için yardımcı olalım.",
+  },
+];
+
 /**
- * Giriş formu (client).
- *
- * Mevcut öğrenciler için sade giriş yüzeyi. Kimlik doğrulama servisi bu public
- * uygulamada bulunmadığından gönderim, çalışan destek kanallarına yönlendirir.
+ * Gerçek bir öğrenci paneli henüz bulunmadığı için parola istemeyen, açık ve
+ * güvenli destek yüzeyi. Kullanıcıdan çalışmayan bir formda kimlik bilgisi
+ * toplamaz; doğrudan çalışan destek kanallarına yönlendirir.
  */
 export function LoginForm() {
-  const [submitted, setSubmitted] = useState(false);
-
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setSubmitted(true);
-      }}
-      className="mt-12 flex flex-col gap-6"
-      noValidate
-    >
-      <div>
-        <label htmlFor="login-email" className="sr-only">
-          E-posta adresi
-        </label>
-        <input
-          id="login-email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="E-posta adresi"
-          className="min-h-[68px] w-full rounded-full border-0 bg-[#f3f3f2] px-7 py-5 text-[17px] text-[var(--site-ink)] outline-none ring-1 ring-transparent transition placeholder:text-[var(--site-muted)] focus:ring-[var(--brand-orange)] sm:min-h-[76px] sm:text-[20px]"
-        />
-      </div>
-      <div>
-        <label htmlFor="login-password" className="sr-only">
-          Şifre
-        </label>
-        <input
-          id="login-password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          placeholder="Şifre"
-          className="min-h-[68px] w-full rounded-full border-0 bg-[#f3f3f2] px-7 py-5 text-[17px] text-[var(--site-ink)] outline-none ring-1 ring-transparent transition placeholder:text-[var(--site-muted)] focus:ring-[var(--brand-orange)] sm:min-h-[76px] sm:text-[20px]"
-        />
-      </div>
-
-      <button type="submit" className="site-btn site-btn-primary mt-3 min-h-[68px] w-full text-[18px] sm:min-h-[76px] sm:text-[20px]">
-        Giriş yap
-      </button>
-
-      <p className="flex items-center justify-center gap-1.5 text-center text-[12.5px] text-[var(--site-muted)]">
-        <Lock size={13} aria-hidden="true" />
-        Giriş desteği yalnızca mevcut öğrenciler içindir.
-      </p>
-
-      {submitted ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className="rounded-2xl border border-[var(--brand-orange)]/35 bg-[var(--brand-orange-tint)] p-4"
-        >
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
-              <MessageCircle size={17} aria-hidden="true" />
+    <div className="mt-10">
+      <div className="grid gap-3 text-left sm:grid-cols-2">
+        {supportItems.map(({ icon: Icon, title, body }) => (
+          <article key={title} className="rounded-[22px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[var(--brand-orange-ink)] shadow-sm">
+              <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
             </span>
-            <div>
-              <p className="text-[15px] font-semibold text-[var(--site-ink)]">
-                Giriş desteği gerekiyor.
-              </p>
-              <p className="mt-1 text-[14px] leading-6 text-[var(--site-body)]">
-                Giriş bilgilerin veya ders bağlantın için destek ekibimize doğrudan yazabilirsin.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-3">
-                <a
-                  href={waHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
-                >
-                  <MessageCircle size={15} aria-hidden="true" />
-                  WhatsApp destek
-                </a>
-                <Link href="/iletisim/" className="text-[14px] font-semibold text-[var(--brand-orange-ink)] hover:underline">
-                  İletişim
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </form>
+            <h2 className="mt-4 text-[15px] font-bold text-[var(--site-ink)]">{title}</h2>
+            <p className="mt-2 text-[13.5px] leading-6 text-[var(--site-body)]">{body}</p>
+          </article>
+        ))}
+      </div>
+
+      <a
+        href={waHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="site-btn site-btn-primary site-btn-lg mt-5 w-full"
+      >
+        <MessageCircle size={18} aria-hidden="true" />
+        WhatsApp’tan destek al
+      </a>
+      <Link href="/iletisim/" className="site-btn site-btn-secondary site-btn-lg mt-3 w-full">
+        İletişim seçeneklerini gör
+        <ArrowRight size={17} aria-hidden="true" />
+      </Link>
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Phone, Mail, MapPin, MessageCircle, ArrowRight, ArrowUpRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
@@ -8,13 +7,15 @@ import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { ContactLeadForm } from "@/components/sections/contact-lead-form";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { contact } from "@/lib/content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "İletişim",
   description:
     "Öğrencinizin matematikte nerede zorlandığını ve uygun ders temposunu konuşmak için bize ulaşabilirsiniz.",
-  alternates: { canonical: "/iletisim" },
-};
+  canonical: "/iletisim",
+  imageAlt: "Online Dershanem iletişim ve ücretsiz ön görüşme",
+});
 
 const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
@@ -37,7 +38,7 @@ export default function ContactPage() {
               Aklınızdakileri <span className="site-hl">konuşalım.</span>
             </>
           }
-          subtitle="WhatsApp veya telefonla doğrudan ulaşabilirsiniz. Formu tercih ederseniz adınızı ve numaranızı bırakmanız yeter; sizi arayıp gerisini birlikte konuşuruz."
+          subtitle="WhatsApp veya telefonla doğrudan ulaşabilirsiniz. Formu tercih ederseniz yaklaşık bir dakikada iletişim, sınıf ve hedef bilgilerini paylaşabilirsiniz."
         />
 
         <section className="site-container pb-20 sm:pb-28">
@@ -108,7 +109,7 @@ export default function ContactPage() {
                   Fiyatı, derslerin kapsamını ve ödeme sonrası süreci tek sayfada görebilirsiniz.
                 </p>
                 <Link
-                  href="/paketler/"
+                  href="/ders-paketleri/"
                   className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
                 >
                   Ders Paketi&apos;ni gör

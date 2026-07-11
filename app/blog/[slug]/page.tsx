@@ -5,8 +5,10 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { Container } from "@/components/ui/container";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
-import { blogPosts, siteUrl } from "@/lib/content";
+import { blogPosts } from "@/lib/content";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
+import { blogPublishedAt, estimateBlogReadingMinutes, formatBlogDate, getBlogAuthor } from "@/lib/blog-meta";
 
 type BlogPostPageProps = {
   params: Promise<{
@@ -28,19 +30,19 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     };
   }
 
-  return {
+  const publishedTime = `${blogPublishedAt[post.slug] ?? "2025-01-01"}T09:00:00+03:00`;
+
+  return buildMarketingMetadata({
     title: post.seoTitle,
     description: post.metaDescription,
-    alternates: {
-      canonical: `/blog/${post.slug}/`
-    },
-    openGraph: {
-      title: post.seoTitle,
-      description: post.metaDescription,
-      url: `${siteUrl}/blog/${post.slug}`,
-      type: "article"
-    }
-  };
+    canonical: `/blog/${post.slug}`,
+    type: "article",
+    imagePath: `/blog/${post.slug}/opengraph-image`,
+    imageAlt: post.title,
+    publishedTime,
+    modifiedTime: publishedTime,
+    authors: [getBlogAuthor(post.category)],
+  });
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
@@ -60,8 +62,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     headline: post.title,
     description: post.metaDescription,
     url: `/blog/${post.slug}/`,
-    datePublished: "2025-01-01T00:00:00Z",
-    dateModified: new Date().toISOString(),
+    datePublished: `${blogPublishedAt[post.slug] ?? "2025-01-01"}T09:00:00+03:00`,
+    dateModified: `${blogPublishedAt[post.slug] ?? "2025-01-01"}T09:00:00+03:00`,
+    authorName: getBlogAuthor(post.category),
   });
   const breadcrumbLd = breadcrumbJsonLd([
     { name: "Ana Sayfa", url: "/" },
@@ -78,6 +81,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <Container>
           <article className="mx-auto max-w-4xl rounded-3xl border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-10">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--brand-orange-ink)]">{post.category}</p>
+            <p className="mt-3 text-[12.5px] text-[var(--site-muted)]">
+              {getBlogAuthor(post.category)} · {formatBlogDate(blogPublishedAt[post.slug])} · {estimateBlogReadingMinutes(post)} dk okuma
+            </p>
             <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">{post.title}</h1>
             <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">{post.excerpt}</p>
 
@@ -120,6 +126,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <LeadFunnelTrigger
                 source={`blog_post_${post.slug}_cta`}
                 eventName="landing_cta_click"
+                href={/(Paket|Sistemini İncele)/i.test(post.cta.buttonLabel) ? "/ders-paketleri/" : "/iletisim/"}
                 className="site-btn site-btn-primary mt-5"
                 analyticsId={`blog_post_${post.slug}_cta`}
               >

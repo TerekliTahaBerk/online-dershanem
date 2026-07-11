@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
@@ -7,22 +6,14 @@ import { PageHero } from "@/components/site/page-hero";
 import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { siteUrl } from "@/lib/content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-  title: "Online Matematik Özel Ders | Butik Küçük Grup Modeli",
+export const metadata = buildMarketingMetadata({
+  title: "Online Matematik Özel Ders",
   description:
     "Online matematik desteği arayanlar için en fazla 4 öğrencilik grup, derste soru-cevap ve ders sonrası çalışma yönü.",
-  alternates: {
-    canonical: "/online-ozel-ders"
-  },
-  openGraph: {
-    title: "Online Matematik Özel Ders | Online Dershanem",
-    description:
-      "Matematikte öğrencinin seviyesine göre küçük grup desteği, ders içi soru-cevap ve veliye kısa gelişim notu.",
-    url: `${siteUrl}/online-ozel-ders`
-  }
-};
+  canonical: "/online-ozel-ders",
+});
 
 export default function OnlineOzelDersPage() {
   return (
@@ -54,7 +45,7 @@ export default function OnlineOzelDersPage() {
               >
                 Ders Paketini İncele
               </LeadFunnelTrigger>
-              <Link href="/paketler/" className="site-btn site-btn-secondary site-btn-lg">
+              <Link href="/ders-paketleri/" className="site-btn site-btn-secondary site-btn-lg">
                 Fiyatı gör
               </Link>
             </>

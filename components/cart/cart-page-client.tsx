@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, MessageCircle, Minus, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { ArrowRight, MessageCircle, ShieldCheck, Trash2 } from "lucide-react";
 import { useCart, type OdCartItem } from "@/components/cart/cart-provider";
 import { EmptyCart } from "@/components/cart/empty-cart";
 import { contact } from "@/lib/content";
@@ -21,7 +21,7 @@ function tryFormat(cents: number): string {
 
 export function CartPageClient() {
   const router = useRouter();
-  const { items, count, totalCents, setQty, remove, clear, hydrated } = useCart();
+  const { items, count, totalCents, remove, clear, hydrated } = useCart();
 
   const finalCents = totalCents;
 
@@ -74,7 +74,6 @@ export function CartPageClient() {
             <CartItemRow
               key={it.id}
               item={it}
-              onQtyChange={(q) => setQty(it.id, q)}
               onRemove={() => remove(it.id)}
             />
           ))}
@@ -128,7 +127,7 @@ export function CartPageClient() {
               </p>
               <ul className="mt-3 space-y-1.5 text-[11.5px] text-[var(--site-body)]">
                 <li>· 256-bit SSL korumalı ödeme</li>
-                <li>· 1, 3, 6 ve 9 taksit seçenekleri</li>
+                <li>· Taksit seçenekleri kartınıza ve bankanıza göre ödeme ekranında gösterilir</li>
                 <li>· Ödeme PayTR tarafından işlenir</li>
               </ul>
             </div>
@@ -168,11 +167,9 @@ export function CartPageClient() {
 
 function CartItemRow({
   item,
-  onQtyChange,
   onRemove,
 }: {
   item: OdCartItem;
-  onQtyChange: (q: number) => void;
   onRemove: () => void;
 }) {
   return (
@@ -187,33 +184,9 @@ function CartItemRow({
         <div className="mt-0.5 text-[12.5px] text-[var(--site-body)]">{item.priceLabel}</div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="inline-flex items-center rounded-full border border-[var(--site-line)] bg-[var(--site-bg-warm)]">
-          <button
-            type="button"
-            onClick={() => onQtyChange(item.qty - 1)}
-            disabled={item.qty <= 1}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-30"
-            aria-label="Adet azalt"
-          >
-            <Minus size={14} />
-          </button>
-          <span className="min-w-[2rem] text-center text-[13px] font-semibold text-[var(--site-ink)]">
-            {item.qty}
-          </span>
-          <button
-            type="button"
-            onClick={() => onQtyChange(item.qty + 1)}
-            disabled={item.qty >= 99}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-30"
-            aria-label="Adet artır"
-          >
-            <Plus size={14} />
-          </button>
-        </div>
-
-        <div className="w-28 text-right font-display text-[18px] leading-none text-[var(--site-ink)]">
-          {tryFormat(item.priceCents * item.qty)}
+      <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-end">
+        <div className="text-right font-display text-[18px] leading-none text-[var(--site-ink)] sm:w-28">
+          {tryFormat(item.priceCents)}
         </div>
 
         <button

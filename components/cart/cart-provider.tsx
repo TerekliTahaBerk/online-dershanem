@@ -1,11 +1,10 @@
 "use client";
 
 /**
- * OD Çoklu-Ürün Sepeti — localStorage tabanlı client cart.
+ * OD tek öğrenci / tek paket sepeti — localStorage tabanlı client cart.
  *
- * Tasarım: Server schema değişmez. Çoklu kalem siparişler `OdOrder.buyerInfo.cart`
- * JSON alanında tutulur; PayTR basket'i kalem kalem oluşturulur; admin/email
- * raporlarında kalemler tek tek görüntülenir.
+ * Yeni paket seçimi önceki seçimin yerini alır. Böylece aynı CTA'ya yeniden
+ * basılması veya LGS/YKS arasında seçim yapılması tutarı yanlışlıkla artırmaz.
  *
  * Kalıcılık: localStorage (key: "od_cart_v1"). SSR-safe — useEffect ile hidrate edilir.
  */
@@ -27,9 +26,8 @@ type CartContextValue = {
   items: OdCartItem[];
   count: number;
   totalCents: number;
-  add: (item: Omit<OdCartItem, "qty">, qty?: number) => void;
+  add: (item: Omit<OdCartItem, "qty">) => void;
   remove: (id: string) => void;
-  setQty: (id: string, qty: number) => void;
   clear: () => void;
   hydrated: boolean;
 };
@@ -83,25 +81,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const add = useCallback((item: Omit<OdCartItem, "qty">, qty = 1) => {
-    setItems((prev) => {
-      const i = prev.findIndex((x) => x.id === item.id);
-      if (i >= 0) {
-        const next = prev.slice();
-        next[i] = { ...next[i], qty: Math.min(99, next[i].qty + qty) };
-        return next;
-      }
-      return [...prev, { ...item, qty: Math.max(1, Math.min(99, qty)) }];
-    });
+  const add = useCallback((item: Omit<OdCartItem, "qty">) => {
+    // Bir checkout tek öğrenci içindir. Yeni seçim önceki paketin yerini alır;
+    // aynı CTA'ya iki kez basmak tutarı artırmaz.
+    setItems([{ ...item, qty: 1 }]);
   }, []);
 
   const remove = useCallback((id: string) => {
     setItems((prev) => prev.filter((x) => x.id !== id));
-  }, []);
-
-  const setQty = useCallback((id: string, qty: number) => {
-    const safe = Math.max(1, Math.min(99, Math.floor(qty)));
-    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, qty: safe } : x)));
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
@@ -109,15 +96,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       items,
-      count: items.reduce((acc, it) => acc + it.qty, 0),
-      totalCents: items.reduce((acc, it) => acc + it.priceCents * it.qty, 0),
+      count: items.length,
+      totalCents: items.reduce((acc, it) => acc + it.priceCents, 0),
       add,
       remove,
-      setQty,
       clear,
       hydrated,
     }),
-    [items, add, remove, setQty, clear, hydrated],
+    [items, add, remove, clear, hydrated],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

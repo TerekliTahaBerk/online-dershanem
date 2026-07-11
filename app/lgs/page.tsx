@@ -1,21 +1,15 @@
-import type { Metadata } from "next";
-import { siteUrl } from "@/lib/content";
 import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
 import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "LGS Matematik Dersi",
   description:
     "LGS matematik için en fazla 4 öğrencilik canlı ders, yeni nesil soru pratiği ve ders sonrası çalışma yönü.",
-  alternates: {
-    canonical: "/lgs"
-  },
-  openGraph: {
-    title: "LGS Matematik Dersi | Online Dershanem",
-    description: "LGS matematik için küçük grup canlı ders, yeni nesil soru pratiği ve ders sonrası çalışma yönü.",
-    url: `${siteUrl}/lgs`
-  }
-};
+  canonical: "/lgs",
+  imagePath: "/lgs/opengraph-image",
+  imageAlt: "LGS Matematik Dersi — Online Dershanem",
+});
 
 export default function LGSLandingPage() {
   const courseLd = courseJsonLd({
@@ -57,7 +51,7 @@ export default function LGSLandingPage() {
             },
             {
               title: "Küçük grup avantajı",
-              body: "En fazla 4 öğrencide öğretmen her öğrencinin çözümünü görür; LGS temposunda kimse geride kalmaz."
+              body: "En fazla 4 öğrencide öğretmen her öğrencinin çözümünü daha yakından görür; geride kalma riskini erken fark etmek kolaylaşır."
             }
           ]
         },
@@ -91,7 +85,7 @@ export default function LGSLandingPage() {
           },
           {
             q: "Ders kaçırılırsa süreç nasıl ilerliyor?",
-            a: "Telafi planıyla öğrenci aynı hafta içinde derse geri döner; konu takibi aksamaz."
+            a: "Ayrı bir telafi dersi yapılmaz. Öğrenci katılamadığında ders kaydı ve ders sonu özeti paylaşılır; işlenen konu ile verilen ödev bu şekilde takip edilir."
           },
           {
             q: "Dersler canlı mı, kayıt mı?",

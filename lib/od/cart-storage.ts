@@ -45,11 +45,14 @@ export function sanitizeCartItems(value: unknown): StoredCartItem[] | null {
       subject: item.subject.trim(),
       priceCents: item.priceCents,
       priceLabel: item.priceLabel.trim(),
-      qty: item.qty,
+      // Legacy çok-adet kayıtlarını güvenli biçimde tek pakete normalleştir.
+      qty: 1,
     });
   }
 
-  return items;
+  // Bu checkout tek öğrenci içindir. Eski çoklu sepetlerde son seçilen paket
+  // korunur; sonraki persist turu depolamayı yeni tek-paket biçimine taşır.
+  return items.slice(-1);
 }
 
 export function parseCheckoutCartSnapshot(value: unknown, now = Date.now()): {

@@ -1,19 +1,12 @@
-import type { Metadata } from "next";
-import { siteUrl } from "@/lib/content";
 import { LegalPageTemplate } from "@/components/sections/legal-page-template";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMarketingMetadata({
   title: "İade Politikası",
   description: "Online Dershanem ders paketleri için ödeme, iptal ve iade koşulları.",
-  alternates: {
-    canonical: "/iade"
-  },
-  openGraph: {
-    title: "İade Politikası | Online Dershanem",
-    description: "Ders bazlı paketlerde iptal, iade ve süreç yönetimi hakkında bilgilendirme.",
-    url: `${siteUrl}/iade`
-  }
-};
+  canonical: "/iade",
+  imageAlt: "Online Dershanem İade Politikası",
+});
 
 export default function RefundPolicyPage() {
   return (

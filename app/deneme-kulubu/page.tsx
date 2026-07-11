@@ -29,7 +29,7 @@ export default function DenemeKulubuPausedPage() {
             üzere bizimle iletişime geçebilirsiniz.
           </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/paketler/" className="site-btn site-btn-primary site-btn-lg">
+            <Link href="/ders-paketleri/" className="site-btn site-btn-primary site-btn-lg">
               Ders Paketlerini İncele
             </Link>
             <Link href="/iletisim/" className="site-btn site-btn-secondary site-btn-lg">

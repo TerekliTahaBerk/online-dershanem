@@ -39,8 +39,8 @@ const socials = [
 export function SiteFooter() {
   return (
     <footer className="site-scope border-t border-[var(--site-line)] bg-[var(--site-bg-warm)]">
-      <div className="site-container py-16 sm:py-24">
-        <div className="grid gap-14 border-t border-[var(--site-line)] pt-16 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:pt-20">
+      <div className="site-container py-12 sm:py-16 lg:py-20">
+        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-x-12">
           {/* Marka */}
           <div className="flex max-w-sm flex-col gap-5">
             <Link href="/" aria-label="Online Dershanem ana sayfa" className="inline-flex">
@@ -76,7 +76,7 @@ export function SiteFooter() {
               <h2 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--site-muted)]">
                 {col.title}
               </h2>
-              <ul className="mt-6 space-y-5">
+              <ul className="mt-5 space-y-3.5">
                 {col.links.map((l) => (
                   <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
@@ -92,7 +92,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[var(--site-line)] pt-6 text-[13px] text-[var(--site-muted)] sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-[var(--site-line)] pt-6 text-[13px] text-[var(--site-muted)] sm:mt-12 sm:flex-row">
           <span>© {new Date().getFullYear()} Online Dershanem. Tüm hakları saklıdır.</span>
           <span className="flex items-center gap-4">
             <Link href="/gizlilik/" className="hover:text-[var(--site-ink)]">

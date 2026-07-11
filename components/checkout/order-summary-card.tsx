@@ -147,8 +147,8 @@ export function OrderSummaryCard({
           />
           <span>
             <strong className="text-[var(--site-ink)]">PayTR</strong> ile 256-bit
-            SSL güvenli ödeme. Kart bilgileriniz sitemizde saklanmaz; 1/3/6/9
-            taksit seçenekleri sunulur.
+            SSL güvenli ödeme. Kart bilgileriniz sitemizde saklanmaz; kullanılabilir
+            taksit seçenekleri kartınıza ve bankanıza göre ödeme ekranında gösterilir.
           </span>
         </div>
 
