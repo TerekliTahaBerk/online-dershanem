@@ -5,7 +5,6 @@ import { Hero } from "@/components/marketing/hero";
 import { SocialProof } from "@/components/marketing/social-proof";
 import { ValueProps } from "@/components/marketing/value-props";
 import { ProductTour } from "@/components/marketing/product-tour";
-import { TrustMetrics } from "@/components/marketing/trust-metrics";
 import { ResultsSection } from "@/components/marketing/results-section";
 import { TestimonialsCarousel } from "@/components/marketing/testimonials-carousel";
 import { First30Days } from "@/components/marketing/first-30-days";
@@ -29,6 +28,14 @@ export const metadata: Metadata = {
     description:
       "LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, öğretmen geri bildirimi ve ders sonrası yönlendirme.",
     url: `${siteUrl}/`,
+    images: [
+      {
+        url: `${siteUrl}/og.png`,
+        width: 1200,
+        height: 630,
+        alt: "Matematikte kaybolma. Yolun net olsun.",
+      },
+    ],
   },
 };
 
@@ -58,13 +65,12 @@ export default function HomePage() {
       <main>
         <Hero />
         <SocialProof />
-        <TrustMetrics />
+        <ValueProps />
+        <ProductTour />
         <PricingPreview />
         <First30Days />
         <TestimonialsCarousel />
         <ResultsSection />
-        <ValueProps />
-        <ProductTour />
         <FaqAccordion items={homeFaqs} />
         <FooterCta
           title="Matematik yolunu birlikte netleştirelim."

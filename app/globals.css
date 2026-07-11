@@ -82,7 +82,7 @@
 
   --site-ink: #14140F;             /* neredeyse siyah başlık (od-ink) */
   --site-body: #5A5A4F;            /* sakin gövde metni (od-ink-soft) */
-  --site-muted: #8A8A80;           /* soluk metin */
+  --site-muted: #68685F;           /* WCAG AA uyumlu ikincil metin */
   --site-bg: #FFFFFF;              /* beyaz zemin */
   --site-bg-warm: #FBFAF5;
   --site-card: #FFFFFF;            /* kart zemini */
@@ -256,6 +256,19 @@ a {
 }
 .site-btn-sm { padding: 10px 18px; font-size: 14px; }
 .site-btn-lg { padding: 16px 32px; font-size: 16px; }
+.site-btn-hero {
+  background: #f4d86a;
+  color: #26341f;
+  border-color: #f4d86a;
+  box-shadow: 0 18px 38px -18px rgba(0, 0, 0, 0.65);
+}
+.site-btn-hero:hover { background: #ffe88a; border-color: #ffe88a; transform: translateY(-1px); }
+.site-btn-hero-ghost {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border-color: rgba(255,255,255,.22);
+}
+.site-btn-hero-ghost:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.35); }
 
 /* Yatay carousel — scrollbar gizle */
 .site-scrollx {

@@ -104,7 +104,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
                       <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
                         <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
                       </span>
-                      <span className="font-display text-[26px] text-[var(--site-line)]">0{i + 1}</span>
+                      <span className="font-display text-[26px] text-[var(--site-muted)]">0{i + 1}</span>
                     </div>
                     <h3 className="mt-5 text-[16px] font-bold text-[var(--site-ink)]">{s.title}</h3>
                     <p className="mt-2 text-[14px] leading-6 text-[var(--site-body)]">{s.body}</p>

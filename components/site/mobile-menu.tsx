@@ -56,7 +56,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       document.body.style.overflow = previousOverflow;
       window.clearTimeout(focusTimer);
       window.removeEventListener("keydown", onKeyDown);
-      trigger?.focus();
+      window.requestAnimationFrame(() => trigger?.focus());
     };
   }, [open, onClose, triggerRef]);
 
@@ -68,7 +68,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       id="site-mobile-menu"
       role="dialog"
       aria-modal="true"
-      aria-label="Menü"
+      aria-label="Mobil menü"
       className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] md:hidden"
     >
       <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--site-line)] px-[clamp(20px,6vw,28px)]">

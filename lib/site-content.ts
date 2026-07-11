@@ -17,7 +17,7 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 
 export const primaryNav = [
   { label: "Ders Paketleri", href: "/ders-paketleri/" },
-  { label: "Kamplar", href: "/kamplar/" },
+  { label: "Nasıl Çalışır?", href: "/#nasil-calisir" },
   { label: "Hakkımızda", href: "/hakkimizda/" },
 ] as const;
 

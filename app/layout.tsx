@@ -63,10 +63,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/logo.png",
+        url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Online Dershanem · Online Matematik Dershanesi"
+        alt: "Matematikte kaybolma. Yolun net olsun."
       }
     ]
   },
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Online Matematik Dershanesi | Online Dershanem",
     description: "En fazla 4 öğrencilik canlı matematik dersleri ve ders sonrası belirli bir çalışma yönü.",
-    images: ["/logo.png"]
+    images: ["/og.png"]
   },
   icons: {
     icon: [

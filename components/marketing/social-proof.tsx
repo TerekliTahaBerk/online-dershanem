@@ -1,22 +1,28 @@
-import { socialProof } from "@/lib/site-content";
+import { CheckCircle2, CreditCard, ShieldCheck, Users } from "lucide-react";
 
-/**
- * Sosyal kanıt barı — gerçek olmayan okul/başarı iddiası yerine ürün kapsamını
- * ve güven unsurlarını açık badge'lerle gösterir.
- */
+const proofItems = [
+  { icon: Users, strong: "En fazla 4 kişi", detail: "her öğrenci görünür" },
+  { icon: CheckCircle2, strong: "Ders sonrası takip", detail: "sıradaki adım net" },
+  { icon: ShieldCheck, strong: "Taahhütsüz", detail: "aylık paket düzeni" },
+  { icon: CreditCard, strong: "Güvenli ödeme", detail: "PayTR altyapısı" },
+];
+
 export function SocialProof() {
   return (
-    <section className="bg-white">
-      <div className="site-container py-10 sm:py-12">
-        <div className="rounded-[24px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-6 py-8 sm:px-10">
-          <p className="text-center text-[14px] leading-6 text-[var(--site-body)]">{socialProof.text}</p>
-          <ul className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
-            {socialProof.badges.map((badge) => (
-              <li key={badge} className="rounded-full border border-[var(--site-line)] bg-white px-4 py-2 text-[13px] font-semibold text-[var(--site-body)]">
-                {badge}
-              </li>
-            ))}
-          </ul>
+    <section className="bg-white" aria-label="Online Dershanem avantajları">
+      <div className="site-container py-7 sm:py-9">
+        <div className="grid gap-3 rounded-[24px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-3 sm:grid-cols-2 lg:grid-cols-4">
+          {proofItems.map(({ icon: Icon, strong, detail }) => (
+            <div key={strong} className="flex items-center gap-3 rounded-[18px] bg-white px-4 py-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                <Icon size={19} strokeWidth={1.9} aria-hidden="true" />
+              </span>
+              <span>
+                <strong className="block text-[13.5px] text-[var(--site-ink)]">{strong}</strong>
+                <span className="mt-0.5 block text-[11.5px] text-[var(--site-muted)]">{detail}</span>
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </section>
