@@ -69,7 +69,7 @@ export default function CampsPage() {
         ])}
       />
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         {/* Başlık */}
         <section className="bg-white pt-16 sm:pt-20">
           <div className="site-container text-center">

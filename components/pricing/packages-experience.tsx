@@ -1,6 +1,5 @@
 import { Check, CreditCard, PhoneCall, Users, Video } from "lucide-react";
 import { PricingCard } from "@/components/pricing/pricing-card";
-import { PricingSelector } from "@/components/pricing/pricing-selector";
 import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { FooterCta } from "@/components/marketing/footer-cta";
@@ -30,9 +29,9 @@ type PackagesExperienceProps = {
 export function PackagesExperience({ title, subtitle, primarySource }: PackagesExperienceProps) {
   return (
     <>
-      <main>
+      <main id="main-content" tabIndex={-1}>
         {/* Başlık */}
-        <section className="bg-[#fafafa] pt-12 sm:pt-16">
+        <section className="bg-white pt-14 sm:pt-20">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">Ders Paketleri</p>
             <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.65rem,5.5vw,5rem)] leading-[.98] text-[var(--site-ink)]">
@@ -43,12 +42,8 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
         </section>
 
         {/* Seçici + kart */}
-        <section className="bg-[#fafafa]">
+        <section className="bg-white">
           <div className="site-container pb-16 pt-9 sm:pb-24 sm:pt-12">
-            <div className="mb-8 flex justify-center text-center sm:mb-10">
-              <PricingSelector />
-            </div>
-
             <div className="grid items-start gap-12 lg:grid-cols-[.78fr_1.22fr] lg:gap-20">
               <div>
                 <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">Neler dahil?</h2>
@@ -67,7 +62,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
                 </ul>
               </div>
 
-              <div className="order-first grid gap-5 md:grid-cols-2 lg:order-none lg:sticky lg:top-24">
+              <div className="order-first grid gap-5 md:grid-cols-2 lg:order-none">
                 {lessonPackages.map((pkg) => (
                   <PricingCard
                     key={`${pkg.category}-${pkg.subject}`}

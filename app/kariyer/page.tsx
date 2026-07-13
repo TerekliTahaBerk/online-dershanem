@@ -45,7 +45,7 @@ export default function CareersPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         {/* Hero */}
         <section className="site-container pb-8 pt-16 text-center sm:pt-24">
           <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] text-[var(--brand-orange-ink)]">

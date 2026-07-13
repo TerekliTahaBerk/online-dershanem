@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { primaryNav, navCta, navLogin } from "@/lib/site-content";
+import { primaryNav, navCta } from "@/lib/site-content";
 import { MobileMenu } from "@/components/site/mobile-menu";
 
 /**
@@ -47,11 +47,11 @@ export function SiteHeader() {
         className="sticky top-0 z-50 w-full border-b border-[var(--site-line)] bg-white/85 backdrop-blur-xl"
       >
         <div className="site-container">
-          <div className="flex h-[68px] items-center justify-between gap-4 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+          <div className="flex h-[70px] items-center justify-between gap-5">
             {/* Sol — masaüstü menü */}
             <nav
               aria-label="Ana menü"
-              className="hidden items-center gap-1 justify-self-start lg:flex"
+              className="hidden items-center gap-1 lg:order-2 lg:flex"
             >
               {primaryNav.map((link) => (
                 <Link
@@ -73,7 +73,7 @@ export function SiteHeader() {
             <Link
               href="/"
               aria-label="Online Dershanem ana sayfa"
-              className="flex shrink-0 items-center justify-self-center"
+              className="flex shrink-0 items-center lg:order-1"
             >
               <Image
                 src="/onlinedershanem_.png"
@@ -87,14 +87,7 @@ export function SiteHeader() {
             </Link>
 
             {/* Sağ — aksiyonlar / hamburger */}
-            <div className="flex items-center gap-2 justify-self-end sm:gap-3">
-              <Link
-                href={navLogin.href}
-                className="hidden text-[14.5px] font-medium text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] lg:inline-flex"
-              >
-                {navLogin.label}
-              </Link>
-
+            <div className="ml-auto flex items-center gap-2 lg:order-3 sm:gap-3">
               <Link
                 href={navCta.href}
                 className="site-btn site-btn-primary site-btn-sm !hidden lg:!inline-flex"
@@ -124,7 +117,6 @@ export function SiteHeader() {
         isActive={isActive}
         triggerRef={menuButtonRef}
       />
-      <span id="main-content" tabIndex={-1} className="sr-only" />
     </>
   );
 }

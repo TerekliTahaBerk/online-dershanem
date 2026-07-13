@@ -29,7 +29,7 @@ export default function ContactPage() {
         ])}
       />
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <PageHero
           eyebrow="İletişim"
           align="left"

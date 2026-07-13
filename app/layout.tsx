@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
-import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { seoKeywords, siteUrl } from "@/lib/content";
 
@@ -19,44 +18,30 @@ const themeInitScript = `(()=>{try{document.documentElement.setAttribute('data-t
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-display",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#FBFAF5",
+  themeColor: "#FFFFFF",
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   manifest: "/manifest.webmanifest",
   title: {
-    default: "Online Matematik Dershanesi | Online Dershanem",
+    default: "Canlı Online Matematik Dersi | Online Dershanem",
     template: "%s | Online Dershanem"
   },
   description:
-    "En fazla 4 öğrencilik canlı matematik dersleri, ders içi soru-cevap, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
+    "LGS ve YKS için en fazla 4 öğrencilik, ayda 4 × 60 dakika canlı matematik dersi; ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"
   },
   openGraph: {
-    title: "Online Matematik Dershanesi | Online Dershanem",
+    title: "Matematiği Verimli ve Erişilebilir Öğrenmenin Yolu",
     description:
-      "En fazla 4 öğrencilik canlı matematik dersleri, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
+      "LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, ders sonrası net çalışma yönü ve veliye sade gelişim özeti.",
     url: `${siteUrl}/`,
     siteName: "Online Dershanem",
     locale: "tr_TR",
@@ -66,14 +51,14 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Matematikte kaybolma. Yolun net olsun."
+        alt: "Matematiği verimli ve erişilebilir öğrenmenin yolu — Online Dershanem"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Online Matematik Dershanesi | Online Dershanem",
-    description: "En fazla 4 öğrencilik canlı matematik dersleri ve ders sonrası belirli bir çalışma yönü.",
+    title: "Matematiği Verimli ve Erişilebilir Öğrenmenin Yolu",
+    description: "En fazla 4 öğrencilik canlı matematik dersleri ve ders sonrası net çalışma yönü.",
     images: ["/og.png"]
   },
   icons: {
@@ -97,7 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="tr"
       data-theme="light"
-      className={`${GeistSans.variable} ${fraunces.variable} ${inter.variable}`}
+      className={GeistSans.variable}
       suppressHydrationWarning
     >
       <head>

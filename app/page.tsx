@@ -2,10 +2,8 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { Hero } from "@/components/marketing/hero";
 import { SocialProof } from "@/components/marketing/social-proof";
-import { ValueProps } from "@/components/marketing/value-props";
 import { ProductTour } from "@/components/marketing/product-tour";
 import { ResultsSection } from "@/components/marketing/results-section";
-import { TestimonialsCarousel } from "@/components/marketing/testimonials-carousel";
 import { First30Days } from "@/components/marketing/first-30-days";
 import { PricingPreview } from "@/components/marketing/pricing-preview";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
@@ -14,7 +12,6 @@ import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { productJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { homeFaqs } from "@/lib/site-content";
 import { lessonPackages } from "@/lib/pricing-content";
-import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
 import { parsePriceToCents } from "@/lib/content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
@@ -48,16 +45,14 @@ export default function HomePage() {
         ]}
       />
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <Hero />
         <SocialProof />
-        <ValueProps />
         <ProductTour />
-        <PricingPreview />
         <First30Days />
-        <TestimonialsCarousel />
+        <PricingPreview />
         <ResultsSection />
-        <FaqAccordion items={homeFaqs} />
+        <FaqAccordion items={homeFaqs} showAllLink />
         <FooterCta
           title="Matematik yolunu birlikte netleştirelim."
           subtitle="Ücretsiz ön görüşmede öğrencinin seviyesini, hedefini ve uygun küçük grup ihtimalini konuşalım."
@@ -66,10 +61,6 @@ export default function HomePage() {
         />
       </main>
       <SiteFooter />
-      <StickyCheckoutBar
-        packages={lessonPackages}
-        note="aylık sabit fiyat"
-      />
     </div>
   );
 }

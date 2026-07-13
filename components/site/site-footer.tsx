@@ -38,7 +38,7 @@ const socials = [
  */
 export function SiteFooter() {
   return (
-    <footer className="site-scope border-t border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+    <footer id="site-footer" className="site-scope border-t border-[var(--site-line)] bg-[var(--site-bg-warm)]">
       <div className="site-container py-12 sm:py-16 lg:py-20">
         <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-x-12">
           {/* Marka */}

@@ -22,6 +22,10 @@ function toLessonPackage(source: (typeof sources)[number]) {
     tagline: source.tagline,
     audience: source.audience,
     quota: source.quota,
+    lessonDurationMinutes: source.lessonDurationMinutes,
+    lessonsPerMonth: source.lessonsPerMonth,
+    billingPeriod: source.billingPeriod,
+    commitment: source.commitment,
     features: [...source.features] as string[],
   };
 }
@@ -31,7 +35,7 @@ export const lessonPackage = lessonPackages[0];
 
 /** "Neler dahil?" listesi — public ürün gerçekliğini fiyat kaynağından ayırmadan anlatır. */
 export const includedFeatures: string[] = [
-  "Ayda 4 × 60 dakika canlı matematik dersi",
+  `Ayda ${lessonPackage.lessonsPerMonth} × ${lessonPackage.lessonDurationMinutes} dakika canlı matematik dersi`,
   "En fazla 4 öğrencilik grup",
   "Derste soru-cevap ve birlikte çözüm",
   "Ders sonrası çalışma yönü",
@@ -46,5 +50,5 @@ export const cardHighlights: string[] = [
   "Ayda 4 × 60 dakika canlı ders",
   "En fazla 4 öğrencilik grup",
   "Ders sonrası çalışma yönü",
-  "Aylık paket · taahhüt yok",
+  `${lessonPackage.billingPeriod} · ${lessonPackage.commitment.toLocaleLowerCase("tr-TR")}`,
 ];

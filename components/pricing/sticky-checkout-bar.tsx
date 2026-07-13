@@ -31,17 +31,27 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, package
         : [];
 
   useEffect(() => {
+    let footerVisible = false;
     const onScroll = () => {
       const doc = document.documentElement;
       const nearBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 160;
-      setVisible(window.scrollY > 520 && !nearBottom);
+      setVisible(window.scrollY > 520 && !nearBottom && !footerVisible);
     };
+    const footer = document.getElementById("site-footer");
+    const observer = footer
+      ? new IntersectionObserver(([entry]) => {
+          footerVisible = entry.isIntersecting;
+          onScroll();
+        }, { rootMargin: "120px 0px" })
+      : null;
+    if (footer && observer) observer.observe(footer);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      observer?.disconnect();
     };
   }, []);
 
@@ -51,7 +61,7 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, package
   const hasMultiple = items.length > 1;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40">
+    <div className="fixed inset-x-0 bottom-0 z-40" role="region" aria-label="Hızlı paket satın alma">
       <div className="border-t border-[var(--site-line)] bg-white/95 shadow-[0_-12px_35px_-28px_rgba(20,20,15,.4)] backdrop-blur-md">
         <div className="site-container flex items-center gap-3 py-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:gap-5 sm:py-4">
           <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[15px] font-bold text-[var(--brand-orange-ink)] sm:flex">

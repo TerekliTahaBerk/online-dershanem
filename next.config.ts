@@ -63,9 +63,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: "/paket", destination: "/ders-paketleri", permanent: true },
-      { source: "/paketler", destination: "/ders-paketleri", permanent: true },
-      { source: "/matematik-ders-paketi", destination: "/ders-paketleri", permanent: true },
       { source: "/tyt", destination: "/yks", permanent: true },
       { source: "/ayt", destination: "/yks", permanent: true },
       { source: "/odk", destination: "/", permanent: true },

@@ -16,7 +16,7 @@ export default function SepetPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main className="min-h-screen bg-[var(--site-bg-warm)]">
+      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)]">
         <CartPageClient />
       </main>
       <SiteFooter />

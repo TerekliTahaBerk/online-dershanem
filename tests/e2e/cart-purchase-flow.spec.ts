@@ -21,7 +21,7 @@ test.describe("Sepet satın alma akışı @smoke", () => {
   test("Satın Al → ürün sepete eklenir → /sepet özetinde görünür", async ({
     page,
   }) => {
-    await page.goto("/matematik-ders-paketi/", {
+    await page.goto("/ders-paketleri/", {
       waitUntil: "domcontentloaded",
     });
 
@@ -48,4 +48,20 @@ test.describe("Sepet satın alma akışı @smoke", () => {
       page.getByRole("button", { name: /güvenli ödemeye geç/i }),
     ).toBeVisible();
   });
+
+  for (const category of ["LGS", "YKS"] as const) {
+    test(`${category} CTA doğru katalog kimliğini sepete yazar`, async ({ page }) => {
+      await page.goto("/ders-paketleri/", { waitUntil: "domcontentloaded" });
+      const cta = page.locator(`a[data-package-name^="${category}"]`).first();
+      await cta.waitFor({ state: "visible" });
+      await page.waitForFunction((name) => {
+        const a = Array.from(document.querySelectorAll<HTMLAnchorElement>("a[data-package-name]")).find((item) => item.dataset.packageName?.startsWith(name));
+        return !!a && Object.keys(a).some((key) => key.startsWith("__reactProps$"));
+      }, category);
+      await cta.click();
+      await page.waitForURL(/\/sepet/);
+      const item = await page.evaluate(() => JSON.parse(localStorage.getItem("od_cart_v1") || "[]")[0]);
+      expect(item).toMatchObject({ category, subject: "Matematik Ders Paketi", priceCents: 300000, qty: 1 });
+    });
+  }
 });

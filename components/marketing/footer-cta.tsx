@@ -1,35 +1,23 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-type FooterCtaProps = {
-  title?: string;
-  subtitle?: string;
-  ctaLabel?: string;
-  ctaHref?: string;
-};
+type Props = { title?: string; subtitle?: string; ctaLabel?: string; ctaHref?: string };
 
-/**
- * Büyük footer öncesi CTA bölümü — referanstaki "Hedefine bir adım daha yaklaş"
- * yapısı: geniş beyaz alan, büyük serif başlık, tek yeşil buton.
- */
 export function FooterCta({
-  title = "Hedefine bir adım daha yaklaş.",
-  subtitle = "Bugün başla, ilk adımı at. Gerisini birlikte planlayalım.",
-  ctaLabel = "Hemen başla",
-  ctaHref = "/ders-paketleri/",
-}: FooterCtaProps) {
+  title = "Öğrencinin matematik yolunu birlikte netleştirelim.",
+  subtitle = "Sınıfını, hedefini ve uygun küçük grup ihtimalini ücretsiz ön görüşmede konuşalım.",
+  ctaLabel = "Ön görüşme talebi",
+  ctaHref = "/iletisim/",
+}: Props) {
   return (
     <section className="bg-white">
-      <div className="site-container py-28 text-center sm:py-44">
-        <h2 className="mx-auto max-w-5xl font-display text-[clamp(3rem,7vw,6.2rem)] leading-[.96] text-[var(--site-ink)]">
-          {title}
-        </h2>
-        <p className="mx-auto mt-8 max-w-2xl text-[16.5px] leading-7 text-[var(--site-body)] sm:text-[19px]">{subtitle}</p>
-        <div className="mt-11">
-          <Link href={ctaHref} className="site-btn site-btn-primary site-btn-lg px-10 py-5 text-[17px]">
-            {ctaLabel}
-            <ArrowUpRight size={18} aria-hidden="true" />
-          </Link>
+      <div className="site-container py-20 text-center sm:py-28">
+        <p className="site-kicker">Ücretsiz ön görüşme</p>
+        <h2 className="mx-auto mt-4 max-w-4xl text-[clamp(2.5rem,6vw,4.25rem)] font-semibold leading-[1.02] tracking-[-.05em] text-[var(--site-ink)]">{title}</h2>
+        <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-8 text-[var(--site-body)]">{subtitle}</p>
+        <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Link href={ctaHref} className="site-btn site-btn-primary site-btn-lg">{ctaLabel}<ArrowRight size={17} aria-hidden="true" /></Link>
+          <Link href="/ders-paketleri/" className="text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">Paketleri incele</Link>
         </div>
       </div>
     </section>

@@ -35,7 +35,7 @@ export default function MissionPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <PageHero
           eyebrow="Misyonumuz"
           align="left"

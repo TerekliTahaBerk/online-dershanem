@@ -27,7 +27,7 @@ export default async function OdkCheckoutResultPage({
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main className="min-h-screen bg-[var(--site-bg-warm)] py-16">
+      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)] py-16">
         <div className="px-4">
           {isSuccess ? (
             <CheckoutResultCard

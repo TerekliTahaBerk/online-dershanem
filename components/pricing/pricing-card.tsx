@@ -5,65 +5,38 @@ export type PricingCardData = {
   name: string;
   category: string;
   subject: string;
-  priceLabel: string; // ör. "₺3.000/ay"
-  oldPriceLabel?: string; // ör. "₺5.000/ay"
-  discountLabel?: string; // ör. "İNDİRİMLİ"
+  priceLabel: string;
+  oldPriceLabel?: string;
+  discountLabel?: string;
   highlights: string[];
   note?: string;
   ctaLabel?: string;
 };
 
-/**
- * Öne çıkan yeşil gradient fiyat kartı (referanstaki featured plan kartı).
- * Satın alma CTA'sı mevcut checkout akışını (cart → /sepet → PayTR) korur.
- */
-export function PricingCard({
-  data,
-  source,
-}: {
-  data: PricingCardData;
-  source: string;
-}) {
+export function PricingCard({ data, source }: { data: PricingCardData; source: string }) {
   const [price, per] = splitPrice(data.priceLabel);
   return (
-    <div
-      className="relative overflow-hidden rounded-[32px] p-7 text-white shadow-[0_30px_60px_-28px_rgba(44,58,32,0.55)] sm:p-9"
-      style={{
-        background:
-          "linear-gradient(160deg, var(--brand-orange-bright) 0%, var(--brand-orange) 55%, var(--brand-orange-strong) 100%)",
-      }}
-    >
-      {data.discountLabel ? (
-        <span className="absolute right-6 top-6 rounded-full bg-white/20 px-3 py-1 text-[12px] font-semibold backdrop-blur">
-          {data.discountLabel}
-        </span>
-      ) : null}
-
-      <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-white/75">{data.category} paketi</div>
-      <h3 className="mt-2 max-w-[12ch] font-display text-[clamp(1.75rem,3.4vw,2.35rem)] leading-[1.04] text-white">
-        {data.name}
-      </h3>
-
-      <div className="mt-5 flex items-end gap-3">
-        <span className="font-display text-[clamp(2.6rem,6vw,3.4rem)] leading-none">{price}</span>
-        {per ? <span className="mb-2 text-[16px] text-white/85">/ {per}</span> : null}
+    <article className="flex h-full flex-col rounded-[24px] border border-[var(--site-line)] bg-white p-7 sm:p-9">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">{data.category} paketi</span>
+        {data.discountLabel ? <span className="rounded-full bg-[var(--brand-olive-soft)] px-3 py-1 text-[10px] font-bold text-[var(--brand-olive)]">{data.discountLabel}</span> : null}
       </div>
-      <div className="mt-2 flex items-center gap-2.5">
-        {data.oldPriceLabel ? (
-          <span className="text-[16px] text-white/70 line-through">{data.oldPriceLabel}</span>
-        ) : null}
-        <span className="rounded-full bg-white/20 px-2.5 py-1 text-[12.5px] font-medium">Aylık sabit fiyat</span>
+      <h3 className="mt-5 max-w-[16ch] text-[clamp(1.7rem,3vw,2.25rem)] font-semibold leading-[1.04] tracking-[-.035em] text-[var(--site-ink)]">{data.name}</h3>
+      <div className="mt-7 flex items-end gap-2">
+        <span className="text-[clamp(2.7rem,5vw,3.7rem)] font-semibold leading-none tracking-[-.05em] text-[var(--site-ink)]">{price}</span>
+        {per ? <span className="mb-1.5 text-[15px] text-[var(--site-muted)]">/ {per}</span> : null}
       </div>
-
-      <ul className="mt-7 flex flex-col gap-3">
-        {data.highlights.map((h) => (
-          <li key={h} className="flex items-start gap-2.5 text-[15px] text-white/95">
-            <Check size={18} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden="true" />
-            {h}
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-[13px]">
+        {data.oldPriceLabel ? <span className="text-[var(--site-muted)] line-through">{data.oldPriceLabel}</span> : null}
+        <span className="font-medium text-[var(--site-body)]">Aylık · taahhüt yok</span>
+      </div>
+      <ul className="mt-8 flex-1 space-y-3 border-t border-[var(--site-line)] pt-7">
+        {data.highlights.map((item) => (
+          <li key={item} className="flex items-start gap-3 text-[14px] leading-6 text-[var(--site-body)]">
+            <Check size={16} className="mt-1 shrink-0 text-[var(--brand-olive)]" aria-hidden="true" />{item}
           </li>
         ))}
       </ul>
-
       <PurchaseFunnelTrigger
         source={source}
         packageName={data.name}
@@ -71,21 +44,16 @@ export function PricingCard({
         subject={data.subject}
         priceLabel={data.priceLabel}
         paymentLink=""
-        className="mt-8 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-[16px] font-bold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-tint)]"
+        className="site-btn site-btn-primary mt-8 w-full"
       >
         {data.ctaLabel ?? `${data.category} Paketini Satın Al`}
       </PurchaseFunnelTrigger>
-
-      <p className="mt-3.5 flex items-center justify-center gap-1.5 text-center text-[12.5px] text-white/85">
-        <Lock size={13} aria-hidden="true" />
-        {data.note ?? "PayTR güvenli ödeme · Kart bilgisi paylaşılmaz"}
-      </p>
-    </div>
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11.5px] text-[var(--site-muted)]"><Lock size={12} aria-hidden="true" />{data.note ?? "PayTR güvenli ödeme · Hesap gerekmez"}</p>
+    </article>
   );
 }
 
 function splitPrice(label: string): [string, string | null] {
   const idx = label.indexOf("/");
-  if (idx === -1) return [label.trim(), null];
-  return [label.slice(0, idx).trim(), label.slice(idx + 1).trim()];
+  return idx === -1 ? [label.trim(), null] : [label.slice(0, idx).trim(), label.slice(idx + 1).trim()];
 }

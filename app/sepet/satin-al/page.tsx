@@ -22,7 +22,7 @@ export default async function CartCheckoutPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main className="min-h-screen bg-[var(--site-bg-warm)] py-10">
+      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)] py-10">
         <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
           <nav className="text-[12px] text-[var(--site-body)] mb-4 uppercase tracking-wider">
             <Link href="/sepet" className="hover:text-[var(--site-ink)]">

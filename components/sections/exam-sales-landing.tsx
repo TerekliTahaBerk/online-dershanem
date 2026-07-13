@@ -36,7 +36,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         {/* HERO */}
         <section className="border-b border-[var(--site-line)] bg-[var(--site-bg-warm)]">
           <div className="site-container grid gap-10 py-16 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">

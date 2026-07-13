@@ -46,7 +46,7 @@ export default function SssPage() {
         ]}
       />
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <PageHero
           eyebrow="Yardım Merkezi"
           title={

@@ -25,7 +25,7 @@ export default function OnlineDershanePage() {
         ])}
       />
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <PageHero
           eyebrow="Online Matematik Dershanesi"
           align="left"

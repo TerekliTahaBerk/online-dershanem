@@ -10,10 +10,13 @@ test("API rate limit headers public route'larda eklenmiyor", async ({ request })
   expect(res.status()).toBe(200);
 });
 
-test("/api/health (varsa) 200 döner", async ({ request }) => {
+test("/api/health çalışma ortamına uygun durum döner", async ({ request }) => {
   const res = await request.get("/api/health");
-  // 200 (mevcutsa) veya 404 (yoksa) — 5xx kabul edilmez
-  expect([200, 404]).toContain(res.status());
+  // DB yapılandırılmışsa 200; lokal E2E ortamında DB yoksa endpoint sözleşmesi gereği 503.
+  expect([200, 404, 503]).toContain(res.status());
+  if (res.status() === 503) {
+    expect(await res.json()).toMatchObject({ status: "down", db: { ok: false } });
+  }
 });
 
 test("kaldırılan panel API'si 404 döner", async ({ request }) => {

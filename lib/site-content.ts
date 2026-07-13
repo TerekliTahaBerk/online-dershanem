@@ -16,10 +16,9 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 /* ---------------- Navigasyon ---------------- */
 
 export const primaryNav = [
-  { label: "Ders Paketleri", href: "/ders-paketleri/" },
-  { label: "Kamplar", href: "/kamplar/" },
   { label: "Nasıl Çalışır?", href: "/#nasil-calisir" },
-  { label: "Hakkımızda", href: "/hakkimizda/" },
+  { label: "Paketler", href: "/#paketler" },
+  { label: "SSS", href: "/#sss" },
 ] as const;
 
 /** Sağ üst birincil CTA — lead / satış odaklı (self-register yok). */
@@ -29,17 +28,12 @@ export const navLogin = { label: "Öğrenci desteği", href: "/giris/" } as cons
 /* ---------------- Hero ---------------- */
 
 export const hero = {
-  pill: "LGS ve YKS için en fazla 4 kişilik canlı matematik",
-  title: ["Matematikte eksik nerede,", "çalışma oradan başlar."],
+  pill: "LGS ve YKS için canlı matematik",
+  title: ["Matematiği verimli ve erişilebilir", "öğrenmenin yolu."],
   subtitle:
     "LGS ve YKS öğrencileri için küçük grup canlı ders, öğretmen geri bildirimi ve ders sonunda net çalışma yönü.",
   primary: { label: "Ders Paketlerini İncele", href: "/ders-paketleri/" },
   secondary: { label: "Ücretsiz görüşme", href: "/iletisim/" },
-  floatingCards: [
-    { title: "En fazla 4 öğrenci", sub: "Öğretmen her çözümü görebilir" },
-    { title: "İki paket", sub: "LGS · YKS" },
-    { title: "Ders sonrası yön", sub: "Ödev, tekrar ve sıradaki adım" },
-  ],
 } as const;
 
 /* ---------------- Sosyal kanıt (üniversite barı) ---------------- */
@@ -134,6 +128,10 @@ export type Faq = { q: string; a: string };
 
 export const homeFaqs: Faq[] = [
   {
+    q: "Dersler kaç dakika ve ayda kaç kez yapılıyor?",
+    a: "Her canlı matematik dersi 60 dakikadır. Aylık paket haftada bir, ayda toplam dört canlı ders içerir. Ders günü ve saati uygun küçük grubun programına göre belirlenir.",
+  },
+  {
     q: "Dersler kaç kişilik?",
     a: "Canlı matematik dersleri en fazla 4 öğrencilik küçük gruplarda yapılır.",
   },
@@ -157,26 +155,18 @@ export const homeFaqs: Faq[] = [
     q: "Çocuğum matematikte çok gerideyse uygun mu?",
     a: "Ön görüşmede seviyeyi birlikte değerlendiririz. Uygun küçük grup varsa ders, öğrencinin ihtiyaç duyduğu noktadan planlanır.",
   },
-  {
-    q: "LGS ve YKS için uygun mu?",
-    a: "Evet. İki paket vardır: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. Ders içeriği ve grup düzeni öğrencinin sınav hedefine göre belirlenir.",
-  },
-  {
-    q: "İstediğim zaman iptal edebilir miyim?",
-    a: "Paket aylık ilerler ve taahhüt içermez. Bir sonraki ay devam etmemeyi tercih edebilirsiniz.",
-  },
-];
+].slice(0, 6);
 
 /* ---------------- Footer ---------------- */
 
 export const footerColumns = [
   {
-    title: "Platform",
+    title: "Ürün",
     links: [
       { label: "Ders Paketleri", href: "/ders-paketleri/" },
-      { label: "Kamplar", href: "/kamplar/" },
       { label: "LGS Matematik", href: "/lgs/" },
       { label: "YKS Matematik", href: "/yks/" },
+      { label: "Kamplar (ön kayıt)", href: "/kamplar/" },
     ],
   },
   {
@@ -185,7 +175,6 @@ export const footerColumns = [
       { label: "Hakkımızda", href: "/hakkimizda/" },
       { label: "Misyonumuz", href: "/misyonumuz/" },
       { label: "Blog", href: "/blog/" },
-      { label: "Kariyer", href: "/kariyer/" },
       { label: "İletişim", href: "/iletisim/" },
     ],
   },
@@ -197,7 +186,6 @@ export const footerColumns = [
       { label: "İade Politikası", href: "/iade/" },
       { label: "Gizlilik", href: "/gizlilik/" },
       { label: "KVKK", href: "/kvkk/" },
-      { label: "PayTR Güvenli Ödeme", href: "/ders-paketleri/" },
     ],
   },
 ] as const;

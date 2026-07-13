@@ -88,7 +88,7 @@ export default function BlogPage() {
         ])}
       />
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         {/* Hero */}
         <section className="border-b border-[var(--site-line)] bg-[var(--site-bg-warm)]">
           <div className="site-container py-16 text-center sm:py-20">

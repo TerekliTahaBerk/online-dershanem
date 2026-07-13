@@ -1,42 +1,31 @@
 import Link from "next/link";
-import { Check } from "lucide-react";
-import { first30 } from "@/lib/site-content";
+
+const steps = [
+  ["01", "Ön görüşme", "Öğrencinin sınıfını, hedefini ve matematikte zorlandığı noktayı konuşuruz."],
+  ["02", "Seviye ve hedef", "Uygun tempo ve sınav hedefi için kısa bir değerlendirme yaparız."],
+  ["03", "Küçük gruba yerleşim", "Benzer seviye ve hedefte, en fazla dört öğrencilik grubu planlarız."],
+  ["04", "Canlı ders ve takip", "Ayda dört canlı ders ve ders sonrası çalışma yönü başlar."],
+];
 
 export function First30Days() {
   return (
-    <section id="ilk-30-gun" className="scroll-mt-24 bg-white">
-      <div className="site-container py-24 sm:py-36">
-        <h2 className="mx-auto max-w-5xl text-center font-display text-[clamp(2.8rem,6.2vw,5.8rem)] leading-[.98] text-[var(--site-ink)]">
-          Matematikte <span className="site-hl">ilk 30 günde</span><br />ne değişir?
-        </h2>
-
-        <div className="mt-20 flex items-center gap-3" aria-hidden="true">
-          {first30.timeline.map((label, index) => (
-            <div key={label} className="flex min-w-0 flex-1 items-center gap-3 last:flex-none">
-              <span className={`whitespace-nowrap rounded-full px-5 py-2.5 text-[14px] font-semibold sm:px-7 sm:text-[17px] ${index === 0 ? "bg-[var(--site-ink)] text-white" : "bg-[#f4f4f3] text-[var(--site-muted)]"}`}>{label}</span>
-              {index < first30.timeline.length - 1 ? <span className="h-px flex-1 bg-[var(--site-line)]" /> : null}
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-10 grid overflow-hidden rounded-[36px] border border-[var(--site-line)] bg-white shadow-[0_30px_70px_-54px_rgba(20,20,15,.35)] md:grid-cols-3">
-          {first30.columns.map((column, index) => (
-            <article key={column.title} className={`p-8 sm:p-11 lg:p-14 ${index ? "border-t border-[var(--site-line)] md:border-l md:border-t-0" : ""}`}>
-              <h3 className="text-center text-[20px] font-bold text-[var(--site-ink)] sm:text-[23px]">{column.title}</h3>
-              <ul className="mt-9 space-y-6">
-                {column.items.map((item) => (
-                  <li key={item} className="flex items-start gap-4 text-[15px] leading-7 text-[var(--site-body)] sm:text-[17px]">
-                    <Check size={20} strokeWidth={2.5} className="mt-1 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-16 text-center">
-          <Link href={first30.cta.href} className="site-btn site-btn-primary site-btn-lg px-10 py-5 text-[17px]">{first30.cta.label}</Link>
+    <section id="nasil-calisir" className="scroll-mt-24 bg-[var(--brand-olive-soft)]">
+      <div className="site-container site-section">
+        <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:gap-20">
+          <div>
+            <p className="site-kicker">Nasıl çalışır?</p>
+            <h2 className="mt-4 text-[clamp(2.4rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">Ödemeden ilk derse dört sade adım.</h2>
+            <Link href="/iletisim/" className="site-btn site-btn-primary mt-8">Ücretsiz ön görüşme</Link>
+          </div>
+          <ol className="divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">
+            {steps.map(([number, title, body]) => (
+              <li key={number} className="grid gap-3 py-6 sm:grid-cols-[54px_180px_1fr] sm:items-start sm:py-7">
+                <span className="font-mono text-[12px] text-[var(--brand-olive)]">{number}</span>
+                <h3 className="text-[16px] font-semibold text-[var(--site-ink)]">{title}</h3>
+                <p className="text-[14px] leading-6 text-[var(--site-body)]">{body}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>

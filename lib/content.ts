@@ -30,6 +30,10 @@ export const subjectPackageGroups = [
         audience:
           "LGS matematiğinde çözümünü gösterebilmeye, soru sorabilmeye ve hafta içinde ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
         quota: "En fazla 4 öğrenci",
+        lessonDurationMinutes: 60,
+        lessonsPerMonth: 4,
+        billingPeriod: "Aylık paket",
+        commitment: "Taahhüt yok",
         oldPrice: "₺5.000/ay",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺3.000/ay",
@@ -58,6 +62,10 @@ export const subjectPackageGroups = [
         audience:
           "TYT temelini ve AYT derinliğini birlikte planlamak, deneme analizine göre daha bilinçli ilerlemek isteyen YKS öğrencileri için.",
         quota: "En fazla 4 öğrenci",
+        lessonDurationMinutes: 60,
+        lessonsPerMonth: 4,
+        billingPeriod: "Aylık paket",
+        commitment: "Taahhüt yok",
         oldPrice: "₺5.000/ay",
         discountLabel: "İNDİRİMLİ",
         discountedPrice: "₺3.000/ay",

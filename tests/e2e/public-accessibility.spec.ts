@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const routes = ["/", "/matematik-ders-paketi", "/kamplar", "/misyonumuz", "/iletisim", "/sss", "/sepet"];
+const routes = ["/", "/ders-paketleri", "/lgs", "/yks", "/kamplar", "/iletisim", "/sss", "/sepet"];
 
 for (const route of routes) {
   test(`WCAG A/AA: ${route}`, async ({ page }) => {
@@ -11,6 +11,15 @@ for (const route of routes) {
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze();
     expect(result.violations).toEqual([]);
+  });
+}
+
+for (const width of [320, 390, 768, 1280, 1440]) {
+  test(`homepage reflows without horizontal overflow at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(1);
   });
 }
 

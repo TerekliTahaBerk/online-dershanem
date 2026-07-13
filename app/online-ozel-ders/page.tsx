@@ -25,7 +25,7 @@ export default function OnlineOzelDersPage() {
         ])}
       />
       <SiteHeader />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <PageHero
           eyebrow="Online Matematik Özel Ders"
           align="left"

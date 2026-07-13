@@ -17,7 +17,7 @@ export default function DenemeKulubuPausedPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main className="min-h-[70vh]">
+      <main id="main-content" tabIndex={-1} className="min-h-[70vh]">
         <section className="site-container py-24 text-center sm:py-32">
           <span className="site-eyebrow">Deneme Kulübü</span>
           <h1 className="mx-auto mt-4 max-w-2xl font-display text-[clamp(2.2rem,5vw,3.6rem)] leading-[1.06] tracking-[-0.02em] text-[var(--site-ink)]">
