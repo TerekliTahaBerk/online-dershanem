@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Check, Plus, ArrowUpRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -24,6 +25,7 @@ type ExamSalesLandingData = {
     heading: string;
     rows: Array<{ label: string; value: string }>;
   };
+  resources?: Array<{ label: string; href: string }>;
 };
 
 export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
@@ -156,6 +158,36 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                   ))}
                 </dl>
               </figure>
+            </div>
+          </section>
+        ) : null}
+
+        {data.resources?.length ? (
+          <section className="border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+            <div className="site-container py-14 sm:py-18">
+              <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-start">
+                <div>
+                  <p className="site-kicker">Matematik rehberleri</p>
+                  <h2 className="mt-3 font-display text-[clamp(1.8rem,3.6vw,2.5rem)] leading-tight text-[var(--site-ink)]">
+                    Çalışma planını doğru içerikle destekleyin.
+                  </h2>
+                  <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">
+                    Sınav hedefinize göre hazırlanmış program, soru çözümü ve deneme analizi rehberlerine geçin.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {data.resources.map((resource) => (
+                    <Link
+                      key={resource.href}
+                      href={resource.href}
+                      className="group flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-[var(--site-line)] bg-white p-4 text-[14.5px] font-semibold leading-6 text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+                    >
+                      {resource.label}
+                      <ArrowUpRight size={16} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
         ) : null}

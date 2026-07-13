@@ -7,6 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/ders-paketleri`, changeFrequency: "weekly", priority: 0.95 },
+    { url: `${siteUrl}/matematik`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/kamplar`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/online-dershane`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/online-ozel-ders`, changeFrequency: "weekly", priority: 0.8 },

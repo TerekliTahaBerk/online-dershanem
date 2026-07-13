@@ -164,6 +164,7 @@ export const footerColumns = [
     title: "Ürün",
     links: [
       { label: "Ders Paketleri", href: "/ders-paketleri/" },
+      { label: "Online Matematik", href: "/matematik/" },
       { label: "LGS Matematik", href: "/lgs/" },
       { label: "YKS Matematik", href: "/yks/" },
       { label: "Kamplar (ön kayıt)", href: "/kamplar/" },

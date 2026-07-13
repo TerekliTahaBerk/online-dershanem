@@ -1,17 +1,39 @@
 import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
-import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
+import { breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "LGS Matematik Dersi",
+  title: "LGS Matematik Kursu ve Online Ders",
   description:
-    "LGS matematik için en fazla 4 öğrencilik canlı ders, yeni nesil soru pratiği ve ders sonrası çalışma yönü.",
+    "LGS matematik kursu: en fazla 4 öğrencilik online canlı ders, yeni nesil soru çözümü, çalışma programı ve ders sonrası öğretmen yönlendirmesi.",
   canonical: "/lgs",
   imagePath: "/lgs/opengraph-image",
   imageAlt: "LGS Matematik Dersi — Online Dershanem",
 });
 
 export default function LGSLandingPage() {
+  const lgsFaq = [
+    {
+      q: "LGS öğrencisi için hangi paket var?",
+      a: "LGS öğrencisi için LGS Matematik Ders Paketi var. Öğrenci seviyesi ve hedefi konuşulduktan sonra uygun küçük gruba yerleştirilir."
+    },
+    {
+      q: "Dersler kalabalık sınıf şeklinde mi?",
+      a: "Hayır. Matematik dersleri en fazla 4 öğrencilik küçük grup modelindedir. Bu sayede öğretmen öğrencinin çözümünü derste görebilir."
+    },
+    {
+      q: "Ders kaçırılırsa süreç nasıl ilerliyor?",
+      a: "Ayrı bir telafi dersi yapılmaz. Öğrenci katılamadığında ders kaydı ve ders sonu özeti paylaşılır; işlenen konu ile verilen ödev bu şekilde takip edilir."
+    },
+    {
+      q: "Dersler canlı mı, kayıt mı?",
+      a: "Dersler Google Meet üzerinden canlıdır. Öğrenci soru sorar, çözümünü gösterir; hazır video izlemez."
+    },
+    {
+      q: "Ödeme sonrası süreç nasıl işliyor?",
+      a: "Ödeme sonrası ekibimiz sizinle iletişime geçer, seviye değerlendirmesi yapar ve uygun gruba yerleştirip ilk dersi planlar."
+    }
+  ];
   const courseLd = courseJsonLd({
     name: "LGS Matematik",
     description:
@@ -26,6 +48,7 @@ export default function LGSLandingPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(lgsFaq)) }} />
       <ExamSalesLanding
       data={{
         examKey: "LGS",
@@ -74,28 +97,13 @@ export default function LGSLandingPage() {
             { label: "Sonraki hedef", value: "Çokgenler ve alan problemleri" }
           ]
         },
-        faq: [
-          {
-            q: "LGS öğrencisi için hangi paket var?",
-            a: "LGS öğrencisi için LGS Matematik Ders Paketi var. Öğrenci seviyesi ve hedefi konuşulduktan sonra uygun küçük gruba yerleştirilir."
-          },
-          {
-            q: "Dersler kalabalık sınıf şeklinde mi?",
-            a: "Hayır. Matematik dersleri en fazla 4 öğrencilik küçük grup modelindedir. Bu sayede öğretmen öğrencinin çözümünü derste görebilir."
-          },
-          {
-            q: "Ders kaçırılırsa süreç nasıl ilerliyor?",
-            a: "Ayrı bir telafi dersi yapılmaz. Öğrenci katılamadığında ders kaydı ve ders sonu özeti paylaşılır; işlenen konu ile verilen ödev bu şekilde takip edilir."
-          },
-          {
-            q: "Dersler canlı mı, kayıt mı?",
-            a: "Dersler Google Meet üzerinden canlıdır. Öğrenci soru sorar, çözümünü gösterir; hazır video izlemez."
-          },
-          {
-            q: "Ödeme sonrası süreç nasıl işliyor?",
-            a: "Ödeme sonrası ekibimiz sizinle iletişime geçer, seviye değerlendirmesi yapar ve uygun gruba yerleştirip ilk dersi planlar."
-          }
-        ]
+        resources: [
+          { label: "LGS matematik çalışma programı", href: "/blog/lgs-matematik-calisma-programi/" },
+          { label: "LGS yeni nesil matematik soruları", href: "/blog/lgs-yeni-nesil-matematik-sorulari/" },
+          { label: "Matematik deneme analizi", href: "/blog/matematik-deneme-analizi/" },
+          { label: "Tüm matematik rehberleri", href: "/matematik/" }
+        ],
+        faq: lgsFaq
       }}
     />
     </>

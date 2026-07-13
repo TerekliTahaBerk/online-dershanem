@@ -9,9 +9,9 @@ import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Matematik Dershanesi",
+  title: "Online Dershane | Matematik Dersi",
   description:
-    "En fazla 4 öğrencilik canlı matematik dersi, derste soru-cevap, ders sonrası çalışma yönü ve veliye kısa gelişim notu.",
+    "Online dershane ve matematik dershanesi: en fazla 4 öğrencilik canlı ders, soru çözümü, ders sonrası çalışma yönü ve veliye kısa özet.",
   canonical: "/online-dershane",
 });
 
@@ -95,6 +95,13 @@ export default function OnlineDershanePage() {
               Matematik dersine başlamadan önce
             </h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <Link
+                href="/matematik/"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+              >
+                Online matematik dersi rehberi
+                <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>
               <Link
                 href="/blog/online-dershane-nedir/"
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"

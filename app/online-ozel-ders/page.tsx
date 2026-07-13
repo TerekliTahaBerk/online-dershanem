@@ -11,7 +11,7 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "Online Matematik Özel Ders",
   description:
-    "Online matematik desteği arayanlar için en fazla 4 öğrencilik grup, derste soru-cevap ve ders sonrası çalışma yönü.",
+    "Online matematik özel ders alternatifi: en fazla 4 öğrencilik canlı grup, yoğun soru-cevap, öğretmen geri bildirimi ve ders sonrası çalışma yönü.",
   canonical: "/online-ozel-ders",
 });
 
@@ -94,6 +94,13 @@ export default function OnlineOzelDersPage() {
               İlgili rehber yazılar
             </h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <Link
+                href="/matematik/"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+              >
+                Online matematik dersi rehberi
+                <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>
               <Link
                 href="/blog/online-ozel-ders-mi-dershane-mi/"
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"

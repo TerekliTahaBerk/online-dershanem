@@ -1,17 +1,39 @@
 import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
-import { breadcrumbJsonLd, courseJsonLd } from "@/lib/seo/jsonld";
+import { breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "YKS Matematik Dersi",
+  title: "YKS Matematik Kursu | TYT ve AYT",
   description:
-    "YKS matematik için en fazla 4 öğrencilik canlı ders, TYT-AYT dengesi, deneme analizi ve ders sonrası çalışma yönü.",
+    "YKS matematik kursu: en fazla 4 öğrencilik online canlı ders, TYT-AYT çalışma planı, soru çözümü, deneme analizi ve öğretmen yönlendirmesi.",
   canonical: "/yks",
   imagePath: "/yks/opengraph-image",
   imageAlt: "YKS Matematik Dersi — Online Dershanem",
 });
 
 export default function TYTLandingPage() {
+  const yksFaq = [
+    {
+      q: "TYT ve AYT matematik aynı YKS paketinde mi ilerliyor?",
+      a: "Evet. YKS Matematik Ders Paketi öğrencinin seviyesine göre TYT temelini ve AYT derinliğini aynı canlı ders takibinde planlar."
+    },
+    {
+      q: "Gruplar nasıl oluşturuluyor?",
+      a: "Ön görüşme sonrası seviye ve hedefe göre en fazla 4 öğrencilik matematik gruplarına yerleşim yapılır. Böylece tempo sınıfa değil öğrenci seviyesine göre belirlenir."
+    },
+    {
+      q: "Paket ücretleri aylık mı?",
+      a: "Evet. YKS Matematik Ders Paketi aylık ilerler; güncel fiyat ve kapsam Ders Paketleri sayfasında açıkça gösterilir."
+    },
+    {
+      q: "Deneme analizi nasıl takip ediliyor?",
+      a: "Öğrencinin denemelerinde kaybettiği konu ve soru tipleri birlikte değerlendirilir; haftalık çalışma bu analize göre yönlendirilir."
+    },
+    {
+      q: "Ödeme sonrası ne oluyor?",
+      a: "Ödeme sonrası ekibimiz sizinle iletişime geçer, seviye değerlendirmesi yapar ve uygun gruba yerleştirip ilk dersi planlar."
+    }
+  ];
   const courseLd = courseJsonLd({
     name: "YKS Matematik",
     description:
@@ -26,6 +48,7 @@ export default function TYTLandingPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(yksFaq)) }} />
       <ExamSalesLanding
       data={{
         examKey: "YKS",
@@ -74,28 +97,13 @@ export default function TYTLandingPage() {
             { label: "Sonraki hedef", value: "İntegral girişine hazırlık" }
           ]
         },
-        faq: [
-          {
-            q: "TYT ve AYT matematik aynı YKS paketinde mi ilerliyor?",
-            a: "Evet. YKS Matematik Ders Paketi öğrencinin seviyesine göre TYT temelini ve AYT derinliğini aynı canlı ders takibinde planlar."
-          },
-          {
-            q: "Gruplar nasıl oluşturuluyor?",
-            a: "Ön görüşme sonrası seviye ve hedefe göre en fazla 4 öğrencilik matematik gruplarına yerleşim yapılır. Böylece tempo sınıfa değil öğrenci seviyesine göre belirlenir."
-          },
-          {
-            q: "Paket ücretleri aylık mı?",
-            a: "Evet. YKS Matematik Ders Paketi aylık ilerler; güncel fiyat ve kapsam Ders Paketleri sayfasında açıkça gösterilir."
-          },
-          {
-            q: "Deneme analizi nasıl takip ediliyor?",
-            a: "Öğrencinin denemelerinde kaybettiği konu ve soru tipleri birlikte değerlendirilir; haftalık çalışma bu analize göre yönlendirilir."
-          },
-          {
-            q: "Ödeme sonrası ne oluyor?",
-            a: "Ödeme sonrası ekibimiz sizinle iletişime geçer, seviye değerlendirmesi yapar ve uygun gruba yerleştirip ilk dersi planlar."
-          }
-        ]
+        resources: [
+          { label: "TYT matematik çalışma programı", href: "/blog/tyt-matematik-calisma-programi/" },
+          { label: "AYT matematik çalışma programı", href: "/blog/ayt-matematik-calisma-programi/" },
+          { label: "TYT problem çözme hızı", href: "/blog/tyt-matematik-problem-cozme-hizi/" },
+          { label: "Tüm matematik rehberleri", href: "/matematik/" }
+        ],
+        faq: yksFaq
       }}
     />
     </>

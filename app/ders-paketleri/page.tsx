@@ -8,8 +8,8 @@ import { lessonPackages } from "@/lib/pricing-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Ders Paketleri",
-  description: "LGS ve YKS için en fazla 4 kişilik canlı matematik ders paketleri. Küçük grup, ders sonrası yönlendirme ve güvenli ödeme.",
+  title: "Matematik Ders Paketleri ve Fiyatları",
+  description: "LGS ve YKS online matematik ders paketleri: ayda 4 × 60 dakika canlı ders, en fazla 4 öğrenci, ₺3.000/ay ve taahhütsüz ödeme.",
   canonical: "/ders-paketleri",
 });
 
