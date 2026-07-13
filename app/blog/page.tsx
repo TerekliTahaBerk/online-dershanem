@@ -3,7 +3,8 @@ import { ArrowRight, BookOpen, Compass, GraduationCap, LineChart, NotebookText, 
 import type { LucideIcon } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import { blogPosts } from "@/lib/content";
+import { blogPosts, type BlogPost } from "@/lib/blog-content";
+import { siteUrl } from "@/lib/content";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
@@ -17,8 +18,6 @@ export const metadata = buildMarketingMetadata({
   imagePath: "/blog/opengraph-image",
   imageAlt: "Online Dershanem Blog",
 });
-
-type BlogPost = (typeof blogPosts)[number];
 
 const visualByCategory: Record<string, { Icon: LucideIcon; tone: string; tile: string }> = {
   "Online Dershane": { Icon: GraduationCap, tone: "var(--od-olive)", tile: "var(--od-mint)" },
@@ -34,6 +33,53 @@ const visualByCategory: Record<string, { Icon: LucideIcon; tone: string; tile: s
 function getVisual(category: string) {
   return (
     visualByCategory[category] ?? { Icon: BookOpen, tone: "var(--od-olive)", tile: "var(--od-cream-2)" }
+  );
+}
+
+const topicClusters = [
+  {
+    id: "lgs-matematik",
+    title: "LGS Matematik",
+    description: "Yeni nesil sorular, haftalık program ve deneme analizini aynı çalışma sisteminde birleştirin.",
+    categories: ["LGS"],
+  },
+  {
+    id: "yks-matematik",
+    title: "TYT ve AYT Matematik",
+    description: "Temelden denemeye, TYT–AYT dengesini ve problem çözme becerisini adım adım geliştirin.",
+    categories: ["YKS"],
+  },
+  {
+    id: "calisma-sistemi",
+    title: "Çalışma ve sınav sistemi",
+    description: "Planı sürdürülebilir kılın; yanlışları bir sonraki haftanın somut çalışma yönüne dönüştürün.",
+    categories: ["Online Ders", "Sınav Stratejisi"],
+  },
+  {
+    id: "online-ders-rehberi",
+    title: "Online ders seçim rehberi",
+    description: "Ders modeli, grup büyüklüğü, takip ve fiyatı şeffaf ölçütlerle değerlendirin.",
+    categories: ["Online Dershane", "Online Özel Ders", "e Dershane", "Özel Ders"],
+  },
+] as const;
+
+function PostCard({ post }: { post: BlogPost }) {
+  return (
+    <article className="flex flex-col">
+      <Link href={`/blog/${post.slug}/`} className="group flex h-full flex-col">
+        <PostVisual post={post} />
+        <p className="mt-5 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-orange-ink)]">
+          {post.category}
+        </p>
+        <h3 className="mt-2 font-display text-[20px] leading-[1.2] tracking-[-0.01em] text-[var(--site-ink)] transition-colors group-hover:text-[var(--brand-orange-ink)] sm:text-[22px]">
+          {post.title}
+        </h3>
+        <p className="mt-3 text-[14px] leading-6 text-[var(--site-body)]">{post.cardSnippet}</p>
+        <p className="mt-4 text-[12.5px] text-[var(--site-muted)]">
+          {formatBlogDate(blogPublishedAt[post.slug])} · {estimateBlogReadingMinutes(post)} dk okuma
+        </p>
+      </Link>
+    </article>
   );
 }
 
@@ -77,15 +123,33 @@ export default function BlogPage() {
   });
 
   const featured = sorted[0];
-  const others = sorted.slice(1);
+  const blogSchema = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    name: "Online Dershanem Blog",
+    description: "LGS, TYT ve AYT matematik çalışma rehberleri ile online ders seçim içerikleri.",
+    url: `${siteUrl}/blog`,
+    inLanguage: "tr-TR",
+    publisher: { "@type": "Organization", name: "Online Dershanem", url: siteUrl },
+    blogPost: sorted.map((post) => ({
+      "@type": "BlogPosting",
+      headline: post.title,
+      url: `${siteUrl}/blog/${post.slug}`,
+      datePublished: blogPublishedAt[post.slug],
+      author: { "@type": "Organization", name: getBlogAuthor(post.category) },
+    })),
+  };
 
   return (
     <div className="site-scope">
       <SchemaJsonLd
-        schema={breadcrumbJsonLd([
-          { name: "Ana Sayfa", url: "/" },
-          { name: "Blog", url: "/blog/" },
-        ])}
+        schema={[
+          breadcrumbJsonLd([
+            { name: "Ana Sayfa", url: "/" },
+            { name: "Blog", url: "/blog/" },
+          ]),
+          blogSchema,
+        ]}
       />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
@@ -102,9 +166,26 @@ export default function BlogPage() {
               Online Dershanem <span className="site-hl">Blog</span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
-              LGS ve YKS için haftalık rehberler, deneme analizi ipuçları ve küçük grup matematik
-              modeli üzerine yazılar.
+              LGS, TYT ve AYT matematik için uygulanabilir çalışma planları, deneme analizi
+              şablonları ve online ders seçim rehberleri.
             </p>
+            <nav aria-label="Blog konu başlıkları" className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2">
+              {topicClusters.map((cluster) => (
+                <Link
+                  key={cluster.id}
+                  href={`#${cluster.id}`}
+                  className="inline-flex min-h-11 items-center rounded-full border border-[var(--site-line)] bg-white px-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange-ink)]"
+                >
+                  {cluster.title}
+                </Link>
+              ))}
+              <Link
+                href="/blog/rss.xml"
+                className="inline-flex min-h-11 items-center rounded-full border border-[var(--site-line)] bg-white px-4 text-sm font-semibold text-[var(--site-body)] transition-colors hover:border-[var(--brand-orange)]"
+              >
+                RSS
+              </Link>
+            </nav>
           </div>
         </section>
 
@@ -135,28 +216,27 @@ export default function BlogPage() {
           <hr className="border-t border-[var(--site-line)]" />
         </div>
 
-        {/* Grid */}
-        <section className="site-container py-16 sm:py-20">
-          <div className="grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-            {others.map((post) => (
-              <article key={post.slug} className="flex flex-col">
-                <Link href={`/blog/${post.slug}/`} className="group flex h-full flex-col">
-                  <PostVisual post={post} />
-                  <p className="mt-5 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-orange-ink)]">
-                    {post.category}
-                  </p>
-                  <h2 className="mt-2 font-display text-[20px] leading-[1.2] tracking-[-0.01em] text-[var(--site-ink)] transition-colors group-hover:text-[var(--brand-orange-ink)] sm:text-[22px]">
-                    {post.title}
-                  </h2>
-                  <p className="mt-3 text-[14px] leading-6 text-[var(--site-body)]">{post.cardSnippet}</p>
-                  <p className="mt-4 text-[12.5px] text-[var(--site-muted)]">
-                    {formatBlogDate(blogPublishedAt[post.slug])} · {estimateBlogReadingMinutes(post)} dk okuma
-                  </p>
-                </Link>
-              </article>
-            ))}
+        <div className="site-container py-16 sm:py-20">
+          <div className="space-y-20">
+            {topicClusters.map((cluster) => {
+              const posts = sorted.filter((post) => cluster.categories.some((category) => category === post.category));
+              return (
+                <section key={cluster.id} id={cluster.id} className="scroll-mt-28">
+                  <div className="max-w-2xl">
+                    <p className="site-eyebrow">Konu kümesi</p>
+                    <h2 className="mt-3 font-display text-[30px] leading-tight tracking-[-0.02em] text-[var(--site-ink)] sm:text-[40px]">
+                      {cluster.title}
+                    </h2>
+                    <p className="mt-3 text-[15px] leading-7 text-[var(--site-body)]">{cluster.description}</p>
+                  </div>
+                  <div className="mt-9 grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+                    {posts.map((post) => <PostCard key={post.slug} post={post} />)}
+                  </div>
+                </section>
+              );
+            })}
           </div>
-        </section>
+        </div>
 
         {/* Soft CTA */}
         <section className="site-container pb-24">

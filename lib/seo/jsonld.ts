@@ -92,18 +92,22 @@ export type ArticleInput = {
 };
 
 export function articleJsonLd(input: ArticleInput) {
+  const url = input.url.startsWith("http") ? input.url : `${siteUrl}${input.url}`;
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: input.headline,
     description: input.description,
-    url: input.url.startsWith("http") ? input.url : `${siteUrl}${input.url}`,
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    inLanguage: "tr-TR",
     image: input.image ? (input.image.startsWith("http") ? input.image : `${siteUrl}${input.image}`) : undefined,
     datePublished: new Date(input.datePublished).toISOString(),
     dateModified: new Date(input.dateModified ?? input.datePublished).toISOString(),
     author: {
       "@type": "Organization",
       name: input.authorName ?? "Online Dershanem",
+      url: `${siteUrl}/hakkimizda`,
     },
     publisher: {
       "@type": "Organization",

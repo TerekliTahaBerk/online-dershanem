@@ -285,7 +285,7 @@ export const blogPosts = [
       {
         h2: "3-5. hafta: Deneme rutinini oturtma",
         paragraphs: [
-          "Bu dönemde haftada en az bir deneme zorunlu olmalı. Deneme sonrası analiz yapılmadan yeni konuya geçmek verimi düşürür.",
+          "Bu dönemde öğrencinin seviyesine uygun düzenli deneme veya mini deneme kullanılabilir. Deneme sonrası analiz, yeni haftanın çalışma önceliğini belirlemeye yardımcı olur.",
           "Analizde şu ayrım net biçimde yapılmalı: bilgi eksikliği mi, dikkat hatası mı? Bu ayrım sonraki haftanın planını belirler."
         ],
         bullets: ["Haftada en az 1 deneme", "Her deneme sonrası analiz", "Bilgi eksiği – dikkat hatası ayrımı"]
@@ -294,7 +294,7 @@ export const blogPosts = [
         h2: "6-8. hafta: Sınav simülasyonu",
         paragraphs: [
           "Son aşamada süre baskısı altında çözüm pratiği ve doğru soru seçme stratejisi öne çıkıyor.",
-          "Net artışı genellikle bu dönemde görünür hale gelir; çünkü önceki haftalarda kurulan sistem sonuç üretmeye başlar."
+          "Bu dönemde tek bir net sonucundan çok; süre kullanımı, boşlar ve tekrar eden hata türlerinin birkaç denemedeki yönü birlikte izlenmelidir."
         ],
         bullets: ["Süre baskısı altında çözüm", "Doğru soru seçme stratejisi", "İstikrarlı net çıktısı"]
       },
@@ -307,10 +307,10 @@ export const blogPosts = [
         bullets: ["Disiplin eksikliği", "Takip eksikliği", "Geri bildirim eksikliği"]
       },
       {
-        h2: "Daha hızlı net artışı için sistemli model",
+        h2: "Çalışma düzenini sürdürebilmek için sistemli model",
         paragraphs: [
           "Bu yüzden öğrencilerin önemli bir kısmı küçük grup online ders modeline geçiyor. Bu yapıda haftalık takip, deneme analizi ve seviyeye göre plan birlikte yürütülüyor.",
-          "Yani öğrenci yalnızca çalışmıyor; süreç de profesyonel olarak yönetiliyor."
+          "Böylece öğrenci yalnızca soru çözmekle kalmaz; hangi eksiğe neden döndüğünü de takip edebilir."
         ],
         links: [
           { label: "Online dershane sistemini incele", href: "/online-dershane/" },
@@ -331,7 +331,7 @@ export const blogPosts = [
     title: "Online Dershane Fiyatları 2026",
     seoTitle: "Online Dershane Fiyatları 2026: Ne Kadar Ödemelisin?",
     metaDescription:
-      "Online dershane fiyatları 2026 yılında neye göre değişiyor? Grup ders ücretleri, değer analizi ve net artıran sistem seçimi rehberi.",
+      "Online dershane fiyatları 2026 yılında neye göre değişiyor? Grup büyüklüğü, canlı ders kapsamı, takip ve ödeme koşullarını karşılaştırma rehberi.",
     excerpt:
       "Online dershane fiyatları çok değişken. Peki gerçek değer ne? Bu yazıda fiyatı değil sonucu nasıl ölçmen gerektiğini anlatıyoruz.",
     cardSnippet: "Online dershane fiyatları 2026: ucuz mu, değerli mi?",
@@ -346,16 +346,16 @@ export const blogPosts = [
       },
       {
         h2: "Fiyatı Belirleyen Faktörler",
-        bullets: ["Sınıf mevcudu", "Öğretmen kalitesi", "Takip sistemi"],
+        bullets: ["Sınıf mevcudu", "Canlı etkileşim", "Ders sonrası takip sistemi"],
         paragraphs: [
-          "Küçük grup ve haftalık takip maliyeti etkiler ama sonuç üretme ihtimalini de yükseltir."
+          "Küçük grup ve ders sonrası takip maliyeti etkileyebilir; karşılaştırmada öğrencinin soru sorma ve geri bildirim alma imkânı da değerlendirilmelidir."
         ]
       },
       {
         h2: "Ucuz mu, Değerli mi?",
-        bullets: ["Ucuz ≠ iyi", "Önemli olan net artışı + sistem"],
+        bullets: ["En düşük fiyat her ihtiyaca uygun olmayabilir", "Ders ve takip kapsamını birlikte karşılaştırın"],
         paragraphs: [
-          "En doğru tercih, öğrencinin düzenli ilerlemesini ve ölçülebilir net artışını sağlayan modeldir."
+          "En doğru tercih; öğrencinin seviyesine, ihtiyaç duyduğu geri bildirime ve ailenin sürdürülebilir bütçesine uyan modeldir."
         ],
         links: [{ label: "Online dershane sistemimizi incele", href: "/online-dershane/" }]
       }
@@ -394,7 +394,7 @@ export const blogPosts = [
         ]
       },
       {
-        h2: "Kimler e dershane modelinden daha hızlı sonuç alır?",
+        h2: "Kimler e dershane modelinden daha düzenli yararlanabilir?",
         bullets: ["Takip ile çalışan öğrenciler", "Planı tek başına sürdüremeyenler", "Ders bazlı destek isteyenler"],
         links: [{ label: "Online dershane sistemini detaylı incele", href: "/online-dershane/" }]
       }
@@ -434,7 +434,7 @@ export const blogPosts = [
       },
       {
         h2: "Programın sürdürülebilir olması için takip sistemi",
-        paragraphs: ["Öğrenci planı yazmakta zorlanmaz, uygulamada zorlanır. Bu noktada öğretmen ve koçluk takibi kritik fark yaratır."],
+        paragraphs: ["Programı yazmak kadar uygulamayı izlemek de önemlidir. Öğretmen geri bildirimi, tamamlanmayan hedefin nedenini görüp planı yeniden düzenlemeye yardımcı olabilir."],
         links: [{ label: "Online özel ders sistemiyle planını netleştir", href: "/online-ozel-ders/" }]
       }
     ],
@@ -488,7 +488,7 @@ export const blogPosts = [
       "YKS matematik neti artırmak için soru analizi, süre yönetimi ve haftalık çalışma planı nasıl kurulmalı? Adım adım öğren.",
     excerpt:
       "YKS matematikte net artırmak için çok soru çözmek tek başına yetmez. Doğru analiz ve doğru sıra gerekir.",
-    cardSnippet: "YKS matematikte net artıran sistemli çalışma adımları.",
+    cardSnippet: "YKS matematikte hatayı analize ve haftalık plana çeviren adımlar.",
     featured: false,
     sections: [
       {
@@ -498,11 +498,11 @@ export const blogPosts = [
       {
         h2: "Haftalık matematik planı",
         bullets: ["2 gün konu tekrar", "2 gün yeni nesil soru", "1 gün zamanlı deneme", "1 gün yanlış dönüşü"],
-        paragraphs: ["Yanlış dönüşü yapılmayan programda net artışı kısa sürede durur."]
+        paragraphs: ["Yanlışlara dönülmeyen programda aynı hata türleri fark edilmeden tekrarlanabilir."]
       },
       {
         h2: "Süre yönetimi nasıl geliştirilir?",
-        paragraphs: ["Soru başına eşik süre belirlemek ve takılma süresini sınırlamak, toplam neti doğrudan etkiler."],
+        paragraphs: ["Soru başına bir takılma eşiği belirlemek, öğrencinin deneme sırasında geçme ve geri dönme kararını daha bilinçli vermesine yardımcı olur."],
         links: [{ label: "YKS için online özel ders desteğini incele", href: "/online-ozel-ders/" }]
       }
     ],
@@ -552,7 +552,7 @@ export const blogPosts = [
     title: "Deneme Analizi Nasıl Yapılır? Net Artıran Yöntem",
     seoTitle: "Deneme Analizi Nasıl Yapılır? Net Artışı İçin Rehber",
     metaDescription:
-      "Deneme analizi nasıl yapılır? Yanlışları doğru sınıflandırıp bir sonraki haftaya plan çıkarmanın net artıran sistemini öğren.",
+      "Deneme analizi nasıl yapılır? Yanlışları sınıflandırıp bir sonraki haftaya uygulanabilir çalışma planı çıkarmayı öğren.",
     excerpt:
       "Deneme çözmek tek başına yeterli değil. Net artışı, deneme sonrası yapılan doğru analizle başlar.",
     cardSnippet: "Net artırmak isteyenler için deneme analiz sistemi.",
@@ -578,7 +578,7 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Deneme analizini profesyonel takip ile yap",
+      title: "Deneme analizini düzenli takibe bağla",
       text: "Süreç başlamadan öğrencinin analiz raporunu birlikte çıkaralım.",
       buttonLabel: "Deneme Analizi Al"
     },
@@ -590,7 +590,7 @@ export const blogPosts = [
     title: "Online Dershane Seçim Rehberi 2026",
     seoTitle: "Online Dershane Seçim Rehberi 2026",
     metaDescription:
-      "2026'da online dershane seçerken dikkat edilmesi gereken kriterler: sınıf mevcudu, takip sistemi, ders bazlı model ve öğretmen kalitesi.",
+      "2026'da online dershane seçerken dikkat edilmesi gereken kriterler: sınıf mevcudu, canlı etkileşim, takip sistemi ve şeffaf ödeme koşulları.",
     excerpt:
       "Online dershane seçerken reklama değil, ölçülebilir kriterlere bakarak karar vermek uzun vadede çok daha sağlıklı sonuç veriyor.",
     cardSnippet: "2026 için online dershane seçim kontrol listesi.",
@@ -640,7 +640,7 @@ export const blogPosts = [
       {
         h2: "Sürdürülebilir sistem nasıl kurulur?",
         bullets: ["Kısa günlük bloklar", "Haftalık sabit deneme saati", "Geri bildirim döngüsü"],
-        paragraphs: ["Az ama düzenli çalışma, yoğun ama dağınık çalışmadan daha hızlı sonuç üretir."]
+        paragraphs: ["Kısa ve düzenli çalışma blokları, aşırı yoğun programlara göre takip edilmesi daha kolay bir düzen sağlayabilir."]
       },
       {
         h2: "Takip sistemiyle disiplin kalıcı hale gelir",

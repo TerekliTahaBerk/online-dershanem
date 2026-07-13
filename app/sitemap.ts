@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
-import { blogPosts, siteUrl } from "@/lib/content";
+import { blogPosts } from "@/lib/blog-content";
+import { blogPublishedAt } from "@/lib/blog-meta";
+import { siteUrl } from "@/lib/content";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -22,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${siteUrl}/blog/${post.slug}`,
+    lastModified: blogPublishedAt[post.slug],
     changeFrequency: "monthly",
     priority: 0.5,
   }));

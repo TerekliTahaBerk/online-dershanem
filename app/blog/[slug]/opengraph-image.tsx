@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { blogPosts } from "@/lib/content";
+import { blogPosts } from "@/lib/blog-content";
 import { OgTemplate, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/seo/og-template";
 
 export const runtime = "edge";
