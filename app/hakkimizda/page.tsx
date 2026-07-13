@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { BarChart3, Compass, HeartHandshake, Layers, MessageCircle, Target } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -70,6 +71,10 @@ export default function AboutPage() {
                   Öğrencinin derste görünür kaldığı, ne çalışacağını bildiği ve gelişiminin aile için
                   de anlaşılır olduğu sürdürülebilir bir çalışma düzeni kurmak.
                 </p>
+                <Link href="/misyonumuz/" className="mt-6 inline-flex items-center gap-2 text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">
+                  Misyonumuzu ayrıntılı okuyun
+                  <Compass size={15} aria-hidden="true" />
+                </Link>
               </div>
               <div className="overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white p-4 shadow-[0_24px_55px_-34px_rgba(20,20,15,.28)]">
                 <div className="aspect-[35/24] overflow-hidden rounded-[18px] bg-[var(--site-bg-warm)]">

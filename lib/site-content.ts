@@ -174,7 +174,6 @@ export const footerColumns = [
     title: "Kurumsal",
     links: [
       { label: "Hakkımızda", href: "/hakkimizda/" },
-      { label: "Misyonumuz", href: "/misyonumuz/" },
       { label: "Blog", href: "/blog/" },
       { label: "İletişim", href: "/iletisim/" },
     ],
@@ -185,8 +184,6 @@ export const footerColumns = [
       { label: "Sıkça Sorulanlar", href: "/sss/" },
       { label: "Öğrenci desteği", href: "/giris/" },
       { label: "İade Politikası", href: "/iade/" },
-      { label: "Gizlilik", href: "/gizlilik/" },
-      { label: "KVKK", href: "/kvkk/" },
     ],
   },
 ] as const;
