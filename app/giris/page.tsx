@@ -1,52 +1,66 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import { CheckCircle2, Headphones, ShieldCheck } from "lucide-react";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
+import { PageHero } from "@/components/site/page-hero";
 import { LoginForm } from "@/components/site/login-form";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = {
-  title: "Öğrenci Desteği",
-  description: "Mevcut Online Dershanem öğrencileri için ders, program ve ödeme desteği.",
-  alternates: { canonical: "/giris" },
+  ...buildMarketingMetadata({
+    title: "Öğrenci Desteği",
+    description: "Mevcut Online Dershanem öğrencileri için canlı ders bağlantısı, program, paket ve ödeme desteği.",
+    canonical: "/giris",
+  }),
   robots: { index: false, follow: false },
 };
 
+const supportBenefits = [
+  { Icon: Headphones, label: "Ders ve program desteği" },
+  { Icon: ShieldCheck, label: "Güvenli iletişim kanalları" },
+  { Icon: CheckCircle2, label: "Paket ve ödeme kaydı desteği" },
+];
+
 export default function LoginPage() {
   return (
-    <div className="site-scope flex min-h-screen flex-col bg-white">
-      <main className="flex flex-1 items-start justify-center px-5 py-16 sm:py-24">
-        <div className="w-full max-w-[620px]">
-          <div className="bg-white px-1 py-4 sm:px-10">
-            <div className="flex flex-col items-center text-center">
-              <Link href="/" aria-label="Online Dershanem ana sayfa">
-                <Image
-                  src="/onlinedershanem_.png"
-                  alt="Online Dershanem"
-                  width={1050}
-                  height={200}
-                  sizes="180px"
-                  className="h-auto w-[180px] sm:w-[220px]"
-                  priority
-                />
-              </Link>
-              <h1 className="mt-14 font-display text-[clamp(2.6rem,7vw,4rem)] text-[var(--site-ink)]">
-                Öğrenci desteği
-              </h1>
-              <p className="mt-5 max-w-lg text-[16px] leading-7 text-[var(--site-body)] sm:text-[18px]">
-                Mevcut öğrenciler için ders bağlantısı, program ve ödeme konularında hızlıca yardımcı olalım.
-              </p>
+    <div className="site-scope">
+      <SiteHeader />
+      <main id="main-content" tabIndex={-1}>
+        <PageHero
+          eyebrow="Mevcut öğrenciler"
+          align="left"
+          title={<>Öğrenci <span className="site-hl">desteği.</span></>}
+          subtitle="Ders bağlantısı, grup programı, paket veya ödeme konusunda doğru kanala hızlıca ulaşın. Bu sayfa bir giriş ekranı değildir; sizden parola istemeyiz."
+        />
+        <section className="site-container py-14 sm:py-20">
+          <div className="grid gap-8 lg:grid-cols-[.9fr_1.1fr] lg:items-start">
+            <div>
+              <p className="site-kicker">Güvenli destek</p>
+              <h2 className="mt-4 max-w-lg font-display text-[clamp(2rem,4vw,3rem)] leading-tight text-[var(--site-ink)]">Sorunu anlatın, doğru ekip yardımcı olsun.</h2>
+              <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">Destek için yalnızca çalışan iletişim kanallarını kullanıyoruz. Kart bilgisi, şifre veya tek kullanımlık kod istemeyiz.</p>
+              <ul className="mt-7 space-y-3">
+                {supportBenefits.map(({ Icon, label }) => (
+                  <li key={label} className="flex items-center gap-3 text-[14.5px] font-medium text-[var(--site-body)]">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"><Icon size={16} aria-hidden="true" /></span>
+                    {label}
+                  </li>
+                ))}
+              </ul>
             </div>
-
-            <LoginForm />
+            <div className="rounded-[26px] border border-[var(--site-line)] bg-white p-6 sm:p-8">
+              <h2 className="font-display text-[25px] text-[var(--site-ink)]">Nasıl yardımcı olabiliriz?</h2>
+              <p className="mt-2 text-[14px] leading-6 text-[var(--site-body)]">Konunuzu seçmeniz gerekmez; WhatsApp üzerinden kısa bir mesaj bırakmanız yeterli.</p>
+              <LoginForm />
+            </div>
           </div>
-
-          <p className="mt-8 text-center text-[15px] text-[var(--site-body)] sm:text-[17px]">
-            Henüz başlamadın mı?{" "}
-            <Link href="/ders-paketleri/" className="font-semibold text-[var(--brand-orange-ink)] hover:underline">
-              Ders paketlerini incele
-            </Link>
-          </p>
-        </div>
+          <div className="mt-10 border-t border-[var(--site-line)] pt-8 text-center text-[15px] text-[var(--site-body)]">
+            Henüz öğrencimiz değil misiniz?{" "}
+            <Link href="/ders-paketleri/" className="font-semibold text-[var(--brand-olive)] hover:underline">Matematik paketlerini inceleyin</Link>
+          </div>
+        </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

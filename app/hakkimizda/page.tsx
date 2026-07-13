@@ -2,6 +2,7 @@ import Image from "next/image";
 import { BarChart3, Compass, HeartHandshake, Layers, MessageCircle, Target } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
+import { PageHero } from "@/components/site/page-hero";
 import { FooterCta } from "@/components/marketing/footer-cta";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
@@ -50,18 +51,11 @@ export default function AboutPage() {
       />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        {/* Başlık */}
-        <section className="bg-white pt-16 sm:pt-24">
-          <div className="site-container text-center">
-            <p className="site-eyebrow justify-center">Hakkımızda</p>
-            <h1 className="mx-auto mt-4 max-w-4xl font-display text-[clamp(2.5rem,6.5vw,4.75rem)] leading-[1.02] text-[var(--site-ink)]">
-              Öğrencinin matematikte yalnız kalmadığı bir sistem.
-            </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-[16.5px] leading-7 text-[var(--site-body)]">
-              Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini bir araya getirir.
-            </p>
-          </div>
-        </section>
+        <PageHero
+          eyebrow="Hakkımızda"
+          title={<>Öğrencinin matematikte <span className="site-hl">yalnız kalmadığı</span> bir sistem.</>}
+          subtitle="Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini aynı çalışma düzeninde bir araya getirir."
+        />
 
         {/* Misyon */}
         <section className="bg-white">

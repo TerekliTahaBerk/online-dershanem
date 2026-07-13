@@ -41,7 +41,7 @@ export default function ContactPage() {
           subtitle="WhatsApp veya telefonla doğrudan ulaşabilirsiniz. Formu tercih ederseniz yaklaşık bir dakikada iletişim, sınıf ve hedef bilgilerini paylaşabilirsiniz."
         />
 
-        <section className="site-container pb-20 sm:pb-28">
+        <section className="site-container pb-20 pt-10 sm:pb-28 sm:pt-14">
           <div className="grid items-start gap-6 lg:grid-cols-2">
             {/* Sol: çalışan lead formu */}
             <ContactLeadForm />

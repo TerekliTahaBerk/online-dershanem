@@ -1,8 +1,9 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PageHero } from "@/components/site/page-hero";
+import { FooterCta } from "@/components/marketing/footer-cta";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
@@ -34,6 +35,10 @@ const principles = [
 export default function MissionPage() {
   return (
     <div className="site-scope">
+      <SchemaJsonLd schema={breadcrumbJsonLd([
+        { name: "Ana Sayfa", url: "/" },
+        { name: "Misyonumuz", url: "/misyonumuz/" },
+      ])} />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <PageHero
@@ -98,33 +103,12 @@ export default function MissionPage() {
           </div>
         </section>
 
-        {/* KAPANIŞ */}
-        <section className="site-container pb-20">
-          <div className="overflow-hidden rounded-[32px] bg-[var(--brand-orange)] px-8 py-14 text-center text-white sm:px-12 sm:py-16">
-            <h2 className="mx-auto max-w-xl font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-tight tracking-[-0.02em]">
-              Tanışalım mı?
-            </h2>
-            <p className="mx-auto mt-4 max-w-md text-[16.5px] leading-7 text-white/85">
-              Çocuğunuz için doğru yer miyiz, en iyisi konuşarak anlaşılır. Bir ön görüşme her
-              zaman ücretsiz.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/iletisim/"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-[16px] font-bold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-tint)]"
-              >
-                İletişim
-                <ArrowUpRight size={18} aria-hidden="true" />
-              </Link>
-              <Link
-                href="/ders-paketleri/"
-                className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-[16px] font-semibold text-white transition-colors hover:bg-white/20"
-              >
-                Ders paketi
-              </Link>
-            </div>
-          </div>
-        </section>
+        <FooterCta
+          title="Matematik yolunu birlikte netleştirelim."
+          subtitle="Öğrencinin seviyesi, hedefi ve uygun küçük grup ihtimalini ücretsiz ön görüşmede konuşalım."
+          ctaLabel="Ücretsiz görüşme"
+          ctaHref="/iletisim/"
+        />
       </main>
       <SiteFooter />
     </div>
