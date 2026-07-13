@@ -34,3 +34,10 @@ test("mobile navigation traps and restores keyboard focus", async ({ page }) => 
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
 });
+
+test("university band is visible and respects reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: /Seçkin eğitimciler/ })).toBeVisible();
+  await expect(page.locator(".university-marquee-track")).toHaveCSS("animation-name", "none");
+});

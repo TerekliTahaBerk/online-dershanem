@@ -78,14 +78,16 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white p-4 shadow-[0_24px_55px_-34px_rgba(20,20,15,.28)]">
-                <Image
-                  src="/founders.webp"
-                  alt="Online Dershanem kurucu ekibi çizimi"
-                  width={420}
-                  height={288}
-                  sizes="(max-width: 1024px) 80vw, 520px"
-                  className="h-auto w-full rounded-[18px]"
-                />
+                <div className="aspect-[35/24] overflow-hidden rounded-[18px] bg-[var(--site-bg-warm)]">
+                  <Image
+                    src="/founders.webp"
+                    alt="Online Dershanem kurucu ekibi çizimi"
+                    width={420}
+                    height={288}
+                    sizes="(max-width: 1024px) 80vw, 520px"
+                    className="h-full w-full object-cover object-center"
+                  />
+                </div>
                 <div className="px-2 pb-2 pt-4">
                   <p className="text-[13px] font-bold text-[var(--site-ink)]">Online Dershanem ekibi</p>
                   <p className="mt-1 text-[12.5px] leading-5 text-[var(--site-body)]">

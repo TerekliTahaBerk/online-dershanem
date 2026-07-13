@@ -22,13 +22,13 @@ export function PricingCard({ data, source }: { data: PricingCardData; source: s
         {data.discountLabel ? <span className="rounded-full bg-[var(--brand-olive-soft)] px-3 py-1 text-[10px] font-bold text-[var(--brand-olive)]">{data.discountLabel}</span> : null}
       </div>
       <h3 className="mt-5 max-w-[16ch] text-[clamp(1.7rem,3vw,2.25rem)] font-semibold leading-[1.04] tracking-[-.035em] text-[var(--site-ink)]">{data.name}</h3>
-      <div className="mt-7 flex items-end gap-2">
-        <span className="text-[clamp(2.7rem,5vw,3.7rem)] font-semibold leading-none tracking-[-.05em] text-[var(--site-ink)]">{price}</span>
-        {per ? <span className="mb-1.5 text-[15px] text-[var(--site-muted)]">/ {per}</span> : null}
-      </div>
-      <div className="mt-3 flex flex-wrap items-center gap-3 text-[13px]">
-        {data.oldPriceLabel ? <span className="text-[var(--site-muted)] line-through">{data.oldPriceLabel}</span> : null}
-        <span className="font-medium text-[var(--site-body)]">Aylık · taahhüt yok</span>
+      <div className="mt-7 rounded-[18px] border border-[var(--site-line)] bg-[var(--brand-olive-tint)] p-5">
+        {data.oldPriceLabel ? <p className="text-[12px] text-[var(--site-muted)]"><span className="line-through">{data.oldPriceLabel}</span> yerine</p> : null}
+        <div className="mt-2 flex items-end gap-2">
+          <span className="text-[clamp(2.9rem,5vw,3.9rem)] font-semibold leading-none tracking-[-.055em] text-[var(--site-ink)]">{price}</span>
+          {per ? <span className="mb-1.5 text-[15px] font-medium text-[var(--site-body)]">/ {per}</span> : null}
+        </div>
+        <p className="mt-3 text-[12px] font-semibold text-[var(--brand-olive)]">Aylık ödeme · taahhüt yok</p>
       </div>
       <ul className="mt-8 flex-1 space-y-3 border-t border-[var(--site-line)] pt-7">
         {data.highlights.map((item) => (

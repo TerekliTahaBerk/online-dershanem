@@ -23,9 +23,16 @@ export function Hero() {
             Ücretsiz ön görüşme
           </Link>
         </div>
-        <p className="mt-6 text-[13px] font-medium text-[var(--site-muted)] sm:text-[14px]">
-          LGS + YKS · Ayda {lessonPackage.lessonsPerMonth} × {lessonPackage.lessonDurationMinutes} dakika · {lessonPackage.priceLabel}
-        </p>
+        <div className="mx-auto mt-7 flex w-full max-w-[560px] flex-col items-center justify-between gap-3 rounded-[20px] border border-[var(--site-line)] bg-[var(--brand-olive-tint)] px-5 py-4 text-left sm:flex-row sm:px-6">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">LGS veya YKS matematik</p>
+            <p className="mt-1 text-[13px] font-medium text-[var(--site-body)]">Ayda {lessonPackage.lessonsPerMonth} × {lessonPackage.lessonDurationMinutes} dakika · Taahhüt yok</p>
+          </div>
+          <div className="shrink-0 text-center sm:text-right">
+            {lessonPackage.oldPriceLabel ? <p className="text-[12px] text-[var(--site-muted)] line-through">{lessonPackage.oldPriceLabel}</p> : null}
+            <p className="mt-0.5 text-[26px] font-semibold leading-none tracking-[-.04em] text-[var(--site-ink)]">{lessonPackage.priceLabel}</p>
+          </div>
+        </div>
         <div className="relative mt-12 sm:mt-16">
           <HeroLessonMockup />
         </div>

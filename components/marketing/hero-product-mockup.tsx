@@ -19,9 +19,9 @@ export function HeroProductMockup() {
           <div className="flex min-h-[310px] flex-col justify-between rounded-[20px] bg-[var(--brand-olive-tint)] p-6 sm:p-8">
             <div>
               <p className="site-kicker">Bugünün konusu</p>
-              <h3 className="mt-3 max-w-xl text-[clamp(1.8rem,4vw,3.2rem)] font-semibold leading-[1.05] tracking-[-.04em] text-[var(--site-ink)]">
+              <p className="mt-3 max-w-xl text-[clamp(1.8rem,4vw,3.2rem)] font-semibold leading-[1.05] tracking-[-.04em] text-[var(--site-ink)]">
                 Problemlerde çözüm yolunu birlikte görünür kılmak.
-              </h3>
+              </p>
             </div>
             <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {participants.map((item, index) => (

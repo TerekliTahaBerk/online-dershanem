@@ -312,9 +312,60 @@ html {
 
 section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 
+/* Üniversite bandı — farklı logo oranlarını tek, stabil görsel alanında hizalar. */
+.university-marquee {
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.university-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: universityMarquee 30s linear infinite;
+}
+.university-marquee:hover .university-marquee-track,
+.university-marquee:focus-within .university-marquee-track {
+  animation-play-state: paused;
+}
+.university-marquee-set {
+  display: flex;
+  align-items: center;
+  gap: clamp(2.25rem, 6vw, 6rem);
+  margin: 0;
+  padding: 0 clamp(1.125rem, 3vw, 3rem);
+  list-style: none;
+}
+.university-logo-item {
+  display: grid;
+  grid-template-columns: 58px auto;
+  align-items: center;
+  gap: 14px;
+  width: clamp(220px, 22vw, 280px);
+  color: var(--site-body);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.3;
+  white-space: normal;
+}
+.university-logo-image {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: .72;
+}
+@keyframes universityMarquee {
+  to { transform: translateX(-50%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   section[id]:target { animation: none; }
+  .university-marquee { -webkit-mask-image: none; mask-image: none; }
+  .university-marquee-track { width: 100%; animation: none; }
+  .university-marquee-set { width: 100%; flex-wrap: wrap; justify-content: center; gap: 1.5rem 2rem; padding-inline: 1.25rem; }
+  .university-marquee-set[aria-hidden="true"] { display: none; }
 }
 
 /* ============================================================
