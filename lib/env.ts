@@ -26,6 +26,7 @@ const CHECKS: EnvCheck[] = [
   { key: "PAYTR_MERCHANT_KEY", required: false, prodOnly: true, description: "PayTR" },
   { key: "PAYTR_MERCHANT_SALT", required: false, prodOnly: true, description: "PayTR" },
   { key: "RESEND_API_KEY", required: false, description: "Email gönderimi (opsiyonel)" },
+  { key: "EMAIL_MODE", required: false, description: "Email kapsamı: receipts (varsayılan) veya all" },
   { key: "MAIL_FROM", required: false, description: "Email from adresi (opsiyonel)" },
   { key: "CRON_SECRET", required: false, prodOnly: true, description: "Cron route'ları korumak için bearer" },
   { key: "UPSTASH_REDIS_REST_URL", required: false, description: "Cache backend (opsiyonel; yoksa in-memory fallback)" },

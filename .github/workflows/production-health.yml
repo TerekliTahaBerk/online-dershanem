@@ -1,0 +1,20 @@
+name: Production Health
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check application and database health
+        run: |
+          response="$(curl --fail --silent --show-error --retry 2 --max-time 20 https://www.onlinedershanem.com/api/health)"
+          echo "$response" | jq -e '.status == "ok" or .status == "degraded"' >/dev/null
+          echo "$response" | jq -e '.db.ok == true' >/dev/null

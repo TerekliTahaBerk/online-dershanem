@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2 } from "lucide-react";
 
 /**
@@ -12,7 +11,6 @@ import { ArrowRight, Loader2 } from "lucide-react";
  * parola mı" ayrımı yapmıyor (kullanıcı sayımına karşı); burada da yapmamalıyız.
  */
 export function LoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -37,10 +35,10 @@ export function LoginForm() {
         return;
       }
 
-      // Oturum çerezi sunucuda yazıldı; server component'lerin onu görmesi için
-      // router cache'ini tazelemek gerekiyor.
-      router.replace(data.redirect);
-      router.refresh();
+      // Kimlik doğrulama sınırında tam sayfa geçişi bilinçli: yeni HttpOnly
+      // oturum çerezi ilk panel isteğinde kesin olarak sunucuya ulaşır ve aynı
+      // anda replace + refresh kaynaklı çift RSC render'ı oluşmaz.
+      window.location.replace(data.redirect);
     } catch {
       setError("Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.");
       setPending(false);

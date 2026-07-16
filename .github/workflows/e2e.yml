@@ -63,6 +63,16 @@ jobs:
       PAYTR_MERCHANT_KEY: e2e-only-merchant-key
       PAYTR_MERCHANT_SALT: e2e-only-merchant-salt
       E2E_PASSWORD: testpass123
+      PANEL_E2E_ADMIN_EMAIL: admin.e2e@example.com
+      PANEL_E2E_ADMIN_PASSWORD: testpass123
+      PANEL_E2E_TEACHER_EMAIL: teacher.e2e@example.com
+      PANEL_E2E_TEACHER_PASSWORD: testpass123
+      PANEL_E2E_STUDENT_EMAIL: student.e2e@example.com
+      PANEL_E2E_STUDENT_PASSWORD: testpass123
+      PANEL_E2E_PARENT_EMAIL: parent.e2e@example.com
+      PANEL_E2E_PARENT_PASSWORD: testpass123
+      PANEL_E2E_FOREIGN_STUDENT_ID: e2e-student-profile-foreign
+      PANEL_E2E_FOREIGN_LESSON_ID: e2e-lesson-foreign
       CI: "true"
       NEXT_TELEMETRY_DISABLED: "1"
       PLAYWRIGHT_HTML_OPEN: never

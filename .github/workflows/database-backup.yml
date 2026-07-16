@@ -1,0 +1,39 @@
+name: Encrypted Database Backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 1 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_DIRECT_URL: ${{ secrets.PRODUCTION_DATABASE_DIRECT_URL }}
+      BACKUP_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
+    steps:
+      - name: Require backup secrets
+        run: |
+          test -n "$DATABASE_DIRECT_URL"
+          test -n "$BACKUP_PASSWORD"
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Create encrypted dump
+        run: |
+          pg_dump "$DATABASE_DIRECT_URL" --format=custom --no-owner --no-acl --file=database.dump
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in database.dump -out database.dump.enc -pass env:BACKUP_PASSWORD
+          rm database.dump
+
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-db-${{ github.run_id }}
+          path: database.dump.enc
+          retention-days: 14
+          if-no-files-found: error

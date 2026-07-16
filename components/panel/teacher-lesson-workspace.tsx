@@ -20,10 +20,10 @@ type LessonData = {
 };
 
 const attendanceOptions: { value: Attendance; label: string; active: string }[] = [
-  { value: "PRESENT", label: "Burada", active: "bg-emerald-600 text-white" },
-  { value: "LATE", label: "Geç", active: "bg-amber-500 text-white" },
-  { value: "ABSENT", label: "Yok", active: "bg-rose-600 text-white" },
-  { value: "EXCUSED", label: "Mazeret", active: "bg-sky-600 text-white" },
+  { value: "PRESENT", label: "Burada", active: "bg-emerald-700 text-white" },
+  { value: "LATE", label: "Geç", active: "bg-amber-700 text-white" },
+  { value: "ABSENT", label: "Yok", active: "bg-rose-700 text-white" },
+  { value: "EXCUSED", label: "Mazeret", active: "bg-sky-700 text-white" },
 ];
 
 export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
@@ -41,7 +41,13 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
       const response = await fetch(`/api/panel/lessons/${lesson.id}/notes`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          topic: form.topic,
+          note: form.note,
+          nextGoal: form.nextGoal,
+          homework: form.homework,
+          students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })),
+        }),
       }).catch(() => null);
       setSaveState(response?.ok ? "saved" : "error");
     }, 850);
@@ -110,7 +116,7 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
           <div key={student.id} className="rounded-[22px] border border-[var(--site-line)] bg-white p-4 shadow-[0_10px_35px_-30px_rgba(20,20,15,.35)]">
             <div className="flex items-center gap-3"><span className={`grid h-9 w-9 place-items-center rounded-xl text-sm font-extrabold ${["bg-[#dceaf6] text-[#1e3a5f]", "bg-[#fcedb4] text-[#6b5310]", "bg-[#e6e0f0] text-[#3f3463]", "bg-[#d7e5d5] text-[#2f4a2a]"][index % 4]}`}>{student.name.charAt(0)}</span><p className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--site-ink)]">{student.name}</p></div>
             <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-[var(--site-bg-warm)] p-1">
-              {attendanceOptions.map((option) => <button key={option.value} type="button" onClick={() => patchStudent(student.id, { attendance: option.value })} className={`rounded-lg px-1 py-2 text-[10px] font-bold transition ${student.attendance === option.value ? option.active : "text-[var(--site-muted)] hover:bg-white"}`}>{option.label}</button>)}
+              {attendanceOptions.map((option) => <button key={option.value} type="button" aria-label={`${student.name}: ${option.label}`} aria-pressed={student.attendance === option.value} onClick={() => patchStudent(student.id, { attendance: option.value })} className={`rounded-lg px-1 py-2 text-[10px] font-bold transition ${student.attendance === option.value ? option.active : "text-[var(--site-muted)] hover:bg-white"}`}>{option.label}</button>)}
             </div>
             <textarea aria-label={`${student.name} için özel not`} value={student.note} onChange={(event) => patchStudent(student.id, { note: event.target.value })} className="panel-input mt-3 min-h-20 resize-none text-xs" placeholder="Farklı bir durum yoksa boş bırakın…" />
           </div>

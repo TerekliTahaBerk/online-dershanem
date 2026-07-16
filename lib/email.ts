@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 let resend: Resend | null = null;
 const sender = "Online Dershanem <noreply@onlinedershanem.com>";
+const emailMode = process.env.EMAIL_MODE || "receipts";
 
 function client(): Resend {
   resend ??= new Resend(process.env.RESEND_API_KEY || "re_missing");
@@ -26,7 +27,9 @@ async function send(to: string | string[], subject: string, html: string): Promi
     if (row) await prisma.emailOutbox.update({ where: { id: row.id }, data: { status: "SENT", sentAt: new Date() } });
   } catch (error) {
     if (row) await prisma.emailOutbox.update({ where: { id: row.id }, data: { status: "FAILED", attempts: 1, lastError: String(error).slice(0, 500), nextRetryAt: new Date(Date.now() + 60_000) } }).catch(() => undefined);
-    throw error;
+    // Gönderim hatası ödeme/lead iş akışını bozmamalı. Kayıt outbox'ta kaldığı
+    // için cron yeniden dener; hata ayrıca Vercel loglarında görünür.
+    console.error("[email] send failed; queued for retry", { subject, error });
   }
 }
 
@@ -39,6 +42,7 @@ export async function sendLeadSubmissionNotification(input: {
   fullName: string; phone: string; classLevel: string; examType: string; targetGoal: string;
   currentNet: string; parentPhone?: string | null; source: string; submittedAt: Date;
 }): Promise<void> {
+  if (emailMode !== "all") return;
   const recipients = notificationRecipients();
   if (!recipients.length) return;
   const rows = [
@@ -61,6 +65,7 @@ export async function sendOrderPaidAdminEmail(input: {
   service: "OD" | "ODK"; orderId: string; packageName: string; totalCents: number;
   buyer: Record<string, string | null | undefined>;
 }): Promise<void> {
+  if (emailMode !== "all") return;
   const recipients = notificationRecipients();
   if (!recipients.length) return;
   const total = (input.totalCents / 100).toLocaleString("tr-TR", { style: "currency", currency: "TRY" });

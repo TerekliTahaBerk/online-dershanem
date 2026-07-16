@@ -8,10 +8,11 @@ const accounts = {
 
 async function login(page: Page, account: { email?: string; password?: string }) {
   await page.goto("/giris");
-  await page.getByLabel("E-posta").fill(account.email!);
+  await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);
   await page.getByLabel("Parola").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş yap$/ }).click();
   await page.waitForURL(/\/panel\//);
+  await expect(page.getByRole("main")).toBeVisible();
 }
 
 test.describe("panel rol ve yatay erişim sınırları", () => {
@@ -38,17 +39,23 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
   test("veli URL ile başka öğrenciyi açamaz", async ({ page }) => {
     test.skip(!process.env.PANEL_E2E_FOREIGN_STUDENT_ID, "Yabancı öğrenci kimliği tanımlı değil.");
     await login(page, accounts.parent);
-    const response = await page.goto(`/panel/veli?studentId=${process.env.PANEL_E2E_FOREIGN_STUDENT_ID}`);
-    expect(response?.status()).toBe(404);
+    await page.goto(`/panel/veli?studentId=${process.env.PANEL_E2E_FOREIGN_STUDENT_ID}`);
+    // App Router, streaming başladıktan sonra notFound() çalışırsa HTTP yanıtı
+    // 200 kalabilir; güvenlik sonucu kullanıcıya veri yerine 404 yüzeyidir.
+    await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
   });
 
   test("öğretmen başka grubun ders notunu değiştiremez", async ({ page }) => {
     test.skip(!process.env.PANEL_E2E_FOREIGN_LESSON_ID, "Yabancı ders kimliği tanımlı değil.");
     await login(page, accounts.teacher);
-    const response = await page.request.put(`/api/panel/lessons/${process.env.PANEL_E2E_FOREIGN_LESSON_ID}/notes`, {
-      data: { topic: "", note: "", nextGoal: "", homework: "", students: [] },
-      headers: { origin: new URL(page.url()).origin },
-    });
-    expect(response.status()).toBe(404);
+    const status = await page.evaluate(async (lessonId) => {
+      const response = await fetch(`/api/panel/lessons/${lessonId}/notes`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ topic: "", note: "", nextGoal: "", homework: "", students: [] }),
+      });
+      return response.status;
+    }, process.env.PANEL_E2E_FOREIGN_LESSON_ID!);
+    expect(status).toBe(404);
   });
 });
