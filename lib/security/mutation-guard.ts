@@ -3,8 +3,9 @@
  *
  * Composable wrapper combining same-origin + rate-limit checks for high-risk
  * server actions / API routes. Authentication and role enforcement remain the
- * caller's responsibility (we already have `requirePanelRole`,
- * `requireParent`, `requireAdminApi`, etc.).
+ * caller's responsibility — note that the site currently has NO auth layer
+ * (panel is being rebuilt from scratch), so this guard is origin + rate-limit
+ * only. Do not assume a caller is authenticated because it passed this guard.
  *
  * Two ergonomic surfaces:
  *

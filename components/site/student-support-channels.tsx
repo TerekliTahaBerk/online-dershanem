@@ -16,11 +16,12 @@ const supportItems = [
 ];
 
 /**
- * Gerçek bir öğrenci paneli henüz bulunmadığı için parola istemeyen, açık ve
- * güvenli destek yüzeyi. Kullanıcıdan çalışmayan bir formda kimlik bilgisi
- * toplamaz; doğrudan çalışan destek kanallarına yönlendirir.
+ * Panel yeniden yazılırken `/giris` sayfasında gösterilen destek yüzeyi.
+ * BİR GİRİŞ FORMU DEĞİLDİR — bilerek parola/kod istemez, çalışmayan bir formda
+ * kimlik bilgisi toplamaz; doğrudan çalışan destek kanallarına yönlendirir.
+ * Gerçek panel girişi yazılınca bu bileşen kaldırılabilir.
  */
-export function LoginForm() {
+export function StudentSupportChannels() {
   return (
     <div className="mt-10">
       <div className="grid gap-3 text-left sm:grid-cols-2">

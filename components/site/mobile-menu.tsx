@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Phone, MessageCircle } from "lucide-react";
-import { primaryNav, navCta, waHref, telHref } from "@/lib/site-content";
+import { primaryNav, navCta, navLogin, waHref, telHref } from "@/lib/site-content";
 import { contact } from "@/lib/content";
 
 type MobileMenuProps = {
@@ -107,6 +107,16 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
             {link.label}
           </Link>
         ))}
+        <Link
+          href={navLogin.href}
+          onClick={onClose}
+          aria-current={isActive(navLogin.href) ? "page" : undefined}
+          className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] ${
+            isActive(navLogin.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
+          }`}
+        >
+          {navLogin.label}
+        </Link>
       </nav>
 
       <div className="flex shrink-0 flex-col gap-3 border-t border-[var(--site-line)] px-[clamp(20px,6vw,28px)] pb-[max(24px,env(safe-area-inset-bottom))] pt-5">

@@ -23,7 +23,8 @@ export const primaryNav = [
 
 /** Sağ üst birincil CTA — lead / satış odaklı (self-register yok). */
 export const navCta = { label: "Ücretsiz görüşme", href: "/iletisim/" } as const;
-export const navLogin = { label: "Öğrenci desteği", href: "/giris/" } as const;
+/** Öğrenci paneli girişi. Panel sıfırdan yazılana kadar `/giris` "yenileniyor" mesajı + destek kanallarını gösterir. */
+export const navLogin = { label: "Giriş", href: "/giris/" } as const;
 
 /* ---------------- Hero ---------------- */
 
@@ -182,7 +183,7 @@ export const footerColumns = [
     title: "Destek",
     links: [
       { label: "Sıkça Sorulanlar", href: "/sss/" },
-      { label: "Öğrenci desteği", href: "/giris/" },
+      { label: "Öğrenci girişi", href: "/giris/" },
       { label: "İade Politikası", href: "/iade/" },
     ],
   },

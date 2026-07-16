@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { primaryNav, navCta } from "@/lib/site-content";
+import { primaryNav, navCta, navLogin } from "@/lib/site-content";
 import { MobileMenu } from "@/components/site/mobile-menu";
 
 /**
@@ -88,6 +88,14 @@ export function SiteHeader() {
 
             {/* Sağ — aksiyonlar / hamburger */}
             <div className="ml-auto flex items-center gap-2 lg:order-3 sm:gap-3">
+              <Link
+                href={navLogin.href}
+                aria-current={isActive(navLogin.href) ? "page" : undefined}
+                className="hidden rounded-full px-3.5 py-2 text-[14.5px] text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] lg:inline-flex"
+              >
+                {navLogin.label}
+              </Link>
+
               <Link
                 href={navCta.href}
                 className="site-btn site-btn-primary site-btn-sm !hidden lg:!inline-flex"
