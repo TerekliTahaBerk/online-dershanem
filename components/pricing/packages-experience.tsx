@@ -44,7 +44,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
         {/* Seçici + kart */}
         <section className="bg-white">
           <div className="site-container pb-16 pt-9 sm:pb-24 sm:pt-12">
-            <div className="grid items-start gap-12 lg:grid-cols-[.78fr_1.22fr] lg:gap-20">
+            <div className="grid items-start gap-12 lg:grid-cols-[.72fr_1.28fr] lg:gap-12">
               <div>
                 <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">Neler dahil?</h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">

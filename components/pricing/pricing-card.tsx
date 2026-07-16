@@ -28,9 +28,14 @@ export function PricingCard({ data, source }: { data: PricingCardData; source: s
       {data.tagline ? <p className="mt-3 text-[14px] leading-6 text-[var(--site-body)]">{data.tagline}</p> : null}
       <div className="mt-7 rounded-[18px] border border-[var(--site-line)] bg-[var(--brand-olive-tint)] p-5">
         {data.oldPriceLabel ? <p className="text-[12px] text-[var(--site-muted)]"><span className="line-through">{data.oldPriceLabel}</span> yerine</p> : null}
+        {/*
+          Fiyat boyutu VIEWPORT'a bağlanmaz: kart dar bir grid sütunu, ekran
+          büyürken kart aynı oranda büyümüyor — vw tabanlı boyut fiyatı kutudan
+          taşırır. Ölçülen en dar kutu (lg/1024) baz alınmıştır.
+        */}
         <div className="mt-2 flex items-end gap-2">
-          <span className="text-[clamp(2.9rem,5vw,3.9rem)] font-semibold leading-none tracking-[-.055em] text-[var(--site-ink)]">{price}</span>
-          {per ? <span className="mb-1.5 text-[15px] font-medium text-[var(--site-body)]">/ {per}</span> : null}
+          <span className="whitespace-nowrap text-[clamp(1.75rem,2.6vw,2.9rem)] font-semibold leading-none tracking-[-.055em] text-[var(--site-ink)]">{price}</span>
+          {per ? <span className="mb-1.5 whitespace-nowrap text-[15px] font-medium text-[var(--site-body)]">/ {per}</span> : null}
         </div>
         <p className="mt-3 text-[12px] font-semibold text-[var(--brand-olive)]">Aylık ödeme · taahhüt yok</p>
       </div>
