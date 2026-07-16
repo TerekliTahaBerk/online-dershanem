@@ -228,6 +228,20 @@ html {
 }
 
 /* Panel: oyuncak gibi değil, kullanırken keyif veren sıcak çalışma yüzeyi. */
+:root {
+  --panel-nav-active: #e9efdf;
+  --panel-card-shadow: 0 18px 55px -42px rgba(20, 20, 15, 0.36);
+}
+.panel-app-bg {
+  background:
+    radial-gradient(circle at 82% -5%, rgba(244, 216, 106, .15), transparent 25rem),
+    linear-gradient(180deg, #fbfaf5 0%, #f8f7f1 100%);
+}
+.panel-nav-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.panel-nav-scroll::-webkit-scrollbar { display: none; }
 .panel-label {
   display: block;
   color: var(--site-ink);
@@ -263,6 +277,57 @@ html {
 .panel-action-icon { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: 14px; }
 .panel-card-title { margin-top: .9rem; color: var(--site-ink); font-size: 1rem; font-weight: 750; letter-spacing: -.02em; }
 .panel-card-copy { margin-top: .25rem; color: var(--site-body); font-size: .78rem; line-height: 1.55; }
+.panel-surface {
+  overflow: hidden;
+  border: 1px solid var(--site-line);
+  border-radius: 24px;
+  background: rgba(255,255,255,.9);
+  box-shadow: var(--panel-card-shadow);
+}
+.panel-quick-action {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  border: 1px solid var(--site-line);
+  border-radius: 13px;
+  background: rgba(255,255,255,.9);
+  padding: .65rem .85rem;
+  color: var(--site-ink);
+  font-size: .75rem;
+  font-weight: 750;
+  box-shadow: 0 8px 25px -22px rgba(20,20,15,.45);
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.panel-quick-action:hover { transform: translateY(-1px); border-color: #d2cec2; box-shadow: 0 12px 28px -20px rgba(20,20,15,.4); }
+.panel-quick-action-primary { border-color: var(--brand-olive); background: var(--brand-olive); color: #fff; }
+.panel-quick-action-primary:hover { border-color: var(--brand-olive-hover); background: var(--brand-olive-hover); }
+.panel-metric-card {
+  border: 1px solid var(--site-line);
+  border-radius: 22px;
+  background: rgba(255,255,255,.9);
+  padding: 1rem;
+  box-shadow: var(--panel-card-shadow);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.panel-metric-card:hover { transform: translateY(-2px); box-shadow: 0 22px 54px -38px rgba(20,20,15,.38); }
+.panel-metric-icon { display: grid; width: 2.35rem; height: 2.35rem; place-items: center; border-radius: 13px; }
+.panel-tone-sky { background: #e8f2fa; color: #24527c; }
+.panel-tone-mint { background: #e5efe2; color: #365630; }
+.panel-tone-yellow { background: #fff3c5; color: #765b0a; }
+.panel-tone-lavender { background: #eee9f7; color: #55447b; }
+.panel-text-link { display: inline-flex; align-items: center; gap: .25rem; color: var(--brand-olive); font-size: .7rem; font-weight: 750; }
+.panel-text-link:hover { text-decoration: underline; }
+.panel-attention-rose { background: #fbe9e4; color: #9a3b2c; }
+.panel-attention-amber { background: #fff3c5; color: #765b0a; }
+.panel-attention-blue { background: #e8f2fa; color: #24527c; }
+@media (prefers-reduced-motion: reduce) {
+  .panel-quick-action,
+  .panel-metric-card { transition: none; }
+  .panel-quick-action:hover,
+  .panel-metric-card:hover { transform: none; }
+}
 /* Highlight kelime — yumuşak adaçayı pill zemin (referans: "tek yerden") */
 .site-hl {
   background: var(--brand-orange-soft);

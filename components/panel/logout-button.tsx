@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 
-export function LogoutButton() {
+export function LogoutButton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
@@ -26,7 +26,7 @@ export function LogoutButton() {
       type="button"
       onClick={onLogout}
       disabled={pending}
-      className="flex items-center gap-1.5 rounded-full border border-[var(--site-line)] px-3 py-1.5 text-[12.5px] font-semibold text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-60"
+      className={`flex items-center gap-1.5 text-[12px] font-semibold text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-60 ${compact ? "w-full rounded-xl px-1 py-1.5" : "rounded-full border border-[var(--site-line)] px-3 py-1.5"}`}
     >
       <LogOut size={13} aria-hidden="true" />
       {pending ? "Çıkılıyor" : "Çıkış"}

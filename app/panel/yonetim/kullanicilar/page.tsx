@@ -5,6 +5,8 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserRowActions } from "@/components/panel/user-row-actions";
+import { AdminPageHeader } from "@/components/panel/admin-page-header";
+import { UsersRound } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -38,23 +40,17 @@ export default async function UsersPage() {
       email={session.email}
       nav={<PanelNav role={session.role} />}
     >
-      <header>
-        <h1 className="text-[22px] font-semibold tracking-[-.02em] text-[var(--site-ink)]">Kullanıcılar</h1>
-        <p className="mt-1.5 max-w-[62ch] text-[14px] leading-6 text-[var(--site-body)]">
-          Hesapları yalnızca siz açarsınız. Geçici parola otomatik üretilir; kişiye WhatsApp veya telefonla
-          iletirsiniz, ilk girişte kendi parolasını belirler.
-        </p>
-      </header>
+      <AdminPageHeader eyebrow="Kişi yönetimi" title="Herkes doğru yerde." description="Öğrenci, öğretmen, veli ve yönetici hesaplarını tek yerden açın; erişim durumlarını güvenle yönetin." icon={UsersRound} meta={`${users.length} hesap`} />
 
-      <section className="mt-6 rounded-[16px] border border-[var(--site-line)] bg-white p-5">
+      <section id="yeni-hesap" className="mt-6 scroll-mt-28 rounded-[20px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)]">
         <h2 className="text-[14px] font-bold text-[var(--site-ink)]">Yeni hesap aç</h2>
         <div className="mt-4">
           <CreateUserForm />
         </div>
       </section>
 
-      <section className="mt-6">
-        <h2 className="text-[13px] font-bold text-[var(--site-ink)]">
+      <section className="mt-7">
+        <h2 className="text-[13px] font-extrabold text-[var(--site-ink)]">
           Mevcut hesaplar <span className="font-medium text-[var(--site-muted)]">({users.length})</span>
         </h2>
 
