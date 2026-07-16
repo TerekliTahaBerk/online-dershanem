@@ -3,7 +3,7 @@ import { PricingCard } from "@/components/pricing/pricing-card";
 import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { FooterCta } from "@/components/marketing/footer-cta";
-import { lessonPackages, includedFeatures, cardHighlights } from "@/lib/pricing-content";
+import { lessonPackages, includedFeatures } from "@/lib/pricing-content";
 import { homeFaqs } from "@/lib/site-content";
 
 const steps = [
@@ -71,10 +71,12 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
                       name: pkg.name,
                       category: pkg.category,
                       subject: pkg.subject,
+                      tagline: pkg.tagline,
                       priceLabel: pkg.priceLabel,
                       oldPriceLabel: pkg.oldPriceLabel,
                       discountLabel: pkg.discountLabel,
-                      highlights: cardHighlights,
+                      highlightsTitle: `${pkg.category} odağı`,
+                      highlights: pkg.examFocus,
                     }}
                   />
                 ))}

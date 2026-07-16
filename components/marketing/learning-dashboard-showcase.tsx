@@ -15,7 +15,7 @@ const summaryRows = [
 export function LearningDashboardShowcase() {
   return (
     <div className="relative mx-auto max-w-[1120px] overflow-hidden rounded-[30px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-3 shadow-[0_35px_90px_-62px_rgba(17,19,17,.42)] sm:p-6 lg:p-9" aria-label="Öğrenci çalışma paneli ve veli mobil özetinin örnek görünümü">
-      <div className="absolute right-8 top-8 h-40 w-40 rounded-full bg-[var(--brand-yellow)]/25 blur-3xl" aria-hidden="true" />
+      <div className="absolute right-8 top-8 h-40 w-40 rounded-full bg-[var(--brand-yellow)] opacity-25 blur-3xl" aria-hidden="true" />
 
       <div className="relative overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white shadow-[0_24px_60px_-44px_rgba(17,19,17,.38)] lg:mr-[190px]">
         <div className="flex min-h-14 items-center justify-between border-b border-[var(--site-line)] px-4 sm:px-6">

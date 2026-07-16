@@ -26,6 +26,7 @@ function toLessonPackage(source: (typeof sources)[number]) {
     lessonsPerMonth: source.lessonsPerMonth,
     billingPeriod: source.billingPeriod,
     commitment: source.commitment,
+    examFocus: [...source.examFocus] as string[],
     features: [...source.features] as string[],
   };
 }
@@ -33,7 +34,11 @@ function toLessonPackage(source: (typeof sources)[number]) {
 export const lessonPackages = sources.map(toLessonPackage);
 export const lessonPackage = lessonPackages[0];
 
-/** "Neler dahil?" listesi — public ürün gerçekliğini fiyat kaynağından ayırmadan anlatır. */
+/**
+ * "Neler dahil?" listesi — public ürün gerçekliğini fiyat kaynağından ayırmadan
+ * anlatır. LGS ve YKS paketlerinde ORTAK standart; paketler arası tek fark
+ * `examFocus`'tur, o yüzden bu liste paketten türetilmez.
+ */
 export const includedFeatures: string[] = [
   `Ayda ${lessonPackage.lessonsPerMonth} × ${lessonPackage.lessonDurationMinutes} dakika canlı matematik dersi`,
   "En fazla 4 öğrencilik grup",
@@ -45,10 +50,3 @@ export const includedFeatures: string[] = [
   "PayTR ile güvenli ödeme",
 ];
 
-/** Fiyat kartında gösterilen kısa öne çıkanlar. */
-export const cardHighlights: string[] = [
-  "Ayda 4 × 60 dakika canlı ders",
-  "En fazla 4 öğrencilik grup",
-  "Ders sonrası çalışma yönü",
-  `${lessonPackage.billingPeriod} · ${lessonPackage.commitment.toLocaleLowerCase("tr-TR")}`,
-];

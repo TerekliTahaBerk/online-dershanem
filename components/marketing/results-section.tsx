@@ -1,11 +1,13 @@
-import { lessonPackage } from "@/lib/pricing-content";
-
+/**
+ * Yalnızca YAPISAL ölçütler — bölümün kendi girişi tablonun piyasa/fiyat
+ * karşılaştırması olmadığını söylüyor. Fiyat hero'da ve paket kartlarında
+ * duruyor; buraya eklemek rakip sütunları "—" bırakır, hiçbir şey karşılaştırmaz.
+ */
 const rows = [
   ["Grup düzeni", "Birebir", "Grup dersi", "En fazla 4 öğrenci"],
   ["Canlı etkileşim", "Bire bir", "Programa göre değişir", "Öğrenci çözümünü gösterir"],
   ["Ders sonrası yön", "Öğretmene göre değişir", "Programa göre değişir", "Her ders sonrası çalışma yönü"],
   ["Veli bilgilendirme", "Öğretmene göre değişir", "Programa göre değişir", "Sade gelişim özeti"],
-  ["Online Dershanem fiyatı", "—", "—", lessonPackage.priceLabel],
 ];
 
 export function ResultsSection() {

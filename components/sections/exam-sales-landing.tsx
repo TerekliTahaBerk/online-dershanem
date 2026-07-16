@@ -238,7 +238,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                   </div>
 
                   <ul className="mt-5 space-y-2.5">
-                    {pkg.features.map((feature) => (
+                    {[...pkg.examFocus, ...pkg.features].map((feature) => (
                       <li key={feature} className="flex items-start gap-2.5 text-[14.5px] leading-6 text-[var(--site-body)]">
                         <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-orange-ink)]" strokeWidth={2.4} aria-hidden="true" />
                         <span>{feature}</span>

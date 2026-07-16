@@ -39,6 +39,11 @@ export const subjectPackageGroups = [
         discountedPrice: "₺3.000/ay",
         priceCents: 300000,
         perLessonPrice: "",
+        /** Bu pakete özgü sınav odağı — LGS/YKS arasındaki TEK gerçek fark. */
+        examFocus: [
+          "Yeni nesil soru pratiği",
+          "8. sınıf müfredat takibi"
+        ],
         features: [
           "Canlı matematik dersi",
           "En fazla 4 öğrencilik grup",
@@ -71,14 +76,19 @@ export const subjectPackageGroups = [
         discountedPrice: "₺3.000/ay",
         priceCents: 300000,
         perLessonPrice: "",
+        /** Bu pakete özgü sınav odağı — LGS/YKS arasındaki TEK gerçek fark. */
+        examFocus: [
+          "TYT + AYT bütünlüğünde planlama",
+          "Deneme analizine göre takip"
+        ],
         features: [
           "Canlı matematik dersi",
-          "TYT + AYT bütünlüğünde planlama",
           "En fazla 4 öğrencilik grup",
           "Derste soru-cevap ve birlikte çözüm",
           "Ders sonrası çalışma yönü",
           "Ödevlendirme ve öğretmen notu",
-          "Deneme analizine göre takip",
+          "Sade gelişim özeti",
+          "Seviye ve hedefe göre grup planlaması",
           "PayTR ile güvenli ödeme"
         ],
         cta: "YKS Paketini Satın Al"

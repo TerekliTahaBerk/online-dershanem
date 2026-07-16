@@ -5,10 +5,13 @@ export type PricingCardData = {
   name: string;
   category: string;
   subject: string;
+  tagline?: string;
   priceLabel: string;
   oldPriceLabel?: string;
   discountLabel?: string;
+  /** Pakete özgü sınav odağı. Ortak standart kartta değil, "Neler dahil?" bölümünde anlatılır. */
   highlights: string[];
+  highlightsTitle?: string;
   note?: string;
   ctaLabel?: string;
 };
@@ -22,6 +25,7 @@ export function PricingCard({ data, source }: { data: PricingCardData; source: s
         {data.discountLabel ? <span className="rounded-full bg-[var(--brand-olive-soft)] px-3 py-1 text-[10px] font-bold text-[var(--brand-olive)]">{data.discountLabel}</span> : null}
       </div>
       <h3 className="mt-5 max-w-[16ch] text-[clamp(1.7rem,3vw,2.25rem)] font-semibold leading-[1.04] tracking-[-.035em] text-[var(--site-ink)]">{data.name}</h3>
+      {data.tagline ? <p className="mt-3 text-[14px] leading-6 text-[var(--site-body)]">{data.tagline}</p> : null}
       <div className="mt-7 rounded-[18px] border border-[var(--site-line)] bg-[var(--brand-olive-tint)] p-5">
         {data.oldPriceLabel ? <p className="text-[12px] text-[var(--site-muted)]"><span className="line-through">{data.oldPriceLabel}</span> yerine</p> : null}
         <div className="mt-2 flex items-end gap-2">
@@ -30,13 +34,18 @@ export function PricingCard({ data, source }: { data: PricingCardData; source: s
         </div>
         <p className="mt-3 text-[12px] font-semibold text-[var(--brand-olive)]">Aylık ödeme · taahhüt yok</p>
       </div>
-      <ul className="mt-8 flex-1 space-y-3 border-t border-[var(--site-line)] pt-7">
+      <div className="mt-8 flex-1 border-t border-[var(--site-line)] pt-7">
+        {data.highlightsTitle ? (
+          <p className="mb-4 text-[11px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">{data.highlightsTitle}</p>
+        ) : null}
+        <ul className="space-y-3">
         {data.highlights.map((item) => (
           <li key={item} className="flex items-start gap-3 text-[14px] leading-6 text-[var(--site-body)]">
             <Check size={16} className="mt-1 shrink-0 text-[var(--brand-olive)]" aria-hidden="true" />{item}
           </li>
         ))}
-      </ul>
+        </ul>
+      </div>
       <PurchaseFunnelTrigger
         source={source}
         packageName={data.name}

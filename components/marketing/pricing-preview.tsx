@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { lessonPackages, cardHighlights } from "@/lib/pricing-content";
+import { lessonPackages } from "@/lib/pricing-content";
 import { PricingCard } from "@/components/pricing/pricing-card";
 
 export function PricingPreview() {
@@ -14,8 +14,9 @@ export function PricingPreview() {
         <div className="mx-auto mt-14 grid max-w-4xl gap-5 md:grid-cols-2 sm:mt-20">
           {lessonPackages.map((pkg) => (
             <PricingCard key={`${pkg.category}-${pkg.subject}`} source={`home_pricing_preview_${pkg.category.toLowerCase()}`} data={{
-              name: pkg.name, category: pkg.category, subject: pkg.subject, priceLabel: pkg.priceLabel,
-              oldPriceLabel: pkg.oldPriceLabel, discountLabel: pkg.discountLabel, highlights: cardHighlights,
+              name: pkg.name, category: pkg.category, subject: pkg.subject, tagline: pkg.tagline, priceLabel: pkg.priceLabel,
+              oldPriceLabel: pkg.oldPriceLabel, discountLabel: pkg.discountLabel,
+              highlightsTitle: `${pkg.category} odağı`, highlights: pkg.examFocus,
             }} />
           ))}
         </div>
