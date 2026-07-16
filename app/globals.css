@@ -226,6 +226,43 @@ a {
 html {
   scroll-padding-top: 88px;
 }
+
+/* Panel: oyuncak gibi değil, kullanırken keyif veren sıcak çalışma yüzeyi. */
+.panel-label {
+  display: block;
+  color: var(--site-ink);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.015em;
+}
+.panel-input {
+  width: 100%;
+  border: 1px solid var(--site-line);
+  border-radius: 13px;
+  background: #fff;
+  padding: 0.72rem 0.82rem;
+  color: var(--site-ink);
+  font: inherit;
+  line-height: 1.45;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.panel-input::placeholder { color: #97968d; }
+.panel-input:hover { border-color: #d3cebf; }
+.panel-input:focus {
+  border-color: var(--brand-olive);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-olive-soft);
+}
+.panel-action-card {
+  border: 1px solid var(--site-line);
+  border-radius: 24px;
+  background: #fff;
+  padding: 1.25rem;
+  box-shadow: 0 18px 55px -42px rgba(20,20,15,.35);
+}
+.panel-action-icon { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: 14px; }
+.panel-card-title { margin-top: .9rem; color: var(--site-ink); font-size: 1rem; font-weight: 750; letter-spacing: -.02em; }
+.panel-card-copy { margin-top: .25rem; color: var(--site-body); font-size: .78rem; line-height: 1.55; }
 /* Highlight kelime — yumuşak adaçayı pill zemin (referans: "tek yerden") */
 .site-hl {
   background: var(--brand-orange-soft);

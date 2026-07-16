@@ -1,0 +1,53 @@
+import "server-only";
+
+import { notFound, redirect } from "next/navigation";
+import type { UserRole } from "@prisma/client";
+import { PANEL_ENABLED } from "@/lib/panel-config";
+import { getSession, type SessionUser } from "@/lib/auth/session";
+import { LOGIN_PATH, PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
+
+/**
+ * Yetki kapıları.
+ *
+ * BURASI GERÇEK GÜVENLİK SINIRIDIR — middleware değil. `middleware.ts` yalnızca
+ * çereze bakıp iyimser yönlendirme yapar; doğrudan route handler çağrısı veya
+ * RSC payload isteğiyle atlatılabilir. Bu yüzden her panel sayfası ve her
+ * mutasyon, veriye dokunmadan ÖNCE buradaki bir guard'ı çağırmak zorundadır.
+ */
+
+/** Panel kapalıyken `/panel/*` hiç var olmamış gibi davranır. */
+export function requirePanelEnabled(): void {
+  if (!PANEL_ENABLED) notFound();
+}
+
+/**
+ * Oturum şart; yoksa girişe yollar.
+ *
+ * `mustChangePassword` KONTROL ETMEZ — parola değiştirme sayfasının kendisi
+ * bunu kullanır, yoksa sonsuz yönlendirme döngüsü oluşur.
+ */
+export async function requireSession(): Promise<SessionUser> {
+  requirePanelEnabled();
+  const session = await getSession();
+  if (!session) redirect(LOGIN_PATH);
+  return session;
+}
+
+/**
+ * Oturum + geçici parola kontrolü + rol kontrolü. Panel sayfalarının
+ * (parola sayfası hariç) kullanacağı guard budur.
+ *
+ * Yanlış rolde 403 değil 404 döner: "burada bir sayfa var ama giremezsin"
+ * bilgisi bile sızmasın.
+ */
+export async function requireRole(...roles: UserRole[]): Promise<SessionUser> {
+  const session = await requireSession();
+  if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
+  if (!roles.includes(session.role)) notFound();
+  return session;
+}
+
+/** Rol farketmeksizin, parolasını değiştirmiş her kullanıcı. */
+export async function requireActiveUser(): Promise<SessionUser> {
+  return requireRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+}

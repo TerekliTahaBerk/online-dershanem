@@ -8,6 +8,237 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ============================================================
+// PANEL — kimlik çekirdeği
+//
+// Public self-register YOKTUR: hesabı yalnızca ADMIN açar ve geçici parolayı
+// elden (WhatsApp/telefon) iletir. Bu yüzden e-posta gönderimine bağlı hiçbir
+// akış yok — parola sıfırlama da admin eliyle yapılır.
+// ============================================================
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model User {
+  id String @id @default(cuid())
+
+  /// DAİMA locale'siz küçük harf. `toLocaleLowerCase("tr")` KULLANMA:
+  /// Türkçe locale'de "I" → "ı" olur ve e-postayı kalıcı olarak bozar.
+  email String @unique
+
+  /// scrypt — biçim: `scrypt$N$r$p$salt_b64$hash_b64` (bkz. lib/auth/password.ts)
+  passwordHash String @map("password_hash")
+
+  /// Admin geçici parola verdiği için ilk giriş zorunlu değişimle biter.
+  mustChangePassword Boolean @default(true) @map("must_change_password")
+
+  role   UserRole
+  status UserStatus @default(ACTIVE)
+
+  fullName String? @map("full_name")
+  /// Parola bu numaradan iletiliyor — panelde kritik alan.
+  phone    String?
+
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until")
+  lastLoginAt    DateTime? @map("last_login_at")
+
+  /// Hangi admin açtı. Admin silinse bile kullanıcı kaydı ayakta kalsın.
+  createdById  String? @map("created_by_id")
+  createdBy    User?   @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers User[]  @relation("UserCreatedBy")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sessions       Session[]
+  studentProfile StudentProfile?
+  teacherProfile TeacherProfile?
+  parentStudents ParentStudent[] @relation("ParentLinks")
+  taughtGroups   Group[]         @relation("GroupTeacher")
+  taughtLessons  Lesson[]        @relation("LessonTeacher")
+  odOrders       OdOrder[]
+
+  @@index([role, status])
+  @@index([createdById])
+  @@map("users")
+}
+
+enum LessonStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+model StudentProfile {
+  id          String          @id @default(cuid())
+  userId      String          @unique @map("user_id")
+  classLevel  String?         @map("class_level")
+  schoolName  String?         @map("school_name")
+  targetGoal  String?         @map("target_goal")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parents     ParentStudent[]
+  enrollments Enrollment[]
+  notes       LessonNote[]
+  attendances Attendance[]
+
+  @@map("student_profiles")
+}
+
+model TeacherProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  subjects  String[] @default([])
+  bio       String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("teacher_profiles")
+}
+
+model ParentStudent {
+  id           String         @id @default(cuid())
+  parentId     String         @map("parent_id")
+  studentId    String         @map("student_id")
+  relationship String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  parent       User           @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, studentId])
+  @@index([studentId])
+  @@map("parent_students")
+}
+
+model Group {
+  id          String       @id @default(cuid())
+  name        String
+  subject     String
+  level       String?
+  capacity    Int          @default(4)
+  teacherId   String       @map("teacher_id")
+  isActive    Boolean      @default(true) @map("is_active")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  teacher     User         @relation("GroupTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  enrollments Enrollment[]
+  lessons     Lesson[]
+
+  @@index([teacherId, isActive])
+  @@map("groups")
+}
+
+model Enrollment {
+  id        String         @id @default(cuid())
+  groupId   String         @map("group_id")
+  studentId String         @map("student_id")
+  startedAt DateTime       @default(now()) @map("started_at")
+  endedAt   DateTime?      @map("ended_at")
+  group     Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student   StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, studentId])
+  @@index([studentId, endedAt])
+  @@map("enrollments")
+}
+
+model Lesson {
+  id          String       @id @default(cuid())
+  groupId     String       @map("group_id")
+  teacherId   String       @map("teacher_id")
+  title       String
+  startsAt    DateTime     @map("starts_at")
+  endsAt      DateTime     @map("ends_at")
+  status      LessonStatus @default(PLANNED)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher     User         @relation("LessonTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  notes       LessonNote[]
+  attendances Attendance[]
+
+  @@index([teacherId, startsAt])
+  @@index([groupId, startsAt])
+  @@map("lessons")
+}
+
+model LessonNote {
+  id        String          @id @default(cuid())
+  lessonId  String          @map("lesson_id")
+  studentId String?         @map("student_id")
+  topic     String?
+  note      String?
+  nextGoal  String?         @map("next_goal")
+  homework  String?
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  lesson    Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student   StudentProfile? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([studentId, updatedAt])
+  @@map("lesson_notes")
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  lessonId  String           @map("lesson_id")
+  studentId String           @map("student_id")
+  status    AttendanceStatus @default(PRESENT)
+  note      String?
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+  lesson    Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student   StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@index([studentId, createdAt])
+  @@map("attendances")
+}
+
+model Session {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  /// Çerezdeki opak token'ın sha256'sı. Düz token ASLA saklanmaz —
+  /// DB sızarsa oturumlar ele geçirilemesin.
+  tokenHash String @unique @map("token_hash")
+
+  expiresAt  DateTime  @map("expires_at")
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  userAgent String? @map("user_agent")
+  ip        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
 enum PurchaseStatus {
   PENDING
   PAID
@@ -285,13 +516,16 @@ model OdOrder {
   totalCents    Int            @map("total_cents")
   buyerInfo     Json?          @map("buyer_info")
   intentId      String?        @map("intent_id")
+  userId        String?        @map("user_id")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   package       Package?       @relation(fields: [packageId], references: [id], onDelete: SetNull)
   payments      OdPayment[]
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([intentId])
+  @@index([userId, createdAt])
   @@map("od_orders")
 }
 

@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "typecheck": "tsc --noEmit",
-    "test:unit": "node --import tsx --test lib/*.test.ts lib/od/*.test.ts lib/odk/*.test.ts",
+    "test:unit": "node --import tsx --test lib/*.test.ts lib/auth/*.test.ts lib/od/*.test.ts lib/odk/*.test.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
