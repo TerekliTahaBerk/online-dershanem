@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpenCheck, CreditCard, LayoutDashboard, Plus, Search, UsersRound, X } from "lucide-react";
+import { ArrowRight, BookOpenCheck, CalendarDays, CreditCard, LayoutDashboard, Plus, Search, UsersRound, X } from "lucide-react";
 
 const commands = [
   { label: "Kontrol merkezine git", detail: "Bugünün özeti ve uyarılar", href: "/panel/yonetim", icon: LayoutDashboard },
+  { label: "Haftalık takvimi aç", detail: "Tüm dersleri gün gün gör", href: "/panel/yonetim/takvim", icon: CalendarDays },
   { label: "Kişileri aç", detail: "Öğrenci, öğretmen ve veli hesapları", href: "/panel/yonetim/kullanicilar", icon: UsersRound },
   { label: "Yeni hesap aç", detail: "Geçici parolalı kullanıcı oluştur", href: "/panel/yonetim/kullanicilar#yeni-hesap", icon: Plus },
   { label: "Grup ve dersleri aç", detail: "Eğitim operasyonu", href: "/panel/yonetim/egitim", icon: BookOpenCheck },

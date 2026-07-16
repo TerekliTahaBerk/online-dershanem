@@ -8,6 +8,7 @@ import { UserRowActions } from "@/components/panel/user-row-actions";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { UsersRound } from "lucide-react";
 import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -63,9 +64,9 @@ export default async function UsersPage() {
             >
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate text-[14px] font-semibold text-[var(--site-ink)]">
+                  <Link href={`/panel/yonetim/kullanicilar/${user.id}`} className="truncate text-[14px] font-semibold text-[var(--site-ink)] hover:text-[var(--brand-olive)] hover:underline">
                     {user.fullName || user.email}
-                  </span>
+                  </Link>
                   <span className="shrink-0 rounded-full border border-[var(--brand-olive-soft)] bg-[var(--brand-olive-soft)] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[.05em] text-[var(--brand-olive)]">
                     {roleLabel(user.role)}
                   </span>
