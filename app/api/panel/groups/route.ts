@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { logAudit } from "@/lib/audit";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -45,5 +46,6 @@ export async function POST(request: Request) {
       enrollments: { create: studentIds.map((studentId) => ({ studentId })) },
     },
   });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "Group", entityId: group.id, action: "group.created", summary: `${group.name} grubu oluşturuldu`, payload: { teacherId: teacher.id, studentCount: studentIds.length } });
   return NextResponse.json({ id: group.id });
 }

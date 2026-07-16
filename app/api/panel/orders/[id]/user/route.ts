@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { logAudit } from "@/lib/audit";
 
 const schema = z.object({ userId: z.string().min(1) });
 
@@ -18,5 +19,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!student) return NextResponse.json({ error: "Aktif öğrenci hesabı bulunamadı." }, { status: 404 });
   const result = await prisma.odOrder.updateMany({ where: { id }, data: { userId: student.id } });
   if (!result.count) return NextResponse.json({ error: "Sipariş bulunamadı." }, { status: 404 });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "OdOrder", entityId: id, action: "order.user_linked", summary: "Sipariş öğrenci hesabına bağlandı", payload: { userId: student.id } });
   return NextResponse.json({ ok: true });
 }

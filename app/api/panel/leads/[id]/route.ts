@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { logAudit } from "@/lib/audit";
 
 const schema = z.object({ status: z.enum(["NEW", "REVIEWING", "CONTACTED", "ENROLLED", "ARCHIVED"]) });
 
@@ -16,5 +17,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const { id } = await context.params;
   const result = await prisma.leadSubmission.updateMany({ where: { id }, data: { intakeStatus: parsed.data.status } });
   if (!result.count) return NextResponse.json({ error: "Talep bulunamadı." }, { status: 404 });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "LeadSubmission", entityId: id, action: "lead.status_updated", summary: `Talep durumu ${parsed.data.status} olarak değiştirildi`, payload: { status: parsed.data.status } });
   return NextResponse.json({ ok: true });
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BookOpenCheck, CalendarDays, CreditCard, LayoutDashboard, Plus, Search, UsersRound, X } from "lucide-react";
+import { ArrowRight, BookOpenCheck, CalendarDays, CreditCard, History, LayoutDashboard, Plus, Search, UsersRound, X } from "lucide-react";
 
 const commands = [
   { label: "Kontrol merkezine git", detail: "Bugünün özeti ve uyarılar", href: "/panel/yonetim", icon: LayoutDashboard },
@@ -13,6 +13,7 @@ const commands = [
   { label: "Yeni grup kur", detail: "En fazla dört öğrenci", href: "/panel/yonetim/egitim#yeni-grup", icon: Plus },
   { label: "Ders planla", detail: "Gruba 60 dakikalık ders ekle", href: "/panel/yonetim/egitim#ders-planla", icon: Plus },
   { label: "Sipariş ve talepleri aç", detail: "Operasyon kuyruğu", href: "/panel/yonetim/isler", icon: CreditCard },
+  { label: "İşlem geçmişini aç", detail: "Yönetim ve güvenlik kayıtları", href: "/panel/yonetim/kayitlar", icon: History },
 ];
 
 export function AdminCommandSearch() {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { logAudit } from "@/lib/audit";
 
 const schema = z.object({ parentId: z.string().min(1), studentId: z.string().min(1), relationship: z.string().trim().max(30).optional() });
 
@@ -18,10 +19,11 @@ export async function POST(request: Request) {
     prisma.studentProfile.findUnique({ where: { id: parsed.data.studentId }, select: { id: true } }),
   ]);
   if (!parent || !student) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
-  await prisma.parentStudent.upsert({
+  const relation = await prisma.parentStudent.upsert({
     where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
     create: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null },
     update: { relationship: parsed.data.relationship || null },
   });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "ParentStudent", entityId: relation.id, action: "relationship.saved", summary: "Veli–öğrenci bağlantısı kaydedildi", payload: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null } });
   return NextResponse.json({ ok: true });
 }

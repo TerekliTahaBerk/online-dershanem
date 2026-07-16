@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
-import { BookOpenCheck, CalendarDays, CreditCard, LayoutDashboard, UsersRound } from "lucide-react";
+import { BookOpenCheck, CalendarDays, CreditCard, History, LayoutDashboard, UsersRound } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 
 type NavItem = { href: string; label: string; hint?: string; icon: LucideIcon };
@@ -16,6 +16,7 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/kullanicilar`, label: "Kişiler", hint: "Hesaplar ve roller", icon: UsersRound },
     { href: `${root}/egitim`, label: "Eğitim", hint: "Gruplar ve dersler", icon: BookOpenCheck },
     { href: `${root}/isler`, label: "Operasyon", hint: "Talepler ve ödemeler", icon: CreditCard },
+    { href: `${root}/kayitlar`, label: "İşlem geçmişi", hint: "Değişiklik ve güvenlik izi", icon: History },
   ],
   TEACHER: (root) => [{ href: root, label: "Bugün", icon: BookOpenCheck }],
   STUDENT: (root) => [{ href: root, label: "Özet", icon: LayoutDashboard }],

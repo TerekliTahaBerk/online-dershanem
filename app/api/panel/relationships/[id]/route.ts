@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { logAudit } from "@/lib/audit";
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRole("ADMIN");
@@ -11,5 +12,6 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   const { id } = await context.params;
   const result = await prisma.parentStudent.deleteMany({ where: { id } });
   if (!result.count) return NextResponse.json({ error: "Veli bağlantısı bulunamadı." }, { status: 404 });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "ParentStudent", entityId: id, action: "relationship.deleted", summary: "Veli–öğrenci bağlantısı kaldırıldı" });
   return NextResponse.json({ ok: true });
 }
