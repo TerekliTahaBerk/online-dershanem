@@ -27,10 +27,7 @@ const CHECKS: EnvCheck[] = [
   { key: "PAYTR_MERCHANT_SALT", required: false, prodOnly: true, description: "PayTR" },
   { key: "RESEND_API_KEY", required: false, description: "Email gönderimi (opsiyonel)" },
   { key: "EMAIL_MODE", required: false, description: "Email kapsamı: receipts (varsayılan) veya all" },
-  { key: "MAIL_FROM", required: false, description: "Email from adresi (opsiyonel)" },
   { key: "CRON_SECRET", required: false, prodOnly: true, description: "Cron route'ları korumak için bearer" },
-  { key: "UPSTASH_REDIS_REST_URL", required: false, description: "Cache backend (opsiyonel; yoksa in-memory fallback)" },
-  { key: "UPSTASH_REDIS_REST_TOKEN", required: false, description: "Cache backend token" },
 ];
 
 type EnvStatus = { ok: boolean; missing: string[]; warnings: string[] };
@@ -55,6 +52,12 @@ export function validateEnvOnce(): EnvStatus {
       warnings.push(`${c.key}: tanımsız — ${c.description}`);
     }
   }
+
+  // Redis tamamen opsiyoneldir; ikisi de yoksa bilinçli in-memory fallback'i
+  // kullanılır. Yalnızca yarım yapılandırma gerçek bir operatör uyarısıdır.
+  const redisUrl = Boolean(process.env.UPSTASH_REDIS_REST_URL);
+  const redisToken = Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
+  if (redisUrl !== redisToken) warnings.push("UPSTASH_REDIS: URL ve token birlikte tanımlanmalı");
 
   const banner = [
     "─".repeat(60),

@@ -9,6 +9,8 @@ import type { NextConfig } from "next";
  * - `connect-src`: Vercel Analytics, Upstash, Resend and analytics beacons.
  * - `img-src` / `media-src`: data + blob (avatar/PDF render), Vercel Blob CDN.
  */
+const secureDeployment = process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://");
+
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live https://www.googletagmanager.com https://static.cloudflareinsights.com",
@@ -23,12 +25,12 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self' https://www.paytr.com",
   "frame-ancestors 'self'",
-  "upgrade-insecure-requests",
+  ...(secureDeployment ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
 const securityHeaders = [
   // Tarayıcıya: bu site'ı her zaman HTTPS üzerinden ziyaret et (1 yıl + preload).
-  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  ...(secureDeployment ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }] : []),
   // MIME-type sniffing engelle
   { key: "X-Content-Type-Options", value: "nosniff" },
   // iframe içine alınmayı engelle (clickjacking)

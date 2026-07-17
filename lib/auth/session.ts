@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
  */
 
 export const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "od_session";
+const SECURE_SESSION_COOKIE = process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") === true;
 
 const SESSION_TTL_DAYS = 30;
 const SESSION_TTL_MS = SESSION_TTL_DAYS * 24 * 60 * 60 * 1000;
@@ -61,7 +62,10 @@ export async function createSession(
   const store = await cookies();
   store.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    // `next start` NODE_ENV=production ile yerel HTTP'de de çalışır. Secure
+    // bayrağı gerçek HTTPS deployment'a göre belirlenir; WebKit aksi durumda
+    // localhost çerezini reddeder.
+    secure: SECURE_SESSION_COOKIE,
     sameSite: "lax",
     path: "/",
     expires: expiresAt,

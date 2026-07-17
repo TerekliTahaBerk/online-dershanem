@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+const crossBrowser = process.env.PLAYWRIGHT_CROSS_BROWSER === "true";
 
 /**
  * Online Dershanem — E2E test yapılandırması
@@ -37,11 +38,11 @@ export default defineConfig({
     locale: "tr-TR",
     timezoneId: "Europe/Istanbul",
   },
-  projects: [
+  projects: crossBrowser ? [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    // Mobile + Firefox/WebKit ileride aktif edilebilir
-    // { name: "mobile-safari", use: { ...devices["iPhone 14"] } },
-  ],
+    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+  ] : [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {

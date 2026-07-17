@@ -1,8 +1,18 @@
 # Online Dershanem
 
-Landing-first Next.js uygulaması. Public pazarlama sayfaları, blog, lead formu, guest paket satın alma, PayTR iframe ve callback akışlarını içerir. Kullanıcı hesabı, rol bazlı panel ve self-register sistemi yoktur.
+Next.js 15, PostgreSQL ve Prisma üzerinde çalışan; public satış sitesiyle rol bazlı eğitim panelini aynı üründe birleştiren uygulama.
 
-## Kurulum
+## Ürün alanları
+
+- Public site, blog, lead formu, sepet ve PayTR ödeme akışları
+- Yönetim paneli: kullanıcılar, veli bağlantıları, gruplar, dersler, raporlar, siparişler ve e-posta kuyruğu
+- Öğretmen paneli: ders programı, hızlı ders notu/yoklama, ödev ve materyal yönetimi
+- Öğrenci paneli: sıradaki ders, ödevler, materyaller ve gelişim görünümü
+- Veli paneli: bağlı öğrenciye özel gelişim, takvim, ödev ve ödeme görünümü
+
+Panel hesapları yalnızca yönetici tarafından oluşturulur; public self-register bulunmaz. Rol ve yatay erişim kontrolleri her sayfa ve API isteğinde uygulanır.
+
+## Lokal kurulum
 
 ```bash
 npm install
@@ -12,38 +22,39 @@ npx prisma migrate dev
 npm run dev
 ```
 
-## Public akışlar
-
-- `/`, ders/deneme landing sayfaları ve `/blog`
-- `/paketler`, `/sepet`, `/paketler/satin-al`
-- `/odk-paketleri/[slug]/satin-al`
-- `POST /api/leads`
-- `POST /api/od/checkout/start`
-- `POST /api/odk/checkout/start`
-- `POST /api/paytr/callback`
-
-Checkout guest olarak çalışır. Alıcı bilgileri siparişin `buyerInfo` alanında tutulur; başarılı ödemede sipariş güncellenir ve müşteri/operasyon e-postaları gönderilir.
-
-## Ortam değişkenleri
-
-`DATABASE_URL`, `DIRECT_URL`, PayTR anahtarları, `RESEND_API_KEY`, `LEAD_NOTIFICATION_EMAILS` ve `CRON_SECRET` gereklidir. Ayrıntılar `.env.example` içindedir.
-
-## Doğrulama ve deploy
+## Doğrulama
 
 ```bash
 npm run lint
 npm run typecheck
 npm run test:unit
 npm run build
-npx prisma migrate deploy
+npm run e2e
 ```
 
-Yeni ve tamamen boş bir veritabanında eski migration zinciri yerine güvenli başlangıç komutu:
+Firefox, WebKit ve Chromium panel kabul paketi:
+
+```bash
+npx playwright install chromium firefox webkit
+npm run e2e:cross-browser
+```
+
+## Veritabanı ve yayın
+
+Mevcut/canlı veritabanında yalnızca migration deploy kullanılır:
+
+```bash
+npm run release:migrate
+```
+
+Tamamen boş bir veritabanında güvenli başlangıç:
 
 ```bash
 ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 ```
 
-Komut boş olmayan veritabanında çalışmayı reddeder; güncel şemayı kurup mevcut migration geçmişini işaretler. Mevcut/canlı veritabanlarında her zaman `npm run release:migrate` kullanılır.
+Komut boş olmayan veritabanında çalışmayı reddeder. Paneli canlıda açmak için Vercel Production ortamında `PANEL_ENABLED=true` ve `NEXT_PUBLIC_PANEL_ENABLED=true` tanımlanıp yeniden deploy edilmelidir.
+
+Ortam değişkenleri, e-posta politikası, yedek geri yükleme ve canlı kabul adımları için [operasyon kılavuzuna](docs/panel-operations.md) bakın.
 
 PayTR bildirim URL'si `/api/paytr/callback` olarak ayarlanmalıdır.

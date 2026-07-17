@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 
 /**
@@ -11,10 +11,15 @@ import { ArrowRight, Loader2 } from "lucide-react";
  * parola mı" ayrımı yapmıyor (kullanıcı sayımına karşı); burada da yapmamalıyız.
  */
 export function LoginForm() {
+  const [ready, setReady] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  // Safari/WebKit ilk yüklemede kullanıcı etkileşimini hydration'dan önce
+  // iletebilir. Handler bağlanmadan submit edilmesini açıkça engelle.
+  useEffect(() => setReady(true), []);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -94,7 +99,8 @@ export function LoginForm() {
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={!ready || pending}
+        aria-busy={!ready || pending}
         className="site-btn site-btn-primary site-btn-lg mt-2 w-full disabled:opacity-70"
       >
         {pending ? (

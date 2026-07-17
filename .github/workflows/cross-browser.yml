@@ -1,0 +1,59 @@
+name: Cross-browser Panel
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "40 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  panel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: e2e_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
+      NEXTAUTH_SECRET: e2e-only-nextauth-secret-0123456789abcdef0123456789abcdef
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      PANEL_ENABLED: "true"
+      NEXT_PUBLIC_PANEL_ENABLED: "true"
+      CRON_SECRET: e2e-only-cron-secret-0123456789abcdef0123456789abcdef
+      PAYTR_MERCHANT_ID: e2e-merchant
+      PAYTR_MERCHANT_KEY: e2e-only-merchant-key
+      PAYTR_MERCHANT_SALT: e2e-only-merchant-salt
+      E2E_PASSWORD: testpass123
+      PANEL_E2E_ADMIN_EMAIL: admin.e2e@example.com
+      PANEL_E2E_ADMIN_PASSWORD: testpass123
+      PANEL_E2E_TEACHER_EMAIL: teacher.e2e@example.com
+      PANEL_E2E_TEACHER_PASSWORD: testpass123
+      PANEL_E2E_STUDENT_EMAIL: student.e2e@example.com
+      PANEL_E2E_STUDENT_PASSWORD: testpass123
+      PANEL_E2E_PARENT_EMAIL: parent.e2e@example.com
+      PANEL_E2E_PARENT_PASSWORD: testpass123
+      PLAYWRIGHT_CROSS_BROWSER: "true"
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npx prisma db push --skip-generate --accept-data-loss
+      - run: npx tsx prisma/seed-e2e.ts
+      - run: npm run build:nomigrate
+      - run: npm run e2e:cross-browser
