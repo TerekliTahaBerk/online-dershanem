@@ -16,11 +16,11 @@ type Item = {
 
 const icons = { LESSON_SUMMARY: CalendarCheck2, ABSENCE: UserX, ASSIGNMENT: ClipboardCheck, PAYMENT: CreditCard, SYSTEM: Bell };
 
-export function NotificationInbox({ initialItems }: { initialItems: Item[] }) {
+export function NotificationInbox({ initialItems, initialUnread, total }: { initialItems: Item[]; initialUnread: number; total: number }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [busy, setBusy] = useState<string | null>(null);
-  const unread = items.filter((item) => !item.read).length;
+  const [unread, setUnread] = useState(initialUnread);
 
   async function markRead(id?: string) {
     setBusy(id || "all");
@@ -29,7 +29,11 @@ export function NotificationInbox({ initialItems }: { initialItems: Item[] }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(id ? { id } : {}),
     });
-    if (response.ok) setItems((current) => current.map((item) => !id || item.id === id ? { ...item, read: true } : item));
+    if (response.ok) {
+      const wasUnread = id ? items.some((item) => item.id === id && !item.read) : unread > 0;
+      setItems((current) => current.map((item) => !id || item.id === id ? { ...item, read: true } : item));
+      setUnread((current) => id ? Math.max(0, current - (wasUnread ? 1 : 0)) : 0);
+    }
     setBusy(null);
     router.refresh();
     return response.ok;
@@ -43,7 +47,7 @@ export function NotificationInbox({ initialItems }: { initialItems: Item[] }) {
   return (
     <section className="panel-surface overflow-hidden">
       <div className="flex items-center justify-between gap-3 border-b border-[var(--site-line)] p-5">
-        <div><h2 className="text-sm font-extrabold text-[var(--site-ink)]">Son bildirimler</h2><p className="mt-1 text-xs text-[var(--site-muted)]">{unread ? `${unread} okunmamış gelişme` : "Hepsini gördünüz"}</p></div>
+        <div><h2 className="text-sm font-extrabold text-[var(--site-ink)]">Son bildirimler</h2><p className="mt-1 text-xs text-[var(--site-muted)]">{unread ? `${unread} okunmamış · ${total} eşleşen kayıt` : `${total} kayıt · hepsini gördünüz`}</p></div>
         {unread ? <button type="button" disabled={busy !== null} onClick={() => void markRead()} className="panel-quick-action">{busy === "all" ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Tümünü okundu yap</button> : null}
       </div>
       <div className="divide-y divide-[var(--site-line)]">

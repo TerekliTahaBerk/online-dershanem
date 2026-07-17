@@ -44,6 +44,11 @@ test.describe("panel deneyimi", () => {
       expect(response?.status(), route).toBe(200);
       await expect(page.getByRole("main")).toBeVisible();
     }
+    const csv = await page.evaluate(async () => { const response = await fetch("/api/panel/reports/export?range=30"); return { status: response.status, type: response.headers.get("content-type"), disposition: response.headers.get("content-disposition"), text: await response.text() }; });
+    expect(csv.status).toBe(200);
+    expect(csv.type).toContain("text/csv");
+    expect(csv.disposition).toContain("attachment");
+    expect(csv.text).toContain("Kategori");
   });
 
   test("öğrenci gelişim ve materyal, veli bildirim ekranlarını açabilir", async ({ page }) => {
@@ -52,7 +57,7 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogrenci/materyaller"); await expect(page.getByText("E2E Köklü İfadeler Föyü")).toBeVisible();
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
-    await page.goto("/panel/bildirimler"); await expect(page.getByText("E2E panel hazır")).toBeVisible();
+    await page.goto("/panel/bildirimler?type=SYSTEM&status=unread"); await expect(page.getByText("E2E panel hazır")).toBeVisible();
   });
 
   test("öğretmen dört öğrencinin ders özetini tek ekranda otomatik kaydeder", async ({ page }) => {

@@ -26,6 +26,8 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
     await page.goto("/panel/ogrenci");
     await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
+    const exportStatus = await page.evaluate(async () => (await fetch("/api/panel/reports/export?range=30")).status);
+    expect(exportStatus).toBe(403);
   });
 
   test("öğrenci öğretmen ve veli panelini açamaz", async ({ page }) => {
