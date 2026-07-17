@@ -102,4 +102,27 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/veli/takip");
     await expect(page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).getByText("Tamamlandı", { exact: true })).toBeVisible();
   });
+
+  test("takvim dışa aktarma rol sınırlarını ve toplantı bağlantısı gizliliğini korur", async ({ page }) => {
+    await login(page, accounts.teacher);
+    const teacherCalendar = await page.evaluate(async () => { const response = await fetch("/api/panel/calendar/export"); return { status: response.status, type: response.headers.get("content-type"), text: await response.text() }; });
+    expect(teacherCalendar.status).toBe(200);
+    expect(teacherCalendar.type).toContain("text/calendar");
+    expect(teacherCalendar.text).toContain("BEGIN:VCALENDAR");
+    expect(teacherCalendar.text).toContain("https://example.com/e2e-class");
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.student);
+    const studentCalendar = await page.evaluate(async () => { const response = await fetch("/api/panel/calendar/export"); return { status: response.status, text: await response.text() }; });
+    expect(studentCalendar.status).toBe(200);
+    expect(studentCalendar.text).toContain("E2E Hızlı Ders Özeti");
+    expect(studentCalendar.text).not.toContain("https://example.com/e2e-class");
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.parent);
+    const parentResults = await page.evaluate(async (foreignId) => { const own = await fetch("/api/panel/calendar/export?studentId=e2e-student-profile"); const foreign = await fetch(`/api/panel/calendar/export?studentId=${foreignId}`); return { ownStatus: own.status, ownText: await own.text(), foreignStatus: foreign.status }; }, process.env.PANEL_E2E_FOREIGN_STUDENT_ID!);
+    expect(parentResults.ownStatus).toBe(200);
+    expect(parentResults.ownText).not.toContain("https://example.com/e2e-class");
+    expect(parentResults.foreignStatus).toBe(404);
+  });
 });

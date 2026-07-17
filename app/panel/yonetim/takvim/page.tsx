@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Download, SlidersHorizontal } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -34,6 +34,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
 
   return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
     <AdminPageHeader eyebrow="Haftalık plan" title="Ders takvimi" description="Tüm grupların derslerini gün gün görün; öğretmen veya gruba göre odağınızı daraltın." icon={CalendarDays} meta={`${lessons.length} ders`} />
+    <div className="mt-4 flex justify-end"><a href="/api/panel/calendar/export" download className="panel-quick-action panel-quick-action-primary"><Download size={14} /> Tüm programı indir (.ics)</a></div>
     <div className="mt-6 flex flex-col gap-3 rounded-[20px] border border-[var(--site-line)] bg-white p-3 shadow-[var(--panel-card-shadow)] lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center justify-between gap-2"><Link href={query(week - 1)} className="panel-quick-action" aria-label="Önceki hafta"><ChevronLeft size={16} /></Link><div className="min-w-[190px] text-center"><p className="text-[12.5px] font-extrabold text-[var(--site-ink)]">{rangeDate.format(start)} – {rangeDate.format(new Date(end.getTime() - 1))}</p><p className="mt-0.5 text-[10.5px] text-[var(--site-muted)]">{week === 0 ? "Bu hafta" : week > 0 ? `${week} hafta sonrası` : `${Math.abs(week)} hafta önce`}</p></div><Link href={query(week + 1)} className="panel-quick-action" aria-label="Sonraki hafta"><ChevronRight size={16} /></Link>{week !== 0 ? <Link href={query(0)} className="panel-quick-action">Bugün</Link> : null}</div>
       <form className="flex flex-col gap-2 sm:flex-row" action="/panel/yonetim/takvim"><input type="hidden" name="week" value={week} /><select name="teacher" defaultValue={params.teacher || ""} className="panel-input min-w-[170px] py-2 text-xs"><option value="">Tüm öğretmenler</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName || teacher.email}</option>)}</select><select name="group" defaultValue={params.group || ""} className="panel-input min-w-[150px] py-2 text-xs"><option value="">Tüm gruplar</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select><button className="panel-quick-action panel-quick-action-primary"><SlidersHorizontal size={14} /> Uygula</button></form>
