@@ -23,6 +23,7 @@ const ids = {
   lesson: "e2e-lesson",
   previousLesson: "e2e-lesson-previous",
   foreignLesson: "e2e-lesson-foreign",
+  assignment: "e2e-assignment",
 };
 
 async function main() {
@@ -80,7 +81,7 @@ async function main() {
 
   const startsAt = new Date(Date.now() + 60 * 60 * 1000);
   const previousStartsAt = new Date(Date.now() - 7 * 86400000);
-  await prisma.lesson.upsert({ where: { id: ids.lesson }, create: { id: ids.lesson, groupId: ids.group, teacherId: ids.teacher, title: "E2E Hızlı Ders Özeti", startsAt, endsAt: new Date(startsAt.getTime() + 3600000) }, update: { startsAt, endsAt: new Date(startsAt.getTime() + 3600000), status: "PLANNED" } });
+  await prisma.lesson.upsert({ where: { id: ids.lesson }, create: { id: ids.lesson, groupId: ids.group, teacherId: ids.teacher, title: "E2E Hızlı Ders Özeti", startsAt, endsAt: new Date(startsAt.getTime() + 3600000), meetingUrl: "https://example.com/e2e-class" }, update: { startsAt, endsAt: new Date(startsAt.getTime() + 3600000), meetingUrl: "https://example.com/e2e-class", status: "PLANNED" } });
   await prisma.lesson.upsert({ where: { id: ids.previousLesson }, create: { id: ids.previousLesson, groupId: ids.group, teacherId: ids.teacher, title: "Önceki Ders", startsAt: previousStartsAt, endsAt: new Date(previousStartsAt.getTime() + 3600000), status: "COMPLETED" }, update: { startsAt: previousStartsAt, status: "COMPLETED" } });
   await prisma.lesson.upsert({ where: { id: ids.foreignLesson }, create: { id: ids.foreignLesson, groupId: ids.foreignGroup, teacherId: ids.otherTeacher, title: "Yabancı Ders", startsAt, endsAt: new Date(startsAt.getTime() + 3600000) }, update: { teacherId: ids.otherTeacher, status: "PLANNED" } });
 
@@ -90,6 +91,11 @@ async function main() {
   const previousNote = await prisma.lessonNote.findFirst({ where: { lessonId: ids.previousLesson, studentId: null } });
   if (previousNote) await prisma.lessonNote.update({ where: { id: previousNote.id }, data: { topic: "Üslü ifadeler", nextGoal: "Köklü ifadelerde dört işlem" } });
   else await prisma.lessonNote.create({ data: { lessonId: ids.previousLesson, topic: "Üslü ifadeler", nextGoal: "Köklü ifadelerde dört işlem" } });
+
+  await prisma.assignment.upsert({ where: { id: ids.assignment }, create: { id: ids.assignment, groupId: ids.group, lessonId: ids.lesson, createdById: ids.teacher, title: "E2E Yeni Nesil Sorular", description: "1–12. soruları çöz ve yanlışlarını işaretle.", dueAt: new Date(Date.now() + 2 * 86400000) }, update: { isActive: true, dueAt: new Date(Date.now() + 2 * 86400000) } });
+  for (const studentId of [ids.studentProfile, ids.foreignStudentProfile, ids.studentProfile3, ids.studentProfile4]) {
+    await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.assignment, studentId } }, create: { assignmentId: ids.assignment, studentId }, update: { status: "TODO", completedAt: null } });
+  }
 }
 
 main()

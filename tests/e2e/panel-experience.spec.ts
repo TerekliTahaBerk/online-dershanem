@@ -10,6 +10,7 @@ const accounts = {
 };
 
 async function login(page: Page, account: { email?: string; password?: string }) {
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}` });
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);
   await page.getByLabel("Parola").fill(account.password!);
@@ -56,5 +57,18 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 6_000 });
     await expect(page.getByRole("button", { name: "Ada Öğrenci: Geç" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  });
+
+  test("ödev durumu öğrenciden veli görünümüne yansır", async ({ page }) => {
+    await login(page, accounts.student);
+    await page.goto("/panel/ogrenci/odevler");
+    const card = page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" });
+    await card.getByRole("button", { name: "Tamamlandı" }).click();
+    await expect(card.getByText("Tamamlandı", { exact: true }).first()).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.parent);
+    await page.goto("/panel/veli/takip");
+    await expect(page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).getByText("Tamamlandı", { exact: true })).toBeVisible();
   });
 });

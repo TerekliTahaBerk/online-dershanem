@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { TeacherLessonWorkspace } from "@/components/panel/teacher-lesson-workspace";
+import { PanelNav } from "@/components/panel/panel-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
   } : null;
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
       {lessons.length ? <nav aria-label="Ders seçimi" className="mb-5 flex gap-2 overflow-x-auto pb-2">
         {lessons.map((lesson) => <Link key={lesson.id} href={`/panel/ogretmen?lesson=${lesson.id}`} className={`min-w-fit rounded-2xl border px-4 py-3 transition ${lesson.id === selectedId ? "border-[var(--brand-olive)] bg-[var(--brand-olive)] text-white shadow-md" : "border-[var(--site-line)] bg-white text-[var(--site-body)] hover:border-[var(--brand-olive)]"}`}><span className="block text-[11px] font-bold uppercase tracking-[.05em] opacity-75">{day.format(lesson.startsAt)}</span><span className="mt-0.5 block text-sm font-bold">{time.format(lesson.startsAt)} · {lesson.group.name}</span></Link>)}
       </nav> : null}

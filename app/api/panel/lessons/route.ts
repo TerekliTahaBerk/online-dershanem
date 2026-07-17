@@ -5,7 +5,7 @@ import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 
-const schema = z.object({ groupId: z.string().min(1), title: z.string().trim().min(2).max(120), startsAt: z.string().datetime(), repeatWeeks: z.number().int().min(1).max(12).default(1) });
+const schema = z.object({ groupId: z.string().min(1), title: z.string().trim().min(2).max(120), startsAt: z.string().datetime(), repeatWeeks: z.number().int().min(1).max(12).default(1), meetingUrl: z.string().url().max(500).optional().or(z.literal("")) });
 
 export async function POST(request: Request) {
   const auth = await requireApiRole("ADMIN");
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const startsAt = new Date(parsed.data.startsAt);
   const lessons = await prisma.$transaction(Array.from({ length: parsed.data.repeatWeeks }, (_, index) => {
     const lessonStart = new Date(startsAt.getTime() + index * 7 * 86400000);
-    return prisma.lesson.create({ data: { groupId: group.id, teacherId: group.teacherId, title: parsed.data.title, startsAt: lessonStart, endsAt: new Date(lessonStart.getTime() + 60 * 60 * 1000) } });
+    return prisma.lesson.create({ data: { groupId: group.id, teacherId: group.teacherId, title: parsed.data.title, startsAt: lessonStart, endsAt: new Date(lessonStart.getTime() + 60 * 60 * 1000), meetingUrl: parsed.data.meetingUrl || null } });
   }));
   await logAudit({ actorUserId: auth.session.userId, entityType: "Lesson", entityId: lessons[0].id, action: "lesson.created", summary: `${parsed.data.title} dersi planlandı`, payload: { groupId: group.id, repeatWeeks: lessons.length, startsAt: startsAt.toISOString() } });
   return NextResponse.json({ id: lessons[0].id, count: lessons.length });

@@ -7,6 +7,7 @@ const accounts = {
 };
 
 async function login(page: Page, account: { email?: string; password?: string }) {
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}` });
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);
   await page.getByLabel("Parola").fill(account.password!);
@@ -43,6 +44,10 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     // App Router, streaming başladıktan sonra notFound() çalışırsa HTTP yanıtı
     // 200 kalabilir; güvenlik sonucu kullanıcıya veri yerine 404 yüzeyidir.
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
+    for (const route of ["takvim", "takip"]) {
+      await page.goto(`/panel/veli/${route}?studentId=${process.env.PANEL_E2E_FOREIGN_STUDENT_ID}`);
+      await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
+    }
   });
 
   test("öğretmen başka grubun ders notunu değiştiremez", async ({ page }) => {

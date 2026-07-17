@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
-import { BookOpenCheck, CalendarDays, CreditCard, History, LayoutDashboard, UsersRound } from "lucide-react";
+import { BookOpenCheck, CalendarDays, ClipboardCheck, CreditCard, History, LayoutDashboard, UsersRound } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 
 type NavItem = { href: string; label: string; hint?: string; icon: LucideIcon };
@@ -18,9 +18,22 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/isler`, label: "Operasyon", hint: "Talepler ve ödemeler", icon: CreditCard },
     { href: `${root}/kayitlar`, label: "İşlem geçmişi", hint: "Değişiklik ve güvenlik izi", icon: History },
   ],
-  TEACHER: (root) => [{ href: root, label: "Bugün", icon: BookOpenCheck }],
-  STUDENT: (root) => [{ href: root, label: "Özet", icon: LayoutDashboard }],
-  PARENT: (root) => [{ href: root, label: "Özet", icon: LayoutDashboard }],
+  TEACHER: (root) => [
+    { href: root, label: "Bugün", icon: BookOpenCheck },
+    { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
+    { href: `${root}/gruplar`, label: "Gruplarım", icon: UsersRound },
+    { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
+  ],
+  STUDENT: (root) => [
+    { href: root, label: "Özet", icon: LayoutDashboard },
+    { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
+    { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
+  ],
+  PARENT: (root) => [
+    { href: root, label: "Gelişim", icon: LayoutDashboard },
+    { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
+    { href: `${root}/takip`, label: "Ödev ve ödeme", icon: ClipboardCheck },
+  ],
 };
 
 export function PanelNav({ role }: { role: UserRole }) {
@@ -28,10 +41,8 @@ export function PanelNav({ role }: { role: UserRole }) {
   const root = rolePath(role);
   const items = NAV[role](root);
 
-  if (items.length < 2) return null;
-
   return (
-    <nav aria-label="Panel menüsü" className="panel-nav-scroll flex gap-2 overflow-x-auto lg:flex-col lg:gap-1 lg:overflow-visible">
+    <nav aria-label="Panel menüsü" className={`panel-nav-scroll flex gap-2 overflow-x-auto ${role === "ADMIN" ? "lg:flex-col lg:gap-1 lg:overflow-visible" : ""}`}>
       {items.map((item) => {
         const active = pathname === item.href || (item.href !== root && pathname.startsWith(`${item.href}/`));
         const Icon = item.icon;
