@@ -2,7 +2,7 @@ import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 
 let resend: Resend | null = null;
-const sender = "Online Dershanem <noreply@onlinedershanem.com>";
+const sender = process.env.MAIL_FROM || "Online Dershanem <noreply@onlinedershanem.com>";
 const emailMode = process.env.EMAIL_MODE || "receipts";
 
 function client(): Resend {
@@ -19,9 +19,11 @@ function template(title: string, body: string): string {
 }
 
 async function send(to: string | string[], subject: string, html: string): Promise<void> {
-  if (!process.env.RESEND_API_KEY) return;
   const recipients = Array.isArray(to) ? to : [to];
   const row = await prisma.emailOutbox.create({ data: { recipients: JSON.stringify(recipients), subject, html }, select: { id: true } }).catch(() => null);
+  // Makbuz önce outbox'a yazılır. Resend geçici olarak kapalıysa PENDING kayıt
+  // cron tarafından anahtar yeniden sağlandığında gönderilebilir.
+  if (!process.env.RESEND_API_KEY) return;
   try {
     await client().emails.send({ from: sender, to: recipients, subject, html });
     if (row) await prisma.emailOutbox.update({ where: { id: row.id }, data: { status: "SENT", sentAt: new Date() } });

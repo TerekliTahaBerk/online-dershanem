@@ -5,7 +5,7 @@ import { sendOrderPaidAdminEmail, sendOrderPaidUserEmail } from "@/lib/email";
 
 export async function markOdkOrderPaid(
   orderId: string,
-  options: { transaction?: Prisma.TransactionClient; afterCommit?: Array<() => void> } = {},
+  options: { transaction?: Prisma.TransactionClient; afterCommit?: Array<() => Promise<void>> } = {},
 ): Promise<void> {
   const execute = async (tx: Prisma.TransactionClient) => {
     const order = await tx.odkOrder.findUnique({
@@ -23,10 +23,13 @@ export async function markOdkOrderPaid(
     };
   };
   const result = options.transaction ? await execute(options.transaction) : await prisma.$transaction(execute);
-  const notify = () => {
+  const notify = async () => {
     const email = result.buyer.email;
-    if (email) void sendOrderPaidUserEmail({ to: email, name: result.buyer.fullName, service: "ODK", orderId, packageName: result.packageName, totalCents: result.totalCents });
-    void sendOrderPaidAdminEmail({ service: "ODK", orderId, packageName: result.packageName, totalCents: result.totalCents, buyer: result.buyer });
+    const deliveries: Promise<void>[] = [];
+    if (email) deliveries.push(sendOrderPaidUserEmail({ to: email, name: result.buyer.fullName, service: "ODK", orderId, packageName: result.packageName, totalCents: result.totalCents }));
+    deliveries.push(sendOrderPaidAdminEmail({ service: "ODK", orderId, packageName: result.packageName, totalCents: result.totalCents, buyer: result.buyer }));
+    await Promise.all(deliveries);
   };
-  options.afterCommit ? options.afterCommit.push(notify) : notify();
+  if (options.afterCommit) options.afterCommit.push(notify);
+  else await notify();
 }

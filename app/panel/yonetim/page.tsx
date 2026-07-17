@@ -22,7 +22,7 @@ export default async function AdminHomePage() {
   const now = new Date();
   const { start, end } = todayBounds();
 
-  const [activeGroups, activeStudents, todayLessons, openLeads, recentLeads, unlinkedOrders, overdueNotes, pendingPasswords] = await Promise.all([
+  const [activeGroups, activeStudents, todayLessons, openLeads, recentLeads, unlinkedOrders, overdueNotes, pendingPasswords, failedEmails] = await Promise.all([
     prisma.group.count({ where: { isActive: true } }),
     prisma.user.count({ where: { role: "STUDENT", status: "ACTIVE" } }),
     prisma.lesson.findMany({ where: { startsAt: { gte: start, lt: end }, status: { not: "CANCELLED" } }, orderBy: { startsAt: "asc" }, include: { group: { select: { name: true, subject: true } }, teacher: { select: { fullName: true, email: true } } } }),
@@ -31,6 +31,7 @@ export default async function AdminHomePage() {
     prisma.odOrder.count({ where: { userId: null } }),
     prisma.lesson.count({ where: { endsAt: { lt: now }, status: "PLANNED" } }),
     prisma.user.count({ where: { mustChangePassword: true, status: "ACTIVE" } }),
+    prisma.emailOutbox.count({ where: { status: { in: ["FAILED", "ABANDONED"] } } }),
   ]);
 
   const firstName = (session.fullName || "Yönetici").split(" ")[0];
@@ -45,6 +46,7 @@ export default async function AdminHomePage() {
     { count: overdueNotes, title: "Ders notu bekleniyor", body: "Süresi geçen fakat tamamlanmayan dersler", href: "/panel/yonetim/egitim", tone: "rose" },
     { count: unlinkedOrders, title: "Sipariş eşleşmemiş", body: "Öğrenci hesabına bağlanması gerekiyor", href: "/panel/yonetim/isler", tone: "amber" },
     { count: pendingPasswords, title: "İlk giriş bekleniyor", body: "Geçici parolasını henüz değiştirmeyen hesaplar", href: "/panel/yonetim/kullanicilar", tone: "blue" },
+    { count: failedEmails, title: "E-posta gönderilemedi", body: "Makbuz veya bildirim yeniden denenecek", href: "/panel/yonetim/isler#eposta-kuyrugu", tone: "rose" },
   ].filter((item) => item.count > 0);
 
   return (

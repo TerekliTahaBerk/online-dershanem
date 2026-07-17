@@ -164,7 +164,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
       return plain("PAYTR notification failed: payment invariant", 400);
     }
 
-    const afterCommit: Array<() => void> = [];
+    const afterCommit: Array<() => Promise<void>> = [];
     try {
       await prisma.$transaction(async (tx) => {
         await markOdkOrderPaid(payment.orderId, { transaction: tx, afterCommit });
@@ -178,7 +178,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
           },
         });
       }, { isolationLevel: "Serializable" });
-      afterCommit.forEach((run) => run());
+      await Promise.all(afterCommit.map((run) => run()));
       log.info("paytr.callback.odk.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
       void logAudit({
         actorUserId: null,
@@ -297,7 +297,7 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
       return plain("PAYTR notification failed: payment invariant", 400);
     }
 
-    const afterCommit: Array<() => void> = [];
+    const afterCommit: Array<() => Promise<void>> = [];
     try {
       await prisma.$transaction(async (tx) => {
         await markOdOrderPaid(payment.orderId, { transaction: tx, afterCommit });
@@ -311,7 +311,7 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
           },
         });
       }, { isolationLevel: "Serializable" });
-      afterCommit.forEach((run) => run());
+      await Promise.all(afterCommit.map((run) => run()));
       log.info("paytr.callback.od.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
       void logAudit({
         actorUserId: null,

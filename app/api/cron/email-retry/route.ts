@@ -16,7 +16,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-const FROM = "Online Dershanem <noreply@onlinedershanem.com>";
+const FROM = process.env.MAIL_FROM || "Online Dershanem <noreply@onlinedershanem.com>";
 const MAX_ATTEMPTS = 10;
 const BATCH_SIZE = 25;
 

@@ -88,6 +88,20 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByText(name, { exact: true })).toBeVisible();
   });
 
+  test("admin başarısız e-postayı yeniden kuyruğa alır, öğretmen bu işleme erişemez", async ({ page }) => {
+    await login(page, accounts.admin);
+    await page.goto("/panel/yonetim/isler#eposta-kuyrugu");
+    const email = page.getByRole("article").filter({ hasText: "E2E ödeme makbuzu" });
+    await expect(email.getByText("Başarısız", { exact: true })).toBeVisible();
+    await email.getByRole("button", { name: "Yeniden dene" }).click();
+    await expect(email.getByText("Bekliyor", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.teacher);
+    const status = await page.evaluate(async () => (await fetch("/api/panel/email-outbox/e2e-email-outbox/retry", { method: "PATCH" })).status);
+    expect(status).toBe(403);
+  });
+
   test("ödev durumu öğrenciden veli görünümüne yansır", async ({ page }) => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/odevler");

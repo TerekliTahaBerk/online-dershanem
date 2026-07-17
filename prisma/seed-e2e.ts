@@ -26,6 +26,7 @@ const ids = {
   assignment: "e2e-assignment",
   material: "e2e-material",
   parentNotification: "e2e-parent-notification",
+  emailOutbox: "e2e-email-outbox",
 };
 
 async function main() {
@@ -100,6 +101,7 @@ async function main() {
   }
   await prisma.learningMaterial.upsert({ where: { id: ids.material }, create: { id: ids.material, groupId: ids.group, lessonId: ids.lesson, createdById: ids.teacher, title: "E2E Köklü İfadeler Föyü", description: "Ders sonrası tekrar kaynağı", url: "https://example.com/e2e-material.pdf", kind: "PDF" }, update: { isActive: true } });
   await prisma.notification.upsert({ where: { id: ids.parentNotification }, create: { id: ids.parentNotification, userId: ids.parent, type: "SYSTEM", title: "E2E panel hazır", body: "Bildirim merkezi kabul testi için hazır.", href: "/panel/veli" }, update: { readAt: null } });
+  await prisma.emailOutbox.upsert({ where: { id: ids.emailOutbox }, create: { id: ids.emailOutbox, recipients: JSON.stringify(["receipt.e2e@example.com"]), subject: "E2E ödeme makbuzu", html: "<p>E2E makbuz</p>", status: "FAILED", attempts: 2, lastError: "E2E gönderim hatası", nextRetryAt: new Date() }, update: { status: "FAILED", attempts: 2, lastError: "E2E gönderim hatası", nextRetryAt: new Date() } });
 }
 
 main()
