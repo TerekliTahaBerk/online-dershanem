@@ -30,6 +30,12 @@ jobs:
           openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in database.dump -out database.dump.enc -pass env:BACKUP_PASSWORD
           rm database.dump
 
+      - name: Verify backup can be opened
+        run: |
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in database.dump.enc -out database.verify.dump -pass env:BACKUP_PASSWORD
+          pg_restore --list database.verify.dump > /dev/null
+          rm database.verify.dump
+
       - name: Upload encrypted backup
         uses: actions/upload-artifact@v4
         with:

@@ -10,6 +10,7 @@ const schema = z.object({
   note: z.string().trim().max(2000).default(""),
   nextGoal: z.string().trim().max(500).default(""),
   homework: z.string().trim().max(1000).default(""),
+  complete: z.boolean().default(false),
   students: z.array(z.object({ studentId: z.string().min(1), note: z.string().trim().max(1000).default(""), attendance })),
 });
 
@@ -23,10 +24,10 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params;
   const lesson = await prisma.lesson.findFirst({
     where: { id, teacherId: auth.session.userId },
-    include: { group: { include: { enrollments: { where: { endedAt: null }, select: { studentId: true } } } } },
+    include: { group: { include: { enrollments: { where: { endedAt: null }, include: { student: { select: { id: true, userId: true, parents: { select: { parentId: true } } } } } } } } },
   });
   if (!lesson) return NextResponse.json({ error: "Ders bulunamadı." }, { status: 404 });
-  const allowed = new Set(lesson.group.enrollments.map((item) => item.studentId));
+  const allowed = new Set(lesson.group.enrollments.map((item) => item.student.id));
   if (parsed.data.students.some((item) => !allowed.has(item.studentId))) return NextResponse.json({ error: "Bu gruba ait olmayan öğrenci gönderildi." }, { status: 403 });
 
   await prisma.$transaction(async (tx) => {
@@ -43,7 +44,16 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       } else if (existing) await tx.lessonNote.delete({ where: { id: existing.id } });
       await tx.attendance.upsert({ where: { lessonId_studentId: { lessonId: id, studentId: item.studentId } }, create: { lessonId: id, studentId: item.studentId, status: item.attendance }, update: { status: item.attendance } });
     }
-    await tx.lesson.update({ where: { id }, data: { status: "COMPLETED" } });
+    if (parsed.data.complete) {
+      await tx.lesson.update({ where: { id }, data: { status: "COMPLETED" } });
+      if (lesson.status !== "COMPLETED") {
+        const summary = parsed.data.topic || lesson.title;
+        const studentRows = lesson.group.enrollments.map((item) => ({ userId: item.student.userId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: "/panel/ogrenci" }));
+        const parentRows = lesson.group.enrollments.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: `/panel/veli?studentId=${item.student.id}` })));
+        const absenceRows = parsed.data.students.filter((item) => item.attendance === "ABSENT").flatMap((absent) => lesson.group.enrollments.find((item) => item.student.id === absent.studentId)?.student.parents.map((link) => ({ userId: link.parentId, type: "ABSENCE" as const, title: "Devamsızlık bilgisi", body: `${lesson.title} dersine katılım görünmüyor.`, href: `/panel/veli?studentId=${absent.studentId}` })) || []);
+        await tx.notification.createMany({ data: [...studentRows, ...parentRows, ...absenceRows] });
+      }
+    }
   });
   return NextResponse.json({ savedAt: new Date().toISOString() });
 }

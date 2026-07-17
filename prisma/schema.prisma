@@ -63,10 +63,13 @@ model User {
   sessions           Session[]
   studentProfile     StudentProfile?
   teacherProfile     TeacherProfile?
-  parentStudents     ParentStudent[] @relation("ParentLinks")
-  taughtGroups       Group[]         @relation("GroupTeacher")
-  taughtLessons      Lesson[]        @relation("LessonTeacher")
-  createdAssignments Assignment[]    @relation("AssignmentCreator")
+  parentStudents     ParentStudent[]         @relation("ParentLinks")
+  taughtGroups       Group[]                 @relation("GroupTeacher")
+  taughtLessons      Lesson[]                @relation("LessonTeacher")
+  createdAssignments Assignment[]            @relation("AssignmentCreator")
+  notifications      Notification[]
+  notificationPrefs  NotificationPreference?
+  createdMaterials   LearningMaterial[]      @relation("MaterialCreator")
   odOrders           OdOrder[]
 
   @@index([role, status])
@@ -85,6 +88,20 @@ enum AttendanceStatus {
   ABSENT
   LATE
   EXCUSED
+}
+
+enum NotificationType {
+  LESSON_SUMMARY
+  ABSENCE
+  ASSIGNMENT
+  PAYMENT
+  SYSTEM
+}
+
+enum MaterialKind {
+  LINK
+  PDF
+  VIDEO
 }
 
 model StudentProfile {
@@ -132,19 +149,20 @@ model ParentStudent {
 }
 
 model Group {
-  id          String       @id @default(cuid())
+  id          String             @id @default(cuid())
   name        String
   subject     String
   level       String?
-  capacity    Int          @default(4)
-  teacherId   String       @map("teacher_id")
-  isActive    Boolean      @default(true) @map("is_active")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  teacher     User         @relation("GroupTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  capacity    Int                @default(4)
+  teacherId   String             @map("teacher_id")
+  isActive    Boolean            @default(true) @map("is_active")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  teacher     User               @relation("GroupTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
   enrollments Enrollment[]
   lessons     Lesson[]
   assignments Assignment[]
+  materials   LearningMaterial[]
 
   @@index([teacherId, isActive])
   @@map("groups")
@@ -165,21 +183,22 @@ model Enrollment {
 }
 
 model Lesson {
-  id          String       @id @default(cuid())
-  groupId     String       @map("group_id")
-  teacherId   String       @map("teacher_id")
+  id          String             @id @default(cuid())
+  groupId     String             @map("group_id")
+  teacherId   String             @map("teacher_id")
   title       String
-  startsAt    DateTime     @map("starts_at")
-  endsAt      DateTime     @map("ends_at")
-  status      LessonStatus @default(PLANNED)
-  meetingUrl  String?      @map("meeting_url")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  group       Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  teacher     User         @relation("LessonTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  startsAt    DateTime           @map("starts_at")
+  endsAt      DateTime           @map("ends_at")
+  status      LessonStatus       @default(PLANNED)
+  meetingUrl  String?            @map("meeting_url")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  group       Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher     User               @relation("LessonTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
   notes       LessonNote[]
   attendances Attendance[]
   assignments Assignment[]
+  materials   LearningMaterial[]
 
   @@index([teacherId, startsAt])
   @@index([groupId, startsAt])
@@ -241,6 +260,7 @@ model Assignment {
   lesson      Lesson?              @relation(fields: [lessonId], references: [id], onDelete: SetNull)
   createdBy   User                 @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Restrict)
   progress    AssignmentProgress[]
+  materials   LearningMaterial[]
 
   @@index([groupId, dueAt])
   @@index([createdById, isActive])
@@ -261,6 +281,58 @@ model AssignmentProgress {
   @@unique([assignmentId, studentId])
   @@index([studentId, status, updatedAt])
   @@map("assignment_progress")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  userId          String   @id @map("user_id")
+  inAppEnabled    Boolean  @default(true) @map("in_app_enabled")
+  emailEnabled    Boolean  @default(false) @map("email_enabled")
+  whatsappEnabled Boolean  @default(false) @map("whatsapp_enabled")
+  lessonSummary   Boolean  @default(true) @map("lesson_summary")
+  absence         Boolean  @default(true)
+  assignment      Boolean  @default(true)
+  payment         Boolean  @default(true)
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+model LearningMaterial {
+  id           String       @id @default(cuid())
+  groupId      String       @map("group_id")
+  lessonId     String?      @map("lesson_id")
+  assignmentId String?      @map("assignment_id")
+  createdById  String       @map("created_by_id")
+  title        String
+  description  String?
+  url          String
+  kind         MaterialKind @default(LINK)
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson       Lesson?      @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  assignment   Assignment?  @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  createdBy    User         @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([groupId, isActive, createdAt])
+  @@map("learning_materials")
 }
 
 model Session {

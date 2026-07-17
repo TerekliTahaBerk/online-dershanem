@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
-import { BookOpenCheck, CalendarDays, ClipboardCheck, CreditCard, History, LayoutDashboard, UsersRound } from "lucide-react";
+import { BarChart3, Bell, BookOpenCheck, CalendarDays, ClipboardCheck, CreditCard, History, LayoutDashboard, Library, UsersRound } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 
 type NavItem = { href: string; label: string; hint?: string; icon: LucideIcon };
@@ -17,22 +17,27 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/egitim`, label: "Eğitim", hint: "Gruplar ve dersler", icon: BookOpenCheck },
     { href: `${root}/isler`, label: "Operasyon", hint: "Talepler ve ödemeler", icon: CreditCard },
     { href: `${root}/kayitlar`, label: "İşlem geçmişi", hint: "Değişiklik ve güvenlik izi", icon: History },
+    { href: `${root}/raporlar`, label: "Raporlar", hint: "Katılım ve tamamlama", icon: BarChart3 },
   ],
   TEACHER: (root) => [
     { href: root, label: "Bugün", icon: BookOpenCheck },
     { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
     { href: `${root}/gruplar`, label: "Gruplarım", icon: UsersRound },
     { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
+    { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
   ],
   STUDENT: (root) => [
     { href: root, label: "Özet", icon: LayoutDashboard },
     { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
     { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
+    { href: `${root}/gelisim`, label: "Gelişim", icon: BarChart3 },
+    { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
   ],
   PARENT: (root) => [
     { href: root, label: "Gelişim", icon: LayoutDashboard },
     { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
     { href: `${root}/takip`, label: "Ödev ve ödeme", icon: ClipboardCheck },
+    { href: `${root}/bildirimler`, label: "Bildirimler", icon: Bell },
   ],
 };
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Check, CircleAlert, Clock3, Sparkles, UserCheck } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Check, CheckCircle2, CircleAlert, ClipboardPlus, Clock3, Sparkles, UserCheck } from "lucide-react";
 
 type Attendance = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
 type Student = { id: string; name: string; note: string; attendance: Attendance };
 type LessonData = {
   id: string;
+  groupId: string;
   groupName: string;
   subject: string;
   title: string;
@@ -16,6 +17,7 @@ type LessonData = {
   nextGoal: string;
   homework: string;
   previousGoal: string | null;
+  status: "PLANNED" | "COMPLETED" | "CANCELLED";
   students: Student[];
 };
 
@@ -29,7 +31,21 @@ const attendanceOptions: { value: Attendance; label: string; active: string }[] 
 export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
   const [form, setForm] = useState(lesson);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [completed, setCompleted] = useState(lesson.status === "COMPLETED");
+  const [actionMessage, setActionMessage] = useState("");
   const first = useRef(true);
+
+  const save = useCallback(async (complete: boolean) => {
+    setSaveState("saving");
+    const response = await fetch(`/api/panel/lessons/${lesson.id}/notes`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ topic: form.topic, note: form.note, nextGoal: form.nextGoal, homework: form.homework, complete, students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })) }),
+    }).catch(() => null);
+    setSaveState(response?.ok ? "saved" : "error");
+    if (response?.ok && complete) { setCompleted(true); setActionMessage("Ders tamamlandı; öğrenci ve veli özeti hazır."); }
+    return response?.ok === true;
+  }, [form, lesson.id]);
 
   useEffect(() => {
     if (first.current) {
@@ -37,22 +53,22 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
       return;
     }
     setSaveState("saving");
-    const timer = window.setTimeout(async () => {
-      const response = await fetch(`/api/panel/lessons/${lesson.id}/notes`, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          topic: form.topic,
-          note: form.note,
-          nextGoal: form.nextGoal,
-          homework: form.homework,
-          students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })),
-        }),
-      }).catch(() => null);
-      setSaveState(response?.ok ? "saved" : "error");
-    }, 850);
+    const timer = window.setTimeout(() => void save(false), 850);
     return () => window.clearTimeout(timer);
-  }, [form, lesson.id]);
+  }, [save]);
+
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => { if (saveState === "saving") event.preventDefault(); };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [saveState]);
+
+  async function createAssignment() {
+    if (!form.homework.trim()) return setActionMessage("Önce çalışma alanını doldurun.");
+    if (!await save(false)) return;
+    const response = await fetch("/api/panel/assignments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ groupId: form.groupId, lessonId: form.id, title: `${form.topic || form.title} çalışması`, description: form.homework, dueAt: new Date(Date.now() + 7 * 86400000).toISOString() }) });
+    setActionMessage(response.ok ? "Çalışma ödeve dönüştürüldü ve öğrencilere gönderildi." : "Ödev oluşturulamadı.");
+  }
 
   function patchStudent(id: string, patch: Partial<Student>) {
     setForm((current) => ({ ...current, students: current.students.map((student) => student.id === id ? { ...student, ...patch } : student) }));
@@ -79,6 +95,7 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
         </div>
 
         <div className="space-y-6 p-5 sm:p-7">
+          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Grup konuyu genel olarak kavradı; temel kazanımlar pekişiyor.", nextGoal: "Yeni nesil sorularda doğru stratejiyi seçmek.", homework: "Konu tarama çalışmasını tamamla ve yanlışlarını işaretle." }))} className="panel-quick-action"><Sparkles size={14} /> Dengeli ders şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Temel adımlarda desteğe ihtiyaç var; birlikte örnek çözümü sürdüreceğiz.", nextGoal: "Temel işlem basamaklarını hatasız uygulamak.", homework: "Kolay düzey 15 soru çöz; takıldığın soruları işaretle." }))} className="panel-quick-action">Destek şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Kazanımlar güçlü; hız ve farklı çözüm yollarına odaklanabiliriz.", nextGoal: "Zorlayıcı sorularda süreyi kontrollü kullanmak.", homework: "Orta-zor düzey 20 soru ve süre analizi." }))} className="panel-quick-action">İleri seviye</button></div>
           {form.previousGoal ? (
             <button type="button" onClick={() => setForm((current) => ({ ...current, topic: current.topic || current.previousGoal || "" }))} className="group flex w-full items-start gap-3 rounded-2xl border border-[#eadf9e] bg-[#fff9dc] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md">
               <span className="rounded-xl bg-white p-2 text-amber-700"><Sparkles size={17} /></span>
@@ -104,6 +121,7 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
               <input value={form.homework} onChange={(event) => setForm({ ...form, homework: event.target.value })} className="panel-input mt-2" placeholder="Örn. 36–48. sorular, yanlışları işaretle" />
             </label>
           </div>
+          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 sm:flex-row sm:items-center sm:justify-between"><p aria-live="polite" className="text-xs font-bold text-[var(--brand-olive)]">{actionMessage || (completed ? "Bu ders tamamlandı." : "Notlar otomatik kaydolur; hazır olduğunuzda dersi tamamlayın.")}</p><div className="flex flex-wrap gap-2"><button type="button" onClick={() => void createAssignment()} className="panel-quick-action"><ClipboardPlus size={14} /> Ödeve dönüştür</button><button type="button" disabled={completed || saveState === "saving"} onClick={() => void save(true)} className="panel-quick-action panel-quick-action-primary"><CheckCircle2 size={14} /> {completed ? "Ders tamamlandı" : "Dersi tamamla"}</button></div></div>
         </div>
       </section>
 

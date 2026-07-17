@@ -38,4 +38,12 @@ npm run build
 npx prisma migrate deploy
 ```
 
+Yeni ve tamamen boş bir veritabanında eski migration zinciri yerine güvenli başlangıç komutu:
+
+```bash
+ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
+```
+
+Komut boş olmayan veritabanında çalışmayı reddeder; güncel şemayı kurup mevcut migration geçmişini işaretler. Mevcut/canlı veritabanlarında her zaman `npm run release:migrate` kullanılır.
+
 PayTR bildirim URL'si `/api/paytr/callback` olarak ayarlanmalıdır.

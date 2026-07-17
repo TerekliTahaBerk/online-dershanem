@@ -40,7 +40,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
 
   const common = selected?.notes.find((note) => note.studentId === null);
   const workspace = selected ? {
-    id: selected.id, groupName: selected.group.name, subject: selected.group.subject, title: selected.title,
+    id: selected.id, groupId: selected.groupId, groupName: selected.group.name, subject: selected.group.subject, title: selected.title, status: selected.status,
     timeLabel: `${day.format(selected.startsAt)} · ${time.format(selected.startsAt)}–${time.format(selected.endsAt)}`,
     topic: common?.topic || "", note: common?.note || "", nextGoal: common?.nextGoal || "", homework: common?.homework || "", previousGoal,
     students: selected.group.enrollments.map((enrollment) => ({

@@ -35,11 +35,20 @@ test.describe("panel deneyimi", () => {
 
   test("admin temel yönetim bölümlerini tek oturumda açabilir", async ({ page }) => {
     await login(page, accounts.admin);
-    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/isler", "/panel/yonetim/kayitlar"]) {
+    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar"]) {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.getByRole("main")).toBeVisible();
     }
+  });
+
+  test("öğrenci gelişim ve materyal, veli bildirim ekranlarını açabilir", async ({ page }) => {
+    await login(page, accounts.student);
+    await page.goto("/panel/ogrenci/gelisim"); await expect(page.getByRole("heading", { name: "Her küçük adım görünür." })).toBeVisible();
+    await page.goto("/panel/ogrenci/materyaller"); await expect(page.getByText("E2E Köklü İfadeler Föyü")).toBeVisible();
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.parent);
+    await page.goto("/panel/veli/bildirimler"); await expect(page.getByText("E2E panel hazır")).toBeVisible();
   });
 
   test("öğretmen dört öğrencinin ders özetini tek ekranda otomatik kaydeder", async ({ page }) => {
@@ -55,8 +64,19 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("textbox", { name: "Ada Öğrenci için özel not" }).last().fill("İşlem kontrolünü son adımda tekrar et.");
 
     await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 6_000 });
+    await page.getByRole("button", { name: "Dersi tamamla" }).click();
+    await expect(page.getByText(/öğrenci ve veli özeti hazır/i)).toBeVisible();
     await expect(page.getByRole("button", { name: "Ada Öğrenci: Geç" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+  });
+
+  test("admin hızlı kurulumla grup, veli bağlantısı ve haftalık program oluşturur", async ({ page }) => {
+    await login(page, accounts.admin);
+    const name = `E2E Hızlı Kurulum ${Date.now()}`;
+    const status = await page.evaluate(async ({ name }) => { const response = await fetch("/api/panel/setup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, subject: "Matematik", level: "8. Sınıf", teacherId: "e2e-user-teacher", studentIds: ["e2e-student-profile"], parentLinks: [{ parentId: "e2e-user-parent", studentId: "e2e-student-profile" }], lessonTitle: "E2E Haftalık Program", startsAt: new Date(Date.now() + 3 * 86400000).toISOString(), repeatWeeks: 4, meetingUrl: "https://example.com/e2e-room" }) }); return response.status; }, { name });
+    expect(status).toBe(200);
+    await page.goto("/panel/yonetim/egitim");
+    await expect(page.getByText(name, { exact: true })).toBeVisible();
   });
 
   test("ödev durumu öğrenciden veli görünümüne yansır", async ({ page }) => {

@@ -16,6 +16,7 @@
     "release:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "db:bootstrap:fresh": "node scripts/bootstrap-fresh-db.mjs",
     "db:studio": "prisma studio",
     "scan:links": "tsx scripts/scan-broken-links.ts",
     "e2e": "playwright test",

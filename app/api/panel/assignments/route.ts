@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
   const group = await prisma.group.findFirst({
     where: { id: parsed.data.groupId, isActive: true, ...(auth.session.role === "TEACHER" ? { teacherId: auth.session.userId } : {}) },
-    include: { enrollments: { where: { endedAt: null }, select: { studentId: true } } },
+    include: { enrollments: { where: { endedAt: null }, include: { student: { select: { id: true, userId: true, parents: { select: { parentId: true } } } } } } },
   });
   if (!group) return NextResponse.json({ error: "Yetkili olduğunuz aktif grup bulunamadı." }, { status: 404 });
   if (parsed.data.lessonId) {
@@ -39,9 +39,13 @@ export async function POST(request: Request) {
       title: parsed.data.title,
       description: parsed.data.description || null,
       dueAt: new Date(parsed.data.dueAt),
-      progress: { create: group.enrollments.map((item) => ({ studentId: item.studentId })) },
+      progress: { create: group.enrollments.map((item) => ({ studentId: item.student.id })) },
     },
   });
+  const body = `${assignment.title} · son tarih ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(assignment.dueAt)}`;
+  const studentRecipients = [...new Set(group.enrollments.map((item) => item.student.userId))];
+  const parentRecipients = [...new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId)))];
+  await prisma.notification.createMany({ data: [...studentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/ogrenci/odevler" })), ...parentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/veli/takip" }))] });
   await logAudit({ actorUserId: auth.session.userId, entityType: "Assignment", entityId: assignment.id, action: "assignment.created", summary: `${assignment.title} ödevi oluşturuldu`, payload: { groupId: group.id, dueAt: assignment.dueAt.toISOString() } });
   return NextResponse.json({ id: assignment.id });
 }
