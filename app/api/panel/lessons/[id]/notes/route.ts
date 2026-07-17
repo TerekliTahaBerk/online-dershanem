@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { filterNotificationRows } from "@/lib/panel-notifications";
 
 const attendance = z.enum(["PRESENT", "ABSENT", "LATE", "EXCUSED"]);
 const schema = z.object({
@@ -30,6 +31,14 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const allowed = new Set(lesson.group.enrollments.map((item) => item.student.id));
   if (parsed.data.students.some((item) => !allowed.has(item.studentId))) return NextResponse.json({ error: "Bu gruba ait olmayan öğrenci gönderildi." }, { status: 403 });
 
+  const firstCompletion = parsed.data.complete && lesson.status !== "COMPLETED";
+  const summary = parsed.data.topic || lesson.title;
+  const summaryRows = firstCompletion ? await filterNotificationRows([
+    ...lesson.group.enrollments.map((item) => ({ userId: item.student.userId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: "/panel/ogrenci" })),
+    ...lesson.group.enrollments.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: `/panel/veli?studentId=${item.student.id}` }))),
+  ], "lessonSummary") : [];
+  const absenceRows = firstCompletion ? await filterNotificationRows(parsed.data.students.filter((item) => item.attendance === "ABSENT").flatMap((absent) => lesson.group.enrollments.find((item) => item.student.id === absent.studentId)?.student.parents.map((link) => ({ userId: link.parentId, type: "ABSENCE" as const, title: "Devamsızlık bilgisi", body: `${lesson.title} dersine katılım görünmüyor.`, href: `/panel/veli?studentId=${absent.studentId}` })) || []), "absence") : [];
+
   await prisma.$transaction(async (tx) => {
     const common = await tx.lessonNote.findFirst({ where: { lessonId: id, studentId: null }, select: { id: true } });
     const commonData = { topic: parsed.data.topic || null, note: parsed.data.note || null, nextGoal: parsed.data.nextGoal || null, homework: parsed.data.homework || null };
@@ -46,13 +55,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     }
     if (parsed.data.complete) {
       await tx.lesson.update({ where: { id }, data: { status: "COMPLETED" } });
-      if (lesson.status !== "COMPLETED") {
-        const summary = parsed.data.topic || lesson.title;
-        const studentRows = lesson.group.enrollments.map((item) => ({ userId: item.student.userId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: "/panel/ogrenci" }));
-        const parentRows = lesson.group.enrollments.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: `/panel/veli?studentId=${item.student.id}` })));
-        const absenceRows = parsed.data.students.filter((item) => item.attendance === "ABSENT").flatMap((absent) => lesson.group.enrollments.find((item) => item.student.id === absent.studentId)?.student.parents.map((link) => ({ userId: link.parentId, type: "ABSENCE" as const, title: "Devamsızlık bilgisi", body: `${lesson.title} dersine katılım görünmüyor.`, href: `/panel/veli?studentId=${absent.studentId}` })) || []);
-        await tx.notification.createMany({ data: [...studentRows, ...parentRows, ...absenceRows] });
-      }
+      if (summaryRows.length || absenceRows.length) await tx.notification.createMany({ data: [...summaryRows, ...absenceRows] });
     }
   });
   return NextResponse.json({ savedAt: new Date().toISOString() });

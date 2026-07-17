@@ -7,7 +7,7 @@ const accounts = {
 };
 
 async function login(page: Page, account: { email?: string; password?: string }) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);
   await page.getByLabel("Parola").fill(account.password!);

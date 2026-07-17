@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
 import { BarChart3, Bell, BookOpenCheck, CalendarDays, ClipboardCheck, CreditCard, History, LayoutDashboard, Library, UsersRound } from "lucide-react";
@@ -18,6 +18,7 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/isler`, label: "Operasyon", hint: "Talepler ve ödemeler", icon: CreditCard },
     { href: `${root}/kayitlar`, label: "İşlem geçmişi", hint: "Değişiklik ve güvenlik izi", icon: History },
     { href: `${root}/raporlar`, label: "Raporlar", hint: "Katılım ve tamamlama", icon: BarChart3 },
+    { href: "/panel/bildirimler", label: "Bildirimler", hint: "Son gelişmeler", icon: Bell },
   ],
   TEACHER: (root) => [
     { href: root, label: "Bugün", icon: BookOpenCheck },
@@ -25,6 +26,7 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/gruplar`, label: "Gruplarım", icon: UsersRound },
     { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
+    { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
   ],
   STUDENT: (root) => [
     { href: root, label: "Özet", icon: LayoutDashboard },
@@ -32,29 +34,33 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
     { href: `${root}/gelisim`, label: "Gelişim", icon: BarChart3 },
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
+    { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
   ],
   PARENT: (root) => [
     { href: root, label: "Gelişim", icon: LayoutDashboard },
     { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
     { href: `${root}/takip`, label: "Ödev ve ödeme", icon: ClipboardCheck },
-    { href: `${root}/bildirimler`, label: "Bildirimler", icon: Bell },
+    { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
   ],
 };
 
 export function PanelNav({ role }: { role: UserRole }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const root = rolePath(role);
   const items = NAV[role](root);
+  const selectedStudentId = role === "PARENT" ? searchParams.get("studentId") : null;
 
   return (
     <nav aria-label="Panel menüsü" className={`panel-nav-scroll flex gap-2 overflow-x-auto ${role === "ADMIN" ? "lg:flex-col lg:gap-1 lg:overflow-visible" : ""}`}>
       {items.map((item) => {
         const active = pathname === item.href || (item.href !== root && pathname.startsWith(`${item.href}/`));
         const Icon = item.icon;
+        const href = selectedStudentId && item.href.startsWith(root) ? `${item.href}?studentId=${encodeURIComponent(selectedStudentId)}` : item.href;
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={href}
             aria-current={active ? "page" : undefined}
             className={`group flex min-w-fit items-center gap-3 rounded-2xl px-3 py-2.5 transition-all lg:w-full ${
               active

@@ -10,7 +10,7 @@ const accounts = {
 };
 
 async function login(page: Page, account: { email?: string; password?: string }) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);
   await page.getByLabel("Parola").fill(account.password!);
@@ -30,12 +30,16 @@ test.describe("panel deneyimi", () => {
       expect(overflow).toBeLessThanOrEqual(1);
       const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
       expect(result.violations).toEqual([]);
+      await page.goto("/panel/bildirimler");
+      await expect(page.getByRole("heading", { name: "Önemli gelişmeler tek yerde." })).toBeVisible();
+      const notificationOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(notificationOverflow).toBeLessThanOrEqual(1);
     });
   }
 
   test("admin temel yönetim bölümlerini tek oturumda açabilir", async ({ page }) => {
     await login(page, accounts.admin);
-    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar"]) {
+    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/bildirimler"]) {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.getByRole("main")).toBeVisible();
@@ -48,7 +52,7 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogrenci/materyaller"); await expect(page.getByText("E2E Köklü İfadeler Föyü")).toBeVisible();
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
-    await page.goto("/panel/veli/bildirimler"); await expect(page.getByText("E2E panel hazır")).toBeVisible();
+    await page.goto("/panel/bildirimler"); await expect(page.getByText("E2E panel hazır")).toBeVisible();
   });
 
   test("öğretmen dört öğrencinin ders özetini tek ekranda otomatik kaydeder", async ({ page }) => {
@@ -83,8 +87,10 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/odevler");
     const card = page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" });
-    await card.getByRole("button", { name: "Tamamlandı" }).click();
-    await expect(card.getByText("Tamamlandı", { exact: true }).first()).toBeVisible();
+    const doneButton = card.getByRole("button", { name: "Tamamlandı" });
+    await doneButton.click();
+    await expect(doneButton).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByText("İlerlemen kaydedildi.")).toBeVisible();
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);

@@ -45,6 +45,10 @@ export async function POST(request: Request) {
       },
     });
 
+    // E-posta kapalı veya gecikmiş olsa bile yönetim paneli yeni talebi gösterir.
+    const admins = await prisma.user.findMany({ where: { role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
+    if (admins.length) await prisma.notification.createMany({ data: admins.map((admin) => ({ userId: admin.id, type: "SYSTEM", title: "Yeni ön görüşme talebi", body: `${lead.fullName} · ${lead.examType} · ${lead.classLevel}`, href: "/panel/yonetim/isler" })) });
+
     // Bildirim e-postası en iyi çaba — başarısızlık kaydı bozmamalı.
     try {
       await sendLeadSubmissionNotification({

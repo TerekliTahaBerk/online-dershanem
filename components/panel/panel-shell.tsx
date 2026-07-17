@@ -3,12 +3,23 @@ import Image from "next/image";
 import type { UserRole } from "@prisma/client";
 import { Bell, ChevronRight } from "lucide-react";
 import { roleLabel } from "@/lib/auth/roles";
+import { getSession } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 import { AdminCommandSearch } from "@/components/panel/admin-command-search";
 import { LogoutButton } from "@/components/panel/logout-button";
 
-export function PanelShell({ role, fullName, email, nav, children }: { role: UserRole; fullName: string | null; email: string; nav?: React.ReactNode; children: React.ReactNode }) {
+export async function PanelShell({ role, fullName, email, nav, children }: { role: UserRole; fullName: string | null; email: string; nav?: React.ReactNode; children: React.ReactNode }) {
   const adminLayout = role === "ADMIN" && nav;
   const firstName = (fullName || email).split(" ")[0];
+  const session = await getSession();
+  const unread = session ? await prisma.notification.count({ where: { userId: session.userId, readAt: null } }) : 0;
+
+  const notificationButton = (
+    <Link href="/panel/bildirimler" className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--site-line)] bg-white text-[var(--site-muted)] transition hover:text-[var(--site-ink)]" aria-label={unread ? `${unread} okunmamış bildirimi aç` : "Bildirimleri aç"}>
+      <Bell size={16} />
+      {unread ? <span className="absolute -right-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-600 px-1 text-[9px] font-extrabold text-white ring-2 ring-white">{unread > 99 ? "99+" : unread}</span> : null}
+    </Link>
+  );
 
   return (
     <div className={`site-scope min-h-dvh ${adminLayout ? "panel-app-bg" : "bg-[var(--site-bg-warm)]"}`}>
@@ -33,7 +44,7 @@ export function PanelShell({ role, fullName, email, nav, children }: { role: Use
               <div className="flex h-[68px] items-center justify-between gap-3 px-4 sm:px-6 xl:px-8">
                 <div className="flex min-w-0 items-center lg:hidden"><Link href="/panel/yonetim" aria-label="Online Dershanem yönetim ana sayfası" className="flex shrink-0 items-center"><Image src="/onlinedershanem_.png" alt="Online Dershanem" width={1050} height={200} priority sizes="128px" className="h-auto w-[118px] sm:w-[128px]" /></Link></div>
                 <div className="hidden items-center gap-1.5 text-[11.5px] text-[var(--site-muted)] lg:flex"><span>Online Dershanem</span><ChevronRight size={13} /><span className="font-semibold text-[var(--site-ink)]">Yönetim</span></div>
-                <div className="flex items-center gap-2"><AdminCommandSearch /><Link href="/panel/yonetim#bekleyenler" className="relative grid h-10 w-10 place-items-center rounded-xl border border-[var(--site-line)] bg-white text-[var(--site-muted)] transition hover:text-[var(--site-ink)]" aria-label="Bekleyen işleri aç"><Bell size={16} /><span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-amber-500 ring-2 ring-white" /></Link><div className="hidden sm:block lg:hidden"><LogoutButton /></div></div>
+                <div className="flex items-center gap-2"><AdminCommandSearch />{notificationButton}<div className="hidden sm:block lg:hidden"><LogoutButton /></div></div>
               </div>
               <div className="border-t border-[var(--site-line)] px-4 py-2 lg:hidden">{nav}</div>
             </header>
@@ -42,7 +53,7 @@ export function PanelShell({ role, fullName, email, nav, children }: { role: Use
         </div>
       ) : (
         <>
-          <header className="sticky top-0 z-40 border-b border-[var(--site-line)] bg-white/90 backdrop-blur-xl"><div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6"><div className="flex min-w-0 items-center gap-2.5 sm:gap-3"><Link href="/panel" aria-label="Online Dershanem panel ana sayfası" className="flex shrink-0 items-center"><Image src="/onlinedershanem_.png" alt="Online Dershanem" width={1050} height={200} priority sizes="150px" className="h-auto w-[116px] sm:w-[150px]" /></Link><span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[.06em] text-[var(--brand-olive)] sm:text-[10.5px]">{roleLabel(role)}</span></div><div className="flex items-center gap-3"><span className="hidden text-[13px] text-[var(--site-body)] sm:inline">{fullName || email}</span><LogoutButton /></div></div>{nav ? <div className="border-t border-[var(--site-line)]"><div className="mx-auto max-w-[1320px] px-4 py-2 sm:px-6">{nav}</div></div> : null}</header>
+          <header className="sticky top-0 z-40 border-b border-[var(--site-line)] bg-white/90 backdrop-blur-xl"><div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6"><div className="flex min-w-0 items-center gap-2.5 sm:gap-3"><Link href="/panel" aria-label="Online Dershanem panel ana sayfası" className="flex shrink-0 items-center"><Image src="/onlinedershanem_.png" alt="Online Dershanem" width={1050} height={200} priority sizes="150px" className="h-auto w-[116px] sm:w-[150px]" /></Link><span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[.06em] text-[var(--brand-olive)] sm:text-[10.5px]">{roleLabel(role)}</span></div><div className="flex items-center gap-2 sm:gap-3"><span className="hidden text-[13px] text-[var(--site-body)] sm:inline">{fullName || email}</span>{notificationButton}<LogoutButton /></div></div>{nav ? <div className="border-t border-[var(--site-line)]"><div className="mx-auto max-w-[1320px] px-4 py-2 sm:px-6">{nav}</div></div> : null}</header>
           <div className="mx-auto max-w-[1320px] px-4 py-6 sm:px-6 sm:py-8"><main id="panel-content" tabIndex={-1}>{children}</main></div>
         </>
       )}

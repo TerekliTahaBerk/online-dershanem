@@ -33,15 +33,14 @@ const CHECKS: EnvCheck[] = [
   { key: "UPSTASH_REDIS_REST_TOKEN", required: false, description: "Cache backend token" },
 ];
 
-let _validated = false;
+type EnvStatus = { ok: boolean; missing: string[]; warnings: string[] };
 
-export function validateEnvOnce(): {
-  ok: boolean;
-  missing: string[];
-  warnings: string[];
-} {
-  if (_validated) return { ok: true, missing: [], warnings: [] };
-  _validated = true;
+let _status: EnvStatus | null = null;
+
+export function validateEnvOnce(): EnvStatus {
+  // Health ve smoke endpoint'leri boot doğrulamasından sonra da gerçek sonucu
+  // görmeli. Önceki boolean kilit ikinci çağrıda hataları yanlışlıkla siliyordu.
+  if (_status) return _status;
 
   const isProd = process.env.NODE_ENV === "production";
   const missing: string[] = [];
@@ -75,5 +74,6 @@ export function validateEnvOnce(): {
     console.log(banner);
   }
 
-  return { ok: missing.length === 0, missing, warnings };
+  _status = { ok: missing.length === 0, missing, warnings };
+  return _status;
 }
