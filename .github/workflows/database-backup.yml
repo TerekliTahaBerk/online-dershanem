@@ -12,9 +12,24 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: restore
+          POSTGRES_PASSWORD: restore
+          POSTGRES_DB: restore_drill
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_DIRECT_URL: ${{ secrets.PRODUCTION_DATABASE_DIRECT_URL }}
       BACKUP_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
+      RESTORE_DATABASE_URL: postgresql://restore:restore@localhost:5432/restore_drill
     steps:
       - name: Require backup secrets
         run: |
@@ -30,10 +45,13 @@ jobs:
           openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in database.dump -out database.dump.enc -pass env:BACKUP_PASSWORD
           rm database.dump
 
-      - name: Verify backup can be opened
+      - name: Restore backup into disposable database
         run: |
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in database.dump.enc -out database.verify.dump -pass env:BACKUP_PASSWORD
           pg_restore --list database.verify.dump > /dev/null
+          pg_restore --no-owner --no-acl --dbname="$RESTORE_DATABASE_URL" database.verify.dump
+          psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS restored_tables FROM information_schema.tables WHERE table_schema='public';"
+          psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS users FROM users; SELECT COUNT(*) AS lessons FROM lessons; SELECT COUNT(*) AS orders FROM od_orders; SELECT COUNT(*) AS outbox FROM email_outbox;"
           rm database.verify.dump
 
       - name: Upload encrypted backup

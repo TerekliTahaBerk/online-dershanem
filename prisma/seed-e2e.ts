@@ -73,6 +73,11 @@ async function main() {
     create: { parentId: ids.parent, studentId: ids.studentProfile, relationship: "Veli" },
     update: { relationship: "Veli" },
   });
+  await prisma.notificationPreference.upsert({
+    where: { userId: ids.parent },
+    create: { userId: ids.parent, inAppEnabled: true, emailEnabled: true, lessonSummary: true, absence: true, assignment: true, payment: true },
+    update: { inAppEnabled: true, emailEnabled: true, lessonSummary: true, absence: true, assignment: true, payment: true },
+  });
 
   await prisma.group.upsert({ where: { id: ids.group }, create: { id: ids.group, name: "E2E LGS Grubu", subject: "Matematik", level: "8. Sınıf", teacherId: ids.teacher }, update: { teacherId: ids.teacher, isActive: true } });
   await prisma.group.upsert({ where: { id: ids.foreignGroup }, create: { id: ids.foreignGroup, name: "Yabancı Grup", subject: "Fen", level: "8. Sınıf", teacherId: ids.otherTeacher }, update: { teacherId: ids.otherTeacher, isActive: true } });

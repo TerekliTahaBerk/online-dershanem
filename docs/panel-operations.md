@@ -10,6 +10,8 @@ Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kul
 
 `ERROR_ALERT_WEBHOOK_URL`, merkezi request hatalarını üç saniyelik zaman aşımıyla JSON webhook'a yollar. Tanımlı değilse hatalar Vercel structured loglarında kalır.
 
+Öğrenci ve veli Bildirim Merkezi'nde e-posta kanalı açılırsa ders özeti, devamsızlık, ödev ve ödeme bildirimleri güvenli `EmailOutbox` üzerinden gönderilir. Geciken ödev işi her gün çalışır ve aynı kullanıcıya aynı kayıt için 24 saat içinde tekrar bildirim üretmez. WhatsApp tercihi hazırdır; gerçek teslimat için ayrıca kurumsal WhatsApp sağlayıcısı ve onaylı mesaj şablonları gerekir.
+
 ## Günlük kontroller
 
 1. `/api/health` yanıtında `status=ok`, `db.ok=true`, `env.ok=true` olduğunu doğrulayın.
@@ -22,11 +24,10 @@ Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kul
 GitHub secrets: `PRODUCTION_DATABASE_DIRECT_URL`, `BACKUP_ENCRYPTION_PASSWORD`, `PRODUCTION_CRON_SECRET`.
 
 1. `Encrypted Database Backup` workflow'unu manuel çalıştırın.
-2. Şifreli artifact'i indirin ve geçici, boş PostgreSQL veritabanı oluşturun.
-3. `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000` ile dump'ı açın.
-4. `pg_restore --list` ile arşivi doğrulayın, ardından yalnızca geçici veritabanına `pg_restore --no-owner --no-acl` uygulayın.
-5. `users`, `lessons`, `od_orders` ve `email_outbox` sayımlarını kaynakla karşılaştırın.
-6. Geçici veritabanını silin; sonuç ve tarihi operasyon kaydına yazın.
+2. Workflow üretim dump'ını AES-256 ile şifreler, tekrar açar ve geçici PostgreSQL servisine gerçekten geri yükler.
+3. `users`, `lessons`, `od_orders` ve `email_outbox` tablolarını sorgulayarak geri yüklenen veriyi doğrular.
+4. Şifreli artifact'i 14 gün saklar; geçici PostgreSQL job sonunda otomatik silinir.
+5. Tatbikat sonucunu ve tarihini operasyon kaydına yazın.
 
 Canlı veritabanına doğrulama amacıyla restore yapılmaz.
 

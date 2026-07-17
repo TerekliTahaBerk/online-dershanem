@@ -73,3 +73,25 @@ export async function sendOrderPaidAdminEmail(input: {
   const total = (input.totalCents / 100).toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
   await send(recipients, `[${input.service}] Yeni satış – ${input.buyer.fullName || "Müşteri"}`, template("Yeni Satış", `<p><strong>Sipariş:</strong> ${escapeHtml(input.orderId)}</p><p><strong>Paket:</strong> ${escapeHtml(input.packageName)}</p><p><strong>Tutar:</strong> ${escapeHtml(total)}</p><p><strong>Müşteri:</strong> ${escapeHtml(input.buyer.fullName || "—")}</p><p><strong>E-posta:</strong> ${escapeHtml(input.buyer.email || "—")}</p><p><strong>Telefon:</strong> ${escapeHtml(input.buyer.phone || "—")}</p>`));
 }
+
+export async function sendPanelNotificationEmail(input: {
+  to: string;
+  name?: string | null;
+  title: string;
+  body: string;
+  href?: string | null;
+}): Promise<void> {
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://www.onlinedershanem.com").replace(/\/$/, "");
+  const href = input.href?.startsWith("/") ? `${baseUrl}${input.href}` : input.href;
+  const action = href
+    ? `<p style="margin-top:24px"><a href="${escapeHtml(href)}" style="display:inline-block;background:#3a4a2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Panelde görüntüle</a></p>`
+    : "";
+  await send(
+    input.to,
+    `${input.title} – Online Dershanem`,
+    template(
+      input.title,
+      `<p>Merhaba ${escapeHtml(input.name || "")},</p><p style="line-height:1.6">${escapeHtml(input.body)}</p>${action}<p style="margin-top:24px;color:#666;font-size:13px">Bildirim tercihlerinizi paneldeki Bildirim Merkezi'nden değiştirebilirsiniz.</p>`,
+    ),
+  );
+}

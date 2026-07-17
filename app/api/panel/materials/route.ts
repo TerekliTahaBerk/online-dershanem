@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
-import { filterNotificationRows } from "@/lib/panel-notifications";
+import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 
 const schema = z.object({ groupId: z.string().min(1), lessonId: z.string().min(1).nullable().optional(), assignmentId: z.string().min(1).nullable().optional(), title: z.string().trim().min(2).max(140), description: z.string().trim().max(1000).optional(), url: z.string().url().max(1000).refine((value) => value.startsWith("https://") || value.startsWith("http://")), kind: z.enum(["LINK", "PDF", "VIDEO"]) });
 
@@ -19,8 +19,10 @@ export async function POST(request: Request) {
   if (data.assignmentId && !await prisma.assignment.findFirst({ where: { id: data.assignmentId, groupId: group.id }, select: { id: true } })) return NextResponse.json({ error: "Ödev bu gruba ait değil." }, { status: 400 });
   const material = await prisma.learningMaterial.create({ data: { groupId: group.id, lessonId: data.lessonId || null, assignmentId: data.assignmentId || null, createdById: auth.session.userId, title: data.title, description: data.description || null, url: data.url, kind: data.kind } });
   const students = [...new Set(group.enrollments.map((item) => item.student.userId))]; const parents = [...new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId)))];
-  const notificationRows = await filterNotificationRows([...students.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/ogrenci/materyaller" })), ...parents.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/veli/takip" }))]);
+  const rawNotificationRows = [...students.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/ogrenci/materyaller" })), ...parents.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/veli/takip" }))];
+  const notificationRows = await filterNotificationRows(rawNotificationRows);
   if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
+  await queuePanelNotificationEmails(rawNotificationRows);
   await logAudit({ actorUserId: auth.session.userId, entityType: "LearningMaterial", entityId: material.id, action: "material.created", summary: `${material.title} paylaşıldı`, payload: { groupId: group.id, kind: material.kind } });
   return NextResponse.json({ id: material.id });
 }

@@ -77,6 +77,11 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByText(/öğrenci ve veli özeti hazır/i)).toBeVisible();
     await expect(page.getByRole("button", { name: "Ada Öğrenci: Geç" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText("4/4", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.admin);
+    await page.goto("/panel/yonetim/isler#eposta-kuyrugu");
+    await expect(page.getByText("Ders özeti hazır – Online Dershanem").first()).toBeVisible();
   });
 
   test("admin hızlı kurulumla grup, veli bağlantısı ve haftalık program oluşturur", async ({ page }) => {

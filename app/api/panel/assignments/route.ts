@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { filterNotificationRows } from "@/lib/panel-notifications";
+import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 
 const schema = z.object({
   groupId: z.string().min(1),
@@ -46,8 +46,10 @@ export async function POST(request: Request) {
   const body = `${assignment.title} · son tarih ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(assignment.dueAt)}`;
   const studentRecipients = [...new Set(group.enrollments.map((item) => item.student.userId))];
   const parentRecipients = [...new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId)))];
-  const notificationRows = await filterNotificationRows([...studentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/ogrenci/odevler" })), ...parentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/veli/takip" }))], "assignment");
+  const rawNotificationRows = [...studentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/ogrenci/odevler" })), ...parentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/veli/takip" }))];
+  const notificationRows = await filterNotificationRows(rawNotificationRows, "assignment");
   if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
+  await queuePanelNotificationEmails(rawNotificationRows, "assignment");
   await logAudit({ actorUserId: auth.session.userId, entityType: "Assignment", entityId: assignment.id, action: "assignment.created", summary: `${assignment.title} ödevi oluşturuldu`, payload: { groupId: group.id, dueAt: assignment.dueAt.toISOString() } });
   return NextResponse.json({ id: assignment.id });
 }
