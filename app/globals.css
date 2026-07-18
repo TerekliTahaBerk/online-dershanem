@@ -1471,3 +1471,18 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 }
 
 /* End — PUBLIC SITE V2 */
+
+@keyframes panel-celebrate-in {
+  0% { opacity: 0; transform: translate(-50%, 18px) scale(.86); }
+  18% { opacity: 1; transform: translate(-50%, 0) scale(1.04); }
+  82% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -12px) scale(.96); }
+}
+
+.panel-celebration {
+  position: fixed; left: 50%; bottom: 2rem; z-index: 80; display: flex; align-items: center; gap: .75rem;
+  border: 1px solid #eadf9e; border-radius: 999px; background: #fff9dc; padding: .9rem 1.15rem;
+  color: #513f0b; font-weight: 800; box-shadow: 0 22px 70px -25px rgba(58,74,44,.65); animation: panel-celebrate-in 2.2s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) { .panel-celebration { animation: none; } }

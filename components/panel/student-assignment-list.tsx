@@ -21,7 +21,15 @@ export function StudentAssignmentList({ assignments }: { assignments: Assignment
     setBusy(null);
     if (response?.ok) {
       setItems((current) => current.map((item) => item.id === id ? { ...item, status } : item));
-      setMessage("İlerlemen kaydedildi.");
+      setMessage(status === "DONE" ? "Harika! Çalışma tamamlandı, serin büyüyor." : "İlerlemen kaydedildi.");
+      if (status === "DONE") {
+        const banner = document.createElement("div");
+        banner.className = "panel-celebration";
+        banner.setAttribute("role", "status");
+        banner.textContent = "🎉 Bir adım daha tamam! ⭐";
+        document.body.append(banner);
+        window.setTimeout(() => banner.remove(), 2200);
+      }
       router.refresh();
     } else {
       setMessage("Durum kaydedilemedi. Lütfen yeniden deneyin.");

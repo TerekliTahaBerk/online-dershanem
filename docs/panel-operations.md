@@ -10,6 +10,8 @@ Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kul
 
 `ERROR_ALERT_WEBHOOK_URL`, merkezi request hatalarını üç saniyelik zaman aşımıyla JSON webhook'a yollar. Tanımlı değilse hatalar Vercel structured loglarında kalır.
 
+Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WRITE_TOKEN` Vercel bağlantısı tarafından yönetilir; PDF/MP4 dosyaları doğrudan URL ile açılmaz, her indirmede rol ve aktif grup üyeliği yeniden doğrulanır. Sunucu yükleme sınırı nedeniyle dosya boyutu 4 MB ile sınırlıdır.
+
 Öğrenci ve veli Bildirim Merkezi'nde e-posta kanalı açılırsa ders özeti, devamsızlık, ödev ve ödeme bildirimleri güvenli `EmailOutbox` üzerinden gönderilir. Geciken ödev işi her gün çalışır ve aynı kullanıcıya aynı kayıt için 24 saat içinde tekrar bildirim üretmez. WhatsApp tercihi hazırdır; gerçek teslimat için ayrıca kurumsal WhatsApp sağlayıcısı ve onaylı mesaj şablonları gerekir.
 
 ## Günlük kontroller
@@ -30,6 +32,10 @@ GitHub secrets: `PRODUCTION_DATABASE_DIRECT_URL`, `BACKUP_ENCRYPTION_PASSWORD`, 
 5. Tatbikat sonucunu ve tarihini operasyon kaydına yazın.
 
 Canlı veritabanına doğrulama amacıyla restore yapılmaz.
+
+## Yeni ve mevcut veritabanı kurulumu
+
+Eski migration geçmişi, ilk yıllarda şema `db push` ile yönetildiği için boş bir veritabanına doğrudan `prisma migrate deploy` ile uygulanamaz. Yeni ve tamamen boş bir ortam yalnızca korumalı `ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh` komutuyla hazırlanır; komut önce güncel şemayı kurar, ardından migration geçmişini uygulanmış olarak kaydeder ve boş olmayan veritabanında çalışmayı reddeder. Mevcut production/preview veritabanlarında normal `npm run release:migrate` kullanılmaya devam edilir.
 
 ## Dört rol canlı kabul listesi
 

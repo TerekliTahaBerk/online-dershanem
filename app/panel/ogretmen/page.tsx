@@ -17,7 +17,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
   const params = await searchParams;
   const from = new Date(Date.now() - 7 * 86400000);
   const to = new Date(Date.now() + 21 * 86400000);
-  const [lessons, activeGroups, assignmentProgress] = await Promise.all([
+  const [lessons, activeGroups, assignmentProgress, noteTemplates] = await Promise.all([
     prisma.lesson.findMany({
       where: { teacherId: session.userId, startsAt: { gte: from, lte: to }, status: { not: "CANCELLED" } },
       orderBy: { startsAt: "asc" },
@@ -28,6 +28,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
       where: { assignment: { createdById: session.userId, isActive: true, dueAt: { gte: from, lte: to } } },
       select: { status: true },
     }),
+    prisma.teacherNoteTemplate.findMany({ where: { teacherId: session.userId }, orderBy: { updatedAt: "desc" }, take: 20, select: { id: true, title: true, note: true, nextGoal: true, homework: true } }),
   ]);
   const selectedId = lessons.some((item) => item.id === params.lesson) ? params.lesson : lessons.find((item) => item.startsAt >= new Date())?.id || lessons.at(-1)?.id;
   const selected = selectedId ? await prisma.lesson.findFirst({
@@ -55,6 +56,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
     id: selected.id, groupId: selected.groupId, groupName: selected.group.name, subject: selected.group.subject, title: selected.title, status: selected.status,
     timeLabel: `${day.format(selected.startsAt)} · ${time.format(selected.startsAt)}–${time.format(selected.endsAt)}`,
     topic: common?.topic || "", note: common?.note || "", nextGoal: common?.nextGoal || "", homework: common?.homework || "", previousGoal,
+    templates: noteTemplates.map((template) => ({ ...template, note: template.note || "", nextGoal: template.nextGoal || "", homework: template.homework || "" })),
     students: selected.group.enrollments.map((enrollment) => ({
       id: enrollment.student.id,
       name: enrollment.student.user.fullName || enrollment.student.user.email,

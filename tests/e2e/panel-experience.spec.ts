@@ -54,6 +54,11 @@ test.describe("panel deneyimi", () => {
   test("öğrenci gelişim ve materyal, veli bildirim ekranlarını açabilir", async ({ page }) => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/gelisim"); await expect(page.getByRole("heading", { name: "Her küçük adım görünür." })).toBeVisible();
+    await page.getByRole("button", { name: "Haftalık hedefi düzenle" }).click();
+    const weeklyGoal = `E2E haftalık hedef ${Date.now()}`;
+    await page.getByRole("textbox", { name: "Haftalık hedef" }).fill(weeklyGoal);
+    await page.getByRole("button", { name: /Hedefi kaydet/ }).click();
+    await expect(page.getByText(weeklyGoal, { exact: true })).toBeVisible();
     await page.goto("/panel/ogrenci/materyaller"); await expect(page.getByText("E2E Köklü İfadeler Föyü")).toBeVisible();
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
@@ -114,7 +119,7 @@ test.describe("panel deneyimi", () => {
     const doneButton = card.getByRole("button", { name: "Tamamlandı" });
     await doneButton.click();
     await expect(doneButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByText("İlerlemen kaydedildi.")).toBeVisible();
+    await expect(page.getByText(/Çalışma tamamlandı|İlerlemen kaydedildi/)).toBeVisible();
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);

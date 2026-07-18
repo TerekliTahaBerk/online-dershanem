@@ -70,6 +70,7 @@ model User {
   notifications      Notification[]
   notificationPrefs  NotificationPreference?
   createdMaterials   LearningMaterial[]      @relation("MaterialCreator")
+  noteTemplates      TeacherNoteTemplate[]   @relation("TeacherNoteTemplateOwner")
   odOrders           OdOrder[]
 
   @@index([role, status])
@@ -110,6 +111,8 @@ model StudentProfile {
   classLevel         String?              @map("class_level")
   schoolName         String?              @map("school_name")
   targetGoal         String?              @map("target_goal")
+  weeklyGoal         String?              @map("weekly_goal")
+  weeklyGoalUpdatedAt DateTime?           @map("weekly_goal_updated_at")
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -132,6 +135,21 @@ model TeacherProfile {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("teacher_profiles")
+}
+
+model TeacherNoteTemplate {
+  id        String   @id @default(cuid())
+  teacherId String   @map("teacher_id")
+  title     String
+  note      String?
+  nextGoal  String?  @map("next_goal")
+  homework  String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  teacher   User     @relation("TeacherNoteTemplateOwner", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, updatedAt])
+  @@map("teacher_note_templates")
 }
 
 model ParentStudent {
@@ -322,6 +340,10 @@ model LearningMaterial {
   title        String
   description  String?
   url          String
+  blobPathname String?      @map("blob_pathname")
+  fileName     String?      @map("file_name")
+  mimeType     String?      @map("mime_type")
+  fileSize     Int?         @map("file_size")
   kind         MaterialKind @default(LINK)
   isActive     Boolean      @default(true) @map("is_active")
   createdAt    DateTime     @default(now()) @map("created_at")

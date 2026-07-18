@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, CheckCircle2, CircleAlert, ClipboardPlus, Clock3, Sparkles, UserCheck } from "lucide-react";
+import { Check, CheckCircle2, CircleAlert, ClipboardPlus, Clock3, Save, Sparkles, Trash2, UserCheck } from "lucide-react";
 
 type Attendance = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
 type Student = { id: string; name: string; note: string; attendance: Attendance };
+type NoteTemplate = { id: string; title: string; note: string; nextGoal: string; homework: string };
 type LessonData = {
   id: string;
   groupId: string;
@@ -18,8 +19,13 @@ type LessonData = {
   homework: string;
   previousGoal: string | null;
   status: "PLANNED" | "COMPLETED" | "CANCELLED";
+  templates: NoteTemplate[];
   students: Student[];
 };
+
+function noteSnapshot(value: LessonData): string {
+  return JSON.stringify({ topic: value.topic, note: value.note, nextGoal: value.nextGoal, homework: value.homework, students: value.students });
+}
 
 const attendanceOptions: { value: Attendance; label: string; active: string }[] = [
   { value: "PRESENT", label: "Burada", active: "bg-emerald-700 text-white" },
@@ -33,7 +39,11 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [completed, setCompleted] = useState(lesson.status === "COMPLETED");
   const [actionMessage, setActionMessage] = useState("");
+  const [templates, setTemplates] = useState(lesson.templates);
+  const [templateTitle, setTemplateTitle] = useState("");
   const first = useRef(true);
+  const lastSaved = useRef(noteSnapshot(lesson));
+  const dirty = noteSnapshot(form) !== lastSaved.current;
 
   const save = useCallback(async (complete: boolean) => {
     setSaveState("saving");
@@ -43,6 +53,7 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
       body: JSON.stringify({ topic: form.topic, note: form.note, nextGoal: form.nextGoal, homework: form.homework, complete, students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })) }),
     }).catch(() => null);
     setSaveState(response?.ok ? "saved" : "error");
+    if (response?.ok) lastSaved.current = noteSnapshot(form);
     if (response?.ok && complete) { setCompleted(true); setActionMessage("Ders tamamlandı; öğrenci ve veli özeti hazır."); }
     return response?.ok === true;
   }, [form, lesson.id]);
@@ -58,10 +69,17 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
   }, [save]);
 
   useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => { if (saveState === "saving") event.preventDefault(); };
+    const warn = (event: BeforeUnloadEvent) => { if (dirty || saveState === "saving" || saveState === "error") event.preventDefault(); };
+    const guardLink = (event: MouseEvent) => {
+      if (!dirty && saveState !== "saving" && saveState !== "error") return;
+      const anchor = (event.target as Element | null)?.closest("a[href]") as HTMLAnchorElement | null;
+      if (!anchor || anchor.target === "_blank" || anchor.origin !== window.location.origin) return;
+      if (!window.confirm("Notlarda henüz güvenli biçimde kaydedilmemiş değişiklikler var. Yine de ayrılmak istiyor musunuz?")) { event.preventDefault(); event.stopPropagation(); }
+    };
     window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [saveState]);
+    document.addEventListener("click", guardLink, true);
+    return () => { window.removeEventListener("beforeunload", warn); document.removeEventListener("click", guardLink, true); };
+  }, [dirty, saveState]);
 
   async function createAssignment() {
     if (!form.homework.trim()) return setActionMessage("Önce çalışma alanını doldurun.");
@@ -72,6 +90,20 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
 
   function patchStudent(id: string, patch: Partial<Student>) {
     setForm((current) => ({ ...current, students: current.students.map((student) => student.id === id ? { ...student, ...patch } : student) }));
+  }
+
+  async function saveTemplate() {
+    if (templateTitle.trim().length < 2) return setActionMessage("Şablona kısa bir ad verin.");
+    const response = await fetch("/api/panel/teacher/templates", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: templateTitle, note: form.note, nextGoal: form.nextGoal, homework: form.homework }) });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) return setActionMessage(body.error || "Şablon kaydedilemedi.");
+    setTemplates((current) => [{ id: body.id, title: body.title, note: body.note || "", nextGoal: body.nextGoal || "", homework: body.homework || "" }, ...current]);
+    setTemplateTitle(""); setActionMessage("Kişisel not şablonu kaydedildi.");
+  }
+
+  async function deleteTemplate(id: string) {
+    const response = await fetch(`/api/panel/teacher/templates/${id}`, { method: "DELETE" });
+    if (response.ok) setTemplates((current) => current.filter((template) => template.id !== id));
   }
 
   return (
@@ -95,7 +127,8 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
         </div>
 
         <div className="space-y-6 p-5 sm:p-7">
-          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Grup konuyu genel olarak kavradı; temel kazanımlar pekişiyor.", nextGoal: "Yeni nesil sorularda doğru stratejiyi seçmek.", homework: "Konu tarama çalışmasını tamamla ve yanlışlarını işaretle." }))} className="panel-quick-action"><Sparkles size={14} /> Dengeli ders şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Temel adımlarda desteğe ihtiyaç var; birlikte örnek çözümü sürdüreceğiz.", nextGoal: "Temel işlem basamaklarını hatasız uygulamak.", homework: "Kolay düzey 15 soru çöz; takıldığın soruları işaretle." }))} className="panel-quick-action">Destek şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Kazanımlar güçlü; hız ve farklı çözüm yollarına odaklanabiliriz.", nextGoal: "Zorlayıcı sorularda süreyi kontrollü kullanmak.", homework: "Orta-zor düzey 20 soru ve süre analizi." }))} className="panel-quick-action">İleri seviye</button></div>
+          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Grup konuyu genel olarak kavradı; temel kazanımlar pekişiyor.", nextGoal: "Yeni nesil sorularda doğru stratejiyi seçmek.", homework: "Konu tarama çalışmasını tamamla ve yanlışlarını işaretle." }))} className="panel-quick-action"><Sparkles size={14} /> Dengeli ders şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Temel adımlarda desteğe ihtiyaç var; birlikte örnek çözümü sürdüreceğiz.", nextGoal: "Temel işlem basamaklarını hatasız uygulamak.", homework: "Kolay düzey 15 soru çöz; takıldığın soruları işaretle." }))} className="panel-quick-action">Destek şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Kazanımlar güçlü; hız ve farklı çözüm yollarına odaklanabiliriz.", nextGoal: "Zorlayıcı sorularda süreyi kontrollü kullanmak.", homework: "Orta-zor düzey 20 soru ve süre analizi." }))} className="panel-quick-action">İleri seviye</button>{templates.map((template) => <span key={template.id} className="inline-flex overflow-hidden rounded-xl border border-[var(--site-line)]"><button type="button" onClick={() => setForm((current) => ({ ...current, note: template.note, nextGoal: template.nextGoal, homework: template.homework }))} className="bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]">{template.title}</button><button type="button" onClick={() => void deleteTemplate(template.id)} aria-label={`${template.title} şablonunu sil`} className="border-l border-[var(--site-line)] bg-white px-2 text-rose-600"><Trash2 size={12} /></button></span>)}</div>
+          <div className="flex flex-col gap-2 rounded-2xl border border-dashed border-[var(--site-line)] p-3 sm:flex-row"><input value={templateTitle} onChange={(event) => setTemplateTitle(event.target.value)} className="panel-input flex-1" maxLength={60} placeholder="Mevcut notları şablon olarak adlandır" aria-label="Yeni şablon adı" /><button type="button" onClick={() => void saveTemplate()} className="panel-quick-action"><Save size={14} /> Şablonu kaydet</button></div>
           {form.previousGoal ? (
             <button type="button" onClick={() => setForm((current) => ({ ...current, topic: current.topic || current.previousGoal || "" }))} className="group flex w-full items-start gap-3 rounded-2xl border border-[#eadf9e] bg-[#fff9dc] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md">
               <span className="rounded-xl bg-white p-2 text-amber-700"><Sparkles size={17} /></span>

@@ -34,6 +34,7 @@
     "@prisma/client": "^6.15.0",
     "@prisma/extension-accelerate": "^3.0.1",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/blob": "^2.6.1",
     "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
     "geist": "^1.7.0",

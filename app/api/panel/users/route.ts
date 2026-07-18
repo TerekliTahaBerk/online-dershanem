@@ -78,6 +78,7 @@ export async function POST(request: Request) {
       ...(parsed.data.role === "STUDENT" ? { studentProfile: { create: {} } } : {}),
       ...(parsed.data.role === "TEACHER" ? { teacherProfile: { create: {} } } : {}),
     },
+    include: { studentProfile: { select: { id: true } } },
   });
 
   await logAudit({
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({
-    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
+    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, studentProfileId: user.studentProfile?.id || null },
     // BİR KEZ döner. Sunucu bunu bir daha üretemez.
     tempPassword,
   });
