@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 15
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: restore
           POSTGRES_PASSWORD: restore
@@ -36,23 +36,25 @@ jobs:
           test -n "$DATABASE_DIRECT_URL"
           test -n "$BACKUP_PASSWORD"
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
-
       - name: Create encrypted dump
         run: |
-          pg_dump "$DATABASE_DIRECT_URL" --format=custom --no-owner --no-acl --file=database.dump
+          docker run --rm --network host -v "$PWD:/backup" postgres:17-alpine \
+            pg_dump "$DATABASE_DIRECT_URL" --format=custom --no-owner --no-acl --file=/backup/database.dump
           openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in database.dump -out database.dump.enc -pass env:BACKUP_PASSWORD
           rm database.dump
 
       - name: Restore backup into disposable database
         run: |
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in database.dump.enc -out database.verify.dump -pass env:BACKUP_PASSWORD
-          pg_restore --list database.verify.dump > /dev/null
-          pg_restore --no-owner --no-acl --dbname="$RESTORE_DATABASE_URL" database.verify.dump
-          psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS restored_tables FROM information_schema.tables WHERE table_schema='public';"
-          psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS users FROM users; SELECT COUNT(*) AS lessons FROM lessons; SELECT COUNT(*) AS orders FROM od_orders; SELECT COUNT(*) AS outbox FROM email_outbox;"
-          rm database.verify.dump
+          docker run --rm -v "$PWD:/backup" postgres:17-alpine pg_restore --list /backup/database.verify.dump > database.restore.list
+          sed '/ EXTENSION /d; /COMMENT - EXTENSION/d' database.restore.list > database.portable.list
+          docker run --rm --network host -v "$PWD:/backup" postgres:17-alpine \
+            pg_restore --use-list=/backup/database.portable.list --no-owner --no-acl --exit-on-error --dbname="$RESTORE_DATABASE_URL" /backup/database.verify.dump
+          docker run --rm --network host postgres:17-alpine \
+            psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS restored_tables FROM information_schema.tables WHERE table_schema='public';"
+          docker run --rm --network host postgres:17-alpine \
+            psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS users FROM users; SELECT COUNT(*) AS lessons FROM lessons; SELECT COUNT(*) AS orders FROM od_orders; SELECT COUNT(*) AS outbox FROM email_outbox;"
+          rm database.verify.dump database.restore.list database.portable.list
 
       - name: Upload encrypted backup
         uses: actions/upload-artifact@v4

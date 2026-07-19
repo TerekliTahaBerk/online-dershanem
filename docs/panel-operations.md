@@ -26,10 +26,11 @@ Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WR
 GitHub secrets: `PRODUCTION_DATABASE_DIRECT_URL`, `BACKUP_ENCRYPTION_PASSWORD`, `PRODUCTION_CRON_SECRET`.
 
 1. `Encrypted Database Backup` workflow'unu manuel çalıştırın.
-2. Workflow üretim dump'ını AES-256 ile şifreler, tekrar açar ve geçici PostgreSQL servisine gerçekten geri yükler.
-3. `users`, `lessons`, `od_orders` ve `email_outbox` tablolarını sorgulayarak geri yüklenen veriyi doğrular.
-4. Şifreli artifact'i 14 gün saklar; geçici PostgreSQL job sonunda otomatik silinir.
-5. Tatbikat sonucunu ve tarihini operasyon kaydına yazın.
+2. Workflow PostgreSQL 17 istemcisiyle üretim dump'ını AES-256 ile şifreler, tekrar açar ve geçici PostgreSQL 17 servisine gerçekten geri yükler.
+3. Prisma Postgres'e özgü extension tanımları portable restore listesinden çıkarılır; uygulama tabloları ve veriler aynen korunur.
+4. `users`, `lessons`, `od_orders` ve `email_outbox` tablolarını sorgulayarak geri yüklenen veriyi doğrular.
+5. Şifreli artifact'i 14 gün saklar; geçici PostgreSQL job sonunda otomatik silinir.
+6. Tatbikat sonucunu ve tarihini operasyon kaydına yazın.
 
 Canlı veritabanına doğrulama amacıyla restore yapılmaz.
 
