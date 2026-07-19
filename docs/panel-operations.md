@@ -10,6 +10,58 @@ Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kul
 
 `ERROR_ALERT_WEBHOOK_URL`, merkezi request hatalarını üç saniyelik zaman aşımıyla JSON webhook'a yollar. Tanımlı değilse hatalar Vercel structured loglarında kalır.
 
+### Ürün rollout bayrakları ve baz ölçüm
+
+`PANEL_FEATURE_BASELINE_METRICS` varsayılan olarak açıktır. Öğretmenin ders kapanışında yalnız süre, grup büyüklüğü, doldurulan alan sayısı, taslak kayıt sayısı ve değişiklik sayısı gibi toplu ürün sinyallerini structured log'a yazar. Not metni, öğrenci adı, öğrenci/öğretmen kimliği veya ders kimliği event payload'ına alınmaz.
+
+Gelecek öğrenme özellikleri `PANEL_FEATURE_LEARNING_OUTCOMES`, `PANEL_FEATURE_MOCK_EXAM_ANALYSIS`, `PANEL_FEATURE_REVIEW_QUEUE`, `PANEL_FEATURE_ADAPTIVE_PLAN`, `PANEL_FEATURE_PARENT_WEEKLY_DIGEST`, `PANEL_FEATURE_INTERVENTION_INBOX` ve `PANEL_FEATURE_TEACHER_AI_DRAFTS` bayraklarıyla yönetilir. Bunların güvenli varsayılanı kapalıdır. Bir bayrak yalnız tam olarak `true` değeriyle açılır; değişiklik deploy gerektirir.
+
+İlk baz çizgi için en az iki hafta şu log event'lerini izleyin:
+
+- `product.lesson_close_started`, `product.lesson_close_completed`, `product.lesson_close_reopened`
+- `product.lesson_autosave_failed`
+- `panel.lesson_notes.saved`
+
+Hedefler: ders kapanışı p50 `<120 sn`, p90 `<240 sn`; not kaydı başarı oranı `≥%99,9`; tamamlanan dersin 24 saat içinde yeniden düzenlenme oranı `<%10`. Hedefler yeterli gerçek kullanım oluşunca yeniden kalibre edilmelidir.
+
+### Panel oturum saklama işi
+
+`/api/cron/panel-session-retention` her gün süresi dolmuş oturumları, 30 günden eski iptal edilmiş oturumları ve 90 günden eski kimliksiz ürün event'lerini temizler. Diğer cron'lar gibi `CRON_SECRET` bearer doğrulaması kullanır ve silinen toplamı PII içermeden döndürür.
+
+Akademik kayıtlar, materyal Blob'ları, bildirimler ve audit kayıtları bu iş tarafından silinmez. Politika ve veri sahibi talep akışı [panel veri yönetişimi standardında](./panel-data-governance.md) tanımlıdır.
+
+### İş SLO kontrolü
+
+Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol edin. Beşten az örnek için durum üretilmez. Hedef dışı kartlarda önce `outcome` dağılımını ve `product.event_persist_failed` loglarını inceleyin; güvenlik reddi ile sistem hatasını birbirine karıştırmayın. Event, hedef ve rollout kapıları [panel SLO kataloğunda](./panel-slo-catalog.md) tanımlıdır.
+
+### Kazanım kataloğu rollout'u
+
+`PANEL_FEATURE_LEARNING_OUTCOMES` açılmadan önce `0045_curriculum_outcome_evidence` migration'ını uygulayın, admin “Kazanımlar” ekranında resmî kaynaklı sürümü hazırlayın ve `ACTIVE` durumuna alın. Katalog yaşam döngüsü, erteleme kuyruğu ve kabul ölçütleri [kazanım işletim standardında](./curriculum-evidence-operations.md) tanımlıdır.
+
+### Deneme analizi rollout'u
+
+`0046_mock_exam_analysis` migration'ından sonra sunucu için `PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true`, build-time menü için `NEXT_PUBLIC_PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true` birlikte ayarlanır. Şablon doğrulaması, güvenli yapıştırma biçimi, rol sınırları ve pilot kapıları [deneme analizi standardında](./mock-exam-analysis-operations.md) tanımlıdır.
+
+### Aralıklı tekrar kuyruğu rollout'u
+
+`0047_spaced_review_queue` migration'ından sonra `PANEL_FEATURE_REVIEW_QUEUE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_REVIEW_QUEUE=true` birlikte açılır. Günlük limit, erteleme hakkı, idempotency, öğretmen gözetim eşikleri ve telif sınırları [aralıklı tekrar standardında](./spaced-review-operations.md) tanımlıdır.
+
+### İstisna odaklı ders kapanışı rollout'u
+
+`0048_quick_lesson_close` migration'ından sonra `PANEL_FEATURE_QUICK_LESSON_CLOSE=true` açılır. İstemci ortam değişkeni yalnız build görünürlüğü için ayrılmıştır; sunucu bayrağının yerine geçmez. Önce 5–30 öğretmen kapanışında p50/p90, düzeltme, eksik kayıt ve conflict oranlarını gözleyin. Transaction, idempotency, geri alma ve seçili öğrenci ödevi ayrıntıları [hızlı ders kapanışı standardında](./quick-lesson-close-operations.md) tanımlıdır.
+
+### Uyarlanabilir haftalık plan rollout'u
+
+`0049_adaptive_weekly_plan` migration'ından sonra `PANEL_FEATURE_ADAPTIVE_PLAN=true` ve `NEXT_PUBLIC_PANEL_FEATURE_ADAPTIVE_PLAN=true` birlikte açılır. İlk dört hafta kabul, görev tamamlama, öğretmen inceleme süresi ve bunaltı pulse'u baz çizgi olarak izlenir. Kural sırası, kapasite sınırı ve geri alma adımları [uyarlanabilir plan standardında](./adaptive-weekly-plan-operations.md) tanımlıdır.
+
+### Sakin haftalık özet rollout'u
+
+`0050_calm_weekly_digest` migration'ından sonra `PANEL_FEATURE_PARENT_WEEKLY_DIGEST=true` ve `NEXT_PUBLIC_PANEL_FEATURE_PARENT_WEEKLY_DIGEST=true` birlikte açılır. İlk pilotta yayın, öğrenci/veli görüntüleme, kaygı pulse'u ve opt-out oranı izlenir; özel öğretmen notlarının özet içeriğine girmediği örneklemle doğrulanır. İçerik ve geri alma kuralları [sakin haftalık özet standardında](./calm-weekly-digest-operations.md) tanımlıdır.
+
+### Açıklanabilir müdahale kutusu rollout'u
+
+`0051_explainable_intervention_inbox` migration'ından sonra `PANEL_FEATURE_INTERVENTION_INBOX=true` ve `NEXT_PUBLIC_PANEL_FEATURE_INTERVENTION_INBOX=true` birlikte açılır. İlk pilotta kural bazında üretilen vaka, ilk aksiyon p50, sonuçla kapanma ve yanlış işaret oranı izlenir. Yanlış işaret guardrail'i aşılırsa ilgili kural durdurulur; eşik otomatik düşürülmez ve ML risk skoru eklenmez. Yetki, erteleme ve geri alma ayrıntıları [müdahale kutusu standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
+
 Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WRITE_TOKEN` Vercel bağlantısı tarafından yönetilir; PDF/MP4 dosyaları doğrudan URL ile açılmaz, her indirmede rol ve aktif grup üyeliği yeniden doğrulanır. Sunucu yükleme sınırı nedeniyle dosya boyutu 4 MB ile sınırlıdır.
 
 Öğrenci ve veli Bildirim Merkezi'nde e-posta kanalı açılırsa ders özeti, devamsızlık, ödev ve ödeme bildirimleri güvenli `EmailOutbox` üzerinden gönderilir. Geciken ödev işi her gün çalışır ve aynı kullanıcıya aynı kayıt için 24 saat içinde tekrar bildirim üretmez. WhatsApp tercihi hazırdır; gerçek teslimat için ayrıca kurumsal WhatsApp sağlayıcısı ve onaylı mesaj şablonları gerekir.

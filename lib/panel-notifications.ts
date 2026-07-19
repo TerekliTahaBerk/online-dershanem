@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { sendPanelNotificationEmail } from "@/lib/email";
 
 export type NotificationRow = { userId: string; type: NotificationType; title: string; body: string; href?: string | null };
-export type NotificationPreferenceKey = "lessonSummary" | "absence" | "assignment" | "payment";
+export type NotificationPreferenceKey = "lessonSummary" | "weeklyDigest" | "absence" | "assignment" | "payment";
 
 /** Kullanıcının panel ve kategori tercihlerini tüm bildirim üreticilerinde uygular. */
 export async function filterNotificationRows(rows: NotificationRow[], preferenceKey?: NotificationPreferenceKey): Promise<NotificationRow[]> {

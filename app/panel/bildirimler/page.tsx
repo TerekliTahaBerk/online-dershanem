@@ -29,7 +29,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
     prisma.notification.count({ where: { userId: session.userId, readAt: null } }),
     canChoosePreferences ? prisma.notificationPreference.findUnique({ where: { userId: session.userId } }) : null,
   ]);
-  const initial = preferences || { inAppEnabled: true, emailEnabled: false, whatsappEnabled: false, lessonSummary: true, absence: true, assignment: true, payment: true };
+  const initial = preferences || { inAppEnabled: true, emailEnabled: false, whatsappEnabled: false, lessonSummary: true, weeklyDigest: true, absence: true, assignment: true, payment: true };
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const href = (next: { page?: number; type?: string; status?: string }) => { const query = new URLSearchParams(); const type = next.type ?? selectedType; const status = next.status ?? selectedStatus; const nextPage = next.page ?? 1; if (type !== "ALL") query.set("type", type); if (status !== "all") query.set("status", status); if (nextPage > 1) query.set("page", String(nextPage)); const text = query.toString(); return `/panel/bildirimler${text ? `?${text}` : ""}`; };
 

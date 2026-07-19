@@ -1,0 +1,112 @@
+# Online Dershanem ürün yol haritası — uygulama takibi
+
+Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirlerin teknik bağımlılık sırasına göre uygulanmasını izler. Öncelik puanı eğitim değerini, aşağıdaki sıra ise güvenli geliştirme bağımlılıklarını ifade eder.
+
+| Aşama | Kapsam | Durum | Çıkış koşulu |
+|---:|---|---|---|
+| 0 | Başlangıç ölçümleri, tipli event sözleşmesi ve rollout bayrakları | **Tamamlandı** | PII içermeyen ders kapanışı ölçümü; gelecek özellikler varsayılan kapalı; unit/E2E doğrulaması |
+| 1 | Çocuk veri güvenliği ve sürekli yetkilendirme | **Tamamlandı** | Veri/retention matrisi, ilişki bazlı auth matrisi, silme ve audit kontrolleri |
+| 2 | Event, KPI ve iş SLO altyapısının genişletilmesi | **Tamamlandı** | Kritik rol yolculukları için ölçülebilir SLI/SLO |
+| 3 | LGS/YKS kazanım omurgası ve kanıt defteri | **Tamamlandı** | Sürümlü kazanım modeli ve ders/ödev kanıtı |
+| 4 | Deneme, süre ve hata nedeni analizi | **Tamamlandı** | LGS/TYT/AYT/YDT hızlı giriş ve hata ısı haritası |
+| 5 | Aralıklı yanlış tekrar kuyruğu | **Tamamlandı** | 1–3–7–14–30 gün tekrar döngüsü |
+| 6 | İstisna odaklı iki dakikalık ders kapanışı | **Tamamlandı** | p50 <120 sn, p90 <240 sn |
+| 7 | Öğretmen onaylı uyarlanabilir haftalık plan | **Tamamlandı** | Açıklanabilir “bugünün üç işi” ve yeniden dengeleme |
+| 8 | Sakin veli haftalık özeti | **Tamamlandı** | Karşılaştırmasız, eylem odaklı haftalık özet |
+| 9 | Açıklanabilir müdahale gelen kutusu | **Tamamlandı** | Sahip, SLA, sonuç ve yanlış pozitif takibi |
+| 10 | Ders kaçırma sonrası telafi paketi | Sıradaki | 72 saatlik telafi döngüsü |
+| 11 | Kanıtlı ödev teslimi, rubric ve yeniden deneme | Bekliyor | Güvenli teslim ve geri bildirim döngüsü |
+| 12 | Öğrenci check-in'i ve yardım isteği | Bekliyor | Kontrollü görünürlük ve yanıt SLA'sı |
+| 13 | Erişilebilirlik ve makul düzenleme profili | Bekliyor | WCAG 2.2 AA ve işlevsel tercihler |
+| 14 | Offline-first ve düşük veri modu | Bekliyor | Güvenli outbox, idempotency ve çatışma çözümü |
+| 15 | Kohort öğrenme kazancı ve kalite panosu | Bekliyor | Adil, minimum örneklemli gelişim görünümü |
+| 16 | Güvenli AI öğretmen yardımcısı | Bekliyor | Kaynaklı taslak, zorunlu onay, eval ve maliyet kapıları |
+| 17 | Bütünleşik pilot ve kademeli yayın | Bekliyor | Dört rol, güvenlik, erişilebilirlik ve etki kabulü |
+
+## Aşama 0 kararları
+
+- Panel ürün event'leri `/api/panel/events` üzerinden tipli ve allowlist payload ile alınır.
+- Event payload'larında serbest metin, ad/e-posta, kullanıcı/öğrenci/ders/grup kimliği bulunmaz.
+- Ders notu yazma API'si, sunucu tarafında request süresi ve toplu kayıt niteliğini structured log'a yazar.
+- Gelecek özellik bayrakları kapalı; yalnız baz ölçüm varsayılan açıktır.
+- Baz çizgi en az iki haftalık gerçek kullanım ve yeterli örneklemle değerlendirilir.
+
+## Aşama 1 kararları
+
+- Nesne erişimi, kaydı önce bulup sonra rol kontrolü yapmak yerine ilişki koşulunu aynı veritabanı sorgusunda uygular.
+- Veli bağlantısı iptali ile grup üyeliği değişiklikleri atomik audit izi üretir; ilişki sona erdiğinde sonraki istek erişimi kaybeder.
+- Private materyal erişim denemeleri ham kimlikler loglanmadan gözlemlenir; dosya her istekte uygulama katmanında yeniden yetkilendirilir.
+- Otomatik retention yalnız artık kullanılamayan süresi dolmuş/eskiden iptal edilmiş oturumları siler. Akademik, finansal, bildirim ve audit verileri için hukuki süre onayı olmadan toplu silme yapılmaz.
+- Veri sınıfları, önerilen saklama süreleri ve veri sahibi talep akışı [panel veri yönetişimi standardında](./panel-data-governance.md) tutulur.
+
+## Aşama 2 kararları
+
+- Admin grup kurulumu, öğretmen ders kapanışı/not kaydı, öğrenci ödev ilerlemesi ve veli özet yüklemesi ortak, sürümlü ve PII'siz event sözleşmesine bağlandı.
+- İstemci yalnız UX event'lerini gönderebilir; başarı, doğrulama, ret ve sistem hatası sonuçları güvenilir biçimde sunucu tarafından üretilir.
+- Kimliksiz event'ler 90 gün tutulur; kullanıcı, öğrenci, ders, grup, ödev veya materyal kimliği ile serbest metin kabul edilmez.
+- Admin rapor ekranı beş kritik SLO'yu 30 günlük pencere ve minimum beş örnek kuralıyla gösterir. Az örneklem yeşil başarı gibi sunulmaz.
+- Yeni fazların rollout büyütme kapıları ve alarm eşikleri [panel SLO kataloğunda](./panel-slo-catalog.md) tanımlıdır.
+
+## Aşama 3 kararları
+
+- Kazanım kataloğu LGS, TYT, AYT ve YDT için sürümlüdür; yalnız `ACTIVE` sürümler öğretmen seçiminde görünür, eski kanıtlar arşivlenen sürümlerle birlikte korunur.
+- Ders ve ödev başına en fazla üç kazanım bağlanır. Kazanım seçilmezse öğretmen kontrollü bir neden belirtir; böylece iki dakikalık kapanış akışı zorunlu katalog aramasına dönüşmez.
+- Öğrenme görünümü tek bir belirsiz “hakimiyet puanı” üretmez. Kanıtlar `işlendi`, `öğretmen gözlemi`, `bağımsız çalışma` ve `tekrar gerekli` türleriyle, kaynağı ve zamanı korunarak sunulur.
+- Öğrenci yalnız katıldığı tamamlanmış derslerden ve kendi tamamladığı ödevlerden kanıt görür. Veli yalnız aktif ilişkisi bulunan öğrencinin sakin, karşılaştırmasız özetini görür.
+- Sınıf sıralaması, öğretmen sıralaması, akran karşılaştırması ve cezalandırıcı kırmızı skorlar kapsam dışıdır. Admin yalnız etiketleme kapsamasını ve katalog işletimini izler.
+- Kazanım kullanım event'i kimlik ve serbest metin içermez. Katalog kaynağı, lisans/sürüm doğrulaması ve rollout adımları [kazanım kanıtı operasyon standardında](./curriculum-evidence-operations.md) tanımlıdır.
+
+## Aşama 4 kararları
+
+- LGS, TYT, AYT ve YDT girişleri sınav şablonundaki bölüm ve soru toplamını sunucuda doğrular. LGS netinde üç, YKS oturumlarında dört yanlış götürme katsayısı kullanılır; puan tahmini yapılmaz.
+- Mobil manuel girişe ek olarak dosya yüklemeden CSV/hesap tablosu sayısal satırları yapıştırılabilir. Formül, dosya metadata'sı, soru metni veya telifli görsel saklanmaz.
+- Bir denemede en fazla üç kontrollü hata nedeni bulunur: bilgi, işlem/yöntem, dikkat, süre ve boş bırakma/başlayamama. Öğrenci seçebilir; aktif grup öğretmeni düzeltebilir ve değişiklik audit edilir.
+- Isı haritası yalnız öğrencinin kendi denemelerindeki neden sıklığını gösterir. Sınıf sırası, yüzdelik, kırmızı başarısızlık etiketi ve tek denemeden kesin hüküm üretilmez.
+- Sistem tekrarlayan neden için yalnız bir küçük eylem taslağı çıkarır; öğrenci/veli görünümünde “öğretmen onaylı” sayılması öğretmen veya admin onayı gerektirir.
+- Deneme girişi p50 ≤180 saniye ve hata nedeni kapsaması ≥%50 rollout kapısıdır. Event'ler deneme/öğrenci kimliği, yayın veya soru metni taşımaz; ayrıntılar [deneme analizi operasyon standardında](./mock-exam-analysis-operations.md) tanımlıdır.
+
+## Aşama 5 kararları
+
+- Deneme bölümündeki yanlışlar ve öğretmenin `NEEDS_REVIEW` işaretlediği katılımlı ders kazanımları idempotent biçimde tekrar öğesine dönüşür. Öğretmen ayrıca telifli içeriği kopyalamadan kendi materyaline kaynak referansı ekleyebilir.
+- İlk dönüş bir gün sonra; doğru yanıtlar 3–7–14–30 gün basamaklarına ilerler. `UNSURE` daha yakın basamağa, `WRONG` bir güne döner; geçmiş silinmez ve “sıfırlandı/seri bozuldu” dili kullanılmaz.
+- Öğrenciye günde en fazla beş öğe gösterilir. “Bugün ertele” İstanbul takvim gününde aynı öğe için bir kez kullanılabilir.
+- Her yanıt `reviewItemId + idempotencyKey` unique kuralıyla çift yazımdan korunur. Çözüm notu en fazla 500 karakterdir ve ürün event'ine alınmaz.
+- Öğretmen ekranı sıralama yapmaz; aktif kuyruk 20'yi, günlük bekleyen 5'i aştığında veya aynı öğede son 30 günde üç `WRONG/UNSURE` olduğunda yalnız “İnsan bakışı gerekli” sinyali verir.
+- Admin raporu 7 günlük yeniden çözüm ve 30 günlük doğru geri çağırma baz çizgisini toplu gösterir. Rollout ve veri güvenliği ayrıntıları [aralıklı tekrar operasyon standardında](./spaced-review-operations.md) tanımlıdır.
+
+## Aşama 6 kararları
+
+- Aktif grup öğrencileri `PRESENT` varsayımıyla başlar; öğretmen tek düğmeyle varsayımı yeniler ve öğrenci kartlarını yalnız istisna olduğunda açar.
+- Önceki dersin hedefi görünür bağlamdır, otomatik gerçek kabul edilmez. Ortak alanlar ve en fazla üç kazanım insan onayıyla saklanır.
+- Ödev taslağı kapanıştan önce içerik ve alıcı önizlemesi gösterir; ilerleme ve bildirim yalnız seçilen öğrencilere oluşturulur.
+- Kapanış `closeVersion + idempotencyKey + requestHash` ile korunur. Aynı istek güvenle tekrar oynatılır; eski sürüm veya farklı içerikle anahtar kullanımı `409` üretir.
+- Not, yoklama, kazanım, kapanış, seçili ödev ve uygulama içi bildirim tek transaction içindedir. E-posta kuyruğu başarılı transaction sonrasında çalışır.
+- Öğretmene kronometre veya hız sıralaması gösterilmez. Ürün ekibi p50/p90 süreyi, 24 saatlik düzeltmeyi ve eksik kayıt oranını yalnız toplu event'lerden izler.
+- Rollout, geri alma ve gözlem ayrıntıları [hızlı ders kapanışı operasyon standardında](./quick-lesson-close-operations.md) tanımlıdır.
+
+## Aşama 7 kararları
+
+- `adaptive-v1` AI kullanmayan, sürümlü ve deterministik kural/kısıt çözücüdür. Ödev, tekrar, öğretmen kanıtı, yaklaşan sınav ve öğrencinin seçtiği kapasite dışında girdi kullanmaz.
+- Günlük görev sayısı üçü ve seçilen dakika kapasitesini aşmaz. Kaçan günler geçmişe yazılmaz; yeniden dengelemede eski açık görevler `SKIPPED` iziyle korunur, borç veya ceza dili üretilmez.
+- Her görev kontrollü neden koduyla açıklanır. Plan taslak başlar; yalnız aktif grup öğretmeni sürüm kontrolüyle onaylayıp kilitler.
+- Öğrenci serbest metin paylaşmadan yoğunluk, yanlış gün, öncelik veya başka neden kategorisiyle değişiklik isteyebilir. 1–5 bunaltı pulse'u isteğe bağlıdır.
+- Veli ayrıntılı görev listesi görmez. Event'ler kimlik, görev başlığı, not veya sınav adı taşımaz.
+- Algoritma, rollout, yetki ve ölçüm ayrıntıları [uyarlanabilir haftalık plan standardında](./adaptive-weekly-plan-operations.md) tanımlıdır.
+
+## Aşama 8 kararları
+
+- `calm-digest-v1` AI kullanmayan, sürümlü ve deterministik bir kural üreticisidir. Haftalık katılım, tamamlanan plan adımı, katılımlı ders kazanımı ve aktif tekrar başlığı dışında veri kullanmaz.
+- Öğretmenin kişisel/özel ders notları, öğrenci pulse'ları, sıralama, sınıf karşılaştırması ve ham puanlar özet girdisi değildir.
+- Taslak öğretmen tarafından gerçek öğrenci/veli görünümüyle önizlenir. Yayında aynı sürüm öğrenci ve bağlı velilere eşzamanlı açılır; yayımlanmış içerik otomatik yeniden üretilmez.
+- Özet iki iyi giden şey, bir destek alanı ve evde sorulabilecek bir soruyla sınırlıdır. Veri tazeliği görünürdür; günlük alarm veya kırmızı başarısızlık dili yoktur.
+- Öğrenci ve veli yalnız kontrollü yararlılık ve 1–5 kaygı pulse'u verebilir; serbest metin toplanmaz. Haftalık özet bildirimi kullanıcı tercihinden kapatılabilir.
+- Yetki, ton, rollout, geri alma ve ölçüm ayrıntıları [sakin haftalık özet standardında](./calm-weekly-digest-operations.md) tanımlıdır.
+
+## Aşama 9 kararları
+
+- `intervention-v1` AI veya tahmine dayalı risk skoru kullanmaz. Yalnız katılım örüntüsü, teslimi geçen çalışma, üç kez tekrarlayan çözüm güçlüğü ve durmuş plan kapasitesi için açık eşikler çalışır.
+- Tek devamsızlık, tek gecikmiş çalışma veya iki açık plan görevi vaka üretmez. Açıklama kanıt sayısını ve değerlendirme penceresini gösterir; motivasyon, sağlık veya aile bağlamı hakkında çıkarım yapmaz.
+- Her vaka 24 saatlik ilk insan aksiyonu hedefi, sahip, önerilen tek küçük eylem, sürüm ve işlem geçmişi taşır. Sahibi olmayan vakayı öğretmen/admin üstlenebilir; başka öğretmenin sahipliğine öğretmen müdahale edemez.
+- Bekletme 1/3/7 günlük kontrollü aralıklarla yapılır. Süresi geçen kayıt yeniden açılır; kapanış kontrollü sonuç koduyla, yanlış işaret ise kural iyileştirme nedeniyle kaydedilir.
+- İç aksiyon notları en fazla 500 karakterdir, yalnız admin/aktif grup öğretmeni görür ve ürün event'lerine kopyalanmaz. Öğrenci veya veli ekranında vaka, sahiplik, SLA ya da iç not görünmez.
+- Kural, yaşam döngüsü, rollout ve geri alma ayrıntıları [müdahale kutusu işletim standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.

@@ -3,7 +3,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { logAudit } from "@/lib/audit";
 
 const schema = z.object({ parentId: z.string().min(1), studentId: z.string().min(1), relationship: z.string().trim().max(30).optional() });
 
@@ -16,14 +15,30 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Veli ve öğrenci seçin." }, { status: 400 });
   const [parent, student] = await Promise.all([
     prisma.user.findFirst({ where: { id: parsed.data.parentId, role: "PARENT", status: "ACTIVE" }, select: { id: true } }),
-    prisma.studentProfile.findUnique({ where: { id: parsed.data.studentId }, select: { id: true } }),
+    prisma.studentProfile.findFirst({ where: { id: parsed.data.studentId, user: { status: "ACTIVE" } }, select: { id: true } }),
   ]);
   if (!parent || !student) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
-  const relation = await prisma.parentStudent.upsert({
+  const existing = await prisma.parentStudent.findUnique({
     where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
-    create: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null },
-    update: { relationship: parsed.data.relationship || null },
+    select: { id: true },
   });
-  await logAudit({ actorUserId: auth.session.userId, entityType: "ParentStudent", entityId: relation.id, action: "relationship.saved", summary: "Veli–öğrenci bağlantısı kaydedildi", payload: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null } });
+  await prisma.$transaction(async (tx) => {
+    const relation = await tx.parentStudent.upsert({
+      where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
+      create: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null },
+      update: { relationship: parsed.data.relationship || null },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorUserId: auth.session.userId,
+        actorType: "USER",
+        entityType: "ParentStudent",
+        entityId: relation.id,
+        action: existing ? "relationship.metadata_updated" : "relationship.access_granted",
+        summary: existing ? "Veli–öğrenci bağlantısı güncellendi" : "Veli–öğrenci erişimi verildi",
+        payload: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null },
+      },
+    });
+  });
   return NextResponse.json({ ok: true });
 }

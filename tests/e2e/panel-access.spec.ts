@@ -46,7 +46,7 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     // App Router, streaming başladıktan sonra notFound() çalışırsa HTTP yanıtı
     // 200 kalabilir; güvenlik sonucu kullanıcıya veri yerine 404 yüzeyidir.
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
-    for (const route of ["takvim", "takip"]) {
+    for (const route of ["takvim", "takip", "denemeler", "haftalik"]) {
       await page.goto(`/panel/veli/${route}?studentId=${process.env.PANEL_E2E_FOREIGN_STUDENT_ID}`);
       await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
     }
@@ -64,5 +64,25 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
       return response.status;
     }, process.env.PANEL_E2E_FOREIGN_LESSON_ID!);
     expect(status).toBe(404);
+    const planStatus = await page.evaluate(async () => (await fetch("/api/panel/adaptive-plan/e2e-weekly-plan-foreign/approve", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1 }) })).status);
+    expect(planStatus).toBe(404);
+    const digestStatus = await page.evaluate(async () => (await fetch("/api/panel/weekly-digests/e2e-weekly-digest-foreign/publish", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1 }) })).status);
+    expect(digestStatus).toBe(404);
+    const interventionStatus = await page.evaluate(async () => (await fetch("/api/panel/interventions/e2e-intervention-foreign", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "ASSIGN_SELF", expectedVersion: 1 }) })).status);
+    expect(interventionStatus).toBe(404);
   });
+
+  test("öğrenci başka öğrencinin tekrar öğesini yanıtlayamaz", async ({ page }) => {
+    await login(page, accounts.student);
+    const status = await page.evaluate(async () => (await fetch("/api/panel/review-queue/e2e-review-item-foreign/respond", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ response: "CORRECT", idempotencyKey: "e2e_foreign_attempt" }) })).status);
+    expect(status).toBe(404);
+  });
+
+  for (const [role, account] of Object.entries(accounts) as [keyof typeof accounts, (typeof accounts)[keyof typeof accounts]][]) {
+    test(`${role} başka grubun private materyalini okuyamaz`, async ({ page }) => {
+      await login(page, account);
+      const status = await page.evaluate(async () => (await fetch("/api/panel/materials/e2e-material-private-foreign/file")).status);
+      expect(status).toBe(404);
+    });
+  }
 });

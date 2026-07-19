@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, CheckCircle2, CircleAlert, ClipboardPlus, Clock3, Save, Sparkles, Trash2, UserCheck } from "lucide-react";
+import { Check, CheckCircle2, CircleAlert, ClipboardPlus, Clock3, Eye, Save, Sparkles, Trash2, UserCheck, UsersRound } from "lucide-react";
+import { sendPanelEvent } from "@/lib/panel-event-client";
+import { OutcomePicker, type OutcomeOption, type SelectedOutcome } from "@/components/panel/outcome-picker";
 
 type Attendance = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
 type Student = { id: string; name: string; note: string; attendance: Attendance };
@@ -18,13 +20,17 @@ type LessonData = {
   nextGoal: string;
   homework: string;
   previousGoal: string | null;
+  previousContext: { topic: string | null; nextGoal: string | null; homework: string | null } | null;
+  closeVersion: number;
   status: "PLANNED" | "COMPLETED" | "CANCELLED";
   templates: NoteTemplate[];
   students: Student[];
+  outcomeLinks: SelectedOutcome[];
+  outcomeSkipReason: "CATALOG_MISSING" | "COMPLETE_LATER" | "NOT_APPLICABLE" | null;
 };
 
 function noteSnapshot(value: LessonData): string {
-  return JSON.stringify({ topic: value.topic, note: value.note, nextGoal: value.nextGoal, homework: value.homework, students: value.students });
+  return JSON.stringify({ topic: value.topic, note: value.note, nextGoal: value.nextGoal, homework: value.homework, students: value.students, outcomeLinks: value.outcomeLinks, outcomeSkipReason: value.outcomeSkipReason });
 }
 
 const attendanceOptions: { value: Attendance; label: string; active: string }[] = [
@@ -34,29 +40,97 @@ const attendanceOptions: { value: Attendance; label: string; active: string }[] 
   { value: "EXCUSED", label: "Mazeret", active: "bg-sky-700 text-white" },
 ];
 
-export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
+export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learningOutcomesEnabled, quickLessonCloseEnabled, outcomes }: { lesson: LessonData; baselineMetricsEnabled: boolean; learningOutcomesEnabled: boolean; quickLessonCloseEnabled: boolean; outcomes: OutcomeOption[] }) {
   const [form, setForm] = useState(lesson);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [completed, setCompleted] = useState(lesson.status === "COMPLETED");
   const [actionMessage, setActionMessage] = useState("");
   const [templates, setTemplates] = useState(lesson.templates);
   const [templateTitle, setTemplateTitle] = useState("");
+  const [showStudentExceptions, setShowStudentExceptions] = useState(!quickLessonCloseEnabled);
+  const [assignmentPreview, setAssignmentPreview] = useState(false);
+  const [assignmentRecipients, setAssignmentRecipients] = useState<string[]>([]);
   const first = useRef(true);
+  const closeVersion = useRef(lesson.closeVersion);
+  const closeIdempotencyKey = useRef<string | null>(null);
   const lastSaved = useRef(noteSnapshot(lesson));
+  const telemetry = useRef({
+    startedAt: null as number | null,
+    interactionCount: 0,
+    draftSaveCount: 0,
+    templateApplied: false,
+    previousGoalUsed: false,
+  });
   const dirty = noteSnapshot(form) !== lastSaved.current;
+  const exceptionCount = form.students.filter((student) => student.attendance !== "PRESENT" || student.note.trim()).length;
+
+  function recordInteraction() {
+    if (!baselineMetricsEnabled) return;
+    telemetry.current.interactionCount = Math.min(1000, telemetry.current.interactionCount + 1);
+    if (telemetry.current.startedAt !== null) return;
+    telemetry.current.startedAt = performance.now();
+    if (lesson.status === "COMPLETED") {
+      sendPanelEvent({ name: "lesson_close_reopened", properties: { groupSize: lesson.students.length } });
+    } else {
+      sendPanelEvent({ name: "lesson_close_started", properties: { groupSize: lesson.students.length, initialStatus: "PLANNED" } });
+    }
+  }
+
+  function patchSharedForm(patch: Partial<Pick<LessonData, "topic" | "note" | "nextGoal" | "homework">>) {
+    recordInteraction();
+    setForm((current) => ({ ...current, ...patch }));
+  }
 
   const save = useCallback(async (complete: boolean) => {
+    if (baselineMetricsEnabled && !complete) telemetry.current.draftSaveCount = Math.min(100, telemetry.current.draftSaveCount + 1);
     setSaveState("saving");
+    if (complete && quickLessonCloseEnabled && !closeIdempotencyKey.current) closeIdempotencyKey.current = crypto.randomUUID();
+    const assignmentDraft = complete && quickLessonCloseEnabled && assignmentPreview && form.homework.trim() && assignmentRecipients.length ? { title: `${form.topic || form.title} çalışması`, description: form.homework, dueAt: new Date(Date.now() + 7 * 86400000).toISOString(), studentIds: assignmentRecipients } : null;
     const response = await fetch(`/api/panel/lessons/${lesson.id}/notes`, {
       method: "PUT",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ topic: form.topic, note: form.note, nextGoal: form.nextGoal, homework: form.homework, complete, students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })) }),
+      body: JSON.stringify({ topic: form.topic, note: form.note, nextGoal: form.nextGoal, homework: form.homework, complete, students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })), outcomes: learningOutcomesEnabled ? form.outcomeLinks : [], outcomeSkipReason: learningOutcomesEnabled ? form.outcomeSkipReason : null, expectedVersion: quickLessonCloseEnabled ? closeVersion.current : undefined, idempotencyKey: complete && quickLessonCloseEnabled ? closeIdempotencyKey.current : undefined, assignmentDraft }),
     }).catch(() => null);
+    const responseBody = await response?.json().catch(() => ({})) as { error?: string; version?: number; replayed?: boolean; assignmentCreated?: boolean } | undefined;
     setSaveState(response?.ok ? "saved" : "error");
-    if (response?.ok) lastSaved.current = noteSnapshot(form);
-    if (response?.ok && complete) { setCompleted(true); setActionMessage("Ders tamamlandı; öğrenci ve veli özeti hazır."); }
+    if (!response?.ok && baselineMetricsEnabled) {
+      sendPanelEvent({ name: "lesson_autosave_failed", properties: { groupSize: lesson.students.length, completionAttempt: complete } });
+    }
+    if (response?.ok) {
+      lastSaved.current = noteSnapshot(form);
+      if (typeof responseBody?.version === "number") closeVersion.current = responseBody.version;
+    }
+    if (!response?.ok && complete) setActionMessage(responseBody?.error || "Ders kapatılamadı; değişiklikleriniz taslakta korunuyor.");
+    if (response?.ok && complete) {
+      setCompleted(true);
+      setActionMessage(responseBody?.replayed ? "Bu kapanış daha önce güvenle tamamlandı; çift kayıt oluşturulmadı." : responseBody?.assignmentCreated ? `Ders tamamlandı; ödev ${assignmentRecipients.length} öğrenciye gönderildi.` : "Ders tamamlandı; öğrenci ve veli özeti hazır.");
+      if (baselineMetricsEnabled) {
+        const initialStudents = new Map(lesson.students.map((student) => [student.id, student]));
+        const changedStudentCount = form.students.filter((student) => {
+          const initial = initialStudents.get(student.id);
+          return !initial || initial.note !== student.note || initial.attendance !== student.attendance;
+        }).length;
+        sendPanelEvent({
+          name: "lesson_close_completed",
+          properties: {
+            durationMs: Math.min(8 * 60 * 60 * 1000, Math.round(telemetry.current.startedAt === null ? 0 : performance.now() - telemetry.current.startedAt)),
+            groupSize: form.students.length,
+            changedStudentCount,
+            privateNoteCount: form.students.filter((student) => student.note.trim()).length,
+            filledSharedFieldCount: [form.topic, form.note, form.nextGoal, form.homework].filter((value) => value.trim()).length,
+            draftSaveCount: telemetry.current.draftSaveCount,
+            interactionCount: telemetry.current.interactionCount,
+            templateApplied: telemetry.current.templateApplied,
+            previousGoalUsed: telemetry.current.previousGoalUsed,
+            quickCloseEnabled: quickLessonCloseEnabled,
+            exceptionCount,
+            assignmentRecipientCount: assignmentDraft?.studentIds.length || 0,
+          },
+        });
+      }
+    }
     return response?.ok === true;
-  }, [form, lesson.id]);
+  }, [assignmentPreview, assignmentRecipients, baselineMetricsEnabled, exceptionCount, form, learningOutcomesEnabled, lesson.id, lesson.students, quickLessonCloseEnabled]);
 
   useEffect(() => {
     if (first.current) {
@@ -84,12 +158,38 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
   async function createAssignment() {
     if (!form.homework.trim()) return setActionMessage("Önce çalışma alanını doldurun.");
     if (!await save(false)) return;
-    const response = await fetch("/api/panel/assignments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ groupId: form.groupId, lessonId: form.id, title: `${form.topic || form.title} çalışması`, description: form.homework, dueAt: new Date(Date.now() + 7 * 86400000).toISOString() }) });
+    const response = await fetch("/api/panel/assignments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ groupId: form.groupId, lessonId: form.id, title: `${form.topic || form.title} çalışması`, description: form.homework, dueAt: new Date(Date.now() + 7 * 86400000).toISOString(), outcomeIds: learningOutcomesEnabled ? form.outcomeLinks.map((item) => item.outcomeId) : [], outcomeSkipReason: learningOutcomesEnabled ? form.outcomeSkipReason : null }) });
     setActionMessage(response.ok ? "Çalışma ödeve dönüştürüldü ve öğrencilere gönderildi." : "Ödev oluşturulamadı.");
   }
 
   function patchStudent(id: string, patch: Partial<Student>) {
+    recordInteraction();
     setForm((current) => ({ ...current, students: current.students.map((student) => student.id === id ? { ...student, ...patch } : student) }));
+  }
+
+  function markEveryonePresent() {
+    recordInteraction();
+    setForm((current) => ({ ...current, students: current.students.map((student) => ({ ...student, attendance: "PRESENT" as const })) }));
+  }
+
+  function toggleAssignmentPreview() {
+    if (!form.homework.trim()) return setActionMessage("Ödev önizlemesi için önce çalışma alanını doldurun.");
+    setAssignmentPreview((current) => {
+      if (!current && !assignmentRecipients.length) setAssignmentRecipients(form.students.filter((student) => student.attendance === "PRESENT" || student.attendance === "LATE").map((student) => student.id));
+      return !current;
+    });
+  }
+
+  function applyTemplate(template: Pick<NoteTemplate, "note" | "nextGoal" | "homework">) {
+    recordInteraction();
+    telemetry.current.templateApplied = true;
+    setForm((current) => ({ ...current, note: template.note, nextGoal: template.nextGoal, homework: template.homework }));
+  }
+
+  function usePreviousGoal() {
+    recordInteraction();
+    telemetry.current.previousGoalUsed = true;
+    setForm((current) => ({ ...current, topic: current.topic || current.previousGoal || "" }));
   }
 
   async function saveTemplate() {
@@ -127,43 +227,47 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
         </div>
 
         <div className="space-y-6 p-5 sm:p-7">
-          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Grup konuyu genel olarak kavradı; temel kazanımlar pekişiyor.", nextGoal: "Yeni nesil sorularda doğru stratejiyi seçmek.", homework: "Konu tarama çalışmasını tamamla ve yanlışlarını işaretle." }))} className="panel-quick-action"><Sparkles size={14} /> Dengeli ders şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Temel adımlarda desteğe ihtiyaç var; birlikte örnek çözümü sürdüreceğiz.", nextGoal: "Temel işlem basamaklarını hatasız uygulamak.", homework: "Kolay düzey 15 soru çöz; takıldığın soruları işaretle." }))} className="panel-quick-action">Destek şablonu</button><button type="button" onClick={() => setForm((current) => ({ ...current, note: "Kazanımlar güçlü; hız ve farklı çözüm yollarına odaklanabiliriz.", nextGoal: "Zorlayıcı sorularda süreyi kontrollü kullanmak.", homework: "Orta-zor düzey 20 soru ve süre analizi." }))} className="panel-quick-action">İleri seviye</button>{templates.map((template) => <span key={template.id} className="inline-flex overflow-hidden rounded-xl border border-[var(--site-line)]"><button type="button" onClick={() => setForm((current) => ({ ...current, note: template.note, nextGoal: template.nextGoal, homework: template.homework }))} className="bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]">{template.title}</button><button type="button" onClick={() => void deleteTemplate(template.id)} aria-label={`${template.title} şablonunu sil`} className="border-l border-[var(--site-line)] bg-white px-2 text-rose-600"><Trash2 size={12} /></button></span>)}</div>
+          <div className="flex flex-wrap gap-2"><button type="button" onClick={() => applyTemplate({ note: "Grup konuyu genel olarak kavradı; temel kazanımlar pekişiyor.", nextGoal: "Yeni nesil sorularda doğru stratejiyi seçmek.", homework: "Konu tarama çalışmasını tamamla ve yanlışlarını işaretle." })} className="panel-quick-action"><Sparkles size={14} /> Dengeli ders şablonu</button><button type="button" onClick={() => applyTemplate({ note: "Temel adımlarda desteğe ihtiyaç var; birlikte örnek çözümü sürdüreceğiz.", nextGoal: "Temel işlem basamaklarını hatasız uygulamak.", homework: "Kolay düzey 15 soru çöz; takıldığın soruları işaretle." })} className="panel-quick-action">Destek şablonu</button><button type="button" onClick={() => applyTemplate({ note: "Kazanımlar güçlü; hız ve farklı çözüm yollarına odaklanabiliriz.", nextGoal: "Zorlayıcı sorularda süreyi kontrollü kullanmak.", homework: "Orta-zor düzey 20 soru ve süre analizi." })} className="panel-quick-action">İleri seviye</button>{templates.map((template) => <span key={template.id} className="inline-flex overflow-hidden rounded-xl border border-[var(--site-line)]"><button type="button" onClick={() => applyTemplate(template)} className="bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]">{template.title}</button><button type="button" onClick={() => void deleteTemplate(template.id)} aria-label={`${template.title} şablonunu sil`} className="border-l border-[var(--site-line)] bg-white px-2 text-rose-600"><Trash2 size={12} /></button></span>)}</div>
           <div className="flex flex-col gap-2 rounded-2xl border border-dashed border-[var(--site-line)] p-3 sm:flex-row"><input value={templateTitle} onChange={(event) => setTemplateTitle(event.target.value)} className="panel-input flex-1" maxLength={60} placeholder="Mevcut notları şablon olarak adlandır" aria-label="Yeni şablon adı" /><button type="button" onClick={() => void saveTemplate()} className="panel-quick-action"><Save size={14} /> Şablonu kaydet</button></div>
           {form.previousGoal ? (
-            <button type="button" onClick={() => setForm((current) => ({ ...current, topic: current.topic || current.previousGoal || "" }))} className="group flex w-full items-start gap-3 rounded-2xl border border-[#eadf9e] bg-[#fff9dc] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md">
+            <button type="button" onClick={usePreviousGoal} className="group flex w-full items-start gap-3 rounded-2xl border border-[#eadf9e] bg-[#fff9dc] p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md">
               <span className="rounded-xl bg-white p-2 text-amber-700"><Sparkles size={17} /></span>
               <span><span className="block text-xs font-bold uppercase tracking-[.06em] text-amber-800">Geçen dersten akıllı öneri</span><span className="mt-1 block text-sm leading-6 text-amber-950">{form.previousGoal}</span></span>
             </button>
           ) : null}
+          {quickLessonCloseEnabled ? <div className="grid gap-3 rounded-2xl border border-[#dfe7c4] bg-[#f7f9ef] p-4 sm:grid-cols-3" aria-label="Kapanış varsayımları"><div><p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">Grup varsayımı</p><p className="mt-1 text-sm font-bold">Herkes burada</p></div><div><p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">Önceki bağlam</p><p className="mt-1 line-clamp-2 text-sm">{form.previousContext?.nextGoal || "İlk ders; önceki hedef yok"}</p></div><div><p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">Çalışma biçimi</p><p className="mt-1 text-sm">Yalnız farklı olanı düzenleyin</p></div></div> : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="sm:col-span-2">
               <span className="panel-label">Bugün ne işlediniz?</span>
-              <input value={form.topic} onChange={(event) => setForm({ ...form, topic: event.target.value })} className="panel-input mt-2 text-base font-semibold" placeholder="Örn. Üslü ifadelerde dört işlem" />
+              <input value={form.topic} onChange={(event) => patchSharedForm({ topic: event.target.value })} className="panel-input mt-2 text-base font-semibold" placeholder="Örn. Üslü ifadelerde dört işlem" />
             </label>
             <label>
               <span className="panel-label">Gruba ortak kısa not</span>
-              <textarea value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} className="panel-input mt-2 min-h-28 resize-y" placeholder="Neyi iyi yaptılar, nerede takıldılar?" />
+              <textarea value={form.note} onChange={(event) => patchSharedForm({ note: event.target.value })} className="panel-input mt-2 min-h-28 resize-y" placeholder="Neyi iyi yaptılar, nerede takıldılar?" />
             </label>
             <label>
               <span className="panel-label">Bir sonraki hedef</span>
-              <textarea value={form.nextGoal} onChange={(event) => setForm({ ...form, nextGoal: event.target.value })} className="panel-input mt-2 min-h-28 resize-y" placeholder="Sonraki öğretmene ve öğrenciye net yön..." />
+              <textarea value={form.nextGoal} onChange={(event) => patchSharedForm({ nextGoal: event.target.value })} className="panel-input mt-2 min-h-28 resize-y" placeholder="Sonraki öğretmene ve öğrenciye net yön..." />
             </label>
             <label className="sm:col-span-2">
               <span className="panel-label">Çalışma / ödev</span>
-              <input value={form.homework} onChange={(event) => setForm({ ...form, homework: event.target.value })} className="panel-input mt-2" placeholder="Örn. 36–48. sorular, yanlışları işaretle" />
+              <input value={form.homework} onChange={(event) => patchSharedForm({ homework: event.target.value })} className="panel-input mt-2" placeholder="Örn. 36–48. sorular, yanlışları işaretle" />
             </label>
           </div>
-          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 sm:flex-row sm:items-center sm:justify-between"><p aria-live="polite" className="text-xs font-bold text-[var(--brand-olive)]">{actionMessage || (completed ? "Bu ders tamamlandı." : "Notlar otomatik kaydolur; hazır olduğunuzda dersi tamamlayın.")}</p><div className="flex flex-wrap gap-2"><button type="button" onClick={() => void createAssignment()} className="panel-quick-action"><ClipboardPlus size={14} /> Ödeve dönüştür</button><button type="button" disabled={completed || saveState === "saving"} onClick={() => void save(true)} className="panel-quick-action panel-quick-action-primary"><CheckCircle2 size={14} /> {completed ? "Ders tamamlandı" : "Dersi tamamla"}</button></div></div>
+          {learningOutcomesEnabled ? <><OutcomePicker outcomes={outcomes} value={form.outcomeLinks} onChange={(outcomeLinks) => { recordInteraction(); setForm((current) => ({ ...current, outcomeLinks, outcomeSkipReason: outcomeLinks.length ? null : current.outcomeSkipReason })); }} withEvidence />{!form.outcomeLinks.length ? <label className="block"><span className="panel-label">Kazanım seçmeden devam etme nedeni</span><select value={form.outcomeSkipReason || ""} onChange={(event) => setForm((current) => ({ ...current, outcomeSkipReason: (event.target.value || null) as LessonData["outcomeSkipReason"] }))} className="panel-input mt-2" aria-label="Kazanım erteleme nedeni"><option value="">Dersi tamamlamadan önce seçin</option><option value="COMPLETE_LATER">Sonra tamamlayacağım</option><option value="CATALOG_MISSING">Katalogda uygun kazanım yok</option><option value="NOT_APPLICABLE">Bu ders için uygulanabilir değil</option></select></label> : null}</> : null}
+          {quickLessonCloseEnabled && assignmentPreview ? <div className="rounded-2xl border border-violet-200 bg-violet-50/60 p-4"><div className="flex items-start gap-3"><Eye size={17} className="mt-0.5 text-violet-700" /><div><p className="text-sm font-extrabold text-violet-950">Ödev önizlemesi</p><p className="mt-1 text-xs leading-5 text-violet-900">{form.homework} · 7 gün · yalnız seçilen öğrencilere</p></div></div><div className="mt-3 flex flex-wrap gap-2">{form.students.map((student) => <label key={student.id} className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-bold"><input type="checkbox" checked={assignmentRecipients.includes(student.id)} onChange={() => setAssignmentRecipients((current) => current.includes(student.id) ? current.filter((id) => id !== student.id) : [...current, student.id])} />{student.name}</label>)}</div>{!assignmentRecipients.length ? <p className="mt-2 text-xs font-bold text-rose-700">Göndermek için en az bir öğrenci seçin.</p> : null}</div> : null}
+          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 sm:flex-row sm:items-center sm:justify-between"><p aria-live="polite" className="text-xs font-bold text-[var(--brand-olive)]">{actionMessage || (completed ? "Bu ders tamamlandı." : "Notlar taslak olarak kaydolur; hazır olduğunuzda tek işlemle kapatın.")}</p><div className="flex flex-wrap gap-2"><button type="button" onClick={() => quickLessonCloseEnabled ? toggleAssignmentPreview() : void createAssignment()} className="panel-quick-action"><ClipboardPlus size={14} /> {quickLessonCloseEnabled ? (assignmentPreview ? "Ödevi çıkar" : "Ödev taslağını önizle") : "Ödeve dönüştür"}</button><button type="button" disabled={completed || saveState === "saving" || Boolean(quickLessonCloseEnabled && assignmentPreview && !assignmentRecipients.length)} onClick={() => { recordInteraction(); void save(true); }} className="panel-quick-action panel-quick-action-primary"><CheckCircle2 size={14} /> {completed ? "Ders tamamlandı" : quickLessonCloseEnabled ? "Dersi güvenle kapat" : "Dersi tamamla"}</button></div></div>
         </div>
       </section>
 
       <aside className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <div><p className="text-sm font-bold text-[var(--site-ink)]">Öğrenciler</p><p className="mt-0.5 text-xs text-[var(--site-muted)]">Sadece farklıysa not ekleyin</p></div>
-          <span className="flex items-center gap-1 rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-xs font-bold text-[var(--brand-olive)]"><UserCheck size={13} /> {form.students.length}/4</span>
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div><p className="text-sm font-bold text-[var(--site-ink)]">Öğrenciler</p><p className="mt-0.5 text-xs text-[var(--site-muted)]">{quickLessonCloseEnabled ? `${exceptionCount} istisna · diğerleri burada` : "Sadece farklıysa not ekleyin"}</p></div>
+          <span className="flex items-center gap-1 rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-xs font-bold text-[var(--brand-olive)]"><UserCheck size={13} /> {form.students.length}/{form.students.length}</span>
         </div>
-        {form.students.map((student, index) => (
+        {quickLessonCloseEnabled ? <div className="grid grid-cols-2 gap-2"><button type="button" onClick={markEveryonePresent} className="panel-quick-action justify-center"><UsersRound size={14} /> Tümü burada</button><button type="button" onClick={() => setShowStudentExceptions((current) => !current)} className="panel-quick-action justify-center">{showStudentExceptions ? "İstisnaları gizle" : "İstisna ekle"}</button></div> : null}
+        {(!quickLessonCloseEnabled || showStudentExceptions || exceptionCount > 0) ? form.students.map((student, index) => (
           <div key={student.id} className="rounded-[22px] border border-[var(--site-line)] bg-white p-4 shadow-[0_10px_35px_-30px_rgba(20,20,15,.35)]">
             <div className="flex items-center gap-3"><span className={`grid h-9 w-9 place-items-center rounded-xl text-sm font-extrabold ${["bg-[#dceaf6] text-[#1e3a5f]", "bg-[#fcedb4] text-[#6b5310]", "bg-[#e6e0f0] text-[#3f3463]", "bg-[#d7e5d5] text-[#2f4a2a]"][index % 4]}`}>{student.name.charAt(0)}</span><p className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--site-ink)]">{student.name}</p></div>
             <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-[var(--site-bg-warm)] p-1">
@@ -171,7 +275,7 @@ export function TeacherLessonWorkspace({ lesson }: { lesson: LessonData }) {
             </div>
             <textarea aria-label={`${student.name} için özel not`} value={student.note} onChange={(event) => patchStudent(student.id, { note: event.target.value })} className="panel-input mt-3 min-h-20 resize-none text-xs" placeholder="Farklı bir durum yoksa boş bırakın…" />
           </div>
-        ))}
+        )) : <div className="rounded-[22px] border border-dashed border-[#cbd7a8] bg-[#f8faef] p-5 text-center"><CheckCircle2 size={20} className="mx-auto text-emerald-700" /><p className="mt-2 text-sm font-bold">Grup varsayımı hazır</p><p className="mt-1 text-xs text-[var(--site-muted)]">Farklı bir durum yoksa öğrenci kartlarını açmanız gerekmez.</p></div>}
       </aside>
     </div>
   );

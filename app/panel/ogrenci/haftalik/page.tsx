@@ -1,0 +1,13 @@
+import { notFound } from "next/navigation";
+import { HeartHandshake } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/auth/guards";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { PanelShell } from "@/components/panel/panel-shell";
+import { PanelNav } from "@/components/panel/panel-nav";
+import { PanelEmptyState } from "@/components/panel/empty-state";
+import { CalmDigestCard } from "@/components/panel/calm-digest-card";
+import { recordPanelProductEvent } from "@/lib/panel-product-events";
+
+export const dynamic = "force-dynamic";
+export default async function StudentWeeklyDigestPage() { const session = await requireRole("STUDENT"); if (!getPanelFeatureFlags().parentWeeklyDigest) notFound(); const digest = await prisma.weeklyDigest.findFirst({ where: { status: "PUBLISHED", student: { userId: session.userId } }, orderBy: { weekStart: "desc" }, include: { feedback: { where: { userId: session.userId }, take: 1 } } }); if (!digest) return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Haftalık özet henüz yayınlanmadı." body="Öğretmenin önizlemeyi tamamladığında sen ve ailen aynı özeti göreceksiniz." /></PanelShell>; const ageDays = digest.publishedAt ? (Date.now() - digest.publishedAt.getTime()) / 86400000 : 0; await recordPanelProductEvent({ name: "weekly_digest_viewed", properties: { actorRole: "STUDENT", trendBand: digest.trendBand as "IMPROVING" | "STEADY" | "BUILDING" | "LIMITED_DATA", ageBand: ageDays <= 2 ? "0-2D" : ageDays <= 7 ? "3-7D" : "8D+" } }, session.role); const feedback = digest.feedback[0]; return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><header><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><HeartHandshake size={15} /> Seninle aynı anda</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em]">Ailenin gördüğü özet burada.</h1><p className="mt-2 text-sm text-[var(--site-body)]">Özel öğretmen notların bu özete eklenmez.</p></header><div className="mt-7"><CalmDigestCard viewerRole="STUDENT" digest={{ id: digest.id, goodThingOne: digest.goodThingOne, goodThingTwo: digest.goodThingTwo, supportArea: digest.supportArea, homeQuestion: digest.homeQuestion, dataThrough: digest.dataThrough.toISOString(), trendBand: digest.trendBand, feedback: feedback ? { helpful: feedback.helpful, anxietyPulse: feedback.anxietyPulse } : null }} /></div></PanelShell>; }

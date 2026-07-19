@@ -6,14 +6,19 @@ import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { PanelNav } from "@/components/panel/panel-nav";
+import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ studentId?: string }> }) {
+  const startedAt = performance.now();
   const session = await requireRole("PARENT");
   const params = await searchParams;
   const links = await prisma.parentStudent.findMany({ where: { parentId: session.userId }, include: { student: { include: { user: { select: { id: true, fullName: true, email: true } } } } }, orderBy: { student: { user: { fullName: "asc" } } } });
-  if (!links.length) return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Öğrenci bağlantınız hazırlanıyor." body="Yönetim ekibi çocuğunuzu hesabınıza bağladığında gelişim özeti burada görünecek." /></PanelShell>;
+  if (!links.length) {
+    await recordPanelProductEvent({ name: "parent_dashboard_loaded", properties: { durationMs: Math.round(performance.now() - startedAt), childCountBand: "0", hasActiveEnrollment: false } }, session.role);
+    return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Öğrenci bağlantınız hazırlanıyor." body="Yönetim ekibi çocuğunuzu hesabınıza bağladığında gelişim özeti burada görünecek." /></PanelShell>;
+  }
   // Güvenlik sınırı: URL'deki studentId hiçbir zaman doğrudan sorgulanmaz;
   // yalnızca oturumdaki veliye ait ilişkiler içinden seçilir.
   const selected = params.studentId ? links.find((item) => item.studentId === params.studentId) : links[0];
@@ -30,6 +35,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
   const personal = latestLesson?.notes.find((note) => note.studentId === selected.studentId);
   const attended = attendance.filter((item) => item.status === "PRESENT" || item.status === "LATE").length;
   const name = selected.student.user.fullName || selected.student.user.email;
+  const childCountBand = links.length === 1 ? "1" : links.length <= 4 ? "2-4" : "5+";
+  await recordPanelProductEvent({ name: "parent_dashboard_loaded", properties: { durationMs: Math.round(performance.now() - startedAt), childCountBand, hasActiveEnrollment: groupIds.length > 0 } }, session.role);
   return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
     <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.07em] text-[var(--brand-olive)]"><ShieldCheck size={15} /> Size özel gelişim özeti</div><h1 className="mt-2 text-[clamp(1.8rem,4vw,2.7rem)] font-semibold tracking-[-.05em] text-[var(--site-ink)]">{name}</h1></div>{links.length > 1 ? <nav aria-label="Öğrenci seçimi" className="flex gap-2">{links.map((link) => <Link key={link.studentId} href={`/panel/veli?studentId=${link.studentId}`} className={`rounded-full px-3 py-2 text-xs font-bold ${link.studentId === selected.studentId ? "bg-[var(--brand-olive)] text-white" : "border border-[var(--site-line)] bg-white text-[var(--site-body)]"}`}>{link.student.user.fullName || link.student.user.email}</Link>)}</nav> : null}</div>
     <div className="mt-7 grid gap-4 lg:grid-cols-[1.25fr_.75fr]"><section className="rounded-[28px] border border-[var(--site-line)] bg-white p-6 sm:p-7"><div className="flex items-center gap-2 text-[var(--brand-olive)]"><BarChart3 size={19} /><h2 className="text-sm font-bold">Son dersten gelişim</h2></div>{latestLesson ? <><p className="mt-5 text-xs font-bold uppercase tracking-[.07em] text-[var(--site-muted)]">{latestLesson.group.subject} · {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" }).format(latestLesson.startsAt)}</p><h3 className="mt-2 text-xl font-semibold tracking-[-.03em] text-[var(--site-ink)]">{common?.topic || latestLesson.title}</h3><p className="mt-3 text-sm leading-6 text-[var(--site-body)]">{common?.note || "Öğretmen genel değerlendirmeyi henüz eklemedi."}</p>{personal?.note ? <p className="mt-4 rounded-2xl bg-[#f1edf8] p-4 text-sm leading-6 text-[#3f3463]"><strong>{name.split(" ")[0]} için:</strong> {personal.note}</p> : null}<div className="mt-5 rounded-2xl bg-[#fff9dc] p-4"><p className="text-xs font-bold uppercase tracking-[.07em] text-amber-800">Sıradaki hedef</p><p className="mt-1 text-sm font-semibold leading-6 text-amber-950">{common?.nextGoal || "Öğretmen sonraki hedefi belirliyor."}</p></div></> : <p className="mt-5 text-sm text-[var(--site-body)]">İlk ders tamamlandığında gelişim özeti burada olacak.</p>}</section>

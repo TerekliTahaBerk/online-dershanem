@@ -4,10 +4,15 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Bell, BookOpenCheck, CalendarDays, ClipboardCheck, CreditCard, History, LayoutDashboard, Library, UsersRound } from "lucide-react";
+import { BarChart3, Bell, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ClipboardCheck, CreditCard, HeartHandshake, History, Inbox, LayoutDashboard, Library, ListChecks, RotateCcw, UsersRound } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 
 type NavItem = { href: string; label: string; hint?: string; icon: LucideIcon };
+const mockExamsEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_MOCK_EXAM_ANALYSIS === "true";
+const reviewQueueEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_REVIEW_QUEUE === "true";
+const adaptivePlanEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_ADAPTIVE_PLAN === "true";
+const parentWeeklyDigestEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_PARENT_WEEKLY_DIGEST === "true";
+const interventionInboxEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_INTERVENTION_INBOX === "true";
 
 const NAV: Record<UserRole, (root: string) => NavItem[]> = {
   ADMIN: (root) => [
@@ -15,6 +20,9 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/takvim`, label: "Takvim", hint: "Haftalık ders akışı", icon: CalendarDays },
     { href: `${root}/kullanicilar`, label: "Kişiler", hint: "Hesaplar ve roller", icon: UsersRound },
     { href: `${root}/egitim`, label: "Eğitim", hint: "Gruplar ve dersler", icon: BookOpenCheck },
+    { href: `${root}/kazanimlar`, label: "Kazanımlar", hint: "Müfredat ve kanıt kapsamı", icon: ClipboardCheck },
+    ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", hint: "Süre ve hata eğilimi", icon: ChartNoAxesCombined }] : []),
+    ...(interventionInboxEnabled ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu", hint: "Sahip, SLA ve sonuç", icon: Inbox }] : []),
     { href: `${root}/isler`, label: "Operasyon", hint: "Talepler ve ödemeler", icon: CreditCard },
     { href: `${root}/kayitlar`, label: "İşlem geçmişi", hint: "Değişiklik ve güvenlik izi", icon: History },
     { href: `${root}/raporlar`, label: "Raporlar", hint: "Katılım ve tamamlama", icon: BarChart3 },
@@ -25,6 +33,11 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
     { href: `${root}/gruplar`, label: "Gruplarım", icon: UsersRound },
     { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
+    ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", icon: ChartNoAxesCombined }] : []),
+    ...(reviewQueueEnabled ? [{ href: `${root}/tekrar`, label: "Tekrar kuyruğu", icon: RotateCcw }] : []),
+    ...(adaptivePlanEnabled ? [{ href: `${root}/plan`, label: "Haftalık planlar", icon: ListChecks }] : []),
+    ...(parentWeeklyDigestEnabled ? [{ href: `${root}/ozetler`, label: "Veli özetleri", icon: HeartHandshake }] : []),
+    ...(interventionInboxEnabled ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu", icon: Inbox }] : []),
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
     { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
   ],
@@ -33,6 +46,10 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
     { href: `${root}/odevler`, label: "Ödevler", icon: ClipboardCheck },
     { href: `${root}/gelisim`, label: "Gelişim", icon: BarChart3 },
+    ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", icon: ChartNoAxesCombined }] : []),
+    ...(reviewQueueEnabled ? [{ href: `${root}/tekrar`, label: "Bugünkü tekrar", icon: RotateCcw }] : []),
+    ...(adaptivePlanEnabled ? [{ href: `${root}/plan`, label: "Haftalık planım", icon: ListChecks }] : []),
+    ...(parentWeeklyDigestEnabled ? [{ href: `${root}/haftalik`, label: "Haftalık özet", icon: HeartHandshake }] : []),
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
     { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
   ],
@@ -40,6 +57,8 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: root, label: "Gelişim", icon: LayoutDashboard },
     { href: `${root}/takvim`, label: "Takvim", icon: CalendarDays },
     { href: `${root}/takip`, label: "Ödev ve ödeme", icon: ClipboardCheck },
+    ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", icon: ChartNoAxesCombined }] : []),
+    ...(parentWeeklyDigestEnabled ? [{ href: `${root}/haftalik`, label: "Haftalık özet", icon: HeartHandshake }] : []),
     { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
   ],
 };

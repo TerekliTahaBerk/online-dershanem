@@ -28,6 +28,52 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum CurriculumExam {
+  LGS
+  TYT
+  AYT
+  YDT
+}
+
+enum CurriculumStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OutcomeEvidenceType {
+  TAUGHT
+  OBSERVED
+  INDEPENDENT
+  NEEDS_REVIEW
+}
+
+enum MockExamErrorCategory {
+  KNOWLEDGE
+  PROCESS
+  ATTENTION
+  TIME
+  BLANK
+}
+
+enum ReviewSourceType {
+  MOCK_EXAM_SECTION
+  LESSON_OUTCOME
+  TEACHER_REFERENCE
+}
+
+enum ReviewItemStatus {
+  ACTIVE
+  MASTERED
+  ARCHIVED
+}
+
+enum ReviewResponse {
+  WRONG
+  UNSURE
+  CORRECT
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -60,18 +106,30 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sessions           Session[]
-  studentProfile     StudentProfile?
-  teacherProfile     TeacherProfile?
-  parentStudents     ParentStudent[]         @relation("ParentLinks")
-  taughtGroups       Group[]                 @relation("GroupTeacher")
-  taughtLessons      Lesson[]                @relation("LessonTeacher")
-  createdAssignments Assignment[]            @relation("AssignmentCreator")
-  notifications      Notification[]
-  notificationPrefs  NotificationPreference?
-  createdMaterials   LearningMaterial[]      @relation("MaterialCreator")
-  noteTemplates      TeacherNoteTemplate[]   @relation("TeacherNoteTemplateOwner")
-  odOrders           OdOrder[]
+  sessions                 Session[]
+  studentProfile           StudentProfile?
+  teacherProfile           TeacherProfile?
+  parentStudents           ParentStudent[]            @relation("ParentLinks")
+  taughtGroups             Group[]                    @relation("GroupTeacher")
+  taughtLessons            Lesson[]                   @relation("LessonTeacher")
+  createdAssignments       Assignment[]               @relation("AssignmentCreator")
+  notifications            Notification[]
+  notificationPrefs        NotificationPreference?
+  createdMaterials         LearningMaterial[]         @relation("MaterialCreator")
+  noteTemplates            TeacherNoteTemplate[]      @relation("TeacherNoteTemplateOwner")
+  createdCurriculums       CurriculumVersion[]        @relation("CurriculumCreator")
+  linkedLessonOutcomes     LessonOutcome[]            @relation("LessonOutcomeLinker")
+  linkedAssignmentOutcomes AssignmentOutcome[]        @relation("AssignmentOutcomeLinker")
+  outcomeFavorites         OutcomeFavorite[]
+  createdMockExams         MockExam[]                 @relation("MockExamCreator")
+  reviewedMockExams        MockExam[]                 @relation("MockExamReviewer")
+  revisedMockExamReasons   MockExamSectionError[]     @relation("MockExamErrorReviser")
+  createdReviewItems       ReviewItem[]               @relation("ReviewItemCreator")
+  ownedInterventionCases   InterventionCase[]         @relation("InterventionCaseOwner")
+  interventionActivities   InterventionCaseActivity[]
+  generatedRecoveryPackages RecoveryPackage[]         @relation("RecoveryPackageGenerator")
+  publishedRecoveryPackages RecoveryPackage[]         @relation("RecoveryPackagePublisher")
+  odOrders                 OdOrder[]
 
   @@index([role, status])
   @@index([createdById])
@@ -106,23 +164,259 @@ enum MaterialKind {
 }
 
 model StudentProfile {
-  id                 String               @id @default(cuid())
-  userId             String               @unique @map("user_id")
-  classLevel         String?              @map("class_level")
-  schoolName         String?              @map("school_name")
-  targetGoal         String?              @map("target_goal")
-  weeklyGoal         String?              @map("weekly_goal")
-  weeklyGoalUpdatedAt DateTime?           @map("weekly_goal_updated_at")
-  createdAt          DateTime             @default(now()) @map("created_at")
-  updatedAt          DateTime             @updatedAt @map("updated_at")
-  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parents            ParentStudent[]
-  enrollments        Enrollment[]
-  notes              LessonNote[]
-  attendances        Attendance[]
-  assignmentProgress AssignmentProgress[]
+  id                  String                 @id @default(cuid())
+  userId              String                 @unique @map("user_id")
+  classLevel          String?                @map("class_level")
+  schoolName          String?                @map("school_name")
+  targetGoal          String?                @map("target_goal")
+  weeklyGoal          String?                @map("weekly_goal")
+  weeklyGoalUpdatedAt DateTime?              @map("weekly_goal_updated_at")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parents             ParentStudent[]
+  enrollments         Enrollment[]
+  notes               LessonNote[]
+  attendances         Attendance[]
+  assignmentProgress  AssignmentProgress[]
+  mockExams           MockExam[]
+  reviewItems         ReviewItem[]
+  planPreference      StudentPlanPreference?
+  weeklyPlans         WeeklyPlan[]
+  weeklyDigests       WeeklyDigest[]
+  interventionCases   InterventionCase[]
+  recoveryPackages    RecoveryPackage[]
 
   @@map("student_profiles")
+}
+
+enum WeeklyDigestStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model WeeklyDigest {
+  id            String                 @id @default(cuid())
+  studentId     String                 @map("student_id")
+  weekStart     DateTime               @map("week_start")
+  status        WeeklyDigestStatus     @default(DRAFT)
+  ruleVersion   String                 @default("calm-digest-v1") @map("rule_version")
+  trendBand     String                 @map("trend_band")
+  goodThingOne  String                 @map("good_thing_one")
+  goodThingTwo  String                 @map("good_thing_two")
+  supportArea   String                 @map("support_area")
+  homeQuestion  String                 @map("home_question")
+  dataThrough   DateTime               @map("data_through")
+  generatedById String                 @map("generated_by_id")
+  publishedById String?                @map("published_by_id")
+  publishedAt   DateTime?              @map("published_at")
+  version       Int                    @default(1)
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  student       StudentProfile         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feedback      WeeklyDigestFeedback[]
+
+  @@unique([studentId, weekStart])
+  @@index([status, weekStart])
+  @@map("weekly_digests")
+}
+
+model WeeklyDigestFeedback {
+  id           String       @id @default(cuid())
+  digestId     String       @map("digest_id")
+  userId       String       @map("user_id")
+  viewerRole   UserRole     @map("viewer_role")
+  helpful      Boolean?
+  anxietyPulse Int?         @map("anxiety_pulse")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  digest       WeeklyDigest @relation(fields: [digestId], references: [id], onDelete: Cascade)
+
+  @@unique([digestId, userId])
+  @@index([viewerRole, createdAt])
+  @@map("weekly_digest_feedback")
+}
+
+enum WeeklyPlanStatus {
+  DRAFT
+  APPROVED
+  CHANGE_REQUESTED
+  ARCHIVED
+}
+
+enum InterventionCaseStatus {
+  OPEN
+  IN_PROGRESS
+  SNOOZED
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+enum InterventionReason {
+  ATTENDANCE_PATTERN
+  OVERDUE_WORK
+  REPEATED_REVIEW_DIFFICULTY
+  PLAN_STALLED
+}
+
+enum InterventionActivityType {
+  GENERATED
+  ASSIGNED
+  STARTED
+  ACTION_LOGGED
+  SNOOZED
+  RESOLVED
+  FALSE_POSITIVE
+  REOPENED
+}
+
+enum InterventionOutcome {
+  CHECK_IN_COMPLETED
+  SUPPORT_PLANNED
+  PRACTICE_ADJUSTED
+  FAMILY_CONTACTED
+  NO_ACTION_NEEDED
+  OTHER
+}
+
+enum InterventionFalsePositiveReason {
+  CONTEXT_MISSING
+  DATA_OUTDATED
+  THRESHOLD_TOO_SENSITIVE
+  DUPLICATE
+  OTHER
+}
+
+model InterventionCase {
+  id              String                     @id @default(cuid())
+  studentId       String                     @map("student_id")
+  ruleVersion     String                     @default("intervention-v1") @map("rule_version")
+  reasonCode      InterventionReason         @map("reason_code")
+  fingerprint     String                     @unique
+  explanation     String
+  suggestedAction String                     @map("suggested_action")
+  evidenceCount   Int                        @map("evidence_count")
+  windowStart     DateTime                   @map("window_start")
+  windowEnd       DateTime                   @map("window_end")
+  dueAt           DateTime                   @map("due_at")
+  status          InterventionCaseStatus     @default(OPEN)
+  ownerId         String?                    @map("owner_id")
+  firstActionAt   DateTime?                  @map("first_action_at")
+  snoozedUntil    DateTime?                  @map("snoozed_until")
+  resolvedAt      DateTime?                  @map("resolved_at")
+  outcomeCode     InterventionOutcome?       @map("outcome_code")
+  version         Int                        @default(1)
+  createdAt       DateTime                   @default(now()) @map("created_at")
+  updatedAt       DateTime                   @updatedAt @map("updated_at")
+  student         StudentProfile             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  owner           User?                      @relation("InterventionCaseOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities      InterventionCaseActivity[]
+
+  @@index([status, dueAt])
+  @@index([studentId, status, createdAt])
+  @@index([ownerId, status, dueAt])
+  @@map("intervention_cases")
+}
+
+model InterventionCaseActivity {
+  id                  String                           @id @default(cuid())
+  caseId              String                           @map("case_id")
+  actorId             String?                          @map("actor_id")
+  type                InterventionActivityType
+  outcomeCode         InterventionOutcome?             @map("outcome_code")
+  falsePositiveReason InterventionFalsePositiveReason? @map("false_positive_reason")
+  note                String?
+  createdAt           DateTime                         @default(now()) @map("created_at")
+  case                InterventionCase                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  actor               User?                            @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("intervention_case_activities")
+}
+
+enum WeeklyPlanTaskStatus {
+  PLANNED
+  DONE
+  SKIPPED
+}
+
+enum WeeklyPlanTaskSource {
+  ASSIGNMENT
+  REVIEW
+  WEAK_OUTCOME
+  EXAM_PREP
+  RECOVERY
+}
+
+enum WeeklyPlanReason {
+  DUE_SOON
+  REVIEW_DUE
+  NEEDS_REVIEW
+  EXAM_APPROACHING
+  CAPACITY_BALANCE
+  MISSED_LESSON
+}
+
+model StudentPlanPreference {
+  id              String         @id @default(cuid())
+  studentId       String         @unique @map("student_id")
+  availableDays   Json           @map("available_days")
+  minutesPerDay   Int            @default(45) @map("minutes_per_day")
+  maxTasksPerDay  Int            @default(3) @map("max_tasks_per_day")
+  nextExamAt      DateTime?      @map("next_exam_at")
+  examLabel       String?        @map("exam_label")
+  planningEnabled Boolean        @default(true) @map("planning_enabled")
+  overwhelmPulse  Int?           @map("overwhelm_pulse")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("student_plan_preferences")
+}
+
+model WeeklyPlan {
+  id                    String           @id @default(cuid())
+  studentId             String           @map("student_id")
+  weekStart             DateTime         @map("week_start")
+  status                WeeklyPlanStatus @default(DRAFT)
+  ruleVersion           String           @default("adaptive-v1") @map("rule_version")
+  capacityMinutes       Int              @map("capacity_minutes")
+  createdById           String           @map("created_by_id")
+  approvedById          String?          @map("approved_by_id")
+  approvedAt            DateTime?        @map("approved_at")
+  changeRequestCategory String?          @map("change_request_category")
+  version               Int              @default(1)
+  generatedAt           DateTime         @default(now()) @map("generated_at")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+  student               StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tasks                 WeeklyPlanTask[]
+
+  @@unique([studentId, weekStart])
+  @@index([status, weekStart])
+  @@map("weekly_plans")
+}
+
+model WeeklyPlanTask {
+  id                String               @id @default(cuid())
+  planId            String               @map("plan_id")
+  scheduledFor      DateTime             @map("scheduled_for")
+  position          Int
+  title             String
+  durationMinutes   Int                  @map("duration_minutes")
+  sourceType        WeeklyPlanTaskSource @map("source_type")
+  sourceReferenceId String?              @map("source_reference_id")
+  reasonCode        WeeklyPlanReason     @map("reason_code")
+  status            WeeklyPlanTaskStatus @default(PLANNED)
+  completedAt       DateTime?            @map("completed_at")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  plan              WeeklyPlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, scheduledFor, position])
+  @@index([planId, status, scheduledFor])
+  @@map("weekly_plan_tasks")
 }
 
 model TeacherProfile {
@@ -201,22 +495,30 @@ model Enrollment {
 }
 
 model Lesson {
-  id          String             @id @default(cuid())
-  groupId     String             @map("group_id")
-  teacherId   String             @map("teacher_id")
-  title       String
-  startsAt    DateTime           @map("starts_at")
-  endsAt      DateTime           @map("ends_at")
-  status      LessonStatus       @default(PLANNED)
-  meetingUrl  String?            @map("meeting_url")
-  createdAt   DateTime           @default(now()) @map("created_at")
-  updatedAt   DateTime           @updatedAt @map("updated_at")
-  group       Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  teacher     User               @relation("LessonTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
-  notes       LessonNote[]
-  attendances Attendance[]
-  assignments Assignment[]
-  materials   LearningMaterial[]
+  id                  String             @id @default(cuid())
+  groupId             String             @map("group_id")
+  teacherId           String             @map("teacher_id")
+  title               String
+  startsAt            DateTime           @map("starts_at")
+  endsAt              DateTime           @map("ends_at")
+  status              LessonStatus       @default(PLANNED)
+  meetingUrl          String?            @map("meeting_url")
+  outcomeSkipReason   String?            @map("outcome_skip_reason")
+  closeVersion        Int                @default(0) @map("close_version")
+  closeIdempotencyKey String?            @map("close_idempotency_key")
+  closeRequestHash    String?            @map("close_request_hash")
+  completedAt         DateTime?          @map("completed_at")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+  group               Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher             User               @relation("LessonTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  notes               LessonNote[]
+  attendances         Attendance[]
+  assignments         Assignment[]
+  materials           LearningMaterial[]
+  outcomeLinks        LessonOutcome[]
+  reviewItems         ReviewItem[]
+  recoveryPackages    RecoveryPackage[]
 
   @@index([teacherId, startsAt])
   @@index([groupId, startsAt])
@@ -264,21 +566,24 @@ enum AssignmentProgressStatus {
 }
 
 model Assignment {
-  id          String               @id @default(cuid())
-  groupId     String               @map("group_id")
-  lessonId    String?              @map("lesson_id")
-  createdById String               @map("created_by_id")
-  title       String
-  description String?
-  dueAt       DateTime             @map("due_at")
-  isActive    Boolean              @default(true) @map("is_active")
-  createdAt   DateTime             @default(now()) @map("created_at")
-  updatedAt   DateTime             @updatedAt @map("updated_at")
-  group       Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  lesson      Lesson?              @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  createdBy   User                 @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  progress    AssignmentProgress[]
-  materials   LearningMaterial[]
+  id                String               @id @default(cuid())
+  groupId           String               @map("group_id")
+  lessonId          String?              @map("lesson_id")
+  createdById       String               @map("created_by_id")
+  title             String
+  description       String?
+  dueAt             DateTime             @map("due_at")
+  isActive          Boolean              @default(true) @map("is_active")
+  outcomeSkipReason String?              @map("outcome_skip_reason")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  group             Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson            Lesson?              @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  createdBy         User                 @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  progress          AssignmentProgress[]
+  materials         LearningMaterial[]
+  outcomeLinks      AssignmentOutcome[]
+  recoveryItems     RecoveryPackageItem[]
 
   @@index([groupId, dueAt])
   @@index([createdById, isActive])
@@ -322,6 +627,7 @@ model NotificationPreference {
   emailEnabled    Boolean  @default(false) @map("email_enabled")
   whatsappEnabled Boolean  @default(false) @map("whatsapp_enabled")
   lessonSummary   Boolean  @default(true) @map("lesson_summary")
+  weeklyDigest    Boolean  @default(true) @map("weekly_digest")
   absence         Boolean  @default(true)
   assignment      Boolean  @default(true)
   payment         Boolean  @default(true)
@@ -352,9 +658,78 @@ model LearningMaterial {
   lesson       Lesson?      @relation(fields: [lessonId], references: [id], onDelete: SetNull)
   assignment   Assignment?  @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
   createdBy    User         @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  recoveryItems RecoveryPackageItem[]
 
   @@index([groupId, isActive, createdAt])
   @@map("learning_materials")
+}
+
+enum RecoveryPackageStatus {
+  DRAFT
+  PUBLISHED
+  COMPLETED
+}
+
+enum RecoveryItemKind {
+  MATERIAL
+  ASSIGNMENT
+}
+
+enum RecoveryCheckpointResponse {
+  NOT_YET
+  NEED_HELP
+  READY
+}
+
+model RecoveryPackage {
+  id                 String                      @id @default(cuid())
+  lessonId           String                      @map("lesson_id")
+  studentId          String                      @map("student_id")
+  status             RecoveryPackageStatus       @default(DRAFT)
+  ruleVersion        String                      @default("recovery-v1") @map("rule_version")
+  summaryTopic       String                      @map("summary_topic")
+  summaryNextStep    String                      @map("summary_next_step")
+  checkpointPrompt   String                      @map("checkpoint_prompt")
+  checkpointResponse RecoveryCheckpointResponse? @map("checkpoint_response")
+  dueAt              DateTime                    @map("due_at")
+  generatedById      String                      @map("generated_by_id")
+  publishedById      String?                     @map("published_by_id")
+  publishedAt        DateTime?                   @map("published_at")
+  firstViewedAt      DateTime?                   @map("first_viewed_at")
+  completedAt        DateTime?                   @map("completed_at")
+  version            Int                         @default(1)
+  createdAt          DateTime                    @default(now()) @map("created_at")
+  updatedAt          DateTime                    @updatedAt @map("updated_at")
+  lesson             Lesson                      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student            StudentProfile              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  generatedBy        User                        @relation("RecoveryPackageGenerator", fields: [generatedById], references: [id], onDelete: Restrict)
+  publishedBy        User?                       @relation("RecoveryPackagePublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+  items              RecoveryPackageItem[]
+
+  @@unique([lessonId, studentId])
+  @@index([studentId, status, dueAt])
+  @@index([status, dueAt])
+  @@map("recovery_packages")
+}
+
+model RecoveryPackageItem {
+  id           String            @id @default(cuid())
+  packageId    String            @map("package_id")
+  kind         RecoveryItemKind
+  position     Int
+  title        String
+  materialId   String?           @map("material_id")
+  assignmentId String?           @map("assignment_id")
+  completedAt  DateTime?         @map("completed_at")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  package      RecoveryPackage   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  material     LearningMaterial? @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  assignment   Assignment?       @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+
+  @@index([packageId, position])
+  @@index([materialId])
+  @@index([assignmentId])
+  @@map("recovery_package_items")
 }
 
 model Session {
@@ -571,6 +946,256 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@index([createdAt])
+}
+
+/// Kimlik ve serbest metin içermeyen, kısa ömürlü ürün telemetrisi.
+model ProductEvent {
+  id            String   @id @default(cuid())
+  name          String
+  role          UserRole
+  properties    Json
+  schemaVersion Int      @default(1) @map("schema_version")
+  occurredAt    DateTime @default(now()) @map("occurred_at")
+
+  @@index([name, occurredAt])
+  @@index([role, occurredAt])
+  @@map("product_events")
+}
+
+model CurriculumVersion {
+  id           String              @id @default(cuid())
+  code         String              @unique
+  title        String
+  exam         CurriculumExam
+  academicYear Int                 @map("academic_year")
+  status       CurriculumStatus    @default(DRAFT)
+  sourceUrl    String?             @map("source_url")
+  createdById  String              @map("created_by_id")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  createdBy    User                @relation("CurriculumCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  subjects     CurriculumSubject[]
+  skills       CurriculumSkill[]
+
+  @@index([exam, academicYear, status])
+  @@map("curriculum_versions")
+}
+
+model CurriculumSubject {
+  id        String            @id @default(cuid())
+  versionId String            @map("version_id")
+  code      String
+  name      String
+  position  Int               @default(0)
+  version   CurriculumVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  units     CurriculumUnit[]
+
+  @@unique([versionId, code])
+  @@index([versionId, position])
+  @@map("curriculum_subjects")
+}
+
+model CurriculumUnit {
+  id        String            @id @default(cuid())
+  subjectId String            @map("subject_id")
+  code      String
+  name      String
+  position  Int               @default(0)
+  subject   CurriculumSubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  outcomes  LearningOutcome[]
+
+  @@unique([subjectId, code])
+  @@index([subjectId, position])
+  @@map("curriculum_units")
+}
+
+model CurriculumSkill {
+  id        String            @id @default(cuid())
+  versionId String            @map("version_id")
+  code      String
+  name      String
+  version   CurriculumVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  outcomes  OutcomeSkill[]
+
+  @@unique([versionId, code])
+  @@map("curriculum_skills")
+}
+
+model LearningOutcome {
+  id          String              @id @default(cuid())
+  unitId      String              @map("unit_id")
+  code        String
+  title       String
+  description String?
+  isActive    Boolean             @default(true) @map("is_active")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  unit        CurriculumUnit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  skills      OutcomeSkill[]
+  lessons     LessonOutcome[]
+  assignments AssignmentOutcome[]
+  favorites   OutcomeFavorite[]
+  reviewItems ReviewItem[]
+
+  @@unique([unitId, code])
+  @@index([isActive, updatedAt])
+  @@map("learning_outcomes")
+}
+
+model OutcomeSkill {
+  outcomeId String          @map("outcome_id")
+  skillId   String          @map("skill_id")
+  outcome   LearningOutcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+  skill     CurriculumSkill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([outcomeId, skillId])
+  @@map("outcome_skills")
+}
+
+model LessonOutcome {
+  lessonId     String              @map("lesson_id")
+  outcomeId    String              @map("outcome_id")
+  evidenceType OutcomeEvidenceType @default(TAUGHT) @map("evidence_type")
+  linkedById   String              @map("linked_by_id")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  lesson       Lesson              @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  outcome      LearningOutcome     @relation(fields: [outcomeId], references: [id], onDelete: Restrict)
+  linkedBy     User                @relation("LessonOutcomeLinker", fields: [linkedById], references: [id], onDelete: Restrict)
+
+  @@id([lessonId, outcomeId])
+  @@index([outcomeId, evidenceType, createdAt])
+  @@map("lesson_outcomes")
+}
+
+model AssignmentOutcome {
+  assignmentId String          @map("assignment_id")
+  outcomeId    String          @map("outcome_id")
+  linkedById   String          @map("linked_by_id")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  assignment   Assignment      @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  outcome      LearningOutcome @relation(fields: [outcomeId], references: [id], onDelete: Restrict)
+  linkedBy     User            @relation("AssignmentOutcomeLinker", fields: [linkedById], references: [id], onDelete: Restrict)
+
+  @@id([assignmentId, outcomeId])
+  @@index([outcomeId, createdAt])
+  @@map("assignment_outcomes")
+}
+
+model OutcomeFavorite {
+  userId    String          @map("user_id")
+  outcomeId String          @map("outcome_id")
+  createdAt DateTime        @default(now()) @map("created_at")
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outcome   LearningOutcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, outcomeId])
+  @@index([userId, createdAt])
+  @@map("outcome_favorites")
+}
+
+model MockExam {
+  id                   String            @id @default(cuid())
+  studentId            String            @map("student_id")
+  exam                 CurriculumExam
+  title                String?
+  publisher            String?
+  takenAt              DateTime          @map("taken_at")
+  durationMinutes      Int?              @map("duration_minutes")
+  nextAction           String?           @map("next_action")
+  nextActionApprovedAt DateTime?         @map("next_action_approved_at")
+  createdById          String            @map("created_by_id")
+  reviewedById         String?           @map("reviewed_by_id")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  student              StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdBy            User              @relation("MockExamCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  reviewedBy           User?             @relation("MockExamReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  sections             MockExamSection[]
+
+  @@index([studentId, takenAt])
+  @@index([exam, takenAt])
+  @@map("mock_exams")
+}
+
+model MockExamSection {
+  id              String                 @id @default(cuid())
+  mockExamId      String                 @map("mock_exam_id")
+  subjectCode     String                 @map("subject_code")
+  subjectName     String                 @map("subject_name")
+  questionCount   Int                    @map("question_count")
+  correctCount    Int                    @map("correct_count")
+  incorrectCount  Int                    @map("incorrect_count")
+  blankCount      Int                    @map("blank_count")
+  durationMinutes Int?                   @map("duration_minutes")
+  position        Int                    @default(0)
+  mockExam        MockExam               @relation(fields: [mockExamId], references: [id], onDelete: Cascade)
+  errors          MockExamSectionError[]
+  reviewItems     ReviewItem[]
+
+  @@unique([mockExamId, subjectCode])
+  @@index([mockExamId, position])
+  @@map("mock_exam_sections")
+}
+
+model MockExamSectionError {
+  sectionId   String                @map("section_id")
+  category    MockExamErrorCategory
+  revisedById String?               @map("revised_by_id")
+  createdAt   DateTime              @default(now()) @map("created_at")
+  updatedAt   DateTime              @updatedAt @map("updated_at")
+  section     MockExamSection       @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  revisedBy   User?                 @relation("MockExamErrorReviser", fields: [revisedById], references: [id], onDelete: SetNull)
+
+  @@id([sectionId, category])
+  @@index([category, updatedAt])
+  @@map("mock_exam_section_errors")
+}
+
+model ReviewItem {
+  id                String           @id @default(cuid())
+  studentId         String           @map("student_id")
+  sourceType        ReviewSourceType @map("source_type")
+  mockExamSectionId String?          @unique @map("mock_exam_section_id")
+  lessonId          String?          @map("lesson_id")
+  outcomeId         String?          @map("outcome_id")
+  createdById       String?          @map("created_by_id")
+  title             String
+  sourceReference   String           @map("source_reference")
+  solutionNote      String?          @map("solution_note")
+  stage             Int              @default(0)
+  dueAt             DateTime         @map("due_at")
+  lastReviewedAt    DateTime?        @map("last_reviewed_at")
+  lastDeferredOn    DateTime?        @map("last_deferred_on")
+  status            ReviewItemStatus @default(ACTIVE)
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  student           StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  mockExamSection   MockExamSection? @relation(fields: [mockExamSectionId], references: [id], onDelete: Cascade)
+  lesson            Lesson?          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  outcome           LearningOutcome? @relation(fields: [outcomeId], references: [id], onDelete: Restrict)
+  createdBy         User?            @relation("ReviewItemCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  attempts          ReviewAttempt[]
+
+  @@unique([studentId, lessonId, outcomeId])
+  @@index([studentId, status, dueAt])
+  @@index([createdById, status])
+  @@map("review_items")
+}
+
+model ReviewAttempt {
+  id             String         @id @default(cuid())
+  reviewItemId   String         @map("review_item_id")
+  response       ReviewResponse
+  stageBefore    Int            @map("stage_before")
+  stageAfter     Int            @map("stage_after")
+  nextDueAt      DateTime?      @map("next_due_at")
+  idempotencyKey String         @map("idempotency_key")
+  reviewedAt     DateTime       @default(now()) @map("reviewed_at")
+  reviewItem     ReviewItem     @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewItemId, idempotencyKey])
+  @@index([reviewedAt, response])
+  @@map("review_attempts")
 }
 
 model Package {

@@ -4,18 +4,21 @@ import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { TeacherAssignmentManager } from "@/components/panel/teacher-assignment-manager";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeacherAssignmentsPage() {
   const session = await requireRole("TEACHER");
-  const [groups, lessons, assignments] = await Promise.all([
+  const featureFlags = getPanelFeatureFlags();
+  const [groups, lessons, assignments, outcomes] = await Promise.all([
     prisma.group.findMany({ where: { teacherId: session.userId, isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true, subject: true } }),
     prisma.lesson.findMany({ where: { teacherId: session.userId, startsAt: { gte: new Date(Date.now() - 30 * 86400000) }, status: { not: "CANCELLED" } }, orderBy: { startsAt: "desc" }, take: 40, select: { id: true, groupId: true, title: true, startsAt: true } }),
-    prisma.assignment.findMany({ where: { group: { teacherId: session.userId } }, orderBy: [{ isActive: "desc" }, { dueAt: "asc" }], take: 60, include: { group: { select: { name: true } }, progress: { select: { status: true } } } }),
+    prisma.assignment.findMany({ where: { group: { teacherId: session.userId } }, orderBy: [{ isActive: "desc" }, { dueAt: "asc" }], take: 60, include: { group: { select: { name: true } }, progress: { select: { status: true } }, outcomeLinks: { include: { outcome: { select: { code: true } } } } } }),
+    featureFlags.learningOutcomes ? prisma.learningOutcome.findMany({ where: { isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } }, orderBy: { code: "asc" }, take: 300, include: { unit: { include: { subject: true } }, skills: { include: { skill: true } }, favorites: { where: { userId: session.userId } }, assignments: { where: { linkedById: session.userId }, take: 1 } } }) : Promise.resolve([]),
   ]);
   return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
     <header className="mb-7"><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><ClipboardCheck size={15} /> Çalışma döngüsü</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-[var(--site-ink)]">Ödevleri ver, ilerlemeyi gör.</h1><p className="mt-2 text-sm text-[var(--site-body)]">Ödev öğrenciye ulaşır; tamamlanma durumu veli paneline aynı anda yansır.</p></header>
-    <TeacherAssignmentManager groups={groups} lessons={lessons.map((item) => ({ ...item, startsAt: item.startsAt.toISOString() }))} assignments={assignments.map((item) => ({ id: item.id, groupId: item.groupId, groupName: item.group.name, title: item.title, description: item.description || "", dueAt: item.dueAt.toISOString(), isActive: item.isActive, done: item.progress.filter((progress) => progress.status === "DONE").length, total: item.progress.length }))} />
+    <TeacherAssignmentManager groups={groups} lessons={lessons.map((item) => ({ ...item, startsAt: item.startsAt.toISOString() }))} assignments={assignments.map((item) => ({ id: item.id, groupId: item.groupId, groupName: item.group.name, title: item.title, description: item.description || "", dueAt: item.dueAt.toISOString(), isActive: item.isActive, done: item.progress.filter((progress) => progress.status === "DONE").length, total: item.progress.length, outcomes: item.outcomeLinks.map((link) => link.outcome.code) }))} learningOutcomesEnabled={featureFlags.learningOutcomes} outcomes={outcomes.map((outcome) => ({ id: outcome.id, code: outcome.code, title: outcome.title, subject: outcome.unit.subject.name, unit: outcome.unit.name, skills: outcome.skills.map((item) => item.skill.name), favorite: outcome.favorites.length > 0, recent: outcome.assignments.length > 0 }))} />
   </PanelShell>;
 }

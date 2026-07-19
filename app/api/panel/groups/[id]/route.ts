@@ -3,7 +3,6 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { logAudit } from "@/lib/audit";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -31,6 +30,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (!group) return NextResponse.json({ error: "Grup bulunamadı." }, { status: 404 });
   if (!teacher || students.length !== studentIds.length) return NextResponse.json({ error: "Öğretmen veya öğrenci seçimini kontrol edin." }, { status: 400 });
 
+  const requestedStudents = new Set(studentIds);
+  const knownStudents = new Set(group.enrollments.map((item) => item.studentId));
+  const addedStudentIds = studentIds.filter((studentId) => !knownStudents.has(studentId));
+  const reactivatedStudentIds = group.enrollments.filter((item) => item.endedAt && requestedStudents.has(item.studentId)).map((item) => item.studentId);
+  const revokedStudentIds = group.enrollments.filter((item) => !item.endedAt && !requestedStudents.has(item.studentId)).map((item) => item.studentId);
   const selected = new Set(studentIds);
   await prisma.$transaction(async (tx) => {
     await tx.group.update({ where: { id }, data: { name: parsed.data.name, subject: parsed.data.subject, level: parsed.data.level || null, teacherId: teacher.id, isActive: parsed.data.isActive } });
@@ -44,7 +48,30 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       selected.delete(enrollment.studentId);
     }
     for (const studentId of selected) await tx.enrollment.create({ data: { groupId: id, studentId } });
+    await tx.auditLog.create({
+      data: {
+        actorUserId: auth.session.userId,
+        actorType: "USER",
+        entityType: "Group",
+        entityId: id,
+        action: "group.updated",
+        summary: `${parsed.data.name} grubu güncellendi`,
+        payload: { teacherId: teacher.id, studentCount: studentIds.length, isActive: parsed.data.isActive },
+      },
+    });
+    if (addedStudentIds.length || reactivatedStudentIds.length || revokedStudentIds.length) {
+      await tx.auditLog.create({
+        data: {
+          actorUserId: auth.session.userId,
+          actorType: "USER",
+          entityType: "Group",
+          entityId: id,
+          action: "group.membership_access_changed",
+          summary: "Öğrenci grup erişimleri güncellendi",
+          payload: { addedStudentIds, reactivatedStudentIds, revokedStudentIds },
+        },
+      });
+    }
   });
-  await logAudit({ actorUserId: auth.session.userId, entityType: "Group", entityId: id, action: "group.updated", summary: `${parsed.data.name} grubu güncellendi`, payload: { teacherId: teacher.id, studentCount: studentIds.length, isActive: parsed.data.isActive } });
   return NextResponse.json({ ok: true });
 }
