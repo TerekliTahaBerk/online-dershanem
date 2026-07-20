@@ -7,7 +7,7 @@ import { PANEL_ENABLED } from "@/lib/panel-config";
 import { normalizeEmail } from "@/lib/auth/email";
 import { verifyAgainstDummy, verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
-import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
+import { postAuthenticationPath } from "@/lib/auth/products";
 
 /**
  * Parola ile giriş.
@@ -151,6 +151,6 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({
-    redirect: user.mustChangePassword ? PASSWORD_CHANGE_PATH : rolePath(user.role),
+    redirect: await postAuthenticationPath({ userId: user.id, role: user.role, mustChangePassword: user.mustChangePassword }),
   });
 }

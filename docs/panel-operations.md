@@ -92,6 +92,10 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 
 `0058_integrated_pilot_rollout` migration'ından sonra admin “Pilot yayını” ekranında aktif bir gruptan dört rollü kohort oluşturur. Pilot deploy'unda `PANEL_ROLLOUT_MODE=pilot` kullanılır; kabul/güvenlik onayları ve son restore tarihi açıkça tanımlanmadan kohort aktive edilemez. Admin dışındaki her panel sayfası ve API aktif üyeliği yeniden doğrular. Operasyonel duraklatma admin ekranından anında yapılır; deploy düzeyi acil kesme için `PANEL_PILOT_KILL_SWITCH=true` kullanılır. Ayrıntılar [bütünleşik pilot standardında](./integrated-pilot-rollout-operations.md) tanımlıdır.
 
+### ODK kontrollü pilot ve üretim yayını
+
+`0063_odk_pilot_rollout` migration'ından sonra ODK admin “Pilot yayını” ekranında dört rolü açıkça seçerek bağımsız bir koşu oluşturur. `ODK_ROLLOUT_MODE=pilot` yalnız aktif koşu üyelerini geçirir; OD pilot kohortları ODK erişimini etkilemez. Özel PDF deposu, yaşam döngüsü cron'u, hazır deneme, güncel restore tatbikatı ve manuel kabul onayları tamamlanmadan aktivasyon yapılamaz. Sınav günü ve geri alma prosedürü [ODK pilot standardında](./odk-pilot-rollout-operations.md) tanımlıdır.
+
 Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WRITE_TOKEN` Vercel bağlantısı tarafından yönetilir; PDF/MP4 dosyaları doğrudan URL ile açılmaz, her indirmede rol ve aktif grup üyeliği yeniden doğrulanır. Sunucu yükleme sınırı nedeniyle dosya boyutu 4 MB ile sınırlıdır.
 
 Öğrenci ve veli Bildirim Merkezi'nde e-posta kanalı açılırsa ders özeti, devamsızlık, ödev ve ödeme bildirimleri güvenli `EmailOutbox` üzerinden gönderilir. Geciken ödev işi her gün çalışır ve aynı kullanıcıya aynı kayıt için 24 saat içinde tekrar bildirim üretmez. WhatsApp tercihi hazırdır; gerçek teslimat için ayrıca kurumsal WhatsApp sağlayıcısı ve onaylı mesaj şablonları gerekir.

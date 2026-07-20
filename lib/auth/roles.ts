@@ -1,4 +1,4 @@
-import type { UserRole } from "@prisma/client";
+import type { ProductCode, UserRole } from "@prisma/client";
 
 /**
  * Rol → panel eşlemesi.
@@ -20,6 +20,7 @@ export const PASSWORD_CHANGE_PATH = "/panel/parola";
 
 /** Giriş ekranı. Panel kapalıyken burası "yenileniyor" mesajı gösterir. */
 export const LOGIN_PATH = "/giris";
+export const PRODUCT_SELECTOR_PATH = "/panel/urun-sec";
 
 /**
  * Her rolün panel kökü.
@@ -37,6 +38,21 @@ const ROLE_HOME: Record<UserRole, string> = {
 
 export function rolePath(role: UserRole): string {
   return ROLE_HOME[role];
+}
+
+const ODK_ROLE_HOME: Record<UserRole, string> = {
+  ADMIN: "/panel/odk/yonetim",
+  TEACHER: "/panel/odk/ogretmen",
+  STUDENT: "/panel/odk/ogrenci",
+  PARENT: "/panel/odk/veli",
+};
+
+export function productRolePath(product: ProductCode, role: UserRole): string {
+  return product === "OD" ? rolePath(role) : ODK_ROLE_HOME[role];
+}
+
+export function productLabel(product: ProductCode): string {
+  return product === "OD" ? "Online Dershanem" : "Online Deneme Kulübü";
 }
 
 /** Menüde/başlıkta gösterilecek okunabilir rol adı. */

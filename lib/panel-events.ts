@@ -111,6 +111,10 @@ export const panelEventSchema = z.discriminatedUnion("name", [
     name: z.literal("mock_exam_import_failed"),
     properties: z.object({ examType: z.enum(["LGS", "TYT", "AYT", "YDT"]), reason: z.enum(["ROW_COUNT", "FORMAT", "TOTAL_MISMATCH"]) }).strict(),
   }),
+  z.object({ name: z.literal("odk_attempt_started"), properties: z.object({ family: z.enum(["LGS", "TYT", "AYT"]), resumed: z.boolean(), lateEntryBand: z.enum(["ON_TIME", "1-5M", "6M+"]) }).strict() }),
+  z.object({ name: z.literal("odk_attempt_submitted"), properties: z.object({ family: z.enum(["LGS", "TYT", "AYT"]), mode: z.enum(["MANUAL", "AUTO"]), answeredBand: z.enum(["0", "1-10", "11-20", "21-40"]), durationBand: z.enum(["0-30M", "31-60M", "61M+"]) }).strict() }),
+  z.object({ name: z.literal("odk_exam_scored"), properties: z.object({ family: z.enum(["LGS", "TYT", "AYT"]), attemptBand: z.enum(["0", "1-10", "11-50", "51+"]) }).strict() }),
+  z.object({ name: z.literal("odk_results_released"), properties: z.object({ family: z.enum(["LGS", "TYT", "AYT"]), attemptBand: z.enum(["0", "1-10", "11-50", "51+"]) }).strict() }),
   z.object({
     name: z.literal("error_reason_revised"),
     properties: z.object({ examType: z.enum(["LGS", "TYT", "AYT", "YDT"]), actorRole: z.enum(["ADMIN", "TEACHER", "STUDENT"]), changedCount: z.number().int().min(1).max(6), reasonCount: z.number().int().min(0).max(3) }).strict(),

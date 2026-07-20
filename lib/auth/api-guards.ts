@@ -1,10 +1,12 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
-import type { UserRole } from "@prisma/client";
+import type { ProductCode, UserRole } from "@prisma/client";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 import { getSession, type SessionUser } from "@/lib/auth/session";
 import { checkPilotAccess } from "@/lib/pilot-access";
+import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
+import { hasProductAccess } from "@/lib/auth/products";
 
 /**
  * API route'ları için yetki kapısı.
@@ -22,7 +24,7 @@ export type ApiAuth =
   | { ok: true; session: SessionUser }
   | { ok: false; response: NextResponse };
 
-export async function requireApiRole(...roles: UserRole[]): Promise<ApiAuth> {
+async function requireApiAuthorizedRole(...roles: UserRole[]): Promise<ApiAuth> {
   if (!PANEL_ENABLED) {
     return {
       ok: false,
@@ -60,16 +62,44 @@ export async function requireApiRole(...roles: UserRole[]): Promise<ApiAuth> {
     };
   }
 
-  const pilot = await checkPilotAccess(session.userId, session.role);
-  if (!pilot.allowed) {
-    return {
-      ok: false,
-      response: NextResponse.json(
-        { error: pilot.reason === "KILL_SWITCH" ? "Pilot geçici olarak durduruldu." : "Bu pilot erişimi etkin değil." },
-        { status: pilot.reason === "KILL_SWITCH" ? 503 : 404 },
-      ),
-    };
-  }
-
   return { ok: true, session };
+}
+
+async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, product: ProductCode): Promise<ApiAuth> {
+  const pilot = product === "ODK" ? await checkOdkPilotAccess(auth.session.userId, auth.session.role) : await checkPilotAccess(auth.session.userId, auth.session.role);
+  if (pilot.allowed) return auth;
+  return { ok: false, response: NextResponse.json({ error: pilot.reason === "KILL_SWITCH" ? "Pilot geçici olarak durduruldu." : "Bu pilot erişimi etkin değil." }, { status: pilot.reason === "KILL_SWITCH" ? 503 : 404 }) };
+}
+
+/** Mevcut panel API'leri Online Dershanem ürün kapsamındadır. */
+export async function requireApiRole(...roles: UserRole[]): Promise<ApiAuth> {
+  let auth = await requireApiAuthorizedRole(...roles);
+  if (!auth.ok) return auth;
+  auth = await requireApiProductPilot(auth, "OD");
+  if (!auth.ok) return auth;
+  if (!(await hasProductAccess(auth.session.userId, auth.session.role, "OD"))) {
+    return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
+  }
+  return auth;
+}
+
+/** Bildirim ve görünüm tercihi gibi iki üründe ortak hesap işlemleri. */
+export async function requireApiActiveUser(): Promise<ApiAuth> {
+  return requireApiAuthorizedRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+}
+
+export async function requireApiAccountRole(...roles: UserRole[]): Promise<ApiAuth> {
+  return requireApiAuthorizedRole(...roles);
+}
+
+/** API için rol kontrolüne ek olarak alt ürün üyeliğini doğrular. */
+export async function requireApiProductRole(product: ProductCode, ...roles: UserRole[]): Promise<ApiAuth> {
+  let auth = await requireApiAuthorizedRole(...roles);
+  if (!auth.ok) return auth;
+  auth = await requireApiProductPilot(auth, product);
+  if (!auth.ok) return auth;
+  if (!(await hasProductAccess(auth.session.userId, auth.session.role, product))) {
+    return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
+  }
+  return auth;
 }

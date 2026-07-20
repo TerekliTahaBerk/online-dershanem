@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiActiveUser } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -11,7 +11,7 @@ import { logAudit } from "@/lib/audit";
 const schema = z.object({ expectedVersion: z.number().int().min(0), lowDataMode: z.boolean(), offlineWritesEnabled: z.boolean() }).strict();
 
 export async function PATCH(request: Request) {
-  const auth = await requireApiRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+  const auth = await requireApiActiveUser();
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().offlineMode) return NextResponse.json({ error: "Düşük veri modu henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.network_preferences.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:network-preferences:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });

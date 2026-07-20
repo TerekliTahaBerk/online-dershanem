@@ -14,12 +14,14 @@ const ids = {
   foreignStudent: "e2e-user-student-foreign",
   student3: "e2e-user-student-3",
   student4: "e2e-user-student-4",
+  odkStudent: "e2e-user-odk-student",
   planForeignStudent: "e2e-user-plan-foreign",
   parent: "e2e-user-parent",
   studentProfile: "e2e-student-profile",
   foreignStudentProfile: "e2e-student-profile-foreign",
   studentProfile3: "e2e-student-profile-3",
   studentProfile4: "e2e-student-profile-4",
+  odkStudentProfile: "e2e-student-profile-odk",
   planForeignStudentProfile: "e2e-student-profile-plan-foreign",
   teacherProfile: "e2e-teacher-profile",
   otherTeacherProfile: "e2e-teacher-profile-foreign",
@@ -57,6 +59,13 @@ const ids = {
   privateCheckIn: "e2e-check-in-private",
   foreignCheckIn: "e2e-check-in-foreign",
   foreignHelpRequest: "e2e-help-request-foreign",
+  odkExam: "e2e-odk-exam-live",
+  odkVersion: "e2e-odk-version-live",
+  odkSection: "e2e-odk-section-live",
+  odkQuestion: "e2e-odk-question-live-1",
+  odkAttempt: "e2e-odk-attempt-live",
+  odkForeignAttempt: "e2e-odk-attempt-foreign",
+  odkPilotRun: "e2e-odk-pilot-run",
 };
 
 async function main() {
@@ -74,6 +83,7 @@ async function main() {
     { id: ids.foreignStudent, email: "foreign.student.e2e@example.com", fullName: "Bora Yabancı", role: "STUDENT" as const },
     { id: ids.student3, email: "student3.e2e@example.com", fullName: "Cem Öğrenci", role: "STUDENT" as const },
     { id: ids.student4, email: "student4.e2e@example.com", fullName: "Duru Öğrenci", role: "STUDENT" as const },
+    { id: ids.odkStudent, email: "odk.student.e2e@example.com", fullName: "Ece ODK Öğrenci", role: "STUDENT" as const },
     { id: ids.planForeignStudent, email: "plan.foreign.student.e2e@example.com", fullName: "Yalnız Yabancı Öğrenci", role: "STUDENT" as const },
     { id: ids.parent, email: "parent.e2e@example.com", fullName: "E2E Veli", role: "PARENT" as const },
   ];
@@ -86,6 +96,10 @@ async function main() {
     });
   }
 
+  await prisma.productMembership.deleteMany({ where: { userId: ids.odkStudent, product: "OD" } });
+  await prisma.productMembership.upsert({ where: { userId_product: { userId: ids.odkStudent, product: "ODK" } }, create: { userId: ids.odkStudent, product: "ODK", source: "MANUAL", grantedById: ids.admin }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });
+  for (const userId of [ids.parent, ids.foreignStudent]) await prisma.productMembership.upsert({ where: { userId_product: { userId, product: "ODK" } }, create: { userId, product: "ODK", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });
+
   await prisma.teacherProfile.upsert({ where: { userId: ids.teacher }, create: { id: ids.teacherProfile, userId: ids.teacher, subjects: ["Matematik"] }, update: { subjects: ["Matematik"] } });
   await prisma.teacherProfile.upsert({ where: { userId: ids.otherTeacher }, create: { id: ids.otherTeacherProfile, userId: ids.otherTeacher, subjects: ["Fen"] }, update: { subjects: ["Fen"] } });
 
@@ -94,6 +108,7 @@ async function main() {
     { id: ids.foreignStudentProfile, userId: ids.foreignStudent },
     { id: ids.studentProfile3, userId: ids.student3 },
     { id: ids.studentProfile4, userId: ids.student4 },
+    { id: ids.odkStudentProfile, userId: ids.odkStudent },
     { id: ids.planForeignStudentProfile, userId: ids.planForeignStudent },
   ];
   for (const profile of profiles) {
@@ -169,6 +184,23 @@ async function main() {
   await prisma.learningOutcome.upsert({ where: { unitId_code: { unitId: ids.curriculumUnit, code: "MAT.8.2" } }, create: { id: ids.outcomePowers, unitId: ids.curriculumUnit, code: "MAT.8.2", title: "Gerçek sayı problemlerinde uygun stratejiyi seçer." }, update: { title: "Gerçek sayı problemlerinde uygun stratejiyi seçer.", isActive: true } });
   await prisma.outcomeSkill.upsert({ where: { outcomeId_skillId: { outcomeId: ids.outcomeRoots, skillId: ids.curriculumSkill } }, create: { outcomeId: ids.outcomeRoots, skillId: ids.curriculumSkill }, update: {} });
   await prisma.outcomeSkill.upsert({ where: { outcomeId_skillId: { outcomeId: ids.outcomePowers, skillId: ids.curriculumSkill } }, create: { outcomeId: ids.outcomePowers, skillId: ids.curriculumSkill }, update: {} });
+
+  const odkStartsAt = new Date(Date.now() - 2 * 60 * 1000);
+  const odkEndsAt = new Date(Date.now() + 60 * 60 * 1000);
+  await prisma.odkScoringPolicy.upsert({ where: { code: "LGS_MATH_V1" }, create: { id: "e2e-odk-policy-lgs", code: "LGS_MATH_V1", title: "LGS Matematik · E2E", wrongPenalty: 3 }, update: { wrongPenalty: 3 } });
+  await prisma.odkExam.upsert({ where: { id: ids.odkExam }, create: { id: ids.odkExam, title: "E2E Canlı Matematik Denemesi", slug: "e2e-canli-matematik-denemesi", family: "LGS", status: "SCHEDULED", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), createdById: ids.admin }, update: { status: "SCHEDULED", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), resultsReleasedAt: null, answerKeyReleasedAt: null } });
+  const policy = await prisma.odkScoringPolicy.findUniqueOrThrow({ where: { code: "LGS_MATH_V1" } });
+  await prisma.odkExamVersion.upsert({ where: { id: ids.odkVersion }, create: { id: ids.odkVersion, examId: ids.odkExam, versionNumber: 1, status: "LOCKED", durationMinutes: 60, scoringPolicyId: policy.id, createdById: ids.admin, lockedAt: new Date() }, update: { status: "LOCKED", durationMinutes: 60, scoringPolicyId: policy.id, lockedAt: new Date() } });
+  await prisma.odkExamSection.upsert({ where: { id: ids.odkSection }, create: { id: ids.odkSection, versionId: ids.odkVersion, code: "MAT", title: "Matematik", position: 0, questionCount: 1 }, update: { questionCount: 1 } });
+  await prisma.odkExamQuestion.upsert({ where: { id: ids.odkQuestion }, create: { id: ids.odkQuestion, sectionId: ids.odkSection, questionNumber: 1, position: 0, correctOption: "A", difficulty: "MEDIUM" }, update: { correctOption: "A", isActive: true } });
+  await prisma.odkQuestionOutcome.upsert({ where: { questionId_outcomeId: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots } }, create: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots, isPrimary: true }, update: { isPrimary: true } });
+  await prisma.odkExam.update({ where: { id: ids.odkExam }, data: { currentVersionId: ids.odkVersion } });
+  await prisma.odkExamAttempt.deleteMany({ where: { examId: ids.odkExam } });
+  await prisma.odkExamAttempt.create({ data: { id: ids.odkAttempt, examId: ids.odkExam, versionId: ids.odkVersion, studentUserId: ids.odkStudent, attemptNumber: 1, status: "IN_PROGRESS", startedAt: new Date(), deadlineAt: odkEndsAt, lastActivityAt: new Date() } });
+  await prisma.odkExamAttempt.create({ data: { id: ids.odkForeignAttempt, examId: ids.odkExam, versionId: ids.odkVersion, studentUserId: ids.foreignStudent, attemptNumber: 1, status: "IN_PROGRESS", startedAt: new Date(), deadlineAt: odkEndsAt, lastActivityAt: new Date() } });
+  await prisma.odkPilotRun.deleteMany({ where: { id: ids.odkPilotRun } });
+  await prisma.odkPilotRun.create({ data: { id: ids.odkPilotRun, name: "E2E ODK kontrollü pilot", status: "ACTIVE", createdById: ids.admin, requestKey: "00000000-0000-4000-8000-000000000063", version: 2, startedAt: new Date(), members: { create: [{ userId: ids.admin, role: "ADMIN" }, { userId: ids.teacher, role: "TEACHER" }, { userId: ids.odkStudent, role: "STUDENT" }, { userId: ids.parent, role: "PARENT" }] } } });
+
   await prisma.lessonOutcome.upsert({ where: { lessonId_outcomeId: { lessonId: ids.previousLesson, outcomeId: ids.outcomeRoots } }, create: { lessonId: ids.previousLesson, outcomeId: ids.outcomeRoots, evidenceType: "NEEDS_REVIEW", linkedById: ids.teacher }, update: { evidenceType: "NEEDS_REVIEW", linkedById: ids.teacher } });
   for (const studentId of [ids.studentProfile, ids.foreignStudentProfile, ids.studentProfile3, ids.studentProfile4]) await prisma.attendance.upsert({ where: { lessonId_studentId: { lessonId: ids.previousLesson, studentId } }, create: { lessonId: ids.previousLesson, studentId, status: "PRESENT" }, update: { status: "PRESENT" } });
 

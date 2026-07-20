@@ -20,6 +20,7 @@ const createUserSchema = z.object({
   fullName: z.string().trim().min(2).max(120).optional().or(z.literal("")),
   phone: z.string().trim().max(32).optional().or(z.literal("")),
   role: z.enum(["ADMIN", "TEACHER", "STUDENT", "PARENT"]),
+  products: z.array(z.enum(["OD", "ODK"])).min(1).max(2),
 });
 
 export async function POST(request: Request) {
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
   }
 
   const tempPassword = generateTemporaryPassword();
+  const products = parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER" ? (["OD", "ODK"] as const) : [...new Set(parsed.data.products)];
   const user = await prisma.user.create({
     data: {
       email,
@@ -77,6 +79,7 @@ export async function POST(request: Request) {
       createdById: auth.session.userId,
       ...(parsed.data.role === "STUDENT" ? { studentProfile: { create: {} } } : {}),
       ...(parsed.data.role === "TEACHER" ? { teacherProfile: { create: {} } } : {}),
+      productMemberships: { create: products.map((product) => ({ product, source: parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER" ? "STAFF" as const : "MANUAL" as const, grantedById: auth.session.userId })) },
     },
     include: { studentProfile: { select: { id: true } } },
   });
@@ -87,6 +90,7 @@ export async function POST(request: Request) {
     entityId: user.id,
     action: "panel.user_created",
     summary: `${user.email} (${user.role}) hesabı açıldı`,
+    payload: { products },
   });
 
   return NextResponse.json({

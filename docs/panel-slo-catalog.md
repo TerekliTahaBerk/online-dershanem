@@ -16,6 +16,8 @@ Bu katalog teknik uptime ile kullanıcı işinin gerçekten tamamlanmasını ayr
 | `parent_dashboard_loaded` | Sunucu render | Veli | Veli özetinin kullanılabilir yüklenme süresi |
 | `mock_exam_entry_started/completed` | İstemci başlangıcı / sunucu sonucu | Admin, öğretmen, öğrenci | Deneme giriş süresi, kaynak ve neden kapsaması |
 | `mock_exam_import_failed` | İstemci | Admin, öğretmen, öğrenci | Yapıştırma satır/biçim/toplam hataları |
+| `odk_attempt_started/submitted` | Sunucu | Öğrenci | Kimliksiz sınav ailesi, geç giriş, teslim biçimi, cevap ve süre bantları |
+| `odk_exam_scored/results_released` | Sunucu | Admin | Kimliksiz sınav ailesi ve katılım bandıyla puanlama/açıklama operasyonu |
 | `error_reason_revised` | Sunucu | Admin, öğretmen, öğrenci | Kontrollü neden düzeltme sıklığı |
 | `mock_heatmap_viewed` | İstemci | Dört rol | Kişi içi analiz görünümünün kullanımı |
 | `review_items_created` | Sunucu | Admin, öğretmen, öğrenci | Deneme, ders veya öğretmen referansından üretilen toplu öğe sayısı |

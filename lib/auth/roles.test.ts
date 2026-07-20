@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { UserRole } from "@prisma/client";
-import { LOGIN_PATH, PANEL_ROOT, PASSWORD_CHANGE_PATH, rolePath, roleLabel } from "./roles";
+import { LOGIN_PATH, PANEL_ROOT, PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, rolePath, roleLabel } from "./roles";
 
 const ALL_ROLES: UserRole[] = ["ADMIN", "TEACHER", "STUDENT", "PARENT"];
 
@@ -50,4 +50,19 @@ test("rol etiketleri dolu ve benzersiz", () => {
   const labels = ALL_ROLES.map(roleLabel);
   for (const l of labels) assert.equal(l.length > 0, true);
   assert.equal(new Set(labels).size, ALL_ROLES.length);
+});
+
+test("OD mevcut rol yollarını korur, ODK ayrı ve benzersiz rol kökleri kullanır", () => {
+  const odkPaths = ALL_ROLES.map((role) => productRolePath("ODK", role));
+  for (const role of ALL_ROLES) {
+    assert.equal(productRolePath("OD", role), rolePath(role));
+    assert.equal(productRolePath("ODK", role).startsWith(`${PANEL_ROOT}/odk/`), true);
+  }
+  assert.equal(new Set(odkPaths).size, ALL_ROLES.length);
+  assert.equal(odkPaths.includes(PRODUCT_SELECTOR_PATH), false);
+});
+
+test("ürün etiketleri kullanıcıya gösterilecek kadar açık", () => {
+  assert.equal(productLabel("OD"), "Online Dershanem");
+  assert.equal(productLabel("ODK"), "Online Deneme Kulübü");
 });

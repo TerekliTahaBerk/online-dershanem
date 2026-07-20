@@ -84,6 +84,13 @@ test("deneme eventleri soru metni ve öğrenci kimliği taşımadan ölçülür"
   assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, studentId: "secret", questionText: "telifli soru" } }).success, false);
 });
 
+test("ODK canlı sınav eventleri yalnız aile ve toplu bant taşır", () => {
+  const event = { name: "odk_attempt_submitted", properties: { family: "LGS", mode: "AUTO", answeredBand: "11-20", durationBand: "31-60M" } };
+  assert.equal(panelEventSchema.safeParse(event).success, true);
+  assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, attemptId: "secret", studentEmail: "secret@example.com" } }).success, false);
+  assert.equal(isClientPanelEvent(panelEventSchema.parse(event)), false);
+});
+
 test("tekrar eventleri yalnız zamanlama basamağı ve kontrollü yanıt taşır", () => {
   const event = { name: "review_item_answered", properties: { response: "UNSURE", stageBefore: 2, stageAfter: 1, nextIntervalDays: 3, ageBand: "8-30", mastered: false } };
   assert.equal(panelEventSchema.safeParse(event).success, true);

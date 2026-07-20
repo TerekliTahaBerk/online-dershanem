@@ -7,7 +7,7 @@ import { z } from "zod";
  * - Öğrenci tarafı: cevap işaretleme, event push (Faz 3+)
  */
 
-export const EXAM_FAMILIES = ["TYT", "AYT", "LGS", "KPSS", "ALES"] as const;
+export const EXAM_FAMILIES = ["LGS", "TYT", "AYT"] as const;
 export const ANSWER_OPTIONS = ["A", "B", "C", "D", "E"] as const;
 export const DIFFICULTY = ["easy", "medium", "hard"] as const;
 

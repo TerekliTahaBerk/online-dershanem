@@ -24,6 +24,7 @@
     "e2e:ui": "playwright test --ui",
     "e2e:debug": "playwright test --debug",
     "e2e:cross-browser": "PLAYWRIGHT_CROSS_BROWSER=true playwright test tests/e2e/panel-cross-browser.spec.ts",
+    "e2e:odk": "playwright test tests/e2e/odk-exam-flow.spec.ts",
     "e2e:install": "playwright install chromium",
     "test:e2e": "playwright test",
     "lighthouse:ci": "lhci autorun",

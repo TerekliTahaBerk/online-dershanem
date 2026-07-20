@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/guards";
-import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
+import { postAuthenticationPath } from "@/lib/auth/products";
 
 /**
  * ROL YÖNLENDİRİCİ — burası bir sayfa değildir.
@@ -10,5 +10,5 @@ import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
  */
 export default async function PanelRouterPage() {
   const session = await requireSession();
-  redirect(session.mustChangePassword ? PASSWORD_CHANGE_PATH : rolePath(session.role));
+  redirect(await postAuthenticationPath(session));
 }

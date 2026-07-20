@@ -10,7 +10,7 @@ import { LoginForm } from "@/components/panel/login-form";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 import { getSession } from "@/lib/auth/session";
-import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
+import { postAuthenticationPath } from "@/lib/auth/products";
 
 export const metadata: Metadata = {
   ...buildMarketingMetadata({
@@ -40,7 +40,7 @@ export default async function LoginPage() {
   // Zaten girmiş kullanıcıyı giriş ekranında tutmanın anlamı yok.
   const session = await getSession();
   if (session) {
-    redirect(session.mustChangePassword ? PASSWORD_CHANGE_PATH : rolePath(session.role));
+    redirect(await postAuthenticationPath(session));
   }
 
   return <LoginScreen />;

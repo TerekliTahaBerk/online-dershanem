@@ -7,7 +7,7 @@ import { PANEL_ENABLED } from "@/lib/panel-config";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { validatePasswordStrength } from "@/lib/auth/password-policy";
 import { getSession, revokeAllUserSessions } from "@/lib/auth/session";
-import { rolePath } from "@/lib/auth/roles";
+import { postAuthenticationPath } from "@/lib/auth/products";
 
 /**
  * Parola değiştirme.
@@ -114,5 +114,5 @@ export async function POST(request: Request) {
     summary: `Parola değiştirildi; ${revoked} diğer oturum kapatıldı`,
   });
 
-  return NextResponse.json({ redirect: rolePath(user.role) });
+  return NextResponse.json({ redirect: await postAuthenticationPath({ userId: user.id, role: user.role, mustChangePassword: false }) });
 }

@@ -29,6 +29,30 @@ export type ScoringResult = {
   }>;
 };
 
+export type OutcomeScoreSummary = {
+  outcomeId: string;
+  questionCount: number;
+  correctCount: number;
+  wrongCount: number;
+  blankCount: number;
+  accuracyRate: number;
+};
+
+export function aggregateOutcomeScores(evaluations: Array<{ result: "CORRECT" | "WRONG" | "BLANK"; outcomeIds: string[] }>): OutcomeScoreSummary[] {
+  const buckets = new Map<string, Omit<OutcomeScoreSummary, "outcomeId" | "accuracyRate">>();
+  for (const evaluation of evaluations) {
+    for (const outcomeId of new Set(evaluation.outcomeIds)) {
+      const bucket = buckets.get(outcomeId) || { questionCount: 0, correctCount: 0, wrongCount: 0, blankCount: 0 };
+      bucket.questionCount += 1;
+      if (evaluation.result === "CORRECT") bucket.correctCount += 1;
+      else if (evaluation.result === "WRONG") bucket.wrongCount += 1;
+      else bucket.blankCount += 1;
+      buckets.set(outcomeId, bucket);
+    }
+  }
+  return [...buckets.entries()].map(([outcomeId, bucket]) => ({ outcomeId, ...bucket, accuracyRate: Math.round((bucket.correctCount / bucket.questionCount) * 10_000) / 100 }));
+}
+
 type SectionInput = {
   id: string;
   title: string;

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiActiveUser } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { activeViewPreferenceCount } from "@/lib/accessibility-preferences";
@@ -12,7 +12,7 @@ import { logAudit } from "@/lib/audit";
 const schema = z.object({ expectedVersion: z.number().int().min(0), reducedMotion: z.boolean(), highContrast: z.boolean(), textScale: z.enum(["DEFAULT", "LARGE"]), comfortableSpacing: z.boolean(), captionsPreferred: z.boolean(), transcriptPreferred: z.boolean() }).strict();
 
 export async function PATCH(request: Request) {
-  const auth = await requireApiRole("ADMIN", "TEACHER", "STUDENT", "PARENT"); if (!auth.ok) return auth.response;
+  const auth = await requireApiActiveUser(); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().accessibilityProfile) return NextResponse.json({ error: "Erişilebilirlik profili henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.accessibility.preferences", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:accessibility:${auth.session.userId}`, rateLimit: { max: 30, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
