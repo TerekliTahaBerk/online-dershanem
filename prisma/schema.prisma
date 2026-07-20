@@ -106,30 +106,31 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sessions                 Session[]
-  studentProfile           StudentProfile?
-  teacherProfile           TeacherProfile?
-  parentStudents           ParentStudent[]            @relation("ParentLinks")
-  taughtGroups             Group[]                    @relation("GroupTeacher")
-  taughtLessons            Lesson[]                   @relation("LessonTeacher")
-  createdAssignments       Assignment[]               @relation("AssignmentCreator")
-  notifications            Notification[]
-  notificationPrefs        NotificationPreference?
-  createdMaterials         LearningMaterial[]         @relation("MaterialCreator")
-  noteTemplates            TeacherNoteTemplate[]      @relation("TeacherNoteTemplateOwner")
-  createdCurriculums       CurriculumVersion[]        @relation("CurriculumCreator")
-  linkedLessonOutcomes     LessonOutcome[]            @relation("LessonOutcomeLinker")
-  linkedAssignmentOutcomes AssignmentOutcome[]        @relation("AssignmentOutcomeLinker")
-  outcomeFavorites         OutcomeFavorite[]
-  createdMockExams         MockExam[]                 @relation("MockExamCreator")
-  reviewedMockExams        MockExam[]                 @relation("MockExamReviewer")
-  revisedMockExamReasons   MockExamSectionError[]     @relation("MockExamErrorReviser")
-  createdReviewItems       ReviewItem[]               @relation("ReviewItemCreator")
-  ownedInterventionCases   InterventionCase[]         @relation("InterventionCaseOwner")
-  interventionActivities   InterventionCaseActivity[]
-  generatedRecoveryPackages RecoveryPackage[]         @relation("RecoveryPackageGenerator")
-  publishedRecoveryPackages RecoveryPackage[]         @relation("RecoveryPackagePublisher")
-  odOrders                 OdOrder[]
+  sessions                      Session[]
+  studentProfile                StudentProfile?
+  teacherProfile                TeacherProfile?
+  parentStudents                ParentStudent[]            @relation("ParentLinks")
+  taughtGroups                  Group[]                    @relation("GroupTeacher")
+  taughtLessons                 Lesson[]                   @relation("LessonTeacher")
+  createdAssignments            Assignment[]               @relation("AssignmentCreator")
+  notifications                 Notification[]
+  notificationPrefs             NotificationPreference?
+  createdMaterials              LearningMaterial[]         @relation("MaterialCreator")
+  noteTemplates                 TeacherNoteTemplate[]      @relation("TeacherNoteTemplateOwner")
+  createdCurriculums            CurriculumVersion[]        @relation("CurriculumCreator")
+  linkedLessonOutcomes          LessonOutcome[]            @relation("LessonOutcomeLinker")
+  linkedAssignmentOutcomes      AssignmentOutcome[]        @relation("AssignmentOutcomeLinker")
+  outcomeFavorites              OutcomeFavorite[]
+  createdMockExams              MockExam[]                 @relation("MockExamCreator")
+  reviewedMockExams             MockExam[]                 @relation("MockExamReviewer")
+  revisedMockExamReasons        MockExamSectionError[]     @relation("MockExamErrorReviser")
+  createdReviewItems            ReviewItem[]               @relation("ReviewItemCreator")
+  ownedInterventionCases        InterventionCase[]         @relation("InterventionCaseOwner")
+  interventionActivities        InterventionCaseActivity[]
+  generatedRecoveryPackages     RecoveryPackage[]          @relation("RecoveryPackageGenerator")
+  publishedRecoveryPackages     RecoveryPackage[]          @relation("RecoveryPackagePublisher")
+  reviewedAssignmentSubmissions AssignmentSubmission[]     @relation("AssignmentSubmissionReviewer")
+  odOrders                      OdOrder[]
 
   @@index([role, status])
   @@index([createdById])
@@ -164,28 +165,29 @@ enum MaterialKind {
 }
 
 model StudentProfile {
-  id                  String                 @id @default(cuid())
-  userId              String                 @unique @map("user_id")
-  classLevel          String?                @map("class_level")
-  schoolName          String?                @map("school_name")
-  targetGoal          String?                @map("target_goal")
-  weeklyGoal          String?                @map("weekly_goal")
-  weeklyGoalUpdatedAt DateTime?              @map("weekly_goal_updated_at")
-  createdAt           DateTime               @default(now()) @map("created_at")
-  updatedAt           DateTime               @updatedAt @map("updated_at")
-  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parents             ParentStudent[]
-  enrollments         Enrollment[]
-  notes               LessonNote[]
-  attendances         Attendance[]
-  assignmentProgress  AssignmentProgress[]
-  mockExams           MockExam[]
-  reviewItems         ReviewItem[]
-  planPreference      StudentPlanPreference?
-  weeklyPlans         WeeklyPlan[]
-  weeklyDigests       WeeklyDigest[]
-  interventionCases   InterventionCase[]
-  recoveryPackages    RecoveryPackage[]
+  id                    String                 @id @default(cuid())
+  userId                String                 @unique @map("user_id")
+  classLevel            String?                @map("class_level")
+  schoolName            String?                @map("school_name")
+  targetGoal            String?                @map("target_goal")
+  weeklyGoal            String?                @map("weekly_goal")
+  weeklyGoalUpdatedAt   DateTime?              @map("weekly_goal_updated_at")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parents               ParentStudent[]
+  enrollments           Enrollment[]
+  notes                 LessonNote[]
+  attendances           Attendance[]
+  assignmentProgress    AssignmentProgress[]
+  mockExams             MockExam[]
+  reviewItems           ReviewItem[]
+  planPreference        StudentPlanPreference?
+  weeklyPlans           WeeklyPlan[]
+  weeklyDigests         WeeklyDigest[]
+  interventionCases     InterventionCase[]
+  recoveryPackages      RecoveryPackage[]
+  assignmentSubmissions AssignmentSubmission[]
 
   @@map("student_profiles")
 }
@@ -566,24 +568,27 @@ enum AssignmentProgressStatus {
 }
 
 model Assignment {
-  id                String               @id @default(cuid())
-  groupId           String               @map("group_id")
-  lessonId          String?              @map("lesson_id")
-  createdById       String               @map("created_by_id")
+  id                String                      @id @default(cuid())
+  groupId           String                      @map("group_id")
+  lessonId          String?                     @map("lesson_id")
+  createdById       String                      @map("created_by_id")
   title             String
   description       String?
-  dueAt             DateTime             @map("due_at")
-  isActive          Boolean              @default(true) @map("is_active")
-  outcomeSkipReason String?              @map("outcome_skip_reason")
-  createdAt         DateTime             @default(now()) @map("created_at")
-  updatedAt         DateTime             @updatedAt @map("updated_at")
-  group             Group                @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  lesson            Lesson?              @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  createdBy         User                 @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  dueAt             DateTime                    @map("due_at")
+  isActive          Boolean                     @default(true) @map("is_active")
+  outcomeSkipReason String?                     @map("outcome_skip_reason")
+  createdAt         DateTime                    @default(now()) @map("created_at")
+  updatedAt         DateTime                    @updatedAt @map("updated_at")
+  group             Group                       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson            Lesson?                     @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  createdBy         User                        @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: Restrict)
   progress          AssignmentProgress[]
   materials         LearningMaterial[]
   outcomeLinks      AssignmentOutcome[]
   recoveryItems     RecoveryPackageItem[]
+  evidenceRequired  Boolean                     @default(false) @map("evidence_required")
+  rubricCriteria    AssignmentRubricCriterion[]
+  submissions       AssignmentSubmission[]
 
   @@index([groupId, dueAt])
   @@index([createdById, isActive])
@@ -604,6 +609,72 @@ model AssignmentProgress {
   @@unique([assignmentId, studentId])
   @@index([studentId, status, updatedAt])
   @@map("assignment_progress")
+}
+
+enum AssignmentSubmissionStatus {
+  SUBMITTED
+  CHANGES_REQUESTED
+  APPROVED
+}
+
+enum RubricLevel {
+  NEEDS_WORK
+  DEVELOPING
+  MEETS
+}
+
+model AssignmentRubricCriterion {
+  id           String                  @id @default(cuid())
+  assignmentId String                  @map("assignment_id")
+  position     Int
+  label        String
+  createdAt    DateTime                @default(now()) @map("created_at")
+  assignment   Assignment              @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  scores       AssignmentRubricScore[]
+
+  @@unique([assignmentId, position])
+  @@index([assignmentId])
+  @@map("assignment_rubric_criteria")
+}
+
+model AssignmentSubmission {
+  id             String                     @id @default(cuid())
+  assignmentId   String                     @map("assignment_id")
+  studentId      String                     @map("student_id")
+  attemptNumber  Int                        @map("attempt_number")
+  status         AssignmentSubmissionStatus @default(SUBMITTED)
+  textEvidence   String                     @map("text_evidence")
+  feedback       String?
+  idempotencyKey String                     @unique @map("idempotency_key")
+  reviewerId     String?                    @map("reviewer_id")
+  submittedAt    DateTime                   @default(now()) @map("submitted_at")
+  reviewedAt     DateTime?                  @map("reviewed_at")
+  version        Int                        @default(1)
+  createdAt      DateTime                   @default(now()) @map("created_at")
+  updatedAt      DateTime                   @updatedAt @map("updated_at")
+  assignment     Assignment                 @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student        StudentProfile             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reviewer       User?                      @relation("AssignmentSubmissionReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  scores         AssignmentRubricScore[]
+
+  @@unique([assignmentId, studentId, attemptNumber])
+  @@index([assignmentId, status, submittedAt])
+  @@index([studentId, submittedAt])
+  @@map("assignment_submissions")
+}
+
+model AssignmentRubricScore {
+  id           String                    @id @default(cuid())
+  submissionId String                    @map("submission_id")
+  criterionId  String                    @map("criterion_id")
+  level        RubricLevel
+  createdAt    DateTime                  @default(now()) @map("created_at")
+  submission   AssignmentSubmission      @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  criterion    AssignmentRubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, criterionId])
+  @@index([criterionId])
+  @@map("assignment_rubric_scores")
 }
 
 model Notification {
@@ -638,26 +709,26 @@ model NotificationPreference {
 }
 
 model LearningMaterial {
-  id           String       @id @default(cuid())
-  groupId      String       @map("group_id")
-  lessonId     String?      @map("lesson_id")
-  assignmentId String?      @map("assignment_id")
-  createdById  String       @map("created_by_id")
-  title        String
-  description  String?
-  url          String
-  blobPathname String?      @map("blob_pathname")
-  fileName     String?      @map("file_name")
-  mimeType     String?      @map("mime_type")
-  fileSize     Int?         @map("file_size")
-  kind         MaterialKind @default(LINK)
-  isActive     Boolean      @default(true) @map("is_active")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  lesson       Lesson?      @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  assignment   Assignment?  @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
-  createdBy    User         @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  id            String                @id @default(cuid())
+  groupId       String                @map("group_id")
+  lessonId      String?               @map("lesson_id")
+  assignmentId  String?               @map("assignment_id")
+  createdById   String                @map("created_by_id")
+  title         String
+  description   String?
+  url           String
+  blobPathname  String?               @map("blob_pathname")
+  fileName      String?               @map("file_name")
+  mimeType      String?               @map("mime_type")
+  fileSize      Int?                  @map("file_size")
+  kind          MaterialKind          @default(LINK)
+  isActive      Boolean               @default(true) @map("is_active")
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
+  group         Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson        Lesson?               @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  assignment    Assignment?           @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  createdBy     User                  @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: Restrict)
   recoveryItems RecoveryPackageItem[]
 
   @@index([groupId, isActive, createdAt])

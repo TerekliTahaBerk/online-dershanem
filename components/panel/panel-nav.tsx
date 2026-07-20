@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Bell, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ClipboardCheck, CreditCard, HeartHandshake, History, Inbox, LayoutDashboard, Library, ListChecks, RotateCcw, UsersRound } from "lucide-react";
+import { BarChart3, Bell, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ClipboardCheck, CreditCard, HeartHandshake, History, Inbox, LayoutDashboard, Library, ListChecks, PackageCheck, RotateCcw, UsersRound } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 
 type NavItem = { href: string; label: string; hint?: string; icon: LucideIcon };
@@ -13,6 +13,7 @@ const reviewQueueEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_REVIEW_QUEUE ==
 const adaptivePlanEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_ADAPTIVE_PLAN === "true";
 const parentWeeklyDigestEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_PARENT_WEEKLY_DIGEST === "true";
 const interventionInboxEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_INTERVENTION_INBOX === "true";
+const recoveryPackageEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_RECOVERY_PACKAGE === "true";
 
 const NAV: Record<UserRole, (root: string) => NavItem[]> = {
   ADMIN: (root) => [
@@ -36,6 +37,7 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", icon: ChartNoAxesCombined }] : []),
     ...(reviewQueueEnabled ? [{ href: `${root}/tekrar`, label: "Tekrar kuyruğu", icon: RotateCcw }] : []),
     ...(adaptivePlanEnabled ? [{ href: `${root}/plan`, label: "Haftalık planlar", icon: ListChecks }] : []),
+    ...(recoveryPackageEnabled ? [{ href: `${root}/telafi`, label: "Telafi paketleri", icon: PackageCheck }] : []),
     ...(parentWeeklyDigestEnabled ? [{ href: `${root}/ozetler`, label: "Veli özetleri", icon: HeartHandshake }] : []),
     ...(interventionInboxEnabled ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu", icon: Inbox }] : []),
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
@@ -49,6 +51,7 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", icon: ChartNoAxesCombined }] : []),
     ...(reviewQueueEnabled ? [{ href: `${root}/tekrar`, label: "Bugünkü tekrar", icon: RotateCcw }] : []),
     ...(adaptivePlanEnabled ? [{ href: `${root}/plan`, label: "Haftalık planım", icon: ListChecks }] : []),
+    ...(recoveryPackageEnabled ? [{ href: `${root}/telafi`, label: "Telafi adımım", icon: PackageCheck }] : []),
     ...(parentWeeklyDigestEnabled ? [{ href: `${root}/haftalik`, label: "Haftalık özet", icon: HeartHandshake }] : []),
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
     { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },

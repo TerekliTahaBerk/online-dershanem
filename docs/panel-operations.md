@@ -14,7 +14,7 @@ Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kul
 
 `PANEL_FEATURE_BASELINE_METRICS` varsayılan olarak açıktır. Öğretmenin ders kapanışında yalnız süre, grup büyüklüğü, doldurulan alan sayısı, taslak kayıt sayısı ve değişiklik sayısı gibi toplu ürün sinyallerini structured log'a yazar. Not metni, öğrenci adı, öğrenci/öğretmen kimliği veya ders kimliği event payload'ına alınmaz.
 
-Gelecek öğrenme özellikleri `PANEL_FEATURE_LEARNING_OUTCOMES`, `PANEL_FEATURE_MOCK_EXAM_ANALYSIS`, `PANEL_FEATURE_REVIEW_QUEUE`, `PANEL_FEATURE_ADAPTIVE_PLAN`, `PANEL_FEATURE_PARENT_WEEKLY_DIGEST`, `PANEL_FEATURE_INTERVENTION_INBOX` ve `PANEL_FEATURE_TEACHER_AI_DRAFTS` bayraklarıyla yönetilir. Bunların güvenli varsayılanı kapalıdır. Bir bayrak yalnız tam olarak `true` değeriyle açılır; değişiklik deploy gerektirir.
+Gelecek öğrenme özellikleri `PANEL_FEATURE_LEARNING_OUTCOMES`, `PANEL_FEATURE_MOCK_EXAM_ANALYSIS`, `PANEL_FEATURE_REVIEW_QUEUE`, `PANEL_FEATURE_ADAPTIVE_PLAN`, `PANEL_FEATURE_PARENT_WEEKLY_DIGEST`, `PANEL_FEATURE_INTERVENTION_INBOX`, `PANEL_FEATURE_RECOVERY_PACKAGE`, `PANEL_FEATURE_ASSIGNMENT_EVIDENCE` ve `PANEL_FEATURE_TEACHER_AI_DRAFTS` bayraklarıyla yönetilir. Bunların güvenli varsayılanı kapalıdır. Bir bayrak yalnız tam olarak `true` değeriyle açılır; değişiklik deploy gerektirir.
 
 İlk baz çizgi için en az iki hafta şu log event'lerini izleyin:
 
@@ -61,6 +61,14 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 ### Açıklanabilir müdahale kutusu rollout'u
 
 `0051_explainable_intervention_inbox` migration'ından sonra `PANEL_FEATURE_INTERVENTION_INBOX=true` ve `NEXT_PUBLIC_PANEL_FEATURE_INTERVENTION_INBOX=true` birlikte açılır. İlk pilotta kural bazında üretilen vaka, ilk aksiyon p50, sonuçla kapanma ve yanlış işaret oranı izlenir. Yanlış işaret guardrail'i aşılırsa ilgili kural durdurulur; eşik otomatik düşürülmez ve ML risk skoru eklenmez. Yetki, erteleme ve geri alma ayrıntıları [müdahale kutusu standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
+
+### Ders kaçırma telafi paketi rollout'u
+
+`0052_missed_lesson_recovery` migration'ından sonra `PANEL_FEATURE_RECOVERY_PACKAGE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_RECOVERY_PACKAGE=true` birlikte açılır. İlk pilotta yayın gecikmesi p50, 72 saatte tamamlama, paket başına öğe sayısı, kaynak erişimi ve haftalık plan yeniden dengelemesi izlenir. Özel not/yoklama notu sızıntısı, yatay erişim veya kapasite sınırı ihlalinde bayrak kapatılır; veri korunur. Ayrıntılar [telafi paketi işletim standardında](./missed-lesson-recovery-operations.md) tanımlıdır.
+
+### Kanıtlı ödev ve rubric rollout'u
+
+`0053_assignment_evidence_rubric` migration'ından sonra `PANEL_FEATURE_ASSIGNMENT_EVIDENCE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_ASSIGNMENT_EVIDENCE=true` birlikte açılır. İlk pilotta geri bildirim p50, yeniden deneme onayı, öğretmen değerlendirme süresi ve yatay erişim reddi izlenir. Dosya kanıtı bu bayrakla açılmaz; tarama ve metadata temizleme ayrı release gate'idir. Ayrıntılar [kanıtlı ödev standardında](./assignment-evidence-rubric-operations.md) tanımlıdır.
 
 Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WRITE_TOKEN` Vercel bağlantısı tarafından yönetilir; PDF/MP4 dosyaları doğrudan URL ile açılmaz, her indirmede rol ve aktif grup üyeliği yeniden doğrulanır. Sunucu yükleme sınırı nedeniyle dosya boyutu 4 MB ile sınırlıdır.
 

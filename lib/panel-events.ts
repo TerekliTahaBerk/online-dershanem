@@ -173,6 +173,8 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({ name: z.literal("recovery_item_completed"), properties: z.object({ kind: z.enum(["MATERIAL", "ASSIGNMENT"]) }).strict() }),
   z.object({ name: z.literal("recovery_checkpoint_submitted"), properties: z.object({ response: z.enum(["NOT_YET", "NEED_HELP", "READY"]) }).strict() }),
   z.object({ name: z.literal("recovery_package_completed"), properties: z.object({ completionDurationMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), within72h: z.boolean(), itemCount: z.number().int().min(0).max(5) }).strict() }),
+  z.object({ name: z.literal("assignment_evidence_submitted"), properties: z.object({ attemptBand: z.enum(["1", "2", "3+"]), characterBand: z.enum(["20-199", "200-499", "500+"]), late: z.boolean(), replayed: z.boolean() }).strict() }),
+  z.object({ name: z.literal("assignment_review_completed"), properties: z.object({ decision: z.enum(["APPROVE", "REQUEST_CHANGES"]), turnaroundMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), criterionCount: z.number().int().min(2).max(4), interactionDurationMs: z.number().int().min(0).max(30 * 60 * 1000), revisedAttempt: z.boolean() }).strict() }),
 ]);
 
 export type PanelEventInput = z.infer<typeof panelEventSchema>;

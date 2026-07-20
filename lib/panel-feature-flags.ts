@@ -8,6 +8,7 @@ export type PanelFeatureFlags = {
   parentWeeklyDigest: boolean;
   interventionInbox: boolean;
   recoveryPackage: boolean;
+  assignmentEvidence: boolean;
   teacherAiDrafts: boolean;
 };
 
@@ -21,6 +22,7 @@ const defaults: PanelFeatureFlags = {
   parentWeeklyDigest: false,
   interventionInbox: false,
   recoveryPackage: false,
+  assignmentEvidence: false,
   teacherAiDrafts: false,
 };
 
@@ -34,6 +36,7 @@ const environmentKeys: Record<keyof PanelFeatureFlags, string> = {
   parentWeeklyDigest: "PANEL_FEATURE_PARENT_WEEKLY_DIGEST",
   interventionInbox: "PANEL_FEATURE_INTERVENTION_INBOX",
   recoveryPackage: "PANEL_FEATURE_RECOVERY_PACKAGE",
+  assignmentEvidence: "PANEL_FEATURE_ASSIGNMENT_EVIDENCE",
   teacherAiDrafts: "PANEL_FEATURE_TEACHER_AI_DRAFTS",
 };
 

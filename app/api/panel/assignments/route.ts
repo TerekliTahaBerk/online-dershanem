@@ -16,6 +16,8 @@ const schema = z.object({
   dueAt: z.string().datetime(),
   outcomeIds: z.array(z.string().min(1)).max(3).default([]),
   outcomeSkipReason: z.enum(["CATALOG_MISSING", "COMPLETE_LATER", "NOT_APPLICABLE"]).nullable().default(null),
+  evidenceRequired: z.boolean().default(false),
+  rubricCriteria: z.array(z.string().trim().min(2).max(120)).max(4).default([]),
 });
 
 export async function POST(request: Request) {
@@ -31,13 +33,17 @@ export async function POST(request: Request) {
     include: { enrollments: { where: { endedAt: null }, include: { student: { select: { id: true, userId: true, parents: { select: { parentId: true } } } } } } },
   });
   if (!group) return NextResponse.json({ error: "Yetkili olduğunuz aktif grup bulunamadı." }, { status: 404 });
+  const flags = getPanelFeatureFlags();
+  const evidenceRequired = flags.assignmentEvidence && parsed.data.evidenceRequired;
+  const rubricCriteria = [...new Set(parsed.data.rubricCriteria.map((item) => item.trim()))];
+  if (evidenceRequired && (rubricCriteria.length < 2 || rubricCriteria.length > 4)) return NextResponse.json({ error: "Kanıtlı ödev için 2–4 farklı değerlendirme ölçütü girin." }, { status: 400 });
   if (parsed.data.lessonId) {
     const lesson = await prisma.lesson.findFirst({ where: { id: parsed.data.lessonId, groupId: group.id }, select: { id: true } });
     if (!lesson) return NextResponse.json({ error: "Seçilen ders bu gruba ait değil." }, { status: 400 });
   }
 
-  const outcomeIds = getPanelFeatureFlags().learningOutcomes ? [...new Set(parsed.data.outcomeIds)] : [];
-  if (getPanelFeatureFlags().learningOutcomes && !outcomeIds.length && !parsed.data.outcomeSkipReason) return NextResponse.json({ error: "Kazanım seçin veya sonra tamamlama nedenini belirtin." }, { status: 400 });
+  const outcomeIds = flags.learningOutcomes ? [...new Set(parsed.data.outcomeIds)] : [];
+  if (flags.learningOutcomes && !outcomeIds.length && !parsed.data.outcomeSkipReason) return NextResponse.json({ error: "Kazanım seçin veya sonra tamamlama nedenini belirtin." }, { status: 400 });
   if (outcomeIds.length) {
     const validOutcomeCount = await prisma.learningOutcome.count({ where: { id: { in: outcomeIds }, isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } } });
     if (validOutcomeCount !== outcomeIds.length) return NextResponse.json({ error: "Seçilen kazanımlardan biri artık aktif değil." }, { status: 400 });
@@ -54,6 +60,8 @@ export async function POST(request: Request) {
       progress: { create: group.enrollments.map((item) => ({ studentId: item.student.id })) },
       outcomeLinks: { create: outcomeIds.map((outcomeId) => ({ outcomeId, linkedById: auth.session.userId })) },
       outcomeSkipReason: outcomeIds.length ? null : parsed.data.outcomeSkipReason,
+      evidenceRequired,
+      rubricCriteria: { create: evidenceRequired ? rubricCriteria.map((label, index) => ({ label, position: index + 1 })) : [] },
     },
   });
   const body = `${assignment.title} · son tarih ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(assignment.dueAt)}`;
@@ -64,6 +72,6 @@ export async function POST(request: Request) {
   if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
   await queuePanelNotificationEmails(rawNotificationRows, "assignment");
   await logAudit({ actorUserId: auth.session.userId, entityType: "Assignment", entityId: assignment.id, action: "assignment.created", summary: `${assignment.title} ödevi oluşturuldu`, payload: { groupId: group.id, dueAt: assignment.dueAt.toISOString() } });
-  if (getPanelFeatureFlags().learningOutcomes) await recordPanelProductEvent({ name: "curriculum_link_saved", properties: { targetType: "ASSIGNMENT", outcomeCount: outcomeIds.length, needsReviewCount: 0, skipReason: parsed.data.outcomeSkipReason || "NONE" } }, auth.session.role);
+  if (flags.learningOutcomes) await recordPanelProductEvent({ name: "curriculum_link_saved", properties: { targetType: "ASSIGNMENT", outcomeCount: outcomeIds.length, needsReviewCount: 0, skipReason: parsed.data.outcomeSkipReason || "NONE" } }, auth.session.role);
   return NextResponse.json({ id: assignment.id });
 }

@@ -7,7 +7,7 @@ export type ProductEventRow = {
 };
 
 export type PanelSloMetric = {
-  key: "teacher_close_time_p50" | "teacher_close_time" | "teacher_close_revision_rate" | "teacher_close_missing_rate" | "teacher_save_reliability" | "student_progress_reliability" | "admin_setup_reliability" | "parent_dashboard_speed" | "mock_exam_entry_time" | "mock_exam_reason_coverage" | "plan_acceptance" | "plan_review_time" | "plan_overwhelm_rate" | "digest_view_rate" | "digest_anxiety_rate" | "digest_optout_rate" | "intervention_first_action_time" | "intervention_false_positive_rate" | "intervention_closure_rate";
+  key: "teacher_close_time_p50" | "teacher_close_time" | "teacher_close_revision_rate" | "teacher_close_missing_rate" | "teacher_save_reliability" | "student_progress_reliability" | "admin_setup_reliability" | "parent_dashboard_speed" | "mock_exam_entry_time" | "mock_exam_reason_coverage" | "plan_acceptance" | "plan_review_time" | "plan_overwhelm_rate" | "digest_view_rate" | "digest_anxiety_rate" | "digest_optout_rate" | "intervention_first_action_time" | "intervention_false_positive_rate" | "intervention_closure_rate" | "recovery_publish_time" | "recovery_72h_completion" | "assignment_feedback_time" | "assignment_revision_approval";
   label: string;
   sampleSize: number;
   value: number | null;
@@ -84,6 +84,15 @@ export function calculatePanelSloReport(rows: ProductEventRow[]): PanelSloMetric
   const interventionDecisions = interventionClosed.length + interventionFalsePositive.length;
   const interventionFalsePositiveRate = interventionDecisions ? Math.round((interventionFalsePositive.length / interventionDecisions) * 10_000) / 100 : null;
   const interventionClosureRate = interventionTriggered.length ? Math.min(100, Math.round((interventionClosed.length / interventionTriggered.length) * 10_000) / 100) : null;
+  const recoveryPublished = events.filter((event) => event.name === "recovery_package_published");
+  const recoveryPublishDurations = recoveryPublished.map((event) => event.properties.publishDelayMs);
+  const recoveryPublishP50 = percentile(recoveryPublishDurations, 50);
+  const recoveryCompleted = events.filter((event) => event.name === "recovery_package_completed");
+  const recoveryWithin72hRate = recoveryCompleted.length ? Math.round((recoveryCompleted.filter((event) => event.properties.within72h).length / recoveryCompleted.length) * 10_000) / 100 : null;
+  const assignmentReviews = events.filter((event) => event.name === "assignment_review_completed");
+  const assignmentFeedbackP50 = percentile(assignmentReviews.map((event) => event.properties.turnaroundMs), 50);
+  const revisedAssignmentReviews = assignmentReviews.filter((event) => event.properties.revisedAttempt);
+  const assignmentRevisionApproval = revisedAssignmentReviews.length ? Math.round((revisedAssignmentReviews.filter((event) => event.properties.decision === "APPROVE").length / revisedAssignmentReviews.length) * 10_000) / 100 : null;
 
   return [
     { key: "teacher_close_time_p50", label: "Ders kapanışı p50", sampleSize: closeDurations.length, value: closeP50, unit: "ms", target: 120_000, comparison: "lte", status: status(closeDurations.length, closeP50, 120_000, "lte") },
@@ -105,5 +114,9 @@ export function calculatePanelSloReport(rows: ProductEventRow[]): PanelSloMetric
     { key: "intervention_first_action_time", label: "İlk insan aksiyonu p50", sampleSize: interventionActions.length, value: interventionFirstActionP50, unit: "ms", target: 24 * 60 * 60 * 1000, comparison: "lte", status: status(interventionActions.length, interventionFirstActionP50, 24 * 60 * 60 * 1000, "lte") },
     { key: "intervention_false_positive_rate", label: "Müdahale yanlış işaret oranı", sampleSize: interventionDecisions, value: interventionFalsePositiveRate, unit: "percent", target: 15, comparison: "lte", status: status(interventionDecisions, interventionFalsePositiveRate, 15, "lte") },
     { key: "intervention_closure_rate", label: "Müdahale sonuçla kapanma", sampleSize: interventionTriggered.length, value: interventionClosureRate, unit: "percent", target: 60, comparison: "gte", status: status(interventionTriggered.length, interventionClosureRate, 60, "gte") },
+    { key: "recovery_publish_time", label: "Telafi paketi yayınlama p50", sampleSize: recoveryPublished.length, value: recoveryPublishP50, unit: "ms", target: 24 * 60 * 60 * 1000, comparison: "lte", status: status(recoveryPublished.length, recoveryPublishP50, 24 * 60 * 60 * 1000, "lte") },
+    { key: "recovery_72h_completion", label: "72 saatte telafi tamamlama", sampleSize: recoveryCompleted.length, value: recoveryWithin72hRate, unit: "percent", target: 60, comparison: "gte", status: status(recoveryCompleted.length, recoveryWithin72hRate, 60, "gte") },
+    { key: "assignment_feedback_time", label: "Kanıtlı ödev geri bildirimi p50", sampleSize: assignmentReviews.length, value: assignmentFeedbackP50, unit: "ms", target: 48 * 60 * 60 * 1000, comparison: "lte", status: status(assignmentReviews.length, assignmentFeedbackP50, 48 * 60 * 60 * 1000, "lte") },
+    { key: "assignment_revision_approval", label: "Yeniden deneme onayı", sampleSize: revisedAssignmentReviews.length, value: assignmentRevisionApproval, unit: "percent", target: 60, comparison: "gte", status: status(revisedAssignmentReviews.length, assignmentRevisionApproval, 60, "gte") },
   ];
 }

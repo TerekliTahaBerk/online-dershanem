@@ -8,6 +8,7 @@ test("gelecek panel özellikleri güvenli biçimde kapalı başlar", () => {
   assert.equal(flags.learningOutcomes, false);
   assert.equal(flags.quickLessonClose, false);
   assert.equal(flags.recoveryPackage, false);
+  assert.equal(flags.assignmentEvidence, false);
   assert.equal(flags.teacherAiDrafts, false);
 });
 

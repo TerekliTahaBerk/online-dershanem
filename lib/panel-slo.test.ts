@@ -25,6 +25,9 @@ test("SLO raporu p90 ve başarı oranlarını hesaplar", () => {
     ...Array.from({ length: 5 }, () => row("case_rule_triggered", { ruleVersion: "intervention-v1", reasonCode: "REPEATED_REVIEW_DIFFICULTY" })),
     ...Array.from({ length: 5 }, () => row("intervention_logged", { action: "RESOLVE", reasonCode: "REPEATED_REVIEW_DIFFICULTY", timeToActionMs: 3_600_000, withinSla: true, noteProvided: false })),
     ...Array.from({ length: 5 }, () => row("case_closed", { reasonCode: "REPEATED_REVIEW_DIFFICULTY", outcomeCode: "SUPPORT_PLANNED" })),
+    ...Array.from({ length: 5 }, () => row("recovery_package_published", { publishDelayMs: 3_600_000, itemCount: 3, planRebalanced: true })),
+    ...Array.from({ length: 5 }, () => row("recovery_package_completed", { completionDurationMs: 20 * 60 * 60 * 1000, within72h: true, itemCount: 3 })),
+    ...Array.from({ length: 5 }, () => row("assignment_review_completed", { decision: "APPROVE", turnaroundMs: 12 * 60 * 60 * 1000, criterionCount: 2, interactionDurationMs: 60_000, revisedAttempt: true })),
   ];
   const report = calculatePanelSloReport(rows);
   assert.equal(report.find((metric) => metric.key === "teacher_close_time")?.value, 200_000);
@@ -34,6 +37,10 @@ test("SLO raporu p90 ve başarı oranlarını hesaplar", () => {
   assert.equal(report.find((metric) => metric.key === "mock_exam_entry_time")?.value, 120_000);
   assert.equal(report.find((metric) => metric.key === "mock_exam_reason_coverage")?.value, 100);
   assert.equal(report.find((metric) => metric.key === "plan_acceptance")?.value, 100);
+  assert.equal(report.find((metric) => metric.key === "recovery_publish_time")?.value, 3_600_000);
+  assert.equal(report.find((metric) => metric.key === "recovery_72h_completion")?.value, 100);
+  assert.equal(report.find((metric) => metric.key === "assignment_feedback_time")?.value, 12 * 60 * 60 * 1000);
+  assert.equal(report.find((metric) => metric.key === "assignment_revision_approval")?.value, 100);
   assert.equal(report.every((metric) => metric.status === "healthy"), true);
 });
 

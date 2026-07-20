@@ -14,8 +14,8 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 | 7 | Öğretmen onaylı uyarlanabilir haftalık plan | **Tamamlandı** | Açıklanabilir “bugünün üç işi” ve yeniden dengeleme |
 | 8 | Sakin veli haftalık özeti | **Tamamlandı** | Karşılaştırmasız, eylem odaklı haftalık özet |
 | 9 | Açıklanabilir müdahale gelen kutusu | **Tamamlandı** | Sahip, SLA, sonuç ve yanlış pozitif takibi |
-| 10 | Ders kaçırma sonrası telafi paketi | Sıradaki | 72 saatlik telafi döngüsü |
-| 11 | Kanıtlı ödev teslimi, rubric ve yeniden deneme | Bekliyor | Güvenli teslim ve geri bildirim döngüsü |
+| 10 | Ders kaçırma sonrası telafi paketi | **Tamamlandı** | 72 saatlik telafi döngüsü |
+| 11 | Kanıtlı ödev teslimi, rubric ve yeniden deneme | Uygulandı; DB/E2E kabulü bekliyor | Güvenli teslim ve geri bildirim döngüsü |
 | 12 | Öğrenci check-in'i ve yardım isteği | Bekliyor | Kontrollü görünürlük ve yanıt SLA'sı |
 | 13 | Erişilebilirlik ve makul düzenleme profili | Bekliyor | WCAG 2.2 AA ve işlevsel tercihler |
 | 14 | Offline-first ve düşük veri modu | Bekliyor | Güvenli outbox, idempotency ve çatışma çözümü |
@@ -110,3 +110,22 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 - Bekletme 1/3/7 günlük kontrollü aralıklarla yapılır. Süresi geçen kayıt yeniden açılır; kapanış kontrollü sonuç koduyla, yanlış işaret ise kural iyileştirme nedeniyle kaydedilir.
 - İç aksiyon notları en fazla 500 karakterdir, yalnız admin/aktif grup öğretmeni görür ve ürün event'lerine kopyalanmaz. Öğrenci veya veli ekranında vaka, sahiplik, SLA ya da iç not görünmez.
 - Kural, yaşam döngüsü, rollout ve geri alma ayrıntıları [müdahale kutusu işletim standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
+
+## Aşama 10 kararları
+
+- `recovery-v1` yalnız tamamlanmış dersteki `ABSENT` veya `EXCUSED` yoklama için çalışır. Hedef zaman ders bitişinden tam 72 saat sonradır.
+- Taslak ortak ders konusu ve sonraki hedefi, en fazla üç aktif materyali, en fazla iki aktif ödevi ve kontrollü mini kontrolü birleştirir. Öğrenciye özel öğretmen notu ile yoklama notu sorguya dahi alınmaz.
+- Öğretmen öğrencinin göreceği sürümü önizler ve tek kez yayınlar; yayınlanmış paket otomatik yenilenmez. Sürüm kontrolü eski sekmenin taslağı ezmesini önler.
+- Öğrenci öğeleri sırayla inceler ve yalnız `henüz değil`, `bir örnek daha gerekli`, `açıklayabiliyorum` yanıtlarından birini verir. Ceza, borç, seri veya akran karşılaştırması dili kullanılmaz.
+- Aktif ve öğretmen onaylı haftalık plan varsa yayın sonrası aynı günlük dakika ve en fazla üç görev sınırları korunarak yeniden dengelenebilir. Geçmiş görevler silinmez, `SKIPPED` iziyle korunur.
+- Veli V1'de paket ayrıntılarını ve mini kontrol yanıtını görmez. Event'ler kimlik, başlık, URL, özel not ya da yoklama notu taşımaz.
+- Yetki, içerik sınırı, rollout ve geri alma ayrıntıları [telafi paketi işletim standardında](./missed-lesson-recovery-operations.md) tanımlıdır.
+
+## Aşama 11 kararları
+
+- Kanıtlı ödev 2–4 gözlenebilir rubric ölçütü taşır; toplam puan, sınıf sırası ve akran karşılaştırması üretmez.
+- Öğrenci V1'de 20–2000 karakterlik çözüm/kontrol kanıtı gönderir. Fotoğraf/PDF, zararlı dosya taraması ve metadata temizleme servisi olmadan kabul edilmez.
+- Her yeniden deneme ayrı attempt olarak korunur. Öğretmen bütün ölçütleri `bir adım daha`, `gelişiyor`, `karşılıyor` düzeyleriyle değerlendirir.
+- Kanıtlı ödev öğrenci tarafından doğrudan tamamlanamaz; yalnız öğretmen onayı ilerlemeyi `DONE` yapar. Idempotency ve sürüm kontrolü çift işlemi engeller.
+- Veli V1'de kanıt, rubric veya geri bildirim ayrıntısı görmez; event'ler içerik ve kimlik taşımaz.
+- Ayrıntılar [kanıtlı ödev işletim standardında](./assignment-evidence-rubric-operations.md) tanımlıdır.

@@ -30,6 +30,9 @@ Bu katalog teknik uptime ile kullanıcı işinin gerçekten tamamlanmasını ayr
 | `case_rule_triggered/opened/assigned` | Sunucu | Admin, öğretmen | Kural sürümü/nedeni, kimliksiz açık-SLA bantları ve sahiplik |
 | `intervention_logged` | Sunucu | Admin, öğretmen | Kontrollü aksiyon, ilk aksiyona süre ve SLA içinde olma |
 | `case_snoozed/closed/false_positive` | Sunucu | Admin, öğretmen | Bekletme aralığı, kontrollü sonuç ve yanlış işaret geri bildirimi |
+| `recovery_package_generated/published/viewed` | Sunucu | Öğretmen, öğrenci | Kural sürümü, öğe sayısı, yayın gecikmesi ve ilk görüntüleme |
+| `recovery_item_completed/checkpoint_submitted/package_completed` | Sunucu | Öğrenci | Öğe türü, kontrollü yanıt ve 72 saat içinde tamamlama |
+| `assignment_evidence_submitted/review_completed` | Sunucu | Öğrenci, öğretmen | Deneme/karakter bandı, geri bildirim süresi ve kontrollü karar |
 
 Sunucu operasyonlarında sonuç sınıfları:
 
@@ -63,6 +66,10 @@ Sunucu operasyonlarında sonuç sınıfları:
 | İlk insan müdahalesi p50 | ≤ 24 saat | 30 gün | 30 ilk aksiyon | İki ardışık günlük kontrolde hedef dışıysa sahiplik ve kapasiteyi incele |
 | Müdahale yanlış işaret oranı | ≤ %15 başlangıç guardrail'i | 30–90 gün | 30 kapanış kararı | Eşik aşılırsa ilgili kuralı kapat veya eşiği yükselt; daha fazla veri toplamak için rollout büyütme |
 | Müdahalenin sonuçla kapanması | ≥ %60 | 30 gün | 30 üretilen vaka | Sahipsiz/bekletilmiş kayıt ve iş yükünü incele; kişiye performans puanı verme |
+| Telafi paketi yayınlama p50 | ≤ 24 saat | 30 gün | 5 yayın | İki ardışık günlük kontrolde hedef dışıysa öğretmen akışı ve bildirim görünürlüğünü incele |
+| Telafiyi 72 saatte tamamlama | ≥ %60 başlangıç hedefi | 30 gün | 30 tamamlanan paket | Hedef dışıysa öğe sayısı, kaynak erişimi ve plan kapasitesini incele; öğrenciye baskı veya seri ekleme |
+| Kanıtlı ödev geri bildirimi p50 | ≤ 48 saat | 30 gün | 30 değerlendirme | Rubric uzunluğu ve öğretmen kuyruğunu incele |
+| Yeniden deneme onayı | ≥ %60 başlangıç hedefi | 30–90 gün | 30 revize deneme | Geri bildirim açıklığını incele; öğrenciyi puanlama veya utandırma |
 
 Başarı oranı bütün kimliği doğrulanmış operasyon sonuçları üzerinden hesaplanır. Bu nedenle UX doğrulama sorunları da ürün kalitesinin parçasıdır; yalnız HTTP 5xx oranına bakılmaz. Güvenlik amaçlı reddedilen kötüye kullanım artarsa ürün SLO'sundan ayrıca güvenlik loglarıyla ayrıştırılır.
 

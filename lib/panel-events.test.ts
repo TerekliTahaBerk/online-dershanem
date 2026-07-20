@@ -121,3 +121,9 @@ test("telafi eventleri özel not veya kaynak kimliği taşımaz", () => {
   assert.equal(panelEventSchema.safeParse(event).success, true);
   assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, studentId: "secret", privateNote: "özel", materialId: "secret" } }).success, false);
 });
+
+test("kanıtlı ödev eventleri metin, öğrenci veya ödev kimliği taşımaz", () => {
+  const event = { name: "assignment_review_completed", properties: { decision: "REQUEST_CHANGES", turnaroundMs: 3600000, criterionCount: 2, interactionDurationMs: 60000, revisedAttempt: false } };
+  assert.equal(panelEventSchema.safeParse(event).success, true);
+  assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, studentId: "secret", assignmentId: "secret", feedback: "özel geri bildirim" } }).success, false);
+});

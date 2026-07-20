@@ -70,12 +70,20 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     expect(digestStatus).toBe(404);
     const interventionStatus = await page.evaluate(async () => (await fetch("/api/panel/interventions/e2e-intervention-foreign", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "ASSIGN_SELF", expectedVersion: 1 }) })).status);
     expect(interventionStatus).toBe(404);
+    const recoveryStatus = await page.evaluate(async () => (await fetch("/api/panel/recovery-packages/e2e-recovery-package-foreign/publish", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1 }) })).status);
+    expect(recoveryStatus).toBe(404);
+    const submissionStatus = await page.evaluate(async () => (await fetch("/api/panel/assignment-submissions/e2e-assignment-submission-foreign/review", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1, decision: "APPROVE", feedback: "Yabancı erişim denemesi", interactionDurationMs: 1000, scores: [{ criterionId: "e2e-rubric-foreign-method", level: "MEETS" }, { criterionId: "e2e-rubric-foreign-check", level: "MEETS" }] }) })).status);
+    expect(submissionStatus).toBe(404);
   });
 
   test("öğrenci başka öğrencinin tekrar öğesini yanıtlayamaz", async ({ page }) => {
     await login(page, accounts.student);
     const status = await page.evaluate(async () => (await fetch("/api/panel/review-queue/e2e-review-item-foreign/respond", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ response: "CORRECT", idempotencyKey: "e2e_foreign_attempt" }) })).status);
     expect(status).toBe(404);
+    const recoveryStatus = await page.evaluate(async () => (await fetch("/api/panel/recovery-packages/e2e-recovery-package-foreign/items/e2e-recovery-item-foreign/complete", { method: "POST" })).status);
+    expect(recoveryStatus).toBe(404);
+    const submissionStatus = await page.evaluate(async () => (await fetch("/api/panel/assignments/e2e-assignment-evidence-foreign/submissions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ textEvidence: "Başka öğrencinin çalışmasına gönderilememesi gereken yeterince uzun kanıt.", idempotencyKey: "foreign_assignment_attempt_001" }) })).status);
+    expect(submissionStatus).toBe(404);
   });
 
   for (const [role, account] of Object.entries(accounts) as [keyof typeof accounts, (typeof accounts)[keyof typeof accounts]][]) {

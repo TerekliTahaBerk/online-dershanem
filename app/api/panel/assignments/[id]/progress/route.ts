@@ -19,8 +19,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const { id } = await context.params;
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
   if (!profile) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 }); }
-  const assignment = await prisma.assignment.findFirst({ where: { id, isActive: true, group: { enrollments: { some: { studentId: profile.id, endedAt: null } } } }, select: { id: true } });
+  const assignment = await prisma.assignment.findFirst({ where: { id, isActive: true, group: { enrollments: { some: { studentId: profile.id, endedAt: null } } } }, select: { id: true, evidenceRequired: true } });
   if (!assignment) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Ödev bulunamadı." }, { status: 404 }); }
+  if (assignment.evidenceRequired && parsed.data.status === "DONE") { await recordFinished("validation", parsed.data.status); return NextResponse.json({ error: "Bu çalışma öğretmen onayından sonra tamamlanır; önce kanıtını gönder." }, { status: 409 }); }
   try {
     await prisma.assignmentProgress.upsert({
       where: { assignmentId_studentId: { assignmentId: id, studentId: profile.id } },

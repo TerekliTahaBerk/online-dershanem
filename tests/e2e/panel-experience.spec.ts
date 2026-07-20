@@ -156,7 +156,8 @@ test.describe("panel deneyimi", () => {
     const replay = await page.evaluate(async ({ payload, url }) => { const response = await fetch(url, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, { payload: closePayload, url: closeUrl });
     expect(replay.status).toBe(200);
     expect(replay.body.replayed).toBe(true);
-    const conflict = await page.evaluate(async ({ payload, url }) => { const response = await fetch(url, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...payload, nextGoal: `${String(payload?.nextGoal || "")} değişti` }) }); return { status: response.status, body: await response.json() }; }, { payload: closePayload, url: closeUrl });
+    const closePayloadForConflict = closePayload as unknown as Record<string, unknown>;
+    const conflict = await page.evaluate(async ({ payload, url }) => { const response = await fetch(url, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...payload, nextGoal: `${String(payload.nextGoal || "")} değişti` }) }); return { status: response.status, body: await response.json() }; }, { payload: closePayloadForConflict, url: closeUrl });
     expect(conflict.status).toBe(409);
     expect(conflict.body.error).toMatch(/aynı işlem anahtarı/i);
 
@@ -199,6 +200,49 @@ test.describe("panel deneyimi", () => {
     await page.getByLabel("Plan değişiklik nedeni").selectOption("TOO_MUCH");
     await page.getByRole("button", { name: "Değişiklik iste" }).click();
     await expect(page.getByText(/Değişiklik isteğin öğretmenine iletildi/)).toBeVisible();
+  });
+
+  test("öğretmen kaçırılan ders için güvenli telafi yayınlar, öğrenci 72 saatlik akışı tamamlar", async ({ page }) => {
+    let publishUrl = "";
+    let publishPayload: Record<string, unknown> | null = null;
+    page.on("request", (request) => {
+      if (request.url().includes("/api/panel/recovery-packages/") && request.url().endsWith("/publish") && request.method() === "POST") {
+        publishUrl = request.url();
+        publishPayload = request.postDataJSON() as Record<string, unknown>;
+      }
+    });
+    await login(page, accounts.teacher);
+    await page.goto("/panel/ogretmen/telafi");
+    await expect(page.getByRole("heading", { name: "Kaçırılan dersi tek onayla küçük bir sıraya koy." })).toBeVisible();
+    let row = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
+    await Promise.all([page.waitForNavigation(), row.getByRole("button", { name: "Telafi taslağı hazırla" }).click()]);
+    row = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
+    await expect(row.getByText("Köklü ifadelerde telafi özeti", { exact: true })).toBeVisible();
+    await expect(row.getByText("E2E Telafi Mini Föyü", { exact: false })).toBeVisible();
+    await expect(page.getByText("ÖZEL TELAFİYE GİRMEMELİ", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("YOKLAMA NOTU TELAFİYE GİRMEMELİ", { exact: true })).toHaveCount(0);
+    await Promise.all([page.waitForNavigation(), row.getByRole("button", { name: "Öğrenciye yayınla" }).click()]);
+    row = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
+    await expect(row.getByText("Öğrencide", { exact: true })).toBeVisible();
+    const replay = await page.evaluate(async ({ url, payload }) => { const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, { url: publishUrl, payload: publishPayload });
+    expect(replay.status).toBe(200);
+    expect(replay.body.replayed).toBe(true);
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.student);
+    await page.goto("/panel/ogrenci/telafi");
+    await expect(page.getByRole("heading", { name: "Biriken iş değil, sıradaki küçük telafi." })).toBeVisible();
+    let studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
+    await expect(studentRow.getByText("Köklü ifadelerde telafi özeti", { exact: true })).toBeVisible();
+    await expect(page.getByText("ÖZEL TELAFİYE GİRMEMELİ", { exact: true })).toHaveCount(0);
+    for (let index = 0; index < 2; index += 1) {
+      studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
+      await Promise.all([page.waitForNavigation(), studentRow.getByRole("button", { name: "İnceledim" }).first().click()]);
+    }
+    studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
+    await Promise.all([page.waitForNavigation(), studentRow.getByRole("button", { name: "Açıklayabiliyorum" }).click()]);
+    studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
+    await expect(studentRow.getByText("Telafi tamamlandı", { exact: true })).toBeVisible();
   });
 
   test("öğretmen sakin özeti önizler, öğrenci ve veli aynı metni görür", async ({ page }) => {
@@ -291,6 +335,47 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).getByText("Tamamlandı", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Bu hafta çalışılan beceriler" })).toBeVisible();
     await expect(page.getByText("MAT.8.2", { exact: true })).toBeVisible();
+  });
+
+  test("öğrenci kanıt gönderir, öğretmen rubric ile yeniden deneme isteyip onaylar", async ({ page }) => {
+    let submitUrl = ""; let submitPayload: Record<string, unknown> | null = null;
+    page.on("request", (request) => { if (request.url().endsWith("/api/panel/assignments/e2e-assignment-evidence/submissions") && request.method() === "POST") { submitUrl = request.url(); submitPayload = request.postDataJSON() as Record<string, unknown>; } });
+    await login(page, accounts.student);
+    await page.goto("/panel/ogrenci/odevler");
+    let studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
+    await studentCard.getByLabel("Çözüm yolunu ve kontrolünü kısaca açıkla").fill("Önce ortak çarpanı ayırdım, işlemleri sırayla yaptım ve sonucu yerine koyarak kontrol ettim.");
+    await studentCard.getByRole("button", { name: "Kanıtı gönder" }).click();
+    await expect(page.getByText(/Kanıtın öğretmen değerlendirmesine gönderildi/)).toBeVisible();
+    const replay = await page.evaluate(async ({ url, payload }) => { const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, { url: submitUrl, payload: submitPayload });
+    expect(replay.status).toBe(200); expect(replay.body.replayed).toBe(true);
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.teacher); await page.goto("/panel/ogretmen/odevler");
+    let review = page.getByRole("article").filter({ hasText: "Ada Öğrenci · 1. deneme" }).first();
+    await review.getByLabel("Ada Öğrenci Çözüm yolunu açıkça gösterir").selectOption("DEVELOPING");
+    await review.getByLabel("Ada Öğrenci Sonucunu kontrol eder").selectOption("NEEDS_WORK");
+    await review.getByLabel("Ada Öğrenci geri bildirim").fill("Çözüm yolun açık. Son kontrolü bir eşitlik yazarak görünür hale getir.");
+    await review.getByRole("button", { name: "Küçük yeniden deneme iste" }).click();
+    await expect(review).toHaveCount(0);
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.student); await page.goto("/panel/ogrenci/odevler");
+    studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
+    await expect(studentCard.getByText(/Son kontrolü bir eşitlik yazarak/)).toBeVisible();
+    await studentCard.getByLabel("Yeni denemende neyi değiştirdin?").fill("Sonucu başlangıç eşitliğinde yerine koydum ve iki tarafın da aynı değeri verdiğini yazdım.");
+    await studentCard.getByRole("button", { name: "Yeni denemeyi gönder" }).click();
+    await expect(page.getByText(/Yeni denemen öğretmenine gönderildi/)).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.teacher); await page.goto("/panel/ogretmen/odevler");
+    review = page.getByRole("article").filter({ hasText: "Ada Öğrenci · 2. deneme" }).first();
+    await review.getByLabel("Ada Öğrenci Çözüm yolunu açıkça gösterir").selectOption("MEETS");
+    await review.getByLabel("Ada Öğrenci Sonucunu kontrol eder").selectOption("MEETS");
+    await review.getByLabel("Ada Öğrenci geri bildirim").fill("Çözüm ve kontrol adımları artık açık; çalışma tamamlandı.");
+    await review.getByRole("button", { name: "Onayla" }).click();
+    await expect(review).toHaveCount(0);
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.student); await page.goto("/panel/ogrenci/odevler");
+    studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
+    await expect(studentCard.getByText("2. deneme · Onaylandı", { exact: true })).toBeVisible();
+    await expect(studentCard.getByText("Karşılıyor", { exact: false }).first()).toBeVisible();
   });
 
   test("takvim dışa aktarma rol sınırlarını ve toplantı bağlantısı gizliliğini korur", async ({ page }) => {
