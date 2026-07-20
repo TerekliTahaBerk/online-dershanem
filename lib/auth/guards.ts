@@ -5,6 +5,7 @@ import type { UserRole } from "@prisma/client";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 import { getSession, type SessionUser } from "@/lib/auth/session";
 import { LOGIN_PATH, PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
+import { checkPilotAccess } from "@/lib/pilot-access";
 
 /**
  * Yetki kapıları.
@@ -44,6 +45,8 @@ export async function requireRole(...roles: UserRole[]): Promise<SessionUser> {
   const session = await requireSession();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
   if (!roles.includes(session.role)) notFound();
+  const pilot = await checkPilotAccess(session.userId, session.role);
+  if (!pilot.allowed) notFound();
   return session;
 }
 

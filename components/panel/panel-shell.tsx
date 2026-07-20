@@ -7,12 +7,23 @@ import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { AdminCommandSearch } from "@/components/panel/admin-command-search";
 import { LogoutButton } from "@/components/panel/logout-button";
+import { AccessibilityPreferenceApplier } from "@/components/panel/accessibility-preference-applier";
+import { defaultAccessibilityViewPreference } from "@/lib/accessibility-preferences";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
+import { offlineSessionScope } from "@/lib/offline-scope";
 
 export async function PanelShell({ role, fullName, email, nav, children }: { role: UserRole; fullName: string | null; email: string; nav?: React.ReactNode; children: React.ReactNode }) {
   const adminLayout = role === "ADMIN" && nav;
   const firstName = (fullName || email).split(" ")[0];
   const session = await getSession();
   const unread = session ? await prisma.notification.count({ where: { userId: session.userId, readAt: null } }) : 0;
+  const flags = getPanelFeatureFlags();
+  const accessibilityEnabled = flags.accessibilityProfile;
+  const storedPreference = accessibilityEnabled && session ? await prisma.accessibilityPreference.findUnique({ where: { userId: session.userId }, select: { reducedMotion: true, highContrast: true, textScale: true, comfortableSpacing: true, captionsPreferred: true, transcriptPreferred: true } }) : null;
+  const accessibilityPreference = storedPreference || defaultAccessibilityViewPreference;
+  const networkPreference = flags.offlineMode && session ? await prisma.networkPreference.findUnique({ where: { userId: session.userId }, select: { lowDataMode: true, offlineWritesEnabled: true } }) : null;
+  const offlineScope = session ? offlineSessionScope(session.sessionId) : "";
 
   const notificationButton = (
     <Link href="/panel/bildirimler" className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--site-line)] bg-white text-[var(--site-muted)] transition hover:text-[var(--site-ink)]" aria-label={unread ? `${unread} okunmamış bildirimi aç` : "Bildirimleri aç"}>
@@ -22,7 +33,9 @@ export async function PanelShell({ role, fullName, email, nav, children }: { rol
   );
 
   return (
+    <OfflineSyncProvider scope={offlineScope} available={flags.offlineMode} enabled={Boolean(flags.offlineMode && networkPreference?.offlineWritesEnabled)} lowDataMode={Boolean(flags.offlineMode && networkPreference?.lowDataMode)}>
     <div className={`site-scope min-h-dvh ${adminLayout ? "panel-app-bg" : "bg-[var(--site-bg-warm)]"}`}>
+      {accessibilityEnabled ? <AccessibilityPreferenceApplier preference={accessibilityPreference} /> : null}
       <a href="#panel-content" className="fixed left-4 top-3 z-[400] -translate-y-24 rounded-full bg-[var(--site-ink)] px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0">Ana içeriğe geç</a>
 
       {adminLayout ? (
@@ -44,7 +57,7 @@ export async function PanelShell({ role, fullName, email, nav, children }: { rol
               <div className="flex h-[68px] items-center justify-between gap-3 px-4 sm:px-6 xl:px-8">
                 <div className="flex min-w-0 items-center lg:hidden"><Link href="/panel/yonetim" aria-label="Online Dershanem yönetim ana sayfası" className="flex shrink-0 items-center"><Image src="/onlinedershanem_.png" alt="Online Dershanem" width={1050} height={200} priority sizes="128px" className="h-auto w-[118px] sm:w-[128px]" /></Link></div>
                 <div className="hidden items-center gap-1.5 text-[11.5px] text-[var(--site-muted)] lg:flex"><span>Online Dershanem</span><ChevronRight size={13} /><span className="font-semibold text-[var(--site-ink)]">Yönetim</span></div>
-                <div className="flex items-center gap-2"><AdminCommandSearch />{notificationButton}<div className="hidden sm:block lg:hidden"><LogoutButton /></div></div>
+                <div className="flex items-center gap-2"><AdminCommandSearch />{notificationButton}<div className="block lg:hidden"><LogoutButton /></div></div>
               </div>
               <div className="border-t border-[var(--site-line)] px-4 py-2 lg:hidden">{nav}</div>
             </header>
@@ -58,5 +71,6 @@ export async function PanelShell({ role, fullName, email, nav, children }: { rol
         </>
       )}
     </div>
+    </OfflineSyncProvider>
   );
 }

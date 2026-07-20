@@ -7,6 +7,7 @@ import { PanelEmptyState } from "@/components/panel/empty-state";
 import { TeacherLessonWorkspace } from "@/components/panel/teacher-lesson-workspace";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { academicSupportLabels } from "@/lib/accessibility-preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
   const selected = selectedId ? await prisma.lesson.findFirst({
     where: { id: selectedId, teacherId: session.userId },
     include: {
-      group: { include: { enrollments: { where: { endedAt: null }, include: { student: { include: { user: { select: { fullName: true, email: true } } } } } } } },
+      group: { include: { enrollments: { where: { endedAt: null }, include: { student: { include: { user: { select: { fullName: true, email: true, accessibilityPreference: true } } } } } } } },
       notes: true,
       attendances: true,
       outcomeLinks: true,
@@ -68,6 +69,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ l
       name: enrollment.student.user.fullName || enrollment.student.user.email,
       note: selected.notes.find((note) => note.studentId === enrollment.student.id)?.note || "",
       attendance: selected.attendances.find((item) => item.studentId === enrollment.student.id)?.status || "PRESENT" as const,
+      supportLabels: featureFlags.accessibilityProfile && enrollment.student.user.accessibilityPreference ? academicSupportLabels(enrollment.student.user.accessibilityPreference) : [],
     })),
   } : null;
 

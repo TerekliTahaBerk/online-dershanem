@@ -1486,3 +1486,45 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 }
 
 @media (prefers-reduced-motion: reduce) { .panel-celebration { animation: none; } }
+
+/* Panel erişilebilirlik tercihleri: yalnız oturumlu panel kabuğu tarafından uygulanır. */
+html[data-panel-text-scale="large"] { font-size: 112.5%; }
+html[data-panel-spacing="comfortable"] .site-scope { letter-spacing: .015em; }
+html[data-panel-spacing="comfortable"] .site-scope :where(p, li, label) { line-height: 1.75 !important; }
+html[data-panel-spacing="comfortable"] .site-scope :where(button, a, input, select, textarea) { line-height: 1.55; }
+html[data-panel-contrast="high"] .site-scope {
+  --site-ink: #000000;
+  --site-body: #171717;
+  --site-muted: #303030;
+  --site-bg: #ffffff;
+  --site-bg-warm: #ffffff;
+  --site-card: #ffffff;
+  --site-line: #505050;
+  --site-line-soft: #777777;
+  --brand-olive: #243719;
+  --brand-olive-hover: #14220d;
+  --brand-olive-soft: #e1ead7;
+  --panel-nav-active: #dce8d2;
+}
+html[data-panel-contrast="high"] .site-scope :where(input, select, textarea, button, a) { border-color: currentColor; }
+html[data-panel-motion="reduced"] .site-scope *,
+html[data-panel-motion="reduced"] .site-scope *::before,
+html[data-panel-motion="reduced"] .site-scope *::after {
+  scroll-behavior: auto !important;
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}
+html[data-panel-motion="reduced"] .site-scope :where(.panel-quick-action, .panel-metric-card):hover { transform: none !important; }
+
+.site-scope :where(button, summary) {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+html[data-panel-low-data="true"] .site-scope :where(.backdrop-blur-xl, .backdrop-blur-md) {
+  backdrop-filter: none !important;
+}
+html[data-panel-low-data="true"] .site-scope :where(.animate-pulse, .animate-spin) {
+  animation: none !important;
+}

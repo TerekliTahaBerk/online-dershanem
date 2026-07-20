@@ -56,6 +56,48 @@ enum MockExamErrorCategory {
   BLANK
 }
 
+enum AiDraftTaskType {
+  ASSIGNMENT
+  MINI_CHECK
+}
+
+enum AiDraftStatus {
+  DRAFT
+  APPROVED
+  REJECTED
+  FLAGGED
+}
+
+enum AiDraftProvider {
+  OPENAI
+  FALLBACK
+  STUB
+}
+
+enum AiDraftFlagReason {
+  FACTUAL_ERROR
+  UNSUPPORTED_CITATION
+  UNSAFE_TONE
+  PRIVACY
+  OTHER
+}
+
+enum PilotCohortStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ROLLED_BACK
+}
+
+enum PilotStopReason {
+  GUARDRAIL_BREACH
+  SECURITY_INCIDENT
+  DATA_QUALITY
+  OPERATIONAL
+  MANUAL_COMPLETION
+}
+
 enum ReviewSourceType {
   MOCK_EXAM_SECTION
   LESSON_OUTCOME
@@ -130,11 +172,57 @@ model User {
   generatedRecoveryPackages     RecoveryPackage[]          @relation("RecoveryPackageGenerator")
   publishedRecoveryPackages     RecoveryPackage[]          @relation("RecoveryPackagePublisher")
   reviewedAssignmentSubmissions AssignmentSubmission[]     @relation("AssignmentSubmissionReviewer")
+  studentHelpResponses          StudentHelpResponse[]      @relation("StudentHelpResponder")
+  accessibilityPreference       AccessibilityPreference?   @relation("AccessibilityPreferenceOwner")
+  updatedAccessibilityProfiles  AccessibilityPreference[]  @relation("AccessibilityPreferenceUpdater")
+  networkPreference             NetworkPreference?
+  teacherAiDrafts               TeacherAiDraft[]           @relation("TeacherAiDraftOwner")
+  createdPilotCohorts           PilotCohort[]              @relation("PilotCohortCreator")
+  pilotMemberships              PilotCohortMember[]
   odOrders                      OdOrder[]
 
   @@index([role, status])
   @@index([createdById])
   @@map("users")
+}
+
+enum AccessibilityTextScale {
+  DEFAULT
+  LARGE
+}
+
+model AccessibilityPreference {
+  userId                 String                 @id @map("user_id")
+  reducedMotion          Boolean                @default(false) @map("reduced_motion")
+  highContrast           Boolean                @default(false) @map("high_contrast")
+  textScale              AccessibilityTextScale @default(DEFAULT) @map("text_scale")
+  comfortableSpacing     Boolean                @default(false) @map("comfortable_spacing")
+  captionsPreferred      Boolean                @default(false) @map("captions_preferred")
+  transcriptPreferred    Boolean                @default(false) @map("transcript_preferred")
+  assessmentExtraPercent Int                    @default(0) @map("assessment_extra_percent")
+  breaksAllowed          Boolean                @default(false) @map("breaks_allowed")
+  academicUpdatedById    String?                @map("academic_updated_by_id")
+  academicUpdatedAt      DateTime?              @map("academic_updated_at")
+  version                Int                    @default(1)
+  createdAt              DateTime               @default(now()) @map("created_at")
+  updatedAt              DateTime               @updatedAt @map("updated_at")
+  user                   User                   @relation("AccessibilityPreferenceOwner", fields: [userId], references: [id], onDelete: Cascade)
+  academicUpdatedBy      User?                  @relation("AccessibilityPreferenceUpdater", fields: [academicUpdatedById], references: [id], onDelete: SetNull)
+
+  @@index([academicUpdatedById, academicUpdatedAt])
+  @@map("accessibility_preferences")
+}
+
+model NetworkPreference {
+  userId               String   @id @map("user_id")
+  lowDataMode          Boolean  @default(false) @map("low_data_mode")
+  offlineWritesEnabled Boolean  @default(false) @map("offline_writes_enabled")
+  version              Int      @default(1)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("network_preferences")
 }
 
 enum LessonStatus {
@@ -188,6 +276,8 @@ model StudentProfile {
   interventionCases     InterventionCase[]
   recoveryPackages      RecoveryPackage[]
   assignmentSubmissions AssignmentSubmission[]
+  checkIns              StudentCheckIn[]
+  helpRequests          StudentHelpRequest[]
 
   @@map("student_profiles")
 }
@@ -463,23 +553,151 @@ model ParentStudent {
 }
 
 model Group {
-  id          String             @id @default(cuid())
-  name        String
-  subject     String
-  level       String?
-  capacity    Int                @default(4)
-  teacherId   String             @map("teacher_id")
-  isActive    Boolean            @default(true) @map("is_active")
-  createdAt   DateTime           @default(now()) @map("created_at")
-  updatedAt   DateTime           @updatedAt @map("updated_at")
-  teacher     User               @relation("GroupTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
-  enrollments Enrollment[]
-  lessons     Lesson[]
-  assignments Assignment[]
-  materials   LearningMaterial[]
+  id           String               @id @default(cuid())
+  name         String
+  subject      String
+  level        String?
+  capacity     Int                  @default(4)
+  teacherId    String               @map("teacher_id")
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  teacher      User                 @relation("GroupTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  enrollments  Enrollment[]
+  lessons      Lesson[]
+  assignments  Assignment[]
+  materials    LearningMaterial[]
+  checkIns     StudentCheckIn[]
+  helpRequests StudentHelpRequest[]
+  pilotCohorts PilotCohort[]
 
   @@index([teacherId, isActive])
   @@map("groups")
+}
+
+model PilotCohort {
+  id                String              @id @default(cuid())
+  groupId           String?             @map("group_id")
+  groupNameSnapshot String              @map("group_name_snapshot")
+  status            PilotCohortStatus   @default(DRAFT)
+  createdById       String              @map("created_by_id")
+  requestKey        String              @unique @map("request_key")
+  version           Int                 @default(1)
+  startedAt         DateTime?           @map("started_at")
+  stoppedAt         DateTime?           @map("stopped_at")
+  stopReason        PilotStopReason?    @map("stop_reason")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  group             Group?              @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdBy         User                @relation("PilotCohortCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  members           PilotCohortMember[]
+
+  @@index([status, createdAt])
+  @@index([groupId, status])
+  @@map("pilot_cohorts")
+}
+
+model PilotCohortMember {
+  cohortId  String      @map("cohort_id")
+  userId    String      @map("user_id")
+  role      UserRole
+  createdAt DateTime    @default(now()) @map("created_at")
+  cohort    PilotCohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([cohortId, userId])
+  @@index([userId, role])
+  @@map("pilot_cohort_members")
+}
+
+enum StudentCheckInEnergy {
+  LOW
+  STEADY
+  GOOD
+}
+
+enum StudentCheckInConfidence {
+  NEED_GUIDANCE
+  BUILDING
+  CONFIDENT
+}
+
+enum StudentCheckInBarrier {
+  NONE
+  NOT_UNDERSTANDING
+  TIME_LOAD
+  ACCESS_TECH
+  NEED_EXAMPLE
+  OTHER
+}
+
+enum StudentHelpRequestStatus {
+  OPEN
+  RESPONDED
+  CLOSED
+}
+
+enum StudentHelpResponseAction {
+  NEXT_LESSON
+  EXTRA_EXAMPLE
+  PLAN_ADJUSTED
+  SHORT_CHECKIN
+  RESOURCE_SHARED
+  NO_ACTION_NEEDED
+}
+
+model StudentCheckIn {
+  id               String                   @id @default(cuid())
+  studentId        String                   @map("student_id")
+  groupId          String                   @map("group_id")
+  energy           StudentCheckInEnergy
+  confidence       StudentCheckInConfidence
+  barrier          StudentCheckInBarrier
+  shareWithTeacher Boolean                  @default(false) @map("share_with_teacher")
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  student          StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group            Group                    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  helpRequest      StudentHelpRequest?
+
+  @@index([studentId, createdAt])
+  @@index([groupId, shareWithTeacher, createdAt])
+  @@map("student_check_ins")
+}
+
+model StudentHelpRequest {
+  id              String                   @id @default(cuid())
+  checkInId       String                   @unique @map("check_in_id")
+  studentId       String                   @map("student_id")
+  groupId         String                   @map("group_id")
+  status          StudentHelpRequestStatus @default(OPEN)
+  dueAt           DateTime                 @map("due_at")
+  firstResponseAt DateTime?                @map("first_response_at")
+  helpful         Boolean?
+  version         Int                      @default(1)
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+  checkIn         StudentCheckIn           @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  student         StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group           Group                    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  responses       StudentHelpResponse[]
+
+  @@index([groupId, status, dueAt])
+  @@index([studentId, status, createdAt])
+  @@map("student_help_requests")
+}
+
+model StudentHelpResponse {
+  id            String                    @id @default(cuid())
+  requestId     String                    @map("request_id")
+  respondedById String                    @map("responded_by_id")
+  action        StudentHelpResponseAction
+  createdAt     DateTime                  @default(now()) @map("created_at")
+  request       StudentHelpRequest        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  respondedBy   User                      @relation("StudentHelpResponder", fields: [respondedById], references: [id], onDelete: Restrict)
+
+  @@index([requestId, createdAt])
+  @@index([respondedById, createdAt])
+  @@map("student_help_responses")
 }
 
 model Enrollment {
@@ -521,10 +739,44 @@ model Lesson {
   outcomeLinks        LessonOutcome[]
   reviewItems         ReviewItem[]
   recoveryPackages    RecoveryPackage[]
+  teacherAiDrafts     TeacherAiDraft[]
 
   @@index([teacherId, startsAt])
   @@index([groupId, startsAt])
   @@map("lessons")
+}
+
+model TeacherAiDraft {
+  id                    String             @id @default(cuid())
+  teacherId             String             @map("teacher_id")
+  lessonId              String             @map("lesson_id")
+  taskType              AiDraftTaskType    @map("task_type")
+  status                AiDraftStatus      @default(DRAFT)
+  provider              AiDraftProvider
+  promptVersion         String             @map("prompt_version")
+  modelName             String?            @map("model_name")
+  sourceHash            String             @map("source_hash")
+  sourceRefs            Json               @map("source_refs")
+  originalContent       Json               @map("original_content")
+  reviewedContent       Json?              @map("reviewed_content")
+  flagReason            AiDraftFlagReason? @map("flag_reason")
+  fallbackReason        String?            @map("fallback_reason")
+  redactionCount        Int                @default(0) @map("redaction_count")
+  latencyMs             Int?               @map("latency_ms")
+  inputTokens           Int?               @map("input_tokens")
+  outputTokens          Int?               @map("output_tokens")
+  estimatedCostMicrousd Int?               @map("estimated_cost_microusd")
+  requestKey            String             @unique @map("request_key")
+  version               Int                @default(1)
+  reviewedAt            DateTime?          @map("reviewed_at")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+  teacher               User               @relation("TeacherAiDraftOwner", fields: [teacherId], references: [id], onDelete: Cascade)
+  lesson                Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, createdAt])
+  @@index([teacherId, status, createdAt])
+  @@map("teacher_ai_drafts")
 }
 
 model LessonNote {
@@ -596,15 +848,17 @@ model Assignment {
 }
 
 model AssignmentProgress {
-  id           String                   @id @default(cuid())
-  assignmentId String                   @map("assignment_id")
-  studentId    String                   @map("student_id")
-  status       AssignmentProgressStatus @default(TODO)
-  completedAt  DateTime?                @map("completed_at")
-  createdAt    DateTime                 @default(now()) @map("created_at")
-  updatedAt    DateTime                 @updatedAt @map("updated_at")
-  assignment   Assignment               @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student      StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id              String                   @id @default(cuid())
+  assignmentId    String                   @map("assignment_id")
+  studentId       String                   @map("student_id")
+  status          AssignmentProgressStatus @default(TODO)
+  completedAt     DateTime?                @map("completed_at")
+  version         Int                      @default(1)
+  lastMutationKey String?                  @map("last_mutation_key")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+  assignment      Assignment               @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student         StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([assignmentId, studentId])
   @@index([studentId, status, updatedAt])
@@ -709,27 +963,29 @@ model NotificationPreference {
 }
 
 model LearningMaterial {
-  id            String                @id @default(cuid())
-  groupId       String                @map("group_id")
-  lessonId      String?               @map("lesson_id")
-  assignmentId  String?               @map("assignment_id")
-  createdById   String                @map("created_by_id")
-  title         String
-  description   String?
-  url           String
-  blobPathname  String?               @map("blob_pathname")
-  fileName      String?               @map("file_name")
-  mimeType      String?               @map("mime_type")
-  fileSize      Int?                  @map("file_size")
-  kind          MaterialKind          @default(LINK)
-  isActive      Boolean               @default(true) @map("is_active")
-  createdAt     DateTime              @default(now()) @map("created_at")
-  updatedAt     DateTime              @updatedAt @map("updated_at")
-  group         Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  lesson        Lesson?               @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  assignment    Assignment?           @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
-  createdBy     User                  @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  recoveryItems RecoveryPackageItem[]
+  id                String                @id @default(cuid())
+  groupId           String                @map("group_id")
+  lessonId          String?               @map("lesson_id")
+  assignmentId      String?               @map("assignment_id")
+  createdById       String                @map("created_by_id")
+  title             String
+  description       String?
+  url               String
+  blobPathname      String?               @map("blob_pathname")
+  fileName          String?               @map("file_name")
+  mimeType          String?               @map("mime_type")
+  fileSize          Int?                  @map("file_size")
+  captionsAvailable Boolean               @default(false) @map("captions_available")
+  transcript        String?
+  kind              MaterialKind          @default(LINK)
+  isActive          Boolean               @default(true) @map("is_active")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  group             Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  lesson            Lesson?               @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  assignment        Assignment?           @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  createdBy         User                  @relation("MaterialCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  recoveryItems     RecoveryPackageItem[]
 
   @@index([groupId, isActive, createdAt])
   @@map("learning_materials")

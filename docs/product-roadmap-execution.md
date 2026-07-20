@@ -15,13 +15,13 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 | 8 | Sakin veli haftalık özeti | **Tamamlandı** | Karşılaştırmasız, eylem odaklı haftalık özet |
 | 9 | Açıklanabilir müdahale gelen kutusu | **Tamamlandı** | Sahip, SLA, sonuç ve yanlış pozitif takibi |
 | 10 | Ders kaçırma sonrası telafi paketi | **Tamamlandı** | 72 saatlik telafi döngüsü |
-| 11 | Kanıtlı ödev teslimi, rubric ve yeniden deneme | Uygulandı; DB/E2E kabulü bekliyor | Güvenli teslim ve geri bildirim döngüsü |
-| 12 | Öğrenci check-in'i ve yardım isteği | Bekliyor | Kontrollü görünürlük ve yanıt SLA'sı |
-| 13 | Erişilebilirlik ve makul düzenleme profili | Bekliyor | WCAG 2.2 AA ve işlevsel tercihler |
-| 14 | Offline-first ve düşük veri modu | Bekliyor | Güvenli outbox, idempotency ve çatışma çözümü |
-| 15 | Kohort öğrenme kazancı ve kalite panosu | Bekliyor | Adil, minimum örneklemli gelişim görünümü |
-| 16 | Güvenli AI öğretmen yardımcısı | Bekliyor | Kaynaklı taslak, zorunlu onay, eval ve maliyet kapıları |
-| 17 | Bütünleşik pilot ve kademeli yayın | Bekliyor | Dört rol, güvenlik, erişilebilirlik ve etki kabulü |
+| 11 | Kanıtlı ödev teslimi, rubric ve yeniden deneme | **Tamamlandı** | Güvenli teslim ve geri bildirim döngüsü |
+| 12 | Öğrenci check-in'i ve yardım isteği | **Tamamlandı** | Kontrollü görünürlük ve yanıt SLA'sı |
+| 13 | Erişilebilirlik ve makul düzenleme profili | **Tamamlandı** | WCAG 2.2 AA ve işlevsel tercihler |
+| 14 | Offline-first ve düşük veri modu | **Tamamlandı** | Güvenli outbox, idempotency ve çatışma çözümü |
+| 15 | Kohort öğrenme kazancı ve kalite panosu | **Tamamlandı** | Adil, minimum örneklemli gelişim görünümü |
+| 16 | Güvenli AI öğretmen yardımcısı | **Tamamlandı** | Kaynaklı taslak, zorunlu onay, eval ve maliyet kapıları |
+| 17 | Bütünleşik pilot ve kademeli yayın | **Tamamlandı** | Dört rol, güvenlik, erişilebilirlik ve etki kabulü |
 
 ## Aşama 0 kararları
 
@@ -129,3 +129,68 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 - Kanıtlı ödev öğrenci tarafından doğrudan tamamlanamaz; yalnız öğretmen onayı ilerlemeyi `DONE` yapar. Idempotency ve sürüm kontrolü çift işlemi engeller.
 - Veli V1'de kanıt, rubric veya geri bildirim ayrıntısı görmez; event'ler içerik ve kimlik taşımaz.
 - Ayrıntılar [kanıtlı ödev işletim standardında](./assignment-evidence-rubric-operations.md) tanımlıdır.
+
+## Aşama 12 kararları
+
+- Öğrenci İstanbul haftasında en fazla iki check-in yapar; enerji, çalışma güveni ve engel yalnız kontrollü seçeneklerden oluşur. Puan, tanı ve serbest metin yoktur.
+- Özel check-in yalnız öğrenciye görünür. Öğretmen ancak öğrenci açıkça paylaşırsa görür; yardım isteği paylaşımı zorunlu kılar ve yalnız seçilen aktif grubun öğretmenine yönlenir.
+- Yardım isteği otomatik müdahale vakası veya risk etiketi oluşturmaz. Check-in içeriği veli/admin ekranına, sakin haftalık özete veya yapay zekâ girdisine taşınmaz.
+- Öğretmen yalnız kontrollü küçük destek adımlarından birini seçer. Önceki yanıtlar korunur; öğrenci “henüz değil” derse istek yeni 24 saat hedefiyle yeniden açılır.
+- Ürün event'leri kimlik veya içerik taşımaz. İlk yanıt p50 ≤24 saat, 24 saatte yanıt ≥%90 ve faydalılık ≥%60 pilot guardrail'idir; beşten az örneklem karar üretmez.
+- Ekran acil yardım hattı olmadığını açıkça belirtir; 112 ve güvenilen yetişkin yönlendirmesi verir, sürekli kriz izleme iddiasında bulunmaz.
+- Yetki, saklama, rollout ve geri alma ayrıntıları [öğrenci check-in işletim standardında](./student-check-in-help-operations.md) tanımlıdır.
+
+## Aşama 13 kararları
+
+- Profil tanı, engel adı, sağlık raporu, belge veya serbest sağlık notu toplamaz. Görsel ve medya tercihlerini yalnız kullanıcı kendisi yönetir.
+- Akademik düzenleme kontrollü `%0/%25/%50/%100` ek süre ve planlı kısa mola yönergesiyle sınırlıdır; yalnız admin aktif öğrenci hesabında değiştirebilir.
+- Öğretmen yalnız kendi aktif grubundaki öğrencinin uygulanabilir yönergelerini görür. Gerekçe, admin kimliği ve profil ayrıntısı gösterilmez; veli profile erişemez.
+- Azaltılmış hareket, yüksek kontrast, büyük metin ve rahat aralık panel kökünde uygulanır; kayıt sonrası değişiklik anında görünür ve sonraki oturumlarda korunur.
+- Video materyali altyazı durumu ve transkript taşıyabilir. Öğrencinin tercihi uyumlu materyali önce sıralar; diğer kaynakları gizlemez.
+- V1'de süreli sınav motoru bulunmadığı için ek süre son teslim tarihini otomatik değiştirmez; öğretmene açık uygulama yönergesi olarak sunulur.
+- `320 px` reflow, klavye ile içerik atlama, en az `24 × 24 px` kontrol hedefi ve Axe A/AA taraması kabul kapsamındadır. Event'ler kimlik, tanı veya sağlık verisi taşımaz.
+- Rollout, telif, yetki ve manuel WCAG kontrol listesi [erişilebilirlik ve makul düzenleme işletim standardında](./accessibility-accommodation-operations.md) tanımlıdır.
+
+## Aşama 14 kararları
+
+- Service worker yalnız statik uygulama dosyaları ile kimliksiz çevrimdışı ekranı cache'ler. Özel panel HTML'i, API yanıtı ve materyal hiçbir zaman Cache Storage'a yazılmaz.
+- Çevrimdışı yazma açık rızayla ve varsayılan kapalıdır. V1 allowlist'i öğretmen ders taslağı/kapanışı ile öğrencinin kontrollü ödev durumuyla sınırlıdır.
+- Outbox opak oturum kapsamıyla ayrılır; çıkışta temizlenir, kayıt başına `64 KB` ve 24 saat sınırı uygular. Aynı ders/ödev için yeni bekleyen kayıt eskisiyle birleşir.
+- Ders kapanışı mevcut sürüm, idempotency anahtarı ve içerik hash'iyle; ödev durumu sürüm ve mutation anahtarıyla korunur. Replay çift yazmaz, eski sürüm güncel sunucu verisini ezmez.
+- `409` otomatik çözülmez; kayıt insan kontrolüne geçer. Güvenlik/doğrulama reddi farklı oturumda yeniden oynatılmaz.
+- Düşük veri modu transkript ve normal bağlantıyı öne çıkarır; video/PDF ancak kullanıcı tıklarsa yüklenir ve düğme veri kullanacağını söyler.
+- Event'ler yalnız işlem türü ile boyut, kuyruk yaşı, deneme ve çatışma bantlarını taşır; içerik veya nesne kimliği taşımaz. Admin SLO'ları eşitleme başarısı, çatışma ve sona erme oranını minimum örneklemle hesaplar.
+- Rollout, cache yasağı, cihaz sınırı ve geri alma adımları [offline-first ve düşük veri işletim standardında](./offline-low-data-operations.md) tanımlıdır.
+
+## Aşama 15 kararları
+
+- `cohort-gain-v1`, aynı öğrencinin aynı sınav türündeki ilk ve en az 14 gün sonraki son uygun ölçümünü eşler. Kesitsel sınıf ortalaması öğrenci gelişimi gibi sunulmaz.
+- LGS neti üç, YKS neti dört yanlış götürme kuralıyla hesaplanır ve farklı soru sayılarını karşılaştırabilmek için toplam soruya göre yüzdeye normalize edilir. LGS, TYT, AYT ve YDT birbirine karıştırılmaz.
+- Bir sınav türünde en az 10 eşleşmiş öğrenci yoksa medyan değişim, değişim yönü ve çeyrek aralığı tamamen bastırılır. Eksik veri sıfır başarı olarak gösterilmez.
+- Yayınlanan görünüm medyan değişim, orta `%50` aralığı, pozitif değişim payı, ölçümler arası medyan gün, eşleşme kapsamı ve veri tazeliğini birlikte gösterir.
+- Ortak hata nedeni ancak en az 10 farklı öğrencide görülürse görünür. Öğrenci/grup kırılımı, küçük hücre drill-down'u, öğrenci veya öğretmen sıralaması bulunmaz.
+- 30 günlük kazanım etiketleme kapsamı ile kanıtlı ödev geri bildirim medyanı süreç kalitesi sinyalidir; bunlar öğrenme kazancı veya öğretmen etkisi diye adlandırılmaz.
+- Event yalnız kural sürümü, hazır/bastırılmış kohort sayısı ve toplam eşleşmiş öğrenci bandını taşır. Öğrenci, grup, öğretmen veya sınav kimliği taşımaz.
+- Yorumlama, rollout, geri alma ve kabul ayrıntıları [kohort kalite panosu işletim standardında](./cohort-learning-quality-operations.md) tanımlıdır.
+
+## Aşama 16 kararları
+
+- V1 açık sohbet değildir; yalnız `ASSIGNMENT` ve `MINI_CHECK` taslağı üretir. Öğrenci ve veli AI ile doğrudan etkileşmez.
+- Girdi ortak ders konusu/notu/sonraki hedef/çalışma notu, grup dersi/seviyesi ve en fazla üç kazanımla sınırlıdır. Öğrenciye özel not, yoklama notu, check-in, yardım isteği, veli ve ödeme verisi sorguya alınmaz.
+- Bilinen öğrenci adları, e-posta, telefon, kimlik numarası ve URL dış çağrıdan önce çıkarılır. Kaynaktaki prompt injection işareti dış çağrıyı durdurup deterministik fallback üretir.
+- Dış model ancak aktarım onayı, sunucu API anahtarı, açık model adı ve maliyet oranları birlikte yapılandırılmışsa çağrılır. Günlük istek ve mikro-USD tavanı aşılırsa hizmet kesilmez; güvenli fallback kullanılır.
+- Model yalnız izin verilen kaynak kimliklerine atıf yapabilir. Şema, uydurma kaynak, tanı, sıralama, utandırma, garanti ve kişisel veri kontrolleri modelden sonra sunucuda yeniden çalışır.
+- Her taslak `DRAFT` başlar. Öğretmen kaynakları görür, dört içerik alanını düzenler ve açıkça onaylar; onay öğrenciye, veliye veya ödev akışına otomatik yayın yapmaz.
+- Öğretmen taslağı kontrollü nedenle reddedebilir veya hatalı işaretleyebilir. Prompt/çıktı ürün event'ine kopyalanmaz; yalnız görev, sağlayıcı, gecikme/maliyet bandı, kaynak/redaksiyon sayısı ve inceleme sonucu ölçülür.
+- `teacher-draft-v1` altın eval seti gizlilik, prompt injection, kaynak doğruluğu ve iki görev türünü kapsar. Canlı eval maliyet onayı olmadan dış çağrı yapmaz.
+- Rollout, tehdit modeli, eval ve geri alma ayrıntıları [güvenli AI öğretmen yardımcısı standardında](./safe-teacher-ai-operations.md) tanımlıdır.
+
+## Aşama 17 kararları
+
+- Pilot rastgele kullanıcı yüzdesi değildir; aktif gruptaki öğretmen, öğrenciler ve bağlı veliler ile kurtarma yetkili admin aynı kohorta atomik olarak alınır.
+- `PANEL_ROLLOUT_MODE=pilot` sırasında admin dışındaki her sayfa ve API isteği aktif kohort üyeliğini sunucuda doğrular. Global özellik bayrakları üst sınır olmaya devam eder.
+- Aktivasyon dört rol kapsamı, sunucu/istemci bayrak eşliği, kabul ve güvenlik onayı, 90 günlük restore tazeliği ve çekirdek SLO ihlalsizliği gerektirir. Az örneklem ilk pilotta bekleme, genişlemede bloktur.
+- `DRAFT`, `ACTIVE`, `PAUSED`, `COMPLETED` ve `ROLLED_BACK` geçişleri sürümlüdür. Duraklatma ve geri alma erişimi keser fakat akademik ve audit kayıtlarını silmez.
+- Admin pilot sırasında kilitlenmez. `PANEL_PILOT_KILL_SWITCH=true`, aktif üyelikten bağımsız son durdurma kapısıdır.
+- Kohort değişiklik event'i yalnız üye bandı, dört rol kapsamı, readiness ve kontrollü eylem taşır; kullanıcı/grup kimliği içermez.
+- Kademeli yayın ve geri alma ayrıntıları [bütünleşik pilot işletim standardında](./integrated-pilot-rollout-operations.md) tanımlıdır.

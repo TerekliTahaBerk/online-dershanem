@@ -9,6 +9,10 @@ test("gelecek panel özellikleri güvenli biçimde kapalı başlar", () => {
   assert.equal(flags.quickLessonClose, false);
   assert.equal(flags.recoveryPackage, false);
   assert.equal(flags.assignmentEvidence, false);
+  assert.equal(flags.studentCheckIn, false);
+  assert.equal(flags.accessibilityProfile, false);
+  assert.equal(flags.offlineMode, false);
+  assert.equal(flags.cohortQuality, false);
   assert.equal(flags.teacherAiDrafts, false);
 });
 

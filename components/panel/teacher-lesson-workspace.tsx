@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, CheckCircle2, CircleAlert, ClipboardPlus, Clock3, Eye, Save, Sparkles, Trash2, UserCheck, UsersRound } from "lucide-react";
 import { sendPanelEvent } from "@/lib/panel-event-client";
 import { OutcomePicker, type OutcomeOption, type SelectedOutcome } from "@/components/panel/outcome-picker";
+import { useOfflineSync } from "@/components/panel/offline-sync-provider";
 
 type Attendance = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
-type Student = { id: string; name: string; note: string; attendance: Attendance };
+type Student = { id: string; name: string; note: string; attendance: Attendance; supportLabels: string[] };
 type NoteTemplate = { id: string; title: string; note: string; nextGoal: string; homework: string };
 type LessonData = {
   id: string;
@@ -41,6 +42,7 @@ const attendanceOptions: { value: Attendance; label: string; active: string }[] 
 ];
 
 export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learningOutcomesEnabled, quickLessonCloseEnabled, outcomes }: { lesson: LessonData; baselineMetricsEnabled: boolean; learningOutcomesEnabled: boolean; quickLessonCloseEnabled: boolean; outcomes: OutcomeOption[] }) {
+  const { submitMutation } = useOfflineSync();
   const [form, setForm] = useState(lesson);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [completed, setCompleted] = useState(lesson.status === "COMPLETED");
@@ -86,22 +88,22 @@ export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learnin
     setSaveState("saving");
     if (complete && quickLessonCloseEnabled && !closeIdempotencyKey.current) closeIdempotencyKey.current = crypto.randomUUID();
     const assignmentDraft = complete && quickLessonCloseEnabled && assignmentPreview && form.homework.trim() && assignmentRecipients.length ? { title: `${form.topic || form.title} çalışması`, description: form.homework, dueAt: new Date(Date.now() + 7 * 86400000).toISOString(), studentIds: assignmentRecipients } : null;
-    const response = await fetch(`/api/panel/lessons/${lesson.id}/notes`, {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ topic: form.topic, note: form.note, nextGoal: form.nextGoal, homework: form.homework, complete, students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })), outcomes: learningOutcomesEnabled ? form.outcomeLinks : [], outcomeSkipReason: learningOutcomesEnabled ? form.outcomeSkipReason : null, expectedVersion: quickLessonCloseEnabled ? closeVersion.current : undefined, idempotencyKey: complete && quickLessonCloseEnabled ? closeIdempotencyKey.current : undefined, assignmentDraft }),
-    }).catch(() => null);
-    const responseBody = await response?.json().catch(() => ({})) as { error?: string; version?: number; replayed?: boolean; assignmentCreated?: boolean } | undefined;
-    setSaveState(response?.ok ? "saved" : "error");
-    if (!response?.ok && baselineMetricsEnabled) {
+    const requestBody = { topic: form.topic, note: form.note, nextGoal: form.nextGoal, homework: form.homework, complete, students: form.students.map((student) => ({ studentId: student.id, note: student.note, attendance: student.attendance })), outcomes: learningOutcomesEnabled ? form.outcomeLinks : [], outcomeSkipReason: learningOutcomesEnabled ? form.outcomeSkipReason : null, expectedVersion: quickLessonCloseEnabled ? closeVersion.current : undefined, idempotencyKey: complete && quickLessonCloseEnabled ? closeIdempotencyKey.current : undefined, assignmentDraft };
+    const result = await submitMutation({ kind: "LESSON_CLOSE", method: "PUT", url: `/api/panel/lessons/${lesson.id}/notes`, body: requestBody, coalesceKey: `lesson:${lesson.id}` });
+    const responseBody = result.body as { error?: string; version?: number; replayed?: boolean; assignmentCreated?: boolean };
+    const saved = result.state === "synced";
+    const queued = result.state === "queued";
+    setSaveState(saved || queued ? "saved" : "error");
+    if (!saved && !queued && baselineMetricsEnabled) {
       sendPanelEvent({ name: "lesson_autosave_failed", properties: { groupSize: lesson.students.length, completionAttempt: complete } });
     }
-    if (response?.ok) {
+    if (saved || queued) {
       lastSaved.current = noteSnapshot(form);
-      if (typeof responseBody?.version === "number") closeVersion.current = responseBody.version;
+      if (saved && typeof responseBody?.version === "number") closeVersion.current = responseBody.version;
     }
-    if (!response?.ok && complete) setActionMessage(responseBody?.error || "Ders kapatılamadı; değişiklikleriniz taslakta korunuyor.");
-    if (response?.ok && complete) {
+    if (!saved && !queued && complete) setActionMessage(responseBody?.error || "Ders kapatılamadı; değişiklikleriniz taslakta korunuyor.");
+    if (queued) setActionMessage(complete ? "Bağlantı yok; ders kapanışı bu cihazda en fazla 24 saat güvenle bekliyor." : "Bağlantı yok; ders taslağı bu cihazda güvenle bekliyor.");
+    if (saved && complete) {
       setCompleted(true);
       setActionMessage(responseBody?.replayed ? "Bu kapanış daha önce güvenle tamamlandı; çift kayıt oluşturulmadı." : responseBody?.assignmentCreated ? `Ders tamamlandı; ödev ${assignmentRecipients.length} öğrenciye gönderildi.` : "Ders tamamlandı; öğrenci ve veli özeti hazır.");
       if (baselineMetricsEnabled) {
@@ -129,8 +131,8 @@ export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learnin
         });
       }
     }
-    return response?.ok === true;
-  }, [assignmentPreview, assignmentRecipients, baselineMetricsEnabled, exceptionCount, form, learningOutcomesEnabled, lesson.id, lesson.students, quickLessonCloseEnabled]);
+    return saved;
+  }, [assignmentPreview, assignmentRecipients, baselineMetricsEnabled, exceptionCount, form, learningOutcomesEnabled, lesson.id, lesson.students, quickLessonCloseEnabled, submitMutation]);
 
   useEffect(() => {
     if (first.current) {
@@ -154,6 +156,25 @@ export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learnin
     document.addEventListener("click", guardLink, true);
     return () => { window.removeEventListener("beforeunload", warn); document.removeEventListener("click", guardLink, true); };
   }, [dirty, saveState]);
+
+  useEffect(() => {
+    const url = `/api/panel/lessons/${lesson.id}/notes`;
+    const synced = (event: Event) => {
+      const detail = (event as CustomEvent<{ kind: string; url: string; body?: { version?: number }; requestBody?: { complete?: boolean } }>).detail;
+      if (detail?.kind !== "LESSON_CLOSE" || detail.url !== url) return;
+      if (typeof detail.body?.version === "number") closeVersion.current = detail.body.version;
+      setSaveState("saved");
+      if (detail.requestBody?.complete) { setCompleted(true); setActionMessage("Cihazda bekleyen ders kapanışı güvenle eşitlendi."); }
+      else setActionMessage("Cihazda bekleyen ders taslağı güvenle eşitlendi.");
+    };
+    const conflicted = (event: Event) => {
+      const detail = (event as CustomEvent<{ kind: string; url: string }>).detail;
+      if (detail?.kind !== "LESSON_CLOSE" || detail.url !== url) return;
+      setSaveState("error"); setActionMessage("Ders başka yerde değişti. Son kaydı açıp cihazdaki değişiklikleri yeniden uygulayın.");
+    };
+    window.addEventListener("panel-offline-synced", synced); window.addEventListener("panel-offline-conflict", conflicted);
+    return () => { window.removeEventListener("panel-offline-synced", synced); window.removeEventListener("panel-offline-conflict", conflicted); };
+  }, [lesson.id]);
 
   async function createAssignment() {
     if (!form.homework.trim()) return setActionMessage("Önce çalışma alanını doldurun.");
@@ -269,7 +290,7 @@ export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learnin
         {quickLessonCloseEnabled ? <div className="grid grid-cols-2 gap-2"><button type="button" onClick={markEveryonePresent} className="panel-quick-action justify-center"><UsersRound size={14} /> Tümü burada</button><button type="button" onClick={() => setShowStudentExceptions((current) => !current)} className="panel-quick-action justify-center">{showStudentExceptions ? "İstisnaları gizle" : "İstisna ekle"}</button></div> : null}
         {(!quickLessonCloseEnabled || showStudentExceptions || exceptionCount > 0) ? form.students.map((student, index) => (
           <div key={student.id} className="rounded-[22px] border border-[var(--site-line)] bg-white p-4 shadow-[0_10px_35px_-30px_rgba(20,20,15,.35)]">
-            <div className="flex items-center gap-3"><span className={`grid h-9 w-9 place-items-center rounded-xl text-sm font-extrabold ${["bg-[#dceaf6] text-[#1e3a5f]", "bg-[#fcedb4] text-[#6b5310]", "bg-[#e6e0f0] text-[#3f3463]", "bg-[#d7e5d5] text-[#2f4a2a]"][index % 4]}`}>{student.name.charAt(0)}</span><p className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--site-ink)]">{student.name}</p></div>
+            <div className="flex items-center gap-3"><span className={`grid h-9 w-9 place-items-center rounded-xl text-sm font-extrabold ${["bg-[#dceaf6] text-[#1e3a5f]", "bg-[#fcedb4] text-[#6b5310]", "bg-[#e6e0f0] text-[#3f3463]", "bg-[#d7e5d5] text-[#2f4a2a]"][index % 4]}`}>{student.name.charAt(0)}</span><p className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--site-ink)]">{student.name}</p></div>{student.supportLabels.length ? <ul aria-label={`${student.name} işlevsel destekleri`} className="mt-2 flex flex-wrap gap-1">{student.supportLabels.map((label) => <li key={label} className="rounded-full bg-sky-50 px-2 py-1 text-[9px] font-bold text-sky-900">{label}</li>)}</ul> : null}
             <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-[var(--site-bg-warm)] p-1">
               {attendanceOptions.map((option) => <button key={option.value} type="button" aria-label={`${student.name}: ${option.label}`} aria-pressed={student.attendance === option.value} onClick={() => patchStudent(student.id, { attendance: option.value })} className={`rounded-lg px-1 py-2 text-[10px] font-bold transition ${student.attendance === option.value ? option.active : "text-[var(--site-muted)] hover:bg-white"}`}>{option.label}</button>)}
             </div>

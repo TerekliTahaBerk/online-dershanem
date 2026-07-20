@@ -28,6 +28,10 @@ test("SLO raporu p90 ve başarı oranlarını hesaplar", () => {
     ...Array.from({ length: 5 }, () => row("recovery_package_published", { publishDelayMs: 3_600_000, itemCount: 3, planRebalanced: true })),
     ...Array.from({ length: 5 }, () => row("recovery_package_completed", { completionDurationMs: 20 * 60 * 60 * 1000, within72h: true, itemCount: 3 })),
     ...Array.from({ length: 5 }, () => row("assignment_review_completed", { decision: "APPROVE", turnaroundMs: 12 * 60 * 60 * 1000, criterionCount: 2, interactionDurationMs: 60_000, revisedAttempt: true })),
+    ...Array.from({ length: 5 }, () => row("student_help_responded", { action: "EXTRA_EXAMPLE", responseTimeMs: 2 * 60 * 60 * 1000, within24h: true, responseNumber: 1, firstResponse: true })),
+    ...Array.from({ length: 5 }, () => row("student_help_feedback", { helpful: true })),
+    ...Array.from({ length: 5 }, () => row("offline_write_queued", { operation: "ASSIGNMENT_PROGRESS", payloadSizeBand: "0-4KB" })),
+    ...Array.from({ length: 5 }, () => row("offline_write_synced", { operation: "ASSIGNMENT_PROGRESS", queueAgeBand: "0-1M", attemptBand: "1" })),
   ];
   const report = calculatePanelSloReport(rows);
   assert.equal(report.find((metric) => metric.key === "teacher_close_time")?.value, 200_000);
@@ -41,6 +45,11 @@ test("SLO raporu p90 ve başarı oranlarını hesaplar", () => {
   assert.equal(report.find((metric) => metric.key === "recovery_72h_completion")?.value, 100);
   assert.equal(report.find((metric) => metric.key === "assignment_feedback_time")?.value, 12 * 60 * 60 * 1000);
   assert.equal(report.find((metric) => metric.key === "assignment_revision_approval")?.value, 100);
+  assert.equal(report.find((metric) => metric.key === "student_help_first_response_time")?.value, 2 * 60 * 60 * 1000);
+  assert.equal(report.find((metric) => metric.key === "student_help_within_sla")?.value, 100);
+  assert.equal(report.find((metric) => metric.key === "student_help_helpful_rate")?.value, 100);
+  assert.equal(report.find((metric) => metric.key === "offline_sync_success")?.value, 100);
+  assert.equal(report.find((metric) => metric.key === "offline_conflict_rate")?.value, 0);
   assert.equal(report.every((metric) => metric.status === "healthy"), true);
 });
 

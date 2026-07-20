@@ -6,7 +6,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 
-const schema = z.object({ groupId: z.string().min(1), lessonId: z.string().min(1).nullable().optional(), assignmentId: z.string().min(1).nullable().optional(), title: z.string().trim().min(2).max(140), description: z.string().trim().max(1000).optional(), url: z.string().url().max(1000).refine((value) => value.startsWith("https://") || value.startsWith("http://")), kind: z.enum(["LINK", "PDF", "VIDEO"]) });
+const schema = z.object({ groupId: z.string().min(1), lessonId: z.string().min(1).nullable().optional(), assignmentId: z.string().min(1).nullable().optional(), title: z.string().trim().min(2).max(140), description: z.string().trim().max(1000).optional(), url: z.string().url().max(1000).refine((value) => value.startsWith("https://") || value.startsWith("http://")), kind: z.enum(["LINK", "PDF", "VIDEO"]), captionsAvailable: z.boolean().default(false), transcript: z.string().trim().max(8000).optional() }).strict();
 
 export async function POST(request: Request) {
   const auth = await requireApiRole("ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   if (!group) return NextResponse.json({ error: "Yetkili olduğunuz grup bulunamadı." }, { status: 404 });
   if (data.lessonId && !await prisma.lesson.findFirst({ where: { id: data.lessonId, groupId: group.id }, select: { id: true } })) return NextResponse.json({ error: "Ders bu gruba ait değil." }, { status: 400 });
   if (data.assignmentId && !await prisma.assignment.findFirst({ where: { id: data.assignmentId, groupId: group.id }, select: { id: true } })) return NextResponse.json({ error: "Ödev bu gruba ait değil." }, { status: 400 });
-  const material = await prisma.learningMaterial.create({ data: { groupId: group.id, lessonId: data.lessonId || null, assignmentId: data.assignmentId || null, createdById: auth.session.userId, title: data.title, description: data.description || null, url: data.url, kind: data.kind } });
+  const material = await prisma.learningMaterial.create({ data: { groupId: group.id, lessonId: data.lessonId || null, assignmentId: data.assignmentId || null, createdById: auth.session.userId, title: data.title, description: data.description || null, url: data.url, kind: data.kind, captionsAvailable: data.kind === "VIDEO" && data.captionsAvailable, transcript: data.transcript || null } });
   const students = [...new Set(group.enrollments.map((item) => item.student.userId))]; const parents = [...new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId)))];
   const rawNotificationRows = [...students.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/ogrenci/materyaller" })), ...parents.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/veli/takip" }))];
   const notificationRows = await filterNotificationRows(rawNotificationRows);

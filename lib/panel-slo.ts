@@ -7,7 +7,7 @@ export type ProductEventRow = {
 };
 
 export type PanelSloMetric = {
-  key: "teacher_close_time_p50" | "teacher_close_time" | "teacher_close_revision_rate" | "teacher_close_missing_rate" | "teacher_save_reliability" | "student_progress_reliability" | "admin_setup_reliability" | "parent_dashboard_speed" | "mock_exam_entry_time" | "mock_exam_reason_coverage" | "plan_acceptance" | "plan_review_time" | "plan_overwhelm_rate" | "digest_view_rate" | "digest_anxiety_rate" | "digest_optout_rate" | "intervention_first_action_time" | "intervention_false_positive_rate" | "intervention_closure_rate" | "recovery_publish_time" | "recovery_72h_completion" | "assignment_feedback_time" | "assignment_revision_approval";
+  key: "teacher_close_time_p50" | "teacher_close_time" | "teacher_close_revision_rate" | "teacher_close_missing_rate" | "teacher_save_reliability" | "student_progress_reliability" | "admin_setup_reliability" | "parent_dashboard_speed" | "mock_exam_entry_time" | "mock_exam_reason_coverage" | "plan_acceptance" | "plan_review_time" | "plan_overwhelm_rate" | "digest_view_rate" | "digest_anxiety_rate" | "digest_optout_rate" | "intervention_first_action_time" | "intervention_false_positive_rate" | "intervention_closure_rate" | "recovery_publish_time" | "recovery_72h_completion" | "assignment_feedback_time" | "assignment_revision_approval" | "student_help_first_response_time" | "student_help_within_sla" | "student_help_helpful_rate" | "offline_sync_success" | "offline_conflict_rate" | "offline_expired_rate";
   label: string;
   sampleSize: number;
   value: number | null;
@@ -93,6 +93,17 @@ export function calculatePanelSloReport(rows: ProductEventRow[]): PanelSloMetric
   const assignmentFeedbackP50 = percentile(assignmentReviews.map((event) => event.properties.turnaroundMs), 50);
   const revisedAssignmentReviews = assignmentReviews.filter((event) => event.properties.revisedAttempt);
   const assignmentRevisionApproval = revisedAssignmentReviews.length ? Math.round((revisedAssignmentReviews.filter((event) => event.properties.decision === "APPROVE").length / revisedAssignmentReviews.length) * 10_000) / 100 : null;
+  const helpResponses = events.flatMap((event) => event.name === "student_help_responded" && event.properties.firstResponse ? [event] : []);
+  const helpResponseP50 = percentile(helpResponses.map((event) => event.properties.responseTimeMs), 50);
+  const helpWithinSla = helpResponses.length ? Math.round((helpResponses.filter((event) => event.properties.within24h).length / helpResponses.length) * 10_000) / 100 : null;
+  const helpFeedback = events.flatMap((event) => event.name === "student_help_feedback" ? [event] : []);
+  const helpHelpfulRate = helpFeedback.length ? Math.round((helpFeedback.filter((event) => event.properties.helpful).length / helpFeedback.length) * 10_000) / 100 : null;
+  const offlineQueued = events.filter((event) => event.name === "offline_write_queued");
+  const offlineSynced = events.filter((event) => event.name === "offline_write_synced");
+  const offlineConflicts = events.filter((event) => event.name === "offline_write_conflicted");
+  const offlineSyncSuccess = offlineQueued.length ? Math.min(100, Math.round((offlineSynced.length / offlineQueued.length) * 10_000) / 100) : null;
+  const offlineConflictRate = offlineQueued.length ? Math.min(100, Math.round((offlineConflicts.length / offlineQueued.length) * 10_000) / 100) : null;
+  const offlineExpiredRate = offlineQueued.length ? Math.min(100, Math.round((offlineConflicts.filter((event) => event.properties.conflictType === "EXPIRED").length / offlineQueued.length) * 10_000) / 100) : null;
 
   return [
     { key: "teacher_close_time_p50", label: "Ders kapanışı p50", sampleSize: closeDurations.length, value: closeP50, unit: "ms", target: 120_000, comparison: "lte", status: status(closeDurations.length, closeP50, 120_000, "lte") },
@@ -118,5 +129,11 @@ export function calculatePanelSloReport(rows: ProductEventRow[]): PanelSloMetric
     { key: "recovery_72h_completion", label: "72 saatte telafi tamamlama", sampleSize: recoveryCompleted.length, value: recoveryWithin72hRate, unit: "percent", target: 60, comparison: "gte", status: status(recoveryCompleted.length, recoveryWithin72hRate, 60, "gte") },
     { key: "assignment_feedback_time", label: "Kanıtlı ödev geri bildirimi p50", sampleSize: assignmentReviews.length, value: assignmentFeedbackP50, unit: "ms", target: 48 * 60 * 60 * 1000, comparison: "lte", status: status(assignmentReviews.length, assignmentFeedbackP50, 48 * 60 * 60 * 1000, "lte") },
     { key: "assignment_revision_approval", label: "Yeniden deneme onayı", sampleSize: revisedAssignmentReviews.length, value: assignmentRevisionApproval, unit: "percent", target: 60, comparison: "gte", status: status(revisedAssignmentReviews.length, assignmentRevisionApproval, 60, "gte") },
+    { key: "student_help_first_response_time", label: "Yardım ilk yanıt p50", sampleSize: helpResponses.length, value: helpResponseP50, unit: "ms", target: 24 * 60 * 60 * 1000, comparison: "lte", status: status(helpResponses.length, helpResponseP50, 24 * 60 * 60 * 1000, "lte") },
+    { key: "student_help_within_sla", label: "24 saatte yardım yanıtı", sampleSize: helpResponses.length, value: helpWithinSla, unit: "percent", target: 90, comparison: "gte", status: status(helpResponses.length, helpWithinSla, 90, "gte") },
+    { key: "student_help_helpful_rate", label: "Destek adımı faydalı", sampleSize: helpFeedback.length, value: helpHelpfulRate, unit: "percent", target: 60, comparison: "gte", status: status(helpFeedback.length, helpHelpfulRate, 60, "gte") },
+    { key: "offline_sync_success", label: "Offline eşitleme başarısı", sampleSize: offlineQueued.length, value: offlineSyncSuccess, unit: "percent", target: 99, comparison: "gte", status: status(offlineQueued.length, offlineSyncSuccess, 99, "gte") },
+    { key: "offline_conflict_rate", label: "Offline çatışma oranı", sampleSize: offlineQueued.length, value: offlineConflictRate, unit: "percent", target: 2, comparison: "lte", status: status(offlineQueued.length, offlineConflictRate, 2, "lte") },
+    { key: "offline_expired_rate", label: "Offline kayıt sona ermesi", sampleSize: offlineQueued.length, value: offlineExpiredRate, unit: "percent", target: 0.5, comparison: "lte", status: status(offlineQueued.length, offlineExpiredRate, 0.5, "lte") },
   ];
 }

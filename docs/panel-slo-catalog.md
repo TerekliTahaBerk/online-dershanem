@@ -33,6 +33,10 @@ Bu katalog teknik uptime ile kullanıcı işinin gerçekten tamamlanmasını ayr
 | `recovery_package_generated/published/viewed` | Sunucu | Öğretmen, öğrenci | Kural sürümü, öğe sayısı, yayın gecikmesi ve ilk görüntüleme |
 | `recovery_item_completed/checkpoint_submitted/package_completed` | Sunucu | Öğrenci | Öğe türü, kontrollü yanıt ve 72 saat içinde tamamlama |
 | `assignment_evidence_submitted/review_completed` | Sunucu | Öğrenci, öğretmen | Deneme/karakter bandı, geri bildirim süresi ve kontrollü karar |
+| `accessibility_preferences_updated` | Sunucu | Dört rol | Kimliksiz tercih türü sayısı ve kayıt başarısı |
+| `academic_accommodation_updated` | Sunucu | Admin | Tanı/gerekçe olmadan kontrollü ek süre ve mola ayarı |
+| `network_preferences_updated` | Sunucu | Dört rol | Düşük veri ve açık rızalı cihaz kuyruğu tercihleri |
+| `offline_write_queued/synced/conflicted` | İstemci | Öğretmen, öğrenci | Kimliksiz işlem türü, boyut/yaş/deneme bandı ve çatışma sonucu |
 
 Sunucu operasyonlarında sonuç sınıfları:
 
@@ -70,6 +74,9 @@ Sunucu operasyonlarında sonuç sınıfları:
 | Telafiyi 72 saatte tamamlama | ≥ %60 başlangıç hedefi | 30 gün | 30 tamamlanan paket | Hedef dışıysa öğe sayısı, kaynak erişimi ve plan kapasitesini incele; öğrenciye baskı veya seri ekleme |
 | Kanıtlı ödev geri bildirimi p50 | ≤ 48 saat | 30 gün | 30 değerlendirme | Rubric uzunluğu ve öğretmen kuyruğunu incele |
 | Yeniden deneme onayı | ≥ %60 başlangıç hedefi | 30–90 gün | 30 revize deneme | Geri bildirim açıklığını incele; öğrenciyi puanlama veya utandırma |
+| Offline eşitleme başarısı | ≥ %99 | 30 gün | 30 sonuçlanan kuyruk | Altında rollout'u büyütme; tarayıcı/ağ ve işlem türü kırılımını incele |
+| Offline çatışma oranı | < %2 | 30 gün | 30 sonuçlanan kuyruk | Sürüm sözleşmesi ve çoklu sekme davranışını incele; otomatik ezme ekleme |
+| Offline kayıt sona ermesi | < %0,5 | 30 gün | 30 kuyruğa alınan işlem | 24 saat sınırını büyütmeden önce bağlantı geri dönüşü ve kullanıcı uyarısını incele |
 
 Başarı oranı bütün kimliği doğrulanmış operasyon sonuçları üzerinden hesaplanır. Bu nedenle UX doğrulama sorunları da ürün kalitesinin parçasıdır; yalnız HTTP 5xx oranına bakılmaz. Güvenlik amaçlı reddedilen kötüye kullanım artarsa ürün SLO'sundan ayrıca güvenlik loglarıyla ayrıştırılır.
 

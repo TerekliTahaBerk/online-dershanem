@@ -97,6 +97,25 @@ test("hızlı kapanış kalite eventleri yalnız toplu sayaç taşır", () => {
   assert.equal(isClientPanelEvent(panelEventSchema.parse(event)), false);
 });
 
+test("kohort kalite eventi yalnız örneklem bandı ve toplu sayaç taşır", () => {
+  const event = { name: "cohort_quality_viewed", properties: { ruleVersion: "cohort-gain-v1", readyCohortCount: 1, suppressedCohortCount: 3, pairedStudentBand: "10-24" } };
+  assert.equal(panelEventSchema.safeParse(event).success, true);
+  assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, groupId: "secret", teacherName: "özel" } }).success, false);
+  assert.equal(isClientPanelEvent(panelEventSchema.parse(event)), false);
+});
+
+test("AI taslak eventleri prompt, çıktı veya kimlik taşımaz", () => {
+  const generated = { name: "ai_draft_generated", properties: { taskType: "ASSIGNMENT", provider: "FALLBACK", latencyBand: "0-2S", citationCount: 2, fallbackReason: "EXTERNAL_TRANSFER_NOT_READY", costBand: "0" } };
+  assert.equal(panelEventSchema.safeParse(generated).success, true);
+  assert.equal(panelEventSchema.safeParse({ ...generated, properties: { ...generated.properties, lessonId: "secret", prompt: "özel", output: "özel" } }).success, false);
+  assert.equal(isClientPanelEvent(panelEventSchema.parse(generated)), false);
+});
+
+test("pilot eventleri kullanıcı ve grup kimliği taşımadan yayın durumunu ölçer", () => {
+  assert.equal(panelEventSchema.safeParse({ name: "pilot_cohort_changed", properties: { action: "ACTIVATE", memberBand: "5-12", fourRoleCoverage: true, readiness: "WAIT" } }).success, true);
+  assert.equal(panelEventSchema.safeParse({ name: "pilot_cohort_changed", properties: { action: "ACTIVATE", memberBand: "5-12", fourRoleCoverage: true, readiness: "WAIT", groupId: "secret" } }).success, false);
+});
+
 test("plan eventleri kimlik ve görev başlığı taşımadan ölçülür", () => {
   const generated = { name: "plan_generated", properties: { ruleVersion: "adaptive-v1", taskCount: 6, capacityMinutes: 135, reasonCount: 3, rebalanced: false } };
   assert.equal(panelEventSchema.safeParse(generated).success, true);
@@ -126,4 +145,25 @@ test("kanıtlı ödev eventleri metin, öğrenci veya ödev kimliği taşımaz",
   const event = { name: "assignment_review_completed", properties: { decision: "REQUEST_CHANGES", turnaroundMs: 3600000, criterionCount: 2, interactionDurationMs: 60000, revisedAttempt: false } };
   assert.equal(panelEventSchema.safeParse(event).success, true);
   assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, studentId: "secret", assignmentId: "secret", feedback: "özel geri bildirim" } }).success, false);
+});
+
+test("check-in eventleri kontrollü seçenek taşır; kimlik ve serbest metin taşımaz", () => {
+  const event = { name: "student_check_in_submitted", properties: { energy: "STEADY", confidence: "BUILDING", barrier: "NEED_EXAMPLE", sharedWithTeacher: true, helpRequested: true, weeklyCount: 1 } };
+  assert.equal(panelEventSchema.safeParse(event).success, true);
+  assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, studentId: "secret", freeText: "özel" } }).success, false);
+  assert.equal(panelEventSchema.safeParse({ name: "student_help_responded", properties: { action: "EXTRA_EXAMPLE", responseTimeMs: 3600000, within24h: true, responseNumber: 1, firstResponse: true } }).success, true);
+});
+
+test("erişilebilirlik eventleri tanı, sağlık notu veya kullanıcı kimliği taşımaz", () => {
+  const event = { name: "accessibility_preferences_updated", properties: { activePreferenceCount: 3, reducedMotion: true, highContrast: false, largeText: true, comfortableSpacing: false, captionsPreferred: true, transcriptPreferred: false } };
+  assert.equal(panelEventSchema.safeParse(event).success, true);
+  assert.equal(panelEventSchema.safeParse({ ...event, properties: { ...event.properties, diagnosis: "özel", userId: "secret" } }).success, false);
+  assert.equal(panelEventSchema.safeParse({ name: "academic_accommodation_updated", properties: { extraTimePercent: 25, breaksAllowed: true } }).success, true);
+});
+
+test("offline eventleri yalnız işlem ve toplu kuyruk bantları taşır", () => {
+  assert.equal(panelEventSchema.safeParse({ name: "offline_write_queued", properties: { operation: "LESSON_CLOSE", payloadSizeBand: "5-16KB" } }).success, true);
+  assert.equal(panelEventSchema.safeParse({ name: "offline_write_synced", properties: { operation: "ASSIGNMENT_PROGRESS", queueAgeBand: "2-15M", attemptBand: "2-3" } }).success, true);
+  assert.equal(panelEventSchema.safeParse({ name: "offline_write_conflicted", properties: { operation: "LESSON_CLOSE", conflictType: "VERSION", lessonId: "secret" } }).success, false);
+  assert.equal(panelEventSchema.safeParse({ name: "network_preferences_updated", properties: { lowDataMode: true, offlineWritesEnabled: true, userId: "secret" } }).success, false);
 });

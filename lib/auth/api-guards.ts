@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import type { UserRole } from "@prisma/client";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 import { getSession, type SessionUser } from "@/lib/auth/session";
+import { checkPilotAccess } from "@/lib/pilot-access";
 
 /**
  * API route'ları için yetki kapısı.
@@ -56,6 +57,17 @@ export async function requireApiRole(...roles: UserRole[]): Promise<ApiAuth> {
     return {
       ok: false,
       response: NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 }),
+    };
+  }
+
+  const pilot = await checkPilotAccess(session.userId, session.role);
+  if (!pilot.allowed) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: pilot.reason === "KILL_SWITCH" ? "Pilot geçici olarak durduruldu." : "Bu pilot erişimi etkin değil." },
+        { status: pilot.reason === "KILL_SWITCH" ? 503 : 404 },
+      ),
     };
   }
 

@@ -175,6 +175,21 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({ name: z.literal("recovery_package_completed"), properties: z.object({ completionDurationMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), within72h: z.boolean(), itemCount: z.number().int().min(0).max(5) }).strict() }),
   z.object({ name: z.literal("assignment_evidence_submitted"), properties: z.object({ attemptBand: z.enum(["1", "2", "3+"]), characterBand: z.enum(["20-199", "200-499", "500+"]), late: z.boolean(), replayed: z.boolean() }).strict() }),
   z.object({ name: z.literal("assignment_review_completed"), properties: z.object({ decision: z.enum(["APPROVE", "REQUEST_CHANGES"]), turnaroundMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), criterionCount: z.number().int().min(2).max(4), interactionDurationMs: z.number().int().min(0).max(30 * 60 * 1000), revisedAttempt: z.boolean() }).strict() }),
+  z.object({ name: z.literal("student_check_in_submitted"), properties: z.object({ energy: z.enum(["LOW", "STEADY", "GOOD"]), confidence: z.enum(["NEED_GUIDANCE", "BUILDING", "CONFIDENT"]), barrier: z.enum(["NONE", "NOT_UNDERSTANDING", "TIME_LOAD", "ACCESS_TECH", "NEED_EXAMPLE", "OTHER"]), sharedWithTeacher: z.boolean(), helpRequested: z.boolean(), weeklyCount: z.number().int().min(1).max(2) }).strict() }),
+  z.object({ name: z.literal("student_help_inbox_viewed"), properties: z.object({ openCountBand: z.enum(["0", "1-5", "6-20", "21+"]), overdueCountBand: z.enum(["0", "1-5", "6-20", "21+"]) }).strict() }),
+  z.object({ name: z.literal("student_help_responded"), properties: z.object({ action: z.enum(["NEXT_LESSON", "EXTRA_EXAMPLE", "PLAN_ADJUSTED", "SHORT_CHECKIN", "RESOURCE_SHARED", "NO_ACTION_NEEDED"]), responseTimeMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), within24h: z.boolean(), responseNumber: z.number().int().min(1).max(20), firstResponse: z.boolean() }).strict() }),
+  z.object({ name: z.literal("student_help_feedback"), properties: z.object({ helpful: z.boolean() }).strict() }),
+  z.object({ name: z.literal("accessibility_preferences_updated"), properties: z.object({ activePreferenceCount: z.number().int().min(0).max(6), reducedMotion: z.boolean(), highContrast: z.boolean(), largeText: z.boolean(), comfortableSpacing: z.boolean(), captionsPreferred: z.boolean(), transcriptPreferred: z.boolean() }).strict() }),
+  z.object({ name: z.literal("academic_accommodation_updated"), properties: z.object({ extraTimePercent: z.union([z.literal(0), z.literal(25), z.literal(50), z.literal(100)]), breaksAllowed: z.boolean() }).strict() }),
+  z.object({ name: z.literal("network_preferences_updated"), properties: z.object({ lowDataMode: z.boolean(), offlineWritesEnabled: z.boolean() }).strict() }),
+  z.object({ name: z.literal("offline_write_queued"), properties: z.object({ operation: z.enum(["LESSON_CLOSE", "ASSIGNMENT_PROGRESS"]), payloadSizeBand: z.enum(["0-4KB", "5-16KB", "17-64KB"]) }).strict() }),
+  z.object({ name: z.literal("offline_write_synced"), properties: z.object({ operation: z.enum(["LESSON_CLOSE", "ASSIGNMENT_PROGRESS"]), queueAgeBand: z.enum(["0-1M", "2-15M", "16M-24H"]), attemptBand: z.enum(["1", "2-3", "4+"]) }).strict() }),
+  z.object({ name: z.literal("offline_write_conflicted"), properties: z.object({ operation: z.enum(["LESSON_CLOSE", "ASSIGNMENT_PROGRESS"]), conflictType: z.enum(["VERSION", "REJECTED", "EXPIRED"]) }).strict() }),
+  z.object({ name: z.literal("cohort_quality_viewed"), properties: z.object({ ruleVersion: z.literal("cohort-gain-v1"), readyCohortCount: z.number().int().min(0).max(4), suppressedCohortCount: z.number().int().min(0).max(4), pairedStudentBand: z.enum(["0-9", "10-24", "25-99", "100+"]) }).strict() }),
+  z.object({ name: z.literal("ai_draft_requested"), properties: z.object({ promptVersion: z.literal("teacher-draft-v1"), taskType: z.enum(["ASSIGNMENT", "MINI_CHECK"]), sourceCount: z.number().int().min(1).max(8), redactionBand: z.enum(["0", "1-2", "3+"]) }).strict() }),
+  z.object({ name: z.literal("ai_draft_generated"), properties: z.object({ taskType: z.enum(["ASSIGNMENT", "MINI_CHECK"]), provider: z.enum(["OPENAI", "FALLBACK", "STUB"]), latencyBand: z.enum(["0-2S", "2-8S", "8S+"]), citationCount: z.number().int().min(1).max(6), fallbackReason: z.enum(["NONE", "PROVIDER_DISABLED", "EXTERNAL_TRANSFER_NOT_READY", "COST_CONFIG_MISSING", "PROMPT_INJECTION", "DAILY_QUOTA", "E2E_STUB", "PROVIDER_ERROR", "SAFETY_OR_PARSE"]), costBand: z.enum(["UNKNOWN", "0", "1-999", "1000+"]) }).strict() }),
+  z.object({ name: z.literal("ai_draft_reviewed"), properties: z.object({ taskType: z.enum(["ASSIGNMENT", "MINI_CHECK"]), provider: z.enum(["OPENAI", "FALLBACK", "STUB"]), action: z.enum(["ACCEPT", "EDIT", "REJECT", "FLAG"]), changedFieldCount: z.number().int().min(0).max(4), reviewAgeBand: z.enum(["0-5M", "6M-24H", "24H+"]) }).strict() }),
+  z.object({ name: z.literal("pilot_cohort_changed"), properties: z.object({ action: z.enum(["CREATED", "ACTIVATE", "PAUSE", "RESUME", "COMPLETE", "ROLLBACK"]), memberBand: z.enum(["1-4", "5-12", "13+"]), fourRoleCoverage: z.boolean(), readiness: z.enum(["PASS", "WAIT", "BLOCK"]) }).strict() }),
 ]);
 
 export type PanelEventInput = z.infer<typeof panelEventSchema>;
@@ -189,6 +204,9 @@ const clientPanelEventNames = new Set<PanelEventInput["name"]>([
   "mock_heatmap_viewed",
   "review_queue_viewed",
   "plan_review_completed",
+  "offline_write_queued",
+  "offline_write_synced",
+  "offline_write_conflicted",
 ]);
 
 export function isClientPanelEvent(event: PanelEventInput): boolean {

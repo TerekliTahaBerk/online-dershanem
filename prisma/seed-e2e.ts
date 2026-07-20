@@ -54,6 +54,9 @@ const ids = {
   foreignInterventionCase: "e2e-intervention-foreign",
   foreignRecoveryPackage: "e2e-recovery-package-foreign",
   foreignRecoveryItem: "e2e-recovery-item-foreign",
+  privateCheckIn: "e2e-check-in-private",
+  foreignCheckIn: "e2e-check-in-foreign",
+  foreignHelpRequest: "e2e-help-request-foreign",
 };
 
 async function main() {
@@ -107,9 +110,13 @@ async function main() {
     create: { userId: ids.parent, inAppEnabled: true, emailEnabled: true, lessonSummary: true, absence: true, assignment: true, payment: true },
     update: { inAppEnabled: true, emailEnabled: true, lessonSummary: true, absence: true, assignment: true, payment: true },
   });
+  await prisma.accessibilityPreference.upsert({ where: { userId: ids.student }, create: { userId: ids.student }, update: { reducedMotion: false, highContrast: false, textScale: "DEFAULT", comfortableSpacing: false, captionsPreferred: false, transcriptPreferred: false, assessmentExtraPercent: 0, breaksAllowed: false, academicUpdatedById: null, academicUpdatedAt: null, version: 1 } });
+  for (const userId of [ids.admin, ids.teacher, ids.student, ids.parent]) await prisma.networkPreference.upsert({ where: { userId }, create: { userId }, update: { lowDataMode: false, offlineWritesEnabled: false, version: 1 } });
 
   await prisma.group.upsert({ where: { id: ids.group }, create: { id: ids.group, name: "E2E LGS Grubu", subject: "Matematik", level: "8. Sınıf", teacherId: ids.teacher }, update: { teacherId: ids.teacher, isActive: true } });
   await prisma.group.upsert({ where: { id: ids.foreignGroup }, create: { id: ids.foreignGroup, name: "Yabancı Grup", subject: "Fen", level: "8. Sınıf", teacherId: ids.otherTeacher }, update: { teacherId: ids.otherTeacher, isActive: true } });
+  await prisma.pilotCohort.deleteMany();
+  await prisma.productEvent.deleteMany();
 
   for (const studentId of [ids.studentProfile, ids.foreignStudentProfile, ids.studentProfile3, ids.studentProfile4]) {
     await prisma.enrollment.upsert({ where: { groupId_studentId: { groupId: ids.group, studentId } }, create: { groupId: ids.group, studentId }, update: { endedAt: null } });
@@ -127,6 +134,7 @@ async function main() {
 
   await prisma.recoveryPackage.deleteMany({ where: { OR: [{ lessonId: ids.recoveryLesson }, { id: ids.foreignRecoveryPackage }] } });
   await prisma.assignmentSubmission.deleteMany({ where: { assignmentId: { in: [ids.evidenceAssignment, ids.foreignEvidenceAssignment] } } });
+  await prisma.studentCheckIn.deleteMany({ where: { OR: [{ studentId: ids.studentProfile }, { id: ids.foreignCheckIn }] } });
   await prisma.attendance.deleteMany({ where: { lessonId: ids.lesson } });
   await prisma.attendance.deleteMany({ where: { lessonId: { in: [ids.recoveryLesson, ids.foreignLesson] } } });
   await prisma.lessonNote.deleteMany({ where: { lessonId: ids.lesson } });
@@ -167,7 +175,7 @@ async function main() {
   await prisma.assignment.upsert({ where: { id: ids.assignment }, create: { id: ids.assignment, groupId: ids.group, lessonId: ids.lesson, createdById: ids.teacher, title: "E2E Yeni Nesil Sorular", description: "1–12. soruları çöz ve yanlışlarını işaretle.", dueAt: new Date(Date.now() + 2 * 86400000) }, update: { isActive: true, dueAt: new Date(Date.now() + 2 * 86400000) } });
   await prisma.assignmentOutcome.upsert({ where: { assignmentId_outcomeId: { assignmentId: ids.assignment, outcomeId: ids.outcomePowers } }, create: { assignmentId: ids.assignment, outcomeId: ids.outcomePowers, linkedById: ids.teacher }, update: { linkedById: ids.teacher } });
   for (const studentId of [ids.studentProfile, ids.foreignStudentProfile, ids.studentProfile3, ids.studentProfile4]) {
-    await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.assignment, studentId } }, create: { assignmentId: ids.assignment, studentId }, update: { status: "TODO", completedAt: null } });
+    await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.assignment, studentId } }, create: { assignmentId: ids.assignment, studentId }, update: { status: "TODO", completedAt: null, version: 1, lastMutationKey: null } });
   }
   await prisma.reviewItem.deleteMany({ where: { studentId: ids.studentProfile } });
   await prisma.reviewItem.deleteMany({ where: { id: ids.reviewItems[2] } });
@@ -189,18 +197,20 @@ async function main() {
   await prisma.weeklyPlan.create({ data: { id: ids.foreignWeeklyPlan, studentId: ids.planForeignStudentProfile, weekStart: planningWeekStart(), status: "DRAFT", capacityMinutes: 45, createdById: ids.otherTeacher, tasks: { create: { scheduledFor: planningWeekStart(), position: 1, title: "Yabancı öğrenci plan görevi", durationMinutes: 20, sourceType: "REVIEW", sourceReferenceId: ids.reviewItems[2], reasonCode: "REVIEW_DUE" } } } });
   await prisma.weeklyDigest.create({ data: { id: ids.foreignWeeklyDigest, studentId: ids.planForeignStudentProfile, weekStart: digestWeekStart(), status: "DRAFT", trendBand: "STEADY", goodThingOne: "Derslere katılım ritmi bu hafta korundu.", goodThingTwo: "Çalışma adımlarında düzenli bir temel oluşuyor.", supportArea: "Küçük ve sürdürülebilir tekrar adımları faydalı olabilir.", homeQuestion: "Bu hafta sana en çok hangi çalışma adımı yardımcı oldu?", dataThrough: new Date(), generatedById: ids.otherTeacher } });
   await prisma.interventionCase.create({ data: { id: ids.foreignInterventionCase, studentId: ids.planForeignStudentProfile, reasonCode: "PLAN_STALLED", fingerprint: "e2e-intervention-foreign-fingerprint", explanation: "Yabancı öğrencinin kontrollü açıklaması.", suggestedAction: "Yabancı öğrencinin küçük eylemi.", evidenceCount: 3, windowStart: interventionWindowStart(), windowEnd: new Date(), dueAt: new Date(Date.now() + 86400000), ownerId: ids.otherTeacher, activities: { create: { type: "GENERATED" } } } });
+  await prisma.studentCheckIn.create({ data: { id: ids.privateCheckIn, studentId: ids.studentProfile, groupId: ids.group, energy: "STEADY", confidence: "BUILDING", barrier: "NONE", shareWithTeacher: false } });
+  await prisma.studentCheckIn.create({ data: { id: ids.foreignCheckIn, studentId: ids.planForeignStudentProfile, groupId: ids.foreignGroup, energy: "LOW", confidence: "NEED_GUIDANCE", barrier: "ACCESS_TECH", shareWithTeacher: true, helpRequest: { create: { id: ids.foreignHelpRequest, studentId: ids.planForeignStudentProfile, groupId: ids.foreignGroup, dueAt: new Date(Date.now() + 86400000) } } } });
   await prisma.learningMaterial.upsert({ where: { id: ids.material }, create: { id: ids.material, groupId: ids.group, lessonId: ids.lesson, createdById: ids.teacher, title: "E2E Köklü İfadeler Föyü", description: "Ders sonrası tekrar kaynağı", url: "https://example.com/e2e-material.pdf", kind: "PDF" }, update: { isActive: true } });
-  await prisma.learningMaterial.upsert({ where: { id: ids.recoveryMaterial }, create: { id: ids.recoveryMaterial, groupId: ids.group, lessonId: ids.recoveryLesson, createdById: ids.teacher, title: "E2E Telafi Mini Föyü", description: "Kaçırılan ders için kısa ortak kaynak", url: "https://example.com/e2e-recovery.pdf", kind: "PDF" }, update: { lessonId: ids.recoveryLesson, isActive: true } });
+  await prisma.learningMaterial.upsert({ where: { id: ids.recoveryMaterial }, create: { id: ids.recoveryMaterial, groupId: ids.group, lessonId: ids.recoveryLesson, createdById: ids.teacher, title: "E2E Erişilebilir Köklü İfadeler Videosu", description: "Altyazı ve metin alternatifi olan kısa ortak kaynak", url: "https://example.com/e2e-recovery.mp4", kind: "VIDEO", captionsAvailable: true, transcript: "Köklü ifadelerde önce kök içindeki ortak çarpanı belirle. Ardından sadeleştirme adımını kontrol et." }, update: { lessonId: ids.recoveryLesson, title: "E2E Erişilebilir Köklü İfadeler Videosu", description: "Altyazı ve metin alternatifi olan kısa ortak kaynak", url: "https://example.com/e2e-recovery.mp4", kind: "VIDEO", captionsAvailable: true, transcript: "Köklü ifadelerde önce kök içindeki ortak çarpanı belirle. Ardından sadeleştirme adımını kontrol et.", isActive: true } });
   await prisma.assignment.upsert({ where: { id: ids.recoveryAssignment }, create: { id: ids.recoveryAssignment, groupId: ids.group, lessonId: ids.recoveryLesson, createdById: ids.teacher, title: "E2E Telafi İki Soru", description: "Ana adımı iki kısa soruda uygula.", dueAt: new Date(recoveryStartsAt.getTime() + 73 * 60 * 60 * 1000) }, update: { lessonId: ids.recoveryLesson, isActive: true, dueAt: new Date(recoveryStartsAt.getTime() + 73 * 60 * 60 * 1000) } });
-  await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.recoveryAssignment, studentId: ids.studentProfile } }, create: { assignmentId: ids.recoveryAssignment, studentId: ids.studentProfile }, update: { status: "TODO", completedAt: null } });
+  await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.recoveryAssignment, studentId: ids.studentProfile } }, create: { assignmentId: ids.recoveryAssignment, studentId: ids.studentProfile }, update: { status: "TODO", completedAt: null, version: 1, lastMutationKey: null } });
   await prisma.assignment.upsert({ where: { id: ids.evidenceAssignment }, create: { id: ids.evidenceAssignment, groupId: ids.group, lessonId: ids.previousLesson, createdById: ids.teacher, title: "E2E Kanıtlı Problem Çözümü", description: "Çözüm yolunu ve son kontrolünü kısa biçimde açıkla.", dueAt: new Date(Date.now() + 2 * 86400000), evidenceRequired: true }, update: { isActive: true, evidenceRequired: true, dueAt: new Date(Date.now() + 2 * 86400000) } });
   await prisma.assignmentRubricCriterion.upsert({ where: { assignmentId_position: { assignmentId: ids.evidenceAssignment, position: 1 } }, create: { id: ids.evidenceCriteria[0], assignmentId: ids.evidenceAssignment, position: 1, label: "Çözüm yolunu açıkça gösterir" }, update: { label: "Çözüm yolunu açıkça gösterir" } });
   await prisma.assignmentRubricCriterion.upsert({ where: { assignmentId_position: { assignmentId: ids.evidenceAssignment, position: 2 } }, create: { id: ids.evidenceCriteria[1], assignmentId: ids.evidenceAssignment, position: 2, label: "Sonucunu kontrol eder" }, update: { label: "Sonucunu kontrol eder" } });
-  await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.evidenceAssignment, studentId: ids.studentProfile } }, create: { assignmentId: ids.evidenceAssignment, studentId: ids.studentProfile }, update: { status: "TODO", completedAt: null } });
+  await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.evidenceAssignment, studentId: ids.studentProfile } }, create: { assignmentId: ids.evidenceAssignment, studentId: ids.studentProfile }, update: { status: "TODO", completedAt: null, version: 1, lastMutationKey: null } });
   await prisma.assignment.upsert({ where: { id: ids.foreignEvidenceAssignment }, create: { id: ids.foreignEvidenceAssignment, groupId: ids.foreignGroup, lessonId: ids.foreignLesson, createdById: ids.otherTeacher, title: "Yabancı kanıtlı çalışma", dueAt: new Date(Date.now() + 2 * 86400000), evidenceRequired: true }, update: { isActive: true, evidenceRequired: true } });
   await prisma.assignmentRubricCriterion.upsert({ where: { assignmentId_position: { assignmentId: ids.foreignEvidenceAssignment, position: 1 } }, create: { id: ids.foreignEvidenceCriteria[0], assignmentId: ids.foreignEvidenceAssignment, position: 1, label: "Yabancı ölçüt bir" }, update: { label: "Yabancı ölçüt bir" } });
   await prisma.assignmentRubricCriterion.upsert({ where: { assignmentId_position: { assignmentId: ids.foreignEvidenceAssignment, position: 2 } }, create: { id: ids.foreignEvidenceCriteria[1], assignmentId: ids.foreignEvidenceAssignment, position: 2, label: "Yabancı ölçüt iki" }, update: { label: "Yabancı ölçüt iki" } });
-  await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.foreignEvidenceAssignment, studentId: ids.planForeignStudentProfile } }, create: { assignmentId: ids.foreignEvidenceAssignment, studentId: ids.planForeignStudentProfile, status: "IN_PROGRESS" }, update: { status: "IN_PROGRESS", completedAt: null } });
+  await prisma.assignmentProgress.upsert({ where: { assignmentId_studentId: { assignmentId: ids.foreignEvidenceAssignment, studentId: ids.planForeignStudentProfile } }, create: { assignmentId: ids.foreignEvidenceAssignment, studentId: ids.planForeignStudentProfile, status: "IN_PROGRESS" }, update: { status: "IN_PROGRESS", completedAt: null, version: 1, lastMutationKey: null } });
   await prisma.assignmentSubmission.create({ data: { id: ids.foreignSubmission, assignmentId: ids.foreignEvidenceAssignment, studentId: ids.planForeignStudentProfile, attemptNumber: 1, textEvidence: "Yabancı öğrencinin yalnız kendi öğretmeninin görebileceği kanıt metni.", idempotencyKey: "e2e-user-plan-foreign:foreign_submission_key_001" } });
   await prisma.learningMaterial.upsert({
     where: { id: ids.foreignPrivateMaterial },

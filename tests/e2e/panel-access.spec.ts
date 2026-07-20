@@ -24,6 +24,8 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     await expect(page).toHaveURL(/\/panel\/ogretmen/);
     await page.goto("/panel/yonetim");
     await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
+    await page.goto("/panel/yonetim/kalite");
+    await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
     await page.goto("/panel/ogrenci");
     await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
     const exportStatus = await page.evaluate(async () => (await fetch("/api/panel/reports/export?range=30")).status);
@@ -37,6 +39,10 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
     await page.goto("/panel/veli");
     await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
+    await page.goto("/panel/ogretmen/ai-yardimci");
+    await expect(page.getByText(/sayfa bulunamadı/i)).toBeVisible();
+    const aiStatus = await page.evaluate(async () => (await fetch("/api/panel/ai-drafts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ lessonId: "e2e-lesson", taskType: "ASSIGNMENT", requestKey: crypto.randomUUID() }) })).status);
+    expect(aiStatus).toBe(403);
   });
 
   test("veli URL ile başka öğrenciyi açamaz", async ({ page }) => {
@@ -74,6 +80,8 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     expect(recoveryStatus).toBe(404);
     const submissionStatus = await page.evaluate(async () => (await fetch("/api/panel/assignment-submissions/e2e-assignment-submission-foreign/review", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1, decision: "APPROVE", feedback: "Yabancı erişim denemesi", interactionDurationMs: 1000, scores: [{ criterionId: "e2e-rubric-foreign-method", level: "MEETS" }, { criterionId: "e2e-rubric-foreign-check", level: "MEETS" }] }) })).status);
     expect(submissionStatus).toBe(404);
+    const helpStatus = await page.evaluate(async () => (await fetch("/api/panel/student-help-requests/e2e-help-request-foreign/respond", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1, action: "EXTRA_EXAMPLE" }) })).status);
+    expect(helpStatus).toBe(404);
   });
 
   test("öğrenci başka öğrencinin tekrar öğesini yanıtlayamaz", async ({ page }) => {
@@ -84,6 +92,25 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     expect(recoveryStatus).toBe(404);
     const submissionStatus = await page.evaluate(async () => (await fetch("/api/panel/assignments/e2e-assignment-evidence-foreign/submissions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ textEvidence: "Başka öğrencinin çalışmasına gönderilememesi gereken yeterince uzun kanıt.", idempotencyKey: "foreign_assignment_attempt_001" }) })).status);
     expect(submissionStatus).toBe(404);
+    const helpStatus = await page.evaluate(async () => (await fetch("/api/panel/student-help-requests/e2e-help-request-foreign/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1, helpful: true }) })).status);
+    expect(helpStatus).toBe(404);
+  });
+
+  test("veli check-in ekranını ve yazma API'sini kullanamaz", async ({ page }) => {
+    await login(page, accounts.parent);
+    await page.goto("/panel/ogrenci/check-in");
+    await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
+    const status = await page.evaluate(async () => (await fetch("/api/panel/student-check-ins", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ groupId: "e2e-group", energy: "GOOD", confidence: "CONFIDENT", barrier: "NONE", shareWithTeacher: false, helpRequested: false }) })).status);
+    expect(status).toBe(403);
+  });
+
+  test("akademik düzenlemeyi yalnız admin değiştirebilir ve self API akademik alan kabul etmez", async ({ page }) => {
+    await login(page, accounts.teacher);
+    const teacherStatus = await page.evaluate(async () => (await fetch("/api/panel/users/e2e-user-student/accessibility", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1, assessmentExtraPercent: 100, breaksAllowed: true }) })).status);
+    expect(teacherStatus).toBe(403);
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.student);
+    const studentStatus = await page.evaluate(async () => (await fetch("/api/panel/accessibility/preferences", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1, reducedMotion: false, highContrast: false, textScale: "DEFAULT", comfortableSpacing: false, captionsPreferred: false, transcriptPreferred: false, assessmentExtraPercent: 100 }) })).status);
+    expect(studentStatus).toBe(400);
   });
 
   for (const [role, account] of Object.entries(accounts) as [keyof typeof accounts, (typeof accounts)[keyof typeof accounts]][]) {

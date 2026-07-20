@@ -39,7 +39,7 @@ test.describe("panel deneyimi", () => {
 
   test("admin temel yönetim bölümlerini tek oturumda açabilir", async ({ page }) => {
     await login(page, accounts.admin);
-    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/bildirimler"]) {
+    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/yonetim/kalite", "/panel/bildirimler"]) {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.getByRole("main")).toBeVisible();
@@ -49,6 +49,44 @@ test.describe("panel deneyimi", () => {
     expect(csv.type).toContain("text/csv");
     expect(csv.disposition).toContain("attachment");
     expect(csv.text).toContain("Kategori");
+  });
+
+  test("admin kalite panosu küçük kohortu bastırır ve sıralama üretmez", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, accounts.admin);
+    await page.goto("/panel/yonetim/kalite");
+    await expect(page.getByRole("heading", { name: "Öğrenme kalitesini adil bir zeminde görün." })).toBeVisible();
+    await expect(page.getByText(/öğretmen etkisi.*ölçmez/i)).toBeVisible();
+    await expect(page.getByText(/uygun öğrenci/).first()).toBeVisible();
+    await expect(page.getByText(/öğretmen sıralaması/i)).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(result.violations).toEqual([]);
+  });
+
+  test("öğretmen kaynaklı AI taslağını düzenleyip onaylar; içerik otomatik yayınlanmaz", async ({ page }) => {
+    let generatePayload: Record<string, unknown> | null = null;
+    page.on("request", (request) => { if (request.url().endsWith("/api/panel/ai-drafts") && request.method() === "POST") generatePayload = request.postDataJSON() as Record<string, unknown>; });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, accounts.teacher);
+    await page.goto("/panel/ogretmen/ai-yardimci");
+    await expect(page.getByRole("heading", { name: "Kaynağı görün, taslağı siz onaylayın." })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(accessibility.violations).toEqual([]);
+    await page.getByRole("button", { name: "Kaynaklı taslak hazırla" }).click();
+    await expect(page.getByText("Taslak hazır. Kaynakları ve içeriği kontrol edin.")).toBeVisible();
+    const draft = page.getByRole("article").filter({ hasText: "Ödev taslağı" }).first();
+    await expect(draft.getByText("İnceleme bekliyor")).toBeVisible();
+    await expect(draft.getByText("Kullanılan kaynaklar")).toBeVisible();
+    await draft.getByLabel("Başlık").fill("E2E öğretmen onaylı taslak");
+    await draft.getByRole("button", { name: "Düzenleyip onayla" }).click();
+    await expect(draft.getByText("İnsan onayı kaydedildi. İçerik otomatik yayınlanmadı.")).toBeVisible();
+    await expect(page.getByText("Öğretmen onaylı").first()).toBeVisible();
+    const replay = await page.evaluate(async (payload) => { const response = await fetch("/api/panel/ai-drafts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, generatePayload);
+    expect(replay.status).toBe(200); expect(replay.body.replayed).toBe(true);
+    await page.goto("/panel/ogretmen/odevler");
+    await expect(page.getByText("E2E öğretmen onaylı taslak", { exact: true })).toHaveCount(0);
   });
 
   test("öğrenci deneme girer, öğretmen eğilimi görür ve veli sakin özeti açar", async ({ page }) => {
@@ -376,6 +414,145 @@ test.describe("panel deneyimi", () => {
     studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
     await expect(studentCard.getByText("2. deneme · Onaylandı", { exact: true })).toBeVisible();
     await expect(studentCard.getByText("Karşılıyor", { exact: false }).first()).toBeVisible();
+  });
+
+  test("öğrenci kontrollü yardım ister, öğretmen küçük adım seçer ve öğrenci faydasını işaretler", async ({ page }) => {
+    await login(page, accounts.student);
+    await page.goto("/panel/ogrenci/check-in");
+    await expect(page.getByRole("heading", { name: "Nasıl ilerlediğini fark et, gerekirse yardım iste." })).toBeVisible();
+    await expect(page.getByText("Veliye hiçbir durumda gösterilmez.")).toBeVisible();
+    await page.getByRole("button", { name: "Enerjim düşük" }).click();
+    await page.getByRole("button", { name: "Yönlendirmeye ihtiyacım var" }).click();
+    await page.getByRole("button", { name: "Bir örneğe daha ihtiyacım var" }).click();
+    await page.getByLabel("Öğretmenimden yardım istiyorum").check();
+    await page.getByRole("button", { name: "Check-in'i kaydet" }).click();
+    await expect(page.getByText("Check-in kaydedildi.")).toBeVisible();
+    await expect(page.getByText("Öğretmen yanıtı bekleniyor")).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.teacher);
+    await page.goto("/panel/ogretmen/yardim");
+    const request = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
+    await expect(request.getByText("Bir örneğe daha ihtiyacım var", { exact: false })).toBeVisible();
+    await request.getByRole("button", { name: "Ek örnek hazırladım" }).click();
+    await expect(request.getByText("Son adım: Ek örnek hazırladım")).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click();
+    await login(page, accounts.student);
+    await page.goto("/panel/ogrenci/check-in");
+    const history = page.getByRole("article").filter({ hasText: "Ek örnek hazırladım" }).first();
+    await history.getByRole("button", { name: "İşime yaradı" }).click();
+    await expect(history.getByText("Destek tamamlandı")).toBeVisible();
+  });
+
+  test("erişilebilirlik tercihleri uygulanır, admin işlevsel düzenleme atar ve öğretmen yalnız desteği görür", async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.setViewportSize({ width: 320, height: 800 });
+    await login(page, accounts.student);
+    await page.goto("/panel/erisilebilirlik");
+    await expect(page.getByRole("heading", { name: "Paneli çalışma biçiminize uyarlayın." })).toBeVisible();
+    for (const name of ["Hareketi azalt", "Yüksek kontrast", "Büyük metin", "Rahat satır aralığı", "Altyazılı medya", "Metin dökümü"]) await page.getByRole("button", { name: new RegExp(name) }).click();
+    await page.getByRole("button", { name: "Tercihleri kaydet" }).click();
+    await expect(page.getByText("Tercihler kaydedildi ve panele uygulandı.")).toBeVisible();
+    await expect.poll(() => page.locator("html").getAttribute("data-panel-motion")).toBe("reduced");
+    await expect(page.locator("html")).toHaveAttribute("data-panel-contrast", "high");
+    await expect(page.locator("html")).toHaveAttribute("data-panel-text-scale", "large");
+    await expect(page.locator("html")).toHaveAttribute("data-panel-spacing", "comfortable");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(accessibility.violations).toEqual([]);
+    await page.reload();
+    const skipLink = page.getByRole("link", { name: "Ana içeriğe geç" });
+    await skipLink.focus();
+    await expect(skipLink).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#panel-content$/);
+
+    await page.goto("/panel/ogrenci/materyaller");
+    const accessibleMaterial = page.getByRole("article").filter({ hasText: "E2E Erişilebilir Köklü İfadeler Videosu" });
+    await expect(accessibleMaterial.getByText("Tercihinle uyumlu")).toBeVisible();
+    await accessibleMaterial.getByText("Metin dökümünü oku").click();
+    await expect(accessibleMaterial.getByText(/önce kök içindeki ortak çarpanı belirle/)).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.admin);
+    await page.goto("/panel/yonetim/kullanicilar/e2e-user-student");
+    await page.getByLabel("Değerlendirme ek süresi").selectOption("25");
+    await page.getByLabel("Planlı kısa molaya izin ver").check();
+    await page.getByRole("button", { name: "Düzenlemeyi kaydet" }).click();
+    await expect(page.getByText("İşlevsel akademik düzenleme kaydedildi.")).toBeVisible();
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.teacher);
+    await page.goto("/panel/ogretmen/gruplar");
+    const student = page.getByText("Ada Öğrenci").locator("..");
+    await expect(student.getByText("Değerlendirmede %25 ek süre")).toBeVisible();
+    await expect(student.getByText("Planlı kısa mola")).toBeVisible();
+    await expect(page.getByText(/tanı|disleksi|sağlık raporu/i)).toHaveCount(0);
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.student);
+    await page.goto("/panel/erisilebilirlik");
+    await expect(page.getByText("%25 ek değerlendirme süresi")).toBeVisible();
+    await expect(page.getByText("Planlı kısa mola", { exact: true })).toBeVisible();
+  });
+
+  test("düşük veri modu özel veriyi cachelemez; öğrenci ve öğretmen işlemleri çevrimdışı eşitlenir", async ({ page, context }) => {
+    test.setTimeout(75_000);
+    await login(page, accounts.student);
+    await page.goto("/panel/veri-kullanimi");
+    await page.getByRole("button", { name: /Düşük veri modu/ }).click();
+    await page.getByRole("button", { name: /Güvenli çevrimdışı yazma/ }).click();
+    await page.getByRole("button", { name: "Tercihleri kaydet" }).click();
+    await expect(page.getByText("Veri kullanımı tercihleri kaydedildi.")).toBeVisible();
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-panel-low-data", "true");
+    await page.goto("/panel/ogrenci/materyaller");
+    await expect(page.getByText(/Düşük veri açık/)).toBeVisible();
+    const accessibleMaterial = page.getByRole("article").filter({ hasText: "E2E Erişilebilir Köklü İfadeler Videosu" });
+    await expect(accessibleMaterial.getByText("Metin dökümünü oku")).toBeVisible();
+    await expect(accessibleMaterial.getByRole("link", { name: /Videoyu aç \(veri kullanır\)/ })).toBeVisible();
+
+    await page.goto("/panel/ogrenci/odevler");
+    const assignment = page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" });
+    await context.setOffline(true);
+    await assignment.getByRole("button", { name: "Çalışıyorum" }).click();
+    await expect(page.getByText(/ödev durumu bu cihazda güvenle bekliyor/i)).toBeVisible();
+    await expect(page.getByText(/1 güvenli işlem cihazda bekliyor/i)).toBeVisible();
+    await context.setOffline(false);
+    await expect(page.getByText(/ödev durumu güvenle eşitlendi/i)).toBeVisible({ timeout: 10_000 });
+    await page.reload();
+    await expect(page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).getByRole("button", { name: "Çalışıyorum" })).toHaveAttribute("aria-pressed", "true");
+
+    const conflict = await page.evaluate(async () => {
+      const url = "/api/panel/assignments/e2e-assignment/progress";
+      const firstPayload = { status: "TODO", expectedVersion: 2, mutationKey: crypto.randomUUID() };
+      const send = async (payload: Record<string, unknown>) => { const response = await fetch(url, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; };
+      const first = await send(firstPayload); const replay = await send(firstPayload); const stale = await send({ status: "DONE", expectedVersion: 2, mutationKey: crypto.randomUUID() });
+      return { first, replay, stale };
+    });
+    expect(conflict.first.status).toBe(200);
+    expect(conflict.replay.body.replayed).toBe(true);
+    expect(conflict.stale.status).toBe(409);
+    const privateCacheEntries = await page.evaluate(async () => (await Promise.all((await caches.keys()).map(async (name) => (await caches.open(name)).keys()))).flat().map((request) => new URL(request.url).pathname).filter((path) => path.startsWith("/panel") || path.startsWith("/api/")));
+    expect(privateCacheEntries).toEqual([]);
+
+    await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.teacher);
+    await page.goto("/panel/veri-kullanimi");
+    await page.getByRole("button", { name: /Güvenli çevrimdışı yazma/ }).click();
+    await page.getByRole("button", { name: "Tercihleri kaydet" }).click();
+    await expect(page.getByText("Veri kullanımı tercihleri kaydedildi.")).toBeVisible();
+    await page.reload(); await page.goto("/panel/ogretmen");
+    await page.getByRole("button", { name: /Geçen dersten akıllı öneri/ }).click();
+    await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Çevrimdışı kapanış öncesi ortak ders notu.");
+    await page.getByRole("textbox", { name: "Bir sonraki hedef" }).last().fill("Bağlantı gelince güvenle eşitlemek.");
+    await page.getByLabel("Kazanım erteleme nedeni").selectOption("COMPLETE_LATER");
+    await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 8_000 });
+    await context.setOffline(true);
+    await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Bağlantı yokken cihazda bekleyen ortak ders notu.");
+    await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 8_000 });
+    await page.getByRole("button", { name: "Dersi güvenle kapat" }).click();
+    await expect(page.getByText(/ders kapanışı bu cihazda en fazla 24 saat güvenle bekliyor/i)).toBeVisible();
+    await context.setOffline(false);
+    await expect(page.getByText(/bekleyen ders kapanışı güvenle eşitlendi/i)).toBeVisible({ timeout: 12_000 });
+    await expect(page.getByRole("button", { name: "Ders tamamlandı" })).toBeDisabled();
   });
 
   test("takvim dışa aktarma rol sınırlarını ve toplantı bağlantısı gizliliğini korur", async ({ page }) => {

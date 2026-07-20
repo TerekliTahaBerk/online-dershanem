@@ -9,6 +9,10 @@ export type PanelFeatureFlags = {
   interventionInbox: boolean;
   recoveryPackage: boolean;
   assignmentEvidence: boolean;
+  studentCheckIn: boolean;
+  accessibilityProfile: boolean;
+  offlineMode: boolean;
+  cohortQuality: boolean;
   teacherAiDrafts: boolean;
 };
 
@@ -23,6 +27,10 @@ const defaults: PanelFeatureFlags = {
   interventionInbox: false,
   recoveryPackage: false,
   assignmentEvidence: false,
+  studentCheckIn: false,
+  accessibilityProfile: false,
+  offlineMode: false,
+  cohortQuality: false,
   teacherAiDrafts: false,
 };
 
@@ -37,6 +45,10 @@ const environmentKeys: Record<keyof PanelFeatureFlags, string> = {
   interventionInbox: "PANEL_FEATURE_INTERVENTION_INBOX",
   recoveryPackage: "PANEL_FEATURE_RECOVERY_PACKAGE",
   assignmentEvidence: "PANEL_FEATURE_ASSIGNMENT_EVIDENCE",
+  studentCheckIn: "PANEL_FEATURE_STUDENT_CHECK_IN",
+  accessibilityProfile: "PANEL_FEATURE_ACCESSIBILITY_PROFILE",
+  offlineMode: "PANEL_FEATURE_OFFLINE_MODE",
+  cohortQuality: "PANEL_FEATURE_COHORT_QUALITY",
   teacherAiDrafts: "PANEL_FEATURE_TEACHER_AI_DRAFTS",
 };
 

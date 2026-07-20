@@ -29,7 +29,9 @@ export async function POST(request: Request) {
   const groupId = String(form?.get("groupId") || "");
   const title = String(form?.get("title") || "").trim();
   const description = String(form?.get("description") || "").trim();
-  if (!(file instanceof File) || !groupId || title.length < 2 || title.length > 140 || description.length > 1000) return NextResponse.json({ error: "Dosya ve materyal alanlarını kontrol edin." }, { status: 400 });
+  const captionsAvailable = form?.get("captionsAvailable") === "on";
+  const transcript = String(form?.get("transcript") || "").trim();
+  if (!(file instanceof File) || !groupId || title.length < 2 || title.length > 140 || description.length > 1000 || transcript.length > 8000) return NextResponse.json({ error: "Dosya ve materyal alanlarını kontrol edin." }, { status: 400 });
   const kind = ALLOWED_TYPES.get(file.type);
   if (!kind) return NextResponse.json({ error: "Yalnızca PDF veya MP4 dosyası yükleyebilirsiniz." }, { status: 415 });
   if (!file.size || file.size > MAX_FILE_SIZE) return NextResponse.json({ error: "Dosya boyutu en fazla 4 MB olabilir." }, { status: 413 });
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
   const blob = await put(`panel-materials/${group.id}/${cleanFileName(file.name)}`, file, { access: "private", addRandomSuffix: true, contentType: file.type });
   let material;
   try {
-    material = await prisma.learningMaterial.create({ data: { groupId: group.id, createdById: auth.session.userId, title, description: description || null, url: blob.url, blobPathname: blob.pathname, fileName: file.name.slice(0, 255), mimeType: file.type, fileSize: file.size, kind } });
+    material = await prisma.learningMaterial.create({ data: { groupId: group.id, createdById: auth.session.userId, title, description: description || null, url: blob.url, blobPathname: blob.pathname, fileName: file.name.slice(0, 255), mimeType: file.type, fileSize: file.size, kind, captionsAvailable: kind === "VIDEO" && captionsAvailable, transcript: transcript || null } });
   } catch (error) {
     await del(blob.url).catch(() => undefined);
     throw error;

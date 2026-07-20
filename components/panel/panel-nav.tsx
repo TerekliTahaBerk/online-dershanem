@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Bell, BookOpenCheck, CalendarDays, ChartNoAxesCombined, ClipboardCheck, CreditCard, HeartHandshake, History, Inbox, LayoutDashboard, Library, ListChecks, PackageCheck, RotateCcw, UsersRound } from "lucide-react";
+import { Accessibility, BarChart3, Bell, BookOpenCheck, Bot, CalendarDays, ChartNoAxesCombined, ClipboardCheck, CreditCard, HandHeart, HeartHandshake, History, Inbox, LayoutDashboard, Library, ListChecks, PackageCheck, Rocket, RotateCcw, UsersRound, WifiOff } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 
 type NavItem = { href: string; label: string; hint?: string; icon: LucideIcon };
@@ -14,6 +14,11 @@ const adaptivePlanEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_ADAPTIVE_PLAN 
 const parentWeeklyDigestEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_PARENT_WEEKLY_DIGEST === "true";
 const interventionInboxEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_INTERVENTION_INBOX === "true";
 const recoveryPackageEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_RECOVERY_PACKAGE === "true";
+const studentCheckInEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN === "true";
+const accessibilityProfileEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_ACCESSIBILITY_PROFILE === "true";
+const offlineModeEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_OFFLINE_MODE === "true";
+const cohortQualityEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_COHORT_QUALITY === "true";
+const teacherAiDraftsEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_TEACHER_AI_DRAFTS === "true";
 
 const NAV: Record<UserRole, (root: string) => NavItem[]> = {
   ADMIN: (root) => [
@@ -27,7 +32,11 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     { href: `${root}/isler`, label: "Operasyon", hint: "Talepler ve ödemeler", icon: CreditCard },
     { href: `${root}/kayitlar`, label: "İşlem geçmişi", hint: "Değişiklik ve güvenlik izi", icon: History },
     { href: `${root}/raporlar`, label: "Raporlar", hint: "Katılım ve tamamlama", icon: BarChart3 },
+    { href: `${root}/pilot`, label: "Pilot yayını", hint: "Kohort, kapılar ve geri alma", icon: Rocket },
+    ...(cohortQualityEnabled ? [{ href: `${root}/kalite`, label: "Öğrenme kalitesi", hint: "Adil kohort gelişimi", icon: BarChart3 }] : []),
     { href: "/panel/bildirimler", label: "Bildirimler", hint: "Son gelişmeler", icon: Bell },
+    ...(accessibilityProfileEnabled ? [{ href: "/panel/erisilebilirlik", label: "Erişilebilirlik", hint: "Görünüm ve işlevsel destek", icon: Accessibility }] : []),
+    ...(offlineModeEnabled ? [{ href: "/panel/veri-kullanimi", label: "Veri kullanımı", hint: "Düşük veri ve çevrimdışı kayıt", icon: WifiOff }] : []),
   ],
   TEACHER: (root) => [
     { href: root, label: "Bugün", icon: BookOpenCheck },
@@ -40,8 +49,12 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     ...(recoveryPackageEnabled ? [{ href: `${root}/telafi`, label: "Telafi paketleri", icon: PackageCheck }] : []),
     ...(parentWeeklyDigestEnabled ? [{ href: `${root}/ozetler`, label: "Veli özetleri", icon: HeartHandshake }] : []),
     ...(interventionInboxEnabled ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu", icon: Inbox }] : []),
+    ...(studentCheckInEnabled ? [{ href: `${root}/yardim`, label: "Yardım istekleri", icon: HandHeart }] : []),
+    ...(teacherAiDraftsEnabled ? [{ href: `${root}/ai-yardimci`, label: "Taslak yardımcısı", icon: Bot }] : []),
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
     { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
+    ...(accessibilityProfileEnabled ? [{ href: "/panel/erisilebilirlik", label: "Erişilebilirlik", icon: Accessibility }] : []),
+    ...(offlineModeEnabled ? [{ href: "/panel/veri-kullanimi", label: "Veri kullanımı", icon: WifiOff }] : []),
   ],
   STUDENT: (root) => [
     { href: root, label: "Özet", icon: LayoutDashboard },
@@ -53,8 +66,11 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     ...(adaptivePlanEnabled ? [{ href: `${root}/plan`, label: "Haftalık planım", icon: ListChecks }] : []),
     ...(recoveryPackageEnabled ? [{ href: `${root}/telafi`, label: "Telafi adımım", icon: PackageCheck }] : []),
     ...(parentWeeklyDigestEnabled ? [{ href: `${root}/haftalik`, label: "Haftalık özet", icon: HeartHandshake }] : []),
+    ...(studentCheckInEnabled ? [{ href: `${root}/check-in`, label: "Nasılım?", icon: HandHeart }] : []),
     { href: `${root}/materyaller`, label: "Materyaller", icon: Library },
     { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
+    ...(accessibilityProfileEnabled ? [{ href: "/panel/erisilebilirlik", label: "Erişilebilirlik", icon: Accessibility }] : []),
+    ...(offlineModeEnabled ? [{ href: "/panel/veri-kullanimi", label: "Veri kullanımı", icon: WifiOff }] : []),
   ],
   PARENT: (root) => [
     { href: root, label: "Gelişim", icon: LayoutDashboard },
@@ -63,6 +79,8 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", icon: ChartNoAxesCombined }] : []),
     ...(parentWeeklyDigestEnabled ? [{ href: `${root}/haftalik`, label: "Haftalık özet", icon: HeartHandshake }] : []),
     { href: "/panel/bildirimler", label: "Bildirimler", icon: Bell },
+    ...(accessibilityProfileEnabled ? [{ href: "/panel/erisilebilirlik", label: "Erişilebilirlik", icon: Accessibility }] : []),
+    ...(offlineModeEnabled ? [{ href: "/panel/veri-kullanimi", label: "Veri kullanımı", icon: WifiOff }] : []),
   ],
 };
 

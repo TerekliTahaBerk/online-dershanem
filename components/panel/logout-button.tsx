@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { useOfflineSync } from "@/components/panel/offline-sync-provider";
 
 export function LogoutButton({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const { clearDeviceQueue } = useOfflineSync();
 
   async function onLogout() {
     setPending(true);
+    await clearDeviceQueue();
     try {
       await fetch("/api/auth/logout", { method: "POST" });
     } catch {

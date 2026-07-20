@@ -14,7 +14,7 @@ Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kul
 
 `PANEL_FEATURE_BASELINE_METRICS` varsayılan olarak açıktır. Öğretmenin ders kapanışında yalnız süre, grup büyüklüğü, doldurulan alan sayısı, taslak kayıt sayısı ve değişiklik sayısı gibi toplu ürün sinyallerini structured log'a yazar. Not metni, öğrenci adı, öğrenci/öğretmen kimliği veya ders kimliği event payload'ına alınmaz.
 
-Gelecek öğrenme özellikleri `PANEL_FEATURE_LEARNING_OUTCOMES`, `PANEL_FEATURE_MOCK_EXAM_ANALYSIS`, `PANEL_FEATURE_REVIEW_QUEUE`, `PANEL_FEATURE_ADAPTIVE_PLAN`, `PANEL_FEATURE_PARENT_WEEKLY_DIGEST`, `PANEL_FEATURE_INTERVENTION_INBOX`, `PANEL_FEATURE_RECOVERY_PACKAGE`, `PANEL_FEATURE_ASSIGNMENT_EVIDENCE` ve `PANEL_FEATURE_TEACHER_AI_DRAFTS` bayraklarıyla yönetilir. Bunların güvenli varsayılanı kapalıdır. Bir bayrak yalnız tam olarak `true` değeriyle açılır; değişiklik deploy gerektirir.
+Gelecek öğrenme özellikleri `PANEL_FEATURE_LEARNING_OUTCOMES`, `PANEL_FEATURE_MOCK_EXAM_ANALYSIS`, `PANEL_FEATURE_REVIEW_QUEUE`, `PANEL_FEATURE_ADAPTIVE_PLAN`, `PANEL_FEATURE_PARENT_WEEKLY_DIGEST`, `PANEL_FEATURE_INTERVENTION_INBOX`, `PANEL_FEATURE_RECOVERY_PACKAGE`, `PANEL_FEATURE_ASSIGNMENT_EVIDENCE`, `PANEL_FEATURE_STUDENT_CHECK_IN`, `PANEL_FEATURE_ACCESSIBILITY_PROFILE`, `PANEL_FEATURE_OFFLINE_MODE`, `PANEL_FEATURE_COHORT_QUALITY` ve `PANEL_FEATURE_TEACHER_AI_DRAFTS` bayraklarıyla yönetilir. Bunların güvenli varsayılanı kapalıdır. Bir bayrak yalnız tam olarak `true` değeriyle açılır; değişiklik deploy gerektirir.
 
 İlk baz çizgi için en az iki hafta şu log event'lerini izleyin:
 
@@ -69,6 +69,28 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 ### Kanıtlı ödev ve rubric rollout'u
 
 `0053_assignment_evidence_rubric` migration'ından sonra `PANEL_FEATURE_ASSIGNMENT_EVIDENCE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_ASSIGNMENT_EVIDENCE=true` birlikte açılır. İlk pilotta geri bildirim p50, yeniden deneme onayı, öğretmen değerlendirme süresi ve yatay erişim reddi izlenir. Dosya kanıtı bu bayrakla açılmaz; tarama ve metadata temizleme ayrı release gate'idir. Ayrıntılar [kanıtlı ödev standardında](./assignment-evidence-rubric-operations.md) tanımlıdır.
+
+`0054_student_check_in_help` migration'ından sonra `PANEL_FEATURE_STUDENT_CHECK_IN=true` ve `NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN=true` birlikte açılır. Özel check-in öğretmen/veli/admin ekranına taşınmaz; yardım isteği yalnız seçilen aktif grup öğretmenine gider. İlk yanıt p50, 24 saat SLA ve öğrenci faydalılık oranı izlenir. Ayrıntılar [check-in ve yardım standardında](./student-check-in-help-operations.md) tanımlıdır.
+
+### Erişilebilirlik ve makul düzenleme rollout'u
+
+`0055_accessibility_preferences` migration'ından sonra `PANEL_FEATURE_ACCESSIBILITY_PROFILE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_ACCESSIBILITY_PROFILE=true` birlikte açılır. Sistem tanı veya sağlık belgesi toplamaz; kullanıcı işlevsel arayüz tercihlerini kendisi, akademik ek süre ve mola yönergesini yalnız admin yönetir. İlk pilotta klavye, `%200` zoom, `320 px` reflow, tercih kayıt başarısı, öğretmen grup sınırı ve materyal altyazı/transkript kapsamı doğrulanır. Ayrıntılar [erişilebilirlik ve makul düzenleme standardında](./accessibility-accommodation-operations.md) tanımlıdır.
+
+### Offline-first ve düşük veri rollout'u
+
+`0056_offline_low_data` migration'ından sonra `PANEL_FEATURE_OFFLINE_MODE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_OFFLINE_MODE=true` birlikte açılır. Çevrimdışı yazma varsayılan kapalıdır; yalnız ders kapanışı ve kontrollü ödev durumu allowlist'tedir. Service worker private panel/API/materyal yanıtını cache'lemez. İlk pilotta eşitleme, çatışma, sona erme ve cache sızıntısı guardrail'leri izlenir. Ayrıntılar [offline-first ve düşük veri standardında](./offline-low-data-operations.md) tanımlıdır.
+
+### Kohort öğrenme kazancı ve kalite panosu rollout'u
+
+Önce kazanım ve deneme veri kalitesi doğrulanır; ardından `PANEL_FEATURE_COHORT_QUALITY=true` ile `NEXT_PUBLIC_PANEL_FEATURE_COHORT_QUALITY=true` birlikte açılır. Yeni tablo veya migration gerektirmez. İlk pilotta eşleşme kapsamı, bastırılan kohort sayısı, veri tazeliği ve yorumlama ihlalleri incelenir. Panel, öğretmen değerlendirmesi, prim veya öğrenci sıralaması için kullanılmaz. Ayrıntılar [kohort kalite panosu standardında](./cohort-learning-quality-operations.md) tanımlıdır.
+
+### Güvenli AI öğretmen yardımcısı rollout'u
+
+`0057_safe_teacher_ai_drafts` migration'ından sonra önce yalnız `AI_DRAFT_PROVIDER=fallback` ile iç kabul yapılır. Dış çağrı için `AI_DRAFT_EXTERNAL_TRANSFER_APPROVED=true`, `OPENAI_API_KEY`, `OPENAI_AI_DRAFT_MODEL`, iki token maliyet oranı ve günlük tavanlar birlikte tanımlanmalıdır. Ardından `PANEL_FEATURE_TEACHER_AI_DRAFTS=true` ile `NEXT_PUBLIC_PANEL_FEATURE_TEACHER_AI_DRAFTS=true` açılır. `npm run eval:teacher-ai` dış çağrısız altın seti çalıştırır; canlı eval yalnız `AI_EVAL_ACKNOWLEDGE_COST=true` ile bilinçli olarak açılır. Ayrıntılar [güvenli AI standardında](./safe-teacher-ai-operations.md) tanımlıdır.
+
+### Bütünleşik pilot ve kademeli yayın
+
+`0058_integrated_pilot_rollout` migration'ından sonra admin “Pilot yayını” ekranında aktif bir gruptan dört rollü kohort oluşturur. Pilot deploy'unda `PANEL_ROLLOUT_MODE=pilot` kullanılır; kabul/güvenlik onayları ve son restore tarihi açıkça tanımlanmadan kohort aktive edilemez. Admin dışındaki her panel sayfası ve API aktif üyeliği yeniden doğrular. Operasyonel duraklatma admin ekranından anında yapılır; deploy düzeyi acil kesme için `PANEL_PILOT_KILL_SWITCH=true` kullanılır. Ayrıntılar [bütünleşik pilot standardında](./integrated-pilot-rollout-operations.md) tanımlıdır.
 
 Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WRITE_TOKEN` Vercel bağlantısı tarafından yönetilir; PDF/MP4 dosyaları doğrudan URL ile açılmaz, her indirmede rol ve aktif grup üyeliği yeniden doğrulanır. Sunucu yükleme sınırı nedeniyle dosya boyutu 4 MB ile sınırlıdır.
 
