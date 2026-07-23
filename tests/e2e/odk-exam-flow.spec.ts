@@ -30,7 +30,7 @@ test.describe("ODK canlı sınav güvenliği ve dayanıklılığı", () => {
       else await route.continue();
     });
     await page.getByRole("button", { name: "A", exact: true }).click();
-    await expect(page.getByText("Kaydedildi")).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 8_000 });
     expect(answerRequests).toBe(3);
 
     const statuses = await page.evaluate(async () => {

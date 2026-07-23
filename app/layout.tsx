@@ -82,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="tr"
       data-theme="light"
+      data-scroll-behavior="smooth"
       className={GeistSans.variable}
       suppressHydrationWarning
     >

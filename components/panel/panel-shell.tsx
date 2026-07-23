@@ -29,7 +29,13 @@ export async function PanelShell({ role, fullName, email, product = "OD", nav, c
   const canSwitchProduct = products.length > 1;
   const homeHref = productRolePath(product, role);
   const productName = productLabel(product);
-  const logo = product === "OD" ? "/onlinedershanem_.png" : "/odklogo1.png";
+  const productLogo = (variant: "admin" | "compact" | "default") => product === "OD" ? (
+    <Image src="/onlinedershanem_.png" alt={productName} width={1050} height={200} priority sizes={variant === "admin" ? "176px" : variant === "compact" ? "128px" : "150px"} className={`h-auto ${variant === "admin" ? "w-[176px]" : variant === "compact" ? "w-[118px] sm:w-[128px]" : "w-[116px] sm:w-[150px]"}`} />
+  ) : (
+    <span className={`relative block shrink-0 overflow-hidden ${variant === "admin" ? "h-11 w-[176px]" : variant === "compact" ? "h-8 w-[128px]" : "h-8 w-[110px] sm:h-9 sm:w-[160px]"}`}>
+      <Image src="/odklogo2.jpeg" alt={productName} fill priority sizes={variant === "admin" ? "176px" : "160px"} className="object-cover mix-blend-multiply" />
+    </span>
+  );
 
   const productSwitch = canSwitchProduct ? (
     <Link href={PRODUCT_SELECTOR_PATH} className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-[10.5px] font-bold text-[var(--site-body)] transition hover:text-[var(--site-ink)]" aria-label="Ürün değiştir">
@@ -46,7 +52,7 @@ export async function PanelShell({ role, fullName, email, product = "OD", nav, c
 
   return (
     <OfflineSyncProvider scope={offlineScope} available={flags.offlineMode} enabled={Boolean(flags.offlineMode && networkPreference?.offlineWritesEnabled)} lowDataMode={Boolean(flags.offlineMode && networkPreference?.lowDataMode)}>
-    <div className={`site-scope min-h-dvh ${adminLayout ? "panel-app-bg" : "bg-[var(--site-bg-warm)]"}`}>
+    <div className={`site-scope min-h-dvh ${product === "ODK" ? "odk-panel-scope" : ""} ${adminLayout ? "panel-app-bg" : "bg-[var(--site-bg-warm)]"}`}>
       {accessibilityEnabled ? <AccessibilityPreferenceApplier preference={accessibilityPreference} /> : null}
       <a href="#panel-content" className="fixed left-4 top-3 z-[400] -translate-y-24 rounded-full bg-[var(--site-ink)] px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0">Ana içeriğe geç</a>
 
@@ -54,7 +60,7 @@ export async function PanelShell({ role, fullName, email, product = "OD", nav, c
         <div className="min-h-dvh lg:grid lg:grid-cols-[252px_minmax(0,1fr)]">
           <aside className="sticky top-0 hidden h-dvh flex-col border-r border-[var(--site-line)] bg-[#f7f6f0]/92 px-4 py-5 backdrop-blur-xl lg:flex">
             <Link href={homeHref} aria-label={`${productName} yönetim ana sayfası`} className="flex flex-col items-start gap-2 px-2 text-[var(--site-ink)]">
-              <Image src={logo} alt={productName} width={1050} height={product === "OD" ? 200 : 1050} priority sizes="176px" className={`h-auto ${product === "OD" ? "w-[176px]" : "w-[112px]"}`} />
+              {productLogo("admin")}
               <span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[.1em] text-[var(--brand-olive)]">Yönetim alanı</span>
             </Link>
             {canSwitchProduct ? <div className="mt-3 px-2">{productSwitch}</div> : null}
@@ -68,7 +74,7 @@ export async function PanelShell({ role, fullName, email, product = "OD", nav, c
           <div className="min-w-0">
             <header className="sticky top-0 z-40 border-b border-[var(--site-line)] bg-[#fbfaf5]/88 backdrop-blur-xl">
               <div className="flex h-[68px] items-center justify-between gap-3 px-4 sm:px-6 xl:px-8">
-                <div className="flex min-w-0 items-center lg:hidden"><Link href={homeHref} aria-label={`${productName} yönetim ana sayfası`} className="flex shrink-0 items-center"><Image src={logo} alt={productName} width={1050} height={product === "OD" ? 200 : 1050} priority sizes="128px" className={`h-auto ${product === "OD" ? "w-[118px] sm:w-[128px]" : "w-[58px]"}`} /></Link></div>
+                <div className="flex min-w-0 items-center lg:hidden"><Link href={homeHref} aria-label={`${productName} yönetim ana sayfası`} className="flex shrink-0 items-center">{productLogo("compact")}</Link></div>
                 <div className="hidden items-center gap-1.5 text-[11.5px] text-[var(--site-muted)] lg:flex"><span>{productName}</span><ChevronRight size={13} /><span className="font-semibold text-[var(--site-ink)]">Yönetim</span></div>
                 <div className="flex items-center gap-2"><AdminCommandSearch />{productSwitch}{notificationButton}<div className="block lg:hidden"><LogoutButton /></div></div>
               </div>
@@ -79,7 +85,7 @@ export async function PanelShell({ role, fullName, email, product = "OD", nav, c
         </div>
       ) : (
         <>
-          <header className="sticky top-0 z-40 border-b border-[var(--site-line)] bg-white/90 backdrop-blur-xl"><div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6"><div className="flex min-w-0 items-center gap-2.5 sm:gap-3"><Link href={homeHref} aria-label={`${productName} panel ana sayfası`} className="flex shrink-0 items-center"><Image src={logo} alt={productName} width={1050} height={product === "OD" ? 200 : 1050} priority sizes="150px" className={`h-auto ${product === "OD" ? "w-[116px] sm:w-[150px]" : "w-[54px] sm:w-[62px]"}`} /></Link><span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[.06em] text-[var(--brand-olive)] sm:text-[10.5px]">{roleLabel(role)}</span></div><div className="flex items-center gap-2 sm:gap-3"><span className="hidden text-[13px] text-[var(--site-body)] sm:inline">{fullName || email}</span>{productSwitch}{notificationButton}<LogoutButton /></div></div>{nav ? <div className="border-t border-[var(--site-line)]"><div className="mx-auto max-w-[1320px] px-4 py-2 sm:px-6">{nav}</div></div> : null}</header>
+          <header className="sticky top-0 z-40 border-b border-[var(--site-line)] bg-white/90 backdrop-blur-xl"><div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6"><div className="flex min-w-0 items-center gap-2.5 sm:gap-3"><Link href={homeHref} aria-label={`${productName} panel ana sayfası`} className="flex shrink-0 items-center">{productLogo("default")}</Link><span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[.06em] text-[var(--brand-olive)] sm:text-[10.5px]">{roleLabel(role)}</span></div><div className="flex items-center gap-2 sm:gap-3"><span className="hidden text-[13px] text-[var(--site-body)] sm:inline">{fullName || email}</span>{productSwitch}{notificationButton}<LogoutButton /></div></div>{nav ? <div className="border-t border-[var(--site-line)]"><div className="mx-auto max-w-[1320px] px-4 py-2 sm:px-6">{nav}</div></div> : null}</header>
           <div className="mx-auto max-w-[1320px] px-4 py-6 sm:px-6 sm:py-8"><main id="panel-content" tabIndex={-1}>{children}</main></div>
         </>
       )}

@@ -94,6 +94,7 @@
   --site-bg-warm: #FBFAF5;
   --site-card: #FFFFFF;            /* kart zemini */
   --site-line: #E8E3D6;            /* ince krem kart border (od-line) */
+  --site-border: var(--site-line);  /* geriye dönük panel alias'ı */
   --site-line-soft: #F1EDE6;       /* daha açık ayraç */
 }
 
@@ -266,6 +267,76 @@ html {
   border-color: var(--brand-olive);
   outline: none;
   box-shadow: 0 0 0 3px var(--brand-olive-soft);
+}
+.panel-input:disabled {
+  cursor: not-allowed;
+  background: var(--site-bg-warm);
+  color: var(--site-muted);
+  opacity: .78;
+}
+.panel-field {
+  display: grid;
+  gap: .4rem;
+  color: var(--site-ink);
+  font-size: .75rem;
+  font-weight: 750;
+}
+.panel-field :where(input, select, textarea) {
+  width: 100%;
+  border: 1px solid var(--site-line);
+  border-radius: 13px;
+  background: #fff;
+  padding: .72rem .82rem;
+  color: var(--site-ink);
+  font: inherit;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.panel-field :where(input, select, textarea):focus {
+  border-color: var(--brand-olive);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-olive-soft);
+}
+.panel-primary-button,
+.panel-secondary-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  padding: .68rem 1rem;
+  font-size: .75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.panel-primary-button {
+  border-color: var(--brand-olive);
+  background: var(--brand-olive);
+  color: #fff;
+  box-shadow: 0 10px 26px -18px rgba(44,58,32,.75);
+}
+.panel-primary-button:hover:not(:disabled) {
+  border-color: var(--brand-olive-hover);
+  background: var(--brand-olive-hover);
+  transform: translateY(-1px);
+}
+.panel-secondary-button {
+  border-color: var(--site-line);
+  background: #fff;
+  color: var(--site-ink);
+}
+.panel-secondary-button:hover:not(:disabled) { border-color: #d2cec2; background: var(--site-bg-warm); }
+.panel-primary-button:disabled,
+.panel-secondary-button:disabled,
+.panel-quick-action:disabled,
+.site-btn:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+  transform: none;
+  box-shadow: none;
 }
 .panel-action-card {
   border: 1px solid var(--site-line);
@@ -1521,6 +1592,8 @@ html[data-panel-motion="reduced"] .site-scope :where(.panel-quick-action, .panel
   min-width: 24px;
   min-height: 24px;
 }
+.odk-panel-scope :where(button, summary) { min-height: 40px; }
+.odk-panel-scope :where(input[type="checkbox"], input[type="radio"]) { min-width: 18px; min-height: 18px; }
 
 html[data-panel-low-data="true"] .site-scope :where(.backdrop-blur-xl, .backdrop-blur-md) {
   backdrop-filter: none !important;

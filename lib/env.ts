@@ -21,13 +21,23 @@ type EnvCheck = {
 
 const CHECKS: EnvCheck[] = [
   { key: "DATABASE_URL", required: true, description: "PostgreSQL bağlantı dizesi" },
+  { key: "DIRECT_URL", required: false, prodOnly: true, description: "Migration ve bakım için doğrudan PostgreSQL bağlantısı" },
   { key: "NEXT_PUBLIC_APP_URL", required: false, prodOnly: true, description: "Public site URL" },
+  { key: "NEXTAUTH_SECRET", required: false, prodOnly: true, description: "Panel oturum imzalama anahtarı" },
+  { key: "PANEL_ENABLED", required: false, prodOnly: true, description: "Panel yayın anahtarı; true veya false açıkça tanımlanmalı" },
   { key: "PAYTR_MERCHANT_ID", required: false, prodOnly: true, description: "PayTR (ödeme alacaksa zorunlu)" },
   { key: "PAYTR_MERCHANT_KEY", required: false, prodOnly: true, description: "PayTR" },
   { key: "PAYTR_MERCHANT_SALT", required: false, prodOnly: true, description: "PayTR" },
   { key: "RESEND_API_KEY", required: false, description: "Email gönderimi (opsiyonel)" },
   { key: "EMAIL_MODE", required: false, description: "Email kapsamı: receipts (varsayılan) veya all" },
   { key: "CRON_SECRET", required: false, prodOnly: true, description: "Cron route'ları korumak için bearer" },
+  { key: "BLOB_READ_WRITE_TOKEN", required: false, prodOnly: true, description: "ODK kitapçıkları için özel Blob deposu" },
+  { key: "ODK_ROLLOUT_MODE", required: false, prodOnly: true, description: "ODK general/pilot yayın modu" },
+  { key: "ODK_PILOT_KILL_SWITCH", required: false, prodOnly: true, description: "ODK acil erişim kesme anahtarı" },
+  { key: "ODK_PILOT_ACCEPTANCE_APPROVED", required: false, prodOnly: true, description: "ODK canlı kabul kanıtı" },
+  { key: "ODK_PILOT_SECURITY_REVIEW_APPROVED", required: false, prodOnly: true, description: "ODK güvenlik ve çocuk verisi onayı" },
+  { key: "ODK_PILOT_OPERATIONS_APPROVED", required: false, prodOnly: true, description: "ODK sınav günü operasyon onayı" },
+  { key: "ODK_LAST_RESTORE_DRILL_AT", required: false, prodOnly: true, description: "Son başarılı ODK restore tatbikatı tarihi" },
 ];
 
 type EnvStatus = { ok: boolean; missing: string[]; warnings: string[] };
