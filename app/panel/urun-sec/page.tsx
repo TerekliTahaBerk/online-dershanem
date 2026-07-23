@@ -31,7 +31,7 @@ export default async function ProductSelectorPage() {
 }
 
 function ProductCard({ href, title, description, logo, icon, wideLogo = false }: { href: string; title: string; description: string; logo: string; icon: React.ReactNode; wideLogo?: boolean }) {
-  return <Link href={href} className="group flex min-h-64 flex-col rounded-[26px] border border-[var(--site-line)] bg-white p-6 shadow-[var(--panel-card-shadow)] transition hover:-translate-y-0.5 hover:border-[var(--brand-olive)]">
+  return <Link href={href} aria-label={`${title} paneline git`} className="group flex min-h-64 flex-col rounded-[26px] border border-[var(--site-line)] bg-white p-6 shadow-[var(--panel-card-shadow)] transition hover:-translate-y-0.5 hover:border-[var(--brand-olive)]">
     <div className="flex items-start justify-between gap-4"><Image src={logo} alt={title} width={1050} height={wideLogo ? 200 : 1050} className={`h-auto ${wideLogo ? "w-48" : "w-20"}`} /><span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">{icon}</span></div>
     <div className="mt-auto pt-8"><h2 className="text-xl font-bold tracking-[-.03em] text-[var(--site-ink)]">{title}</h2><p className="mt-2 text-sm leading-6 text-[var(--site-body)]">{description}</p><span className="mt-5 inline-flex items-center gap-2 text-xs font-extrabold text-[var(--brand-olive)]">Panele git <ArrowRight size={14} className="transition group-hover:translate-x-1" /></span></div>
   </Link>;

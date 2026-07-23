@@ -18,6 +18,8 @@ const themeInitScript = `(()=>{try{document.documentElement.setAttribute('data-t
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
+const vercelTelemetryEnabled = process.env.VERCEL === "1";
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -102,8 +104,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Suspense>
               <Pixels />
               {children}
-              <Analytics />
-              <SpeedInsights />
+              {vercelTelemetryEnabled ? <Analytics /> : null}
+              {vercelTelemetryEnabled ? <SpeedInsights /> : null}
             </ToastProvider>
           </CartProvider>
         </ThemeProvider>

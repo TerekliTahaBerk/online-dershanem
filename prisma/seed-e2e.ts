@@ -96,6 +96,13 @@ async function main() {
     });
   }
 
+  for (const userId of [ids.student, ids.parent]) {
+    await prisma.productMembership.upsert({
+      where: { userId_product: { userId, product: "OD" } },
+      create: { userId, product: "OD", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) },
+      update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin },
+    });
+  }
   await prisma.productMembership.deleteMany({ where: { userId: ids.odkStudent, product: "OD" } });
   await prisma.productMembership.upsert({ where: { userId_product: { userId: ids.odkStudent, product: "ODK" } }, create: { userId: ids.odkStudent, product: "ODK", source: "MANUAL", grantedById: ids.admin }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });
   for (const userId of [ids.parent, ids.foreignStudent]) await prisma.productMembership.upsert({ where: { userId_product: { userId, product: "ODK" } }, create: { userId, product: "ODK", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });

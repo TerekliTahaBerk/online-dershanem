@@ -9,11 +9,16 @@ const accounts = [
 
 async function login(page: Page, email: string, password: string) {
   await page.setExtraHTTPHeaders({ "x-forwarded-for": `cross-browser-${email}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await expect(page.getByRole("button", { name: /^Giriş yap$/ })).toBeEnabled();
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);
   await page.getByLabel("Parola").fill(password);
   await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+  await page.waitForURL(/\/panel\//);
+  if (new URL(page.url()).pathname === "/panel/urun-sec") {
+    await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
+  }
 }
 
 test.describe("çapraz tarayıcı panel kabulü", () => {

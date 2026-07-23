@@ -74,8 +74,24 @@ jobs:
       NEXT_PUBLIC_PANEL_FEATURE_RECOVERY_PACKAGE: "true"
       PANEL_FEATURE_ASSIGNMENT_EVIDENCE: "true"
       NEXT_PUBLIC_PANEL_FEATURE_ASSIGNMENT_EVIDENCE: "true"
+      PANEL_FEATURE_STUDENT_CHECK_IN: "true"
+      NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN: "true"
+      PANEL_FEATURE_ACCESSIBILITY_PROFILE: "true"
+      NEXT_PUBLIC_PANEL_FEATURE_ACCESSIBILITY_PROFILE: "true"
+      PANEL_FEATURE_OFFLINE_MODE: "true"
+      NEXT_PUBLIC_PANEL_FEATURE_OFFLINE_MODE: "true"
+      PANEL_FEATURE_COHORT_QUALITY: "true"
+      NEXT_PUBLIC_PANEL_FEATURE_COHORT_QUALITY: "true"
+      PANEL_FEATURE_TEACHER_AI_DRAFTS: "true"
+      NEXT_PUBLIC_PANEL_FEATURE_TEACHER_AI_DRAFTS: "true"
       PUBLIC_REGISTER_ENABLED: "false"
+      ODK_ROLLOUT_MODE: general
+      ODK_PILOT_KILL_SWITCH: "false"
+      ODK_PILOT_ACCEPTANCE_APPROVED: "true"
+      ODK_PILOT_SECURITY_REVIEW_APPROVED: "true"
+      ODK_PILOT_OPERATIONS_APPROVED: "true"
       CRON_SECRET: e2e-only-cron-secret-0123456789abcdef0123456789abcdef
+      BLOB_READ_WRITE_TOKEN: vercel_blob_rw_e2e_placeholder
       PAYTR_MERCHANT_ID: e2e-merchant
       PAYTR_MERCHANT_KEY: e2e-only-merchant-key
       PAYTR_MERCHANT_SALT: e2e-only-merchant-salt
@@ -95,22 +111,27 @@ jobs:
       PLAYWRIGHT_HTML_OPEN: never
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install deps
         run: npm ci
+
+      - name: Configure CI restore-drill fixture
+        run: |
+          echo "PANEL_LAST_RESTORE_DRILL_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          echo "ODK_LAST_RESTORE_DRILL_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
 
       - name: Resolve Playwright version
         id: playwright-version
         run: node -p '"version=" + require("@playwright/test/package.json").version' >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browser
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
@@ -129,12 +150,23 @@ jobs:
       - name: Build Next.js
         run: npm run build:nomigrate
 
-      - name: Run Playwright tests
-        run: npm run e2e -- --shard=${{ matrix.shard }}/3
+      - name: Run general Playwright tests
+        run: npm run e2e -- --shard=${{ matrix.shard }}/3 --grep-invert "bütünleşik pilot yayını"
+
+      - name: Run pilot rollout tests
+        if: ${{ matrix.shard == 1 }}
+        env:
+          PANEL_ROLLOUT_MODE: pilot
+          PANEL_PILOT_KILL_SWITCH: "false"
+          PANEL_PILOT_ACCEPTANCE_APPROVED: "true"
+          PANEL_PILOT_SECURITY_REVIEW_APPROVED: "true"
+        run: |
+          npx tsx prisma/seed-e2e.ts
+          npm run e2e -- tests/e2e/pilot-rollout.spec.ts --workers=1
 
       - name: Upload shard report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: blob-report-${{ matrix.shard }}
           path: blob-report/
@@ -144,7 +176,7 @@ jobs:
 
       - name: Upload failure diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.shard }}
           path: test-results/
@@ -161,11 +193,11 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install report tooling
@@ -174,7 +206,7 @@ jobs:
       - name: Download shard reports
         id: download-reports
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: blob-report-*
           path: all-blob-reports
@@ -187,7 +219,7 @@ jobs:
 
       - name: Upload Playwright HTML report
         if: ${{ always() && steps.merge-reports.outcome == 'success' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/

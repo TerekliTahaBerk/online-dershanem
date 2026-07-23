@@ -8,11 +8,16 @@ const accounts = {
 
 async function login(page: Page, account: { email?: string; password?: string }) {
   await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);
   await page.getByLabel("Parola").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş yap$/ }).click();
   await page.waitForURL(/\/panel\//);
+  if (new URL(page.url()).pathname === "/panel/urun-sec") {
+    await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
+    await page.waitForURL(/\/panel\/(yonetim|ogretmen|ogrenci|veli)/);
+  }
   await expect(page.getByRole("main")).toBeVisible();
 }
 

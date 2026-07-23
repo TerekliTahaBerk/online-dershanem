@@ -31,13 +31,14 @@ const routes = {
 async function login(page: Page, role: keyof typeof accounts) {
   const account = accounts[role];
   await page.setExtraHTTPHeaders({ "x-forwarded-for": `odk-quality-${role}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email);
   await page.getByLabel("Parola").fill(password);
   await page.getByRole("button", { name: /^Giriş yap$/ }).click();
   await page.waitForURL(/\/panel\//);
   if (new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: /Online Deneme Kulübü/ }).click();
+    await page.getByRole("link", { name: "Online Deneme Kulübü paneline git" }).click();
   }
   await page.waitForURL((url) => url.pathname === account.root);
 }

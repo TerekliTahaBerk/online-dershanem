@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install deps
@@ -65,12 +65,13 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/fresh_test?schema=public
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/fresh_test?schema=public
+      PSQL_URL: postgresql://postgres:postgres@localhost:5432/fresh_test
       ALLOW_FRESH_DB_BOOTSTRAP: "true"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - name: Bootstrap schema and resolve legacy chain
@@ -78,4 +79,4 @@ jobs:
       - name: Verify schema and migration state
         run: |
           npx prisma migrate status
-          test "$(psql "$DIRECT_URL" -Atc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('users','groups','lessons','assignments','notifications');")" = "5"
+          test "$(psql "$PSQL_URL" -Atc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('users','groups','lessons','assignments','notifications');")" = "5"

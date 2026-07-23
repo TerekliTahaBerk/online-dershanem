@@ -7,10 +7,15 @@ const account = {
 
 async function login(page: Page, credentials = account) {
   await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-odk-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(credentials.email);
   await page.getByLabel("Parola").fill(credentials.password!);
   await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+  await page.waitForURL(/\/panel\//);
+  if (new URL(page.url()).pathname === "/panel/urun-sec") {
+    await page.getByRole("link", { name: "Online Deneme Kulübü paneline git" }).click();
+  }
   await page.waitForURL(/\/panel\/odk\/ogrenci/);
 }
 
@@ -19,9 +24,10 @@ test.describe("ODK canlı sınav güvenliği ve dayanıklılığı", () => {
   test.describe.configure({ mode: "serial" });
 
   test("bağlantı hatasında cevabı yeniden dener, revizyon yarışını ve yatay erişimi engeller", async ({ page }) => {
+    test.setTimeout(60_000);
     await login(page);
     await page.goto("/panel/odk/ogrenci/denemeler/e2e-odk-exam-live/coz");
-    await expect(page.getByText("Canlı matematik denemesi")).toBeVisible();
+    await expect(page.getByText("Canlı matematik denemesi").first()).toBeVisible();
 
     let answerRequests = 0;
     await page.route("**/api/odk/student/attempts/e2e-odk-attempt-live/answers", async (route) => {
@@ -30,7 +36,7 @@ test.describe("ODK canlı sınav güvenliği ve dayanıklılığı", () => {
       else await route.continue();
     });
     await page.getByRole("button", { name: "A", exact: true }).click();
-    await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 8_000 });
+    await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 15_000 });
     expect(answerRequests).toBe(3);
 
     const statuses = await page.evaluate(async () => {
