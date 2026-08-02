@@ -10,8 +10,7 @@ export function FaqAccordion({ title = "Karar vermeden önce merak edilenler.", 
       <div className="site-container site-section">
         <div className="grid gap-10 lg:grid-cols-[.65fr_1.35fr] lg:gap-20">
           <div>
-            <p className="site-kicker">Sıkça sorulanlar</p>
-            <h2 className="mt-4 text-[clamp(2.3rem,5vw,3.6rem)] font-semibold leading-[1.03] tracking-[-.04em] text-[var(--site-ink)]">{title}</h2>
+            <h2 className="text-[clamp(2.3rem,5vw,3.6rem)] font-semibold leading-[1.03] tracking-[-.04em] text-[var(--site-ink)]">{title}</h2>
             {showAllLink ? <Link href="/sss/" className="mt-7 inline-flex text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">Tüm soruları gör</Link> : null}
           </div>
           <div className="divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">

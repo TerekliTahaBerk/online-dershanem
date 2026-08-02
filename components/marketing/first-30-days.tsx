@@ -13,8 +13,7 @@ export function First30Days() {
       <div className="site-container site-section">
         <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:gap-20">
           <div>
-            <p className="site-kicker">Nasıl çalışır?</p>
-            <h2 className="mt-4 text-[clamp(2.4rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">Ödemeden ilk derse dört sade adım.</h2>
+            <h2 className="text-[clamp(2.4rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">Ödemeden ilk derse dört sade adım.</h2>
             <Link href="/iletisim/" className="site-btn site-btn-primary mt-8">Ücretsiz ön görüşme</Link>
           </div>
           <ol className="divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">

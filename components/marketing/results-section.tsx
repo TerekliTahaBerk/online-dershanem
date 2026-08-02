@@ -15,8 +15,7 @@ export function ResultsSection() {
     <section className="bg-[var(--brand-olive-tint)]">
       <div className="site-container site-section">
         <div className="max-w-3xl">
-          <p className="site-kicker">Model karşılaştırması</p>
-          <h2 className="mt-4 text-[clamp(2.4rem,5.5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">İhtiyaca göre doğru matematik desteği.</h2>
+          <h2 className="text-[clamp(2.4rem,5.5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">İhtiyaca göre doğru matematik desteği.</h2>
           <p className="mt-6 text-[16px] leading-8 text-[var(--site-body)]">Aşağıdaki tablo piyasa sonucu veya başarı vaadi değil; üç ders modelinin yapısal özelliklerini karşılaştırır.</p>
         </div>
         <div
