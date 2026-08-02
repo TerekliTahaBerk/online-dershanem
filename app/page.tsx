@@ -54,8 +54,8 @@ export default function HomePage() {
         <ResultsSection />
         <FaqAccordion items={homeFaqs} showAllLink />
         <FooterCta
-          title="Matematik yolunu birlikte netleştirelim."
-          subtitle="Ücretsiz ön görüşmede öğrencinin seviyesini, hedefini ve uygun küçük grup ihtimalini konuşalım."
+          title="Önce ücretsiz bir görüşme yapalım."
+          subtitle="Öğrencinin sınıfını, hedefini ve uygun küçük grubu birlikte konuşalım."
           ctaLabel="Ücretsiz görüşme"
           ctaHref="/iletisim/"
         />

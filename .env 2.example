@@ -1,0 +1,78 @@
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/onlinedershanem?schema=public"
+DIRECT_URL="postgresql://USER:PASSWORD@HOST:5432/onlinedershanem?schema=public"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+PAYTR_MERCHANT_ID=""
+PAYTR_MERCHANT_KEY=""
+PAYTR_MERCHANT_SALT=""
+PAYMENT_WEBHOOK_SECRET="replace-with-your-payment-webhook-secret"
+
+RESEND_API_KEY="re_xxxxxxxxx"
+# Varsayılan: yalnızca ödeme yapan müşteriye makbuz. `all` lead ve admin satış bildirimlerini de açar.
+EMAIL_MODE="receipts"
+LEAD_NOTIFICATION_EMAILS="ops@onlinedershanem.com"
+MAIL_FROM="Online Dershanem <noreply@onlinedershanem.com>"
+# Yalnızca lead/satış bildirimi fallback'i olarak desteklenir.
+ADMIN_EMAIL=""
+
+CRON_SECRET="replace-with-random-bearer-token"
+UPSTASH_REDIS_REST_URL=""
+UPSTASH_REDIS_REST_TOKEN=""
+LOG_LEVEL="info"
+# Panel rollout bayrakları. Yalnız baz ölçümleri varsayılan açık; gelecek ürün
+# fazları kodu yayınlansa bile açıkça etkinleştirilmeden kullanıcıya açılmaz.
+PANEL_FEATURE_BASELINE_METRICS="true"
+PANEL_FEATURE_LEARNING_OUTCOMES="false"
+PANEL_FEATURE_MOCK_EXAM_ANALYSIS="false"
+# Deneme menüsünün build sırasında görünmesi için sunucu bayrağıyla aynı tutulur.
+NEXT_PUBLIC_PANEL_FEATURE_MOCK_EXAM_ANALYSIS="false"
+PANEL_FEATURE_REVIEW_QUEUE="false"
+NEXT_PUBLIC_PANEL_FEATURE_REVIEW_QUEUE="false"
+PANEL_FEATURE_QUICK_LESSON_CLOSE="false"
+NEXT_PUBLIC_PANEL_FEATURE_QUICK_LESSON_CLOSE="false"
+PANEL_FEATURE_ADAPTIVE_PLAN="false"
+NEXT_PUBLIC_PANEL_FEATURE_ADAPTIVE_PLAN="false"
+PANEL_FEATURE_PARENT_WEEKLY_DIGEST="false"
+NEXT_PUBLIC_PANEL_FEATURE_PARENT_WEEKLY_DIGEST="false"
+PANEL_FEATURE_INTERVENTION_INBOX="false"
+NEXT_PUBLIC_PANEL_FEATURE_INTERVENTION_INBOX="false"
+PANEL_FEATURE_RECOVERY_PACKAGE="false"
+NEXT_PUBLIC_PANEL_FEATURE_RECOVERY_PACKAGE="false"
+PANEL_FEATURE_ASSIGNMENT_EVIDENCE="false"
+NEXT_PUBLIC_PANEL_FEATURE_ASSIGNMENT_EVIDENCE="false"
+PANEL_FEATURE_STUDENT_CHECK_IN="false"
+NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN="false"
+PANEL_FEATURE_ACCESSIBILITY_PROFILE="false"
+NEXT_PUBLIC_PANEL_FEATURE_ACCESSIBILITY_PROFILE="false"
+PANEL_FEATURE_OFFLINE_MODE="false"
+NEXT_PUBLIC_PANEL_FEATURE_OFFLINE_MODE="false"
+PANEL_FEATURE_COHORT_QUALITY="false"
+NEXT_PUBLIC_PANEL_FEATURE_COHORT_QUALITY="false"
+PANEL_FEATURE_TEACHER_AI_DRAFTS="false"
+NEXT_PUBLIC_PANEL_FEATURE_TEACHER_AI_DRAFTS="false"
+PANEL_ROLLOUT_MODE="general"
+PANEL_PILOT_KILL_SWITCH="false"
+PANEL_PILOT_ACCEPTANCE_APPROVED="false"
+PANEL_PILOT_SECURITY_REVIEW_APPROVED="false"
+PANEL_LAST_RESTORE_DRILL_AT=""
+
+# Online Deneme Kulübü bağımsız rollout kapıları. Pilot modunda admin dışındaki
+# kullanıcılar ayrıca aktif bir ODK pilot koşusunun üyesi olmalıdır.
+ODK_ROLLOUT_MODE="general"
+ODK_PILOT_KILL_SWITCH="false"
+ODK_PILOT_ACCEPTANCE_APPROVED="false"
+ODK_PILOT_SECURITY_REVIEW_APPROVED="false"
+ODK_PILOT_OPERATIONS_APPROVED="false"
+ODK_LAST_RESTORE_DRILL_AT=""
+# Dış model aktarımı hukuk/operasyon onayı olmadan true yapmayın.
+AI_DRAFT_EXTERNAL_TRANSFER_APPROVED="false"
+AI_DRAFT_PROVIDER="fallback"
+OPENAI_AI_DRAFT_MODEL=""
+AI_DRAFT_MAX_DAILY_REQUESTS="10"
+AI_DRAFT_MAX_DAILY_MICRO_USD="100000"
+AI_DRAFT_INPUT_MICRO_USD_PER_MILLION_TOKENS=""
+AI_DRAFT_OUTPUT_MICRO_USD_PER_MILLION_TOKENS=""
+# Opsiyonel: JSON kabul eden Slack/Teams/özel alarm webhook'u.
+ERROR_ALERT_WEBHOOK_URL=""
+# Vercel Blob private store — panel PDF/MP4 materyalleri için.
+BLOB_READ_WRITE_TOKEN=""

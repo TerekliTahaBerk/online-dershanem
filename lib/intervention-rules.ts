@@ -39,7 +39,7 @@ export function buildInterventionSignals(input: {
       reasonCode: "OVERDUE_WORK",
       evidenceCount: input.overdueWorkCount,
       explanation: `Son 30 günde teslim tarihi geçen ${input.overdueWorkCount} çalışma henüz tamamlandı olarak işaretlenmedi.`,
-      suggestedAction: "Yalnız en gerekli çalışmayı seçip süreyi ve engeli öğrenciyle birlikte netleştirin.",
+      suggestedAction: "Yalnız en gerekli çalışmayı seçip süreyi ve engeli öğrenciyle birlikte konuşun.",
     });
   }
 

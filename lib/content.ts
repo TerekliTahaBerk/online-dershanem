@@ -147,7 +147,7 @@ export const blogPosts = [
         h2: "Online dershane mi, online özel ders mi? Karar nasıl verilir?",
         paragraphs: [
           "Öğrenci tüm derslerde temel bir problem yaşıyorsa yapılandırılmış bir online dershane modeli daha sağlıklı sonuç verir. Sadece belirli bir derste tıkanma varsa online özel ders daha hızlı çözüm olabilir.",
-          "Çoğu durumda en sürdürülebilir yol, dershane düzenine ihtiyaç olduğunda ders bazlı özel destekle birleşmiş bir model oluyor."
+          "Çoğu durumda en işlevsel yol, dershane düzenine ihtiyaç olduğunda ders bazlı özel destekle birleşmiş bir yaklaşım oluyor."
         ],
         links: [
           { label: "Online özel ders modeli nasıl çalışıyor?", href: "/online-ozel-ders/" },
@@ -156,9 +156,10 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Sana uygun butik grup paketini birlikte belirleyelim",
-      text: "Tek başına çalışırken nerede takıldığını görmek zordur. Hangi dersten başlaman gerektiğini ekibimizle birlikte netleştirelim.",
-      buttonLabel: "Paketleri İncele"
+      title: "Sana uygun paketi birlikte seçelim",
+      text: "Tek başına çalışırken nerede takıldığını görmek zordur. Hangi dersten başlaman gerektiğini ekibimizle konuşalım.",
+      buttonLabel: "Paketleri İncele",
+      href: "/ders-paketleri/"
     },
     relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
   },
@@ -168,9 +169,9 @@ export const blogPosts = [
     title: "Online Dershane mi Özel Ders mi? Hangisi Sana Uygun?",
     seoTitle: "Online Dershane mi Özel Ders mi? Karşılaştırma Rehberi",
     metaDescription:
-      "Online dershane mi özel ders mi daha verimli? Maliyet, sürdürülebilirlik ve sonuç açısından küçük grup modeliyle karşılaştırmalı değerlendirme.",
+      "Online dershane mi özel ders mi daha verimli? Maliyet, süreklilik ve sonuç açısından küçük grup modeliyle karşılaştırmalı değerlendirme.",
     excerpt:
-      "En sık sorulan sorulardan biri: online dershane mi alayım, özel ders mi? Cevap öğrencinin ihtiyacına göre değişiyor; bu yazıda karar çerçevesini birlikte kuruyoruz.",
+      "En sık sorulan sorulardan biri: online dershane mi alayım, özel ders mi? Cevap öğrencinin ihtiyacına göre değişiyor; bu yazıda karar vermene yardımcı olacak ölçütleri sıralıyoruz.",
     cardSnippet: "Online dershane ve özel ders karşılaştırması: hangisi sana uygun?",
     featured: true,
     sections: [
@@ -179,7 +180,7 @@ export const blogPosts = [
         bullets: ["Birebir ilgi", "Hızlı ilerleme", "Esnek ders planı"],
         paragraphs: [
           "Doğru öğretmenle yapılan özel ders kısa sürede ciddi sonuç verebilir.",
-          "Ancak çoğu öğrenci için maliyet, uzun sınav dönemlerinde sürdürülebilir olmuyor."
+          "Ancak çoğu öğrenci için bu maliyet, uzun sınav dönemlerinde zorlayıcı hale gelebiliyor."
         ]
       },
       {
@@ -191,19 +192,20 @@ export const blogPosts = [
         ]
       },
       {
-        h2: "Çoğu öğrenci için en dengeli model: küçük grup",
-        bullets: ["4 kişilik gruplar", "Birebir gibi ilgi", "Dershane gibi düzen"],
+        h2: "Çoğu öğrenci için en dengeli seçenek: küçük grup",
+        bullets: ["4 kişilik gruplar", "Derste soru sorma alanı", "Dershane gibi düzen"],
         paragraphs: [
-          "Küçük grup modelinde öğrenci ne kalabalıkta kaybolur ne de maliyet yükü altına girer.",
-          "Bu yapı hem verimli hem de uzun süreçte sürdürülebilir bir ilerleme sunar."
+          "Küçük grupta öğrenci ne kalabalıkta kaybolur ne de maliyet yükü altına girer.",
+          "Bu yapı hem verimli hem de uzun sınav sürecinde takip edilebilir bir ilerleme sunar."
         ],
         links: [{ label: "Online dershane sistemini incele", href: "/online-dershane/" }]
       }
     ],
     cta: {
-      title: "Küçük grup modelini yakından incele",
-      text: "Öğrencinin seviyesine göre en uygun modeli birlikte belirleyelim.",
-      buttonLabel: "Online Dershane Sistemini İncele"
+      title: "Küçük grup yaklaşımını yakından incele",
+      text: "Öğrencinin seviyesine göre en uygun grubu birlikte seçelim.",
+      buttonLabel: "Online Dershaneyi İncele",
+      href: "/online-dershane/"
     },
     relatedSlugs: ["online-dershane-nedir", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
   },
@@ -213,10 +215,10 @@ export const blogPosts = [
     title: "TYT ve AYT Aynı Anda Nasıl Çalışılır?",
     seoTitle: "TYT ve AYT Aynı Anda Nasıl Çalışılır? Net Üreten Sistem",
     metaDescription:
-      "TYT ve AYT'yi birlikte yürütürken zaman yönetimi, deneme analizi ve haftalık plan nasıl kurulur? Uygulanabilir bir çalışma sistemi.",
+      "TYT ve AYT'yi birlikte yürütürken zaman yönetimi, deneme analizi ve haftalık plan nasıl kurulur? Uygulanabilir bir haftalık plan.",
     excerpt:
       "YKS sürecinde en sık karşılaşılan sorun TYT ile AYT arasında dengeyi kuramamak. Yanlış denge sıralamayı doğrudan etkiliyor; bu yazıda işleyen bir haftalık plan kuruyoruz.",
-    cardSnippet: "TYT + AYT dengesini kurup net üreten haftalık çalışma sistemi.",
+    cardSnippet: "TYT + AYT dengesini kuran uygulanabilir haftalık çalışma planı.",
     featured: false,
     sections: [
       {
@@ -259,9 +261,10 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "TYT + AYT dengesini birlikte kuralım",
-      text: "Tek başına denge kurmak zorlanıyorsan sana uygun butik grup paketinde haftalık planı birlikte hazırlayalım.",
-      buttonLabel: "Online Özel Ders Sistemini İncele"
+      title: "TYT + AYT dengesini konuşalım",
+      text: "Tek başına denge kurmakta zorlanıyorsan haftalık planı küçük grup dersinde birlikte hazırlayalım.",
+      buttonLabel: "Online Özel Dersi İncele",
+      href: "/online-ozel-ders/"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -286,7 +289,7 @@ export const blogPosts = [
         bullets: ["Plansız çalışma", "Deneme analizinin atlanması", "Çok kaynak, az tekrar"]
       },
       {
-        h2: "1-2. hafta: Mevcut seviyeyi netleştirme",
+        h2: "1-2. hafta: Mevcut seviyeyi ölçme",
         paragraphs: [
           "İlk iki haftada öğrencinin mevcut seviyesini ölçmek gerekiyor. Bir seviye belirleme denemesi yapıp özellikle Türkçe paragraf ve matematik problem sürelerini ölçmek kritik.",
           "Bu aşamada öncelik hız değil, doğru çözüm alışkanlığını kurmak."
@@ -304,7 +307,7 @@ export const blogPosts = [
         h2: "6-8. hafta: Sınav simülasyonu",
         paragraphs: [
           "Son aşamada süre baskısı altında çözüm pratiği ve doğru soru seçme stratejisi öne çıkıyor.",
-          "Bu dönemde tek bir net sonucundan çok; süre kullanımı, boşlar ve tekrar eden hata türlerinin birkaç denemedeki yönü birlikte izlenmelidir."
+          "Bu dönemde tek bir net sonucundan çok; süre kullanımı, boşlar ve tekrar eden hata türlerinin birkaç denemedeki seyri izlenmelidir."
         ],
         bullets: ["Süre baskısı altında çözüm", "Doğru soru seçme stratejisi", "İstikrarlı net çıktısı"]
       },
@@ -319,7 +322,7 @@ export const blogPosts = [
       {
         h2: "Çalışma düzenini sürdürebilmek için sistemli model",
         paragraphs: [
-          "Bu yüzden öğrencilerin önemli bir kısmı küçük grup online ders modeline geçiyor. Bu yapıda haftalık takip, deneme analizi ve seviyeye göre plan birlikte yürütülüyor.",
+          "Bu yüzden öğrencilerin önemli bir kısmı küçük grup online ders modeline geçiyor. Bu yapıda haftalık takip, deneme analizi ve seviyeye göre plan aynı anda yürütülüyor.",
           "Böylece öğrenci yalnızca soru çözmekle kalmaz; hangi eksiğe neden döndüğünü de takip edebilir."
         ],
         links: [
@@ -329,9 +332,10 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Net artış planını birlikte çıkaralım",
-      text: "Bu sistemi tek başına uygulamak zor geliyorsa öğrencinin seviyesine göre haftalık planı birlikte hazırlayalım.",
-      buttonLabel: "Paketleri İncele"
+      title: "Net artışı için haftalık planı çıkaralım",
+      text: "Bunu tek başına uygulamak zor geliyorsa öğrencinin seviyesine göre haftalık planı birlikte hazırlayalım.",
+      buttonLabel: "Paketleri İncele",
+      href: "/ders-paketleri/"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -363,17 +367,18 @@ export const blogPosts = [
       },
       {
         h2: "Ucuz mu, Değerli mi?",
-        bullets: ["En düşük fiyat her ihtiyaca uygun olmayabilir", "Ders ve takip kapsamını birlikte karşılaştırın"],
+        bullets: ["En düşük fiyat her ihtiyaca uygun olmayabilir", "Ders ve takip kapsamını da karşılaştırın"],
         paragraphs: [
-          "En doğru tercih; öğrencinin seviyesine, ihtiyaç duyduğu geri bildirime ve ailenin sürdürülebilir bütçesine uyan modeldir."
+          "En uygun tercih; öğrencinin seviyesine, ihtiyaç duyduğu geri bildirime ve ailenin bütçesine uyan seçenektir."
         ],
         links: [{ label: "Online dershane sistemimizi incele", href: "/online-dershane/" }]
       }
     ],
     cta: {
-      title: "Küçük grup + takip sistemli modeli dene",
-      text: "Öğrencinin seviyesine göre ders planını birlikte çıkaralım, doğru başlangıcı yapın.",
-      buttonLabel: "Hemen Paketleri İncele"
+      title: "Küçük grup + düzenli takibi birlikte deneyin",
+      text: "Öğrencinin seviyesine göre ders planını birlikte çıkaralım.",
+      buttonLabel: "Paketleri İncele",
+      href: "/ders-paketleri/"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani"]
   },
@@ -385,7 +390,7 @@ export const blogPosts = [
     metaDescription:
       "e dershane nedir, online dershaneden farkı var mı? LGS-YKS öğrencileri için verimli e dershane seçme rehberi.",
     excerpt:
-      "e dershane arayan öğrenciler için en kritik konu sistemli ilerleme. Hangi model gerçekten işe yarıyor bu yazıda netleşiyor.",
+      "e dershane arayan öğrenciler için en kritik konu düzenli ilerleme. Hangi yaklaşım gerçekten işe yarıyor, bu yazıda anlatıyoruz.",
     cardSnippet: "e dershane seçerken bakman gereken 3 kritik kriter.",
     featured: false,
     sections: [
@@ -410,9 +415,10 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "e dershane modelini yakından incele",
-      text: "Öğrencinin seviyesine göre hangi dersten başlaman gerektiğini birlikte belirleyelim.",
-      buttonLabel: "Paketleri İncele"
+      title: "e dershane yaklaşımımızı yakından incele",
+      text: "Öğrencinin seviyesine göre hangi dersten başlaman gerektiğini birlikte konuşalım.",
+      buttonLabel: "Paketleri İncele",
+      href: "/ders-paketleri/"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -425,7 +431,7 @@ export const blogPosts = [
       "Online ders sürecinde dağılmadan çalışmak için haftalık program nasıl hazırlanır? Uygulanabilir plan ve takip modeli burada.",
     excerpt:
       "Online ders alırken asıl sorun planı sürdürmek. Bu yazıda uygulanabilir haftalık programı adım adım kuruyoruz.",
-    cardSnippet: "Online ders programı nasıl sürdürülebilir hale getirilir?",
+    cardSnippet: "Online ders programı dağılmadan nasıl yürütülür?",
     featured: false,
     sections: [
       {
@@ -443,15 +449,16 @@ export const blogPosts = [
         paragraphs: ["Plan mutlaka her hafta deneme sonucuna göre güncellenmelidir."]
       },
       {
-        h2: "Programın sürdürülebilir olması için takip sistemi",
+        h2: "Programı sürdürmek için takip şart",
         paragraphs: ["Programı yazmak kadar uygulamayı izlemek de önemlidir. Öğretmen geri bildirimi, tamamlanmayan hedefin nedenini görüp planı yeniden düzenlemeye yardımcı olabilir."],
-        links: [{ label: "Online özel ders sistemiyle planını netleştir", href: "/online-ozel-ders/" }]
+        links: [{ label: "Online özel ders desteğiyle planını gözden geçir", href: "/online-ozel-ders/" }]
       }
     ],
     cta: {
-      title: "Kişisel online ders programını birlikte oluşturalım",
-      text: "İhtiyacına en uygun butik grup paketinde haftalık planını seviyene göre kuralım.",
-      buttonLabel: "Programımı Oluştur"
+      title: "Kişiye özel çalışma programını konuşalım",
+      text: "İhtiyacına uygun küçük grup dersinde haftalık planını seviyene göre kuralım.",
+      buttonLabel: "Ön Görüşme Talep Et",
+      href: "/iletisim/"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "lgs-online-ders-net-artirma"]
   },
@@ -461,9 +468,9 @@ export const blogPosts = [
     title: "Özel Ders mi Küçük Grup mu? Hangi Seçim Daha Mantıklı?",
     seoTitle: "Özel Ders mi Küçük Grup mu? Karar Rehberi",
     metaDescription:
-      "Özel ders ve küçük grup online ders modeli arasında karar veremiyor musun? Maliyet, verim ve sürdürülebilirlik karşılaştırması.",
+      "Özel ders ve küçük grup online ders modeli arasında karar veremiyor musun? Maliyet, verim ve süreklilik karşılaştırması.",
     excerpt:
-      "Özel ders her zaman en iyi seçenek değildir. Küçük grup modeli bazı öğrenciler için daha verimli ve sürdürülebilir olabilir.",
+      "Özel ders her zaman en iyi seçenek değildir. Küçük grup dersi bazı öğrenciler için daha verimli ve daha kolay yürütülebilir olabilir.",
     cardSnippet: "Özel ders vs küçük grup: maliyet ve sonuç kıyası.",
     featured: false,
     sections: [
@@ -473,8 +480,8 @@ export const blogPosts = [
       },
       {
         h2: "Küçük grubun güçlü tarafı",
-        bullets: ["Daha sürdürülebilir maliyet", "Sistemli haftalık takip", "Akran motivasyonu"],
-        paragraphs: ["Uzun sınav dönemlerinde sürdürülebilirlik, kısa vadeli hızdan daha belirleyici olur."]
+        bullets: ["Daha uygun maliyet", "Düzenli haftalık takip", "Akran motivasyonu"],
+        paragraphs: ["Uzun sınav dönemlerinde süreklilik, kısa vadeli hızdan daha belirleyici olur."]
       },
       {
         h2: "Hangi durumda hangi model seçilmeli?",
@@ -483,9 +490,10 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Doğru modeli birlikte belirleyelim",
-      text: "Öğrencinin seviyesine göre özel ders mi küçük grup mu daha verimli, ön görüşmede netleştirelim.",
-      buttonLabel: "Modelimi Belirle"
+      title: "Uygun seçeneği birlikte seçelim",
+      text: "Öğrencinin seviyesine göre özel ders mi küçük grup mu daha verimli, ön görüşmede konuşalım.",
+      buttonLabel: "Ön Görüşme Talep Et",
+      href: "/iletisim/"
     },
     relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
   },
@@ -517,9 +525,10 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Matematik netini birlikte yükseltelim",
-      text: "Mevcut matematik seviyeni analiz edip butik grupta ilk 4 haftalık planını birlikte çıkaralım.",
-      buttonLabel: "YKS Matematik Paketini İncele"
+      title: "Matematik çalışma planını birlikte hazırlayalım",
+      text: "Mevcut matematik seviyeni analiz edip küçük grup dersinde ilk 4 haftalık planını birlikte çıkaralım.",
+      buttonLabel: "YKS Matematik Paketini İncele",
+      href: "/yks/"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
   },
@@ -552,7 +561,8 @@ export const blogPosts = [
     cta: {
       title: "LGS matematik paketini incele",
       text: "Öğrencinin matematik seviyesini ölçüp hangi konudan başlaman gerektiğini belirleyelim.",
-      buttonLabel: "LGS Matematik Paketini İncele"
+      buttonLabel: "LGS Matematik Paketini İncele",
+      href: "/lgs/"
     },
     relatedSlugs: ["lgs-online-ders-net-artirma", "online-dershane-nedir", "online-ozel-ders-mi-dershane-mi"]
   },
@@ -589,8 +599,9 @@ export const blogPosts = [
     ],
     cta: {
       title: "Deneme analizini düzenli takibe bağla",
-      text: "Süreç başlamadan öğrencinin analiz raporunu birlikte çıkaralım.",
-      buttonLabel: "Deneme Analizi Al"
+      text: "Deneme sonuçlarını birlikte değerlendirip haftalık planı çıkaralım.",
+      buttonLabel: "Ön Görüşme Talep Et",
+      href: "/iletisim/"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "lgs-online-ders-net-artirma", "online-dershane-nedir"]
   },
@@ -613,7 +624,7 @@ export const blogPosts = [
       {
         h2: "Öğretmen ve sistem dengesi",
         paragraphs: [
-          "İyi öğretmen tek başına yeterli değildir; doğru sistem olmadan öğrenci ilerlemesi sürdürülebilir olmaz."
+          "İyi öğretmen tek başına yeterli değildir; düzenli takip olmadan öğrencinin ilerlemesi kalıcı olmaz."
         ]
       },
       {
@@ -626,8 +637,9 @@ export const blogPosts = [
     ],
     cta: {
       title: "Doğru online dershane seçimi için bizimle iletişime geç",
-      text: "Öğrencinin seviyesine göre en doğru başlangıç modelini birlikte belirleyelim.",
-      buttonLabel: "Ön Görüşme Talep Et"
+      text: "Öğrencinin seviyesine göre en uygun başlangıcı birlikte konuşalım.",
+      buttonLabel: "Ön Görüşme Talep Et",
+      href: "/iletisim/"
     },
     relatedSlugs: ["online-dershane-nedir", "online-dershane-fiyatlari-2026", "online-ozel-ders-mi-dershane-mi"]
   },
@@ -637,7 +649,7 @@ export const blogPosts = [
     title: "Online Ders Disiplini Nasıl Kurulur?",
     seoTitle: "Online Ders Disiplini Kurma Rehberi",
     metaDescription:
-      "Online ders sürecinde disiplin nasıl kurulur? Ertelemeyi azaltan, sürdürülebilir çalışma alışkanlığı oluşturan pratik sistem.",
+      "Online ders sürecinde disiplin nasıl kurulur? Ertelemeyi azaltan, kalıcı çalışma alışkanlığı oluşturan pratik yöntemler.",
     excerpt:
       "Online dersin en kritik noktası süreklilik. Disiplin kurulamayan programlarda sonuç almak zorlaşır.",
     cardSnippet: "Online derslerde istikrar sağlayan disiplin modeli.",
@@ -659,9 +671,10 @@ export const blogPosts = [
       }
     ],
     cta: {
-      title: "Online ders disiplinini birlikte kuralım",
-      text: "Butik grup paketinde öğrencinin haftalık çalışma düzenini seviyesine göre tasarlayalım.",
-      buttonLabel: "Disiplin Planımı Oluştur"
+      title: "Çalışma düzenini birlikte oluşturalım",
+      text: "Küçük grup dersinde öğrencinin haftalık çalışma düzenini seviyesine göre tasarlayalım.",
+      buttonLabel: "Ön Görüşme Talep Et",
+      href: "/iletisim/"
     },
     relatedSlugs: ["online-ders-calisma-programi", "deneme-analizi-nasil-yapilir", "online-dershane-nedir"]
   }
@@ -912,7 +925,6 @@ export const seoKeywords = [
   "online matematik dersi",
   "matematik özel ders",
   "canlı matematik dersi",
-  "butik matematik dersi",
   "tyt matematik",
   "ayt matematik",
   "lgs matematik",

@@ -28,7 +28,7 @@ const principles = [
   {
     n: "03",
     title: "Erişilebilir olmak",
-    body: "Kaliteli takibi, birebir dersin maliyetine mahkûm etmeden, sürdürülebilir bir fiyatta sunmak.",
+    body: "Kaliteli takibi, birebir dersin maliyetine mahkûm etmeden, aileler için uygun bir fiyatta sunmak.",
   },
 ];
 
@@ -104,8 +104,8 @@ export default function MissionPage() {
         </section>
 
         <FooterCta
-          title="Matematik yolunu birlikte netleştirelim."
-          subtitle="Öğrencinin seviyesi, hedefi ve uygun küçük grup ihtimalini ücretsiz ön görüşmede konuşalım."
+          title="Bu yaklaşımı öğrencinizde deneyin."
+          subtitle="Ücretsiz ön görüşmede sınıfını, seviyesini ve hedefini konuşalım; uygun küçük grubu birlikte bulalım."
           ctaLabel="Ücretsiz görüşme"
           ctaHref="/iletisim/"
         />

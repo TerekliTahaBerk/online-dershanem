@@ -32,7 +32,7 @@ const newBlogPosts: BlogPost[] = [
     metaDescription:
       "LGS matematik için konu, soru çözümü, tekrar ve deneme analizini dengeleyen uygulanabilir haftalık çalışma programını adım adım kurun.",
     excerpt:
-      "İyi bir LGS matematik programı yalnızca kaç soru çözüleceğini söylemez; öğrencinin eksiğine göre hangi gün neyi, neden çalışacağını da netleştirir.",
+      "İyi bir LGS matematik programı yalnızca kaç soru çözüleceğini söylemez; öğrencinin eksiğine göre hangi gün neyi, neden çalışacağını da belirtir.",
     cardSnippet: "Konu, soru, tekrar ve denemeyi dengeleyen gerçekçi haftalık plan.",
     featured: true,
     summary: [
@@ -51,7 +51,7 @@ const newBlogPosts: BlogPost[] = [
       {
         h2: "Uygulanabilir bir haftanın dört parçası",
         bullets: [
-          "Konu ve örnek çözüm: eksik kazanımı kısa anlatım ve temel sorularla netleştirme",
+          "Konu ve örnek çözüm: eksik kazanımı kısa anlatım ve temel sorularla pekiştirme",
           "Odaklı soru seti: aynı beceriyi farklı soru biçimlerinde kullanma",
           "Karışık tekrar: eski konuların unutulmasını önleme",
           "Deneme ve analiz: bir sonraki haftanın önceliğini belirleme"
@@ -87,7 +87,7 @@ const newBlogPosts: BlogPost[] = [
       {
         h2: "Veli programı nasıl destekleyebilir?",
         paragraphs: [
-          "Velinin rolü her soruyu kontrol etmek değil, çalışma düzeninin sürdürülebilir olup olmadığını görmektir. Günlük sorgulama yerine haftada bir kısa değerlendirme; öğrencinin neyi tamamladığını, nerede desteğe ihtiyaç duyduğunu ve sonraki hedefini konuşmak için yeterlidir."
+          "Velinin rolü her soruyu kontrol etmek değil, çalışma düzeninin devam edip etmediğini görmektir. Günlük sorgulama yerine haftada bir kısa değerlendirme; öğrencinin neyi tamamladığını, nerede desteğe ihtiyaç duyduğunu ve sonraki hedefini konuşmak için yeterlidir."
         ]
       }
     ],
@@ -96,7 +96,7 @@ const newBlogPosts: BlogPost[] = [
       { q: "Haftada kaç matematik denemesi çözülmeli?", a: "Sabit bir sayı yerine denemenin analiz edilebilmesi önemlidir. Başlangıçta süreli mini denemeler, sınava yaklaştıkça genel denemeler öğrencinin planına göre artırılabilir." }
     ],
     cta: {
-      title: "LGS matematik planını birlikte netleştirelim",
+      title: "LGS matematik planını birlikte hazırlayalım",
       text: "En fazla dört öğrencilik canlı derste öğrencinin seviyesine göre çalışma yönünü belirleyelim.",
       buttonLabel: "LGS Paketini İncele",
       href: "/lgs/"
@@ -167,10 +167,10 @@ const newBlogPosts: BlogPost[] = [
     ],
     faq: [
       { q: "TYT matematik programı kaç saat olmalı?", a: "Tek bir doğru süre yoktur. Öğrencinin seviyesi, okul programı ve diğer dersleri dikkate alınarak tamamlanabilir bloklar planlanmalı; süre kadar çalışma amacı da net olmalıdır." },
-      { q: "TYT matematikte önce konular mı problemler mi bitmeli?", a: "Temel konular ile problem pratiğini tamamen ardışık yürütmek gerekmez. Öğrenci seviyesine uygun problem çalışması, temel konu öğrenimiyle birlikte kademeli biçimde sürdürülebilir." }
+      { q: "TYT matematikte önce konular mı problemler mi bitmeli?", a: "Temel konular ile problem pratiğini tamamen ardışık yürütmek gerekmez. Öğrenci seviyesine uygun problem çalışması, temel konu öğrenimiyle birlikte kademeli biçimde ilerletilebilir." }
     ],
     cta: {
-      title: "TYT ve AYT matematik düzenini birlikte kuralım",
+      title: "TYT ve AYT matematik düzenini birlikte oluşturalım",
       text: "YKS paketinin canlı ders ve ders sonrası yönlendirme modelini inceleyin.",
       buttonLabel: "YKS Paketini İncele",
       href: "/yks/"
@@ -240,7 +240,7 @@ const newBlogPosts: BlogPost[] = [
       }
     ],
     cta: {
-      title: "AYT matematikte çalışma yönünü netleştirin",
+      title: "AYT matematikte sıradaki adımı belirleyin",
       text: "TYT ve AYT hedeflerini birlikte ele alan YKS matematik paketini görün.",
       buttonLabel: "YKS Paketini İncele",
       href: "/yks/"
@@ -297,7 +297,7 @@ const newBlogPosts: BlogPost[] = [
       {
         h2: "Ne zaman öğretmen desteği düşünülmeli?",
         paragraphs: [
-          "Öğrenci çözümü izlediğinde anlıyor fakat tek başına başlayamıyorsa, aynı hata birkaç hafta tekrarlanıyorsa veya neyi çalışacağını seçemiyorsa dış geri bildirim süreci kısaltabilir. Desteğin amacı yalnız soruyu çözmek değil, öğrencinin hangi adımda koptuğunu görünür kılmaktır."
+          "Öğrenci çözümü izlediğinde anlıyor fakat tek başına başlayamıyorsa, aynı hata birkaç hafta tekrarlanıyorsa veya neyi çalışacağını seçemiyorsa dış geri bildirim süreci kısaltabilir. Desteğin amacı yalnız soruyu çözmek değil, öğrencinin hangi adımda koptuğunu ortaya çıkarmaktır."
         ],
         links: [
           { label: "Online matematik dersi nasıl olmalı?", href: "/blog/online-matematik-dersi-nasil-olmali/" },
@@ -310,7 +310,7 @@ const newBlogPosts: BlogPost[] = [
       { q: "Matematiğe sıfırdan başlarken çok soru çözmek gerekir mi?", a: "Başlangıçta soru sayısından çok doğru kademelendirme önemlidir. Kavram anlaşıldıktan sonra kolaydan karışığa ilerleyen yeterli pratik yapılmalıdır." }
     ],
     cta: {
-      title: "Doğru başlangıç noktasını birlikte bulalım",
+      title: "Nereden başlaman gerektiğini birlikte bulalım",
       text: "Öğrencinin sınıfını, hedefini ve matematikte zorlandığı noktayı ücretsiz ön görüşmede konuşalım.",
       buttonLabel: "Ücretsiz Ön Görüşme",
       href: "/iletisim/"
@@ -380,7 +380,7 @@ const newBlogPosts: BlogPost[] = [
       }
     ],
     cta: {
-      title: "Yeni nesil sorularda çözüm adımlarını görünür kılalım",
+      title: "Yeni nesil sorularda çözüm adımlarını birlikte gösterelim",
       text: "En fazla dört öğrencilik canlı derste öğrenci çözümünü gösterir ve takıldığı adımda geri bildirim alır.",
       buttonLabel: "LGS Paketini İncele",
       href: "/lgs/"
@@ -425,7 +425,7 @@ const newBlogPosts: BlogPost[] = [
           "Aynı beceriyi birkaç gün sonra kısa kontrol setinde deneyin"
         ],
         paragraphs: [
-          "Süre tutmanın amacı öğrenciyi telaşlandırmak değil, kararlarını görünür kılmaktır. Her oturumun rekor denemesi olması gerekmez."
+          "Süre tutmanın amacı öğrenciyi telaşlandırmak değil, kararlarını fark edilir hale getirmektir. Her oturumun rekor denemesi olması gerekmez."
         ]
       },
       {
@@ -449,8 +449,8 @@ const newBlogPosts: BlogPost[] = [
       }
     ],
     cta: {
-      title: "TYT matematikte doğru çalışma yönünü belirleyin",
-      text: "Canlı derste çözüm adımlarını görünür kılan YKS matematik modelini inceleyin.",
+      title: "TYT matematikte sıradaki çalışma adımını belirleyin",
+      text: "Canlı derste çözüm adımlarının gösterildiği YKS matematik paketini inceleyin.",
       buttonLabel: "YKS Paketini İncele",
       href: "/yks/"
     },
@@ -606,7 +606,7 @@ const newBlogPosts: BlogPost[] = [
     ],
     cta: {
       title: "Deneme analizini ders sonrası yönlendirmeye bağlayın",
-      text: "Öğrencinin hangi adımı çalışacağını görünür kılan LGS ve YKS matematik paketlerini inceleyin.",
+      text: "Öğrencinin hangi adımı çalışacağını netlikle gösteren LGS ve YKS matematik paketlerini inceleyin.",
       buttonLabel: "Paketleri Karşılaştır",
       href: "/ders-paketleri/"
     },

@@ -51,8 +51,8 @@ const topicClusters = [
   },
   {
     id: "calisma-sistemi",
-    title: "Çalışma ve sınav sistemi",
-    description: "Planı sürdürülebilir kılın; yanlışları bir sonraki haftanın somut çalışma yönüne dönüştürün.",
+    title: "Çalışma ve sınav düzeni",
+    description: "Planı hafta hafta uygulanabilir tutun; yanlışları bir sonraki haftanın somut çalışma adımına dönüştürün.",
     categories: ["Online Ders", "Sınav Stratejisi"],
   },
   {
@@ -248,7 +248,7 @@ export default function BlogPage() {
                   Okuduklarını uygulamaya geçirelim.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
-                  Sana uygun ders, hoca ve haftalık plan kombinasyonunu birlikte kuralım.
+                  Sana uygun paketi ve haftalık planı ücretsiz görüşmede birlikte konuşalım.
                 </p>
               </div>
               <Link href="/ders-paketleri/" className="site-btn site-btn-primary shrink-0">

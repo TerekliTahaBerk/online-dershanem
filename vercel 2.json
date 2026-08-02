@@ -1,0 +1,9 @@
+{
+  "crons": [
+    { "path": "/api/cron/email-retry", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/panel-reminders", "schedule": "30 6 * * *" },
+    { "path": "/api/cron/rate-limit-prune", "schedule": "0 4 * * *" },
+    { "path": "/api/cron/panel-session-retention", "schedule": "15 4 * * *" },
+    { "path": "/api/cron/odk-exam-lifecycle", "schedule": "*/5 * * * *" }
+  ]
+}

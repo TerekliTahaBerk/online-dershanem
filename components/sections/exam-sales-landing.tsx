@@ -64,7 +64,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
 
             <article className="rounded-[28px] border border-[var(--site-line)] bg-white p-7 shadow-[0_40px_80px_-50px_rgba(20,20,15,0.35)] sm:p-8">
               <h2 className="font-display text-[22px] leading-snug text-[var(--site-ink)]">
-                Bu model öğrenciyi nasıl görünür kılar?
+                Küçük grupta öğrenciye ne değişir?
               </h2>
               <ul className="mt-5 space-y-3.5">
                 {data.highlights.map((item) => (

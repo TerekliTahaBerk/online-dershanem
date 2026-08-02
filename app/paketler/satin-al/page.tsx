@@ -57,7 +57,7 @@ export default async function OdCheckoutFormPage({
       <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)] py-10">
         <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
           <nav className="text-[12px] text-[var(--site-body)] mb-4 uppercase tracking-wider">
-            <Link href="/#matematik-ders-paketi" className="hover:text-[var(--site-ink)]">
+            <Link href="/ders-paketleri/" className="hover:text-[var(--site-ink)]">
               Matematik Ders Paketi
             </Link>
             <span className="mx-2">/</span>
@@ -95,7 +95,7 @@ export default async function OdCheckoutFormPage({
                   priceCents: parsePriceToCents(priceLabel),
                 },
               ]}
-              backHref="/paketler"
+              backHref="/ders-paketleri/"
               backLabel="← Matematik dersine dön"
             />
           </div>

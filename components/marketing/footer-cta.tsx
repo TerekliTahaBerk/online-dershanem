@@ -4,8 +4,8 @@ import { ArrowRight } from "lucide-react";
 type Props = { title?: string; subtitle?: string; ctaLabel?: string; ctaHref?: string };
 
 export function FooterCta({
-  title = "Öğrencinin matematik yolunu birlikte netleştirelim.",
-  subtitle = "Sınıfını, hedefini ve uygun küçük grup ihtimalini ücretsiz ön görüşmede konuşalım.",
+  title = "Öğrencinizin seviyesini ücretsiz görüşmede konuşalım.",
+  subtitle = "Sınıfını, hedefini ve uygun küçük grup ihtimalini birlikte değerlendirelim.",
   ctaLabel = "Ön görüşme talebi",
   ctaHref = "/iletisim/",
 }: Props) {

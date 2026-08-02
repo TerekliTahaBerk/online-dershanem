@@ -19,25 +19,25 @@ export const metadata = buildMarketingMetadata({
 const approach = [
   {
     icon: HeartHandshake,
-    title: "Birebir ilgi",
-    body: "En fazla 4 kişilik grupta öğrenci görünür kalır; soru sorar, çözümünü gösterir.",
+    title: "Yakın takip",
+    body: "En fazla 4 kişilik grupta her öğrenci soru sorar ve çözümünü gösterir; kalabalıkta kaybolmaz.",
   },
   {
     icon: BarChart3,
     title: "Düzenli takip",
-    body: "İşlenen konu, verilen ödev ve sonraki hedef kısa öğretmen notlarıyla görünür kalır.",
+    body: "İşlenen konu, verilen ödev ve sonraki hedef kısa öğretmen notlarıyla haftalık olarak paylaşılır.",
   },
   {
     icon: Compass,
     title: "Seviyeye göre plan",
-    body: "Öğrencinin seviyesi ve sınav hedefi dikkate alınır; sıradaki çalışma yönü netleşir.",
+    body: "Öğrencinin seviyesi ve sınav hedefi dikkate alınır; sıradaki çalışma adımı buna göre belirlenir.",
   },
 ];
 
 const different = [
-  { title: "Tek sistem", body: "Ders, plan, ödev ve veli bilgilendirmesi tek bir düzende yürür." },
-  { title: "Görünür ilerleme", body: "İşlenen konu, zorlanılan nokta ve sıradaki hedef haftalık olarak görünür." },
-  { title: "Seviyeye göre plan", body: "Çalışma yönü öğrencinin seviyesi ve sınav hedefine göre güncellenir." },
+  { title: "Hepsi bir elden", body: "Ders, plan, ödev ve veli bilgilendirmesi aynı ekip tarafından yürütülür." },
+  { title: "Haftalık özet", body: "İşlenen konu, zorlanılan nokta ve sıradaki hedef her hafta kısaca paylaşılır." },
+  { title: "Kişiye göre tempo", body: "Ders temposu ve sıradaki adım, öğrencinin seviyesi ve sınav hedefine göre güncellenir." },
   { title: "Düzenli geri bildirim", body: "Öğrenciye öğretmen notu, veliye kısa gelişim özeti." },
 ];
 
@@ -54,8 +54,8 @@ export default function AboutPage() {
       <main id="main-content" tabIndex={-1}>
         <PageHero
           eyebrow="Hakkımızda"
-          title={<>Öğrencinin matematikte <span className="site-hl">yalnız kalmadığı</span> bir sistem.</>}
-          subtitle="Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini aynı çalışma düzeninde bir araya getirir."
+          title={<>Öğrencinin matematikte <span className="site-hl">yalnız kalmadığı</span> küçük bir grup.</>}
+          subtitle="Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini bir arada sunar."
         />
 
         {/* Misyon */}
@@ -68,8 +68,8 @@ export default function AboutPage() {
                   Hedefe giden yolu <span className="site-hl">sadeleştirmek.</span>
                 </h2>
                 <p className="mt-5 max-w-[46ch] text-[15.5px] leading-7 text-[var(--site-body)]">
-                  Öğrencinin derste görünür kaldığı, ne çalışacağını bildiği ve gelişiminin aile için
-                  de anlaşılır olduğu sürdürülebilir bir çalışma düzeni kurmak.
+                  Öğrencinin derste sorularını sorabildiği, ne çalışacağını bildiği ve gelişiminin
+                  aile için de anlaşılır olduğu bir düzen kurmak.
                 </p>
                 <Link href="/misyonumuz/" className="mt-6 inline-flex items-center gap-2 text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">
                   Misyonumuzu ayrıntılı okuyun
@@ -90,7 +90,7 @@ export default function AboutPage() {
                 <div className="px-2 pb-2 pt-4">
                   <p className="text-[13px] font-bold text-[var(--site-ink)]">Online Dershanem ekibi</p>
                   <p className="mt-1 text-[12.5px] leading-5 text-[var(--site-body)]">
-                    Küçük grup matematik modelini öğrenci, öğretmen ve veli için daha açık hâle getirmek üzere çalışıyoruz.
+                    Küçük grup dersini öğrenci, öğretmen ve veli için daha anlaşılır hale getirmeye çalışıyoruz.
                   </p>
                 </div>
               </div>
@@ -131,7 +131,7 @@ export default function AboutPage() {
               </h2>
               <p className="mt-5 max-w-md text-[15px] leading-7 text-[var(--site-body)]">
                 Kısa vadeli, kanıtlanmamış vaatler yerine; uygulanabilir bir çalışma düzenine ve
-                ölçülebilir gelişime odaklanırız.
+                haftalık takip edilebilir gelişime odaklanırız.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -157,7 +157,7 @@ export default function AboutPage() {
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
               Küçük grup dersini yürütecek öğretmen seçiminde matematik alan bilgisi, anlatım yaklaşımı
-              ve öğrencinin seviyesi birlikte değerlendirilir. Uygun eşleşmeyi ön görüşmede netleştiririz.
+              ve öğrencinin seviyesi birlikte değerlendirilir. Uygun eşleşmeyi ön görüşmede belirleriz.
             </p>
             <a
               href="/iletisim/"

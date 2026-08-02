@@ -37,17 +37,16 @@ export default function OnlineOzelDersPage() {
           subtitle="Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik grupta daha çok soru-cevap alanı bulur ve ders sonunda ne çalışacağını bilir."
           actions={
             <>
+              <Link href="/ders-paketleri/" className="site-btn site-btn-primary site-btn-lg">
+                Paketleri incele
+              </Link>
               <LeadFunnelTrigger
                 source="online_ozel_ders_hero_cta"
                 eventName="landing_cta_click"
-                href="/#matematik-ders-paketi"
-                className="site-btn site-btn-primary site-btn-lg"
+                className="site-btn site-btn-secondary site-btn-lg"
               >
-                Ders Paketini İncele
+                Ücretsiz görüşme
               </LeadFunnelTrigger>
-              <Link href="/ders-paketleri/" className="site-btn site-btn-secondary site-btn-lg">
-                Fiyatı gör
-              </Link>
             </>
           }
         />

@@ -38,17 +38,16 @@ export default function OnlineDershanePage() {
           subtitle="Bu sistem klasik kalabalık online ders değil. Öğrenci matematikte en fazla 4 öğrencilik küçük grupta ilerler; soru sorar, çözümünü gösterir ve ders sonunda ne çalışacağını bilir."
           actions={
             <>
+              <Link href="/ders-paketleri/" className="site-btn site-btn-primary site-btn-lg">
+                Paketleri incele
+              </Link>
               <LeadFunnelTrigger
                 source="online_dershane_hero_cta"
                 eventName="landing_cta_click"
-                href="/#matematik-ders-paketi"
-                className="site-btn site-btn-primary site-btn-lg"
+                className="site-btn site-btn-secondary site-btn-lg"
               >
-                Ders Paketini İncele
+                Ücretsiz görüşme
               </LeadFunnelTrigger>
-              <Link href="/ders-paketleri/" className="site-btn site-btn-secondary site-btn-lg">
-                Fiyatı gör
-              </Link>
             </>
           }
         />

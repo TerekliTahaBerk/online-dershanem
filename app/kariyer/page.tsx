@@ -8,13 +8,13 @@ import { contact, siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Kariyer",
   description:
-    "Online Dershanem'de açık pozisyonlar. Butik matematik dersi modelini birlikte büyütecek ekip arkadaşlarıyla tanışmak istiyoruz.",
+    "Online Dershanem'de açık pozisyonlar. Küçük grup matematik dersini büyütecek ekip arkadaşları arıyoruz.",
   alternates: { canonical: "/kariyer" },
   robots: { index: false, follow: true },
   openGraph: {
     title: "Kariyer | Online Dershanem",
     description:
-      "Eğitimin geleceğini birlikte kurmak için Online Dershanem ekibine katıl.",
+      "Online Dershanem ekibine katılmak ister misin? Açık pozisyonlara göz at.",
     url: `${siteUrl}/kariyer`
   }
 };
@@ -52,11 +52,11 @@ export default function CareersPage() {
             <Boxes size={27} strokeWidth={1.6} aria-hidden="true" />
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
-            Eğitimin geleceğini <span className="site-hl">birlikte</span> inşa edelim.
+            Küçük bir ekipte, <span className="site-hl">öğrenciye dokunan</span> iş yap.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
-            Online Dershanem; öğrencinin kalabalık içinde kaybolmadığı, öğretmeninin onu adıyla
-            tanıdığı bir model kuruyor. Bu modeli büyütecek küçük ama etkili bir ekiple çalışıyoruz.
+            Online Dershanem, öğrencinin kalabalıkta kaybolmadığı, öğretmeninin onu adıyla tanıdığı
+            küçük gruplarla çalışıyor. Bunu büyüten küçük ama etkili bir ekibiz.
           </p>
         </section>
 
@@ -120,11 +120,11 @@ export default function CareersPage() {
               },
               {
                 title: "Özenli standartlar",
-                body: "Öğretmenden yazılım altyapısına kadar her detayda açık ve sürdürülebilir kalite arıyoruz."
+                body: "Öğretmenden yazılım altyapısına kadar her detayda tutarlı kalite arıyoruz."
               },
               {
                 title: "Şeffaf süreç",
-                body: "Hedefler ölçülebilir, geri bildirim düzenli, gelişim alanları nettir."
+                body: "Hedefler net, geri bildirim düzenli, gelişim alanları açık şekilde konuşulur."
               }
             ].map((item) => (
               <article

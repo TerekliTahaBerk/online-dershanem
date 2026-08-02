@@ -1,0 +1,30 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.*.local
+out/
+prisma/dev.db
+prisma/dev.db-journal
+.vercel
+.env*.local
+
+# OS / editor / IDE / agent artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+.claire/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
+
+# Playwright artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Lighthouse CI artifacts
+/.lighthouseci/

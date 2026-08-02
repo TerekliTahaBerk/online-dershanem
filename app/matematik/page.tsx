@@ -19,7 +19,7 @@ export const metadata = buildMarketingMetadata({
 const mathFaqs = [
   {
     q: "Online matematik dersi kimler için uygun?",
-    a: "Canlı derste soru sormaya, çözümünü göstermeye ve ders sonrasında ne çalışacağını netleştirmeye ihtiyaç duyan LGS ve YKS öğrencileri için uygundur. Grup yerleşimi öğrencinin seviyesi ve hedefi değerlendirilerek yapılır.",
+    a: "Canlı derste soru sormaya, çözümünü göstermeye ve ders sonrasında ne çalışacağını bilmeye ihtiyaç duyan LGS ve YKS öğrencileri için uygundur. Grup yerleşimi öğrencinin seviyesi ve hedefi değerlendirilerek yapılır.",
   },
   {
     q: "Matematik dersleri kaç kişilik?",
@@ -39,7 +39,7 @@ const learningPaths = [
   {
     Icon: Calculator,
     title: "Matematikte temel eksikliği",
-    text: "Eksikliği genel bir etiket olarak bırakmadan; kavram, işlem ve soru dili başlıklarında doğru başlangıç noktasını bulun.",
+    text: "Eksikliği genel bir etiket olarak bırakmadan; kavram, işlem ve soru dili başlıklarında nereden başlanması gerektiğini bulun.",
     href: "/blog/matematikte-temel-eksigi-nasil-kapatilir/",
     label: "Temel eksikliği rehberi",
   },
@@ -111,7 +111,7 @@ export default function MathematicsHubPage() {
             <div>
               <span className="site-eyebrow">LGS · TYT · AYT matematik</span>
               <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.5rem,5.6vw,4.5rem)] leading-[1.02] tracking-[-0.035em] text-[var(--site-ink)]">
-                Online matematik dersi, öğrencinin <span className="site-hl">çözümünü görünür</span> kılmalı.
+                Online matematik dersinde öğrenci <span className="site-hl">çözümünü göstermeli</span>, sadece dinlememeli.
               </h1>
               <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[var(--site-body)]">
                 En fazla dört öğrencilik canlı matematik dersinde öğrenci sorusunu sorar, çözümünü gösterir ve ders sonrasında LGS veya YKS hedefi için ne çalışacağını bilir.
@@ -133,8 +133,8 @@ export default function MathematicsHubPage() {
               </p>
             </div>
 
-            <aside className="rounded-[28px] border border-[var(--site-line)] bg-white p-7 shadow-[0_38px_85px_-58px_rgba(17,19,17,.35)] sm:p-9" aria-label="Matematik çalışma sistemi">
-              <p className="site-kicker">Matematik çalışma döngüsü</p>
+            <aside className="rounded-[28px] border border-[var(--site-line)] bg-white p-7 shadow-[0_38px_85px_-58px_rgba(17,19,17,.35)] sm:p-9" aria-label="Ders sonrası çalışma akışı">
+              <p className="site-kicker">Dört adımda ders akışı</p>
               <ol className="mt-6 space-y-4">
                 {[
                   ["01", "Canlı derste çözümü göster"],
@@ -154,9 +154,9 @@ export default function MathematicsHubPage() {
 
         <section className="site-container py-16 sm:py-24">
           <div className="max-w-3xl">
-            <span className="site-eyebrow">Matematikte doğru başlangıç</span>
+            <span className="site-eyebrow">Matematikte ilk adım</span>
             <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3.2rem)] leading-tight tracking-[-.025em] text-[var(--site-ink)]">
-              Daha çok soru değil, doğru eksiğe doğru çalışma.
+              Daha çok soru değil, eksiğe göre çalışma.
             </h2>
             <p className="mt-5 text-[16px] leading-8 text-[var(--site-body)]">
               Matematikte ilerleme tek bir yönteme bağlı değildir. Öğrencinin temel bilgisi, soru dili, işlem alışkanlığı ve süre kullanımı ayrı ayrı görülmeli; haftalık plan bu ihtiyaca göre sadeleşmelidir.
@@ -182,7 +182,7 @@ export default function MathematicsHubPage() {
               <Link href="/lgs/" className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9">
                 <p className="site-kicker">8. sınıf</p>
                 <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.6rem)] leading-tight text-[var(--site-ink)]">LGS matematik dersi</h2>
-                <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">Yeni nesil soru, temel eksik ve deneme geri bildirimini öğrencinin seviyesine göre aynı düzende ilerletin.</p>
+                <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">Yeni nesil soru, temel eksik ve deneme geri bildirimini öğrencinin seviyesine göre ele alın.</p>
                 <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-olive)]">LGS matematiği incele <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" aria-hidden="true" /></span>
               </Link>
               <Link href="/yks/" className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9">
@@ -225,7 +225,7 @@ export default function MathematicsHubPage() {
             <div className="max-w-3xl">
               <span className="site-eyebrow">Ders modeli seçimi</span>
               <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3rem)] leading-tight text-[var(--site-ink)]">Online dershane mi, matematik özel ders mi?</h2>
-              <p className="mt-4 text-[16px] leading-8 text-[var(--site-body)]">Kararı yalnız ders adına göre değil; grup büyüklüğü, canlı etkileşim, ders sonrası yönlendirme ve sürdürülebilir bütçeye göre verin.</p>
+              <p className="mt-4 text-[16px] leading-8 text-[var(--site-body)]">Kararı yalnız ders adına göre değil; grup büyüklüğü, canlı etkileşim, ders sonrası yönlendirme ve aile bütçesine göre verin.</p>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <Link href="/online-dershane/" className="group flex items-center justify-between gap-4 rounded-[20px] border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] hover:border-[var(--brand-olive)]">Online dershane modelini incele <ArrowRight size={17} className="shrink-0 group-hover:translate-x-1" aria-hidden="true" /></Link>
@@ -257,7 +257,7 @@ export default function MathematicsHubPage() {
           <div className="rounded-[28px] border border-[var(--site-line)] bg-[var(--brand-olive)] p-8 text-white sm:p-12">
             <div className="grid gap-7 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
-                <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-tight">Matematikte doğru başlangıcı birlikte bulalım.</h2>
+                <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-tight">Öğrenciniz nereden başlamalı, konuşalım.</h2>
                 <p className="mt-3 max-w-xl text-[15px] leading-7 text-white/75">Öğrencinin sınıfını, hedefini ve zorlandığı noktayı konuşup uygun LGS veya YKS grubunu değerlendirelim.</p>
               </div>
               <LeadFunnelTrigger source="matematik_hub_final_cta" eventName="landing_cta_click" className="site-btn bg-white text-[var(--brand-olive)] hover:bg-[var(--site-bg-warm)]">Ücretsiz görüşme</LeadFunnelTrigger>

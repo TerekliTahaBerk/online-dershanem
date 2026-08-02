@@ -53,7 +53,7 @@ export default function TYTLandingPage() {
       data={{
         examKey: "YKS",
         heroBadge: "YKS Matematik",
-        heroTitle: "YKS matematikte TYT ve AYT aynı düzende ilerlesin.",
+        heroTitle: "YKS matematikte TYT ve AYT birlikte, dengeli ilerlesin.",
         heroText:
           "YKS öğrencisi derste yalnızca dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda TYT-AYT çalışmasında hangi adımla devam edeceğini bilir.",
         highlights: [

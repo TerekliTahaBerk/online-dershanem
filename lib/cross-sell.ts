@@ -35,10 +35,9 @@ export function buildOdSuggestions(
         getPackagePriceCents(pkg.category, pkg.subject) ||
         parsePriceToCents(pkg.discountedPrice);
       if (priceCents <= 0) continue;
-      // Premium dilli reason
       let reason = "Matematikteki gelişimini tamamlayabilir.";
       if (pkg.subject === "Matematik Ders Paketi") {
-        reason = "Butik grupta canlı matematik dersiyle eksiklerini kapat.";
+        reason = "Küçük grupta canlı matematik dersiyle eksiklerini kapat.";
       }
       all.push({
         id,

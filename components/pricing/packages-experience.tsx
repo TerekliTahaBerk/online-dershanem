@@ -48,7 +48,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
               <div>
                 <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">Neler dahil?</h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
-                  LGS ve YKS paketlerinde aynı butik ders standardı vardır.
+                  LGS ve YKS paketlerinde aynı küçük grup ders standardı vardır.
                 </p>
                 <ul className="mt-9 grid gap-x-8 gap-y-5">
                   {includedFeatures.map((f) => (
@@ -116,7 +116,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
             <article className="rounded-[28px] border border-[var(--site-line)] bg-[var(--brand-orange-tint)] p-8 sm:p-10">
               <h2 className="font-display text-[27px] text-[var(--site-ink)]">Kimler için uygun?</h2>
               <ul className="mt-6 space-y-3 text-[14.5px] leading-6 text-[var(--site-body)]">
-                {["Kalabalık sınıfta soru soramayanlar", "Ders sonrası ne çalışacağını netleştirmek isteyenler", "LGS veya YKS matematiğinde düzen arayanlar"].map((item) => <li key={item} className="flex gap-2.5"><Check size={17} className="mt-1 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />{item}</li>)}
+                {["Kalabalık sınıfta soru soramayanlar", "Ders sonrası ne çalışacağını bilmek isteyenler", "LGS veya YKS matematiğinde düzen arayanlar"].map((item) => <li key={item} className="flex gap-2.5"><Check size={17} className="mt-1 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />{item}</li>)}
               </ul>
             </article>
             <article className="rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-10">
@@ -130,7 +130,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
 
         <FaqAccordion items={homeFaqs} tone="plain" />
         <FooterCta
-          title="Hangi paket doğru, birlikte netleştirelim."
+          title="Hangi paket uygun, birlikte karar verelim."
           subtitle="Kararsızsan ücretsiz ön görüşmede öğrencinin seviyesini ve sınav hedefini konuşalım."
           ctaLabel="Ücretsiz görüşme"
           ctaHref="/iletisim/"

@@ -40,7 +40,7 @@ export const hero = {
 /* ---------------- Sosyal kanıt (üniversite barı) ---------------- */
 
 export const socialProof = {
-  text: "İki paket, aynı butik ders disiplini: canlı matematik, küçük grup ve takip.",
+  text: "İki paket, aynı ders disiplini: canlı matematik, küçük grup ve takip.",
   badges: ["LGS", "YKS", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip", "PayTR güvenli ödeme"],
 } as const;
 
@@ -50,7 +50,7 @@ export const valueProps = {
   eyebrow: "Neden Online Dershanem",
   title: "Ders bitince süreç bitmiyor.",
   subtitle:
-    "Öğrencinin derste nerede takıldığını görür, ders sonrasında hangi çalışmayla devam edeceğini sade biçimde netleştiririz.",
+    "Öğrencinin derste nerede takıldığını görür, ders sonrasında hangi çalışmayla devam edeceğini sade biçimde söyleriz.",
 } as const;
 
 /* ---------------- İlk 30 gün ---------------- */
@@ -106,7 +106,7 @@ export const stories: Story[] = [
   {
     tag: "8. sınıf velisi",
     title: "Soru sormak kolaylaşır",
-    body: "En fazla dört kişilik grupta öğrenci çözümünü gösterir, takıldığı adımı öğretmeniyle birlikte görünür kılar.",
+    body: "En fazla dört kişilik grupta öğrenci çözümünü gösterir, takıldığı adımı öğretmeniyle birlikte bulur.",
     detail: "Küçük grup canlı ders",
   },
   {
