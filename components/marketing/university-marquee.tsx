@@ -32,7 +32,6 @@ export function UniversityMarquee() {
   return (
     <section className="overflow-hidden border-b border-[var(--site-line)] bg-[var(--site-bg-warm)] py-14 sm:py-16" aria-labelledby="university-heading">
       <div className="site-container text-center">
-        <p className="site-kicker">Eğitim kültürümüz</p>
         <h2 id="university-heading" className="mx-auto mt-3 max-w-3xl text-[clamp(1.8rem,4vw,2.8rem)] font-semibold leading-[1.05] tracking-[-.035em] text-[var(--site-ink)]">
           Seçkin eğitimciler. Seçkin üniversitelerden beslenen bir akademik kültür.
         </h2>

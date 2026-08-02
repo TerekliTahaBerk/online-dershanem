@@ -31,7 +31,7 @@ const mathFaqs = [
   },
   {
     q: "Online matematik dersi fiyatı ne kadar?",
-    a: "LGS ve YKS Matematik Ders Paketlerinin her biri aylık ₺3.000'dir. Paket ayda 4 canlı, 60 dakikalık ders içerir ve taahhütsüzdür.",
+    a: "LGS ve YKS Matematik Ders Paketlerinin her biri aylık ₺3.000'dir. Paket ayda 4 canlı, 90 dakikalık ders içerir ve taahhütsüzdür.",
   },
 ];
 
@@ -129,7 +129,7 @@ export default function MathematicsHubPage() {
                 </LeadFunnelTrigger>
               </div>
               <p className="mt-5 text-[13px] font-semibold text-[var(--site-muted)]">
-                Ayda 4 × 60 dakika · En fazla 4 öğrenci · ₺3.000/ay · Taahhütsüz
+                Ayda 4 × 90 dakika · En fazla 4 öğrenci · ₺3.000/ay · Taahhütsüz
               </p>
             </div>
 

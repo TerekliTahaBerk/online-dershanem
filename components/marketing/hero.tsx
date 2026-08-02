@@ -7,7 +7,6 @@ export function Hero() {
   return (
     <section className="overflow-hidden bg-white pb-16 pt-16 sm:pb-20 sm:pt-24">
       <div className="site-container text-center">
-        <p className="site-kicker">{hero.pill}</p>
         <h1 className="mx-auto mt-5 max-w-[980px] text-[clamp(2.8rem,7vw,4.75rem)] font-semibold leading-[.98] tracking-[-.055em] text-[var(--site-ink)]">
           <span className="relative whitespace-nowrap"><span className="relative z-10">Matematiği</span><span aria-hidden="true" className="absolute inset-x-0 bottom-1 z-0 h-3 bg-[var(--brand-yellow)] opacity-55 sm:h-4" /></span>{" "}
           <span className="text-[var(--brand-olive)]">verimli</span> ve <span className="text-[var(--brand-olive)]">erişilebilir</span>{" "}

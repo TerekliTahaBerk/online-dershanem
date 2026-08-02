@@ -528,7 +528,7 @@ const newBlogPosts: BlogPost[] = [
     ],
     cta: {
       title: "Ders modelini ve fiyatı şeffaf biçimde inceleyin",
-      text: "LGS ve YKS matematik paketleri ayda dört canlı 60 dakikalık ders içerir ve aylık ₺3.000'dir.",
+      text: "LGS ve YKS matematik paketleri ayda dört canlı 90 dakikalık ders içerir ve aylık ₺3.000'dir.",
       buttonLabel: "Paketleri Karşılaştır",
       href: "/ders-paketleri/"
     },

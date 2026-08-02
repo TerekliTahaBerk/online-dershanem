@@ -41,7 +41,7 @@ export function LearningDashboardShowcase() {
             <div className="mt-36 rounded-[16px] border border-[var(--site-line)] bg-white p-4">
               <p className="text-[10px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">Sıradaki ders</p>
               <p className="mt-2 text-[13px] font-semibold leading-5 text-[var(--site-ink)]">Cumartesi · 14.00</p>
-              <p className="mt-1 text-[11px] text-[var(--site-muted)]">60 dakika canlı ders</p>
+              <p className="mt-1 text-[11px] text-[var(--site-muted)]">90 dakika canlı ders</p>
             </div>
           </aside>
 

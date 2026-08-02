@@ -30,7 +30,7 @@ export const subjectPackageGroups = [
         audience:
           "LGS matematiğinde çözümünü gösterebilmeye, soru sorabilmeye ve hafta içinde ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
         quota: "En fazla 4 öğrenci",
-        lessonDurationMinutes: 60,
+        lessonDurationMinutes: 90,
         lessonsPerMonth: 4,
         billingPeriod: "Aylık paket",
         commitment: "Taahhüt yok",
@@ -67,7 +67,7 @@ export const subjectPackageGroups = [
         audience:
           "TYT temelini ve AYT derinliğini birlikte planlamak, deneme analizine göre daha bilinçli ilerlemek isteyen YKS öğrencileri için.",
         quota: "En fazla 4 öğrenci",
-        lessonDurationMinutes: 60,
+        lessonDurationMinutes: 90,
         lessonsPerMonth: 4,
         billingPeriod: "Aylık paket",
         commitment: "Taahhüt yok",
@@ -712,7 +712,7 @@ export const faq = [
 ];
 
 // Kategori bazlı SSS — /sss sayfası ve FAQPage JSON-LD bu listeyi kullanır.
-// Operasyonel cevaplar (ders süresi 60 dk, haftada 1 ders, telafi yerine ders
+// Operasyonel cevaplar (ders süresi 90 dk, haftada 1 ders, telafi yerine ders
 // kaydı paylaşımı) ekip tarafından onaylanan rakamlarla yazılmıştır.
 export const faqCategories = [
   {
@@ -740,7 +740,7 @@ export const faqCategories = [
       },
       {
         q: "Dersler kaç dakika ve haftada kaç ders var?",
-        a: "Her matematik dersi 60 dakikadır. Aylık ₺3.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
+        a: "Her matematik dersi 90 dakikadır. Aylık ₺3.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
       },
       {
         q: "Ödev veriliyor ve kontrol ediliyor mu?",

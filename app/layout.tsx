@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s | Online Dershanem"
   },
   description:
-    "LGS ve YKS için en fazla 4 öğrencilik, ayda 4 × 60 dakika canlı matematik dersi; ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
+    "LGS ve YKS için en fazla 4 öğrencilik, ayda 4 × 90 dakika canlı matematik dersi; ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"

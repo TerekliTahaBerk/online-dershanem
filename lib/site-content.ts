@@ -29,7 +29,6 @@ export const navLogin = { label: "Giriş", href: "/giris/" } as const;
 /* ---------------- Hero ---------------- */
 
 export const hero = {
-  pill: "LGS ve YKS için canlı matematik",
   title: ["Matematiği verimli ve erişilebilir", "öğrenmenin yolu."],
   subtitle:
     "LGS ve YKS öğrencileri için küçük grup canlı ders, öğretmen geri bildirimi ve ders sonunda net çalışma yönü.",
@@ -130,7 +129,7 @@ export type Faq = { q: string; a: string };
 export const homeFaqs: Faq[] = [
   {
     q: "Dersler kaç dakika ve ayda kaç kez yapılıyor?",
-    a: "Her canlı matematik dersi 60 dakikadır. Aylık paket haftada bir, ayda toplam dört canlı ders içerir. Ders günü ve saati uygun küçük grubun programına göre belirlenir.",
+    a: "Her canlı matematik dersi 90 dakikadır. Aylık paket haftada bir, ayda toplam dört canlı ders içerir. Ders günü ve saati uygun küçük grubun programına göre belirlenir.",
   },
   {
     q: "Dersler kaç kişilik?",
