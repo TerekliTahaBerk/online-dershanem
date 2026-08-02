@@ -1,7 +1,6 @@
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { Hero } from "@/components/marketing/hero";
-import { SocialProof } from "@/components/marketing/social-proof";
 import { UniversityMarquee } from "@/components/marketing/university-marquee";
 import { ProductTour } from "@/components/marketing/product-tour";
 import { ResultsSection } from "@/components/marketing/results-section";
@@ -48,7 +47,6 @@ export default function HomePage() {
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <Hero />
-        <SocialProof />
         <UniversityMarquee />
         <ProductTour />
         <First30Days />
