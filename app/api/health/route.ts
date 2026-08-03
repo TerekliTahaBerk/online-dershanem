@@ -58,7 +58,13 @@ export async function GET() {
       commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
       branch: process.env.VERCEL_GIT_COMMIT_REF ?? null,
     },
-    db: { ok: dbOk, latencyMs: dbLatencyMs, error: dbError },
+    db: { ok: dbOk, latencyMs: dbLatencyMs, errorCode: dbError ? "DATABASE_UNAVAILABLE" : null },
+    business: {
+      instagramConfigured: Boolean(process.env.META_INSTAGRAM_ACCESS_TOKEN && process.env.META_GRAPH_API_VERSION),
+      openAIConfigured: Boolean(process.env.OPENAI_API_KEY),
+      jobProcessorConfigured: Boolean(process.env.JOB_PROCESSOR_SECRET || process.env.CRON_SECRET),
+      paymentConfigured: Boolean(process.env.PAYTR_MERCHANT_ID && process.env.PAYTR_MERCHANT_KEY && process.env.PAYTR_MERCHANT_SALT),
+    },
     cache: cacheStatus(),
     env: {
       ok: envStatus.ok,
