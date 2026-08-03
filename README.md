@@ -2,6 +2,12 @@
 
 Next.js 15, PostgreSQL ve Prisma üzerinde çalışan; public satış sitesiyle rol bazlı eğitim panelini aynı üründe birleştiren uygulama.
 
+## Instagram AI CRM, reklam ve finans merkezi
+
+`/panel/yonetim/isletme` alanı Instagram mesaj kutusunu, aday hunisini, kampanya performansını ve OD/ODK ortak finans defterini birleştirir. Eğitim rolleri değişmez; işletme erişimi `BusinessRoleAssignment` ile iş birimi kapsamında verilir. `ADMIN` kullanıcıları süper yönetici kabul edilir.
+
+`.env.example` içindeki işletme değişkenlerini `.env.local` dosyanıza alın; migration, generate ve seed adımlarını çalıştırın. Dış servisler kapalıyken development adapter’ları kullanılır. Webhook `/api/integrations/instagram/webhook`, kalıcı işleyici `/api/cron/business-jobs` adresindedir. Ayrıntılar `docs/meta-instagram-setup.md`, `docs/openai-assistant-setup.md` ve `docs/deployment-checklist.md` içindedir.
+
 ## Ürün alanları
 
 - Public site, blog, lead formu, sepet ve PayTR ödeme akışları
