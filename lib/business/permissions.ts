@@ -15,7 +15,7 @@ const ROLE_PERMISSIONS: Record<BusinessRole, readonly BusinessPermission[]> = {
   ADMIN: ["dashboard:read", "conversation:read", "conversation:reply", "lead:read", "lead:write", "campaign:read", "campaign:write", "finance:read", "finance:write", "knowledge:write", "automation:write", "integration:write", "audit:read"],
   SALES: ["dashboard:read", "conversation:read", "conversation:reply", "lead:read", "lead:write", "campaign:read"],
   SUPPORT: ["dashboard:read", "conversation:read", "conversation:reply", "lead:read"],
-  ACCOUNTING: ["dashboard:read", "campaign:read", "finance:read", "finance:write", "finance:reverse", "audit:read"],
+  ACCOUNTING: ["dashboard:read", "campaign:read", "finance:read", "finance:write", "finance:reverse"],
   VIEWER: ["dashboard:read", "conversation:read", "lead:read", "campaign:read", "finance:read"],
 };
 
@@ -50,4 +50,3 @@ export async function authorizeBusinessRequest(permission: BusinessPermission) {
   const access = await getBusinessAccess(session, permission);
   return access.role && access.units.length ? { session, ...access } : null;
 }
-

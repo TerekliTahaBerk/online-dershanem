@@ -4,17 +4,24 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAIProvider } from "@/lib/business/ai";
 import { getInstagramProvider, type NormalizedInstagramEvent, webhookIdempotencyKey } from "@/lib/business/instagram";
+import { attributeLeadFromReferral, extractReferralAttribution } from "@/lib/business/attribution";
+import { executeAutomations, runUnansweredHotLeadAutomations } from "@/lib/business/automation";
+import { buildKnowledgeContext } from "@/lib/business/knowledge";
+import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
+import { reconcileAllBusinessUnits } from "@/lib/business/reconciliation";
+import { applyBusinessRetention } from "@/lib/business/retention";
+import { getAdPlatformProvider } from "@/lib/business/providers";
 import { log } from "@/lib/logger";
 
 async function ensureAccount(tx: Prisma.TransactionClient, externalId: string) {
   const existing = await tx.instagramAccount.findUnique({ where: { externalId } });
   if (existing) return existing;
-  const unit = await tx.businessUnit.upsert({ where: { product: "OD" }, update: { isActive: true }, create: { code: "OD", name: "OnlineDershanem", product: "OD" } });
+  const unit = await tx.businessUnit.upsert({ where: { code: "OD" }, update: { isActive: true }, create: { code: "OD", name: "OnlineDershanem", product: "OD" } });
   const connection = await tx.integrationConnection.upsert({
     where: { businessUnitId_provider_displayName: { businessUnitId: unit.id, provider: "INSTAGRAM", displayName: "Instagram" } },
     update: {}, create: { businessUnitId: unit.id, provider: "INSTAGRAM", displayName: "Instagram", status: process.env.META_INSTAGRAM_ACCESS_TOKEN ? "CONNECTED" : "DISCONNECTED" },
   });
-  return tx.instagramAccount.create({ data: { businessUnitId: unit.id, connectionId: connection.id, externalId, username: process.env.META_INSTAGRAM_USERNAME || "development", aiMode: (process.env.INSTAGRAM_AI_MODE?.toUpperCase().replace("-", "_") as "OFF" | "SUGGESTION" | "AUTO_SAFE" | "AUTO") || "SUGGESTION" } });
+  return tx.instagramAccount.upsert({ where: { externalId }, update: {}, create: { businessUnitId: unit.id, connectionId: connection.id, externalId, username: process.env.META_INSTAGRAM_USERNAME || "development", aiMode: (process.env.INSTAGRAM_AI_MODE?.toUpperCase().replace("-", "_") as "OFF" | "SUGGESTION" | "AUTO_SAFE" | "AUTO") || "SUGGESTION" } });
 }
 
 export async function persistInstagramEvent(event: NormalizedInstagramEvent, rawPayload: Prisma.InputJsonValue) {
@@ -23,7 +30,7 @@ export async function persistInstagramEvent(event: NormalizedInstagramEvent, raw
     const key = webhookIdempotencyKey(event);
     const webhook = await tx.instagramWebhookEvent.upsert({
       where: { providerEventId: event.providerEventId }, update: {},
-      create: { instagramAccountId: account.id, providerEventId: event.providerEventId, idempotencyKey: key, eventType: "messages", occurredAt: event.occurredAt, payload: rawPayload },
+      create: { instagramAccountId: account.id, providerEventId: event.providerEventId, idempotencyKey: key, eventType: event.eventKind, occurredAt: event.occurredAt, payload: rawPayload },
     });
     await tx.backgroundJob.upsert({
       where: { idempotencyKey: `instagram-event:${key}` }, update: {},
@@ -36,40 +43,65 @@ export async function persistInstagramEvent(event: NormalizedInstagramEvent, raw
 async function processInstagramMessage(webhookEventId: string) {
   const webhook = await prisma.instagramWebhookEvent.findUnique({ where: { id: webhookEventId }, include: { instagramAccount: true } });
   if (!webhook || webhook.processedAt || !webhook.instagramAccount) return;
-  const payload = webhook.payload as unknown as NormalizedInstagramEvent;
+  const stored = webhook.payload as unknown as NormalizedInstagramEvent;
+  const payload: NormalizedInstagramEvent = { ...stored, eventKind: stored.eventKind ?? "MESSAGE", occurredAt: stored.occurredAt instanceof Date ? stored.occurredAt : new Date(stored.occurredAt), relatedMessageIds: stored.relatedMessageIds ?? [] };
   const account = webhook.instagramAccount;
+  if (payload.eventKind === "DELIVERY" || payload.eventKind === "READ") {
+    const status = payload.eventKind === "DELIVERY" ? "DELIVERED" : "READ";
+    const messages = payload.relatedMessageIds.length ? await prisma.businessMessage.findMany({ where: { externalId: { in: payload.relatedMessageIds } }, select: { id: true } }) : [];
+    for (const item of messages) await prisma.$transaction([prisma.businessMessage.update({ where: { id: item.id }, data: { status } }), prisma.messageDelivery.create({ data: { messageId: item.id, status, providerResponse: { eventId: payload.providerEventId } } })]);
+    await prisma.instagramWebhookEvent.update({ where: { id: webhook.id }, data: { processedAt: new Date() } }); return;
+  }
   const customerId = payload.isEcho ? payload.recipientId : payload.senderId;
   const body = payload.text ?? null;
+  const attribution = extractReferralAttribution(payload.referral);
   const conversation = await prisma.businessConversation.upsert({
     where: { instagramAccountId_instagramScopedUserId: { instagramAccountId: account.id, instagramScopedUserId: customerId } },
-    update: { lastMessageAt: payload.occurredAt, unreadCount: payload.isEcho ? undefined : { increment: 1 } },
-    create: { businessUnitId: account.businessUnitId, instagramAccountId: account.id, instagramScopedUserId: customerId, lastMessageAt: payload.occurredAt, unreadCount: payload.isEcho ? 0 : 1, aiMode: account.aiMode },
+    update: { lastMessageAt: payload.occurredAt, unreadCount: payload.isEcho ? undefined : { increment: 1 }, sourceCampaignExternalId: attribution.campaignExternalId ?? undefined, sourceAdExternalId: attribution.adExternalId ?? undefined },
+    create: { businessUnitId: account.businessUnitId, instagramAccountId: account.id, instagramScopedUserId: customerId, lastMessageAt: payload.occurredAt, unreadCount: payload.isEcho ? 0 : 1, aiMode: account.aiMode, sourceCampaignExternalId: attribution.campaignExternalId, sourceAdExternalId: attribution.adExternalId },
   });
   const message = await prisma.businessMessage.upsert({
     where: { idempotencyKey: `instagram:${webhook.id}` }, update: {},
     create: { conversationId: conversation.id, externalId: payload.providerEventId, direction: payload.isEcho ? "OUTBOUND" : "INBOUND", senderType: payload.isEcho ? "HUMAN" : "CUSTOMER", body, type: payload.mediaMetadata ? "MEDIA" : "TEXT", mediaMetadata: payload.mediaMetadata as Prisma.InputJsonValue | undefined, providerMetadata: { referral: payload.referral } as Prisma.InputJsonValue, status: payload.isEcho ? "SENT" : "RECEIVED", idempotencyKey: `instagram:${webhook.id}`, occurredAt: payload.occurredAt },
   });
-  await prisma.businessLead.upsert({
+  const lead = await prisma.businessLead.upsert({
     where: { conversationId: conversation.id },
     update: { lastContactAt: payload.occurredAt },
     create: { businessUnitId: account.businessUnitId, conversationId: conversation.id, instagramScopedId: customerId, source: payload.referral ? "INSTAGRAM_AD" : "INSTAGRAM_ORGANIC", lastContactAt: payload.occurredAt },
   });
-
+  if (payload.referral) await attributeLeadFromReferral(lead.id, account.businessUnitId, payload.referral);
+  if (!payload.isEcho) {
+    await executeAutomations("NEW_MESSAGE", { businessUnitId: account.businessUnitId, entityType: "conversation", entityId: conversation.id, conversationId: conversation.id, leadId: lead.id, temperature: conversation.temperature, campaignExternalId: attribution.campaignExternalId });
+  }
   if (!payload.isEcho && body && account.aiMode !== "OFF" && process.env.INSTAGRAM_AI_ENABLED === "true") {
-    const entries = await prisma.knowledgeBaseEntry.findMany({ where: { businessUnitId: account.businessUnitId, isActive: true, OR: [{ validFrom: null }, { validFrom: { lte: new Date() } }], AND: [{ OR: [{ validUntil: null }, { validUntil: { gte: new Date() } }] }] }, orderBy: { updatedAt: "desc" }, take: 12 });
-    const started = Date.now();
-    try {
-      const decision = await getAIProvider().decide({ message: body, context: entries.map((item) => `${item.title}: ${item.content}`).join("\n"), safetyIdentifier: createHash("sha256").update(customerId).digest("hex") });
-      await prisma.aIExecution.create({ data: { conversationId: conversation.id, inputMessageId: message.id, provider: process.env.NODE_ENV === "production" ? "OPENAI" : "MOCK", model: process.env.OPENAI_MODEL || "gpt-5.6-luna", decision: decision as Prisma.InputJsonValue, confidence: decision.confidence, status: "SUCCEEDED", latencyMs: Date.now() - started } });
-      await prisma.businessConversation.update({ where: { id: conversation.id }, data: { temperature: decision.leadTemperature, productInterest: decision.productInterest, tags: { push: decision.suggestedTags }, ...(decision.requiresHuman ? { status: "WAITING_HUMAN", aiMode: "OFF" } : {}) } });
-      const mayAuto = decision.reply && decision.shouldReplyAutomatically && (account.aiMode === "AUTO" || account.aiMode === "AUTO_SAFE");
-      if (mayAuto) await sendConversationMessage({ conversationId: conversation.id, text: decision.reply!, senderType: "AI", idempotencyKey: `ai:${message.id}` });
-    } catch (error) {
-      await prisma.aIExecution.create({ data: { conversationId: conversation.id, inputMessageId: message.id, provider: "OPENAI", model: process.env.OPENAI_MODEL || "gpt-5.6-luna", status: "FAILED", errorCode: error instanceof Error ? error.message.slice(0, 80) : "UNKNOWN", latencyMs: Date.now() - started } });
-      await prisma.businessConversation.update({ where: { id: conversation.id }, data: { status: "WAITING_HUMAN", aiMode: "OFF" } });
-    }
+    const bucket = Math.floor(payload.occurredAt.getTime() / 10_000);
+    await prisma.backgroundJob.upsert({ where: { idempotencyKey: `ai-debounce:${conversation.id}:${bucket}` }, update: { runAfter: new Date(Date.now() + 8_000), payload: { conversationId: conversation.id, inputMessageId: message.id } }, create: { businessUnitId: account.businessUnitId, type: "GENERATE_AI_REPLY", idempotencyKey: `ai-debounce:${conversation.id}:${bucket}`, payload: { conversationId: conversation.id, inputMessageId: message.id }, runAfter: new Date(Date.now() + 8_000) } });
   }
   await prisma.instagramWebhookEvent.update({ where: { id: webhook.id }, data: { processedAt: new Date() } });
+}
+
+export async function generateAIReply(conversationId: string, inputMessageId?: string) {
+  const conversation = await prisma.businessConversation.findUnique({ where: { id: conversationId }, include: { instagramAccount: true, lead: true, messages: { where: { direction: "INBOUND", body: { not: null } }, orderBy: { occurredAt: "desc" }, take: 4 } } });
+  if (!conversation || conversation.aiMode === "OFF" || !conversation.messages.length) return;
+  const input = [...conversation.messages].reverse().map((item) => item.body).filter(Boolean).join("\n");
+  const context = await buildKnowledgeContext({ businessUnitId: conversation.businessUnitId, message: input, productInterest: conversation.productInterest });
+  const prompt = await prisma.aIPromptVersion.findFirst({ where: { OR: [{ businessUnitId: conversation.businessUnitId }, { businessUnitId: null }], isActive: true }, orderBy: { version: "desc" } });
+  const started = Date.now();
+  try {
+    const decision = await getAIProvider().decide({ message: input, context: `${prompt?.systemPrompt ? `YÖNETİLEN EK KURALLAR:\n${prompt.systemPrompt}\n` : ""}${context}`, safetyIdentifier: createHash("sha256").update(conversation.instagramScopedUserId).digest("hex") });
+    await prisma.aIExecution.create({ data: { conversationId, inputMessageId, promptVersionId: prompt?.id, provider: process.env.NODE_ENV === "production" ? "OPENAI" : "MOCK", model: process.env.OPENAI_MODEL || "gpt-5.6-luna", decision: decision as Prisma.InputJsonValue, confidence: decision.confidence, status: "SUCCEEDED", latencyMs: Date.now() - started } });
+    await prisma.$transaction(async (tx) => {
+      await tx.businessConversation.update({ where: { id: conversationId }, data: { summary: decision.internalSummary, temperature: decision.leadTemperature, productInterest: decision.productInterest, tags: { push: decision.suggestedTags }, ...(decision.requiresHuman ? { status: "WAITING_HUMAN", aiMode: "OFF" } : {}) } });
+      if (conversation.lead) await tx.businessLead.update({ where: { id: conversation.lead.id }, data: { temperature: decision.leadTemperature, productInterest: decision.productInterest, firstName: decision.extractedData.name, studentName: decision.extractedData.studentName, parentName: decision.extractedData.parentName, phone: decision.extractedData.phone, normalizedPhone: normalizePhone(decision.extractedData.phone), email: decision.extractedData.email, normalizedEmail: normalizeEmail(decision.extractedData.email), grade: decision.extractedData.grade, examType: decision.extractedData.examType, city: decision.extractedData.city, tags: { push: decision.suggestedTags } } });
+    });
+    if (conversation.lead && decision.leadTemperature === "HOT") await executeAutomations("HOT_LEAD", { businessUnitId: conversation.businessUnitId, entityType: "lead", entityId: conversation.lead.id, leadId: conversation.lead.id, conversationId, temperature: "HOT", intent: decision.intent, campaignExternalId: conversation.sourceCampaignExternalId });
+    if (decision.requiresHuman) await executeAutomations(decision.intent === "COMPLAINT" ? "COMPLAINT" : "NEW_MESSAGE", { businessUnitId: conversation.businessUnitId, entityType: "conversation", entityId: conversationId, conversationId, leadId: conversation.lead?.id, temperature: decision.leadTemperature, intent: decision.intent, campaignExternalId: conversation.sourceCampaignExternalId });
+    const mayAuto = decision.reply && decision.shouldReplyAutomatically && (conversation.aiMode === "AUTO" || conversation.aiMode === "AUTO_SAFE");
+    if (mayAuto) await sendConversationMessage({ conversationId, text: decision.reply!, senderType: "AI", idempotencyKey: `ai:${inputMessageId ?? conversation.messages[0].id}` });
+  } catch (error) {
+    await prisma.aIExecution.create({ data: { conversationId, inputMessageId, promptVersionId: prompt?.id, provider: "OPENAI", model: process.env.OPENAI_MODEL || "gpt-5.6-luna", status: "FAILED", errorCode: error instanceof Error ? error.message.slice(0, 80) : "UNKNOWN", latencyMs: Date.now() - started } });
+    await prisma.businessConversation.update({ where: { id: conversationId }, data: { status: "WAITING_HUMAN", aiMode: "OFF" } });
+  }
 }
 
 export async function sendConversationMessage(input: { conversationId: string; text: string; senderType: "AI" | "HUMAN"; idempotencyKey: string }) {
@@ -88,12 +120,20 @@ export async function sendConversationMessage(input: { conversationId: string; t
     ]);
   } catch (error) {
     await prisma.businessMessage.update({ where: { id: message.id }, data: { status: "FAILED", failureCode: error instanceof Error ? error.message.slice(0, 80) : "UNKNOWN" } });
-    throw error;
+    await prisma.backgroundJob.upsert({ where: { idempotencyKey: `message-delivery:${message.id}` }, update: { status: "FAILED", runAfter: new Date(Date.now() + 60_000) }, create: { businessUnitId: conversation.businessUnitId, type: "DELIVER_INSTAGRAM_MESSAGE", idempotencyKey: `message-delivery:${message.id}`, payload: { messageId: message.id }, runAfter: new Date(Date.now() + 60_000) } });
   }
   return message.id;
 }
 
+async function retryMessageDelivery(messageId: string) {
+  const message = await prisma.businessMessage.findUnique({ where: { id: messageId }, include: { conversation: { include: { instagramAccount: true } } } });
+  if (!message || message.status === "SENT" || !message.body) return;
+  const result = await getInstagramProvider().sendText({ accountId: message.conversation.instagramAccount.externalId, recipientId: message.conversation.instagramScopedUserId, text: message.body, idempotencyKey: message.idempotencyKey });
+  await prisma.$transaction([prisma.businessMessage.update({ where: { id: message.id }, data: { externalId: result.externalId, status: "SENT", failureCode: null } }), prisma.messageDelivery.create({ data: { messageId: message.id, status: "SENT", providerResponse: result.raw as Prisma.InputJsonValue } })]);
+}
+
 export async function processBackgroundJobs(limit = 10) {
+  await prisma.backgroundJob.updateMany({ where: { status: "PROCESSING", lockedAt: { lt: new Date(Date.now() - 15 * 60_000) } }, data: { status: "FAILED", lockedAt: null, lockedBy: null, lastErrorCode: "STALE_LOCK_RECOVERED" } });
   let processed = 0;
   for (let index = 0; index < Math.min(limit, 50); index++) {
     const candidate = await prisma.backgroundJob.findFirst({ where: { status: { in: ["PENDING", "FAILED"] }, runAfter: { lte: new Date() }, attempts: { lt: 5 } }, orderBy: [{ priority: "asc" }, { createdAt: "asc" }] });
@@ -101,8 +141,21 @@ export async function processBackgroundJobs(limit = 10) {
     const claimed = await prisma.backgroundJob.updateMany({ where: { id: candidate.id, status: candidate.status }, data: { status: "PROCESSING", lockedAt: new Date(), lockedBy: process.env.VERCEL_REGION || "local", attempts: { increment: 1 } } });
     if (!claimed.count) continue;
     try {
-      if (candidate.type === "PROCESS_INSTAGRAM_MESSAGE") await processInstagramMessage(String((candidate.payload as { webhookEventId?: string }).webhookEventId));
+      const payload = candidate.payload as Record<string, unknown>;
+      if (candidate.type === "PROCESS_INSTAGRAM_MESSAGE") await processInstagramMessage(String(payload.webhookEventId));
+      else if (candidate.type === "GENERATE_AI_REPLY") await generateAIReply(String(payload.conversationId), payload.inputMessageId ? String(payload.inputMessageId) : undefined);
+      else if (candidate.type === "DELIVER_INSTAGRAM_MESSAGE") await retryMessageDelivery(String(payload.messageId));
+      else if (candidate.type === "RECONCILE_FINANCE") await reconcileAllBusinessUnits();
+      else if (candidate.type === "APPLY_BUSINESS_RETENTION") await applyBusinessRetention();
+      else if (candidate.type === "SYNC_META_ADS") await getAdPlatformProvider().syncCampaigns();
+      else if (candidate.type === "CHECK_UNANSWERED_HOT_LEADS") await runUnansweredHotLeadAutomations();
+      else if (candidate.type === "AUTOMATE_PAYMENT_COMPLETED") {
+        const lead = await prisma.businessLead.findUnique({ where: { id: String(payload.leadId) } });
+        if (lead) await executeAutomations("PAYMENT_COMPLETED", { businessUnitId: lead.businessUnitId, entityType: "payment", entityId: String(payload.orderId), leadId: lead.id, temperature: lead.temperature });
+      }
+      else throw new Error("UNKNOWN_JOB_TYPE");
       await prisma.backgroundJob.update({ where: { id: candidate.id }, data: { status: "SUCCEEDED", completedAt: new Date(), lockedAt: null, lockedBy: null } });
+      log.info("business.job.succeeded", { jobId: candidate.id, type: candidate.type, retryCount: candidate.attempts, latency: Date.now() - candidate.updatedAt.getTime() });
       processed++;
     } catch (error) {
       const attempts = candidate.attempts + 1;
@@ -114,3 +167,13 @@ export async function processBackgroundJobs(limit = 10) {
   return processed;
 }
 
+export async function scheduleBusinessMaintenanceJobs(now = new Date()) {
+  const hourly = now.toISOString().slice(0, 13); const daily = now.toISOString().slice(0, 10);
+  const jobs = [
+    { type: "RECONCILE_FINANCE", key: `maintenance:reconcile:${hourly}`, enabled: true },
+    { type: "CHECK_UNANSWERED_HOT_LEADS", key: `maintenance:unanswered:${hourly}`, enabled: true },
+    { type: "APPLY_BUSINESS_RETENTION", key: `maintenance:retention:${daily}`, enabled: true },
+    { type: "SYNC_META_ADS", key: `maintenance:meta-ads:${hourly}`, enabled: process.env.META_ADS_INTEGRATION_ENABLED === "true" },
+  ];
+  for (const job of jobs.filter((item) => item.enabled)) await prisma.backgroundJob.upsert({ where: { idempotencyKey: job.key }, update: {}, create: { type: job.type, idempotencyKey: job.key, payload: {} } });
+}

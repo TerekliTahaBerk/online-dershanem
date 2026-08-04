@@ -6,3 +6,4 @@ Brüt, indirim, net, KDV, stopaj, diğer vergi ve komisyon kuruş; oranlar yöne
 
 Vergi ekranı resmî muhasebe yerine geçmez; profil ve oranlar mali müşavirce doğrulanmalıdır.
 
+Mutabakat motoru PayTR provider ref, order id, tutar ve duplicate sayısını karşılaştırır. Eksik komisyon da `REVIEW_REQUIRED` üretir. Yetkili kullanıcı sonucu `MANUALLY_MATCHED` veya `CORRECTED` yapabilir; çözüm zamanı/kullanıcısı ve audit kaydı korunur. Aylık veya çeyreklik görünüm dashboard tarih aralığıyla aynı UTC sınırlarını kullanır ve arayüzde Europe/Istanbul gösterilir.

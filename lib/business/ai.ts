@@ -36,7 +36,7 @@ const DECISION_SCHEMA = {
     confidence: { type: "number", minimum: 0, maximum: 1 }, leadTemperature: { type: "string", enum: ["COLD", "WARM", "HOT"] },
     productInterest: { type: "string", enum: ["ONLINE_DERSHANEM", "ONLINE_DENEME_KULUBU", "UNKNOWN"] }, shouldReplyAutomatically: { type: "boolean" }, requiresHuman: { type: "boolean" },
     escalationReason: { type: ["string", "null"] },
-    extractedData: { type: "object", additionalProperties: false, properties: { name: { type: "string" }, studentName: { type: "string" }, parentName: { type: "string" }, phone: { type: "string" }, email: { type: "string" }, grade: { type: "string" }, examType: { type: "string", enum: ["LGS", "TYT", "AYT"] }, city: { type: "string" } } },
+    extractedData: { type: "object", additionalProperties: false, required: ["name", "studentName", "parentName", "phone", "email", "grade", "examType", "city"], properties: { name: { type: ["string", "null"] }, studentName: { type: ["string", "null"] }, parentName: { type: ["string", "null"] }, phone: { type: ["string", "null"] }, email: { type: ["string", "null"] }, grade: { type: ["string", "null"] }, examType: { type: ["string", "null"], enum: ["LGS", "TYT", "AYT", null] }, city: { type: ["string", "null"] } } },
     suggestedTags: { type: "array", items: { type: "string" }, maxItems: 10 }, internalSummary: { type: "string" },
   },
 };
@@ -60,7 +60,9 @@ export class OpenAIResponsesProvider implements AIResponseProvider {
     const data = await response.json() as { output_text?: string; output?: Array<{ content?: Array<{ type?: string; text?: string }> }> };
     const raw = data.output_text ?? data.output?.flatMap((item) => item.content ?? []).find((item) => item.type === "output_text")?.text;
     if (!raw) return safeFallbackDecision;
-    return applyAISafety(aiConversationDecisionSchema.parse(JSON.parse(raw)));
+    const json = JSON.parse(raw) as { extractedData?: Record<string, unknown> };
+    if (json.extractedData) for (const [key, value] of Object.entries(json.extractedData)) if (value === null) delete json.extractedData[key];
+    return applyAISafety(aiConversationDecisionSchema.parse(json));
   }
 }
 

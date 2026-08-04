@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authorizeBusinessRequest } from "@/lib/business/permissions";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
+import { guardMutation } from "@/lib/security/mutation-guard";
 export async function GET() {
   const access = await authorizeBusinessRequest("integration:write");
   if (!access) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
@@ -12,6 +13,8 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const access = await authorizeBusinessRequest("integration:write");
   if (!access) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
+  const guard = await guardMutation({ action: "business.instagram.settings", userId: access.session.userId, headers: request.headers, requireSameOrigin: true, rateLimit: { max: 30, windowMs: 60_000 } });
+  if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "ORIGIN" ? 403 : 429 });
   const parsed = z.object({ accountId: z.string().cuid(), aiMode: z.enum(["OFF", "SUGGESTION", "AUTO_SAFE", "AUTO"]), isActive: z.boolean() }).safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri." }, { status: 400 });
   const updated = await prisma.instagramAccount.updateMany({ where: { id: parsed.data.accountId, businessUnitId: { in: access.units.map((unit) => unit.id) } }, data: { aiMode: parsed.data.aiMode, isActive: parsed.data.isActive } });
@@ -19,4 +22,3 @@ export async function PATCH(request: Request) {
   void logAudit({ actorUserId: access.session.userId, entityType: "InstagramAccount", entityId: parsed.data.accountId, action: "INSTAGRAM_SETTINGS_UPDATED", payload: { aiMode: parsed.data.aiMode, isActive: parsed.data.isActive } });
   return NextResponse.json({ ok: true });
 }
-

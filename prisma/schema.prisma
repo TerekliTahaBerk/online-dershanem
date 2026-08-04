@@ -428,6 +428,8 @@ model BusinessUnit {
   name                  String
   product               ProductCode              @unique
   isActive              Boolean                  @default(true) @map("is_active")
+  retentionDays         Int                      @default(730) @map("retention_days")
+  settings              Json?
   createdAt             DateTime                 @default(now()) @map("created_at")
   updatedAt             DateTime                 @updatedAt @map("updated_at")
   roles                 BusinessRoleAssignment[]
@@ -444,6 +446,7 @@ model BusinessUnit {
   accountingPeriods     AccountingPeriod[]
   reconciliationRecords ReconciliationRecord[]
   backgroundJobs        BackgroundJob[]
+  aiPromptVersions      AIPromptVersion[]
 
   @@map("business_units")
 }
@@ -537,6 +540,10 @@ model BusinessConversation {
   unreadCount           Int                @default(0) @map("unread_count")
   lastMessageAt         DateTime           @default(now()) @map("last_message_at")
   lastReplyBy           MessageSenderType? @map("last_reply_by")
+  summary               String?
+  sourceCampaignExternalId String?          @map("source_campaign_external_id")
+  sourceAdExternalId       String?          @map("source_ad_external_id")
+  anonymizedAt          DateTime?           @map("anonymized_at")
   createdAt             DateTime           @default(now()) @map("created_at")
   updatedAt             DateTime           @updatedAt @map("updated_at")
   businessUnit          BusinessUnit       @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
@@ -612,6 +619,12 @@ model BusinessLead {
   tags                  String[]
   consentMetadata       Json?                  @map("consent_metadata")
   lostReason            String?                @map("lost_reason")
+  relatedOdUserId       String?                @map("related_od_user_id")
+  relatedOdkUserId      String?                @map("related_odk_user_id")
+  relatedOdOrderId      String?                @map("related_od_order_id")
+  relatedOdkOrderId     String?                @map("related_odk_order_id")
+  matchSuggestion      Json?                  @map("match_suggestion")
+  anonymizedAt          DateTime?              @map("anonymized_at")
   firstContactAt        DateTime               @default(now()) @map("first_contact_at")
   lastContactAt         DateTime               @default(now()) @map("last_contact_at")
   createdAt             DateTime               @default(now()) @map("created_at")
@@ -763,14 +776,17 @@ model KnowledgeBaseEntry {
 
 model AIPromptVersion {
   id            String   @id @default(cuid())
+  businessUnitId String? @map("business_unit_id")
   name          String
   version       Int
   systemPrompt  String   @map("system_prompt")
   schemaVersion Int      @default(1) @map("schema_version")
   isActive      Boolean  @default(false) @map("is_active")
   createdAt     DateTime @default(now()) @map("created_at")
+  businessUnit  BusinessUnit? @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
 
   @@unique([name, version])
+  @@index([businessUnitId, isActive])
   @@map("ai_prompt_versions")
 }
 

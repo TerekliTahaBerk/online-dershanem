@@ -111,7 +111,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, totalCents: true, discountCents: true } },
+      order: { select: { status: true, totalCents: true, discountCents: true, buyerInfo: true } },
     },
   });
 
@@ -179,7 +179,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
             failureReason: null,
           },
         });
-        await upsertOrderLedger(tx, { source: "ONLINE_DENEME_KULUBU", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: `ODK siparişi ${payment.orderId}`, paidAt, paymentMethod: payload.payment_type });
+        await upsertOrderLedger(tx, { source: "ONLINE_DENEME_KULUBU", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: `ODK siparişi ${payment.orderId}`, paidAt, paymentMethod: payload.payment_type, buyerInfo: payment.order.buyerInfo });
       }, { isolationLevel: "Serializable" });
       await Promise.all(afterCommit.map((run) => run()));
       log.info("paytr.callback.odk.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
@@ -246,7 +246,7 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, totalCents: true, discountCents: true, packageName: true } },
+      order: { select: { status: true, totalCents: true, discountCents: true, packageName: true, buyerInfo: true } },
     },
   });
 
@@ -314,7 +314,7 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
             failureReason: null,
           },
         });
-        await upsertOrderLedger(tx, { source: "ONLINE_DERSHANEM", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: payment.order.packageName, paidAt, paymentMethod: payload.payment_type });
+        await upsertOrderLedger(tx, { source: "ONLINE_DERSHANEM", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: payment.order.packageName, paidAt, paymentMethod: payload.payment_type, buyerInfo: payment.order.buyerInfo });
       }, { isolationLevel: "Serializable" });
       await Promise.all(afterCommit.map((run) => run()));
       log.info("paytr.callback.od.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });

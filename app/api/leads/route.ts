@@ -47,14 +47,10 @@ export async function POST(request: Request) {
     });
 
     // Public lead formunu birleşik CRM'e yüksek güvenli telefon eşleşmesiyle yansıt.
-    const unit = await prisma.businessUnit.upsert({ where: { product: "OD" }, update: { isActive: true }, create: { code: "OD", name: "OnlineDershanem", product: "OD" } });
+    const unit = await prisma.businessUnit.upsert({ where: { code: "OD" }, update: { isActive: true }, create: { code: "OD", name: "OnlineDershanem", product: "OD" } });
     const normalizedPhone = normalizePhone(lead.phone);
     const existingBusinessLead = normalizedPhone ? await prisma.businessLead.findFirst({ where: { businessUnitId: unit.id, normalizedPhone } }) : null;
-    if (existingBusinessLead) {
-      await prisma.businessLead.update({ where: { id: existingBusinessLead.id }, data: { lastContactAt: lead.submittedAt, firstName: existingBusinessLead.firstName || lead.fullName, grade: existingBusinessLead.grade || lead.classLevel, examType: existingBusinessLead.examType || lead.examType } });
-    } else {
-      await prisma.businessLead.create({ data: { businessUnitId: unit.id, source: "OD_WEB_FORM", firstName: lead.fullName, phone: lead.phone, normalizedPhone, grade: lead.classLevel, examType: lead.examType, consentMetadata: { kvkkConsent: lead.kvkkConsent, sourceSubmissionId: lead.id } } });
-    }
+    await prisma.businessLead.create({ data: { businessUnitId: unit.id, source: "OD_WEB_FORM", firstName: lead.fullName, phone: lead.phone, normalizedPhone, grade: lead.classLevel, examType: lead.examType, consentMetadata: { kvkkConsent: lead.kvkkConsent, sourceSubmissionId: lead.id }, matchSuggestion: existingBusinessLead ? { leadId: existingBusinessLead.id, confidence: 0.78, reasons: ["PHONE"] } : undefined } });
 
     // E-posta kapalı veya gecikmiş olsa bile yönetim paneli yeni talebi gösterir.
     const admins = await prisma.user.findMany({ where: { role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
