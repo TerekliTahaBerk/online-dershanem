@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "typecheck": "tsc --noEmit",
     "test:unit": "node --import tsx --test lib/*.test.ts lib/auth/*.test.ts lib/od/*.test.ts lib/odk/*.test.ts",
+    "test:integration": "node --conditions react-server --import tsx --test tests/integration/business.integration.ts",
     "eval:teacher-ai": "node --import tsx scripts/eval-teacher-ai.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -48,6 +49,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "resend": "^6.10.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^2.6.1",
     "zod": "^4.3.6"
   },
