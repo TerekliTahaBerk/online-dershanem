@@ -580,7 +580,7 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /Geçen dersten akıllı öneri/ }).click();
     await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Çevrimdışı kapanış öncesi ortak ders notu.");
     await page.getByRole("textbox", { name: "Bir sonraki hedef" }).last().fill("Bağlantı gelince güvenle eşitlemek.");
-    const outcomeSkipReason = page.getByLabel("Kazanım erteleme nedeni");
+    const outcomeSkipReason = page.getByLabel("Kazanım erteleme nedeni").last();
     if (await outcomeSkipReason.count()) await outcomeSkipReason.selectOption("COMPLETE_LATER");
     await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 8_000 });
     await context.setOffline(true);
