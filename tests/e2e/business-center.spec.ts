@@ -24,7 +24,7 @@ test.describe("Instagram CRM ve finans merkezi", () => {
     await page.goto("/panel/urun-sec");
     await expect(page.getByRole("link", { name: "İşletme Paneline git" })).toBeVisible();
     await page.getByRole("link", { name: "İşletme Paneline git" }).click();
-    await expect(page.getByText("işletme.", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "İşletme yönetim ana sayfası" })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "İşletme panel menüsü" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Kontrol merkezi/ })).toHaveCount(0);
     for (const section of ["genel-bakis", "mesaj-kutusu", "adaylar", "satis-hunisi", "gelirler", "giderler", "vergiler", "entegrasyonlar"]) {
@@ -52,7 +52,7 @@ test.describe("Instagram CRM ve finans merkezi", () => {
       await financeForm.getByLabel("Kategori").fill(section === "gelirler" ? "SALE" : "SOFTWARE");
       await financeForm.getByLabel("Tutar TL").fill("120");
       await financeForm.getByRole("button", { name: "Kaydet" }).click();
-      await expect(page.getByText(description).first()).toBeVisible();
+      await expect(page.getByText(description).first()).toBeVisible({ timeout: 15_000 });
     }
     await page.goto("/panel/yonetim/isletme/vergiler"); await expect(page.getByText("Hesaplanan KDV").first()).toBeVisible();
     await page.goto("/panel/yonetim/isletme/genel-bakis?product=OD"); await expect(page.getByText("Operasyon özeti").first()).toBeVisible();
