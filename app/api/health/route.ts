@@ -24,10 +24,13 @@ export async function GET() {
   let dbOk = false;
   let dbLatencyMs: number | null = null;
   let dbError: string | null = null;
+  let lastBusinessJobAt: string | null = null;
 
   try {
     const tDb = Date.now();
     await prisma.$queryRaw`SELECT 1`;
+    const lastJob = await prisma.backgroundJob.findFirst({ where: { status: "SUCCEEDED" }, orderBy: { completedAt: "desc" }, select: { completedAt: true } });
+    lastBusinessJobAt = lastJob?.completedAt?.toISOString() ?? null;
     dbLatencyMs = Date.now() - tDb;
     dbOk = true;
   } catch (e) {
@@ -58,7 +61,14 @@ export async function GET() {
       commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
       branch: process.env.VERCEL_GIT_COMMIT_REF ?? null,
     },
-    db: { ok: dbOk, latencyMs: dbLatencyMs, error: dbError },
+    db: { ok: dbOk, latencyMs: dbLatencyMs, errorCode: dbError ? "DATABASE_UNAVAILABLE" : null },
+    business: {
+      instagramConfigured: Boolean(process.env.META_INSTAGRAM_ACCESS_TOKEN && process.env.META_GRAPH_API_VERSION),
+      openAIConfigured: Boolean(process.env.OPENAI_API_KEY),
+      jobProcessorConfigured: Boolean(process.env.JOB_PROCESSOR_SECRET || process.env.CRON_SECRET),
+      lastSuccessfulJobAt: lastBusinessJobAt,
+      paymentConfigured: Boolean(process.env.PAYTR_MERCHANT_ID && process.env.PAYTR_MERCHANT_KEY && process.env.PAYTR_MERCHANT_SALT),
+    },
     cache: cacheStatus(),
     env: {
       ok: envStatus.ok,

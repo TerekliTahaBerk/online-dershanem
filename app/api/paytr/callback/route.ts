@@ -27,6 +27,7 @@ import {
   type PaytrCallbackPayload,
 } from "@/lib/odk/paytr";
 import { validatePaytrPaymentInvariant } from "@/lib/odk/paytr-callback-validation";
+import { upsertOrderLedger } from "@/lib/business/finance";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -110,7 +111,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, totalCents: true } },
+      order: { select: { status: true, totalCents: true, discountCents: true, buyerInfo: true } },
     },
   });
 
@@ -167,16 +168,18 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
     const afterCommit: Array<() => Promise<void>> = [];
     try {
       await prisma.$transaction(async (tx) => {
+        const paidAt = new Date();
         await markOdkOrderPaid(payment.orderId, { transaction: tx, afterCommit });
         await tx.odkPayment.update({
           where: { id: payment.id },
           data: {
             status: "SUCCEEDED",
             amountCents: invariant.paymentAmountCents,
-            paidAt: new Date(),
+            paidAt,
             failureReason: null,
           },
         });
+        await upsertOrderLedger(tx, { source: "ONLINE_DENEME_KULUBU", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: `ODK siparişi ${payment.orderId}`, paidAt, paymentMethod: payload.payment_type, buyerInfo: payment.order.buyerInfo });
       }, { isolationLevel: "Serializable" });
       await Promise.all(afterCommit.map((run) => run()));
       log.info("paytr.callback.odk.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
@@ -243,7 +246,7 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, totalCents: true } },
+      order: { select: { status: true, totalCents: true, discountCents: true, packageName: true, buyerInfo: true } },
     },
   });
 
@@ -300,16 +303,18 @@ async function handleOd(payload: PaytrCallbackPayload): Promise<Response> {
     const afterCommit: Array<() => Promise<void>> = [];
     try {
       await prisma.$transaction(async (tx) => {
+        const paidAt = new Date();
         await markOdOrderPaid(payment.orderId, { transaction: tx, afterCommit });
         await tx.odPayment.update({
           where: { id: payment.id },
           data: {
             status: "SUCCEEDED",
             amountCents: invariant.paymentAmountCents,
-            paidAt: new Date(),
+            paidAt,
             failureReason: null,
           },
         });
+        await upsertOrderLedger(tx, { source: "ONLINE_DERSHANEM", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: payment.order.packageName, paidAt, paymentMethod: payload.payment_type, buyerInfo: payment.order.buyerInfo });
       }, { isolationLevel: "Serializable" });
       await Promise.all(afterCommit.map((run) => run()));
       log.info("paytr.callback.od.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
