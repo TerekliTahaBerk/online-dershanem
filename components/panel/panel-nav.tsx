@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { UserRole } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
-import { Accessibility, BarChart3, Bell, BookOpenCheck, Bot, Building2, CalendarDays, ChartNoAxesCombined, ClipboardCheck, CreditCard, HandHeart, HeartHandshake, History, Inbox, LayoutDashboard, Library, ListChecks, PackageCheck, Rocket, RotateCcw, UsersRound, WifiOff } from "lucide-react";
+import { Accessibility, BarChart3, Bell, BookOpenCheck, Bot, CalendarDays, ChartNoAxesCombined, ClipboardCheck, CreditCard, HandHeart, HeartHandshake, History, Inbox, LayoutDashboard, Library, ListChecks, PackageCheck, Rocket, RotateCcw, UsersRound, WifiOff } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 
 type NavItem = { href: string; label: string; hint?: string; icon: LucideIcon };
@@ -19,7 +19,6 @@ const accessibilityProfileEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_ACCESS
 const offlineModeEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_OFFLINE_MODE === "true";
 const cohortQualityEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_COHORT_QUALITY === "true";
 const teacherAiDraftsEnabled = process.env.NEXT_PUBLIC_PANEL_FEATURE_TEACHER_AI_DRAFTS === "true";
-const businessPanelEnabled = process.env.NEXT_PUBLIC_CRM_PANEL_ENABLED !== "false";
 
 const NAV: Record<UserRole, (root: string) => NavItem[]> = {
   ADMIN: (root) => [
@@ -31,7 +30,6 @@ const NAV: Record<UserRole, (root: string) => NavItem[]> = {
     ...(mockExamsEnabled ? [{ href: `${root}/denemeler`, label: "Denemeler", hint: "Süre ve hata eğilimi", icon: ChartNoAxesCombined }] : []),
     ...(interventionInboxEnabled ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu", hint: "Sahip, SLA ve sonuç", icon: Inbox }] : []),
     { href: `${root}/isler`, label: "Operasyon", hint: "Talepler ve ödemeler", icon: CreditCard },
-    ...(businessPanelEnabled ? [{ href: `${root}/isletme`, label: "Reklam, CRM ve Finans", hint: "Mesaj, aday ve nakit akışı", icon: Building2 }] : []),
     { href: `${root}/kayitlar`, label: "İşlem geçmişi", hint: "Değişiklik ve güvenlik izi", icon: History },
     { href: `${root}/raporlar`, label: "Raporlar", hint: "Katılım ve tamamlama", icon: BarChart3 },
     { href: `${root}/pilot`, label: "Pilot yayını", hint: "Kohort, kapılar ve geri alma", icon: Rocket },

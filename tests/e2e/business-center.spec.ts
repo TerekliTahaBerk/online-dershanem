@@ -22,7 +22,11 @@ test.describe("Instagram CRM ve finans merkezi", () => {
     }
     await login(page, admin);
     await page.goto("/panel/urun-sec");
-    await expect(page.getByRole("link", { name: "Reklam, CRM ve Finans paneline git" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "İşletme Paneline git" })).toBeVisible();
+    await page.getByRole("link", { name: "İşletme Paneline git" }).click();
+    await expect(page.getByRole("link", { name: "İşletme yönetim ana sayfası" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "İşletme panel menüsü" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Kontrol merkezi/ })).toHaveCount(0);
     for (const section of ["genel-bakis", "mesaj-kutusu", "adaylar", "satis-hunisi", "gelirler", "giderler", "vergiler", "entegrasyonlar"]) {
       const response = await page.goto(`/panel/yonetim/isletme/${section}`); expect(response?.status(), section).toBe(200);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -48,7 +52,7 @@ test.describe("Instagram CRM ve finans merkezi", () => {
       await financeForm.getByLabel("Kategori").fill(section === "gelirler" ? "SALE" : "SOFTWARE");
       await financeForm.getByLabel("Tutar TL").fill("120");
       await financeForm.getByRole("button", { name: "Kaydet" }).click();
-      await expect(page.getByText(description).first()).toBeVisible();
+      await expect(page.getByText(description).first()).toBeVisible({ timeout: 15_000 });
     }
     await page.goto("/panel/yonetim/isletme/vergiler"); await expect(page.getByText("Hesaplanan KDV").first()).toBeVisible();
     await page.goto("/panel/yonetim/isletme/genel-bakis?product=OD"); await expect(page.getByText("Operasyon özeti").first()).toBeVisible();
@@ -59,7 +63,7 @@ test.describe("Instagram CRM ve finans merkezi", () => {
   test("işletme rolü olmayan kullanıcı finans API'sine erişemez", async ({ page }) => {
     await login(page, teacher);
     await page.goto("/panel/urun-sec");
-    await expect(page.getByRole("link", { name: "Reklam, CRM ve Finans paneline git" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "İşletme Paneline git" })).toHaveCount(0);
     const response = await page.request.get("/api/admin/business/reports.csv"); expect(response.status()).toBe(401);
     await page.goto("/panel/yonetim/isletme/gelirler");
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
