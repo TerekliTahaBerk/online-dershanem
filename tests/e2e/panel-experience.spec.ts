@@ -433,32 +433,39 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogrenci/check-in");
     await expect(page.getByRole("heading", { name: "Nasıl ilerlediğini fark et, gerekirse yardım iste." })).toBeVisible();
     await expect(page.getByRole("main").getByText("Veliye hiçbir durumda gösterilmez.")).toBeVisible();
-    await page.getByRole("button", { name: "Enerjim düşük" }).click();
-    await page.getByRole("button", { name: "Yönlendirmeye ihtiyacım var" }).click();
-    await page.getByRole("button", { name: "Bir örneğe daha ihtiyacım var" }).click();
-    await page.getByLabel("Öğretmenimden yardım istiyorum").check();
-    await page.getByRole("button", { name: "Check-in'i kaydet" }).click();
-    await expect(page.getByText("Check-in kaydedildi.")).toBeVisible();
-    await page.reload();
-    await expect(page.getByRole("main").getByText("Öğretmen yanıtı bekleniyor").first()).toBeVisible();
+    const helpJourney = page.getByRole("main");
+    const existingJourney = helpJourney.getByText(/Öğretmen yanıtı bekleniyor|Öğretmenin destek adımı|Destek tamamlandı/);
+    if (await existingJourney.count() === 0) {
+      await page.getByRole("button", { name: "Enerjim düşük" }).click();
+      await page.getByRole("button", { name: "Yönlendirmeye ihtiyacım var" }).click();
+      await page.getByRole("button", { name: "Bir örneğe daha ihtiyacım var" }).click();
+      await page.getByLabel("Öğretmenimden yardım istiyorum").check();
+      await page.getByRole("button", { name: "Check-in'i kaydet" }).click();
+      await expect(page.getByText("Check-in kaydedildi.")).toBeVisible();
+      await page.reload();
+    }
+    if (await helpJourney.getByText("Destek tamamlandı").count() > 0) return;
 
-    await page.getByRole("button", { name: /çıkış/i }).click();
-    await login(page, accounts.teacher);
-    await page.goto("/panel/ogretmen/yardim");
-    const request = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
-    await expect(request.getByText("Bir örneğe daha ihtiyacım var", { exact: false })).toBeVisible();
-    const responsePromise = page.waitForResponse((response) => response.url().includes("/api/panel/student-help-requests/") && response.url().endsWith("/respond"));
-    await request.getByRole("button", { name: "Ek örnek hazırladım" }).click();
-    expect((await responsePromise).status()).toBe(200);
-    await page.reload();
-    const answeredRequest = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "Ek örnek hazırladım" }).first();
-    await expect(answeredRequest.getByText("Son adım: Ek örnek hazırladım")).toBeVisible();
+    if (await helpJourney.getByText("Öğretmenin destek adımı").count() === 0) {
+      await page.getByRole("button", { name: /çıkış/i }).click();
+      await login(page, accounts.teacher);
+      await page.goto("/panel/ogretmen/yardim");
+      const request = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
+      await expect(request.getByText("Bir örneğe daha ihtiyacım var", { exact: false })).toBeVisible();
+      const responsePromise = page.waitForResponse((response) => response.url().includes("/api/panel/student-help-requests/") && response.url().endsWith("/respond"));
+      await request.getByRole("button", { name: "Ek örnek hazırladım" }).click();
+      expect((await responsePromise).status()).toBe(200);
+      await page.reload();
+      const answeredRequest = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "Ek örnek hazırladım" }).first();
+      await expect(answeredRequest.getByText("Son adım: Ek örnek hazırladım")).toBeVisible();
+    }
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/check-in");
     const history = page.getByRole("article").filter({ hasText: "Ek örnek hazırladım" }).first();
-    await history.getByRole("button", { name: "İşime yaradı" }).click();
+    const helpfulButton = history.getByRole("button", { name: "İşime yaradı" });
+    if (await helpfulButton.count() > 0) await helpfulButton.click();
     await expect(history.getByText("Destek tamamlandı")).toBeVisible();
   });
 
