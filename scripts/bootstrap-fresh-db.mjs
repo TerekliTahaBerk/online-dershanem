@@ -14,4 +14,16 @@ if (tables.length) throw new Error(`Veritabanı boş değil (${tables.length} ta
 execFileSync("npx", ["prisma", "db", "push", "--skip-generate"], { stdio: "inherit", env: process.env });
 const migrations = readdirSync("prisma/migrations", { withFileTypes: true }).filter((item) => item.isDirectory()).map((item) => item.name).sort();
 for (const migration of migrations) execFileSync("npx", ["prisma", "migrate", "resolve", "--applied", migration], { stdio: "inherit", env: process.env });
+const bootstrapPrisma = new PrismaClient();
+await bootstrapPrisma.businessUnit.upsert({
+  where: { product: "OD" },
+  update: { name: "OnlineDershanem", isActive: true },
+  create: { id: "cbusinessunitod000000000001", code: "OD", name: "OnlineDershanem", product: "OD" },
+});
+await bootstrapPrisma.businessUnit.upsert({
+  where: { product: "ODK" },
+  update: { name: "OnlineDenemeKulübü", isActive: true },
+  create: { id: "cbusinessunitodk00000000001", code: "ODK", name: "OnlineDenemeKulübü", product: "ODK" },
+});
+await bootstrapPrisma.$disconnect();
 console.log(`Fresh database hazırlandı; ${migrations.length} migration işaretlendi.`);
