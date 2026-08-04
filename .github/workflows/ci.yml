@@ -80,3 +80,4 @@ jobs:
         run: |
           npx prisma migrate status
           test "$(psql "$PSQL_URL" -Atc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('users','groups','lessons','assignments','notifications');")" = "5"
+          test "$(psql "$PSQL_URL" -Atc "SELECT COUNT(*) FROM business_units WHERE product IN ('OD', 'ODK') AND is_active = true;")" = "2"
