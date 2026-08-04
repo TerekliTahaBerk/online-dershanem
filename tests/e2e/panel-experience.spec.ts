@@ -22,6 +22,7 @@ async function login(page: Page, account: { email?: string; password?: string })
     await page.waitForURL(/\/panel\/(yonetim|ogretmen|ogrenci|veli)/);
   }
   await expect(page.getByRole("main")).toBeVisible();
+  await expect.poll(() => page.title()).not.toBe("");
 }
 
 test.describe("panel deneyimi", () => {
@@ -97,15 +98,16 @@ test.describe("panel deneyimi", () => {
   test("öğrenci deneme girer, öğretmen eğilimi görür ve veli sakin özeti açar", async ({ page }) => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/denemeler");
+    const studentExamMain = page.getByRole("main");
     await expect(page.getByRole("heading", { name: "Her denemeden tek doğru adım çıkar." })).toBeVisible();
-    await expect(page.getByText("İşlem / yöntem · son 3 denemede 3 işaret")).toBeVisible();
-    await page.getByLabel("Sınav").selectOption("YDT");
-    await page.getByLabel("Yabancı Dil correctCount").fill("60");
-    await page.getByLabel("Yabancı Dil incorrectCount").fill("10");
-    await page.getByLabel("Yabancı Dil blankCount").fill("10");
-    await page.getByLabel("Süre yönetimi", { exact: true }).check();
-    await page.getByRole("button", { name: "Denemeyi kaydet" }).click();
-    await expect(page.getByText(/Deneme kaydedildi/)).toBeVisible();
+    await expect(studentExamMain.getByText("İşlem / yöntem · son 3 denemede 3 işaret")).toBeVisible();
+    await studentExamMain.getByLabel("Sınav").selectOption("YDT");
+    await studentExamMain.getByLabel("Yabancı Dil correctCount").fill("60");
+    await studentExamMain.getByLabel("Yabancı Dil incorrectCount").fill("10");
+    await studentExamMain.getByLabel("Yabancı Dil blankCount").fill("10");
+    await studentExamMain.getByLabel("Süre yönetimi", { exact: true }).check();
+    await studentExamMain.getByRole("button", { name: "Denemeyi kaydet" }).click();
+    await expect(studentExamMain.getByText(/Deneme kaydedildi/)).toBeVisible();
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/denemeler");
@@ -240,9 +242,9 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByRole("main").getByText("Öğretmenin onayladı", { exact: true }).first()).toBeVisible();
     await page.getByRole("button", { name: "Tamamla" }).first().click();
     await expect(page.getByRole("button", { name: "Tamamlandı" }).first()).toBeDisabled();
-    await page.getByLabel("Plan değişiklik nedeni").selectOption("TOO_MUCH");
-    await page.getByRole("button", { name: "Değişiklik iste" }).click();
-    await expect(page.getByText(/Değişiklik isteğin öğretmenine iletildi/)).toBeVisible();
+    await page.getByRole("main").getByLabel("Plan değişiklik nedeni").selectOption("TOO_MUCH");
+    await page.getByRole("main").getByRole("button", { name: "Değişiklik iste" }).click();
+    await expect(page.getByRole("main").getByText(/Değişiklik isteğin öğretmenine iletildi/)).toBeVisible();
   });
 
   test("öğretmen kaçırılan ders için güvenli telafi yayınlar, öğrenci 72 saatlik akışı tamamlar", async ({ page }) => {
@@ -347,7 +349,7 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByRole("main").getByText(name, { exact: true })).toBeVisible();
     await page.goto("/panel/yonetim/raporlar");
     await expect(page.getByRole("heading", { name: "Kritik yolculuk SLO'ları" })).toBeVisible();
-    await expect(page.getByText("Grup kurulum başarısı", { exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Grup kurulum başarısı", { exact: true })).toBeVisible();
   });
 
   test("admin başarısız e-postayı yeniden kuyruğa alır, öğretmen bu işleme erişemez", async ({ page }) => {
@@ -439,7 +441,7 @@ test.describe("panel deneyimi", () => {
       await page.getByRole("button", { name: "Enerjim düşük" }).click();
       await page.getByRole("button", { name: "Yönlendirmeye ihtiyacım var" }).click();
       await page.getByRole("button", { name: "Bir örneğe daha ihtiyacım var" }).click();
-      await page.getByLabel("Öğretmenimden yardım istiyorum").check();
+      await helpJourney.getByLabel("Öğretmenimden yardım istiyorum").check();
       await page.getByRole("button", { name: "Check-in'i kaydet" }).click();
       await expect(page.getByText("Check-in kaydedildi.")).toBeVisible();
       await page.reload();
@@ -503,10 +505,11 @@ test.describe("panel deneyimi", () => {
 
     await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.admin);
     await page.goto("/panel/yonetim/kullanicilar/e2e-user-student");
-    await page.getByLabel("Değerlendirme ek süresi").selectOption("25");
-    await page.getByLabel("Planlı kısa molaya izin ver").check();
-    await page.getByRole("button", { name: "Düzenlemeyi kaydet" }).click();
-    await expect(page.getByText("İşlevsel akademik düzenleme kaydedildi.")).toBeVisible();
+    const accommodationMain = page.getByRole("main");
+    await accommodationMain.getByLabel("Değerlendirme ek süresi").selectOption("25");
+    await accommodationMain.getByLabel("Planlı kısa molaya izin ver").check();
+    await accommodationMain.getByRole("button", { name: "Düzenlemeyi kaydet" }).click();
+    await expect(accommodationMain.getByText("İşlevsel akademik düzenleme kaydedildi.")).toBeVisible();
 
     await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/gruplar");
