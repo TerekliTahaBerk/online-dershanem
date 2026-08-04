@@ -344,7 +344,7 @@ test.describe("panel deneyimi", () => {
     const status = await page.evaluate(async ({ name }) => { const response = await fetch("/api/panel/setup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, subject: "Matematik", level: "8. Sınıf", teacherId: "e2e-user-teacher", studentIds: ["e2e-student-profile"], parentLinks: [{ parentId: "e2e-user-parent", studentId: "e2e-student-profile" }], lessonTitle: "E2E Haftalık Program", startsAt: new Date(Date.now() + 3 * 86400000).toISOString(), repeatWeeks: 4, meetingUrl: "https://example.com/e2e-room" }) }); return response.status; }, { name });
     expect(status).toBe(200);
     await page.goto("/panel/yonetim/egitim");
-    await expect(page.getByText(name, { exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByText(name, { exact: true })).toBeVisible();
     await page.goto("/panel/yonetim/raporlar");
     await expect(page.getByRole("heading", { name: "Kritik yolculuk SLO'ları" })).toBeVisible();
     await expect(page.getByText("Grup kurulum başarısı", { exact: true })).toBeVisible();
@@ -515,8 +515,10 @@ test.describe("panel deneyimi", () => {
     test.setTimeout(75_000);
     await login(page, accounts.student);
     await page.goto("/panel/veri-kullanimi");
-    await page.getByRole("button", { name: /Düşük veri modu/ }).click();
-    await page.getByRole("button", { name: /Güvenli çevrimdışı yazma/ }).click();
+    const lowDataButton = page.getByRole("button", { name: /Düşük veri modu/ });
+    if (await lowDataButton.getAttribute("aria-pressed") !== "true") await lowDataButton.click();
+    const offlineWritesButton = page.getByRole("button", { name: /Güvenli çevrimdışı yazma/ });
+    if (await offlineWritesButton.getAttribute("aria-pressed") !== "true") await offlineWritesButton.click();
     await page.getByRole("button", { name: "Tercihleri kaydet" }).click();
     await expect(page.getByText("Veri kullanımı tercihleri kaydedildi.")).toBeVisible();
     await page.reload();
