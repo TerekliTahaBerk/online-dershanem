@@ -117,7 +117,7 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.parent);
     await page.goto("/panel/veli/denemeler");
     await expect(page.getByRole("heading", { name: /Ada Öğrenci · Deneme eğilimi/ })).toBeVisible();
-    await expect(page.getByText("Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.")).toBeVisible();
+    await expect(page.getByRole("main").getByText("Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.")).toBeVisible();
   });
 
   test("öğrenci küçük tekrarı yanıtlar, öğretmen kalıcı zorlanmayı görür", async ({ page }) => {
@@ -134,13 +134,14 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/tekrar");
+    const teacherReviewMain = page.getByRole("main");
     await expect(page.getByRole("heading", { name: "Kuyruk büyürse insan bakışı devreye girsin." })).toBeVisible();
-    await expect(page.getByText("İnsan bakışı gerekli", { exact: true })).toBeVisible();
-    await page.getByLabel("Öğrenci").selectOption("e2e-student-profile");
-    await page.getByLabel("Kısa çalışma başlığı").fill("E2E öğretmen tekrar kaynağı");
-    await page.getByLabel("Kaynak referansı").fill("E2E öğretmen föyü s.4 soru 6");
-    await page.getByRole("button", { name: "Tekrar ekle" }).click();
-    await expect(page.getByText(/yarının küçük tekrarlarına eklendi/i)).toBeVisible();
+    await expect(teacherReviewMain.getByText("İnsan bakışı gerekli", { exact: true })).toBeVisible();
+    await teacherReviewMain.getByLabel("Öğrenci").selectOption("e2e-student-profile");
+    await teacherReviewMain.getByLabel("Kısa çalışma başlığı").fill("E2E öğretmen tekrar kaynağı");
+    await teacherReviewMain.getByLabel("Kaynak referansı").fill("E2E öğretmen föyü s.4 soru 6");
+    await teacherReviewMain.getByRole("button", { name: "Tekrar ekle" }).click();
+    await expect(teacherReviewMain.getByText(/yarının küçük tekrarlarına eklendi/i)).toBeVisible();
   });
 
   test("öğrenci gelişim ve materyal, veli bildirim ekranlarını açabilir", async ({ page }) => {
@@ -313,9 +314,10 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
     await page.goto("/panel/veli/haftalik");
-    await expect(page.getByText(sharedText!, { exact: true })).toBeVisible();
-    await page.getByLabel("Özet kaygı düzeyi").selectOption("1");
-    await expect(page.getByText("Geri bildirimin kaydedildi.")).toBeVisible();
+    const parentDigestMain = page.getByRole("main");
+    await expect(parentDigestMain.getByText(sharedText!, { exact: true })).toBeVisible();
+    await parentDigestMain.getByLabel("Özet kaygı düzeyi").selectOption("1");
+    await expect(parentDigestMain.getByText("Geri bildirimin kaydedildi.")).toBeVisible();
   });
 
   test("açıklanabilir müdahale sahiplenilir ve kontrollü sonuçla kapanır", async ({ page }) => {
