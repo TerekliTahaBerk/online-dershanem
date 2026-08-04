@@ -21,6 +21,8 @@ test.describe("Instagram CRM ve finans merkezi", () => {
       expect((await page.request.post("/api/cron/business-jobs", { headers: { authorization: `Bearer ${process.env.PANEL_E2E_JOB_SECRET}` } })).status()).toBe(200);
     }
     await login(page, admin);
+    await page.goto("/panel/urun-sec");
+    await expect(page.getByRole("link", { name: "Reklam, CRM ve Finans paneline git" })).toBeVisible();
     for (const section of ["genel-bakis", "mesaj-kutusu", "adaylar", "satis-hunisi", "gelirler", "giderler", "vergiler", "entegrasyonlar"]) {
       const response = await page.goto(`/panel/yonetim/isletme/${section}`); expect(response?.status(), section).toBe(200);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -55,7 +57,10 @@ test.describe("Instagram CRM ve finans merkezi", () => {
     const csv = await page.request.get("/api/admin/business/reports.csv"); expect(csv.status()).toBe(200); expect(csv.headers()["content-type"]).toContain("text/csv");
   });
   test("işletme rolü olmayan kullanıcı finans API'sine erişemez", async ({ page }) => {
-    await login(page, teacher); const response = await page.request.get("/api/admin/business/reports.csv"); expect(response.status()).toBe(401);
+    await login(page, teacher);
+    await page.goto("/panel/urun-sec");
+    await expect(page.getByRole("link", { name: "Reklam, CRM ve Finans paneline git" })).toHaveCount(0);
+    const response = await page.request.get("/api/admin/business/reports.csv"); expect(response.status()).toBe(401);
     await page.goto("/panel/yonetim/isletme/gelirler");
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
   });

@@ -24,16 +24,9 @@ export function roleHasPermission(role: BusinessRole, permission: BusinessPermis
 }
 
 export async function getBusinessAccess(session: SessionUser, permission: BusinessPermission) {
-  if (session.role === "ADMIN") {
-    const units = await prisma.businessUnit.findMany({ where: { isActive: true }, select: { id: true, code: true, name: true, product: true } });
-    return { role: "SUPER_ADMIN" as const, units };
-  }
-  const assignments = await prisma.businessRoleAssignment.findMany({
-    where: { userId: session.userId, businessUnit: { isActive: true } },
-    include: { businessUnit: { select: { id: true, code: true, name: true, product: true } } },
-  });
-  const allowed = assignments.filter((item) => roleHasPermission(item.role, permission));
-  return { role: allowed[0]?.role ?? null, units: allowed.map((item) => item.businessUnit) };
+  if (session.role !== "ADMIN") return { role: null, units: [] };
+  const units = await prisma.businessUnit.findMany({ where: { isActive: true }, select: { id: true, code: true, name: true, product: true } });
+  return { role: "SUPER_ADMIN" as const, units };
 }
 
 export async function requireBusinessPage(permission: BusinessPermission) {
