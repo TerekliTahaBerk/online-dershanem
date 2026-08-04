@@ -66,7 +66,7 @@ test.describe.serial("bütünleşik pilot yayını", () => {
   test("admin pilotu duraklatınca mevcut üyenin sayfa ve API erişimi kesilir", async ({ page }) => {
     await login(page, accounts.admin); await page.goto("/panel/yonetim/pilot");
     const cohort = page.getByRole("article").filter({ hasText: "E2E LGS Grubu" }).first();
-    await page.getByLabel("Pilot durdurma nedeni").selectOption("OPERATIONAL");
+    await page.getByRole("main").getByLabel("Pilot durdurma nedeni").selectOption("OPERATIONAL");
     await cohort.getByRole("button", { name: "Duraklat" }).click();
     await expect(page.getByText(/Pilot erişimi güvenle durduruldu/)).toBeVisible();
     await logout(page); await login(page, accounts.student, false);

@@ -16,6 +16,8 @@ type EnvCheck = {
   required: boolean;
   /** prod'da required mı? dev'de optional olabilir. */
   prodOnly?: boolean;
+  /** İlgili entegrasyon veya fallback gerçekten kullanılıyorsa kontrol et. */
+  when?: () => boolean;
   description: string;
 };
 
@@ -32,11 +34,11 @@ const CHECKS: EnvCheck[] = [
   { key: "EMAIL_MODE", required: false, description: "Email kapsamı: receipts (varsayılan) veya all" },
   { key: "CRON_SECRET", required: false, prodOnly: true, description: "Cron route'ları korumak için bearer" },
   { key: "BLOB_READ_WRITE_TOKEN", required: false, prodOnly: true, description: "ODK kitapçıkları için özel Blob deposu" },
-  { key: "OPENAI_API_KEY", required: false, description: "Instagram AI satış asistanı" },
-  { key: "META_APP_SECRET", required: false, description: "Meta webhook imzası" },
-  { key: "META_VERIFY_TOKEN", required: false, description: "Meta webhook doğrulama tokenı" },
-  { key: "META_GRAPH_API_VERSION", required: false, description: "Sabitlenmiş güncel Meta Graph API sürümü" },
-  { key: "JOB_PROCESSOR_SECRET", required: false, description: "Opsiyonel ayrı job secret; yoksa CRON_SECRET kullanılır" },
+  { key: "OPENAI_API_KEY", required: false, when: () => process.env.INSTAGRAM_AI_ENABLED === "true", description: "Instagram AI satış asistanı" },
+  { key: "META_APP_SECRET", required: false, when: () => process.env.INSTAGRAM_INTEGRATION_ENABLED === "true", description: "Meta webhook imzası" },
+  { key: "META_VERIFY_TOKEN", required: false, when: () => process.env.INSTAGRAM_INTEGRATION_ENABLED === "true", description: "Meta webhook doğrulama tokenı" },
+  { key: "META_GRAPH_API_VERSION", required: false, when: () => process.env.INSTAGRAM_INTEGRATION_ENABLED === "true" || process.env.META_ADS_INTEGRATION_ENABLED === "true", description: "Sabitlenmiş güncel Meta Graph API sürümü" },
+  { key: "JOB_PROCESSOR_SECRET", required: false, when: () => !process.env.CRON_SECRET, description: "Opsiyonel ayrı job secret; yoksa CRON_SECRET kullanılır" },
   { key: "ODK_ROLLOUT_MODE", required: false, prodOnly: true, description: "ODK general/pilot yayın modu" },
   { key: "ODK_PILOT_KILL_SWITCH", required: false, prodOnly: true, description: "ODK acil erişim kesme anahtarı" },
   { key: "ODK_PILOT_ACCEPTANCE_APPROVED", required: false, prodOnly: true, description: "ODK canlı kabul kanıtı" },
@@ -59,6 +61,7 @@ export function validateEnvOnce(): EnvStatus {
   const warnings: string[] = [];
 
   for (const c of CHECKS) {
+    if (c.when && !c.when()) continue;
     const v = process.env[c.key];
     const needed = c.required || (c.prodOnly && isProd);
     if (needed && !v) {
