@@ -432,7 +432,7 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/check-in");
     await expect(page.getByRole("heading", { name: "Nasıl ilerlediğini fark et, gerekirse yardım iste." })).toBeVisible();
-    await expect(page.getByText("Veliye hiçbir durumda gösterilmez.")).toBeVisible();
+    await expect(page.getByRole("main").getByText("Veliye hiçbir durumda gösterilmez.")).toBeVisible();
     await page.getByRole("button", { name: "Enerjim düşük" }).click();
     await page.getByRole("button", { name: "Yönlendirmeye ihtiyacım var" }).click();
     await page.getByRole("button", { name: "Bir örneğe daha ihtiyacım var" }).click();
@@ -468,7 +468,10 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/erisilebilirlik");
     await expect(page.getByRole("heading", { name: "Paneli çalışma biçiminize uyarlayın." })).toBeVisible();
-    for (const name of ["Hareketi azalt", "Yüksek kontrast", "Büyük metin", "Rahat satır aralığı", "Altyazılı medya", "Metin dökümü"]) await page.getByRole("button", { name: new RegExp(name) }).click();
+    for (const name of ["Hareketi azalt", "Yüksek kontrast", "Büyük metin", "Rahat satır aralığı", "Altyazılı medya", "Metin dökümü"]) {
+      const preferenceButton = page.getByRole("button", { name: new RegExp(name) });
+      if (await preferenceButton.getAttribute("aria-pressed") !== "true") await preferenceButton.click();
+    }
     await page.getByRole("button", { name: "Tercihleri kaydet" }).click();
     await expect(page.getByText("Tercihler kaydedildi ve panele uygulandı.")).toBeVisible();
     await expect.poll(() => page.locator("html").getAttribute("data-panel-motion")).toBe("reduced");
