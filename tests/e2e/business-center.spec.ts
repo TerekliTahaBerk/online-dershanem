@@ -51,6 +51,15 @@ test.describe("Instagram CRM ve finans merkezi", () => {
       await financeForm.getByLabel("Açıklama").fill(description);
       await financeForm.getByLabel("Kategori").fill(section === "gelirler" ? "SALE" : "SOFTWARE");
       await financeForm.getByLabel("Tutar TL").fill("120");
+      // Admin birden fazla iş birimine erişiyor; kayıt hangi birime yazılacağı
+      // AÇIKÇA seçilmeden oluşturulamaz. Sessizce "ilk birime" yazan eski
+      // davranış kaldırıldı (bkz. resolveMutationUnit). Seçim, hidratasyon
+      // seçimi sıfırlamasın diye gönderimden hemen önce yapılır.
+      const unitSelect = financeForm.getByLabel("İş birimi");
+      if (await unitSelect.count()) {
+        await unitSelect.selectOption({ label: "OnlineDershanem" });
+        await expect(unitSelect).not.toHaveValue("");
+      }
       await financeForm.getByRole("button", { name: "Kaydet" }).click();
       await expect(page.getByText(description).first()).toBeVisible({ timeout: 15_000 });
     }

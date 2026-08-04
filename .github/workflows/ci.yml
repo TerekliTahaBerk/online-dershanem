@@ -41,6 +41,9 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
+      - name: Repo hygiene (duplicate file guard)
+        run: npm run lint:hygiene
+
       - name: Unit tests
         run: npm run test:unit
 

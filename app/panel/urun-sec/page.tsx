@@ -5,6 +5,8 @@ import { ArrowRight, BookOpenCheck, Building2, ClipboardCheck } from "lucide-rea
 import { requireActiveUser } from "@/lib/auth/guards";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { productRolePath } from "@/lib/auth/roles";
+import { getUserBusinessPermissions } from "@/lib/business/permissions";
+import { businessFlags } from "@/lib/business/flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +14,12 @@ export const dynamic = "force-dynamic";
 export default async function ProductSelectorPage() {
   const session = await requireActiveUser();
   const products = await getAccessibleProducts(session.userId, session.role);
-  if (products.length === 1) redirect(productRolePath(products[0], session.role));
+  // İşletme kartı yalnız GERÇEK işletme yetkisi olana gösterilir. Eskiden
+  // `session.role === "ADMIN"` kontrolüne bakılıyordu; ataması olmayan bir
+  // platform yöneticisi karta tıklayıp 404 alıyordu.
+  const hasBusinessAccess =
+    businessFlags.panel && (await getUserBusinessPermissions(session)).has("dashboard:read");
+  if (products.length === 1 && !hasBusinessAccess) redirect(productRolePath(products[0], session.role));
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
@@ -21,10 +28,10 @@ export default async function ProductSelectorPage() {
         <h1 className="mt-3 text-3xl font-semibold tracking-[-.05em] text-[var(--site-ink)] sm:text-4xl">Bugün hangi çalışma alanına gideceksiniz?</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--site-body)]">Hesabınıza açık çalışma alanını seçin. Her alanın kendi paneli ve navigasyonu vardır.</p>
 
-        {products.length || session.role === "ADMIN" ? <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {products.length || hasBusinessAccess ? <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {products.includes("OD") ? <ProductCard href={productRolePath("OD", session.role)} title="Online Dershanem" description="Dersler, gruplar, ödevler, materyaller ve gelişim takibi." logo="/onlinedershanem_.png" icon={<BookOpenCheck size={18} />} wideLogo /> : null}
           {products.includes("ODK") ? <ProductCard href={productRolePath("ODK", session.role)} title="Online Deneme Kulübü" description="Planlı matematik denemeleri, canlı sınavlar ve kazanım analizi." logo="/odklogo1.png" icon={<ClipboardCheck size={18} />} /> : null}
-          {session.role === "ADMIN" ? <ProductCard href="/panel/yonetim/isletme/genel-bakis" title="İşletme Paneli" description="Instagram mesajları, adaylar, kampanyalar, satış ve nakit akışı." brand="işletme." icon={<Building2 size={18} />} /> : null}
+          {hasBusinessAccess ? <ProductCard href="/panel/yonetim/isletme/genel-bakis" title="İşletme Paneli" description="Instagram mesajları, adaylar, kampanyalar, satış ve nakit akışı." brand="işletme." icon={<Building2 size={18} />} /> : null}
         </div> : <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">Hesabınıza henüz aktif bir ürün erişimi tanımlanmamış. Yönetim ekibiyle iletişime geçin.</div>}
       </div>
     </PanelShell>
