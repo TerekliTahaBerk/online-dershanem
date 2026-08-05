@@ -17,6 +17,12 @@ const ids = {
   odkStudent: "e2e-user-odk-student",
   planForeignStudent: "e2e-user-plan-foreign",
   parent: "e2e-user-parent",
+  businessSales: "e2e-user-business-sales",
+  businessSupport: "e2e-user-business-support",
+  businessAccounting: "e2e-user-business-accounting",
+  businessViewer: "e2e-user-business-viewer",
+  businessOdkOnly: "e2e-user-business-odk-only",
+  businessNoAccess: "e2e-user-business-noaccess",
   studentProfile: "e2e-student-profile",
   foreignStudentProfile: "e2e-student-profile-foreign",
   studentProfile3: "e2e-student-profile-3",
@@ -86,6 +92,15 @@ async function main() {
     { id: ids.odkStudent, email: "odk.student.e2e@example.com", fullName: "Ece ODK Öğrenci", role: "STUDENT" as const },
     { id: ids.planForeignStudent, email: "plan.foreign.student.e2e@example.com", fullName: "Yalnız Yabancı Öğrenci", role: "STUDENT" as const },
     { id: ids.parent, email: "parent.e2e@example.com", fullName: "E2E Veli", role: "PARENT" as const },
+    // İşletme RBAC fixture'ları. Hepsi platformda ADMIN'dir; aralarındaki tek
+    // fark BusinessRoleAssignment satırlarıdır. Böylece testler gerçekten
+    // işletme rolünü ölçer, platform rolünü değil.
+    { id: ids.businessSales, email: "business.sales.e2e@example.com", fullName: "E2E Satış", role: "ADMIN" as const },
+    { id: ids.businessSupport, email: "business.support.e2e@example.com", fullName: "E2E Destek", role: "ADMIN" as const },
+    { id: ids.businessAccounting, email: "business.accounting.e2e@example.com", fullName: "E2E Muhasebe", role: "ADMIN" as const },
+    { id: ids.businessViewer, email: "business.viewer.e2e@example.com", fullName: "E2E İzleyici", role: "ADMIN" as const },
+    { id: ids.businessOdkOnly, email: "business.odkonly.e2e@example.com", fullName: "E2E ODK Birim", role: "ADMIN" as const },
+    { id: ids.businessNoAccess, email: "business.noaccess.e2e@example.com", fullName: "E2E Atamasız", role: "ADMIN" as const },
   ];
 
   for (const user of users) {
@@ -265,6 +280,31 @@ async function main() {
   await prisma.businessLead.upsert({ where: { conversationId: businessConversation.id }, update: { stage: "NEW" }, create: { businessUnitId: businessUnit.id, conversationId: businessConversation.id, instagramScopedId: "e2e-instagram-user", firstName: "E2E Aday", source: "INSTAGRAM_ORGANIC", temperature: "HOT", stage: "NEW", tags: [] } });
   await prisma.notification.upsert({ where: { id: ids.parentNotification }, create: { id: ids.parentNotification, userId: ids.parent, type: "SYSTEM", title: "E2E panel hazır", body: "Bildirim merkezi kabul testi için hazır.", href: "/panel/veli" }, update: { readAt: null } });
   await prisma.emailOutbox.upsert({ where: { id: ids.emailOutbox }, create: { id: ids.emailOutbox, recipients: JSON.stringify(["receipt.e2e@example.com"]), subject: "E2E ödeme makbuzu", html: "<p>E2E makbuz</p>", status: "FAILED", attempts: 2, lastError: "E2E gönderim hatası", nextRetryAt: new Date() }, update: { status: "FAILED", attempts: 2, lastError: "E2E gönderim hatası", nextRetryAt: new Date() } });
+
+  // İkinci iş birimi — çok kiracılı izolasyon testleri için gereklidir.
+  const odkUnit = await prisma.businessUnit.upsert({ where: { product: "ODK" }, update: { isActive: true }, create: { code: "ODK", name: "OnlineDenemeKulübü", product: "ODK" } });
+  await prisma.businessLead.upsert({ where: { id: "e2e-lead-odk-unit" }, update: { stage: "NEW" }, create: { id: "e2e-lead-odk-unit", businessUnitId: odkUnit.id, firstName: "ODK Birimi Adayı", source: "MANUAL", temperature: "WARM", stage: "NEW", tags: [] } });
+
+  // İşletme erişimi YALNIZ bu atamalardan gelir. Platform ADMIN rolü tek
+  // başına hiçbir işletme izni vermez (bkz. lib/business/permissions.ts).
+  const assignments: Array<{ userId: string; businessUnitId: string; role: "SUPER_ADMIN" | "ADMIN" | "SALES" | "SUPPORT" | "ACCOUNTING" | "VIEWER" }> = [
+    { userId: ids.admin, businessUnitId: businessUnit.id, role: "SUPER_ADMIN" },
+    { userId: ids.admin, businessUnitId: odkUnit.id, role: "SUPER_ADMIN" },
+    { userId: ids.businessSales, businessUnitId: businessUnit.id, role: "SALES" },
+    { userId: ids.businessSupport, businessUnitId: businessUnit.id, role: "SUPPORT" },
+    { userId: ids.businessAccounting, businessUnitId: businessUnit.id, role: "ACCOUNTING" },
+    { userId: ids.businessViewer, businessUnitId: businessUnit.id, role: "VIEWER" },
+    // Yalnız ODK birimine erişir — OD birimini görememelidir.
+    { userId: ids.businessOdkOnly, businessUnitId: odkUnit.id, role: "ADMIN" },
+    // businessNoAccess bilinçli olarak atamasızdır.
+  ];
+  for (const assignment of assignments) {
+    await prisma.businessRoleAssignment.upsert({
+      where: { userId_businessUnitId_role: assignment },
+      update: {},
+      create: assignment,
+    });
+  }
 }
 
 main()

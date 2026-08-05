@@ -1,10 +1,12 @@
 # Online Dershanem
 
-Next.js 15, PostgreSQL ve Prisma üzerinde çalışan; public satış sitesiyle rol bazlı eğitim panelini aynı üründe birleştiren uygulama.
+Next.js 16 (App Router), React 18, TypeScript 5, PostgreSQL ve Prisma 6 üzerinde çalışan; public satış sitesiyle rol bazlı eğitim panelini aynı üründe birleştiren uygulama.
+
+Üç çalışma alanı vardır: **Online Dershanem** (dersler ve gelişim), **Online Deneme Kulübü** (denemeler ve kazanım analizi) ve **İşletme Paneli** (CRM, reklam, finans). Her alanın kendi navigasyonu ve yetki modeli vardır.
 
 ## Instagram AI CRM, reklam ve finans merkezi
 
-`/panel/yonetim/isletme` alanı Instagram mesaj kutusunu, aday hunisini, kampanya performansını ve OD/ODK ortak finans defterini birleştirir. Eğitim rolleri değişmez; işletme erişimi `BusinessRoleAssignment` ile iş birimi kapsamında verilir. `ADMIN` kullanıcıları süper yönetici kabul edilir.
+`/panel/yonetim/isletme` alanı Instagram mesaj kutusunu, aday hunisini, kampanya performansını ve OD/ODK ortak finans defterini birleştirir. Eğitim rolleri değişmez; işletme erişimi **yalnız** `BusinessRoleAssignment` ile iş birimi kapsamında verilir. Platformdaki `ADMIN` rolü tek başına hiçbir işletme izni vermez — roller, izin matrisi ve bootstrap için [`docs/business-rbac.md`](docs/business-rbac.md).
 
 `.env.example` içindeki işletme değişkenlerini `.env.local` dosyanıza alın; migration, generate ve seed adımlarını çalıştırın. Dış servisler kapalıyken development adapter’ları kullanılır. Webhook `/api/integrations/instagram/webhook`, kalıcı işleyici `/api/cron/business-jobs` adresindedir. Ayrıntılar `docs/meta-instagram-setup.md`, `docs/openai-assistant-setup.md` ve `docs/deployment-checklist.md` içindedir.
 
@@ -24,7 +26,8 @@ Panel hesapları yalnızca yönetici tarafından oluşturulur; public self-regis
 npm install
 cp .env.example .env.local
 npx prisma generate
-npx prisma migrate dev
+npx prisma migrate deploy
+npm run db:seed
 npm run dev
 ```
 
@@ -32,8 +35,10 @@ npm run dev
 
 ```bash
 npm run lint
+npm run lint:hygiene      # yinelenen " 2" dosya kopyalarını yakalar
 npm run typecheck
 npm run test:unit
+npm run test:integration  # DATABASE_URL gerektirir; yoksa testler skip olur
 npm run build
 npm run e2e
 ```

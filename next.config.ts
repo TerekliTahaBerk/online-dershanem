@@ -1,24 +1,61 @@
 import type { NextConfig } from "next";
 
 /**
- * Content Security Policy — pragmatic baseline.
+ * Content Security Policy.
  *
- * - `unsafe-inline` / `unsafe-eval`: Next.js client bundle ve framer-motion için zorunlu.
- *   (Strict CSP'ye geçiş ileride bir round'da nonce-based ile yapılır.)
- * - `frame-src`: PayTR iframe and YouTube embeds.
- * - `connect-src`: Vercel Analytics, Upstash, Resend and analytics beacons.
- * - `img-src` / `media-src`: data + blob (avatar/PDF render), Vercel Blob CDN.
+ * - `'unsafe-eval'` YALNIZ development'ta verilir. Eski gerekçe "framer-motion
+ *   için zorunlu" idi; framer-motion bu projede bağımlılık DEĞİL ve kod
+ *   tabanında `eval`/`new Function` kullanımı yok. Production Next.js bundle'ı
+ *   eval gerektirmez — dev'de webpack/React Refresh gerektirir.
+ * - `'unsafe-inline'` script tarafında hâlâ gerekli: Next.js önyükleme ve
+ *   `next/script` inline bloklarını (GA/Meta/TikTok pixel) çalıştırıyor.
+ *   Kaldırılması nonce tabanlı CSP'ye geçmeyi gerektirir; bu ayrı bir pakettir.
+ * - `script-src` içindeki pixel origin'leri: `components/analytics/pixels.tsx`
+ *   bunlardan script yüklüyor. Daha önce listede DEĞİLLERDİ, yani pixel
+ *   kimlikleri tanımlıyken bu scriptler CSP tarafından bloklanıyordu.
+ * - `img-src`: düz `http:` kaldırıldı (HTTPS sayfada zaten mixed-content olarak
+ *   engellenir). Genel `https:` korunuyor — reklam/analitik pikselleri çok
+ *   sayıda ve değişken alan adı kullanıyor; daraltmak ölçüm kaybına yol açar.
+ * - `frame-src`: PayTR iframe ve YouTube gömüleri.
  */
 const secureDeployment = process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://");
+const isDevelopment = process.env.NODE_ENV === "development";
+
+/** `components/analytics/pixels.tsx` tarafından yüklenen üçüncü taraf origin'ler. */
+const analyticsScriptOrigins = [
+  "https://www.googletagmanager.com",
+  "https://connect.facebook.net",
+  "https://analytics.tiktok.com",
+];
+const analyticsConnectOrigins = [
+  "https://www.google-analytics.com",
+  "https://analytics.tiktok.com",
+  "https://www.facebook.com",
+];
 
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vercel.live https://www.googletagmanager.com https://static.cloudflareinsights.com",
+  [
+    "script-src 'self' 'unsafe-inline'",
+    ...(isDevelopment ? ["'unsafe-eval'"] : []),
+    "https://va.vercel-scripts.com",
+    "https://vercel.live",
+    "https://static.cloudflareinsights.com",
+    ...analyticsScriptOrigins,
+  ].join(" "),
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
-  "img-src 'self' data: blob: https: http:",
+  "img-src 'self' data: blob: https:",
   "media-src 'self' blob: data:",
-  "connect-src 'self' https://*.vercel-insights.com https://vitals.vercel-insights.com https://*.upstash.io https://api.resend.com https://www.google-analytics.com https://cloudflareinsights.com",
+  [
+    "connect-src 'self'",
+    "https://*.vercel-insights.com",
+    "https://vitals.vercel-insights.com",
+    "https://*.upstash.io",
+    "https://api.resend.com",
+    "https://cloudflareinsights.com",
+    ...analyticsConnectOrigins,
+  ].join(" "),
   "frame-src 'self' https://www.paytr.com https://www.youtube.com https://www.youtube-nocookie.com blob:",
   "worker-src 'self' blob:",
   "object-src 'none'",

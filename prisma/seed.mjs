@@ -43,7 +43,20 @@ async function main() {
     const admin = await prisma.user.findFirst({ where: { role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
     if (admin) await prisma.notification.upsert({ where: { id: "demo-business-notification" }, update: {}, create: { id: "demo-business-notification", userId: admin.id, type: "SYSTEM", title: "Demo mutabakat uyarısı", body: "Bir demo tutar uyuşmazlığı inceleme bekliyor.", href: "/panel/yonetim/isletme/mutabakat" } });
   }
-  console.log("İşletme merkezi temel verileri hazırlandı.");
+  // İşletme erişimi yalnız BusinessRoleAssignment ile verilir; platform
+  // ADMIN rolü tek başına yetki taşımaz. Aktif yöneticilere her iş biriminde
+  // SUPER_ADMIN ataması yapılmazsa panel boş 404 döner.
+  const admins = await prisma.user.findMany({ where: { role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
+  for (const admin of admins) {
+    for (const unit of [od, odk]) {
+      await prisma.businessRoleAssignment.upsert({
+        where: { userId_businessUnitId_role: { userId: admin.id, businessUnitId: unit.id, role: "SUPER_ADMIN" } },
+        update: {},
+        create: { userId: admin.id, businessUnitId: unit.id, role: "SUPER_ADMIN" },
+      });
+    }
+  }
+  console.log(`İşletme merkezi temel verileri hazırlandı (${admins.length} yöneticiye SUPER_ADMIN ataması).`);
 }
 
 main().finally(() => prisma.$disconnect());
