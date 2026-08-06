@@ -172,6 +172,11 @@ async function main() {
   await prisma.recoveryPackage.deleteMany({ where: { OR: [{ lessonId: ids.recoveryLesson }, { id: ids.foreignRecoveryPackage }] } });
   await prisma.assignmentSubmission.deleteMany({ where: { assignmentId: { in: [ids.evidenceAssignment, ids.foreignEvidenceAssignment] } } });
   await prisma.studentCheckIn.deleteMany({ where: { OR: [{ studentId: ids.studentProfile }, { id: ids.foreignCheckIn }] } });
+  await prisma.teacherAiDraft.deleteMany({ where: { teacherId: { in: [ids.teacher, ids.otherTeacher] } } });
+  // Sliding-window sayaçları da fixture durumudur: temizlenmezse arka arkaya
+  // koşan yerel/CI tekrarları API kotalarına (ör. ai-draft 20/15dk) takılıp
+  // ürün hatası gibi görünen 429'lar üretiyor.
+  await prisma.rateLimitEntry.deleteMany({ where: { key: { contains: "e2e-" } } });
   await prisma.attendance.deleteMany({ where: { lessonId: ids.lesson } });
   await prisma.attendance.deleteMany({ where: { lessonId: { in: [ids.recoveryLesson, ids.foreignLesson] } } });
   await prisma.lessonNote.deleteMany({ where: { lessonId: ids.lesson } });

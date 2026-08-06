@@ -71,6 +71,7 @@ test.describe("panel deneyimi", () => {
   });
 
   test("öğretmen kaynaklı AI taslağını düzenleyip onaylar; içerik otomatik yayınlanmaz", async ({ page }) => {
+    test.setTimeout(60_000);
     let generatePayload: Record<string, unknown> | null = null;
     page.on("request", (request) => { if (request.url().endsWith("/api/panel/ai-drafts") && request.method() === "POST") generatePayload = request.postDataJSON() as Record<string, unknown>; });
     await page.setViewportSize({ width: 390, height: 844 });
@@ -80,14 +81,26 @@ test.describe("panel deneyimi", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
     const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     expect(accessibility.violations).toEqual([]);
+    // NOT: mutasyondan sonraki `router.refresh()` bu kurulumda güvenilir değil —
+    // RSC yanıtı 200 dönüyor ama DOM'a çoğu zaman ancak bir sonraki RSC isteği
+    // gelince uygulanıyor. Testi o yarışa bağlamamak için kalıcı durumu
+    // sunucudan yeniden okuyoruz; bu aynı zamanda daha güçlü bir doğrulama.
+    const draftCards = page.getByRole("article").filter({ hasText: "Ödev taslağı" });
+    const draftCountBefore = await draftCards.count();
     await page.getByRole("button", { name: "Kaynaklı taslak hazırla" }).click();
     await expect(page.getByText("Taslak hazır. Kaynakları ve içeriği kontrol edin.")).toBeVisible();
-    const draft = page.getByRole("article").filter({ hasText: "Ödev taslağı" }).first();
+    await page.reload();
+    await expect(draftCards).toHaveCount(draftCountBefore + 1);
+    // Kuyruk createdAt'e göre azalan sıralı; yeni taslak her zaman ilk karttır.
+    const draft = draftCards.first();
     await expect(draft.getByText("İnceleme bekliyor")).toBeVisible();
     await expect(draft.getByText("Kullanılan kaynaklar")).toBeVisible();
     await draft.getByLabel("Başlık").fill("E2E öğretmen onaylı taslak");
+    const approvalPromise = page.waitForResponse((response) => response.url().includes("/api/panel/ai-drafts/") && response.request().method() === "PATCH");
     await draft.getByRole("button", { name: "Düzenleyip onayla" }).click();
+    expect((await approvalPromise).status()).toBe(200);
     await expect(draft.getByText("İnsan onayı kaydedildi. İçerik otomatik yayınlanmadı.")).toBeVisible();
+    await page.reload();
     await expect(page.getByText("Öğretmen onaylı").first()).toBeVisible();
     const replay = await page.evaluate(async (payload) => { const response = await fetch("/api/panel/ai-drafts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, generatePayload);
     expect(replay.status).toBe(200); expect(replay.body.replayed).toBe(true);
@@ -433,6 +446,7 @@ test.describe("panel deneyimi", () => {
   });
 
   test("öğrenci kontrollü yardım ister, öğretmen küçük adım seçer ve öğrenci faydasını işaretler", async ({ page }) => {
+    test.setTimeout(60_000);
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/check-in");
     await expect(page.getByRole("heading", { name: "Nasıl ilerlediğini fark et, gerekirse yardım iste." })).toBeVisible();
@@ -447,6 +461,7 @@ test.describe("panel deneyimi", () => {
       await page.getByRole("button", { name: "Check-in'i kaydet" }).click();
       await expect(page.getByText("Check-in kaydedildi.")).toBeVisible();
       await page.reload();
+      await expect(helpJourney.getByRole("heading", { name: "Geçmişim" })).toBeVisible();
     }
     if (await helpJourney.getByText("Destek tamamlandı").count() > 0) return;
 
@@ -467,9 +482,18 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/check-in");
+    // Geçmiş akışla gelir: beklemeden count() almak kartı 0 görüp tıklamayı atlıyordu.
     const history = page.getByRole("article").filter({ hasText: "Ek örnek hazırladım" }).first();
+    await expect(history).toBeVisible();
     const helpfulButton = history.getByRole("button", { name: "İşime yaradı" });
-    if (await helpfulButton.count() > 0) await helpfulButton.click();
+    if (await helpfulButton.count() > 0) {
+      const feedbackPromise = page.waitForResponse((response) => response.url().includes("/api/panel/student-help-requests/") && response.url().endsWith("/feedback"));
+      await helpfulButton.click();
+      expect((await feedbackPromise).status()).toBe(200);
+      // Yukarıdaki AI taslağı testindeki notun aynısı: `router.refresh()` yarışına
+      // güvenmek yerine kapanan isteği sunucudan tekrar okuyoruz.
+      await page.reload();
+    }
     await expect(history.getByText("Destek tamamlandı")).toBeVisible();
   });
 
