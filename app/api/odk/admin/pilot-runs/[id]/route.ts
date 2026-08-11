@@ -15,13 +15,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Pilot geçişini kontrol edin." }, { status: 400 });
   const { id } = await context.params;
-  const run = await prisma.odkPilotRun.findUnique({ where: { id }, include: { members: { select: { role: true } } } });
+  const run = await prisma.odkPilotRun.findUnique({ where: { id }, include: { members: { select: { role: true, userId: true } } } });
   if (!run) return NextResponse.json({ error: "ODK pilot koşusu bulunamadı." }, { status: 404 });
   if (run.version !== parsed.data.expectedVersion) return NextResponse.json({ error: "Pilot başka bir yönetici tarafından güncellendi. Sayfayı yenileyin." }, { status: 409 });
   if (!odkPilotTransitionAllowed(run.status, parsed.data.action)) return NextResponse.json({ error: "Bu pilot durumunda seçilen geçiş yapılamaz." }, { status: 409 });
   if (["PAUSE", "ROLLBACK"].includes(parsed.data.action) && !parsed.data.stopReason) return NextResponse.json({ error: "Durdurma nedeni seçilmelidir." }, { status: 400 });
-  const readiness = await getOdkPilotReadiness(run.members.map((member) => member.role));
+  const readiness = await getOdkPilotReadiness(run.members, run.startedAt);
   if (["ACTIVATE", "RESUME"].includes(parsed.data.action) && !readiness.canActivate) return NextResponse.json({ error: "ODK pilot aktivasyon kapıları tamamlanmadı.", checks: readiness.checks }, { status: 409 });
+  if (parsed.data.action === "COMPLETE" && !readiness.canExpand) return NextResponse.json({ error: "İki gerçek deneme ve kabul kanıtları tamamlanmadan pilot kapatılamaz.", checks: readiness.checks }, { status: 409 });
   const status = parsed.data.action === "ACTIVATE" || parsed.data.action === "RESUME" ? "ACTIVE" : parsed.data.action === "PAUSE" ? "PAUSED" : parsed.data.action === "COMPLETE" ? "COMPLETED" : "ROLLED_BACK";
   const now = new Date(); const stopReason = parsed.data.action === "COMPLETE" ? "MANUAL_COMPLETION" : parsed.data.stopReason;
   const updatedCount = await prisma.odkPilotRun.updateMany({ where: { id, version: run.version, status: run.status }, data: { status, version: { increment: 1 }, startedAt: parsed.data.action === "ACTIVATE" ? now : undefined, stoppedAt: ["PAUSE", "COMPLETE", "ROLLBACK"].includes(parsed.data.action) ? now : parsed.data.action === "RESUME" ? null : undefined, stopReason: ["PAUSE", "COMPLETE", "ROLLBACK"].includes(parsed.data.action) ? stopReason : parsed.data.action === "RESUME" ? null : undefined } });

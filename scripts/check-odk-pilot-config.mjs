@@ -3,7 +3,8 @@ import { resolve } from "node:path";
 
 const root = process.cwd();
 const checks = [];
-const add = (label, ok, detail) => checks.push({ label, ok, detail });
+const add = (label, ok, detail) => checks.push({ label, status: ok ? "PASS" : "BLOCK", detail });
+const wait = (label, detail) => checks.push({ label, status: "WAIT", detail });
 const value = (key) => process.env[key]?.trim() || "";
 const configured = (key) => {
   const current = value(key).toLowerCase();
@@ -20,7 +21,8 @@ add("ODK_ROLLOUT_MODE enum", rolloutModeValid, rolloutModeValid ? `Mevcut mod: $
 add("ODK pilot modu", rolloutMode === "pilot", rolloutMode === "pilot" ? "Pilot ön kontrolü etkin." : "Bu komut pilot deploy için ODK_ROLLOUT_MODE=pilot bekler.");
 add("ODK_PILOT_KILL_SWITCH", value("ODK_PILOT_KILL_SWITCH") !== "true", value("ODK_PILOT_KILL_SWITCH") === "true" ? "Acil durdurma açık." : "Kapalı.");
 for (const key of ["ODK_PILOT_ACCEPTANCE_APPROVED", "ODK_PILOT_SECURITY_REVIEW_APPROVED", "ODK_PILOT_OPERATIONS_APPROVED"]) {
-  add(key, value(key) === "true", value(key) === "true" ? "Onaylı." : "Onay bekliyor.");
+  if (value(key) === "true") add(key, true, "Onaylı.");
+  else wait(key, "Canlı pilot kanıtından sonra açılır; ilk aktivasyonu engellemez.");
 }
 
 const restoreValue = value("ODK_LAST_RESTORE_DRILL_AT");
@@ -41,8 +43,9 @@ add("0063 migration", existsSync(resolve(root, "prisma/migrations/0063_odk_pilot
 add("Yaşam döngüsü endpoint'i", existsSync(resolve(root, "app/api/cron/odk-exam-lifecycle/route.ts")), "Cron endpoint dosyası.");
 
 console.log("ODK pilot yapılandırma ön kontrolü\n");
-for (const check of checks) console.log(`${check.ok ? "HAZIR" : "BLOKE"}  ${check.label} — ${check.detail}`);
-const blockers = checks.filter((check) => !check.ok);
-console.log(`\n${checks.length - blockers.length}/${checks.length} kontrol hazır. ${blockers.length} bloke kontrol.`);
+for (const check of checks) console.log(`${check.status === "PASS" ? "HAZIR" : check.status === "WAIT" ? "BEKLİYOR" : "BLOKE"}  ${check.label} — ${check.detail}`);
+const blockers = checks.filter((check) => check.status === "BLOCK");
+const waiting = checks.filter((check) => check.status === "WAIT");
+console.log(`\n${checks.length - blockers.length - waiting.length}/${checks.length} kontrol hazır. ${waiting.length} bekleyen, ${blockers.length} bloke kontrol.`);
 console.log("Bu komut veritabanına bağlanmaz; admin Pilot yayını ekranındaki canlı veri kapıları ayrıca doğrulanmalıdır.");
 if (blockers.length) process.exitCode = 1;

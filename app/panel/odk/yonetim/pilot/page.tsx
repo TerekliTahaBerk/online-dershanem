@@ -15,10 +15,10 @@ export default async function OdkPilotPage() {
   const now = new Date();
   const [candidates, runs] = await Promise.all([
     prisma.user.findMany({ where: { status: "ACTIVE", OR: [{ role: { in: ["ADMIN", "TEACHER"] } }, { productMemberships: { some: { product: "ODK", startsAt: { lte: now }, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] } } }] }, select: { id: true, role: true, fullName: true, email: true }, orderBy: [{ role: "asc" }, { fullName: "asc" }, { email: "asc" }] }),
-    prisma.odkPilotRun.findMany({ orderBy: { createdAt: "desc" }, take: 20, include: { members: { select: { role: true } } } }),
+    prisma.odkPilotRun.findMany({ orderBy: { createdAt: "desc" }, take: 20, include: { members: { select: { role: true, userId: true } } } }),
   ]);
-  const readinessRoles = runs.find((run) => run.status === "ACTIVE")?.members.map((member) => member.role) || runs[0]?.members.map((member) => member.role) || ["ADMIN" as const];
-  const readiness = await getOdkPilotReadiness(readinessRoles);
+  const readinessRun = runs.find((run) => run.status === "ACTIVE") || runs[0];
+  const readiness = await getOdkPilotReadiness(readinessRun?.members || [{ role: "ADMIN" as const }], readinessRun?.startedAt);
   const groups = [
     { status: "BLOCK" as const, label: "Bloke", description: "Aktivasyondan önce tamamlanmalı", icon: AlertTriangle, className: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" },
     { status: "WAIT" as const, label: "Bekliyor", description: "İlk pilotu durdurmaz; genişlemeyi durdurur", icon: Clock3, className: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]" },

@@ -35,9 +35,9 @@ async function AdminHome() {
     prisma.odkExam.count({ where: { status: { in: ["DRAFT", "READY"] } } }),
     prisma.odkExamAttempt.count({ where: { status: "IN_PROGRESS", deadlineAt: { gt: now } } }),
     prisma.odkExam.count({ where: { OR: [{ status: "ENDED" }, { status: { in: ["SCHEDULED", "LIVE"] }, endsAt: { lte: now } }] } }),
-    prisma.odkPilotRun.findFirst({ where: { status: { in: ["ACTIVE", "DRAFT", "PAUSED"] } }, orderBy: { updatedAt: "desc" }, select: { status: true, members: { select: { role: true } } } }),
+    prisma.odkPilotRun.findFirst({ where: { status: { in: ["ACTIVE", "DRAFT", "PAUSED"] } }, orderBy: { updatedAt: "desc" }, select: { status: true, startedAt: true, members: { select: { role: true, userId: true } } } }),
   ]);
-  const readiness = await getOdkPilotReadiness(pilotRun?.members.map((member) => member.role) || ["ADMIN"]);
+  const readiness = await getOdkPilotReadiness(pilotRun?.members || [{ role: "ADMIN" }], pilotRun?.startedAt);
   const blocked = readiness.checks.filter((check) => check.status === "BLOCK").length;
   const status = nextExam ? examStatusPresentation[nextExam.status] : null;
   return <><PrimaryCard eyebrow="Sıradaki operasyon" title={nextExam?.title || "İlk matematik denemesini hazırlayın"} copy={nextExam ? `${nextExam.family} · ${nextExam.startsAt ? dateTime.format(nextExam.startsAt) : "Saat bekleniyor"}` : "Soru kitapçığı, cevap anahtarı ve kazanım eşlemesini tamamlayarak başlayın."} href={nextExam ? `/panel/odk/yonetim/sinavlar/${nextExam.id}` : "/panel/odk/yonetim/sinavlar"} action={nextExam ? "Denemeyi aç" : "Deneme oluştur"} badge={status ? <OdkStatusBadge label={status.label} tone={status.tone} pulse={nextExam?.status === "LIVE"} /> : undefined} /><section className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><MetricCard icon={ClipboardCheck} label="Hazırlanan deneme" value={preparationCount} tone="sky" /><MetricCard icon={Activity} label="Aktif öğrenci" value={activeAttempts} tone="mint" /><MetricCard icon={CheckCircle2} label="Puanlama bekleyen" value={awaitingScore} tone="yellow" /><MetricCard icon={Rocket} label="Bloke yayın kapısı" value={blocked} tone="lavender" /></section></>;
