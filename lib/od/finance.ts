@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { redeemCoupon } from "@/lib/discount";
 import { sendOrderPaidAdminEmail, sendOrderPaidUserEmail } from "@/lib/email";
+import { ensurePaidOdOnboarding } from "@/lib/od/onboarding";
 
 export async function markOdOrderPaid(
   orderId: string,
@@ -35,6 +36,7 @@ export async function markOdOrderPaid(
       intentId = intent.id;
       await tx.odOrder.update({ where: { id: order.id }, data: { intentId } });
     }
+    await ensurePaidOdOnboarding(tx, order.id);
     return { packageName: order.packageName, totalCents: order.totalCents, buyer: buyer as Record<string, string | null | undefined> };
   };
   const result = options.transaction ? await execute(options.transaction) : await prisma.$transaction(execute);

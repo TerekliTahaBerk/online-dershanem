@@ -5,6 +5,7 @@ import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
+import { ensurePaidOdOnboarding } from "@/lib/od/onboarding";
 
 const schema = z.object({ userId: z.string().min(1) });
 
@@ -18,9 +19,22 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   const student = await prisma.user.findFirst({ where: { id: parsed.data.userId, role: "STUDENT", status: "ACTIVE" }, select: { id: true, studentProfile: { select: { id: true, parents: { select: { parentId: true } } } } } });
   if (!student) return NextResponse.json({ error: "Aktif öğrenci hesabı bulunamadı." }, { status: 404 });
-  const order = await prisma.odOrder.findUnique({ where: { id }, select: { id: true, packageName: true, status: true, totalCents: true } });
+  const order = await prisma.odOrder.findUnique({ where: { id }, select: { id: true, packageName: true, status: true, totalCents: true, userId: true } });
   if (!order) return NextResponse.json({ error: "Sipariş bulunamadı." }, { status: 404 });
-  await prisma.odOrder.update({ where: { id }, data: { userId: student.id } });
+  if (order.userId && order.userId !== student.id) return NextResponse.json({ error: "Bu sipariş zaten farklı bir öğrenci hesabına bağlı. Bağlantı değiştirilemez." }, { status: 409 });
+  const linked = await prisma.$transaction(async (tx) => {
+    const linked = await tx.odOrder.updateMany({ where: { id, OR: [{ userId: null }, { userId: student.id }] }, data: { userId: student.id } });
+    if (linked.count !== 1) throw new Error("ORDER_LINK_CONFLICT");
+    if (order.status === "PAID") {
+      await ensurePaidOdOnboarding(tx, id);
+      await tx.odOnboarding.update({ where: { orderId: id }, data: { flowType: "EXISTING_STUDENT" } });
+    }
+    return true;
+  }).catch((error) => {
+    if (error instanceof Error && error.message === "ORDER_LINK_CONFLICT") return false;
+    throw error;
+  });
+  if (!linked) return NextResponse.json({ error: "Sipariş aynı anda farklı bir öğrenci hesabına bağlandı. Sayfayı yenileyin." }, { status: 409 });
   if (order.status === "PAID") {
     const body = `${order.packageName} · ${(order.totalCents / 100).toLocaleString("tr-TR")} ₺ ödendi`;
     const rawNotificationRows = [
