@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Güvenlik açığı bildirimi
+  - name: Report a security vulnerability
     url: https://github.com/TerekliTahaBerk/online-dershanem/security/advisories/new
-    about: Güvenlik açıklarını özel olarak bildirin.
-  - name: Canlı site
+    about: Report security vulnerabilities privately.
+  - name: Live website
     url: https://onlinedershanem.com
-    about: Online Dershanem ürününü açın.
+    about: Open the Online Dershanem product website.

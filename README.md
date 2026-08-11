@@ -4,43 +4,44 @@
 [![Lighthouse](https://github.com/TerekliTahaBerk/online-dershanem/actions/workflows/lighthouse.yml/badge.svg)](https://github.com/TerekliTahaBerk/online-dershanem/actions/workflows/lighthouse.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Container](https://img.shields.io/badge/GHCR-container-2496ED?logo=docker&logoColor=white)](https://github.com/TerekliTahaBerk/online-dershanem/pkgs/container/online-dershanem)
 [![License: Proprietary](https://img.shields.io/badge/license-proprietary-red.svg)](LICENSE)
 
-Türkiye'deki çevrim içi eğitim operasyonlarını satıştan öğrenme çıktısına kadar tek üründe birleştiren, rol bazlı eğitim ve işletme platformu.
+A role-based education and business operations platform that connects sales, learning delivery, assessment, and operational reporting in one product.
 
-[Canlı site](https://onlinedershanem.com) · [Hata bildir](https://github.com/TerekliTahaBerk/online-dershanem/issues/new?template=bug_report.yml) · [Özellik öner](https://github.com/TerekliTahaBerk/online-dershanem/issues/new?template=feature_request.yml)
+[Live website](https://onlinedershanem.com) · [Report a bug](https://github.com/TerekliTahaBerk/online-dershanem/issues/new?template=bug_report.yml) · [Request a feature](https://github.com/TerekliTahaBerk/online-dershanem/issues/new?template=feature_request.yml)
 
-## Ürün alanları
+## Product areas
 
-| Alan | Kapsam |
+| Area | Scope |
 | --- | --- |
-| **Online Dershanem** | Dersler, ödevler, materyaller, gelişim takibi ve veli görünümü |
-| **Online Deneme Kulübü** | Deneme sınavları, güvenli sınav akışı ve kazanım analizi |
-| **İşletme Paneli** | Instagram CRM, aday hunisi, reklam performansı ve ortak finans defteri |
+| **Online Dershanem** | Lessons, assignments, materials, progress tracking, and parent visibility |
+| **Online Deneme Kulübü** | Mock exams, secure exam delivery, and learning-outcome analysis |
+| **Business Panel** | Instagram CRM, lead pipeline, advertising performance, and shared finance ledger |
 
-Yönetici, öğretmen, öğrenci ve veli deneyimleri ayrı navigasyonlara ve yatay erişim kontrollerine sahiptir. Panel hesapları yalnızca yönetici tarafından oluşturulur; public self-register bulunmaz. İşletme erişimi ise platform rolünden bağımsız olarak `BusinessRoleAssignment` ile verilir.
+Administrator, teacher, student, and parent experiences have separate navigation and horizontal access controls. Panel accounts are created by administrators; public self-registration is not available. Business access is granted independently from platform roles through `BusinessRoleAssignment`.
 
-## Öne çıkan yetenekler
+## Highlights
 
-- Public satış sitesi, SEO uyumlu blog, lead formu, sepet ve PayTR ödeme akışları
-- Ders programı, hızlı ders notu/yoklama, ödev ve materyal yönetimi
-- Öğrenci gelişimi, veli raporları, takvim ve ödeme görünümü
-- Deneme sınavı yaşam döngüsü, otomatik puanlama ve kazanım raporları
-- Instagram mesaj kutusu, CRM, reklam ve finans operasyonları
-- Denetlenebilir yetkilendirme, audit kayıtları, rate limiting ve güvenli rollout kapıları
-- Sağlık kontrolleri, cron heartbeat'leri, yedekleme ve gözlemlenebilirlik iş akışları
+- Public sales website, SEO-ready blog, lead forms, cart, and PayTR checkout flows
+- Lesson scheduling, quick lesson notes and attendance, assignments, and material management
+- Student progress, parent reports, calendar, and payment visibility
+- Mock-exam lifecycle, automated scoring, and learning-outcome reporting
+- Instagram inbox, CRM, advertising, and finance operations
+- Auditable authorization, security logging, rate limiting, and controlled rollout gates
+- Health checks, scheduled-job heartbeats, backups, and observability workflows
 
-## Teknoloji
+## Technology
 
-- Next.js 16 App Router, React 18 ve TypeScript 5
-- PostgreSQL ve Prisma 6
+- Next.js 16 App Router, React 18, and TypeScript 5
+- PostgreSQL and Prisma 6
 - Tailwind CSS 3
-- Playwright, Node test runner ve Lighthouse CI
-- Vercel, Vercel Blob, Resend, PayTR ve isteğe bağlı Meta/OpenAI entegrasyonları
+- Playwright, Node.js test runner, and Lighthouse CI
+- Vercel, Vercel Blob, Resend, PayTR, and optional Meta/OpenAI integrations
 
-## Lokal kurulum
+## Local development
 
-Gereksinimler: Node.js 22+, npm ve PostgreSQL.
+Requirements: Node.js 22+, npm 10+, and PostgreSQL.
 
 ```bash
 git clone https://github.com/TerekliTahaBerk/online-dershanem.git
@@ -53,9 +54,9 @@ npm run db:seed
 npm run dev
 ```
 
-Uygulama varsayılan olarak `http://localhost:3000` adresinde açılır. `.env.example` güvenli varsayılanları ve entegrasyonların opt-in anahtarlarını belgeler; gerçek anahtarları repoya eklemeyin.
+The application starts at `http://localhost:3000` by default. `.env.example` documents safe placeholders and opt-in integration settings. Never commit real credentials.
 
-## Doğrulama
+## Validation
 
 ```bash
 npm run lint
@@ -67,44 +68,55 @@ npm run build
 npm run e2e
 ```
 
-Entegrasyon testleri `DATABASE_URL` gerektirir; değişken yoksa ilgili testler atlanır. Chromium, Firefox ve WebKit panel kabul paketi için:
+Integration tests require `DATABASE_URL`; the relevant tests are skipped when it is not set. To run the Chromium, Firefox, and WebKit acceptance suite:
 
 ```bash
 npx playwright install chromium firefox webkit
 npm run e2e:cross-browser
 ```
 
-## Veritabanı ve yayın
+## Database and releases
 
-Canlı veritabanında yalnızca sürümlenmiş migration'ları uygulayın:
+Apply only versioned migrations to an existing or production database:
 
 ```bash
 npm run release:migrate
 ```
 
-Tamamen boş bir veritabanı güvenli biçimde şu komutla hazırlanabilir:
+Bootstrap a completely empty database safely with:
 
 ```bash
 ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 ```
 
-Komut boş olmayan veritabanında çalışmayı reddeder. Ortam değişkenleri, e-posta politikası, yedek geri yükleme ve canlı kabul adımları için [operasyon kılavuzuna](docs/panel-operations.md) ve [yayın kontrol listesine](docs/deployment-checklist.md) bakın.
+The bootstrap command refuses to run against a non-empty database. See the [panel operations guide](docs/panel-operations.md) and [deployment checklist](docs/deployment-checklist.md) for environment variables, email policy, backup restoration, and production acceptance.
 
-Sürümler `v*` biçimindeki etiketlerle yayımlanır. Etiket push edildiğinde release iş akışı kalite kontrollerini çalıştırır ve GitHub Release notlarını üretir. Değişiklikler [CHANGELOG.md](CHANGELOG.md) dosyasında tutulur.
+Releases use `v*.*.*` tags. A tag push runs the release quality gate, publishes a GitHub Release, and builds a versioned container. Notable changes are maintained in [CHANGELOG.md](CHANGELOG.md).
 
-## Dokümantasyon
+### Container package
 
-- [Panel operasyonları](docs/panel-operations.md)
-- [Güvenlik ve KVKK](docs/security-and-kvkk.md)
-- [İşletme RBAC modeli](docs/business-rbac.md)
-- [Meta / Instagram kurulumu](docs/meta-instagram-setup.md)
-- [OpenAI destekli taslak kurulumu](docs/openai-assistant-setup.md)
-- [ODK pilot kabul kontrol listesi](docs/odk-pilot-acceptance-checklist.md)
+Every semantic version is published to GitHub Container Registry with version, major-minor, and `latest` tags. Package access follows the repository owner's GitHub Packages visibility settings.
 
-## Katkı ve güvenlik
+```bash
+docker pull ghcr.io/tereclitahaberk/online-dershanem:latest
+docker run --env-file .env.local -p 3000:3000 ghcr.io/tereclitahaberk/online-dershanem:latest
+```
 
-Katkı süreci için [CONTRIBUTING.md](CONTRIBUTING.md), güvenlik açığı bildirimleri için [SECURITY.md](SECURITY.md) dosyasını okuyun. Hassas bir açığı herkese açık issue olarak paylaşmayın.
+Database migrations do not run automatically when the container starts. Run `npm run release:migrate` before a production deployment.
 
-## Lisans
+## Documentation
 
-Bu depo açık kaynak değildir. Kaynak kodun tüm hakları saklıdır; kullanım ve dağıtım koşulları için [LICENSE](LICENSE) dosyasına bakın.
+- [Panel operations](docs/panel-operations.md)
+- [Security and KVKK](docs/security-and-kvkk.md)
+- [Business RBAC model](docs/business-rbac.md)
+- [Meta and Instagram setup](docs/meta-instagram-setup.md)
+- [OpenAI-assisted drafting setup](docs/openai-assistant-setup.md)
+- [ODK pilot acceptance checklist](docs/odk-pilot-acceptance-checklist.md)
+
+## Contributing and security
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a change. Do not disclose sensitive vulnerabilities in public issues; follow [SECURITY.md](SECURITY.md) instead.
+
+## License
+
+This repository is not open source. All rights to the source code are reserved. See [LICENSE](LICENSE) for use and distribution terms.

@@ -1,7 +1,7 @@
 {
   "name": "onlinedershanem",
   "version": "0.1.0",
-  "description": "Rol bazlı çevrim içi eğitim, deneme sınavı ve işletme yönetim platformu.",
+  "description": "A role-based online education, mock-exam, and business operations platform.",
   "private": true,
   "license": "UNLICENSED",
   "author": "Taha Berk Terekli",
@@ -17,6 +17,7 @@
     "node": ">=22",
     "npm": ">=10"
   },
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "next dev",
     "build": "npm run validate:deploy-env && prisma generate && next build",

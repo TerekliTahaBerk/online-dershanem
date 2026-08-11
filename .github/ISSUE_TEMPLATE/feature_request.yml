@@ -1,5 +1,5 @@
-name: Özellik önerisi
-description: Kullanıcı ihtiyacını ve beklenen sonucu açıklayın.
+name: Feature request
+description: Describe a user need and the expected outcome.
 title: "[Feature]: "
 labels: [enhancement, triage]
 body:
@@ -7,36 +7,36 @@ body:
     id: problem
     attributes:
       label: Problem
-      description: Hangi kullanıcı hangi işi yaparken zorlanıyor?
+      description: Which user is struggling with which task?
     validations:
       required: true
   - type: textarea
     id: outcome
     attributes:
-      label: Beklenen sonuç
-      description: Başarılı çözüm kullanıcı için neyi değiştirmeli?
+      label: Expected outcome
+      description: What should a successful solution change for the user?
     validations:
       required: true
   - type: dropdown
     id: area
     attributes:
-      label: Ürün alanı
+      label: Product area
       options:
-        - Public site / ödeme
-        - Online Dershanem paneli
+        - Public website / checkout
+        - Online Dershanem panel
         - Online Deneme Kulübü
-        - İşletme Paneli
-        - Altyapı / CI
-        - Diğer
+        - Business Panel
+        - Infrastructure / CI
+        - Other
     validations:
       required: true
   - type: textarea
     id: acceptance
     attributes:
-      label: Kabul ölçütleri
-      description: Çözümün tamamlandığını nasıl anlayacağız?
+      label: Acceptance criteria
+      description: How will we know the solution is complete?
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatifler
-      description: Denenen geçici çözümleri veya alternatif yaklaşımı yazın.
+      label: Alternatives
+      description: Describe attempted workarounds or alternative approaches.

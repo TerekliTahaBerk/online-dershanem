@@ -1,16 +1,16 @@
-# Katkı rehberi
+# Contributing guide
 
-Online Dershanem kapalı lisanslı bir üründür. Katkılar, yalnızca proje sahibi tarafından yetkilendirilmiş katkıcılar için kabul edilir. Bir değişikliğe başlamadan önce mevcut issue'ları kontrol edin ve kapsamı bir issue üzerinden netleştirin.
+Online Dershanem is a proprietary product. Contributions are accepted only from contributors authorized by the repository owner. Review existing issues and agree on scope before starting a change.
 
-## Geliştirme akışı
+## Development workflow
 
-1. `main` dalının güncel olduğundan emin olun ve kısa, açıklayıcı bir özellik dalı açın.
-2. `.env.example` dosyasını `.env.local` olarak kopyalayın; gerçek sırları hiçbir zaman commit etmeyin.
-3. Küçük, odaklı değişiklikler yapın ve davranış değişikliklerini testlerle destekleyin.
-4. İlgili dokümantasyonu ve `CHANGELOG.md` içindeki `Unreleased` bölümünü güncelleyin.
-5. Pull request şablonundaki doğrulama listesini tamamlayın.
+1. Start from an up-to-date `main` branch and create a short, descriptive feature branch.
+2. Copy `.env.example` to `.env.local`; never commit real secrets.
+3. Keep changes focused and cover behavior changes with tests.
+4. Update the relevant documentation and the `Unreleased` section in `CHANGELOG.md`.
+5. Complete the validation checklist in the pull request template.
 
-## Zorunlu kontroller
+## Required checks
 
 ```bash
 npm ci
@@ -20,13 +20,13 @@ npm run typecheck
 npm run test:unit
 ```
 
-Değişikliğin kapsamına göre entegrasyon, Playwright ve build kontrollerini de çalıştırın. Şema değişikliklerinde migration dosyasını ekleyin; canlı veritabanında `prisma db push` kullanmayın.
+Run integration, Playwright, and production build checks when the change affects those surfaces. Schema changes must include a migration. Never use `prisma db push` against a production database.
 
-## Commit ve pull request ilkeleri
+## Commit and pull request standards
 
-- Commit mesajlarını kısa, emir kipinde ve tek bir amacı anlatacak şekilde yazın.
-- Kişisel veri, erişim anahtarı, üretim URL'si içeren gizli uç noktalar veya müşteri verisi eklemeyin.
-- Ekran veya davranış değişikliklerinde doğrulama kanıtını pull request açıklamasına ekleyin.
-- Yetkilendirme, ödeme veya kişisel veri akışlarında riskleri ve geri alma planını açıkça belirtin.
+- Keep commit messages short, imperative, and limited to one purpose.
+- Do not add personal data, access keys, confidential production endpoints, or customer data.
+- Include validation evidence for UI or behavior changes.
+- Explain risks and rollback steps for authorization, payment, or personal-data flows.
 
-Davranış kuralları için [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), güvenlik bildirimleri için [SECURITY.md](SECURITY.md) geçerlidir.
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) applies to collaboration, and [SECURITY.md](SECURITY.md) applies to vulnerability reports.

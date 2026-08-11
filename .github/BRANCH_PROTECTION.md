@@ -1,14 +1,14 @@
 # `main` branch protection
 
-`main` dalına doğrudan push kapatılmalı ve pull request birleşmeden önce aşağıdaki tek check zorunlu olmalıdır:
+Disable direct pushes to `main` and require the following single status check before a pull request can be merged:
 
 - `CI / Quality Gate`
 
-Bu sonuç lint, TypeScript, unit, integration, production build, fresh database bootstrap ve üç shard Playwright sonuçlarının tamamını toplar. Alt job'lar gözlem ve hata ayıklama için görünür kalır; branch protection listesine ayrıca eklenmeleri gerekmez.
+This aggregate check covers lint, TypeScript, unit tests, integration tests, the production build, fresh database bootstrap, and all three Playwright shards. Individual jobs remain visible for diagnostics and do not need to be added separately to branch protection.
 
-`Broken Link Scan`, `Lighthouse`, `Cross-browser Panel`, `Production Health`, `Production Smoke` ve `Encrypted Database Backup` periyodik/manuel operasyon kontrolleridir. Pull request olayında her zaman oluşmadıkları için required check yapılmamalıdır.
+`Broken Link Scan`, `Lighthouse`, `Cross-browser Panel`, `Production Health`, `Production Smoke`, and `Encrypted Database Backup` are scheduled or manually triggered operational checks. Do not mark them as required because they are not created for every pull request event.
 
-GitHub ayarlarında ayrıca şu seçenekler açılmalıdır:
+Also enable these repository settings:
 
 - Require a pull request before merging
 - Require status checks to pass before merging

@@ -1,0 +1,16 @@
+.git
+.github
+.next
+.vercel
+.env
+.env.*
+!.env.example
+node_modules
+npm-debug.log*
+playwright-report
+test-results
+blob-report
+.lighthouseci
+docs
+tests
+PayTR IFrame API

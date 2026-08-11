@@ -1,52 +1,52 @@
-name: Hata bildirimi
-description: Tekrarlanabilir bir ürün veya teknik hata bildirin.
+name: Bug report
+description: Report a reproducible product or technical defect.
 title: "[Bug]: "
 labels: [bug, triage]
 body:
   - type: markdown
     attributes:
-      value: Hassas güvenlik açıklarını burada paylaşmayın; SECURITY.md içindeki özel kanalı kullanın.
+      value: Do not disclose sensitive vulnerabilities here. Use the private channel described in SECURITY.md.
   - type: textarea
     id: summary
     attributes:
-      label: Hata özeti
-      description: Ne oldu ve ne olmasını bekliyordunuz?
+      label: Bug summary
+      description: What happened, and what did you expect to happen?
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Tekrarlama adımları
+      label: Reproduction steps
       placeholder: "1. ...\n2. ...\n3. ..."
     validations:
       required: true
   - type: dropdown
     id: area
     attributes:
-      label: Ürün alanı
+      label: Product area
       options:
-        - Public site / ödeme
-        - Online Dershanem paneli
+        - Public website / checkout
+        - Online Dershanem panel
         - Online Deneme Kulübü
-        - İşletme Paneli
-        - Altyapı / CI
-        - Diğer
+        - Business Panel
+        - Infrastructure / CI
+        - Other
     validations:
       required: true
   - type: input
     id: environment
     attributes:
-      label: Ortam ve tarayıcı
+      label: Environment and browser
       placeholder: "Production, Chrome 140, macOS"
   - type: textarea
     id: evidence
     attributes:
-      label: Ek kanıt
-      description: Kişisel veri veya erişim anahtarı içermeyen ekran görüntüsü ya da log ekleyin.
+      label: Additional evidence
+      description: Add a screenshot or log that contains no personal data or access credentials.
   - type: checkboxes
     id: checks
     attributes:
-      label: Kontrol
+      label: Confirmation
       options:
-        - label: Bu bildirimin gizli bilgi veya kişisel veri içermediğini doğruluyorum.
+        - label: I confirm that this report contains no secrets or personal data.
           required: true

@@ -1,26 +1,26 @@
-## Özet
+## Summary
 
-<!-- Ne değişti ve neden gerekli? -->
+<!-- What changed, and why is it needed? -->
 
-## Etki ve risk
+## Impact and risk
 
-<!-- Kullanıcı etkisi, veri/migration etkisi, güvenlik veya ödeme riski -->
+<!-- User impact, data or migration impact, security risk, and payment risk -->
 
-## Doğrulama
+## Validation
 
 - [ ] `npm run lint`
 - [ ] `npm run lint:hygiene`
 - [ ] `npm run typecheck`
 - [ ] `npm run test:unit`
-- [ ] Kapsama uygun entegrasyon/E2E/build kontrolü
+- [ ] Scope-appropriate integration, E2E, or production build check
 
-## Yayın notları
+## Release notes
 
-- [ ] Migration gerekmiyor veya migration dosyası eklendi
-- [ ] Yeni ortam değişkenleri `.env.example` ve dokümantasyona eklendi
-- [ ] Kullanıcıya dönük değişiklik `CHANGELOG.md` dosyasına eklendi
-- [ ] Geri alma planı değerlendirildi
+- [ ] No migration is required, or the migration is included
+- [ ] New environment variables are documented in `.env.example` and the relevant guide
+- [ ] User-facing changes are documented in `CHANGELOG.md`
+- [ ] A rollback plan was considered
 
-## Kanıt
+## Evidence
 
-<!-- Ekran görüntüsü, test çıktısı veya gözlemlenebilirlik bağlantısı -->
+<!-- Screenshots, test output, or observability links -->

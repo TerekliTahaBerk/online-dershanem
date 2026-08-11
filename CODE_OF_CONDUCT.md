@@ -1,16 +1,16 @@
-# Davranış kuralları
+# Code of conduct
 
-Bu projede saygılı, profesyonel ve kapsayıcı bir çalışma ortamı beklenir.
+This project expects a respectful, professional, and inclusive working environment.
 
-## Beklenen davranışlar
+## Expected behavior
 
-- Teknik görüş ayrılıklarını kişiselleştirmeden, kanıt ve kullanıcı etkisi üzerinden tartışın.
-- Geri bildirimi açık, uygulanabilir ve yapıcı biçimde verin.
-- Kişisel veriyi, öğrenci mahremiyetini ve güvenlik bilgilerini koruyun.
-- Taciz, ayrımcılık, tehdit, hakaret ve istenmeyen kişisel ilgiden kaçının.
+- Discuss technical disagreements through evidence and user impact, without personal attacks.
+- Give clear, actionable, and constructive feedback.
+- Protect personal data, student privacy, and security information.
+- Do not engage in harassment, discrimination, threats, insults, or unwanted personal attention.
 
-## Uygulama
+## Enforcement
 
-Sorunları herkese açık tartışmayı büyütmeden `terekli@tahaberk.com` adresine bildirin. Proje sahibi; içeriği düzenleme veya kaldırma, katkıyı reddetme ve erişimi geçici ya da kalıcı olarak sınırlandırma hakkını saklı tutar.
+Report concerns privately to `terekli@tahaberk.com`. The repository owner may edit or remove content, reject contributions, and restrict access temporarily or permanently.
 
-Bu kurallar repo, issue, pull request, review ve proje adına yürütülen diğer iletişimlerde geçerlidir.
+These rules apply to repository activity, issues, pull requests, reviews, and other communication conducted on behalf of the project.
