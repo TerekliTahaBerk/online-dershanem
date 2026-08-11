@@ -2,6 +2,14 @@ import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 const crossBrowser = process.env.PLAYWRIGHT_CROSS_BROWSER === "true";
+const odkDeviceMatrix = process.env.PLAYWRIGHT_ODK_DEVICE_MATRIX === "true";
+
+const odkProjects = [
+  { name: "odk-desktop-chromium", use: { ...devices["Desktop Chrome"] } },
+  { name: "odk-desktop-webkit", use: { ...devices["Desktop Safari"] } },
+  { name: "odk-iphone-webkit", use: { ...devices["iPhone 13"] } },
+  { name: "odk-android-chromium", use: { ...devices["Pixel 5"] } },
+];
 
 /**
  * Online Dershanem — E2E test yapılandırması
@@ -13,7 +21,7 @@ const crossBrowser = process.env.PLAYWRIGHT_CROSS_BROWSER === "true";
  *
  * Önkoşullar:
  *   - `npm install -D @playwright/test`
- *   - `npx playwright install chromium`
+ *   - `npx playwright install chromium webkit`
  *   - Lokal sunucu (PLAYWRIGHT_BASE_URL ile değiştirilebilir)
  */
 export default defineConfig({
@@ -38,11 +46,15 @@ export default defineConfig({
     locale: "tr-TR",
     timezoneId: "Europe/Istanbul",
   },
-  projects: crossBrowser ? [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
-  ] : [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: odkDeviceMatrix
+    ? odkProjects
+    : crossBrowser
+      ? [
+          { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+          { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+          { name: "webkit", use: { ...devices["Desktop Safari"] } },
+        ]
+      : [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER
     ? undefined
     : {

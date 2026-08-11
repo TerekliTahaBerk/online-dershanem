@@ -141,7 +141,7 @@ jobs:
         run: npm run build:nomigrate
 
       - name: Run general Playwright tests
-        run: npm run e2e -- --shard=${{ matrix.shard }}/3 --grep-invert "bütünleşik pilot yayını"
+        run: npm run e2e -- --shard=${{ matrix.shard }}/3 --grep-invert "bütünleşik pilot yayını|@odk-critical"
 
       - name: Run pilot rollout tests
         if: ${{ matrix.shard == 1 }}
@@ -174,10 +174,126 @@ jobs:
           if-no-files-found: ignore
           overwrite: true
 
+  odk-critical:
+    name: ODK critical (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: odk-desktop-chromium
+            browser: chromium
+          - project: odk-desktop-webkit
+            browser: webkit
+          - project: odk-iphone-webkit
+            browser: webkit
+          - project: odk-android-chromium
+            browser: chromium
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: e2e_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/e2e_test?schema=public
+      NEXTAUTH_SECRET: e2e-only-nextauth-secret-0123456789abcdef0123456789abcdef
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      PANEL_ENABLED: "true"
+      NEXT_PUBLIC_PANEL_ENABLED: "true"
+      ODK_ROLLOUT_MODE: general
+      ODK_PILOT_KILL_SWITCH: "false"
+      ODK_PILOT_ACCEPTANCE_APPROVED: "true"
+      ODK_PILOT_SECURITY_REVIEW_APPROVED: "true"
+      ODK_PILOT_OPERATIONS_APPROVED: "true"
+      CRON_SECRET: e2e-only-cron-secret-0123456789abcdef
+      BLOB_READ_WRITE_TOKEN: vercel_blob_rw_e2e_placeholder
+      E2E_PASSWORD: testpass123
+      PANEL_E2E_STUDENT_PASSWORD: testpass123
+      PLAYWRIGHT_ODK_DEVICE_MATRIX: "true"
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      PLAYWRIGHT_HTML_OPEN: never
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Configure CI restore-drill fixture
+        run: |
+          echo "PANEL_LAST_RESTORE_DRILL_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          echo "ODK_LAST_RESTORE_DRILL_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
+      - name: Resolve Playwright version
+        id: playwright-version
+        run: node -p '"version=" + require("@playwright/test/package.json").version' >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browser
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}-${{ matrix.browser }}
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Prepare database
+        run: |
+          npx prisma generate
+          npx prisma db push --skip-generate --accept-data-loss
+          npx tsx prisma/seed-e2e.ts
+
+      - name: Build Next.js
+        run: npm run build:nomigrate
+
+      - name: Run mandatory ODK flow
+        run: npx playwright test tests/e2e/odk-exam-flow.spec.ts --project=${{ matrix.project }} --workers=1
+
+      - name: Upload ODK report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: blob-report-odk-${{ matrix.project }}
+          path: blob-report/
+          retention-days: 14
+          if-no-files-found: ignore
+          overwrite: true
+
+      - name: Upload ODK failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results-odk-${{ matrix.project }}
+          path: test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+          overwrite: true
+
   report:
     # Shard sonuçlarını tek bir rapor durumunda ve HTML artifact'ında toplar.
     name: Playwright Tests
-    needs: e2e
+    needs: [e2e, odk-critical]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -217,8 +333,8 @@ jobs:
           if-no-files-found: error
           overwrite: true
 
-      - name: Enforce shard results
-        if: ${{ always() && needs.e2e.result != 'success' }}
+      - name: Enforce Playwright results
+        if: ${{ always() && (needs.e2e.result != 'success' || needs.odk-critical.result != 'success') }}
         run: |
-          echo "One or more Playwright shards failed. Open the playwright-report artifact for details."
+          echo "One or more general shards or mandatory ODK browser/device jobs failed. Open the playwright-report artifact for details."
           exit 1

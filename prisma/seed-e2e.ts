@@ -69,6 +69,7 @@ const ids = {
   odkVersion: "e2e-odk-version-live",
   odkSection: "e2e-odk-section-live",
   odkQuestion: "e2e-odk-question-live-1",
+  odkQuestion2: "e2e-odk-question-live-2",
   odkAttempt: "e2e-odk-attempt-live",
   odkForeignAttempt: "e2e-odk-attempt-foreign",
   odkPilotRun: "e2e-odk-pilot-run",
@@ -218,9 +219,11 @@ async function main() {
   await prisma.odkExam.upsert({ where: { id: ids.odkExam }, create: { id: ids.odkExam, title: "E2E Canlı Matematik Denemesi", slug: "e2e-canli-matematik-denemesi", family: "LGS", status: "SCHEDULED", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), createdById: ids.admin }, update: { status: "SCHEDULED", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), resultsReleasedAt: null, answerKeyReleasedAt: null } });
   const policy = await prisma.odkScoringPolicy.findUniqueOrThrow({ where: { code: "LGS_MATH_V1" } });
   await prisma.odkExamVersion.upsert({ where: { id: ids.odkVersion }, create: { id: ids.odkVersion, examId: ids.odkExam, versionNumber: 1, status: "LOCKED", durationMinutes: 60, scoringPolicyId: policy.id, createdById: ids.admin, lockedAt: new Date() }, update: { status: "LOCKED", durationMinutes: 60, scoringPolicyId: policy.id, lockedAt: new Date() } });
-  await prisma.odkExamSection.upsert({ where: { id: ids.odkSection }, create: { id: ids.odkSection, versionId: ids.odkVersion, code: "MAT", title: "Matematik", position: 0, questionCount: 1 }, update: { questionCount: 1 } });
+  await prisma.odkExamSection.upsert({ where: { id: ids.odkSection }, create: { id: ids.odkSection, versionId: ids.odkVersion, code: "MAT", title: "Matematik", position: 0, questionCount: 2 }, update: { questionCount: 2 } });
   await prisma.odkExamQuestion.upsert({ where: { id: ids.odkQuestion }, create: { id: ids.odkQuestion, sectionId: ids.odkSection, questionNumber: 1, position: 0, correctOption: "A", difficulty: "MEDIUM" }, update: { correctOption: "A", isActive: true } });
+  await prisma.odkExamQuestion.upsert({ where: { id: ids.odkQuestion2 }, create: { id: ids.odkQuestion2, sectionId: ids.odkSection, questionNumber: 2, position: 1, correctOption: "B", difficulty: "MEDIUM" }, update: { correctOption: "B", position: 1, isActive: true } });
   await prisma.odkQuestionOutcome.upsert({ where: { questionId_outcomeId: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots } }, create: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots, isPrimary: true }, update: { isPrimary: true } });
+  await prisma.odkQuestionOutcome.upsert({ where: { questionId_outcomeId: { questionId: ids.odkQuestion2, outcomeId: ids.outcomePowers } }, create: { questionId: ids.odkQuestion2, outcomeId: ids.outcomePowers, isPrimary: true }, update: { isPrimary: true } });
   await prisma.odkExam.update({ where: { id: ids.odkExam }, data: { currentVersionId: ids.odkVersion } });
   const e2eOdkPackage = await prisma.odkPackage.upsert({
     where: { slug: "e2e-odk-live-access" },
