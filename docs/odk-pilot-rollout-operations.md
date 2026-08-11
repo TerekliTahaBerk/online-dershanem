@@ -21,11 +21,11 @@ Admin erişimi olay müdahalesi ve geri alma için açık kalır. Public route, 
 1. `0063_odk_pilot_rollout` migration'ını uygulayın ve deploy'u `ODK_ROLLOUT_MODE=pilot` ile alın.
 2. `CRON_SECRET` ile `/api/cron/odk-exam-lifecycle` görevinin çalıştığını, `BLOB_READ_WRITE_TOKEN` ile kitapçıkların özel depoda tutulduğunu doğrulayın.
 3. Son 90 gün içinde yalnız yedekten yeni ortama restore tatbikatı yapın; başarılı tarihi `ODK_LAST_RESTORE_DRILL_AT` olarak kaydedin.
-4. Bir admin, bir öğretmen, en az bir öğrenci ve bağlı bir veliyle klavye, mobil, `%200` zoom, ağ kesme, süre sonu, sonuç açıklama ve yatay erişim kabulünü tamamlayın.
-5. Çocuk verisi/KVKK, Meet oturum protokolü, PDF yetkisi ve olay yönetimi incelemesinden sonra üç manuel onayı açın: `ODK_PILOT_ACCEPTANCE_APPROVED`, `ODK_PILOT_SECURITY_REVIEW_APPROVED`, `ODK_PILOT_OPERATIONS_APPROVED`.
+4. Bir admin, bir öğretmen, en az iki gerçek öğrenci ve bağlı bir veliyle klavye, mobil, `%200` zoom, ağ kesme, süre sonu, sonuç açıklama ve yatay erişim kabulünü tamamlayın.
+5. İlk pilot aktivasyonunda üç manuel onay `false` kalır ve readiness ekranında `Bekliyor` görünür. İki gerçek deneme ile çocuk verisi/KVKK, Meet oturum protokolü, PDF yetkisi, kill-switch ve olay yönetimi kanıtı tamamlandıktan sonra onayları açın: `ODK_PILOT_ACCEPTANCE_APPROVED`, `ODK_PILOT_SECURITY_REVIEW_APPROVED`, `ODK_PILOT_OPERATIONS_APPROVED`. Bu onaylar pilot aktivasyon kapısı değil, pilot tamamlama ve `general` genişleme kapısıdır.
 6. Admin ODK “Pilot yayını” ekranında katılımcıları açıkça seçer. Taslak oluşturmak erişim vermez; tüm bloke kapılar kalkınca aktive edilir.
 
-Ortam değişkenlerini yükledikten sonra önce `npm run validate:deploy-env -- --target=production`, ardından `npm run inspect:odk-pilot` çalıştırılır. Deploy doğrulaması kritik production sözleşmesini bloke eder; restore drill gibi hizmeti düşürmeyen readiness eksiklerini redakte edilmiş structured warning olarak bildirir. Komutlar hiçbir secret değerini yazdırmaz ve veritabanına bağlanmaz. Hazır deneme, stale oturum, puanlama kuyruğu ve rol kapsamı gibi canlı veri kapıları ayrıca admin “Pilot yayını” ekranından doğrulanır.
+Ortam değişkenlerini yükledikten sonra önce `npm run validate:deploy-env -- --target=production`, ardından `npm run inspect:odk-pilot` çalıştırılır. Deploy doğrulaması kritik production sözleşmesini bloke eder; pilot ön kontrolü üç canlı kabul onayını ilk aktivasyondan önce `BEKLİYOR`, diğer zorunlu teknik eksikleri `BLOKE` olarak bildirir. Komutlar hiçbir secret değerini yazdırmaz ve veritabanına bağlanmaz. Hazır deneme, stale oturum, puanlama kuyruğu, koşu sonrası iki deneme/iki öğrenci sonucu ve rol kapsamı ayrıca admin “Pilot yayını” ekranından doğrulanır.
 
 Her koşu için [ODK iki aşamalı pilot kabul formu](./odk-pilot-acceptance-checklist.md) kopyalanır. Formda kişisel veri veya soru içeriği tutulmaz.
 
@@ -51,10 +51,10 @@ Tekrarlanabilir üretim tatbikatı `.github/workflows/database-backup.yml` için
 1. Üretim migration ve ortam yapılandırması doğrulanır; genel yayın modu açılmaz.
 2. Restore, özel PDF, cron, yatay erişim, pause ve kill switch teknik provası yapılır.
 3. Dört rol gerçek cihaz ve erişilebilirlik kabulünü tamamlar.
-4. Admin tek bir dört rollü pilot koşusunu aktive eder.
+4. Admin en az bir admin, bir öğretmen, iki öğrenci ve bir veli içeren tek pilot koşusunu aktive eder. Canlı kabul onayları bu aşamada henüz bekliyor olabilir; teknik kapılar bloke ise aktivasyon yapılamaz.
 5. Pilot deneme #1 gerçekleştirilir; P0 ve P1 bulgular kapanmadan yeni deneme planlanmaz.
 6. Aynı kritik yollar pilot deneme #2'de yeniden doğrulanır.
-7. Yalnız iki deneme de kabul edildiğinde `canExpand=true` koşulu değerlendirilir.
+7. Sistem yalnız en az iki pilot öğrencinin puanlanmış ve açıklanmış sonucu bulunan iki denemeyi tamamlanmış sayar. Bu veri ve üç kanıt sonrası onay birlikte hazır olduğunda `canExpand=true` olur; koşu ancak bundan sonra `COMPLETED` yapılabilir.
 8. Ürün, güvenlik ve operasyon sahipleri birlikte onay vermeden `ODK_ROLLOUT_MODE=general` deploy edilmez. Production env doğrulaması bu üç onaydan biri eksikse deploy'u bloke eder; runtime kararı da yapılandırmayı `disabled` olarak uygular.
 
 ## Sınav günü görev dağılımı

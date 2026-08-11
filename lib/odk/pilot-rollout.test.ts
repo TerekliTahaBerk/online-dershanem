@@ -9,7 +9,7 @@ import {
   odkRolloutMode,
 } from "./pilot-rollout";
 
-const snapshot = { readyExamCount: 1, staleAttemptCount: 0, unscoredEndedExamCount: 0, lifecycleCronConfigured: true, privateStorageConfigured: true };
+const snapshot = { readyExamCount: 1, staleAttemptCount: 0, unscoredEndedExamCount: 0, completedPilotExamCount: 2, completedPilotStudentCount: 2, lifecycleCronConfigured: true, privateStorageConfigured: true };
 const env = { ODK_ROLLOUT_MODE: "pilot", ODK_PILOT_KILL_SWITCH: "false", ODK_PILOT_ACCEPTANCE_APPROVED: "true", ODK_PILOT_SECURITY_REVIEW_APPROVED: "true", ODK_PILOT_OPERATIONS_APPROVED: "true", ODK_LAST_RESTORE_DRILL_AT: "2026-07-01" };
 
 test("ODK kill switch admini kilitlemeden diğer rolleri keser", () => {
@@ -60,18 +60,40 @@ test("kill switch pilot/general ve onaylardan daha yüksek önceliklidir", () =>
   }
 });
 
-test("ODK pilot aktivasyonu dört rol ve operasyon kapılarını zorunlu tutar", () => {
-  const ready = calculateOdkPilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT", "PARENT"], snapshot, now: new Date("2026-07-20") });
+test("ODK pilot aktivasyonu dört rol, iki öğrenci ve teknik kapıları zorunlu tutar", () => {
+  const ready = calculateOdkPilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT", "STUDENT", "PARENT"], snapshot, now: new Date("2026-07-20") });
   assert.equal(ready.canActivate, true);
   const blocked = calculateOdkPilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT"], snapshot: { ...snapshot, privateStorageConfigured: false }, now: new Date("2026-07-20") });
   assert.equal(blocked.canActivate, false);
   assert.equal(blocked.checks.filter((check) => check.status === "BLOCK").length, 2);
 });
 
+test("canlı kabul onayları ilk aktivasyonu değil yalnız tamamlamayı ve genişlemeyi bekletir", () => {
+  const pendingApprovals = calculateOdkPilotReadiness({
+    env: { ...env, ODK_PILOT_ACCEPTANCE_APPROVED: "false", ODK_PILOT_SECURITY_REVIEW_APPROVED: "false", ODK_PILOT_OPERATIONS_APPROVED: "false" },
+    roles: ["ADMIN", "TEACHER", "STUDENT", "STUDENT", "PARENT"],
+    snapshot: { ...snapshot, completedPilotExamCount: 0, completedPilotStudentCount: 0 },
+    now: new Date("2026-07-20"),
+  });
+  assert.equal(pendingApprovals.canActivate, true);
+  assert.equal(pendingApprovals.canExpand, false);
+  assert.equal(pendingApprovals.checks.filter((check) => check.status === "WAIT").length, 5);
+});
+
+test("iki tamamlanmış deneme sonrası yeni hazır deneme olmadan genişleme açılır", () => {
+  const completed = calculateOdkPilotReadiness({
+    env,
+    roles: ["ADMIN", "TEACHER", "STUDENT", "STUDENT", "PARENT"],
+    snapshot: { ...snapshot, readyExamCount: 0 },
+    now: new Date("2026-07-20"),
+  });
+  assert.equal(completed.canExpand, true);
+});
+
 test("eski heartbeat aktivasyonu durdurur, birikmiş puanlama yalnız genişlemeyi bekletir", () => {
-  const stale = calculateOdkPilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT", "PARENT"], snapshot: { ...snapshot, staleAttemptCount: 1 }, now: new Date("2026-07-20") });
+  const stale = calculateOdkPilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT", "STUDENT", "PARENT"], snapshot: { ...snapshot, staleAttemptCount: 1 }, now: new Date("2026-07-20") });
   assert.equal(stale.canActivate, false);
-  const waiting = calculateOdkPilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT", "PARENT"], snapshot: { ...snapshot, unscoredEndedExamCount: 1 }, now: new Date("2026-07-20") });
+  const waiting = calculateOdkPilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT", "STUDENT", "PARENT"], snapshot: { ...snapshot, unscoredEndedExamCount: 1 }, now: new Date("2026-07-20") });
   assert.equal(waiting.canActivate, true);
   assert.equal(waiting.canExpand, false);
 });
