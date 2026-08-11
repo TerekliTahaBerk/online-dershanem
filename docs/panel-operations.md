@@ -102,7 +102,7 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 
 ### ODK kontrollü pilot ve üretim yayını
 
-`0063_odk_pilot_rollout` migration'ından sonra ODK admin “Pilot yayını” ekranında dört rolü açıkça seçerek bağımsız bir koşu oluşturur. `ODK_ROLLOUT_MODE=pilot` yalnız aktif koşu üyelerini geçirir; OD pilot kohortları ODK erişimini etkilemez. Özel PDF deposu, yaşam döngüsü cron'u, hazır deneme, güncel restore tatbikatı ve manuel kabul onayları tamamlanmadan aktivasyon yapılamaz. Sınav günü ve geri alma prosedürü [ODK pilot standardında](./odk-pilot-rollout-operations.md) tanımlıdır.
+`0063_odk_pilot_rollout` migration'ından sonra ODK admin “Pilot yayını” ekranında dört rolü açıkça seçerek bağımsız bir koşu oluşturur. Rollout varsayılanı `disabled` değeridir; eksik, boş ve tanınmayan değerler de fail-closed olarak `disabled` uygulanır. `ODK_ROLLOUT_MODE=pilot` yalnız aktif koşu üyelerini geçirir; OD pilot kohortları ODK erişimini etkilemez. `general` üç manuel approval değeri de `true` olmadan server-side açılamaz. `ODK_PILOT_KILL_SWITCH=true` mode ve onaylardan önce gelir. Özel PDF deposu, yaşam döngüsü cron'u, hazır deneme, güncel restore tatbikatı ve manuel kabul onayları tamamlanmadan aktivasyon yapılamaz. Sınav günü ve geri alma prosedürü [ODK pilot standardında](./odk-pilot-rollout-operations.md) tanımlıdır.
 
 Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WRITE_TOKEN` Vercel bağlantısı tarafından yönetilir; PDF/MP4 dosyaları doğrudan URL ile açılmaz, her indirmede rol ve aktif grup üyeliği yeniden doğrulanır. Sunucu yükleme sınırı nedeniyle dosya boyutu 4 MB ile sınırlıdır.
 

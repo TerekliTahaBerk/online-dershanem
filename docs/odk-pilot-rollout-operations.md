@@ -2,6 +2,20 @@
 
 Bu süreç Online Deneme Kulübü'nü küçük, adı konmuş bir katılımcı grubuyla açar. Ürün üyeliği satın alma hakkını; pilot üyeliği ise o yayın koşusuna katılımı temsil eder. İkisi birbirinin yerine geçmez.
 
+## Fail-closed rollout sözleşmesi
+
+`ODK_ROLLOUT_MODE` yalnız küçük harfle yazılmış `disabled`, `pilot` veya `general` değerlerinden birini kabul eder. Değişken eksikse, boşsa, büyük/küçük harfi farklıysa veya tanınmıyorsa effective mode `disabled` olur.
+
+| Yapılandırma | Effective erişim |
+| --- | --- |
+| `disabled`, eksik veya geçersiz mode | Public satış ve admin dışındaki ODK panel/API erişimi kapalı |
+| `pilot` | Yalnız aktif ODK pilot koşusundaki admin dışı üyeler; public satış kapalı |
+| `general` + üç onay da tam olarak `true` | Admin dışındaki üyelik sahibi kullanıcılar genel erişime açık |
+| `general` + eksik/false/geçersiz onay | Effective mode `disabled` |
+| Herhangi bir mode + `ODK_PILOT_KILL_SWITCH=true` | Public ve admin dışındaki tüm ODK erişimi anında kapalı |
+
+Admin erişimi olay müdahalesi ve geri alma için açık kalır. Public route, checkout API ve ODK panel/API guard'ları aynı server-side rollout kararını kullanır. Public checkout ayrıca bağımsız ürün kararıyla şu anda `410 Gone` dönmeye devam eder; rollout `general` olsa bile bu dokümanda ayrıca satış açılışı ilan edilmeden checkout açılmaz.
+
 ## Yayın öncesi kapılar
 
 1. `0063_odk_pilot_rollout` migration'ını uygulayın ve deploy'u `ODK_ROLLOUT_MODE=pilot` ile alın.
@@ -41,7 +55,7 @@ Tekrarlanabilir üretim tatbikatı `.github/workflows/database-backup.yml` için
 5. Pilot deneme #1 gerçekleştirilir; P0 ve P1 bulgular kapanmadan yeni deneme planlanmaz.
 6. Aynı kritik yollar pilot deneme #2'de yeniden doğrulanır.
 7. Yalnız iki deneme de kabul edildiğinde `canExpand=true` koşulu değerlendirilir.
-8. Ürün, güvenlik ve operasyon sahipleri birlikte onay vermeden `ODK_ROLLOUT_MODE=general` deploy edilmez.
+8. Ürün, güvenlik ve operasyon sahipleri birlikte onay vermeden `ODK_ROLLOUT_MODE=general` deploy edilmez. Production env doğrulaması bu üç onaydan biri eksikse deploy'u bloke eder; runtime kararı da yapılandırmayı `disabled` olarak uygular.
 
 ## Sınav günü görev dağılımı
 

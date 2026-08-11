@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
+import { odkPublicAccessDecision } from "@/lib/odk/pilot-rollout";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Deneme Kulübü Yayında Değil",
@@ -14,6 +17,9 @@ export const metadata: Metadata = {
 };
 
 export default function DenemeKulubuPausedPage() {
+  // Public sayfa da checkout ve panel ile aynı fail-closed rollout kararını
+  // değerlendirir. Satış ayrı ürün kararıyla şimdilik her modda kapalıdır.
+  odkPublicAccessDecision();
   return (
     <div className="site-scope">
       <SiteHeader />
