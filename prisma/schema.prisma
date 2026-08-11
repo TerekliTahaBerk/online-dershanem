@@ -250,6 +250,8 @@ model User {
   createdOdkPilotRuns           OdkPilotRun[]              @relation("OdkPilotRunCreator")
   odkPilotMemberships           OdkPilotMember[]
   odOrders                      OdOrder[]
+  ownedOdOnboardings            OdOnboarding[]             @relation("OdOnboardingOwner")
+  odOnboardingTransitions       OdOnboardingTransition[]   @relation("OdOnboardingTransitionActor")
   productMemberships            ProductMembership[]        @relation("ProductMembershipOwner")
   grantedProductMemberships     ProductMembership[]        @relation("ProductMembershipGranter")
   odkOrders                     OdkOrder[]                 @relation("OdkOrderStudent")
@@ -2017,6 +2019,26 @@ enum OdkOrderStatus {
   REFUNDED
 }
 
+enum OdOnboardingState {
+  PAID
+  CONTACT_PENDING
+  CONTACTED
+  ACCOUNT_READY
+  PARENT_LINKED
+  PLACEMENT_PENDING
+  GROUP_ASSIGNED
+  FIRST_LESSON_SCHEDULED
+  ACTIVE
+  BLOCKED
+  REFUND_PENDING
+  CANCELED
+}
+
+enum OdOnboardingFlowType {
+  NEW_STUDENT
+  EXISTING_STUDENT
+}
+
 enum OdkPaymentStatus {
   PENDING
   SUCCEEDED
@@ -2816,11 +2838,54 @@ model OdOrder {
   package       Package?       @relation(fields: [packageId], references: [id], onDelete: SetNull)
   payments      OdPayment[]
   user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  onboarding    OdOnboarding?
 
   @@index([status, createdAt])
   @@index([intentId])
   @@index([userId, createdAt])
   @@map("od_orders")
+}
+
+model OdOnboarding {
+  id               String                   @id @default(cuid())
+  orderId          String                   @unique @map("order_id")
+  state            OdOnboardingState        @default(PAID)
+  flowType         OdOnboardingFlowType     @default(NEW_STUDENT) @map("flow_type")
+  ownerId          String?                  @map("owner_id")
+  dueAt            DateTime?                @map("due_at")
+  blockerReason    String?                  @map("blocker_reason")
+  blockedFromState OdOnboardingState?       @map("blocked_from_state")
+  stateEnteredAt   DateTime                 @default(now()) @map("state_entered_at")
+  activatedAt      DateTime?                @map("activated_at")
+  canceledAt       DateTime?                @map("canceled_at")
+  version          Int                      @default(1)
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  updatedAt        DateTime                 @updatedAt @map("updated_at")
+  order            OdOrder                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  owner            User?                    @relation("OdOnboardingOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  transitions      OdOnboardingTransition[]
+
+  @@index([state, dueAt])
+  @@index([ownerId, state, dueAt])
+  @@map("od_onboardings")
+}
+
+model OdOnboardingTransition {
+  id           String             @id @default(cuid())
+  onboardingId String             @map("onboarding_id")
+  fromState    OdOnboardingState? @map("from_state")
+  toState      OdOnboardingState  @map("to_state")
+  actorUserId  String?            @map("actor_user_id")
+  actorType    AuditActorType     @default(SYSTEM) @map("actor_type")
+  note         String?
+  metadata     Json?
+  occurredAt   DateTime           @default(now()) @map("occurred_at")
+  onboarding   OdOnboarding       @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  actor        User?              @relation("OdOnboardingTransitionActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([onboardingId, occurredAt])
+  @@index([actorUserId, occurredAt])
+  @@map("od_onboarding_transitions")
 }
 
 model OdPayment {
