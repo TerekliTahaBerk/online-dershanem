@@ -18,7 +18,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { log } from "@/lib/logger";
-import { logAudit } from "@/lib/audit";
+import { logCriticalAudit, type LogAuditInput } from "@/lib/audit";
+import { paytrAuditIdempotencyKey } from "@/lib/audit-policy";
 import { markOdkOrderPaid } from "@/lib/odk/finance";
 import { markOdOrderPaid } from "@/lib/od/finance";
 import { provisionOdOrder, type OdProvisioningFailurePoint } from "@/lib/od/provisioning";
@@ -38,6 +39,17 @@ function plain(body: string, status = 200): Response {
   return new NextResponse(body, {
     status,
     headers: { "content-type": "text/plain; charset=utf-8" },
+  });
+}
+
+/**
+ * PayTR en az bir kez teslim edebilir. Aynı merchant_oid + action tek mantıksal
+ * audit olayıdır; farklı action'lar (örn. invariant failure ve success) ayrıdır.
+ */
+async function logPaytrAudit(payload: PaytrCallbackPayload, input: LogAuditInput) {
+  return logCriticalAudit({
+    ...input,
+    idempotencyKey: paytrAuditIdempotencyKey(input.action, payload.merchant_oid),
   });
 }
 
@@ -72,7 +84,7 @@ export async function POST(req: Request) {
   // KRİTİK: hash doğrulama
   if (!verifyPaytrCallbackHash(payload)) {
     log.warn("paytr.callback.bad_hash", { merchantOid: payload.merchant_oid });
-    void logAudit({
+    await logPaytrAudit(payload, {
       actorUserId: null,
       actorType: "SYSTEM",
       entityType: "Payment",
@@ -108,7 +120,7 @@ export async function POST(req: Request) {
   }
 
   log.warn("paytr.callback.unknown_prefix", { merchantOid: payload.merchant_oid });
-  void logAudit({
+  await logPaytrAudit(payload, {
     actorUserId: null,
     actorType: "SYSTEM",
     entityType: "Payment",
@@ -133,7 +145,7 @@ async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvis
 
   if (!payment) {
     log.warn("paytr.callback.odk.payment_not_found", { merchantOid: payload.merchant_oid });
-    void logAudit({
+    await logPaytrAudit(payload, {
       actorUserId: null,
       actorType: "SYSTEM",
       entityType: "OdkPayment",
@@ -164,7 +176,7 @@ async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvis
         merchantOid: payload.merchant_oid,
         reason: invariant.reason,
       });
-      void logAudit({
+      await logPaytrAudit(payload, {
         actorUserId: null,
         actorType: "SYSTEM",
         entityType: "OdkOrder",
@@ -202,7 +214,7 @@ async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvis
       await Promise.all(afterCommit.map((run) => run()));
       await provisionOdkOrder(payment.orderId, { failurePoint });
       log.info("paytr.callback.odk.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
-      void logAudit({
+      await logPaytrAudit(payload, {
         actorUserId: null,
         actorType: "SYSTEM",
         entityType: "OdkOrder",
@@ -237,17 +249,16 @@ async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvis
         code: payload.failed_reason_code,
         msg: payload.failed_reason_msg,
       });
-      void logAudit({
+      await logPaytrAudit(payload, {
         actorUserId: null,
         actorType: "SYSTEM",
         entityType: "OdkOrder",
         entityId: payment.orderId,
         action: "PAYTR_PAYMENT_FAILED",
-        summary: `ODK başarısız: ${payload.failed_reason_msg ?? payload.failed_reason_code ?? "?"}`,
+        summary: `ODK ödeme başarısız: kod=${payload.failed_reason_code ?? "UNKNOWN"}`,
         payload: {
           merchantOid: payload.merchant_oid,
           code: payload.failed_reason_code,
-          msg: payload.failed_reason_msg,
         },
       });
     } catch (err) {
@@ -271,7 +282,7 @@ async function handleOd(payload: PaytrCallbackPayload, failurePoint?: OdProvisio
 
   if (!payment) {
     log.warn("paytr.callback.od.payment_not_found", { merchantOid: payload.merchant_oid });
-    void logAudit({
+    await logPaytrAudit(payload, {
       actorUserId: null,
       actorType: "SYSTEM",
       entityType: "OdPayment",
@@ -302,7 +313,7 @@ async function handleOd(payload: PaytrCallbackPayload, failurePoint?: OdProvisio
         merchantOid: payload.merchant_oid,
         reason: invariant.reason,
       });
-      void logAudit({
+      await logPaytrAudit(payload, {
         actorUserId: null,
         actorType: "SYSTEM",
         entityType: "OdOrder",
@@ -344,7 +355,7 @@ async function handleOd(payload: PaytrCallbackPayload, failurePoint?: OdProvisio
         return plain("OK");
       }
       log.info("paytr.callback.od.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
-      void logAudit({
+      await logPaytrAudit(payload, {
         actorUserId: null,
         actorType: "SYSTEM",
         entityType: "OdOrder",
@@ -380,17 +391,16 @@ async function handleOd(payload: PaytrCallbackPayload, failurePoint?: OdProvisio
         code: payload.failed_reason_code,
         msg: payload.failed_reason_msg,
       });
-      void logAudit({
+      await logPaytrAudit(payload, {
         actorUserId: null,
         actorType: "SYSTEM",
         entityType: "OdOrder",
         entityId: payment.orderId,
         action: "PAYTR_PAYMENT_FAILED",
-        summary: `OD başarısız: ${payload.failed_reason_msg ?? payload.failed_reason_code ?? "?"}`,
+        summary: `OD ödeme başarısız: kod=${payload.failed_reason_code ?? "UNKNOWN"}`,
         payload: {
           merchantOid: payload.merchant_oid,
           code: payload.failed_reason_code,
-          msg: payload.failed_reason_msg,
         },
       });
 
