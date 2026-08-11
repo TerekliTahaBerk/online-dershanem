@@ -4,7 +4,7 @@
 
 Pilot bir yüzde rastgeleleştirmesi değildir. Öğretmen, aktif öğrenciler ve onların bağlı velileri aynı eğitim ilişkisi içinde birlikte seçilir; işlemi yapan admin kurtarma ve denetim için kohorta eklenir. Böylece öğrencinin açılan bir akışı öğretmen veya velide kapalı kalmaz. Kohort oluşturmak erişimi açmaz.
 
-Global `PANEL_FEATURE_*` ve `NEXT_PUBLIC_PANEL_FEATURE_*` bayrakları ürünün üst sınırıdır. Pilot kohortu kapalı bir özelliği açamaz. `PANEL_ROLLOUT_MODE=pilot` olduğunda admin dışındaki her korumalı sayfa ve API isteği aktif `PilotCohortMember` ilişkisini sunucuda yeniden doğrular. İstemci menüsü veya middleware güvenlik kararı değildir.
+Global `PANEL_FEATURE_*` bayrakları ürünün üst sınırıdır ve istemci menüsüne aynı server snapshot'ı aktarılır. Pilot kohortu kapalı bir özelliği açamaz. `PANEL_ROLLOUT_MODE=pilot` olduğunda admin dışındaki her korumalı sayfa ve API isteği aktif `PilotCohortMember` ilişkisini sunucuda yeniden doğrular. İstemci menüsü veya middleware güvenlik kararı değildir.
 
 ## Aktivasyon kapıları
 

@@ -13,6 +13,7 @@ import { defaultAccessibilityViewPreference } from "@/lib/accessibility-preferen
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
+import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
 
 export async function PanelShell({ role, fullName, email, product = "OD", workspace = "PRODUCT", nav, children }: { role: UserRole; fullName: string | null; email: string; product?: ProductCode; workspace?: "PRODUCT" | "BUSINESS"; nav?: React.ReactNode; children: React.ReactNode }) {
   const adminLayout = role === "ADMIN" && nav;
@@ -54,6 +55,7 @@ export async function PanelShell({ role, fullName, email, product = "OD", worksp
   );
 
   return (
+    <PanelFeatureProvider flags={flags}>
     <OfflineSyncProvider scope={offlineScope} available={flags.offlineMode} enabled={Boolean(flags.offlineMode && networkPreference?.offlineWritesEnabled)} lowDataMode={Boolean(flags.offlineMode && networkPreference?.lowDataMode)}>
     <div className={`site-scope min-h-dvh ${product === "ODK" && !isBusinessWorkspace ? "odk-panel-scope" : ""} ${isBusinessWorkspace ? "business-panel-scope" : ""} ${adminLayout ? "panel-app-bg" : "bg-[var(--site-bg-warm)]"}`}>
       {accessibilityEnabled ? <AccessibilityPreferenceApplier preference={accessibilityPreference} /> : null}
@@ -94,5 +96,6 @@ export async function PanelShell({ role, fullName, email, product = "OD", worksp
       )}
     </div>
     </OfflineSyncProvider>
+    </PanelFeatureProvider>
   );
 }

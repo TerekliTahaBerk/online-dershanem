@@ -50,4 +50,4 @@ En az 30 öneri ve dört haftalık karşılaştırma olmadan etki sonucu ilan ed
 
 Migration: `0049_adaptive_weekly_plan`.
 
-Sunucu: `PANEL_FEATURE_ADAPTIVE_PLAN=true`. Menü/build: `NEXT_PUBLIC_PANEL_FEATURE_ADAPTIVE_PLAN=true`. Sunucu bayrağı kapalıyken API ve sayfalar 404 verir. Geri almada bayraklar kapatılır; plan geçmişi ve akademik kaynak kayıtları silinmez.
+`PANEL_FEATURE_ADAPTIVE_PLAN=true` aynı server snapshot'ı üzerinden menü, sayfa ve API'yi açar. Bayrak kapalıyken API ve sayfalar 404 verir. Geri almada bayrak kapatılır; plan geçmişi ve akademik kaynak kayıtları silinmez.

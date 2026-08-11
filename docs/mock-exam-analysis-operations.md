@@ -28,7 +28,7 @@ PII içermeyen event'ler: `mock_exam_entry_started`, `mock_exam_entry_completed`
 Rollout kapıları:
 
 1. `0046_mock_exam_analysis` migration'ını uygulayın.
-2. `PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true` ve menü için `NEXT_PUBLIC_PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true` değerlerini aynı deploy'da açın.
+2. `PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true` ayarlayın; menü ve sunucu aynı snapshot'tan açılır.
 3. Önce küçük pilotta en az 30 kayıt toplayın.
 4. Deneme girişi p50 ≤180 saniye, hata nedeni kapsaması ≥%50 ve sistem hatası sıfır olmadan rollout'u büyütmeyin.
 5. En az beş öğretmene örnek ısı haritasını görev bazlı yorumlatın; doğru yorumlama hedefi ≥%70'tir. Bu nitel test otomatik event'ten çıkarılamaz.

@@ -21,7 +21,7 @@ Yardım istenirse paylaşım zorunlu olur ve istek yalnız seçilen aktif grubun
 
 ## Pilot, SLO ve durdurma kapıları
 
-`0054_student_check_in_help` migration'ından sonra sunucuda `PANEL_FEATURE_STUDENT_CHECK_IN=true`, build sırasında menü için `NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN=true` birlikte açılır. Önce 1–2 öğretmen grubunda dört hafta pilot yapılır.
+`0054_student_check_in_help` migration'ından sonra `PANEL_FEATURE_STUDENT_CHECK_IN=true` açılır; menü ve sunucu aynı snapshot'ı kullanır. Önce 1–2 öğretmen grubunda dört hafta pilot yapılır.
 
 İzlenecek PII içermeyen metrikler: haftalık check-in sayısı, yardım isteme oranı, ilk yanıt p50, 24 saatte yanıt oranı ve öğrenci faydalılık oranı. İlk yanıt p50 hedefi 24 saat veya altı, 24 saatte yanıt hedefi en az %90, faydalılık başlangıç guardrail'i en az %60'tır. Beşten az örneklem karar üretmez.
 

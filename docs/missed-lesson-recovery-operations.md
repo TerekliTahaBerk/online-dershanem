@@ -49,7 +49,7 @@ Tamamlama oranı öğrenci sıralaması, öğretmen performans puanı veya cezal
 ## Rollout ve geri alma
 
 1. `0052_missed_lesson_recovery` migration'ını uygulayın.
-2. Sunucuda `PANEL_FEATURE_RECOVERY_PACKAGE=true`, build sırasında `NEXT_PUBLIC_PANEL_FEATURE_RECOVERY_PACKAGE=true` ayarlayın.
+2. `PANEL_FEATURE_RECOVERY_PACKAGE=true` ayarlayın; menü ve sunucu aynı snapshot'tan açılır.
 3. Önce iç hesaplarda özel/yoklama notunun taslakta görünmediğini, private materyal erişimini, 72 saat hesabını ve rol izolasyonunu doğrulayın.
 4. Küçük öğretmen pilotunda SLO ve destek taleplerini en az iki hafta izleyin; yeterli veri oluşmadan yeşil karar vermeyin.
 5. Güvenlik, içerik veya kapasite guardrail'i ihlalinde iki bayrağı kapatıp yeniden deploy edin. Mevcut paketler korunur; yeni üretim/yayın ve menü erişimi durur.

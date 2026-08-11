@@ -14,12 +14,12 @@ test("pilot modunda yalnız aktif kohort üyesi geçer", () => {
 });
 
 test("readiness dört rol, bayrak eşliği ve operasyon onaylarını zorunlu tutar", () => {
-  const env = { PANEL_ROLLOUT_MODE: "pilot", PANEL_FEATURE_BASELINE_METRICS: "true", PANEL_FEATURE_STUDENT_CHECK_IN: "true", NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN: "true", PANEL_PILOT_ACCEPTANCE_APPROVED: "true", PANEL_PILOT_SECURITY_REVIEW_APPROVED: "true", PANEL_LAST_RESTORE_DRILL_AT: "2026-07-01" };
+  const env = { PANEL_ROLLOUT_MODE: "pilot", PANEL_FEATURE_BASELINE_METRICS: "true", PANEL_FEATURE_STUDENT_CHECK_IN: "true", PANEL_PILOT_ACCEPTANCE_APPROVED: "true", PANEL_PILOT_SECURITY_REVIEW_APPROVED: "true", PANEL_LAST_RESTORE_DRILL_AT: "2026-07-01" };
   const ready = calculatePilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT", "PARENT"], sloMetrics: [], now: new Date("2026-07-20") });
   assert.equal(ready.canActivate, true);
-  const blocked = calculatePilotReadiness({ env: { ...env, NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN: "false" }, roles: ["ADMIN", "TEACHER", "STUDENT"], sloMetrics: [], now: new Date("2026-07-20") });
+  const blocked = calculatePilotReadiness({ env, roles: ["ADMIN", "TEACHER", "STUDENT"], sloMetrics: [], now: new Date("2026-07-20") });
   assert.equal(blocked.canActivate, false);
-  assert.equal(blocked.checks.filter((item) => item.status === "BLOCK").length, 2);
+  assert.equal(blocked.checks.filter((item) => item.status === "BLOCK").length, 1);
 });
 
 test("terminal pilot durumları yeniden açılamaz", () => {

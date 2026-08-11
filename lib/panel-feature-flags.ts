@@ -16,7 +16,7 @@ export type PanelFeatureFlags = {
   teacherAiDrafts: boolean;
 };
 
-const defaults: PanelFeatureFlags = {
+export const panelFeatureDefaults: PanelFeatureFlags = {
   baselineMetrics: true,
   learningOutcomes: false,
   mockExamAnalysis: false,
@@ -34,7 +34,7 @@ const defaults: PanelFeatureFlags = {
   teacherAiDrafts: false,
 };
 
-const environmentKeys: Record<keyof PanelFeatureFlags, string> = {
+export const panelFeatureEnvironmentKeys: Record<keyof PanelFeatureFlags, string> = {
   baselineMetrics: "PANEL_FEATURE_BASELINE_METRICS",
   learningOutcomes: "PANEL_FEATURE_LEARNING_OUTCOMES",
   mockExamAnalysis: "PANEL_FEATURE_MOCK_EXAM_ANALYSIS",
@@ -62,11 +62,11 @@ export function getPanelFeatureFlags(
   env: Record<string, string | undefined> = process.env,
 ): PanelFeatureFlags {
   return Object.fromEntries(
-    (Object.keys(defaults) as (keyof PanelFeatureFlags)[]).map((flag) => {
-      const raw = env[environmentKeys[flag]]?.trim().toLowerCase();
+    (Object.keys(panelFeatureDefaults) as (keyof PanelFeatureFlags)[]).map((flag) => {
+      const raw = env[panelFeatureEnvironmentKeys[flag]]?.trim().toLowerCase();
       if (raw === "true") return [flag, true];
       if (raw === "false") return [flag, false];
-      return [flag, defaults[flag]];
+      return [flag, panelFeatureDefaults[flag]];
     }),
   ) as PanelFeatureFlags;
 }
