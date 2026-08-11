@@ -29,7 +29,7 @@ function getResend(): Resend {
 export async function GET(req: Request) {
   return runJob("email-retry", req, async () => {
     if (!process.env.RESEND_API_KEY) {
-      return { ok: true, skipped: true, reason: "no_resend_key" };
+      return { candidates: 0, sent: 0, failed: 0, abandoned: 0, skipped: true, reason: "no_resend_key" };
     }
     const now = new Date();
     const candidates = await prisma.emailOutbox.findMany({
@@ -84,5 +84,5 @@ export async function GET(req: Request) {
     }
 
     return { candidates: candidates.length, sent, failed, abandoned };
-  });
+  }, { metrics: (result) => ({ processedCount: result.candidates, failedCount: result.failed + result.abandoned }) });
 }

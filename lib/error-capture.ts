@@ -14,6 +14,13 @@ import { log } from "@/lib/logger";
 
 export type ErrorContext = Record<string, unknown>;
 
+export type OperationalAlert = {
+  event: string;
+  severity: "warning" | "critical";
+  summary: string;
+  context?: ErrorContext;
+};
+
 export function captureError(err: unknown, context?: ErrorContext): void {
   log.error("app.error", err, context);
 }
@@ -21,18 +28,34 @@ export function captureError(err: unknown, context?: ErrorContext): void {
 /** Opsiyonel webhook ile merkezi alarm gönderir; alarm arızası isteği bozmaz. */
 export async function reportError(err: unknown, context?: ErrorContext): Promise<void> {
   captureError(err, context);
+  const error = err instanceof Error ? err : new Error(String(err));
+  await reportOperationalAlert({
+    event: "app.error",
+    severity: "critical",
+    summary: error.message,
+    context: { ...context, errorName: error.name, digest: "digest" in error ? String(error.digest) : undefined },
+  });
+}
+
+/** Slack/Teams/özel webhook'lara secretsiz, sağlayıcıdan bağımsız alarm gövdesi yollar. */
+export async function reportOperationalAlert(alert: OperationalAlert): Promise<void> {
   const webhook = process.env.ERROR_ALERT_WEBHOOK_URL;
   if (!webhook || process.env.NODE_ENV !== "production") return;
-  const error = err instanceof Error ? err : new Error(String(err));
   try {
     await fetch(webhook, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ event: "app.error", occurredAt: new Date().toISOString(), error: { name: error.name, message: error.message, digest: "digest" in error ? String(error.digest) : undefined }, context }),
+      body: JSON.stringify({
+        event: alert.event,
+        severity: alert.severity,
+        occurredAt: new Date().toISOString(),
+        summary: alert.summary,
+        context: alert.context,
+      }),
       signal: AbortSignal.timeout(3_000),
     });
   } catch (alertError) {
-    log.warn("app.error_alert_failed", { originalMessage: error.message }, alertError);
+    log.warn("app.error_alert_failed", { event: alert.event }, alertError);
   }
 }
 

@@ -34,5 +34,5 @@ export async function GET(request: Request) {
       return { deletedSessions, deletedProductEvents };
     });
     return { expiredBefore: now.toISOString(), revokedBefore: revokedBefore.toISOString(), productEventsBefore: productEventsBefore.toISOString(), deletedSessions: result.deletedSessions.count, deletedProductEvents: result.deletedProductEvents.count };
-  });
+  }, { metrics: (result) => ({ processedCount: result.deletedSessions + result.deletedProductEvents }) });
 }

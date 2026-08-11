@@ -1,15 +1,18 @@
-import { timingSafeEqual } from "node:crypto";
-import { NextResponse } from "next/server";
+import { runJob } from "@/lib/jobs/runner";
 import { processBackgroundJobs, scheduleBusinessMaintenanceJobs } from "@/lib/business/jobs";
-function valid(request: Request) {
-  const expected = process.env.JOB_PROCESSOR_SECRET || process.env.CRON_SECRET || "";
-  const actual = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
-  const a = Buffer.from(expected); const b = Buffer.from(actual);
-  return expected.length > 15 && a.length === b.length && timingSafeEqual(a, b);
-}
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export async function GET(request: Request) {
-  if (!valid(request)) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
-  await scheduleBusinessMaintenanceJobs();
-  return NextResponse.json({ processed: await processBackgroundJobs(20) });
+  return runJob("business-jobs", request, async () => {
+    await scheduleBusinessMaintenanceJobs();
+    return processBackgroundJobs(20);
+  }, {
+    secrets: [process.env.JOB_PROCESSOR_SECRET, process.env.CRON_SECRET],
+    metrics: (result) => ({ processedCount: result.processed, failedCount: result.failed }),
+  });
 }
+
 export const POST = GET;

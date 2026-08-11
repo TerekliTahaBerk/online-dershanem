@@ -42,5 +42,5 @@ export async function GET(request: Request) {
     await queuePanelNotificationEmails(freshRows, "assignment");
 
     return { overdue: overdue.length, notifications: inAppRows.length, emailCandidates: freshRows.length };
-  });
+  }, { metrics: (result) => ({ processedCount: result.overdue }) });
 }

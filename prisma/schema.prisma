@@ -993,6 +993,28 @@ model BackgroundJob {
   @@map("background_jobs")
 }
 
+/// Vercel cron tetikleyicisinden bağımsız, kalıcı çalışma kanıtı.
+/// Tek satır/job tasarımı health ve operasyon ekranının ucuz ve deterministik
+/// sorgulanmasını sağlar; lastRunId çakışan invocation'ların eski sonucu
+/// yenisinin üzerine yazmasını engeller.
+model CronHeartbeat {
+  name            String    @id
+  lastRunId       String?   @map("last_run_id")
+  lastStartedAt   DateTime? @map("last_started_at")
+  lastSucceededAt DateTime? @map("last_succeeded_at")
+  lastFailedAt    DateTime? @map("last_failed_at")
+  lastDurationMs  Int?      @map("last_duration_ms")
+  processedCount  Int       @default(0) @map("processed_count")
+  failedCount     Int       @default(0) @map("failed_count")
+  lastErrorCode   String?   @map("last_error_code")
+  lastAlertedAt   DateTime? @map("last_alerted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([lastSucceededAt])
+  @@map("cron_heartbeats")
+}
+
 /// Bir kullanıcının hangi alt ürüne erişebildiğini rolünden bağımsız tutar.
 /// ADMIN ve TEACHER hesapları uygulama kuralı olarak iki ürüne de erişir;
 /// satırlar ayrıca erişimin kaynağını ve audit bağlamını korur.
