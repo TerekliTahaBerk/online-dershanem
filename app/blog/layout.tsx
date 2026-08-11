@@ -1,13 +1,8 @@
-import { Fraunces } from "next/font/google";
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-display",
-  display: "swap",
-});
+const blogFontStyle = {
+  "--font-display":
+    'Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, Times New Roman, serif',
+} as React.CSSProperties;
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  return <div className={fraunces.variable}>{children}</div>;
+  return <div style={blogFontStyle}>{children}</div>;
 }
