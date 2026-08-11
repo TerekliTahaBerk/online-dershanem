@@ -1,0 +1,52 @@
+name: Hata bildirimi
+description: Tekrarlanabilir bir ürün veya teknik hata bildirin.
+title: "[Bug]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Hassas güvenlik açıklarını burada paylaşmayın; SECURITY.md içindeki özel kanalı kullanın.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Hata özeti
+      description: Ne oldu ve ne olmasını bekliyordunuz?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Tekrarlama adımları
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Ürün alanı
+      options:
+        - Public site / ödeme
+        - Online Dershanem paneli
+        - Online Deneme Kulübü
+        - İşletme Paneli
+        - Altyapı / CI
+        - Diğer
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Ortam ve tarayıcı
+      placeholder: "Production, Chrome 140, macOS"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Ek kanıt
+      description: Kişisel veri veya erişim anahtarı içermeyen ekran görüntüsü ya da log ekleyin.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Kontrol
+      options:
+        - label: Bu bildirimin gizli bilgi veya kişisel veri içermediğini doğruluyorum.
+          required: true

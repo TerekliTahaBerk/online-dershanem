@@ -1,7 +1,22 @@
 {
   "name": "onlinedershanem",
   "version": "0.1.0",
+  "description": "Rol bazlı çevrim içi eğitim, deneme sınavı ve işletme yönetim platformu.",
   "private": true,
+  "license": "UNLICENSED",
+  "author": "Taha Berk Terekli",
+  "homepage": "https://onlinedershanem.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TerekliTahaBerk/online-dershanem.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TerekliTahaBerk/online-dershanem/issues"
+  },
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "npm run validate:deploy-env && prisma generate && next build",

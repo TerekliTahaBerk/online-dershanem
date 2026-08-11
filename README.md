@@ -1,49 +1,73 @@
 # Online Dershanem
 
-Next.js 16 (App Router), React 18, TypeScript 5, PostgreSQL ve Prisma 6 üzerinde çalışan; public satış sitesiyle rol bazlı eğitim panelini aynı üründe birleştiren uygulama.
+[![CI](https://github.com/TerekliTahaBerk/online-dershanem/actions/workflows/ci.yml/badge.svg)](https://github.com/TerekliTahaBerk/online-dershanem/actions/workflows/ci.yml)
+[![Lighthouse](https://github.com/TerekliTahaBerk/online-dershanem/actions/workflows/lighthouse.yml/badge.svg)](https://github.com/TerekliTahaBerk/online-dershanem/actions/workflows/lighthouse.yml)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License: Proprietary](https://img.shields.io/badge/license-proprietary-red.svg)](LICENSE)
 
-Üç çalışma alanı vardır: **Online Dershanem** (dersler ve gelişim), **Online Deneme Kulübü** (denemeler ve kazanım analizi) ve **İşletme Paneli** (CRM, reklam, finans). Her alanın kendi navigasyonu ve yetki modeli vardır.
+Türkiye'deki çevrim içi eğitim operasyonlarını satıştan öğrenme çıktısına kadar tek üründe birleştiren, rol bazlı eğitim ve işletme platformu.
 
-## Instagram AI CRM, reklam ve finans merkezi
-
-`/panel/yonetim/isletme` alanı Instagram mesaj kutusunu, aday hunisini, kampanya performansını ve OD/ODK ortak finans defterini birleştirir. Eğitim rolleri değişmez; işletme erişimi **yalnız** `BusinessRoleAssignment` ile iş birimi kapsamında verilir. Platformdaki `ADMIN` rolü tek başına hiçbir işletme izni vermez — roller, izin matrisi ve bootstrap için [`docs/business-rbac.md`](docs/business-rbac.md).
-
-`.env.example` içindeki işletme değişkenlerini `.env.local` dosyanıza alın; migration, generate ve seed adımlarını çalıştırın. Dış servisler kapalıyken development adapter’ları kullanılır. Webhook `/api/integrations/instagram/webhook`, kalıcı işleyici `/api/cron/business-jobs` adresindedir. Ayrıntılar `docs/meta-instagram-setup.md`, `docs/openai-assistant-setup.md` ve `docs/deployment-checklist.md` içindedir.
+[Canlı site](https://onlinedershanem.com) · [Hata bildir](https://github.com/TerekliTahaBerk/online-dershanem/issues/new?template=bug_report.yml) · [Özellik öner](https://github.com/TerekliTahaBerk/online-dershanem/issues/new?template=feature_request.yml)
 
 ## Ürün alanları
 
-- Public site, blog, lead formu, sepet ve PayTR ödeme akışları
-- Yönetim paneli: kullanıcılar, veli bağlantıları, gruplar, dersler, raporlar, siparişler ve e-posta kuyruğu
-- Öğretmen paneli: ders programı, hızlı ders notu/yoklama, ödev ve materyal yönetimi
-- Öğrenci paneli: sıradaki ders, ödevler, materyaller ve gelişim görünümü
-- Veli paneli: bağlı öğrenciye özel gelişim, takvim, ödev ve ödeme görünümü
+| Alan | Kapsam |
+| --- | --- |
+| **Online Dershanem** | Dersler, ödevler, materyaller, gelişim takibi ve veli görünümü |
+| **Online Deneme Kulübü** | Deneme sınavları, güvenli sınav akışı ve kazanım analizi |
+| **İşletme Paneli** | Instagram CRM, aday hunisi, reklam performansı ve ortak finans defteri |
 
-Panel hesapları yalnızca yönetici tarafından oluşturulur; public self-register bulunmaz. Rol ve yatay erişim kontrolleri her sayfa ve API isteğinde uygulanır.
+Yönetici, öğretmen, öğrenci ve veli deneyimleri ayrı navigasyonlara ve yatay erişim kontrollerine sahiptir. Panel hesapları yalnızca yönetici tarafından oluşturulur; public self-register bulunmaz. İşletme erişimi ise platform rolünden bağımsız olarak `BusinessRoleAssignment` ile verilir.
+
+## Öne çıkan yetenekler
+
+- Public satış sitesi, SEO uyumlu blog, lead formu, sepet ve PayTR ödeme akışları
+- Ders programı, hızlı ders notu/yoklama, ödev ve materyal yönetimi
+- Öğrenci gelişimi, veli raporları, takvim ve ödeme görünümü
+- Deneme sınavı yaşam döngüsü, otomatik puanlama ve kazanım raporları
+- Instagram mesaj kutusu, CRM, reklam ve finans operasyonları
+- Denetlenebilir yetkilendirme, audit kayıtları, rate limiting ve güvenli rollout kapıları
+- Sağlık kontrolleri, cron heartbeat'leri, yedekleme ve gözlemlenebilirlik iş akışları
+
+## Teknoloji
+
+- Next.js 16 App Router, React 18 ve TypeScript 5
+- PostgreSQL ve Prisma 6
+- Tailwind CSS 3
+- Playwright, Node test runner ve Lighthouse CI
+- Vercel, Vercel Blob, Resend, PayTR ve isteğe bağlı Meta/OpenAI entegrasyonları
 
 ## Lokal kurulum
 
+Gereksinimler: Node.js 22+, npm ve PostgreSQL.
+
 ```bash
-npm install
+git clone https://github.com/TerekliTahaBerk/online-dershanem.git
+cd online-dershanem
+npm ci
 cp .env.example .env.local
-npx prisma generate
-npx prisma migrate deploy
+npm run prisma:generate
+npm run prisma:deploy
 npm run db:seed
 npm run dev
 ```
+
+Uygulama varsayılan olarak `http://localhost:3000` adresinde açılır. `.env.example` güvenli varsayılanları ve entegrasyonların opt-in anahtarlarını belgeler; gerçek anahtarları repoya eklemeyin.
 
 ## Doğrulama
 
 ```bash
 npm run lint
-npm run lint:hygiene      # yinelenen " 2" dosya kopyalarını yakalar
+npm run lint:hygiene
 npm run typecheck
 npm run test:unit
-npm run test:integration  # DATABASE_URL gerektirir; yoksa testler skip olur
+npm run test:integration
 npm run build
 npm run e2e
 ```
 
-Firefox, WebKit ve Chromium panel kabul paketi:
+Entegrasyon testleri `DATABASE_URL` gerektirir; değişken yoksa ilgili testler atlanır. Chromium, Firefox ve WebKit panel kabul paketi için:
 
 ```bash
 npx playwright install chromium firefox webkit
@@ -52,20 +76,35 @@ npm run e2e:cross-browser
 
 ## Veritabanı ve yayın
 
-Mevcut/canlı veritabanında yalnızca migration deploy kullanılır:
+Canlı veritabanında yalnızca sürümlenmiş migration'ları uygulayın:
 
 ```bash
 npm run release:migrate
 ```
 
-Tamamen boş bir veritabanında güvenli başlangıç:
+Tamamen boş bir veritabanı güvenli biçimde şu komutla hazırlanabilir:
 
 ```bash
 ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 ```
 
-Komut boş olmayan veritabanında çalışmayı reddeder. Paneli canlıda açmak için Vercel Production ortamında `PANEL_ENABLED=true` tanımlanıp yeniden deploy edilmelidir.
+Komut boş olmayan veritabanında çalışmayı reddeder. Ortam değişkenleri, e-posta politikası, yedek geri yükleme ve canlı kabul adımları için [operasyon kılavuzuna](docs/panel-operations.md) ve [yayın kontrol listesine](docs/deployment-checklist.md) bakın.
 
-Ortam değişkenleri, e-posta politikası, yedek geri yükleme ve canlı kabul adımları için [operasyon kılavuzuna](docs/panel-operations.md) bakın.
+Sürümler `v*` biçimindeki etiketlerle yayımlanır. Etiket push edildiğinde release iş akışı kalite kontrollerini çalıştırır ve GitHub Release notlarını üretir. Değişiklikler [CHANGELOG.md](CHANGELOG.md) dosyasında tutulur.
 
-PayTR bildirim URL'si `/api/paytr/callback` olarak ayarlanmalıdır.
+## Dokümantasyon
+
+- [Panel operasyonları](docs/panel-operations.md)
+- [Güvenlik ve KVKK](docs/security-and-kvkk.md)
+- [İşletme RBAC modeli](docs/business-rbac.md)
+- [Meta / Instagram kurulumu](docs/meta-instagram-setup.md)
+- [OpenAI destekli taslak kurulumu](docs/openai-assistant-setup.md)
+- [ODK pilot kabul kontrol listesi](docs/odk-pilot-acceptance-checklist.md)
+
+## Katkı ve güvenlik
+
+Katkı süreci için [CONTRIBUTING.md](CONTRIBUTING.md), güvenlik açığı bildirimleri için [SECURITY.md](SECURITY.md) dosyasını okuyun. Hassas bir açığı herkese açık issue olarak paylaşmayın.
+
+## Lisans
+
+Bu depo açık kaynak değildir. Kaynak kodun tüm hakları saklıdır; kullanım ve dağıtım koşulları için [LICENSE](LICENSE) dosyasına bakın.

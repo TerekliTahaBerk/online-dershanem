@@ -1,0 +1,42 @@
+name: Özellik önerisi
+description: Kullanıcı ihtiyacını ve beklenen sonucu açıklayın.
+title: "[Feature]: "
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Hangi kullanıcı hangi işi yaparken zorlanıyor?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Beklenen sonuç
+      description: Başarılı çözüm kullanıcı için neyi değiştirmeli?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Ürün alanı
+      options:
+        - Public site / ödeme
+        - Online Dershanem paneli
+        - Online Deneme Kulübü
+        - İşletme Paneli
+        - Altyapı / CI
+        - Diğer
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Kabul ölçütleri
+      description: Çözümün tamamlandığını nasıl anlayacağız?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatifler
+      description: Denenen geçici çözümleri veya alternatif yaklaşımı yazın.
