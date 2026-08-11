@@ -14,8 +14,17 @@ test("/api/health çalışma ortamına uygun durum döner", async ({ request }) 
   const res = await request.get("/api/health");
   // DB yapılandırılmışsa 200; lokal E2E ortamında DB yoksa endpoint sözleşmesi gereği 503.
   expect([200, 404, 503]).toContain(res.status());
-  if (res.status() === 503) {
-    expect(await res.json()).toMatchObject({ status: "down", db: { ok: false } });
+  if (res.status() !== 404) {
+    const body = await res.json();
+    expect(body).toMatchObject({
+      configuration: {
+        status: expect.stringMatching(/^(ready|degraded|blocked)$/),
+        blockerCount: expect.any(Number),
+        warningCount: expect.any(Number),
+        fingerprint: expect.stringMatching(/^cfg-[a-f0-9]{8}$/),
+      },
+    });
+    if (res.status() === 503) expect(body.status).toBe("down");
   }
 });
 

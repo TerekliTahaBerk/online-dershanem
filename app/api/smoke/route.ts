@@ -84,12 +84,14 @@ export async function GET(req: NextRequest) {
   }));
 
   // 5. Env validation
-  const envStatus = validateEnvOnce();
+  const configuration = validateEnvOnce();
   checks.push({
     name: "env_validation",
-    ok: envStatus.ok,
+    ok: configuration.status !== "blocked",
     ms: 0,
-    error: envStatus.missing.length ? `missing: ${envStatus.missing.join(", ")}` : undefined,
+    error: configuration.blockers.length
+      ? `blocked: ${configuration.blockers.map(({ key, code }) => `${key}:${code}`).join(", ")}`
+      : undefined,
   });
 
   const allOk = checks.every((c) => c.ok);

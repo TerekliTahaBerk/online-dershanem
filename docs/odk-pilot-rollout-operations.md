@@ -11,7 +11,7 @@ Bu süreç Online Deneme Kulübü'nü küçük, adı konmuş bir katılımcı gr
 5. Çocuk verisi/KVKK, Meet oturum protokolü, PDF yetkisi ve olay yönetimi incelemesinden sonra üç manuel onayı açın: `ODK_PILOT_ACCEPTANCE_APPROVED`, `ODK_PILOT_SECURITY_REVIEW_APPROVED`, `ODK_PILOT_OPERATIONS_APPROVED`.
 6. Admin ODK “Pilot yayını” ekranında katılımcıları açıkça seçer. Taslak oluşturmak erişim vermez; tüm bloke kapılar kalkınca aktive edilir.
 
-Ortam değişkenlerini yükledikten sonra `npm run inspect:odk-pilot` çalıştırılır. Komut hiçbir secret değerini yazdırmaz ve veritabanına bağlanmaz; migration dosyası, cron tanımı ve ortam yapılandırmasının yerel ön kontrolünü yapar. Hazır deneme, stale oturum, puanlama kuyruğu ve rol kapsamı gibi canlı veri kapıları ayrıca admin “Pilot yayını” ekranından doğrulanır.
+Ortam değişkenlerini yükledikten sonra önce `npm run validate:deploy-env -- --target=production`, ardından `npm run inspect:odk-pilot` çalıştırılır. Deploy doğrulaması kritik production sözleşmesini bloke eder; restore drill gibi hizmeti düşürmeyen readiness eksiklerini redakte edilmiş structured warning olarak bildirir. Komutlar hiçbir secret değerini yazdırmaz ve veritabanına bağlanmaz. Hazır deneme, stale oturum, puanlama kuyruğu ve rol kapsamı gibi canlı veri kapıları ayrıca admin “Pilot yayını” ekranından doğrulanır.
 
 Her koşu için [ODK iki aşamalı pilot kabul formu](./odk-pilot-acceptance-checklist.md) kopyalanır. Formda kişisel veri veya soru içeriği tutulmaz.
 
