@@ -222,6 +222,29 @@ async function main() {
   await prisma.odkExamQuestion.upsert({ where: { id: ids.odkQuestion }, create: { id: ids.odkQuestion, sectionId: ids.odkSection, questionNumber: 1, position: 0, correctOption: "A", difficulty: "MEDIUM" }, update: { correctOption: "A", isActive: true } });
   await prisma.odkQuestionOutcome.upsert({ where: { questionId_outcomeId: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots } }, create: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots, isPrimary: true }, update: { isPrimary: true } });
   await prisma.odkExam.update({ where: { id: ids.odkExam }, data: { currentVersionId: ids.odkVersion } });
+  const e2eOdkPackage = await prisma.odkPackage.upsert({
+    where: { slug: "e2e-odk-live-access" },
+    create: { id: "e2e-odk-package-live", slug: "e2e-odk-live-access", title: "E2E ODK Canlı Erişim", priceCents: 9900 },
+    update: { title: "E2E ODK Canlı Erişim", priceCents: 9900, isActive: true },
+  });
+  await prisma.odkPackageExam.upsert({
+    where: { packageId_examId: { packageId: e2eOdkPackage.id, examId: ids.odkExam } },
+    create: { packageId: e2eOdkPackage.id, examId: ids.odkExam },
+    update: {},
+  });
+  for (const userId of [ids.odkStudent, ids.foreignStudent]) {
+    const orderId = `e2e-odk-access-${userId}`;
+    await prisma.odkOrder.upsert({
+      where: { id: orderId },
+      create: { id: orderId, packageId: e2eOdkPackage.id, status: "PAID", subtotalCents: 9900, totalCents: 9900, studentUserId: userId, provisioningStatus: "SUCCEEDED", provisionedAt: new Date(), buyerInfo: { email: users.find((user) => user.id === userId)?.email } },
+      update: { status: "PAID", studentUserId: userId, provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
+    });
+    await prisma.odkEntitlement.upsert({
+      where: { orderId },
+      create: { orderId, userId, packageId: e2eOdkPackage.id, startsAt: new Date(0) },
+      update: { userId, packageId: e2eOdkPackage.id, startsAt: new Date(0), expiresAt: null, revokedAt: null },
+    });
+  }
   await prisma.odkExamAttempt.deleteMany({ where: { examId: ids.odkExam } });
   await prisma.odkExamAttempt.create({ data: { id: ids.odkAttempt, examId: ids.odkExam, versionId: ids.odkVersion, studentUserId: ids.odkStudent, attemptNumber: 1, status: "IN_PROGRESS", startedAt: new Date(), deadlineAt: odkEndsAt, lastActivityAt: new Date() } });
   await prisma.odkExamAttempt.create({ data: { id: ids.odkForeignAttempt, examId: ids.odkExam, versionId: ids.odkVersion, studentUserId: ids.foreignStudent, attemptNumber: 1, status: "IN_PROGRESS", startedAt: new Date(), deadlineAt: odkEndsAt, lastActivityAt: new Date() } });
