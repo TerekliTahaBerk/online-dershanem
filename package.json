@@ -30,6 +30,7 @@
     "e2e:cross-browser": "PLAYWRIGHT_CROSS_BROWSER=true playwright test tests/e2e/panel-cross-browser.spec.ts",
     "e2e:odk": "playwright test tests/e2e/odk-exam-flow.spec.ts",
     "e2e:odk-quality": "playwright test tests/e2e/odk-product-quality.spec.ts --workers=1",
+    "e2e:odk-provisioning": "playwright test tests/e2e/odk-payment-provisioning.spec.ts --workers=1",
     "e2e:install": "playwright install chromium",
     "test:e2e": "playwright test",
     "lighthouse:ci": "lhci autorun",

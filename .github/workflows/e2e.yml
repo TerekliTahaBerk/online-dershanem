@@ -96,6 +96,7 @@ jobs:
       PAYTR_MERCHANT_ID: e2e-merchant
       PAYTR_MERCHANT_KEY: e2e-only-merchant-key
       PAYTR_MERCHANT_SALT: e2e-only-merchant-salt
+      ODK_PROVISIONING_TEST_MODE: "true"
       E2E_PASSWORD: testpass123
       PANEL_E2E_ADMIN_EMAIL: admin.e2e@example.com
       PANEL_E2E_ADMIN_PASSWORD: testpass123

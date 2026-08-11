@@ -8,6 +8,7 @@ import { attemptStartError, decideAttemptStart } from "@/lib/odk/attempt-domain"
 import { odkLateEntryBand } from "@/lib/odk/telemetry";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { hasActiveOdkExamEntitlement } from "@/lib/odk/provisioning";
 
 const schema = z.object({ meetAcknowledged: z.boolean().default(false) });
 
@@ -18,6 +19,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Sınav giriş onayını kontrol edin." }, { status: 400 });
   const { id } = await context.params;
+  if (!(await hasActiveOdkExamEntitlement(auth.session.userId, id))) {
+    return NextResponse.json({ error: "Bu deneme için aktif paket erişiminiz yok." }, { status: 403 });
+  }
   const exam = await prisma.odkExam.findFirst({ where: { id, publishedAt: { not: null } }, select: { id: true, family: true, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, attemptLimit: true, meetRequired: true, currentVersion: { select: { id: true, status: true, durationMinutes: true } } } });
   if (!exam?.currentVersion || exam.currentVersion.status !== "LOCKED") return NextResponse.json({ error: "Sınav sürümü kullanıma hazır değil." }, { status: 409 });
   const existing = await prisma.odkExamAttempt.findFirst({ where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS" }, orderBy: { attemptNumber: "desc" } });

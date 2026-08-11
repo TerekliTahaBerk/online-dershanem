@@ -252,6 +252,8 @@ model User {
   odOrders                      OdOrder[]
   productMemberships            ProductMembership[]        @relation("ProductMembershipOwner")
   grantedProductMemberships     ProductMembership[]        @relation("ProductMembershipGranter")
+  odkOrders                     OdkOrder[]                 @relation("OdkOrderStudent")
+  odkEntitlements               OdkEntitlement[]
   createdOdkExamSeries          OdkExamSeries[]            @relation("OdkExamSeriesCreator")
   createdOdkExams               OdkExam[]                  @relation("OdkExamCreator")
   createdOdkExamVersions        OdkExamVersion[]           @relation("OdkExamVersionCreator")
@@ -2029,6 +2031,13 @@ enum OdkPaymentProvider {
   PAYTR
 }
 
+enum OdkProvisioningStatus {
+  PENDING
+  RUNNING
+  RETRY_PENDING
+  SUCCEEDED
+}
+
 enum CouponType {
   PERCENT
   FIXED
@@ -2446,6 +2455,7 @@ model OdkPackage {
   updatedAt          DateTime         @updatedAt @map("updated_at")
   orders             OdkOrder[]
   examLinks          OdkPackageExam[]
+  entitlements       OdkEntitlement[]
 
   @@index([isActive])
   @@index([isFeatured])
@@ -2726,20 +2736,48 @@ model OdkAttemptOutcomeScore {
 }
 
 model OdkOrder {
-  id            String         @id @default(cuid())
-  packageId     String         @map("package_id")
-  status        OdkOrderStatus @default(PENDING)
-  subtotalCents Int            @map("subtotal_cents")
-  discountCents Int            @default(0) @map("discount_cents")
-  totalCents    Int            @map("total_cents")
-  buyerInfo     Json?          @map("buyer_info")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  package       OdkPackage     @relation(fields: [packageId], references: [id], onDelete: Restrict)
-  payments      OdkPayment[]
+  id                   String                @id @default(cuid())
+  packageId            String                @map("package_id")
+  status               OdkOrderStatus        @default(PENDING)
+  subtotalCents        Int                   @map("subtotal_cents")
+  discountCents        Int                   @default(0) @map("discount_cents")
+  totalCents           Int                   @map("total_cents")
+  buyerInfo            Json?                 @map("buyer_info")
+  studentUserId        String?               @map("student_user_id")
+  provisioningStatus   OdkProvisioningStatus @default(PENDING) @map("provisioning_status")
+  provisioningAttempts Int                   @default(0) @map("provisioning_attempts")
+  provisioningError    String?               @map("provisioning_error")
+  provisionedAt        DateTime?             @map("provisioned_at")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  package              OdkPackage            @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  payments             OdkPayment[]
+  student              User?                 @relation("OdkOrderStudent", fields: [studentUserId], references: [id], onDelete: SetNull)
+  entitlement          OdkEntitlement?
 
   @@index([status, createdAt])
+  @@index([provisioningStatus, updatedAt])
+  @@index([studentUserId, createdAt])
   @@map("odk_orders")
+}
+
+model OdkEntitlement {
+  id        String     @id @default(cuid())
+  orderId   String     @unique @map("order_id")
+  userId    String     @map("user_id")
+  packageId String     @map("package_id")
+  startsAt  DateTime   @default(now()) @map("starts_at")
+  expiresAt DateTime?  @map("expires_at")
+  revokedAt DateTime?  @map("revoked_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  order     OdkOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package   OdkPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+
+  @@index([userId, revokedAt, expiresAt])
+  @@index([packageId])
+  @@map("odk_entitlements")
 }
 
 model OdkPayment {

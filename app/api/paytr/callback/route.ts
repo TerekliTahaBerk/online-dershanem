@@ -28,6 +28,7 @@ import {
 } from "@/lib/odk/paytr";
 import { validatePaytrPaymentInvariant } from "@/lib/odk/paytr-callback-validation";
 import { upsertOrderLedger } from "@/lib/business/finance";
+import { provisionOdkOrder, type OdkProvisioningFailurePoint } from "@/lib/odk/provisioning";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -85,7 +86,14 @@ export async function POST(req: Request) {
   const service = detectPaytrService(payload.merchant_oid);
 
   if (service === "ODK") {
-    return handleOdk(payload);
+    const requestedFailure = req.headers.get("x-odk-test-failure") as OdkProvisioningFailurePoint | null;
+    const failurePoint = process.env.ODK_PROVISIONING_TEST_MODE === "true"
+      && process.env.VERCEL_ENV !== "production"
+      && requestedFailure
+      && ["AFTER_USER", "AFTER_PROFILE", "AFTER_MEMBERSHIP"].includes(requestedFailure)
+      ? requestedFailure
+      : undefined;
+    return handleOdk(payload, failurePoint);
   }
   if (service === "OD") {
     return handleOd(payload);
@@ -104,14 +112,14 @@ export async function POST(req: Request) {
   return plain("OK");
 }
 
-async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
+async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvisioningFailurePoint): Promise<Response> {
   const payment = await prisma.odkPayment.findFirst({
     where: { provider: "PAYTR", providerRef: payload.merchant_oid },
     select: {
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, totalCents: true, discountCents: true, buyerInfo: true } },
+      order: { select: { status: true, totalCents: true, discountCents: true, buyerInfo: true, provisioningStatus: true } },
     },
   });
 
@@ -129,7 +137,7 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
     return plain("OK");
   }
 
-  if (payment.status === "SUCCEEDED" && payment.order.status === "PAID") {
+  if (payment.status === "SUCCEEDED" && payment.order.status === "PAID" && payment.order.provisioningStatus === "SUCCEEDED") {
     log.debug("paytr.callback.odk.already_processed", { orderId: payment.orderId });
     return plain("OK");
   }
@@ -167,21 +175,24 @@ async function handleOdk(payload: PaytrCallbackPayload): Promise<Response> {
 
     const afterCommit: Array<() => Promise<void>> = [];
     try {
-      await prisma.$transaction(async (tx) => {
-        const paidAt = new Date();
-        await markOdkOrderPaid(payment.orderId, { transaction: tx, afterCommit });
-        await tx.odkPayment.update({
-          where: { id: payment.id },
-          data: {
-            status: "SUCCEEDED",
-            amountCents: invariant.paymentAmountCents,
-            paidAt,
-            failureReason: null,
-          },
-        });
-        await upsertOrderLedger(tx, { source: "ONLINE_DENEME_KULUBU", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: `ODK siparişi ${payment.orderId}`, paidAt, paymentMethod: payload.payment_type, buyerInfo: payment.order.buyerInfo });
-      }, { isolationLevel: "Serializable" });
+      if (payment.status !== "SUCCEEDED" || payment.order.status !== "PAID") {
+        await prisma.$transaction(async (tx) => {
+          const paidAt = new Date();
+          await markOdkOrderPaid(payment.orderId, { transaction: tx, afterCommit });
+          await tx.odkPayment.update({
+            where: { id: payment.id },
+            data: {
+              status: "SUCCEEDED",
+              amountCents: invariant.paymentAmountCents,
+              paidAt,
+              failureReason: null,
+            },
+          });
+          await upsertOrderLedger(tx, { source: "ONLINE_DENEME_KULUBU", orderId: payment.orderId, totalCents: invariant.paymentAmountCents, discountCents: payment.order.discountCents, description: `ODK siparişi ${payment.orderId}`, paidAt, paymentMethod: payload.payment_type, buyerInfo: payment.order.buyerInfo });
+        }, { isolationLevel: "Serializable" });
+      }
       await Promise.all(afterCommit.map((run) => run()));
+      await provisionOdkOrder(payment.orderId, { failurePoint });
       log.info("paytr.callback.odk.success", { orderId: payment.orderId, merchantOid: payload.merchant_oid, amount: totalCents });
       void logAudit({
         actorUserId: null,
