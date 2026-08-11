@@ -28,5 +28,5 @@ export async function GET(request: Request) {
     const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length };
     log.info("odk.lifecycle.completed", result);
     return result;
-  });
+  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted }) });
 }

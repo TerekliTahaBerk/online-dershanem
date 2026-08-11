@@ -8,7 +8,15 @@ Zorunlu değişkenler: `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_APP_URL`, `NEX
 
 Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kullanılır; ikisi de yoksa uygulama in-memory fallback ile çalışır. Yalnızca birinin tanımlanması yapılandırma hatasıdır.
 
-`ERROR_ALERT_WEBHOOK_URL`, merkezi request hatalarını üç saniyelik zaman aşımıyla JSON webhook'a yollar. Tanımlı değilse hatalar Vercel structured loglarında kalır.
+`ERROR_ALERT_WEBHOOK_URL`, merkezi request ve cron heartbeat alarmlarını üç saniyelik zaman aşımıyla JSON webhook'a yollar. Production readiness bu kanal tanımlı değilse hazır sayılmaz; yöneticiler ayrıca aynı alarmı panel Bildirim Merkezi'nde görür.
+
+### Liveness, readiness ve cron heartbeat
+
+`/api/health/live` yalnız Node process'inin yanıt verebildiğini ölçer ve bağımlılık sorgulamaz. `/api/health/ready` ise DB, kritik env sözleşmesi, PayTR anahtar bütünlüğü, son restore tatbikatı, alarm kanalı ve altı kritik cron'un kalıcı heartbeat'ini ayrı ayrı raporlar. Eski `/api/health` URL'si geriye uyumluluk için readiness ile aynı yanıtı verir. Health yanıtlarında secret değerleri bulunmaz.
+
+Her cron çalışmasında `lastStartedAt`, `lastSucceededAt`, `lastFailedAt`, `lastDurationMs`, `processedCount` ve `failedCount` güncellenir. Genel stale eşiği cadence'in iki katıdır; beş dakikalık ODK sınav yaşam döngüsü işi sınav açma/kapatma riski nedeniyle sekiz dakikada alarm üretir. Başarısız veya stale işler `/panel/yonetim/isler#cron-durumu` ekranında görünür, yönetici bildirimi oluşturur ve `ERROR_ALERT_WEBHOOK_URL` kanalına deduplikasyonlu alarm yollar.
+
+External uptime monitor iki URL'yi ayrı monitor olarak çağırmalıdır: liveness sürekli `200` bekler; readiness yalnız bütün zorunlu kontroller sağlıklıysa `200`, aksi halde `503` döner. Böylece cron tetikleyicisinin tamamen durması da bir sonraki readiness kontrolünde kullanıcı şikâyetinden önce alarma dönüşür.
 
 ### Ürün rollout bayrakları ve baz ölçüm
 
@@ -102,7 +110,7 @@ Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WR
 
 ## Günlük kontroller
 
-1. `/api/health` yanıtında `status=ok`, `db.ok=true`, `env.ok=true` olduğunu doğrulayın.
+1. `/api/health/ready` yanıtında `status=ready`, `ready=true` ve bütün zorunlu kontrollerin `status=ok` olduğunu doğrulayın.
 2. Yönetim panelindeki “İlginizi bekleyenler” ve “E-posta kuyruğu” bölümlerini kontrol edin.
 3. Başarısız makbuzu “Yeniden dene” ile kuyruğa alın; cron en geç 15 dakika içinde yeniden dener.
 4. Eşleşmemiş ödenmiş siparişleri doğru öğrenci hesabına bağlayın.

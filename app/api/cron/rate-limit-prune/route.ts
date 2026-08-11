@@ -26,5 +26,5 @@ export async function GET(req: Request) {
       cutoff: cutoff.toISOString(),
       deleted: result.count,
     };
-  });
+  }, { metrics: (result) => ({ processedCount: result.deleted }) });
 }

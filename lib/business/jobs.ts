@@ -135,6 +135,7 @@ async function retryMessageDelivery(messageId: string) {
 export async function processBackgroundJobs(limit = 10) {
   await prisma.backgroundJob.updateMany({ where: { status: "PROCESSING", lockedAt: { lt: new Date(Date.now() - 15 * 60_000) } }, data: { status: "FAILED", lockedAt: null, lockedBy: null, lastErrorCode: "STALE_LOCK_RECOVERED" } });
   let processed = 0;
+  let failed = 0;
   for (let index = 0; index < Math.min(limit, 50); index++) {
     const candidate = await prisma.backgroundJob.findFirst({ where: { status: { in: ["PENDING", "FAILED"] }, runAfter: { lte: new Date() }, attempts: { lt: 5 } }, orderBy: [{ priority: "asc" }, { createdAt: "asc" }] });
     if (!candidate) break;
@@ -158,13 +159,14 @@ export async function processBackgroundJobs(limit = 10) {
       log.info("business.job.succeeded", { jobId: candidate.id, type: candidate.type, retryCount: candidate.attempts, latency: Date.now() - candidate.updatedAt.getTime() });
       processed++;
     } catch (error) {
+      failed++;
       const attempts = candidate.attempts + 1;
       const code = error instanceof Error ? error.message.slice(0, 100) : "UNKNOWN";
       await prisma.backgroundJob.update({ where: { id: candidate.id }, data: { status: attempts >= candidate.maxAttempts ? "DEAD" : "FAILED", lastErrorCode: code, runAfter: new Date(Date.now() + Math.min(60, 2 ** attempts) * 60_000), lockedAt: null, lockedBy: null } });
       log.error("business.job.failed", error, { jobId: candidate.id, type: candidate.type, retryCount: attempts });
     }
   }
-  return processed;
+  return { processed, failed };
 }
 
 export async function scheduleBusinessMaintenanceJobs(now = new Date()) {

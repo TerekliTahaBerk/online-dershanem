@@ -10,21 +10,28 @@ test("API rate limit headers public route'larda eklenmiyor", async ({ request })
   expect(res.status()).toBe(200);
 });
 
-test("/api/health çalışma ortamına uygun durum döner", async ({ request }) => {
-  const res = await request.get("/api/health");
+test("liveness bağımlılıklardan bağımsız process sinyali döner", async ({ request }) => {
+  const res = await request.get("/api/health/live");
+  expect(res.status()).toBe(200);
+  await expect(res.json()).resolves.toMatchObject({ status: "live", live: true });
+});
+
+test("readiness bileşenleri ve kritik cron kanıtlarını ayrı raporlar", async ({ request }) => {
+  const res = await request.get("/api/health/ready");
   // DB yapılandırılmışsa 200; lokal E2E ortamında DB yoksa endpoint sözleşmesi gereği 503.
   expect([200, 404, 503]).toContain(res.status());
   if (res.status() !== 404) {
     const body = await res.json();
     expect(body).toMatchObject({
-      configuration: {
-        status: expect.stringMatching(/^(ready|degraded|blocked)$/),
-        blockerCount: expect.any(Number),
-        warningCount: expect.any(Number),
-        fingerprint: expect.stringMatching(/^cfg-[a-f0-9]{8}$/),
+      status: expect.stringMatching(/^(ready|not_ready)$/),
+      ready: expect.any(Boolean),
+      checks: {
+        database: { status: expect.stringMatching(/^(ok|down)$/) },
+        configuration: { blockerCount: expect.any(Number), warningCount: expect.any(Number), fingerprint: expect.stringMatching(/^cfg-[a-f0-9]{8}$/) },
+        cron: { jobs: expect.arrayContaining([expect.objectContaining({ name: "odk-exam-lifecycle", status: expect.stringMatching(/^(healthy|missing|failed|stale)$/) })]) },
       },
     });
-    if (res.status() === 503) expect(body.status).toBe("down");
+    expect(body.ready).toBe(res.status() === 200);
   }
 });
 
