@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-11
+
 ### Added
 
 - GitHub community health files and issue and pull request templates
@@ -24,5 +26,6 @@ All notable changes to this project are documented here. The format follows [Kee
 - PayTR payments, Resend email, and optional Meta/OpenAI integrations
 - CI, E2E, Lighthouse, backup, and production health workflows
 
-[Unreleased]: https://github.com/TerekliTahaBerk/online-dershanem/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/TerekliTahaBerk/online-dershanem/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/TerekliTahaBerk/online-dershanem/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/TerekliTahaBerk/online-dershanem/releases/tag/v0.1.0
