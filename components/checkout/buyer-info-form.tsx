@@ -18,6 +18,7 @@ export type BuyerInfoFormDefaults = {
   targetSchool?: string;
   parentFullName?: string;
   parentPhone?: string;
+  parentEmail?: string;
 };
 
 export type BuyerInfoFormProps = {
@@ -398,6 +399,13 @@ export function BuyerInfoForm({
           type="tel"
           autoComplete="section-parent tel"
           defaultValue={defaults.parentPhone}
+        />
+        <Field
+          name="parentEmail"
+          label="Veli E-posta"
+          type="email"
+          autoComplete="section-parent email"
+          defaultValue={defaults.parentEmail}
         />
       </Section>
 

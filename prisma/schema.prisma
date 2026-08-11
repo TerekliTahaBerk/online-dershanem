@@ -1027,18 +1027,21 @@ model ProductMembership {
   userId      String              @map("user_id")
   product     ProductCode
   source      ProductAccessSource @default(MANUAL)
-  grantedById String?             @map("granted_by_id")
+  grantedById    String?             @map("granted_by_id")
+  sourceOdOrderId String?            @map("source_od_order_id")
   startsAt    DateTime            @default(now()) @map("starts_at")
   expiresAt   DateTime?           @map("expires_at")
   revokedAt   DateTime?           @map("revoked_at")
   createdAt   DateTime            @default(now()) @map("created_at")
   updatedAt   DateTime            @updatedAt @map("updated_at")
   user        User                @relation("ProductMembershipOwner", fields: [userId], references: [id], onDelete: Cascade)
-  grantedBy   User?               @relation("ProductMembershipGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+  grantedBy     User?               @relation("ProductMembershipGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+  sourceOdOrder OdOrder?            @relation(fields: [sourceOdOrderId], references: [id], onDelete: SetNull)
 
   @@unique([userId, product])
   @@index([product, revokedAt, expiresAt])
   @@index([grantedById, createdAt])
+  @@index([sourceOdOrderId])
   @@map("product_memberships")
 }
 
@@ -2029,6 +2032,7 @@ enum OdOnboardingState {
   GROUP_ASSIGNED
   FIRST_LESSON_SCHEDULED
   ACTIVE
+  MANUAL_REVIEW
   BLOCKED
   REFUND_PENDING
   CANCELED
@@ -2058,6 +2062,14 @@ enum OdkProvisioningStatus {
   RUNNING
   RETRY_PENDING
   SUCCEEDED
+}
+
+enum OdProvisioningStatus {
+  PENDING
+  RUNNING
+  RETRY_PENDING
+  SUCCEEDED
+  MANUAL_REVIEW
 }
 
 enum CouponType {
@@ -2833,16 +2845,22 @@ model OdOrder {
   buyerInfo     Json?          @map("buyer_info")
   intentId      String?        @map("intent_id")
   userId        String?        @map("user_id")
+  provisioningStatus   OdProvisioningStatus @default(PENDING) @map("provisioning_status")
+  provisioningAttempts Int                  @default(0) @map("provisioning_attempts")
+  provisioningError    String?              @map("provisioning_error")
+  provisionedAt        DateTime?            @map("provisioned_at")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   package       Package?       @relation(fields: [packageId], references: [id], onDelete: SetNull)
   payments      OdPayment[]
   user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   onboarding    OdOnboarding?
+  sourcedMemberships ProductMembership[]
 
   @@index([status, createdAt])
   @@index([intentId])
   @@index([userId, createdAt])
+  @@index([provisioningStatus, updatedAt])
   @@map("od_orders")
 }
 

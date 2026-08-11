@@ -8,6 +8,7 @@ export const OD_ONBOARDING_STATES = [
   "GROUP_ASSIGNED",
   "FIRST_LESSON_SCHEDULED",
   "ACTIVE",
+  "MANUAL_REVIEW",
   "BLOCKED",
   "REFUND_PENDING",
   "CANCELED",
@@ -25,6 +26,7 @@ export const OD_ONBOARDING_LABELS: Record<OdOnboardingStateValue, string> = {
   GROUP_ASSIGNED: "Grup atandı",
   FIRST_LESSON_SCHEDULED: "İlk ders planlandı",
   ACTIVE: "Aktif",
+  MANUAL_REVIEW: "Manuel inceleme",
   BLOCKED: "Bloke",
   REFUND_PENDING: "İade bekliyor",
   CANCELED: "İptal edildi",
@@ -50,6 +52,7 @@ const SLA_HOURS: Partial<Record<OdOnboardingStateValue, number>> = {
   PLACEMENT_PENDING: 48,
   GROUP_ASSIGNED: 72,
   FIRST_LESSON_SCHEDULED: 24,
+  MANUAL_REVIEW: 24,
   BLOCKED: 24,
   REFUND_PENDING: 48,
 };
@@ -64,6 +67,7 @@ export const OD_ONBOARDING_NEXT_ACTION: Record<OdOnboardingStateValue, string> =
   GROUP_ASSIGNED: "İlk dersi takvime ekle",
   FIRST_LESSON_SCHEDULED: "Erişimi aktive edip onboarding'i tamamla",
   ACTIVE: "Onboarding tamamlandı",
+  MANUAL_REVIEW: "Kimlik çakışmasını incele veya öğrenci hesabını elle seç",
   BLOCKED: "Blokeri çöz ve önceki adıma dön",
   REFUND_PENDING: "Ödeme iadesinin tamamlanmasını takip et",
   CANCELED: "İşlem kapatıldı",
@@ -76,6 +80,7 @@ export function allowedOdOnboardingTransitions(
   blockedFromState?: OdOnboardingStateValue | null,
 ): OdOnboardingStateValue[] {
   if (TERMINAL.has(state)) return state === "ACTIVE" ? ["REFUND_PENDING"] : [];
+  if (state === "MANUAL_REVIEW") return blockedFromState ? [blockedFromState, "BLOCKED", "REFUND_PENDING", "CANCELED"] : ["BLOCKED", "REFUND_PENDING", "CANCELED"];
   if (state === "BLOCKED") return blockedFromState ? [blockedFromState, "REFUND_PENDING", "CANCELED"] : ["REFUND_PENDING", "CANCELED"];
   if (state === "REFUND_PENDING") return ["CANCELED", "BLOCKED"];
   const next = NORMAL_NEXT[state];
