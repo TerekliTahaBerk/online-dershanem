@@ -15,6 +15,23 @@ Ortam değişkenlerini yükledikten sonra `npm run inspect:odk-pilot` çalışt�
 
 Her koşu için [ODK iki aşamalı pilot kabul formu](./odk-pilot-acceptance-checklist.md) kopyalanır. Formda kişisel veri veya soru içeriği tutulmaz.
 
+## Backup → restore prosedürü ve kanıt kaydı
+
+Tekrarlanabilir üretim tatbikatı `.github/workflows/database-backup.yml` içindeki `Encrypted Database Backup` workflow'udur:
+
+1. `PRODUCTION_DATABASE_DIRECT_URL` ile PostgreSQL 17 custom-format dump alınır. Dump üretim veritabanına yalnız okuma yapar.
+2. Dump AES-256-CBC/PBKDF2 ile şifrelenir; açık dump kalıcı artifact olarak yüklenmez.
+3. Şifreli dump tekrar açılarak job'a özel, production olmayan PostgreSQL 17 servisine restore edilir. Extension metadata'sı portable restore listesinden çıkarılır; canlı veritabanı restore hedefi olarak hiçbir zaman kullanılmaz.
+4. `scripts/verify-restore-readiness.sql` kullanıcı, product membership, OD/ODK sipariş-ödeme ve ODK exam/version/attempt/answer/score ilişkilerini kontrol eder. Her orphan veya sınav-sürüm uyuşmazlığı job'ı başarısız yapar.
+5. Başarılı job'ın GitHub Actions run URL'si, restore süresi, sorumlu ve UTC bitiş zamanı aşağıdaki kayda eklenir. Şifreli artifact 14 gün, bu özet kayıt kalıcı saklanır. Kişisel veri veya bağlantı dizesi kayda yazılmaz; dump yalnız SHA-256 özetiyle tanımlanır.
+6. Yalnız `PASS` kaydından sonra bitiş zamanı production `ODK_LAST_RESTORE_DRILL_AT` değerine UTC ISO timestamp olarak yazılır ve production yeniden deploy edilir.
+
+### Tatbikat kayıtları
+
+| UTC bitiş | Sonuç | Sorumlu | Restore süresi | Kapsam ve kanıt |
+| --- | --- | --- | --- | --- |
+| `2026-08-11T14:07:17Z` | `PASS` | Taha Berk Terekli | `0.37s` | Vercel production `DIRECT_URL` kaynağından `pg_dump` 17.10; izole local PostgreSQL 17.10 restore; 110 public tablo; kritik ilişki smoke kontrolleri geçti. Dump SHA-256: `844011e9ad10e903c0db46e1c6bcf409d27c6bb438d7d9ad2a0b3b1b1d78515a`; takip: Linear `Y-56`. Production ODK exam/version/attempt/answer tabloları tatbikat anında boştu. |
+
 ## Zorunlu uygulama sırası
 
 1. Üretim migration ve ortam yapılandırması doğrulanır; genel yayın modu açılmaz.

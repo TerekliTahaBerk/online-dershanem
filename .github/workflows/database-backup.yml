@@ -31,6 +31,8 @@ jobs:
       BACKUP_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
       RESTORE_DATABASE_URL: postgresql://restore:restore@localhost:5432/restore_drill
     steps:
+      - uses: actions/checkout@v4
+
       - name: Require backup secrets
         run: |
           test -n "$DATABASE_DIRECT_URL"
@@ -50,10 +52,8 @@ jobs:
           sed '/ EXTENSION /d; /COMMENT - EXTENSION/d' database.restore.list > database.portable.list
           docker run --rm --network host -v "$PWD:/backup" postgres:17-alpine \
             pg_restore --use-list=/backup/database.portable.list --no-owner --no-acl --exit-on-error --dbname="$RESTORE_DATABASE_URL" /backup/database.verify.dump
-          docker run --rm --network host postgres:17-alpine \
-            psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS restored_tables FROM information_schema.tables WHERE table_schema='public';"
-          docker run --rm --network host postgres:17-alpine \
-            psql "$RESTORE_DATABASE_URL" -v ON_ERROR_STOP=1 -c "SELECT COUNT(*) AS users FROM users; SELECT COUNT(*) AS lessons FROM lessons; SELECT COUNT(*) AS orders FROM od_orders; SELECT COUNT(*) AS outbox FROM email_outbox;"
+          docker run --rm --network host -v "$PWD:/workspace:ro" postgres:17-alpine \
+            psql "$RESTORE_DATABASE_URL" --file=/workspace/scripts/verify-restore-readiness.sql
           rm database.verify.dump database.restore.list database.portable.list
 
       - name: Upload encrypted backup

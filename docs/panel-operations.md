@@ -114,9 +114,9 @@ GitHub secrets: `PRODUCTION_DATABASE_DIRECT_URL`, `BACKUP_ENCRYPTION_PASSWORD`, 
 1. `Encrypted Database Backup` workflow'unu manuel çalıştırın.
 2. Workflow PostgreSQL 17 istemcisiyle üretim dump'ını AES-256 ile şifreler, tekrar açar ve geçici PostgreSQL 17 servisine gerçekten geri yükler.
 3. Prisma Postgres'e özgü extension tanımları portable restore listesinden çıkarılır; uygulama tabloları ve veriler aynen korunur.
-4. `users`, `lessons`, `od_orders` ve `email_outbox` tablolarını sorgulayarak geri yüklenen veriyi doğrular.
+4. `scripts/verify-restore-readiness.sql` ile kullanıcı, product membership, OD/ODK sipariş-ödeme ve ODK exam/version/attempt/answer/score ilişkilerini doğrular; orphan veya sınav-sürüm uyuşmazlığında workflow başarısız olur.
 5. Şifreli artifact'i 14 gün saklar; geçici PostgreSQL job sonunda otomatik silinir.
-6. Tatbikat sonucunu ve tarihini operasyon kaydına yazın.
+6. Tatbikat sonucunu, UTC bitiş zamanını, restore süresini, sorumluyu ve GitHub Actions run kanıtını [ODK operasyon kaydına](./odk-pilot-rollout-operations.md#tatbikat-kayıtları) yazın.
 
 Canlı veritabanına doğrulama amacıyla restore yapılmaz.
 
