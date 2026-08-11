@@ -73,6 +73,9 @@ jobs:
       PANEL_FEATURE_TEACHER_AI_DRAFTS: "true"
       NEXT_PUBLIC_PANEL_FEATURE_TEACHER_AI_DRAFTS: "true"
       INSTAGRAM_INTEGRATION_ENABLED: "true"
+      META_APP_SECRET: e2e-only-meta-app-secret
+      META_VERIFY_TOKEN: e2e-only-meta-verify-token
+      META_GRAPH_API_VERSION: v99.0
       PUBLIC_REGISTER_ENABLED: "false"
       ODK_ROLLOUT_MODE: general
       ODK_PILOT_KILL_SWITCH: "false"
