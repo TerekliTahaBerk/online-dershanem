@@ -31,11 +31,12 @@ export function postPaytrCallback(
   request: APIRequestContext,
   input: Parameters<typeof paytrCallbackBody>[0],
   failurePoint?: "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP",
+  failureService: "OD" | "ODK" = "ODK",
 ) {
   return request.post("/api/paytr/callback", {
     headers: {
       "content-type": "application/x-www-form-urlencoded",
-      ...(failurePoint ? { "x-odk-test-failure": failurePoint } : {}),
+      ...(failurePoint ? { [failureService === "OD" ? "x-od-test-failure" : "x-odk-test-failure"]: failurePoint } : {}),
     },
     data: paytrCallbackBody(input),
   });

@@ -6,6 +6,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { ensurePaidOdOnboarding } from "@/lib/od/onboarding";
+import { provisionOdOrder } from "@/lib/od/provisioning";
 
 const schema = z.object({ userId: z.string().min(1) });
 
@@ -35,6 +36,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     throw error;
   });
   if (!linked) return NextResponse.json({ error: "Sipariş aynı anda farklı bir öğrenci hesabına bağlandı. Sayfayı yenileyin." }, { status: 409 });
+  if (order.status === "PAID") await provisionOdOrder(id, { studentUserId: student.id });
   if (order.status === "PAID") {
     const body = `${order.packageName} · ${(order.totalCents / 100).toLocaleString("tr-TR")} ₺ ödendi`;
     const rawNotificationRows = [

@@ -31,6 +31,7 @@ export async function markOdOrderPaid(
         weakLessons: value.notes ? String(value.notes).slice(0, 200) : "—", needType: "Paket Satın Alma (Ödenmiş)",
         studyStatus: "—", weeklyStudyHours: "—", parentFullName: value.parentFullName || null,
         parentPhone: value.parentPhone || null, notes: `OD Order: ${order.id}`, kvkkConsent: true,
+        parentEmail: value.parentEmail || null,
         paymentConsent: true, status: "PAID", submittedAt: new Date(),
       }, select: { id: true } });
       intentId = intent.id;

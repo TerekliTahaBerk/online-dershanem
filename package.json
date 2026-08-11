@@ -31,6 +31,7 @@
     "e2e:odk": "PLAYWRIGHT_ODK_DEVICE_MATRIX=true playwright test tests/e2e/odk-exam-flow.spec.ts --workers=1",
     "e2e:odk-quality": "playwright test tests/e2e/odk-product-quality.spec.ts --workers=1",
     "e2e:odk-provisioning": "playwright test tests/e2e/odk-payment-provisioning.spec.ts --workers=1",
+    "e2e:od-provisioning": "playwright test tests/e2e/od-payment-provisioning.spec.ts --workers=1",
     "e2e:install": "playwright install chromium webkit",
     "test:e2e": "playwright test",
     "lighthouse:ci": "lhci autorun",

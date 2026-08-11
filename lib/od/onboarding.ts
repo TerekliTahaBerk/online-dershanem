@@ -77,7 +77,7 @@ export async function transitionOdOnboarding(input: {
     if (!allowed.includes(input.toState)) {
       throw new OdOnboardingError(`${currentState} durumundan ${input.toState} durumuna geçilemez.`, "INVALID_TRANSITION");
     }
-    if (input.toState === "BLOCKED" && !input.blockerReason?.trim()) {
+    if (["BLOCKED", "MANUAL_REVIEW"].includes(input.toState) && !input.blockerReason?.trim()) {
       throw new OdOnboardingError("Bloke durumuna geçmek için neden girin.", "MISSING_PREREQUISITE");
     }
     if (input.toState === "CANCELED" && onboarding.order.status !== "REFUNDED" && onboarding.order.status !== "CANCELLED") {
@@ -106,8 +106,8 @@ export async function transitionOdOnboarding(input: {
         state: input.toState as OdOnboardingState,
         ownerId: nextOwnerId,
         dueAt: nextDueAt,
-        blockerReason: input.toState === "BLOCKED" ? input.blockerReason?.trim() : null,
-        blockedFromState: input.toState === "BLOCKED" ? onboarding.state : null,
+        blockerReason: ["BLOCKED", "MANUAL_REVIEW"].includes(input.toState) ? input.blockerReason?.trim() : null,
+        blockedFromState: ["BLOCKED", "MANUAL_REVIEW"].includes(input.toState) ? onboarding.state : null,
         stateEnteredAt: now,
         activatedAt: input.toState === "ACTIVE" ? now : onboarding.activatedAt,
         canceledAt: input.toState === "CANCELED" ? now : onboarding.canceledAt,

@@ -10,6 +10,7 @@ test("normal onboarding sırası atlanamaz ve istisna yolları görünürdür", 
   assert.deepEqual(allowedOdOnboardingTransitions("CONTACTED"), ["ACCOUNT_READY", "BLOCKED", "REFUND_PENDING", "CANCELED"]);
   assert.equal(allowedOdOnboardingTransitions("CONTACTED").includes("GROUP_ASSIGNED"), false);
   assert.deepEqual(allowedOdOnboardingTransitions("BLOCKED", "CONTACTED"), ["CONTACTED", "REFUND_PENDING", "CANCELED"]);
+  assert.deepEqual(allowedOdOnboardingTransitions("MANUAL_REVIEW", "PAID"), ["PAID", "BLOCKED", "REFUND_PENDING", "CANCELED"]);
   assert.deepEqual(allowedOdOnboardingTransitions("CANCELED"), []);
 });
 
