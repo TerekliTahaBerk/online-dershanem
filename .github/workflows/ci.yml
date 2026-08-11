@@ -7,12 +7,15 @@ on:
     branches: [main, test]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  typecheck:
-    name: TypeScript & Lint
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -21,31 +24,112 @@ jobs:
         with:
           node-version: 22
           cache: npm
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Validate Prisma schema with DATABASE_URL only
-        env:
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
-        run: npx prisma validate
-
-      - name: Prisma generate
-        env:
-          DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
-        run: npx prisma generate
-
-      - name: Type-check
-        run: npx tsc --noEmit
-
-      - name: Lint
-        run: npm run lint --if-present
-
-      - name: Repo hygiene (duplicate file guard)
+      - run: npm ci
+      - run: npm run lint
+      - name: Repo hygiene
         run: npm run lint:hygiene
 
-      - name: Unit tests
-        run: npm run test:unit
+  typecheck:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: postgresql://user:pass@localhost:5432/typecheck?schema=public
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - run: npm run typecheck
+
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: postgresql://user:pass@localhost:5432/unit?schema=public
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - run: npm run test:unit
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: integration_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/integration_test?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/integration_test?schema=public
+      BUSINESS_INTEGRATION_TEST: "true"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Prepare integration database
+        run: |
+          npm run prisma:generate
+          npx prisma db push --skip-generate
+          npm run db:seed
+      - run: npm run test:integration
+
+  production-build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_ENV: production
+      DATABASE_URL: postgresql://user:pass@localhost:5432/build?schema=public
+      DIRECT_URL: postgresql://user:pass@localhost:5432/build?schema=public
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ci-only-nextauth-secret-0123456789abcdef0123456789abcdef
+      PANEL_ENABLED: "true"
+      CRON_SECRET: ci-only-cron-secret-0123456789abcdef0123456789abcdef
+      BLOB_READ_WRITE_TOKEN: vercel_blob_rw_ci_only
+      RESEND_API_KEY: re_ci_only
+      EMAIL_MODE: receipts
+      ODK_ROLLOUT_MODE: general
+      ODK_PILOT_KILL_SWITCH: "false"
+      ODK_PILOT_ACCEPTANCE_APPROVED: "true"
+      ODK_PILOT_SECURITY_REVIEW_APPROVED: "true"
+      ODK_PILOT_OPERATIONS_APPROVED: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Configure production readiness fixture
+        run: echo "ODK_LAST_RESTORE_DRILL_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+      - run: npm run build
 
   fresh-database:
     name: Fresh database bootstrap
@@ -84,3 +168,35 @@ jobs:
           npx prisma migrate status
           test "$(psql "$PSQL_URL" -Atc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('users','groups','lessons','assignments','notifications');")" = "5"
           test "$(psql "$PSQL_URL" -Atc "SELECT COUNT(*) FROM business_units WHERE product IN ('OD', 'ODK') AND is_active = true;")" = "2"
+
+  playwright:
+    name: Playwright
+    uses: ./.github/workflows/e2e.yml
+
+  quality-gate:
+    name: Quality Gate
+    if: ${{ always() }}
+    needs:
+      - lint
+      - typecheck
+      - unit
+      - integration
+      - production-build
+      - fresh-database
+      - playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enforce all required checks
+        env:
+          LINT_RESULT: ${{ needs.lint.result }}
+          TYPECHECK_RESULT: ${{ needs.typecheck.result }}
+          UNIT_RESULT: ${{ needs.unit.result }}
+          INTEGRATION_RESULT: ${{ needs.integration.result }}
+          BUILD_RESULT: ${{ needs.production-build.result }}
+          DATABASE_RESULT: ${{ needs.fresh-database.result }}
+          PLAYWRIGHT_RESULT: ${{ needs.playwright.result }}
+        run: |
+          for result in "$LINT_RESULT" "$TYPECHECK_RESULT" "$UNIT_RESULT" "$INTEGRATION_RESULT" "$BUILD_RESULT" "$DATABASE_RESULT" "$PLAYWRIGHT_RESULT"; do
+            test "$result" = "success"
+          done
