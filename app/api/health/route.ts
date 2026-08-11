@@ -4,7 +4,7 @@
  * Production health check endpoint:
  *  - DB ping (1ms SELECT)
  *  - Boot timestamp + commit SHA (Vercel env)
- *  - 200 if OK, 503 if DB unreachable
+ *  - 200 if operational (ready/degraded), 503 if DB or critical configuration is down
  *
  * Uptime monitor (BetterStack / UptimeRobot / Vercel Status) tarafından çağrılır.
  * Auth GEREKMEZ — özellikle public.
@@ -38,7 +38,7 @@ export async function GET() {
   }
 
   // Env validation status (idempotent — gerçek validation boot'ta yapıldı)
-  const envStatus = validateEnvOnce();
+  const configuration = validateEnvOnce();
 
   // Memory snapshot (heap)
   const mem = process.memoryUsage();
@@ -49,7 +49,9 @@ export async function GET() {
   };
 
   const body = {
-    status: dbOk && envStatus.ok ? "ok" : dbOk ? "degraded" : "down",
+    status: !dbOk || configuration.status === "blocked"
+      ? "down"
+      : configuration.status === "degraded" ? "degraded" : "ok",
     bootAt: BOOT_AT,
     now: new Date().toISOString(),
     uptimeMs: Date.now() - new Date(BOOT_AT).getTime(),
@@ -70,17 +72,21 @@ export async function GET() {
       paymentConfigured: Boolean(process.env.PAYTR_MERCHANT_ID && process.env.PAYTR_MERCHANT_KEY && process.env.PAYTR_MERCHANT_SALT),
     },
     cache: cacheStatus(),
-    env: {
-      ok: envStatus.ok,
-      missingCount: envStatus.missing.length,
-      warningCount: envStatus.warnings.length,
+    configuration: {
+      status: configuration.status,
+      environment: configuration.environment,
+      fingerprint: configuration.fingerprint,
+      blockerCount: configuration.blockers.length,
+      warningCount: configuration.warnings.length,
+      blockers: configuration.blockers.map(({ key, code }) => ({ key, code })),
+      warnings: configuration.warnings.map(({ key, code }) => ({ key, code })),
     },
     memory: memMb,
     totalLatencyMs: Date.now() - t0,
   };
 
   return NextResponse.json(body, {
-    status: dbOk ? 200 : 503,
+    status: dbOk && configuration.status !== "blocked" ? 200 : 503,
     headers: {
       "Cache-Control": "no-store, max-age=0",
       "Content-Type": "application/json",
