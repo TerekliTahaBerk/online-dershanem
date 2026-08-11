@@ -14,7 +14,10 @@ for (const key of ["DATABASE_URL", "DIRECT_URL", "NEXTAUTH_SECRET", "CRON_SECRET
   add(key, configured(key), configured(key) ? "Tanımlı; değer gösterilmedi." : "Eksik veya örnek değer kullanılıyor.");
 }
 
-add("ODK_ROLLOUT_MODE", value("ODK_ROLLOUT_MODE").toLowerCase() === "pilot", value("ODK_ROLLOUT_MODE") ? `Mevcut mod: ${value("ODK_ROLLOUT_MODE").toLowerCase()}` : "Değişken tanımlı değil.");
+const rolloutMode = value("ODK_ROLLOUT_MODE");
+const rolloutModeValid = ["disabled", "pilot", "general"].includes(rolloutMode);
+add("ODK_ROLLOUT_MODE enum", rolloutModeValid, rolloutModeValid ? `Mevcut mod: ${rolloutMode}` : "Eksik/geçersiz değer runtime'da disabled olur.");
+add("ODK pilot modu", rolloutMode === "pilot", rolloutMode === "pilot" ? "Pilot ön kontrolü etkin." : "Bu komut pilot deploy için ODK_ROLLOUT_MODE=pilot bekler.");
 add("ODK_PILOT_KILL_SWITCH", value("ODK_PILOT_KILL_SWITCH") !== "true", value("ODK_PILOT_KILL_SWITCH") === "true" ? "Acil durdurma açık." : "Kapalı.");
 for (const key of ["ODK_PILOT_ACCEPTANCE_APPROVED", "ODK_PILOT_SECURITY_REVIEW_APPROVED", "ODK_PILOT_OPERATIONS_APPROVED"]) {
   add(key, value(key) === "true", value(key) === "true" ? "Onaylı." : "Onay bekliyor.");

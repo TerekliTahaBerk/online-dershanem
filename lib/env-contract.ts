@@ -123,9 +123,17 @@ export function evaluateConfiguration(input: {
     }
   }, productionSeverity);
   addInvalidWhenPresent("EMAIL_MODE", (value) => value === "receipts" || value === "all", "warning");
-  addInvalidWhenPresent("ODK_ROLLOUT_MODE", (value) => value === "general" || value === "pilot", "warning");
+  addInvalidWhenPresent("ODK_ROLLOUT_MODE", (value) => value === "disabled" || value === "pilot" || value === "general", "warning");
   for (const key of ODK_READINESS_KEYS.filter((key) => key !== "ODK_ROLLOUT_MODE")) {
     addInvalidWhenPresent(key, (value) => value === "true" || value === "false", "warning");
+  }
+  if (env.ODK_ROLLOUT_MODE?.trim() === "general") {
+    const generalApproved = [
+      env.ODK_PILOT_ACCEPTANCE_APPROVED,
+      env.ODK_PILOT_SECURITY_REVIEW_APPROVED,
+      env.ODK_PILOT_OPERATIONS_APPROVED,
+    ].every((value) => value?.trim() === "true");
+    if (!generalApproved) issues.push({ key: "ODK_GENERAL_APPROVALS", code: "invalid", severity: productionSeverity });
   }
 
   if (env.INSTAGRAM_AI_ENABLED === "true") addRequired("OPENAI_API_KEY", "blocker");

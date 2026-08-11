@@ -51,8 +51,9 @@ test("cart is preserved when an unverified success URL is opened", async ({ page
   expect(await page.evaluate(() => localStorage.getItem("od_checkout_cart"))).not.toBeNull();
 });
 
-test("new ODK checkout starts are disabled", async ({ request }) => {
+test("general-approved E2E fixture still respects the independent ODK checkout closure", async ({ request }) => {
   const response = await request.post("/api/odk/checkout/start", { data: {} });
   expect(response.status()).toBe(410);
+  expect(response.headers()["cache-control"]).toContain("no-store");
   expect(await response.json()).toMatchObject({ ok: false });
 });

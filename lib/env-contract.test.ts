@@ -11,7 +11,7 @@ const productionEnv = {
   PANEL_ENABLED: "true",
   CRON_SECRET: "secret-cron-value",
   BLOB_READ_WRITE_TOKEN: "secret-blob-value",
-  ODK_ROLLOUT_MODE: "general",
+  ODK_ROLLOUT_MODE: "disabled",
   ODK_PILOT_KILL_SWITCH: "false",
   ODK_PILOT_ACCEPTANCE_APPROVED: "false",
   ODK_PILOT_SECURITY_REVIEW_APPROVED: "false",
@@ -68,4 +68,30 @@ test("aynı sorun seti aynı, değerlerden bağımsız fingerprint üretir", () 
   const first = evaluateConfiguration({ env: { DATABASE_URL: "one" }, environment: "preview" });
   const second = evaluateConfiguration({ env: { DATABASE_URL: "two" }, environment: "preview" });
   assert.equal(first.fingerprint, second.fingerprint);
+});
+
+test("ODK rollout enum'u disabled değerini kabul eder, bilinmeyen değeri raporlar", () => {
+  const disabled = evaluateConfiguration({ env: productionEnv, environment: "production", now: new Date("2026-08-11T00:00:00Z") });
+  assert.equal(disabled.warnings.some((issue) => issue.key === "ODK_ROLLOUT_MODE"), false);
+
+  const invalid = evaluateConfiguration({ env: { ...productionEnv, ODK_ROLLOUT_MODE: "GENERAL" }, environment: "production", now: new Date("2026-08-11T00:00:00Z") });
+  assert.ok(invalid.warnings.some((issue) => issue.key === "ODK_ROLLOUT_MODE" && issue.code === "invalid"));
+});
+
+test("production general deploy'u üç approval olmadan bloke edilir", () => {
+  const blocked = evaluateConfiguration({ env: { ...productionEnv, ODK_ROLLOUT_MODE: "general" }, environment: "production", now: new Date("2026-08-11T00:00:00Z") });
+  assert.ok(blocked.blockers.some((issue) => issue.key === "ODK_GENERAL_APPROVALS"));
+
+  const approved = evaluateConfiguration({
+    env: {
+      ...productionEnv,
+      ODK_ROLLOUT_MODE: "general",
+      ODK_PILOT_ACCEPTANCE_APPROVED: "true",
+      ODK_PILOT_SECURITY_REVIEW_APPROVED: "true",
+      ODK_PILOT_OPERATIONS_APPROVED: "true",
+    },
+    environment: "production",
+    now: new Date("2026-08-11T00:00:00Z"),
+  });
+  assert.equal(approved.blockers.some((issue) => issue.key === "ODK_GENERAL_APPROVALS"), false);
 });
