@@ -2,7 +2,7 @@
 
 ## Production ortamı
 
-Zorunlu değişkenler: `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_APP_URL`, `NEXTAUTH_SECRET`, `CRON_SECRET`, PayTR anahtarları ve panel için `PANEL_ENABLED=true`. `NEXT_PUBLIC_PANEL_ENABLED=true` istemci tarafı görünürlüğünü eşitler. Bu değişkenler değiştiğinde yeniden deploy gerekir.
+Zorunlu değişkenler: `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_APP_URL`, `NEXTAUTH_SECRET`, `CRON_SECRET`, PayTR anahtarları ve panel için `PANEL_ENABLED=true`. Panel ve özellik görünürlüğü sunucudan tek snapshot olarak istemciye aktarılır. Bu değişkenler değiştiğinde yeniden deploy gerekir.
 
 `EMAIL_MODE=receipts` yalnızca ödeme yapan müşteriye makbuz yollar ve önerilen varsayılandır. `all`, lead ve yönetici satış bildirimlerini de açar. `RESEND_API_KEY` yoksa makbuz outbox'ta `PENDING` kalır; anahtar düzeldiğinde cron gönderir. `MAIL_FROM` yoksa güvenli marka adresi kullanılır.
 
@@ -48,11 +48,11 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 
 ### Deneme analizi rollout'u
 
-`0046_mock_exam_analysis` migration'ından sonra sunucu için `PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true`, build-time menü için `NEXT_PUBLIC_PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true` birlikte ayarlanır. Şablon doğrulaması, güvenli yapıştırma biçimi, rol sınırları ve pilot kapıları [deneme analizi standardında](./mock-exam-analysis-operations.md) tanımlıdır.
+`0046_mock_exam_analysis` migration'ından sonra `PANEL_FEATURE_MOCK_EXAM_ANALYSIS=true` ayarlanır. Menü ve sunucu aynı snapshot'ı kullanır. Şablon doğrulaması, güvenli yapıştırma biçimi, rol sınırları ve pilot kapıları [deneme analizi standardında](./mock-exam-analysis-operations.md) tanımlıdır.
 
 ### Aralıklı tekrar kuyruğu rollout'u
 
-`0047_spaced_review_queue` migration'ından sonra `PANEL_FEATURE_REVIEW_QUEUE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_REVIEW_QUEUE=true` birlikte açılır. Günlük limit, erteleme hakkı, idempotency, öğretmen gözetim eşikleri ve telif sınırları [aralıklı tekrar standardında](./spaced-review-operations.md) tanımlıdır.
+`0047_spaced_review_queue` migration'ından sonra `PANEL_FEATURE_REVIEW_QUEUE=true` açılır. Günlük limit, erteleme hakkı, idempotency, öğretmen gözetim eşikleri ve telif sınırları [aralıklı tekrar standardında](./spaced-review-operations.md) tanımlıdır.
 
 ### İstisna odaklı ders kapanışı rollout'u
 
@@ -60,41 +60,41 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 
 ### Uyarlanabilir haftalık plan rollout'u
 
-`0049_adaptive_weekly_plan` migration'ından sonra `PANEL_FEATURE_ADAPTIVE_PLAN=true` ve `NEXT_PUBLIC_PANEL_FEATURE_ADAPTIVE_PLAN=true` birlikte açılır. İlk dört hafta kabul, görev tamamlama, öğretmen inceleme süresi ve bunaltı pulse'u baz çizgi olarak izlenir. Kural sırası, kapasite sınırı ve geri alma adımları [uyarlanabilir plan standardında](./adaptive-weekly-plan-operations.md) tanımlıdır.
+`0049_adaptive_weekly_plan` migration'ından sonra `PANEL_FEATURE_ADAPTIVE_PLAN=true` açılır. İlk dört hafta kabul, görev tamamlama, öğretmen inceleme süresi ve bunaltı pulse'u baz çizgi olarak izlenir. Kural sırası, kapasite sınırı ve geri alma adımları [uyarlanabilir plan standardında](./adaptive-weekly-plan-operations.md) tanımlıdır.
 
 ### Sakin haftalık özet rollout'u
 
-`0050_calm_weekly_digest` migration'ından sonra `PANEL_FEATURE_PARENT_WEEKLY_DIGEST=true` ve `NEXT_PUBLIC_PANEL_FEATURE_PARENT_WEEKLY_DIGEST=true` birlikte açılır. İlk pilotta yayın, öğrenci/veli görüntüleme, kaygı pulse'u ve opt-out oranı izlenir; özel öğretmen notlarının özet içeriğine girmediği örneklemle doğrulanır. İçerik ve geri alma kuralları [sakin haftalık özet standardında](./calm-weekly-digest-operations.md) tanımlıdır.
+`0050_calm_weekly_digest` migration'ından sonra `PANEL_FEATURE_PARENT_WEEKLY_DIGEST=true` açılır. İlk pilotta yayın, öğrenci/veli görüntüleme, kaygı pulse'u ve opt-out oranı izlenir; özel öğretmen notlarının özet içeriğine girmediği örneklemle doğrulanır. İçerik ve geri alma kuralları [sakin haftalık özet standardında](./calm-weekly-digest-operations.md) tanımlıdır.
 
 ### Açıklanabilir müdahale kutusu rollout'u
 
-`0051_explainable_intervention_inbox` migration'ından sonra `PANEL_FEATURE_INTERVENTION_INBOX=true` ve `NEXT_PUBLIC_PANEL_FEATURE_INTERVENTION_INBOX=true` birlikte açılır. İlk pilotta kural bazında üretilen vaka, ilk aksiyon p50, sonuçla kapanma ve yanlış işaret oranı izlenir. Yanlış işaret guardrail'i aşılırsa ilgili kural durdurulur; eşik otomatik düşürülmez ve ML risk skoru eklenmez. Yetki, erteleme ve geri alma ayrıntıları [müdahale kutusu standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
+`0051_explainable_intervention_inbox` migration'ından sonra `PANEL_FEATURE_INTERVENTION_INBOX=true` açılır. İlk pilotta kural bazında üretilen vaka, ilk aksiyon p50, sonuçla kapanma ve yanlış işaret oranı izlenir. Yanlış işaret guardrail'i aşılırsa ilgili kural durdurulur; eşik otomatik düşürülmez ve ML risk skoru eklenmez. Yetki, erteleme ve geri alma ayrıntıları [müdahale kutusu standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
 
 ### Ders kaçırma telafi paketi rollout'u
 
-`0052_missed_lesson_recovery` migration'ından sonra `PANEL_FEATURE_RECOVERY_PACKAGE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_RECOVERY_PACKAGE=true` birlikte açılır. İlk pilotta yayın gecikmesi p50, 72 saatte tamamlama, paket başına öğe sayısı, kaynak erişimi ve haftalık plan yeniden dengelemesi izlenir. Özel not/yoklama notu sızıntısı, yatay erişim veya kapasite sınırı ihlalinde bayrak kapatılır; veri korunur. Ayrıntılar [telafi paketi işletim standardında](./missed-lesson-recovery-operations.md) tanımlıdır.
+`0052_missed_lesson_recovery` migration'ından sonra `PANEL_FEATURE_RECOVERY_PACKAGE=true` açılır. İlk pilotta yayın gecikmesi p50, 72 saatte tamamlama, paket başına öğe sayısı, kaynak erişimi ve haftalık plan yeniden dengelemesi izlenir. Özel not/yoklama notu sızıntısı, yatay erişim veya kapasite sınırı ihlalinde bayrak kapatılır; veri korunur. Ayrıntılar [telafi paketi işletim standardında](./missed-lesson-recovery-operations.md) tanımlıdır.
 
 ### Kanıtlı ödev ve rubric rollout'u
 
-`0053_assignment_evidence_rubric` migration'ından sonra `PANEL_FEATURE_ASSIGNMENT_EVIDENCE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_ASSIGNMENT_EVIDENCE=true` birlikte açılır. İlk pilotta geri bildirim p50, yeniden deneme onayı, öğretmen değerlendirme süresi ve yatay erişim reddi izlenir. Dosya kanıtı bu bayrakla açılmaz; tarama ve metadata temizleme ayrı release gate'idir. Ayrıntılar [kanıtlı ödev standardında](./assignment-evidence-rubric-operations.md) tanımlıdır.
+`0053_assignment_evidence_rubric` migration'ından sonra `PANEL_FEATURE_ASSIGNMENT_EVIDENCE=true` açılır. İlk pilotta geri bildirim p50, yeniden deneme onayı, öğretmen değerlendirme süresi ve yatay erişim reddi izlenir. Dosya kanıtı bu bayrakla açılmaz; tarama ve metadata temizleme ayrı release gate'idir. Ayrıntılar [kanıtlı ödev standardında](./assignment-evidence-rubric-operations.md) tanımlıdır.
 
-`0054_student_check_in_help` migration'ından sonra `PANEL_FEATURE_STUDENT_CHECK_IN=true` ve `NEXT_PUBLIC_PANEL_FEATURE_STUDENT_CHECK_IN=true` birlikte açılır. Özel check-in öğretmen/veli/admin ekranına taşınmaz; yardım isteği yalnız seçilen aktif grup öğretmenine gider. İlk yanıt p50, 24 saat SLA ve öğrenci faydalılık oranı izlenir. Ayrıntılar [check-in ve yardım standardında](./student-check-in-help-operations.md) tanımlıdır.
+`0054_student_check_in_help` migration'ından sonra `PANEL_FEATURE_STUDENT_CHECK_IN=true` açılır. Özel check-in öğretmen/veli/admin ekranına taşınmaz; yardım isteği yalnız seçilen aktif grup öğretmenine gider. İlk yanıt p50, 24 saat SLA ve öğrenci faydalılık oranı izlenir. Ayrıntılar [check-in ve yardım standardında](./student-check-in-help-operations.md) tanımlıdır.
 
 ### Erişilebilirlik ve makul düzenleme rollout'u
 
-`0055_accessibility_preferences` migration'ından sonra `PANEL_FEATURE_ACCESSIBILITY_PROFILE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_ACCESSIBILITY_PROFILE=true` birlikte açılır. Sistem tanı veya sağlık belgesi toplamaz; kullanıcı işlevsel arayüz tercihlerini kendisi, akademik ek süre ve mola yönergesini yalnız admin yönetir. İlk pilotta klavye, `%200` zoom, `320 px` reflow, tercih kayıt başarısı, öğretmen grup sınırı ve materyal altyazı/transkript kapsamı doğrulanır. Ayrıntılar [erişilebilirlik ve makul düzenleme standardında](./accessibility-accommodation-operations.md) tanımlıdır.
+`0055_accessibility_preferences` migration'ından sonra `PANEL_FEATURE_ACCESSIBILITY_PROFILE=true` açılır. Sistem tanı veya sağlık belgesi toplamaz; kullanıcı işlevsel arayüz tercihlerini kendisi, akademik ek süre ve mola yönergesini yalnız admin yönetir. İlk pilotta klavye, `%200` zoom, `320 px` reflow, tercih kayıt başarısı, öğretmen grup sınırı ve materyal altyazı/transkript kapsamı doğrulanır. Ayrıntılar [erişilebilirlik ve makul düzenleme standardında](./accessibility-accommodation-operations.md) tanımlıdır.
 
 ### Offline-first ve düşük veri rollout'u
 
-`0056_offline_low_data` migration'ından sonra `PANEL_FEATURE_OFFLINE_MODE=true` ve `NEXT_PUBLIC_PANEL_FEATURE_OFFLINE_MODE=true` birlikte açılır. Çevrimdışı yazma varsayılan kapalıdır; yalnız ders kapanışı ve kontrollü ödev durumu allowlist'tedir. Service worker private panel/API/materyal yanıtını cache'lemez. İlk pilotta eşitleme, çatışma, sona erme ve cache sızıntısı guardrail'leri izlenir. Ayrıntılar [offline-first ve düşük veri standardında](./offline-low-data-operations.md) tanımlıdır.
+`0056_offline_low_data` migration'ından sonra `PANEL_FEATURE_OFFLINE_MODE=true` açılır. Çevrimdışı yazma varsayılan kapalıdır; yalnız ders kapanışı ve kontrollü ödev durumu allowlist'tedir. Service worker private panel/API/materyal yanıtını cache'lemez. İlk pilotta eşitleme, çatışma, sona erme ve cache sızıntısı guardrail'leri izlenir. Ayrıntılar [offline-first ve düşük veri standardında](./offline-low-data-operations.md) tanımlıdır.
 
 ### Kohort öğrenme kazancı ve kalite panosu rollout'u
 
-Önce kazanım ve deneme veri kalitesi doğrulanır; ardından `PANEL_FEATURE_COHORT_QUALITY=true` ile `NEXT_PUBLIC_PANEL_FEATURE_COHORT_QUALITY=true` birlikte açılır. Yeni tablo veya migration gerektirmez. İlk pilotta eşleşme kapsamı, bastırılan kohort sayısı, veri tazeliği ve yorumlama ihlalleri incelenir. Panel, öğretmen değerlendirmesi, prim veya öğrenci sıralaması için kullanılmaz. Ayrıntılar [kohort kalite panosu standardında](./cohort-learning-quality-operations.md) tanımlıdır.
+Önce kazanım ve deneme veri kalitesi doğrulanır; ardından `PANEL_FEATURE_COHORT_QUALITY=true` açılır. Yeni tablo veya migration gerektirmez. İlk pilotta eşleşme kapsamı, bastırılan kohort sayısı, veri tazeliği ve yorumlama ihlalleri incelenir. Panel, öğretmen değerlendirmesi, prim veya öğrenci sıralaması için kullanılmaz. Ayrıntılar [kohort kalite panosu standardında](./cohort-learning-quality-operations.md) tanımlıdır.
 
 ### Güvenli AI öğretmen yardımcısı rollout'u
 
-`0057_safe_teacher_ai_drafts` migration'ından sonra önce yalnız `AI_DRAFT_PROVIDER=fallback` ile iç kabul yapılır. Dış çağrı için `AI_DRAFT_EXTERNAL_TRANSFER_APPROVED=true`, `OPENAI_API_KEY`, `OPENAI_AI_DRAFT_MODEL`, iki token maliyet oranı ve günlük tavanlar birlikte tanımlanmalıdır. Ardından `PANEL_FEATURE_TEACHER_AI_DRAFTS=true` ile `NEXT_PUBLIC_PANEL_FEATURE_TEACHER_AI_DRAFTS=true` açılır. `npm run eval:teacher-ai` dış çağrısız altın seti çalıştırır; canlı eval yalnız `AI_EVAL_ACKNOWLEDGE_COST=true` ile bilinçli olarak açılır. Ayrıntılar [güvenli AI standardında](./safe-teacher-ai-operations.md) tanımlıdır.
+`0057_safe_teacher_ai_drafts` migration'ından sonra önce yalnız `AI_DRAFT_PROVIDER=fallback` ile iç kabul yapılır. Dış çağrı için `AI_DRAFT_EXTERNAL_TRANSFER_APPROVED=true`, `OPENAI_API_KEY`, `OPENAI_AI_DRAFT_MODEL`, iki token maliyet oranı ve günlük tavanlar birlikte tanımlanmalıdır. Ardından `PANEL_FEATURE_TEACHER_AI_DRAFTS=true` açılır. `npm run eval:teacher-ai` dış çağrısız altın seti çalıştırır; canlı eval yalnız `AI_EVAL_ACKNOWLEDGE_COST=true` ile bilinçli olarak açılır. Ayrıntılar [güvenli AI standardında](./safe-teacher-ai-operations.md) tanımlıdır.
 
 ### Bütünleşik pilot ve kademeli yayın
 

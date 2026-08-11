@@ -32,9 +32,8 @@
 ## Rollout ve gözlem
 
 1. `0056_offline_low_data` migration'ını uygulayın.
-2. `PANEL_FEATURE_OFFLINE_MODE=true` ile `NEXT_PUBLIC_PANEL_FEATURE_OFFLINE_MODE=true` değerlerini birlikte açın.
+2. `PANEL_FEATURE_OFFLINE_MODE=true` ayarlayın; menü ve sunucu aynı snapshot'tan açılır.
 3. Önce kişisel cihaz kullanan küçük öğretmen/öğrenci pilotunda eşitleme başarısı, çatışma, bloklanma, 24 saat sona erme ve kuyruk yaşı bantlarını izleyin.
 4. Hedefler: eşitleme başarısı `≥%99`, çatışma `<%2`, süresi dolan kayıt `<%0,5`; hiçbir özel panel/API kaydı Cache Storage'da bulunmamalıdır.
 5. Özel cache sızıntısı, farklı oturumda replay veya çift ders kapanışı görülürse bayrağı kapatın ve service worker cache sürümünü yükselterek eski cache'i silin. Sunucu verisini geri almayın; audit ve idempotency izini inceleyin.
 6. Pilot kabulünde Chromium ağ kesme testi yanında gerçek Android düşük bellek, iOS Safari depolama tahliyesi ve 2G/3G throttle testi manuel yapılır. Tarayıcı depolaması kalıcı garanti olarak sunulmaz.
-

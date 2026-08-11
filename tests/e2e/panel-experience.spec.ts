@@ -45,11 +45,15 @@ test.describe("panel deneyimi", () => {
 
   test("admin temel yönetim bölümlerini tek oturumda açabilir", async ({ page }) => {
     await login(page, accounts.admin);
-    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/yonetim/kalite", "/panel/bildirimler"]) {
+    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/yonetim/pilot", "/panel/yonetim/ozellikler", "/panel/yonetim/kalite", "/panel/bildirimler"]) {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.getByRole("main")).toBeVisible();
     }
+    await page.goto("/panel/yonetim/ozellikler");
+    await expect(page.getByRole("heading", { name: "Özellik yayını tek yerde görünür." })).toBeVisible();
+    await expect(page.getByText("Server/client drift yok", { exact: true })).toBeVisible();
+    await expect(page.getByRole("article")).toHaveCount(15);
     const csv = await page.evaluate(async () => { const response = await fetch("/api/panel/reports/export?range=30"); return { status: response.status, type: response.headers.get("content-type"), disposition: response.headers.get("content-disposition"), text: await response.text() }; });
     expect(csv.status).toBe(200);
     expect(csv.type).toContain("text/csv");

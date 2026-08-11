@@ -33,7 +33,7 @@ Bu sinyaller birbirine eklenerek tek bir skor oluşturulmaz. Düşük etiketleme
 ## Rollout ve kabul
 
 1. `PANEL_FEATURE_MOCK_EXAM_ANALYSIS` ve `PANEL_FEATURE_LEARNING_OUTCOMES` pilotlarının veri giriş kalitesini doğrulayın.
-2. Sunucuda `PANEL_FEATURE_COHORT_QUALITY=true`, build sırasında `NEXT_PUBLIC_PANEL_FEATURE_COHORT_QUALITY=true` kullanın.
+2. `PANEL_FEATURE_COHORT_QUALITY=true` ayarlayın; menü ve sunucu aynı snapshot'tan açılır.
 3. İlk dört hafta sınav türü bazında eşleşme kapsamını ve veri tazeliğini haftalık inceleyin. Yetersiz örneklemi hedef baskısıyla doldurmak için gereksiz sınav yaptırmayın.
 4. Hazır bir kohortta en az iki kişi arayüzdeki medyan ve çeyrekleri bağımsız sorguyla yeniden hesaplasın.
 5. Öğretmen adı/grup kırılımı istenirse veri koruma ve ölçme-değerlendirme incelemesi olmadan eklemeyin.

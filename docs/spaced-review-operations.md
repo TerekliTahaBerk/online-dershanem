@@ -36,7 +36,7 @@ Tekrar öğeleri ve yanıt geçmişi ders/ödev/deneme kanıtıyla aynı onaylı
 ## Rollout ve başarı kapıları
 
 1. `0047_spaced_review_queue` migration'ını uygulayın.
-2. Sunucuda `PANEL_FEATURE_REVIEW_QUEUE=true`, build sırasında `NEXT_PUBLIC_PANEL_FEATURE_REVIEW_QUEUE=true` değerlerini birlikte açın.
+2. `PANEL_FEATURE_REVIEW_QUEUE=true` ayarlayın; menü ve sunucu aynı snapshot'tan açılır.
 3. Önce küçük pilotta en az 30 uygun öğe ve 30 yanıt toplayın.
 4. 7 gün içinde en az bir yeniden çözüm oranı ≥%60 olmalıdır.
 5. 30 günlük basamak için yeterli örnek oluşmadan “kalıcılık arttı” kararı verilmez; baz çizgi ve doğru geri çağırma oranı birlikte raporlanır.

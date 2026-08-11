@@ -64,7 +64,7 @@ Tamamen boş bir veritabanında güvenli başlangıç:
 ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 ```
 
-Komut boş olmayan veritabanında çalışmayı reddeder. Paneli canlıda açmak için Vercel Production ortamında `PANEL_ENABLED=true` ve `NEXT_PUBLIC_PANEL_ENABLED=true` tanımlanıp yeniden deploy edilmelidir.
+Komut boş olmayan veritabanında çalışmayı reddeder. Paneli canlıda açmak için Vercel Production ortamında `PANEL_ENABLED=true` tanımlanıp yeniden deploy edilmelidir.
 
 Ortam değişkenleri, e-posta politikası, yedek geri yükleme ve canlı kabul adımları için [operasyon kılavuzuna](docs/panel-operations.md) bakın.
 

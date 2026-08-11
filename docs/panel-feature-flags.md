@@ -1,90 +1,71 @@
-# Panel feature flag'leri
+# Panel feature flag envanteri
 
-## Bugünkü durum: iki ayrı kaynak
+Son doğrulama: **11 Ağustos 2026**. Kod envanterinin tek kaynağı
+`lib/panel-feature-registry.ts`, canlı deployment görünümü ise admin panelindeki
+`/panel/yonetim/ozellikler` sayfasıdır.
 
-Panel flag'leri şu anda **iki bağımsız yerden** okunuyor:
+## Vercel Production ve Preview snapshot
 
-| Katman | Değişken | Okunduğu yer |
-|---|---|---|
-| Sunucu | `PANEL_FEATURE_*` | `lib/panel-feature-flags.ts` (sayfa ve API guard'ları) |
-| İstemci | `NEXT_PUBLIC_PANEL_FEATURE_*` | `components/panel/panel-nav.tsx` (modül seviyesinde) |
+Vercel projesi `online-dershanem` için Production ve Preview env'leri CLI ile
+ayrı ayrı çekilip yalnız `PANEL_FEATURE_*`, `NEXT_PUBLIC_PANEL_FEATURE_*`,
+`PANEL_ENABLED` ve eski public panel anahtarları filtrelenmiştir.
 
-İşletme tarafında da aynı ikilik var: `CRM_PANEL_ENABLED` /
-`NEXT_PUBLIC_CRM_PANEL_ENABLED`, `PANEL_ENABLED` / `NEXT_PUBLIC_PANEL_ENABLED`.
+| Ortam | `PANEL_ENABLED` | `PANEL_FEATURE_*` | `NEXT_PUBLIC_PANEL_FEATURE_*` | Sonuç |
+|---|---:|---|---|---|
+| Production | `true` | Tanımlı değil | Tanımlı değil | Baseline metrics varsayılan açık; diğer 14 özellik kapalı |
+| Preview | Tanımlı değil | Tanımlı değil | Tanımlı değil | Panel kapalı; baseline varsayılanı route açmaz |
 
-### Bunun neden bir sorun olduğu
+Bu envanter secret değer içermez. Flag değişikliği Vercel'de yapıldıktan sonra
+yeni deployment alınmalı ve admin snapshot'ı tekrar kontrol edilmelidir.
 
-İki değişken elle senkronize tutuluyor. Biri diğeri olmadan değiştirildiğinde:
+## Tek kaynak ve drift kararı
 
-- Sunucu **açık**, istemci **kapalı** → route çalışıyor ama menüde link yok;
-  özellik kullanıcıya görünmez hâle geliyor.
-- Sunucu **kapalı**, istemci **açık** → menüde link var, tıklayınca 404.
+`NEXT_PUBLIC_PANEL_FEATURE_*` ailesi **deprecated** edilip kod, `.env.example`
+ve CI workflow'larından kaldırıldı. `PanelShell`, `getPanelFeatureFlags()` ile
+sunucuda çözdüğü typed snapshot'ı `PanelFeatureProvider` üzerinden `PanelNav`'a
+aktarır. Böylece menü ile sayfa/API guard'larının farklı flag okuması yapısal
+olarak engellenir. Eski public anahtar Vercel'e sonradan eklenirse canlı admin
+snapshot'ında temizlik/drift uyarısı görünür; ürün davranışını değiştirmez.
 
-`NEXT_PUBLIC_*` değerleri **derleme anında** bundle'a gömülür. Yani bu
-değişkenlerden birini Vercel'de değiştirmek tek başına yetmez; yeni bir deploy
-gerekir. Aynı kısıt `proxy.ts` için de geçerlidir (dosyanın kendi başlığında
-not edilmiştir).
+`PANEL_ENABLED` de yalnız server/edge kapısıdır; eski
+`NEXT_PUBLIC_PANEL_ENABLED` artık kullanılmaz. Production ve Preview'da ölü
+public panel env değeri bulunmadığından Vercel tarafında silinecek mevcut değer
+yoktur.
 
-Bu davranış bu çalışmada **doğrulandı**: E2E ortamı `PANEL_ENABLED` /
-`NEXT_PUBLIC_PANEL_ENABLED` ikilisi set edilmeden ayağa kaldırıldığında giriş
-sayfası formu hiç render edilmedi ve bütün panel testleri sessizce zaman aşımına
-uğradı.
+## Rollout envanteri
 
-### Doğru hedef mimari
+| Özellik | Statü | Sahip | Roller | Veri | E2E | Rollback |
+|---|---|---|---|---|---|---|
+| Baseline metrics | production-ready | Platform Engineering | Admin, Öğretmen | Event logları | panel events/unit + deneyim | `PANEL_FEATURE_BASELINE_METRICS=false` |
+| Kazanım kanıtı | pilot | Akademik Operasyon | Tüm roller | 0045 | ders/gelişim/veli | Flag kapat; veriyi koru |
+| Deneme analizi | pilot | Akademik Operasyon | Tüm roller | 0046 | öğrenci→öğretmen→veli | Flag kapat |
+| Tekrar kuyruğu | pilot | Öğrenme Deneyimi | Öğretmen, Öğrenci | 0047 | akış + yetki | Flag kapat; kuyruğu koru |
+| Hızlı ders kapanışı | pilot | Öğretmen Deneyimi | Öğretmen, Öğrenci | 0048 | dört öğrencili kapanış | Flag kapat; klasik akışa dön |
+| Uyarlanabilir plan | pilot | Öğrenme Deneyimi | Öğretmen, Öğrenci | 0049 | üret/onay/geri bildirim | Flag kapat; geçmişi koru |
+| Haftalık özet | pilot | Aile Deneyimi | Öğretmen, Öğrenci, Veli | 0050 | ortak yayın + yetki | Flag kapat; yayınları koru |
+| Müdahale kutusu | pilot | Öğrenci Başarı Operasyonu | Admin, Öğretmen | 0051 | sahiplenme/sonuç/yetki | Flag ve gerekirse kuralı kapat |
+| Telafi paketi | pilot | Öğrenci Başarı Operasyonu | Öğretmen, Öğrenci | 0052 | yayın/tamamlama/yetki | Flag kapat; paketleri koru |
+| Kanıtlı ödev | pilot | Öğretmen Deneyimi | Öğretmen, Öğrenci | 0053 | iki deneme/rubric/yetki | Flag kapat; teslimleri koru |
+| Check-in ve yardım | pilot | Öğrenci Başarı ve Güvenlik | Öğretmen, Öğrenci | 0054 | yardım + veli izolasyonu | Flag kapat; açık istekleri kapat |
+| Erişilebilirlik profili | pilot | Erişilebilirlik | Tüm roller | 0055 | 320px/axe/rol sınırı | Flag kapat; tercihleri koru |
+| Offline/düşük veri | experimental | Platform Engineering | Öğretmen, Öğrenci | 0056 + browser outbox | sync/conflict/cache | Flag kapat; outbox yazımını kes |
+| Kohort kalitesi | experimental | Akademik Operasyon | Admin | Kazanım + deneme | bastırma/sıralamasız görünüm | Flag kapat |
+| Öğretmen AI taslakları | experimental | AI Güvenliği + Öğretmen Deneyimi | Öğretmen | 0057 + provider kapıları | insan onayı/unit/eval | Önce dış aktarımı, sonra flag'i kapat |
 
-Tek sunucu kaynağı + typed props:
+Tam operasyon metadatası registry'de tutulur ve admin sayfasında doğrudan aynı
+kayıttan render edilir. Şu anda ürün özelliği olarak `deprecated` statüsünde
+flag yoktur. Deprecated temizlik kararı yalnız eski public flag ailesidir; yeni
+özellik kaldırılırsa registry'de önce `deprecated` yapılmalı, sahibi ve veri
+saklama/silme kararı kaydedilmeden env anahtarı silinmemelidir.
 
-```
-lib/panel-feature-flags.ts        (TEK kaynak, yalnız PANEL_FEATURE_*)
-  → server component flag'leri çözer
-  → client component'e TYPED PROP olarak geçer
-  → NEXT_PUBLIC_* tamamen kaldırılır
-```
+## Rollout kuralı
 
-Böylece menü, sayfa guard'ı ve API guard'ı aynı değeri görür; ayrışma yapısal
-olarak imkânsız hâle gelir.
+- `experimental`: Production'a açılmaz; yalnız kontrollü geliştirme/acceptance.
+- `pilot`: Aktif pilot kohortu, SLO ve güvenlik kapılarıyla sınırlı açılır.
+- `production-ready`: Genel erişime adaydır; owner rollback sorumluluğunu taşır.
+- `deprecated`: Yeni aktivasyon yapılmaz; veri ve env temizliği planı uygulanır.
 
-**Bu geçiş bu çalışmada YAPILMADI.** `panel-nav.tsx` hâlâ modül seviyesinde
-`NEXT_PUBLIC_*` okuyor. Geçiş, `PanelShell` → `PanelNav` arasındaki bütün
-çağrı noktalarını değiştirmeyi gerektiriyor ve ayrı bir çalışma paketidir.
-
-### Ara dönem kuralı
-
-`PANEL_FEATURE_X` ve `NEXT_PUBLIC_PANEL_FEATURE_X` **her zaman birlikte** ve
-aynı değerle set edilmelidir. `.github/workflows/e2e.yml` bu ikiliği çiftler
-hâlinde tanımlar; yeni bir flag eklerken aynı düzeni izleyin.
-
-`lib/pilot-rollout.ts` içindeki `FLAG_PAIRS` tablosu bu eşleşmeyi zaten
-biliyor ve pilot readiness kontrolünde ikisinin de açık olmasını şart koşuyor —
-yani ayrışma en azından pilot kapısında yakalanıyor.
-
-## İşletme paneli flag'leri
-
-| Değişken | Varsayılan | Etki |
-|---|---|---|
-| `CRM_PANEL_ENABLED` | açık (`!== "false"`) | Kapalıysa bütün `/panel/yonetim/isletme/*` 404 |
-| `FINANCE_PANEL_ENABLED` | açık (`!== "false"`) | Kapalıysa gelirler/giderler/vergiler/mutabakat/raporlar 404 ve menüde yok |
-| `INSTAGRAM_INTEGRATION_ENABLED` | kapalı (`=== "true"`) | Dış Instagram çağrıları; kapalıyken dev adapter |
-| `INSTAGRAM_AI_ENABLED` | kapalı (`=== "true"`) | AI yanıt üretimi |
-| `META_ADS_INTEGRATION_ENABLED` | kapalı (`=== "true"`) | Meta Ads senkronu |
-
-Parse kuralı bilinçli olarak asimetriktir:
-
-- **Panel/finans flag'leri** `!== "false"` — yani varsayılan AÇIK. Bunlar
-  yalnızca ürün yüzeyini gösterir, dış dünyaya bir şey yapmaz.
-- **Entegrasyon flag'leri** `=== "true"` — yani varsayılan KAPALI. Yanlış
-  yapılandırılmış bir ortam değişkeni asla kendiliğinden dış servise istek
-  atmaz, para harcamaz veya müşteriye mesaj göndermez.
-
-Boş string, tanımsız değer ve beklenmeyen metinler entegrasyonları **açmaz**.
-
-`FINANCE_SECTIONS` listesi `lib/business/sections.ts` içindedir ve hem menü
-filtresi hem sayfa guard'ı tarafından kullanılır — finans kapatıldığında link
-gizlenmesiyle route'un 404 dönmesi aynı listeden beslenir.
-
-## Görünürlük güvenlik değildir
-
-Flag'e veya izne göre menüde link gizlemek bir güvenlik sınırı **değildir**.
-Her sayfa ve her server action kendi guard'ını çalıştırır
-(`requireBusinessPage`, `authorizeBusinessRequest`). Flag kapalıyken route
-doğrudan URL ile de 404 döner.
+Bir flag'i açmadan önce ilgili migration/veri kapısı, E2E senaryosu ve rollback
+adımı doğrulanır. Statü ile gerçek Açık/Kapalı değeri farklı kavramlardır:
+`pilot` bir özellik kapalı olabilir; `experimental` bir özellik ise production'da
+açık görünürse bu bir yayın hatasıdır ve hemen rollback edilir.

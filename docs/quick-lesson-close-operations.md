@@ -33,7 +33,7 @@ Rollout büyütme kapıları en az 5 kapanış örneğinden sonra değerlendiril
 - eksik konu/gözlem/sonraki adım kaydı < %2
 - ders notu kayıt başarısı ≥ %99,5
 
-Bayraklar: sunucu `PANEL_FEATURE_QUICK_LESSON_CLOSE`, istemci görünürlüğü için ayrılmış `NEXT_PUBLIC_PANEL_FEATURE_QUICK_LESSON_CLOSE`. Ekran sunucu bayrağını prop olarak kullandığından istemci ortam değişkeni tek başına yetki veya özellik açmaz.
+Bayrak: `PANEL_FEATURE_QUICK_LESSON_CLOSE`. Ekran ve istemci menüsü sunucuda çözülen aynı typed snapshot'ı kullandığından ayrı public ortam değişkeni yoktur.
 
 ## Geri alma ve müdahale
 

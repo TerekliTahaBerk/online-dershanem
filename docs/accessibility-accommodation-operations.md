@@ -30,8 +30,7 @@
 ## Rollout ve geri alma
 
 1. `0055_accessibility_preferences` migration'ını uygulayın.
-2. Sunucuda `PANEL_FEATURE_ACCESSIBILITY_PROFILE=true`, build sırasında `NEXT_PUBLIC_PANEL_FEATURE_ACCESSIBILITY_PROFILE=true` değerlerini birlikte açın.
+2. `PANEL_FEATURE_ACCESSIBILITY_PROFILE=true` ayarlayın; menü ve sunucu aynı snapshot'tan açılır.
 3. Önce küçük bir öğrenci/öğretmen/admin pilotunda tercih kaydetme başarısı, erişilebilir materyal kapsaması ve öğretmen yönergesinin doğru görünürlüğünü izleyin.
 4. Tanı/sağlık verisi toplanması, veliye profil sızıntısı, başka grubun öğrencisine erişim veya tercihin paneli kullanılamaz hale getirmesi halinde bayrağı kapatın. Kayıtları topluca silmeyin; olay ve hukuki saklama değerlendirmesi yapın.
 5. Bayrak kapatıldığında saklanan tercihler uygulanmaz ve menü görünmez; mevcut materyaller erişilebilir olmaya devam eder.
-
