@@ -51,6 +51,7 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
     expect(student.studentProfile?.parents[0].parentId).toBe(parent.id);
     expect(await prisma.parentStudent.count({ where: { parentId: parent.id, studentId: student.studentProfile!.id } })).toBe(1);
     expect(await prisma.auditLog.count({ where: { entityType: "OdOrder", entityId: order.id, action: "od.provisioning.succeeded" } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { entityType: "OdOrder", entityId: order.id, action: "PAYTR_PAYMENT_SUCCESS" } })).toBe(1);
   });
 
   test("mevcut öğrenciyi e-postayla yeniden kullanır ve duplicate user/membership açmaz", async ({ request }) => {

@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { randomBytes } from "node:crypto";
 import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
+import { logCriticalAudit } from "@/lib/audit";
 
 export type OdkProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -106,14 +107,35 @@ export async function provisionOdkOrder(
     });
     injected(options.failurePoint, "AFTER_MEMBERSHIP");
 
-    await prisma.odkEntitlement.upsert({
-      where: { orderId },
-      create: { orderId, userId: user.id, packageId: order.packageId, startsAt, expiresAt },
-      update: { userId: user.id, packageId: order.packageId, revokedAt: null, expiresAt },
+    const entitlement = await prisma.$transaction(async (tx) => {
+      const storedEntitlement = await tx.odkEntitlement.upsert({
+        where: { orderId },
+        create: { orderId, userId: user.id, packageId: order.packageId, startsAt, expiresAt },
+        update: { userId: user.id, packageId: order.packageId, revokedAt: null, expiresAt },
+      });
+      await tx.odkOrder.update({
+        where: { id: orderId },
+        data: { provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
+      });
+      return storedEntitlement;
     });
-    await prisma.odkOrder.update({
-      where: { id: orderId },
-      data: { provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
+    await logCriticalAudit({
+      actorType: "SYSTEM",
+      entityType: "ProductMembership",
+      entityId: `${user.id}:ODK`,
+      action: "product_membership.purchase_granted",
+      summary: "ODK satın alma erişimi açıldı",
+      payload: { orderId, product: "ODK", source: "PURCHASE" },
+      idempotencyKey: `odk:provisioning:membership:${orderId}`,
+    });
+    await logCriticalAudit({
+      actorType: "SYSTEM",
+      entityType: "OdkOrder",
+      entityId: orderId,
+      action: "odk.provisioning.succeeded",
+      summary: "Hesap ve ODK erişimi hazırlandı",
+      payload: { entitlementId: entitlement.id, product: "ODK" },
+      idempotencyKey: `odk:provisioning:succeeded:${orderId}`,
     });
     return { userId: user.id, alreadyProvisioned: false };
   } catch (error) {

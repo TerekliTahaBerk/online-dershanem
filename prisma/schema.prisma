@@ -2190,15 +2190,16 @@ model PurchaseEvent {
 }
 
 model AuditLog {
-  id          String         @id @default(cuid())
-  actorUserId String?
-  actorType   AuditActorType @default(SYSTEM)
-  entityType  String
-  entityId    String
-  action      String
-  summary     String?
-  payload     Json?
-  createdAt   DateTime       @default(now())
+  id             String         @id @default(cuid())
+  actorUserId    String?
+  actorType      AuditActorType @default(SYSTEM)
+  entityType     String
+  entityId       String
+  action         String
+  summary        String?
+  payload        Json?
+  idempotencyKey String?        @unique @map("idempotency_key")
+  createdAt      DateTime       @default(now())
 
   @@index([entityType, entityId, createdAt])
   @@index([createdAt])

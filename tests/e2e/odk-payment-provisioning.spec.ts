@@ -48,6 +48,8 @@ test.describe("ODK ödeme → provisioning bütünlüğü", () => {
     expect(state.user?.productMemberships).toHaveLength(1);
     expect(await prisma.user.count({ where: { email } })).toBe(1);
     expect(await prisma.odkEntitlement.count({ where: { orderId: order.id } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { entityType: "OdkOrder", entityId: order.id, action: "odk.provisioning.succeeded" } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { entityType: "OdkOrder", entityId: order.id, action: "PAYTR_PAYMENT_SUCCESS" } })).toBe(1);
   });
 
   test("mevcut OD öğrencisini yeniden kullanıp yalnız ODK erişimini ekler", async ({ request }) => {
