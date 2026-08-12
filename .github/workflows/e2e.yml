@@ -111,7 +111,7 @@ jobs:
         run: node -p '"version=" + require("@playwright/test/package.json").version' >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browser
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
@@ -239,7 +239,7 @@ jobs:
         run: node -p '"version=" + require("@playwright/test/package.json").version' >> "$GITHUB_OUTPUT"
 
       - name: Cache Playwright browser
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}-${{ matrix.browser }}
