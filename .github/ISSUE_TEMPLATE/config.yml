@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/TerekliTahaBerk/online-dershanem/security/advisories/new
+    about: Report security vulnerabilities privately.
+  - name: Live website
+    url: https://onlinedershanem.com
+    about: Open the Online Dershanem product website.

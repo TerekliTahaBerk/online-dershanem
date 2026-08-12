@@ -61,6 +61,9 @@ test.describe("Instagram CRM ve finans merkezi", () => {
         await expect(unitSelect).not.toHaveValue("");
       }
       await financeForm.getByRole("button", { name: "Kaydet" }).click();
+      // Server action kalıcı kaydı tamamladıktan sonra listeyi sunucudan yeniden
+      // okuyarak router refresh/hydration yarışına bağlanmıyoruz.
+      await page.reload();
       await expect(page.getByText(description).first()).toBeVisible({ timeout: 15_000 });
     }
     await page.goto("/panel/yonetim/isletme/vergiler"); await expect(page.getByText("Hesaplanan KDV").first()).toBeVisible();
