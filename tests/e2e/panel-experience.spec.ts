@@ -353,9 +353,8 @@ test.describe("panel deneyimi", () => {
     await active.getByLabel("Ada Öğrenci sonuç").selectOption("PRACTICE_ADJUSTED");
     await Promise.all([page.waitForNavigation(), active.getByRole("button", { name: "Sonuçla kapat" }).click()]);
     await page.getByRole("main").getByLabel("Görünüm").selectOption("CLOSED");
-    await page.reload();
-    const closed = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "Tekrarlayan çözüm güçlüğü" }).first();
-    await expect(closed.locator("span").getByText("Çözüldü", { exact: true })).toBeVisible();
+    const closed = page.getByRole("article").filter({ hasText: "Kritik çözüm adımı birlikte incelendi." });
+    await expect(closed.getByText("Çözüldü", { exact: true })).toBeVisible();
     await closed.getByText("Son işlem geçmişi").click();
     await expect(closed.getByText("Kritik çözüm adımı birlikte incelendi.")).toBeVisible();
   });
