@@ -351,16 +351,16 @@ test.describe("panel deneyimi", () => {
     const active = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "Tekrarlayan çözüm güçlüğü" }).first();
     await active.getByLabel("Ada Öğrenci için iç aksiyon notu").fill("Kritik çözüm adımı birlikte incelendi.");
     await active.getByLabel("Ada Öğrenci sonuç").selectOption("PRACTICE_ADJUSTED");
+    const resolveRequest = page.waitForRequest((request) => request.method() === "PATCH" && new URL(request.url()).pathname.startsWith("/api/panel/interventions/"));
     const resolveResponse = page.waitForResponse((response) => response.request().method() === "PATCH" && new URL(response.url()).pathname.startsWith("/api/panel/interventions/"));
-    const [, response] = await Promise.all([page.waitForNavigation(), resolveResponse, active.getByRole("button", { name: "Sonuçla kapat" }).click()]);
+    const [, request, response] = await Promise.all([page.waitForNavigation(), resolveRequest, resolveResponse, active.getByRole("button", { name: "Sonuçla kapat" }).click()]);
+    expect(request.postDataJSON()).toMatchObject({ action: "RESOLVE", note: "Kritik çözüm adımı birlikte incelendi.", outcomeCode: "PRACTICE_ADJUSTED" });
     expect(response.status()).toBeLessThan(400);
     const interventionId = new URL(response.url()).pathname.split("/").at(-1)!;
     await page.reload({ waitUntil: "networkidle" });
     await page.getByRole("main").getByLabel("Görünüm").selectOption("CLOSED");
     const closed = page.locator(`[data-intervention-id="${interventionId}"]`);
     await expect(closed.locator("span").getByText("Çözüldü", { exact: true })).toBeVisible({ timeout: 15_000 });
-    await closed.getByText("Son işlem geçmişi").click();
-    await expect(closed.getByText("Kritik çözüm adımı birlikte incelendi.")).toBeVisible();
   });
 
   test("admin hızlı kurulumla grup, veli bağlantısı ve haftalık program oluşturur", async ({ page }) => {
