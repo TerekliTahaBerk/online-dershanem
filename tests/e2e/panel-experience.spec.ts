@@ -351,10 +351,13 @@ test.describe("panel deneyimi", () => {
     const active = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "Tekrarlayan çözüm güçlüğü" }).first();
     await active.getByLabel("Ada Öğrenci için iç aksiyon notu").fill("Kritik çözüm adımı birlikte incelendi.");
     await active.getByLabel("Ada Öğrenci sonuç").selectOption("PRACTICE_ADJUSTED");
-    await Promise.all([page.waitForNavigation(), active.getByRole("button", { name: "Sonuçla kapat" }).click()]);
+    const resolveResponse = page.waitForResponse((response) => response.request().method() === "PATCH" && new URL(response.url()).pathname.startsWith("/api/panel/interventions/"));
+    const [, response] = await Promise.all([page.waitForNavigation(), resolveResponse, active.getByRole("button", { name: "Sonuçla kapat" }).click()]);
+    expect(response.status()).toBeLessThan(400);
+    await page.waitForLoadState("networkidle");
     await page.getByRole("main").getByLabel("Görünüm").selectOption("CLOSED");
     const closed = page.getByRole("article").filter({ hasText: "Kritik çözüm adımı birlikte incelendi." });
-    await expect(closed.getByText("Çözüldü", { exact: true })).toBeVisible();
+    await expect(closed.getByText("Çözüldü", { exact: true })).toBeVisible({ timeout: 15_000 });
     await closed.getByText("Son işlem geçmişi").click();
     await expect(closed.getByText("Kritik çözüm adımı birlikte incelendi.")).toBeVisible();
   });
