@@ -399,7 +399,7 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/veli/takip");
     await expect(page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).getByText("Tamamlandı", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Bu hafta çalışılan beceriler" })).toBeVisible();
-    await expect(page.getByText("MAT.8.2", { exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByText("MAT.8.2", { exact: true })).toBeVisible();
   });
 
   test("öğrenci kanıt gönderir, öğretmen rubric ile yeniden deneme isteyip onaylar", async ({ page }) => {
