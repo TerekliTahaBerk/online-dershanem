@@ -11,7 +11,7 @@ type MobileMenuProps = {
   open: boolean;
   onClose: () => void;
   isActive: (href: string) => boolean;
-  triggerRef: React.RefObject<HTMLButtonElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 /**
