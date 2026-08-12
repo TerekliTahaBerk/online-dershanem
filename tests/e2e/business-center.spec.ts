@@ -60,7 +60,12 @@ test.describe("Instagram CRM ve finans merkezi", () => {
         await unitSelect.selectOption({ label: "OnlineDershanem" });
         await expect(unitSelect).not.toHaveValue("");
       }
+      const saveResponse = page.waitForResponse((response) =>
+        response.request().method() === "POST"
+        && new URL(response.url()).pathname === `/panel/yonetim/isletme/${section}`,
+      );
       await financeForm.getByRole("button", { name: "Kaydet" }).click();
+      expect((await saveResponse).status()).toBeLessThan(400);
       // Server action kalıcı kaydı tamamladıktan sonra listeyi sunucudan yeniden
       // okuyarak router refresh/hydration yarışına bağlanmıyoruz.
       await page.reload();
