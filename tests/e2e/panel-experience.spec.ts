@@ -357,7 +357,7 @@ test.describe("panel deneyimi", () => {
     await page.reload({ waitUntil: "networkidle" });
     await page.getByRole("main").getByLabel("Görünüm").selectOption("CLOSED");
     const closed = page.getByRole("article").filter({ hasText: "Kritik çözüm adımı birlikte incelendi." });
-    await expect(closed.getByText("Çözüldü", { exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(closed.locator("span").getByText("Çözüldü", { exact: true })).toBeVisible({ timeout: 15_000 });
     await closed.getByText("Son işlem geçmişi").click();
     await expect(closed.getByText("Kritik çözüm adımı birlikte incelendi.")).toBeVisible();
   });
