@@ -177,7 +177,14 @@ async function main() {
   // Sliding-window sayaçları da fixture durumudur: temizlenmezse arka arkaya
   // koşan yerel/CI tekrarları API kotalarına (ör. ai-draft 20/15dk) takılıp
   // ürün hatası gibi görünen 429'lar üretiyor.
-  await prisma.rateLimitEntry.deleteMany({ where: { key: { contains: "e2e-" } } });
+  await prisma.rateLimitEntry.deleteMany({
+    where: {
+      OR: [
+        { key: { contains: "e2e-" } },
+        { key: { contains: ":ip:2001:db8:" } },
+      ],
+    },
+  });
   await prisma.attendance.deleteMany({ where: { lessonId: ids.lesson } });
   await prisma.attendance.deleteMany({ where: { lessonId: { in: [ids.recoveryLesson, ids.foreignLesson] } } });
   await prisma.lessonNote.deleteMany({ where: { lessonId: ids.lesson } });

@@ -104,6 +104,20 @@ test("rate-limit proxy modu yalnız belgelenen topolojileri kabul eder", () => {
   });
   assert.equal(valid.blockers.some((issue) => issue.key === "RATE_LIMIT_PROXY_MODE"), false);
 
+  const ciLocal = evaluateConfiguration({
+    env: { ...productionEnv, CI: "true", RATE_LIMIT_PROXY_MODE: "local" },
+    environment: "production",
+    now: new Date("2026-08-11T00:00:00Z"),
+  });
+  assert.equal(ciLocal.blockers.some((issue) => issue.key === "RATE_LIMIT_PROXY_MODE"), false);
+
+  const productionLocal = evaluateConfiguration({
+    env: { ...productionEnv, RATE_LIMIT_PROXY_MODE: "local" },
+    environment: "production",
+    now: new Date("2026-08-11T00:00:00Z"),
+  });
+  assert.ok(productionLocal.blockers.some((issue) => issue.key === "RATE_LIMIT_PROXY_MODE" && issue.code === "invalid"));
+
   const invalid = evaluateConfiguration({
     env: { ...productionEnv, RATE_LIMIT_PROXY_MODE: "trust-all" },
     environment: "production",

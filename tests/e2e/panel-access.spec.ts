@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const accounts = {
   teacher: { email: process.env.PANEL_E2E_TEACHER_EMAIL, password: process.env.PANEL_E2E_TEACHER_PASSWORD },
@@ -7,7 +8,7 @@ const accounts = {
 };
 
 async function login(page: Page, account: { email?: string; password?: string }) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-${account.email}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);

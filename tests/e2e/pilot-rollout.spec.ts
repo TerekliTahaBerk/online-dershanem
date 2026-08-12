@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD || "testpass123";
 const accounts = {
@@ -11,7 +12,7 @@ const accounts = {
 };
 
 async function login(page: Page, account: { email?: string; password?: string }, expectPanel = true) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `pilot-${account.email}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!);

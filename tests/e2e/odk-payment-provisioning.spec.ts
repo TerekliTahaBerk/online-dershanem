@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { postPaytrCallback } from "./helpers/paytr-callback";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const prisma = new PrismaClient();
 const amountCents = 12_900;
@@ -22,7 +23,7 @@ async function chain(orderId: string, email: string) {
 }
 
 async function login(page: Page, email: string) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-provisioning-${crypto.randomUUID()}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   const response = await page.request.post("/api/auth/login", { data: { email, password: process.env.E2E_PASSWORD ?? "testpass123" } });
   expect(response.status()).toBe(200);
 }

@@ -72,11 +72,16 @@ function normalizeIp(raw: string | null): string | null {
   return null;
 }
 
-export type ProxyMode = "vercel" | "cloudflare" | "local";
+export type ProxyMode = "vercel" | "cloudflare" | "local" | "untrusted";
 
-function configuredProxyMode(): ProxyMode {
-  if (process.env.RATE_LIMIT_PROXY_MODE === "cloudflare") return "cloudflare";
-  if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") return "vercel";
+export function configuredProxyMode(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): ProxyMode {
+  if (env.RATE_LIMIT_PROXY_MODE === "vercel") return "vercel";
+  if (env.RATE_LIMIT_PROXY_MODE === "cloudflare") return "cloudflare";
+  if (env.VERCEL === "1") return "vercel";
+  if (env.RATE_LIMIT_PROXY_MODE === "local" && env.CI === "true") return "local";
+  if (env.NODE_ENV === "production") return "untrusted";
   return "local";
 }
 
@@ -88,7 +93,9 @@ function configuredProxyMode(): ProxyMode {
  * - Cloudflare: opt in with RATE_LIMIT_PROXY_MODE=cloudflare only when direct
  *   access to the Vercel deployment is blocked; then CF-Connecting-IP is the
  *   single-value visitor address supplied by Cloudflare.
- * - Local/test: validated forwarding headers are accepted for developer tools.
+ * - Local/test: validated forwarding headers are accepted. CI must opt in with
+ *   RATE_LIMIT_PROXY_MODE=local. Production without a known topology fails
+ *   closed instead of trusting caller-controlled forwarding headers.
  *
  * Invalid or absent input deliberately collapses to `unknown` instead of
  * trusting a lower-priority, potentially attacker-controlled header.
@@ -103,6 +110,7 @@ export function getClientIp(
   if (mode === "cloudflare") {
     return normalizeIp(headers?.get("cf-connecting-ip") ?? null) ?? "unknown";
   }
+  if (mode === "untrusted") return "unknown";
   return (
     normalizeIp(headers?.get("x-vercel-forwarded-for") ?? null) ??
     normalizeIp(headers?.get("cf-connecting-ip") ?? null) ??

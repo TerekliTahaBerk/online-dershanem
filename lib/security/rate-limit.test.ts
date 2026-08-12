@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  configuredProxyMode,
   getClientIp,
   getRateLimitKeyComposite,
   getRateLimitKeyFromIp,
@@ -28,6 +29,15 @@ test("Vercel modunda yalnız platform IP başlığına güvenir", () => {
     getClientIp(headers({ "x-forwarded-for": "198.51.100.99" }), "vercel"),
     "unknown",
   );
+});
+
+test("proxy topolojisini NODE_ENV yerine açık platform sinyalinden seçer", () => {
+  assert.equal(configuredProxyMode({ NODE_ENV: "production" }), "untrusted");
+  assert.equal(configuredProxyMode({ VERCEL: "1" }), "vercel");
+  assert.equal(configuredProxyMode({ RATE_LIMIT_PROXY_MODE: "vercel" }), "vercel");
+  assert.equal(configuredProxyMode({ RATE_LIMIT_PROXY_MODE: "cloudflare" }), "cloudflare");
+  assert.equal(configuredProxyMode({ CI: "true", RATE_LIMIT_PROXY_MODE: "local" }), "local");
+  assert.equal(configuredProxyMode({ NODE_ENV: "production", RATE_LIMIT_PROXY_MODE: "local" }), "untrusted");
 });
 
 test("Cloudflare modu tek ve geçerli CF-Connecting-IP ister", () => {
@@ -57,6 +67,10 @@ test("yerel mod adresi doğrular, portu ve IPv4-mapped IPv6 biçimini normalize 
   assert.equal(getClientIp(headers({ "x-forwarded-for": "203.0.113.5:443" }), "local"), "203.0.113.5");
   assert.equal(getClientIp(headers({ "x-forwarded-for": "::ffff:192.0.2.4" }), "local"), "192.0.2.4");
   assert.equal(getClientIp(headers({ "x-forwarded-for": "attacker-value" }), "local"), "unknown");
+});
+
+test("bilinmeyen production topolojisi forwarding başlıklarına güvenmez", () => {
+  assert.equal(getClientIp(headers({ "x-forwarded-for": "203.0.113.5" }), "untrusted"), "unknown");
 });
 
 test("IP, kullanıcı ve bileşik anahtarlar kanonik ve ayraç çakışmasına kapalıdır", () => {
