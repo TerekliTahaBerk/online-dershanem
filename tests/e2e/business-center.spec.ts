@@ -1,10 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { createHmac } from "node:crypto";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 const admin = { email: process.env.PANEL_E2E_ADMIN_EMAIL, password: process.env.PANEL_E2E_ADMIN_PASSWORD };
 const teacher = { email: process.env.PANEL_E2E_TEACHER_EMAIL, password: process.env.PANEL_E2E_TEACHER_PASSWORD };
 async function login(page: Page, account: { email?: string; password?: string }) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `business-e2e-${Date.now()}-${Math.random()}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout"); await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!); await page.getByLabel("Parola").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş yap$/ }).click(); await page.waitForURL(/\/panel\//);

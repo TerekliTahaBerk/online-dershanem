@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 
 /**
  * İşletme Paneli RBAC matrisi.
@@ -28,7 +29,7 @@ const accounts = {
 } as const;
 
 async function login(page: Page, email: string) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `rbac-e2e-${Date.now()}-${Math.random()}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);

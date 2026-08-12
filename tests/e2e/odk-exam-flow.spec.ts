@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { expect, test, type Page } from "@playwright/test";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const prisma = new PrismaClient();
 const examId = "e2e-odk-exam-live";
@@ -14,7 +15,12 @@ const account = {
 
 async function resetAttempt(deadline = new Date(Date.now() + 60 * 60_000)) {
   await prisma.rateLimitEntry.deleteMany({
-    where: { OR: [{ key: { startsWith: "odk:" } }, { key: { startsWith: "auth:login:ip:e2e-odk-" } }] },
+    where: {
+      OR: [
+        { key: { contains: ":user:e2e-user-" } },
+        { key: { contains: ":ip:2001:db8:" } },
+      ],
+    },
   });
   await prisma.odkExam.update({
     where: { id: examId },
@@ -36,7 +42,7 @@ async function resetAttempt(deadline = new Date(Date.now() + 60 * 60_000)) {
 }
 
 async function login(page: Page, email = account.email) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `e2e-odk-${crypto.randomUUID()}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);

@@ -20,6 +20,7 @@ import type { NextConfig } from "next";
  */
 const secureDeployment = process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://");
 const isDevelopment = process.env.NODE_ENV === "development";
+const isVercelBuild = process.env.VERCEL === "1";
 
 /** `components/analytics/pixels.tsx` tarafından yüklenen üçüncü taraf origin'ler. */
 const analyticsScriptOrigins = [
@@ -83,7 +84,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Vercel packages the native Next.js output itself. Forcing standalone there
+  // makes its post-build tracing hook look for a server trace that Next 16.3
+  // may already have moved into the standalone bundle. Docker still consumes
+  // `.next/standalone` and therefore keeps the self-hosted output mode.
+  ...(isVercelBuild ? {} : { output: "standalone" as const }),
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,

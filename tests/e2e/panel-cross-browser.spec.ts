@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const accounts = [
   { role: "admin", email: process.env.PANEL_E2E_ADMIN_EMAIL, password: process.env.PANEL_E2E_ADMIN_PASSWORD, path: "/panel/yonetim" },
@@ -8,7 +9,7 @@ const accounts = [
 ];
 
 async function login(page: Page, email: string, password: string) {
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `cross-browser-${email}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await expect(page.getByRole("button", { name: /^Giriş yap$/ })).toBeEnabled();

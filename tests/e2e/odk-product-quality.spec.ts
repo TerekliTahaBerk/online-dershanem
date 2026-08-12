@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const password = process.env.E2E_PASSWORD || "testpass123";
 const accounts = {
@@ -30,7 +31,7 @@ const routes = {
 
 async function login(page: Page, role: keyof typeof accounts) {
   const account = accounts[role];
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": `odk-quality-${role}-${Date.now()}-${Math.random().toString(36).slice(2)}` });
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email);
