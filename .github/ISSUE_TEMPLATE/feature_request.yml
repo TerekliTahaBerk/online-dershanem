@@ -1,0 +1,42 @@
+name: Feature request
+description: Describe a user need and the expected outcome.
+title: "[Feature]: "
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Which user is struggling with which task?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected outcome
+      description: What should a successful solution change for the user?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Public website / checkout
+        - Online Dershanem panel
+        - Online Deneme Kulübü
+        - Business Panel
+        - Infrastructure / CI
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How will we know the solution is complete?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Describe attempted workarounds or alternative approaches.

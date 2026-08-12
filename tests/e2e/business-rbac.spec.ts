@@ -169,6 +169,6 @@ test.describe("İşletme Paneli RBAC", () => {
     await page.goto("/panel/yonetim/isletme/mesaj-kutusu");
     // Başlıktaki toplam ayrı `count` sorgusundan gelir; listedeki 30 satırlık
     // sayfa boyutu toplamı değiştirmez.
-    await expect(page.getByText(/Filtreye uyan toplam \d+ konuşma/)).toBeVisible();
+    await expect(page.getByRole("main").getByText(/Filtreye uyan toplam \d+ konuşma/).first()).toBeVisible();
   });
 });

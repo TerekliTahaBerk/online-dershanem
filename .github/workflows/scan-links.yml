@@ -3,7 +3,7 @@ name: Broken Link Scan
 on:
   workflow_dispatch:
   schedule:
-    # Her gün TSİ 06:00 (UTC 03:00)
+    # Every day at 06:00 Turkey time (03:00 UTC)
     - cron: "0 3 * * *"
 
 jobs:
