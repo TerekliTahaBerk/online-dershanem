@@ -56,7 +56,7 @@
     "test:e2e:smoke": "playwright test --grep @smoke"
   },
   "dependencies": {
-    "@prisma/client": "^7.9.1",
+    "@prisma/client": "^6.19.3",
     "@prisma/extension-accelerate": "^3.0.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.6.1",
