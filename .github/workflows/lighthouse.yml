@@ -3,7 +3,7 @@ name: Lighthouse
 on:
   workflow_dispatch:
   schedule:
-    # Her pazartesi TSİ 06:30 (UTC 03:30)
+    # Every Monday at 06:30 Turkey time (03:30 UTC)
     - cron: "30 3 * * 1"
 
 permissions:

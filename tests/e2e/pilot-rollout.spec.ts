@@ -27,7 +27,7 @@ async function login(page: Page, account: { email?: string; password?: string },
 
 async function logout(page: Page) { const status = await page.evaluate(async () => (await fetch("/api/auth/logout", { method: "POST" })).status); expect(status).toBe(200); await page.goto("/giris"); }
 
-test.describe.serial("bütünleşik pilot yayını", () => {
+test.describe.serial("integrated pilot rollout", () => {
   test.skip(!accounts.admin.email || !accounts.admin.password || !accounts.teacher.email || !accounts.student.email || !accounts.parent.email, "Panel E2E hesapları tanımlı değil.");
 
   test("admin dört rollü kohortu oluşturur ve readiness kapılarıyla aktive eder", async ({ page }) => {

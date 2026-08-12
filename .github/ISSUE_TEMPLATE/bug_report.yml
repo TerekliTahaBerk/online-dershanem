@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a reproducible product or technical defect.
+title: "[Bug]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not disclose sensitive vulnerabilities here. Use the private channel described in SECURITY.md.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+      description: What happened, and what did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Public website / checkout
+        - Online Dershanem panel
+        - Online Deneme Kulübü
+        - Business Panel
+        - Infrastructure / CI
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment and browser
+      placeholder: "Production, Chrome 140, macOS"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Additional evidence
+      description: Add a screenshot or log that contains no personal data or access credentials.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I confirm that this report contains no secrets or personal data.
+          required: true
