@@ -16,7 +16,7 @@ jobs:
       BASE_URL: ${{ vars.SCAN_BASE_URL || 'https://onlinedershanem.com' }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
         with:
