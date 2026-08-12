@@ -76,21 +76,21 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@lhci/cli": "^0.15.1",
-    "@playwright/test": "^1.49.0",
-    "@types/node": "^22.9.0",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^15.5.20",
-    "postcss": "8.5.16",
-    "tailwindcss": "^3.4.15",
-    "tsx": "^4.21.0",
-    "typescript": "^5.6.3"
+    "autoprefixer": "^10.5.4",
+    "eslint": "^10.8.1",
+    "eslint-config-next": "^16.3.0",
+    "postcss": "8.5.26",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.11",
+    "typescript": "^7.0.2"
   },
   "overrides": {
     "esbuild": "0.28.1",
-    "postcss": "8.5.16",
+    "postcss": "8.5.26",
     "sharp": "0.35.0",
     "tmp": "0.2.7",
     "uuid": "11.1.1"
