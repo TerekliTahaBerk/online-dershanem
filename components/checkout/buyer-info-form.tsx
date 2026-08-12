@@ -227,7 +227,8 @@ export function BuyerInfoForm({
     <form
       onSubmit={onSubmit}
       onChange={(event) => {
-        const target = event.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+        const target = event.target;
+        if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) return;
         if (!target.name || !fieldErrors[target.name]) return;
         setFieldErrors((current) => {
           const next = { ...current };
