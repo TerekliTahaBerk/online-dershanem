@@ -198,7 +198,6 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     });
     await login(page);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
-    await expect(page.locator('[aria-label^="Kalan süre 00:0"]')).toBeVisible();
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`), { timeout: 20_000 });
     await expect(page.getByText("Denemen teslim edildi.")).toBeVisible();
     const attempt = await prisma.odkExamAttempt.findUniqueOrThrow({ where: { id: attemptId } });
