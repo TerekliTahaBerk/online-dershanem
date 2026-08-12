@@ -354,7 +354,7 @@ test.describe("panel deneyimi", () => {
     const resolveResponse = page.waitForResponse((response) => response.request().method() === "PATCH" && new URL(response.url()).pathname.startsWith("/api/panel/interventions/"));
     const [, response] = await Promise.all([page.waitForNavigation(), resolveResponse, active.getByRole("button", { name: "Sonuçla kapat" }).click()]);
     expect(response.status()).toBeLessThan(400);
-    await page.waitForLoadState("networkidle");
+    await page.reload({ waitUntil: "networkidle" });
     await page.getByRole("main").getByLabel("Görünüm").selectOption("CLOSED");
     const closed = page.getByRole("article").filter({ hasText: "Kritik çözüm adımı birlikte incelendi." });
     await expect(closed.getByText("Çözüldü", { exact: true })).toBeVisible({ timeout: 15_000 });
