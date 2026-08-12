@@ -31,7 +31,7 @@ jobs:
       BACKUP_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
       RESTORE_DATABASE_URL: postgresql://restore:restore@localhost:5432/restore_drill
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Require backup secrets
         run: |
