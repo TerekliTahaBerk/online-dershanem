@@ -3,6 +3,7 @@ import { z } from "zod";
 import { authorizeBusinessRequest } from "@/lib/business/permissions";
 import { sendConversationMessage } from "@/lib/business/jobs";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getRateLimitKeyFromUser, rateLimitResponseHeaders } from "@/lib/security/rate-limit";
 import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { guardMutation } from "@/lib/security/mutation-guard";
@@ -15,8 +16,8 @@ export async function POST(request: Request) {
   if (!access) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   const guard = await guardMutation({ action: "business.instagram.send", userId: access.session.userId, headers: request.headers, requireSameOrigin: true });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "ORIGIN" ? 403 : 429 });
-  const rate = await checkRateLimit(`ig-send:${access.session.userId}`, 30, 60_000);
-  if (!rate.allowed) return NextResponse.json({ error: "Çok fazla istek." }, { status: 429 });
+  const rate = await checkRateLimit(getRateLimitKeyFromUser(access.session.userId, "instagram.send"), 30, 60_000);
+  if (!rate.allowed) return NextResponse.json({ error: "Çok fazla istek.", code: "RATE_LIMIT" }, { status: 429, headers: rateLimitResponseHeaders(rate.retryAfterMs) });
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz mesaj." }, { status: 400 });
   const conversation = await prisma.businessConversation.findFirst({ where: { id: parsed.data.conversationId, businessUnitId: { in: access.units.map((unit) => unit.id) } }, select: { id: true } });

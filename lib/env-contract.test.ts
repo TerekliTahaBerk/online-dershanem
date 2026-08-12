@@ -95,3 +95,19 @@ test("production general deploy'u üç approval olmadan bloke edilir", () => {
   });
   assert.equal(approved.blockers.some((issue) => issue.key === "ODK_GENERAL_APPROVALS"), false);
 });
+
+test("rate-limit proxy modu yalnız belgelenen topolojileri kabul eder", () => {
+  const valid = evaluateConfiguration({
+    env: { ...productionEnv, RATE_LIMIT_PROXY_MODE: "cloudflare" },
+    environment: "production",
+    now: new Date("2026-08-11T00:00:00Z"),
+  });
+  assert.equal(valid.blockers.some((issue) => issue.key === "RATE_LIMIT_PROXY_MODE"), false);
+
+  const invalid = evaluateConfiguration({
+    env: { ...productionEnv, RATE_LIMIT_PROXY_MODE: "trust-all" },
+    environment: "production",
+    now: new Date("2026-08-11T00:00:00Z"),
+  });
+  assert.ok(invalid.blockers.some((issue) => issue.key === "RATE_LIMIT_PROXY_MODE" && issue.code === "invalid"));
+});

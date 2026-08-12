@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { guardMutation } from "@/lib/security/mutation-guard";
+import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
+import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
+import { getClientIp, getRateLimitKeyFromIp } from "@/lib/security/rate-limit";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 import { normalizeEmail } from "@/lib/auth/email";
 import { verifyAgainstDummy, verifyPassword } from "@/lib/auth/password";
@@ -31,33 +33,23 @@ const loginSchema = z.object({
 /** Saldırgana giden tek mesaj. Hangi adımın hatalı olduğunu ASLA söyleme. */
 const GENERIC_ERROR = "E-posta veya parola hatalı.";
 
-function clientIp(request: Request): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
-
 export async function POST(request: Request) {
   if (!PANEL_ENABLED) {
     return NextResponse.json({ error: "Panel şu anda kapalı." }, { status: 503 });
   }
 
-  const ip = clientIp(request);
+  const ip = getClientIp(request.headers);
+  const policy = RATE_LIMIT_POLICIES.login;
 
   const guard = await guardMutation({
-    action: "auth.login",
+    action: policy.action,
     requireSameOrigin: true,
     headers: { get: (name: string) => request.headers.get(name) },
-    rateLimitKey: `auth:login:ip:${ip}`,
-    rateLimit: { max: 10, windowMs: 15 * 60 * 1000 },
+    rateLimitKey: getRateLimitKeyFromIp(request.headers, policy.action),
+    rateLimit: policy.limit,
   });
   if (!guard.ok) {
-    return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla deneme. Biraz sonra tekrar deneyin." : guard.message },
-      { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
-    );
+    return mutationGuardResponse(guard);
   }
 
   let body: unknown;

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { leadSubmissionSchema } from "@/lib/validators";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getRateLimitKeyFromIp, rateLimitResponseHeaders } from "@/lib/security/rate-limit";
 import { sendLeadSubmissionNotification } from "@/lib/email";
 import { normalizePhone } from "@/lib/business/normalization";
 
@@ -14,15 +15,15 @@ import { normalizePhone } from "@/lib/business/normalization";
 export async function POST(request: Request) {
   try {
     // IP başına basit hız limiti — form spam'ini sınırla.
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
-    const limit = await checkRateLimit(`leads:${ip}`, 5, 60_000);
+    const limit = await checkRateLimit(
+      getRateLimitKeyFromIp(request.headers, "lead.submit"),
+      5,
+      60_000,
+    );
     if (!limit.allowed) {
       return NextResponse.json(
         { error: "Çok fazla deneme. Lütfen biraz sonra tekrar deneyin." },
-        { status: 429 },
+        { status: 429, headers: rateLimitResponseHeaders(limit.retryAfterMs) },
       );
     }
 

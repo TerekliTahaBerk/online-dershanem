@@ -22,8 +22,10 @@ import { validateCoupon } from "@/lib/discount";
 import {
   assertRateLimit,
   getRateLimitKeyFromIp,
+  rateLimitResponseHeaders,
   RateLimitError,
 } from "@/lib/security/rate-limit";
+import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,17 +81,17 @@ function asBool(v: unknown): boolean {
 const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function POST(req: Request) {
+  const policy = RATE_LIMIT_POLICIES.odCheckout;
   try {
-    await assertRateLimit(getRateLimitKeyFromIp(req.headers, "checkout:od"), {
-      max: 8,
-      windowMs: 10 * 60_000,
-      message: "Çok fazla ödeme denemesi yapıldı. Lütfen 10 dakika sonra tekrar deneyin.",
-    });
+    await assertRateLimit(
+      getRateLimitKeyFromIp(req.headers, policy.action),
+      policy.limit,
+    );
   } catch (error) {
     if (error instanceof RateLimitError) {
       return NextResponse.json(
         { ok: false, error: error.message },
-        { status: 429, headers: { "Retry-After": "600" } },
+        { status: 429, headers: rateLimitResponseHeaders(error.retryAfterMs) },
       );
     }
     throw error;

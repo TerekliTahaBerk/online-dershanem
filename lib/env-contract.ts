@@ -123,6 +123,7 @@ export function evaluateConfiguration(input: {
     }
   }, productionSeverity);
   addInvalidWhenPresent("EMAIL_MODE", (value) => value === "receipts" || value === "all", "warning");
+  addInvalidWhenPresent("RATE_LIMIT_PROXY_MODE", (value) => value === "vercel" || value === "cloudflare", productionSeverity);
   addInvalidWhenPresent("ODK_ROLLOUT_MODE", (value) => value === "disabled" || value === "pilot" || value === "general", "warning");
   for (const key of ODK_READINESS_KEYS.filter((key) => key !== "ODK_ROLLOUT_MODE")) {
     addInvalidWhenPresent(key, (value) => value === "true" || value === "false", "warning");

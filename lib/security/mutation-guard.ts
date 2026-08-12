@@ -19,6 +19,7 @@
  */
 
 import { headers as nextHeaders } from "next/headers";
+import { NextResponse } from "next/server";
 
 import {
   assertSameOrigin,
@@ -28,6 +29,7 @@ import {
   assertRateLimit,
   RateLimitError,
   getRateLimitKeyFromUser,
+  rateLimitResponseHeaders,
   type RateLimitOpts,
 } from "@/lib/security/rate-limit";
 
@@ -48,7 +50,12 @@ export type MutationGuardOpts = {
 
 export type GuardResult =
   | { ok: true }
-  | { ok: false; code: "ORIGIN" | "RATE_LIMIT"; message: string };
+  | {
+      ok: false;
+      code: "ORIGIN" | "RATE_LIMIT";
+      message: string;
+      retryAfterMs?: number;
+    };
 
 async function resolveHeaders(
   provided?: MutationGuardOpts["headers"],
@@ -92,7 +99,12 @@ export async function guardMutation(
         await assertRateLimit(key, opts.rateLimit);
       } catch (err) {
         if (err instanceof RateLimitError) {
-          return { ok: false, code: "RATE_LIMIT", message: err.message };
+          return {
+            ok: false,
+            code: "RATE_LIMIT",
+            message: err.message,
+            retryAfterMs: err.retryAfterMs,
+          };
         }
         throw err;
       }
@@ -100,6 +112,25 @@ export async function guardMutation(
   }
 
   return { ok: true };
+}
+
+/** Convert every guarded API failure to the same status/body/header contract. */
+export function mutationGuardResponse(
+  result: Exclude<GuardResult, { ok: true }>,
+): NextResponse {
+  if (result.code === "RATE_LIMIT") {
+    return NextResponse.json(
+      { error: result.message, code: "RATE_LIMIT" },
+      {
+        status: 429,
+        headers: rateLimitResponseHeaders(result.retryAfterMs ?? 1_000),
+      },
+    );
+  }
+  return NextResponse.json(
+    { error: result.message, code: "ORIGIN" },
+    { status: 403, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 /** Throwing guard — bubbles a Turkish `Error` on failure. */
