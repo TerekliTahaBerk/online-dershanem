@@ -11,6 +11,9 @@ test("normal onboarding sırası atlanamaz ve istisna yolları görünürdür", 
   assert.equal(allowedOdOnboardingTransitions("CONTACTED").includes("GROUP_ASSIGNED"), false);
   assert.deepEqual(allowedOdOnboardingTransitions("BLOCKED", "CONTACTED"), ["CONTACTED", "REFUND_PENDING", "CANCELED"]);
   assert.deepEqual(allowedOdOnboardingTransitions("MANUAL_REVIEW", "PAID"), ["PAID", "BLOCKED", "REFUND_PENDING", "CANCELED"]);
+  assert.deepEqual(allowedOdOnboardingTransitions("PLACEMENT_PENDING"), ["GROUP_ASSIGNED", "ALTERNATE_SLOT_OFFERED", "WAITLISTED", "NO_SLOT_REFUND_PENDING", "BLOCKED", "REFUND_PENDING", "CANCELED"]);
+  assert.equal(allowedOdOnboardingTransitions("WAITLISTED").includes("PLACEMENT_PENDING"), true);
+  assert.deepEqual(allowedOdOnboardingTransitions("ALTERNATE_SLOT_OFFERED")[0], "ALTERNATE_SLOT_ACCEPTED");
   assert.deepEqual(allowedOdOnboardingTransitions("CANCELED"), []);
 });
 

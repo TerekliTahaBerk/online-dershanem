@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { CartCheckoutClient } from "@/components/cart/cart-checkout-client";
+import { getOdPlacementExpectation } from "@/lib/od/placement-server";
 
 export const metadata: Metadata = {
   title: "Güvenli Ödeme",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CartCheckoutPage() {
+  const placementExpectation = await getOdPlacementExpectation();
   const defaults = {
     fullName: "", email: "", phone: "", city: "", district: "",
     schoolName: "", classLevel: "", department: "", examType: "",
@@ -31,7 +33,7 @@ export default async function CartCheckoutPage() {
             <span className="mx-2">/</span>
             <span className="text-[var(--site-ink)]">Güvenli Ödeme</span>
           </nav>
-          <CartCheckoutClient defaults={defaults} />
+          <CartCheckoutClient defaults={defaults} placementExpectation={placementExpectation} />
         </div>
       </main>
       <SiteFooter />

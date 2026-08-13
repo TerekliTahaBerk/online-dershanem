@@ -26,6 +26,8 @@ import {
   RateLimitError,
 } from "@/lib/security/rate-limit";
 import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
+import { OD_NO_SLOT_VALUES, OD_TIME_RANGE_VALUES } from "@/lib/od/placement";
+import { getOdPlacementExpectation } from "@/lib/od/placement-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +68,10 @@ const InputSchema = z.object({
   parentPhone: z.string().max(20).optional().nullable(),
   parentEmail: z.string().email().max(254).optional().nullable().or(z.literal("")),
   notes: z.string().max(1000).optional().nullable(),
+  availabilityTimeRanges: z.array(z.enum(OD_TIME_RANGE_VALUES)).min(1).max(4),
+  earliestStartDate: z.iso.date().optional().nullable(),
+  noSlotPreference: z.enum(OD_NO_SLOT_VALUES),
+  placementConsent: z.union([z.string(), z.boolean()]).optional(),
   couponCode: z.string().max(60).optional().nullable(),
   kvkkConsent: z.union([z.string(), z.boolean()]).optional(),
   marketingConsent: z.union([z.string(), z.boolean()]).optional(),
@@ -121,7 +127,7 @@ export async function POST(req: Request) {
   }
   const d = parsed.data;
 
-  if (!asBool(d.kvkkConsent) || !asBool(d.paymentConsent)) {
+  if (!asBool(d.kvkkConsent) || !asBool(d.paymentConsent) || !asBool(d.placementConsent)) {
     return NextResponse.json(
       { ok: false, error: "KVKK ve ön bilgilendirme onaylarını işaretleyin." },
       { status: 400 },
@@ -238,6 +244,7 @@ export async function POST(req: Request) {
   }
 
   const normalizedEmail = d.email.trim().toLowerCase();
+  const placementExpectation = await getOdPlacementExpectation(category);
   const buyerInfo = {
     fullName: d.fullName,
     email: normalizedEmail,
@@ -255,6 +262,13 @@ export async function POST(req: Request) {
     parentPhone: d.parentPhone || null,
     parentEmail: d.parentEmail?.trim().toLowerCase() || null,
     notes: d.notes || null,
+    placementPreferences: {
+      timeRanges: d.availabilityTimeRanges,
+      earliestStartDate: d.earliestStartDate || null,
+      noSlotPreference: d.noSlotPreference,
+      capturedAt: new Date().toISOString(),
+      expectationShown: placementExpectation,
+    },
     kvkkConsent: true,
     marketingConsent: asBool(d.marketingConsent),
     paymentConsent: true,
@@ -316,6 +330,9 @@ export async function POST(req: Request) {
     couponCode,
     packageId,
     itemCount: cartSnapshot?.length ?? 1,
+    capacitySignal: placementExpectation.capacitySignal,
+    timeRangeCount: d.availabilityTimeRanges.length,
+    noSlotPreference: d.noSlotPreference,
   });
 
   return NextResponse.json({

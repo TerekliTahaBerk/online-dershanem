@@ -19,7 +19,7 @@ export class OdOnboardingError extends Error {
 }
 
 export async function ensurePaidOdOnboarding(tx: DbClient, orderId: string) {
-  const order = await tx.odOrder.findUnique({ where: { id: orderId }, select: { id: true, status: true, userId: true } });
+  const order = await tx.odOrder.findUnique({ where: { id: orderId }, select: { id: true, status: true, userId: true, buyerInfo: true } });
   if (!order) throw new OdOnboardingError("Sipariş bulunamadı.", "NOT_FOUND");
   if (order.status !== "PAID") throw new OdOnboardingError("Onboarding yalnızca ödenmiş sipariş için oluşturulabilir.", "PAYMENT_CONFLICT");
   const now = new Date();
@@ -32,7 +32,13 @@ export async function ensurePaidOdOnboarding(tx: DbClient, orderId: string) {
       flowType: order.userId ? "EXISTING_STUDENT" : "NEW_STUDENT",
       dueAt: dueAtForOdOnboardingState("PAID", now),
       stateEnteredAt: now,
-      transitions: { create: { toState: "PAID", actorType: "SYSTEM", note: "Ödeme onayı ile onboarding başlatıldı.", occurredAt: now } },
+      transitions: { create: {
+        toState: "PAID",
+        actorType: "SYSTEM",
+        note: "Ödeme onayı ile onboarding başlatıldı.",
+        metadata: { placementPreferences: ((order.buyerInfo ?? {}) as Record<string, unknown>).placementPreferences ?? null },
+        occurredAt: now,
+      } },
     },
   });
 }

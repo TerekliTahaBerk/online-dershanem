@@ -5,6 +5,10 @@ export const OD_ONBOARDING_STATES = [
   "ACCOUNT_READY",
   "PARENT_LINKED",
   "PLACEMENT_PENDING",
+  "ALTERNATE_SLOT_OFFERED",
+  "ALTERNATE_SLOT_ACCEPTED",
+  "WAITLISTED",
+  "NO_SLOT_REFUND_PENDING",
   "GROUP_ASSIGNED",
   "FIRST_LESSON_SCHEDULED",
   "ACTIVE",
@@ -23,6 +27,10 @@ export const OD_ONBOARDING_LABELS: Record<OdOnboardingStateValue, string> = {
   ACCOUNT_READY: "Hesap hazır",
   PARENT_LINKED: "Veli bağlandı",
   PLACEMENT_PENDING: "Yerleştirme bekliyor",
+  ALTERNATE_SLOT_OFFERED: "Alternatif saat önerildi",
+  ALTERNATE_SLOT_ACCEPTED: "Alternatif saat kabul edildi",
+  WAITLISTED: "Bekleme listesinde",
+  NO_SLOT_REFUND_PENDING: "Uygun grup yok — iade bekliyor",
   GROUP_ASSIGNED: "Grup atandı",
   FIRST_LESSON_SCHEDULED: "İlk ders planlandı",
   ACTIVE: "Aktif",
@@ -50,6 +58,10 @@ const SLA_HOURS: Partial<Record<OdOnboardingStateValue, number>> = {
   ACCOUNT_READY: 24,
   PARENT_LINKED: 24,
   PLACEMENT_PENDING: 48,
+  ALTERNATE_SLOT_OFFERED: 24,
+  ALTERNATE_SLOT_ACCEPTED: 24,
+  WAITLISTED: 72,
+  NO_SLOT_REFUND_PENDING: 48,
   GROUP_ASSIGNED: 72,
   FIRST_LESSON_SCHEDULED: 24,
   MANUAL_REVIEW: 24,
@@ -64,6 +76,10 @@ export const OD_ONBOARDING_NEXT_ACTION: Record<OdOnboardingStateValue, string> =
   ACCOUNT_READY: "Veli hesabını öğrenciye bağla",
   PARENT_LINKED: "Seviye ve yerleştirme bilgilerini doğrula",
   PLACEMENT_PENDING: "Öğrenciyi uygun gruba ata",
+  ALTERNATE_SLOT_OFFERED: "Önerilen saatin kabulünü takip et",
+  ALTERNATE_SLOT_ACCEPTED: "Kabul edilen alternatif gruba atamayı tamamla",
+  WAITLISTED: "Yeni kapasiteyi takip et ve öğrenciyi bilgilendir",
+  NO_SLOT_REFUND_PENDING: "Uygun grup bulunamadığı için ödeme iadesini tamamla",
   GROUP_ASSIGNED: "İlk dersi takvime ekle",
   FIRST_LESSON_SCHEDULED: "Erişimi aktive edip onboarding'i tamamla",
   ACTIVE: "Onboarding tamamlandı",
@@ -83,6 +99,11 @@ export function allowedOdOnboardingTransitions(
   if (state === "MANUAL_REVIEW") return blockedFromState ? [blockedFromState, "BLOCKED", "REFUND_PENDING", "CANCELED"] : ["BLOCKED", "REFUND_PENDING", "CANCELED"];
   if (state === "BLOCKED") return blockedFromState ? [blockedFromState, "REFUND_PENDING", "CANCELED"] : ["REFUND_PENDING", "CANCELED"];
   if (state === "REFUND_PENDING") return ["CANCELED", "BLOCKED"];
+  if (state === "NO_SLOT_REFUND_PENDING") return ["CANCELED", "BLOCKED"];
+  if (state === "PLACEMENT_PENDING") return ["GROUP_ASSIGNED", "ALTERNATE_SLOT_OFFERED", "WAITLISTED", "NO_SLOT_REFUND_PENDING", "BLOCKED", "REFUND_PENDING", "CANCELED"];
+  if (state === "ALTERNATE_SLOT_OFFERED") return ["ALTERNATE_SLOT_ACCEPTED", "WAITLISTED", "PLACEMENT_PENDING", "NO_SLOT_REFUND_PENDING", "REFUND_PENDING", "BLOCKED", "CANCELED"];
+  if (state === "ALTERNATE_SLOT_ACCEPTED") return ["GROUP_ASSIGNED", "PLACEMENT_PENDING", "NO_SLOT_REFUND_PENDING", "REFUND_PENDING", "BLOCKED", "CANCELED"];
+  if (state === "WAITLISTED") return ["PLACEMENT_PENDING", "ALTERNATE_SLOT_OFFERED", "GROUP_ASSIGNED", "NO_SLOT_REFUND_PENDING", "REFUND_PENDING", "BLOCKED", "CANCELED"];
   const next = NORMAL_NEXT[state];
   return [...(next ? [next] : []), "BLOCKED", "REFUND_PENDING", "CANCELED"];
 }

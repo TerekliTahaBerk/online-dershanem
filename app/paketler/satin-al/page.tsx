@@ -9,6 +9,7 @@ import {
   CheckoutPageHeader,
 } from "@/components/checkout/order-summary-card";
 import { parsePriceToCents } from "@/lib/content";
+import { getOdPlacementExpectation } from "@/lib/od/placement-server";
 
 type Search = Promise<{
   cat?: string;
@@ -44,6 +45,7 @@ export default async function OdCheckoutFormPage({
     explicitName ||
     [category, subject].filter(Boolean).join(" ").trim() ||
     "Paket";
+  const placementExpectation = await getOdPlacementExpectation(category);
 
   const defaults = {
     fullName: "", email: "", phone: "", city: "", district: "",
@@ -83,6 +85,7 @@ export default async function OdCheckoutFormPage({
                   priceLabel,
                 }}
                 defaults={defaults}
+                placementExpectation={placementExpectation}
               />
             </div>
 
