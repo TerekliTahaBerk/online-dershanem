@@ -1,4 +1,5 @@
-import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { hashPassword } from "@/lib/auth/password";
 
 export const PASSWORD_RESET_TTL_MS = 60 * 60_000;
 const TOKEN_ID_BYTES = 18;
@@ -14,14 +15,10 @@ function proofForId(id: string): string {
   return createHmac("sha256", resetSecret()).update(`password-reset:${id}`).digest("base64url");
 }
 
-export function createPasswordResetToken(): { id: string; token: string; tokenHash: string } {
+export async function createPasswordResetToken(): Promise<{ id: string; token: string; tokenHash: string }> {
   const id = randomBytes(TOKEN_ID_BYTES).toString("base64url");
   const token = `${id}.${proofForId(id)}`;
-  return { id, token, tokenHash: hashPasswordResetToken(token) };
-}
-
-export function hashPasswordResetToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
+  return { id, token, tokenHash: await hashPassword(token) };
 }
 
 export function passwordResetTokenId(token: string): string | null {

@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (user?.status === "ACTIVE") {
       const now = new Date();
-      const generated = createPasswordResetToken();
+      const generated = await createPasswordResetToken();
       try {
         await prisma.$transaction(async (tx) => {
           await tx.passwordResetToken.updateMany({

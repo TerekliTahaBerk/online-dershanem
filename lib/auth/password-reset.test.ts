@@ -2,19 +2,19 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createPasswordResetToken,
-  hashPasswordResetToken,
   materializePasswordResetEmailHtml,
   passwordResetTokenId,
   passwordResetUrlMarker,
 } from "./password-reset";
+import { verifyPassword } from "./password";
 
-test("reset token round-trip validates its HMAC and stores only a hash", () => {
+test("reset token round-trip validates its HMAC and stores only a scrypt hash", async () => {
   const previous = process.env.NEXTAUTH_SECRET;
   process.env.NEXTAUTH_SECRET = "password-reset-test-secret-with-enough-entropy";
   try {
-    const generated = createPasswordResetToken();
+    const generated = await createPasswordResetToken();
     assert.equal(passwordResetTokenId(generated.token), generated.id);
-    assert.equal(hashPasswordResetToken(generated.token), generated.tokenHash);
+    assert.equal(await verifyPassword(generated.token, generated.tokenHash), true);
     assert.notEqual(generated.tokenHash, generated.token);
     assert.equal(passwordResetTokenId(`${generated.id}.tampered`), null);
   } finally {
@@ -23,13 +23,13 @@ test("reset token round-trip validates its HMAC and stores only a hash", () => {
   }
 });
 
-test("durable HTML contains no usable token and materializes it only for delivery", () => {
+test("durable HTML contains no usable token and materializes it only for delivery", async () => {
   const previousSecret = process.env.NEXTAUTH_SECRET;
   const previousUrl = process.env.NEXT_PUBLIC_APP_URL;
   process.env.NEXTAUTH_SECRET = "password-reset-test-secret-with-enough-entropy";
   process.env.NEXT_PUBLIC_APP_URL = "https://example.test";
   try {
-    const generated = createPasswordResetToken();
+    const generated = await createPasswordResetToken();
     const storedHtml = `<a href="${passwordResetUrlMarker(generated.id)}">reset</a>`;
     assert.equal(storedHtml.includes(generated.token), false);
     const deliveredHtml = materializePasswordResetEmailHtml(storedHtml);

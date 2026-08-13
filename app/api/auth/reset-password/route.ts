@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { hashPassword } from "@/lib/auth/password";
+import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { validatePasswordStrength } from "@/lib/auth/password-policy";
-import { hashPasswordResetToken, passwordResetTokenId } from "@/lib/auth/password-reset";
+import { passwordResetTokenId } from "@/lib/auth/password-reset";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { getRateLimitKeyFromIp } from "@/lib/security/rate-limit";
@@ -37,9 +37,10 @@ export async function POST(request: Request) {
   const reset = tokenId
     ? await prisma.passwordResetToken.findUnique({ where: { id: tokenId }, include: { user: true } })
     : null;
+  const tokenMatches = reset ? await verifyPassword(token, reset.tokenHash) : false;
 
   const now = new Date();
-  if (!reset || reset.tokenHash !== hashPasswordResetToken(token) || reset.usedAt || reset.expiresAt <= now || reset.user.status !== "ACTIVE") {
+  if (!reset || !tokenMatches || reset.usedAt || reset.expiresAt <= now || reset.user.status !== "ACTIVE") {
     return NextResponse.json({ error: INVALID_LINK }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 
