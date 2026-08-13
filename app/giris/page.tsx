@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CheckCircle2, Headphones, Lock, ShieldCheck } from "lucide-react";
+import { Lock } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import { PageHero } from "@/components/site/page-hero";
-import { StudentSupportChannels } from "@/components/site/student-support-channels";
 import { LoginForm } from "@/components/panel/login-form";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 import { PANEL_ENABLED } from "@/lib/panel-config";
@@ -20,12 +19,6 @@ export const metadata: Metadata = {
   }),
   robots: { index: false, follow: false },
 };
-
-const supportBenefits = [
-  { Icon: Headphones, label: "Ders ve program desteği" },
-  { Icon: ShieldCheck, label: "Güvenli iletişim kanalları" },
-  { Icon: CheckCircle2, label: "Paket ve ödeme kaydı desteği" },
-];
 
 /**
  * Panel girişi.
@@ -81,53 +74,29 @@ function LoginScreen({ resetSuccess }: { resetSuccess: boolean }) {
 /** Panel kapalıyken gösterilen ekran — çalışan bir giriş formu yok. */
 function RenewingNotice() {
   return (
-    <div className="site-scope">
-      <SiteHeader />
-      <main id="main-content" tabIndex={-1}>
-        <PageHero
-          eyebrow="Öğrenci paneli"
-          align="left"
-          title={<>Panelimiz sizin için <span className="site-hl">yenileniyor.</span></>}
-          subtitle="Öğrenci panelini baştan hazırlıyoruz. Bu sürede ders bağlantınız, grup programınız ve ödeme kaydınız için ekibimiz yanınızda — sizden parola veya tek kullanımlık kod istemiyoruz."
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="site-scope grid min-h-dvh place-items-center px-6 py-10 text-center"
+    >
+      <div className="w-full max-w-[460px]">
+        <Image
+          src="/panel-yenileniyor-seffaf.png"
+          alt="Bilgisayar başında çalışan Online Dershanem karakteri"
+          width={1333}
+          height={1180}
+          priority
+          sizes="(max-width: 520px) 88vw, 460px"
+          className="mx-auto h-auto w-full"
         />
-        <section className="site-container py-14 sm:py-20">
-          <div className="grid gap-8 lg:grid-cols-[.9fr_1.1fr] lg:items-start">
-            <div>
-              <p className="site-kicker">Panel yenilenirken</p>
-              <h2 className="mt-4 max-w-lg font-display text-[clamp(2rem,4vw,3rem)] leading-tight text-[var(--site-ink)]">
-                Panel yokken de yalnız değilsiniz.
-              </h2>
-              <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">
-                Panelin yaptığı her işi bu sürede ekibimiz üstleniyor. Yalnızca çalışan iletişim kanallarını kullanıyoruz; kart bilgisi, şifre veya tek kullanımlık kod istemeyiz.
-              </p>
-              <ul className="mt-7 space-y-3">
-                {supportBenefits.map(({ Icon, label }) => (
-                  <li key={label} className="flex items-center gap-3 text-[14.5px] font-medium text-[var(--site-body)]">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
-                      <Icon size={16} aria-hidden="true" />
-                    </span>
-                    {label}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-[26px] border border-[var(--site-line)] bg-white p-6 sm:p-8">
-              <h2 className="font-display text-[25px] text-[var(--site-ink)]">Nasıl yardımcı olabiliriz?</h2>
-              <p className="mt-2 text-[14px] leading-6 text-[var(--site-body)]">
-                Konunuzu seçmeniz gerekmez; WhatsApp üzerinden kısa bir mesaj bırakmanız yeterli.
-              </p>
-              <StudentSupportChannels />
-            </div>
-          </div>
-          <div className="mt-10 border-t border-[var(--site-line)] pt-8 text-center text-[15px] text-[var(--site-body)]">
-            Henüz öğrencimiz değil misiniz?{" "}
-            <Link href="/ders-paketleri/" className="font-semibold text-[var(--brand-olive)] hover:underline">
-              Matematik paketlerini inceleyin
-            </Link>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </div>
+        <h1 className="sr-only">Panelimizi yeniliyoruz</h1>
+        <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
+          Panelimizi yeniliyoruz, çok yakında buradayız. {" "}
+          <Link href="/" className="font-semibold text-[var(--brand-olive)] underline underline-offset-4">
+            Ana sayfaya dön
+          </Link>
+        </p>
+      </div>
+    </main>
   );
 }
