@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PublicSection, SectionIntro } from "@/components/public/primitives";
 
 const steps = [
   ["01", "İhtiyacı belirle", "Canlı ders, planlama desteği veya deneme ölçümünden hangisinin bugün gerekli olduğunu seç."],
@@ -9,12 +10,10 @@ const steps = [
 
 export function First30Days() {
   return (
-    <section id="nasil-calisir" className="scroll-mt-24 bg-[var(--brand-olive-soft)]">
-      <div className="site-container site-section">
+    <PublicSection id="nasil-calisir" tone="soft">
         <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:gap-20">
           <div>
-            <p className="site-kicker">Nasıl çalışır?</p>
-            <h2 className="mt-4 text-[clamp(2.4rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">Tek bir pakete sıkışmadan kendi destek yolunu kur.</h2>
+            <SectionIntro eyebrow="Nasıl çalışır?" title="Tek bir pakete sıkışmadan kendi destek yolunu kur." />
             <Link href="/urunler/" className="site-btn site-btn-primary mt-8">Ürünleri karşılaştır</Link>
           </div>
           <ol className="divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">
@@ -27,7 +26,6 @@ export function First30Days() {
             ))}
           </ol>
         </div>
-      </div>
-    </section>
+    </PublicSection>
   );
 }
