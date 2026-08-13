@@ -2212,6 +2212,26 @@ enum OdProvisioningStatus {
   MANUAL_REVIEW
 }
 
+enum CommerceProduct {
+  OD
+  ODK
+}
+
+enum OrderLineFulfillmentStatus {
+  PENDING
+  RUNNING
+  RETRY_PENDING
+  SUCCEEDED
+  MANUAL_REVIEW
+  REVOKED
+}
+
+enum OrderLineRefundStatus {
+  NONE
+  PARTIAL
+  FULL
+}
+
 enum CouponType {
   PERCENT
   FIXED
@@ -2932,6 +2952,7 @@ model OdkOrder {
   payments             OdkPayment[]
   student              User?                 @relation("OdkOrderStudent", fields: [studentUserId], references: [id], onDelete: SetNull)
   entitlement          OdkEntitlement?
+  lines                CommerceOrderLine[]
 
   @@index([status, createdAt])
   @@index([provisioningStatus, updatedAt])
@@ -2940,19 +2961,21 @@ model OdkOrder {
 }
 
 model OdkEntitlement {
-  id               String     @id @default(cuid())
-  orderId          String     @unique @map("order_id")
-  userId           String     @map("user_id")
-  packageId        String     @map("package_id")
-  startsAt         DateTime   @default(now()) @map("starts_at")
-  expiresAt        DateTime?  @map("expires_at")
-  revokedAt        DateTime?  @map("revoked_at")
-  contractSnapshot Json       @default("{}") @map("contract_snapshot")
-  createdAt        DateTime   @default(now()) @map("created_at")
-  updatedAt        DateTime   @updatedAt @map("updated_at")
-  order            OdkOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package          OdkPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  id               String             @id @default(cuid())
+  orderId          String?            @unique @map("order_id")
+  orderLineId      String?            @unique @map("order_line_id")
+  userId           String             @map("user_id")
+  packageId        String             @map("package_id")
+  startsAt         DateTime           @default(now()) @map("starts_at")
+  expiresAt        DateTime?          @map("expires_at")
+  revokedAt        DateTime?          @map("revoked_at")
+  contractSnapshot Json               @default("{}") @map("contract_snapshot")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  order            OdkOrder?          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderLine        CommerceOrderLine? @relation(fields: [orderLineId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package          OdkPackage         @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
   @@index([userId, revokedAt, expiresAt])
   @@index([packageId])
@@ -3001,12 +3024,55 @@ model OdOrder {
   user                 User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
   onboarding           OdOnboarding?
   sourcedMemberships   ProductMembership[]
+  lines                CommerceOrderLine[]
 
   @@index([status, createdAt])
   @@index([intentId])
   @@index([userId, createdAt])
   @@index([provisioningStatus, updatedAt])
   @@map("od_orders")
+}
+
+/// Immutable commercial facts captured when checkout is created. Operational
+/// fulfillment/refund columns may advance, but snapshot and money columns are
+/// protected from mutation by database triggers.
+model CommerceOrderLine {
+  id                       String                     @id @default(cuid())
+  odOrderId                String?                    @map("od_order_id")
+  odkOrderId               String?                    @map("odk_order_id")
+  position                 Int
+  product                  CommerceProduct
+  productId                String?                    @map("product_id")
+  sku                      String
+  productName              String                     @map("product_name")
+  productSnapshot          Json                       @map("product_snapshot")
+  quantity                 Int
+  unitPriceCents           Int                        @map("unit_price_cents")
+  subtotalCents            Int                        @map("subtotal_cents")
+  discountCents            Int                        @default(0) @map("discount_cents")
+  taxCents                 Int                        @default(0) @map("tax_cents")
+  totalCents               Int                        @map("total_cents")
+  fulfillmentOwnerKey      String                     @map("fulfillment_owner_key")
+  fulfillmentOwnerSnapshot Json                       @map("fulfillment_owner_snapshot")
+  fulfillmentOwnerUserId   String?                    @map("fulfillment_owner_user_id")
+  fulfillmentStatus        OrderLineFulfillmentStatus @default(PENDING) @map("fulfillment_status")
+  fulfillmentAttempts      Int                        @default(0) @map("fulfillment_attempts")
+  fulfillmentError         String?                    @map("fulfillment_error")
+  fulfilledAt              DateTime?                  @map("fulfilled_at")
+  refundedQuantity         Int                        @default(0) @map("refunded_quantity")
+  refundedCents            Int                        @default(0) @map("refunded_cents")
+  refundStatus             OrderLineRefundStatus      @default(NONE) @map("refund_status")
+  createdAt                DateTime                   @default(now()) @map("created_at")
+  updatedAt                DateTime                   @updatedAt @map("updated_at")
+  odOrder                  OdOrder?                   @relation(fields: [odOrderId], references: [id], onDelete: Cascade)
+  odkOrder                 OdkOrder?                  @relation(fields: [odkOrderId], references: [id], onDelete: Cascade)
+  odkEntitlement           OdkEntitlement?
+
+  @@unique([odOrderId, position])
+  @@unique([odkOrderId, position])
+  @@index([fulfillmentStatus, updatedAt])
+  @@index([fulfillmentOwnerKey, product])
+  @@map("commerce_order_lines")
 }
 
 model OdOnboarding {

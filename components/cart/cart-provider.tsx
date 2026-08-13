@@ -1,10 +1,7 @@
 "use client";
 
 /**
- * OD tek öğrenci / tek paket sepeti — localStorage tabanlı client cart.
- *
- * Yeni paket seçimi önceki seçimin yerini alır. Böylece aynı CTA'ya yeniden
- * basılması veya LGS/YKS arasında seçim yapılması tutarı yanlışlıkla artırmaz.
+ * OD çok satırlı sepeti — localStorage tabanlı client cart.
  *
  * Kalıcılık: localStorage (key: "od_cart_v1"). SSR-safe — useEffect ile hidrate edilir.
  */
@@ -82,9 +79,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const add = useCallback((item: Omit<OdCartItem, "qty">) => {
-    // Bir checkout tek öğrenci içindir. Yeni seçim önceki paketin yerini alır;
-    // aynı CTA'ya iki kez basmak tutarı artırmaz.
-    setItems([{ ...item, qty: 1 }]);
+    setItems((current) => {
+      const existing = current.find((candidate) => candidate.id === item.id);
+      if (!existing) return [...current, { ...item, qty: 1 }].slice(0, 20);
+      return current.map((candidate) => candidate.id === item.id
+        ? { ...candidate, qty: Math.min(99, candidate.qty + 1) }
+        : candidate);
+    });
   }, []);
 
   const remove = useCallback((id: string) => {
@@ -96,8 +97,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       items,
-      count: items.length,
-      totalCents: items.reduce((acc, it) => acc + it.priceCents, 0),
+      count: items.reduce((acc, it) => acc + it.qty, 0),
+      totalCents: items.reduce((acc, it) => acc + it.priceCents * it.qty, 0),
       add,
       remove,
       clear,

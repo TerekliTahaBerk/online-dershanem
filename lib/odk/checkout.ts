@@ -20,6 +20,7 @@ import {
   isPaytrConfigured,
   type PaytrBasketItem,
 } from "./paytr";
+import { assertOrderLineReconciliation } from "@/lib/commerce/order-lines";
 
 export type CheckoutResult =
   | { ok: true; orderId: string; iframeUrl: string }
@@ -50,7 +51,10 @@ export async function createOdkCheckoutSession(input: {
       id: true,
       status: true,
       totalCents: true,
+      subtotalCents: true,
+      discountCents: true,
       contractSnapshot: true,
+      lines: { orderBy: { position: "asc" }, select: { position: true, productName: true, quantity: true, unitPriceCents: true, subtotalCents: true, discountCents: true, taxCents: true, totalCents: true } },
       package: { select: { isActive: true } },
     },
   });
@@ -66,6 +70,14 @@ export async function createOdkCheckoutSession(input: {
       reason: "invalid_price",
       userMessage: "Bu paketin fiyatı tanımlı değil. Lütfen iletişime geçin.",
     };
+  }
+  if (order.lines.length) {
+    try {
+      assertOrderLineReconciliation(order.lines, order);
+    } catch {
+      log.error("odk.checkout.line_reconciliation_failed", { orderId: order.id });
+      return { ok: false, reason: "line_total_mismatch", userMessage: "Sipariş toplamı doğrulanamadı. Lütfen sepeti yeniden oluşturun." };
+    }
   }
   const contract = parseOdkProductContract(order.contractSnapshot);
   if (!contract.success) {
@@ -107,9 +119,9 @@ export async function createOdkCheckoutSession(input: {
     });
   }
 
-  const basket: PaytrBasketItem[] = [
-    [pkg.title.slice(0, 200), (order.totalCents / 100).toFixed(2), 1],
-  ];
+  const basket: PaytrBasketItem[] = order.lines.length
+    ? order.lines.map((line) => [`${line.productName}${line.quantity > 1 ? ` × ${line.quantity}` : ""}`.slice(0, 200), (line.totalCents / 100).toFixed(2), 1])
+    : [[pkg.title.slice(0, 200), (order.totalCents / 100).toFixed(2), 1]];
 
   const okUrl = `${input.origin}/odk-paketleri/${pkg.slug}/satin-al/sonuc?status=success&orderId=${order.id}`;
   const failUrl = `${input.origin}/odk-paketleri/${pkg.slug}/satin-al/sonuc?status=failed&orderId=${order.id}`;

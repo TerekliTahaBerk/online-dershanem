@@ -18,7 +18,7 @@ test("sanitizes valid cart items and rejects invalid numeric fields", () => {
   assert.equal(sanitizeCartItems([{ ...validItem, priceCents: Number.NaN }]), null);
 });
 
-test("normalizes legacy carts to one unit of the last selected package", () => {
+test("preserves multi-line carts and quantities", () => {
   const replacement = {
     ...validItem,
     id: "YKS__Matematik Ders Paketi",
@@ -28,9 +28,7 @@ test("normalizes legacy carts to one unit of the last selected package", () => {
     qty: 7,
   };
 
-  assert.deepEqual(sanitizeCartItems([validItem, replacement]), [
-    { ...replacement, qty: 1 },
-  ]);
+  assert.deepEqual(sanitizeCartItems([validItem, replacement]), [validItem, replacement]);
 });
 
 test("checkout snapshot enforces TTL and shape", () => {

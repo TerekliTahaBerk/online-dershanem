@@ -61,6 +61,17 @@ export async function createOdkOrderFromCatalog(input: {
   if (!sale.allowed) throw new Error(`ODK_PACKAGE_NOT_SELLABLE:${sale.reason}`);
   const issues = odkSellableContractIssues(contract);
   if (issues.length) throw new Error(`ODK_PACKAGE_CONTRACT_INCOMPLETE:${issues.join(",")}`);
+  const buyer = (input.buyerInfo && typeof input.buyerInfo === "object" && !Array.isArray(input.buyerInfo)
+    ? input.buyerInfo
+    : {}) as Record<string, unknown>;
+  const ownerEmail = typeof buyer.studentEmail === "string"
+    ? buyer.studentEmail.trim().toLowerCase()
+    : typeof buyer.email === "string" ? buyer.email.trim().toLowerCase() : `guest:${contract.package.id}`;
+  const ownerSnapshot = {
+    fullName: typeof buyer.studentFullName === "string" ? buyer.studentFullName : buyer.fullName,
+    email: ownerEmail,
+    phone: typeof buyer.studentPhone === "string" ? buyer.studentPhone : buyer.phone,
+  };
   return prisma.odkOrder.create({
     data: {
       packageId: input.packageId,
@@ -68,6 +79,22 @@ export async function createOdkOrderFromCatalog(input: {
       totalCents: contract.package.priceCents,
       buyerInfo: input.buyerInfo,
       contractSnapshot: contract as unknown as Prisma.InputJsonValue,
+      lines: { create: {
+        position: 0,
+        product: "ODK",
+        productId: contract.package.id,
+        sku: contract.package.slug,
+        productName: contract.package.title,
+        productSnapshot: contract as unknown as Prisma.InputJsonValue,
+        quantity: 1,
+        unitPriceCents: contract.package.priceCents,
+        subtotalCents: contract.package.priceCents,
+        discountCents: 0,
+        taxCents: 0,
+        totalCents: contract.package.priceCents,
+        fulfillmentOwnerKey: ownerEmail,
+        fulfillmentOwnerSnapshot: ownerSnapshot as Prisma.InputJsonValue,
+      } },
     },
   });
 }

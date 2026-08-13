@@ -95,9 +95,10 @@ export function CartCheckoutClient({ defaults, placementExpectation }: { default
     );
   }
 
-  // Sepet tek öğrenci için tam olarak bir paket içerir.
   const first = snapshot.items[0];
-  const packageLabel = `${first.category} ${first.subject}`;
+  const packageLabel = snapshot.items.length === 1
+    ? `${first.category} ${first.subject}`
+    : `${snapshot.items.length} farklı paket`;
   const priceLabel = tryFormat(totalCents);
 
   return (

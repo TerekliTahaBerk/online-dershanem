@@ -62,6 +62,11 @@ export async function provisionOdkOrder(
     return waitForConcurrentProvisioning(orderId);
   }
 
+  await prisma.commerceOrderLine.updateMany({
+    where: { odkOrderId: orderId, product: "ODK", fulfillmentStatus: { in: ["PENDING", "RETRY_PENDING"] } },
+    data: { fulfillmentStatus: "RUNNING", fulfillmentAttempts: { increment: 1 }, fulfillmentError: null },
+  });
+
   try {
     const order = await prisma.odkOrder.findUniqueOrThrow({
       where: { id: orderId },
@@ -123,6 +128,10 @@ export async function provisionOdkOrder(
         where: { id: orderId },
         data: { provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
       });
+      await tx.commerceOrderLine.updateMany({
+        where: { odkOrderId: orderId, product: "ODK" },
+        data: { fulfillmentOwnerUserId: user.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() },
+      });
       return storedEntitlement;
     });
     await logCriticalAudit({
@@ -149,6 +158,10 @@ export async function provisionOdkOrder(
     await prisma.odkOrder.updateMany({
       where: { id: orderId, provisioningStatus: "RUNNING" },
       data: { provisioningStatus: "RETRY_PENDING", provisioningError: message },
+    });
+    await prisma.commerceOrderLine.updateMany({
+      where: { odkOrderId: orderId, fulfillmentStatus: "RUNNING" },
+      data: { fulfillmentStatus: "RETRY_PENDING", fulfillmentError: message },
     });
     throw error;
   }
