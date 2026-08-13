@@ -28,6 +28,7 @@ const PRODUCTION_REQUIRED = [
   "PANEL_ENABLED",
   "CRON_SECRET",
   "BLOB_READ_WRITE_TOKEN",
+  "MFA_ENCRYPTION_KEY",
 ] as const;
 
 const OPTIONAL_KEYS = ["RESEND_API_KEY", "EMAIL_MODE"] as const;
@@ -123,6 +124,9 @@ export function evaluateConfiguration(input: {
     }
   }, productionSeverity);
   addInvalidWhenPresent("EMAIL_MODE", (value) => value === "receipts" || value === "all", "warning");
+  addInvalidWhenPresent("MFA_ENCRYPTION_KEY", (value) => {
+    try { return Buffer.from(value, "base64").length === 32; } catch { return false; }
+  }, productionSeverity);
   addInvalidWhenPresent(
     "RATE_LIMIT_PROXY_MODE",
     (value) => value === "vercel" || value === "cloudflare" || (value === "local" && env.CI === "true"),

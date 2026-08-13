@@ -1,10 +1,11 @@
 import "server-only";
 import { cache } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { BusinessRole } from "@prisma/client";
 import { getSession, type SessionUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { log } from "@/lib/logger";
+import { hasFreshStepUp, STEP_UP_PATH } from "@/lib/auth/mfa-policy";
 import {
   BUSINESS_ROLE_PERMISSIONS,
   roleHasPermission,
@@ -89,7 +90,7 @@ export async function getBusinessAccess(
   session: SessionUser,
   permission: BusinessPermission,
 ): Promise<BusinessUnitAccess[]> {
-  if (session.status !== "ACTIVE" || session.mustChangePassword) return [];
+  if (session.status !== "ACTIVE" || session.mustChangePassword || (session.role === "ADMIN" && !session.mfaVerifiedAt)) return [];
 
   let assignments = await loadAssignments(session.userId);
 
@@ -123,6 +124,13 @@ export async function requireBusinessPage(permission: BusinessPermission): Promi
   const units = await getBusinessAccess(session, permission);
   if (units.length === 0) notFound();
   return { session, units };
+}
+
+/** High-risk finance and role mutations require a recent second-factor ceremony. */
+export async function requireRecentBusinessPage(permission: BusinessPermission): Promise<BusinessAccess> {
+  const access = await requireBusinessPage(permission);
+  if (!hasFreshStepUp(access.session.stepUpAt)) redirect(STEP_UP_PATH);
+  return access;
 }
 
 /** API/route handler guard'ı. Yetkisizde `null` döner. */
@@ -172,7 +180,7 @@ export async function getUserBusinessPermissions(
   session: SessionUser,
 ): Promise<Set<BusinessPermission>> {
   const granted = new Set<BusinessPermission>();
-  if (session.status !== "ACTIVE" || session.mustChangePassword) return granted;
+  if (session.status !== "ACTIVE" || session.mustChangePassword || (session.role === "ADMIN" && !session.mfaVerifiedAt)) return granted;
 
   let assignments = await loadAssignments(session.userId);
   if (assignments.length === 0 && session.role === "ADMIN" && bootstrapEmails().has(session.email.toLowerCase())) {

@@ -7,6 +7,7 @@ import { getSession, type SessionUser } from "@/lib/auth/session";
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
 import { hasProductAccess } from "@/lib/auth/products";
+import { hasFreshStepUp } from "@/lib/auth/mfa-policy";
 
 /**
  * API route'ları için yetki kapısı.
@@ -24,7 +25,7 @@ export type ApiAuth =
   | { ok: true; session: SessionUser }
   | { ok: false; response: NextResponse };
 
-async function requireApiAuthorizedRole(...roles: UserRole[]): Promise<ApiAuth> {
+async function requireApiAuthorizedRole(roles: UserRole[], requireAdminMfa = true): Promise<ApiAuth> {
   if (!PANEL_ENABLED) {
     return {
       ok: false,
@@ -62,7 +63,20 @@ async function requireApiAuthorizedRole(...roles: UserRole[]): Promise<ApiAuth> 
     };
   }
 
+  if (requireAdminMfa && session.role === "ADMIN" && !session.mfaVerifiedAt) {
+    return { ok: false, response: NextResponse.json({ error: "Yönetici erişimi için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
+  }
+
   return { ok: true, session };
+}
+
+export async function requireApiRecentAdminStepUp(): Promise<ApiAuth> {
+  const auth = await requireApiRole("ADMIN");
+  if (!auth.ok) return auth;
+  if (!hasFreshStepUp(auth.session.stepUpAt)) {
+    return { ok: false, response: NextResponse.json({ error: "Bu hassas işlem için kimliğinizi yeniden doğrulayın.", code: "STEP_UP_REQUIRED", redirect: "/panel/guvenlik" }, { status: 428 }) };
+  }
+  return auth;
 }
 
 async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, product: ProductCode): Promise<ApiAuth> {
@@ -73,7 +87,7 @@ async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, 
 
 /** Mevcut panel API'leri Online Dershanem ürün kapsamındadır. */
 export async function requireApiRole(...roles: UserRole[]): Promise<ApiAuth> {
-  let auth = await requireApiAuthorizedRole(...roles);
+  let auth = await requireApiAuthorizedRole(roles);
   if (!auth.ok) return auth;
   auth = await requireApiProductPilot(auth, "OD");
   if (!auth.ok) return auth;
@@ -85,16 +99,21 @@ export async function requireApiRole(...roles: UserRole[]): Promise<ApiAuth> {
 
 /** Bildirim ve görünüm tercihi gibi iki üründe ortak hesap işlemleri. */
 export async function requireApiActiveUser(): Promise<ApiAuth> {
-  return requireApiAuthorizedRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+  return requireApiAuthorizedRole(["ADMIN", "TEACHER", "STUDENT", "PARENT"]);
 }
 
 export async function requireApiAccountRole(...roles: UserRole[]): Promise<ApiAuth> {
-  return requireApiAuthorizedRole(...roles);
+  return requireApiAuthorizedRole(roles);
+}
+
+/** Narrow pre-MFA boundary used only by ADMIN second-factor ceremonies. */
+export async function requireApiPrimaryAdmin(): Promise<ApiAuth> {
+  return requireApiAuthorizedRole(["ADMIN"], false);
 }
 
 /** API için rol kontrolüne ek olarak alt ürün üyeliğini doğrular. */
 export async function requireApiProductRole(product: ProductCode, ...roles: UserRole[]): Promise<ApiAuth> {
-  let auth = await requireApiAuthorizedRole(...roles);
+  let auth = await requireApiAuthorizedRole(roles);
   if (!auth.ok) return auth;
   auth = await requireApiProductPilot(auth, product);
   if (!auth.ok) return auth;

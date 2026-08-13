@@ -41,6 +41,7 @@
     "db:studio": "prisma studio",
     "scan:links": "tsx scripts/scan-broken-links.ts",
     "e2e": "playwright test",
+    "e2e:mfa": "PANEL_E2E_ADMIN_MFA_BYPASS=false playwright test tests/e2e/admin-mfa.spec.ts --workers=1",
     "e2e:ui": "playwright test --ui",
     "e2e:debug": "playwright test --debug",
     "e2e:cross-browser": "PLAYWRIGHT_CROSS_BROWSER=true playwright test tests/e2e/panel-cross-browser.spec.ts",
@@ -58,6 +59,8 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "@prisma/extension-accelerate": "^3.0.1",
+    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.7.0",
     "@vercel/speed-insights": "^2.0.0",

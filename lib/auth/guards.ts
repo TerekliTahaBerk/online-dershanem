@@ -8,6 +8,7 @@ import { LOGIN_PATH, PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
 import { hasProductAccess } from "@/lib/auth/products";
+import { MFA_PATH, STEP_UP_PATH, hasFreshStepUp } from "@/lib/auth/mfa-policy";
 
 /**
  * Yetki kapıları.
@@ -46,7 +47,14 @@ export async function requireSession(): Promise<SessionUser> {
 async function requireAuthorizedRole(...roles: UserRole[]): Promise<SessionUser> {
   const session = await requireSession();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
+  if (session.role === "ADMIN" && !session.mfaVerifiedAt) redirect(MFA_PATH);
   if (!roles.includes(session.role)) notFound();
+  return session;
+}
+
+export async function requireRecentAdminStepUp(): Promise<SessionUser> {
+  const session = await requireAuthorizedRole("ADMIN");
+  if (!hasFreshStepUp(session.stepUpAt)) redirect(STEP_UP_PATH);
   return session;
 }
 

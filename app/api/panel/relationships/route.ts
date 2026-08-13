@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
 const schema = z.object({ parentId: z.string().min(1), studentId: z.string().min(1), relationship: z.string().trim().max(30).optional() });
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.relationships.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:relations:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });

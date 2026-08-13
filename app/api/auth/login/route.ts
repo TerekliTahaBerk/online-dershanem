@@ -131,7 +131,10 @@ export async function POST(request: Request) {
     data: { failedAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
   });
 
-  await createSession(user.id, { ip, userAgent: request.headers.get("user-agent") });
+  // Existing broad E2E suites can opt into a non-production bypass. The
+  // dedicated MFA suite explicitly disables it and production can never use it.
+  const e2eMfaBypass = process.env.CI === "true" && process.env.VERCEL_ENV !== "production" && process.env.PANEL_E2E_ADMIN_MFA_BYPASS === "true" && user.role === "ADMIN" && user.email.endsWith(".e2e@example.com");
+  await createSession(user.id, { ip, userAgent: request.headers.get("user-agent"), mfaVerified: e2eMfaBypass });
 
   await logAudit({
     actorUserId: user.id,
@@ -143,6 +146,6 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({
-    redirect: await postAuthenticationPath({ userId: user.id, role: user.role, mustChangePassword: user.mustChangePassword }),
+    redirect: await postAuthenticationPath({ userId: user.id, role: user.role, mustChangePassword: user.mustChangePassword, mfaVerifiedAt: e2eMfaBypass ? new Date() : null }),
   });
 }

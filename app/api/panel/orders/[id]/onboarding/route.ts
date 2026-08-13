@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { prisma } from "@/lib/prisma";
 import { OD_ONBOARDING_STATES } from "@/lib/od/onboarding-state";
@@ -15,7 +15,7 @@ const schema = z.object({
 });
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.orders.onboarding.transition", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:onboarding:${auth.session.userId}`, rateLimit: { max: 120, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });

@@ -31,6 +31,8 @@ export type SessionUser = {
   status: UserStatus;
   fullName: string | null;
   mustChangePassword: boolean;
+  mfaVerifiedAt: Date | null;
+  stepUpAt: Date | null;
 };
 
 function hashToken(token: string): string {
@@ -43,7 +45,7 @@ function hashToken(token: string): string {
  */
 export async function createSession(
   userId: string,
-  meta: { ip?: string | null; userAgent?: string | null } = {},
+  meta: { ip?: string | null; userAgent?: string | null; mfaVerified?: boolean } = {},
 ): Promise<void> {
   // 256 bit opak token — tahmin edilemez, içinde bilgi taşımaz.
   const token = randomBytes(32).toString("base64url");
@@ -56,6 +58,7 @@ export async function createSession(
       expiresAt,
       ip: meta.ip ?? null,
       userAgent: meta.userAgent?.slice(0, 500) ?? null,
+      ...(meta.mfaVerified ? { mfaVerifiedAt: new Date(), stepUpAt: new Date() } : {}),
     },
   });
 
@@ -110,6 +113,8 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
     status: session.user.status,
     fullName: session.user.fullName,
     mustChangePassword: session.user.mustChangePassword,
+    mfaVerifiedAt: session.mfaVerifiedAt,
+    stepUpAt: session.stepUpAt,
   };
 });
 
