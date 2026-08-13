@@ -113,6 +113,8 @@ jobs:
       CRON_SECRET: ci-only-cron-secret-0123456789abcdef0123456789abcdef
       BLOB_READ_WRITE_TOKEN: vercel_blob_rw_ci_only
       MFA_ENCRYPTION_KEY: Y2ktb25seS1tZmEta2V5LTAxMjM0NTY3ODlhYmNkZWY=
+      UPSTASH_REDIS_REST_URL: https://ci-cache.invalid
+      UPSTASH_REDIS_REST_TOKEN: ci-only-cache-token
       RESEND_API_KEY: re_ci_only
       EMAIL_MODE: receipts
       ODK_ROLLOUT_MODE: general
