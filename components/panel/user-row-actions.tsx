@@ -25,6 +25,7 @@ export function UserRowActions({
   const [pending, setPending] = useState<"reset" | "status" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [currentStatus, setCurrentStatus] = useState(status);
 
   async function resetPassword() {
     // Yıkıcı olmayan ama etkisi büyük: kullanıcının açık oturumları kapanır.
@@ -47,7 +48,7 @@ export function UserRowActions({
   }
 
   async function toggleStatus() {
-    const next: UserStatus = status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+    const next: UserStatus = currentStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
     if (next === "SUSPENDED" && !confirm(`${email} askıya alınacak ve anında çıkış yapacak. Devam edilsin mi?`)) return;
     setError(null);
     setPending("status");
@@ -59,7 +60,7 @@ export function UserRowActions({
       });
       const d = (await r.json()) as { error?: string };
       if (!r.ok) setError(d.error ?? "Durum değiştirilemedi.");
-      else router.refresh();
+      else { setCurrentStatus(next); router.refresh(); }
     } catch {
       setError("Bağlantı kurulamadı.");
     }
@@ -98,12 +99,12 @@ export function UserRowActions({
           <button type="button" onClick={toggleStatus} disabled={pending !== null} className={btn}>
             {pending === "status" ? (
               <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-            ) : status === "ACTIVE" ? (
+            ) : currentStatus === "ACTIVE" ? (
               <Pause size={12} aria-hidden="true" />
             ) : (
               <Play size={12} aria-hidden="true" />
             )}
-            {status === "ACTIVE" ? "Askıya al" : "Aktifleştir"}
+            {currentStatus === "ACTIVE" ? "Askıya al" : "Aktifleştir"}
           </button>
         )}
       </div>

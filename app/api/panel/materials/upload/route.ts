@@ -55,5 +55,5 @@ export async function POST(request: Request) {
   if (rows.length) await prisma.notification.createMany({ data: rows });
   await queuePanelNotificationEmails(rawRows);
   await logAudit({ actorUserId: auth.session.userId, entityType: "LearningMaterial", entityId: material.id, action: "material.uploaded", summary: `${material.title} dosyası yüklendi`, payload: { groupId: group.id, kind, fileSize: file.size } });
-  return NextResponse.json({ id: material.id });
+  return NextResponse.json({ material: { id: material.id, title: material.title, description: material.description || "", url: material.url, kind: material.kind, groupName: group.name, isActive: material.isActive, captionsAvailable: material.captionsAvailable, transcript: material.transcript || "" } });
 }
