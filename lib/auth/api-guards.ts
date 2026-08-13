@@ -3,7 +3,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { PANEL_ENABLED } from "@/lib/panel-config";
-import { getSession, type SessionUser } from "@/lib/auth/session";
+import { getSession, SESSION_COOKIE_NAME, type SessionUser } from "@/lib/auth/session";
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
 import { hasProductAccess } from "@/lib/auth/products";
@@ -35,12 +35,14 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireAdminMfa = tru
 
   const session = await getSession();
   if (!session) {
+    const response = NextResponse.json(
+      { error: "Oturumunuz sona ermiş. Tekrar giriş yapın." },
+      { status: 401, headers: { "Cache-Control": "no-store" } },
+    );
+    response.cookies.delete(SESSION_COOKIE_NAME);
     return {
       ok: false,
-      response: NextResponse.json(
-        { error: "Oturumunuz sona ermiş. Tekrar giriş yapın." },
-        { status: 401 },
-      ),
+      response,
     };
   }
 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { requireBusinessPage, requireRecentBusinessPage, resolveMutationUnit, scopedUnitIds } from "@/lib/business/permissions";
+import { revokeAllUserSessions } from "@/lib/auth/session";
 import { assertAccountingPeriodOpen, reverseLedgerTransaction } from "@/lib/business/finance";
 import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
 import { prisma } from "@/lib/prisma";
@@ -289,6 +290,7 @@ export async function assignBusinessRole(formData: FormData) {
   resolveMutationUnit(access, parsed.businessUnitId);
   const user = await prisma.user.findFirst({ where: { id: parsed.userId, status: "ACTIVE" }, select: { id: true } }); if (!user) throw new Error("USER_NOT_FOUND");
   const assignment = await prisma.businessRoleAssignment.upsert({ where: { userId_businessUnitId_role: parsed }, update: {}, create: parsed });
+  await revokeAllUserSessions(parsed.userId);
   void logAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_ASSIGNED", payload: { userId: parsed.userId, businessUnitId: parsed.businessUnitId, role: parsed.role } }); revalidateBusiness();
   redirectToSection("ayarlar");
 }
@@ -307,6 +309,7 @@ export async function revokeBusinessRole(formData: FormData) {
     if (remaining === 0) throw new Error("LAST_SUPER_ADMIN_PROTECTED");
   }
   await prisma.businessRoleAssignment.delete({ where: { id: assignment.id } });
+  await revokeAllUserSessions(assignment.userId);
   void logAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_REVOKED", payload: { userId: assignment.userId, businessUnitId: assignment.businessUnitId, role: assignment.role } }); revalidateBusiness();
   redirectToSection("ayarlar");
 }

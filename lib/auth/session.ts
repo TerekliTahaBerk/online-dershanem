@@ -5,6 +5,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import type { UserRole, UserStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { SESSION_POLICIES, absoluteSessionExpiry, sessionExpiryReason } from "@/lib/auth/session-policy";
 
 /**
  * Oturum yönetimi.
@@ -16,12 +17,6 @@ import { prisma } from "@/lib/prisma";
 
 export const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "od_session";
 const SECURE_SESSION_COOKIE = process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") === true;
-
-const SESSION_TTL_DAYS = 30;
-const SESSION_TTL_MS = SESSION_TTL_DAYS * 24 * 60 * 60 * 1000;
-
-/** `lastSeenAt` her istekte yazılmaz; bu aralıktan sık güncelleme yapılmaz. */
-const TOUCH_INTERVAL_MS = 60 * 60 * 1000;
 
 export type SessionUser = {
   sessionId: string;
@@ -45,11 +40,13 @@ function hashToken(token: string): string {
  */
 export async function createSession(
   userId: string,
+  role: UserRole,
   meta: { ip?: string | null; userAgent?: string | null; mfaVerified?: boolean } = {},
 ): Promise<void> {
   // 256 bit opak token — tahmin edilemez, içinde bilgi taşımaz.
   const token = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_POLICIES[role].absoluteTtlMs);
 
   await prisma.session.create({
     data: {
@@ -58,7 +55,7 @@ export async function createSession(
       expiresAt,
       ip: meta.ip ?? null,
       userAgent: meta.userAgent?.slice(0, 500) ?? null,
-      ...(meta.mfaVerified ? { mfaVerifiedAt: new Date(), stepUpAt: new Date() } : {}),
+      ...(meta.mfaVerified ? { mfaVerifiedAt: now, stepUpAt: now } : {}),
     },
   });
 
@@ -94,16 +91,33 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
 
   if (!session) return null;
   if (session.revokedAt) return null;
-  if (session.expiresAt.getTime() <= Date.now()) return null;
   // Askıya alınan kullanıcının açık oturumu ANINDA geçersizdir.
   if (session.user.status !== "ACTIVE") return null;
 
-  if (Date.now() - session.lastSeenAt.getTime() > TOUCH_INTERVAL_MS) {
-    // Kozmetik bilgi; yarışta veya hata durumunda oturumu düşürmemeli.
-    await prisma.session
-      .update({ where: { id: session.id }, data: { lastSeenAt: new Date() } })
-      .catch(() => undefined);
+  const now = new Date();
+  const role = session.user.role;
+  const expiryReason = sessionExpiryReason({ role, createdAt: session.createdAt, expiresAt: session.expiresAt, lastSeenAt: session.lastSeenAt }, now);
+  if (expiryReason) {
+    await prisma.session.updateMany({ where: { id: session.id, revokedAt: null }, data: { revokedAt: now } });
+    return null;
   }
+
+  // The conditional update is the authoritative idle-time check and activity
+  // write in one DB operation. A stale concurrent request cannot resurrect a
+  // session that crossed either boundary or whose user role/status changed.
+  const policy = SESSION_POLICIES[role];
+  const touched = await prisma.session.updateMany({
+    where: {
+      id: session.id,
+      revokedAt: null,
+      expiresAt: { gt: now },
+      createdAt: { gt: new Date(now.getTime() - policy.absoluteTtlMs) },
+      lastSeenAt: { gt: new Date(now.getTime() - policy.idleTimeoutMs) },
+      user: { status: "ACTIVE", role },
+    },
+    data: { lastSeenAt: now },
+  });
+  if (touched.count !== 1) return null;
 
   return {
     sessionId: session.id,
@@ -124,6 +138,26 @@ export async function revokeSession(sessionId: string): Promise<void> {
     where: { id: sessionId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
+}
+
+export type ActiveSession = {
+  id: string;
+  createdAt: Date;
+  lastSeenAt: Date;
+  expiresAt: Date;
+  userAgent: string | null;
+  ip: string | null;
+};
+
+export async function listActiveUserSessions(userId: string, role: UserRole, now = new Date()): Promise<ActiveSession[]> {
+  const sessions = await prisma.session.findMany({
+    where: { userId, revokedAt: null, expiresAt: { gt: now } },
+    select: { id: true, createdAt: true, lastSeenAt: true, expiresAt: true, userAgent: true, ip: true },
+    orderBy: { lastSeenAt: "desc" },
+  });
+  return sessions
+    .filter((session) => !sessionExpiryReason({ ...session, role }, now))
+    .map((session) => ({ ...session, expiresAt: absoluteSessionExpiry(role, session.createdAt, session.expiresAt) }));
 }
 
 /**

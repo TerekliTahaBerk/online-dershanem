@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { ProductCode, UserRole } from "@prisma/client";
-import { ArrowLeftRight, Bell, ChevronRight } from "lucide-react";
+import { ArrowLeftRight, Bell, ChevronRight, ShieldCheck } from "lucide-react";
 import { PRODUCT_SELECTOR_PATH, productLabel, productRolePath, roleLabel } from "@/lib/auth/roles";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { getSession } from "@/lib/auth/session";
@@ -53,6 +53,11 @@ export async function PanelShell({ role, fullName, email, product = "OD", worksp
       {unread ? <span className="absolute -right-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full bg-rose-600 px-1 text-[9px] font-extrabold text-white ring-2 ring-white">{unread > 99 ? "99+" : unread}</span> : null}
     </Link>
   );
+  const sessionsButton = (
+    <Link href="/panel/oturumlar" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--site-line)] bg-white text-[var(--site-muted)] transition hover:text-[var(--site-ink)]" aria-label="Aktif oturumları yönet">
+      <ShieldCheck size={16} />
+    </Link>
+  );
 
   return (
     <PanelFeatureProvider flags={flags}>
@@ -81,7 +86,7 @@ export async function PanelShell({ role, fullName, email, product = "OD", worksp
               <div className="flex h-[68px] items-center justify-between gap-3 px-4 sm:px-6 xl:px-8">
                 <div className="flex min-w-0 items-center lg:hidden"><Link href={homeHref} aria-label={`${productName} yönetim ana sayfası`} className="flex shrink-0 items-center">{productLogo("compact")}</Link></div>
                 <div className="hidden items-center gap-1.5 text-[11.5px] text-[var(--site-muted)] lg:flex"><span>{productName}</span><ChevronRight size={13} /><span className="font-semibold text-[var(--site-ink)]">Yönetim</span></div>
-                <div className="flex items-center gap-2">{isBusinessWorkspace ? null : <AdminCommandSearch />}{productSwitch}{notificationButton}<div className="block lg:hidden"><LogoutButton /></div></div>
+                <div className="flex items-center gap-2">{isBusinessWorkspace ? null : <AdminCommandSearch />}{productSwitch}{sessionsButton}{notificationButton}<div className="block lg:hidden"><LogoutButton /></div></div>
               </div>
               <div className="border-t border-[var(--site-line)] px-4 py-2 lg:hidden">{nav}</div>
             </header>
@@ -90,7 +95,7 @@ export async function PanelShell({ role, fullName, email, product = "OD", worksp
         </div>
       ) : (
         <>
-          <header className="sticky top-0 z-40 border-b border-[var(--site-line)] bg-white/90 backdrop-blur-xl"><div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6"><div className="flex min-w-0 items-center gap-2.5 sm:gap-3"><Link href={homeHref} aria-label={`${productName} panel ana sayfası`} className="flex shrink-0 items-center">{productLogo("default")}</Link><span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[.06em] text-[var(--brand-olive)] sm:text-[10.5px]">{roleLabel(role)}</span></div><div className="flex items-center gap-2 sm:gap-3"><span className="hidden text-[13px] text-[var(--site-body)] sm:inline">{fullName || email}</span>{productSwitch}{notificationButton}<LogoutButton /></div></div>{nav ? <div className="border-t border-[var(--site-line)]"><div className="mx-auto max-w-[1320px] px-4 py-2 sm:px-6">{nav}</div></div> : null}</header>
+          <header className="sticky top-0 z-40 border-b border-[var(--site-line)] bg-white/90 backdrop-blur-xl"><div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6"><div className="flex min-w-0 items-center gap-2.5 sm:gap-3"><Link href={homeHref} aria-label={`${productName} panel ana sayfası`} className="flex shrink-0 items-center">{productLogo("default")}</Link><span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[.06em] text-[var(--brand-olive)] sm:text-[10.5px]">{roleLabel(role)}</span></div><div className="flex items-center gap-2 sm:gap-3"><span className="hidden text-[13px] text-[var(--site-body)] sm:inline">{fullName || email}</span>{productSwitch}{sessionsButton}{notificationButton}<LogoutButton /></div></div>{nav ? <div className="border-t border-[var(--site-line)]"><div className="mx-auto max-w-[1320px] px-4 py-2 sm:px-6">{nav}</div></div> : null}</header>
           <div className="mx-auto max-w-[1320px] px-4 py-6 sm:px-6 sm:py-8"><main id="panel-content" tabIndex={-1}>{children}</main></div>
         </>
       )}
