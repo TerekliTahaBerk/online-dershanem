@@ -24,8 +24,6 @@ export function buildOdSuggestions(
 ): Suggestion[] {
   const cartIds = new Set(cartItems.map((c) => c.id));
   const cartCategories = new Set(cartItems.map((c) => c.category));
-  const cartSubjects = new Set(cartItems.map((c) => c.subject));
-
   const all: Suggestion[] = [];
   for (const group of subjectPackageGroups) {
     for (const pkg of group.packages) {

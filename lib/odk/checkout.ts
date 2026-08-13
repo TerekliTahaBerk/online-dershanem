@@ -12,6 +12,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { log } from "@/lib/logger";
+import { decideOdkSale, odkSellableContractIssues, parseOdkProductContract } from "@/lib/odk/product-contract";
 import {
   buildMerchantOid,
   createPaytrIframeToken,
@@ -48,7 +49,8 @@ export async function createOdkCheckoutSession(input: {
       id: true,
       status: true,
       totalCents: true,
-      package: { select: { title: true, slug: true, isActive: true } },
+      contractSnapshot: true,
+      package: { select: { isActive: true } },
     },
   });
   if (!order || !order.package?.isActive) {
@@ -64,7 +66,20 @@ export async function createOdkCheckoutSession(input: {
       userMessage: "Bu paketin fiyatı tanımlı değil. Lütfen iletişime geçin.",
     };
   }
-  const pkg = { title: order.package.title, slug: order.package.slug };
+  const contract = parseOdkProductContract(order.contractSnapshot);
+  if (!contract.success) {
+    return { ok: false, reason: "invalid_contract", userMessage: "Sipariş sözleşmesi geçersiz. Lütfen destek ekibiyle iletişime geçin." };
+  }
+  const sale = decideOdkSale(contract.data.policy);
+  if (!sale.allowed) {
+    return { ok: false, reason: `sale_${sale.reason.toLowerCase()}`, userMessage: "Bu paket şu anda yeni satın alımlara açık değil." };
+  }
+  const contractIssues = odkSellableContractIssues(contract.data);
+  if (contractIssues.length) {
+    log.warn("odk.checkout.contract_incomplete", { orderId: order.id, issues: contractIssues });
+    return { ok: false, reason: "incomplete_contract", userMessage: "Paket içeriği henüz satışa hazır değil. Lütfen destek ekibiyle iletişime geçin." };
+  }
+  const pkg = { title: contract.data.package.title, slug: contract.data.package.slug };
 
   const merchantOid = buildMerchantOid(order.id);
 

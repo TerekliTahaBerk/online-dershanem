@@ -550,33 +550,33 @@ model InstagramWebhookEvent {
 }
 
 model BusinessConversation {
-  id                    String             @id @default(cuid())
-  businessUnitId        String             @map("business_unit_id")
-  instagramAccountId    String             @map("instagram_account_id")
-  instagramScopedUserId String             @map("instagram_scoped_user_id")
-  username              String?
-  displayName           String?            @map("display_name")
-  profilePictureUrl     String?            @map("profile_picture_url")
-  status                ConversationStatus @default(OPEN)
-  temperature           LeadTemperature    @default(COLD)
-  aiMode                AiMode             @default(SUGGESTION) @map("ai_mode")
-  assignedUserId        String?            @map("assigned_user_id")
-  tags                  String[]
-  productInterest       ProductInterest    @default(UNKNOWN) @map("product_interest")
-  unreadCount           Int                @default(0) @map("unread_count")
-  lastMessageAt         DateTime           @default(now()) @map("last_message_at")
-  lastReplyBy           MessageSenderType? @map("last_reply_by")
-  summary               String?
-  sourceCampaignExternalId String?          @map("source_campaign_external_id")
-  sourceAdExternalId       String?          @map("source_ad_external_id")
-  anonymizedAt          DateTime?           @map("anonymized_at")
-  createdAt             DateTime           @default(now()) @map("created_at")
-  updatedAt             DateTime           @updatedAt @map("updated_at")
-  businessUnit          BusinessUnit       @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
-  instagramAccount      InstagramAccount   @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
-  messages              BusinessMessage[]
-  lead                  BusinessLead?
-  aiExecutions          AIExecution[]
+  id                       String             @id @default(cuid())
+  businessUnitId           String             @map("business_unit_id")
+  instagramAccountId       String             @map("instagram_account_id")
+  instagramScopedUserId    String             @map("instagram_scoped_user_id")
+  username                 String?
+  displayName              String?            @map("display_name")
+  profilePictureUrl        String?            @map("profile_picture_url")
+  status                   ConversationStatus @default(OPEN)
+  temperature              LeadTemperature    @default(COLD)
+  aiMode                   AiMode             @default(SUGGESTION) @map("ai_mode")
+  assignedUserId           String?            @map("assigned_user_id")
+  tags                     String[]
+  productInterest          ProductInterest    @default(UNKNOWN) @map("product_interest")
+  unreadCount              Int                @default(0) @map("unread_count")
+  lastMessageAt            DateTime           @default(now()) @map("last_message_at")
+  lastReplyBy              MessageSenderType? @map("last_reply_by")
+  summary                  String?
+  sourceCampaignExternalId String?            @map("source_campaign_external_id")
+  sourceAdExternalId       String?            @map("source_ad_external_id")
+  anonymizedAt             DateTime?          @map("anonymized_at")
+  createdAt                DateTime           @default(now()) @map("created_at")
+  updatedAt                DateTime           @updatedAt @map("updated_at")
+  businessUnit             BusinessUnit       @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  instagramAccount         InstagramAccount   @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
+  messages                 BusinessMessage[]
+  lead                     BusinessLead?
+  aiExecutions             AIExecution[]
 
   @@unique([instagramAccountId, instagramScopedUserId])
   @@index([businessUnitId, status, lastMessageAt])
@@ -649,7 +649,7 @@ model BusinessLead {
   relatedOdkUserId      String?                @map("related_odk_user_id")
   relatedOdOrderId      String?                @map("related_od_order_id")
   relatedOdkOrderId     String?                @map("related_odk_order_id")
-  matchSuggestion      Json?                  @map("match_suggestion")
+  matchSuggestion       Json?                  @map("match_suggestion")
   anonymizedAt          DateTime?              @map("anonymized_at")
   firstContactAt        DateTime               @default(now()) @map("first_contact_at")
   lastContactAt         DateTime               @default(now()) @map("last_contact_at")
@@ -801,15 +801,15 @@ model KnowledgeBaseEntry {
 }
 
 model AIPromptVersion {
-  id            String   @id @default(cuid())
-  businessUnitId String? @map("business_unit_id")
-  name          String
-  version       Int
-  systemPrompt  String   @map("system_prompt")
-  schemaVersion Int      @default(1) @map("schema_version")
-  isActive      Boolean  @default(false) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at")
-  businessUnit  BusinessUnit? @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  id             String        @id @default(cuid())
+  businessUnitId String?       @map("business_unit_id")
+  name           String
+  version        Int
+  systemPrompt   String        @map("system_prompt")
+  schemaVersion  Int           @default(1) @map("schema_version")
+  isActive       Boolean       @default(false) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  businessUnit   BusinessUnit? @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
 
   @@unique([name, version])
   @@index([businessUnitId, isActive])
@@ -1045,20 +1045,20 @@ model CronHeartbeat {
 /// ADMIN ve TEACHER hesapları uygulama kuralı olarak iki ürüne de erişir;
 /// satırlar ayrıca erişimin kaynağını ve audit bağlamını korur.
 model ProductMembership {
-  id          String              @id @default(cuid())
-  userId      String              @map("user_id")
-  product     ProductCode
-  source      ProductAccessSource @default(MANUAL)
-  grantedById    String?             @map("granted_by_id")
-  sourceOdOrderId String?            @map("source_od_order_id")
-  startsAt    DateTime            @default(now()) @map("starts_at")
-  expiresAt   DateTime?           @map("expires_at")
-  revokedAt   DateTime?           @map("revoked_at")
-  createdAt   DateTime            @default(now()) @map("created_at")
-  updatedAt   DateTime            @updatedAt @map("updated_at")
-  user        User                @relation("ProductMembershipOwner", fields: [userId], references: [id], onDelete: Cascade)
-  grantedBy     User?               @relation("ProductMembershipGranter", fields: [grantedById], references: [id], onDelete: SetNull)
-  sourceOdOrder OdOrder?            @relation(fields: [sourceOdOrderId], references: [id], onDelete: SetNull)
+  id              String              @id @default(cuid())
+  userId          String              @map("user_id")
+  product         ProductCode
+  source          ProductAccessSource @default(MANUAL)
+  grantedById     String?             @map("granted_by_id")
+  sourceOdOrderId String?             @map("source_od_order_id")
+  startsAt        DateTime            @default(now()) @map("starts_at")
+  expiresAt       DateTime?           @map("expires_at")
+  revokedAt       DateTime?           @map("revoked_at")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  user            User                @relation("ProductMembershipOwner", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy       User?               @relation("ProductMembershipGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+  sourceOdOrder   OdOrder?            @relation(fields: [sourceOdOrderId], references: [id], onDelete: SetNull)
 
   @@unique([userId, product])
   @@index([product, revokedAt, expiresAt])
@@ -1989,8 +1989,8 @@ model Session {
   /// Password authentication establishes the session; ADMIN privilege is
   /// withheld until `mfaVerifiedAt` is set by a fresh second-factor ceremony.
   primaryAuthenticatedAt DateTime  @default(now()) @map("primary_authenticated_at")
-  mfaVerifiedAt           DateTime? @map("mfa_verified_at")
-  stepUpAt                DateTime? @map("step_up_at")
+  mfaVerifiedAt          DateTime? @map("mfa_verified_at")
+  stepUpAt               DateTime? @map("step_up_at")
 
   userAgent String? @map("user_agent")
   ip        String?
@@ -2027,15 +2027,15 @@ model AdminMfa {
   userId String @unique @map("user_id")
 
   /// AES-256-GCM envelope (version.iv.tag.ciphertext). Never plaintext.
-  totpSecretEncrypted String?   @map("totp_secret_encrypted")
-  totpEnabledAt       DateTime? @map("totp_enabled_at")
-  totpLastCounter     BigInt?   @map("totp_last_counter")
+  totpSecretEncrypted        String?   @map("totp_secret_encrypted")
+  totpEnabledAt              DateTime? @map("totp_enabled_at")
+  totpLastCounter            BigInt?   @map("totp_last_counter")
   pendingTotpSecretEncrypted String?   @map("pending_totp_secret_encrypted")
   pendingTotpExpiresAt       DateTime? @map("pending_totp_expires_at")
-  recoveryGeneratedAt DateTime? @map("recovery_generated_at")
-  enrolledAt          DateTime? @map("enrolled_at")
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  recoveryGeneratedAt        DateTime? @map("recovery_generated_at")
+  enrolledAt                 DateTime? @map("enrolled_at")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -2043,18 +2043,18 @@ model AdminMfa {
 }
 
 model PasskeyCredential {
-  id           String   @id @default(cuid())
-  userId       String   @map("user_id")
-  credentialId String   @unique @map("credential_id")
-  publicKey    Bytes    @map("public_key")
-  counter      BigInt   @default(0)
-  transports   String[] @default([])
-  deviceType   String   @map("device_type")
-  backedUp     Boolean  @default(false) @map("backed_up")
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  credentialId String    @unique @map("credential_id")
+  publicKey    Bytes     @map("public_key")
+  counter      BigInt    @default(0)
+  transports   String[]  @default([])
+  deviceType   String    @map("device_type")
+  backedUp     Boolean   @default(false) @map("backed_up")
   name         String?
   lastUsedAt   DateTime? @map("last_used_at")
   revokedAt    DateTime? @map("revoked_at")
-  createdAt    DateTime @default(now()) @map("created_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -2063,11 +2063,11 @@ model PasskeyCredential {
 }
 
 model MfaRecoveryCode {
-  id       String   @id @default(cuid())
-  userId   String   @map("user_id")
-  codeHash String   @unique @map("code_hash")
-  usedAt   DateTime? @map("used_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  codeHash  String    @unique @map("code_hash")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -2622,6 +2622,8 @@ model OdkPackage {
   isActive           Boolean          @default(true) @map("is_active")
   isFeatured         Boolean          @default(false) @map("is_featured")
   ctaText            String?          @map("cta_text")
+  contractVersion    Int              @default(1) @map("contract_version")
+  contractPolicy     Json             @default("{}") @map("contract_policy")
   createdAt          DateTime         @default(now()) @map("created_at")
   updatedAt          DateTime         @updatedAt @map("updated_at")
   orders             OdkOrder[]
@@ -2914,6 +2916,7 @@ model OdkOrder {
   discountCents        Int                   @default(0) @map("discount_cents")
   totalCents           Int                   @map("total_cents")
   buyerInfo            Json?                 @map("buyer_info")
+  contractSnapshot     Json                  @default("{}") @map("contract_snapshot")
   studentUserId        String?               @map("student_user_id")
   provisioningStatus   OdkProvisioningStatus @default(PENDING) @map("provisioning_status")
   provisioningAttempts Int                   @default(0) @map("provisioning_attempts")
@@ -2933,18 +2936,19 @@ model OdkOrder {
 }
 
 model OdkEntitlement {
-  id        String     @id @default(cuid())
-  orderId   String     @unique @map("order_id")
-  userId    String     @map("user_id")
-  packageId String     @map("package_id")
-  startsAt  DateTime   @default(now()) @map("starts_at")
-  expiresAt DateTime?  @map("expires_at")
-  revokedAt DateTime?  @map("revoked_at")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  order     OdkOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  package   OdkPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  id               String     @id @default(cuid())
+  orderId          String     @unique @map("order_id")
+  userId           String     @map("user_id")
+  packageId        String     @map("package_id")
+  startsAt         DateTime   @default(now()) @map("starts_at")
+  expiresAt        DateTime?  @map("expires_at")
+  revokedAt        DateTime?  @map("revoked_at")
+  contractSnapshot Json       @default("{}") @map("contract_snapshot")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  order            OdkOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package          OdkPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
   @@index([userId, revokedAt, expiresAt])
   @@index([packageId])
@@ -2970,29 +2974,29 @@ model OdkPayment {
 }
 
 model OdOrder {
-  id            String         @id @default(cuid())
-  packageId     String?        @map("package_id")
-  packageName   String         @map("package_name")
-  category      String?
-  subject       String?
-  status        OdkOrderStatus @default(PENDING)
-  subtotalCents Int            @map("subtotal_cents")
-  discountCents Int            @default(0) @map("discount_cents")
-  totalCents    Int            @map("total_cents")
-  buyerInfo     Json?          @map("buyer_info")
-  intentId      String?        @map("intent_id")
-  userId        String?        @map("user_id")
+  id                   String               @id @default(cuid())
+  packageId            String?              @map("package_id")
+  packageName          String               @map("package_name")
+  category             String?
+  subject              String?
+  status               OdkOrderStatus       @default(PENDING)
+  subtotalCents        Int                  @map("subtotal_cents")
+  discountCents        Int                  @default(0) @map("discount_cents")
+  totalCents           Int                  @map("total_cents")
+  buyerInfo            Json?                @map("buyer_info")
+  intentId             String?              @map("intent_id")
+  userId               String?              @map("user_id")
   provisioningStatus   OdProvisioningStatus @default(PENDING) @map("provisioning_status")
   provisioningAttempts Int                  @default(0) @map("provisioning_attempts")
   provisioningError    String?              @map("provisioning_error")
   provisionedAt        DateTime?            @map("provisioned_at")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  package       Package?       @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  payments      OdPayment[]
-  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  onboarding    OdOnboarding?
-  sourcedMemberships ProductMembership[]
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  package              Package?             @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  payments             OdPayment[]
+  user                 User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  onboarding           OdOnboarding?
+  sourcedMemberships   ProductMembership[]
 
   @@index([status, createdAt])
   @@index([intentId])

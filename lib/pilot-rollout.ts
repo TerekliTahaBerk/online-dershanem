@@ -35,8 +35,8 @@ export function calculatePilotReadiness(input: { env?: NodeJS.ProcessEnv | Recor
   const env = input.env || process.env;
   const now = input.now || new Date();
   const coverage = roleCoverage(input.roles);
-  const { baselineMetrics: _baselineMetrics, ...pilotFeatures } = getPanelFeatureFlags(env);
-  const enabledFeatureCount = Object.values(pilotFeatures).filter(Boolean).length;
+  const pilotFeatures = getPanelFeatureFlags(env);
+  const enabledFeatureCount = Object.entries(pilotFeatures).filter(([key, enabled]) => key !== "baselineMetrics" && enabled).length;
   const restoreAt = env.PANEL_LAST_RESTORE_DRILL_AT ? new Date(env.PANEL_LAST_RESTORE_DRILL_AT) : null;
   const restoreFresh = Boolean(restoreAt && Number.isFinite(restoreAt.getTime()) && restoreAt <= now && now.getTime() - restoreAt.getTime() <= 90 * 86400000);
   const core = input.sloMetrics.filter((metric) => CORE_SLO_KEYS.has(metric.key));

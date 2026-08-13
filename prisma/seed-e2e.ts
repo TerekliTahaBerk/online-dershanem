@@ -5,6 +5,12 @@ import { digestWeekStart } from "../lib/calm-weekly-digest";
 import { interventionWindowStart } from "../lib/intervention-rules";
 
 const prisma = new PrismaClient();
+const odkContractPolicy = {
+  sales: { state: "AVAILABLE" as const },
+  access: { starts: "PURCHASED_AT" as const, durationDays: null },
+  rights: { studentReports: true, parentReports: true, teacherReports: true, liveService: true },
+  exceptions: { soldOut: "BLOCK_NEW_ORDERS" as const, outage: "RESCHEDULE_OR_EXTEND_ACCESS" as const, cancellation: "RESCHEDULE_OR_REFUND" as const, refund: "BEFORE_FIRST_ATTEMPT" as const, exceptionalAccess: "ADMIN_GRANT_WITH_REASON_AND_EXPIRY" as const },
+};
 
 const ids = {
   admin: "e2e-user-admin",
@@ -234,24 +240,26 @@ async function main() {
   await prisma.odkExam.update({ where: { id: ids.odkExam }, data: { currentVersionId: ids.odkVersion } });
   const e2eOdkPackage = await prisma.odkPackage.upsert({
     where: { slug: "e2e-odk-live-access" },
-    create: { id: "e2e-odk-package-live", slug: "e2e-odk-live-access", title: "E2E ODK Canlı Erişim", priceCents: 9900 },
-    update: { title: "E2E ODK Canlı Erişim", priceCents: 9900, isActive: true },
+    create: { id: "e2e-odk-package-live", slug: "e2e-odk-live-access", title: "E2E ODK Canlı Erişim", priceCents: 9900, contractPolicy: odkContractPolicy },
+    update: { title: "E2E ODK Canlı Erişim", priceCents: 9900, isActive: true, contractPolicy: odkContractPolicy },
   });
   await prisma.odkPackageExam.upsert({
     where: { packageId_examId: { packageId: e2eOdkPackage.id, examId: ids.odkExam } },
     create: { packageId: e2eOdkPackage.id, examId: ids.odkExam },
     update: {},
   });
+  const e2eCatalogVersion = (await prisma.odkPackage.findUniqueOrThrow({ where: { id: e2eOdkPackage.id }, select: { contractVersion: true } })).contractVersion;
+  const e2eContractSnapshot = { schemaVersion: 1, catalogVersion: e2eCatalogVersion, capturedAt: new Date().toISOString(), package: { id: e2eOdkPackage.id, slug: e2eOdkPackage.slug, title: e2eOdkPackage.title, description: e2eOdkPackage.description, priceCents: e2eOdkPackage.priceCents, originalPriceCents: e2eOdkPackage.originalPriceCents }, policy: odkContractPolicy, exams: [{ id: ids.odkExam, seriesId: null, seriesTitle: null, title: "E2E Canlı Matematik Denemesi", slug: "e2e-canli-matematik-denemesi", family: "LGS", startsAt: odkStartsAt.toISOString(), endsAt: odkEndsAt.toISOString(), lateEntryMinutes: 10, attemptLimit: 1, resultsReleasedAt: null, answerKeyReleasedAt: null, liveServiceRequired: false }] };
   for (const userId of [ids.odkStudent, ids.foreignStudent]) {
     const orderId = `e2e-odk-access-${userId}`;
     await prisma.odkOrder.upsert({
       where: { id: orderId },
-      create: { id: orderId, packageId: e2eOdkPackage.id, status: "PAID", subtotalCents: 9900, totalCents: 9900, studentUserId: userId, provisioningStatus: "SUCCEEDED", provisionedAt: new Date(), buyerInfo: { email: users.find((user) => user.id === userId)?.email } },
+      create: { id: orderId, packageId: e2eOdkPackage.id, status: "PAID", subtotalCents: 9900, totalCents: 9900, studentUserId: userId, provisioningStatus: "SUCCEEDED", provisionedAt: new Date(), buyerInfo: { email: users.find((user) => user.id === userId)?.email }, contractSnapshot: e2eContractSnapshot },
       update: { status: "PAID", studentUserId: userId, provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
     });
     await prisma.odkEntitlement.upsert({
       where: { orderId },
-      create: { orderId, userId, packageId: e2eOdkPackage.id, startsAt: new Date(0) },
+      create: { orderId, userId, packageId: e2eOdkPackage.id, startsAt: new Date(0), contractSnapshot: e2eContractSnapshot },
       update: { userId, packageId: e2eOdkPackage.id, startsAt: new Date(0), expiresAt: null, revokedAt: null },
     });
   }

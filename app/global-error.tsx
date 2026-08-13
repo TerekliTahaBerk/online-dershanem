@@ -18,7 +18,6 @@ export default function GlobalError({
 }) {
   useEffect(() => {
     // Client error log'una düş — sunucu zaten kendi tarafını loglar
-    // eslint-disable-next-line no-console
     console.error("[global-error]", { message: error.message, digest: error.digest });
   }, [error]);
 

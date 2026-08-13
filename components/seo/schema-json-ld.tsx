@@ -12,7 +12,6 @@ export function SchemaJsonLd({ schema }: { schema: Json | Json[] }) {
     <>
       {list.map((item, i) => (
         <script
-          // eslint-disable-next-line react/no-array-index-key
           key={i}
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}

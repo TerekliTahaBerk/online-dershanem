@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { UserRole } from "@prisma/client";
-import { Activity, BarChart3, ClipboardCheck, LayoutDashboard, Rocket } from "lucide-react";
+import { Activity, BarChart3, ClipboardCheck, LayoutDashboard, PackageOpen, Rocket } from "lucide-react";
 import { productRolePath } from "@/lib/auth/roles";
 
 export function OdkPanelNav({ role }: { role: UserRole }) {
@@ -13,6 +13,7 @@ export function OdkPanelNav({ role }: { role: UserRole }) {
     { href: home, label: role === "ADMIN" ? "Kontrol merkezi" : "Özet", hint: "Bugün ve sıradaki adım", icon: LayoutDashboard },
     ...(role === "ADMIN" ? [
       { href: `${home}/sinavlar`, label: "Deneme planlama", hint: "İçerik, takvim ve yayın", icon: ClipboardCheck },
+      { href: `${home}/paketler`, label: "Paket sözleşmeleri", hint: "Haklar, kurallar ve denemeler", icon: PackageOpen },
       { href: `${home}/operasyon`, label: "Canlı operasyon", hint: "Oturumlar ve bağlantı", icon: Activity },
       { href: `${home}/raporlar`, label: "Deneme raporları", hint: "Sonuç ve kazanım", icon: BarChart3 },
       { href: `${home}/pilot`, label: "Pilot yayını", hint: "Kapılar ve geri alma", icon: Rocket },
