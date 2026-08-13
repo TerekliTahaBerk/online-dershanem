@@ -12,6 +12,8 @@ const productionEnv = {
   CRON_SECRET: "secret-cron-value",
   BLOB_READ_WRITE_TOKEN: "secret-blob-value",
   MFA_ENCRYPTION_KEY: Buffer.alloc(32, 11).toString("base64"),
+  UPSTASH_REDIS_REST_URL: "https://cache.test.invalid",
+  UPSTASH_REDIS_REST_TOKEN: "secret-cache-token",
   ODK_ROLLOUT_MODE: "disabled",
   ODK_PILOT_KILL_SWITCH: "false",
   ODK_PILOT_ACCEPTANCE_APPROVED: "false",
@@ -38,6 +40,17 @@ test("production'da örnek secret değeri geçerli konfigürasyon sayılmaz", ()
     now: new Date("2026-08-11T00:00:00Z"),
   });
   assert.ok(report.blockers.some((issue) => issue.key === "CRON_SECRET" && issue.code === "invalid"));
+});
+
+test("production deploy Redis REST çifti olmadan bloke edilir", () => {
+  const report = evaluateConfiguration({
+    env: { ...productionEnv, UPSTASH_REDIS_REST_URL: undefined, UPSTASH_REDIS_REST_TOKEN: undefined },
+    environment: "production",
+    now: new Date("2026-08-11T00:00:00Z"),
+  });
+
+  assert.ok(report.blockers.some((issue) => issue.key === "UPSTASH_REDIS_REST_URL" && issue.code === "missing"));
+  assert.ok(report.blockers.some((issue) => issue.key === "UPSTASH_REDIS_REST_TOKEN" && issue.code === "missing"));
 });
 
 test("preview'da production-only eksik warning olur, blocker olmaz", () => {

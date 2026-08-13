@@ -26,7 +26,10 @@ test("TOTP secrets use authenticated encryption", () => {
     const encrypted = encryptMfaSecret(RFC_SECRET);
     assert.ok(!encrypted.includes(RFC_SECRET));
     assert.equal(decryptMfaSecret(encrypted), RFC_SECRET);
-    assert.throws(() => decryptMfaSecret(`${encrypted.slice(0, -1)}A`));
+    const [version, iv, tag, ciphertext] = encrypted.split(".");
+    const tamperedCiphertext = Buffer.from(ciphertext, "base64url");
+    tamperedCiphertext[0] ^= 1;
+    assert.throws(() => decryptMfaSecret([version, iv, tag, tamperedCiphertext.toString("base64url")].join(".")));
   } finally {
     if (previous === undefined) delete process.env.MFA_ENCRYPTION_KEY;
     else process.env.MFA_ENCRYPTION_KEY = previous;

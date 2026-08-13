@@ -16,7 +16,7 @@
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { cacheGet, cacheSet, cacheInvalidate, cacheStatus } from "@/lib/cache";
+import { CACHE_NAMESPACES, cacheGet, cacheSet, cacheInvalidate, cacheKey, cacheStatus } from "@/lib/cache";
 import { logAudit } from "@/lib/audit";
 import { validateEnvOnce } from "@/lib/env";
 
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
 
   // 3. Cache cycle
   checks.push(await timed("cache_cycle", async () => {
-    const k = `smoke:cache:${Date.now()}`;
+    const k = cacheKey(CACHE_NAMESPACES.SYSTEM, "smoke", Date.now());
     await cacheSet(k, { ok: true }, 10);
     const v = await cacheGet<{ ok: boolean }>(k);
     if (!v?.ok) throw new Error("cache miss after set");
