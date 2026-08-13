@@ -2,15 +2,22 @@ import { expect, test, type Page } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { postPaytrCallback } from "./helpers/paytr-callback";
 import { uniqueTestClientIp } from "./helpers/client-ip";
+import { defaultOdkPackagePolicy } from "../../lib/odk/product-contract";
 
 const prisma = new PrismaClient();
 const amountCents = 12_900;
 
+async function testContract(packageId: string) {
+  const pack = await prisma.odkPackage.findUniqueOrThrow({ where: { id: packageId }, include: { examLinks: { include: { exam: true } } } });
+  return { schemaVersion: 1 as const, catalogVersion: pack.contractVersion, capturedAt: new Date().toISOString(), package: { id: pack.id, slug: pack.slug, title: pack.title, description: pack.description, priceCents: pack.priceCents, originalPriceCents: pack.originalPriceCents }, policy: { ...defaultOdkPackagePolicy, sales: { state: "AVAILABLE" as const } }, exams: pack.examLinks.map(({ exam }) => ({ id: exam.id, seriesId: exam.seriesId, title: exam.title, slug: exam.slug, family: exam.family, startsAt: exam.startsAt?.toISOString() ?? null, endsAt: exam.endsAt?.toISOString() ?? null, lateEntryMinutes: exam.lateEntryMinutes, attemptLimit: exam.attemptLimit, resultsReleasedAt: exam.resultsReleasedAt?.toISOString() ?? null, answerKeyReleasedAt: exam.answerKeyReleasedAt?.toISOString() ?? null, liveServiceRequired: exam.meetRequired })) };
+}
+
 async function fixture(label: string, buyerInfo: Record<string, string>) {
   const suffix = `${label}-${crypto.randomUUID()}`;
-  const pack = await prisma.odkPackage.create({ data: { slug: `e2e-${suffix}`, title: `E2E ${label}`, priceCents: amountCents } });
+  const pack = await prisma.odkPackage.create({ data: { slug: `e2e-${suffix}`, title: `E2E ${label}`, priceCents: amountCents, contractPolicy: { ...defaultOdkPackagePolicy, sales: { state: "AVAILABLE" } } } });
   await prisma.odkPackageExam.create({ data: { packageId: pack.id, examId: "e2e-odk-exam-live" } });
-  const order = await prisma.odkOrder.create({ data: { packageId: pack.id, subtotalCents: amountCents, totalCents: amountCents, buyerInfo } });
+  const contractSnapshot = await testContract(pack.id);
+  const order = await prisma.odkOrder.create({ data: { packageId: pack.id, subtotalCents: amountCents, totalCents: amountCents, buyerInfo, contractSnapshot } });
   const merchantOid = `ODK${order.id.replace(/[^a-zA-Z0-9]/g, "").slice(-28)}`;
   await prisma.odkPayment.create({ data: { orderId: order.id, provider: "PAYTR", providerRef: merchantOid, amountCents } });
   return { order, pack, merchantOid };
@@ -107,8 +114,9 @@ test.describe("ODK ödeme → provisioning bütünlüğü", () => {
     const passwordHash = (await prisma.user.findUniqueOrThrow({ where: { id: "e2e-user-student" }, select: { passwordHash: true } })).passwordHash;
     const user = await prisma.user.create({ data: { email, fullName: "Erişim Öğrencisi", role: "STUDENT", passwordHash, mustChangePassword: false, studentProfile: { create: {} }, productMemberships: { create: { product: "ODK", source: "PURCHASE" } } } });
     const pack = await prisma.odkPackage.findUniqueOrThrow({ where: { id: "e2e-odk-package-live" } });
-    const order = await prisma.odkOrder.create({ data: { packageId: pack.id, status: "PAID", subtotalCents: pack.priceCents, totalCents: pack.priceCents, studentUserId: user.id, provisioningStatus: "SUCCEEDED", provisionedAt: new Date(), buyerInfo: { email } } });
-    const entitlement = await prisma.odkEntitlement.create({ data: { orderId: order.id, userId: user.id, packageId: pack.id } });
+    const contractSnapshot = await testContract(pack.id);
+    const order = await prisma.odkOrder.create({ data: { packageId: pack.id, status: "PAID", subtotalCents: pack.priceCents, totalCents: pack.priceCents, studentUserId: user.id, provisioningStatus: "SUCCEEDED", provisionedAt: new Date(), buyerInfo: { email }, contractSnapshot } });
+    const entitlement = await prisma.odkEntitlement.create({ data: { orderId: order.id, userId: user.id, packageId: pack.id, contractSnapshot } });
     const membership = await prisma.productMembership.findUniqueOrThrow({ where: { userId_product: { userId: user.id, product: "ODK" } } });
     await login(page, email);
 

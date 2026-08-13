@@ -1,15 +1,22 @@
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+const contractPolicy = {
+  sales: { state: "PAUSED" },
+  access: { starts: "PURCHASED_AT", durationDays: 90 },
+  rights: { studentReports: true, parentReports: true, teacherReports: true, liveService: true },
+  exceptions: { soldOut: "BLOCK_NEW_ORDERS", outage: "RESCHEDULE_OR_EXTEND_ACCESS", cancellation: "RESCHEDULE_OR_REFUND", refund: "BEFORE_FIRST_ATTEMPT", exceptionalAccess: "ADMIN_GRANT_WITH_REASON_AND_EXPIRY" },
+};
 
 async function main() {
   await prisma.odkPackage.upsert({
     where: { slug: "tyt-deneme-kulubu" },
-    update: { title: "TYT Deneme Kulübü", priceCents: 149900, isActive: true },
+    update: { title: "TYT Deneme Kulübü", priceCents: 149900, isActive: true, contractPolicy },
     create: {
       title: "TYT Deneme Kulübü", slug: "tyt-deneme-kulubu",
       description: "Online deneme paketi", priceCents: 149900,
       originalPriceCents: 199900, durationDays: 90, isActive: true, isFeatured: true,
+      contractPolicy,
     },
   });
   console.log("Public ürün kataloğu hazırlandı.");

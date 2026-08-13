@@ -2,6 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { attemptHasExpired, decideAttemptStart } from "@/lib/odk/attempt-domain";
+import { getActiveOdkExamGrant, listActiveOdkContracts } from "@/lib/odk/product-contract-server";
+import { contractExamSchedule } from "@/lib/odk/product-contract";
 
 export const studentExamInclude = {
   currentVersion: {
@@ -14,8 +16,14 @@ export const studentExamInclude = {
 
 export async function listStudentExams(studentUserId: string) {
   const now = new Date();
+  const contracts = await listActiveOdkContracts(studentUserId, now);
+  const examIds = [...new Set(contracts.flatMap(({ contract }) => contract.exams.map((exam) => exam.id)))];
+  const grants = new Map<string, { exam: (typeof contracts)[number]["contract"]["exams"][number]; liveService: boolean }>();
+  for (const { contract } of contracts) {
+    for (const exam of contract.exams) if (!grants.has(exam.id)) grants.set(exam.id, { exam, liveService: contract.policy.rights.liveService });
+  }
   return prisma.odkExam.findMany({
-    where: { status: { in: ["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"] }, publishedAt: { not: null } },
+    where: { id: { in: examIds }, status: { in: ["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"] }, publishedAt: { not: null } },
     orderBy: [{ startsAt: "desc" }],
     take: 50,
     select: {
@@ -23,25 +31,42 @@ export async function listStudentExams(studentUserId: string) {
       currentVersion: { select: { durationMinutes: true } },
       attempts: { where: { studentUserId }, orderBy: { attemptNumber: "desc" }, take: 1, select: { id: true, status: true, deadlineAt: true, submittedAt: true } },
     },
-  }).then((exams) => exams.map((exam) => ({ ...exam, serverNow: now })));
+  }).then((exams) => exams.map((exam) => {
+    const grant = grants.get(exam.id);
+    const schedule = grant ? contractExamSchedule(grant.exam) : null;
+    return { ...exam, ...(schedule || {}), meetRequired: Boolean(grant?.exam.liveServiceRequired && grant.liveService), serverNow: now };
+  }));
 }
 
 export async function getStudentExam(examId: string, studentUserId: string) {
+  const grant = await getActiveOdkExamGrant(studentUserId, examId);
+  if (!grant) return null;
   const exam = await prisma.odkExam.findFirst({
     where: { id: examId, status: { in: ["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"] }, publishedAt: { not: null } },
     include: { ...studentExamInclude, attempts: { where: { studentUserId }, orderBy: { attemptNumber: "desc" }, take: 1, include: { answers: true } } },
   });
   if (!exam) return null;
+  const schedule = contractExamSchedule(grant.exam);
+  exam.startsAt = schedule.startsAt;
+  exam.endsAt = schedule.endsAt;
+  exam.lateEntryMinutes = schedule.lateEntryMinutes;
+  exam.attemptLimit = schedule.attemptLimit;
+  exam.meetRequired = grant.exam.liveServiceRequired && grant.contract.policy.rights.liveService;
   const attempt = exam.attempts[0] || null;
   if (attempt?.status === "IN_PROGRESS" && attemptHasExpired(attempt.deadlineAt)) {
     const finalized = await prisma.odkExamAttempt.update({ where: { id: attempt.id }, data: { status: "AUTO_SUBMITTED", submittedAt: new Date() }, include: { answers: true } });
     exam.attempts[0] = finalized;
   }
-  const decision = exam.currentVersion ? decideAttemptStart({ ...exam, durationMinutes: exam.currentVersion.durationMinutes }) : { ok: false as const, code: "NOT_SCHEDULED" as const };
-  return { exam, attempt: exam.attempts[0] || null, startDecision: decision, serverNow: new Date() };
+  const decision = exam.currentVersion ? decideAttemptStart({ status: exam.status, ...contractExamSchedule(grant.exam), durationMinutes: exam.currentVersion.durationMinutes }) : { ok: false as const, code: "NOT_SCHEDULED" as const };
+  const resultReleasedAt = grant.exam.resultsReleasedAt ? new Date(grant.exam.resultsReleasedAt) : null;
+  return { exam, attempt: exam.attempts[0] || null, startDecision: decision, resultAvailable: Boolean(resultReleasedAt && resultReleasedAt <= new Date()), serverNow: new Date() };
 }
 
 export async function getReleasedStudentResult(examId: string, studentUserId: string) {
+  const grant = await getActiveOdkExamGrant(studentUserId, examId);
+  if (!grant || !grant.contract.policy.rights.studentReports) return null;
+  const releaseAt = grant.exam.resultsReleasedAt ? new Date(grant.exam.resultsReleasedAt) : null;
+  if (!releaseAt || releaseAt > new Date()) return null;
   const exam = await prisma.odkExam.findFirst({
     where: { id: examId, status: "RELEASED", resultsReleasedAt: { lte: new Date() } },
     select: {
@@ -63,5 +88,6 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
     },
   });
   const attempt = exam?.attempts[0];
-  return exam && attempt?.score ? { exam, attempt, score: attempt.score } : null;
+  const answerKeyReleasedAt = grant.exam.answerKeyReleasedAt ? new Date(grant.exam.answerKeyReleasedAt) : null;
+  return exam && attempt?.score ? { exam, attempt, score: attempt.score, answerKeyAvailable: Boolean(answerKeyReleasedAt && answerKeyReleasedAt <= new Date()) } : null;
 }

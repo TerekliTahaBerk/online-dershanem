@@ -2,11 +2,13 @@ import { get } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "STUDENT"); if (!auth.ok) return auth.response;
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposu kullanılamıyor." }, { status: 503 });
   const { id } = await context.params;
+  if (!(await getActiveOdkExamGrant(auth.session.userId, id))) return NextResponse.json({ error: "Bu deneme için aktif paket erişiminiz yok." }, { status: 403 });
   const attempt = await prisma.odkExamAttempt.findFirst({
     where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { gt: new Date() } },
     orderBy: { attemptNumber: "desc" },
