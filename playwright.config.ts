@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 const crossBrowser = process.env.PLAYWRIGHT_CROSS_BROWSER === "true";
 const odkDeviceMatrix = process.env.PLAYWRIGHT_ODK_DEVICE_MATRIX === "true";
+process.env.PANEL_E2E_ADMIN_MFA_BYPASS ??= "true";
+process.env.MFA_ENCRYPTION_KEY ??= Buffer.alloc(32, 23).toString("base64");
 
 const odkProjects = [
   { name: "odk-desktop-chromium", use: { ...devices["Desktop Chrome"] } },
@@ -60,6 +62,7 @@ export default defineConfig({
     : {
         command: "npm run start",
         url: "http://localhost:3000",
+        env: { ...process.env, PANEL_E2E_ADMIN_MFA_BYPASS: process.env.PANEL_E2E_ADMIN_MFA_BYPASS },
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
       },

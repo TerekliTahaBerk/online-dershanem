@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { revokeAllUserSessions } from "@/lib/auth/session";
 
 /**
@@ -18,7 +18,7 @@ import { revokeAllUserSessions } from "@/lib/auth/session";
 const schema = z.object({ status: z.enum(["ACTIVE", "SUSPENDED"]) });
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
 
   const guard = await guardMutation({

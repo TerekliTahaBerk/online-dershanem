@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { isPlausibleEmail, normalizeEmail } from "@/lib/auth/email";
 import { generateTemporaryPassword, hashPassword } from "@/lib/auth/password";
 
@@ -24,7 +24,7 @@ const createUserSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
 
   const guard = await guardMutation({

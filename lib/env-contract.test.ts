@@ -11,6 +11,7 @@ const productionEnv = {
   PANEL_ENABLED: "true",
   CRON_SECRET: "secret-cron-value",
   BLOB_READ_WRITE_TOKEN: "secret-blob-value",
+  MFA_ENCRYPTION_KEY: Buffer.alloc(32, 11).toString("base64"),
   ODK_ROLLOUT_MODE: "disabled",
   ODK_PILOT_KILL_SWITCH: "false",
   ODK_PILOT_ACCEPTANCE_APPROVED: "false",

@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import { requireBusinessPage, resolveMutationUnit, scopedUnitIds } from "@/lib/business/permissions";
+import { requireBusinessPage, requireRecentBusinessPage, resolveMutationUnit, scopedUnitIds } from "@/lib/business/permissions";
 import { assertAccountingPeriodOpen, reverseLedgerTransaction } from "@/lib/business/finance";
 import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
 import { prisma } from "@/lib/prisma";
@@ -76,7 +76,7 @@ export async function createManualLead(formData: FormData) {
 }
 
 export async function createFinancialTransaction(formData: FormData) {
-  const access = await requireBusinessPage("finance:write");
+  const access = await requireRecentBusinessPage("finance:write");
   await guard("finance.create", access.session.userId);
   const parsed = z.object({ kind: z.enum(["MANUAL_INCOME", "EXPENSE", "ADJUSTMENT"]), description: z.string().trim().min(2).max(300), category: z.string().trim().min(2).max(80), amountTl: z.coerce.number().positive().max(100_000_000), vatRate: z.coerce.number().min(0).max(100).default(0), withholdingRate: z.coerce.number().min(0).max(100).default(0), commissionTl: z.coerce.number().min(0).max(100_000_000).default(0), transactionDate: z.string().optional() }).parse(Object.fromEntries(formData));
   const unit = resolveMutationUnit(access, formData.get("businessUnitId")); const at = new Date();
@@ -89,7 +89,7 @@ export async function createFinancialTransaction(formData: FormData) {
 }
 
 export async function reverseFinancialTransaction(formData: FormData) {
-  const access = await requireBusinessPage("finance:reverse");
+  const access = await requireRecentBusinessPage("finance:reverse");
   await guard("finance.reverse", access.session.userId);
   const id = z.string().cuid().parse(formData.get("id"));
   const original = await prisma.financialTransaction.findFirst({ where: { id, businessUnitId: { in: scopedUnitIds(access) }, cancelledAt: null } });
@@ -219,7 +219,7 @@ export async function createPromptVersion(formData: FormData) {
 }
 
 export async function lockAccountingPeriod(formData: FormData) {
-  const access = await requireBusinessPage("finance:reverse"); await guard("period.lock", access.session.userId);
+  const access = await requireRecentBusinessPage("finance:reverse"); await guard("period.lock", access.session.userId);
   const parsed = z.object({ startsAt: z.string().date(), endsAt: z.string().date() }).parse(Object.fromEntries(formData)); const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
   const startsAt = new Date(`${parsed.startsAt}T00:00:00+03:00`); const endsAt = new Date(`${parsed.endsAt}T23:59:59.999+03:00`); if (endsAt < startsAt) throw new Error("INVALID_PERIOD");
   const overlap = await prisma.accountingPeriod.findFirst({ where: { businessUnitId: unit.id, NOT: { startsAt, endsAt }, startsAt: { lte: endsAt }, endsAt: { gte: startsAt } } }); if (overlap) throw new Error("ACCOUNTING_PERIOD_OVERLAP");
@@ -282,7 +282,7 @@ export async function mergeSuggestedLead(formData: FormData) {
 }
 
 export async function assignBusinessRole(formData: FormData) {
-  const access = await requireBusinessPage("role:write"); await guard("role.assign", access.session.userId);
+  const access = await requireRecentBusinessPage("role:write"); await guard("role.assign", access.session.userId);
   const parsed = z.object({ userId: z.string().min(1), businessUnitId: z.string().cuid(), role: z.enum(["SUPER_ADMIN", "ADMIN", "SALES", "SUPPORT", "ACCOUNTING", "VIEWER"]) }).parse(Object.fromEntries(formData));
   // Formdan gelen birim, kullanıcının role:write yetkisi olan birimleri
   // arasından doğrulanır — form değeri tek başına asla yeterli değildir.
@@ -298,7 +298,7 @@ export async function assignBusinessRole(formData: FormData) {
  * yönetici kendi son süper yöneticiliğini kaldırarak paneli kilitleyemez.
  */
 export async function revokeBusinessRole(formData: FormData) {
-  const access = await requireBusinessPage("role:write"); await guard("role.revoke", access.session.userId);
+  const access = await requireRecentBusinessPage("role:write"); await guard("role.revoke", access.session.userId);
   const id = z.string().cuid().parse(formData.get("id"));
   const assignment = await prisma.businessRoleAssignment.findFirst({ where: { id, businessUnitId: { in: scopedUnitIds(access) } } });
   if (!assignment) throw new Error("ROLE_ASSIGNMENT_NOT_FOUND");

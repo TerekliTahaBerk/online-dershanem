@@ -28,8 +28,9 @@ export async function hasProductAccess(userId: string, role: UserRole, product: 
   return (await getAccessibleProducts(userId, role)).includes(product);
 }
 
-export async function postAuthenticationPath(input: { userId: string; role: UserRole; mustChangePassword: boolean }): Promise<string> {
+export async function postAuthenticationPath(input: { userId: string; role: UserRole; mustChangePassword: boolean; mfaVerifiedAt?: Date | null }): Promise<string> {
   if (input.mustChangePassword) return PASSWORD_CHANGE_PATH;
+  if (input.role === "ADMIN" && !input.mfaVerifiedAt) return "/giris/mfa";
   const products = await getAccessibleProducts(input.userId, input.role);
   if (products.length === 1) return productRolePath(products[0], input.role);
   return PRODUCT_SELECTOR_PATH;

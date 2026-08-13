@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { isPlausibleEmail, normalizeEmail } from "@/lib/auth/email";
 import { revokeAllUserSessions } from "@/lib/auth/session";
 
@@ -14,7 +14,7 @@ const schema = z.object({
 });
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.users.update", requireSameOrigin: true, headers: { get: (name: string) => request.headers.get(name) }, rateLimitKey: `panel:users:update:${auth.session.userId}`, rateLimit: { max: 90, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

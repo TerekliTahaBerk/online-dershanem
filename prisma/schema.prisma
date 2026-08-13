@@ -28,6 +28,20 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum MfaChallengePurpose {
+  PASSKEY_ENROLLMENT
+  MFA_AUTHENTICATION
+  STEP_UP
+}
+
+enum MfaResetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  EXPIRED
+}
+
 enum ProductCode {
   OD
   ODK
@@ -217,6 +231,13 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   sessions                      Session[]
+  adminMfa                      AdminMfa?
+  passkeyCredentials            PasskeyCredential[]
+  mfaRecoveryCodes              MfaRecoveryCode[]
+  mfaChallenges                 MfaChallenge[]
+  requestedMfaResets            MfaResetRequest[]          @relation("MfaResetRequester")
+  targetMfaResets               MfaResetRequest[]          @relation("MfaResetTarget")
+  approvedMfaResets             MfaResetRequest[]          @relation("MfaResetApprover")
   studentProfile                StudentProfile?
   teacherProfile                TeacherProfile?
   parentStudents                ParentStudent[]            @relation("ParentLinks")
@@ -1964,6 +1985,12 @@ model Session {
   lastSeenAt DateTime  @default(now()) @map("last_seen_at")
   revokedAt  DateTime? @map("revoked_at")
 
+  /// Password authentication establishes the session; ADMIN privilege is
+  /// withheld until `mfaVerifiedAt` is set by a fresh second-factor ceremony.
+  primaryAuthenticatedAt DateTime  @default(now()) @map("primary_authenticated_at")
+  mfaVerifiedAt           DateTime? @map("mfa_verified_at")
+  stepUpAt                DateTime? @map("step_up_at")
+
   userAgent String? @map("user_agent")
   ip        String?
 
@@ -1974,6 +2001,96 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+model AdminMfa {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+
+  /// AES-256-GCM envelope (version.iv.tag.ciphertext). Never plaintext.
+  totpSecretEncrypted String?   @map("totp_secret_encrypted")
+  totpEnabledAt       DateTime? @map("totp_enabled_at")
+  totpLastCounter     BigInt?   @map("totp_last_counter")
+  pendingTotpSecretEncrypted String?   @map("pending_totp_secret_encrypted")
+  pendingTotpExpiresAt       DateTime? @map("pending_totp_expires_at")
+  recoveryGeneratedAt DateTime? @map("recovery_generated_at")
+  enrolledAt          DateTime? @map("enrolled_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_mfa")
+}
+
+model PasskeyCredential {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  credentialId String   @unique @map("credential_id")
+  publicKey    Bytes    @map("public_key")
+  counter      BigInt   @default(0)
+  transports   String[] @default([])
+  deviceType   String   @map("device_type")
+  backedUp     Boolean  @default(false) @map("backed_up")
+  name         String?
+  lastUsedAt   DateTime? @map("last_used_at")
+  revokedAt    DateTime? @map("revoked_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@map("passkey_credentials")
+}
+
+model MfaRecoveryCode {
+  id       String   @id @default(cuid())
+  userId   String   @map("user_id")
+  codeHash String   @unique @map("code_hash")
+  usedAt   DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+  @@map("mfa_recovery_codes")
+}
+
+model MfaChallenge {
+  id            String              @id @default(cuid())
+  userId        String              @map("user_id")
+  sessionId     String              @map("session_id")
+  purpose       MfaChallengePurpose
+  challengeHash String              @map("challenge_hash")
+  expiresAt     DateTime            @map("expires_at")
+  consumedAt    DateTime?           @map("consumed_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionId, purpose, expiresAt])
+  @@map("mfa_challenges")
+}
+
+model MfaResetRequest {
+  id            String         @id @default(cuid())
+  targetUserId  String         @map("target_user_id")
+  requestedById String         @map("requested_by_id")
+  approvedById  String?        @map("approved_by_id")
+  status        MfaResetStatus @default(PENDING)
+  reason        String
+  expiresAt     DateTime       @map("expires_at")
+  approvedAt    DateTime?      @map("approved_at")
+  completedAt   DateTime?      @map("completed_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  target      User  @relation("MfaResetTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  requestedBy User  @relation("MfaResetRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy  User? @relation("MfaResetApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+
+  @@index([targetUserId, status])
+  @@index([status, expiresAt])
+  @@map("mfa_reset_requests")
 }
 
 enum PurchaseStatus {
