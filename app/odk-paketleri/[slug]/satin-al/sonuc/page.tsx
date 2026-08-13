@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { CheckoutResultCard } from "@/components/checkout/checkout-result-card";
+import { prisma } from "@/lib/prisma";
 
 type Params = Promise<{ slug: string }>;
-type Search = Promise<{ status?: string }>;
+type Search = Promise<{ status?: string; orderId?: string }>;
 
 export const metadata: Metadata = {
   title: "Ödeme Sonucu · ODK",
@@ -21,8 +22,13 @@ export default async function OdkCheckoutResultPage({
   searchParams: Search;
 }) {
   const { slug } = await params;
-  const { status } = await searchParams;
-  const isSuccess = status === "success";
+  const { status, orderId } = await searchParams;
+  const order = orderId ? await prisma.odkOrder.findFirst({
+    where: { id: orderId, package: { slug } },
+    select: { status: true, provisioningStatus: true },
+  }) : null;
+  const isSuccess = status === "success" && order?.status === "PAID";
+  const isPending = status === "success" && order?.status === "PENDING";
 
   return (
     <div className="site-scope">
@@ -34,13 +40,10 @@ export default async function OdkCheckoutResultPage({
               status="success"
               eyebrow="Deneme Kulübü"
               title="Ödemeniz alındı"
-              description="Ödemeniz kaydedildi. Sipariş detayları e-posta adresinize gönderilecektir."
+              description={order.provisioningStatus === "SUCCEEDED" ? "Ödemeniz kaydedildi ve Deneme Kulübü erişiminiz hazırlandı." : "Ödemeniz kaydedildi. Erişiminiz hazırlanıyor; tamamlandığında hesabınızdan giriş yapabilirsiniz."}
               nextStepNote={
                 <>
-                  <strong>Sıradaki adım:</strong> Deneme planınızı
-                  kişiselleştirmek için <strong>hocalarımız 24 saat içinde</strong>{" "}
-                  sizinle iletişime geçecektir. Şimdilik bir aksiyon almanıza
-                  gerek yok.
+                  <strong>Sıradaki adım:</strong> E-posta adresinizle oluşturulan öğrenci hesabına giriş yaparak paketinizdeki denemeleri görebilirsiniz.
                 </>
               }
               primaryAction={{
@@ -52,6 +55,15 @@ export default async function OdkCheckoutResultPage({
                 href: "/iletisim",
                 label: "İletişim",
               }}
+            />
+          ) : isPending ? (
+            <CheckoutResultCard
+              status="pending"
+              eyebrow="Deneme Kulübü"
+              title="Ödeme doğrulanıyor"
+              description="Banka bildirimi henüz ulaşmadı. Bu sayfayı kısa süre sonra yenileyin; doğrulama tamamlanmadan erişim açılmaz."
+              primaryAction={{ href: `/odk-paketleri/${slug}/satin-al/sonuc?status=success&orderId=${orderId}`, label: "Durumu Yenile", variant: "primary" }}
+              secondaryAction={{ href: "/iletisim", label: "Destek" }}
             />
           ) : (
             <CheckoutResultCard

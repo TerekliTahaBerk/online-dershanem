@@ -2,11 +2,16 @@ import type { MetadataRoute } from "next";
 import { blogPosts } from "@/lib/blog-content";
 import { blogPublishedAt } from "@/lib/blog-meta";
 import { siteUrl } from "@/lib/content";
+import { listPublicOdkPackages } from "@/lib/odk/public-commerce-server";
+
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const odkPackages = await listPublicOdkPackages();
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/ders-paketleri`, changeFrequency: "weekly", priority: 0.95 },
+    { url: `${siteUrl}/deneme-kulubu`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/matematik`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/kamplar`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/online-dershane`, changeFrequency: "weekly", priority: 0.8 },
@@ -30,5 +35,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...blogRoutes];
+  const odkRoutes: MetadataRoute.Sitemap = odkPackages.map((item) => ({
+    url: `${siteUrl}/odk-paketleri/${item.contract.package.slug}`,
+    lastModified: item.contract.capturedAt,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...odkRoutes, ...blogRoutes];
 }
