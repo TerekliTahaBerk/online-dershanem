@@ -6,6 +6,7 @@ import { ShoppingBag } from "lucide-react";
 import { BuyerInfoForm, type BuyerInfoFormDefaults } from "@/components/checkout/buyer-info-form";
 import { OrderSummaryCard, CheckoutPageHeader } from "@/components/checkout/order-summary-card";
 import { parseCheckoutCartSnapshot } from "@/lib/od/cart-storage";
+import type { OdPlacementExpectation } from "@/lib/od/placement";
 
 type CartSnapshot = {
   items: {
@@ -29,8 +30,9 @@ function tryFormat(cents: number): string {
   }).format(cents / 100);
 }
 
-export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaults }) {
+export function CartCheckoutClient({ defaults, placementExpectation }: { defaults: BuyerInfoFormDefaults; placementExpectation: OdPlacementExpectation }) {
   const [snapshot, setSnapshot] = useState<CartSnapshot | null>(null);
+  const [currentExpectation, setCurrentExpectation] = useState(placementExpectation);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -50,6 +52,17 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
     } catch {/* ignore */}
     setLoaded(true);
   }, []);
+
+  useEffect(() => {
+    const category = snapshot?.items[0]?.category;
+    if (!category) return;
+    const controller = new AbortController();
+    fetch(`/api/od/placement-expectation?category=${encodeURIComponent(category)}`, { signal: controller.signal })
+      .then((response) => response.ok ? response.json() as Promise<OdPlacementExpectation> : null)
+      .then((result) => { if (result) setCurrentExpectation(result); })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [snapshot]);
 
   const totalCents = useMemo(
     () => (snapshot?.items || []).reduce((acc, i) => acc + i.priceCents * i.qty, 0),
@@ -117,6 +130,7 @@ export function CartCheckoutClient({ defaults }: { defaults: BuyerInfoFormDefaul
             })),
           }}
           defaults={defaults}
+          placementExpectation={currentExpectation}
         />
       </div>
 

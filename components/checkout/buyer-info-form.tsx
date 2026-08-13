@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CircleAlert, ShoppingBag } from "lucide-react";
+import { CalendarClock, CircleAlert, Clock3, ShoppingBag, UsersRound } from "lucide-react";
+import { OD_NO_SLOT_OPTIONS, OD_TIME_RANGE_OPTIONS, type OdPlacementExpectation } from "@/lib/od/placement";
 
 export type BuyerInfoFormDefaults = {
   fullName?: string;
@@ -43,6 +44,7 @@ export type BuyerInfoFormProps = {
   service: "OD" | "ODK";
   /** Called after successful submission (e.g. to clear cart). */
   onSuccess?: () => void;
+  placementExpectation?: OdPlacementExpectation;
 };
 
 type ApiResult =
@@ -83,6 +85,7 @@ export function BuyerInfoForm({
   submitLabel = "Ödemeye Geç",
   service,
   onSuccess,
+  placementExpectation,
 }: BuyerInfoFormProps) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
@@ -100,6 +103,7 @@ export function BuyerInfoForm({
     fd.forEach((value, key) => {
       payload[key] = typeof value === "string" ? value.trim() : value;
     });
+    payload.availabilityTimeRanges = fd.getAll("availabilityTimeRanges").map(String);
     // Merge extraPayload (cart items, etc.) — overrides any flat duplicates.
     if (extraPayload) {
       for (const [k, v] of Object.entries(extraPayload)) {
@@ -115,6 +119,9 @@ export function BuyerInfoForm({
     }
     if (!payload.kvkkConsent) nextFieldErrors.kvkkConsent = "Devam etmek için onaylayın.";
     if (!payload.paymentConsent) nextFieldErrors.paymentConsent = "Devam etmek için onaylayın.";
+    if (service === "OD" && !(payload.availabilityTimeRanges as unknown[]).length) nextFieldErrors.availabilityTimeRanges = "En az bir uygun zaman aralığı seçin.";
+    if (service === "OD" && !payload.noSlotPreference) nextFieldErrors.noSlotPreference = "Bir tercih seçin.";
+    if (service === "OD" && !payload.placementConsent) nextFieldErrors.placementConsent = "Tahmini yerleştirme koşullarını onaylayın.";
     if (!String(payload.email).includes("@")) {
       nextFieldErrors.email = payload.email ? "Geçerli bir e-posta adresi girin." : "Bu alan gerekli.";
     }
@@ -410,6 +417,28 @@ export function BuyerInfoForm({
         />
       </Section>
 
+      {service === "OD" ? (
+        <section className="rounded-[24px] border border-[var(--brand-orange-soft)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
+          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">Ders zamanı ve yerleştirme</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">Bu bilgiler uygun grubu bulmak için doğrudan operasyon ekibine aktarılır; yeniden girmeniz gerekmez.</p>
+          {placementExpectation ? <PlacementExpectationCard expectation={placementExpectation} /> : null}
+          <fieldset className="mt-5">
+            <legend className="text-[12.5px] font-medium uppercase tracking-wide text-[var(--site-body)]">Uygun olduğunuz saatler <RequiredMark /></legend>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">{OD_TIME_RANGE_OPTIONS.map((option) => <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-3 py-3 text-sm"><input type="checkbox" name="availabilityTimeRanges" value={option.value} className="h-4 w-4 accent-[var(--brand-orange)]" />{option.label}</label>)}</div>
+            {fieldErrors.availabilityTimeRanges ? <FieldError id="availabilityTimeRanges-error">{fieldErrors.availabilityTimeRanges}</FieldError> : null}
+          </fieldset>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field name="earliestStartDate" label="En erken başlayabileceğiniz tarih" type="date" autoComplete="off" />
+            <SelectField name="noSlotPreference" label="Uygun grup yoksa" required error={fieldErrors.noSlotPreference} options={[{ v: "", l: "Tercih seçin" }, ...OD_NO_SLOT_OPTIONS.map((option) => ({ v: option.value, l: option.label }))]} />
+          </div>
+          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl bg-amber-50 px-4 py-3">
+            <input type="checkbox" name="placementConsent" value="1" className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-orange)]" />
+            <span className="text-sm leading-6 text-amber-950"><strong>Anladım:</strong> Gösterilen kapasite, saatler ve başlangıç tarihi tahmindir; belirli bir grup veya saat ödeme ile garanti edilmez. Ekip 24 saat içinde iletişim kurar ve 48 saat içinde grup, alternatif, bekleme listesi veya talebim doğrultusunda iade yolunu netleştirir. <RequiredMark /></span>
+          </label>
+          {fieldErrors.placementConsent ? <FieldError id="placementConsent-error">{fieldErrors.placementConsent}</FieldError> : null}
+        </section>
+      ) : null}
+
       <Section title="Notlar">
         <Field
           name="notes"
@@ -503,6 +532,16 @@ export function BuyerInfoForm({
       </button>
     </form>
   );
+}
+
+function PlacementExpectationCard({ expectation }: { expectation: OdPlacementExpectation }) {
+  const signalTone = expectation.capacitySignal === "OPEN_SEATS" ? "bg-emerald-50 text-emerald-900" : expectation.capacitySignal === "LIMITED" ? "bg-amber-50 text-amber-950" : "bg-slate-100 text-slate-800";
+  return <div className="mt-4 grid gap-2 text-[12.5px] sm:grid-cols-2">
+    <div className={`rounded-2xl px-4 py-3 ${signalTone}`}><p className="flex items-center gap-2 font-bold"><UsersRound size={15} />Kapasite sinyali</p><p className="mt-1 leading-5">{expectation.capacityLabel}</p></div>
+    <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3"><p className="flex items-center gap-2 font-bold"><CalendarClock size={15} />Beklenen başlangıç</p><p className="mt-1 leading-5">{expectation.expectedStartLabel}</p></div>
+    <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3"><p className="flex items-center gap-2 font-bold"><Clock3 size={15} />Gözlenen ders saatleri</p><p className="mt-1 leading-5">{expectation.observedTimeRanges.length ? expectation.observedTimeRanges.join(" · ") : "Saat uyumu görüşmede belirlenecek"}</p></div>
+    <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3"><p className="font-bold">Yerleştirme SLA'sı</p><p className="mt-1 leading-5">{expectation.placementSlaLabel}</p></div>
+  </div>;
 }
 
 function Section({
