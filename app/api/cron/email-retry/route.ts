@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { runJob } from "@/lib/jobs/runner";
 import { log } from "@/lib/logger";
+import { materializePasswordResetEmailHtml } from "@/lib/auth/password-reset";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +56,12 @@ export async function GET(req: Request) {
         recipients = [e.recipients];
       }
       try {
-        await getResend().emails.send({ from: FROM, to: recipients, subject: e.subject, html: e.html });
+        await getResend().emails.send({
+          from: FROM,
+          to: recipients,
+          subject: e.subject,
+          html: materializePasswordResetEmailHtml(e.html),
+        });
         await prisma.emailOutbox.update({
           where: { id: e.id },
           data: { status: "SENT", sentAt: new Date(), attempts: e.attempts + 1, lastError: null, nextRetryAt: null },

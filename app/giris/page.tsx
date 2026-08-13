@@ -34,7 +34,7 @@ const supportBenefits = [
  * destek kanallarına yönlendiriyoruz — kullanıcıdan çalışmayan bir formda
  * parola istemek en kötüsü olurdu.
  */
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ "password-reset"?: string }> }) {
   if (!PANEL_ENABLED) return <RenewingNotice />;
 
   // Zaten girmiş kullanıcıyı giriş ekranında tutmanın anlamı yok.
@@ -43,10 +43,11 @@ export default async function LoginPage() {
     redirect(await postAuthenticationPath(session));
   }
 
-  return <LoginScreen />;
+  const params = await searchParams;
+  return <LoginScreen resetSuccess={params["password-reset"] === "success"} />;
 }
 
-function LoginScreen() {
+function LoginScreen({ resetSuccess }: { resetSuccess: boolean }) {
   return (
     <div className="site-scope">
       <SiteHeader />
@@ -62,7 +63,7 @@ function LoginScreen() {
             </p>
 
             <div className="mt-8 rounded-[24px] border border-[var(--site-line)] bg-white p-6 sm:p-8">
-              <LoginForm />
+              <LoginForm resetSuccess={resetSuccess} />
             </div>
 
             <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-[12px] text-[var(--site-muted)]">

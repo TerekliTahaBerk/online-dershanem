@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 /**
  * Panel giriş formu.
@@ -10,7 +11,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
  * olduğunu client tarafında tahmin etmeye çalışmaz. Sunucu bilerek "e-posta mı
  * parola mı" ayrımı yapmıyor (kullanıcı sayımına karşı); burada da yapmamalıyız.
  */
-export function LoginForm() {
+export function LoginForm({ resetSuccess = false }: { resetSuccess?: boolean }) {
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,9 +72,10 @@ export function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="password" className="text-[13px] font-semibold text-[var(--site-ink)]">
-          Parola
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="password" className="text-[13px] font-semibold text-[var(--site-ink)]">Parola</label>
+          <Link href="/parolami-unuttum" className="text-[12.5px] font-semibold text-[var(--brand-olive)] hover:underline">Parolamı unuttum</Link>
+        </div>
         <input
           id="password"
           name="password"
@@ -86,6 +88,8 @@ export function LoginForm() {
           className="rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-colors focus-visible:border-[var(--brand-olive)] focus-visible:ring-2 focus-visible:ring-[var(--brand-olive-soft)] disabled:opacity-60"
         />
       </div>
+
+      {resetSuccess ? <p role="status" className="rounded-[12px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800">Parolanız yenilendi. Yeni parolanızla giriş yapabilirsiniz.</p> : null}
 
       {error ? (
         <p
@@ -115,9 +119,7 @@ export function LoginForm() {
         )}
       </button>
 
-      <p className="mt-1 text-center text-[12.5px] leading-6 text-[var(--site-muted)]">
-        Parolanızı ekibimiz iletti. Unuttuysanız bize yazın, yenisini oluşturalım.
-      </p>
+      <p className="mt-1 text-center text-[12.5px] leading-6 text-[var(--site-muted)]">İlk girişte ekibimizin ilettiği geçici parolayı kullanabilirsiniz.</p>
     </form>
   );
 }
