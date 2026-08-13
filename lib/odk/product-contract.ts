@@ -174,3 +174,39 @@ export function odkSellableContractIssues(contract: OdkProductContract) {
   }
   return issues;
 }
+
+export type OdkCommerceBlockReason =
+  | "ROLLOUT"
+  | "INACTIVE"
+  | "PAYMENT_UNAVAILABLE"
+  | "INVALID_PRICE"
+  | "INCOMPLETE_CONTRACT"
+  | "SOLD_OUT"
+  | "PAUSED"
+  | "CLOSED"
+  | "NOT_STARTED"
+  | "ENDED";
+
+/**
+ * Public discovery and checkout use the same fail-closed decision. Keeping this
+ * pure makes the rule independently testable and prevents a visible CTA from
+ * drifting away from the API gate.
+ */
+export function decideOdkCommerceAvailability(input: {
+  contract: OdkProductContract;
+  rolloutAllowed: boolean;
+  packageActive: boolean;
+  paymentReady: boolean;
+  now?: Date;
+}) {
+  if (!input.rolloutAllowed) return { allowed: false as const, reason: "ROLLOUT" as const };
+  if (!input.packageActive) return { allowed: false as const, reason: "INACTIVE" as const };
+  if (input.contract.package.priceCents <= 0) return { allowed: false as const, reason: "INVALID_PRICE" as const };
+  const sale = decideOdkSale(input.contract.policy, input.now);
+  if (!sale.allowed) return { allowed: false as const, reason: sale.reason as OdkCommerceBlockReason };
+  if (odkSellableContractIssues(input.contract).length) {
+    return { allowed: false as const, reason: "INCOMPLETE_CONTRACT" as const };
+  }
+  if (!input.paymentReady) return { allowed: false as const, reason: "PAYMENT_UNAVAILABLE" as const };
+  return { allowed: true as const, reason: null };
+}

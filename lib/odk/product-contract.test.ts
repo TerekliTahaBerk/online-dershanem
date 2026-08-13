@@ -7,6 +7,7 @@ import {
   contractExam,
   contractResultAvailable,
   decideOdkSale,
+  decideOdkCommerceAvailability,
   defaultOdkPackagePolicy,
   parseOdkProductContract,
   odkSellableContractIssues,
@@ -33,6 +34,18 @@ test("satış penceresi ve stok durumu deterministik karar üretir", () => {
   assert.deepEqual(decideOdkSale(snapshot.policy, new Date("2026-08-13T10:00:00Z")), { allowed: true });
   assert.deepEqual(decideOdkSale({ ...snapshot.policy, sales: { state: "SOLD_OUT" } }, new Date()), { allowed: false, reason: "SOLD_OUT" });
   assert.deepEqual(decideOdkSale({ ...snapshot.policy, sales: { state: "AVAILABLE", startsAt: "2026-09-01T00:00:00Z" } }, new Date("2026-08-13T10:00:00Z")), { allowed: false, reason: "NOT_STARTED" });
+});
+
+test("public keşif ve checkout aynı fail-closed uygunluk kararını kullanır", () => {
+  const parsed = parseOdkProductContract(snapshot);
+  assert.equal(parsed.success, true);
+  if (!parsed.success) return;
+  const ready = { contract: parsed.data, rolloutAllowed: true, packageActive: true, paymentReady: true };
+  assert.deepEqual(decideOdkCommerceAvailability(ready), { allowed: true, reason: null });
+  assert.deepEqual(decideOdkCommerceAvailability({ ...ready, rolloutAllowed: false }), { allowed: false, reason: "ROLLOUT" });
+  assert.deepEqual(decideOdkCommerceAvailability({ ...ready, paymentReady: false }), { allowed: false, reason: "PAYMENT_UNAVAILABLE" });
+  assert.deepEqual(decideOdkCommerceAvailability({ ...ready, contract: { ...parsed.data, policy: { ...parsed.data.policy, sales: { state: "SOLD_OUT" } } } }), { allowed: false, reason: "SOLD_OUT" });
+  assert.deepEqual(decideOdkCommerceAvailability({ ...ready, contract: { ...parsed.data, exams: [] } }), { allowed: false, reason: "INCOMPLETE_CONTRACT" });
 });
 
 test("erişim süresi satın alma anından sözleşmedeki süreyle hesaplanır", () => {

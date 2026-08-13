@@ -12,7 +12,8 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { log } from "@/lib/logger";
-import { decideOdkSale, odkSellableContractIssues, parseOdkProductContract } from "@/lib/odk/product-contract";
+import { decideOdkCommerceAvailability, parseOdkProductContract } from "@/lib/odk/product-contract";
+import { odkPublicAccessDecision } from "@/lib/odk/pilot-rollout";
 import {
   buildMerchantOid,
   createPaytrIframeToken,
@@ -70,14 +71,15 @@ export async function createOdkCheckoutSession(input: {
   if (!contract.success) {
     return { ok: false, reason: "invalid_contract", userMessage: "Sipariş sözleşmesi geçersiz. Lütfen destek ekibiyle iletişime geçin." };
   }
-  const sale = decideOdkSale(contract.data.policy);
-  if (!sale.allowed) {
-    return { ok: false, reason: `sale_${sale.reason.toLowerCase()}`, userMessage: "Bu paket şu anda yeni satın alımlara açık değil." };
-  }
-  const contractIssues = odkSellableContractIssues(contract.data);
-  if (contractIssues.length) {
-    log.warn("odk.checkout.contract_incomplete", { orderId: order.id, issues: contractIssues });
-    return { ok: false, reason: "incomplete_contract", userMessage: "Paket içeriği henüz satışa hazır değil. Lütfen destek ekibiyle iletişime geçin." };
+  const availability = decideOdkCommerceAvailability({
+    contract: contract.data,
+    rolloutAllowed: odkPublicAccessDecision().allowed,
+    packageActive: order.package.isActive,
+    paymentReady: true,
+  });
+  if (!availability.allowed) {
+    log.warn("odk.checkout.availability_blocked", { orderId: order.id, reason: availability.reason });
+    return { ok: false, reason: `availability_${availability.reason.toLowerCase()}`, userMessage: "Bu paket şu anda yeni satın alımlara açık değil." };
   }
   const pkg = { title: contract.data.package.title, slug: contract.data.package.slug };
 
@@ -109,8 +111,8 @@ export async function createOdkCheckoutSession(input: {
     [pkg.title.slice(0, 200), (order.totalCents / 100).toFixed(2), 1],
   ];
 
-  const okUrl = `${input.origin}/odk-paketleri/${pkg.slug}/satin-al/sonuc?status=success`;
-  const failUrl = `${input.origin}/odk-paketleri/${pkg.slug}/satin-al/sonuc?status=failed`;
+  const okUrl = `${input.origin}/odk-paketleri/${pkg.slug}/satin-al/sonuc?status=success&orderId=${order.id}`;
+  const failUrl = `${input.origin}/odk-paketleri/${pkg.slug}/satin-al/sonuc?status=failed&orderId=${order.id}`;
 
   const tokenRes = await createPaytrIframeToken({
     merchantOid,

@@ -19,6 +19,14 @@ export const RATE_LIMIT_POLICIES = {
         "Çok fazla ödeme denemesi yapıldı. Lütfen 10 dakika sonra tekrar deneyin.",
     },
   },
+  odkCheckout: {
+    action: "checkout.odk",
+    limit: {
+      max: 8,
+      windowMs: 10 * 60_000,
+      message: "Çok fazla ödeme denemesi yapıldı. Lütfen 10 dakika sonra tekrar deneyin.",
+    },
+  },
   odkAnswer: {
     action: "odk.attempt.answer",
     limit: { max: 600, windowMs: 15 * 60_000 },

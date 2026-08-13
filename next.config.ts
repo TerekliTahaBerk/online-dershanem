@@ -110,9 +110,12 @@ const nextConfig: NextConfig = {
     return [
       { source: "/tyt", destination: "/yks", permanent: true },
       { source: "/ayt", destination: "/yks", permanent: true },
-      { source: "/odk", destination: "/", permanent: true },
+      { source: "/odk", destination: "/deneme-kulubu", permanent: true },
       { source: "/odk-paketleri", destination: "/deneme-kulubu", permanent: true },
-      { source: "/odk-paketleri/:slug", destination: "/deneme-kulubu", permanent: true },
+      { source: "/online-deneme-kulubu", destination: "/deneme-kulubu", permanent: true },
+      { source: "/deneme-paketleri", destination: "/deneme-kulubu", permanent: true },
+      { source: "/tyt-deneme-kulubu", destination: "/deneme-kulubu", permanent: true },
+      { source: "/lgs-deneme-kulubu", destination: "/deneme-kulubu", permanent: true },
     ];
   },
 };
