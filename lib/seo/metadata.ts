@@ -3,7 +3,7 @@ import { siteUrl } from "@/lib/content";
 
 const SITE_NAME = "Online Dershanem";
 const DEFAULT_IMAGE_PATH = "/og.png";
-const DEFAULT_IMAGE_ALT = "Online Dershanem — LGS ve YKS için küçük grup canlı matematik dersi";
+const DEFAULT_IMAGE_ALT = "Online Dershanem — LGS ve YKS için ders, koçluk ve deneme ürünleri";
 
 type MarketingOpenGraphType = "website" | "article";
 

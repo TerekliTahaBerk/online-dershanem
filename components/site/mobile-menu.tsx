@@ -69,7 +69,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       role="dialog"
       aria-modal="true"
       aria-label="Mobil menü"
-      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] lg:hidden"
+      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] xl:hidden"
     >
       <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--site-line)] px-[clamp(20px,6vw,28px)]">
         <Link href="/" onClick={onClose} aria-label="Online Dershanem ana sayfa">
@@ -98,6 +98,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
           <Link
             key={link.href}
             href={link.href}
+            aria-label={link.accessibleLabel}
             onClick={onClose}
             aria-current={isActive(link.href) ? "page" : undefined}
             className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] ${

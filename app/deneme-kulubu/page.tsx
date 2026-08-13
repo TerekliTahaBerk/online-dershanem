@@ -11,11 +11,11 @@ import { listPublicOdkPackages, ODK_PUBLIC_FAQ } from "@/lib/odk/public-commerce
 export const dynamic = "force-dynamic";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Deneme Kulübü",
-  description: "Tarihleri, kapsamı, rapor hakları ve erişim koşulları açıkça tanımlanmış online LGS ve YKS deneme paketlerini inceleyin.",
-  canonical: "/deneme-kulubu",
+  title: "Online Deneme Kulübüm | LGS, TYT ve AYT",
+  description: "LGS, TYT ve AYT için planlı online denemeler, kazanım analizi ve gelişimi takip etmeye yardımcı raporlar.",
+  canonical: "/urunler/online-deneme-kulubum",
   imagePath: "/deneme-kulubu/opengraph-image",
-  imageAlt: "Online Dershanem Deneme Kulübü",
+  imageAlt: "Online Deneme Kulübüm — LGS, TYT ve AYT",
 });
 
 export default async function DenemeKulubuPage() {
@@ -23,7 +23,7 @@ export default async function DenemeKulubuPage() {
   return (
     <div className="site-scope">
       <SchemaJsonLd schema={[
-        breadcrumbJsonLd([{ name: "Ana Sayfa", url: "/" }, { name: "Deneme Kulübü", url: "/deneme-kulubu" }]),
+        breadcrumbJsonLd([{ name: "Ana Sayfa", url: "/" }, { name: "Ürünler", url: "/urunler/" }, { name: "Online Deneme Kulübüm", url: "/urunler/online-deneme-kulubum/" }]),
         faqJsonLd([...ODK_PUBLIC_FAQ]),
       ]} />
       <SiteHeader />
@@ -31,12 +31,12 @@ export default async function DenemeKulubuPage() {
         <section className="overflow-hidden bg-[var(--site-bg-warm)] py-20 sm:py-28">
           <div className="site-container grid items-center gap-12 lg:grid-cols-[1.12fr_.88fr]">
             <div>
-              <span className="site-eyebrow">Online Deneme Kulübü</span>
+              <span className="site-eyebrow">Online Deneme Kulübüm · LGS, TYT ve AYT</span>
               <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.7rem,6vw,5.25rem)] leading-[.98] tracking-[-.055em] text-[var(--site-ink)]">
                 Sadece puanı değil, bir sonraki adımı da görün.
               </h1>
               <p className="mt-7 max-w-2xl text-lg leading-8 text-[var(--site-body)]">
-                Gerçek sınav saatinde online denemeye girin; sonuç, kazanım analizi ve gelişim raporlarını tek panelde takip edin. Her paketin içeriği ve erişim koşulları satın almadan önce açıkça gösterilir.
+                LGS, TYT ve AYT için gerçek sınav saatinde online denemeye girin; sonuç, kazanım analizi ve gelişim raporlarını tek panelde takip edin. Her paketin içeriği ve erişim koşulları satın almadan önce açıkça gösterilir.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                 <a href="#paketler" className="site-btn site-btn-primary site-btn-lg">Paketleri incele <ArrowRight size={18} /></a>

@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 const steps = [
-  ["01", "Ön görüşme", "Öğrencinin sınıfını, hedefini ve matematikte zorlandığı noktayı konuşuruz."],
-  ["02", "Seviye ve hedef", "Uygun tempo ve sınav hedefi için kısa bir değerlendirme yaparız."],
-  ["03", "Küçük gruba yerleşim", "Benzer seviye ve hedefte, en fazla dört öğrencilik grubu planlarız."],
-  ["04", "Canlı ders ve takip", "Ayda dört canlı ders ve ders sonrası çalışma yönü başlar."],
+  ["01", "İhtiyacı belirle", "Canlı ders, planlama desteği veya deneme ölçümünden hangisinin bugün gerekli olduğunu seç."],
+  ["02", "Ürününle başla", "Online Dershanem, Online Koçum veya Online Deneme Kulübüm kendi açık başlangıç akışıyla ilerler."],
+  ["03", "İlerlemeyi görünür kıl", "Ders geri bildirimi, haftalık plan veya deneme analizi öğrenciye sıradaki adımı gösterir."],
+  ["04", "Gerektiğinde birleştir", "İhtiyaç değiştiğinde diğer ürünü aynı öğrenme yolculuğuna ekleyebilirsin."],
 ];
 
 export function First30Days() {
@@ -13,8 +13,9 @@ export function First30Days() {
       <div className="site-container site-section">
         <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:gap-20">
           <div>
-            <h2 className="text-[clamp(2.4rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">Ödemeden ilk derse dört sade adım.</h2>
-            <Link href="/iletisim/" className="site-btn site-btn-primary mt-8">Ücretsiz ön görüşme</Link>
+            <p className="site-kicker">Nasıl çalışır?</p>
+            <h2 className="mt-4 text-[clamp(2.4rem,5vw,3.8rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">Tek bir pakete sıkışmadan kendi destek yolunu kur.</h2>
+            <Link href="/urunler/" className="site-btn site-btn-primary mt-8">Ürünleri karşılaştır</Link>
           </div>
           <ol className="divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">
             {steps.map(([number, title, body]) => (

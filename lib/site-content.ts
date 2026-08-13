@@ -1,14 +1,15 @@
 /**
  * PUBLIC MARKETING SITE — içerik kaynağı.
  *
- * Bu dosya yeni public sitenin (Home / Ders Paketleri / Kamplar / Hakkımızda /
- * Giriş) metin ve liste verilerini tek yerde tutar.
+ * Bu dosya public sitenin ortak pazarlama metinlerini tutar. Üç ürünün yapısal
+ * kaynağı `lib/product-architecture.ts` içindedir.
  *
  * ÖNEMLİ: Fiyat/ürün kimliği burada DEĞİLDİR. Ödeme-kritik fiyat kaynağı
  * `lib/content.ts` → `subjectPackageGroups`'tur. Buradaki her şey pazarlama
  * metnidir; abartılı/kanıtlanmamış başarı vaadi içermez.
  */
 import { contact } from "@/lib/content";
+import { publicProducts } from "@/lib/product-architecture";
 
 export const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
@@ -16,53 +17,53 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 /* ---------------- Navigasyon ---------------- */
 
 export const primaryNav = [
-  { label: "Nasıl Çalışır?", href: "/#nasil-calisir" },
-  { label: "Paketler", href: "/#paketler" },
-  { label: "SSS", href: "/#sss" },
+  ...publicProducts.map(({ name, href }) => ({ label: name, accessibleLabel: name, href })),
+  { label: "Ürünler", accessibleLabel: "Tüm ürünler", href: "/urunler/" },
+  { label: "Hakkımızda", accessibleLabel: "Hakkımızda", href: "/hakkimizda/" },
 ] as const;
 
 /** Sağ üst birincil CTA — lead / satış odaklı (self-register yok). */
-export const navCta = { label: "Ücretsiz görüşme", href: "/iletisim/" } as const;
+export const navCta = { label: "Ürününü bul", href: "/urunler/" } as const;
 /** Öğrenci paneli girişi. Panel sıfırdan yazılana kadar `/giris` "yenileniyor" mesajı + destek kanallarını gösterir. */
 export const navLogin = { label: "Giriş", href: "/giris/" } as const;
 
 /* ---------------- Hero ---------------- */
 
 export const hero = {
-  title: ["Matematiği verimli ve erişilebilir", "öğrenmenin yolu."],
+  title: ["Ders, plan ve deneme", "aynı hedef için çalışsın."],
   subtitle:
-    "LGS ve YKS öğrencileri için küçük grup canlı ders, öğretmen geri bildirimi ve ders sonunda net çalışma yönü.",
-  primary: { label: "Ders Paketlerini İncele", href: "/ders-paketleri/" },
+    "LGS ve YKS yolculuğunda canlı ders, kişisel çalışma düzeni ve online denemeyi üç açık ürünle bir araya getiriyoruz.",
+  primary: { label: "Ürünleri Keşfet", href: "/urunler/" },
   secondary: { label: "Ücretsiz görüşme", href: "/iletisim/" },
 } as const;
 
 /* ---------------- Sosyal kanıt (üniversite barı) ---------------- */
 
 export const socialProof = {
-  text: "İki paket, aynı ders disiplini: canlı matematik, küçük grup ve takip.",
-  badges: ["LGS", "YKS", "Matematik", "Küçük grup", "Canlı ders", "Ders sonrası takip", "PayTR güvenli ödeme"],
+  text: "Üç ürün, aynı öğrenme yolculuğu: ders, planlama ve ölçme.",
+  badges: ["LGS", "YKS", "TYT", "AYT", "Canlı ders", "Çalışma planı", "Deneme analizi"],
 } as const;
 
 /* ---------------- Ana değer önerisi (iki büyük kart) ---------------- */
 
 export const valueProps = {
-  eyebrow: "Neden Online Dershanem",
-  title: "Ders bitince süreç bitmiyor.",
+  eyebrow: "Üç ürün, tek yolculuk",
+  title: "Ders, plan ve ölçüm birbirinden haberdar.",
   subtitle:
-    "Öğrencinin derste nerede takıldığını görür, ders sonrasında hangi çalışmayla devam edeceğini sade biçimde söyleriz.",
+    "Öğrencinin canlı derste, haftalık planında ve denemelerde ortaya çıkan ihtiyacı anlaşılır bir sonraki adıma dönüşür.",
 } as const;
 
 /* ---------------- İlk 30 gün ---------------- */
 
 export const first30 = {
-  title: ["İlk 30 günde matematikte", "ne değişir?"],
+  title: ["İlk 30 günde", "ne netleşir?"],
   timeline: ["Bugün", "7. Gün", "30. Gün"],
   columns: [
     {
       title: "Seviyeyi görelim",
       items: [
         "Öğrencinin sınıfı ve sınav hedefi alınır",
-        "Matematikte tıkandığı başlıklar konuşulur",
+        "Zorlandığı dersler ve çalışma alışkanlıkları konuşulur",
         "LGS veya YKS paketine göre grup planlanır",
       ],
     },
@@ -128,46 +129,39 @@ export type Faq = { q: string; a: string };
 
 export const homeFaqs: Faq[] = [
   {
-    q: "Dersler kaç dakika ve ayda kaç kez yapılıyor?",
-    a: "Her canlı matematik dersi 90 dakikadır. Aylık paket haftada bir, ayda toplam dört canlı ders içerir. Ders günü ve saati uygun küçük grubun programına göre belirlenir.",
+    q: "Online Dershanem, Online Koçum ve Online Deneme Kulübüm arasındaki fark nedir?",
+    a: "Online Dershanem canlı öğrenme ve öğretmen geri bildirimine, Online Koçum haftalık çalışma düzeni ve takibe, Online Deneme Kulübüm ise planlı sınav ölçümü ve analize odaklanır.",
   },
   {
-    q: "Dersler kaç kişilik?",
-    a: "Canlı matematik dersleri en fazla 4 öğrencilik küçük gruplarda yapılır.",
+    q: "Ürünleri birlikte kullanmak zorunlu mu?",
+    a: "Hayır. Öğrenci yalnız ihtiyaç duyduğu ürünle başlayabilir. İhtiyaç değiştiğinde diğer ürünler aynı öğrenme yolculuğuna eklenebilir.",
   },
   {
-    q: "Öğrenci derste soru sorabiliyor mu?",
-    a: "Evet. Küçük grup düzeni öğrencinin soru sorması, çözümünü göstermesi ve öğretmenden doğrudan geri bildirim alması için kurulmuştur.",
+    q: "Hangi ürünler LGS öğrencileri için uygun?",
+    a: "Üç ürün de LGS öğrencileri için konumlandırılmıştır: canlı ders için Online Dershanem, çalışma düzeni için Online Koçum, ölçme ve analiz için Online Deneme Kulübüm.",
   },
   {
-    q: "Ödeme sonrası ne olacak?",
-    a: "Ekibimiz sizinle iletişime geçer, öğrencinin seviyesini ve hedefini konuşur, uygun küçük grubu belirler ve ilk dersi planlar.",
+    q: "Hangi ürünler YKS öğrencileri için uygun?",
+    a: "Online Dershanem ve Online Koçum YKS yolculuğuna; Online Deneme Kulübüm ise TYT ve AYT ölçümüne göre konumlandırılmıştır.",
   },
   {
-    q: "Hesap oluşturmak gerekiyor mu?",
-    a: "Hayır. Paketi satın almak ve ilk ders planlamasını yapmak için hesap oluşturmanız gerekmez.",
+    q: "Nereden başlamalıyım?",
+    a: "Canlı ders ihtiyacı öndeyse Online Dershanem, planı sürdürmek zorsa Online Koçum, mevcut durumu ölçmek gerekiyorsa Online Deneme Kulübüm iyi bir başlangıç noktasıdır.",
   },
   {
-    q: "Ders başlamadan önce görüşebilir miyiz?",
-    a: "Evet. Ücretsiz ön görüşmede öğrencinin sınıfını, matematik seviyesini ve sınav hedefini konuşabiliriz.",
+    q: "Karar vermeden önce görüşebilir miyiz?",
+    a: "Evet. Ücretsiz ön görüşmede öğrencinin sınıfını, sınav hedefini ve bugün ihtiyaç duyduğu destek türünü konuşabiliriz.",
   },
-  {
-    q: "Çocuğum matematikte çok gerideyse uygun mu?",
-    a: "Ön görüşmede seviyeyi birlikte değerlendiririz. Uygun küçük grup varsa ders, öğrencinin ihtiyaç duyduğu noktadan planlanır.",
-  },
-].slice(0, 6);
+];
 
 /* ---------------- Footer ---------------- */
 
 export const footerColumns = [
   {
-    title: "Ürün",
+    title: "Ürünler",
     links: [
-      { label: "Ders Paketleri", href: "/ders-paketleri/" },
-      { label: "Online Matematik", href: "/matematik/" },
-      { label: "LGS Matematik", href: "/lgs/" },
-      { label: "YKS Matematik", href: "/yks/" },
-      { label: "Kamplar (ön kayıt)", href: "/kamplar/" },
+      ...publicProducts.map(({ name, href }) => ({ label: name, href })),
+      { label: "Tüm ürünleri karşılaştır", href: "/urunler/" },
     ],
   },
   {
@@ -179,8 +173,11 @@ export const footerColumns = [
     ],
   },
   {
-    title: "Destek",
+    title: "Keşfet",
     links: [
+      { label: "LGS çözümleri", href: "/lgs/" },
+      { label: "YKS çözümleri", href: "/yks/" },
+      { label: "Ders paketleri", href: "/ders-paketleri/" },
       { label: "Sıkça Sorulanlar", href: "/sss/" },
       { label: "Öğrenci girişi", href: "/giris/" },
       { label: "İade Politikası", href: "/iade/" },
@@ -189,4 +186,4 @@ export const footerColumns = [
 ] as const;
 
 export const footerTagline =
-  "LGS ve YKS için en fazla 4 kişilik canlı matematik dersleri, ders sonrası çalışma yönü ve güvenli ödeme.";
+  "LGS ve YKS öğrencileri için canlı ders, çalışma düzeni ve online denemeyi üç açık ürün altında buluşturan eğitim platformu.";

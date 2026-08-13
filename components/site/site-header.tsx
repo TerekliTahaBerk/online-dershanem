@@ -9,8 +9,8 @@ import { primaryNav, navCta, navLogin } from "@/lib/site-content";
 import { MobileMenu } from "@/components/site/mobile-menu";
 
 /**
- * Public site header — referans tasarım: sol menü · ortada logo · sağda
- * yardımcı bağlantı + yeşil CTA. Minimal, beyaz, hafif sticky.
+ * Public site header — solda marka, ortada ürünler, sağda giriş ve CTA.
+ * Genişlik ürün adlarını tek satırda taşımaya yetmediğinde mobil menüye geçer.
  */
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -51,12 +51,13 @@ export function SiteHeader() {
             {/* Sol — masaüstü menü */}
             <nav
               aria-label="Ana menü"
-              className="hidden items-center gap-1 lg:order-2 lg:flex"
+              className="hidden items-center gap-1 xl:order-2 xl:flex"
             >
               {primaryNav.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
+                  aria-label={link.accessibleLabel}
                   aria-current={isActive(link.href) ? "page" : undefined}
                   className={`rounded-full px-3.5 py-2 text-[14.5px] transition-colors ${
                     isActive(link.href)
@@ -69,11 +70,11 @@ export function SiteHeader() {
               ))}
             </nav>
 
-            {/* Orta — logo */}
+            {/* Sol — logo */}
             <Link
               href="/"
               aria-label="Online Dershanem ana sayfa"
-              className="flex shrink-0 items-center lg:order-1"
+              className="flex shrink-0 items-center xl:order-1"
             >
               <Image
                 src="/onlinedershanem_.png"
@@ -87,18 +88,18 @@ export function SiteHeader() {
             </Link>
 
             {/* Sağ — aksiyonlar / hamburger */}
-            <div className="ml-auto flex items-center gap-2 lg:order-3 sm:gap-3">
+            <div className="ml-auto flex items-center gap-2 sm:gap-3 xl:order-3">
               <Link
                 href={navLogin.href}
                 aria-current={isActive(navLogin.href) ? "page" : undefined}
-                className="hidden rounded-full px-3.5 py-2 text-[14.5px] text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] lg:inline-flex"
+                className="hidden rounded-full px-3.5 py-2 text-[14.5px] text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] xl:inline-flex"
               >
                 {navLogin.label}
               </Link>
 
               <Link
                 href={navCta.href}
-                className="site-btn site-btn-primary site-btn-sm !hidden lg:!inline-flex"
+                className="site-btn site-btn-primary site-btn-sm !hidden xl:!inline-flex"
               >
                 {navCta.label}
               </Link>
@@ -107,7 +108,7 @@ export function SiteHeader() {
                 ref={menuButtonRef}
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-ink)] lg:hidden"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-ink)] xl:hidden"
                 aria-label="Menüyü aç"
                 aria-expanded={open}
                 aria-controls="site-mobile-menu"

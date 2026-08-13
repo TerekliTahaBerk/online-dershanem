@@ -6,10 +6,10 @@ export function ProductTour() {
       <div className="site-container site-section">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-[clamp(2.4rem,6vw,4rem)] font-semibold leading-[1.02] tracking-[-.045em] text-[var(--site-ink)]">
-            Öğrenci ne çalışacağını bilir. Veli süreci görür.
+            Üç ürünün ortak noktası: sıradaki adımın net olması.
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-8 text-[var(--site-body)]">
-            Ders, çalışma planı ve veli özeti aynı sade düzenin parçalarıdır.
+            Canlı dersten, koçluk planından veya deneme analizinden gelen bilgi öğrencinin haftalık yönüne dönüşür.
           </p>
         </div>
         <div className="mt-14 sm:mt-20">
