@@ -1,4 +1,5 @@
-import { Bot, BrainCircuit, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Bot, BrainCircuit, Sparkles } from "lucide-react";
 import {
   publicProducts,
   sharedIntelligenceLayer,
@@ -24,10 +25,22 @@ export function DinoAiLayer() {
                 Ortak zekâ katmanı
               </p>
               <h2 className="mt-4 text-[clamp(2.5rem,5vw,4rem)] font-semibold leading-[1.02] tracking-[-.05em]">
-                {sharedIntelligenceLayer.name}, üç ürünün arasında bağ kurar.
+                {sharedIntelligenceLayer.name}, üç ürünün arasında bağ kuracak.
               </h2>
               <p className="mt-6 max-w-2xl text-[16px] leading-8 text-white/70">
                 {sharedIntelligenceLayer.description}
+              </p>
+              <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-[12px] font-semibold text-white/70">
+                {sharedIntelligenceLayer.status}
+              </p>
+              <p className="mt-6">
+                <Link
+                  href={sharedIntelligenceLayer.href}
+                  className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--brand-yellow)] hover:underline"
+                >
+                  {sharedIntelligenceLayer.name} neyi hedefliyor?
+                  <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
+                </Link>
               </p>
             </div>
 

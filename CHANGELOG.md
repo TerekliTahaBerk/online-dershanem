@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- Public `/dino-ai` page positioning Dino AI as the shared layer across the three products, linked from the footer and sitemap
+- Registration-status notice on the Online Koçum product page while pricing and sign-up are not yet published
+- End-to-end coverage for public navigation, legacy redirects, and product-surface accessibility
+
+### Changed
+
+- Dino AI marketing copy now describes planned rather than live capability
+
 ## [0.1.1] - 2026-08-11
 
 ### Added

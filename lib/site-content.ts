@@ -9,7 +9,7 @@
  * metnidir; abartılı/kanıtlanmamış başarı vaadi içermez.
  */
 import { contact } from "@/lib/content";
-import { publicProducts } from "@/lib/product-architecture";
+import { publicProducts, sharedIntelligenceLayer } from "@/lib/product-architecture";
 
 export const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
@@ -177,6 +177,7 @@ export const footerColumns = [
     links: [
       { label: "LGS çözümleri", href: "/lgs/" },
       { label: "YKS çözümleri", href: "/yks/" },
+      { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
       { label: "Ders paketleri", href: "/ders-paketleri/" },
       { label: "Sıkça Sorulanlar", href: "/sss/" },
       { label: "Öğrenci girişi", href: "/giris/" },

@@ -1,7 +1,21 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const routes = ["/", "/ders-paketleri", "/lgs", "/yks", "/kamplar", "/iletisim", "/sss", "/sepet"];
+const routes = [
+  "/",
+  "/urunler",
+  "/urunler/online-dershanem",
+  "/urunler/online-kocum",
+  "/urunler/online-deneme-kulubum",
+  "/dino-ai",
+  "/ders-paketleri",
+  "/lgs",
+  "/yks",
+  "/kamplar",
+  "/iletisim",
+  "/sss",
+  "/sepet",
+];
 
 for (const route of routes) {
   test(`WCAG A/AA: ${route}`, async ({ page }) => {
