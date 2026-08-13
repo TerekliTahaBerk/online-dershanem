@@ -100,7 +100,9 @@ test.describe.serial("self-service password reset", () => {
     await oldContext.close();
 
     await login(page, oldPassword);
-    await expect(page.getByRole("alert")).toContainText(/e-posta veya parola hatalı/i);
+    await expect(
+      page.getByRole("alert").filter({ hasText: /e-posta veya parola hatalı/i }),
+    ).toContainText(/e-posta veya parola hatalı/i);
     await login(page, newPassword);
     await page.waitForURL(/\/panel/);
 
