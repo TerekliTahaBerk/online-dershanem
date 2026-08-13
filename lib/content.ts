@@ -104,6 +104,8 @@ export const subjectPackageGroups = [
  * döner ve çağıranlar sepet/checkout akışına yönlenir.
  */
 export function getPackagePaymentLink(_category: string, _subject: string): string | null {
+  void _category;
+  void _subject;
   return null;
 }
 

@@ -43,6 +43,8 @@ export async function buildOdkCatalogContract(packageId: string, capturedAt = ne
       attemptLimit: exam.attemptLimit,
       resultsReleasedAt: exam.resultsReleasedAt?.toISOString() ?? null,
       answerKeyReleasedAt: exam.answerKeyReleasedAt?.toISOString() ?? null,
+      resultsReleaseMode: exam.resultsReleasedAt ? "SCHEDULED" : "ADMIN_AFTER_END",
+      answerKeyReleaseMode: exam.answerKeyReleasedAt ? "SCHEDULED" : "WITH_RESULTS",
       liveServiceRequired: exam.meetRequired,
     })),
   };

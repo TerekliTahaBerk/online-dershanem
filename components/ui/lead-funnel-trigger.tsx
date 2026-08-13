@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MouseEvent, ReactNode } from "react";
+import { ReactNode } from "react";
 import { trackConversionEvent } from "@/lib/tracking";
 
 type LeadFunnelTriggerProps = {
@@ -25,7 +25,7 @@ export function LeadFunnelTrigger({
   analyticsId,
   href = "/iletisim/"
 }: LeadFunnelTriggerProps) {
-  const handleClick = (_event: MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = () => {
     trackConversionEvent(eventName, { source });
   };
 

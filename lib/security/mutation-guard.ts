@@ -90,7 +90,6 @@ export async function guardMutation(
         : null);
     if (!key) {
       // Misconfiguration — skip silently rather than blocking legit users.
-      // eslint-disable-next-line no-console
       console.warn(
         `[security/mutation-guard] No rate-limit key for action=${opts.action}`,
       );

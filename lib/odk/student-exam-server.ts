@@ -3,7 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { attemptHasExpired, decideAttemptStart } from "@/lib/odk/attempt-domain";
 import { getActiveOdkExamGrant, listActiveOdkContracts } from "@/lib/odk/product-contract-server";
-import { contractExamSchedule } from "@/lib/odk/product-contract";
+import { contractAnswerKeyAvailable, contractExamSchedule, contractResultAvailable } from "@/lib/odk/product-contract";
 
 export const studentExamInclude = {
   currentVersion: {
@@ -58,19 +58,16 @@ export async function getStudentExam(examId: string, studentUserId: string) {
     exam.attempts[0] = finalized;
   }
   const decision = exam.currentVersion ? decideAttemptStart({ status: exam.status, ...contractExamSchedule(grant.exam), durationMinutes: exam.currentVersion.durationMinutes }) : { ok: false as const, code: "NOT_SCHEDULED" as const };
-  const resultReleasedAt = grant.exam.resultsReleasedAt ? new Date(grant.exam.resultsReleasedAt) : null;
-  return { exam, attempt: exam.attempts[0] || null, startDecision: decision, resultAvailable: Boolean(resultReleasedAt && resultReleasedAt <= new Date()), serverNow: new Date() };
+  return { exam, attempt: exam.attempts[0] || null, startDecision: decision, resultAvailable: contractResultAvailable(grant.exam, exam), serverNow: new Date() };
 }
 
 export async function getReleasedStudentResult(examId: string, studentUserId: string) {
   const grant = await getActiveOdkExamGrant(studentUserId, examId);
   if (!grant || !grant.contract.policy.rights.studentReports) return null;
-  const releaseAt = grant.exam.resultsReleasedAt ? new Date(grant.exam.resultsReleasedAt) : null;
-  if (!releaseAt || releaseAt > new Date()) return null;
   const exam = await prisma.odkExam.findFirst({
-    where: { id: examId, status: "RELEASED", resultsReleasedAt: { lte: new Date() } },
+    where: { id: examId, status: "RELEASED" },
     select: {
-      id: true, title: true, family: true, resultsReleasedAt: true,
+      id: true, title: true, family: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
       currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, take: 1, select: { id: true } } } },
       attempts: {
         where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { isNot: null } }, orderBy: { attemptNumber: "desc" }, take: 1,
@@ -87,7 +84,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
       },
     },
   });
+  if (!exam || !contractResultAvailable(grant.exam, exam)) return null;
   const attempt = exam?.attempts[0];
-  const answerKeyReleasedAt = grant.exam.answerKeyReleasedAt ? new Date(grant.exam.answerKeyReleasedAt) : null;
-  return exam && attempt?.score ? { exam, attempt, score: attempt.score, answerKeyAvailable: Boolean(answerKeyReleasedAt && answerKeyReleasedAt <= new Date()) } : null;
+  return attempt?.score ? { exam, attempt, score: attempt.score, answerKeyAvailable: contractAnswerKeyAvailable(grant.exam, exam) } : null;
 }

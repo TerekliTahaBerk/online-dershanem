@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, BookOpenCheck, CalendarPlus, CheckCircle2, CircleAlert, Clock3, CreditCard, Sparkles, UserPlus, UsersRound } from "lucide-react";
+import { ArrowUpRight, CalendarPlus, CheckCircle2, CircleAlert, Clock3, CreditCard, Sparkles, UserPlus, UsersRound } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";

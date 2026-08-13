@@ -43,8 +43,14 @@ export const odkContractExamSchema = z.object({
   attemptLimit: z.number().int().positive(),
   resultsReleasedAt: nullableIsoDate,
   answerKeyReleasedAt: nullableIsoDate,
+  resultsReleaseMode: z.enum(["SCHEDULED", "ADMIN_AFTER_END"]).optional(),
+  answerKeyReleaseMode: z.enum(["SCHEDULED", "WITH_RESULTS", "ADMIN_AFTER_END"]).optional(),
   liveServiceRequired: z.boolean(),
-});
+}).transform((exam) => ({
+  ...exam,
+  resultsReleaseMode: exam.resultsReleaseMode ?? (exam.resultsReleasedAt ? "SCHEDULED" as const : "ADMIN_AFTER_END" as const),
+  answerKeyReleaseMode: exam.answerKeyReleaseMode ?? (exam.answerKeyReleasedAt ? "SCHEDULED" as const : "WITH_RESULTS" as const),
+}));
 
 export const odkProductContractSchema = z.object({
   schemaVersion: z.literal(1),
@@ -130,17 +136,40 @@ export function contractAllowsReport(contract: OdkProductContract, role: "STUDEN
   return contract.policy.rights.teacherReports;
 }
 
+type CurrentExamRelease = {
+  status: string;
+  resultsReleasedAt: Date | null;
+  answerKeyReleasedAt?: Date | null;
+};
+
+export function contractResultAvailable(exam: OdkContractExam, current: CurrentExamRelease, now = new Date()) {
+  if (current.status !== "RELEASED") return false;
+  const releasedAt = exam.resultsReleaseMode === "SCHEDULED"
+    ? exam.resultsReleasedAt && new Date(exam.resultsReleasedAt)
+    : current.resultsReleasedAt;
+  return Boolean(releasedAt && releasedAt <= now);
+}
+
+export function contractAnswerKeyAvailable(exam: OdkContractExam, current: CurrentExamRelease, now = new Date()) {
+  if (current.status !== "RELEASED") return false;
+  if (exam.answerKeyReleaseMode === "WITH_RESULTS") return contractResultAvailable(exam, current, now);
+  const releasedAt = exam.answerKeyReleaseMode === "SCHEDULED"
+    ? exam.answerKeyReleasedAt && new Date(exam.answerKeyReleasedAt)
+    : current.answerKeyReleasedAt;
+  return Boolean(releasedAt && releasedAt <= now);
+}
+
 export function odkSellableContractIssues(contract: OdkProductContract) {
   const issues: string[] = [];
   if (!contract.exams.length) issues.push("PACKAGE_HAS_NO_EXAMS");
   if (contract.policy.access.starts === "FIXED" && !contract.policy.access.startsAt) issues.push("FIXED_ACCESS_START_MISSING");
   for (const exam of contract.exams) {
     if (!exam.startsAt || !exam.endsAt) issues.push(`EXAM_SCHEDULE_MISSING:${exam.id}`);
-    if (!exam.resultsReleasedAt) issues.push(`RESULT_RELEASE_MISSING:${exam.id}`);
-    if (!exam.answerKeyReleasedAt) issues.push(`ANSWER_KEY_RELEASE_MISSING:${exam.id}`);
+    if (exam.resultsReleaseMode === "SCHEDULED" && !exam.resultsReleasedAt) issues.push(`RESULT_RELEASE_MISSING:${exam.id}`);
+    if (exam.answerKeyReleaseMode === "SCHEDULED" && !exam.answerKeyReleasedAt) issues.push(`ANSWER_KEY_RELEASE_MISSING:${exam.id}`);
     if (exam.startsAt && exam.endsAt && new Date(exam.endsAt) <= new Date(exam.startsAt)) issues.push(`EXAM_WINDOW_INVALID:${exam.id}`);
-    if (exam.endsAt && exam.resultsReleasedAt && new Date(exam.resultsReleasedAt) < new Date(exam.endsAt)) issues.push(`RESULT_RELEASE_BEFORE_END:${exam.id}`);
-    if (exam.endsAt && exam.answerKeyReleasedAt && new Date(exam.answerKeyReleasedAt) < new Date(exam.endsAt)) issues.push(`ANSWER_KEY_RELEASE_BEFORE_END:${exam.id}`);
+    if (exam.resultsReleaseMode === "SCHEDULED" && exam.endsAt && exam.resultsReleasedAt && new Date(exam.resultsReleasedAt) < new Date(exam.endsAt)) issues.push(`RESULT_RELEASE_BEFORE_END:${exam.id}`);
+    if (exam.answerKeyReleaseMode === "SCHEDULED" && exam.endsAt && exam.answerKeyReleasedAt && new Date(exam.answerKeyReleasedAt) < new Date(exam.endsAt)) issues.push(`ANSWER_KEY_RELEASE_BEFORE_END:${exam.id}`);
     if (exam.liveServiceRequired && !contract.policy.rights.liveService) issues.push(`LIVE_SERVICE_RIGHT_MISSING:${exam.id}`);
   }
   return issues;

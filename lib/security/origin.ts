@@ -63,7 +63,6 @@ export function assertSameOrigin(
   if (allowed.length === 0) {
     // No env configured — be permissive but visible.
     if (isProd) {
-      // eslint-disable-next-line no-console
       console.warn(
         "[security/origin] No allowed origins configured — same-origin check skipped.",
       );
