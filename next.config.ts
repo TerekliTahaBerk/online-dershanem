@@ -110,12 +110,14 @@ const nextConfig: NextConfig = {
     return [
       { source: "/tyt", destination: "/yks", permanent: true },
       { source: "/ayt", destination: "/yks", permanent: true },
-      { source: "/odk", destination: "/deneme-kulubu", permanent: true },
-      { source: "/odk-paketleri", destination: "/deneme-kulubu", permanent: true },
-      { source: "/online-deneme-kulubu", destination: "/deneme-kulubu", permanent: true },
-      { source: "/deneme-paketleri", destination: "/deneme-kulubu", permanent: true },
-      { source: "/tyt-deneme-kulubu", destination: "/deneme-kulubu", permanent: true },
-      { source: "/lgs-deneme-kulubu", destination: "/deneme-kulubu", permanent: true },
+      { source: "/online-dershane", destination: "/urunler/online-dershanem", permanent: true },
+      { source: "/deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      { source: "/odk", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      { source: "/odk-paketleri", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      { source: "/online-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      { source: "/deneme-paketleri", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      { source: "/tyt-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      { source: "/lgs-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
     ];
   },
 };

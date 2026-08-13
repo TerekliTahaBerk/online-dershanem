@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function OdkRoot() {
-  redirect("/");
+  redirect("/urunler/online-deneme-kulubum/");
 }

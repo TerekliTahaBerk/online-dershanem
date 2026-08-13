@@ -17,7 +17,7 @@ export function FooterCta({
         <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-8 text-[var(--site-body)]">{subtitle}</p>
         <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link href={ctaHref} className="site-btn site-btn-primary site-btn-lg">{ctaLabel}<ArrowRight size={17} aria-hidden="true" /></Link>
-          <Link href="/ders-paketleri/" className="text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">Paketleri incele</Link>
+          <Link href="/iletisim/" className="text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">Bize ulaşın</Link>
         </div>
       </div>
     </section>

@@ -10,11 +10,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const odkPackages = await listPublicOdkPackages();
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "weekly", priority: 1 },
-    { url: `${siteUrl}/ders-paketleri`, changeFrequency: "weekly", priority: 0.95 },
-    { url: `${siteUrl}/deneme-kulubu`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteUrl}/urunler`, changeFrequency: "weekly", priority: 0.95 },
+    { url: `${siteUrl}/urunler/online-dershanem`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteUrl}/urunler/online-kocum`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteUrl}/urunler/online-deneme-kulubum`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteUrl}/ders-paketleri`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteUrl}/matematik`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/kamplar`, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${siteUrl}/online-dershane`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/online-ozel-ders`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/yks`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/lgs`, changeFrequency: "weekly", priority: 0.8 },

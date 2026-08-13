@@ -31,19 +31,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   manifest: "/manifest.webmanifest",
   title: {
-    default: "Canlı Online Matematik Dersi | Online Dershanem",
+    default: "Online Dershanem | Ders, Koçluk ve Deneme Ürünleri",
     template: "%s | Online Dershanem"
   },
   description:
-    "LGS ve YKS için en fazla 4 öğrencilik, ayda 4 × 90 dakika canlı matematik dersi; ders sonrası çalışma yönü ve veliye sade gelişim özeti.",
+    "LGS ve YKS öğrencileri için canlı ders, çalışma düzeni ve online deneme ürünleri.",
   keywords: seoKeywords,
   alternates: {
     canonical: "/"
   },
   openGraph: {
-    title: "Matematiği Verimli ve Erişilebilir Öğrenmenin Yolu",
+    title: "Ders, Koçluk ve Deneme Ürünleri | Online Dershanem",
     description:
-      "LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, ders sonrası net çalışma yönü ve veliye sade gelişim özeti.",
+      "Online Dershanem, Online Koçum ve Online Deneme Kulübüm ile LGS ve YKS yolculuğuna uygun desteği seçin.",
     url: `${siteUrl}/`,
     siteName: "Online Dershanem",
     locale: "tr_TR",
@@ -53,14 +53,14 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Matematiği verimli ve erişilebilir öğrenmenin yolu — Online Dershanem"
+        alt: "Online Dershanem ders, koçluk ve deneme ürünleri"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Matematiği Verimli ve Erişilebilir Öğrenmenin Yolu",
-    description: "En fazla 4 öğrencilik canlı matematik dersleri ve ders sonrası net çalışma yönü.",
+    title: "Ders, Koçluk ve Deneme Ürünleri | Online Dershanem",
+    description: "LGS ve YKS öğrencileri için üç açık eğitim ürünü.",
     images: ["/og.png"]
   },
   icons: {
@@ -89,7 +89,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <head>
-        <title>Canlı Online Matematik Dersi | Online Dershanem</title>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />

@@ -32,7 +32,7 @@ export function LearningDashboardShowcase() {
 
         <div className="grid min-h-[500px] md:grid-cols-[190px_1fr]">
           <aside className="hidden border-r border-[var(--site-line)] bg-[var(--brand-olive-tint)] p-5 md:block" aria-label="Panel menüsü">
-            <p className="text-[11px] font-bold uppercase tracking-[.1em] text-[var(--site-muted)]">Matematik</p>
+            <p className="text-[11px] font-bold uppercase tracking-[.1em] text-[var(--site-muted)]">Öğrenme yolculuğum</p>
             <div className="mt-6 space-y-2" aria-label="Örnek panel bölümleri">
               <span className="flex items-center gap-2 rounded-xl bg-[var(--brand-olive)] px-3 py-3 text-[12px] font-semibold text-white"><Target size={15} aria-hidden="true" /> Çalışma yönüm</span>
               <span className="flex items-center gap-2 px-3 py-3 text-[12px] font-medium text-[var(--site-body)]"><CalendarDays size={15} aria-hidden="true" /> Derslerim</span>
@@ -41,7 +41,7 @@ export function LearningDashboardShowcase() {
             <div className="mt-36 rounded-[16px] border border-[var(--site-line)] bg-white p-4">
               <p className="text-[10px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">Sıradaki ders</p>
               <p className="mt-2 text-[13px] font-semibold leading-5 text-[var(--site-ink)]">Cumartesi · 14.00</p>
-              <p className="mt-1 text-[11px] text-[var(--site-muted)]">90 dakika canlı ders</p>
+              <p className="mt-1 text-[11px] text-[var(--site-muted)]">Online Dershanem</p>
             </div>
           </aside>
 
@@ -77,7 +77,7 @@ export function LearningDashboardShowcase() {
           <div className="flex items-center justify-between border-b border-[var(--site-line)] pb-4">
             <div>
               <p className="text-[11px] font-bold text-[var(--site-ink)]">Veli özeti</p>
-              <p className="mt-0.5 text-[9px] text-[var(--site-muted)]">8. sınıf · Matematik</p>
+              <p className="mt-0.5 text-[9px] text-[var(--site-muted)]">8. sınıf · LGS yolculuğu</p>
             </div>
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"><MessageCircle size={14} aria-hidden="true" /></span>
           </div>
