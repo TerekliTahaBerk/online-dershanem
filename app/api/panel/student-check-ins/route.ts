@@ -28,10 +28,10 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Check-in seçeneklerini kontrol et." }, { status: 400 });
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
   if (!profile) return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 });
-  const enrollment = await prisma.enrollment.findFirst({ where: { studentId: profile.id, groupId: parsed.data.groupId, endedAt: null, group: { isActive: true } }, include: { group: { select: { teacherId: true } } } });
+  const enrollment = await prisma.enrollment.findFirst({ where: { studentId: profile.id, groupId: parsed.data.groupId, endedAt: null, group: { isActive: true } }, include: { group: { select: { teacherId: true, name: true } } } });
   if (!enrollment) return NextResponse.json({ error: "Aktif grup bulunamadı." }, { status: 404 });
   const now = new Date();
-  let result: { kind: "CREATED"; checkIn: { id: string }; helpRequest: { id: string } | null; weeklyCount: number } | { kind: "LIMIT" } | { kind: "OPEN" };
+  let result: { kind: "CREATED"; checkIn: { id: string; createdAt: Date }; helpRequest: { id: string; status: string; version: number } | null; weeklyCount: number } | { kind: "LIMIT" } | { kind: "OPEN" };
   try {
     result = await prisma.$transaction(async (tx) => {
       const weeklyCount = await tx.studentCheckIn.count({ where: { studentId: profile.id, createdAt: { gte: studentCheckInWeekStart(now), lt: studentCheckInWeekEnd(now) } } });
@@ -54,5 +54,5 @@ export async function POST(request: Request) {
   const created = result;
   await logAudit({ actorUserId: auth.session.userId, entityType: "StudentCheckIn", entityId: created.checkIn.id, action: "student_check_in.created", summary: "Kontrollü öğrenci check-in'i kaydedildi", payload: { sharedWithTeacher: parsed.data.shareWithTeacher, helpRequested: parsed.data.helpRequested } });
   await recordPanelProductEvent({ name: "student_check_in_submitted", properties: { energy: parsed.data.energy, confidence: parsed.data.confidence, barrier: parsed.data.barrier, sharedWithTeacher: parsed.data.shareWithTeacher, helpRequested: parsed.data.helpRequested, weeklyCount: created.weeklyCount } }, auth.session.role);
-  return NextResponse.json({ created: true, checkInId: created.checkIn.id, helpRequestId: created.helpRequest?.id || null }, { status: 201 });
+  return NextResponse.json({ created: true, checkIn: { id: created.checkIn.id, createdAt: created.checkIn.createdAt, groupName: enrollment.group.name, energy: parsed.data.energy, confidence: parsed.data.confidence, barrier: parsed.data.barrier, shared: parsed.data.shareWithTeacher, request: created.helpRequest ? { id: created.helpRequest.id, status: created.helpRequest.status, version: created.helpRequest.version, helpful: null, action: null } : null }, remaining: STUDENT_CHECK_IN_WEEKLY_LIMIT - created.weeklyCount }, { status: 201 });
 }

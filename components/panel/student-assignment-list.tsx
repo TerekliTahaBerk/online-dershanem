@@ -19,7 +19,6 @@ export function StudentAssignmentList({ assignments, evidenceEnabled = false }: 
   const [items, setItems] = useState(assignments);
   const [message, setMessage] = useState("");
   const [evidence, setEvidence] = useState<Record<string, string>>({});
-  useEffect(() => setItems(assignments), [assignments]);
   useEffect(() => {
     const synced = (event: Event) => { const detail = (event as CustomEvent<{ kind: string }>).detail; if (detail?.kind === "ASSIGNMENT_PROGRESS") { setMessage("Cihazda bekleyen ödev durumu güvenle eşitlendi."); router.refresh(); } };
     const conflicted = (event: Event) => { const detail = (event as CustomEvent<{ kind: string }>).detail; if (detail?.kind === "ASSIGNMENT_PROGRESS") setMessage("Ödev durumu başka yerde değişti; son durumu görüp yeniden seçin."); };

@@ -24,5 +24,5 @@ export async function POST(request: Request) {
   if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
   await queuePanelNotificationEmails(rawNotificationRows);
   await logAudit({ actorUserId: auth.session.userId, entityType: "LearningMaterial", entityId: material.id, action: "material.created", summary: `${material.title} paylaşıldı`, payload: { groupId: group.id, kind: material.kind } });
-  return NextResponse.json({ id: material.id });
+  return NextResponse.json({ material: { id: material.id, title: material.title, description: material.description || "", url: material.url, kind: material.kind, groupName: group.name, isActive: material.isActive, captionsAvailable: material.captionsAvailable, transcript: material.transcript || "" } });
 }
