@@ -1,5 +1,7 @@
 import { Resend } from "resend";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { passwordResetUrlMarker } from "@/lib/auth/password-reset";
 
 let resend: Resend | null = null;
 const sender = process.env.MAIL_FROM || "Online Dershanem <noreply@onlinedershanem.com>";
@@ -94,4 +96,30 @@ export async function sendPanelNotificationEmail(input: {
       `<p>Merhaba ${escapeHtml(input.name || "")},</p><p style="line-height:1.6">${escapeHtml(input.body)}</p>${action}<p style="margin-top:24px;color:#666;font-size:13px">Bildirim tercihlerinizi paneldeki Bildirim Merkezi'nden değiştirebilirsiniz.</p>`,
     ),
   );
+}
+
+/**
+ * Persist a reset message for the retry worker. The credential itself is not
+ * persisted: the HTML contains only a non-secret record id marker. The worker
+ * derives the HMAC proof in memory immediately before handing the mail to
+ * Resend, so database/outbox dumps never contain a usable reset token.
+ */
+export async function queuePasswordResetEmail(input: {
+  to: string;
+  name?: string | null;
+  tokenId: string;
+  expiresInMinutes: number;
+}, db: Pick<Prisma.TransactionClient, "emailOutbox"> = prisma): Promise<void> {
+  const resetUrl = passwordResetUrlMarker(input.tokenId);
+  const html = template(
+    "Parolanızı yenileyin",
+    `<p>Merhaba ${escapeHtml(input.name || "")},</p><p>Online Dershanem hesabınız için parola yenileme isteği aldık.</p><p style="margin-top:24px"><a href="${resetUrl}" style="display:inline-block;background:#3a4a2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Yeni parola belirle</a></p><p style="line-height:1.6">Bu bağlantı ${input.expiresInMinutes} dakika geçerlidir ve yalnızca bir kez kullanılabilir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.</p>`,
+  );
+  await db.emailOutbox.create({
+    data: {
+      recipients: JSON.stringify([input.to]),
+      subject: "Parolanızı yenileyin – Online Dershanem",
+      html,
+    },
+  });
 }

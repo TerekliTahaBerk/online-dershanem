@@ -7,7 +7,7 @@ import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
 import { getClientIp, getRateLimitKeyFromIp } from "@/lib/security/rate-limit";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 import { normalizeEmail } from "@/lib/auth/email";
-import { verifyAgainstDummy, verifyPassword } from "@/lib/auth/password";
+import { hashPassword, needsRehash, verifyAgainstDummy, verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 import { postAuthenticationPath } from "@/lib/auth/products";
 
@@ -124,6 +124,22 @@ export async function POST(request: Request) {
       { error: "Hesabınız askıya alınmış. Lütfen ekibimizle iletişime geçin." },
       { status: 403 },
     );
+  }
+
+  // A successful password check is the only safe time to raise scrypt cost.
+  // Compare-and-swap prevents this background upgrade from overwriting a
+  // concurrent admin/self-service password reset. Rehash failure must never
+  // turn valid credentials into a failed login.
+  if (needsRehash(user.passwordHash)) {
+    try {
+      const upgradedHash = await hashPassword(password);
+      await prisma.user.updateMany({
+        where: { id: user.id, passwordHash: user.passwordHash },
+        data: { passwordHash: upgradedHash },
+      });
+    } catch (error) {
+      console.error("[auth] opportunistic password rehash failed", { userId: user.id, error });
+    }
   }
 
   await prisma.user.update({
