@@ -9,7 +9,19 @@ Kimlik, oturum, nesne sahipliği ve CSP modeli. RBAC ayrı dokümanda:
   token'ın `sha256` özeti saklanır (`lib/auth/session.ts`). Veritabanı sızarsa
   oturumlar ele geçirilemez.
 - Token hiçbir yerde loglanmaz.
-- Çerez `HttpOnly`; `Secure` yalnız HTTPS dağıtımda; TTL 30 gün.
+- Çerez `HttpOnly`; `Secure` yalnız HTTPS dağıtımda. Mutlak ve boşta kalma
+  sınırları sunucuda `lastSeenAt` üzerinden uygulanır:
+
+  | Rol | Boşta kalma | Mutlak ömür |
+  |---|---:|---:|
+  | Öğrenci | 7 gün | 30 gün |
+  | Veli | 7 gün | 30 gün |
+  | Öğretmen | 24 saat | 7 gün |
+  | Yönetici | 30 dakika | 12 saat |
+
+  MFA ve adım yükseltme bu sınırları uzatmaz. Kullanıcılar
+  `/panel/oturumlar` üzerinden açık oturumlarını görüp diğer cihazları
+  kapatabilir.
 - Parolalar scrypt ile doğrulanır.
 
 ## Yetki sınırı nerede

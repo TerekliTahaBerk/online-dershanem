@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { revokeAllUserSessions } from "@/lib/auth/session";
 
 const schema = z.object({ products: z.array(z.enum(["OD", "ODK"])).min(1).max(2).refine((items) => new Set(items).size === items.length) });
 
@@ -31,6 +32,8 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     }
   });
   const after = [...next].sort();
-  await logAudit({ actorUserId: auth.session.userId, entityType: "User", entityId: id, action: "panel.user_products_updated", summary: "Kullanıcı ürün erişimi güncellendi", payload: { before, after } });
+  const changed = before.join(",") !== after.join(",");
+  const revoked = changed ? await revokeAllUserSessions(id) : 0;
+  await logAudit({ actorUserId: auth.session.userId, entityType: "User", entityId: id, action: "panel.user_products_updated", summary: `Kullanıcı ürün erişimi güncellendi; ${revoked} oturum kapatıldı`, payload: { before, after, revoked } });
   return NextResponse.json({ products: after });
 }
