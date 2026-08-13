@@ -51,7 +51,7 @@ export function DinoAiLayer() {
               </div>
               <div className="my-5 flex items-center gap-3" aria-hidden="true">
                 <span className="h-px flex-1 bg-white/10" />
-                <span className="text-[11px] font-bold uppercase tracking-[.1em] text-white/45">Dino AI</span>
+                <span className="text-[11px] font-bold uppercase tracking-[.1em] text-white/60">Dino AI</span>
                 <span className="h-px flex-1 bg-white/10" />
               </div>
               <div className="flex flex-wrap gap-2" aria-label="Dino AI ile çalışan ürünler">
