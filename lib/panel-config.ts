@@ -12,10 +12,14 @@ import "server-only";
  *   - `/panel/*`    → 404
  *   - panel API'leri → 503
  *
- * Açmak için ortam değişkeni: `PANEL_ENABLED=true`
+ * Bakım tamamlandığında önce aşağıdaki kod kilidini kaldırın, ardından ortam
+ * değişkenini `PANEL_ENABLED=true` yapın. Kod kilidi, canlı ortamda daha önce
+ * açık kalmış bir env değeri olsa bile panelin yanlışlıkla açılmasını önler.
  *
  * `server-only`: bu değer client'ta okunamaz. `NEXT_PUBLIC_` öneki olmadığı
  * için client bundle'ında `undefined` olur ve sessizce `false` görünürdü —
  * import hatası, sessiz yanlış davranıştan iyidir.
  */
-export const PANEL_ENABLED = process.env.PANEL_ENABLED === "true";
+const PANEL_MAINTENANCE_MODE = true;
+
+export const PANEL_ENABLED = !PANEL_MAINTENANCE_MODE && process.env.PANEL_ENABLED === "true";
