@@ -181,12 +181,14 @@ function CartItemRow({
         <div className="mt-1 font-display text-[22px] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
           {item.name}
         </div>
-        <div className="mt-0.5 text-[12.5px] text-[var(--site-body)]">{item.priceLabel}</div>
+        <div className="mt-0.5 text-[12.5px] text-[var(--site-body)]">
+          {item.priceLabel}{item.qty > 1 ? ` · ${item.qty} adet` : ""}
+        </div>
       </div>
 
       <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-end">
         <div className="text-right font-display text-[18px] leading-none text-[var(--site-ink)] sm:w-28">
-          {tryFormat(item.priceCents)}
+          {tryFormat(item.priceCents * item.qty)}
         </div>
 
         <button

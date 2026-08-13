@@ -16,6 +16,7 @@ import {
   isPaytrConfigured,
   type PaytrBasketItem,
 } from "@/lib/odk/paytr";
+import { assertOrderLineReconciliation } from "@/lib/commerce/order-lines";
 
 export type OdCheckoutResult =
   | { ok: true; orderId: string; iframeUrl: string }
@@ -46,6 +47,9 @@ export async function createOdCheckoutSession(input: {
       totalCents: true,
       packageName: true,
       buyerInfo: true,
+      subtotalCents: true,
+      discountCents: true,
+      lines: { orderBy: { position: "asc" }, select: { position: true, productName: true, quantity: true, unitPriceCents: true, subtotalCents: true, discountCents: true, taxCents: true, totalCents: true } },
     },
   });
   if (!order) {
@@ -64,6 +68,14 @@ export async function createOdCheckoutSession(input: {
       reason: "invalid_price",
       userMessage: "Paket fiyatı geçersiz. Lütfen iletişime geçin.",
     };
+  }
+  if (order.lines.length) {
+    try {
+      assertOrderLineReconciliation(order.lines, order);
+    } catch {
+      log.error("od.checkout.line_reconciliation_failed", { orderId: order.id });
+      return { ok: false, reason: "line_total_mismatch", userMessage: "Sipariş toplamı doğrulanamadı. Lütfen sepeti yeniden oluşturun." };
+    }
   }
 
   const merchantOid = buildMerchantOid(order.id, "OD");
@@ -96,7 +108,13 @@ export async function createOdCheckoutSession(input: {
     ? (buyer.cart as Array<{ name: string; priceCents: number; qty: number }>)
     : null;
 
-  const basket: PaytrBasketItem[] =
+  const basket: PaytrBasketItem[] = order.lines.length > 0
+    ? order.lines.map((line) => [
+        `${line.productName}${line.quantity > 1 ? ` × ${line.quantity}` : ""}`.slice(0, 200),
+        (line.totalCents / 100).toFixed(2),
+        1,
+      ])
+    :
     cart && cart.length > 0
       ? cart.map((c) => [
           c.name.slice(0, 200),

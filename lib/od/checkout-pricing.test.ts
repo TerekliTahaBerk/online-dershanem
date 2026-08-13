@@ -14,7 +14,7 @@ test("catalog items ignore client prices and reject unknown products", () => {
   );
 });
 
-test("catalog checkout accepts exactly one unit of one product", () => {
+test("catalog checkout supports multiple server-priced lines and quantities", () => {
   const lgs = {
     id: "LGS__Matematik Ders Paketi",
     name: "LGS Matematik Ders Paketi",
@@ -23,7 +23,7 @@ test("catalog checkout accepts exactly one unit of one product", () => {
     qty: 1,
   };
 
-  assert.equal(priceCatalogItems([{ ...lgs, qty: 2 }]), null);
-  assert.equal(priceCatalogItems([lgs, { ...lgs, id: "duplicate" }]), null);
-  assert.equal(priceCatalogItems([lgs])?.[0].priceCents, 300000);
+  assert.equal(priceCatalogItems([{ ...lgs, qty: 2 }])?.[0].priceCents, 300000);
+  assert.equal(priceCatalogItems([lgs, { ...lgs, id: "sibling" }])?.length, 2);
+  assert.equal(priceCatalogItems([{ ...lgs, qty: 100 }]), null);
 });

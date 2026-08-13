@@ -20,7 +20,8 @@ export type PricedCheckoutItem = CatalogCheckoutItem & {
 export function priceCatalogItems(
   items: CatalogCheckoutItem[],
 ): PricedCheckoutItem[] | null {
-  if (items.length !== 1 || items[0].qty !== 1) return null;
+  if (items.length < 1 || items.length > 20) return null;
+  if (items.some((item) => !Number.isSafeInteger(item.qty) || item.qty < 1 || item.qty > 99)) return null;
 
   const priced = items.map((item) => ({
     ...item,

@@ -31,6 +31,7 @@ import {
 import { validatePaytrPaymentInvariant } from "@/lib/odk/paytr-callback-validation";
 import { upsertOrderLedger } from "@/lib/business/finance";
 import { provisionOdkOrder, type OdkProvisioningFailurePoint } from "@/lib/odk/provisioning";
+import { assertOrderLineReconciliation, isOrderCallbackComplete } from "@/lib/commerce/order-lines";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -139,7 +140,7 @@ async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvis
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, totalCents: true, discountCents: true, buyerInfo: true, provisioningStatus: true } },
+      order: { select: { status: true, subtotalCents: true, totalCents: true, discountCents: true, buyerInfo: true, provisioningStatus: true, lines: { select: { position: true, quantity: true, unitPriceCents: true, subtotalCents: true, discountCents: true, taxCents: true, totalCents: true, fulfillmentStatus: true } } } },
     },
   });
 
@@ -157,7 +158,7 @@ async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvis
     return plain("OK");
   }
 
-  if (payment.status === "SUCCEEDED" && payment.order.status === "PAID" && payment.order.provisioningStatus === "SUCCEEDED") {
+  if (isOrderCallbackComplete({ paymentStatus: payment.status, orderStatus: payment.order.status, provisioningStatus: payment.order.provisioningStatus, lineStatuses: payment.order.lines.map((line) => line.fulfillmentStatus) })) {
     log.debug("paytr.callback.odk.already_processed", { orderId: payment.orderId });
     return plain("OK");
   }
@@ -165,6 +166,12 @@ async function handleOdk(payload: PaytrCallbackPayload, failurePoint?: OdkProvis
   const totalCents = parseInt(payload.total_amount, 10);
 
   if (payload.status === "success") {
+    try {
+      if (payment.order.lines.length) assertOrderLineReconciliation(payment.order.lines, payment.order);
+    } catch {
+      log.error("paytr.callback.odk.line_reconciliation_failed", { orderId: payment.orderId });
+      return plain("PAYTR notification failed: order-line invariant", 400);
+    }
     const invariant = validatePaytrPaymentInvariant({
       expectedAmountCents: payment.order.totalCents,
       paymentAmount: payload.payment_amount,
@@ -276,7 +283,7 @@ async function handleOd(payload: PaytrCallbackPayload, failurePoint?: OdProvisio
       id: true,
       orderId: true,
       status: true,
-      order: { select: { status: true, totalCents: true, discountCents: true, packageName: true, buyerInfo: true, provisioningStatus: true } },
+      order: { select: { status: true, subtotalCents: true, totalCents: true, discountCents: true, packageName: true, buyerInfo: true, provisioningStatus: true, lines: { select: { position: true, quantity: true, unitPriceCents: true, subtotalCents: true, discountCents: true, taxCents: true, totalCents: true, fulfillmentStatus: true } } } },
     },
   });
 
@@ -294,7 +301,7 @@ async function handleOd(payload: PaytrCallbackPayload, failurePoint?: OdProvisio
     return plain("OK");
   }
 
-  if (payment.status === "SUCCEEDED" && payment.order.status === "PAID" && payment.order.provisioningStatus === "SUCCEEDED") {
+  if (isOrderCallbackComplete({ paymentStatus: payment.status, orderStatus: payment.order.status, provisioningStatus: payment.order.provisioningStatus, lineStatuses: payment.order.lines.map((line) => line.fulfillmentStatus) })) {
     log.debug("paytr.callback.od.already_processed", { orderId: payment.orderId });
     return plain("OK");
   }
@@ -302,6 +309,12 @@ async function handleOd(payload: PaytrCallbackPayload, failurePoint?: OdProvisio
   const totalCents = parseInt(payload.total_amount, 10);
 
   if (payload.status === "success") {
+    try {
+      if (payment.order.lines.length) assertOrderLineReconciliation(payment.order.lines, payment.order);
+    } catch {
+      log.error("paytr.callback.od.line_reconciliation_failed", { orderId: payment.orderId });
+      return plain("PAYTR notification failed: order-line invariant", 400);
+    }
     const invariant = validatePaytrPaymentInvariant({
       expectedAmountCents: payment.order.totalCents,
       paymentAmount: payload.payment_amount,

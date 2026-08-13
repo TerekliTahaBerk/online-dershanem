@@ -6,6 +6,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
 import { dueAtForOdOnboardingState } from "@/lib/od/onboarding-state";
 import { prisma } from "@/lib/prisma";
+import { contractAccessWindow, parseOdkProductContract } from "@/lib/odk/product-contract";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -35,6 +36,71 @@ function textField(source: Buyer, key: string): string | null {
 
 function injected(point: OdProvisioningFailurePoint | undefined, expected: OdProvisioningFailurePoint) {
   if (point === expected) throw new OdProvisioningError(`Injected failure at ${expected}`, "INJECTED_FAILURE");
+}
+
+async function provisionRemainingOdLines(orderId: string) {
+  const lines = await prisma.commerceOrderLine.findMany({
+    where: { odOrderId: orderId, fulfillmentStatus: { in: ["PENDING", "RETRY_PENDING"] } },
+    orderBy: { position: "asc" },
+    select: { id: true, product: true, productId: true, productSnapshot: true, fulfillmentOwnerKey: true, fulfillmentOwnerSnapshot: true },
+  });
+  for (const line of lines) {
+    const claim = await prisma.commerceOrderLine.updateMany({
+      where: { id: line.id, fulfillmentStatus: { in: ["PENDING", "RETRY_PENDING"] } },
+      data: { fulfillmentStatus: "RUNNING", fulfillmentAttempts: { increment: 1 }, fulfillmentError: null },
+    });
+    if (!claim.count) continue;
+    try {
+      const owner = line.fulfillmentOwnerSnapshot as Buyer;
+      const email = normalizeEmail(line.fulfillmentOwnerKey);
+      if (!email) throw new OdProvisioningError("Satır öğrenci e-postası eksik.", "LINE_OWNER_EMAIL_MISSING");
+      const passwordHash = await hashPassword(randomBytes(32).toString("base64url"));
+      const user = await prisma.user.upsert({
+        where: { email },
+        create: { email, fullName: textField(owner, "fullName") ?? "OD Öğrencisi", phone: textField(owner, "phone"), role: "STUDENT", status: "ACTIVE", passwordHash, mustChangePassword: true },
+        update: {},
+        select: { id: true, role: true, status: true },
+      });
+      const conflict = usableIdentity(user, "STUDENT", "Satır öğrenci e-postası");
+      if (conflict) throw new OdProvisioningError(conflict, "LINE_OWNER_CONFLICT");
+      await prisma.$transaction(async (tx) => {
+        await tx.studentProfile.upsert({ where: { userId: user.id }, create: { userId: user.id }, update: {} });
+        if (line.product === "OD") {
+          await tx.productMembership.upsert({
+            where: { userId_product: { userId: user.id, product: "OD" } },
+            create: { userId: user.id, product: "OD", source: "PURCHASE", sourceOdOrderId: orderId },
+            update: { source: "PURCHASE", sourceOdOrderId: orderId, revokedAt: null, expiresAt: null },
+          });
+        } else {
+          if (!line.productId) throw new OdProvisioningError("ODK satırında ürün kimliği eksik.", "ODK_LINE_PRODUCT_MISSING");
+          const contract = parseOdkProductContract(line.productSnapshot);
+          if (!contract.success) throw new OdProvisioningError("ODK satır sözleşmesi geçersiz.", "ODK_LINE_CONTRACT_INVALID");
+          const paid = await tx.odPayment.findFirst({ where: { orderId, status: "SUCCEEDED" }, orderBy: { paidAt: "asc" }, select: { paidAt: true } });
+          const { startsAt, expiresAt } = contractAccessWindow(contract.data.policy, paid?.paidAt ?? new Date());
+          const existing = await tx.productMembership.findUnique({ where: { userId_product: { userId: user.id, product: "ODK" } } });
+          const membershipStartsAt = existing && existing.startsAt < startsAt ? existing.startsAt : startsAt;
+          const membershipExpiresAt = existing
+            ? existing.expiresAt === null || expiresAt === null ? null : new Date(Math.max(existing.expiresAt.getTime(), expiresAt.getTime()))
+            : expiresAt;
+          await tx.productMembership.upsert({
+            where: { userId_product: { userId: user.id, product: "ODK" } },
+            create: { userId: user.id, product: "ODK", source: "PURCHASE", startsAt: membershipStartsAt, expiresAt: membershipExpiresAt },
+            update: { source: "PURCHASE", revokedAt: null, startsAt: membershipStartsAt, expiresAt: membershipExpiresAt },
+          });
+          await tx.odkEntitlement.upsert({
+            where: { orderLineId: line.id },
+            create: { orderLineId: line.id, userId: user.id, packageId: line.productId, startsAt, expiresAt, contractSnapshot: contract.data as unknown as Prisma.InputJsonValue },
+            update: { userId: user.id, packageId: line.productId, revokedAt: null, startsAt, expiresAt },
+          });
+        }
+        await tx.commerceOrderLine.update({ where: { id: line.id }, data: { fulfillmentOwnerUserId: user.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() } });
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message.slice(0, 500) : "Bilinmeyen satır provisioning hatası";
+      await prisma.commerceOrderLine.update({ where: { id: line.id }, data: { fulfillmentStatus: "RETRY_PENDING", fulfillmentError: message } });
+      throw error;
+    }
+  }
 }
 
 function usableIdentity(user: IdentityUser | null, expectedRole: UserRole, label: string): string | null {
@@ -104,7 +170,10 @@ async function waitForConcurrentProvisioning(orderId: string): Promise<OdProvisi
       where: { id: orderId },
       select: { provisioningStatus: true, provisioningError: true, userId: true },
     });
-    if (order.provisioningStatus === "SUCCEEDED") return { status: "SUCCEEDED", userId: order.userId!, alreadyProvisioned: true };
+    if (order.provisioningStatus === "SUCCEEDED") {
+      await provisionRemainingOdLines(orderId);
+      return { status: "SUCCEEDED", userId: order.userId!, alreadyProvisioned: true };
+    }
     if (order.provisioningStatus === "MANUAL_REVIEW") return { status: "MANUAL_REVIEW", reason: order.provisioningError ?? "Manuel inceleme gerekli." };
     if (order.provisioningStatus !== "RUNNING") break;
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -137,7 +206,7 @@ export async function provisionOdOrder(
 
   try {
     const passwordHash = await hashPassword(randomBytes(32).toString("base64url"));
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const order = await tx.odOrder.findUniqueOrThrow({ where: { id: orderId }, include: { onboarding: true } });
       const buyer = (order.buyerInfo ?? {}) as Buyer;
       const rawEmail = textField(buyer, "studentEmail") ?? textField(buyer, "email");
@@ -238,6 +307,10 @@ export async function provisionOdOrder(
         where: { id: orderId },
         data: { userId: student.id, provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
       });
+      await tx.commerceOrderLine.updateMany({
+        where: { odOrderId: orderId, product: "OD", fulfillmentOwnerKey: email, fulfillmentStatus: { in: ["PENDING", "RUNNING", "RETRY_PENDING"] } },
+        data: { fulfillmentOwnerUserId: student.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() },
+      });
       const hasParentLink = (await tx.parentStudent.count({ where: { studentId: profile.id } })) > 0;
       const targetState = hasParentLink ? "PARENT_LINKED" as const : "ACCOUNT_READY" as const;
       const onboarding = await tx.odOnboarding.findUniqueOrThrow({ where: { orderId } });
@@ -254,8 +327,10 @@ export async function provisionOdOrder(
         ...(parentUserId ? [{ actorType: "SYSTEM" as const, entityType: "ParentStudent", entityId: `${parentUserId}:${profile.id}`, action: parentLinkCreated ? "parent_student.auto_linked" : "parent_student.link_confirmed", summary: "Veli öğrenci bağlantısı doğrulandı", payload: { orderId, parentUserId, studentProfileId: profile.id } }] : []),
         { actorType: "SYSTEM", entityType: "OdOrder", entityId: orderId, action: "od.provisioning.succeeded", summary: `Hesap ve OD erişimi hazırlandı; onboarding ${targetState}`, payload: { userId: student.id, parentUserId: parentUserId ?? null, flowType: existingStudent ? "EXISTING_STUDENT" : "NEW_STUDENT", onboardingState: targetState } },
       ] });
-      return { status: "SUCCEEDED", userId: student.id, parentUserId };
+      return { status: "SUCCEEDED" as const, userId: student.id, parentUserId };
     }, { isolationLevel: "Serializable" });
+    if (result.status === "SUCCEEDED") await provisionRemainingOdLines(orderId);
+    return result;
   } catch (error) {
     const message = error instanceof Error ? error.message.slice(0, 500) : "Bilinmeyen provisioning hatası";
     await prisma.odOrder.updateMany({
