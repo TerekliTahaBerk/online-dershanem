@@ -29,7 +29,6 @@ jobs:
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       PANEL_ENABLED: "true"
-      PANEL_MAINTENANCE_BYPASS: "true"
       PANEL_FEATURE_LEARNING_OUTCOMES: "true"
       PANEL_FEATURE_MOCK_EXAM_ANALYSIS: "true"
       PANEL_FEATURE_REVIEW_QUEUE: "true"

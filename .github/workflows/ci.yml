@@ -113,7 +113,6 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXTAUTH_SECRET: ci-only-nextauth-secret-0123456789abcdef0123456789abcdef
       PANEL_ENABLED: "true"
-      PANEL_MAINTENANCE_BYPASS: "true"
       CRON_SECRET: ci-only-cron-secret-0123456789abcdef0123456789abcdef
       BLOB_READ_WRITE_TOKEN: vercel_blob_rw_ci_only
       MFA_ENCRYPTION_KEY: Y2ktb25seS1tZmEta2V5LTAxMjM0NTY3ODlhYmNkZWY=

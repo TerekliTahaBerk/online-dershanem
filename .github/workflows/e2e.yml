@@ -44,7 +44,6 @@ jobs:
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       PANEL_ENABLED: "true"
-      PANEL_MAINTENANCE_BYPASS: "true"
       RATE_LIMIT_PROXY_MODE: local
       PANEL_FEATURE_LEARNING_OUTCOMES: "true"
       PANEL_FEATURE_MOCK_EXAM_ANALYSIS: "true"
@@ -206,7 +205,6 @@ jobs:
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       PANEL_ENABLED: "true"
-      PANEL_MAINTENANCE_BYPASS: "true"
       RATE_LIMIT_PROXY_MODE: local
       ODK_ROLLOUT_MODE: general
       ODK_PILOT_KILL_SWITCH: "false"
