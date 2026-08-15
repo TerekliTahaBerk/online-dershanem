@@ -46,9 +46,8 @@ const authorByCategory: Record<string, string> = {
   "Online Özel Ders": "Online Dershanem Ekibi",
   YKS: "Online Dershanem Eğitim Ekibi",
   LGS: "Online Dershanem Eğitim Ekibi",
-  "e Dershane": "Online Dershanem Ekibi",
+  "e-Dershane": "Online Dershanem Ekibi",
   "Online Ders": "Online Dershanem Eğitim Ekibi",
-  "Özel Ders": "Online Dershanem Ekibi",
   "Sınav Stratejisi": "Online Dershanem Eğitim Ekibi",
 };
 

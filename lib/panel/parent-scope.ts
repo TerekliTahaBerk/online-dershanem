@@ -1,5 +1,6 @@
 import "server-only";
 
+import { notFound } from "next/navigation";
 import type { ProductCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAccessibleProducts } from "@/lib/auth/products";
@@ -9,9 +10,12 @@ import { getAccessibleProducts } from "@/lib/auth/products";
  *
  * GÜVENLİK SINIRI: seçili öğrenci HER ZAMAN velinin `ParentStudent`
  * bağlantıları arasından çözülür. URL'den gelen `studentId` doğrudan
- * kullanılmaz; yalnızca bağlı öğrenciler arasında ARANIR. Bağlı olmayan bir
- * kimlik verilirse sessizce ilk bağlı öğrenciye düşülür — başka bir ailenin
- * verisi hiçbir koşulda çekilmez.
+ * kullanılmaz; yalnızca bağlı öğrenciler arasında ARANIR.
+ *
+ * BAĞLI OLMAYAN KİMLİK → 404. Önce sessizce ilk bağlı öğrenciye düşülüyordu.
+ * Başka ailenin verisi o hâlde de sızmıyordu, ama iki çocuklu bir velide
+ * ekran SESSİZCE ÖTEKİ ÇOCUĞU gösteriyordu: veli yanlış çocuğun verisini
+ * doğru sanabilirdi. Yanlış kimlik artık açıkça reddedilir.
  *
  * §23: birden çok çocuk varsa veriler KARIŞTIRILMAZ; her zaman tek bir
  * seçili öğrencinin bağlamı döner.
@@ -59,10 +63,13 @@ export async function resolveParentScope(
     })),
   );
 
-  const selected =
-    (requestedStudentId ? children.find((c) => c.id === requestedStudentId) : undefined) ??
-    children[0] ??
-    null;
+  if (requestedStudentId) {
+    const requested = children.find((c) => c.id === requestedStudentId);
+    // Bağlı olmayan kimlik: veri döndürmek yerine 404. Saldırgana bu velinin
+    // kaç çocuğu olduğu hakkında da bilgi vermez.
+    if (!requested) notFound();
+    return { children, selected: requested };
+  }
 
-  return { children, selected };
+  return { children, selected: children[0] ?? null };
 }

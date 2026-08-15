@@ -25,12 +25,6 @@ export function HomeHero() {
               Paketini Oluştur
               <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
             </Link>
-            <Link
-              href="/urunler/"
-              className="px-1 py-4 text-[16px] font-bold text-dc-ink underline decoration-[#C9D3CE] underline-offset-[5px] hover:decoration-dc-brand"
-            >
-              Ürünleri İncele
-            </Link>
           </div>
 
           {/* Doğrulanmış, somut bilgi — rakam/başarı oranı iddiası yok */}
@@ -64,15 +58,13 @@ export function HomeHero() {
               Bugün yüzde problemlerinde takıldın. Yarın 40 dakika bu konuya ayır.
             </p>
           </div>
-          <p className="absolute bottom-[18px] left-0 text-[11px] text-dc-ink-ghost">
-            Maskot görseli geçici — resmî çizim gelecek
-          </p>
         </div>
       </div>
 
       {/* 03 — doğruluk notu */}
       <p className="pt-8 text-[11.5px] text-dc-ink-ghost">
-        Öğrenci sayısı, başarı oranı gibi rakamlar, doğrulanmadan yayınlanmıyor.
+        Sitede öğrenci sayısı ya da başarı oranı yazmıyor. Elimizde doğrulanmış bir
+        rakam olmadan böyle bir şey yazmıyoruz.
       </p>
     </section>
   );

@@ -135,7 +135,7 @@ export default function OnlineDenemeKulubumPage() {
             },
             {
               q: "Deneme takvimi nasıl belirleniyor?",
-              a: "Dönem takvimi yayınlandığında deneme tarihleri panelinde görünür.",
+              a: "Deneme takvimi dönem başında paneline düşer; her denemenin tarihi ve saati orada yazar. Katılamadığın denemeyi sonradan kendi başına çözebilirsin.",
             },
             {
               q: "Sonuç analizinde ne görüyorum?",

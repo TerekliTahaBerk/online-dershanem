@@ -8,7 +8,7 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "Hakkımızda | Öğrenciyi yalnız bırakmayan bir sistem",
   description:
-    "Online Dershanem canlı dersle başladı; bugün ders, koçluk ve deneme analizini tek ekosistemde birleştiriyor.",
+    "Online Dershanem canlı dersle başladı. Bugün ders, koçluk ve deneme analizi aynı çatı altında; üçü birbirinden haberdar çalışıyor.",
   canonical: "/hakkimizda/",
 });
 
@@ -51,9 +51,9 @@ export default function HakkimizdaPage() {
                 bırakmayan bir sistem.
               </h1>
               <p className="mt-4 max-w-[520px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
-                Online Dershanem, canlı dersle başladı. Bugün ders, koçluk ve deneme
-                analizini tek ekosistemde birleştiriyor: öğrenci ne öğreneceğini, ne
-                zaman çalışacağını ve nerede olduğunu aynı yerde görüyor.
+                Online Dershanem canlı dersle başladı. Bugün ders, koçluk ve deneme
+                analizi aynı çatı altında: öğrenci ne öğreneceğini, ne zaman
+                çalışacağını ve nerede durduğunu aynı yerde görüyor.
               </p>
               <Link
                 href="/misyonumuz/"
@@ -109,8 +109,9 @@ export default function HakkimizdaPage() {
               Ekip
             </h2>
             <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
-              Öğretmenler, koçlar ve ürün ekibi aynı hedefe çalışıyor. Ekip bilgileri ve
-              fotoğraflar, izinli içerik hazır olduğunda yayınlanacak.
+              Dersleri alanında deneyimli öğretmenler veriyor, planı insan koçlar
+              kuruyor. Öğretmen adlarını ve fotoğraflarını, her biri kendi izniyle
+              onaylamadan yayınlamıyoruz.
             </p>
           </div>
         </section>

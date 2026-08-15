@@ -7,8 +7,8 @@ const steps = [
   { n: "01", title: "Hedefini söyle", body: "LGS mi YKS mi, hangi alan ve hangi dönem." },
   {
     n: "02",
-    title: "Seviyeni değerlendirelim",
-    body: "Kısa görüşme ve mevcut durum analizi.",
+    title: "Nerede zorlandığını konuşalım",
+    body: "Kısa bir ön görüşme; hangi konularda takıldığını dinliyoruz.",
   },
   {
     n: "03",
@@ -18,7 +18,7 @@ const steps = [
   {
     n: "04",
     title: "Başla ve takipte kal",
-    body: "Ders takibi, veli özeti ve Dino AI önerileri.",
+    body: "Her ders sonrası not, veli özeti ve Dino AI önerileri panelinde.",
   },
 ];
 

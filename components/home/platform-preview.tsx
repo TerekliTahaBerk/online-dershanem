@@ -5,9 +5,9 @@ import Link from "next/link";
  * 09 PLATFORM ÖN İZLEMESİ — onaylı tasarım (Web.dc.html).
  * Koyu yeşil banner + telefon mockup'ı.
  *
- * DOĞRULUK: handoff açıkça "Yakında · mağaza rozeti yok" diyor. Bu yüzden
- * App Store / Google Play rozeti YOKTUR ve ekranda mobil uygulamanın yayında
- * olmadığı yazılıdır (§55).
+ * DOĞRULUK: handoff açıkça "Yakında · mağaza rozeti yok" diyor. App Store /
+ * Google Play rozeti YOKTUR ve telefon uygulamasının yayında olmadığı ekranda
+ * yazılıdır (§55). Panelin kendisi tarayıcıda AÇIK — metin bunu doğru anlatmalı.
  */
 export function PlatformPreview() {
   return (
@@ -27,8 +27,9 @@ export function PlatformPreview() {
             gelişimin tek yerde.
           </h2>
           <p className="mt-4 max-w-[420px] text-[16.5px] leading-[1.65] text-[#B6CEC4]">
-            Ders, haftalık plan, deneme sonucu ve Dino AI önerileri aynı ekranda. Web
-            deneyimi geliştirme aşamasında.
+            Ders programın, haftalık planın, deneme sonuçların ve Dino AI önerileri
+            aynı ekranda. Panele tarayıcıdan giriyorsun; telefon uygulaması üzerinde
+            çalışıyoruz.
           </p>
 
           <ul className="mt-6 max-w-[460px] border-t border-[rgba(255,255,255,.14)] pt-5 text-[15px] font-medium leading-[1.9] text-[#CFE3DA]">
@@ -45,7 +46,7 @@ export function PlatformPreview() {
               Nasıl çalışacağını gör
             </Link>
             <span className="max-w-[280px] text-[13px] font-medium text-[var(--dc-on-deep-faint)]">
-              Mobil uygulama henüz yayında değil — mağaza rozetleri kullanılmıyor.
+              Telefon uygulaması henüz yayında değil.
             </span>
           </div>
         </div>

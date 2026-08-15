@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   discountPercent,
+  lessonFormatPrices,
   lessonSubjects,
   resolvePackageQuote,
   singleProductPrice,
@@ -150,10 +151,35 @@ test("hiç ürün seçilmediğinde fiyat çözülmez", () => {
   assert.equal(quote.savingsCents, null);
 });
 
-test("sınav seçilmeden ders fiyatı hesaplanmaz", () => {
-  const quote = resolvePackageQuote({ ...base, exam: null, dershanem: true });
-  assert.equal(quote.priceResolved, false);
-  assert.deepEqual(quote.missingPriceFor, ["dershanem"]);
+test("ders fiyatı sınav seçilmeden de gösterilir", () => {
+  // Ders fiyatı LGS ve YKS'de aynı olduğu için sınav seçimi fiyatı beklemez.
+  // Eskiden burada `null` dönülüyordu ve kart, fiyat belliyken bile
+  // "Fiyat ön görüşmede netleşir" yazıyordu.
+  const grup = resolvePackageQuote({ ...base, exam: null, dershanem: true });
+  assert.equal(grup.priceResolved, true);
+  assert.deepEqual(grup.missingPriceFor, []);
+  assert.equal(grup.bundleTotalCents, 300_000);
+
+  const birebir = resolvePackageQuote({
+    ...base,
+    exam: null,
+    dershanem: true,
+    format: "birebir",
+  });
+  assert.equal(birebir.bundleTotalCents, 450_000);
+});
+
+test("her iki ders formatının da fiyatı tanımlı", () => {
+  const formats = lessonFormatPrices();
+  assert.equal(formats.grup.campaignCents, 300_000);
+  assert.equal(formats.birebir.campaignCents, 450_000);
+  for (const [name, pair] of Object.entries(formats)) {
+    assert.ok(pair.listCents, `${name} liste fiyatı yok`);
+    assert.ok(
+      pair.listCents > (pair.campaignCents ?? 0),
+      `${name} liste fiyatı kampanyanın üstünde değil`,
+    );
+  }
 });
 
 test("indirim yüzdesi yalnızca gerçek indirimde döner", () => {

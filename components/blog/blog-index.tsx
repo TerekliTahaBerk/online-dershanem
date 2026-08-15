@@ -11,21 +11,31 @@ import type { BlogPost } from "@/lib/blog-content";
  *
  * DÜRÜSTLÜK: tasarımdaki kartlar tamamen yer tutucudur ("Yazı başlığı
  * placeholder", "İÇERİK PLACEHOLDER"). Buraya GERÇEK yazılar bağlandı;
- * placeholder metin üretime taşınmadı (§54). Görsel alanları tasarımdaki
- * taralı panel olarak kalır — yazı görselleri henüz yok.
+ * placeholder metin üretime taşınmadı (§54).
+ *
+ * Yazıların kendi görseli yok. Görsel alanı bu yüzden taralı bir yer tutucu
+ * değil, yazının kategorisini taşıyan sakin bir marka panelidir — yarım
+ * bırakılmış değil, bilinçli bir tercih gibi durur.
  */
 
 const ALL = "Tümü";
 
-function HatchThumb({ className = "" }: { className?: string }) {
+/**
+ * Kart görseli. Yazıların kendi fotoğrafı yok; kategori zaten kartın içinde
+ * rozet olarak yazdığı için burada METİN YOK — yoksa aynı kelime kartta iki
+ * kez görünüyor. Sakin, soyut bir marka paneli.
+ */
+function ArticleThumb({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={className}
-      style={{
-        background: "repeating-linear-gradient(135deg,#E3EDE8 0 10px,#EDF4F0 10px 20px)",
-      }}
-    />
+      className={`flex flex-col justify-center gap-2.5 bg-dc-brand-soft px-8 ${className}`}
+    >
+      <span className="h-2 w-[62%] rounded-full bg-[#BBDCCA]" />
+      <span className="h-2 w-[86%] rounded-full bg-[#CFE6DA]" />
+      <span className="h-2 w-[44%] rounded-full bg-[#9CCDB5]" />
+      <span className="h-2 w-[74%] rounded-full bg-[#CFE6DA]" />
+    </div>
   );
 }
 
@@ -73,7 +83,7 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
       <section className="site-container pt-9">
         {featured ? (
           <article className="grid overflow-hidden rounded-dc-card border border-dc-line bg-white lg:grid-cols-2">
-            <HatchThumb className="min-h-[220px] lg:min-h-[300px]" />
+            <ArticleThumb className="min-h-[220px] lg:min-h-[300px]" />
             <div className="p-7 sm:p-9">
               <span className="rounded-full bg-dc-brand-soft px-[11px] py-[5px] text-[11.5px] font-bold uppercase text-dc-brand-hover">
                 {featured.category}
@@ -102,7 +112,7 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
               key={post.slug}
               className="overflow-hidden rounded-[18px] border border-dc-line bg-white"
             >
-              <HatchThumb className="h-[170px]" />
+              <ArticleThumb className="h-[170px]" />
               <div className="p-5">
                 <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11px] font-bold uppercase text-dc-brand-hover">
                   {post.category}

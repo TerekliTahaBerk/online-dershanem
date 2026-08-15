@@ -1,14 +1,22 @@
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
-  HatchPanel,
   ProductHero,
   ProductDinoBand,
   CrossSellWithPrice,
   ProductFaq,
   ProductClosingCta,
 } from "@/components/product/product-sections";
-import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing";
+import {
+  LessonBoardVisual,
+  ParentSummaryVisual,
+  StudentScheduleVisual,
+} from "@/components/product/product-visuals";
+import {
+  formatCents,
+  lessonFormatPrices,
+  singleProductPriceLabel,
+} from "@/lib/commerce/package-builder-pricing";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
@@ -20,6 +28,9 @@ export const metadata = buildMarketingMetadata({
 
 /** ÜRÜN · ONLINE DERSHANEM — onaylı tasarım (Web.dc.html → isOD). */
 export default function OnlineDershanemPage() {
+  // İki ders formatının da fiyatı gerçek; sayfada ikisi birden gösterilir.
+  const oneToOne = lessonFormatPrices().birebir;
+
   return (
     <div className="site-scope">
       <SiteHeader />
@@ -32,16 +43,7 @@ export default function OnlineDershanemPage() {
           note="Birebir ya da en fazla 4 kişilik grup"
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-3.5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
-              <HatchPanel
-                height="h-[260px] sm:h-[330px]"
-                label={
-                  <>
-                    CANLI DERS EKRAN GÖRÜNTÜSÜ
-                    <br />
-                    öğretmen · tahta · 4 öğrenci
-                  </>
-                }
-              />
+              <LessonBoardVisual />
             </div>
           }
         />
@@ -87,17 +89,24 @@ export default function OnlineDershanemPage() {
             </div>
 
             <div className="mt-5 grid gap-5 lg:grid-cols-2">
-              {[
-                { label: "ÖĞRENCİ ARAYÜZÜ", panel: "DERS PROGRAMI + ÖDEV EKRANI" },
-                { label: "VELİ ÖZETİ", panel: "KATILIM · İLERLEME ÖZETİ" },
-              ].map((p) => (
-                <div key={p.label} className="rounded-[18px] border border-dc-line p-5">
-                  <p className="font-mono text-[11px] font-semibold text-[var(--dc-ink-faint)]">
-                    {p.label}
-                  </p>
-                  <HatchPanel height="h-[200px]" className="mt-3" label={p.panel} />
+              <div className="rounded-[18px] border border-dc-line p-5">
+                <h3 className="text-[17px] font-bold text-dc-ink">Öğrenci ne görüyor?</h3>
+                <p className="mt-1.5 text-[14.5px] leading-[1.6] text-dc-ink-muted">
+                  Sıradaki dersi, o hafta ne çalışacağını ve açık ödevlerini tek ekranda.
+                </p>
+                <div className="mt-4">
+                  <StudentScheduleVisual />
                 </div>
-              ))}
+              </div>
+              <div className="rounded-[18px] border border-dc-line p-5">
+                <h3 className="text-[17px] font-bold text-dc-ink">Veli ne görüyor?</h3>
+                <p className="mt-1.5 text-[14.5px] leading-[1.6] text-dc-ink-muted">
+                  Derse katılım ve konu ilerlemesi. Not değil, süreç.
+                </p>
+                <div className="mt-4">
+                  <ParentSummaryVisual />
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -125,7 +134,19 @@ export default function OnlineDershanemPage() {
           ]}
           advantageNote="Birlikte aldığında paket fiyatın düşer."
           price={singleProductPriceLabel("dershanem")}
+          priceLabel="Maks. 4 kişilik grup · ders başına"
           priceSuffix="/ ay"
+          secondaryPrice={
+            oneToOne.campaignCents === null
+              ? null
+              : {
+                  label: "Birebir özel ders · ders başına",
+                  price: formatCents(oneToOne.campaignCents),
+                  listPrice:
+                    oneToOne.listCents === null ? null : formatCents(oneToOne.listCents),
+                  suffix: "/ ay",
+                }
+          }
           features={["Canlı dersler", "Ders takibi ve veli özeti", "Dino AI ders analizi"]}
           priceFootnote="Koçluk da eklediğinde toplamda daha avantajlı."
         />
@@ -134,11 +155,11 @@ export default function OnlineDershanemPage() {
           items={[
             {
               q: "Dersler canlı mı?",
-              a: "Evet, dersler öğretmenle eşzamanlı yapılır. Kayıt politikası ürün ekibi onayıyla netleşecek.",
+              a: "Evet. Ders saatinde öğretmen ve öğrenciler aynı anda bağlanır; kayıttan izlenen bir video dersi değildir. Dersler kaydedilmez, çünkü derste konuşulanlar gruba özeldir.",
             },
             {
               q: "Derse katılamazsam ne olur?",
-              a: "Telafi ve devamsızlık koşulları ön görüşmede paylaşılır; kesin politika yayınlandığında burada yer alacak.",
+              a: "Ders öncesinden haber verdiğinde telafi için uygun bir saat ararız. Habersiz kaçırılan ders telafi edilmez; grup dört kişilik olduğu için o saat başka bir öğrenciye ayrılmış oluyor.",
             },
             {
               q: "Hangi dersler var?",

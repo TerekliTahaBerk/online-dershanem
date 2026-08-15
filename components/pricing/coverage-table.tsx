@@ -203,7 +203,8 @@ export function CoverageTable() {
       </div>
 
       <p className="mt-4 text-[12.5px] text-dc-ink-ghost">
-        Kapsam satırları ürün ekibi onayıyla kesinleşecek.
+        Ders saatleri ve grup günleri öğrencinin yerleştiği gruba göre değişir; ön
+        görüşmede netleşir.
       </p>
     </>
   );

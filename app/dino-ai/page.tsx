@@ -64,9 +64,9 @@ export default function DinoAiPage() {
                     yayında değil. Sayfa çalışıyormuş gibi anlatmaz. */}
                 <p className="mt-3 border-t border-dc-line-soft pt-3 text-[13.5px] leading-[1.6] text-dc-ink-muted">
                   <span className="font-semibold text-dc-ink">Geliştirme aşamasında.</span>{" "}
-                  Aşağıdaki örnekler ürünün nasıl çalışacağını anlatır; canlı Dino
-                  çıktısı <span className="font-semibold">Planlanıyor</span> ve
-                  yayına alındığında panelinde görünür.
+                  Aşağıdaki örnekler Dino AI&apos;ın ne yapacağını anlatıyor. Kendi
+                  verinden üretilen gerçek çıktılar henüz yayında değil; hazır
+                  olduğunda panelinde görünecek.
                 </p>
               </div>
             </div>

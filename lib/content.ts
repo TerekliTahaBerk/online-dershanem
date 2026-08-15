@@ -386,7 +386,7 @@ export const blogPosts = [
   },
   {
     slug: "e-dershane-nedir",
-    category: "e Dershane",
+    category: "e-Dershane",
     title: "e Dershane Nedir? Kimler İçin Gerçekten Verimli?",
     seoTitle: "e Dershane Nedir? LGS ve YKS İçin Kılavuz",
     metaDescription:
@@ -466,7 +466,7 @@ export const blogPosts = [
   },
   {
     slug: "ozel-ders-mi-kucuk-grup-mu",
-    category: "Özel Ders",
+    category: "Online Özel Ders",
     title: "Özel Ders mi Küçük Grup mu? Hangi Seçim Daha Mantıklı?",
     seoTitle: "Özel Ders mi Küçük Grup mu? Karar Rehberi",
     metaDescription:

@@ -400,8 +400,7 @@ export function PackageBuilder() {
                             </div>
                           ) : (
                             <p className="mt-2.5 text-[13.5px] leading-[1.6] text-dc-ink-muted">
-                              {selection.exam} için şu anda tek ders açık. Diğer dersler
-                              eklendiğinde burada seçilebilir olacak.
+                              {selection.exam} için tek ders açık.
                             </p>
                           )}
                         </fieldset>

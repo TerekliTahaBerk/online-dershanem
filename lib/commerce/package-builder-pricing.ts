@@ -64,7 +64,19 @@ export type BillingPeriod = "monthly" | "period";
  */
 const GROUP_LESSON_CATALOG_SUBJECT = "Matematik Ders Paketi";
 
-function groupLessonPrice(exam: ExamTrack): PricePair {
+/**
+ * Grup dersi fiyatı. `exam` verilmezse LGS ve YKS aynı fiyattaysa o ortak fiyat
+ * döner; ayrışmışlarsa `null` döner ve arayüz sınav seçilene kadar rakam basmaz.
+ */
+function groupLessonPrice(exam: ExamTrack | null): PricePair {
+  if (exam === null) {
+    const lgs = groupLessonPrice("LGS");
+    const yks = groupLessonPrice("YKS");
+    return lgs.campaignCents !== null && lgs.campaignCents === yks.campaignCents
+      ? { ...lgs, listCents: lgs.listCents === yks.listCents ? lgs.listCents : null }
+      : { listCents: null, campaignCents: null };
+  }
+
   const campaign = getPackagePriceCents(exam, GROUP_LESSON_CATALOG_SUBJECT);
   const list = getPackageListPriceCents(exam, GROUP_LESSON_CATALOG_SUBJECT);
   return {
@@ -216,12 +228,12 @@ const productLabels: Record<ProductKey, string> = {
 /**
  * Dershanem kaleminin fiyatı: seçilen format × (1 dahil ders + ek dersler).
  *
- * Ders fiyatı derse göre değişmediği için ders SAYISI ile çarpılır; hangi ders
- * seçildiği fiyatı etkilemez.
+ * Ders fiyatı ne derse ne de SINAVA göre değişir; ders SAYISI ile çarpılır.
+ * Bu yüzden sınav seçilmeden de fiyat gösterilebilir — daha önce burada
+ * `exam` yokken `null` dönülüyordu ve kart, fiyatı belliyken bile
+ * "Fiyat ön görüşmede netleşir" yazıyordu.
  */
 function dershanemLinePrice(selection: BuilderSelection): PricePair {
-  if (!selection.exam) return { listCents: null, campaignCents: null };
-
   const base =
     selection.format === "grup" ? groupLessonPrice(selection.exam) : ONE_TO_ONE_LESSON;
 
@@ -379,9 +391,17 @@ export function singleProductPrice(product: ProductKey): PricePair | null {
   if (product === "kocum") return COACHING;
   if (product === "denemeKulubum") return EXAM_CLUB;
 
-  const lgs = groupLessonPrice("LGS");
-  const yks = groupLessonPrice("YKS");
-  if (lgs.campaignCents === null || lgs.campaignCents !== yks.campaignCents) return null;
+  const group = groupLessonPrice(null);
+  return group.campaignCents === null ? null : group;
+}
 
-  return lgs.listCents === yks.listCents ? lgs : { ...lgs, listCents: null };
+/**
+ * Ders formatlarının fiyatı — ürün sayfasında ikisini birden göstermek için.
+ *
+ * Online Dershanem'in iki formatı ayrı fiyatlanır ve ikisi de gerçek bir
+ * fiyattır; sayfada yalnız grup fiyatını göstermek birebir dersi "fiyatı
+ * belirsiz" gibi gösteriyordu.
+ */
+export function lessonFormatPrices(): Record<LessonFormat, PricePair> {
+  return { grup: groupLessonPrice(null), birebir: ONE_TO_ONE_LESSON };
 }

@@ -8,23 +8,25 @@ import Link from "next/link";
  * Mobilde dikey; hover'da kenarlık markaya döner.
  */
 
+/**
+ * Canlı ders: paylaşılan tahta + en fazla dört katılımcı.
+ *
+ * Burada eskiden taralı bir yer tutucu ve "canlı ders ekranı" yazısı vardı;
+ * canlı sitede yarım bırakılmış maket gibi duruyordu.
+ */
 function LivePreview() {
   return (
     <div className="flex h-[172px] flex-col gap-2 border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
-      <div
-        className="grid flex-1 place-items-center rounded-xl font-mono text-[10px] font-semibold text-[var(--dc-ink-faint)]"
-        style={{
-          background:
-            "repeating-linear-gradient(135deg,#E3EDE8 0 8px,#EDF4F0 8px 16px)",
-        }}
-      >
-        canlı ders ekranı
+      <div className="flex flex-1 flex-col justify-center gap-2 rounded-xl border border-dc-line bg-white px-4">
+        <span className="h-2 w-[58%] rounded-full bg-[#CDE2D8]" />
+        <span className="h-2 w-[80%] rounded-full bg-[#DCEAE3]" />
+        <span className="h-2 w-[40%] rounded-full bg-dc-brand" />
       </div>
       <div className="flex gap-2">
-        <span className="h-[34px] w-[44px] rounded-lg bg-[#DFEBE5]" />
-        <span className="h-[34px] w-[44px] rounded-lg bg-[#E9F1ED]" />
-        <span className="h-[34px] w-[44px] rounded-lg bg-[#E9F1ED]" />
-        <span className="h-[34px] flex-1 rounded-lg border border-dashed border-[#D6E2DC] bg-white" />
+        <span className="h-[34px] flex-1 rounded-lg bg-[#DFEBE5]" />
+        <span className="h-[34px] flex-1 rounded-lg bg-[#E9F1ED]" />
+        <span className="h-[34px] flex-1 rounded-lg bg-[#E9F1ED]" />
+        <span className="h-[34px] flex-1 rounded-lg bg-[#E9F1ED]" />
       </div>
     </div>
   );
@@ -118,18 +120,21 @@ const products = [
   },
 ];
 
-export function ProductTrio() {
+export function ProductTrio({
+  title = "Hangisi sana gerekiyor?",
+  lede = "Üç ürün ayrı ayrı çalışır: ders, koçluk, deneme. Hangisini alacağına sen karar veriyorsun.",
+}: {
+  title?: string;
+  lede?: string;
+} = {}) {
   return (
     <section className="border-y border-dc-line-soft bg-white">
       <div className="site-container py-[var(--dc-section)]">
         <div className="max-w-[620px]">
           <h2 className="font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
-            Hangisi sana gerekiyor?
+            {title}
           </h2>
-          <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
-            Üç ürün ayrı ayrı çalışır: ders, koçluk, deneme. Hangisini alacağına sen
-            karar veriyorsun.
-          </p>
+          <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">{lede}</p>
         </div>
 
         <div className="mt-11 grid gap-[22px] md:grid-cols-2 lg:grid-cols-3">

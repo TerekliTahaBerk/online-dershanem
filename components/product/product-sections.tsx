@@ -10,28 +10,6 @@ import Link from "next/link";
  * SSS ve kapanış banner'ı. Bu yüzden bölümler burada bir kez yazılır.
  */
 
-/** Tasarımdaki taralı yer tutucu panel (ekran görüntüsü gelene kadar). */
-export function HatchPanel({
-  label,
-  className = "",
-  height = "h-[330px]",
-}: {
-  label: ReactNode;
-  className?: string;
-  height?: string;
-}) {
-  return (
-    <div
-      className={`grid place-items-center rounded-xl text-center font-mono text-[11px] font-semibold leading-[1.6] text-[var(--dc-ink-faint)] ${height} ${className}`}
-      style={{
-        background: "repeating-linear-gradient(135deg,#E3EDE8 0 9px,#EDF4F0 9px 18px)",
-      }}
-    >
-      {label}
-    </div>
-  );
-}
-
 export function ProductHero({
   eyebrow,
   title,
@@ -204,7 +182,9 @@ export function CrossSellWithPrice({
   cards,
   advantageNote,
   price,
+  priceLabel,
   priceSuffix,
+  secondaryPrice,
   features,
   priceFootnote,
 }: {
@@ -212,7 +192,16 @@ export function CrossSellWithPrice({
   advantageNote: string;
   /** `null` ise rakam basılmaz. `listPrice` yalnızca gerçek liste fiyatıdır. */
   price: { price: string; listPrice: string | null } | null;
+  /** Ana fiyatın neyin fiyatı olduğunu söyler; ürünün tek formatı varsa boş. */
+  priceLabel?: string;
   priceSuffix: string;
+  /** İkinci bir format fiyatı — ör. birebir özel ders. */
+  secondaryPrice?: {
+    label: string;
+    price: string;
+    listPrice: string | null;
+    suffix: string;
+  } | null;
   features: readonly string[];
   priceFootnote: string;
 }) {
@@ -258,7 +247,10 @@ export function CrossSellWithPrice({
                 </span>
               </p>
             ) : null}
-            <p className="mt-2.5 flex items-baseline gap-2">
+            {priceLabel ? (
+              <p className="mt-2 text-[13px] font-semibold text-dc-ink-muted">{priceLabel}</p>
+            ) : null}
+            <p className="mt-1.5 flex items-baseline gap-2">
               <span className="font-display text-[40px] tracking-[-0.02em] text-dc-ink">
                 {price.price}
               </span>
@@ -270,6 +262,27 @@ export function CrossSellWithPrice({
             Fiyat ön görüşmede netleşir
           </p>
         )}
+
+        {secondaryPrice ? (
+          <div className="mt-4 border-t border-dc-line-soft pt-4">
+            <p className="text-[13px] font-semibold text-dc-ink-muted">
+              {secondaryPrice.label}
+            </p>
+            <p className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-[24px] font-extrabold tracking-[-0.02em] text-dc-ink">
+                {secondaryPrice.price}
+              </span>
+              <span className="text-[13px] font-medium text-dc-ink-faint">
+                {secondaryPrice.suffix}
+              </span>
+              {secondaryPrice.listPrice ? (
+                <span className="text-[13px] font-semibold text-dc-ink-faint line-through">
+                  {secondaryPrice.listPrice}
+                </span>
+              ) : null}
+            </p>
+          </div>
+        ) : null}
 
         <div className="my-4.5 h-px bg-dc-line-soft" />
 

@@ -1,7 +1,6 @@
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
-  HatchPanel,
   ProductHero,
   StepCards,
   CrossSellWithPrice,
@@ -57,11 +56,18 @@ export default function OnlineKocumPage() {
                   />
                 ))}
               </div>
-              <HatchPanel
-                height="h-[120px]"
-                className="mt-3.5"
-                label="KOÇ GÖRÜŞME + İLERLEME EKRANI"
-              />
+              <div className="mt-4 border-t border-dc-line-soft pt-4">
+                <p className="text-[14px] font-bold text-dc-ink">Bu haftanın durumu</p>
+                <p className="mt-1 text-[13.5px] leading-[1.55] text-dc-ink-muted">
+                  Planın ne kadarının yapıldığı koç görüşmesinde birlikte işaretlenir.
+                </p>
+                <span className="mt-3 block h-1.5 overflow-hidden rounded-full bg-[#E4EBE7]">
+                  <span
+                    aria-hidden="true"
+                    className="block h-full w-[58%] rounded-full bg-dc-brand"
+                  />
+                </span>
+              </div>
             </div>
           }
         />

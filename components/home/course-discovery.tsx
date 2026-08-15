@@ -2,32 +2,25 @@
 
 import { useState } from "react";
 
+import { lessonSubjects } from "@/lib/commerce/package-builder-pricing";
+
 /**
  * 06 DERS KEŞFİ — onaylı tasarım (Web.dc.html).
  * LGS/YKS geçişi, altında 5 kolonluk ders ızgarası. Mobilde yatay kaydırma
  * yerine 2 kolona iner (dokunma hedefi ve okunabilirlik için).
  *
- * DÜRÜSTLÜK: tasarımın kendi metni bu listenin bir yerleşim örneği olduğunu
- * söylüyor ("kesin katalog onaylandığında güncellenecek"). Bu uyarı ekranda
- * korunur; liste satılabilir ders vaadi değildir.
+ * Liste TEK kaynaktan gelir (`lessonSubjects`); paket kurucudaki ders seçimiyle
+ * aynı veridir. Daha önce burada elle yazılmış ayrı bir liste ve
+ * "kesin katalog onaylandığında güncellenecek" uyarısı vardı — iki liste
+ * birbirinden ayrışıyordu.
  */
 
-const catalog = {
-  LGS: {
-    primary: ["Matematik", "Türkçe", "Fen Bilimleri", "İnkılap Tarihi", "İngilizce"],
-    secondary: ["Geometri", "Din Kültürü", "Paragraf", "Deneme Analizi", "Yeni Nesil Sorular"],
-  },
-  YKS: {
-    primary: ["Matematik", "Türkçe", "Fizik", "Kimya", "Biyoloji"],
-    secondary: ["Geometri", "Tarih", "Coğrafya", "İngilizce", "Felsefe"],
-  },
-} as const;
-
-type Track = keyof typeof catalog;
+const tracks = ["LGS", "YKS"] as const;
+type Track = (typeof tracks)[number];
 
 export function CourseDiscovery() {
   const [track, setTrack] = useState<Track>("LGS");
-  const { primary, secondary } = catalog[track];
+  const subjects = lessonSubjects[track];
 
   return (
     <section className="border-y border-dc-line-soft bg-white">
@@ -41,13 +34,13 @@ export function CourseDiscovery() {
               Hangi dersi alacağını sen seçiyorsun
             </h3>
             <p className="mt-2.5 max-w-[520px] text-[15.5px] leading-[1.6] text-dc-ink-muted">
-              Paket fiyatına bir ders dahil; istersen ek ders eklersin. Aşağıdaki liste
-              yerleşim örneğidir, kesin katalog onaylandığında güncellenecek.
+              Paket fiyatına bir ders dahil; istersen ek ders eklersin. Hangi dersi
+              seçersen seç fiyat aynı.
             </p>
           </div>
 
           <div role="group" aria-label="Sınav seçimi" className="flex gap-2">
-            {(Object.keys(catalog) as Track[]).map((t) => (
+            {tracks.map((t) => (
               <button
                 key={t}
                 type="button"
@@ -65,15 +58,10 @@ export function CourseDiscovery() {
           </div>
         </div>
 
-        <ul className="mt-7 grid grid-cols-2 border-t border-dc-line sm:grid-cols-3 lg:grid-cols-5">
-          {primary.map((name) => (
+        <ul className="mt-7 grid grid-cols-2 border-t border-dc-line sm:grid-cols-3 lg:grid-cols-4">
+          {subjects.map((name) => (
             <li key={name} className="border-b border-dc-line py-[18px] pr-5">
               <span className="text-[16px] font-bold text-dc-ink">{name}</span>
-            </li>
-          ))}
-          {secondary.map((name) => (
-            <li key={name} className="py-[18px] pr-5">
-              <span className="text-[15px] text-dc-ink-faint">{name}</span>
             </li>
           ))}
         </ul>
