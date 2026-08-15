@@ -23,7 +23,7 @@ export function EmptyCart() {
         Matematik Ders Paketini inceleyerek başlayabilirsiniz.
       </p>
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <Link href="/ders-paketleri/" className="site-btn site-btn-primary site-btn-lg">
+        <Link href="/ders-paketleri" className="site-btn site-btn-primary site-btn-lg">
           Paketi İncele
           <ArrowRight size={16} />
         </Link>

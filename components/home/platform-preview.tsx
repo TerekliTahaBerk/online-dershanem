@@ -40,7 +40,7 @@ export function PlatformPreview() {
 
           <div className="mt-7 flex flex-wrap items-center gap-4">
             <Link
-              href="/urunler/"
+              href="/urunler"
               className="rounded-full bg-white px-[26px] py-[15px] text-[15px] font-bold text-dc-brand-deep transition-opacity hover:opacity-90"
             >
               Nasıl çalışacağını gör

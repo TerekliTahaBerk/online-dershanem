@@ -16,7 +16,7 @@ export function ProductHero({
   body,
   tracks,
   note,
-  secondaryCta = { label: "Ücretsiz Görüşme", href: "/iletisim/" },
+  secondaryCta = { label: "Ücretsiz Görüşme", href: "/iletisim" },
   visual,
 }: {
   eyebrow: string;
@@ -40,7 +40,7 @@ export function ProductHero({
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/paketler/" className="site-btn site-btn-primary site-btn-lg">
+            <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
               Paketini Oluştur
             </Link>
             <Link
@@ -292,7 +292,7 @@ export function CrossSellWithPrice({
           ))}
         </ul>
 
-        <Link href="/paketler/" className="site-btn site-btn-primary mt-5 w-full">
+        <Link href="/paketler" className="site-btn site-btn-primary mt-5 w-full">
           Paketini Oluştur
         </Link>
         <p className="mt-2.5 text-center text-[12.5px] font-medium text-dc-ink-faint">
@@ -338,14 +338,24 @@ export function ProductFaq({
   );
 }
 
+/**
+ * Ürün sayfası kapanış bandı.
+ *
+ * `secondaryCta` doğrudan satın alma yolunu taşır: ürün sayfalarının hiçbirinde
+ * ödemeye giden bağlantı yoktu, tek CTA paket kurucuya (oradan da ön görüşmeye)
+ * gidiyordu. Online Dershanem'in gerçek bir checkout SKU'su olduğu için o
+ * sayfada `/ders-paketleri` ikinci bir çıkış olarak veriliyor.
+ */
 export function ProductClosingCta({
   title,
   body,
   variant = "soft",
+  secondaryCta,
 }: {
   title: string;
   body: string;
   variant?: "soft" | "deep";
+  secondaryCta?: { href: string; label: string };
 }) {
   const deep = variant === "deep";
   return (
@@ -371,16 +381,30 @@ export function ProductClosingCta({
             {body}
           </p>
         </div>
-        <Link
-          href="/paketler/"
-          className={
-            deep
-              ? "flex-none rounded-full bg-white px-[30px] py-[17px] text-[16px] font-bold text-dc-brand-deep transition-opacity hover:opacity-90"
-              : "site-btn site-btn-primary site-btn-lg flex-none"
-          }
-        >
-          Paketini Oluştur →
-        </Link>
+        <div className="flex flex-none flex-col gap-3 sm:flex-row sm:items-center">
+          <Link
+            href="/paketler"
+            className={
+              deep
+                ? "flex-none rounded-full bg-white px-[30px] py-[17px] text-[16px] font-bold text-dc-brand-deep transition-opacity hover:opacity-90"
+                : "site-btn site-btn-primary site-btn-lg flex-none"
+            }
+          >
+            Paketini Oluştur →
+          </Link>
+          {secondaryCta ? (
+            <Link
+              href={secondaryCta.href}
+              className={
+                deep
+                  ? "flex-none rounded-full border border-[var(--dc-on-deep-line)] px-[30px] py-[17px] text-center text-[16px] font-bold text-white transition-colors hover:bg-white/10"
+                  : "site-btn site-btn-secondary site-btn-lg flex-none"
+              }
+            >
+              {secondaryCta.label}
+            </Link>
+          ) : null}
+        </div>
       </div>
     </section>
   );

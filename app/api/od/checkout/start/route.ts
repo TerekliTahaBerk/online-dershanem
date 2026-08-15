@@ -78,7 +78,10 @@ const InputSchema = z.object({
   parentEmail: z.string().email().max(254).optional().nullable().or(z.literal("")),
   notes: z.string().max(1000).optional().nullable(),
   availabilityTimeRanges: z.array(z.enum(OD_TIME_RANGE_VALUES)).min(1).max(4),
-  earliestStartDate: z.iso.date().optional().nullable(),
+  // Boş `<input type="date">` FormData'ya "" olarak girer. `z.iso.date()` boş
+  // string'i reddettiği için bu alan opsiyonel etiketli olmasına rağmen tüm
+  // checkout'u 400'lüyordu; `parentEmail` ile aynı kalıp burada da gerekli.
+  earliestStartDate: z.iso.date().optional().nullable().or(z.literal("")),
   noSlotPreference: z.enum(OD_NO_SLOT_VALUES),
   placementConsent: z.union([z.string(), z.boolean()]).optional(),
   couponCode: z.string().max(60).optional().nullable(),

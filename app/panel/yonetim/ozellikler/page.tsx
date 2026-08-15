@@ -30,7 +30,7 @@ export default async function PanelFeatureInventoryPage() {
     <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
       <AdminPageHeader eyebrow="Canlı deployment snapshot" title="Özellik yayını tek yerde görünür." description="Menü, sayfa ve API aynı sunucu flag snapshot'ını kullanır. Statü ürün olgunluğunu; Açık/Kapalı ise bu deployment'ın gerçek davranışını gösterir." icon={Flag} meta={`${enabled}/${snapshot.length} açık`} />
 
-      <section className={`mt-7 flex items-start gap-3 rounded-[22px] border p-4 ${drift.length ? "border-rose-200 bg-rose-50" : "border-emerald-200 bg-emerald-50"}`}>
+      <section className={`mt-7 flex items-start gap-3 rounded-[14px] border p-4 ${drift.length ? "border-rose-200 bg-rose-50" : "border-emerald-200 bg-emerald-50"}`}>
         {drift.length ? <TriangleAlert className="mt-0.5 shrink-0 text-rose-700" size={18} /> : <ShieldCheck className="mt-0.5 shrink-0 text-emerald-700" size={18} />}
         <div><h2 className="text-sm font-extrabold">{drift.length ? `${drift.length} eski public env değeri drift üretiyor` : "Server/client drift yok"}</h2><p className="mt-1 text-xs leading-5 text-[var(--site-body)]">İstemci görünürlüğü artık `NEXT_PUBLIC_PANEL_FEATURE_*` okumaz; `PanelShell` sunucuda çözdüğü typed snapshot'ı menüye aktarır. Eski public değişkenler tanımlıysa yalnız temizlik uyarısı olarak raporlanır.</p></div>
       </section>

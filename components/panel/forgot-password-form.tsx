@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
+import { ArrowLeft, Loader2, MailCheck, MessageCircle } from "lucide-react";
+import { contact } from "@/lib/content";
+
+const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -39,9 +42,28 @@ export function ForgotPasswordForm() {
         <MailCheck className="mx-auto text-[var(--brand-olive)]" size={36} aria-hidden="true" />
         <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">{message}</p>
         <p className="mt-2 text-[13px] leading-6 text-[var(--site-muted)]">E-postadaki bağlantı 60 dakika geçerlidir. Gelen kutunuzda yoksa spam klasörünü de kontrol edin.</p>
-        <Link href="/giris" className="site-btn site-btn-primary mt-6 inline-flex">
-          <ArrowLeft size={16} aria-hidden="true" /> Girişe dön
-        </Link>
+        {/*
+          Dürüst çıkış yolu: hesaplar ödeme sonrası otomatik açıldığı için
+          parola e-postası ulaşmadığında kullanıcı kilitli kalıyordu. Parolayı
+          admin de sıfırlayabiliyor; o kanalı burada açıkça söylüyoruz.
+        */}
+        <p className="mt-4 rounded-[12px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-3 text-[13px] leading-6 text-[var(--site-body)]">
+          Birkaç dakika içinde e-posta ulaşmazsa bize yazın; hesabınızı doğrulayıp
+          parolanızı biz sıfırlayalım.
+        </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <Link href="/giris" className="site-btn site-btn-primary inline-flex">
+            <ArrowLeft size={16} aria-hidden="true" /> Girişe dön
+          </Link>
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="site-btn site-btn-secondary inline-flex"
+          >
+            <MessageCircle size={16} aria-hidden="true" /> WhatsApp&apos;tan yaz
+          </a>
+        </div>
       </div>
     );
   }

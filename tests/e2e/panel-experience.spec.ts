@@ -188,6 +188,12 @@ test.describe("panel deneyimi", () => {
       }
     });
     await login(page, accounts.teacher);
+    /*
+     * Ders kapanışı artık öğretmen ana sayfasında gömülü DEĞİL; dersin kendi
+     * adresinde (`/panel/ogretmen/ders/[id]`). Bağlantıya tıklayarak gidiyoruz
+     * ki ana sayfa → ders kapanışı yönlendirmesi de testin kapsamında kalsın.
+     */
+    await page.locator('a[href^="/panel/ogretmen/ders/"]').first().click();
     await expect(page.getByRole("heading", { name: "E2E Hızlı Ders Özeti" })).toBeVisible();
 
     await page.getByRole("button", { name: /Geçen dersten akıllı öneri/ }).click();

@@ -5,10 +5,12 @@ import {
   discountPercent,
   lessonFormatPrices,
   lessonSubjects,
+  resolveBuilderCheckout,
   resolvePackageQuote,
   singleProductPrice,
   type BuilderSelection,
 } from "./package-builder-pricing";
+import { getPackagePriceCents } from "@/lib/content";
 
 /**
  * Fiyat modelini kilitleyen testler.
@@ -200,4 +202,43 @@ test("LGS ve YKS ders listeleri dolu ve tekrarsız", () => {
     );
     assert.ok(subjects.includes("Matematik"), `${exam} listesinde matematik yok`);
   }
+});
+
+/* ── Kurucudan doğrudan satın alma sınırı ─────────────────────────────────
+ * `resolveBuilderCheckout` ödeme-kritiktir: yalnız gerçek bir checkout SKU'su
+ * olan yapılandırma sepete gidebilir. Sınır gevşerse kullanıcı, karşılığı
+ * olmayan bir paketi ders paketi fiyatına satın alır.
+ */
+
+test("yalnız tek başına grup dersi doğrudan sepete gider", () => {
+  const item = resolveBuilderCheckout({ ...base, exam: "LGS", dershanem: true });
+  assert.ok(item);
+  assert.equal(item.category, "LGS");
+  assert.equal(item.subject, "Matematik Ders Paketi");
+  assert.equal(item.id, "LGS__Matematik Ders Paketi");
+  assert.equal(item.priceCents, getPackagePriceCents("LGS", "Matematik Ders Paketi"));
+});
+
+test("sepet kimliği ve fiyatı ödeme-kritik katalogla aynıdır", () => {
+  for (const exam of ["LGS", "YKS"] as const) {
+    const item = resolveBuilderCheckout({ ...base, exam, dershanem: true });
+    assert.ok(item);
+    assert.equal(item.id, `${exam}__Matematik Ders Paketi`);
+    assert.equal(item.priceCents, getPackagePriceCents(exam, "Matematik Ders Paketi"));
+    assert.ok(item.priceCents > 0);
+  }
+});
+
+test("sınav seçilmeden doğrudan satın alma açılmaz", () => {
+  assert.equal(resolveBuilderCheckout({ ...base, exam: null, dershanem: true }), null);
+});
+
+test("SKU'su olmayan yapılandırmalar ön görüşmeye kalır", () => {
+  const selection = { ...base, exam: "YKS" as const, dershanem: true };
+  // birebir format, ek ders ve diğer ürünlerin checkout karşılığı yok
+  assert.equal(resolveBuilderCheckout({ ...selection, format: "birebir" }), null);
+  assert.equal(resolveBuilderCheckout({ ...selection, extraSubjects: ["Fizik"] }), null);
+  assert.equal(resolveBuilderCheckout({ ...selection, kocum: true }), null);
+  assert.equal(resolveBuilderCheckout({ ...selection, denemeKulubum: true }), null);
+  assert.equal(resolveBuilderCheckout({ ...base, exam: "YKS", kocum: true }), null);
 });

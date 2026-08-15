@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -142,13 +143,17 @@ export default async function TeacherCalendarPage({
                       );
                       return (
                         <td key={day.toISOString()} className="p-2 align-top">
+                          {/* Ders kartı, ders kapanışı ekranına açılır — kartlar
+                              daha önce düz <div>'di ve takvimden derse
+                              girilemiyordu. */}
                           {cell.map((lesson) => (
-                            <div
+                            <Link
                               key={lesson.id}
-                              className={`rounded-lg p-2 ${
+                              href={`/panel/ogretmen/ders/${lesson.id}`}
+                              className={`block rounded-lg p-2 transition-colors ${
                                 lesson.status === "CANCELLED"
-                                  ? "border border-dc-line bg-white opacity-60"
-                                  : "border border-dc-brand-soft-line bg-dc-brand-soft"
+                                  ? "border border-dc-line bg-white opacity-60 hover:opacity-100"
+                                  : "border border-dc-brand-soft-line bg-dc-brand-soft hover:border-dc-brand"
                               }`}
                             >
                               <p
@@ -163,7 +168,7 @@ export default async function TeacherCalendarPage({
                               <p className="text-[11px] text-[#3F5C51]">
                                 {lesson.group.enrollments.length} öğrenci
                               </p>
-                            </div>
+                            </Link>
                           ))}
                         </td>
                       );

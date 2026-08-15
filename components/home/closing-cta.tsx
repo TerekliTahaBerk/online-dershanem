@@ -18,11 +18,11 @@ export function ClosingCta() {
             fiyatın düşer.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-5">
-            <Link href="/paketler/" className="site-btn site-btn-primary site-btn-lg">
+            <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
               Paketini Oluştur →
             </Link>
             <Link
-              href="/iletisim/"
+              href="/iletisim"
               className="text-[15px] font-bold text-dc-brand-hover hover:text-dc-brand-deep"
             >
               Ücretsiz görüşme talep et

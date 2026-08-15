@@ -8,6 +8,7 @@ import { Menu } from "lucide-react";
 import { primaryNav, navCta, navLogin } from "@/lib/site-content";
 import { MobileMenu } from "@/components/site/mobile-menu";
 import { ProductsMenu } from "@/components/site/products-menu";
+import { CartHeaderLink } from "@/components/cart/cart-header-link";
 
 /**
  * Public site header — solda marka, ortada ürünler, sağda giriş ve CTA.
@@ -64,7 +65,7 @@ export function SiteHeader() {
                   href={link.href}
                   aria-label={link.accessibleLabel}
                   aria-current={isActive(link.href) ? "page" : undefined}
-                  className={`rounded-full px-3.5 py-2 text-[14.5px] font-semibold transition-colors ${
+                  className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[14.5px] font-semibold transition-colors ${
                     isActive(link.href)
                       ? "text-[var(--site-ink)]"
                       : "text-[var(--site-body)] hover:text-[var(--site-ink)]"
@@ -109,6 +110,10 @@ export function SiteHeader() {
               >
                 {navCta.label}
               </Link>
+
+              {/* Sepet dolu olduğunda her kırılımda görünür — mobilde de
+                  hamburger'in yanında, menü açmadan erişilebilir. */}
+              <CartHeaderLink />
 
               <button
                 ref={menuButtonRef}

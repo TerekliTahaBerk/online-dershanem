@@ -41,7 +41,9 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#FFFFFF",
+  // Tek kaynak: onaylı tasarımın zemini (`--dc-canvas`). Manifest'teki
+  // `theme_color` ile AYNI kalmalı; üç ayrı değer taşınıyordu.
+  themeColor: "#FBFCFA",
 };
 
 export const metadata: Metadata = {

@@ -7,6 +7,7 @@ import { UserRowActions } from "@/components/panel/user-row-actions";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { UsersRound } from "lucide-react";
 import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
+import { ApproveMfaResetButton } from "@/components/panel/mfa-reset-controls";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ function formatDate(value: Date | null): string {
 export default async function UsersPage() {
   const session = await requireRole("ADMIN");
 
-  const [users, relationships] = await Promise.all([prisma.user.findMany({
+  const [users, relationships, pendingMfaResets] = await Promise.all([prisma.user.findMany({
     orderBy: [{ role: "asc" }, { createdAt: "desc" }],
     select: {
       id: true,
@@ -32,7 +33,17 @@ export default async function UsersPage() {
       lastLoginAt: true,
       createdAt: true,
     },
-  }), prisma.parentStudent.findMany({ orderBy: { createdAt: "desc" }, include: { parent: { select: { fullName: true, email: true } }, student: { include: { user: { select: { fullName: true, email: true } } } } } })]);
+  }), prisma.parentStudent.findMany({ orderBy: { createdAt: "desc" }, include: { parent: { select: { fullName: true, email: true } }, student: { include: { user: { select: { fullName: true, email: true } } } } } }),
+  // Çift kontrollü MFA sıfırlama kuyruğu — onayı isteği açandan BAŞKA bir
+  // yönetici verir, o yüzden liste tüm yöneticilere gösterilir.
+  prisma.mfaResetRequest.findMany({
+    where: { status: "PENDING", expiresAt: { gt: new Date() } },
+    orderBy: { createdAt: "desc" },
+    include: {
+      target: { select: { id: true, fullName: true, email: true } },
+      requestedBy: { select: { id: true, fullName: true, email: true } },
+    },
+  })]);
 
   return (
     <PanelShell
@@ -43,7 +54,51 @@ export default async function UsersPage() {
     >
       <AdminPageHeader eyebrow="Kişi yönetimi" title="Herkes doğru yerde." description="Öğrenci, öğretmen, veli ve yönetici hesaplarını tek yerden açın; erişim durumlarını güvenle yönetin." icon={UsersRound} meta={`${users.length} hesap`} />
 
-      <section id="yeni-hesap" className="mt-6 scroll-mt-28 rounded-[20px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)]">
+      {pendingMfaResets.length ? (
+        <section className="mt-6 rounded-[14px] border border-rose-200 bg-rose-50 p-5">
+          <h2 className="text-[14px] font-bold text-rose-900">
+            Bekleyen MFA sıfırlama onayı ({pendingMfaResets.length})
+          </h2>
+          <p className="mt-1 text-[12.5px] leading-5 text-rose-950">
+            Onayı, isteği açan ve hedef yöneticiden farklı bir yönetici vermelidir.
+            Onaylandığında hedefin tüm doğrulama yöntemleri silinir ve oturumları kapatılır.
+          </p>
+          <ul className="mt-4 flex flex-col gap-2">
+            {pendingMfaResets.map((reset) => {
+              const blocked =
+                reset.targetUserId === session.userId || reset.requestedById === session.userId;
+              return (
+                <li
+                  key={reset.id}
+                  className="flex flex-wrap items-start justify-between gap-3 rounded-[14px] border border-rose-200 bg-white p-4"
+                >
+                  <div className="min-w-[220px] flex-1">
+                    <p className="text-[13px] font-bold text-[var(--site-ink)]">
+                      {reset.target.fullName || reset.target.email}
+                    </p>
+                    <p className="mt-1 text-[12px] text-[var(--site-muted)]">
+                      İsteyen: {reset.requestedBy.fullName || reset.requestedBy.email} ·
+                      son geçerlilik {formatDate(reset.expiresAt)}
+                    </p>
+                    <p className="mt-1.5 text-[12.5px] leading-5 text-[var(--site-body)]">
+                      {reset.reason}
+                    </p>
+                  </div>
+                  {blocked ? (
+                    <p className="text-[12px] font-semibold text-rose-700">
+                      Bu isteği siz onaylayamazsınız.
+                    </p>
+                  ) : (
+                    <ApproveMfaResetButton requestId={reset.id} />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      <section id="yeni-hesap" className="mt-6 scroll-mt-28 rounded-[14px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)]">
         <h2 className="text-[14px] font-bold text-[var(--site-ink)]">Yeni hesap aç</h2>
         <div className="mt-4">
           <CreateUserForm />

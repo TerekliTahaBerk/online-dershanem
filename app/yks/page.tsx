@@ -98,10 +98,10 @@ export default function TYTLandingPage() {
           ]
         },
         resources: [
-          { label: "TYT matematik çalışma programı", href: "/blog/tyt-matematik-calisma-programi/" },
-          { label: "AYT matematik çalışma programı", href: "/blog/ayt-matematik-calisma-programi/" },
-          { label: "TYT problem çözme hızı", href: "/blog/tyt-matematik-problem-cozme-hizi/" },
-          { label: "Tüm matematik rehberleri", href: "/matematik/" }
+          { label: "TYT matematik çalışma programı", href: "/blog/tyt-matematik-calisma-programi" },
+          { label: "AYT matematik çalışma programı", href: "/blog/ayt-matematik-calisma-programi" },
+          { label: "TYT problem çözme hızı", href: "/blog/tyt-matematik-problem-cozme-hizi" },
+          { label: "Tüm matematik rehberleri", href: "/matematik" }
         ],
         faq: yksFaq
       }}

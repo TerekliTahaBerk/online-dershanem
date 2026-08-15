@@ -89,7 +89,7 @@ export function LegalPageTemplate({
               <div className="mt-5 rounded-[18px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
                 <Mail size={17} className="text-[var(--brand-olive)]" aria-hidden="true" />
                 <p className="mt-3 text-[12.5px] leading-6 text-[var(--site-body)]">Bu metinle ilgili bir sorunuz varsa ekibimize yazabilirsiniz.</p>
-                <Link href="/iletisim/" className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--brand-olive)] hover:underline">
+                <Link href="/iletisim" className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--brand-olive)] hover:underline">
                   İletişime geç <ArrowRight size={14} aria-hidden="true" />
                 </Link>
               </div>

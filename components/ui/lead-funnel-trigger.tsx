@@ -23,7 +23,7 @@ export function LeadFunnelTrigger({
   className = "",
   eventName = "trial_cta_click",
   analyticsId,
-  href = "/iletisim/"
+  href = "/iletisim"
 }: LeadFunnelTriggerProps) {
   const handleClick = () => {
     trackConversionEvent(eventName, { source });

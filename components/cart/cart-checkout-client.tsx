@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { BuyerInfoForm, type BuyerInfoFormDefaults } from "@/components/checkout/buyer-info-form";
 import { OrderSummaryCard, CheckoutPageHeader } from "@/components/checkout/order-summary-card";
-import { parseCheckoutCartSnapshot } from "@/lib/od/cart-storage";
+import { parseCheckoutCartSnapshot, sanitizeCartItems } from "@/lib/od/cart-storage";
 import type { OdPlacementExpectation } from "@/lib/od/placement";
 
 type CartSnapshot = {
@@ -43,11 +43,29 @@ export function CartCheckoutClient({ defaults, placementExpectation }: { default
         sessionStorage.getItem("od_checkout_cart");
       if (raw) {
         const parsed = parseCheckoutCartSnapshot(JSON.parse(raw));
-        if (parsed) setSnapshot(parsed);
-        else {
-          localStorage.removeItem("od_checkout_cart");
-          sessionStorage.removeItem("od_checkout_cart");
+        if (parsed) {
+          setSnapshot(parsed);
+          setLoaded(true);
+          return;
         }
+        localStorage.removeItem("od_checkout_cart");
+        sessionStorage.removeItem("od_checkout_cart");
+      }
+
+      /*
+       * Snapshot YOK ya da 60 dakikalık penceresi dolmuş.
+       *
+       * Snapshot yalnızca "Güvenli Ödemeye Geç" tıklandığında yazılıyor; yer
+       * imi, geri/ileri tuşu veya bir saat sonra yenileme durumunda sepet
+       * doluyken bile "Sepet bilgisi bulunamadı" ekranı çıkıyordu. Canlı
+       * sepet (`od_cart_v1`) tek gerçek kaynak olduğu için ondan tazeleniyor.
+       */
+      const liveCart = localStorage.getItem("od_cart_v1");
+      const items = liveCart ? sanitizeCartItems(JSON.parse(liveCart)) : null;
+      if (items?.length) {
+        const restored = { items, coupon: null, ts: Date.now() };
+        localStorage.setItem("od_checkout_cart", JSON.stringify(restored));
+        setSnapshot(restored);
       }
     } catch {/* ignore */}
     setLoaded(true);
@@ -132,6 +150,7 @@ export function CartCheckoutClient({ defaults, placementExpectation }: { default
           }}
           defaults={defaults}
           placementExpectation={currentExpectation}
+          couponContext={{ subtotalCents: totalCents }}
         />
       </div>
 

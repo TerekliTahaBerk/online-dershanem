@@ -36,11 +36,11 @@ export function NoProductAccess({ role }: { role: UserRole }) {
 
         {!isStaff ? (
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/paketler/" className="site-btn site-btn-primary">
+            <Link href="/paketler" className="site-btn site-btn-primary">
               Paketini Oluştur
             </Link>
             <Link
-              href="/iletisim/"
+              href="/iletisim"
               className="rounded-full border border-[#DDE4E0] bg-white px-5 py-2.5 text-[14px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
             >
               Bize ulaş

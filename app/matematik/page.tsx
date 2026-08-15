@@ -40,21 +40,21 @@ const learningPaths = [
     Icon: Calculator,
     title: "Matematikte temel eksikliği",
     text: "Eksikliği genel bir etiket olarak bırakmadan; kavram, işlem ve soru dili başlıklarında nereden başlanması gerektiğini bulun.",
-    href: "/blog/matematikte-temel-eksigi-nasil-kapatilir/",
+    href: "/blog/matematikte-temel-eksigi-nasil-kapatilir",
     label: "Temel eksikliği rehberi",
   },
   {
     Icon: Target,
     title: "Yeni nesil soru ve problemler",
     text: "Sorudaki veriyi ayıklama, uygun modeli kurma ve çözüm adımını kontrol etme becerisini sistemli pratikle geliştirin.",
-    href: "/blog/lgs-yeni-nesil-matematik-sorulari/",
+    href: "/blog/lgs-yeni-nesil-matematik-sorulari",
     label: "Yeni nesil soru rehberi",
   },
   {
     Icon: LineChart,
     title: "Deneme analizi ve çalışma yönü",
     text: "Yanlış, boş ve uzun süren soruları sınıflandırıp bir sonraki haftaya uygulanabilir matematik hedefleri çıkarın.",
-    href: "/blog/matematik-deneme-analizi/",
+    href: "/blog/matematik-deneme-analizi",
     label: "Deneme analiz şablonu",
   },
 ];
@@ -64,18 +64,18 @@ const resourceGroups = [
     title: "LGS matematik rehberleri",
     text: "8. sınıf çalışma düzeni, yeni nesil sorular ve deneme analizini birlikte ele alın.",
     links: [
-      { label: "LGS matematik çalışma programı", href: "/blog/lgs-matematik-calisma-programi/" },
-      { label: "LGS yeni nesil matematik soruları", href: "/blog/lgs-yeni-nesil-matematik-sorulari/" },
-      { label: "LGS matematikte zorlananlar için plan", href: "/blog/lgs-matematikte-zorlananlar-icin/" },
+      { label: "LGS matematik çalışma programı", href: "/blog/lgs-matematik-calisma-programi" },
+      { label: "LGS yeni nesil matematik soruları", href: "/blog/lgs-yeni-nesil-matematik-sorulari" },
+      { label: "LGS matematikte zorlananlar için plan", href: "/blog/lgs-matematikte-zorlananlar-icin" },
     ],
   },
   {
     title: "TYT ve AYT matematik rehberleri",
     text: "TYT hızını, AYT konu derinliğini ve ortak deneme geri bildirimini dengeli ilerletin.",
     links: [
-      { label: "TYT matematik çalışma programı", href: "/blog/tyt-matematik-calisma-programi/" },
-      { label: "AYT matematik çalışma programı", href: "/blog/ayt-matematik-calisma-programi/" },
-      { label: "TYT problem çözme hızı", href: "/blog/tyt-matematik-problem-cozme-hizi/" },
+      { label: "TYT matematik çalışma programı", href: "/blog/tyt-matematik-calisma-programi" },
+      { label: "AYT matematik çalışma programı", href: "/blog/ayt-matematik-calisma-programi" },
+      { label: "TYT problem çözme hızı", href: "/blog/tyt-matematik-problem-cozme-hizi" },
     ],
   },
 ];
@@ -117,7 +117,7 @@ export default function MathematicsHubPage() {
                 En fazla dört öğrencilik canlı matematik dersinde öğrenci sorusunu sorar, çözümünü gösterir ve ders sonrasında LGS veya YKS hedefi için ne çalışacağını bilir.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/ders-paketleri/" className="site-btn site-btn-primary site-btn-lg">
+                <Link href="/ders-paketleri" className="site-btn site-btn-primary site-btn-lg">
                   Matematik paketlerini gör
                 </Link>
                 <LeadFunnelTrigger
@@ -179,13 +179,13 @@ export default function MathematicsHubPage() {
         <section className="border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
           <div className="site-container py-16 sm:py-24">
             <div className="grid gap-5 md:grid-cols-2">
-              <Link href="/lgs/" className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9">
+              <Link href="/lgs" className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9">
                 <p className="site-kicker">8. sınıf</p>
                 <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.6rem)] leading-tight text-[var(--site-ink)]">LGS matematik dersi</h2>
                 <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">Yeni nesil soru, temel eksik ve deneme geri bildirimini öğrencinin seviyesine göre ele alın.</p>
                 <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-olive)]">LGS matematiği incele <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" aria-hidden="true" /></span>
               </Link>
-              <Link href="/yks/" className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9">
+              <Link href="/yks" className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9">
                 <p className="site-kicker">TYT ve AYT</p>
                 <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.6rem)] leading-tight text-[var(--site-ink)]">YKS matematik dersi</h2>
                 <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">TYT hızını, AYT konu derinliğini ve deneme analizini öğrencinin hedefine göre dengeleyin.</p>
@@ -228,8 +228,10 @@ export default function MathematicsHubPage() {
               <p className="mt-4 text-[16px] leading-8 text-[var(--site-body)]">Kararı yalnız ders adına göre değil; grup büyüklüğü, canlı etkileşim, ders sonrası yönlendirme ve aile bütçesine göre verin.</p>
             </div>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <Link href="/online-dershane/" className="group flex items-center justify-between gap-4 rounded-[20px] border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] hover:border-[var(--brand-olive)]">Online dershane modelini incele <ArrowRight size={17} className="shrink-0 group-hover:translate-x-1" aria-hidden="true" /></Link>
-              <Link href="/online-ozel-ders/" className="group flex items-center justify-between gap-4 rounded-[20px] border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] hover:border-[var(--brand-olive)]">Online matematik özel dersi karşılaştır <ArrowRight size={17} className="shrink-0 group-hover:translate-x-1" aria-hidden="true" /></Link>
+              {/* `/online-dershane` next.config'te 308 ile buraya yönleniyor;
+                  iç bağlantı doğrudan hedefe verilir. */}
+              <Link href="/urunler/online-dershanem" className="group flex items-center justify-between gap-4 rounded-[20px] border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] hover:border-[var(--brand-olive)]">Online dershane modelini incele <ArrowRight size={17} className="shrink-0 group-hover:translate-x-1" aria-hidden="true" /></Link>
+              <Link href="/online-ozel-ders" className="group flex items-center justify-between gap-4 rounded-[20px] border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] hover:border-[var(--brand-olive)]">Online matematik özel dersi karşılaştır <ArrowRight size={17} className="shrink-0 group-hover:translate-x-1" aria-hidden="true" /></Link>
             </div>
           </div>
         </section>

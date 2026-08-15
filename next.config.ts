@@ -106,8 +106,17 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  /**
+   * Eski URL'ler BURADA yönlendirilir, sayfa içinde `permanentRedirect()` ile
+   * DEĞİL: kökte `app/loading.tsx` olduğu için her dinamik sayfa stream
+   * ediliyor ve sayfa içi yönlendirme tarayıcıya 200 gövdesinin İÇİNDE
+   * ulaşıyor. Arama motoru 301 değil, kök layout metadata'sıyla boş bir 200
+   * görüyordu (`/matematik-ders-paketi` indekslenmiş bir adresti).
+   */
   async redirects() {
     return [
+      { source: "/matematik-ders-paketi", destination: "/ders-paketleri", permanent: true },
+      { source: "/paket", destination: "/ders-paketleri", permanent: true },
       { source: "/tyt", destination: "/yks", permanent: true },
       { source: "/ayt", destination: "/yks", permanent: true },
       { source: "/online-dershane", destination: "/urunler/online-dershanem", permanent: true },

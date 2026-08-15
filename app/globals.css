@@ -555,12 +555,10 @@ html {
 /* Panel: oyuncak gibi değil, kullanırken keyif veren sıcak çalışma yüzeyi. */
 :root {
   --panel-nav-active: #e9efdf;
-  --panel-card-shadow: 0 18px 55px -42px rgba(20, 20, 15, 0.36);
-}
-.panel-app-bg {
-  background:
-    radial-gradient(circle at 82% -5%, rgba(244, 216, 106, .15), transparent 25rem),
-    linear-gradient(180deg, #fbfaf5 0%, #f8f7f1 100%);
+  /* Onaylı tasarımda panel kartı gölgesizdir; sınıf hâlâ birçok
+     ekranda `shadow-[var(--panel-card-shadow)]` olarak yazılı olduğu için
+     değer buradan nötrlendi. */
+  --panel-card-shadow: none;
 }
 .panel-nav-scroll {
   scrollbar-width: none;
@@ -569,15 +567,15 @@ html {
 .panel-nav-scroll::-webkit-scrollbar { display: none; }
 .panel-label {
   display: block;
-  color: var(--site-ink);
-  font-size: 0.75rem;
-  font-weight: 750;
-  letter-spacing: 0.015em;
+  color: var(--dc-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
 }
 .panel-input {
   width: 100%;
-  border: 1px solid var(--site-line);
-  border-radius: 13px;
+  border: 1px solid var(--dc-line);
+  border-radius: 10px;
   background: #fff;
   padding: 0.72rem 0.82rem;
   color: var(--site-ink);
@@ -588,9 +586,9 @@ html {
 .panel-input::placeholder { color: #97968d; }
 .panel-input:hover { border-color: #d3cebf; }
 .panel-input:focus {
-  border-color: var(--brand-olive);
+  border-color: var(--dc-brand);
   outline: none;
-  box-shadow: 0 0 0 3px var(--brand-olive-soft);
+  box-shadow: 0 0 0 3px var(--dc-brand-soft);
 }
 .panel-input:disabled {
   cursor: not-allowed;
@@ -617,9 +615,9 @@ html {
   line-height: 1.45;
 }
 .panel-field :where(input, select, textarea):focus {
-  border-color: var(--brand-olive);
+  border-color: var(--dc-brand);
   outline: none;
-  box-shadow: 0 0 0 3px var(--brand-olive-soft);
+  box-shadow: 0 0 0 3px var(--dc-brand-soft);
 }
 .panel-primary-button,
 .panel-secondary-button {
@@ -697,20 +695,20 @@ html {
   transition: border-color .15s ease, background-color .15s ease;
 }
 .panel-quick-action:hover { border-color: var(--dc-brand); }
-.panel-quick-action-primary { border-color: var(--brand-olive); background: var(--brand-olive); color: #fff; }
-.panel-quick-action-primary:hover { border-color: var(--brand-olive-hover); background: var(--brand-olive-hover); }
+.panel-quick-action-primary { border-color: var(--dc-brand-strong); background: var(--dc-brand-strong); color: #fff; }
+.panel-quick-action-primary:hover { border-color: var(--dc-brand-hover); background: var(--dc-brand-hover); }
 .panel-metric-card {
   border: 1px solid var(--dc-line);
   border-radius: 14px;
   background: #fff;
   padding: 1.1rem;
 }
-.panel-metric-icon { display: grid; width: 2.35rem; height: 2.35rem; place-items: center; border-radius: 13px; }
+.panel-metric-icon { display: grid; width: 2.35rem; height: 2.35rem; place-items: center; border-radius: 10px; }
 .panel-tone-sky { background: #e8f2fa; color: #24527c; }
 .panel-tone-mint { background: #e5efe2; color: #365630; }
 .panel-tone-yellow { background: #fff3c5; color: #765b0a; }
 .panel-tone-lavender { background: #eee9f7; color: #55447b; }
-.panel-text-link { display: inline-flex; align-items: center; gap: .25rem; color: var(--brand-olive); font-size: .7rem; font-weight: 750; }
+.panel-text-link { display: inline-flex; align-items: center; gap: .3rem; color: var(--dc-brand-strong); font-size: .84rem; font-weight: 700; }
 .panel-text-link:hover { text-decoration: underline; }
 .panel-attention-rose { background: #fbe9e4; color: #9a3b2c; }
 .panel-attention-amber { background: #fff3c5; color: #765b0a; }

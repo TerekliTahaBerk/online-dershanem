@@ -1,8 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { normalizePrismaEnv } from "@/lib/prisma-env";
+import { checkDevDatabase } from "@/lib/dev-database-guard";
 
 const { databaseUrl, directUrl } = normalizePrismaEnv();
+
+// `.env.local` production adreslerini taşıyabiliyor; development'ta uzak
+// veritabanı açık onay ister. Ayrıntı: lib/dev-database-guard.ts
+const devDatabase = checkDevDatabase(process.env);
+if (!devDatabase.ok) throw new Error(`[db] ${devDatabase.reason}`);
 const isAccelerateUrl =
   databaseUrl?.startsWith("prisma://") === true ||
   databaseUrl?.startsWith("prisma+postgres://") === true;

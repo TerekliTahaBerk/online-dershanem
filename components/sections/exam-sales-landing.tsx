@@ -283,7 +283,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
             ))}
           </div>
           <a
-            href="/sss/"
+            href="/sss"
             className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
           >
             Tüm soru ve cevaplar — Sıkça Sorulanlar

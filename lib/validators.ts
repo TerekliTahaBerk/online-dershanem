@@ -11,6 +11,10 @@ const optionalTrimmedString = z
 export const leadSubmissionSchema = z.object({
   fullName: trimmedString,
   phone: trimmedString,
+  // İletişim formu e-postayı topluyordu ama hiçbir yere yazmıyordu; CRM
+  // kaydına (`BusinessLead.email`) geçirebilmek için taşınır. `LeadSubmission`
+  // modelinde ayrı sütun yok, orada `adminNotes` içinde kalır.
+  email: z.string().trim().email().max(254).optional().or(z.literal("")),
   classLevel: trimmedString,
   examType: trimmedString,
   targetGoal: trimmedString,

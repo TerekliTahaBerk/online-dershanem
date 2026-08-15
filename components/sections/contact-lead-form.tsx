@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessageCircle, Mail, Check, CircleAlert } from "lucide-react";
 import Link from "next/link";
 import { contact } from "@/lib/content";
@@ -83,6 +83,23 @@ export function ContactLeadForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const formRef = useRef<HTMLFormElement>(null);
 
+  /**
+   * Paket kurucudan gelen seçimi devral (`/iletisim?sinav=LGS&paket=…`).
+   * `useSearchParams` yerine efekt içinde okunuyor: sayfanın render modunu
+   * değiştirmiyor ve prefill sadece bir ilerletme (progressive enhancement).
+   */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const exam = params.get("sinav");
+    const pack = params.get("paket");
+    if (!exam && !pack) return;
+    setForm((prev) => ({
+      ...prev,
+      goal: exam === "LGS" ? goals[0] : exam === "YKS" ? goals[1] : prev.goal,
+      topic: pack ? `Paket kurucudaki seçimim: ${pack}` : prev.topic,
+    }));
+  }, []);
+
   const update = (key: keyof FormState, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: undefined }));
@@ -130,6 +147,7 @@ export function ContactLeadForm() {
         body: JSON.stringify({
           fullName: form.parentName.trim(),
           phone: form.phone.trim(),
+          email: form.email.trim(),
           classLevel: form.grade,
           examType: form.goal,
           targetGoal: form.goal,
@@ -360,7 +378,7 @@ export function ContactLeadForm() {
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-[var(--site-line)] accent-[var(--brand-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)]"
           />
           <span>
-            <Link href="/kvkk/" className="font-medium text-[var(--brand-orange-ink)] underline-offset-2 hover:underline">
+            <Link href="/kvkk" className="font-medium text-[var(--brand-orange-ink)] underline-offset-2 hover:underline">
               KVKK Aydınlatma Metni
             </Link>
             {" "}kapsamında bilgilerimin iletişim amacıyla işlenmesini onaylıyorum.

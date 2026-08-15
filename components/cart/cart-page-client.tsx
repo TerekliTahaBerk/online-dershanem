@@ -144,15 +144,15 @@ export function CartPageClient() {
             </a>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--site-line)] pt-3 text-[11.5px] text-[var(--site-muted)]">
-              <Link href="/iade/" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
+              <Link href="/iade" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
                 İade Politikası
               </Link>
               <span aria-hidden="true" className="text-[var(--site-line)]">·</span>
-              <Link href="/kvkk/" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
+              <Link href="/kvkk" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
                 KVKK
               </Link>
               <span aria-hidden="true" className="text-[var(--site-line)]">·</span>
-              <Link href="/gizlilik/" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
+              <Link href="/gizlilik" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
                 Gizlilik
               </Link>
             </div>

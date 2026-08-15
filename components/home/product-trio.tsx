@@ -95,7 +95,7 @@ const products = [
       "Birebir ya da en fazla 4 kişilik grupta ders. Öğretmen soruyu derste seninle çözer, ders sonrası neyi tekrar edeceğin yazılı kalır.",
     tracks: ["LGS", "YKS"],
     cta: "Online Dershanem'i İncele",
-    href: "/urunler/online-dershanem/",
+    href: "/urunler/online-dershanem",
     Preview: LivePreview,
   },
   {
@@ -105,7 +105,7 @@ const products = [
       "Koçun haftanı planlar; bir sonraki görüşmede ne kadarını yaptığınızı birlikte kontrol edersiniz. Tüm dersleri kapsar.",
     tracks: ["LGS", "YKS"],
     cta: "Online Koçum'u İncele",
-    href: "/urunler/online-kocum/",
+    href: "/urunler/online-kocum",
     Preview: PlanPreview,
   },
   {
@@ -115,7 +115,7 @@ const products = [
       "LGS, TYT ve AYT denemeleri. Hangi konuda ve hangi soru tipinde puan kaybettiğini görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
     cta: "Deneme Kulübünü İncele",
-    href: "/urunler/online-deneme-kulubum/",
+    href: "/urunler/online-deneme-kulubum",
     Preview: ExamPreview,
   },
 ];

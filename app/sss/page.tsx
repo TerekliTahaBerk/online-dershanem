@@ -99,7 +99,7 @@ export default function SssPage() {
           title="Sorunuz hâlâ duruyor mu?"
           subtitle="Öğrencinin sınıfını, matematik hedefini veya paket sürecini ücretsiz görüşmede konuşalım."
           ctaLabel="Bize ulaşın"
-          ctaHref="/iletisim/"
+          ctaHref="/iletisim"
         />
       </main>
       <SiteFooter />

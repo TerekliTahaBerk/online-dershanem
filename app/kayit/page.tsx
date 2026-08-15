@@ -7,11 +7,20 @@ import { PUBLIC_REGISTER_ENABLED } from "@/lib/panel-config";
 import { getSession } from "@/lib/auth/session";
 import { postAuthenticationPath } from "@/lib/auth/products";
 
-export const metadata: Metadata = {
-  title: "Kayıt Ol",
-  description: "Online Dershanem hesabı oluşturun.",
-  robots: { index: false, follow: false },
-};
+/**
+ * Statik `metadata` kapalıyken bile "Kayıt Ol" başlığını basıyordu: sayfa
+ * 404 gövdesi gösterirken sekmede var olmayan bir ekranın adı duruyordu.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  if (!PUBLIC_REGISTER_ENABLED) {
+    return { title: "Sayfa bulunamadı", robots: { index: false, follow: false } };
+  }
+  return {
+    title: "Kayıt Ol",
+    description: "Online Dershanem hesabı oluşturun.",
+    robots: { index: false, follow: false },
+  };
+}
 
 /**
  * Public kayıt ekranı — onaylı tasarım (Web.dc.html → isLogin, "KAYIT OL").

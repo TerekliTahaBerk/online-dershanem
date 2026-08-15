@@ -22,9 +22,12 @@ test.describe("Instagram CRM ve finans merkezi", () => {
       expect((await page.request.post("/api/cron/business-jobs", { headers: { authorization: `Bearer ${process.env.PANEL_E2E_JOB_SECRET}` } })).status()).toBe(200);
     }
     await login(page, admin);
-    await page.goto("/panel/urun-sec");
-    await expect(page.getByRole("link", { name: "İşletme Paneline git" })).toBeVisible();
-    await page.getByRole("link", { name: "İşletme Paneline git" }).click();
+    /*
+     * Ürün seçici ekranı tek-panele geçişte kaldırıldı; işletme alanına artık
+     * panel kenar çubuğundaki alan değiştirme bağlantısından geçiliyor.
+     */
+    await expect(page.getByRole("link", { name: "İşletme paneline geç" })).toBeVisible();
+    await page.getByRole("link", { name: "İşletme paneline geç" }).click();
     await expect(page.getByRole("link", { name: "İşletme yönetim ana sayfası" })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "İşletme panel menüsü" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Kontrol merkezi/ })).toHaveCount(0);
@@ -77,8 +80,8 @@ test.describe("Instagram CRM ve finans merkezi", () => {
   });
   test("işletme rolü olmayan kullanıcı finans API'sine erişemez", async ({ page }) => {
     await login(page, teacher);
-    await page.goto("/panel/urun-sec");
-    await expect(page.getByRole("link", { name: "İşletme Paneline git" })).toHaveCount(0);
+    // İşletme ataması olmayan kullanıcıya alan değiştirme bağlantısı basılmaz.
+    await expect(page.getByRole("link", { name: "İşletme paneline geç" })).toHaveCount(0);
     const response = await page.request.get("/api/admin/business/reports.csv"); expect(response.status()).toBe(401);
     await page.goto("/panel/yonetim/isletme/gelirler");
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();

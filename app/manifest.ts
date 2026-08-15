@@ -6,11 +6,15 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Online Dershanem",
     short_name: "Online Dershanem",
-    description: "Online matematik dershanesi: küçük grup canlı matematik dersleri ve ders sonrası takip.",
+    // Açıklama math-only dönemden kalmıştı; site artık üç ürünlü ve çok dersli.
+    description:
+      "LGS ve YKS için canlı ders, koçluk ve deneme analizi: Online Dershanem, Online Koçum ve Online Deneme Kulübüm.",
     start_url: "/",
     display: "standalone",
-    background_color: "#FBFAF5",
-    theme_color: "#FBFAF5",
+    // Onaylı tasarımın zemini (`--dc-canvas`). Eski krem #FBFAF5 buradan
+    // kalmıştı ve mobil tarayıcı çerçevesi siteyle uyuşmuyordu.
+    background_color: "#FBFCFA",
+    theme_color: "#FBFCFA",
     icons: [
       {
         src: "/icon-192.png",

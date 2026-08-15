@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Home, ArrowLeft, Search } from "lucide-react";
 
 const POPULAR_LINKS = [
-  { href: "/ders-paketleri/", label: "Matematik Ders Paketi" },
-  { href: "/yks/", label: "YKS Matematik" },
-  { href: "/lgs/", label: "LGS Matematik" },
-  { href: "/misyonumuz/", label: "Misyonumuz" },
-  { href: "/iletisim/", label: "İletişim" },
-  { href: "/sss/", label: "Sıkça Sorulan Sorular" },
+  { href: "/ders-paketleri", label: "Matematik Ders Paketi" },
+  { href: "/yks", label: "YKS Matematik" },
+  { href: "/lgs", label: "LGS Matematik" },
+  { href: "/misyonumuz", label: "Misyonumuz" },
+  { href: "/iletisim", label: "İletişim" },
+  { href: "/sss", label: "Sıkça Sorulan Sorular" },
 ];
 
 export default function NotFound() {

@@ -19,7 +19,7 @@ export const publicProducts = [
     slug: "online-dershanem",
     name: "Online Dershanem",
     label: "Dershanem",
-    href: "/urunler/online-dershanem/",
+    href: "/urunler/online-dershanem",
     role: "Çok dersli canlı öğrenme",
     eyebrow: "Birlikte öğren",
     description:
@@ -31,7 +31,7 @@ export const publicProducts = [
     slug: "online-kocum",
     name: "Online Koçum",
     label: "Koçum",
-    href: "/urunler/online-kocum/",
+    href: "/urunler/online-kocum",
     role: "Planlama ve sürdürülebilir takip",
     eyebrow: "Düzenini kur",
     description:
@@ -43,7 +43,7 @@ export const publicProducts = [
     slug: "online-deneme-kulubum",
     name: "Online Deneme Kulübüm",
     label: "Deneme Kulübüm",
-    href: "/urunler/online-deneme-kulubum/",
+    href: "/urunler/online-deneme-kulubum",
     role: "Ölçme, analiz ve sonraki adım",
     eyebrow: "Nerede olduğunu gör",
     description:
@@ -64,7 +64,7 @@ export const publicProducts = [
 export const sharedIntelligenceLayer = {
   name: "Dino AI",
   role: "Üç ürünün ortak zekâ katmanı",
-  href: "/dino-ai/",
+  href: "/dino-ai",
   status: "Geliştirme aşamasında",
   description:
     "Ders geri bildirimini, çalışma planını ve deneme analizini öğrencinin anlayabileceği tek bir sonraki adıma dönüştürmeyi hedefliyor.",

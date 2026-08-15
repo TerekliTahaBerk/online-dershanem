@@ -46,7 +46,7 @@ export function HomeFaq() {
             Ürün, kapsam ve fiyatlama hakkında en çok sorulanlar.
           </p>
           <a
-            href="/sss/"
+            href="/sss"
             className="mt-3.5 inline-block text-[14.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
           >
             Tüm sorular →

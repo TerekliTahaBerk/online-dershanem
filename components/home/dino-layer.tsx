@@ -38,7 +38,7 @@ export function DinoLayer() {
             yapması gerektiğini sade bir dille söyler. Kararı öğretmen ve koç verir.
           </p>
           <Link
-            href="/dino-ai/"
+            href="/dino-ai"
             className="mt-6 inline-block text-[15px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
           >
             Dino AI&apos;ın çalıştığı yerler →

@@ -56,7 +56,7 @@ export default async function AuditLogsPage({ searchParams }: { searchParams: Pr
         })}
       </nav>
 
-      <section className="mt-4 overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white shadow-[var(--panel-card-shadow)]">
+      <section className="mt-4 overflow-hidden rounded-[14px] border border-[var(--site-line)] bg-white shadow-[var(--panel-card-shadow)]">
         <div className="divide-y divide-[var(--site-line)]">
           {logs.map((log) => (
             <article key={log.id} className="grid gap-2 px-4 py-4 transition hover:bg-[var(--site-bg-warm)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:px-5">

@@ -92,7 +92,7 @@ export default function CampsPage() {
               </p>
             </div>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/iletisim/" className="site-btn site-btn-primary site-btn-lg">
+              <Link href="/iletisim" className="site-btn site-btn-primary site-btn-lg">
                 Ön kayıt bilgisi al
                 <ArrowRight size={17} aria-hidden="true" />
               </Link>
@@ -172,7 +172,7 @@ export default function CampsPage() {
                     </div>
                   </dl>
                   <Link
-                    href="/iletisim/"
+                    href="/iletisim"
                     className="mt-6 inline-flex items-center gap-2 text-[14.5px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
                   >
                     {camp.featured ? "Ön kayıt bilgisi al" : "Duyurulunca haber ver"}
@@ -216,7 +216,7 @@ export default function CampsPage() {
           title="Kamp duyurularını kaçırmayın."
           subtitle="Öğrencinin seviyesini ve ilgilendiğiniz kampı paylaşın; kesin program açıklandığında size bilgi verelim."
           ctaLabel="Ön kayıt bilgisi al"
-          ctaHref="/iletisim/"
+          ctaHref="/iletisim"
         />
       </main>
       <SiteFooter />

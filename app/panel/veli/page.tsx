@@ -245,7 +245,7 @@ export default async function ParentHomePage({
               plan ve takip burada görünür.
             </p>
             <Link
-              href="/paketler/"
+              href="/paketler"
               className="mt-3.5 inline-block rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
             >
               Paketi görüntüle

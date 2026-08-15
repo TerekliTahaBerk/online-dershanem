@@ -5,6 +5,36 @@ import { redeemCoupon } from "@/lib/discount";
 import { sendOrderPaidAdminEmail, sendOrderPaidUserEmail } from "@/lib/email";
 import { ensurePaidOdOnboarding } from "@/lib/od/onboarding";
 
+/**
+ * Ödeme alındığında aktif adminlere panel içi bildirim yazar.
+ *
+ * Best-effort: bildirim yazımı başarısız olursa ödeme akışı bozulmamalı —
+ * sipariş zaten `/panel/yonetim/isler` kuyruğunda görünür.
+ */
+async function notifyAdminsOfPaidOrder(
+  orderId: string,
+  packageName: string,
+  totalCents: number,
+  buyerName: string | null | undefined,
+): Promise<void> {
+  try {
+    const admins = await prisma.user.findMany({ where: { role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
+    if (!admins.length) return;
+    const total = (totalCents / 100).toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
+    await prisma.notification.createMany({
+      data: admins.map((admin) => ({
+        userId: admin.id,
+        type: "SYSTEM" as const,
+        title: "Yeni ödeme alındı",
+        body: `${buyerName || "Müşteri"} · ${packageName} · ${total}`,
+        href: "/panel/yonetim/isler",
+      })),
+    });
+  } catch {
+    /* bildirim yazılamadı — ödeme akışı etkilenmez */
+  }
+}
+
 export async function markOdOrderPaid(
   orderId: string,
   options: { transaction?: Prisma.TransactionClient; afterCommit?: Array<() => Promise<void>> } = {},
@@ -45,6 +75,11 @@ export async function markOdOrderPaid(
     const deliveries: Promise<void>[] = [];
     if (result.buyer.email) deliveries.push(sendOrderPaidUserEmail({ to: result.buyer.email, name: result.buyer.fullName, service: "OD", orderId, packageName: result.packageName, totalCents: result.totalCents }));
     deliveries.push(sendOrderPaidAdminEmail({ service: "OD", orderId, packageName: result.packageName, totalCents: result.totalCents, buyer: result.buyer }));
+    // Admin satış e-postası `EMAIL_MODE=all` gerektirir ve varsayılan "receipts".
+    // Panel içi bildirim bu yüzden e-postadan BAĞIMSIZ yazılır: aksi halde
+    // varsayılan kurulumda ödeme alındığında kimseye haber gitmiyor.
+    // Aynı kalıp public lead formunda da kullanılıyor (`app/api/leads`).
+    deliveries.push(notifyAdminsOfPaidOrder(orderId, result.packageName, result.totalCents, result.buyer.fullName));
     await Promise.all(deliveries);
   };
   if (options.afterCommit) options.afterCommit.push(notify);

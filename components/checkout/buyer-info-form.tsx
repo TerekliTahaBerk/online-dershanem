@@ -45,7 +45,17 @@ export type BuyerInfoFormProps = {
   /** Called after successful submission (e.g. to clear cart). */
   onSuccess?: () => void;
   placementExpectation?: OdPlacementExpectation;
+  /**
+   * İndirim kodu alanını açar. Verilmezse alan basılmaz.
+   *
+   * `subtotalCents` yalnızca doğrulama çağrısı içindir; ödenecek tutarı
+   * SUNUCU yeniden hesaplar (`/api/od/checkout/start` kuponu bir kez daha
+   * doğrular), bu yüzden buradaki değer manipüle edilse bile para riski yok.
+   */
+  couponContext?: { subtotalCents: number };
 };
+
+type AppliedCoupon = { code: string; discountCents: number; label: string };
 
 type ApiResult =
   | { ok: true; redirectUrl?: string; paymentLink?: string }
@@ -86,12 +96,70 @@ export function BuyerInfoForm({
   service,
   onSuccess,
   placementExpectation,
+  couponContext,
 }: BuyerInfoFormProps) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const pendingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [couponCode, setCouponCode] = useState("");
+  const [couponState, setCouponState] = useState<"idle" | "checking">("idle");
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const formElementRef = useRef<HTMLFormElement>(null);
+
+  /**
+   * Kodu ödemeden ÖNCE doğrular ki kullanıcı geçersiz kodla ödeme ekranına
+   * gitmesin. Yalnızca doğrulanmış kod payload'a eklenir; yazım hatası tüm
+   * checkout'u düşürmez.
+   */
+  async function applyCoupon() {
+    const code = couponCode.trim();
+    if (!code || !couponContext) return;
+    const email = String(
+      new FormData(formElementRef.current!).get("email") ?? "",
+    ).trim();
+    if (!email.includes("@")) {
+      setCouponError("Kodu uygulamak için önce e-posta adresinizi girin.");
+      return;
+    }
+    setCouponState("checking");
+    setCouponError(null);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code,
+          service,
+          subtotalCents: couponContext.subtotalCents,
+          email,
+        }),
+      });
+      const json = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        code?: string;
+        discountCents?: number;
+        kindLabel?: string;
+      };
+      if (!res.ok || !json.ok || !json.code || typeof json.discountCents !== "number") {
+        setAppliedCoupon(null);
+        setCouponError(json.error || "İndirim kodu doğrulanamadı.");
+        return;
+      }
+      setAppliedCoupon({
+        code: json.code,
+        discountCents: json.discountCents,
+        label: json.kindLabel || "İndirim",
+      });
+    } catch {
+      setCouponError("İndirim kodu doğrulanamadı. Bağlantınızı kontrol edin.");
+    } finally {
+      setCouponState("idle");
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -104,6 +172,8 @@ export function BuyerInfoForm({
       payload[key] = typeof value === "string" ? value.trim() : value;
     });
     payload.availabilityTimeRanges = fd.getAll("availabilityTimeRanges").map(String);
+    // Yalnız doğrulanmış kod gönderilir; sunucu yine de yeniden doğrular.
+    payload.couponCode = appliedCoupon?.code ?? null;
     // Merge extraPayload (cart items, etc.) — overrides any flat duplicates.
     if (extraPayload) {
       for (const [k, v] of Object.entries(extraPayload)) {
@@ -232,6 +302,7 @@ export function BuyerInfoForm({
 
   return (
     <form
+      ref={formElementRef}
       onSubmit={onSubmit}
       onChange={(event) => {
         const target = event.target;
@@ -449,6 +520,73 @@ export function BuyerInfoForm({
           placeholder="Tercih, müsaitlik, ihtiyaç vb."
         />
       </Section>
+
+      {couponContext ? (
+        <section className="rounded-[24px] border border-[var(--site-line)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
+          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">
+            İndirim kodu
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+            Kodunuz varsa buraya girin; indirim ödeme tutarına yansır.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <label htmlFor="couponCodeInput" className="sr-only">
+              İndirim kodu
+            </label>
+            <input
+              id="couponCodeInput"
+              type="text"
+              value={couponCode}
+              autoComplete="off"
+              maxLength={60}
+              disabled={!!appliedCoupon}
+              onChange={(event) => {
+                setCouponCode(event.target.value);
+                setCouponError(null);
+              }}
+              placeholder="ÖRN. HOSGELDIN"
+              aria-invalid={!!couponError}
+              aria-describedby={couponError ? "couponCode-error" : undefined}
+              className="min-h-12 flex-1 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-3 text-[15px] uppercase text-[var(--site-ink)] outline-none transition-[border-color,box-shadow] duration-150 placeholder:normal-case placeholder:text-[var(--site-muted)] focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/15 disabled:opacity-60"
+            />
+            {appliedCoupon ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setAppliedCoupon(null);
+                  setCouponCode("");
+                  setCouponError(null);
+                }}
+                className="min-h-12 rounded-2xl border border-[var(--site-line)] px-5 text-[14px] font-semibold text-[var(--site-body)] transition-colors hover:border-rose-300 hover:text-rose-600"
+              >
+                Kaldır
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void applyCoupon()}
+                disabled={couponState === "checking" || !couponCode.trim()}
+                className="min-h-12 rounded-2xl border border-[var(--brand-orange)] px-5 text-[14px] font-semibold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {couponState === "checking" ? "Kontrol ediliyor..." : "Uygula"}
+              </button>
+            )}
+          </div>
+          {couponError ? (
+            <FieldError id="couponCode-error">{couponError}</FieldError>
+          ) : null}
+          {appliedCoupon ? (
+            <p role="status" className="mt-3 rounded-[14px] bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-900">
+              <strong>{appliedCoupon.code}</strong> uygulandı ·{" "}
+              {(appliedCoupon.discountCents / 100).toLocaleString("tr-TR", {
+                style: "currency",
+                currency: "TRY",
+              })}{" "}
+              indirim ödeme ekranında düşülür.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       <div className="space-y-3 rounded-[20px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4">
         <label className="flex items-start gap-3 cursor-pointer">

@@ -107,7 +107,7 @@ export default function MissionPage() {
           title="Bu yaklaşımı öğrencinizde deneyin."
           subtitle="Ücretsiz ön görüşmede sınıfını, seviyesini ve hedefini konuşalım; uygun küçük grubu birlikte bulalım."
           ctaLabel="Ücretsiz görüşme"
-          ctaHref="/iletisim/"
+          ctaHref="/iletisim"
         />
       </main>
       <SiteFooter />

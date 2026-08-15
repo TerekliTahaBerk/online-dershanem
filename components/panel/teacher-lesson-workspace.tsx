@@ -229,7 +229,7 @@ export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learnin
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-      <section className="overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-white shadow-[0_18px_55px_-35px_rgba(20,20,15,.28)]">
+      <section className="overflow-hidden rounded-[14px] border border-[var(--site-line)] bg-white shadow-[0_18px_55px_-35px_rgba(20,20,15,.28)]">
         <div className="flex flex-col gap-4 border-b border-[var(--site-line)] bg-[linear-gradient(135deg,#f7f8f1_0%,#fff_58%,#fff8dd_100%)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div>
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[var(--brand-olive)]">
@@ -289,14 +289,14 @@ export function TeacherLessonWorkspace({ lesson, baselineMetricsEnabled, learnin
         </div>
         {quickLessonCloseEnabled ? <div className="grid grid-cols-2 gap-2"><button type="button" onClick={markEveryonePresent} className="panel-quick-action justify-center"><UsersRound size={14} /> Tümü burada</button><button type="button" onClick={() => setShowStudentExceptions((current) => !current)} className="panel-quick-action justify-center">{showStudentExceptions ? "İstisnaları gizle" : "İstisna ekle"}</button></div> : null}
         {(!quickLessonCloseEnabled || showStudentExceptions || exceptionCount > 0) ? form.students.map((student, index) => (
-          <div key={student.id} className="rounded-[22px] border border-[var(--site-line)] bg-white p-4 shadow-[0_10px_35px_-30px_rgba(20,20,15,.35)]">
+          <div key={student.id} className="rounded-[14px] border border-[var(--site-line)] bg-white p-4 shadow-[0_10px_35px_-30px_rgba(20,20,15,.35)]">
             <div className="flex items-center gap-3"><span className={`grid h-9 w-9 place-items-center rounded-xl text-sm font-extrabold ${["bg-[#dceaf6] text-[#1e3a5f]", "bg-[#fcedb4] text-[#6b5310]", "bg-[#e6e0f0] text-[#3f3463]", "bg-[#d7e5d5] text-[#2f4a2a]"][index % 4]}`}>{student.name.charAt(0)}</span><p className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--site-ink)]">{student.name}</p></div>{student.supportLabels.length ? <ul aria-label={`${student.name} işlevsel destekleri`} className="mt-2 flex flex-wrap gap-1">{student.supportLabels.map((label) => <li key={label} className="rounded-full bg-sky-50 px-2 py-1 text-[9px] font-bold text-sky-900">{label}</li>)}</ul> : null}
             <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-[var(--site-bg-warm)] p-1">
               {attendanceOptions.map((option) => <button key={option.value} type="button" aria-label={`${student.name}: ${option.label}`} aria-pressed={student.attendance === option.value} onClick={() => patchStudent(student.id, { attendance: option.value })} className={`rounded-lg px-1 py-2 text-[10px] font-bold transition ${student.attendance === option.value ? option.active : "text-[var(--site-muted)] hover:bg-white"}`}>{option.label}</button>)}
             </div>
             <textarea aria-label={`${student.name} için özel not`} value={student.note} onChange={(event) => patchStudent(student.id, { note: event.target.value })} className="panel-input mt-3 min-h-20 resize-none text-xs" placeholder="Farklı bir durum yoksa boş bırakın…" />
           </div>
-        )) : <div className="rounded-[22px] border border-dashed border-[#cbd7a8] bg-[#f8faef] p-5 text-center"><CheckCircle2 size={20} className="mx-auto text-emerald-700" /><p className="mt-2 text-sm font-bold">Grup varsayımı hazır</p><p className="mt-1 text-xs text-[var(--site-muted)]">Farklı bir durum yoksa öğrenci kartlarını açmanız gerekmez.</p></div>}
+        )) : <div className="rounded-[14px] border border-dashed border-[#cbd7a8] bg-[#f8faef] p-5 text-center"><CheckCircle2 size={20} className="mx-auto text-emerald-700" /><p className="mt-2 text-sm font-bold">Grup varsayımı hazır</p><p className="mt-1 text-xs text-[var(--site-muted)]">Farklı bir durum yoksa öğrenci kartlarını açmanız gerekmez.</p></div>}
       </aside>
     </div>
   );

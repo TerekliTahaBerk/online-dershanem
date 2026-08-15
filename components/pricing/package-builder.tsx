@@ -2,12 +2,17 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
+import { useCart } from "@/components/cart/cart-provider";
+import { trackConversionEvent } from "@/lib/tracking";
 import {
   billingSuffix,
+  builderContactQuery,
   discountPercent,
   formatCents,
   lessonSubjects,
+  resolveBuilderCheckout,
   resolvePackageQuote,
   type BuilderSelection,
   type ExamTrack,
@@ -119,6 +124,29 @@ export function PackageBuilder() {
   const quote = useMemo(() => resolvePackageQuote(selection), [selection]);
   const count = quote.selectedCount;
   const subjects = selection.exam ? lessonSubjects[selection.exam] : [];
+
+  // Seçim gerçekten satın alınabiliyorsa CTA sepete gider; aksi halde seçimi
+  // taşıyarak ön görüşmeye. Sınır `resolveBuilderCheckout` içinde tanımlıdır.
+  const router = useRouter();
+  const { add } = useCart();
+  const checkoutItem = useMemo(() => resolveBuilderCheckout(selection), [selection]);
+
+  const startCheckout = () => {
+    if (!checkoutItem) return;
+    add({
+      id: checkoutItem.id,
+      name: checkoutItem.name,
+      category: checkoutItem.category,
+      subject: checkoutItem.subject,
+      priceCents: checkoutItem.priceCents,
+      priceLabel: checkoutItem.priceLabel,
+    });
+    trackConversionEvent("purchase_cta_click", {
+      source: "package_builder",
+      packageName: checkoutItem.name,
+    });
+    router.push("/sepet");
+  };
 
   const pickExam = (exam: ExamTrack) =>
     setSelection((s) => ({
@@ -588,11 +616,28 @@ export function PackageBuilder() {
             >
               Bu Paketle Başla
             </span>
+          ) : checkoutItem ? (
+            <button type="button" onClick={startCheckout} className="site-btn site-btn-primary mt-5 w-full">
+              Bu Paketle Başla
+            </button>
           ) : (
-            <Link href="/iletisim/" className="site-btn site-btn-primary mt-5 w-full">
-              {quote.priceResolved ? "Bu Paketle Başla" : "Ön Görüşme Talep Et"}
+            <Link
+              href={`/iletisim/${builderContactQuery(selection)}`}
+              className="site-btn site-btn-primary mt-5 w-full"
+            >
+              {quote.priceResolved ? "Bu Paketle Devam Et" : "Ön Görüşme Talep Et"}
             </Link>
           )}
+
+          {/* Neden bazı yapılandırmalar doğrudan ödemeye gitmiyor — kullanıcı
+              CTA'nın neden değiştiğini görebilsin. */}
+          {count > 0 && !checkoutItem ? (
+            <p className="mt-2.5 text-center text-[12px] leading-[1.5] text-dc-ink-faint">
+              {selection.dershanem && !selection.kocum && !selection.denemeKulubum
+                ? "Birebir ders ve ek ders yapılandırmaları ön görüşmede kesinleşir."
+                : "Koçluk ve Deneme Kulübü için online kayıt akışı yayına alınmadan ödeme almıyoruz."}
+            </p>
+          ) : null}
 
           <p className="mt-3 text-center text-[12.5px] font-medium leading-[1.5] text-dc-ink-faint">
             {hintText(count)}

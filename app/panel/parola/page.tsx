@@ -30,7 +30,7 @@ export default async function ChangePasswordPage() {
             : "Yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapanır."}
         </p>
 
-        <div className="mt-8 rounded-[20px] border border-[var(--site-line)] bg-white p-6">
+        <div className="mt-8 rounded-[14px] border border-[var(--site-line)] bg-white p-6">
           <ChangePasswordForm forced={forced} />
         </div>
 

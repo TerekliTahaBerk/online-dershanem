@@ -98,10 +98,10 @@ export default function LGSLandingPage() {
           ]
         },
         resources: [
-          { label: "LGS matematik çalışma programı", href: "/blog/lgs-matematik-calisma-programi/" },
-          { label: "LGS yeni nesil matematik soruları", href: "/blog/lgs-yeni-nesil-matematik-sorulari/" },
-          { label: "Matematik deneme analizi", href: "/blog/matematik-deneme-analizi/" },
-          { label: "Tüm matematik rehberleri", href: "/matematik/" }
+          { label: "LGS matematik çalışma programı", href: "/blog/lgs-matematik-calisma-programi" },
+          { label: "LGS yeni nesil matematik soruları", href: "/blog/lgs-yeni-nesil-matematik-sorulari" },
+          { label: "Matematik deneme analizi", href: "/blog/matematik-deneme-analizi" },
+          { label: "Tüm matematik rehberleri", href: "/matematik" }
         ],
         faq: lgsFaq
       }}

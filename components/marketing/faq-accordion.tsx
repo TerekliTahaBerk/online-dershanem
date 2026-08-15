@@ -11,7 +11,7 @@ export function FaqAccordion({ title = "Karar vermeden önce merak edilenler.", 
         <div className="grid gap-10 lg:grid-cols-[.65fr_1.35fr] lg:gap-20">
           <div>
             <SectionIntro title={title} size="section" />
-            {showAllLink ? <Link href="/sss/" className="mt-7 inline-flex text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">Tüm soruları gör</Link> : null}
+            {showAllLink ? <Link href="/sss" className="mt-7 inline-flex text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">Tüm soruları gör</Link> : null}
           </div>
           <PublicAccordion items={items.map((item) => ({ title: item.q, content: item.a }))} />
         </div>

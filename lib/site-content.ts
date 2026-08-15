@@ -24,7 +24,7 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 export const productsMenu = {
   label: "Ürünler",
   accessibleLabel: "Ürünler menüsü",
-  href: "/urunler/",
+  href: "/urunler",
   items: publicProducts.map(({ name, href, role }) => ({
     label: name,
     href,
@@ -32,21 +32,27 @@ export const productsMenu = {
   })),
 } as const;
 
+/**
+ * "Ders Paketleri" menüde ZORUNLU: `/ders-paketleri` sitedeki TEK online satın
+ * alma sayfası. Daha önce yalnız footer'dan erişiliyordu; navbar, ana sayfa ve
+ * ürün sayfalarının hiçbirinde ödemeye giden bağlantı yoktu.
+ */
 export const primaryNav = [
-  { label: "Paketler", accessibleLabel: "Paketler", href: "/paketler/" },
+  { label: "Paketler", accessibleLabel: "Paketler", href: "/paketler" },
+  { label: "Ders Paketleri", accessibleLabel: "Ders paketleri ve fiyatları", href: "/ders-paketleri" },
   {
     label: sharedIntelligenceLayer.name,
     accessibleLabel: sharedIntelligenceLayer.name,
     href: sharedIntelligenceLayer.href,
   },
-  { label: "Hakkımızda", accessibleLabel: "Hakkımızda", href: "/hakkimizda/" },
-  { label: "Blog", accessibleLabel: "Blog", href: "/blog/" },
+  { label: "Hakkımızda", accessibleLabel: "Hakkımızda", href: "/hakkimizda" },
+  { label: "Blog", accessibleLabel: "Blog", href: "/blog" },
 ] as const;
 
 /** Sağ üst birincil CTA — paket kurucuya götürür (self-register yok). */
-export const navCta = { label: "Paketini Oluştur", href: "/paketler/" } as const;
+export const navCta = { label: "Paketini Oluştur", href: "/paketler" } as const;
 /** Öğrenci paneli girişi. Panel sıfırdan yazılana kadar `/giris` "yenileniyor" mesajı + destek kanallarını gösterir. */
-export const navLogin = { label: "Giriş Yap", href: "/giris/" } as const;
+export const navLogin = { label: "Giriş Yap", href: "/giris" } as const;
 
 /* ---------------- Sıkça sorulan sorular ---------------- */
 
@@ -94,36 +100,36 @@ export const footerColumns = [
     title: "Ürünler",
     links: [
       ...publicProducts.map(({ name, href }) => ({ label: name, href })),
-      { label: "Paketler", href: "/paketler/" },
+      { label: "Paketler", href: "/paketler" },
       { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
-      { label: "LGS çözümleri", href: "/lgs/" },
-      { label: "YKS çözümleri", href: "/yks/" },
-      { label: "Ders paketleri", href: "/ders-paketleri/" },
+      { label: "LGS çözümleri", href: "/lgs" },
+      { label: "YKS çözümleri", href: "/yks" },
+      { label: "Ders paketleri", href: "/ders-paketleri" },
     ],
   },
   {
     title: "Kurumsal",
     links: [
-      { label: "Hakkımızda", href: "/hakkimizda/" },
-      { label: "Blog", href: "/blog/" },
-      { label: "İletişim", href: "/iletisim/" },
+      { label: "Hakkımızda", href: "/hakkimizda" },
+      { label: "Blog", href: "/blog" },
+      { label: "İletişim", href: "/iletisim" },
     ],
   },
   {
     title: "Destek",
     links: [
-      { label: "Sıkça sorulan sorular", href: "/sss/" },
-      { label: "Ücretsiz görüşme", href: "/iletisim/" },
-      { label: "Öğrenci girişi", href: "/giris/" },
+      { label: "Sıkça sorulan sorular", href: "/sss" },
+      { label: "Ücretsiz görüşme", href: "/iletisim" },
+      { label: "Öğrenci girişi", href: "/giris" },
     ],
   },
 ] as const;
 
 /** Alt şerit — yalnızca depoda gerçekten var olan yasal sayfalar. */
 export const footerLegalLinks = [
-  { label: "Gizlilik", href: "/gizlilik/" },
-  { label: "KVKK", href: "/kvkk/" },
-  { label: "İade", href: "/iade/" },
+  { label: "Gizlilik", href: "/gizlilik" },
+  { label: "KVKK", href: "/kvkk" },
+  { label: "İade", href: "/iade" },
 ] as const;
 
 export const footerTagline =

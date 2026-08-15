@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Check, CreditCard, PhoneCall, Users, Video } from "lucide-react";
 import { PricingCard } from "@/components/pricing/pricing-card";
 import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
@@ -49,6 +50,21 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
                 <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">Neler dahil?</h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
                   LGS ve YKS paketlerinde aynı küçük grup ders standardı vardır.
+                </p>
+                {/*
+                  Sayfa matematik paketini satıyor ama alttaki SSS "hangi dersi
+                  seçersen seç fiyat aynı" diyordu; ikisi birbiriyle
+                  çelişiyordu. Kapsam açıkça yazılır ve diğer dersler için
+                  kurucuya yönlendirilir.
+                */}
+                <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
+                  Buradaki iki paket <strong>matematik dersi</strong> içindir. Ders
+                  fiyatı derse göre değişmez; başka bir ders ya da birden fazla ders
+                  istiyorsan{" "}
+                  <Link href="/paketler" className="font-semibold text-[var(--dc-brand-strong)] underline-offset-2 hover:underline">
+                    paket kurucudan
+                  </Link>{" "}
+                  seçebilirsin.
                 </p>
                 <ul className="mt-9 grid gap-x-8 gap-y-5">
                   {includedFeatures.map((f) => (
@@ -133,7 +149,7 @@ export function PackagesExperience({ title, subtitle, primarySource }: PackagesE
           title="Hangi paket uygun, birlikte karar verelim."
           subtitle="Kararsızsan ücretsiz ön görüşmede öğrencinin seviyesini ve sınav hedefini konuşalım."
           ctaLabel="Ücretsiz görüşme"
-          ctaHref="/iletisim/"
+          ctaHref="/iletisim"
         />
       </main>
 

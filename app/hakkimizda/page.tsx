@@ -9,7 +9,7 @@ export const metadata = buildMarketingMetadata({
   title: "Hakkımızda | Öğrenciyi yalnız bırakmayan bir sistem",
   description:
     "Online Dershanem canlı dersle başladı. Bugün ders, koçluk ve deneme analizi aynı çatı altında; üçü birbirinden haberdar çalışıyor.",
-  canonical: "/hakkimizda/",
+  canonical: "/hakkimizda",
 });
 
 const principles = [
@@ -45,8 +45,11 @@ export default function HakkimizdaPage() {
           <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
             <div>
               <p className="dc-eyebrow">Hakkımızda</p>
+              {/* `<br/>` textContent'e boşluk EKLEMEZ: başlık ekran okuyucuda
+                  ve arama sonucunda "yalnızbırakmayan" olarak okunuyordu.
+                  Satır kırığı korunur, kelime arası boşluk açıkça yazılır. */}
               <h1 className="mt-4 font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
-                Öğrenciyi yalnız
+                Öğrenciyi yalnız{" "}
                 <br />
                 bırakmayan bir sistem.
               </h1>
@@ -56,7 +59,7 @@ export default function HakkimizdaPage() {
                 çalışacağını ve nerede durduğunu aynı yerde görüyor.
               </p>
               <Link
-                href="/misyonumuz/"
+                href="/misyonumuz"
                 className="mt-5 inline-block text-[15px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
               >
                 Misyonumuzu ayrıntılı okuyun →

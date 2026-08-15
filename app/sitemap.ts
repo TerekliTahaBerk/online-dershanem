@@ -15,6 +15,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/urunler/online-kocum`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/urunler/online-deneme-kulubum`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/ders-paketleri`, changeFrequency: "weekly", priority: 0.85 },
+    // Paket kurucu — navbar'ın birincil CTA'sı ve indexlenebilir; sitemap'te
+    // yoktu.
+    { url: `${siteUrl}/paketler`, changeFrequency: "weekly", priority: 0.85 },
     { url: `${siteUrl}/dino-ai`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/matematik`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${siteUrl}/kamplar`, changeFrequency: "weekly", priority: 0.8 },

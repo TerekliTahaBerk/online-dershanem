@@ -338,6 +338,75 @@ export function resolvePackageQuote(selection: BuilderSelection): PackageQuote {
   };
 }
 
+/**
+ * Kurucudaki seçim doğrudan satın alınabiliyor mu?
+ *
+ * Sitede checkout SKU'su OLAN tek yapılandırma, katalogdaki grup ders paketidir
+ * (`<exam>` + "Matematik Ders Paketi"). Koçum ve Deneme Kulübü'nün, birebir
+ * formatın ve ek derslerin karşılığı bir SKU yok — onlar ön görüşmeden
+ * ilerler. Bu fonksiyon o sınırı TEK yerde tutar; arayüz kendi başına
+ * "satın alınabilir" kararı vermez.
+ *
+ * Dönen `id`/`category`/`subject` sepet kimliğidir ve sunucudaki
+ * `priceCatalogItems` ile birebir aynı anahtarları kullanır.
+ */
+export function resolveBuilderCheckout(selection: BuilderSelection): {
+  id: string;
+  name: string;
+  category: ExamTrack;
+  subject: string;
+  priceCents: number;
+  priceLabel: string;
+} | null {
+  if (selection.exam === null) return null;
+  if (!selection.dershanem || selection.kocum || selection.denemeKulubum) return null;
+  if (selection.format !== "grup") return null;
+  if (selection.extraSubjects.length > 0) return null;
+
+  const priceCents = getPackagePriceCents(selection.exam, GROUP_LESSON_CATALOG_SUBJECT);
+  if (priceCents <= 0) return null;
+
+  return {
+    id: `${selection.exam}__${GROUP_LESSON_CATALOG_SUBJECT}`,
+    name: `${selection.exam} ${GROUP_LESSON_CATALOG_SUBJECT}`,
+    category: selection.exam,
+    subject: GROUP_LESSON_CATALOG_SUBJECT,
+    priceCents,
+    priceLabel: `${formatCents(priceCents)}/ay`,
+  };
+}
+
+/**
+ * Ön görüşmeye giderken seçimi TAŞIR. Daha önce kurucunun CTA'sı düz
+ * `/iletisim`'e gidiyordu ve kullanıcının kurduğu paket (sınav, format, dersler)
+ * tamamen kayboluyordu.
+ */
+export function builderContactQuery(selection: BuilderSelection): string {
+  const products = [
+    selection.dershanem ? "Online Dershanem" : null,
+    selection.kocum ? "Online Koçum" : null,
+    selection.denemeKulubum ? "Online Deneme Kulübüm" : null,
+  ].filter(Boolean) as string[];
+
+  if (!products.length && selection.exam === null) return "";
+
+  const lessons = selection.dershanem
+    ? [selection.subject, ...selection.extraSubjects].filter(Boolean).join(", ")
+    : "";
+  const summary = [
+    products.join(" + "),
+    selection.dershanem ? (selection.format === "birebir" ? "birebir özel ders" : "maks. 4 kişilik grup") : null,
+    lessons ? `dersler: ${lessons}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const params = new URLSearchParams();
+  if (selection.exam) params.set("sinav", selection.exam);
+  if (summary) params.set("paket", summary);
+  return params.toString() ? `?${params.toString()}` : "";
+}
+
 const tryFormatter = new Intl.NumberFormat("tr-TR", {
   style: "currency",
   currency: "TRY",

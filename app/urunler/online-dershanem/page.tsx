@@ -23,7 +23,7 @@ export const metadata = buildMarketingMetadata({
   title: "Online Dershanem | Canlı derste öğretmenle ilerle",
   description:
     "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve Dino AI ders analizi.",
-  canonical: "/urunler/online-dershanem/",
+  canonical: "/urunler/online-dershanem",
 });
 
 /** ÜRÜN · ONLINE DERSHANEM — onaylı tasarım (Web.dc.html → isOD). */
@@ -171,6 +171,7 @@ export default function OnlineDershanemPage() {
         <ProductClosingCta
           title="Canlı derse başla."
           body="İstersen yalnız ders, istersen koçluk ve denemeyle birlikte."
+          secondaryCta={{ href: "/ders-paketleri", label: "Ders Paketlerini Gör" }}
         />
       </main>
       <SiteFooter />

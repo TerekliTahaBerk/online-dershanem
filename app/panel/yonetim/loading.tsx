@@ -6,11 +6,11 @@ export default function AdminLoading() {
         <div className="mt-4 h-9 w-64 max-w-full rounded-xl bg-[#d8d5ca]" />
         <div className="mt-3 h-4 w-[430px] max-w-full rounded-full bg-[#e5e2d9]" />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-32 rounded-[24px] border border-white bg-white/70" />)}
+          {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-32 rounded-[14px] border border-white bg-white/70" />)}
         </div>
         <div className="mt-6 grid gap-5 xl:grid-cols-[1.35fr_.65fr]">
-          <div className="h-[360px] rounded-[26px] border border-white bg-white/70" />
-          <div className="h-[360px] rounded-[26px] border border-white bg-white/70" />
+          <div className="h-[360px] rounded-[14px] border border-white bg-white/70" />
+          <div className="h-[360px] rounded-[14px] border border-white bg-white/70" />
         </div>
       </div>
       <span className="sr-only">Yönetim verileri hazırlanıyor.</span>

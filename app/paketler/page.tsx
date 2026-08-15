@@ -9,7 +9,7 @@ export const metadata = buildMarketingMetadata({
   title: "Paketler | Kendi paketini oluştur",
   description:
     "Online Dershanem, Online Koçum ve Online Deneme Kulübüm'ü tek tek ya da birlikte seç. Birlikte aldığında toplam paket fiyatın düşer.",
-  canonical: "/paketler/",
+  canonical: "/paketler",
 });
 
 export default function PackagesPage() {

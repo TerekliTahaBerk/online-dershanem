@@ -14,7 +14,7 @@ export const metadata = buildMarketingMetadata({
   title: "Online Koçum | Planını uygula",
   description:
     "Kişisel haftalık çalışma planı, birebir koç görüşmesi ve düzenli takip. LGS ve YKS için, tüm dersleri kapsar.",
-  canonical: "/urunler/online-kocum/",
+  canonical: "/urunler/online-kocum",
 });
 
 const planDays = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];

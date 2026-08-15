@@ -2,9 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { ArrowLeftRight, Bell, ShieldCheck } from "lucide-react";
-import { PRODUCT_SELECTOR_PATH, productRolePath, roleLabel } from "@/lib/auth/roles";
+import { productRolePath, roleLabel } from "@/lib/auth/roles";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { getSession } from "@/lib/auth/session";
+import { getBusinessAccess } from "@/lib/business/permissions";
 import { prisma } from "@/lib/prisma";
 import { AdminCommandSearch } from "@/components/panel/admin-command-search";
 import { LogoutButton } from "@/components/panel/logout-button";
@@ -94,12 +95,32 @@ export async function PanelShell({
 
   // Menü yetkiye göre daraltılır; asıl kontrol sunucu guard'larındadır.
   const products = session ? await getAccessibleProducts(session.userId, session.role) : [];
-  const canSwitchProduct =
-    products.length > 1 || (role === "ADMIN" && process.env.CRM_PANEL_ENABLED !== "false");
+  void products;
 
   const homeHref = isBusinessWorkspace
     ? "/panel/yonetim/isletme/genel-bakis"
     : productRolePath(product, role);
+
+  /*
+   * ÇALIŞMA ALANI DEĞİŞTİRME.
+   *
+   * Eskiden bu bağlantı `/panel/urun-sec`e gidiyordu; o sayfa tek-panele
+   * geçişte salt yönlendiriciye indirildiği için düğme kullanıcıyı geldiği
+   * yere geri atıyordu — İşletme Paneli'ne arayüzden hiçbir yol kalmamıştı.
+   * Artık gerçek hedefe bağlanıyor ve YALNIZ gidilecek bir alan varsa basılıyor.
+   *
+   * Görünürlük gerçek işletme atamasından türetilir (rol tahmininden değil),
+   * böylece 404'e giden bir bağlantı gösterilmez.
+   */
+  const businessUnits =
+    session && !isBusinessWorkspace && process.env.CRM_PANEL_ENABLED !== "false"
+      ? await getBusinessAccess(session, "dashboard:read")
+      : [];
+  const workspaceSwitch = isBusinessWorkspace
+    ? { href: productRolePath(product, role), label: "Eğitim paneline dön" }
+    : businessUnits.length > 0
+      ? { href: "/panel/yonetim/isletme/genel-bakis", label: "İşletme paneline geç" }
+      : null;
 
   const displayName = fullName || email;
   const initials = displayName
@@ -168,12 +189,12 @@ export async function PanelShell({
             </div>
 
             <div className="mt-auto border-t border-dc-line-soft pt-5">
-              {canSwitchProduct ? (
+              {workspaceSwitch ? (
                 <Link
-                  href={PRODUCT_SELECTOR_PATH}
+                  href={workspaceSwitch.href}
                   className="mb-3 flex items-center gap-1.5 rounded-[10px] px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
                 >
-                  <ArrowLeftRight size={13} aria-hidden="true" /> Alan değiştir
+                  <ArrowLeftRight size={13} aria-hidden="true" /> {workspaceSwitch.label}
                 </Link>
               ) : null}
 

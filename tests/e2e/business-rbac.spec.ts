@@ -70,9 +70,9 @@ test.describe("İşletme Paneli RBAC", () => {
 
   test("atamasız kullanıcı işletme alanına hiç giremez", async ({ page }) => {
     await login(page, accounts.noAccess);
-    // Platformda ADMIN olsa bile işletme ataması yoksa ürün seçicide kart yok.
-    await page.goto("/panel/urun-sec");
-    await expect(page.getByRole("link", { name: "İşletme Paneline git" })).toHaveCount(0);
+    // Platformda ADMIN olsa bile işletme ataması yoksa panelde alan değiştirme
+    // bağlantısı görünmez.
+    await expect(page.getByRole("link", { name: "İşletme paneline geç" })).toHaveCount(0);
     for (const section of ["genel-bakis", "mesaj-kutusu", "gelirler", "ayarlar"]) {
       await expectSectionBlocked(page, section);
     }

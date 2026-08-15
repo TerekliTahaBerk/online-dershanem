@@ -37,7 +37,7 @@ export default function OnlineOzelDersPage() {
           subtitle="Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik grupta daha çok soru-cevap alanı bulur ve ders sonunda ne çalışacağını bilir."
           actions={
             <>
-              <Link href="/ders-paketleri/" className="site-btn site-btn-primary site-btn-lg">
+              <Link href="/ders-paketleri" className="site-btn site-btn-primary site-btn-lg">
                 Paketleri incele
               </Link>
               <LeadFunnelTrigger
@@ -94,21 +94,21 @@ export default function OnlineOzelDersPage() {
             </h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <Link
-                href="/matematik/"
+                href="/matematik"
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
               >
                 Online matematik dersi rehberi
                 <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
               <Link
-                href="/blog/online-ozel-ders-mi-dershane-mi/"
+                href="/blog/online-ozel-ders-mi-dershane-mi"
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
               >
                 Online özel ders mi dershane mi?
                 <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
               <Link
-                href="/blog/yks-online-ders-calisma-plani/"
+                href="/blog/yks-online-ders-calisma-plani"
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
               >
                 YKS online ders çalışma planı

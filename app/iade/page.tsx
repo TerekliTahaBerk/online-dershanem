@@ -26,7 +26,13 @@ export default function RefundPolicyPage() {
           title: "2. Satın Alım ve Hizmet Başlangıcı",
           paragraphs: [
             "Ödemeler, seçilen ders paketinin içeriğine ve ilan edilen güncel fiyatlara göre tahsil edilir.",
-            "Satın alım öncesinde ders programı, eğitmen bilgisi ve grup seviyesi öğrenci/veli ile paylaşılır. Ödeme onayıyla birlikte hizmet süreci resmen başlar."
+            // Bu paragraf gerçek akışla ÇELİŞİYORDU: satın alım öncesinde
+            // program/eğitmen/grup paylaşıldığını söylüyordu, oysa checkout
+            // onay metni "gösterilen kapasite, saatler ve başlangıç tarihi
+            // tahmindir; belirli bir grup veya saat ödeme ile garanti edilmez"
+            // diyor. Metin gerçek akışa ve checkout taahhüdüne göre yazıldı.
+            "Satın alım sırasında paket kapsamı, ders süresi, grup büyüklüğü ve güncel fiyat açıkça gösterilir. Gösterilen kapasite, uygun saatler ve başlangıç tarihi tahminidir; belirli bir grup, eğitmen veya saat ödeme ile garanti edilmez.",
+            "Ödeme onayının ardından ekibimiz 24 saat içinde iletişime geçer ve 48 saat içinde grubu, alternatifi, bekleme listesini veya talep hâlinde iade sürecini netleştirir. Hizmet, grup ve ders saati kesinleştikten sonra fiilen başlar."
           ]
         },
         {

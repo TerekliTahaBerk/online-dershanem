@@ -8,7 +8,7 @@ export const metadata = buildMarketingMetadata({
   title: "Dino AI | Ders, plan ve deneme arasındaki bağ",
   description:
     "Dino AI ayrı satılan bir ürün değildir. Aldığın her ürünün içinde çalışır; öğretmenin ve koçun kararını destekler, yerine geçmez.",
-  canonical: "/dino-ai/",
+  canonical: "/dino-ai",
 });
 
 const surfaces = [

@@ -20,10 +20,18 @@ export function HomeHero() {
             alabilirsin; birlikte aldığında toplam fiyat düşer.
           </p>
 
+          {/*
+            İkinci CTA satın alma yolunu açık tutar: ana sayfadan ödemeye giden
+            tek bağlantı footer'daki küçük "Ders paketleri" linkiydi. Kurucu
+            keşif içindir, `/ders-paketleri` ise doğrudan alma yoludur.
+          */}
           <div className="mt-7 flex flex-wrap items-center gap-3.5">
-            <Link href="/paketler/" className="site-btn site-btn-primary site-btn-lg">
+            <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
               Paketini Oluştur
               <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
+            </Link>
+            <Link href="/ders-paketleri" className="site-btn site-btn-secondary site-btn-lg">
+              Ders Paketlerini Gör
             </Link>
           </div>
 

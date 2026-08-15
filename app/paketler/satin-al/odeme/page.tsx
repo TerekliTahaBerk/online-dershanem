@@ -83,7 +83,7 @@ export default async function OdPaymentPage({
       <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14">
         <PaytrIframeShell
           breadcrumb={[
-            { label: "Matematik Ders Paketi", href: "/#matematik-ders-paketi" },
+            { label: "Ders Paketleri", href: "/ders-paketleri" },
             { label: "Bilgiler", href: editHref },
             { label: "Ödeme" },
           ]}

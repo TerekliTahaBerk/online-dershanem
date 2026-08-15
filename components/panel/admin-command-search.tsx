@@ -59,7 +59,7 @@ export function AdminCommandSearch() {
 
       {open ? (
         <div className="fixed inset-0 z-[300] flex items-start justify-center bg-[#10150d]/35 px-4 pt-[12vh] backdrop-blur-[3px]" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
-          <div role="dialog" aria-modal="true" aria-label="Panelde ara" className="w-full max-w-[620px] overflow-hidden rounded-[26px] border border-white/60 bg-white shadow-[0_35px_100px_-25px_rgba(20,20,15,.55)]">
+          <div role="dialog" aria-modal="true" aria-label="Panelde ara" className="w-full max-w-[620px] overflow-hidden rounded-[14px] border border-white/60 bg-white shadow-[0_35px_100px_-25px_rgba(20,20,15,.55)]">
             <div className="flex items-center gap-3 border-b border-[var(--site-line)] px-4 py-3">
               <Search size={18} className="text-[var(--brand-olive)]" />
               <input ref={inputRef} value={query} onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && results[0]) go(results[0].href); }} className="min-w-0 flex-1 bg-transparent py-2 text-[15px] text-[var(--site-ink)] outline-none placeholder:text-[var(--site-muted)]" placeholder="Ne yapmak istiyorsunuz?" />

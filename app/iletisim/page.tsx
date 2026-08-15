@@ -109,7 +109,7 @@ export default function ContactPage() {
                   Fiyatı, derslerin kapsamını ve ödeme sonrası süreci tek sayfada görebilirsiniz.
                 </p>
                 <Link
-                  href="/ders-paketleri/"
+                  href="/ders-paketleri"
                   className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
                 >
                   Ders Paketi&apos;ni gör

@@ -169,8 +169,11 @@ export default async function TeacherHomePage() {
                       {lesson.group.enrollments.length} öğrenci
                     </span>
                   </span>
+                  {/* Ders kapanışı ekranı — `/panel/ogretmen/odevler`e giden
+                      eski bağlantı `?ders=` parametresini okumayan genel ödev
+                      sayfasına düşüyordu, yani not girişi hiç yapılamıyordu. */}
                   <Link
-                    href={`/panel/ogretmen/odevler?ders=${lesson.id}`}
+                    href={`/panel/ogretmen/ders/${lesson.id}`}
                     className={`flex-none rounded-[10px] px-4 py-2.5 text-[13.5px] font-bold transition-colors ${
                       lesson.notes.length === 0 && lesson.startsAt < now
                         ? "bg-dc-brand-strong text-white hover:bg-dc-brand-hover"
@@ -198,7 +201,7 @@ export default async function TeacherHomePage() {
                       {lesson.group.name} · {DAY.format(lesson.startsAt)} dersi not girişi
                     </span>
                     <Link
-                      href={`/panel/ogretmen/odevler?ders=${lesson.id}`}
+                      href={`/panel/ogretmen/ders/${lesson.id}`}
                       className="shrink-0 text-[13.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
                     >
                       Gir

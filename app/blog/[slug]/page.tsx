@@ -201,10 +201,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </article>
 
           <section className="mx-auto mt-6 grid max-w-4xl gap-4 rounded-3xl border border-[var(--site-line)] bg-white p-6 sm:grid-cols-2">
-            <Link href="/online-dershane/" className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]">
+            <Link href="/online-dershane" className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]">
               Online dershane sayfasına git
             </Link>
-            <Link href="/online-ozel-ders/" className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]">
+            <Link href="/online-ozel-ders" className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]">
               Online özel ders sayfasına git
             </Link>
           </section>
