@@ -2,7 +2,6 @@ import { Flag, ShieldCheck, TriangleAlert } from "lucide-react";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureSnapshot, type PanelFeatureStatus } from "@/lib/panel-feature-registry";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +27,7 @@ export default async function PanelFeatureInventoryPage() {
   const drift = snapshot.filter((feature) => feature.legacyPublicDrift);
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
       <AdminPageHeader eyebrow="Canlı deployment snapshot" title="Özellik yayını tek yerde görünür." description="Menü, sayfa ve API aynı sunucu flag snapshot'ını kullanır. Statü ürün olgunluğunu; Açık/Kapalı ise bu deployment'ın gerçek davranışını gösterir." icon={Flag} meta={`${enabled}/${snapshot.length} açık`} />
 
       <section className={`mt-7 flex items-start gap-3 rounded-[22px] border p-4 ${drift.length ? "border-rose-200 bg-rose-50" : "border-emerald-200 bg-emerald-50"}`}>

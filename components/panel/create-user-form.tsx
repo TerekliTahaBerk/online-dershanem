@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, UserPlus } from "lucide-react";
 import type { ProductCode, UserRole } from "@prisma/client";
+import { productLabel } from "@/lib/auth/roles";
 import { TempPasswordReveal } from "@/components/panel/temp-password-reveal";
 
 type Created = { email: string; fullName: string | null; tempPassword: string; phone: string | null };
@@ -58,7 +59,7 @@ export function CreateUserForm() {
       setEmail("");
       setFullName("");
       setPhone("");
-      setProducts(role === "ADMIN" || role === "TEACHER" ? ["OD", "ODK"] : ["OD"]);
+      setProducts(role === "ADMIN" || role === "TEACHER" ? ["OD", "OK", "ODK"] : ["OD"]);
       setPending(false);
       router.refresh();
     } catch {
@@ -138,7 +139,7 @@ export function CreateUserForm() {
           <select
             id="new-role"
             value={role}
-            onChange={(e) => { const next = e.target.value as UserRole; setRole(next); setProducts(next === "ADMIN" || next === "TEACHER" ? ["OD", "ODK"] : ["OD"]); }}
+            onChange={(e) => { const next = e.target.value as UserRole; setRole(next); setProducts(next === "ADMIN" || next === "TEACHER" ? ["OD", "OK", "ODK"] : ["OD"]); }}
             disabled={pending}
             aria-describedby="role-hint"
             className={field}
@@ -158,7 +159,7 @@ export function CreateUserForm() {
       <fieldset className="rounded-[14px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
         <legend className="px-1 text-[12.5px] font-semibold text-[var(--site-ink)]">Ürün erişimi</legend>
         <div className="mt-1 flex flex-wrap gap-3">
-          {(["OD", "ODK"] as ProductCode[]).map((product) => <label key={product} className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]"><input type="checkbox" checked={products.includes(product)} disabled={pending || role === "ADMIN" || role === "TEACHER"} onChange={(event) => setProducts((current) => event.target.checked ? [...new Set([...current, product])] : current.filter((item) => item !== product))} />{product === "OD" ? "Online Dershanem" : "Online Deneme Kulübü"}</label>)}
+          {(["OD", "OK", "ODK"] as ProductCode[]).map((product) => <label key={product} className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]"><input type="checkbox" checked={products.includes(product)} disabled={pending || role === "ADMIN" || role === "TEACHER"} onChange={(event) => setProducts((current) => event.target.checked ? [...new Set([...current, product])] : current.filter((item) => item !== product))} />{productLabel(product)}</label>)}
         </div>
         <p className="mt-2 text-[11.5px] leading-5 text-[var(--site-muted)]">Yönetici ve öğretmenler görev gereği iki ürüne de erişir. Öğrenci ve velide en az bir ürün seçilmelidir.</p>
       </fieldset>

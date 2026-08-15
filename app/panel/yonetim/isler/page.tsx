@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { OrderLinkForm } from "@/components/panel/order-link-form";
 import { OdOnboardingControl } from "@/components/panel/od-onboarding-control";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
@@ -40,7 +39,7 @@ export default async function OperationsPage() {
   const placementMetrics = calculateOdPlacementMetrics(placementTransitions);
   const now = new Date();
   const dateTime = new Intl.DateTimeFormat("tr-TR", { dateStyle: "short", timeStyle: "medium", timeZone: "Europe/Istanbul" });
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
     <AdminPageHeader eyebrow="Operasyon kuyruğu" title="Siparişler ve talepler" description="Ödeme sonrası hesabı, veli bağlantısını, yerleştirmeyi ve ilk dersi SLA ile tek akışta yönetin." icon={CreditCard} meta={`${onboardingQueue.length} aktivasyon bekliyor`} />
     <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <PlacementMetric label="İlk iletişim" value={placementMetrics.firstContactHours === null ? "—" : `${placementMetrics.firstContactHours} sa`} detail={`${placementMetrics.firstContactSample} ölçüm · hedef ≤24 sa`} />

@@ -1,36 +1,246 @@
-import Link from "next/link";
-import { BookOpenCheck, CalendarClock, ClipboardCheck, PartyPopper, Target } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requirePanelRole } from "@/lib/auth/guards";
+import { getAccessibleProducts } from "@/lib/auth/products";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
-import { LiveCountdown } from "@/components/panel/live-countdown";
-import { PanelNav } from "@/components/panel/panel-nav";
+import { NoProductAccess } from "@/components/panel/no-product-access";
+import { TodayCard, type TodayRow } from "@/components/panel/student/today-card";
+import {
+  WeeklyPlanCard,
+  LatestExamCard,
+  NetTrendCard,
+  DinoInsightCard,
+  type PlanTaskRow,
+  type ExamSubjectRow,
+  type TrendPoint,
+} from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page() {
-  const session = await requireRole("STUDENT");
+/**
+ * ÖĞRENCİ ANA SAYFASI — onaylı tasarım (Panel.dc.html → scStudentHome).
+ *
+ * TEK PANEL: sayfa `requirePanelRole` ile korunur (rol yeter, ürün şart
+ * değil). Ürün bölümleri satın alıma göre açılır:
+ *   OD  → Bugün'deki canlı ders satırı
+ *   OK  → Bugün'deki plan görevleri, haftalık plan kartı
+ *   ODK → son deneme kartı, net gelişimi
+ * Erişimi olmayan ürünün bölümü HİÇ render edilmez (§16).
+ *
+ * Hiç ürünü olmayan (yeni kayıt olmuş) kullanıcı `NoProductAccess` görür.
+ */
+
+const TR_DATE = new Intl.DateTimeFormat("tr-TR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+const TR_TIME = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
+const TR_SHORT = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+
+function greeting(now: Date): string {
+  const h = now.getHours();
+  if (h < 11) return "Günaydın";
+  if (h < 18) return "İyi günler";
+  return "İyi akşamlar";
+}
+
+/** Bir denemenin toplam neti: doğru − yanlış/4, bölüm bölüm toplanır. */
+function examNet(sections: { correctCount: number; incorrectCount: number }[]): number {
+  return sections.reduce((sum, s) => sum + (s.correctCount - s.incorrectCount / 4), 0);
+}
+
+export default async function StudentHomePage() {
+  const session = await requirePanelRole("STUDENT");
+  const products = await getAccessibleProducts(session.userId, session.role);
+  const hasOD = products.includes("OD");
+  const hasOK = products.includes("OK");
+  const hasODK = products.includes("ODK");
+
+  const shell = (children: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Ana Sayfa"
+    >
+      {children}
+    </PanelShell>
+  );
+
+  // Hiç ürün yok → dürüst durum, uydurma içerik yok.
+  if (products.length === 0) {
+    return shell(<NoProductAccess role="STUDENT" />);
+  }
+
   const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
-  if (!profile) return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Profiliniz hazırlanıyor." body="Yönetim ekibi öğrenci profilinizi tamamladığında dersleriniz burada görünecek." /></PanelShell>;
-  const enrollmentIds = await prisma.enrollment.findMany({ where: { studentId: profile.id, endedAt: null }, select: { groupId: true } });
-  const groupIds = enrollmentIds.map((item) => item.groupId);
-  const [nextLesson, latestLesson, attendance, openAssignments] = await Promise.all([
-    prisma.lesson.findFirst({ where: { groupId: { in: groupIds }, startsAt: { gte: new Date() }, status: "PLANNED" }, orderBy: { startsAt: "asc" }, include: { group: true, teacher: { select: { fullName: true } } } }),
-    prisma.lesson.findFirst({ where: { groupId: { in: groupIds }, status: "COMPLETED" }, orderBy: { startsAt: "desc" }, include: { group: true, notes: { where: { OR: [{ studentId: null }, { studentId: profile.id }] } } } }),
-    prisma.attendance.findMany({ where: { studentId: profile.id }, orderBy: { createdAt: "desc" }, take: 12 }),
-    prisma.assignment.count({ where: { isActive: true, groupId: { in: groupIds }, progress: { some: { studentId: profile.id, status: { not: "DONE" } } } } }),
+  if (!profile) {
+    return shell(
+      <PanelEmptyState
+        title="Profiliniz hazırlanıyor."
+        body="Yönetim ekibi öğrenci profilinizi tamamladığında dersleriniz burada görünecek."
+      />,
+    );
+  }
+
+  const now = new Date();
+  const dayStart = new Date(now);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  const enrollments = hasOD
+    ? await prisma.enrollment.findMany({
+        where: { studentId: profile.id, endedAt: null },
+        select: { groupId: true },
+      })
+    : [];
+  const groupIds = enrollments.map((e) => e.groupId);
+
+  const todayLessons =
+    hasOD && groupIds.length
+      ? await prisma.lesson.findMany({
+          where: {
+            groupId: { in: groupIds },
+            startsAt: { gte: dayStart, lt: dayEnd },
+            status: "PLANNED",
+          },
+          orderBy: { startsAt: "asc" },
+          include: { group: true, teacher: { select: { fullName: true } } },
+        })
+      : [];
+
+  const [weeklyPlan, recentExams] = await Promise.all([
+
+    // Koçluk — bu haftanın planı (Online Koçum kapsamı)
+    hasOK
+      ? prisma.weeklyPlan.findFirst({
+          where: { studentId: profile.id },
+          orderBy: { weekStart: "desc" },
+          include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
+        })
+      : Promise.resolve(null),
+
+    // Deneme geçmişi — son deneme kartı ve net gelişimi
+    prisma.mockExam.findMany({
+      where: { studentId: profile.id },
+      orderBy: { takenAt: "desc" },
+      take: 6,
+      include: { sections: { orderBy: { position: "asc" } } },
+    }),
   ]);
-  const common = latestLesson?.notes.find((note) => note.studentId === null);
-  const personal = latestLesson?.notes.find((note) => note.studentId === profile.id);
-  const present = attendance.filter((item) => item.status === "PRESENT" || item.status === "LATE").length;
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
-    <div className="mb-6"><p className="text-sm font-semibold text-[var(--brand-olive)]">Merhaba {session.fullName?.split(" ")[0] || "şampiyon"} 👋</p><h1 className="mt-1 text-[clamp(1.8rem,4vw,2.8rem)] font-semibold tracking-[-.05em] text-[var(--site-ink)]">Bu hafta bir adım daha ileri.</h1></div>
-    <div className="grid gap-4 lg:grid-cols-[1.25fr_.75fr]">
-      <section className="relative overflow-hidden rounded-[30px] bg-[var(--brand-olive)] p-6 text-white shadow-[0_25px_70px_-35px_rgba(58,74,44,.75)] sm:p-8"><div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-[#f4d86a]/25" /><span className="flex w-fit items-center gap-2 rounded-full bg-white/12 px-3 py-1.5 text-xs font-bold"><CalendarClock size={15} /> Sıradaki ders</span>{nextLesson ? <><h2 className="mt-7 text-2xl font-semibold tracking-[-.035em]">{nextLesson.title}</h2><p className="mt-2 text-sm text-white/75">{nextLesson.group.name} · {nextLesson.teacher.fullName || "Öğretmenin"}</p><div className="mt-8 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.08em] text-white/75">Başlamasına</p><p className="mt-1 text-2xl font-bold"><LiveCountdown target={nextLesson.startsAt.toISOString()} /></p></div><time className="rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-[var(--brand-olive)]">{new Intl.DateTimeFormat("tr-TR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(nextLesson.startsAt)}</time></div></> : <><h2 className="mt-7 text-2xl font-semibold">Takvimin şimdilik rahat.</h2><p className="mt-2 text-sm text-white/75">Yeni dersin planlandığında burada belirecek.</p></>}</section>
-      <section className="rounded-[30px] border border-[var(--site-line)] bg-[#fff9dc] p-6 sm:p-7"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-white text-amber-700"><Target size={20} /></span><p className="mt-5 text-xs font-bold uppercase tracking-[.08em] text-amber-800">Bu haftanın yönü</p><h2 className="mt-2 text-xl font-semibold tracking-[-.03em] text-amber-950">{common?.nextGoal || "Ritmini koru, küçük adımları tamamla."}</h2><p className="mt-4 text-sm leading-6 text-amber-900/75">{common?.note || "Ders notun eklendiğinde öğretmeninin sana özel yönü burada olacak."}</p></section>
-    </div>
-    <div className="mt-4 grid gap-4 md:grid-cols-2"><section className="rounded-[24px] border border-[var(--site-line)] bg-white p-5"><div className="flex items-center gap-2 text-[var(--brand-olive)]"><BookOpenCheck size={18} /><h2 className="text-sm font-bold">Çalışma kartı</h2></div><p className="mt-4 text-base font-semibold text-[var(--site-ink)]">{common?.homework || "Henüz yeni çalışma verilmedi."}</p><p className="mt-2 text-sm leading-6 text-[var(--site-body)]">{personal?.note ? `Sana özel: ${personal.note}` : "Öğretmenin yalnızca farklı bir nokta olduğunda sana özel not ekler."}</p></section><section className="rounded-[24px] border border-[var(--site-line)] bg-white p-5"><div className="flex items-center gap-2 text-violet-700"><PartyPopper size={18} /><h2 className="text-sm font-bold">Devam serisi</h2></div><p className="mt-4 text-3xl font-extrabold tracking-[-.04em] text-[var(--site-ink)]">{attendance.length ? `%${Math.round((present / attendance.length) * 100)}` : "—"}</p><p className="mt-1 text-sm text-[var(--site-body)]">Son {attendance.length || 0} dersteki katılımın. Her gelişin seriyi büyütür.</p></section></div>
-    <Link href="/panel/ogrenci/odevler" className="mt-4 flex items-center justify-between rounded-[24px] border border-[var(--site-line)] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"><span className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#f1edf8] text-violet-700"><ClipboardCheck size={19} /></span><span><strong className="block text-sm text-[var(--site-ink)]">{openAssignments ? `${openAssignments} çalışma seni bekliyor` : "Tüm çalışmalar tamam"}</strong><span className="mt-1 block text-xs text-[var(--site-muted)]">Ödevlerini aç ve ilerlemeni güncelle</span></span></span><span className="text-xs font-bold text-[var(--brand-olive)]">Aç →</span></Link>
-  </PanelShell>;
+
+  /* ── Bugün akışı ── */
+  const rows: TodayRow[] = [];
+
+  for (const lesson of todayLessons) {
+    rows.push({
+      id: `lesson-${lesson.id}`,
+      when: TR_TIME.format(lesson.startsAt),
+      title: `${lesson.title} · Canlı ders`,
+      meta: [lesson.teacher.fullName, lesson.group.name].filter(Boolean).join(" · "),
+      action: { label: "Derse katıl", href: "/panel/ogrenci/takvim", primary: true },
+    });
+  }
+
+  const todayTasks = (weeklyPlan?.tasks ?? []).filter(
+    (t) => t.scheduledFor >= dayStart && t.scheduledFor < dayEnd,
+  );
+  for (const task of todayTasks) {
+    rows.push({
+      id: `task-${task.id}`,
+      when: TR_TIME.format(task.scheduledFor),
+      title: `${task.title} · ${task.durationMinutes} dk`,
+      meta: "Haftalık plan görevi",
+      action: { label: "Görevi aç", href: "/panel/ogrenci/plan" },
+    });
+  }
+
+  /* ── Haftalık plan özeti ── */
+  const planTasks: PlanTaskRow[] = (weeklyPlan?.tasks ?? []).slice(0, 3).map((t) => ({
+    id: t.id,
+    title: `${t.title} · ${t.durationMinutes} dk`,
+    meta: TR_SHORT.format(t.scheduledFor),
+    done: t.status === "DONE",
+  }));
+  const planDone = (weeklyPlan?.tasks ?? []).filter((t) => t.status === "DONE").length;
+  const planTotal = weeklyPlan?.tasks.length ?? 0;
+
+  /* ── Deneme kartı ve gelişim ── */
+  const latest = recentExams[0];
+  const previous = recentExams[1];
+  const latestNet = latest ? examNet(latest.sections) : 0;
+  const delta = latest && previous ? latestNet - examNet(previous.sections) : null;
+
+  const subjects: ExamSubjectRow[] = (latest?.sections ?? []).map((s) => ({
+    name: s.subjectName,
+    correct: s.correctCount,
+    incorrect: s.incorrectCount,
+    net: s.correctCount - s.incorrectCount / 4,
+  }));
+
+  const trend: TrendPoint[] = [...recentExams]
+    .reverse()
+    .map((exam, i) => ({ label: `D${i + 1}`, net: Number(examNet(exam.sections).toFixed(2)) }));
+
+  const trendCaption =
+    trend.length >= 2
+      ? `Toplam netin ${trend[0].net.toLocaleString("tr-TR")}'ten ${trend[trend.length - 1].net.toLocaleString("tr-TR")}'e ${
+          trend[trend.length - 1].net >= trend[0].net ? "çıktı" : "indi"
+        }. Karşılaştırma yalnızca kendi geçmiş denemelerinle yapılır.`
+      : "";
+
+  const summaryParts = [
+    todayLessons.length ? `bugün ${todayLessons.length} dersin var` : null,
+    planTotal ? `haftalık planında ${planTotal - planDone} görev kaldı` : null,
+    latest ? `son denemen ${TR_SHORT.format(latest.takenAt)}` : null,
+  ].filter(Boolean);
+
+  return shell(
+    <div className="max-w-[1040px]">
+      <h1 className="text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink sm:text-[28px]">
+        {greeting(now)}, {session.fullName?.split(" ")[0] || "hoş geldin"}.
+      </h1>
+      {summaryParts.length ? (
+        <p className="mt-2 text-[15.5px] leading-[1.6] text-dc-ink-muted">
+          {summaryParts.join(" · ")}.
+        </p>
+      ) : null}
+
+      <TodayCard rows={rows} dateLabel={TR_DATE.format(now)} />
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        {hasOK && weeklyPlan ? (
+          <WeeklyPlanCard
+            done={planDone}
+            total={planTotal}
+            tasks={planTasks}
+            href="/panel/ogrenci/plan"
+          />
+        ) : null}
+
+        {latest ? (
+          <LatestExamCard
+            net={latestNet}
+            delta={delta}
+            title={latest.title || latest.exam}
+            dateLabel={TR_SHORT.format(latest.takenAt)}
+            subjects={subjects}
+            href="/panel/ogrenci/denemeler"
+          />
+        ) : null}
+      </div>
+
+      {trend.length >= 2 ? <NetTrendCard points={trend} caption={trendCaption} /> : null}
+
+      {/* Dino AI arka ucu yok — bileşen dürüst durumu kendisi gösterir (§22). */}
+      <DinoInsightCard insight={null} basis={null} />
+
+      {hasODK && !latest ? (
+        <p className="mt-5 text-[14px] text-dc-ink-muted">
+          Deneme Kulübü sonuçların girildiğinde net gelişimin ve analiz burada açılır.
+        </p>
+      ) : null}
+    </div>,
+  );
 }

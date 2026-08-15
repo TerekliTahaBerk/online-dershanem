@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { TeacherHelpRequests } from "@/components/panel/teacher-help-requests";
 
 function countBand(value: number): "0" | "1-5" | "6-20" | "21+" { return value === 0 ? "0" : value <= 5 ? "1-5" : value <= 20 ? "6-20" : "21+"; }
@@ -18,5 +17,5 @@ export default async function TeacherHelpPage() {
   const rows = visible.filter((entry) => entry.active).map(({ item }) => ({ id: item.id, studentName: item.student.user.fullName || item.student.user.email, groupName: item.group.name, energy: item.checkIn.energy, confidence: item.checkIn.confidence, barrier: item.checkIn.barrier, status: item.status as "OPEN" | "RESPONDED", dueAt: item.dueAt.toISOString(), version: item.version, helpful: item.helpful, responseAction: item.responses[0]?.action || null }));
   const open = rows.filter((item) => item.status === "OPEN");
   await recordPanelProductEvent({ name: "student_help_inbox_viewed", properties: { openCountBand: countBand(open.length), overdueCountBand: countBand(open.filter((item) => new Date(item.dueAt) < now).length) } }, session.role);
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><header><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><HandHeart size={15} /> Öğrenci yardım kutusu</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em]">Sorunu yorumlamadan, küçük destek adımını seçin.</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--site-body)]">Yalnız öğrencinin açıkça paylaştığı kontrollü işaretler görünür. Tanı, serbest metin, veli bildirimi veya otomatik risk etiketi yoktur.</p></header><div className="mt-7"><TeacherHelpRequests rows={rows} /></div></PanelShell>;
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}><header><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><HandHeart size={15} /> Öğrenci yardım kutusu</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em]">Sorunu yorumlamadan, küçük destek adımını seçin.</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--site-body)]">Yalnız öğrencinin açıkça paylaştığı kontrollü işaretler görünür. Tanı, serbest metin, veli bildirimi veya otomatik risk etiketi yoktur.</p></header><div className="mt-7"><TeacherHelpRequests rows={rows} /></div></PanelShell>;
 }

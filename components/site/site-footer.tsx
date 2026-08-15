@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle, Mail } from "lucide-react";
+import { MessageCircle, Mail, ChevronDown } from "lucide-react";
 import { contact } from "@/lib/content";
-import { footerColumns, footerTagline } from "@/lib/site-content";
+import { footerColumns, footerTagline, footerLegalLinks } from "@/lib/site-content";
 
 const socials = [
   {
@@ -33,28 +33,34 @@ const socials = [
 ];
 
 /**
- * Public site footer — referans tasarım: açık zemin, sol marka bloğu, sağda
- * minimal kolonlar, altta telif + yasal linkler.
+ * Public site footer — onaylı tasarım (Site Footer.dc.html):
+ * koyu yeşil zemin, sol marka bloğu (1.4fr) + üç bağlantı kolonu,
+ * altta telif ve yasal şerit. Mobilde kolonlar akordeona dönüşür
+ * (handoff: "footer akordeon").
  */
 export function SiteFooter() {
   return (
-    <footer id="site-footer" className="site-scope border-t border-[var(--site-line)] bg-[var(--site-bg-warm)]">
-      <div className="site-container py-12 sm:py-16 lg:py-20">
-        <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-x-12">
+    <footer id="site-footer" className="site-scope dc-surface-deep">
+      <div className="site-container py-14 sm:py-16">
+        <div className="grid gap-x-10 gap-y-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
           {/* Marka */}
-          <div className="flex max-w-sm flex-col gap-5">
+          <div className="flex max-w-sm flex-col gap-4">
             <Link href="/" aria-label="Online Dershanem ana sayfa" className="inline-flex">
+              {/* Handoff: 36×36, radius 10. Renkli marka işareti — koyu zeminde
+                  ters çevrilmez. */}
               <Image
-                src="/onlinedershanem_.png"
+                src="/design/od-logo.png"
                 alt="Online Dershanem"
-                width={1050}
-                height={200}
-                sizes="180px"
-                className="h-auto w-[180px]"
+                width={1254}
+                height={1254}
+                sizes="36px"
+                className="h-9 w-9 rounded-[10px] object-cover"
               />
             </Link>
-            <p className="text-[14px] leading-6 text-[var(--site-body)]">{footerTagline}</p>
-            <div className="mt-1 flex items-center gap-2">
+            <p className="max-w-[280px] text-[14.5px] leading-[1.7] text-[var(--dc-on-deep-muted)]">
+              {footerTagline}
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
               {socials.map(({ label, href, Icon }) => (
                 <a
                   key={label}
@@ -62,7 +68,7 @@ export function SiteFooter() {
                   aria-label={label}
                   target={href.startsWith("http") ? "_blank" : undefined}
                   rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--site-line)] bg-white text-[var(--site-body)] transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange-ink)]"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--dc-on-deep-line)] text-[var(--dc-on-deep-body)] transition-colors hover:border-white/40 hover:text-white"
                 >
                   <Icon size={16} />
                 </a>
@@ -70,37 +76,50 @@ export function SiteFooter() {
             </div>
           </div>
 
-          {/* Kolonlar */}
+          {/* Kolonlar — mobilde <details> akordeon, lg'den itibaren düz liste */}
           {footerColumns.map((col) => (
-            <div key={col.title}>
-              <h2 className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--site-muted)]">
-                {col.title}
-              </h2>
-              <ul className="mt-5 space-y-3.5">
+            <details
+              key={col.title}
+              className="dc-footer-col group border-b border-[var(--dc-on-deep-line)] lg:border-0"
+              open
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between py-3 lg:py-0">
+                <h2 className="font-mono text-[12.5px] font-semibold uppercase tracking-[0.06em] text-[var(--dc-on-deep-label)]">
+                  {col.title}
+                </h2>
+                <ChevronDown
+                  size={16}
+                  aria-hidden="true"
+                  className="text-[var(--dc-on-deep-label)] transition-transform group-open:rotate-180 lg:hidden"
+                />
+              </summary>
+              <ul className="flex flex-col gap-2.5 pb-4 pt-2 lg:pb-0 lg:pt-4">
                 {col.links.map((l) => (
                   <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
                       href={l.href}
-                      className="text-[15.5px] text-[var(--site-body)] transition-colors hover:text-[var(--brand-orange-ink)]"
+                      className="text-[14.5px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
                     >
                       {l.label}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </details>
           ))}
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-[var(--site-line)] pt-6 text-[13px] text-[var(--site-muted)] sm:mt-12 sm:flex-row">
-          <span>© {new Date().getFullYear()} Online Dershanem. Tüm hakları saklıdır.</span>
-          <span className="flex items-center gap-4">
-            <Link href="/gizlilik/" className="hover:text-[var(--site-ink)]">
-              Gizlilik Politikası
-            </Link>
-            <Link href="/kvkk/" className="hover:text-[var(--site-ink)]">
-              KVKK
-            </Link>
+        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-[var(--dc-on-deep-line)] pt-5 text-[13px] text-[var(--dc-on-deep-faint)] sm:mt-13 sm:flex-row sm:items-center">
+          <span>© {new Date().getFullYear()} Onlinedershanem</span>
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {footerLegalLinks.map((l, i) => (
+              <span key={l.href} className="flex items-center gap-2">
+                {i > 0 ? <span aria-hidden="true">·</span> : null}
+                <Link href={l.href} className="transition-colors hover:text-white">
+                  {l.label}
+                </Link>
+              </span>
+            ))}
           </span>
         </div>
       </div>

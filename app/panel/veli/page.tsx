@@ -1,47 +1,260 @@
 import Link from "next/link";
-import { BarChart3, CalendarCheck2, ClipboardCheck, CreditCard, ShieldCheck } from "lucide-react";
-import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requirePanelRole } from "@/lib/auth/guards";
+import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelEmptyState } from "@/components/panel/empty-state";
-import { PanelNav } from "@/components/panel/panel-nav";
-import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
+import { DinoInsightCard } from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ studentId?: string }> }) {
-  const startedAt = performance.now();
-  const session = await requireRole("PARENT");
-  const params = await searchParams;
-  const links = await prisma.parentStudent.findMany({ where: { parentId: session.userId }, include: { student: { include: { user: { select: { id: true, fullName: true, email: true } } } } }, orderBy: { student: { user: { fullName: "asc" } } } });
-  if (!links.length) {
-    await recordPanelProductEvent({ name: "parent_dashboard_loaded", properties: { durationMs: Math.round(performance.now() - startedAt), childCountBand: "0", hasActiveEnrollment: false } }, session.role);
-    return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Öğrenci bağlantınız hazırlanıyor." body="Yönetim ekibi çocuğunuzu hesabınıza bağladığında gelişim özeti burada görünecek." /></PanelShell>;
+/**
+ * VELİ · ANA SAYFA — onaylı tasarım (Panel.dc.html → scParentHome).
+ *
+ * Tasarımın işlev tanımı: 4 kolonlu metrik şeridi (katılım, plan görevleri,
+ * deneme, net), turuncu kenarlı "Dikkat edilmesi gereken" kartı, yan yana
+ * Dersler ve Koçluk kartları, altta Dino veli özeti.
+ *
+ * VELİ PANELİ ÖĞRENCİ PANELİNİN KOPYASI DEĞİLDİR (§23): burada görev
+ * tamamlama, katılım ve eğilim özetlenir; öğretmenin öğrenciye özel notu ve
+ * koçluk görüşme notları GÖSTERİLMEZ.
+ *
+ * Ürün blokları ÇOCUĞUN yetkisine göre açılır (velinin değil).
+ */
+
+const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+const net = (s: { correctCount: number; incorrectCount: number }) =>
+  s.correctCount - s.incorrectCount / 4;
+
+export default async function ParentHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ studentId?: string }>;
+}) {
+  const session = await requirePanelRole("PARENT");
+  const { studentId } = await searchParams;
+  const { children, selected } = await resolveParentScope(session.userId, studentId);
+
+  const shell = (body: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Ana Sayfa"
+      topbarSlot={
+        <ChildSwitcher options={children} selectedId={selected?.id ?? null} basePath="/panel/veli" />
+      }
+    >
+      <div className="max-w-[1040px]">{body}</div>
+    </PanelShell>
+  );
+
+  if (!selected) {
+    return shell(
+      <>
+        <PanelHeading title="Öğrenci bağlantınız hazırlanıyor." />
+        <PanelEmpty
+          title="Henüz bağlı öğrenci yok."
+          body="Yönetim ekibi hesabınızı öğrencinizle eşleştirdiğinde ders, plan ve deneme özeti burada açılır."
+        />
+      </>,
+    );
   }
-  // Güvenlik sınırı: URL'deki studentId hiçbir zaman doğrudan sorgulanmaz;
-  // yalnızca oturumdaki veliye ait ilişkiler içinden seçilir.
-  const selected = params.studentId ? links.find((item) => item.studentId === params.studentId) : links[0];
-  if (!selected) notFound();
-  const enrollments = await prisma.enrollment.findMany({ where: { studentId: selected.studentId, endedAt: null }, select: { groupId: true } });
-  const groupIds = enrollments.map((item) => item.groupId);
-  const [latestLesson, attendance, orders, openAssignments] = await Promise.all([
-    prisma.lesson.findFirst({ where: { groupId: { in: groupIds }, status: "COMPLETED", startsAt: { lte: new Date() } }, orderBy: { startsAt: "desc" }, include: { group: true, notes: { where: { OR: [{ studentId: null }, { studentId: selected.studentId }] } } } }),
-    prisma.attendance.findMany({ where: { studentId: selected.studentId }, orderBy: { createdAt: "desc" }, take: 12 }),
-    prisma.odOrder.findMany({ where: { userId: selected.student.user.id }, orderBy: { createdAt: "desc" }, take: 5, select: { id: true, packageName: true, status: true, totalCents: true, createdAt: true } }),
-    prisma.assignment.count({ where: { isActive: true, groupId: { in: groupIds }, progress: { some: { studentId: selected.studentId, status: { not: "DONE" } } } } }),
+
+  const hasOD = selected.products.includes("OD");
+  const hasOK = selected.products.includes("OK");
+  const hasODK = selected.products.includes("ODK");
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { studentId: selected.id, endedAt: null },
+    select: { groupId: true },
+  });
+  const groupIds = enrollments.map((e) => e.groupId);
+
+  const [attendance, lessons, plan, exams] = await Promise.all([
+    prisma.attendance.findMany({
+      where: { studentId: selected.id },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+    }),
+    groupIds.length
+      ? prisma.lesson.findMany({
+          where: { groupId: { in: groupIds } },
+          orderBy: { startsAt: "desc" },
+          take: 3,
+          include: {
+            teacher: { select: { fullName: true } },
+            notes: { where: { studentId: null }, take: 1 },
+            attendances: { where: { studentId: selected.id }, select: { status: true } },
+          },
+        })
+      : Promise.resolve([]),
+    hasOK ? prisma.weeklyPlan.findFirst({
+      where: { studentId: selected.id },
+      orderBy: { weekStart: "desc" },
+      include: { tasks: { select: { status: true } } },
+    }) : Promise.resolve(null),
+    hasODK
+      ? prisma.mockExam.findMany({
+          where: { studentId: selected.id },
+          orderBy: { takenAt: "desc" },
+          take: 2,
+          include: { sections: true },
+        })
+      : Promise.resolve([]),
   ]);
-  const common = latestLesson?.notes.find((note) => note.studentId === null);
-  const personal = latestLesson?.notes.find((note) => note.studentId === selected.studentId);
-  const attended = attendance.filter((item) => item.status === "PRESENT" || item.status === "LATE").length;
-  const name = selected.student.user.fullName || selected.student.user.email;
-  const childCountBand = links.length === 1 ? "1" : links.length <= 4 ? "2-4" : "5+";
-  await recordPanelProductEvent({ name: "parent_dashboard_loaded", properties: { durationMs: Math.round(performance.now() - startedAt), childCountBand, hasActiveEnrollment: groupIds.length > 0 } }, session.role);
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
-    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.07em] text-[var(--brand-olive)]"><ShieldCheck size={15} /> Size özel gelişim özeti</div><h1 className="mt-2 text-[clamp(1.8rem,4vw,2.7rem)] font-semibold tracking-[-.05em] text-[var(--site-ink)]">{name}</h1></div>{links.length > 1 ? <nav aria-label="Öğrenci seçimi" className="flex gap-2">{links.map((link) => <Link key={link.studentId} href={`/panel/veli?studentId=${link.studentId}`} className={`rounded-full px-3 py-2 text-xs font-bold ${link.studentId === selected.studentId ? "bg-[var(--brand-olive)] text-white" : "border border-[var(--site-line)] bg-white text-[var(--site-body)]"}`}>{link.student.user.fullName || link.student.user.email}</Link>)}</nav> : null}</div>
-    <div className="mt-7 grid gap-4 lg:grid-cols-[1.25fr_.75fr]"><section className="rounded-[28px] border border-[var(--site-line)] bg-white p-6 sm:p-7"><div className="flex items-center gap-2 text-[var(--brand-olive)]"><BarChart3 size={19} /><h2 className="text-sm font-bold">Son dersten gelişim</h2></div>{latestLesson ? <><p className="mt-5 text-xs font-bold uppercase tracking-[.07em] text-[var(--site-muted)]">{latestLesson.group.subject} · {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" }).format(latestLesson.startsAt)}</p><h3 className="mt-2 text-xl font-semibold tracking-[-.03em] text-[var(--site-ink)]">{common?.topic || latestLesson.title}</h3><p className="mt-3 text-sm leading-6 text-[var(--site-body)]">{common?.note || "Öğretmen genel değerlendirmeyi henüz eklemedi."}</p>{personal?.note ? <p className="mt-4 rounded-2xl bg-[#f1edf8] p-4 text-sm leading-6 text-[#3f3463]"><strong>{name.split(" ")[0]} için:</strong> {personal.note}</p> : null}<div className="mt-5 rounded-2xl bg-[#fff9dc] p-4"><p className="text-xs font-bold uppercase tracking-[.07em] text-amber-800">Sıradaki hedef</p><p className="mt-1 text-sm font-semibold leading-6 text-amber-950">{common?.nextGoal || "Öğretmen sonraki hedefi belirliyor."}</p></div></> : <p className="mt-5 text-sm text-[var(--site-body)]">İlk ders tamamlandığında gelişim özeti burada olacak.</p>}</section>
-      <div className="space-y-4"><section className="rounded-[26px] bg-[var(--brand-olive)] p-6 text-white"><CalendarCheck2 size={21} /><p className="mt-5 text-4xl font-extrabold tracking-[-.05em]">{attendance.length ? `%${Math.round((attended / attendance.length) * 100)}` : "—"}</p><p className="mt-2 text-sm text-white/70">Son {attendance.length} derste katılım</p></section><section className="rounded-[26px] border border-[var(--site-line)] bg-white p-6"><div className="flex items-center gap-2 text-[var(--brand-olive)]"><CreditCard size={19} /><h2 className="text-sm font-bold">Ödeme</h2></div>{orders.length ? <div className="mt-4 space-y-3">{orders.map((order) => <div key={order.id} className="flex items-center justify-between gap-3 text-xs"><span><strong className="block text-[var(--site-ink)]">{order.packageName}</strong><span className="text-[var(--site-muted)]">{new Intl.DateTimeFormat("tr-TR").format(order.createdAt)}</span></span><span className={`rounded-full px-2.5 py-1 font-bold ${order.status === "PAID" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}>{order.status === "PAID" ? "Ödendi" : "Bekliyor"} · {(order.totalCents / 100).toLocaleString("tr-TR")} ₺</span></div>)}</div> : <p className="mt-4 text-sm text-[var(--site-body)]">Bu hesaba bağlı sipariş görünmüyor.</p>}</section></div>
+
+  const attended = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
+  const planDone = plan?.tasks.filter((t) => t.status === "DONE").length ?? 0;
+  const planTotal = plan?.tasks.length ?? 0;
+  const planPct = planTotal ? Math.round((planDone / planTotal) * 100) : 0;
+
+  const latestExam = exams[0];
+  const latestNet = latestExam ? latestExam.sections.reduce((s, x) => s + net(x), 0) : null;
+  const prevNet = exams[1] ? exams[1].sections.reduce((s, x) => s + net(x), 0) : null;
+
+  const missed = attendance.filter((a) => a.status === "ABSENT").length;
+  const overduePlan = planTotal - planDone;
+
+  /* "Dikkat edilmesi gereken" — yalnız gerçek sinyal varsa gösterilir. */
+  const attention =
+    missed > 0
+      ? `Son ${attendance.length} derste ${missed} katılmama var. Devamsızlığın sebebini öğrenciyle konuşmak iyi olabilir.`
+      : planTotal > 0 && planPct < 60
+        ? `Bu haftanın planında ${overduePlan} görev bekliyor (%${planPct} tamamlandı).`
+        : null;
+
+  const stat = (label: string, value: string, tone?: "brand") => (
+    <div className="border-b border-dc-line-soft px-[22px] py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+      <p className="text-[13px] text-dc-ink-faint">{label}</p>
+      <p
+        className={`mt-1.5 text-[24px] font-extrabold ${
+          tone === "brand" ? "text-dc-brand-hover" : "text-dc-ink"
+        }`}
+      >
+        {value}
+      </p>
     </div>
-    <Link href={`/panel/veli/takip?studentId=${selected.studentId}`} className="mt-4 flex items-center justify-between rounded-[24px] border border-[var(--site-line)] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md"><span className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#f1edf8] text-violet-700"><ClipboardCheck size={19} /></span><span><strong className="block text-sm text-[var(--site-ink)]">{openAssignments ? `${openAssignments} çalışma bekliyor` : "Tüm çalışmalar tamam"}</strong><span className="mt-1 block text-xs text-[var(--site-muted)]">Ödev ilerlemesi ve ödeme kayıtlarını açın</span></span></span><span className="text-xs font-bold text-[var(--brand-olive)]">Takibe git →</span></Link>
-  </PanelShell>;
+  );
+
+  return shell(
+    <>
+      <PanelHeading
+        title={`${selected.name} · bu haftası`}
+        description={[
+          hasOD ? `${attended}/${attendance.length} derse katıldı` : null,
+          planTotal ? `plan %${planPct}` : null,
+          latestNet !== null ? `son deneme ${latestNet.toFixed(2)} net` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+      />
+
+      <div className="mt-6 grid overflow-hidden rounded-[14px] border border-dc-line bg-white sm:grid-cols-2 lg:grid-cols-4">
+        {stat("Derse katılım", attendance.length ? `${attended} / ${attendance.length}` : "—")}
+        {stat("Plan görevleri", planTotal ? `${planDone} / ${planTotal}` : "—")}
+        {stat("Deneme", exams.length ? `${exams.length} deneme` : hasODK ? "Sonuç yok" : "—")}
+        {stat(
+          "Son deneme neti",
+          latestNet !== null ? latestNet.toFixed(2) : "—",
+          latestNet !== null && prevNet !== null && latestNet >= prevNet ? "brand" : undefined,
+        )}
+      </div>
+
+      {attention ? (
+        <div className="mt-5 max-w-[760px] rounded-[14px] border border-dc-line border-l-[3px] border-l-[#E0A34A] bg-white px-[22px] py-5">
+          <h2 className="text-[15.5px] font-bold text-dc-ink">Dikkat edilmesi gereken</h2>
+          <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{attention}</p>
+        </div>
+      ) : null}
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        {hasOD ? (
+          <PanelCard>
+            <PanelCardTitle>Dersler</PanelCardTitle>
+            {lessons.length ? (
+              <>
+                <ul className="mt-3.5 flex flex-col gap-3 text-[14px] font-medium text-[var(--pd-ink-3)]">
+                  {lessons.map((lesson) => {
+                    const status = lesson.attendances[0]?.status;
+                    const label =
+                      status === "ABSENT"
+                        ? "Katılmadı"
+                        : status === "LATE"
+                          ? "Geç katıldı"
+                          : status === "PRESENT"
+                            ? "Katıldı"
+                            : "İşlenmedi";
+                    return (
+                      <li key={lesson.id} className="flex justify-between gap-3">
+                        <span className="min-w-0 truncate">
+                          {lesson.title} · {DAY.format(lesson.startsAt)}
+                        </span>
+                        <span
+                          className={`shrink-0 ${
+                            status === "ABSENT" ? "text-[#8A5F37]" : "text-dc-brand-hover"
+                          }`}
+                        >
+                          {label}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {lessons[0]?.notes[0]?.topic ? (
+                  <p className="mt-3.5 text-[13.5px] leading-[1.6] text-dc-ink-muted">
+                    Son ders: {lessons[0].notes[0].topic}
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <p className="mt-3 text-[14px] text-dc-ink-muted">
+                Henüz işlenmiş ders yok. Dersler başladığında burada görünecek.
+              </p>
+            )}
+          </PanelCard>
+        ) : null}
+
+        {/* Koçluk — çocuğun planı varsa özet, yoksa tasarımdaki kesik çizgili durum */}
+        {hasOK && planTotal ? (
+          <PanelCard>
+            <PanelCardTitle>Koçluk</PanelCardTitle>
+            <div
+              className="mt-4 h-2 overflow-hidden rounded-full bg-dc-line-soft"
+              role="progressbar"
+              aria-valuenow={planPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Haftalık plan tamamlanma"
+            >
+              <div className="h-full rounded-full bg-dc-brand" style={{ width: `${planPct}%` }} />
+            </div>
+            <p className="mt-2 text-[13px] text-dc-ink-muted">
+              Bu haftanın planı %{planPct} tamamlandı · {planDone} / {planTotal} görev.
+            </p>
+            <p className="mt-3.5 text-[13.5px] leading-[1.6] text-dc-ink-muted">
+              Koçun veliye açık özeti burada görünür; görüşmelerin özel notları paylaşılmaz.
+            </p>
+          </PanelCard>
+        ) : (
+          <div className="rounded-[14px] border border-dashed border-[#CBD6D0] bg-white p-[22px]">
+            <PanelCardTitle>Koçluk</PanelCardTitle>
+            <p className="mt-2 text-[14px] leading-[1.6] text-dc-ink-muted">
+              Bu öğrencinin hesabında Online Koçum bulunmuyor. Koçluk eklendiğinde haftalık
+              plan ve takip burada görünür.
+            </p>
+            <Link
+              href="/paketler/"
+              className="mt-3.5 inline-block rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+            >
+              Paketi görüntüle
+            </Link>
+          </div>
+        )}
+      </div>
+
+      <DinoInsightCard insight={null} basis={null} />
+    </>,
+  );
 }

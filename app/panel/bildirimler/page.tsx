@@ -4,7 +4,6 @@ import type { NotificationType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireActiveUser } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { NotificationInbox } from "@/components/panel/notification-inbox";
 import { NotificationPreferences } from "@/components/panel/notification-preferences";
 
@@ -34,7 +33,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
   const href = (next: { page?: number; type?: string; status?: string }) => { const query = new URLSearchParams(); const type = next.type ?? selectedType; const status = next.status ?? selectedStatus; const nextPage = next.page ?? 1; if (type !== "ALL") query.set("type", type); if (status !== "all") query.set("status", status); if (nextPage > 1) query.set("page", String(nextPage)); const text = query.toString(); return `/panel/bildirimler${text ? `?${text}` : ""}`; };
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
       <header><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><Bell size={15} /> Bildirim merkezi</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-[var(--site-ink)]">Önemli gelişmeler tek yerde.</h1><p className="mt-2 text-sm text-[var(--site-body)]">Ders, çalışma ve operasyon hareketlerini kaçırmadan takip edin.</p></header>
       <div className="panel-nav-scroll mt-5 flex gap-2 overflow-x-auto pb-1" aria-label="Bildirim türü filtresi">{types.map((item) => <Link key={item.value} href={href({ type: item.value })} aria-current={selectedType === item.value ? "page" : undefined} className={`min-w-fit rounded-full px-3 py-2 text-xs font-bold ${selectedType === item.value ? "bg-[var(--brand-olive)] text-white" : "border border-[var(--site-line)] bg-white text-[var(--site-body)]"}`}>{item.label}</Link>)}</div>
       <div className="mt-2 flex gap-2"><Link href={href({ status: "all" })} aria-current={selectedStatus === "all" ? "page" : undefined} className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${selectedStatus === "all" ? "bg-[var(--site-ink)] text-white" : "border border-[var(--site-line)] bg-white"}`}>Tüm durumlar</Link><Link href={href({ status: "unread" })} aria-current={selectedStatus === "unread" ? "page" : undefined} className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${selectedStatus === "unread" ? "bg-[var(--site-ink)] text-white" : "border border-[var(--site-line)] bg-white"}`}>Okunmamış ({unreadTotal})</Link></div>

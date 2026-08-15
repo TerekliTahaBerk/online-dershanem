@@ -4,6 +4,76 @@
 
 :root {
   color-scheme: light;
+
+  /* ============================================================
+     CLAUDE DESIGN — ONAYLI TASARIM KAYNAĞI
+     "Online Dershanem Web.dc.html" → Tasarım sistemi · Handoff.
+     Bu blok tek kaynaktır; aşağıdaki --pd-*, --site-*, --brand-*
+     alias'ları buraya bağlanır. Yeni bir rakip tema DEĞİLDİR.
+     ============================================================ */
+  /* Marka yeşili. DİKKAT — #14976B beyaz üstünde 3.7:1'dir; METİN ve beyaz
+     yazılı BUTON için WCAG AA'yı (4.5:1) GEÇMEZ. Bu yüzden ikiye ayrıldı:
+       --dc-brand        : yalnız METİN OLMAYAN dolgular (grafik çizgisi,
+                           ilerleme çubuğu, nokta, dekoratif alan → eşik 3:1)
+       --dc-brand-strong : beyaz üstünde METİN ve beyaz metin taşıyan BUTON
+                           zemini (4.9:1)
+     Tasarımın görsel niyeti korunur, erişilebilirlik düzeltilir (§38/§49). */
+  --dc-brand: #14976B;
+  --dc-brand-strong: #0C7C57;
+  --dc-brand-hover: #0C6B4C;
+  --dc-brand-deep: #0C4A38;
+  --dc-brand-soft: #EDF7F2;
+  --dc-brand-soft-line: #D9EBE3;
+
+  --dc-ink: #14201C;
+  --dc-ink-body: #4E5C56;
+  --dc-ink-muted: #5C6B65;
+  /* Tasarımdaki #8A968F (3.07:1) ve #A9B4AE (2.13:1) gövde metni olarak
+     AA'yı geçmiyordu; aynı gri-yeşil tonda AA'yı geçen değerlere çekildi. */
+  --dc-ink-faint: #5F6E67;
+  --dc-ink-ghost: #64736C;
+
+  --dc-canvas: #FBFCFA;
+  --dc-surface: #FFFFFF;
+  --dc-surface-muted: #F4F8F6;
+
+  --dc-line: #E7EBE8;
+  --dc-line-soft: #EDF0EE;
+  --dc-line-selected: var(--dc-brand);
+
+  /* Koyu yeşil zemin üstü metin (footer + kapanış banner'ı) */
+  --dc-on-deep: #FFFFFF;
+  --dc-on-deep-body: #DCEAE4;
+  --dc-on-deep-muted: #A8C4B8;
+  --dc-on-deep-label: #A8CCBD;
+  --dc-on-deep-faint: #A8CCBD;
+  --dc-on-deep-line: rgba(255, 255, 255, 0.12);
+
+  /* Gölge — handoff: kart 0 1 2 /4%, sticky 0 12 34 /7% */
+  --dc-shadow-card: 0 1px 2px rgba(20, 32, 28, 0.04);
+  --dc-shadow-raised: 0 10px 24px rgba(20, 32, 28, 0.06);
+  --dc-shadow-sticky: 0 12px 34px rgba(20, 32, 28, 0.07);
+  --dc-shadow-canvas: 0 24px 60px rgba(20, 32, 28, 0.10);
+
+  /* Yarıçap — handoff: kart 18–22, banner 28, pill 999 */
+  --dc-radius-card: 22px;
+  --dc-radius-card-sm: 14px;
+  --dc-radius-banner: 28px;
+  --dc-radius-pill: 999px;
+
+  /* Grid — handoff: container maks. 1200, yan 40, 12 kolon */
+  --dc-container: 1200px;
+  --dc-gutter: clamp(20px, 4vw, 40px);
+  /* Bölüm boşluğu — desktop 88–104, mobil 48–56 */
+  --dc-section: clamp(48px, 7vw, 100px);
+  --dc-section-tight: clamp(40px, 5vw, 72px);
+
+  /* Tipografi — handoff: gövde/başlık Manrope, etiket JetBrains Mono */
+  --dc-font-sans: var(--font-manrope), var(--font-geist-sans), system-ui, sans-serif;
+  --dc-font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--dc-font-sans);
+  --font-display: var(--font-manrope), var(--font-geist-sans), system-ui, sans-serif;
+
   --color-primary-dark: #091413;
   --color-secondary-dark-green: #435633;
   --color-primary-green: #546B41;
@@ -24,11 +94,11 @@
   --od-sky: #DCEAF6;
   --od-sky-soft: #ECF3FA;
   --od-lavender: #E6E0F0;
-  --od-olive: #3A4A2C;
-  --od-olive-soft: #596C47;
-  --od-ink: #14140F;
-  --od-ink-soft: #5A5A4F;
-  --od-line: #E8E3D6;
+  --od-olive: var(--dc-brand-strong);
+  --od-olive-soft: var(--dc-brand-hover);
+  --od-ink: var(--dc-ink);
+  --od-ink-soft: var(--dc-ink-muted);
+  --od-line: var(--dc-line);
   --od-clay-line: #C06A52;
   --od-clay-text: #9A3B2C;
   --od-clay-bg: #FBEDE7;
@@ -36,24 +106,24 @@
   /* Premium design tokens — LIGHT THEME (default)
      Beyaz tabanlı public site dili.
      Pastel ikincil tonlar: sky / yellow / mint / blush / lavender. */
-  --pd-bg: #ffffff;
-  --pd-bg-elevated: #ffffff;
-  --pd-bg-subtle: #F6F6F3;
-  --pd-bg-muted: #ECECE7;
-  --pd-bg-dark: #14140F; /* legacy fallback */
-  --pd-ink: #14140F;
-  --pd-ink-2: #242220;
-  --pd-ink-3: #3c3a38;
-  --pd-muted: #6a6c69;
-  --pd-muted-2: #9a9c98;
-  --pd-line: #ECEAE3;
-  --pd-line-2: #DCDAD2;
-  --pd-line-strong: #14140F;
-  --pd-accent: #3A4A2C;            /* od-olive (site ile birebir) */
-  --pd-accent-hover: #2C3A20;
-  --pd-accent-soft: #ECEFE3;
-  --pd-accent-chip-bg: #ECEFE3;
-  --pd-accent-chip-ink: #2C3A20;
+  --pd-bg: var(--dc-surface);
+  --pd-bg-elevated: var(--dc-surface);
+  --pd-bg-subtle: var(--dc-surface-muted);
+  --pd-bg-muted: #ECEFEC;
+  --pd-bg-dark: var(--dc-brand-deep); /* legacy fallback */
+  --pd-ink: var(--dc-ink);
+  --pd-ink-2: #242F2A;
+  --pd-ink-3: #3B4842;
+  --pd-muted: var(--dc-ink-muted);
+  --pd-muted-2: var(--dc-ink-faint);
+  --pd-line: var(--dc-line);
+  --pd-line-2: var(--dc-line-soft);
+  --pd-line-strong: var(--dc-ink);
+  --pd-accent: var(--dc-brand-strong);
+  --pd-accent-hover: var(--dc-brand-hover);
+  --pd-accent-soft: var(--dc-brand-soft);
+  --pd-accent-chip-bg: var(--dc-brand-soft);
+  --pd-accent-chip-ink: var(--dc-brand-hover);
 
   /* Pastel ikincil tonlar — bilgi / uyarı / başarı / kritik / özel */
   --pd-pastel-sky-bg: #DCEAF6;       --pd-pastel-sky-soft: #ECF3FA;     --pd-pastel-sky-ink: #1E3A5F;
@@ -72,43 +142,44 @@
      Büyük serif başlıklar, geniş beyaz alan, yeşil CTA'lar.
      Token adları geriye dönük uyumluluk için korunur.
      ============================================================ */
-  --brand-orange: #3A4A2C;
-  --brand-orange-hover: #2C3A20;
-  --brand-orange-bright: #5C7342;
-  --brand-orange-strong: #2A3720;
-  --brand-orange-ink: #3A4A2C;
-  --brand-orange-soft: #E3EAD3;
-  --brand-orange-tint: #F5F7F2;
+  --brand-orange: var(--dc-brand-strong);
+  --brand-orange-hover: var(--dc-brand-hover);
+  --brand-orange-bright: #1BB07E;
+  --brand-orange-strong: var(--dc-brand-deep);
+  --brand-orange-ink: var(--dc-brand-hover);
+  --brand-orange-soft: var(--dc-brand-soft);
+  --brand-orange-tint: var(--dc-surface-muted);
 
-  /* Public isimlendirme: eski orange alias'ları checkout uyumluluğu için korunur. */
-  --brand-olive: #3A4A2C;
-  --brand-olive-hover: #26341F;
-  --brand-olive-soft: #EAF0E3;
-  --brand-olive-tint: #FAFAF7;
+  /* Public isimlendirme: eski orange/olive alias'ları checkout uyumluluğu için korunur. */
+  --brand-olive: var(--dc-brand-strong);
+  --brand-olive-hover: var(--dc-brand-hover);
+  --brand-olive-soft: var(--dc-brand-soft);
+  --brand-olive-tint: var(--dc-canvas);
   --brand-yellow: #F4D86A;
 
-  --site-ink: #14140F;             /* neredeyse siyah başlık (od-ink) */
-  --site-body: #5A5A4F;            /* sakin gövde metni (od-ink-soft) */
-  --site-muted: #68685F;           /* WCAG AA uyumlu ikincil metin */
-  --site-bg: #FFFFFF;              /* beyaz zemin */
-  --site-bg-warm: #FBFAF5;
-  --site-card: #FFFFFF;            /* kart zemini */
-  --site-line: #E8E3D6;            /* ince krem kart border (od-line) */
+  --site-ink: var(--dc-ink);        /* başlık mürekkebi */
+  --site-body: var(--dc-ink-body);  /* gövde metni */
+  --site-muted: var(--dc-ink-muted); /* WCAG AA uyumlu ikincil metin */
+  --site-bg: var(--dc-surface);     /* beyaz zemin */
+  --site-bg-warm: var(--dc-canvas);
+  --site-card: var(--dc-surface);   /* kart zemini */
+  --site-line: var(--dc-line);      /* ince kart border */
   --site-border: var(--site-line);  /* geriye dönük panel alias'ı */
-  --site-line-soft: #F1EDE6;       /* daha açık ayraç */
+  --site-line-soft: var(--dc-line-soft); /* daha açık ayraç */
 
   /* Public system: shared measure, type and rhythm for every P0 page. */
-  --public-content: 1200px;
+  --public-content: var(--dc-container);
   --public-measure: 68ch;
   --public-measure-tight: 54ch;
-  --public-gutter: clamp(1.25rem, 4vw, 3rem);
-  --public-space-section: clamp(4rem, 8vw, 7.5rem);
-  --public-space-compact: clamp(3rem, 6vw, 5rem);
-  --public-space-hero: clamp(4rem, 9vw, 8rem);
-  --public-radius-card: clamp(1.25rem, 2vw, 1.75rem);
-  --public-display: clamp(2.75rem, 7vw, 4.75rem);
-  --public-title: clamp(2.25rem, 5.5vw, 4rem);
-  --public-subtitle: clamp(1.75rem, 3.5vw, 2.75rem);
+  --public-gutter: var(--dc-gutter);
+  --public-space-section: var(--dc-section);
+  --public-space-compact: var(--dc-section-tight);
+  --public-space-hero: clamp(48px, 6vw, 76px);
+  --public-radius-card: var(--dc-radius-card);
+  /* Tipografi ölçeği — handoff: hero 56–62/mobil 38–40, H2 38–46/mobil 28–30 */
+  --public-display: clamp(38px, 5.4vw, 58px);
+  --public-title: clamp(28px, 4vw, 44px);
+  --public-subtitle: clamp(21px, 2.4vw, 25px);
 }
 
 /* DARK THEME — pastelleri desatüre derin tonlara çevirir, ink açılır */
@@ -169,14 +240,16 @@ html {
 body {
   background-color: var(--pd-bg);
   color: var(--pd-ink);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--dc-font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   letter-spacing: 0;
 }
 
 .font-display {
-  font-family: var(--font-display, var(--font-geist-sans)), system-ui, sans-serif;
+  font-family: var(--font-display);
+  /* Handoff: hero w800 ls -.03em, H2 w800 ls -.025em */
+  font-weight: 800;
   letter-spacing: -0.025em;
   word-spacing: 0;
 }
@@ -214,15 +287,74 @@ a {
 .site-scope p {
   text-wrap: pretty;
 }
+/* Handoff: container maks. 1200, yan boşluk 40 */
 .site-container {
   width: 100%;
-  max-width: 1240px;
+  max-width: var(--dc-container);
   margin-inline: auto;
-  padding-inline: clamp(20px, 4vw, 48px);
+  padding-inline: var(--dc-gutter);
 }
 
+/* Handoff: bölüm boşluğu desktop 88–104, mobil 48–56 */
 .site-section {
-  padding-block: clamp(5rem, 9vw, 7.5rem);
+  padding-block: var(--dc-section);
+}
+
+/* SSS akordeonu — handoff: "FAQItem · details/summary, + → ×" */
+.dc-faq > summary::-webkit-details-marker {
+  display: none;
+}
+.dc-faq[open] .dc-faq-plus {
+  transform: rotate(45deg);
+}
+
+/* Tablo başlık satırı — handoff: #F6F8F7 */
+.bg-dc-panel-head {
+  background: #f6f8f7;
+}
+
+/* Panel zemini — handoff: #F6F8F7.
+   `.site-scope` kendi zeminini set ettiği ve utilities'ten sonra tanımlandığı
+   için aynı özgüllükteki `bg-[...]` sınıfını yener; adanmış sınıf gerekiyor. */
+.site-scope.dc-panel-bg,
+.dc-panel-bg {
+  background: #f6f8f7;
+}
+
+/* Koyu yeşil yüzey (footer + kapanış banner'ı).
+   NOT: `.site-scope` kendi zeminini set ettiği için burada aynı özgüllükte
+   ama daha sonra tanımlanan bir sınıf gerekiyor; yoksa zemin beyaz kalır. */
+.site-scope.dc-surface-deep,
+.dc-surface-deep {
+  background: var(--dc-brand-deep);
+  color: var(--dc-on-deep-body);
+}
+.dc-surface-deep :where(a, button, summary):focus-visible {
+  outline: 2px solid var(--dc-on-deep);
+  outline-offset: 3px;
+}
+
+/* Footer kolonları: mobilde akordeon, lg'den itibaren her zaman açık düz liste.
+   Masaüstünde <summary> tıklamayla kapanmasın diye etkileşim kapatılır. */
+@media (min-width: 1024px) {
+  .dc-footer-col > summary {
+    pointer-events: none;
+    cursor: default;
+  }
+  .dc-footer-col > ul {
+    display: flex !important;
+  }
+}
+
+/* Handoff: eyebrow / etiket — JetBrains Mono 10–11, ls .14em */
+.dc-eyebrow {
+  font-family: var(--dc-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dc-brand-strong);
 }
 
 .site-section-warm {
@@ -540,12 +672,14 @@ html {
 .panel-action-icon { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: 14px; }
 .panel-card-title { margin-top: .9rem; color: var(--site-ink); font-size: 1rem; font-weight: 750; letter-spacing: -.02em; }
 .panel-card-copy { margin-top: .25rem; color: var(--site-body); font-size: .78rem; line-height: 1.55; }
+/* Onaylı tasarımın panel kartı: düz beyaz, 1px #E7EBE8, 14px radius, gölgesiz.
+   Bu sınıf admin alt sayfalarında yaygın kullanıldığı için buradan
+   hizalamak tüm o ekranları tek noktadan tasarıma çeker. */
 .panel-surface {
   overflow: hidden;
-  border: 1px solid var(--site-line);
-  border-radius: 24px;
-  background: rgba(255,255,255,.9);
-  box-shadow: var(--panel-card-shadow);
+  border: 1px solid var(--dc-line);
+  border-radius: 14px;
+  background: #fff;
 }
 .panel-quick-action {
   display: inline-flex;
@@ -553,28 +687,24 @@ html {
   align-items: center;
   justify-content: center;
   gap: .45rem;
-  border: 1px solid var(--site-line);
-  border-radius: 13px;
-  background: rgba(255,255,255,.9);
+  border: 1px solid #DDE4E0;
+  border-radius: 10px;
+  background: #fff;
   padding: .65rem .85rem;
   color: var(--site-ink);
-  font-size: .75rem;
-  font-weight: 750;
-  box-shadow: 0 8px 25px -22px rgba(20,20,15,.45);
-  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  font-size: .8rem;
+  font-weight: 700;
+  transition: border-color .15s ease, background-color .15s ease;
 }
-.panel-quick-action:hover { transform: translateY(-1px); border-color: #d2cec2; box-shadow: 0 12px 28px -20px rgba(20,20,15,.4); }
+.panel-quick-action:hover { border-color: var(--dc-brand); }
 .panel-quick-action-primary { border-color: var(--brand-olive); background: var(--brand-olive); color: #fff; }
 .panel-quick-action-primary:hover { border-color: var(--brand-olive-hover); background: var(--brand-olive-hover); }
 .panel-metric-card {
-  border: 1px solid var(--site-line);
-  border-radius: 22px;
-  background: rgba(255,255,255,.9);
-  padding: 1rem;
-  box-shadow: var(--panel-card-shadow);
-  transition: transform .18s ease, box-shadow .18s ease;
+  border: 1px solid var(--dc-line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 1.1rem;
 }
-.panel-metric-card:hover { transform: translateY(-2px); box-shadow: 0 22px 54px -38px rgba(20,20,15,.38); }
 .panel-metric-icon { display: grid; width: 2.35rem; height: 2.35rem; place-items: center; border-radius: 13px; }
 .panel-tone-sky { background: #e8f2fa; color: #24527c; }
 .panel-tone-mint { background: #e5efe2; color: #365630; }

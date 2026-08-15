@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Phone, MessageCircle } from "lucide-react";
-import { primaryNav, navCta, navLogin, waHref, telHref } from "@/lib/site-content";
+import { primaryNav, productsMenu, navCta, navLogin, waHref, telHref } from "@/lib/site-content";
 import { contact } from "@/lib/content";
 
 type MobileMenuProps = {
@@ -74,12 +74,12 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--site-line)] px-[clamp(20px,6vw,28px)]">
         <Link href="/" onClick={onClose} aria-label="Online Dershanem ana sayfa">
           <Image
-            src="/onlinedershanem_.png"
+            src="/design/od-logo.png"
             alt="Online Dershanem"
-            width={1050}
-            height={200}
-            sizes="150px"
-            className="h-auto w-[150px]"
+            width={1254}
+            height={1254}
+            sizes="38px"
+            className="h-[38px] w-[38px] rounded-[10px] object-cover"
           />
         </Link>
         <button
@@ -94,6 +94,29 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       </div>
 
       <nav aria-label="Mobil menü" className="flex-1 overflow-y-auto px-[clamp(20px,6vw,28px)] py-2">
+        {/* Ürünler — masaüstündeki açılır menünün mobil karşılığı */}
+        <div className="border-b border-[var(--site-line)] py-5">
+          <h2 className="dc-eyebrow">{productsMenu.label}</h2>
+          <ul className="mt-4 flex flex-col gap-4">
+            {productsMenu.items.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={onClose}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`block font-display text-[23px] ${
+                    isActive(item.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+                <span className="mt-0.5 block text-[13.5px] text-[var(--site-muted)]">
+                  {item.summary}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
         {primaryNav.map((link) => (
           <Link
             key={link.href}

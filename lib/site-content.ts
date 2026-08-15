@@ -16,16 +16,37 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 
 /* ---------------- Navigasyon ---------------- */
 
+/**
+ * Ana menü — onaylı tasarım (Site Nav.dc.html):
+ * Ürünler ▼ · Paketler · Dino AI · Hakkımızda · Blog
+ * "Ürünler" üç ürünü açan bir alt menüdür; diğerleri düz bağlantıdır.
+ */
+export const productsMenu = {
+  label: "Ürünler",
+  accessibleLabel: "Ürünler menüsü",
+  href: "/urunler/",
+  items: publicProducts.map(({ name, href, role }) => ({
+    label: name,
+    href,
+    summary: role,
+  })),
+} as const;
+
 export const primaryNav = [
-  ...publicProducts.map(({ name, href }) => ({ label: name, accessibleLabel: name, href })),
-  { label: "Ürünler", accessibleLabel: "Tüm ürünler", href: "/urunler/" },
+  { label: "Paketler", accessibleLabel: "Paketler", href: "/paketler/" },
+  {
+    label: sharedIntelligenceLayer.name,
+    accessibleLabel: sharedIntelligenceLayer.name,
+    href: sharedIntelligenceLayer.href,
+  },
   { label: "Hakkımızda", accessibleLabel: "Hakkımızda", href: "/hakkimizda/" },
+  { label: "Blog", accessibleLabel: "Blog", href: "/blog/" },
 ] as const;
 
-/** Sağ üst birincil CTA — lead / satış odaklı (self-register yok). */
-export const navCta = { label: "Ürününü bul", href: "/urunler/" } as const;
+/** Sağ üst birincil CTA — paket kurucuya götürür (self-register yok). */
+export const navCta = { label: "Paketini Oluştur", href: "/paketler/" } as const;
 /** Öğrenci paneli girişi. Panel sıfırdan yazılana kadar `/giris` "yenileniyor" mesajı + destek kanallarını gösterir. */
-export const navLogin = { label: "Giriş", href: "/giris/" } as const;
+export const navLogin = { label: "Giriş Yap", href: "/giris/" } as const;
 
 /* ---------------- Hero ---------------- */
 
@@ -156,12 +177,24 @@ export const homeFaqs: Faq[] = [
 
 /* ---------------- Footer ---------------- */
 
+/**
+ * Footer kolonları — onaylı tasarım (Site Footer.dc.html): ÜRÜNLER / KURUMSAL / DESTEK.
+ *
+ * Tasarımdaki "Yardım merkezi" için depoda bir route YOK; uydurma bağlantı
+ * yerine mevcut gerçek destek sayfalarına bağlanır (§11 — yasal/destek route
+ * uydurulmaz, çalışan bağlantı kaldırılmaz). LGS/YKS ve ders paketleri
+ * bağlantıları SEO değeri taşıdığı için ÜRÜNLER altında korunur.
+ */
 export const footerColumns = [
   {
     title: "Ürünler",
     links: [
       ...publicProducts.map(({ name, href }) => ({ label: name, href })),
-      { label: "Tüm ürünleri karşılaştır", href: "/urunler/" },
+      { label: "Paketler", href: "/paketler/" },
+      { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
+      { label: "LGS çözümleri", href: "/lgs/" },
+      { label: "YKS çözümleri", href: "/yks/" },
+      { label: "Ders paketleri", href: "/ders-paketleri/" },
     ],
   },
   {
@@ -173,17 +206,20 @@ export const footerColumns = [
     ],
   },
   {
-    title: "Keşfet",
+    title: "Destek",
     links: [
-      { label: "LGS çözümleri", href: "/lgs/" },
-      { label: "YKS çözümleri", href: "/yks/" },
-      { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
-      { label: "Ders paketleri", href: "/ders-paketleri/" },
-      { label: "Sıkça Sorulanlar", href: "/sss/" },
+      { label: "Sıkça sorulan sorular", href: "/sss/" },
+      { label: "Ücretsiz görüşme", href: "/iletisim/" },
       { label: "Öğrenci girişi", href: "/giris/" },
-      { label: "İade Politikası", href: "/iade/" },
     ],
   },
+] as const;
+
+/** Alt şerit — yalnızca depoda gerçekten var olan yasal sayfalar. */
+export const footerLegalLinks = [
+  { label: "Gizlilik", href: "/gizlilik/" },
+  { label: "KVKK", href: "/kvkk/" },
+  { label: "İade", href: "/iade/" },
 ] as const;
 
 export const footerTagline =

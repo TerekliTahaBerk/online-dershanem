@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { roleLabel } from "@/lib/auth/roles";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { AdminUserProfileForm } from "@/components/panel/admin-user-profile-form";
 import { AdminAccessibilityAccommodationForm } from "@/components/panel/admin-accessibility-accommodation-form";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
@@ -32,7 +31,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const attendance = student?.attendances || [];
   const attended = attendance.filter((item) => item.status === "PRESENT" || item.status === "LATE").length;
 
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
     <Link href="/panel/yonetim/kullanicilar" className="panel-text-link"><ArrowLeft size={13} /> Kişilere dön</Link>
     <header className="mt-5 flex flex-col gap-4 rounded-[26px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)] sm:flex-row sm:items-center sm:justify-between sm:p-6"><div className="flex items-center gap-4"><span className="grid h-14 w-14 place-items-center rounded-[18px] bg-[var(--brand-olive-soft)] text-xl font-extrabold text-[var(--brand-olive)]">{(user.fullName || user.email).charAt(0).toLocaleUpperCase("tr-TR")}</span><div><div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-semibold tracking-[-.04em] text-[var(--site-ink)]">{user.fullName || user.email}</h1><span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-extrabold uppercase text-[var(--brand-olive)]">{roleLabel(user.role)}</span><span className={`rounded-full px-2.5 py-1 text-[9.5px] font-extrabold uppercase ${user.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>{user.status === "ACTIVE" ? "Aktif" : "Askıda"}</span></div><p className="mt-2 text-xs text-[var(--site-muted)]">{user.email} · {user.phone || "Telefon yok"}</p></div></div><div className="text-left sm:text-right"><p className="text-[10px] font-bold uppercase tracking-[.07em] text-[var(--site-muted)]">Son giriş</p><p className="mt-1 text-xs font-bold text-[var(--site-ink)]">{user.lastLoginAt ? date.format(user.lastLoginAt) : "Henüz giriş yapmadı"}</p></div></header>
     <AdminUserProfileForm user={{ id: user.id, role: user.role, email: user.email, fullName: user.fullName || "", phone: user.phone || "", classLevel: user.studentProfile?.classLevel || "", schoolName: user.studentProfile?.schoolName || "", targetGoal: user.studentProfile?.targetGoal || "", subjects: user.teacherProfile?.subjects || [], bio: user.teacherProfile?.bio || "" }} />

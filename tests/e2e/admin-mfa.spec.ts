@@ -10,8 +10,8 @@ const password = "Mfa-E2E-Secure-Password-42";
 async function passwordLogin(page: Page) {
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);
-  await page.getByLabel("Parola").fill(password);
-  await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+  await page.getByLabel("Şifre").fill(password);
+  await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/giris\/mfa|\/panel/);
 }
 
@@ -133,8 +133,8 @@ test.describe.serial("admin MFA, recovery, replay and step-up", () => {
     await prisma.user.update({ where: { id: user.id }, data: { status: "SUSPENDED" } });
     await page.goto("/giris");
     await page.getByRole("textbox", { name: "E-posta" }).fill(email);
-    await page.getByLabel("Parola").fill(password);
-    await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+    await page.getByLabel("Şifre").fill(password);
+    await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
     await expect(page.getByText(/hesabınız askıya alınmış/i)).toBeVisible();
   });
 });

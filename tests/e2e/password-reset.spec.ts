@@ -22,8 +22,8 @@ function lowCostHash(password: string): Promise<string> {
 async function login(page: Page, password: string) {
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);
-  await page.getByLabel("Parola", { exact: true }).fill(password);
-  await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+  await page.getByLabel("Şifre", { exact: true }).fill(password);
+  await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
 }
 
 async function requestReset(page: Page, requestedEmail: string) {

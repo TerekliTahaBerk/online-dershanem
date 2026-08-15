@@ -6,7 +6,7 @@ import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { revokeAllUserSessions } from "@/lib/auth/session";
 
-const schema = z.object({ products: z.array(z.enum(["OD", "ODK"])).min(1).max(2).refine((items) => new Set(items).size === items.length) });
+const schema = z.object({ products: z.array(z.enum(["OD", "OK", "ODK"])).min(1).max(3).refine((items) => new Set(items).size === items.length) });
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentAdminStepUp();
@@ -23,7 +23,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const next = new Set(parsed.data.products);
   const before = user.productMemberships.map((membership) => membership.product).sort();
   await prisma.$transaction(async (tx) => {
-    for (const product of ["OD", "ODK"] as const) {
+    for (const product of ["OD", "OK", "ODK"] as const) {
       if (next.has(product)) {
         await tx.productMembership.upsert({ where: { userId_product: { userId: id, product } }, create: { userId: id, product, source: "MANUAL", grantedById: auth.session.userId }, update: { source: "MANUAL", grantedById: auth.session.userId, startsAt: new Date(), expiresAt: null, revokedAt: null } });
       } else {

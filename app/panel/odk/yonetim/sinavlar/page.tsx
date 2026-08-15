@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
-import { OdkPanelNav } from "@/components/odk/odk-panel-nav";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { AdminExamCreate } from "@/components/odk/admin-exam-create";
 import { examStatusPresentation } from "@/lib/odk/presentation";
@@ -27,7 +26,7 @@ export default async function OdkAdminExamsPage({ searchParams }: { searchParams
     prisma.odkExam.findMany({ where, orderBy: { createdAt: "desc" }, include: { currentVersion: { select: { versionNumber: true } }, series: { select: { title: true } } } }),
   ]);
 
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" nav={<OdkPanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
     <PanelPageHeader eyebrow="Deneme planlama" title="Sınavı önce eksiksiz hazırlayın." description="Taslak, içerik kilidi, planlama, puanlama ve sonuç açıklama adımlarını kontrollü sırayla yönetin." icon={ClipboardCheck} action={<a href="#yeni-deneme" className="panel-quick-action panel-quick-action-primary"><Plus size={14} /> Yeni deneme</a>} />
 
     <section id="yeni-deneme" className="mt-7 scroll-mt-28"><AdminExamCreate series={series} /></section>

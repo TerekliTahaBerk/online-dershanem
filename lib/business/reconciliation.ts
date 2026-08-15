@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { PRODUCT_ORDER_TABLE } from "@/lib/commerce/product-mapping";
 
 export function reconciliationStatus(expectedCents: number | null, actualCents: number | null, duplicateCount = 1, commissionMissing = false) {
   if (duplicateCount > 1 || commissionMissing) return "REVIEW_REQUIRED" as const;
@@ -13,7 +14,8 @@ export async function reconcileBusinessUnit(businessUnitId: string) {
   const ledgers = await prisma.financialTransaction.findMany({ where: { businessUnitId, kind: "SALE", status: { in: ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"] } } });
   let scanned = 0; let issues = 0;
   for (const ledger of ledgers) {
-    const order = unit.product === "OD"
+    // OD ve OK siparişleri OdOrder'da, ODK kendi tablosunda yaşar.
+    const order = PRODUCT_ORDER_TABLE[unit.product] === "od"
       ? ledger.odOrderId ? await prisma.odOrder.findUnique({ where: { id: ledger.odOrderId }, include: { payments: true } }) : null
       : ledger.odkOrderId ? await prisma.odkOrder.findUnique({ where: { id: ledger.odkOrderId }, include: { payments: true } }) : null;
     const actualCents = order?.totalCents ?? null;

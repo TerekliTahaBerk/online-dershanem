@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { authInputClass, authSubmitClass } from "@/components/auth/auth-card";
 
 /**
  * Panel giriş formu.
@@ -11,7 +12,13 @@ import Link from "next/link";
  * olduğunu client tarafında tahmin etmeye çalışmaz. Sunucu bilerek "e-posta mı
  * parola mı" ayrımı yapmıyor (kullanıcı sayımına karşı); burada da yapmamalıyız.
  */
-export function LoginForm({ resetSuccess = false }: { resetSuccess?: boolean }) {
+export function LoginForm({
+  resetSuccess = false,
+  registered = false,
+}: {
+  resetSuccess?: boolean;
+  registered?: boolean;
+}) {
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,50 +59,65 @@ export function LoginForm({ resetSuccess = false }: { resetSuccess?: boolean }) 
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4" noValidate>
-      <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-[13px] font-semibold text-[var(--site-ink)]">
-          E-posta
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="username"
-          inputMode="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={pending}
-          className="rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-colors focus-visible:border-[var(--brand-olive)] focus-visible:ring-2 focus-visible:ring-[var(--brand-olive-soft)] disabled:opacity-60"
-        />
-      </div>
+    <form onSubmit={onSubmit} className="flex flex-col gap-3" noValidate>
+      {/* Tasarımda alanlar yalnız placeholder gösteriyor; etiketler ekran
+          okuyucu için sr-only olarak korunur (§38). */}
+      <label htmlFor="email" className="sr-only">
+        E-posta
+      </label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autoComplete="username"
+        inputMode="email"
+        placeholder="E-posta"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        disabled={pending}
+        className={authInputClass}
+      />
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <label htmlFor="password" className="text-[13px] font-semibold text-[var(--site-ink)]">Parola</label>
-          <Link href="/parolami-unuttum" className="text-[12.5px] font-semibold text-[var(--brand-olive)] hover:underline">Parolamı unuttum</Link>
-        </div>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={pending}
-          className="rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-colors focus-visible:border-[var(--brand-olive)] focus-visible:ring-2 focus-visible:ring-[var(--brand-olive-soft)] disabled:opacity-60"
-        />
-      </div>
+      <label htmlFor="password" className="sr-only">
+        Şifre
+      </label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autoComplete="current-password"
+        placeholder="Şifre"
+        required
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        disabled={pending}
+        className={authInputClass}
+      />
 
-      {resetSuccess ? <p role="status" className="rounded-[12px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800">Parolanız yenilendi. Yeni parolanızla giriş yapabilirsiniz.</p> : null}
+      {registered ? (
+        <p
+          role="status"
+          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800"
+        >
+          Hesabınız hazır. Giriş yaparak devam edebilirsiniz.
+        </p>
+      ) : null}
+
+      {resetSuccess ? (
+        <p
+          role="status"
+          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800"
+        >
+          Parolanız yenilendi. Yeni parolanızla giriş yapabilirsiniz.
+        </p>
+      ) : null}
 
       {error ? (
         <p
           role="alert"
           aria-live="assertive"
-          className="rounded-[12px] border border-rose-200 bg-rose-50 px-4 py-3 text-[13.5px] text-rose-800"
+          className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13.5px] text-rose-800"
         >
           {error}
         </p>
@@ -105,21 +127,24 @@ export function LoginForm({ resetSuccess = false }: { resetSuccess?: boolean }) 
         type="submit"
         disabled={!ready || pending}
         aria-busy={!ready || pending}
-        className="site-btn site-btn-primary site-btn-lg mt-2 w-full disabled:opacity-70"
+        className={authSubmitClass}
       >
         {pending ? (
-          <>
+          <span className="inline-flex items-center justify-center gap-2">
             <Loader2 size={17} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
             Giriş yapılıyor
-          </>
+          </span>
         ) : (
-          <>
-            Giriş yap <ArrowRight size={17} aria-hidden="true" />
-          </>
+          "Giriş Yap"
         )}
       </button>
 
-      <p className="mt-1 text-center text-[12.5px] leading-6 text-[var(--site-muted)]">İlk girişte ekibimizin ilettiği geçici parolayı kullanabilirsiniz.</p>
+      <Link
+        href="/parolami-unuttum"
+        className="mt-3 text-center text-[13px] text-dc-ink-faint hover:text-dc-ink"
+      >
+        Şifremi unuttum
+      </Link>
     </form>
   );
 }

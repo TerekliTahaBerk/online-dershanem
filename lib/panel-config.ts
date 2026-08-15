@@ -25,3 +25,20 @@ import "server-only";
 const PANEL_MAINTENANCE_MODE = process.env.PANEL_MAINTENANCE_BYPASS !== "true";
 
 export const PANEL_ENABLED = !PANEL_MAINTENANCE_MODE && process.env.PANEL_ENABLED === "true";
+
+/**
+ * Public kayıt kilidi.
+ *
+ * Kayıt bir hesap açar ama HİÇBİR ürün erişimi vermez (bkz.
+ * `app/api/auth/register/route.ts`). Yine de yeni hesap oluşturulmasını
+ * ortamdan kapatabilmek gerekiyor: kontenjan dolduğunda ya da kötüye
+ * kullanımda tek env değişkeniyle kapanır.
+ *
+ * Panelden BAĞIMSIZ değildir — panel kapalıyken kayıt da kapalıdır; kimsenin
+ * giremeyeceği bir panele hesap açtırmanın anlamı yok.
+ *
+ * Varsayılan KAPALI: deponun geri kalanıyla aynı duruş. Canlıda açmak için
+ * `PUBLIC_REGISTER_ENABLED=true`.
+ */
+export const PUBLIC_REGISTER_ENABLED =
+  PANEL_ENABLED && process.env.PUBLIC_REGISTER_ENABLED === "true";

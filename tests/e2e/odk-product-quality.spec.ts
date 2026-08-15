@@ -35,12 +35,16 @@ async function login(page: Page, role: keyof typeof accounts) {
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email);
-  await page.getByLabel("Parola").fill(password);
-  await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+  await page.getByLabel("Şifre").fill(password);
+  await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
+  /*
+   * TEK PANEL: giriş artık ürün seçici göstermez ve herkesi kendi ROL
+   * paneline yollar; Deneme Kulübü o panelin bir bölümüdür. Bu yüzden test
+   * önce panele girer, sonra ODK bölümüne gider. Kapsam daralmadı —
+   * aşağıdaki ODK yüzeylerinin hepsi yine tek tek geziliyor.
+   */
   await page.waitForURL(/\/panel\//);
-  if (new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: "Online Deneme Kulübü paneline git" }).click();
-  }
+  await page.goto(account.root);
   await page.waitForURL((url) => url.pathname === account.root);
 }
 

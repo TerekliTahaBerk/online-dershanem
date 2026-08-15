@@ -3,7 +3,6 @@ import { History } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +46,7 @@ export default async function AuditLogsPage({ searchParams }: { searchParams: Pr
   const actorNames = new Map(actors.map((actor) => [actor.id, actor.fullName || actor.email]));
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
       <AdminPageHeader eyebrow="Güvenlik ve izlenebilirlik" title="İşlem geçmişi" description="Panelde yapılan önemli değişiklikleri, işlemi yapan hesabı ve zamanı tek yerde görün." icon={History} meta={`Son ${logs.length} kayıt`} />
 
       <nav aria-label="Kayıt türü filtresi" className="mt-6 flex gap-2 overflow-x-auto pb-1">

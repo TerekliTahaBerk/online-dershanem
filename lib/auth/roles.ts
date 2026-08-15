@@ -47,12 +47,34 @@ const ODK_ROLE_HOME: Record<UserRole, string> = {
   PARENT: "/panel/odk/veli",
 };
 
+/**
+ * Ürünün panel kökü.
+ *
+ * TEK PANEL: OD ve OK aynı panelin bölümleridir, bu yüzden rolün kendi
+ * kökünü döndürürler. ODK'nın sınav motoru ayrı route ağacında yaşamaya
+ * devam ediyor (aynı panelin bölümü olarak).
+ *
+ * `Record<ProductCode, …>` bilinçli: enum'a yeni ürün eklendiğinde burası
+ * DERLEME HATASI verir. Eskiden ternary olduğu için `OK` eklendiğinde
+ * sessizce ODK'ya düşüyordu.
+ */
 export function productRolePath(product: ProductCode, role: UserRole): string {
-  return product === "OD" ? rolePath(role) : ODK_ROLE_HOME[role];
+  const byProduct: Record<ProductCode, string> = {
+    OD: rolePath(role),
+    OK: rolePath(role),
+    ODK: ODK_ROLE_HOME[role],
+  };
+  return byProduct[product];
 }
 
+const PRODUCT_LABEL: Record<ProductCode, string> = {
+  OD: "Online Dershanem",
+  OK: "Online Koçum",
+  ODK: "Online Deneme Kulübüm",
+};
+
 export function productLabel(product: ProductCode): string {
-  return product === "OD" ? "Online Dershanem" : "Online Deneme Kulübü";
+  return PRODUCT_LABEL[product];
 }
 
 /** Menüde/başlıkta gösterilecek okunabilir rol adı. */

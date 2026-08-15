@@ -1,14 +1,182 @@
-import { CalendarDays, Download, ExternalLink, Video } from "lucide-react";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
+import {
+  PanelHeading,
+  PanelFilterLink,
+  PanelTable,
+  PanelTableRow,
+  PanelTableCell,
+  PanelEmpty,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function StudentCalendarPage() {
+/**
+ * ÖĞRENCİ · DERSLERİN — onaylı tasarım (Panel.dc.html → sLessons).
+ *
+ * Tasarımın işlev tanımı: tek tablo, "Yaklaşan / Tamamlanan" filtresi,
+ * satırda tarih+saat, ders ve konu, öğretmen, durum ve duruma göre değişen
+ * tek aksiyon (Derse katıl / Detay / Notları gör / Telafi).
+ *
+ * OD ürün kapsamındadır → `requireRole` (OD erişimi şart).
+ */
+
+const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+const TIME = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
+
+type Filter = "yaklasan" | "tamamlanan";
+
+export default async function StudentLessonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ durum?: string }>;
+}) {
   const session = await requireRole("STUDENT");
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId }, select: { id: true } });
-  const lessons = profile ? await prisma.lesson.findMany({ where: { group: { enrollments: { some: { studentId: profile.id, endedAt: null } } }, startsAt: { gte: new Date(Date.now() - 7 * 86400000), lte: new Date(Date.now() + 60 * 86400000) }, status: { not: "CANCELLED" } }, orderBy: { startsAt: "asc" }, include: { group: { select: { name: true, subject: true } }, teacher: { select: { fullName: true, email: true } } } }) : [];
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><CalendarDays size={15} /> Ders takvimim</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-[var(--site-ink)]">Sıradaki adımın hazır.</h1></div><a href="/api/panel/calendar/export" download className="panel-quick-action panel-quick-action-primary"><Download size={14} /> Takvime ekle (.ics)</a></header><div className="mt-7 space-y-3">{lessons.map((lesson) => <article key={lesson.id} className="flex flex-col gap-4 rounded-[22px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)] sm:flex-row sm:items-center"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"><Video size={19} /></span><div className="min-w-0 flex-1"><h2 className="text-sm font-extrabold text-[var(--site-ink)]">{lesson.title}</h2><p className="mt-1 text-xs text-[var(--site-muted)]">{lesson.group.name} · {lesson.group.subject} · {lesson.teacher.fullName || lesson.teacher.email}</p><p className="mt-1 text-xs font-bold capitalize text-[var(--brand-olive)]">{new Intl.DateTimeFormat("tr-TR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(lesson.startsAt)}</p></div>{lesson.meetingUrl && lesson.startsAt > new Date(Date.now() - 2 * 3600000) ? <a href={lesson.meetingUrl} target="_blank" rel="noopener noreferrer" className="panel-quick-action panel-quick-action-primary"><ExternalLink size={14} /> Derse katıl</a> : null}</article>)}{!lessons.length ? <p className="rounded-[24px] border border-dashed border-[var(--site-line)] p-10 text-center text-sm text-[var(--site-muted)]">Takvimde ders görünmüyor.</p> : null}</div></PanelShell>;
+  const filter: Filter = (await searchParams).durum === "tamamlanan" ? "tamamlanan" : "yaklasan";
+
+  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+
+  const shell = (children: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Dersler"
+    >
+      <div className="max-w-[1040px]">{children}</div>
+    </PanelShell>
+  );
+
+  if (!profile) {
+    return shell(
+      <>
+        <PanelHeading title="Derslerin" />
+        <PanelEmpty
+          title="Profilin hazırlanıyor."
+          body="Öğrenci profilin tamamlandığında ders takvimin burada görünecek."
+        />
+      </>,
+    );
+  }
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { studentId: profile.id, endedAt: null },
+    select: { groupId: true, group: { select: { name: true } } },
+  });
+  const groupIds = enrollments.map((e) => e.groupId);
+
+  const now = new Date();
+  const lessons = groupIds.length
+    ? await prisma.lesson.findMany({
+        where: {
+          groupId: { in: groupIds },
+          ...(filter === "yaklasan"
+            ? { startsAt: { gte: now }, status: "PLANNED" }
+            : { OR: [{ status: "COMPLETED" }, { startsAt: { lt: now } }] }),
+        },
+        orderBy: { startsAt: filter === "yaklasan" ? "asc" : "desc" },
+        take: 50,
+        include: {
+          group: { select: { name: true } },
+          teacher: { select: { fullName: true } },
+          attendances: { where: { studentId: profile.id }, select: { status: true } },
+        },
+      })
+    : [];
+
+  const groupNames = [...new Set(enrollments.map((e) => e.group.name))].join(" · ");
+
+  return shell(
+    <>
+      <PanelHeading
+        title="Derslerin"
+        description={groupNames || undefined}
+        actions={
+          <>
+            <PanelFilterLink href="/panel/ogrenci/takvim" active={filter === "yaklasan"}>
+              Yaklaşan
+            </PanelFilterLink>
+            <PanelFilterLink
+              href="/panel/ogrenci/takvim?durum=tamamlanan"
+              active={filter === "tamamlanan"}
+            >
+              Tamamlanan
+            </PanelFilterLink>
+          </>
+        }
+      />
+
+      {lessons.length === 0 ? (
+        <PanelEmpty
+          title={filter === "yaklasan" ? "Yaklaşan ders yok." : "Tamamlanmış ders yok."}
+          body={
+            filter === "yaklasan"
+              ? "Yeni dersin planlandığında burada görünecek."
+              : "Ders tamamlandıkça öğretmen notlarıyla birlikte burada listelenir."
+          }
+        />
+      ) : (
+        <PanelTable
+          caption="Ders listesi"
+          columns={["Tarih", "Ders ve konu", "Öğretmen", "Durum", ""]}
+        >
+          {lessons.map((lesson) => {
+            const attendance = lesson.attendances[0]?.status;
+            const missed = attendance === "ABSENT";
+            const isToday = lesson.startsAt.toDateString() === now.toDateString();
+            const completed = lesson.status === "COMPLETED";
+
+            const statusLabel = missed
+              ? "Katılmadın"
+              : completed
+                ? "Tamamlandı"
+                : isToday
+                  ? "Bugün"
+                  : lesson.status === "CANCELLED"
+                    ? "İptal edildi"
+                    : "Yaklaşıyor";
+
+            const actionLabel = missed
+              ? "Telafi"
+              : completed
+                ? "Notları gör"
+                : isToday
+                  ? "Derse katıl"
+                  : "Detay";
+
+            return (
+              <PanelTableRow key={lesson.id}>
+                <PanelTableCell>
+                  <span className="block text-[13.5px] font-bold text-dc-ink">
+                    {DATE.format(lesson.startsAt)}
+                  </span>
+                  <span className="block text-[12.5px] text-dc-ink-faint">
+                    {TIME.format(lesson.startsAt)}
+                  </span>
+                </PanelTableCell>
+                <PanelTableCell>
+                  {lesson.title}
+                  {lesson.group.name ? ` · ${lesson.group.name}` : ""}
+                </PanelTableCell>
+                <PanelTableCell>{lesson.teacher.fullName || "—"}</PanelTableCell>
+                <PanelTableCell tone={missed ? "warn" : isToday && !completed ? "ok" : "default"}>
+                  {statusLabel}
+                </PanelTableCell>
+                <PanelTableCell>
+                  <Link
+                    href={`/panel/ogrenci/takvim/${lesson.id}`}
+                    className="text-[13px] font-semibold text-dc-brand-strong hover:text-dc-brand-hover"
+                  >
+                    {actionLabel}
+                  </Link>
+                </PanelTableCell>
+              </PanelTableRow>
+            );
+          })}
+        </PanelTable>
+      )}
+    </>,
+  );
 }

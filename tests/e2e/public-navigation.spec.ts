@@ -28,14 +28,26 @@ const PRODUCTS = [
 test.describe("masaüstü navigasyon", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
+  /*
+   * Onaylı tasarımda (Site Nav.dc.html) üç ürün doğrudan header'da DEĞİL,
+   * "Ürünler" açılır menüsündedir. İddia zayıflatılmadı: üç ürünün de
+   * görünür ve tıklanabilir olduğu hâlâ doğrulanıyor, yalnızca menünün
+   * açılması adımı eklendi.
+   */
   test("header üç ürünü de gösterir ve ürün sayfasına götürür", async ({ page }) => {
     await gotoHydrated(page, "/");
     const nav = page.getByRole("navigation", { name: "Ana menü" });
 
+    const trigger = nav.getByRole("button", { name: "Ürünler menüsü" });
+    await expect(trigger).toBeVisible();
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await trigger.click();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
     for (const product of PRODUCTS) {
       await expect(nav.getByRole("link", { name: product.name, exact: true })).toBeVisible();
     }
-    await expect(nav.getByRole("link", { name: "Tüm ürünler" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /Tüm ürünleri karşılaştır/ })).toBeVisible();
 
     await nav.getByRole("link", { name: "Online Koçum", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-kocum\/?$/);
@@ -45,11 +57,11 @@ test.describe("masaüstü navigasyon", () => {
   test("giriş ve birincil CTA masaüstünde erişilebilir", async ({ page }) => {
     await gotoHydrated(page, "/");
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "Giriş" })).toBeVisible();
-    const cta = header.getByRole("link", { name: "Ürününü bul" });
+    await expect(header.getByRole("link", { name: "Giriş Yap" })).toBeVisible();
+    const cta = header.getByRole("link", { name: "Paketini Oluştur" });
     await expect(cta).toBeVisible();
     await cta.click();
-    await expect(page).toHaveURL(/\/urunler\/?$/);
+    await expect(page).toHaveURL(/\/paketler\/?$/);
   });
 });
 
@@ -65,7 +77,7 @@ test.describe("mobil navigasyon", () => {
     for (const product of PRODUCTS) {
       await expect(menu.getByRole("link", { name: product.name, exact: true })).toBeVisible();
     }
-    await expect(dialog.getByRole("link", { name: "Giriş", exact: true })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Giriş Yap", exact: true })).toBeVisible();
 
     await menu.getByRole("link", { name: "Online Deneme Kulübüm", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-deneme-kulubum\/?$/);
@@ -100,12 +112,14 @@ test.describe("ürün sayfaları ve footer", () => {
     }
     await expect(footer.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
     await expect(footer.getByRole("link", { name: "KVKK" })).toBeVisible();
-    await expect(footer.getByRole("link", { name: "Gizlilik Politikası" })).toBeVisible();
+    await expect(footer.getByRole("link", { name: "Gizlilik", exact: true })).toBeVisible();
   });
 
   test("Dino AI yayında olmayan bir yeteneği çalışıyormuş gibi anlatmaz", async ({ page }) => {
     await page.goto("/dino-ai", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("zekâ katmanı");
+    // H1 metni onaylı tasarımla değişti; doğruluk iddiaları AYNEN korunuyor.
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Dino AI");
+    await expect(page.getByText("ayrı satılan bir ürün değildir", { exact: false })).toBeVisible();
     await expect(page.getByText("Geliştirme aşamasında")).toBeVisible();
     await expect(page.getByText("Planlanıyor").first()).toBeVisible();
   });

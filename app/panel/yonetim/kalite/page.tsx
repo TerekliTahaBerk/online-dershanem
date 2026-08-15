@@ -6,7 +6,6 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { calculateCohortGains, cohortSampleBand, COHORT_MIN_GAP_DAYS, COHORT_MIN_STUDENTS, COHORT_QUALITY_RULE_VERSION } from "@/lib/cohort-quality";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +41,7 @@ export default async function AdminQualityPage() {
   }
   const commonErrors = [...errorStudents.entries()].filter(([, students]) => students.size >= COHORT_MIN_STUDENTS).sort((a, b) => b[1].size - a[1].size);
 
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
     <AdminPageHeader eyebrow="Son 180 gün" title="Öğrenme kalitesini adil bir zeminde görün." description="Aynı öğrencinin başlangıç ve takip ölçümünü eşler; öğrenci ya da öğretmen sıralaması üretmez." icon={BarChart3} meta={COHORT_QUALITY_RULE_VERSION} />
     <section className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950"><div className="flex gap-3"><ShieldCheck className="mt-0.5 shrink-0" size={18} /><div><h2 className="font-extrabold">Yorumlama sınırı</h2><p className="mt-1 leading-6">Bu görünüm nedensel bir “öğretmen etkisi” ölçmez. En az {COHORT_MIN_STUDENTS} öğrenci ve aynı sınav türünde en az {COHORT_MIN_GAP_DAYS} gün aralıklı iki ölçüm olmadan değişim istatistikleri gizlenir.</p></div></div></section>
 

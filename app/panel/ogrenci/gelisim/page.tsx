@@ -1,39 +1,156 @@
-import { Award, BarChart3, BookOpenCheck, Flame, RotateCcw, Target, Trophy } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
-import { PanelEmptyState } from "@/components/panel/empty-state";
-import { StudentWeeklyGoal } from "@/components/panel/student-weekly-goal";
-import { completionDayStreak } from "@/lib/student-engagement";
-import { evidenceTypeLabel, summarizeLearningEvidence, type LearningEvidenceRow } from "@/lib/learning-evidence";
-import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { PanelHeading, PanelStatCard, PanelEmpty } from "@/components/panel/ui";
+import { SubjectTrendCard, type SubjectSeries } from "@/components/panel/student/subject-trend";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * ÖĞRENCİ · GELİŞİMİN — onaylı tasarım (Panel.dc.html → sProgress).
+ *
+ * Tasarımın işlev tanımı: ders bazında net grafiği (son denemeler), ders
+ * katılımı ve çalışma tamamlama kartları. Hepsi gerçek veriden hesaplanır;
+ * veri yoksa kart uydurma sayı göstermez.
+ */
+
+/* Tasarımdaki iki seri rengi; daha fazla ders olursa döngüyle devam eder. */
+const SERIES_COLORS = ["#14976B", "#E0A34A", "#5C7BA6", "#9C5340", "#6B7A73"];
+
+const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+
 export default async function StudentProgressPage() {
   const session = await requireRole("STUDENT");
-  const featureFlags = getPanelFeatureFlags();
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId }, select: { id: true, targetGoal: true, weeklyGoal: true } });
-  if (!profile) return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Gelişim profiliniz hazırlanıyor." body="Profiliniz tamamlandığında kişisel gelişim alanı burada açılır." /></PanelShell>;
-  const [progress, attendance, lessonEvidence] = await Promise.all([
-    prisma.assignmentProgress.findMany({ where: { studentId: profile.id }, orderBy: { updatedAt: "desc" }, take: 60, include: { assignment: { include: { group: { select: { subject: true } }, outcomeLinks: { include: { outcome: { include: { unit: { include: { subject: true } }, skills: { include: { skill: true } } } } } } } } } }),
-    prisma.attendance.findMany({ where: { studentId: profile.id }, orderBy: { createdAt: "desc" }, take: 30 }),
-    featureFlags.learningOutcomes ? prisma.lessonOutcome.findMany({ where: { lesson: { status: "COMPLETED", startsAt: { gte: new Date(Date.now() - 30 * 86400000) }, attendances: { some: { studentId: profile.id, status: { in: ["PRESENT", "LATE"] } } } } }, orderBy: { lesson: { startsAt: "desc" } }, include: { lesson: { select: { startsAt: true } }, outcome: { include: { unit: { include: { subject: true } }, skills: { include: { skill: true } } } } } }) : Promise.resolve([]),
+  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+
+  const shell = (children: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Gelişim"
+    >
+      <div className="max-w-[1000px]">{children}</div>
+    </PanelShell>
+  );
+
+  if (!profile) {
+    return shell(
+      <>
+        <PanelHeading title="Gelişimin" />
+        <PanelEmpty
+          title="Profilin hazırlanıyor."
+          body="Öğrenci profilin tamamlandığında gelişim özetin burada açılır."
+        />
+      </>,
+    );
+  }
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { studentId: profile.id, endedAt: null },
+    select: { groupId: true },
+  });
+  const groupIds = enrollments.map((e) => e.groupId);
+
+  const [exams, attendance, assignments] = await Promise.all([
+    prisma.mockExam.findMany({
+      where: { studentId: profile.id },
+      orderBy: { takenAt: "asc" },
+      take: 6,
+      include: { sections: { orderBy: { position: "asc" } } },
+    }),
+    prisma.attendance.findMany({
+      where: { studentId: profile.id },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+      include: { lesson: { select: { startsAt: true } } },
+    }),
+    groupIds.length
+      ? prisma.assignment.findMany({
+          where: { isActive: true, groupId: { in: groupIds } },
+          include: { progress: { where: { studentId: profile.id }, select: { status: true } } },
+        })
+      : Promise.resolve([]),
   ]);
-  const done = progress.filter((item) => item.status === "DONE"); const attendanceGood = attendance.filter((item) => item.status === "PRESENT" || item.status === "LATE").length;
-  const completion = progress.length ? Math.round((done.length / progress.length) * 100) : 0; const participation = attendance.length ? Math.round((attendanceGood / attendance.length) * 100) : 0;
-  const streak = completionDayStreak(done.map((item) => item.completedAt));
-  const subjectRows = [...new Set(progress.map((item) => item.assignment.group.subject))].map((subject) => { const rows = progress.filter((item) => item.assignment.group.subject === subject); return { subject, percent: rows.length ? Math.round((rows.filter((item) => item.status === "DONE").length / rows.length) * 100) : 0 }; });
-  const badges = [{ title: "İlk adım", body: "İlk çalışmayı tamamla", unlocked: done.length >= 1, icon: Target }, { title: "Ritim ustası", body: "5 çalışmayı tamamla", unlocked: done.length >= 5, icon: Flame }, { title: "Devam yıldızı", body: "%90 katılıma ulaş", unlocked: participation >= 90 && attendance.length >= 3, icon: Award }, { title: "Tamamlama şampiyonu", body: "%90 ödev oranına ulaş", unlocked: completion >= 90 && progress.length >= 3, icon: Trophy }];
-  const evidenceRows: LearningEvidenceRow[] = [
-    ...lessonEvidence.map((link) => ({ outcomeId: link.outcomeId, code: link.outcome.code, title: link.outcome.title, subject: link.outcome.unit.subject.name, unit: link.outcome.unit.name, skills: link.outcome.skills.map((item) => item.skill.name), type: link.evidenceType, occurredAt: link.lesson.startsAt, source: "LESSON" as const })),
-    ...done.flatMap((item) => item.assignment.outcomeLinks.map((link) => ({ outcomeId: link.outcomeId, code: link.outcome.code, title: link.outcome.title, subject: link.outcome.unit.subject.name, unit: link.outcome.unit.name, skills: link.outcome.skills.map((skill) => skill.skill.name), type: "INDEPENDENT" as const, occurredAt: item.completedAt || item.updatedAt, source: "ASSIGNMENT" as const }))),
-  ];
-  const evidence = summarizeLearningEvidence(evidenceRows);
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><header><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><BarChart3 size={15} /> Kendi yarışın</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-[var(--site-ink)]">Her küçük adım görünür.</h1><p className="mt-2 text-sm text-[var(--site-body)]">Büyük hedefin: {profile.targetGoal || "Düzenli çalışıp kendi ritmini güçlendirmek"}</p></header><div className="mt-6"><StudentWeeklyGoal initial={profile.weeklyGoal || "Bu hafta en az üç odaklı çalışma tamamlayacağım."} /></div>
-    <section className="mt-7 grid gap-3 sm:grid-cols-3"><article className="panel-metric-card"><Target size={18} className="text-[var(--brand-olive)]" /><p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">%{completion}</p><p className="mt-1 text-xs text-[var(--site-muted)]">Ödev tamamlama</p></article><article className="panel-metric-card"><Flame size={18} className="text-orange-600" /><p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">{streak}</p><p className="mt-1 text-xs text-[var(--site-muted)]">Güncel tamamlama serisi</p></article><article className="panel-metric-card"><Award size={18} className="text-violet-700" /><p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">%{participation}</p><p className="mt-1 text-xs text-[var(--site-muted)]">Ders katılımı</p></article></section>
-    {featureFlags.learningOutcomes ? <section className="mt-5 grid gap-5 xl:grid-cols-[1.2fr_.8fr]"><article className="panel-surface p-5"><h2 className="flex items-center gap-2 text-sm font-extrabold"><BookOpenCheck size={17} className="text-[var(--brand-olive)]" /> Bu hafta kanıt ürettiğim beceriler</h2><p className="mt-1 text-xs text-[var(--site-muted)]">Ders ve tamamladığın ödevlerden; puan değil, öğretmenin doğruladığı çalışma izi.</p><div className="mt-4 space-y-3">{evidence.thisWeek.map((item) => <div key={item.outcomeId} className="rounded-2xl border border-[var(--site-line)] p-4"><div className="flex flex-wrap items-center gap-2"><span className="text-[9px] font-extrabold text-[var(--brand-olive)]">{item.code}</span><span className="rounded-full bg-[var(--brand-olive-soft)] px-2 py-1 text-[9px] font-bold text-[var(--brand-olive)]">{evidenceTypeLabel[item.type]}</span></div><p className="mt-2 text-xs font-bold leading-5">{item.title}</p><p className="mt-1 text-[10px] text-[var(--site-muted)]">{item.subject} · {item.unit}{item.skills.length ? ` · ${item.skills.join(" · ")}` : ""}</p></div>)}{!evidence.thisWeek.length ? <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-5 text-sm text-[var(--site-muted)]">Öğretmenin ders veya ödevi kazanımla bağladığında bu alan oluşacak.</p> : null}</div></article><article className="panel-surface p-5"><h2 className="flex items-center gap-2 text-sm font-extrabold"><RotateCcw size={17} className="text-amber-700" /> Tekrar edeceğim iki beceri</h2><p className="mt-1 text-xs text-[var(--site-muted)]">Yalnız öğretmenin tekrar önerdiği alanlar; eksik listesi veya sıralama değil.</p><div className="mt-4 space-y-3">{evidence.reviewNext.map((item) => <div key={item.outcomeId} className="rounded-2xl bg-[#fff9dc] p-4"><span className="text-[9px] font-extrabold text-amber-800">{item.code} · {item.unit}</span><p className="mt-2 text-xs font-bold leading-5 text-amber-950">{item.title}</p></div>)}{!evidence.reviewNext.length ? <p className="rounded-2xl bg-emerald-50 p-4 text-xs font-bold leading-5 text-emerald-800">Şu an öğretmenin işaretlediği özel bir tekrar odağı yok.</p> : null}</div></article></section> : null}
-    <div className="mt-5 grid gap-5 xl:grid-cols-[1.1fr_.9fr]"><section className="panel-surface p-5"><h2 className="text-sm font-extrabold text-[var(--site-ink)]">Derslere göre ilerleme</h2><div className="mt-5 space-y-4">{subjectRows.map((row) => <div key={row.subject}><div className="flex justify-between text-xs font-bold"><span>{row.subject}</span><span>%{row.percent}</span></div><div className="mt-2 h-3 overflow-hidden rounded-full bg-[var(--site-bg-warm)]"><div className="h-full rounded-full bg-[linear-gradient(90deg,var(--brand-olive),#82a26d)]" style={{ width: `${row.percent}%` }} /></div></div>)}{!subjectRows.length ? <p className="text-sm text-[var(--site-muted)]">İlk ödevin tamamlandığında grafiklerin oluşacak.</p> : null}</div></section><section className="panel-surface p-5"><h2 className="text-sm font-extrabold text-[var(--site-ink)]">Rozet koleksiyonu</h2><div className="mt-4 grid grid-cols-2 gap-3">{badges.map(({ title, body, unlocked, icon: Icon }) => <article key={title} className={`rounded-2xl border p-4 ${unlocked ? "border-[#e6d27b] bg-[#fff9dc]" : "border-[var(--site-line)] bg-slate-50 opacity-55"}`}><Icon size={20} className={unlocked ? "text-amber-700" : "text-slate-400"} /><h3 className="mt-3 text-xs font-extrabold text-[var(--site-ink)]">{title}</h3><p className="mt-1 text-[10.5px] leading-4 text-[var(--site-muted)]">{unlocked ? "Kazanıldı!" : body}</p></article>)}</div></section></div>
-  </PanelShell>;
+
+  /* ── Ders bazında net serileri ── */
+  const labels = exams.map((_, i) => `D${i + 1}`);
+  const subjectNames = [...new Set(exams.flatMap((e) => e.sections.map((s) => s.subjectName)))];
+  const series: SubjectSeries[] = subjectNames.map((name, idx) => ({
+    name,
+    color: SERIES_COLORS[idx % SERIES_COLORS.length],
+    nets: exams.map((exam) => {
+      const s = exam.sections.find((x) => x.subjectName === name);
+      return s ? Number((s.correctCount - s.incorrectCount / 4).toFixed(2)) : 0;
+    }),
+  }));
+
+  const trendCaption =
+    series.length && exams.length >= 2
+      ? series
+          .map((s) => {
+            const first = s.nets[0];
+            const last = s.nets[s.nets.length - 1];
+            const dir = last > first ? "yükseldi" : last < first ? "geriledi" : "sabit kaldı";
+            return `${s.name} neti ${first.toLocaleString("tr-TR")} → ${last.toLocaleString("tr-TR")} (${dir})`;
+          })
+          .join(". ") + "."
+      : undefined;
+
+  /* ── Katılım ── */
+  const attended = attendance.filter(
+    (a) => a.status === "PRESENT" || a.status === "LATE",
+  ).length;
+  const missedLesson = attendance.find((a) => a.status === "ABSENT");
+
+  /* ── Çalışma tamamlama ── */
+  const totalAssignments = assignments.length;
+  const doneAssignments = assignments.filter((a) => a.progress[0]?.status === "DONE").length;
+  const completionPct =
+    totalAssignments > 0 ? Math.round((doneAssignments / totalAssignments) * 100) : null;
+
+  const nothingYet = exams.length === 0 && attendance.length === 0 && totalAssignments === 0;
+
+  return shell(
+    <>
+      <PanelHeading
+        title="Gelişimin"
+        description="Ders katılımı, çalışma tamamlama ve deneme netleri bir arada."
+      />
+
+      {nothingYet ? (
+        <PanelEmpty
+          title="Henüz gösterilecek veri yok."
+          body="Derslerin işlendikçe, çalışmaların tamamlandıkça ve denemelerin girildikçe gelişimin burada birikir."
+        />
+      ) : (
+        <>
+          <SubjectTrendCard series={series} labels={labels} caption={trendCaption} />
+
+          <div className="mt-5 grid gap-5 md:grid-cols-2">
+            {attendance.length ? (
+              <PanelStatCard
+                title="Ders katılımı"
+                value={`${attended} / ${attendance.length}`}
+                note={
+                  missedLesson?.lesson?.startsAt
+                    ? `Son ${attendance.length} ders · ${DAY.format(missedLesson.lesson.startsAt)} dersine katılmadın`
+                    : `Son ${attendance.length} ders`
+                }
+              />
+            ) : null}
+
+            {completionPct !== null ? (
+              <PanelStatCard
+                title="Çalışma tamamlama"
+                value={`%${completionPct}`}
+                progressPct={completionPct}
+                note={`${doneAssignments} / ${totalAssignments} çalışma tamamlandı.`}
+              />
+            ) : null}
+          </div>
+        </>
+      )}
+    </>,
+  );
 }

@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { roleLabel } from "@/lib/auth/roles";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserRowActions } from "@/components/panel/user-row-actions";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
@@ -40,7 +39,7 @@ export default async function UsersPage() {
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      nav={<PanelNav role={session.role} />}
+     
     >
       <AdminPageHeader eyebrow="Kişi yönetimi" title="Herkes doğru yerde." description="Öğrenci, öğretmen, veli ve yönetici hesaplarını tek yerden açın; erişim durumlarını güvenle yönetin." icon={UsersRound} meta={`${users.length} hesap`} />
 

@@ -10,6 +10,14 @@ export const RATE_LIMIT_POLICIES = {
       message: "Çok fazla deneme. Biraz sonra tekrar deneyin.",
     },
   },
+  register: {
+    action: "auth.register",
+    limit: {
+      max: 5,
+      windowMs: 60 * 60_000,
+      message: "Çok fazla kayıt denemesi. Lütfen bir süre sonra tekrar deneyin.",
+    },
+  },
   odCheckout: {
     action: "checkout.od",
     limit: {

@@ -1,0 +1,183 @@
+import { prisma } from "@/lib/prisma";
+import { requirePanelRole } from "@/lib/auth/guards";
+import { resolveParentScope } from "@/lib/panel/parent-scope";
+import { PanelShell } from "@/components/panel/panel-shell";
+import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
+
+export const dynamic = "force-dynamic";
+
+/**
+ * VELİ · KOÇLUK — onaylı tasarım (Panel.dc.html → pCoach).
+ *
+ * Tasarımın işlev tanımı: haftanın planı ve tamamlanma oranı, gün gün görev
+ * özeti ve veliye açık koç özeti.
+ *
+ * GİZLİLİK: koçun birebir görüşme notları veliyle PAYLAŞILMAZ. Bu ekran
+ * yalnız planın kendisini ve tamamlanma durumunu gösterir.
+ *
+ * ÜRÜN KAPSAMI: Online Koçum (OK). Çocuğun koçluk yetkisi yoksa dürüst durum
+ * gösterilir — sayfa boş bırakılmaz.
+ */
+
+const DAY_LABEL = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+const RANGE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+
+function mondayOf(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d;
+}
+
+export default async function ParentCoachingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ studentId?: string }>;
+}) {
+  const session = await requirePanelRole("PARENT");
+  const { studentId } = await searchParams;
+  const { children, selected } = await resolveParentScope(session.userId, studentId);
+
+  const shell = (body: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Koçluk"
+      topbarSlot={
+        <ChildSwitcher
+          options={children}
+          selectedId={selected?.id ?? null}
+          basePath="/panel/veli/kocluk"
+        />
+      }
+    >
+      <div className="max-w-[1000px]">{body}</div>
+    </PanelShell>
+  );
+
+  if (!selected) {
+    return shell(
+      <>
+        <PanelHeading title="Koçluk" />
+        <PanelEmpty
+          title="Henüz bağlı öğrenci yok."
+          body="Hesabınız öğrencinizle eşleştirildiğinde koçluk özeti burada açılır."
+        />
+      </>,
+    );
+  }
+
+  if (!selected.products.includes("OK")) {
+    return shell(
+      <>
+        <PanelHeading title="Koçluk" description={selected.name} />
+        <PanelEmpty
+          title="Bu hesapta Online Koçum bulunmuyor."
+          body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünür."
+        />
+      </>,
+    );
+  }
+
+  const plan = await prisma.weeklyPlan.findFirst({
+    where: { studentId: selected.id },
+    orderBy: { weekStart: "desc" },
+    include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
+  });
+
+  if (!plan) {
+    return shell(
+      <>
+        <PanelHeading title="Koçluk" description={selected.name} />
+        <PanelEmpty
+          title="Bu hafta için plan yayınlanmadı."
+          body="Koç haftalık planı yayınladığında görevler ve tamamlanma oranı burada görünür."
+        />
+      </>,
+    );
+  }
+
+  const start = mondayOf(plan.weekStart);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+
+  const done = plan.tasks.filter((t) => t.status === "DONE").length;
+  const total = plan.tasks.length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  return shell(
+    <>
+      <PanelHeading
+        title="Koçluk"
+        description={`${selected.name} · ${RANGE.format(start)} – ${RANGE.format(end)}`}
+      />
+
+      <PanelCard className="mt-5">
+        <PanelCardTitle>Bu haftanın planı</PanelCardTitle>
+        <div
+          className="mt-4 h-2 overflow-hidden rounded-full bg-dc-line-soft"
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Haftalık plan tamamlanma"
+        >
+          <div className="h-full rounded-full bg-dc-brand" style={{ width: `${pct}%` }} />
+        </div>
+        <p className="mt-2 text-[13.5px] text-dc-ink-muted">
+          %{pct} tamamlandı · {done} / {total} görev
+        </p>
+      </PanelCard>
+
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        {days.map((day, i) => {
+          const tasks = plan.tasks.filter(
+            (t) => t.scheduledFor.toDateString() === day.toDateString(),
+          );
+          return (
+            <div key={day.toISOString()}>
+              <p className="text-[13px] font-bold text-dc-ink">
+                {DAY_LABEL[i]} {day.getDate()}
+              </p>
+              <div className="mt-2.5 flex flex-col gap-2">
+                {tasks.length === 0 ? (
+                  <p className="rounded-[10px] border border-dashed border-[#CBD6D0] p-3 text-[11.5px] text-dc-ink-ghost">
+                    Boş gün
+                  </p>
+                ) : (
+                  tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className={`rounded-[10px] border border-dc-line bg-white p-3 ${
+                        task.status === "DONE" ? "border-l-[3px] border-l-dc-brand" : ""
+                      }`}
+                    >
+                      <p className="text-[12.5px] font-semibold text-dc-ink">{task.title}</p>
+                      <p className="mt-0.5 text-[11.5px] text-dc-ink-faint">
+                        {task.durationMinutes} dk ·{" "}
+                        {task.status === "DONE" ? "tamamlandı" : "bekliyor"}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="mt-5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
+        Koçun birebir görüşme notları veliyle paylaşılmaz. Bu ekran planın kendisini ve
+        tamamlanma durumunu gösterir.
+      </p>
+    </>,
+  );
+}

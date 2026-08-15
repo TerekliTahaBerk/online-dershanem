@@ -966,6 +966,26 @@ export function parsePriceToCents(priceLabel: string | null | undefined): number
 }
 
 /**
+ * Katalogdaki KAMPANYA ÖNCESİ liste fiyatını (`oldPrice`) kuruş olarak döner.
+ *
+ * Bu değer ödeme-kritik DEĞİLDİR; yalnızca üstü çizili gösterim içindir.
+ * Tanımlı değilse 0 döner ve arayüz üstü çizili fiyat basmaz.
+ */
+export function getPackageListPriceCents(
+  category: string,
+  subject: string,
+): number {
+  for (const group of subjectPackageGroups) {
+    for (const pkg of group.packages) {
+      if (pkg.category === category && pkg.subject === subject) {
+        return parsePriceToCents(pkg.oldPrice);
+      }
+    }
+  }
+  return 0;
+}
+
+/**
  * Static katalogdaki paket fiyatını kuruş olarak döner. Bulamazsa 0.
  */
 export function getPackagePriceCents(

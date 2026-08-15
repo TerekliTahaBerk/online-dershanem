@@ -10,6 +10,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // ─── Claude Design tokens (onaylı tasarım kaynağı) ───
+        dc: {
+          brand: "var(--dc-brand)",
+          "brand-strong": "var(--dc-brand-strong)",
+          "brand-hover": "var(--dc-brand-hover)",
+          "brand-deep": "var(--dc-brand-deep)",
+          "brand-soft": "var(--dc-brand-soft)",
+          "brand-soft-line": "var(--dc-brand-soft-line)",
+          ink: "var(--dc-ink)",
+          "ink-body": "var(--dc-ink-body)",
+          "ink-muted": "var(--dc-ink-muted)",
+          "ink-faint": "var(--dc-ink-faint)",
+          "ink-ghost": "var(--dc-ink-ghost)",
+          canvas: "var(--dc-canvas)",
+          surface: "var(--dc-surface)",
+          "surface-muted": "var(--dc-surface-muted)",
+          line: "var(--dc-line)",
+          "line-soft": "var(--dc-line-soft)",
+          "on-deep": "var(--dc-on-deep)",
+          "on-deep-body": "var(--dc-on-deep-body)",
+          "on-deep-muted": "var(--dc-on-deep-muted)",
+          "on-deep-label": "var(--dc-on-deep-label)",
+          "on-deep-faint": "var(--dc-on-deep-faint)",
+          "on-deep-line": "var(--dc-on-deep-line)"
+        },
+
         // Legacy site colors — preserved
         anchor: "#091413",
         ink: "#111111",
@@ -63,6 +89,10 @@ const config: Config = {
         }
       },
       boxShadow: {
+        "dc-card": "var(--dc-shadow-card)",
+        "dc-raised": "var(--dc-shadow-raised)",
+        "dc-sticky": "var(--dc-shadow-sticky)",
+        "dc-canvas": "var(--dc-shadow-canvas)",
         soft: "0 12px 34px -18px rgba(9, 20, 19, 0.32)",
         "od-sm": "var(--pd-shadow-sm)",
         "od-md": "var(--pd-shadow-md)",
@@ -70,6 +100,9 @@ const config: Config = {
         "od-xl": "var(--pd-shadow-xl)"
       },
       borderRadius: {
+        "dc-card": "var(--dc-radius-card)",
+        "dc-card-sm": "var(--dc-radius-card-sm)",
+        "dc-banner": "var(--dc-radius-banner)",
         xl2: "1.25rem",
         "od-sm": "6px",
         od: "10px",
@@ -77,15 +110,17 @@ const config: Config = {
         "od-xl": "24px"
       },
       fontFamily: {
-        display: ["var(--font-display)", "ui-serif", "Georgia", "serif"],
-        serif: ["var(--font-display)", "ui-serif", "Georgia", "serif"],
+        // Onaylı tasarım: başlık ve gövde Manrope, etiket JetBrains Mono.
+        display: ["var(--font-manrope)", "var(--font-geist-sans)", "system-ui", "sans-serif"],
+        serif: ["var(--font-manrope)", "var(--font-geist-sans)", "system-ui", "sans-serif"],
         sans: [
-          "var(--font-sans)",
+          "var(--font-manrope)",
           "var(--font-geist-sans)",
           "ui-sans-serif",
           "system-ui",
           "sans-serif"
-        ]
+        ],
+        mono: ["var(--font-jetbrains-mono)", "ui-monospace", "SFMono-Regular", "monospace"]
       },
       fontSize: {
         "od-display": ["36px", { lineHeight: "44px", letterSpacing: "-0.02em" }],

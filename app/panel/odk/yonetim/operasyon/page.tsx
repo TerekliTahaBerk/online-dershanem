@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
-import { OdkPanelNav } from "@/components/odk/odk-panel-nav";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { OdkOperationsRefresh } from "@/components/odk/odk-operations-refresh";
 import { attemptStatusPresentation } from "@/lib/odk/presentation";
@@ -36,7 +35,7 @@ export default async function OdkOperationsPage({ searchParams }: { searchParams
     return matchesView && matchesQuery;
   });
 
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" nav={<OdkPanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
     <PanelPageHeader eyebrow="Canlı operasyon" title="Sınav akışını tek ekrandan izleyin." description="Kalp atışı tarayıcı bağlantısını gösterir; Google Meet katılımının teknik kanıtı değildir. Gecikme durumunda öğrenciyle doğrudan iletişim kurun." icon={Activity} action={<OdkOperationsRefresh renderedAt={now.toISOString()} />} />
 
     <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[["Aktif sınav", exams.filter((exam) => exam.startsAt && exam.startsAt <= now && exam.endsAt && exam.endsAt > now).length, Activity, "panel-tone-sky"], ["Aktif öğrenci", active.length, UsersRound, "panel-tone-mint"], ["Teslim", submitted.length, CheckCircle2, "panel-tone-lavender"], ["Bağlantısı geciken", stale.length, AlertTriangle, stale.length ? "panel-attention-amber" : "panel-tone-yellow"]].map(([label, value, Icon, tone]) => { const MetricIcon = Icon as typeof Activity; return <article key={String(label)} className="panel-metric-card"><span className={`panel-metric-icon ${tone}`}><MetricIcon size={18} /></span><p className="mt-4 text-2xl font-black text-[var(--site-ink)]">{String(value)}</p><p className="mt-1 text-xs text-[var(--site-muted)]">{String(label)}</p></article>; })}</section>

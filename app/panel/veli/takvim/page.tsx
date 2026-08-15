@@ -1,26 +1,159 @@
-import Link from "next/link";
-import { CalendarDays, Download, ExternalLink, ShieldCheck } from "lucide-react";
-import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requirePanelRole } from "@/lib/auth/guards";
+import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
-import { PanelEmptyState } from "@/components/panel/empty-state";
+import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import {
+  PanelHeading,
+  PanelCard,
+  PanelTable,
+  PanelTableRow,
+  PanelTableCell,
+  PanelEmpty,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function ParentCalendarPage({ searchParams }: { searchParams: Promise<{ studentId?: string }> }) {
-  const session = await requireRole("PARENT");
+/**
+ * VELİ · DERSLER — onaylı tasarım (Panel.dc.html → pLessons).
+ *
+ * Tasarımın işlev tanımı: tarih / ders ve konu / öğretmen / katılım tablosu,
+ * altında "Son dersin özeti" ve gizlilik notu.
+ *
+ * GİZLİLİK: yalnızca ORTAK ders notu (`studentId: null`) okunur. Öğretmenin
+ * öğrenciye özel notu sorguya HİÇ girmez — veliye sızma ihtimali kalmaz.
+ */
+
+const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+
+export default async function ParentLessonsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ studentId?: string }>;
+}) {
+  const session = await requirePanelRole("PARENT");
   const { studentId } = await searchParams;
-  const links = await prisma.parentStudent.findMany({ where: { parentId: session.userId }, include: { student: { include: { user: { select: { fullName: true, email: true } } } } }, orderBy: { student: { user: { fullName: "asc" } } } });
-  if (!links.length) return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Öğrenci bağlantınız hazırlanıyor." body="Bağlantı kurulduğunda ders takvimi burada görünür." /></PanelShell>;
-  const selected = studentId ? links.find((item) => item.studentId === studentId) : links[0];
-  if (!selected) notFound();
-  const enrollments = await prisma.enrollment.findMany({ where: { studentId: selected.studentId, endedAt: null }, select: { groupId: true } });
-  const lessons = await prisma.lesson.findMany({ where: { groupId: { in: enrollments.map((item) => item.groupId) }, startsAt: { gte: new Date(Date.now() - 86400000) }, status: { not: "CANCELLED" } }, orderBy: { startsAt: "asc" }, take: 30, include: { group: true, teacher: { select: { fullName: true, email: true } } } });
-  const name = selected.student.user.fullName || selected.student.user.email;
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.07em] text-[var(--brand-olive)]"><ShieldCheck size={15} /> Güvenli veli görünümü</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] text-[var(--site-ink)]">{name} · Ders takvimi</h1></div><div className="flex flex-wrap gap-2">{links.length > 1 ? <nav className="flex gap-2" aria-label="Öğrenci seçimi">{links.map((link) => <Link key={link.studentId} href={`/panel/veli/takvim?studentId=${link.studentId}`} className={`rounded-full px-3 py-2 text-xs font-bold ${link.studentId === selected.studentId ? "bg-[var(--brand-olive)] text-white" : "border border-[var(--site-line)] bg-white"}`}>{link.student.user.fullName || link.student.user.email}</Link>)}</nav> : null}<a href={`/api/panel/calendar/export?studentId=${selected.studentId}`} download className="panel-quick-action panel-quick-action-primary"><Download size={14} /> Takvime ekle (.ics)</a></div></header>
-    <section className="panel-surface mt-6 overflow-hidden"><div className="border-b border-[var(--site-line)] p-5"><h2 className="flex items-center gap-2 text-sm font-extrabold text-[var(--site-ink)]"><CalendarDays size={17} /> Yaklaşan dersler</h2></div><div className="divide-y divide-[var(--site-line)]">{lessons.map((lesson) => <article key={lesson.id} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"><div><time className="text-xs font-extrabold text-[var(--brand-olive)]">{new Intl.DateTimeFormat("tr-TR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(lesson.startsAt)}</time><h3 className="mt-1 text-sm font-bold text-[var(--site-ink)]">{lesson.title}</h3><p className="mt-1 text-xs text-[var(--site-muted)]">{lesson.group.name} · {lesson.teacher.fullName || lesson.teacher.email}</p></div>{lesson.meetingUrl && lesson.startsAt.getTime() < Date.now() + 86400000 ? <a href={lesson.meetingUrl} target="_blank" rel="noreferrer" className="panel-quick-action panel-quick-action-primary"><ExternalLink size={14} /> Ders bağlantısı</a> : null}</article>)}{!lessons.length ? <p className="p-8 text-center text-sm text-[var(--site-muted)]">Planlanmış ders bulunmuyor.</p> : null}</div></section>
-  </PanelShell>;
+  const { children, selected } = await resolveParentScope(session.userId, studentId);
+
+  const shell = (body: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Dersler"
+      topbarSlot={
+        <ChildSwitcher
+          options={children}
+          selectedId={selected?.id ?? null}
+          basePath="/panel/veli/takvim"
+        />
+      }
+    >
+      <div className="max-w-[1000px]">{body}</div>
+    </PanelShell>
+  );
+
+  if (!selected) {
+    return shell(
+      <>
+        <PanelHeading title="Dersler" />
+        <PanelEmpty
+          title="Henüz bağlı öğrenci yok."
+          body="Hesabınız öğrencinizle eşleştirildiğinde ders takvimi burada görünür."
+        />
+      </>,
+    );
+  }
+
+  if (!selected.products.includes("OD")) {
+    return shell(
+      <>
+        <PanelHeading title="Dersler" description={selected.name} />
+        <PanelEmpty
+          title="Bu hesapta canlı ders ürünü bulunmuyor."
+          body="Online Dershanem eklendiğinde ders takvimi ve katılım burada görünür."
+        />
+      </>,
+    );
+  }
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { studentId: selected.id, endedAt: null },
+    select: { groupId: true },
+  });
+  const groupIds = enrollments.map((e) => e.groupId);
+
+  const lessons = groupIds.length
+    ? await prisma.lesson.findMany({
+        where: { groupId: { in: groupIds } },
+        orderBy: { startsAt: "desc" },
+        take: 30,
+        include: {
+          teacher: { select: { fullName: true } },
+          // Yalnız ortak not — öğrenciye özel not okunmaz.
+          notes: { where: { studentId: null }, take: 1 },
+          attendances: { where: { studentId: selected.id }, select: { status: true } },
+        },
+      })
+    : [];
+
+  const lastWithSummary = lessons.find((l) => l.notes[0]?.topic);
+
+  return shell(
+    <>
+      <PanelHeading title="Dersler" description={selected.name} />
+
+      {lessons.length === 0 ? (
+        <PanelEmpty
+          title="Henüz ders kaydı yok."
+          body="Dersler planlandıkça tarih, öğretmen ve katılım bilgisi burada listelenir."
+        />
+      ) : (
+        <>
+          <PanelTable
+            caption={`${selected.name} ders listesi`}
+            columns={["Tarih", "Ders ve konu", "Öğretmen", "Katılım"]}
+          >
+            {lessons.map((lesson) => {
+              const status = lesson.attendances[0]?.status;
+              const label =
+                status === "ABSENT"
+                  ? "Katılmadı"
+                  : status === "LATE"
+                    ? "Geç katıldı"
+                    : status === "PRESENT"
+                      ? "Katıldı"
+                      : status === "EXCUSED"
+                        ? "Mazeretli"
+                        : "İşlenmedi";
+              return (
+                <PanelTableRow key={lesson.id}>
+                  <PanelTableCell>{DAY.format(lesson.startsAt)}</PanelTableCell>
+                  <PanelTableCell>
+                    {lesson.title}
+                    {lesson.notes[0]?.topic ? ` · ${lesson.notes[0].topic}` : ""}
+                  </PanelTableCell>
+                  <PanelTableCell>{lesson.teacher.fullName || "—"}</PanelTableCell>
+                  <PanelTableCell tone={status === "ABSENT" ? "warn" : "ok"}>
+                    {label}
+                  </PanelTableCell>
+                </PanelTableRow>
+              );
+            })}
+          </PanelTable>
+
+          <PanelCard className="mt-5 max-w-[760px]">
+            <h2 className="text-[15px] font-bold text-dc-ink">Son dersin özeti</h2>
+            <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+              {lastWithSummary?.notes[0]?.topic ||
+                "Öğretmen henüz ders özeti eklemedi. Eklendiğinde burada görünecek."}
+            </p>
+            <p className="mt-2.5 text-[12.5px] text-dc-ink-faint">
+              Öğretmenin öğrenciye özel notları veliyle paylaşılmaz.
+            </p>
+          </PanelCard>
+        </>
+      )}
+    </>,
+  );
 }

@@ -7,8 +7,8 @@ const teacher = { email: process.env.PANEL_E2E_TEACHER_EMAIL, password: process.
 async function login(page: Page, account: { email?: string; password?: string }) {
   await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout"); await page.goto("/giris");
-  await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!); await page.getByLabel("Parola").fill(account.password!);
-  await page.getByRole("button", { name: /^Giriş yap$/ }).click(); await page.waitForURL(/\/panel\//);
+  await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!); await page.getByLabel("Şifre").fill(account.password!);
+  await page.getByRole("button", { name: /^Giriş Yap$/ }).click(); await page.waitForURL(/\/panel\//);
   if (new URL(page.url()).pathname === "/panel/urun-sec") await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
 }
 test.describe("Instagram CRM ve finans merkezi", () => {

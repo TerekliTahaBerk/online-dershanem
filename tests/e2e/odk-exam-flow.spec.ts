@@ -46,8 +46,8 @@ async function login(page: Page, email = account.email) {
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);
-  await page.getByLabel("Parola").fill(account.password!);
-  await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+  await page.getByLabel("Şifre").fill(account.password!);
+  await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/panel\//);
   if (new URL(page.url()).pathname === "/panel/urun-sec") {
     await page.getByRole("link", { name: "Online Deneme Kulübü paneline git" }).click();

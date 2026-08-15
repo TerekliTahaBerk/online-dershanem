@@ -1,6 +1,23 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
+import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+// Onaylı tasarımın tipografisi: gövde ve başlık Manrope, etiket/eyebrow
+// JetBrains Mono. (Web.dc.html → Tasarım sistemi · Tipografi)
+const manrope = Manrope({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-manrope",
+  display: "swap"
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "600"],
+  variable: "--font-jetbrains-mono",
+  display: "swap"
+});
 import { seoKeywords, siteUrl } from "@/lib/content";
 
 import { Suspense } from "react";
@@ -85,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="tr"
       data-theme="light"
       data-scroll-behavior="smooth"
-      className={GeistSans.variable}
+      className={`${GeistSans.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <head>

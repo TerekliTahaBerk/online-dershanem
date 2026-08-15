@@ -258,7 +258,7 @@ export default function MathematicsHubPage() {
             <div className="grid gap-7 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
                 <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-tight">Öğrenciniz nereden başlamalı, konuşalım.</h2>
-                <p className="mt-3 max-w-xl text-[15px] leading-7 text-white/75">Öğrencinin sınıfını, hedefini ve zorlandığı noktayı konuşup uygun LGS veya YKS grubunu değerlendirelim.</p>
+                <p className="mt-3 max-w-xl text-[15px] leading-7 text-white">Öğrencinin sınıfını, hedefini ve zorlandığı noktayı konuşup uygun LGS veya YKS grubunu değerlendirelim.</p>
               </div>
               <LeadFunnelTrigger source="matematik_hub_final_cta" eventName="landing_cta_click" className="site-btn bg-white text-[var(--brand-olive)] hover:bg-[var(--site-bg-warm)]">Ücretsiz görüşme</LeadFunnelTrigger>
             </div>

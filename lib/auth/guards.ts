@@ -63,7 +63,26 @@ async function requireProductPilot(session: SessionUser, product: ProductCode) {
   if (!pilot.allowed) notFound();
 }
 
-/** Mevcut panel sayfaları Online Dershanem ürün kapsamındadır. */
+/**
+ * TEK PANEL kapısı — yalnız rol doğrular, ÜRÜN ŞART KOŞMAZ.
+ *
+ * Panel tek panele geçtiği için her kullanıcı hangi ürünü almış olursa olsun
+ * kendi paneline girebilmeli; satın alınan ürünler panelin İÇİNDE bölüm
+ * olarak açılır. Ürün bağımsız sayfalar (panel ana sayfası, bildirimler,
+ * erişilebilirlik, veri kullanımı, oturumlar) bu kapıyı kullanır.
+ *
+ * DİKKAT: ürün verisi gösteren sayfalar bunu KULLANMAZ — onlar
+ * `requireProductRole(product, ...)` ile korunur. Bu kapı "panele girebilir"
+ * demektir, "o ürünün verisini görebilir" demek DEĞİLDİR.
+ */
+export async function requirePanelRole(...roles: UserRole[]): Promise<SessionUser> {
+  return requireAuthorizedRole(...roles);
+}
+
+/**
+ * Online Dershanem (OD) ürün kapsamındaki sayfalar.
+ * Ders, ödev, materyal, haftalık plan gibi OD verisi gösteren her sayfa.
+ */
 export async function requireRole(...roles: UserRole[]): Promise<SessionUser> {
   const session = await requireAuthorizedRole(...roles);
   await requireProductPilot(session, "OD");

@@ -8,6 +8,9 @@ const routes = [
   "/urunler/online-kocum",
   "/urunler/online-deneme-kulubum",
   "/dino-ai",
+  // Paket kurucu: sitedeki en etkileşimli public yüzey ve fiyat/indirim
+  // gösteriminin tek yeri — sweep dışında kalmamalı.
+  "/paketler",
   "/ders-paketleri",
   "/lgs",
   "/yks",
@@ -49,9 +52,23 @@ test("mobile navigation traps and restores keyboard focus", async ({ page }) => 
   await expect(trigger).toBeFocused();
 });
 
-test("university band is visible and respects reduced motion", async ({ page }) => {
+/*
+ * "University band" (kayan eğitimci şeridi) onaylı tasarımda YOK: ana sayfanın
+ * bölüm haritası (01–15) böyle bir şerit içermiyor ve bölüm kaldırıldı.
+ * Test, var olmayan bir bileşeni beklediği için kaldırıldı — iddia
+ * zayıflatılmadı, konusu ortadan kalktı.
+ *
+ * Hareket azaltma güvencesi kaybolmasın diye ana sayfada animasyon
+ * kalmadığı burada doğrulanır.
+ */
+test("ana sayfa reduced-motion tercihine uyar", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Seçkin eğitimciler/ })).toBeVisible();
-  await expect(page.locator(".university-marquee-track")).toHaveCSS("animation-name", "none");
+  const animated = await page.evaluate(() =>
+    [...document.querySelectorAll("*")].filter((el) => {
+      const name = getComputedStyle(el).animationName;
+      return name && name !== "none";
+    }).length,
+  );
+  expect(animated).toBe(0);
 });

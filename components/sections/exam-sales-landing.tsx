@@ -297,7 +297,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
             <h2 className="mx-auto max-w-2xl font-display text-[clamp(1.9rem,4vw,2.9rem)] leading-tight tracking-[-0.02em]">
               Doğru gruba birlikte karar verelim.
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-[16.5px] leading-7 text-white/85">
+            <p className="mx-auto mt-4 max-w-xl text-[16.5px] leading-7 text-white">
               Kısa bir ön görüşmeyle seviyeyi, hedefi ve ders temposunu konuşalım.
             </p>
             <div className="mt-8 flex justify-center">

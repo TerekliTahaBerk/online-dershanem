@@ -1,179 +1,123 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BarChart3, Compass, HeartHandshake, Layers, MessageCircle, Target } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import { PageHero } from "@/components/site/page-hero";
-import { FooterCta } from "@/components/marketing/footer-cta";
-import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { ProductClosingCta } from "@/components/product/product-sections";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Hakkımızda",
+  title: "Hakkımızda | Öğrenciyi yalnız bırakmayan bir sistem",
   description:
-    "Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini bir araya getirir.",
-  canonical: "/hakkimizda",
+    "Online Dershanem canlı dersle başladı; bugün ders, koçluk ve deneme analizini tek ekosistemde birleştiriyor.",
+  canonical: "/hakkimizda/",
 });
 
-const approach = [
+const principles = [
   {
-    icon: HeartHandshake,
-    title: "Yakın takip",
-    body: "En fazla 4 kişilik grupta her öğrenci soru sorar ve çözümünü gösterir; kalabalıkta kaybolmaz.",
+    title: "Küçük grup, gerçek etkileşim",
+    body: "Kalabalık sınıf yerine maks. 4 kişilik canlı gruplar; öğretmen her öğrenciyle ilgilenebiliyor.",
   },
   {
-    icon: BarChart3,
-    title: "Düzenli takip",
-    body: "İşlenen konu, verilen ödev ve sonraki hedef kısa öğretmen notlarıyla haftalık olarak paylaşılır.",
+    title: "İnsan koç merkezde",
+    body: "Planı kuran, öğrenciyi tanıyan ve sorumluluk alan bir insan. Yapay zekâ bu işi devralmıyor.",
   },
   {
-    icon: Compass,
-    title: "Seviyeye göre plan",
-    body: "Öğrencinin seviyesi ve sınav hedefi dikkate alınır; sıradaki çalışma adımı buna göre belirlenir.",
+    title: "Ölçmeden ilerlemiyoruz",
+    body: "Deneme sonucu bir not değil, sıradaki adımın gerekçesi. Veli de aynı resmi görüyor.",
   },
 ];
 
-const different = [
-  { title: "Hepsi bir elden", body: "Ders, plan, ödev ve veli bilgilendirmesi aynı ekip tarafından yürütülür." },
-  { title: "Haftalık özet", body: "İşlenen konu, zorlanılan nokta ve sıradaki hedef her hafta kısaca paylaşılır." },
-  { title: "Kişiye göre tempo", body: "Ders temposu ve sıradaki adım, öğrencinin seviyesi ve sınav hedefine göre güncellenir." },
-  { title: "Düzenli geri bildirim", body: "Öğrenciye öğretmen notu, veliye kısa gelişim özeti." },
-];
-
-export default function AboutPage() {
+/**
+ * HAKKIMIZDA — onaylı tasarım (Web.dc.html → isAbout).
+ *
+ * BİLİNÇLİ SAPMA (§54): tasarımdaki "Ekip" bölümünde kesik çizgili
+ * "ÖĞRETMEN / KOÇ / ÜRÜN EKİBİ FOTOĞRAFI" kutuları var. Bunlar prototip yer
+ * tutucusudur; üretimde gerçek kullanıcıya boş fotoğraf kutusu gösterilmez.
+ * Bölümün dürüst metni korundu, kutular çıkarıldı — izinli fotoğraflar
+ * geldiğinde ızgara buraya eklenir.
+ */
+export default function HakkimizdaPage() {
   return (
     <div className="site-scope">
-      <SchemaJsonLd
-        schema={breadcrumbJsonLd([
-          { name: "Ana Sayfa", url: "/" },
-          { name: "Hakkımızda", url: "/hakkimizda/" },
-        ])}
-      />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        <PageHero
-          eyebrow="Hakkımızda"
-          title={<>Öğrencinin matematikte <span className="site-hl">yalnız kalmadığı</span> küçük bir grup.</>}
-          subtitle="Online Dershanem; küçük grup canlı ders, öğretmen takibi ve sade veli bilgilendirmesini bir arada sunar."
-        />
-
-        {/* Misyon */}
-        <section className="bg-white">
-          <div className="site-container py-16 sm:py-20">
-            <div className="grid items-center gap-8 overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-12 lg:grid-cols-2 lg:gap-14">
-              <div>
-                <p className="site-eyebrow mb-4">Misyonumuz</p>
-                <h2 className="font-display text-[clamp(1.9rem,3.6vw,2.8rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
-                  Hedefe giden yolu <span className="site-hl">sadeleştirmek.</span>
-                </h2>
-                <p className="mt-5 max-w-[46ch] text-[15.5px] leading-7 text-[var(--site-body)]">
-                  Öğrencinin derste sorularını sorabildiği, ne çalışacağını bildiği ve gelişiminin
-                  aile için de anlaşılır olduğu bir düzen kurmak.
-                </p>
-                <Link href="/misyonumuz/" className="mt-6 inline-flex items-center gap-2 text-[14px] font-semibold text-[var(--brand-olive)] hover:underline">
-                  Misyonumuzu ayrıntılı okuyun
-                  <Compass size={15} aria-hidden="true" />
-                </Link>
-              </div>
-              <div className="overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white p-4 shadow-[0_24px_55px_-34px_rgba(20,20,15,.28)]">
-                <div className="aspect-[35/24] overflow-hidden rounded-[18px] bg-[var(--site-bg-warm)]">
-                  <Image
-                    src="/founders.webp"
-                    alt="Online Dershanem kurucu ekibi çizimi"
-                    width={420}
-                    height={288}
-                    sizes="(max-width: 1024px) 80vw, 520px"
-                    className="h-full w-full object-cover object-center"
-                  />
-                </div>
-                <div className="px-2 pb-2 pt-4">
-                  <p className="text-[13px] font-bold text-[var(--site-ink)]">Online Dershanem ekibi</p>
-                  <p className="mt-1 text-[12.5px] leading-5 text-[var(--site-body)]">
-                    Küçük grup dersini öğrenci, öğretmen ve veli için daha anlaşılır hale getirmeye çalışıyoruz.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Yaklaşım */}
-        <section className="bg-white">
-          <div className="site-container pb-8">
-            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
-              Yaklaşımımız
-            </h2>
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
-              {approach.map((a) => {
-                const Icon = a.icon;
-                return (
-                  <article key={a.title} className="rounded-[24px] border border-[var(--site-line)] bg-white p-8">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
-                      <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
-                    </span>
-                    <h3 className="mt-6 font-display text-[24px] tracking-[-0.01em] text-[var(--site-ink)]">{a.title}</h3>
-                    <p className="mt-3 text-[14.5px] leading-6 text-[var(--site-body)]">{a.body}</p>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* Neden farklı */}
-        <section className="bg-[var(--site-bg-warm)]">
-          <div className="site-container grid gap-12 py-20 sm:py-24 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="site-container pt-14 sm:pt-[72px]">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-12">
             <div>
-              <p className="site-eyebrow mb-4">Neden farklı?</p>
-              <h2 className="font-display text-[clamp(1.9rem,3.8vw,3rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)]">
-                İlerleme, küçük ama tutarlı adımlarla gelir.
-              </h2>
-              <p className="mt-5 max-w-md text-[15px] leading-7 text-[var(--site-body)]">
-                Kısa vadeli, kanıtlanmamış vaatler yerine; uygulanabilir bir çalışma düzenine ve
-                haftalık takip edilebilir gelişime odaklanırız.
+              <p className="dc-eyebrow">Hakkımızda</p>
+              <h1 className="mt-4 font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
+                Öğrenciyi yalnız
+                <br />
+                bırakmayan bir sistem.
+              </h1>
+              <p className="mt-4 max-w-[520px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
+                Online Dershanem, canlı dersle başladı. Bugün ders, koçluk ve deneme
+                analizini tek ekosistemde birleştiriyor: öğrenci ne öğreneceğini, ne
+                zaman çalışacağını ve nerede olduğunu aynı yerde görüyor.
               </p>
+              <Link
+                href="/misyonumuz/"
+                className="mt-5 inline-block text-[15px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
+              >
+                Misyonumuzu ayrıntılı okuyun →
+              </Link>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {different.map((d) => (
-                <div key={d.title} className="rounded-[20px] border border-[var(--site-line)] bg-white p-6">
-                  <div className="flex items-center gap-2 text-[var(--brand-orange-ink)]">
-                    <Layers size={16} aria-hidden="true" />
-                    <h3 className="text-[15px] font-bold text-[var(--site-ink)]">{d.title}</h3>
-                  </div>
-                  <p className="mt-2.5 text-[14px] leading-6 text-[var(--site-body)]">{d.body}</p>
+
+            <div className="relative h-[280px] sm:h-[340px]">
+              <div
+                aria-hidden="true"
+                className="absolute inset-5 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle at 50% 50%,#E8F5EF,rgba(243,249,246,0) 70%)",
+                }}
+              />
+              <Image
+                src="/design/dino-mascot.png"
+                alt=""
+                aria-hidden="true"
+                width={1319}
+                height={1193}
+                sizes="(max-width: 1023px) 60vw, 320px"
+                className="absolute bottom-0 left-[14%] w-[68%] max-w-[320px] lg:left-20"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-16 border-y border-dc-line-soft bg-white">
+          <div className="site-container py-[var(--dc-section-tight)]">
+            <h2 className="font-display text-[length:var(--public-title)] leading-[1.1] tracking-[-0.025em] text-dc-ink">
+              Nasıl çalışıyoruz?
+            </h2>
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              {principles.map((p) => (
+                <div key={p.title} className="rounded-[20px] border border-dc-line p-6">
+                  <h3 className="text-[20px] font-bold text-dc-ink">{p.title}</h3>
+                  <p className="mt-2.5 text-[15px] leading-[1.6] text-dc-ink-muted">
+                    {p.body}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Öğretmenler teaser */}
-        <section className="bg-white">
-          <div className="site-container py-20 text-center sm:py-24">
-            <Target className="mx-auto text-[var(--brand-orange)]" size={30} aria-hidden="true" />
-            <h2 className="mx-auto mt-5 max-w-2xl font-display text-[clamp(1.9rem,4vw,3rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
-              Öğretmen eşleşmesini öğrencinin seviyesine göre yapıyoruz.
+        <section className="site-container pt-[var(--dc-section-tight)]">
+          <div className="max-w-[640px]">
+            <h2 className="font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
+              Ekip
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-[15.5px] leading-7 text-[var(--site-body)]">
-              Küçük grup dersini yürütecek öğretmen seçiminde matematik alan bilgisi, anlatım yaklaşımı
-              ve öğrencinin seviyesi birlikte değerlendirilir. Uygun eşleşmeyi ön görüşmede belirleriz.
+            <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
+              Öğretmenler, koçlar ve ürün ekibi aynı hedefe çalışıyor. Ekip bilgileri ve
+              fotoğraflar, izinli içerik hazır olduğunda yayınlanacak.
             </p>
-            <a
-              href="/iletisim/"
-              className="mt-8 inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
-            >
-              <MessageCircle size={16} aria-hidden="true" />
-              Bize ulaş
-            </a>
           </div>
         </section>
 
-        <FooterCta
-          title="Hedefini birlikte planlayalım."
-          subtitle="Kısa bir ücretsiz görüşmede öğrencinin seviyesini ve hedefini konuşalım."
-          ctaLabel="Ücretsiz görüşme"
-          ctaHref="/iletisim/"
+        <ProductClosingCta
+          title="Sistemi öğrenciye göre kuralım."
+          body="İhtiyacın olan ürünleri birlikte belirleyelim."
         />
       </main>
       <SiteFooter />

@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 
 export const dynamic = "force-dynamic";
 const dateTime = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -16,7 +15,7 @@ export default async function GroupDetailPage({ params }: { params: Promise<{ id
   if (!group) notFound();
   const completed = group.lessons.filter((lesson) => lesson.status === "COMPLETED").length;
   const planned = group.lessons.filter((lesson) => lesson.status === "PLANNED").length;
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
     <Link href="/panel/yonetim/egitim" className="panel-text-link"><ArrowLeft size={13} /> Eğitime dön</Link>
     <header className="mt-5 rounded-[26px] border border-[var(--site-line)] bg-white p-6 shadow-[var(--panel-card-shadow)]"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-[9.5px] font-extrabold ${group.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{group.isActive ? "Aktif grup" : "Kapalı grup"}</span><span className="text-[10.5px] text-[var(--site-muted)]">{group.level || "Seviye belirtilmedi"}</span></div><h1 className="mt-3 text-3xl font-semibold tracking-[-.05em] text-[var(--site-ink)]">{group.name}</h1><p className="mt-2 text-sm text-[var(--site-body)]">{group.subject} · <Link href={`/panel/yonetim/kullanicilar/${group.teacher.id}`} className="font-bold text-[var(--brand-olive)]">{group.teacher.fullName || group.teacher.email}</Link></p></div><div className="flex gap-2"><span className="panel-quick-action"><UsersRound size={15} /> {group.enrollments.length}/4 öğrenci</span><span className="panel-quick-action"><CalendarDays size={15} /> {group.lessons.length} ders</span></div></div></header>
     <section className="mt-5 grid gap-3 sm:grid-cols-3"><div className="panel-metric-card"><CheckCircle2 size={18} className="text-emerald-700" /><p className="mt-4 text-2xl font-bold text-[var(--site-ink)]">{completed}</p><p className="mt-1 text-xs text-[var(--site-muted)]">Tamamlanan ders</p></div><div className="panel-metric-card"><Clock3 size={18} className="text-amber-700" /><p className="mt-4 text-2xl font-bold text-[var(--site-ink)]">{planned}</p><p className="mt-1 text-xs text-[var(--site-muted)]">Planlı ders</p></div><div className="panel-metric-card"><UsersRound size={18} className="text-violet-700" /><p className="mt-4 text-2xl font-bold text-[var(--site-ink)]">{group.enrollments.length}</p><p className="mt-1 text-xs text-[var(--site-muted)]">Aktif öğrenci</p></div></section>

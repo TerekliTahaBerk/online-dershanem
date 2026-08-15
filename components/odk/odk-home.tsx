@@ -3,7 +3,6 @@ import type { SessionUser } from "@/lib/auth/session";
 import { Activity, ArrowRight, CalendarClock, CheckCircle2, ClipboardCheck, LineChart, Rocket, ShieldCheck, UsersRound } from "lucide-react";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
-import { OdkPanelNav } from "@/components/odk/odk-panel-nav";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { prisma } from "@/lib/prisma";
 import { listStudentExams } from "@/lib/odk/student-exam-server";
@@ -77,5 +76,5 @@ async function ParentHome({ userId }: { userId: string }) {
 
 export async function OdkHome({ session }: { session: SessionUser }) {
   const copy = COPY[session.role];
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" nav={<OdkPanelNav role={session.role} />}><PanelPageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.body} icon={session.role === "ADMIN" ? ShieldCheck : session.role === "STUDENT" ? CalendarClock : LineChart} />{session.role === "ADMIN" ? <AdminHome /> : session.role === "STUDENT" ? <StudentHome userId={session.userId} /> : session.role === "TEACHER" ? <TeacherHome userId={session.userId} /> : <ParentHome userId={session.userId} />}</PanelShell>;
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK"><PanelPageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.body} icon={session.role === "ADMIN" ? ShieldCheck : session.role === "STUDENT" ? CalendarClock : LineChart} />{session.role === "ADMIN" ? <AdminHome /> : session.role === "STUDENT" ? <StudentHome userId={session.userId} /> : session.role === "TEACHER" ? <TeacherHome userId={session.userId} /> : <ParentHome userId={session.userId} />}</PanelShell>;
 }

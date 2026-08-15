@@ -3,7 +3,6 @@ import { CalendarDays, ChevronLeft, ChevronRight, Download, SlidersHorizontal } 
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +31,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const days = Array.from({ length: 7 }, (_, index) => new Date(start.getTime() + index * 86400000));
   const query = (nextWeek: number) => { const qs = new URLSearchParams({ week: String(nextWeek) }); if (params.teacher) qs.set("teacher", params.teacher); if (params.group) qs.set("group", params.group); return `/panel/yonetim/takvim?${qs}`; };
 
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
     <AdminPageHeader eyebrow="Haftalık plan" title="Ders takvimi" description="Tüm grupların derslerini gün gün görün; öğretmen veya gruba göre odağınızı daraltın." icon={CalendarDays} meta={`${lessons.length} ders`} />
     <div className="mt-4 flex justify-end"><a href="/api/panel/calendar/export" download className="panel-quick-action panel-quick-action-primary"><Download size={14} /> Tüm programı indir (.ics)</a></div>
     <div className="mt-6 flex flex-col gap-3 rounded-[20px] border border-[var(--site-line)] bg-white p-3 shadow-[var(--panel-card-shadow)] lg:flex-row lg:items-center lg:justify-between">

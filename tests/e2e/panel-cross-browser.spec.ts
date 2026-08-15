@@ -12,10 +12,10 @@ async function login(page: Page, email: string, password: string) {
   await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
   await page.request.post("/api/auth/logout");
   await page.goto("/giris");
-  await expect(page.getByRole("button", { name: /^Giriş yap$/ })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /^Giriş Yap$/ })).toBeEnabled();
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);
-  await page.getByLabel("Parola").fill(password);
-  await page.getByRole("button", { name: /^Giriş yap$/ }).click();
+  await page.getByLabel("Şifre").fill(password);
+  await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/panel\//);
   if (new URL(page.url()).pathname === "/panel/urun-sec") {
     await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();

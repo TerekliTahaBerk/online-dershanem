@@ -2,12 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Lock } from "lucide-react";
-import { SiteHeader } from "@/components/site/site-header";
-import { SiteFooter } from "@/components/site/site-footer";
+import { AuthCard } from "@/components/auth/auth-card";
 import { LoginForm } from "@/components/panel/login-form";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
-import { PANEL_ENABLED } from "@/lib/panel-config";
+import { PANEL_ENABLED, PUBLIC_REGISTER_ENABLED } from "@/lib/panel-config";
 import { getSession } from "@/lib/auth/session";
 import { postAuthenticationPath } from "@/lib/auth/products";
 
@@ -27,7 +25,11 @@ export const metadata: Metadata = {
  * destek kanallarına yönlendiriyoruz — kullanıcıdan çalışmayan bir formda
  * parola istemek en kötüsü olurdu.
  */
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ "password-reset"?: string }> }) {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ "password-reset"?: string; kayit?: string }>;
+}) {
   if (!PANEL_ENABLED) return <RenewingNotice />;
 
   // Zaten girmiş kullanıcıyı giriş ekranında tutmanın anlamı yok.
@@ -37,37 +39,34 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   }
 
   const params = await searchParams;
-  return <LoginScreen resetSuccess={params["password-reset"] === "success"} />;
+  return (
+    <LoginScreen
+      resetSuccess={params["password-reset"] === "success"}
+      registered={params.kayit === "tamam"}
+    />
+  );
 }
 
-function LoginScreen({ resetSuccess }: { resetSuccess: boolean }) {
+/** Onaylı tasarım (Web.dc.html → isLogin, "GİRİŞ"). */
+function LoginScreen({ resetSuccess, registered }: { resetSuccess: boolean; registered: boolean }) {
   return (
-    <div className="site-scope">
-      <SiteHeader />
-      <main id="main-content" tabIndex={-1}>
-        <section className="site-container flex justify-center py-16 sm:py-24">
-          <div className="w-full max-w-[440px]">
-            <p className="site-kicker">Panel girişi</p>
-            <h1 className="mt-4 font-display text-[clamp(2rem,4vw,2.6rem)] leading-[1.1] text-[var(--site-ink)]">
-              Tekrar hoş geldiniz.
-            </h1>
-            <p className="mt-3 text-[15px] leading-7 text-[var(--site-body)]">
-              Öğrenci, veli ve öğretmen paneli aynı kapıdan açılır — rolünüze göre doğru sayfaya yönlendirilirsiniz.
-            </p>
+    <AuthCard title="Tekrar hoş geldin" googleLabel="Google ile giriş yap">
+      <LoginForm resetSuccess={resetSuccess} registered={registered} />
 
-            <div className="mt-8 rounded-[24px] border border-[var(--site-line)] bg-white p-6 sm:p-8">
-              <LoginForm resetSuccess={resetSuccess} />
-            </div>
-
-            <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-[12px] text-[var(--site-muted)]">
-              <Lock size={12} aria-hidden="true" />
-              Hesap oluşturma yoktur; hesabınızı ekibimiz açar.
-            </p>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </div>
+      {/* Kayıt kapalıyken var olmayan bir sayfaya bağlantı gösterme. */}
+      {PUBLIC_REGISTER_ENABLED ? (
+        <p className="mt-5 text-center text-[13px] text-dc-ink-muted">
+          Hesabın yok mu?{" "}
+          <Link href="/kayit" className="font-semibold text-dc-brand-strong hover:text-dc-brand-hover">
+            Kayıt ol
+          </Link>
+        </p>
+      ) : (
+        <p className="mt-5 text-center text-[13px] text-dc-ink-muted">
+          Hesabınızı ekibimiz açar.
+        </p>
+      )}
+    </AuthCard>
   );
 }
 

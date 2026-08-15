@@ -4,7 +4,6 @@ import { requireProductRole } from "@/lib/auth/guards";
 import { parseOdkPackagePolicy } from "@/lib/odk/product-contract";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
-import { OdkPanelNav } from "@/components/odk/odk-panel-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +35,7 @@ export default async function OdkAdminPackagesPage() {
     },
   });
 
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" nav={<OdkPanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
     <PanelPageHeader eyebrow="Ticari ürün sözleşmesi" title="Paketin ne verdiğini tek bakışta görün." description="Satış, erişim, raporlama, canlı hizmet ve istisna kuralları ile deneme eşlemeleri aynı makine-okunur sözleşmeden gösterilir." icon={PackageOpen} />
     <section className="mt-7 space-y-5">
       {packages.map((pkg) => {

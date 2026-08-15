@@ -1,6 +1,7 @@
 import type { FinancialSource, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
+import { COMMERCE_ORDER_TABLE } from "@/lib/commerce/product-mapping";
 
 export function calculateTax(grossCents: number, vatRate: number) {
   const vatCents = Math.round(grossCents * vatRate / (100 + vatRate));
@@ -42,11 +43,11 @@ export async function upsertOrderLedger(tx: Prisma.TransactionClient, input: { s
       businessUnitId: unit.id, source: input.source, externalSourceId: input.orderId, idempotencyKey, kind: "SALE", status: "PAID",
       transactionAt: input.paidAt, accrualAt: input.paidAt, paidAt: input.paidAt, description: input.description, category: "PACKAGE_SALE",
       grossCents: input.totalCents + input.discountCents, discountCents: input.discountCents, netCents: input.totalCents,
-      paymentMethod: input.paymentMethod ?? "PAYTR", leadId: lead?.id, ...(product === "OD" ? { odOrderId: input.orderId } : { odkOrderId: input.orderId }),
+      paymentMethod: input.paymentMethod ?? "PAYTR", leadId: lead?.id, ...(COMMERCE_ORDER_TABLE[product] === "od" ? { odOrderId: input.orderId } : { odkOrderId: input.orderId }),
     },
   });
   if (lead) {
-    await tx.businessLead.update({ where: { id: lead.id }, data: { stage: "WON", source: "PURCHASE_COMPLETED", ...(product === "OD" ? { relatedOdOrderId: input.orderId } : { relatedOdkOrderId: input.orderId }) } });
+    await tx.businessLead.update({ where: { id: lead.id }, data: { stage: "WON", source: "PURCHASE_COMPLETED", ...(COMMERCE_ORDER_TABLE[product] === "od" ? { relatedOdOrderId: input.orderId } : { relatedOdkOrderId: input.orderId }) } });
     await tx.leadActivity.create({ data: { leadId: lead.id, type: "PAYMENT_COMPLETED", fromValue: lead.stage, toValue: "WON", metadata: { orderId: input.orderId, source: input.source } } });
     await tx.backgroundJob.upsert({ where: { idempotencyKey: `payment-automation:${product}:${input.orderId}` }, update: {}, create: { businessUnitId: unit.id, type: "AUTOMATE_PAYMENT_COMPLETED", idempotencyKey: `payment-automation:${product}:${input.orderId}`, payload: { leadId: lead.id, orderId: input.orderId } } });
   }

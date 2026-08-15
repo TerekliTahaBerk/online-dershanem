@@ -2,9 +2,9 @@ import "server-only";
 
 import type { ProductCode, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH, productRolePath } from "@/lib/auth/roles";
+import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
 
-const STAFF_PRODUCTS: ProductCode[] = ["OD", "ODK"];
+const STAFF_PRODUCTS: ProductCode[] = ["OD", "OK", "ODK"];
 
 export async function getAccessibleProducts(userId: string, role: UserRole, now = new Date()): Promise<ProductCode[]> {
   // Personel görev gereği iki üründe de çalışır. DB satırları kaynak/audit için
@@ -28,10 +28,19 @@ export async function hasProductAccess(userId: string, role: UserRole, product: 
   return (await getAccessibleProducts(userId, role)).includes(product);
 }
 
+/**
+ * Girişten sonra gidilecek yer.
+ *
+ * TEK PANEL: kullanıcı hangi ürünleri aldıysa alsın, aynı panele girer.
+ * Ürün seçme adımı YOKTUR — satın alınan ürünler panelin İÇİNDE bölüm olarak
+ * açılır ve menü yetkiye göre daralır (bkz. `PanelNav`).
+ *
+ * Eskiden burada `PRODUCT_SELECTOR_PATH` vardı ve iki ürünü olan kullanıcı
+ * her girişte "hangi panele gireceksin?" sorusuyla karşılaşıyordu; ürün
+ * mimarisi tek panele geçtiği için bu adım kaldırıldı.
+ */
 export async function postAuthenticationPath(input: { userId: string; role: UserRole; mustChangePassword: boolean; mfaVerifiedAt?: Date | null }): Promise<string> {
   if (input.mustChangePassword) return PASSWORD_CHANGE_PATH;
   if (input.role === "ADMIN" && !input.mfaVerifiedAt) return "/giris/mfa";
-  const products = await getAccessibleProducts(input.userId, input.role);
-  if (products.length === 1) return productRolePath(products[0], input.role);
-  return PRODUCT_SELECTOR_PATH;
+  return rolePath(input.role);
 }

@@ -5,7 +5,6 @@ import { roleCoverage } from "@/lib/pilot-rollout";
 import { getOdkPilotReadiness } from "@/lib/odk/pilot-readiness-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
-import { OdkPanelNav } from "@/components/odk/odk-panel-nav";
 import { OdkPilotControl } from "@/components/odk/odk-pilot-control";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +24,7 @@ export default async function OdkPilotPage() {
     { status: "PASS" as const, label: "Hazır", description: "Kanıtı güncel", icon: CheckCircle2, className: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]" },
   ].map((group) => ({ ...group, checks: readiness.checks.filter((check) => check.status === group.status) }));
 
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" nav={<OdkPanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
     <PanelPageHeader eyebrow="Kontrollü yayın" title="Önce tek koşu, sonra kanıtlı genişleme." description="Pilot üyeliği ürün erişiminden ayrıdır. Acil durdurma sınav verisini silmeden erişimi keser; admin kurtarma erişimini korur." icon={Rocket} />
 
     <section className="mt-7 grid gap-3 sm:grid-cols-3">{groups.map((group) => <article key={group.status} className="panel-metric-card"><span className={`panel-metric-icon ${group.className}`}><group.icon size={18} /></span><p className="mt-4 text-2xl font-black">{group.checks.length}</p><p className="mt-1 text-xs font-bold">{group.label} kapı</p><p className="mt-1 text-[10px] leading-4 text-[var(--site-muted)]">{group.description}</p></article>)}</section>

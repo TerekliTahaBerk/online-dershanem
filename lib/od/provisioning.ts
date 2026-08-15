@@ -7,6 +7,7 @@ import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
 import { dueAtForOdOnboardingState } from "@/lib/od/onboarding-state";
 import { prisma } from "@/lib/prisma";
 import { contractAccessWindow, parseOdkProductContract } from "@/lib/odk/product-contract";
+import { COMMERCE_TO_PRODUCT_CODE, MEMBERSHIP_BACKED_PRODUCTS } from "@/lib/commerce/product-mapping";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -65,10 +66,18 @@ async function provisionRemainingOdLines(orderId: string) {
       if (conflict) throw new OdProvisioningError(conflict, "LINE_OWNER_CONFLICT");
       await prisma.$transaction(async (tx) => {
         await tx.studentProfile.upsert({ where: { userId: user.id }, create: { userId: user.id }, update: {} });
-        if (line.product === "OD") {
+        /*
+         * ÜRÜN AYRIMI AÇIK OLMALI. Burası eskiden `if (OD) … else { ODK }`
+         * idi; üçüncü ürün (Koçum) eklendiğinde OK satırı sessizce ODK
+         * dalına düşüp ya hata veriyor ya da yanlış yetki açıyordu.
+         * Artık üyelik temelli ürünler (OD, OK) ortak dalda, ODK kendi
+         * sözleşme/pencere mantığında.
+         */
+        if (MEMBERSHIP_BACKED_PRODUCTS[line.product]) {
+          const productCode = COMMERCE_TO_PRODUCT_CODE[line.product];
           await tx.productMembership.upsert({
-            where: { userId_product: { userId: user.id, product: "OD" } },
-            create: { userId: user.id, product: "OD", source: "PURCHASE", sourceOdOrderId: orderId },
+            where: { userId_product: { userId: user.id, product: productCode } },
+            create: { userId: user.id, product: productCode, source: "PURCHASE", sourceOdOrderId: orderId },
             update: { source: "PURCHASE", sourceOdOrderId: orderId, revokedAt: null, expiresAt: null },
           });
         } else {

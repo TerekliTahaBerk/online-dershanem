@@ -20,7 +20,7 @@ const createUserSchema = z.object({
   fullName: z.string().trim().min(2).max(120).optional().or(z.literal("")),
   phone: z.string().trim().max(32).optional().or(z.literal("")),
   role: z.enum(["ADMIN", "TEACHER", "STUDENT", "PARENT"]),
-  products: z.array(z.enum(["OD", "ODK"])).min(1).max(2),
+  products: z.array(z.enum(["OD", "OK", "ODK"])).min(1).max(3),
 });
 
 export async function POST(request: Request) {
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
   }
 
   const tempPassword = generateTemporaryPassword();
-  const products = parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER" ? (["OD", "ODK"] as const) : [...new Set(parsed.data.products)];
+  const products = parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER" ? (["OD", "OK", "ODK"] as const) : [...new Set(parsed.data.products)];
   const user = await prisma.user.create({
     data: {
       email,

@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
 import { AdminLearningForms } from "@/components/panel/admin-learning-forms";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { BookOpenCheck } from "lucide-react";
@@ -27,7 +26,7 @@ export default async function EducationAdminPage() {
     featureFlags.learningOutcomes ? prisma.learningOutcome.findMany({ where: { isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } }, orderBy: { code: "asc" }, take: 300, include: { unit: { include: { subject: true } }, skills: { include: { skill: true } }, favorites: { where: { userId: session.userId } }, assignments: { where: { linkedById: session.userId }, take: 1 } } }) : Promise.resolve([]),
   ]);
   const name = (item: { fullName: string | null; email: string }) => item.fullName || item.email;
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
     <AdminPageHeader eyebrow="Eğitim operasyonu" title="Grubu kur, dersi planla." description="Tek akıştan öğretmen ekranını, öğrenci özetini ve veli görünümünü birlikte besleyin." icon={BookOpenCheck} meta={`${groupsRaw.filter((group) => group.isActive).length} aktif grup`} />
     <div className="mt-7"><AdminSetupWizard teachers={teachersRaw.map((item) => ({ id: item.id, name: name(item) }))} students={studentsRaw.map((item) => ({ id: item.id, name: name(item.user) }))} parents={parentsRaw.map((item) => ({ id: item.id, name: name(item) }))} /></div>
     <div className="mt-7"><AdminLearningForms teachers={teachersRaw.map((item) => ({ id: item.id, name: name(item) }))} students={studentsRaw.map((item) => ({ id: item.id, name: name(item.user) }))} parents={parentsRaw.map((item) => ({ id: item.id, name: name(item) }))} groups={groupsRaw.filter((item) => item.isActive).map((item) => ({ id: item.id, name: item.name, subject: item.subject }))} /></div>

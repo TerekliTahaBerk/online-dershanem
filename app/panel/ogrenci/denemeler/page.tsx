@@ -1,19 +1,242 @@
 import { notFound } from "next/navigation";
-import { ChartNoAxesCombined } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelNav } from "@/components/panel/panel-nav";
-import { PanelEmptyState } from "@/components/panel/empty-state";
-import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
-import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
+import { PanelHeading, PanelCard, PanelEmpty } from "@/components/panel/ui";
+import { DinoInsightCard } from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
-export default async function StudentMockExamsPage() {
-  const session = await requireRole("STUDENT"); if (!getPanelFeatureFlags().mockExamAnalysis) notFound();
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId }, select: { id: true } });
-  if (!profile) return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><PanelEmptyState title="Deneme profiliniz hazırlanıyor." body="Öğrenci profiliniz tamamlandığında deneme analizi açılır." /></PanelShell>;
-  const exams = await prisma.mockExam.findMany({ where: { studentId: profile.id }, orderBy: { takenAt: "desc" }, take: 40, include: mockExamViewInclude });
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} nav={<PanelNav role={session.role} />}><header><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><ChartNoAxesCombined size={15} /> Kendi eğilimin</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em]">Her denemeden tek doğru adım çıkar.</h1><p className="mt-2 text-sm text-[var(--site-body)]">Sıralama yok: doğru–yanlış–boş, süre ve nedenleri yalnız kendi önceki denemelerinle karşılaştır.</p></header><div className="mt-7"><MockExamWorkspace role={session.role} students={[{ id: profile.id, name: session.fullName || session.email }]} initialExams={exams.map(toMockExamView)} /></div></PanelShell>;
+
+/**
+ * ÖĞRENCİ · DENEME SONUCU — onaylı tasarım (Panel.dc.html → scExam).
+ *
+ * Tasarımın işlev tanımı: üst şeritte toplam net / önceki denemeye göre fark /
+ * tarih / süre; solda ders bazında bar + D-Y-net dökümü ve kendi denemelerine
+ * göre gelişim; sağda Dino analizi.
+ *
+ * KARŞILAŞTIRMA KURALI: tasarım açıkça "Karşılaştırma yalnızca kendi geçmiş
+ * denemelerinle yapılır" diyor — başka öğrenciyle/kohortla kıyas YOK.
+ */
+
+const FULL = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+const fmt = (v: number) =>
+  v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const net = (s: { correctCount: number; incorrectCount: number }) =>
+  s.correctCount - s.incorrectCount / 4;
+
+export default async function StudentExamResultPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ deneme?: string }>;
+}) {
+  const session = await requireRole("STUDENT");
+  if (!getPanelFeatureFlags().mockExamAnalysis) notFound();
+
+  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+
+  const shell = (children: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Denemeler"
+    >
+      <div className="max-w-[1040px]">{children}</div>
+    </PanelShell>
+  );
+
+  if (!profile) {
+    return shell(
+      <>
+        <PanelHeading title="Denemelerin" />
+        <PanelEmpty
+          title="Profilin hazırlanıyor."
+          body="Öğrenci profilin tamamlandığında deneme sonuçların burada açılır."
+        />
+      </>,
+    );
+  }
+
+  const exams = await prisma.mockExam.findMany({
+    where: { studentId: profile.id },
+    orderBy: { takenAt: "desc" },
+    take: 10,
+    include: { sections: { orderBy: { position: "asc" } } },
+  });
+
+  if (exams.length === 0) {
+    return shell(
+      <>
+        <PanelHeading title="Denemelerin" />
+        <PanelEmpty
+          title="Henüz deneme sonucu yok."
+          body="Deneme sonucun girildiğinde net dökümü, ders bazında analiz ve gelişim karşılaştırman burada açılır."
+        />
+      </>,
+    );
+  }
+
+  const requested = (await searchParams).deneme;
+  const current = exams.find((e) => e.id === requested) ?? exams[0];
+  const currentIndex = exams.findIndex((e) => e.id === current.id);
+  const previous = exams[currentIndex + 1];
+
+  const total = current.sections.reduce((sum, s) => sum + net(s), 0);
+  const delta = previous
+    ? total - previous.sections.reduce((sum, s) => sum + net(s), 0)
+    : null;
+
+  const maxNet = Math.max(...current.sections.map((s) => Math.max(net(s), 1)));
+
+  // Kendi geçmişi — eskiden yeniye
+  const history = [...exams].reverse();
+  const historyNets = history.map((e) => e.sections.reduce((sum, s) => sum + net(s), 0));
+
+  return shell(
+    <>
+      <PanelHeading
+        eyebrow="Deneme Kulübüm · Sonuçlar"
+        title={current.title || current.exam}
+        actions={
+          exams.length > 1 ? (
+            <div className="flex flex-wrap gap-2">
+              {exams.slice(0, 5).map((e) => (
+                <a
+                  key={e.id}
+                  href={`/panel/ogrenci/denemeler?deneme=${e.id}`}
+                  aria-current={e.id === current.id ? "page" : undefined}
+                  className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition-colors ${
+                    e.id === current.id
+                      ? "bg-dc-brand-strong text-white"
+                      : "border border-[#DDE4E0] bg-white text-dc-ink-muted hover:border-dc-brand"
+                  }`}
+                >
+                  {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short" }).format(
+                    e.takenAt,
+                  )}
+                </a>
+              ))}
+            </div>
+          ) : undefined
+        }
+      />
+
+      <div className="mt-5 flex flex-wrap items-end gap-9 border-b border-dc-line pb-5">
+        <div>
+          <p className="text-[13px] text-dc-ink-faint">Toplam net</p>
+          <p className="text-[40px] font-extrabold tracking-[-0.025em] text-dc-ink">
+            {fmt(total)}
+          </p>
+        </div>
+        {delta !== null ? (
+          <div>
+            <p className="text-[13px] text-dc-ink-faint">Önceki denemeye göre</p>
+            <p
+              className={`text-[24px] font-extrabold ${
+                delta >= 0 ? "text-dc-brand-hover" : "text-[#8A5F37]"
+              }`}
+            >
+              {delta >= 0 ? "+" : ""}
+              {fmt(delta)}
+            </p>
+          </div>
+        ) : null}
+        <div>
+          <p className="text-[13px] text-dc-ink-faint">Tarih</p>
+          <p className="text-[18px] font-bold text-dc-ink">{FULL.format(current.takenAt)}</p>
+        </div>
+        {current.durationMinutes ? (
+          <div>
+            <p className="text-[13px] text-dc-ink-faint">Süre</p>
+            <p className="text-[18px] font-bold text-dc-ink">{current.durationMinutes} dk</p>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_1fr]">
+        <div>
+          <h2 className="text-[16px] font-bold text-dc-ink">Ders bazında</h2>
+          <ul className="mt-3.5">
+            {current.sections.map((s, i) => {
+              const value = net(s);
+              const pct = Math.max(4, Math.round((value / maxNet) * 100));
+              return (
+                <li
+                  key={s.id}
+                  className={`flex flex-wrap items-center gap-3.5 py-3 ${
+                    i < current.sections.length - 1 ? "border-b border-dc-line-soft" : ""
+                  }`}
+                >
+                  <span className="w-24 shrink-0 text-[14px] font-semibold text-dc-ink">
+                    {s.subjectName}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="h-2 min-w-[80px] flex-1 overflow-hidden rounded-full bg-dc-line-soft"
+                  >
+                    <span
+                      className="block h-full rounded-full bg-dc-brand"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </span>
+                  <span className="shrink-0 text-right text-[13px] text-dc-ink-muted">
+                    {s.correctCount}D / {s.incorrectCount}Y · {fmt(value)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+
+          {history.length >= 2 ? (
+            <>
+              <h2 className="mt-7 text-[16px] font-bold text-dc-ink">
+                Kendi denemelerine göre
+              </h2>
+              <svg
+                viewBox="0 0 520 140"
+                className="mt-3 h-[150px] w-full"
+                role="img"
+                aria-label={`Toplam net gelişimi: ${historyNets.map((n) => fmt(n)).join(", ")}`}
+              >
+                {[20, 70, 118].map((y) => (
+                  <line key={y} x1="0" y1={y} x2="520" y2={y} stroke="#EDF0EE" />
+                ))}
+                <polyline
+                  points={historyNets
+                    .map((n, i) => {
+                      const min = Math.min(...historyNets);
+                      const span = Math.max(...historyNets) - min || 1;
+                      const x = Math.round((i * 520) / (historyNets.length - 1));
+                      const y = Math.round(118 - ((n - min) / span) * 90);
+                      return `${x},${y}`;
+                    })
+                    .join(" ")}
+                  fill="none"
+                  stroke="#14976B"
+                  strokeWidth="2.5"
+                />
+              </svg>
+              <p className="text-[12.5px] text-dc-ink-ghost">
+                Karşılaştırma yalnızca kendi geçmiş denemelerinle yapılır.
+              </p>
+            </>
+          ) : null}
+        </div>
+
+        {/* Dino analizi — arka uç yok, bileşen dürüst durumu gösterir (§22). */}
+        <DinoInsightCard insight={null} basis={null} />
+      </div>
+
+      {current.nextAction ? (
+        <PanelCard className="mt-6">
+          <h2 className="text-[15px] font-bold text-dc-ink">Bir sonraki denemeye kadar</h2>
+          <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+            {current.nextAction}
+          </p>
+        </PanelCard>
+      ) : null}
+    </>,
+  );
 }

@@ -4,7 +4,6 @@ import { ArrowLeft, CheckCircle2, FileText, Target, XCircle } from "lucide-react
 import { requireProductRole } from "@/lib/auth/guards";
 import { getReleasedStudentResult } from "@/lib/odk/student-exam-server";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { OdkPanelNav } from "@/components/odk/odk-panel-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +12,7 @@ export default async function OdkStudentResultPage({ params }: { params: Promise
   const data = await getReleasedStudentResult(id, session.userId); if (!data) notFound();
   const { exam, score, answerKeyAvailable } = data;
   const weak = score.outcomeScores.filter((item) => Number(item.accuracyRate) < 50);
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" nav={<OdkPanelNav role={session.role} />}>
+  return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
     <Link href={`/panel/odk/ogrenci/denemeler/${id}`} className="inline-flex items-center gap-2 text-sm font-bold text-[var(--site-body)]"><ArrowLeft size={15} /> Denemeye dön</Link>
     <header className="mt-6"><p className="text-xs font-extrabold uppercase tracking-[.1em] text-[var(--brand-olive)]">{exam.family} matematik sonucu</p><h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-[var(--site-ink)]">{exam.title}</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--site-body)]">Sonucun yalnız kendi cevapların ve denemenin kilitli cevap anahtarı kullanılarak hesaplandı.</p></header>
     <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[["Net", Number(score.totalNet).toFixed(2), Target, "text-[var(--brand-olive)]"], ["Doğru", score.correctCount, CheckCircle2, "text-emerald-600"], ["Yanlış", score.wrongCount, XCircle, "text-rose-600"], ["Boş", score.blankCount, FileText, "text-slate-500"]].map(([label, value, Icon, color]) => { const MetricIcon = Icon as typeof Target; return <article key={String(label)} className="panel-metric-card"><MetricIcon size={18} className={String(color)} /><p className="mt-4 text-2xl font-black text-[var(--site-ink)]">{String(value)}</p><p className="mt-1 text-xs text-[var(--site-muted)]">{String(label)}</p></article>; })}</section>

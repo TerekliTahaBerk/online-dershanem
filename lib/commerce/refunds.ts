@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { refundForQuantity } from "@/lib/commerce/order-lines";
+import { COMMERCE_TO_PRODUCT_CODE, MEMBERSHIP_BACKED_PRODUCTS } from "@/lib/commerce/product-mapping";
 
 type OrderParent = { odOrderId: string | null; odkOrderId: string | null };
 
@@ -44,16 +45,29 @@ export async function recordOrderLineRefund(input: { lineId: string; quantity: n
         data: { revokedAt: new Date() },
       });
     }
-    if (refund.refundStatus === "FULL" && line.product === "OD" && line.fulfillmentOwnerUserId) {
+    /*
+     * Üyelik temelli ürünlerde (OD, OK) tam iade yetkiyi geri alır — ama
+     * yalnız o üründen BAŞKA aktif satır kalmadıysa. Ürün başına ayrı
+     * sayılır: Koçum iadesi ders erişimini kapatmamalı.
+     */
+    if (
+      refund.refundStatus === "FULL" &&
+      MEMBERSHIP_BACKED_PRODUCTS[line.product] &&
+      line.fulfillmentOwnerUserId
+    ) {
       const otherActiveLines = await tx.commerceOrderLine.count({
         where: {
-          id: { not: line.id }, product: "OD", fulfillmentOwnerUserId: line.fulfillmentOwnerUserId,
+          id: { not: line.id }, product: line.product, fulfillmentOwnerUserId: line.fulfillmentOwnerUserId,
           refundStatus: { not: "FULL" }, fulfillmentStatus: "SUCCEEDED",
         },
       });
       if (!otherActiveLines) {
         await tx.productMembership.updateMany({
-          where: { userId: line.fulfillmentOwnerUserId, product: "OD", source: "PURCHASE" },
+          where: {
+            userId: line.fulfillmentOwnerUserId,
+            product: COMMERCE_TO_PRODUCT_CODE[line.product],
+            source: "PURCHASE",
+          },
           data: { revokedAt: new Date() },
         });
       }

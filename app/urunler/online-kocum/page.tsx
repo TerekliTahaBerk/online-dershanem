@@ -1,73 +1,188 @@
-import Link from "next/link";
-import { ArrowRight, CalendarCheck2, Check, HandHeart, RefreshCw, Target } from "lucide-react";
-import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
+import {
+  HatchPanel,
+  ProductHero,
+  StepCards,
+  CrossSellWithPrice,
+  ProductFaq,
+  ProductClosingCta,
+} from "@/components/product/product-sections";
+import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Koçum | LGS ve YKS Çalışma Düzeni",
-  description: "LGS ve YKS öğrencileri için hedefi haftalık plana çeviren, ilerlemeyi görünür kılan ve destek istemeyi kolaylaştıran takip düzeni.",
-  canonical: "/urunler/online-kocum",
+  title: "Online Koçum | Planını uygula",
+  description:
+    "Kişisel haftalık çalışma planı, birebir koç görüşmesi ve düzenli takip. LGS ve YKS için, tüm dersleri kapsar.",
+  canonical: "/urunler/online-kocum/",
 });
 
-const flow = [
-  { icon: Target, title: "Hedefi netleştir", body: "Sınav hedefi ve mevcut sorumluluklar anlaşılır bir başlangıç noktasına dönüşür." },
-  { icon: CalendarCheck2, title: "Haftayı planla", body: "Çalışma adımları öğrencinin zamanına sığan, uygulanabilir bir haftalık düzende görünür." },
-  { icon: RefreshCw, title: "Gözden geçir", body: "Tamamlananlar ve zorlanılan noktalar fark edilir; sonraki hafta buna göre yeniden ele alınır." },
-  { icon: HandHeart, title: "Destek iste", body: "Öğrenci zorlandığını fark ettiğinde yardım istemek için açık bir kanala sahip olur." },
-] as const;
+const planDays = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
+const planCells = ["#DFEBE5", "#14976B", "#EDF4F0", "#DFEBE5", "#14976B", "#EDF4F0", ""];
 
-export default function OnlineKocumProductPage() {
+/** ÜRÜN · ONLINE KOÇUM — onaylı tasarım (Web.dc.html → isOK). */
+export default function OnlineKocumPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        <section className="bg-[var(--pd-pastel-yellow-soft)] py-20 sm:py-28">
-          <div className="site-container grid gap-12 lg:grid-cols-[1.08fr_.92fr] lg:items-center">
+        <ProductHero
+          eyebrow="Ürün · Online Koçum"
+          title="Planını uygula."
+          body="Kişisel çalışma planı, birebir koç görüşmesi ve düzenli takip. Ne çalışacağını bilmemek sorun olmaktan çıkar."
+          tracks={["LGS", "YKS"]}
+          note="Planı koç kurar, tüm dersleri kapsar"
+          visual={
+            <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
+              <p className="font-mono text-[11px] font-semibold text-[var(--dc-ink-faint)]">
+                HAFTALIK PLAN
+              </p>
+              <div className="mt-3 grid grid-cols-7 gap-1.5">
+                {planDays.map((d) => (
+                  <span
+                    key={d}
+                    className="text-center text-[10.5px] font-semibold text-dc-ink-faint"
+                  >
+                    {d}
+                  </span>
+                ))}
+                {planCells.map((c, i) => (
+                  <span
+                    key={i}
+                    className={`h-16 rounded-lg ${
+                      c ? "" : "border border-dashed border-[#D6E2DC] bg-dc-surface-muted"
+                    }`}
+                    style={c ? { background: c, opacity: i === 4 ? 0.7 : 1 } : undefined}
+                  />
+                ))}
+              </div>
+              <HatchPanel
+                height="h-[120px]"
+                className="mt-3.5"
+                label="KOÇ GÖRÜŞME + İLERLEME EKRANI"
+              />
+            </div>
+          }
+        />
+
+        <StepCards
+          title="Koçluk nasıl işliyor?"
+          steps={[
+            {
+              title: "Tanışma ve hedef",
+              body: "Mevcut durum, hedef sınav ve haftalık kapasite belirlenir.",
+            },
+            {
+              title: "Haftalık plan",
+              body: "Gerçekçi, uygulanabilir plan; ders ve deneme takvimiyle uyumlu.",
+            },
+            {
+              title: "Birebir görüşme",
+              body: "Düzenli görüşmede plan gözden geçirilir, tıkanan yer açılır.",
+            },
+            {
+              title: "Takip ve veli görünürlüğü",
+              body: "İlerleme kayıtlı; veli özeti paylaşılabilir.",
+            },
+          ]}
+        />
+
+        {/* Dino AI · koçluk önerisi — sağda öncelik listesi */}
+        <section className="mt-[var(--dc-section-tight)] border-y border-dc-line-soft bg-white">
+          <div className="site-container grid items-center gap-10 py-[var(--dc-section-tight)] lg:grid-cols-2">
             <div>
-              <p className="site-kicker">Online Koçum · LGS ve YKS</p>
-              <h1 className="mt-5 max-w-4xl text-[clamp(2.8rem,6vw,5.1rem)] font-semibold leading-[.98] tracking-[-.055em] text-[var(--site-ink)]">Büyük hedefi, yapılabilir haftalara böl.</h1>
-              <p className="mt-7 max-w-2xl text-[17px] leading-8 text-[var(--site-body)] sm:text-[19px]">Online Koçum, LGS ve YKS öğrencilerinin hedefini çalışma düzenine çevirmesine, ilerlemesini görmesine ve ihtiyaç halinde destek istemesine yardımcı olan takip ürünüdür.</p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Link href="/iletisim/" className="site-btn site-btn-primary site-btn-lg">Bilgi al <ArrowRight size={17} /></Link><Link href="/urunler/" className="site-btn site-btn-secondary site-btn-lg">Ürünleri karşılaştır</Link></div>
+              <p className="dc-eyebrow">Dino AI · Koçluk önerisi</p>
+              <h2 className="mt-3.5 font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
+                Koçun kararı, Dino AI&apos;ın bağlamı.
+              </h2>
+              <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
+                Dino AI ders ve deneme verisinden bu haftanın odak konularını önerir.
+                Planı kuran ve öğrenciyi tanıyan yine koçtur.
+              </p>
             </div>
-            <aside className="rounded-[30px] border border-[var(--site-line)] bg-white p-7 sm:p-9" aria-label="Online Koçum ne sağlar">
-              <p className="text-[12px] font-bold uppercase tracking-[.1em] text-[var(--site-muted)]">Ürünün rolü</p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-.04em] text-[var(--site-ink)]">Planı öğrencinin yerine yapmak değil, sürdürülebilir bir düzen kurmak.</h2>
-              <ul className="mt-6 space-y-4">{["LGS ve YKS hedeflerine göre çalışma yönü", "Haftalık plan ve düzenli gözden geçirme", "Puanlama ve kıyaslama yerine açıklanabilir takip"].map((item) => <li key={item} className="flex gap-3 text-[15px] leading-7 text-[var(--site-body)]"><Check className="mt-1 h-5 w-5 shrink-0 text-[var(--brand-olive)]" aria-hidden="true" />{item}</li>)}</ul>
-            </aside>
-          </div>
-        </section>
 
-        <section className="site-container py-20 sm:py-24"><div className="max-w-3xl"><p className="site-kicker">Takip döngüsü</p><h2 className="mt-4 text-[clamp(2.3rem,5vw,3.7rem)] font-semibold tracking-[-.045em] text-[var(--site-ink)]">Her hafta yeniden anlaşılır bir başlangıç.</h2></div><div className="mt-12 grid gap-5 md:grid-cols-2">{flow.map(({ icon: Icon, title, body }, index) => <article key={title} className="rounded-[26px] border border-[var(--site-line)] bg-white p-7"><div className="flex items-center justify-between"><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]"><Icon size={21} aria-hidden="true" /></span><span className="font-mono text-xs text-[var(--site-muted)]">0{index + 1}</span></div><h3 className="mt-6 text-2xl font-semibold text-[var(--site-ink)]">{title}</h3><p className="mt-3 text-[15px] leading-7 text-[var(--site-body)]">{body}</p></article>)}</div></section>
-
-        {/*
-          Dürüstlük notu: Online Koçum için yayınlanmış bir fiyat ve self-servis
-          kayıt akışı henüz yok. Olmayan bir satın alma yolu göstermek yerine
-          durumu açıkça yazıp ön görüşmeye yönlendiriyoruz. Fiyat/paket sunumu
-          P0-07'nin konusu.
-        */}
-        <section className="site-container pb-20 sm:pb-24">
-          <div className="rounded-[30px] border border-[var(--site-line)] bg-[var(--pd-pastel-yellow-soft)] p-7 sm:p-10">
-            <p className="site-kicker">Kayıt durumu</p>
-            <h2 className="mt-4 max-w-3xl text-[clamp(1.7rem,3.4vw,2.4rem)] font-semibold tracking-[-.04em] text-[var(--site-ink)]">
-              Online Koçum için kayıtlar hazırlanıyor.
-            </h2>
-            <p className="mt-4 max-w-2xl text-[16px] leading-8 text-[var(--site-body)]">
-              Koçluk paketlerinin fiyatı ve online kayıt akışı yayına alınmadan ödeme almıyoruz. Şu anda
-              öğrencinin sınıfını ve hedefini konuşmak için ücretsiz ön görüşme oluşturabilirsiniz.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Link href="/iletisim/" className="site-btn site-btn-primary">
-                Ücretsiz görüşme talep et
-              </Link>
-              <Link href="/sss/" className="site-btn site-btn-secondary">
-                Sıkça sorulanlar
-              </Link>
+            <div className="rounded-[20px] border border-dc-line bg-[#FCFDFC] p-5 sm:p-[22px]">
+              <p className="font-mono text-[11px] font-semibold text-[var(--dc-ink-faint)]">
+                ÖNERİLEN ODAK
+              </p>
+              <ul className="mt-3.5 flex flex-col gap-2.5">
+                {[
+                  { label: "Paragraf · hız", rank: "öncelik 1", top: true },
+                  { label: "Türev kuralları", rank: "öncelik 2", top: false },
+                  { label: "Deneme tekrarı", rank: "öncelik 3", top: false },
+                ].map((r) => (
+                  <li
+                    key={r.label}
+                    className={`flex items-center justify-between gap-3 rounded-[10px] px-3.5 py-3 text-[14.5px] font-semibold ${
+                      r.top
+                        ? "bg-dc-brand-soft text-dc-brand-deep"
+                        : "bg-dc-surface-muted text-[var(--pd-ink-3)]"
+                    }`}
+                  >
+                    <span>{r.label}</span>
+                    <span>{r.rank}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-[12px] font-medium text-[var(--dc-ink-muted)]">
+                Örnek metin — gerçek öneri öğrencinin kendi verisinden üretilir.
+              </p>
             </div>
           </div>
         </section>
 
-        <section className="bg-[var(--site-bg-warm)] py-20"><div className="site-container grid gap-8 lg:grid-cols-2 lg:items-center"><div><p className="site-kicker">Birlikte kullan</p><h2 className="mt-4 text-[clamp(2.2rem,5vw,3.5rem)] font-semibold tracking-[-.045em] text-[var(--site-ink)]">Plan, ders ve deneme verisiyle anlam kazanır.</h2><p className="mt-5 text-[16px] leading-8 text-[var(--site-body)]">Online Dershanem öğrenme desteğini, Online Deneme Kulübüm ölçüm desteğini sağlar. Online Koçum ise bu yolculuktaki çalışma düzenine odaklanır.</p></div><div className="flex flex-col gap-3"><Link href="/urunler/online-dershanem/" className="site-btn site-btn-secondary site-btn-lg justify-between">Online Dershanem <ArrowRight size={17} /></Link><Link href="/urunler/online-deneme-kulubum/" className="site-btn site-btn-secondary site-btn-lg justify-between">Online Deneme Kulübüm <ArrowRight size={17} /></Link></div></div></section>
+        <CrossSellWithPrice
+          cards={[
+            {
+              eyebrow: "+ Online Dershanem",
+              title: "Konuyu öğretmenle kapat",
+              body: "Plan hazır ama konu eksikse, canlı ders bu boşluğu kapatır.",
+            },
+            {
+              eyebrow: "+ Deneme Kulübüm",
+              title: "Planın işe yaradığını gör",
+              body: "Deneme sonuçları planın bir sonraki haftasını besler.",
+            },
+          ]}
+          advantageNote="Online Dershanem ile birlikte daha avantajlı."
+          price={singleProductPriceLabel("kocum")}
+          priceSuffix="/ ay"
+          features={["Haftalık plan", "Birebir koç görüşmesi", "Dino AI plan önerileri"]}
+          priceFootnote="Üç ürünü birleştirdiğinde en avantajlı toplam."
+        />
+
+        {/* DOĞRULUK: koçluk için online kayıt akışı henüz yayında değil.
+            Durum açıkça yazılır; sayfa satın alınabilirmiş gibi davranmaz. */}
+        <section className="site-container pt-6">
+          <p className="rounded-dc-card-sm border border-dc-line bg-white px-5 py-4 text-[14.5px] leading-[1.6] text-dc-ink-muted">
+            Online Koçum için kayıtlar hazırlanıyor. Koçluk kontenjanı ve başlangıç
+            tarihi ön görüşmede netleşir; online kayıt akışı yayına alınmadan ödeme
+            almıyoruz.
+          </p>
+        </section>
+
+        <ProductFaq
+          items={[
+            {
+              q: "Koçum gerçek bir insan mı?",
+              a: "Evet. Koçluk insan koç tarafından yürütülür; Dino AI yalnızca veri ve öneri sağlar.",
+            },
+            {
+              q: "Görüşme sıklığı ne?",
+              a: "Görüşme sıklığı öğrencinin programına göre ön görüşmede belirlenir.",
+            },
+            {
+              q: "Ders almadan koçluk alabilir miyim?",
+              a: "Evet, Online Koçum tek başına satın alınabilir.",
+            },
+          ]}
+        />
+
+        <ProductClosingCta
+          title="Planını koçunla kur."
+          body="Tek ürün olarak ya da ders ve denemeyle birlikte."
+        />
       </main>
       <SiteFooter />
     </div>
