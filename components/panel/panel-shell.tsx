@@ -240,8 +240,14 @@ export async function PanelShell({
             <header className="sticky top-0 z-40 flex h-16 flex-none items-center gap-4 border-b border-dc-line bg-white px-4 sm:px-7">
               <PanelMobileNav role={role} products={products} nav={nav} />
 
+              {/*
+                Topbar başlığı BAŞLIK ÖĞESİ DEĞİLDİR. Eskiden `<h1>`di ve her
+                panel sayfasında iki `<h1>` oluşuyordu (biri burada, biri
+                `PanelHeading` içinde). Sayfanın tek `<h1>`i içerik başlığıdır;
+                buradaki yalnız bağlam etiketidir.
+              */}
               {pageTitle ? (
-                <h1 className="truncate text-[15px] font-bold text-dc-ink">{pageTitle}</h1>
+                <p className="truncate text-[15px] font-bold text-dc-ink">{pageTitle}</p>
               ) : null}
 
               {topbarSlot ? <div className="min-w-0 lg:ml-3">{topbarSlot}</div> : null}

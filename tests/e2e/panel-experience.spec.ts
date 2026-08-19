@@ -130,8 +130,13 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
     await page.goto("/panel/veli/denemeler");
-    await expect(page.getByRole("heading", { name: /Ada Öğrenci · Deneme eğilimi/ })).toBeVisible();
-    await expect(page.getByRole("main").getByText("Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.")).toBeVisible();
+    // Tasarım (pExam) başlığı "Denemeler"; hangi çocuğun verisi olduğu üst
+    // etikette durur. İddia aynı şeyi kanıtlıyor: veli BU çocuğun deneme
+    // ekranını, karşılaştırma yapmayan gizlilik cümlesiyle görüyor.
+    const parentExamMain = page.getByRole("main");
+    await expect(parentExamMain.getByRole("heading", { name: "Denemeler", exact: true })).toBeVisible();
+    await expect(parentExamMain.getByText("Ada Öğrenci", { exact: true })).toBeVisible();
+    await expect(parentExamMain.getByText("Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.")).toBeVisible();
   });
 
   test("öğrenci küçük tekrarı yanıtlar, öğretmen kalıcı zorlanmayı görür", async ({ page }) => {

@@ -75,8 +75,16 @@ export default async function ParentMockExamsPage({
   /* Deneme analizi OD ürününün bir parçası; Deneme Kulübüm ayrı üründür. */
   const canSeeExams = products.includes("OD") || products.includes("ODK");
 
+  /*
+   * Başlıkta ÇOCUĞUN ADI durur. Tasarımın başlığı yalnız "Denemeler" ama
+   * `ChildSwitcher` tek çocuklu velide hiç basılmıyor; o durumda ekranda
+   * kimin verisine bakıldığı hiçbir yerde yazmaz. Veli panelinde bu kabul
+   * edilemez (§23 — hangi öğrencinin verisi olduğu her ekranda açık kalmalı),
+   * o yüzden ad üst etikete alındı.
+   */
   const heading = (
     <PanelHeading
+      eyebrow={selected.name}
       title="Denemeler"
       description={
         products.length
