@@ -4,7 +4,8 @@ import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
-import { PanelHeading, PanelCard, PanelEmpty } from "@/components/panel/ui";
+import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
+import { getStudentCoaching } from "@/lib/panel/coaching";
 
 export const dynamic = "force-dynamic";
 
@@ -139,12 +140,44 @@ export default async function StudentPlanPage() {
   const end = new Date(start);
   end.setDate(end.getDate() + 6);
 
+  /* Tasarımın "Koçum" bölümü: kim, ne zaman, hangi odak. */
+  const coaching = await getStudentCoaching(profile.id);
+
   return shell(
     <>
       <PanelHeading
         title="Haftalık planın"
         description={`${RANGE.format(start)} – ${RANGE.format(end)}`}
       />
+
+      {coaching ? (
+        <PanelCard className="mt-6 max-w-[760px]">
+          <PanelCardTitle>Koçun</PanelCardTitle>
+          <dl className="mt-3 flex flex-col gap-2.5 text-[14px] font-medium text-dc-ink-body">
+            <div className="flex justify-between gap-3">
+              <dt>Koçun</dt>
+              <dd className="text-dc-ink-muted">{coaching.coachName}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt>Sonraki görüşme</dt>
+              <dd className={coaching.overdue ? "text-[#A5764A]" : "text-dc-ink-muted"}>
+                {coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}
+              </dd>
+            </div>
+            {coaching.focus ? (
+              <div className="flex justify-between gap-3">
+                <dt>Haftanın odağı</dt>
+                <dd className="text-dc-ink-muted">{coaching.focus}</dd>
+              </div>
+            ) : null}
+          </dl>
+          {coaching.sharedNote ? (
+            <p className="mt-3.5 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
+              {coaching.sharedNote}
+            </p>
+          ) : null}
+        </PanelCard>
+      ) : null}
 
       <div className="mt-6">{adaptivePlan}</div>
 

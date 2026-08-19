@@ -41,7 +41,11 @@ function studentNav(root: string, products: ProductCode[], flags: PanelFeatureFl
 
     // ── Online Koçum (OK) bölümü ──
     ...(hasOK && flags.adaptivePlan
-      ? [{ href: `${root}/plan`, label: "Koçum" }]
+      ? [
+          { href: `${root}/plan`, label: "Koçum" },
+          // Tasarımda (sGoals) hedefler koçluk bölümünün parçası.
+          { href: `${root}/hedefler`, label: "Hedefler" },
+        ]
       : []),
 
     // ── Online Deneme Kulübüm (ODK) bölümü — sınav motoru aynı panelin içinde ──
@@ -53,6 +57,7 @@ function studentNav(root: string, products: ProductCode[], flags: PanelFeatureFl
       : []),
 
     { href: `${root}/gelisim`, label: "Gelişim" },
+    ...(flags.dinoAi ? [{ href: `${root}/dino`, label: "Dino AI" }] : []),
     ...(flags.studentCheckIn ? [{ href: `${root}/check-in`, label: "Nasılım?" }] : []),
   ];
 }
@@ -72,6 +77,9 @@ function parentNav(root: string, products: ProductCode[], flags: PanelFeatureFla
     ...(hasODK ? [{ href: "/panel/odk/veli/raporlar", label: "Deneme raporları" }] : []),
     ...(hasOK ? [{ href: `${root}/kocluk`, label: "Koçluk" }] : []),
     ...(flags.parentWeeklyDigest ? [{ href: `${root}/haftalik`, label: "Haftalık özet" }] : []),
+    // Tasarımda (pAcc) hesap ekranı velinin menüsünde yer alır — ürüne bağlı değil.
+    ...(flags.dinoAi ? [{ href: `${root}/dino`, label: "Dino AI" }] : []),
+    { href: `${root}/hesap`, label: "Hesap ve paket" },
   ];
 }
 
@@ -95,14 +103,20 @@ function adminNav(root: string, flags: PanelFeatureFlags): NavItem[] {
   return [
     { href: root, label: "Ana Sayfa" },
     { href: `${root}/kullanicilar`, label: "Öğrenciler" },
+    // Tasarımda (aEdu) eğitmenler öğrencilerden ayrı bir menü girişi.
+    { href: `${root}/egitmenler`, label: "Eğitmenler" },
     { href: `${root}/egitim`, label: "Dersler ve gruplar" },
+    // Tasarımda (aCoach) koçluk operasyonu ayrı bir menü girişi.
+    ...(flags.adaptivePlan ? [{ href: `${root}/kocluk`, label: "Koçluk" }] : []),
     { href: `${root}/takvim`, label: "Takvim" },
     ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Deneme analizi" }] : []),
     // ── Deneme Kulübü operasyonu — ayrı çalışma alanı değil, aynı panelin bölümü ──
     { href: "/panel/odk/yonetim", label: "Deneme Kulübüm" },
     { href: "/panel/odk/yonetim/sinavlar", label: "Deneme planlama" },
     { href: "/panel/odk/yonetim/operasyon", label: "Canlı operasyon" },
-    { href: `${root}/isler`, label: "Siparişler" },
+    // Tasarımın sipariş ekranı (aOrders); geniş operasyon kuyruğu ayrı girişte.
+    { href: `${root}/siparisler`, label: "Siparişler" },
+    { href: `${root}/isler`, label: "Operasyon kuyruğu" },
     { href: `${root}/raporlar`, label: "Raporlar" },
     ...(flags.interventionInbox ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu" }] : []),
     { href: `${root}/kayitlar`, label: "İşlem geçmişi" },

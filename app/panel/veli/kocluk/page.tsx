@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
+import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
@@ -81,16 +82,67 @@ export default async function ParentCoachingPage({
     );
   }
 
-  const plan = await prisma.weeklyPlan.findFirst({
-    where: { studentId: selected.id },
-    orderBy: { weekStart: "desc" },
-    include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
-  });
+  const [plan, coaching] = await Promise.all([
+    prisma.weeklyPlan.findFirst({
+      where: { studentId: selected.id },
+      orderBy: { weekStart: "desc" },
+      include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
+    }),
+    /*
+     * GİZLİLİK: `getStudentCoaching` özel koç notunu (`privateNote`) hiç
+     * seçmez — yalnız koçun paylaşmayı seçtiği `sharedNote` döner. Veliye
+     * gidecek yolda özel notun sızmaması alan seçimiyle garanti altındadır,
+     * bu bileşenin dikkatine bırakılmaz.
+     */
+    getStudentCoaching(selected.id),
+  ]);
+
+  /*
+   * Koç kartı plan kontrolünden ÖNCE hazırlanır ve her dalda basılır.
+   * Önce yalnız plan yayınlandığında görünüyordu; oysa "koçum kim, sonraki
+   * görüşme ne zaman" bilgisi plan henüz yokken DAHA da gereklidir.
+   */
+  const coachCard = coaching ? (
+    <PanelCard className="mt-5">
+      <PanelCardTitle>Koç</PanelCardTitle>
+      <dl className="mt-3 flex flex-col gap-2.5 text-[14px] font-medium text-dc-ink-body">
+        <div className="flex justify-between gap-3">
+          <dt>Koçu</dt>
+          <dd className="text-dc-ink-muted">{coaching.coachName}</dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt>Sonraki görüşme</dt>
+          <dd className={coaching.overdue ? "text-[#C2493D]" : "text-dc-ink-muted"}>
+            {coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}
+            {coaching.overdue && coaching.overdueDays !== null
+              ? ` · ${coaching.overdueDays} gün gecikti`
+              : ""}
+          </dd>
+        </div>
+        {coaching.focus ? (
+          <div className="flex justify-between gap-3">
+            <dt>Haftanın odağı</dt>
+            <dd className="text-dc-ink-muted">{coaching.focus}</dd>
+          </div>
+        ) : null}
+      </dl>
+      {coaching.sharedNote ? (
+        <p className="mt-3.5 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
+          {coaching.sharedNote}
+        </p>
+      ) : null}
+      <p className="mt-2.5 text-[12.5px] text-dc-ink-faint">
+        Koçun öğrenciyle paylaştığı özet gösterilir; birebir görüşme notları
+        paylaşılmaz.
+      </p>
+    </PanelCard>
+  ) : null;
 
   if (!plan) {
     return shell(
       <>
         <PanelHeading title="Koçluk" description={selected.name} />
+        {coachCard}
         <PanelEmpty
           title="Bu hafta için plan yayınlanmadı."
           body="Koç haftalık planı yayınladığında görevler ve tamamlanma oranı burada görünür."
@@ -119,6 +171,8 @@ export default async function ParentCoachingPage({
         title="Koçluk"
         description={`${selected.name} · ${RANGE.format(start)} – ${RANGE.format(end)}`}
       />
+
+      {coachCard}
 
       <PanelCard className="mt-5">
         <PanelCardTitle>Bu haftanın planı</PanelCardTitle>

@@ -90,7 +90,8 @@ export default async function AdminHomePage() {
       id: "paid-unprovisioned",
       severity: "high",
       text: `${paidUnprovisioned} siparişin ödemesi alındı, ürün erişimi henüz açılmadı.`,
-      action: { label: "Siparişleri aç", href: "/panel/yonetim/isler" },
+      // Doğrudan "erişim sorunu" filtresine açılır; admin listeyi elle taramaz.
+      action: { label: "Siparişleri aç", href: "/panel/yonetim/siparisler?filtre=sorun" },
     });
   }
   if (manualReviewOrders > 0) {
@@ -98,7 +99,8 @@ export default async function AdminHomePage() {
       id: "provisioning-failed",
       severity: "high",
       text: `${manualReviewOrders} sipariş erişim açma için elle inceleme bekliyor.`,
-      action: { label: "Siparişleri aç", href: "/panel/yonetim/isler" },
+      // Doğrudan "erişim sorunu" filtresine açılır; admin listeyi elle taramaz.
+      action: { label: "Siparişleri aç", href: "/panel/yonetim/siparisler?filtre=sorun" },
     });
   }
   if (cancelledToday.length > 0) {

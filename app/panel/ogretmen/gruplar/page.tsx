@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { academicSupportLabels } from "@/lib/accessibility-preferences";
@@ -147,7 +148,13 @@ export default async function TeacherStudentsPage() {
               return (
                 <PanelTableRow key={`${row.group}-${row.studentId}`}>
                   <PanelTableCell>
-                    <span className="text-[14px] font-bold text-dc-ink">{row.name}</span>
+                    {/* Tasarımdaki "Öğrenciyi aç" — satır adı detay ekranına açılır. */}
+                    <Link
+                      href={`/panel/ogretmen/ogrenci/${row.studentId}`}
+                      className="text-[14px] font-bold text-dc-ink underline-offset-2 hover:text-dc-brand-hover hover:underline"
+                    >
+                      {row.name}
+                    </Link>
                     {row.supports.length ? (
                       <ul
                         aria-label="İşlevsel destekler"

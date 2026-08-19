@@ -39,6 +39,23 @@ export type SafeTeacherAiSource = {
 const injectionPattern = /(ignore|disregard|forget).{0,30}(instruction|prompt)|system\s+(prompt|message)|developer\s+message|önceki.{0,30}(talimat|komut)|sistem\s+(mesajı|talimatı)/i;
 const forbiddenOutputPattern = /(tanı|depres|anksiyete|tembel|başarısız öğrenci|ceza|sınıf sırası|yüzdelik dilim|kesin kazanacak|garanti)/i;
 
+/**
+ * Eğitim ürününde ASLA üretilmemesi gereken dil: tanı koymak, damgalamak,
+ * sıralama/yüzdelik vermek, sonuç garantisi, ceza. Ayrıca çıktıya bağlantı ya
+ * da e-posta sızmamalı.
+ *
+ * Dino da aynı sınırı kullanır; desen İKİ YERE KOPYALANMAZ, yoksa biri
+ * güncellenip diğeri geride kalırdı.
+ */
+export function containsUnsafeEducationalClaim(text: string): boolean {
+  return forbiddenOutputPattern.test(text) || /https?:\/\/|\b\S+@\S+\.\S+\b/i.test(text);
+}
+
+/** Kaynak metinde prompt injection işareti var mı? Dino ile ortak. */
+export function looksLikePromptInjection(text: string): boolean {
+  return injectionPattern.test(text);
+}
+
 function compact(value: string | null | undefined, max = 600) {
   return value?.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, max) || "";
 }

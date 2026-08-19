@@ -54,7 +54,8 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/yonetim/ozellikler");
     await expect(page.getByRole("heading", { name: "Özellik yayını tek yerde görünür." })).toBeVisible();
     await expect(page.getByRole("main").getByRole("heading", { name: "Server/client drift yok", exact: true }).first()).toBeVisible();
-    await expect(page.getByRole("article")).toHaveCount(15);
+    // Kayıtlı her özellik bir kart basar; sayı registry ile birlikte artar.
+    await expect(page.getByRole("article")).toHaveCount(16);
     const csv = await page.evaluate(async () => { const response = await fetch("/api/panel/reports/export?range=30"); return { status: response.status, type: response.headers.get("content-type"), disposition: response.headers.get("content-disposition"), text: await response.text() }; });
     expect(csv.status).toBe(200);
     expect(csv.type).toContain("text/csv");
@@ -130,8 +131,13 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
     await page.goto("/panel/veli/denemeler");
-    await expect(page.getByRole("heading", { name: /Ada Öğrenci · Deneme eğilimi/ })).toBeVisible();
-    await expect(page.getByRole("main").getByText("Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.")).toBeVisible();
+    // Tasarım (pExam) başlığı "Denemeler"; hangi çocuğun verisi olduğu üst
+    // etikette durur. İddia aynı şeyi kanıtlıyor: veli BU çocuğun deneme
+    // ekranını, karşılaştırma yapmayan gizlilik cümlesiyle görüyor.
+    const parentExamMain = page.getByRole("main");
+    await expect(parentExamMain.getByRole("heading", { name: "Denemeler", exact: true })).toBeVisible();
+    await expect(parentExamMain.getByText("Ada Öğrenci", { exact: true })).toBeVisible();
+    await expect(parentExamMain.getByText("Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.")).toBeVisible();
   });
 
   test("öğrenci küçük tekrarı yanıtlar, öğretmen kalıcı zorlanmayı görür", async ({ page }) => {

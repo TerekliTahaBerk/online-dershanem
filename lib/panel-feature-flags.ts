@@ -14,6 +14,7 @@ export type PanelFeatureFlags = {
   offlineMode: boolean;
   cohortQuality: boolean;
   teacherAiDrafts: boolean;
+  dinoAi: boolean;
 };
 
 export const panelFeatureDefaults: PanelFeatureFlags = {
@@ -32,6 +33,7 @@ export const panelFeatureDefaults: PanelFeatureFlags = {
   offlineMode: false,
   cohortQuality: false,
   teacherAiDrafts: false,
+  dinoAi: false,
 };
 
 export const panelFeatureEnvironmentKeys: Record<keyof PanelFeatureFlags, string> = {
@@ -50,6 +52,7 @@ export const panelFeatureEnvironmentKeys: Record<keyof PanelFeatureFlags, string
   offlineMode: "PANEL_FEATURE_OFFLINE_MODE",
   cohortQuality: "PANEL_FEATURE_COHORT_QUALITY",
   teacherAiDrafts: "PANEL_FEATURE_TEACHER_AI_DRAFTS",
+  dinoAi: "PANEL_FEATURE_DINO_AI",
 };
 
 /**

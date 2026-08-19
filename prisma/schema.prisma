@@ -164,8 +164,61 @@ enum AiDraftStatus {
 
 enum AiDraftProvider {
   OPENAI
+  GEMINI
   FALLBACK
   STUB
+}
+
+enum DinoAudience {
+  STUDENT
+  PARENT
+  TEACHER
+}
+
+/// DINO AI YANITI.
+///
+/// `TeacherAiDraft` ile aynı iskelet: kaynak özeti, sağlayıcı, gecikme, token,
+/// maliyet ve `requestKey` ile tekrar-güvenliği. Tablo OLMADAN kullanıcı başına
+/// GÜNLÜK KOTA ve MALİYET TAVANI uygulanamazdı — asıl varlık sebebi budur,
+/// sohbet geçmişi ikincil.
+///
+/// `questionKey` izin listesindeki soruyu tutar; serbest metin saklanmaz çünkü
+/// serbest metin kabul edilmez (bkz. `lib/dino.ts`).
+model DinoAnswer {
+  id          String       @id @default(cuid())
+  userId      String       @map("user_id")
+  audience    DinoAudience
+  questionKey String       @map("question_key")
+
+  /// Veli/eğitmen bir öğrenci hakkında sorduğunda o öğrencinin profili.
+  /// Öğrenci kendisi sorduğunda kendi profili.
+  subjectStudentId String? @map("subject_student_id")
+
+  provider      AiDraftProvider
+  modelName     String?         @map("model_name")
+  promptVersion String          @map("prompt_version")
+  sourceHash    String          @map("source_hash")
+  sourceRefs    Json            @map("source_refs")
+
+  /// `{ text, citations[] }` — doğrulanmış çıktı.
+  answer Json
+
+  fallbackReason        String? @map("fallback_reason")
+  redactionCount        Int     @default(0) @map("redaction_count")
+  latencyMs             Int     @map("latency_ms")
+  inputTokens           Int?    @map("input_tokens")
+  outputTokens          Int?    @map("output_tokens")
+  estimatedCostMicrousd Int?    @map("estimated_cost_microusd")
+
+  requestKey String   @unique @map("request_key")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user           User            @relation("DinoAnswerUser", fields: [userId], references: [id], onDelete: Cascade)
+  subjectStudent StudentProfile? @relation(fields: [subjectStudentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([subjectStudentId, createdAt])
+  @@map("dino_answers")
 }
 
 enum AiDraftFlagReason {
@@ -248,6 +301,9 @@ model User {
   passkeyCredentials            PasskeyCredential[]
   mfaRecoveryCodes              MfaRecoveryCode[]
   mfaChallenges                 MfaChallenge[]
+  assignedCoachings             CoachAssignment[]          @relation("CoachAssignmentAssigner")
+  authoredStudentGoals          StudentGoal[]              @relation("StudentGoalAuthor")
+  dinoAnswers                   DinoAnswer[]               @relation("DinoAnswerUser")
   requestedMfaResets            MfaResetRequest[]          @relation("MfaResetRequester")
   targetMfaResets               MfaResetRequest[]          @relation("MfaResetTarget")
   approvedMfaResets             MfaResetRequest[]          @relation("MfaResetApprover")
@@ -1151,6 +1207,11 @@ model StudentProfile {
   classLevel            String?                @map("class_level")
   schoolName            String?                @map("school_name")
   targetGoal            String?                @map("target_goal")
+
+  /// Tasarımdaki "hedef sıralama 30.000". Serbest metin `targetGoal` sınavı
+  /// tutar (ör. "YKS"); sıralama ayrı ve sayısaldır ki karşılaştırılabilsin.
+  /// Boşsa ekranda sıralama satırı hiç basılmaz.
+  targetRank Int? @map("target_rank")
   weeklyGoal            String?                @map("weekly_goal")
   weeklyGoalUpdatedAt   DateTime?              @map("weekly_goal_updated_at") @db.Timestamptz(3)
   createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -1171,6 +1232,9 @@ model StudentProfile {
   assignmentSubmissions AssignmentSubmission[]
   checkIns              StudentCheckIn[]
   helpRequests          StudentHelpRequest[]
+  coachAssignments      CoachAssignment[]
+  goals                 StudentGoal[]
+  dinoAnswers           DinoAnswer[]
 
   @@map("student_profiles")
 }
@@ -1405,15 +1469,151 @@ model WeeklyPlanTask {
 }
 
 model TeacherProfile {
-  id        String   @id @default(cuid())
-  userId    String   @unique @map("user_id")
-  subjects  String[] @default([])
-  bio       String?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  userId   String   @unique @map("user_id")
+  subjects String[] @default([])
+  bio      String?
 
+  /// Bu personel koçluk da yapıyor mu? Tasarımdaki "Öğretmen + koç" / "Koç"
+  /// ayrımı budur — AYRI BİR UserRole DEĞİL. Yalnız koçluk yapan personel de
+  /// TEACHER rolündedir, sadece grubu olmaz.
+  isCoach Boolean @default(false) @map("is_coach")
+
+  /// Aynı anda taşıyabileceği koçluk öğrencisi sayısı. Boşsa tavan tanımlı
+  /// değildir ve kapasite uyarısı üretilmez — uydurma bir sayı varsayılmaz.
+  coachCapacity Int? @map("coach_capacity")
+
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coachAssignments CoachAssignment[]
+
+  @@index([isCoach])
   @@map("teacher_profiles")
+}
+
+/// ONLINE KOÇUM — ÖĞRENCİ ↔ KOÇ ATAMASI.
+///
+/// Ürün sayfasının sözü: "Planı koç kurar", "birebir koç görüşmesi ve düzenli
+/// takip". Bu tablo o ilişkinin kaydıdır; koçluk buraya kadar yalnız
+/// `WeeklyPlan` onayı olarak yaşıyordu ve atanmış bir koç kavramı yoktu.
+///
+/// Bir öğrencinin aynı anda TEK aktif koçu olur (`endedAt = null` olanlar
+/// arasında). Kısmi tekil indeks migration'da elle eklenir; Prisma şema dili
+/// koşullu unique tanımlayamıyor.
+model CoachAssignment {
+  id        String @id @default(cuid())
+  studentId String @map("student_id")
+  coachId   String @map("coach_id")
+
+  /// Görüşme sıklığı GÜN cinsinden. Ürün sayfası: "Görüşme sıklığı öğrencinin
+  /// programına göre ön görüşmede belirlenir" — yani pakete değil öğrenciye
+  /// bağlıdır. Boşsa gecikme hesaplanmaz.
+  cadenceDays Int? @map("cadence_days")
+
+  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  endedAt   DateTime? @map("ended_at") @db.Timestamptz(3)
+
+  /// Atamayı yapan yönetici — denetim izi.
+  assignedById String? @map("assigned_by_id")
+
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student   StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  coach     TeacherProfile    @relation(fields: [coachId], references: [id], onDelete: Restrict)
+  assignedBy User?            @relation("CoachAssignmentAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  sessions  CoachingSession[]
+
+  @@index([studentId, endedAt])
+  @@index([coachId, endedAt])
+  @@map("coach_assignments")
+}
+
+enum StudentGoalKind {
+  /// Bir dersin deneme neti hedefi (ör. "Matematik 25 net").
+  SUBJECT_NET
+  /// Haftalık plan tamamlama yüzdesi hedefi (ör. %90).
+  PLAN_COMPLETION
+}
+
+/// ÖĞRENCİ HEDEFİ — onaylı tasarım (Panel.dc.html → sGoals).
+///
+/// Tasarımın satırı iki parçadır: "Matematik neti 25" (HEDEF) ve "şimdi 19,00"
+/// (ŞU ANKİ DEĞER). Burada YALNIZ HEDEF saklanır.
+///
+/// Şu anki değer BİLEREK saklanmaz; her görüntülemede gerçek veriden
+/// hesaplanır (`MockExamSection` netleri, `WeeklyPlanTask` tamamlanması).
+/// Saklansaydı yeni bir deneme girildiği anda bayatlar ve öğrenciye yanlış
+/// ilerleme gösterirdi.
+///
+/// `subjectName` öğrencinin GERÇEK deneme bölümlerinden seçilir; serbest
+/// yazılmaz. Aksi hâlde "Matematik" ile "matematik" eşleşmez ve hedefin
+/// karşılığı hiç bulunamaz.
+model StudentGoal {
+  id        String          @id @default(cuid())
+  studentId String          @map("student_id")
+  kind      StudentGoalKind
+
+  /// Yalnız `SUBJECT_NET` için doludur; `MockExamSection.subjectName` ile birebir eşleşir.
+  subjectName String? @map("subject_name")
+
+  /// Hedef değer: net hedefi (ör. 25) ya da tamamlama yüzdesi (ör. 90).
+  targetValue Float @map("target_value")
+
+  /// Tasarımdaki "Yakın hedef: bir sonraki denemede 21 net." satırı.
+  nearTermNote String? @map("near_term_note")
+
+  /// Hedefi koyan koç/yönetici — hedefler koçla birlikte belirlenir.
+  setById String? @map("set_by_id")
+
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  setBy   User?          @relation("StudentGoalAuthor", fields: [setById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, archivedAt])
+  @@map("student_goals")
+}
+
+enum CoachingSessionStatus {
+  PLANNED
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+/// BİREBİR KOÇ GÖRÜŞMESİ.
+///
+/// GİZLİLİK — iki ayrı not alanı bilinçlidir:
+///  - `sharedNote` öğrenciye VE veliye açıktır (ürün sayfası: "veli özeti
+///    paylaşılabilir").
+///  - `privateNote` yalnız koça ve yöneticiye görünür; veliye ve öğrenciye
+///    ASLA gönderilmez. Tasarımın veli ekranları da "private coaching note
+///    paylaşılmaz" diyor.
+/// İki alanı tek alanda birleştirmek bu sınırı kod içinde tutulamaz hâle
+/// getirirdi.
+model CoachingSession {
+  id           String                @id @default(cuid())
+  assignmentId String                @map("assignment_id")
+  scheduledAt  DateTime              @map("scheduled_at") @db.Timestamptz(3)
+  status       CoachingSessionStatus @default(PLANNED)
+  completedAt  DateTime?             @map("completed_at") @db.Timestamptz(3)
+
+  /// Görüşmede belirlenen haftanın odağı — öğrenciye görünür.
+  focus String?
+
+  sharedNote  String? @map("shared_note")
+  privateNote String? @map("private_note")
+
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  assignment CoachAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@map("coaching_sessions")
 }
 
 model TeacherNoteTemplate {
