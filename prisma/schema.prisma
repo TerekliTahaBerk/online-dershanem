@@ -248,6 +248,7 @@ model User {
   passkeyCredentials            PasskeyCredential[]
   mfaRecoveryCodes              MfaRecoveryCode[]
   mfaChallenges                 MfaChallenge[]
+  assignedCoachings             CoachAssignment[]          @relation("CoachAssignmentAssigner")
   requestedMfaResets            MfaResetRequest[]          @relation("MfaResetRequester")
   targetMfaResets               MfaResetRequest[]          @relation("MfaResetTarget")
   approvedMfaResets             MfaResetRequest[]          @relation("MfaResetApprover")
@@ -1171,6 +1172,7 @@ model StudentProfile {
   assignmentSubmissions AssignmentSubmission[]
   checkIns              StudentCheckIn[]
   helpRequests          StudentHelpRequest[]
+  coachAssignments      CoachAssignment[]
 
   @@map("student_profiles")
 }
@@ -1405,15 +1407,103 @@ model WeeklyPlanTask {
 }
 
 model TeacherProfile {
-  id        String   @id @default(cuid())
-  userId    String   @unique @map("user_id")
-  subjects  String[] @default([])
-  bio       String?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  userId   String   @unique @map("user_id")
+  subjects String[] @default([])
+  bio      String?
 
+  /// Bu personel koçluk da yapıyor mu? Tasarımdaki "Öğretmen + koç" / "Koç"
+  /// ayrımı budur — AYRI BİR UserRole DEĞİL. Yalnız koçluk yapan personel de
+  /// TEACHER rolündedir, sadece grubu olmaz.
+  isCoach Boolean @default(false) @map("is_coach")
+
+  /// Aynı anda taşıyabileceği koçluk öğrencisi sayısı. Boşsa tavan tanımlı
+  /// değildir ve kapasite uyarısı üretilmez — uydurma bir sayı varsayılmaz.
+  coachCapacity Int? @map("coach_capacity")
+
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coachAssignments CoachAssignment[]
+
+  @@index([isCoach])
   @@map("teacher_profiles")
+}
+
+/// ONLINE KOÇUM — ÖĞRENCİ ↔ KOÇ ATAMASI.
+///
+/// Ürün sayfasının sözü: "Planı koç kurar", "birebir koç görüşmesi ve düzenli
+/// takip". Bu tablo o ilişkinin kaydıdır; koçluk buraya kadar yalnız
+/// `WeeklyPlan` onayı olarak yaşıyordu ve atanmış bir koç kavramı yoktu.
+///
+/// Bir öğrencinin aynı anda TEK aktif koçu olur (`endedAt = null` olanlar
+/// arasında). Kısmi tekil indeks migration'da elle eklenir; Prisma şema dili
+/// koşullu unique tanımlayamıyor.
+model CoachAssignment {
+  id        String @id @default(cuid())
+  studentId String @map("student_id")
+  coachId   String @map("coach_id")
+
+  /// Görüşme sıklığı GÜN cinsinden. Ürün sayfası: "Görüşme sıklığı öğrencinin
+  /// programına göre ön görüşmede belirlenir" — yani pakete değil öğrenciye
+  /// bağlıdır. Boşsa gecikme hesaplanmaz.
+  cadenceDays Int? @map("cadence_days")
+
+  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  endedAt   DateTime? @map("ended_at") @db.Timestamptz(3)
+
+  /// Atamayı yapan yönetici — denetim izi.
+  assignedById String? @map("assigned_by_id")
+
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student   StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  coach     TeacherProfile    @relation(fields: [coachId], references: [id], onDelete: Restrict)
+  assignedBy User?            @relation("CoachAssignmentAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  sessions  CoachingSession[]
+
+  @@index([studentId, endedAt])
+  @@index([coachId, endedAt])
+  @@map("coach_assignments")
+}
+
+enum CoachingSessionStatus {
+  PLANNED
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+/// BİREBİR KOÇ GÖRÜŞMESİ.
+///
+/// GİZLİLİK — iki ayrı not alanı bilinçlidir:
+///  - `sharedNote` öğrenciye VE veliye açıktır (ürün sayfası: "veli özeti
+///    paylaşılabilir").
+///  - `privateNote` yalnız koça ve yöneticiye görünür; veliye ve öğrenciye
+///    ASLA gönderilmez. Tasarımın veli ekranları da "private coaching note
+///    paylaşılmaz" diyor.
+/// İki alanı tek alanda birleştirmek bu sınırı kod içinde tutulamaz hâle
+/// getirirdi.
+model CoachingSession {
+  id           String                @id @default(cuid())
+  assignmentId String                @map("assignment_id")
+  scheduledAt  DateTime              @map("scheduled_at") @db.Timestamptz(3)
+  status       CoachingSessionStatus @default(PLANNED)
+  completedAt  DateTime?             @map("completed_at") @db.Timestamptz(3)
+
+  /// Görüşmede belirlenen haftanın odağı — öğrenciye görünür.
+  focus String?
+
+  sharedNote  String? @map("shared_note")
+  privateNote String? @map("private_note")
+
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  assignment CoachAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@map("coaching_sessions")
 }
 
 model TeacherNoteTemplate {

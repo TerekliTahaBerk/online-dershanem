@@ -69,6 +69,14 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             },
           },
           attendances: { orderBy: { createdAt: "desc" }, take: 20 },
+          coachAssignments: {
+            where: { endedAt: null },
+            take: 1,
+            select: {
+              cadenceDays: true,
+              coach: { select: { user: { select: { fullName: true, email: true } } } },
+            },
+          },
           notes: {
             orderBy: { updatedAt: "desc" },
             take: 10,
@@ -99,6 +107,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const attendance = student?.attendances ?? [];
   const attended = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
   const activeProducts = new Set(user.productMemberships.map((m) => m.product));
+  const coach = student?.coachAssignments[0] ?? null;
 
   /* Tasarımın kırmızı uyarısı: ödendi ama erişim açılmadı. */
   const blockedOrders = user.odOrders.filter(
@@ -267,6 +276,17 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                         : "Bağlı veli yok"
                     }
                     tone={student.parents.length ? undefined : "text-[#A5764A]"}
+                  />
+                  <Row
+                    label="Koç"
+                    value={
+                      coach
+                        ? `${coach.coach.user.fullName || coach.coach.user.email}${
+                            coach.cadenceDays ? ` · ${coach.cadenceDays} günde bir` : ""
+                          }`
+                        : "Koç atanmadı"
+                    }
+                    tone={coach ? undefined : "text-[#A5764A]"}
                   />
                   <Row
                     label="Son ders katılımı"

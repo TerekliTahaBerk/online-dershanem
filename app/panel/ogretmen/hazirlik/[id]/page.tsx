@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
 import { resolveTeacherStudent } from "@/lib/panel/teacher-scope";
+import { findCoachAssignmentForCoach, getStudentCoaching } from "@/lib/panel/coaching";
+import { recordCoachingSession } from "./actions";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelCard, PanelCardTitle, PanelHeading } from "@/components/panel/ui";
 
@@ -19,12 +21,12 @@ export const dynamic = "force-dynamic";
  * TASARIMDAN BİLİNÇLİ SAPMALAR (§27 — gerçek ürün davranışı görsel
  * birebirliğin önünde):
  *
- *  1. "Görüşmeyi tamamlandı işaretle" YOK. Şemada koç görüşmesi (randevu,
- *     katılım, görüşme notu) modeli bulunmuyor; koçluk bu üründe `WeeklyPlan`
- *     onay akışı olarak yaşıyor. İşlevsiz bir düğme koymak yerine ekran
- *     mevcut plan onay akışına bağlanır.
- *  2. "Dino'nun hazırlık özeti" YOK. Mevcut AI kapısı yalnız ödev/mini test
+ *  1. "Dino'nun hazırlık özeti" YOK. Mevcut AI kapısı yalnız ödev/mini test
  *     taslağı üretir; koçluk özeti üretmez. Uydurma AI metni yazılmaz.
+ *
+ * Görüşme kaydı (`CoachingSession`) artık gerçektir: koç görüşmeyi tamamlandı
+ * işaretler, haftanın odağını ve iki ayrı notu yazar. Bu ekran ilk yazıldığında
+ * şemada görüşme modeli yoktu ve düğme bilinçli olarak konmamıştı.
  *
  * GÜVENLİK: öğrenci `resolveTeacherStudent` ile çözülür — kapsam dışı 404.
  */
@@ -44,7 +46,8 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
   const lastWeek = new Date(thisWeek);
   lastWeek.setDate(lastWeek.getDate() - 7);
 
-  const [lastPlan, currentPlan, notes, attendances, examSections] = await Promise.all([
+  const [lastPlan, currentPlan, notes, attendances, examSections, coaching, assignment] =
+    await Promise.all([
     prisma.weeklyPlan.findUnique({
       where: { studentId_weekStart: { studentId: student.id, weekStart: lastWeek } },
       select: {
@@ -82,6 +85,8 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
       orderBy: { mockExam: { takenAt: "desc" } },
       take: 4,
     }),
+    getStudentCoaching(student.id),
+    findCoachAssignmentForCoach(session.userId, student.id),
   ]);
 
   const tasks = lastPlan?.tasks ?? [];
@@ -178,6 +183,72 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
             </div>
           </PanelCard>
         </div>
+
+        {assignment ? (
+          <PanelCard className="mt-5">
+            <PanelCardTitle>Görüşmeyi kaydet</PanelCardTitle>
+            <p className="mt-1.5 text-[13.5px] text-dc-ink-muted">
+              {coaching?.nextScheduledAt
+                ? `Planlanan görüşme: ${DAY.format(coaching.nextScheduledAt)}`
+                : "Planlanmış görüşme yok; kayıt bugünün görüşmesi olarak eklenir."}
+            </p>
+            <form action={recordCoachingSession} className="mt-4 flex flex-col gap-3.5">
+              <input type="hidden" name="studentId" value={student.id} />
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">Haftanın odağı</span>
+                <input
+                  name="focus"
+                  maxLength={300}
+                  placeholder="Örn. yüzde–oran ve geometri temelleri"
+                  className="rounded-[10px] border border-[#DDE4E0] bg-[#FCFDFC] px-3.5 py-3 text-[14.5px] text-dc-ink"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">
+                  Koç notu — öğrenciye ve veliye görünür
+                </span>
+                <textarea
+                  name="sharedNote"
+                  rows={3}
+                  maxLength={4000}
+                  className="rounded-[10px] border border-[#DDE4E0] bg-[#FCFDFC] px-3.5 py-3 text-[14.5px] leading-[1.6] text-dc-ink"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">
+                  Özel not — yalnız sana ve yöneticiye görünür
+                </span>
+                <textarea
+                  name="privateNote"
+                  rows={2}
+                  maxLength={4000}
+                  className="rounded-[10px] border border-[#DDE4E0] bg-[#FCFDFC] px-3.5 py-3 text-[14.5px] leading-[1.6] text-dc-ink"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">
+                  Sonraki görüşme{assignment.cadenceDays ? " (boş bırakılırsa sıklıktan hesaplanır)" : ""}
+                </span>
+                <input
+                  type="datetime-local"
+                  name="nextAt"
+                  className="w-fit rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[14px] text-dc-ink"
+                />
+              </label>
+
+              <button
+                type="submit"
+                className="w-fit rounded-[10px] bg-dc-brand px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              >
+                Görüşmeyi tamamlandı işaretle
+              </button>
+            </form>
+          </PanelCard>
+        ) : null}
 
         <PanelCard className="mt-5">
           <PanelCardTitle>Bu haftanın planı</PanelCardTitle>

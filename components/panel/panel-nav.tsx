@@ -100,6 +100,8 @@ function adminNav(root: string, flags: PanelFeatureFlags): NavItem[] {
     // Tasarımda (aEdu) eğitmenler öğrencilerden ayrı bir menü girişi.
     { href: `${root}/egitmenler`, label: "Eğitmenler" },
     { href: `${root}/egitim`, label: "Dersler ve gruplar" },
+    // Tasarımda (aCoach) koçluk operasyonu ayrı bir menü girişi.
+    ...(flags.adaptivePlan ? [{ href: `${root}/kocluk`, label: "Koçluk" }] : []),
     { href: `${root}/takvim`, label: "Takvim" },
     ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Deneme analizi" }] : []),
     // ── Deneme Kulübü operasyonu — ayrı çalışma alanı değil, aynı panelin bölümü ──
