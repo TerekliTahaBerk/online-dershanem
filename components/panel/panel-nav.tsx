@@ -57,6 +57,7 @@ function studentNav(root: string, products: ProductCode[], flags: PanelFeatureFl
       : []),
 
     { href: `${root}/gelisim`, label: "Gelişim" },
+    ...(flags.dinoAi ? [{ href: `${root}/dino`, label: "Dino AI" }] : []),
     ...(flags.studentCheckIn ? [{ href: `${root}/check-in`, label: "Nasılım?" }] : []),
   ];
 }
@@ -77,6 +78,7 @@ function parentNav(root: string, products: ProductCode[], flags: PanelFeatureFla
     ...(hasOK ? [{ href: `${root}/kocluk`, label: "Koçluk" }] : []),
     ...(flags.parentWeeklyDigest ? [{ href: `${root}/haftalik`, label: "Haftalık özet" }] : []),
     // Tasarımda (pAcc) hesap ekranı velinin menüsünde yer alır — ürüne bağlı değil.
+    ...(flags.dinoAi ? [{ href: `${root}/dino`, label: "Dino AI" }] : []),
     { href: `${root}/hesap`, label: "Hesap ve paket" },
   ];
 }

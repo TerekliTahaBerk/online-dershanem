@@ -164,8 +164,61 @@ enum AiDraftStatus {
 
 enum AiDraftProvider {
   OPENAI
+  GEMINI
   FALLBACK
   STUB
+}
+
+enum DinoAudience {
+  STUDENT
+  PARENT
+  TEACHER
+}
+
+/// DINO AI YANITI.
+///
+/// `TeacherAiDraft` ile aynı iskelet: kaynak özeti, sağlayıcı, gecikme, token,
+/// maliyet ve `requestKey` ile tekrar-güvenliği. Tablo OLMADAN kullanıcı başına
+/// GÜNLÜK KOTA ve MALİYET TAVANI uygulanamazdı — asıl varlık sebebi budur,
+/// sohbet geçmişi ikincil.
+///
+/// `questionKey` izin listesindeki soruyu tutar; serbest metin saklanmaz çünkü
+/// serbest metin kabul edilmez (bkz. `lib/dino.ts`).
+model DinoAnswer {
+  id          String       @id @default(cuid())
+  userId      String       @map("user_id")
+  audience    DinoAudience
+  questionKey String       @map("question_key")
+
+  /// Veli/eğitmen bir öğrenci hakkında sorduğunda o öğrencinin profili.
+  /// Öğrenci kendisi sorduğunda kendi profili.
+  subjectStudentId String? @map("subject_student_id")
+
+  provider      AiDraftProvider
+  modelName     String?         @map("model_name")
+  promptVersion String          @map("prompt_version")
+  sourceHash    String          @map("source_hash")
+  sourceRefs    Json            @map("source_refs")
+
+  /// `{ text, citations[] }` — doğrulanmış çıktı.
+  answer Json
+
+  fallbackReason        String? @map("fallback_reason")
+  redactionCount        Int     @default(0) @map("redaction_count")
+  latencyMs             Int     @map("latency_ms")
+  inputTokens           Int?    @map("input_tokens")
+  outputTokens          Int?    @map("output_tokens")
+  estimatedCostMicrousd Int?    @map("estimated_cost_microusd")
+
+  requestKey String   @unique @map("request_key")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user           User            @relation("DinoAnswerUser", fields: [userId], references: [id], onDelete: Cascade)
+  subjectStudent StudentProfile? @relation(fields: [subjectStudentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([subjectStudentId, createdAt])
+  @@map("dino_answers")
 }
 
 enum AiDraftFlagReason {
@@ -250,6 +303,7 @@ model User {
   mfaChallenges                 MfaChallenge[]
   assignedCoachings             CoachAssignment[]          @relation("CoachAssignmentAssigner")
   authoredStudentGoals          StudentGoal[]              @relation("StudentGoalAuthor")
+  dinoAnswers                   DinoAnswer[]               @relation("DinoAnswerUser")
   requestedMfaResets            MfaResetRequest[]          @relation("MfaResetRequester")
   targetMfaResets               MfaResetRequest[]          @relation("MfaResetTarget")
   approvedMfaResets             MfaResetRequest[]          @relation("MfaResetApprover")
@@ -1180,6 +1234,7 @@ model StudentProfile {
   helpRequests          StudentHelpRequest[]
   coachAssignments      CoachAssignment[]
   goals                 StudentGoal[]
+  dinoAnswers           DinoAnswer[]
 
   @@map("student_profiles")
 }

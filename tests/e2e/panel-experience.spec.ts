@@ -54,7 +54,8 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/yonetim/ozellikler");
     await expect(page.getByRole("heading", { name: "Özellik yayını tek yerde görünür." })).toBeVisible();
     await expect(page.getByRole("main").getByRole("heading", { name: "Server/client drift yok", exact: true }).first()).toBeVisible();
-    await expect(page.getByRole("article")).toHaveCount(15);
+    // Kayıtlı her özellik bir kart basar; sayı registry ile birlikte artar.
+    await expect(page.getByRole("article")).toHaveCount(16);
     const csv = await page.evaluate(async () => { const response = await fetch("/api/panel/reports/export?range=30"); return { status: response.status, type: response.headers.get("content-type"), disposition: response.headers.get("content-disposition"), text: await response.text() }; });
     expect(csv.status).toBe(200);
     expect(csv.type).toContain("text/csv");

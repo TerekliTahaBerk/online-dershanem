@@ -3,7 +3,7 @@ import test from "node:test";
 import { getPanelFeatureSnapshot, panelFeatureRegistry } from "./panel-feature-registry";
 
 test("her panel özelliğinin rollout ve işletme metadatası vardır", () => {
-  assert.equal(panelFeatureRegistry.length, 15);
+  assert.equal(panelFeatureRegistry.length, 16);
   for (const feature of panelFeatureRegistry) {
     assert.ok(feature.owner);
     assert.ok(feature.roles.length);
