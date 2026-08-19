@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { StudentAssignmentList } from "@/components/panel/student-assignment-list";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
@@ -33,6 +35,7 @@ type Item = {
 
 export default async function StudentTasksPage() {
   const session = await requireRole("STUDENT");
+  const evidenceEnabled = getPanelFeatureFlags().assignmentEvidence;
   const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
 
   const shell = (children: React.ReactNode) => (
@@ -70,8 +73,10 @@ export default async function StudentTasksPage() {
           where: { isActive: true, groupId: { in: groupIds } },
           orderBy: { dueAt: "asc" },
           include: {
-            progress: { where: { studentId: profile.id }, select: { status: true } },
-            group: { select: { teacher: { select: { fullName: true } } } },
+            progress: { where: { studentId: profile.id }, take: 1 },
+            group: { select: { name: true, subject: true, teacher: { select: { fullName: true } } } },
+            rubricCriteria: { orderBy: { position: "asc" } },
+            submissions: { where: { studentId: profile.id }, orderBy: { attemptNumber: "desc" }, include: { scores: true } },
           },
         })
       : Promise.resolve([]),
@@ -88,18 +93,17 @@ export default async function StudentTasksPage() {
   const weekEnd = new Date(todayEnd);
   weekEnd.setDate(weekEnd.getDate() + 7);
 
+  /*
+   * Koçluk plan görevleri okunur listede kalır; ders çalışmaları ise
+   * `StudentAssignmentList` ile ETKİLEŞİMLİ basılır.
+   *
+   * Tasarım geçişinde bu sayfa tamamen okunur hale gelmişti: öğrenci
+   * "Çalışıyorum/Tamamlandı" işaretleyemiyor, kanıtlı ödevde teslim
+   * yapamıyordu. Bileşen ve uçlar (`/api/panel/assignments/[id]/progress`,
+   * `.../submissions`) yerinde duruyordu, yalnız hiçbir sayfadan
+   * render edilmiyordu — dolayısıyla veli görünümü de hiç güncellenmiyordu.
+   */
   const items: Item[] = [
-    ...assignments.map((a) => {
-      const done = a.progress[0]?.status === "DONE";
-      return {
-        id: `a-${a.id}`,
-        title: a.title,
-        meta: `Ders çalışması${a.group.teacher.fullName ? ` · ${a.group.teacher.fullName}` : ""}`,
-        due: a.dueAt,
-        done,
-        overdue: !done && !!a.dueAt && a.dueAt < now,
-      };
-    }),
     ...(plan?.tasks ?? []).map((t) => ({
       id: `t-${t.id}`,
       title: `${t.title} · ${t.durationMinutes} dk`,
@@ -147,22 +151,55 @@ export default async function StudentTasksPage() {
     <>
       <PanelHeading
         title="Çalışmalar"
-        description="Öğretmenin verdiği çalışmalar ve koçunun plan görevleri aynı listede."
+        description="Öğretmenin verdiği çalışmalar ve koçunun plan görevleri aynı listede. Çalışmaya başladığında işaretle; kanıtlı çalışmada öğretmen geri bildirimiyle yeniden deneyebilirsin."
       />
 
-      {items.length === 0 ? (
+      {assignments.length === 0 && items.length === 0 ? (
         <PanelEmpty
           title="Bekleyen çalışma yok."
           body="Öğretmenin ya da koçun yeni bir çalışma eklediğinde burada görünecek."
         />
-      ) : (
-        <>
+      ) : null}
+
+      {assignments.length ? (
+        <div className="mt-6">
+          <PanelSectionLabel>Ders çalışmaların</PanelSectionLabel>
+          <div className="mt-2.5">
+            <StudentAssignmentList
+              evidenceEnabled={evidenceEnabled}
+              assignments={assignments.map((item) => ({
+                id: item.id,
+                title: item.title,
+                description: item.description || "",
+                dueAt: item.dueAt.toISOString(),
+                groupName: item.group.name,
+                subject: item.group.subject,
+                status: item.progress[0]?.status || "TODO",
+                version: item.progress[0]?.version || 0,
+                evidenceRequired: item.evidenceRequired,
+                criteria: item.rubricCriteria.map((criterion) => ({ id: criterion.id, label: criterion.label })),
+                submissions: item.submissions.map((submission) => ({
+                  id: submission.id,
+                  attemptNumber: submission.attemptNumber,
+                  status: submission.status,
+                  textEvidence: submission.textEvidence,
+                  feedback: submission.feedback,
+                  scores: submission.scores.map((score) => ({ criterionId: score.criterionId, level: score.level })),
+                })),
+              }))}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {items.length ? (
+        <div className="mt-8">
           {group("Bugün", today)}
           {group("Bu hafta", thisWeek)}
           {group("Sonraki", later)}
           {group("Tamamlananlar", done, true)}
-        </>
-      )}
+        </div>
+      ) : null}
     </>,
   );
 }

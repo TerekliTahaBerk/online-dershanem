@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelHeading } from "@/components/panel/ui";
 import { TeacherLessonWorkspace } from "@/components/panel/teacher-lesson-workspace";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { academicSupportLabels } from "@/lib/accessibility-preferences";
@@ -146,19 +145,18 @@ export default async function TeacherLessonClosePage({
       pageTitle="Ders kapanışı"
     >
       <div className="max-w-[1040px]">
-        <PanelHeading
-          eyebrow={`${workspace.groupName} · ${workspace.timeLabel}`}
-          title={workspace.title}
-          description="Yoklamayı işaretle, ortak notu yaz, gerekiyorsa öğrenciye özel not ekle ve dersi kapat."
-          actions={
-            <Link
-              href="/panel/ogretmen"
-              className="rounded-lg border border-dc-line bg-white px-3.5 py-2.5 text-[13px] font-semibold text-dc-ink-muted transition-colors hover:border-dc-brand"
-            >
-              ← Bugüne dön
-            </Link>
-          }
-        />
+        {/*
+          Sayfa BAŞLIĞI burada basılmaz: `TeacherLessonWorkspace` zaten dersin
+          adını `<h1>` olarak çiziyor. `PanelHeading` eklendiğinde sayfada iki
+          `<h1>` oluyordu (aynı metinle) — hem geçersiz belge yapısı hem de
+          ekran okuyucuda çift duyuru.
+        */}
+        <Link
+          href="/panel/ogretmen"
+          className="inline-flex rounded-lg border border-dc-line bg-white px-3.5 py-2.5 text-[13px] font-semibold text-dc-ink-muted transition-colors hover:border-dc-brand"
+        >
+          ← Bugüne dön
+        </Link>
 
         <div className="mt-5">
           <TeacherLessonWorkspace

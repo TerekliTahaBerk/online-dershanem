@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
+import { StudentWeeklyGoal } from "@/components/panel/student-weekly-goal";
 import { PanelHeading, PanelStatCard, PanelEmpty } from "@/components/panel/ui";
 import { SubjectTrendCard, type SubjectSeries } from "@/components/panel/student/subject-trend";
 
@@ -117,6 +118,17 @@ export default async function StudentProgressPage() {
         title="Gelişimin"
         description="Ders katılımı, çalışma tamamlama ve deneme netleri bir arada."
       />
+
+      {/*
+        Haftalık hedef düzenleme tasarım geçişinde ekrandan düşmüştü:
+        `/api/panel/student/weekly-goal` ucu ve bileşen duruyor, ama hiçbir
+        sayfa render etmiyordu — öğrenci kendi hedefini yazamıyordu.
+      */}
+      <div className="mt-6">
+        <StudentWeeklyGoal
+          initial={profile.weeklyGoal || "Bu hafta en az üç odaklı çalışma tamamlayacağım."}
+        />
+      </div>
 
       {nothingYet ? (
         <PanelEmpty

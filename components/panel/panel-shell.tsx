@@ -166,9 +166,14 @@ export async function PanelShell({
 
           {/* Sidebar — handoff: 248px, beyaz, sağ kenarlık */}
           <aside className="sticky top-0 hidden h-dvh w-[248px] flex-none flex-col border-r border-dc-line bg-white px-3.5 py-5 lg:flex">
+            {/*
+              Erişilebilir ad çalışma alanına göre değişir: aynı marka
+              bağlantısı işletme alanında başka bir yere gidiyor, ekran
+              okuyucuda ikisi aynı isimle duyurulmamalı.
+            */}
             <Link
               href={homeHref}
-              aria-label="Panel ana sayfası"
+              aria-label={isBusinessWorkspace ? "İşletme yönetim ana sayfası" : "Panel ana sayfası"}
               className="flex items-center gap-2.5 px-2 pb-[22px] pt-1"
             >
               <Image

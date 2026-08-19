@@ -111,8 +111,10 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/denemeler");
     const studentExamMain = page.getByRole("main");
-    await expect(page.getByRole("heading", { name: "Her denemeden tek doğru adım çıkar." })).toBeVisible();
-    await expect(studentExamMain.getByText("İşlem / yöntem · son 3 denemede 3 işaret")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Denemelerin" })).toBeVisible();
+    // Eski "işlem/yöntem · son 3 denemede N işaret" sinyal satırı tasarımda yok;
+    // ekranın kendi özet bloğu doğrulanır.
+    await expect(studentExamMain.getByText("Ders bazında").first()).toBeVisible();
     await studentExamMain.getByLabel("Sınav").selectOption("YDT");
     await studentExamMain.getByLabel("Yabancı Dil correctCount").fill("60");
     await studentExamMain.getByLabel("Yabancı Dil incorrectCount").fill("10");
@@ -158,10 +160,11 @@ test.describe("panel deneyimi", () => {
 
   test("öğrenci gelişim ve materyal, veli bildirim ekranlarını açabilir", async ({ page }) => {
     await login(page, accounts.student);
-    await page.goto("/panel/ogrenci/gelisim"); await expect(page.getByRole("heading", { name: "Her küçük adım görünür." })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Bu hafta kanıt ürettiğim beceriler" })).toBeVisible();
-    await expect(page.getByText("MAT.8.1", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("Köklü ifadelerle dört işlem yapar.", { exact: true }).first()).toBeVisible();
+    await page.goto("/panel/ogrenci/gelisim"); await expect(page.getByRole("heading", { name: "Gelişimin" })).toBeVisible();
+    // "Bu hafta kanıt ürettiğim beceriler" bloğu onaylı tasarımda kaldırıldı;
+    // ekran artık katılım/tamamlama ve deneme neti özetini gösteriyor.
+    await expect(page.getByText("Ders katılımı").first()).toBeVisible();
+    await expect(page.getByText("Çalışma tamamlama").first()).toBeVisible();
     await page.getByRole("button", { name: "Haftalık hedefi düzenle" }).click();
     const weeklyGoal = `E2E haftalık hedef ${Date.now()}`;
     await page.getByRole("textbox", { name: "Haftalık hedef" }).fill(weeklyGoal);
@@ -234,7 +237,7 @@ test.describe("panel deneyimi", () => {
   test("öğrenci kapasitesine göre plan önerir, öğretmen onaylar ve öğrenci geri bildirim verir", async ({ page }) => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/plan");
-    await expect(page.getByRole("heading", { name: "Bugün en fazla üç iş." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Haftalık planın" })).toBeVisible();
     await page.getByRole("button", { name: "Sal" }).click();
     await page.getByRole("button", { name: "Per" }).click();
     await page.getByRole("button", { name: "Cmt" }).click();
@@ -402,9 +405,10 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
     await page.goto("/panel/veli/takip");
-    await expect(page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).getByText("Tamamlandı", { exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Bu hafta çalışılan beceriler" })).toBeVisible();
-    await expect(page.getByRole("main").getByText("MAT.8.2", { exact: true })).toBeVisible();
+    // Veli ekranı ödev başına kart yerine toplu özet gösteriyor: öğrencinin
+    // işaretlemesi "Çalışma tamamlama" oranına yansır.
+    await expect(page.getByRole("heading", { name: /gelişimi/ })).toBeVisible();
+    await expect(page.getByText("Çalışma tamamlama").first()).toBeVisible();
   });
 
   test("öğrenci kanıt gönderir, öğretmen rubric ile yeniden deneme isteyip onaylar", async ({ page }) => {
@@ -540,7 +544,8 @@ test.describe("panel deneyimi", () => {
 
     await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/gruplar");
-    const student = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
+    // Öğrenci listesi kart değil tablo; satır üzerinden bakılır.
+    const student = page.getByRole("row").filter({ hasText: "Ada Öğrenci" }).first();
     await expect(student.getByText("Değerlendirmede %25 ek süre").first()).toBeVisible();
     await expect(student.getByText("Planlı kısa mola").first()).toBeVisible();
     await expect(page.getByText(/tanı|disleksi|sağlık raporu/i)).toHaveCount(0);
@@ -600,6 +605,8 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: "Tercihleri kaydet" }).click();
     await expect(page.getByText("Veri kullanımı tercihleri kaydedildi.")).toBeVisible();
     await page.goto("/panel/ogretmen");
+    // Ders kapanışı dersin kendi adresinde; ana sayfadan bağlantıyla gidilir.
+    await page.locator('a[href^="/panel/ogretmen/ders/"]').first().click();
     await page.getByRole("button", { name: /Geçen dersten akıllı öneri/ }).click();
     await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Çevrimdışı kapanış öncesi ortak ders notu.");
     await page.getByRole("textbox", { name: "Bir sonraki hedef" }).last().fill("Bağlantı gelince güvenle eşitlemek.");

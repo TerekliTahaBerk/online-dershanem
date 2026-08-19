@@ -125,6 +125,21 @@ async function main() {
       update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin },
     });
   }
+  /*
+   * Online Koçum (OK) erişimi.
+   *
+   * Haftalık plan (`/panel/ogrenci/plan`) ve veli koçluk ekranı
+   * `requireProductRole("OK", …)` ile korunuyor; tohumda hiçbir kullanıcıya OK
+   * verilmediği için bu ekranlar e2e'de her zaman 404'e düşüyor ve adaptif plan
+   * akışı hiç test edilmiyordu.
+   */
+  for (const userId of [ids.student, ids.parent]) {
+    await prisma.productMembership.upsert({
+      where: { userId_product: { userId, product: "OK" } },
+      create: { userId, product: "OK", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) },
+      update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin },
+    });
+  }
   await prisma.productMembership.deleteMany({ where: { userId: ids.odkStudent, product: "OD" } });
   await prisma.productMembership.upsert({ where: { userId_product: { userId: ids.odkStudent, product: "ODK" } }, create: { userId: ids.odkStudent, product: "ODK", source: "MANUAL", grantedById: ids.admin }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });
   for (const userId of [ids.parent, ids.foreignStudent]) await prisma.productMembership.upsert({ where: { userId_product: { userId, product: "ODK" } }, create: { userId, product: "ODK", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });

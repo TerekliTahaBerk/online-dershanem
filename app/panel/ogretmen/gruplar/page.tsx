@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { academicSupportLabels } from "@/lib/accessibility-preferences";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
@@ -25,6 +27,7 @@ export const dynamic = "force-dynamic";
 
 export default async function TeacherStudentsPage() {
   const session = await requireRole("TEACHER");
+  const accessibilityEnabled = getPanelFeatureFlags().accessibilityProfile;
 
   const groups = await prisma.group.findMany({
     where: { teacherId: session.userId, isActive: true },
@@ -39,7 +42,7 @@ export default async function TeacherStudentsPage() {
             select: {
               id: true,
               userId: true,
-              user: { select: { fullName: true, email: true, role: true } },
+              user: { select: { fullName: true, email: true, role: true, accessibilityPreference: true } },
             },
           },
         },
@@ -54,6 +57,16 @@ export default async function TeacherStudentsPage() {
       role: e.student.user.role,
       name: e.student.user.fullName || e.student.user.email,
       group: g.name,
+      /*
+       * İşlevsel destekler (ek süre, mola) öğretmene GÖRÜNMELİ: erişilebilirlik
+       * profilinin tek amacı bu. Tasarım geçişinde satırdan düşmüştü.
+       * `academicSupportLabels` yalnız işlevsel etiket üretir — tanı, sağlık
+       * raporu gibi hassas veri asla buraya taşınmaz.
+       */
+      supports:
+        accessibilityEnabled && e.student.user.accessibilityPreference
+          ? academicSupportLabels(e.student.user.accessibilityPreference)
+          : [],
     })),
   );
 
@@ -135,6 +148,16 @@ export default async function TeacherStudentsPage() {
                 <PanelTableRow key={`${row.group}-${row.studentId}`}>
                   <PanelTableCell>
                     <span className="text-[14px] font-bold text-dc-ink">{row.name}</span>
+                    {row.supports.length ? (
+                      <ul
+                        aria-label="İşlevsel destekler"
+                        className="mt-1 space-y-0.5 text-[11.5px] font-semibold text-dc-brand-strong"
+                      >
+                        {row.supports.map((support) => (
+                          <li key={support}>· {support}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </PanelTableCell>
                   <PanelTableCell>{scopeLabel(row.studentId)}</PanelTableCell>
                   <PanelTableCell>{row.group}</PanelTableCell>

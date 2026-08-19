@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
+import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
+import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
 import { PanelHeading, PanelCard, PanelEmpty } from "@/components/panel/ui";
 import { DinoInsightCard } from "@/components/panel/student/home-cards";
 
@@ -66,14 +68,34 @@ export default async function StudentExamResultPage({
     include: { sections: { orderBy: { position: "asc" } } },
   });
 
+  /*
+   * Deneme GİRİŞİ öğrencinin kendi ekranında olmalı.
+   * `MockExamWorkspace` öğretmen, veli ve yönetim sayfalarında render
+   * ediliyordu; öğrencide tasarım geçişinde düşmüş ve öğrenci kendi deneme
+   * sonucunu giremez hale gelmişti.
+   */
+  const entryExams = await prisma.mockExam.findMany({
+    where: { studentId: profile.id },
+    orderBy: { takenAt: "desc" },
+    take: 40,
+    include: mockExamViewInclude,
+  });
+  const examEntry = (
+    <MockExamWorkspace
+      role={session.role}
+      students={[{ id: profile.id, name: session.fullName || session.email }]}
+      initialExams={entryExams.map(toMockExamView)}
+    />
+  );
+
   if (exams.length === 0) {
     return shell(
       <>
-        <PanelHeading title="Denemelerin" />
-        <PanelEmpty
-          title="Henüz deneme sonucu yok."
-          body="Deneme sonucun girildiğinde net dökümü, ders bazında analiz ve gelişim karşılaştırman burada açılır."
+        <PanelHeading
+          title="Denemelerin"
+          description="İlk deneme sonucunu aşağıdan gir; analiz ve karşılaştırma ondan sonra açılır."
         />
+        <div className="mt-6">{examEntry}</div>
       </>,
     );
   }
@@ -237,6 +259,8 @@ export default async function StudentExamResultPage({
           </p>
         </PanelCard>
       ) : null}
+
+      <div className="mt-8">{examEntry}</div>
     </>,
   );
 }

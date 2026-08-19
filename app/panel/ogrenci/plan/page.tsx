@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
+import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
 import { PanelHeading, PanelCard, PanelEmpty } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,10 @@ export default async function StudentPlanPage() {
   const session = await requireProductRole("OK", "STUDENT");
   if (!getPanelFeatureFlags().adaptivePlan) notFound();
 
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+  const profile = await prisma.studentProfile.findUnique({
+    where: { userId: session.userId },
+    include: { planPreference: true },
+  });
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -66,14 +70,57 @@ export default async function StudentPlanPage() {
     include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
   });
 
+  /*
+   * Kapasite seçimi ve plan onayı `StudentAdaptivePlan` içinde.
+   *
+   * Tasarım geçişinde bu sayfa salt okunur bir listeye indirilmişti: öğrenci
+   * uygun günlerini/süresini bildiremiyor, üretilen planı onaylayamıyor,
+   * değişiklik isteyemiyordu. Bileşen ve uçlar
+   * (`/api/panel/adaptive-plan/...`) yerinde duruyordu, yalnız hiçbir sayfadan
+   * render edilmiyordu.
+   */
+  const adaptivePlan = (
+    <StudentAdaptivePlan
+      initialPreference={{
+        availableDays: Array.isArray(profile.planPreference?.availableDays)
+          ? profile.planPreference.availableDays.filter((day): day is number => typeof day === "number")
+          : [1, 3, 5],
+        minutesPerDay: profile.planPreference?.minutesPerDay || 45,
+        nextExamAt: profile.planPreference?.nextExamAt?.toISOString() || null,
+        examLabel: profile.planPreference?.examLabel || null,
+        planningEnabled: profile.planPreference?.planningEnabled ?? true,
+        overwhelmPulse: profile.planPreference?.overwhelmPulse || null,
+      }}
+      initialPlan={
+        plan
+          ? {
+              id: plan.id,
+              status: plan.status,
+              version: plan.version,
+              capacityMinutes: plan.capacityMinutes,
+              tasks: plan.tasks.map((task) => ({
+                id: task.id,
+                title: task.title,
+                scheduledFor: task.scheduledFor.toISOString(),
+                durationMinutes: task.durationMinutes,
+                sourceType: task.sourceType,
+                reasonCode: task.reasonCode,
+                status: task.status,
+              })),
+            }
+          : null
+      }
+    />
+  );
+
   if (!plan) {
     return shell(
       <>
-        <PanelHeading title="Haftalık planın" />
-        <PanelEmpty
-          title="Bu hafta için plan hazırlanmadı."
-          body="Koçun haftalık planını yayınladığında görevlerin gün gün burada listelenir."
+        <PanelHeading
+          title="Haftalık planın"
+          description="Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."
         />
+        <div className="mt-6">{adaptivePlan}</div>
       </>,
     );
   }
@@ -99,7 +146,9 @@ export default async function StudentPlanPage() {
         description={`${RANGE.format(start)} – ${RANGE.format(end)}`}
       />
 
-      <div className="mt-5 flex items-center gap-4">
+      <div className="mt-6">{adaptivePlan}</div>
+
+      <div className="mt-8 flex items-center gap-4">
         <div
           className="h-2 flex-1 overflow-hidden rounded-full bg-dc-line-soft"
           role="progressbar"
