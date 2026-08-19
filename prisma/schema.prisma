@@ -249,6 +249,7 @@ model User {
   mfaRecoveryCodes              MfaRecoveryCode[]
   mfaChallenges                 MfaChallenge[]
   assignedCoachings             CoachAssignment[]          @relation("CoachAssignmentAssigner")
+  authoredStudentGoals          StudentGoal[]              @relation("StudentGoalAuthor")
   requestedMfaResets            MfaResetRequest[]          @relation("MfaResetRequester")
   targetMfaResets               MfaResetRequest[]          @relation("MfaResetTarget")
   approvedMfaResets             MfaResetRequest[]          @relation("MfaResetApprover")
@@ -1152,6 +1153,11 @@ model StudentProfile {
   classLevel            String?                @map("class_level")
   schoolName            String?                @map("school_name")
   targetGoal            String?                @map("target_goal")
+
+  /// Tasarımdaki "hedef sıralama 30.000". Serbest metin `targetGoal` sınavı
+  /// tutar (ör. "YKS"); sıralama ayrı ve sayısaldır ki karşılaştırılabilsin.
+  /// Boşsa ekranda sıralama satırı hiç basılmaz.
+  targetRank Int? @map("target_rank")
   weeklyGoal            String?                @map("weekly_goal")
   weeklyGoalUpdatedAt   DateTime?              @map("weekly_goal_updated_at") @db.Timestamptz(3)
   createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -1173,6 +1179,7 @@ model StudentProfile {
   checkIns              StudentCheckIn[]
   helpRequests          StudentHelpRequest[]
   coachAssignments      CoachAssignment[]
+  goals                 StudentGoal[]
 
   @@map("student_profiles")
 }
@@ -1465,6 +1472,54 @@ model CoachAssignment {
   @@index([studentId, endedAt])
   @@index([coachId, endedAt])
   @@map("coach_assignments")
+}
+
+enum StudentGoalKind {
+  /// Bir dersin deneme neti hedefi (ör. "Matematik 25 net").
+  SUBJECT_NET
+  /// Haftalık plan tamamlama yüzdesi hedefi (ör. %90).
+  PLAN_COMPLETION
+}
+
+/// ÖĞRENCİ HEDEFİ — onaylı tasarım (Panel.dc.html → sGoals).
+///
+/// Tasarımın satırı iki parçadır: "Matematik neti 25" (HEDEF) ve "şimdi 19,00"
+/// (ŞU ANKİ DEĞER). Burada YALNIZ HEDEF saklanır.
+///
+/// Şu anki değer BİLEREK saklanmaz; her görüntülemede gerçek veriden
+/// hesaplanır (`MockExamSection` netleri, `WeeklyPlanTask` tamamlanması).
+/// Saklansaydı yeni bir deneme girildiği anda bayatlar ve öğrenciye yanlış
+/// ilerleme gösterirdi.
+///
+/// `subjectName` öğrencinin GERÇEK deneme bölümlerinden seçilir; serbest
+/// yazılmaz. Aksi hâlde "Matematik" ile "matematik" eşleşmez ve hedefin
+/// karşılığı hiç bulunamaz.
+model StudentGoal {
+  id        String          @id @default(cuid())
+  studentId String          @map("student_id")
+  kind      StudentGoalKind
+
+  /// Yalnız `SUBJECT_NET` için doludur; `MockExamSection.subjectName` ile birebir eşleşir.
+  subjectName String? @map("subject_name")
+
+  /// Hedef değer: net hedefi (ör. 25) ya da tamamlama yüzdesi (ör. 90).
+  targetValue Float @map("target_value")
+
+  /// Tasarımdaki "Yakın hedef: bir sonraki denemede 21 net." satırı.
+  nearTermNote String? @map("near_term_note")
+
+  /// Hedefi koyan koç/yönetici — hedefler koçla birlikte belirlenir.
+  setById String? @map("set_by_id")
+
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  setBy   User?          @relation("StudentGoalAuthor", fields: [setById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, archivedAt])
+  @@map("student_goals")
 }
 
 enum CoachingSessionStatus {

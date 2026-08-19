@@ -105,3 +105,87 @@ export async function recordCoachingSession(formData: FormData) {
 
   revalidatePath(`/panel/ogretmen/hazirlik/${parsed.studentId}`);
 }
+
+/**
+ * EĞİTMEN · HEDEF BELİRLE (Panel.dc.html → sGoals'un yazma tarafı).
+ *
+ * Tasarımın öğrenci ekranı "Koçunla belirlediğiniz hedefler" diyor; hedefi
+ * koyan taraf burasıdır.
+ *
+ * Ders adı SERBEST YAZILMAZ — öğrencinin gerçek deneme bölümlerinden seçilir.
+ * Aksi hâlde "matematik" ile "Matematik" eşleşmez ve hedefin karşılığı hiç
+ * bulunamazdı. Veritabanındaki CHECK kısıtı da türle dersin uyumunu ayrıca
+ * zorlar.
+ */
+export async function setStudentGoal(formData: FormData) {
+  const session = await requireRole("TEACHER");
+  await enforceMutation({
+    action: "coaching.goal.set",
+    userId: session.userId,
+    requireSameOrigin: true,
+    rateLimit: { max: 60, windowMs: 60_000 },
+  });
+
+  const parsed = z
+    .object({
+      studentId: z.string().min(1),
+      kind: z.enum(["SUBJECT_NET", "PLAN_COMPLETION"]),
+      subjectName: z.string().optional(),
+      targetValue: z.string().min(1),
+      nearTermNote: z.string().max(300).optional(),
+    })
+    .parse(Object.fromEntries(formData));
+
+  const assignment = await findCoachAssignmentForCoach(session.userId, parsed.studentId);
+  if (!assignment) return;
+
+  const target = Number(parsed.targetValue.replace(",", "."));
+  if (!Number.isFinite(target) || target < 0) return;
+
+  const subjectName =
+    parsed.kind === "SUBJECT_NET" ? (parsed.subjectName?.trim() || null) : null;
+  if (parsed.kind === "SUBJECT_NET" && !subjectName) return;
+
+  // Ders adı öğrencinin gerçek deneme bölümlerinden biri olmalı.
+  if (subjectName) {
+    const known = await prisma.mockExamSection.findFirst({
+      where: { mockExam: { studentId: parsed.studentId }, subjectName },
+      select: { id: true },
+    });
+    if (!known) return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Aynı başlıkta aktif hedef varsa arşivle — kısmi tekil indeks ikinci bir
+    // aktif hedefi zaten reddederdi.
+    await tx.studentGoal.updateMany({
+      where: {
+        studentId: parsed.studentId,
+        kind: parsed.kind,
+        subjectName,
+        archivedAt: null,
+      },
+      data: { archivedAt: new Date() },
+    });
+    await tx.studentGoal.create({
+      data: {
+        studentId: parsed.studentId,
+        kind: parsed.kind,
+        subjectName,
+        targetValue: target,
+        nearTermNote: parsed.nearTermNote?.trim() || null,
+        setById: session.userId,
+      },
+    });
+  });
+
+  await logAudit({
+    actorUserId: session.userId,
+    entityType: "StudentGoal",
+    entityId: parsed.studentId,
+    action: "coaching.goal.set",
+    summary: `${subjectName ?? "Plan tamamlama"} hedefi ${target} olarak belirlendi`,
+  });
+
+  revalidatePath(`/panel/ogretmen/hazirlik/${parsed.studentId}`);
+}

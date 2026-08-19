@@ -6,7 +6,8 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
 import { resolveTeacherStudent } from "@/lib/panel/teacher-scope";
 import { findCoachAssignmentForCoach, getStudentCoaching } from "@/lib/panel/coaching";
-import { recordCoachingSession } from "./actions";
+import { getStudentExamSubjects, getStudentGoals } from "@/lib/panel/goals";
+import { recordCoachingSession, setStudentGoal } from "./actions";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelCard, PanelCardTitle, PanelHeading } from "@/components/panel/ui";
 
@@ -88,6 +89,11 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
     getStudentCoaching(student.id),
     findCoachAssignmentForCoach(session.userId, student.id),
   ]);
+
+  /* Hedefler yalnız atanmış koç için anlamlı; kapsam dışıysa hiç sorgulanmaz. */
+  const [goals, examSubjects] = assignment
+    ? await Promise.all([getStudentGoals(student.id), getStudentExamSubjects(student.id)])
+    : [[], []];
 
   const tasks = lastPlan?.tasks ?? [];
   const done = tasks.filter((t) => t.status === "DONE");
@@ -247,6 +253,94 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
                 Görüşmeyi tamamlandı işaretle
               </button>
             </form>
+          </PanelCard>
+        ) : null}
+
+        {assignment ? (
+          <PanelCard className="mt-5">
+            <PanelCardTitle>Hedefler</PanelCardTitle>
+            {goals.length === 0 ? (
+              <p className="mt-2 text-[13.5px] text-dc-ink-muted">
+                Bu öğrenci için henüz hedef belirlenmedi.
+              </p>
+            ) : (
+              <ul className="mt-3 flex flex-col gap-2 text-[14px] text-dc-ink-body">
+                {goals.map((g) => (
+                  <li key={g.id} className="flex flex-wrap justify-between gap-2">
+                    <span className="font-medium">{g.label}</span>
+                    <span className="text-dc-ink-muted">
+                      {g.current === null
+                        ? "ölçüm yok"
+                        : g.kind === "PLAN_COMPLETION"
+                          ? `şimdi %${g.current}`
+                          : `şimdi ${g.current.toFixed(2).replace(".", ",")}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <form action={setStudentGoal} className="mt-4 flex flex-wrap items-end gap-2.5">
+              <input type="hidden" name="studentId" value={student.id} />
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">Hedef türü</span>
+                <select
+                  name="kind"
+                  className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
+                >
+                  <option value="SUBJECT_NET">Ders neti</option>
+                  <option value="PLAN_COMPLETION">Plan tamamlama %</option>
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">Ders</span>
+                <select
+                  name="subjectName"
+                  className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
+                >
+                  <option value="">— (plan hedefi için boş)</option>
+                  {examSubjects.map((subject) => (
+                    <option key={subject} value={subject}>
+                      {subject}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">Hedef değer</span>
+                <input
+                  name="targetValue"
+                  required
+                  inputMode="decimal"
+                  className="w-[96px] rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] text-dc-ink"
+                />
+              </label>
+
+              <label className="flex flex-1 flex-col gap-1.5">
+                <span className="text-[12.5px] text-dc-ink-faint">Yakın hedef notu</span>
+                <input
+                  name="nearTermNote"
+                  maxLength={300}
+                  placeholder="Örn. bir sonraki denemede 21 net"
+                  className="min-w-[200px] rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] text-dc-ink"
+                />
+              </label>
+
+              <button
+                type="submit"
+                className="rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+              >
+                Hedefi kaydet
+              </button>
+            </form>
+            {examSubjects.length === 0 ? (
+              <p className="mt-2 text-[12.5px] text-dc-ink-faint">
+                Ders neti hedefi koyabilmek için önce bu öğrenciye deneme sonucu
+                girilmiş olmalı.
+              </p>
+            ) : null}
           </PanelCard>
         ) : null}
 

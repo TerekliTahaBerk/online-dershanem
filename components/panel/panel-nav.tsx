@@ -41,7 +41,11 @@ function studentNav(root: string, products: ProductCode[], flags: PanelFeatureFl
 
     // ── Online Koçum (OK) bölümü ──
     ...(hasOK && flags.adaptivePlan
-      ? [{ href: `${root}/plan`, label: "Koçum" }]
+      ? [
+          { href: `${root}/plan`, label: "Koçum" },
+          // Tasarımda (sGoals) hedefler koçluk bölümünün parçası.
+          { href: `${root}/hedefler`, label: "Hedefler" },
+        ]
       : []),
 
     // ── Online Deneme Kulübüm (ODK) bölümü — sınav motoru aynı panelin içinde ──
