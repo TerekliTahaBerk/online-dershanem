@@ -1,8 +1,11 @@
 import { Flag, ShieldCheck, TriangleAlert } from "lucide-react";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureSnapshot, type PanelFeatureStatus } from "@/lib/panel-feature-registry";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
+import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -14,15 +17,49 @@ const statusLabel: Record<PanelFeatureStatus, string> = {
 };
 
 const statusTone: Record<PanelFeatureStatus, string> = {
-  experimental: "bg-violet-100 text-violet-800",
+  experimental: "bg-dc-brand-soft text-dc-brand-deep",
   pilot: "bg-amber-100 text-amber-900",
   "production-ready": "bg-emerald-100 text-emerald-800",
   deprecated: "bg-slate-200 text-slate-700",
 };
 
+const AUDIT_WHEN = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Europe/Istanbul",
+});
+
 export default async function PanelFeatureInventoryPage() {
   const session = await requireRole("ADMIN");
   const snapshot = getPanelFeatureSnapshot();
+
+  /*
+   * SON İŞLEMLER — onaylı tasarım (Panel.dc.html → aSys, alt blok).
+   * Gerçek `AuditLog` satırları; erişim ve atama değişikliklerinin izi.
+   */
+  const auditRows = await prisma.auditLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 12,
+    select: {
+      id: true,
+      action: true,
+      summary: true,
+      entityType: true,
+      actorType: true,
+      actorUserId: true,
+      createdAt: true,
+    },
+  });
+  const actorIds = [...new Set(auditRows.map((r) => r.actorUserId).filter(Boolean) as string[])];
+  const actors = actorIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: actorIds } },
+        select: { id: true, fullName: true, email: true },
+      })
+    : [];
+  const actorName = new Map(actors.map((a) => [a.id, a.fullName || a.email]));
   const enabled = snapshot.filter((feature) => feature.enabled).length;
   const drift = snapshot.filter((feature) => feature.legacyPublicDrift);
 
@@ -34,6 +71,55 @@ export default async function PanelFeatureInventoryPage() {
         {drift.length ? <TriangleAlert className="mt-0.5 shrink-0 text-rose-700" size={18} /> : <ShieldCheck className="mt-0.5 shrink-0 text-emerald-700" size={18} />}
         <div><h2 className="text-sm font-extrabold">{drift.length ? `${drift.length} eski public env değeri drift üretiyor` : "Server/client drift yok"}</h2><p className="mt-1 text-xs leading-5 text-[var(--site-body)]">İstemci görünürlüğü artık `NEXT_PUBLIC_PANEL_FEATURE_*` okumaz; `PanelShell` sunucuda çözdüğü typed snapshot'ı menüye aktarır. Eski public değişkenler tanımlıysa yalnız temizlik uyarısı olarak raporlanır.</p></div>
       </section>
+
+      {/*
+        TASARIMDAKİ YETKİ MATRİSİ UYGULANMADI.
+        `Online Dershanem Panel.dc.html → aSys` dört yönetici alt rolü varsayıyor
+        (Tam admin / Operasyon / Eğitim / Finans). Eğitim panelinin yetki modeli
+        böyle DEĞİL: `UserRole` tek bir `ADMIN` tanır ve bütün yönetim guard'ları
+        (`requireRole("ADMIN")`) bu tek role bakar. Alt rollü bir matris çizmek
+        §10'un açıkça yasakladığı şey olurdu — "görsel role matrix yapıp
+        backend'de farklı permission bırakma". Granüler roller yalnız İŞLETME
+        çalışma alanında var (`BusinessRole` + `BusinessRoleAssignment`) ve
+        oranın kendi ekranından yönetilir.
+      */}
+      <PanelCard className="mt-5">
+        <PanelCardTitle>Yönetici yetkisi</PanelCardTitle>
+        <p className="mt-2 text-[14px] leading-[1.65] text-dc-ink-body">
+          Eğitim panelinde tek bir yönetici rolü vardır; her yönetici bütün
+          yönetim ekranlarını görür. Alan bazlı ayrım (satış, destek, muhasebe)
+          yalnız İşletme çalışma alanında tanımlıdır ve oradan yönetilir.
+        </p>
+        <Link
+          href="/panel/yonetim/isletme/genel-bakis"
+          className="mt-3.5 inline-block rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+        >
+          İşletme yetkilerini aç
+        </Link>
+      </PanelCard>
+
+      <PanelCard className="mt-5">
+        <PanelCardTitle>Son işlemler</PanelCardTitle>
+        {auditRows.length === 0 ? (
+          <p className="mt-3 text-[13.5px] text-dc-ink-muted">Henüz kayıtlı işlem yok.</p>
+        ) : (
+          <ul className="mt-3 flex flex-col gap-1.5 text-[13.5px] leading-[1.7] text-dc-ink-muted">
+            {auditRows.map((row) => (
+              <li key={row.id}>
+                {AUDIT_WHEN.format(row.createdAt)} ·{" "}
+                {row.actorUserId ? (actorName.get(row.actorUserId) ?? "Bilinmeyen kullanıcı") : "Sistem"} ·{" "}
+                {row.summary || `${row.entityType} · ${row.action}`}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2.5 text-[12.5px] text-dc-ink-faint">
+          Erişim ve atama değişiklikleri her zaman kayıt altına alınır.{" "}
+          <Link href="/panel/yonetim/kayitlar" className="font-semibold text-dc-brand hover:underline">
+            Tüm işlem geçmişi
+          </Link>
+        </p>
+      </PanelCard>
 
       <section className="mt-5 space-y-3" aria-label="Panel özellik envanteri">
         {snapshot.map((feature) => (
