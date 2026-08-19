@@ -122,6 +122,20 @@ export async function PanelShell({
       ? { href: "/panel/yonetim/isletme/genel-bakis", label: "İşletme paneline geç" }
       : null;
 
+  /*
+   * HESAP SAYFASI — tasarımda (Panel.dc.html → sProfile / pacc) profil ekranı
+   * menüde değil, sağ üstteki avatar üzerinden açılıyor. Yalnız gerçekten var
+   * olan rotalar bağlanır; olmayan rol için avatar bağlantısız kalır ki
+   * kullanıcı 404'e gönderilmesin.
+   */
+  const accountHref: string | null = isBusinessWorkspace
+    ? null
+    : role === "STUDENT"
+      ? "/panel/ogrenci/profil"
+      : role === "PARENT"
+        ? "/panel/veli/hesap"
+        : null;
+
   const displayName = fullName || email;
   const initials = displayName
     .split(" ")
@@ -257,7 +271,13 @@ export async function PanelShell({
                   ) : null}
                 </Link>
 
-                {avatar("sm")}
+                {accountHref ? (
+                  <Link href={accountHref} aria-label="Profil ve hesap sayfanı aç">
+                    {avatar("sm")}
+                  </Link>
+                ) : (
+                  avatar("sm")
+                )}
 
                 <div className="lg:hidden">
                   <LogoutButton compact />

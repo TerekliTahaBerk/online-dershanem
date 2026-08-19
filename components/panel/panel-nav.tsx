@@ -72,6 +72,8 @@ function parentNav(root: string, products: ProductCode[], flags: PanelFeatureFla
     ...(hasODK ? [{ href: "/panel/odk/veli/raporlar", label: "Deneme raporları" }] : []),
     ...(hasOK ? [{ href: `${root}/kocluk`, label: "Koçluk" }] : []),
     ...(flags.parentWeeklyDigest ? [{ href: `${root}/haftalik`, label: "Haftalık özet" }] : []),
+    // Tasarımda (pAcc) hesap ekranı velinin menüsünde yer alır — ürüne bağlı değil.
+    { href: `${root}/hesap`, label: "Hesap ve paket" },
   ];
 }
 
@@ -95,6 +97,8 @@ function adminNav(root: string, flags: PanelFeatureFlags): NavItem[] {
   return [
     { href: root, label: "Ana Sayfa" },
     { href: `${root}/kullanicilar`, label: "Öğrenciler" },
+    // Tasarımda (aEdu) eğitmenler öğrencilerden ayrı bir menü girişi.
+    { href: `${root}/egitmenler`, label: "Eğitmenler" },
     { href: `${root}/egitim`, label: "Dersler ve gruplar" },
     { href: `${root}/takvim`, label: "Takvim" },
     ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Deneme analizi" }] : []),
