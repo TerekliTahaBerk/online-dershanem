@@ -48,13 +48,17 @@ export function PanelCard({
   children,
   className = "",
   padded = true,
+  id,
 }: {
   children: ReactNode;
   className?: string;
   padded?: boolean;
+  /** Sayfa içi çapa hedefi (ör. "#yeni-hesap" bağlantısı). */
+  id?: string;
 }) {
   return (
     <section
+      id={id}
       className={`rounded-[14px] border border-dc-line bg-white ${padded ? "p-[22px]" : ""} ${className}`}
     >
       {children}

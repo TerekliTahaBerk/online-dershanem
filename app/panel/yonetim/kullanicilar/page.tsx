@@ -1,175 +1,452 @@
+import Link from "next/link";
+import type { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
-import { roleLabel } from "@/lib/auth/roles";
+import { productLabel, roleLabel } from "@/lib/auth/roles";
 import { PanelShell } from "@/components/panel/panel-shell";
+import {
+  PanelCard,
+  PanelCardTitle,
+  PanelHeading,
+  PanelEmpty,
+  PanelTable,
+  PanelTableRow,
+  PanelTableCell,
+} from "@/components/panel/ui";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserRowActions } from "@/components/panel/user-row-actions";
-import { AdminPageHeader } from "@/components/panel/admin-page-header";
-import { UsersRound } from "lucide-react";
 import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
 import { ApproveMfaResetButton } from "@/components/panel/mfa-reset-controls";
-import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * ADMIN · KİŞİLER — onaylı tasarım (Panel.dc.html → astudents).
+ *
+ * Tasarımın istediği üç şey eski sürümde YOKTU ve burada gerçek olarak
+ * kuruldu: arama, filtreler ve sayfalama. Hepsi SUNUCUDA çalışır
+ * (`searchParams` → Prisma `where`), istemcide liste süzme yapılmaz; 1.000+
+ * kayıtta tarayıcıya bütün tabloyu göndermek doğru olmaz.
+ *
+ * Tasarımdaki "Koç" sütunu YOK: şemada koç ataması modeli bulunmuyor
+ * (koçluk `WeeklyPlan` onayı olarak yaşıyor). Boş bir sütun çizmek yerine
+ * sütun hiç basılmadı.
+ *
+ * "Durum" gerçek sinyalden türetilir — askıya alınmış hesap, parola bekleyen
+ * ilk giriş ve ödenmiş ama erişimi açılmamış sipariş. Tasarımdaki kırmızı
+ * "Ödeme alındı, erişim yok" satırı budur ve kişi detayına bağlanır.
+ *
+ * Korunan bölümler: yeni hesap formu, MFA sıfırlama onay kuyruğu ve
+ * veli–öğrenci bağlantıları.
+ */
+
+const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", year: "numeric" });
+const PAGE_SIZE = 25;
+
+const ROLE_FILTERS: { value: string; label: string }[] = [
+  { value: "", label: "Tümü" },
+  { value: "STUDENT", label: "Öğrenci" },
+  { value: "TEACHER", label: "Eğitmen" },
+  { value: "PARENT", label: "Veli" },
+  { value: "ADMIN", label: "Yönetici" },
+];
+
+const STATUS_FILTERS: { value: string; label: string }[] = [
+  { value: "", label: "Tümü" },
+  { value: "dikkat", label: "Dikkat gerekenler" },
+  { value: "askida", label: "Askıda" },
+  { value: "parola", label: "Parola bekliyor" },
+];
+
 function formatDate(value: Date | null): string {
-  if (!value) return "—";
-  return new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", year: "numeric" }).format(value);
+  return value ? DATE.format(value) : "—";
 }
 
-export default async function UsersPage() {
-  const session = await requireRole("ADMIN");
+/** Filtre çipi — seçili değeri koruyarak yeni sorgu dizesi kurar. */
+function chipHref(base: Record<string, string>, key: string, value: string): string {
+  const next = { ...base, [key]: value };
+  const qs = new URLSearchParams(
+    Object.entries(next).filter(([, v]) => v) as [string, string][],
+  ).toString();
+  return qs ? `/panel/yonetim/kullanicilar?${qs}` : "/panel/yonetim/kullanicilar";
+}
 
-  const [users, relationships, pendingMfaResets] = await Promise.all([prisma.user.findMany({
-    orderBy: [{ role: "asc" }, { createdAt: "desc" }],
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      phone: true,
-      role: true,
-      status: true,
-      mustChangePassword: true,
-      lastLoginAt: true,
-      createdAt: true,
-    },
-  }), prisma.parentStudent.findMany({ orderBy: { createdAt: "desc" }, include: { parent: { select: { fullName: true, email: true } }, student: { include: { user: { select: { fullName: true, email: true } } } } } }),
-  // Çift kontrollü MFA sıfırlama kuyruğu — onayı isteği açandan BAŞKA bir
-  // yönetici verir, o yüzden liste tüm yöneticilere gösterilir.
-  prisma.mfaResetRequest.findMany({
-    where: { status: "PENDING", expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: "desc" },
-    include: {
-      target: { select: { id: true, fullName: true, email: true } },
-      requestedBy: { select: { id: true, fullName: true, email: true } },
-    },
-  })]);
+function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "true" : undefined}
+      className={`rounded-[10px] border px-3.5 py-2.5 text-[13.5px] font-semibold transition-colors ${
+        active
+          ? "border-dc-brand bg-dc-brand-soft text-dc-brand-hover"
+          : "border-[#DDE4E0] bg-white text-dc-ink hover:border-dc-brand"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; rol?: string; urun?: string; durum?: string; sayfa?: string }>;
+}) {
+  const session = await requireRole("ADMIN");
+  const sp = await searchParams;
+
+  const q = (sp.q ?? "").trim();
+  const rol = ROLE_FILTERS.some((r) => r.value === sp.rol) ? (sp.rol ?? "") : "";
+  const urun = ["OD", "OK", "ODK"].includes(sp.urun ?? "") ? (sp.urun ?? "") : "";
+  const durum = STATUS_FILTERS.some((s) => s.value === sp.durum) ? (sp.durum ?? "") : "";
+  const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
+  const base = { q, rol, urun, durum };
+
+  const where: Prisma.UserWhereInput = {
+    ...(rol ? { role: rol as UserRole } : {}),
+    ...(q
+      ? {
+          OR: [
+            { fullName: { contains: q, mode: "insensitive" as const } },
+            { email: { contains: q, mode: "insensitive" as const } },
+            { phone: { contains: q } },
+          ],
+        }
+      : {}),
+    ...(urun
+      ? {
+          productMemberships: {
+            some: {
+              product: urun as "OD" | "OK" | "ODK",
+              revokedAt: null,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+            },
+          },
+        }
+      : {}),
+    ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
+    ...(durum === "parola" ? { mustChangePassword: true } : {}),
+    // "Dikkat gerekenler": ödenmiş ama erişimi açılmamış siparişi olanlar.
+    ...(durum === "dikkat"
+      ? { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } }
+      : {}),
+  };
+
+  const [total, users, relationships, pendingMfaResets, attentionCount] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.user.findMany({
+      where,
+      orderBy: [{ role: "asc" }, { createdAt: "desc" }],
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        phone: true,
+        role: true,
+        status: true,
+        mustChangePassword: true,
+        lastLoginAt: true,
+        createdAt: true,
+        productMemberships: {
+          where: { revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+          select: { product: true },
+        },
+        odOrders: {
+          where: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
+          select: { id: true },
+          take: 1,
+        },
+        studentProfile: {
+          select: {
+            targetGoal: true,
+            enrollments: {
+              where: { endedAt: null },
+              select: {
+                group: { select: { name: true, teacher: { select: { fullName: true, email: true } } } },
+              },
+              take: 2,
+            },
+          },
+        },
+      },
+    }),
+    prisma.parentStudent.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: {
+        parent: { select: { fullName: true, email: true } },
+        student: { include: { user: { select: { fullName: true, email: true } } } },
+      },
+    }),
+    // Çift kontrollü MFA sıfırlama kuyruğu — onayı isteği açandan BAŞKA bir
+    // yönetici verir, o yüzden liste tüm yöneticilere gösterilir.
+    prisma.mfaResetRequest.findMany({
+      where: { status: "PENDING", expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+      include: {
+        target: { select: { id: true, fullName: true, email: true } },
+        requestedBy: { select: { id: true, fullName: true, email: true } },
+      },
+    }),
+    prisma.user.count({
+      where: { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } },
+    }),
+  ]);
+
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <PanelShell
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-     
+      pageTitle="Kullanıcılar"
     >
-      <AdminPageHeader eyebrow="Kişi yönetimi" title="Herkes doğru yerde." description="Öğrenci, öğretmen, veli ve yönetici hesaplarını tek yerden açın; erişim durumlarını güvenle yönetin." icon={UsersRound} meta={`${users.length} hesap`} />
-
-      {pendingMfaResets.length ? (
-        <section className="mt-6 rounded-[14px] border border-rose-200 bg-rose-50 p-5">
-          <h2 className="text-[14px] font-bold text-rose-900">
-            Bekleyen MFA sıfırlama onayı ({pendingMfaResets.length})
-          </h2>
-          <p className="mt-1 text-[12.5px] leading-5 text-rose-950">
-            Onayı, isteği açan ve hedef yöneticiden farklı bir yönetici vermelidir.
-            Onaylandığında hedefin tüm doğrulama yöntemleri silinir ve oturumları kapatılır.
-          </p>
-          <ul className="mt-4 flex flex-col gap-2">
-            {pendingMfaResets.map((reset) => {
-              const blocked =
-                reset.targetUserId === session.userId || reset.requestedById === session.userId;
-              return (
-                <li
-                  key={reset.id}
-                  className="flex flex-wrap items-start justify-between gap-3 rounded-[14px] border border-rose-200 bg-white p-4"
-                >
-                  <div className="min-w-[220px] flex-1">
-                    <p className="text-[13px] font-bold text-[var(--site-ink)]">
-                      {reset.target.fullName || reset.target.email}
-                    </p>
-                    <p className="mt-1 text-[12px] text-[var(--site-muted)]">
-                      İsteyen: {reset.requestedBy.fullName || reset.requestedBy.email} ·
-                      son geçerlilik {formatDate(reset.expiresAt)}
-                    </p>
-                    <p className="mt-1.5 text-[12.5px] leading-5 text-[var(--site-body)]">
-                      {reset.reason}
-                    </p>
-                  </div>
-                  {blocked ? (
-                    <p className="text-[12px] font-semibold text-rose-700">
-                      Bu isteği siz onaylayamazsınız.
-                    </p>
-                  ) : (
-                    <ApproveMfaResetButton requestId={reset.id} />
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
-
-      <section id="yeni-hesap" className="mt-6 scroll-mt-28 rounded-[14px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)]">
-        <h2 className="text-[14px] font-bold text-[var(--site-ink)]">Yeni hesap aç</h2>
-        <div className="mt-4">
-          <CreateUserForm />
-        </div>
-      </section>
-
-      <section className="mt-7">
-        <h2 className="text-[13px] font-extrabold text-[var(--site-ink)]">
-          Mevcut hesaplar <span className="font-medium text-[var(--site-muted)]">({users.length})</span>
-        </h2>
-
-        <ul className="mt-3 flex flex-col gap-2">
-          {users.map((user) => (
-            <li
-              key={user.id}
-              className="flex flex-col gap-3 rounded-[14px] border border-[var(--site-line)] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+      <div className="max-w-[1200px]">
+        <PanelHeading
+          title="Kişiler"
+          description={`${total} kayıt${
+            attentionCount ? ` · ${attentionCount} tanesi erişim bekliyor` : ""
+          }`}
+          actions={
+            <Link
+              href="#yeni-hesap"
+              className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link href={`/panel/yonetim/kullanicilar/${user.id}`} className="truncate text-[14px] font-semibold text-[var(--site-ink)] hover:text-[var(--brand-olive)] hover:underline">
-                    {user.fullName || user.email}
-                  </Link>
-                  <span className="shrink-0 rounded-full border border-[var(--brand-olive-soft)] bg-[var(--brand-olive-soft)] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[.05em] text-[var(--brand-olive)]">
-                    {roleLabel(user.role)}
-                  </span>
-                  {/* Durum rengi marka yeşilinden AYRI bir eksende — "aktif menü" ile
-                      "askıya alınmış hesap" aynı yeşille çizilmemeli. */}
-                  {user.status === "SUSPENDED" ? (
-                    <span className="shrink-0 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[.05em] text-rose-700">
-                      Askıda
-                    </span>
-                  ) : null}
-                  {user.mustChangePassword ? (
-                    <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[.05em] text-amber-800">
-                      Parola bekliyor
-                    </span>
-                  ) : null}
-                  {user.id === session.userId ? (
-                    <span className="shrink-0 text-[11px] font-semibold text-[var(--site-muted)]">siz</span>
-                  ) : null}
-                </div>
+              Hesap ekle
+            </Link>
+          }
+        />
 
-                <p className="mt-1 truncate text-[12.5px] text-[var(--site-body)]">
-                  {user.fullName ? `${user.email} · ` : ""}
-                  {user.phone || "telefon yok"}
-                </p>
-                <p className="mt-0.5 text-[11.5px] text-[var(--site-muted)]">
-                  Açılış {formatDate(user.createdAt)} · Son giriş {formatDate(user.lastLoginAt)}
-                </p>
-              </div>
+        {/* ── Arama ve filtreler ── */}
+        <form method="get" role="search" className="mt-5 flex flex-wrap items-center gap-2.5">
+          <label className="sr-only" htmlFor="kisi-ara">
+            Ad, e-posta veya telefon ara
+          </label>
+          <input
+            id="kisi-ara"
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="Ad, e-posta ya da telefon ara"
+            className="min-w-[240px] rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[14px] text-dc-ink placeholder:text-dc-ink-ghost"
+          />
+          {rol ? <input type="hidden" name="rol" value={rol} /> : null}
+          {urun ? <input type="hidden" name="urun" value={urun} /> : null}
+          {durum ? <input type="hidden" name="durum" value={durum} /> : null}
+          <button
+            type="submit"
+            className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[13.5px] font-semibold text-dc-ink transition-colors hover:border-dc-brand"
+          >
+            Ara
+          </button>
+          {q || rol || urun || durum ? (
+            <Link
+              href="/panel/yonetim/kullanicilar"
+              className="text-[13.5px] font-semibold text-dc-brand hover:underline"
+            >
+              Filtreleri temizle
+            </Link>
+          ) : null}
+        </form>
 
-              <UserRowActions
-                userId={user.id}
-                email={user.email}
-                fullName={user.fullName}
-                phone={user.phone}
-                status={user.status}
-                isSelf={user.id === session.userId}
-              />
-            </li>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-[12.5px] font-semibold text-dc-ink-faint">Rol:</span>
+          {ROLE_FILTERS.map((r) => (
+            <Chip key={r.value || "all"} href={chipHref(base, "rol", r.value)} active={rol === r.value}>
+              {r.label}
+            </Chip>
           ))}
-        </ul>
-      </section>
-
-      <section className="mt-8">
-        <h2 className="text-[13px] font-extrabold text-[var(--site-ink)]">Veli–öğrenci bağlantıları <span className="font-medium text-[var(--site-muted)]">({relationships.length})</span></h2>
-        <div className="mt-3 grid gap-2 lg:grid-cols-2">
-          {relationships.map((relationship) => <div key={relationship.id} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-4 shadow-[var(--panel-card-shadow)]"><div className="min-w-0"><p className="truncate text-[12.5px] font-bold text-[var(--site-ink)]">{relationship.parent.fullName || relationship.parent.email}</p><p className="mt-1 truncate text-[11px] text-[var(--site-muted)]">{relationship.relationship || "Veli"} → {relationship.student.user.fullName || relationship.student.user.email}</p></div><RelationshipRemoveButton id={relationship.id} /></div>)}
-          {!relationships.length ? <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-5 text-sm text-[var(--site-muted)] lg:col-span-2">Henüz veli bağlantısı yok.</p> : null}
         </div>
-      </section>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-[12.5px] font-semibold text-dc-ink-faint">Durum:</span>
+          {STATUS_FILTERS.map((s) => (
+            <Chip
+              key={s.value || "all"}
+              href={chipHref(base, "durum", s.value)}
+              active={durum === s.value}
+            >
+              {s.label}
+            </Chip>
+          ))}
+        </div>
+
+        {/* ── Liste ── */}
+        {users.length === 0 ? (
+          <PanelEmpty
+            title="Bu filtrelerle kayıt bulunamadı."
+            body="Aramayı değiştirebilir ya da filtreleri temizleyebilirsin."
+          />
+        ) : (
+          <div className="mt-5">
+            <PanelTable
+              caption="Kişi kayıtları"
+              columns={["Kişi", "Rol", "Sınav", "Ürünler", "Öğretmen / grup", "Durum", ""]}
+            >
+              {users.map((user) => {
+                const products = user.productMemberships.map((m) => productLabel(m.product));
+                const enrollment = user.studentProfile?.enrollments[0];
+                const status = user.odOrders.length
+                  ? { label: "Ödeme alındı, erişim yok", tone: "warn" as const }
+                  : user.status === "SUSPENDED"
+                    ? { label: "Askıda", tone: "warn" as const }
+                    : user.mustChangePassword
+                      ? { label: "Parola bekliyor", tone: "warn" as const }
+                      : { label: "Aktif", tone: "ok" as const };
+
+                return (
+                  <PanelTableRow key={user.id}>
+                    <PanelTableCell>
+                      <Link
+                        href={`/panel/yonetim/kullanicilar/${user.id}`}
+                        className="text-[14px] font-bold text-dc-ink underline-offset-2 hover:text-dc-brand-hover hover:underline"
+                      >
+                        {user.fullName || user.email}
+                      </Link>
+                      <span className="mt-0.5 block text-[12.5px] text-dc-ink-faint">
+                        {user.email}
+                      </span>
+                    </PanelTableCell>
+                    <PanelTableCell>{roleLabel(user.role)}</PanelTableCell>
+                    <PanelTableCell>{user.studentProfile?.targetGoal || "—"}</PanelTableCell>
+                    <PanelTableCell>{products.length ? products.join(" · ") : "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      {enrollment
+                        ? `${enrollment.group.teacher.fullName || enrollment.group.teacher.email} · ${enrollment.group.name}`
+                        : "—"}
+                    </PanelTableCell>
+                    <PanelTableCell tone={status.tone}>{status.label}</PanelTableCell>
+                    <PanelTableCell>
+                      <UserRowActions
+                        userId={user.id}
+                        email={user.email}
+                        fullName={user.fullName}
+                        phone={user.phone}
+                        status={user.status}
+                        isSelf={user.id === session.userId}
+                      />
+                    </PanelTableCell>
+                  </PanelTableRow>
+                );
+              })}
+            </PanelTable>
+
+            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-dc-ink-faint">
+              <span>
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total}
+              </span>
+              {pageCount > 1 ? (
+                <nav className="flex items-center gap-2" aria-label="Sayfalama">
+                  {page > 1 ? (
+                    <Link
+                      href={chipHref(base, "sayfa", String(page - 1))}
+                      className="rounded-lg border border-[#DDE4E0] bg-white px-3 py-1.5 font-semibold text-dc-ink hover:border-dc-brand"
+                    >
+                      Önceki
+                    </Link>
+                  ) : null}
+                  <span>
+                    Sayfa {page} / {pageCount}
+                  </span>
+                  {page < pageCount ? (
+                    <Link
+                      href={chipHref(base, "sayfa", String(page + 1))}
+                      className="rounded-lg border border-[#DDE4E0] bg-white px-3 py-1.5 font-semibold text-dc-ink hover:border-dc-brand"
+                    >
+                      Sonraki
+                    </Link>
+                  ) : null}
+                </nav>
+              ) : null}
+            </div>
+          </div>
+        )}
+
+        {/* ── Bekleyen MFA sıfırlama onayları ── */}
+        {pendingMfaResets.length ? (
+          <section className="mt-7 rounded-[14px] border border-dc-line border-l-[3px] border-l-[#C2493D] bg-white p-[22px]">
+            <h2 className="text-[16px] font-bold text-dc-ink">
+              Bekleyen MFA sıfırlama onayı ({pendingMfaResets.length})
+            </h2>
+            <p className="mt-1.5 text-[13px] leading-[1.6] text-dc-ink-muted">
+              Onayı, isteği açan ve hedef yöneticiden farklı bir yönetici vermelidir.
+              Onaylandığında hedefin tüm doğrulama yöntemleri silinir ve oturumları kapatılır.
+            </p>
+            <ul className="mt-4 flex flex-col gap-2">
+              {pendingMfaResets.map((reset) => {
+                const blocked =
+                  reset.targetUserId === session.userId || reset.requestedById === session.userId;
+                return (
+                  <li
+                    key={reset.id}
+                    className="flex flex-wrap items-start justify-between gap-3 rounded-[10px] border border-dc-line p-4"
+                  >
+                    <div className="min-w-[220px] flex-1">
+                      <p className="text-[13.5px] font-bold text-dc-ink">
+                        {reset.target.fullName || reset.target.email}
+                      </p>
+                      <p className="mt-1 text-[12.5px] text-dc-ink-faint">
+                        İsteyen: {reset.requestedBy.fullName || reset.requestedBy.email} · son
+                        geçerlilik {formatDate(reset.expiresAt)}
+                      </p>
+                      <p className="mt-1.5 text-[13px] leading-[1.6] text-dc-ink-body">
+                        {reset.reason}
+                      </p>
+                    </div>
+                    {blocked ? (
+                      <p className="text-[12.5px] font-semibold text-[#C2493D]">
+                        Bu isteği siz onaylayamazsınız.
+                      </p>
+                    ) : (
+                      <ApproveMfaResetButton requestId={reset.id} />
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
+
+        {/* ── Yeni hesap ── */}
+        <PanelCard id="yeni-hesap" className="mt-7 scroll-mt-28">
+          <PanelCardTitle>Yeni hesap aç</PanelCardTitle>
+          <div className="mt-4">
+            <CreateUserForm />
+          </div>
+        </PanelCard>
+
+        {/* ── Veli–öğrenci bağlantıları ── */}
+        <PanelCard className="mt-5">
+          <PanelCardTitle>Veli–öğrenci bağlantıları ({relationships.length})</PanelCardTitle>
+          <div className="mt-3.5 grid gap-2 lg:grid-cols-2">
+            {relationships.map((relationship) => (
+              <div
+                key={relationship.id}
+                className="flex items-center justify-between gap-3 rounded-[10px] border border-dc-line p-4"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-bold text-dc-ink">
+                    {relationship.parent.fullName || relationship.parent.email}
+                  </p>
+                  <p className="mt-1 truncate text-[12px] text-dc-ink-muted">
+                    {relationship.relationship || "Veli"} →{" "}
+                    {relationship.student.user.fullName || relationship.student.user.email}
+                  </p>
+                </div>
+                <RelationshipRemoveButton id={relationship.id} />
+              </div>
+            ))}
+            {!relationships.length ? (
+              <p className="text-[13px] text-dc-ink-muted lg:col-span-2">
+                Henüz veli bağlantısı yok.
+              </p>
+            ) : null}
+          </div>
+        </PanelCard>
+      </div>
     </PanelShell>
   );
 }

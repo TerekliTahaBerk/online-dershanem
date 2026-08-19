@@ -106,7 +106,9 @@ function adminNav(root: string, flags: PanelFeatureFlags): NavItem[] {
     { href: "/panel/odk/yonetim", label: "Deneme Kulübüm" },
     { href: "/panel/odk/yonetim/sinavlar", label: "Deneme planlama" },
     { href: "/panel/odk/yonetim/operasyon", label: "Canlı operasyon" },
-    { href: `${root}/isler`, label: "Siparişler" },
+    // Tasarımın sipariş ekranı (aOrders); geniş operasyon kuyruğu ayrı girişte.
+    { href: `${root}/siparisler`, label: "Siparişler" },
+    { href: `${root}/isler`, label: "Operasyon kuyruğu" },
     { href: `${root}/raporlar`, label: "Raporlar" },
     ...(flags.interventionInbox ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu" }] : []),
     { href: `${root}/kayitlar`, label: "İşlem geçmişi" },
