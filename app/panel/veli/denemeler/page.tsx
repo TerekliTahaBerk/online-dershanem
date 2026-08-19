@@ -1,20 +1,139 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChartNoAxesCombined, ShieldCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requirePanelRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { resolveParentScope } from "@/lib/panel/parent-scope";
+import { productLabel } from "@/lib/auth/roles";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelEmptyState } from "@/components/panel/empty-state";
+import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
 import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
 
 export const dynamic = "force-dynamic";
-export default async function ParentMockExamsPage({ searchParams }: { searchParams: Promise<{ studentId?: string }> }) {
-  const session = await requireRole("PARENT"); if (!getPanelFeatureFlags().mockExamAnalysis) notFound(); const { studentId } = await searchParams;
-  const links = await prisma.parentStudent.findMany({ where: { parentId: session.userId }, include: { student: { include: { user: { select: { fullName: true, email: true } } } } }, orderBy: { student: { user: { fullName: "asc" } } } });
-  if (!links.length) return <PanelShell role={session.role} fullName={session.fullName} email={session.email}><PanelEmptyState title="Öğrenci bağlantınız hazırlanıyor." body="Bağlantı kurulduğunda sakin deneme özeti burada görünür." /></PanelShell>;
-  const selected = studentId ? links.find((link) => link.studentId === studentId) : links[0]; if (!selected) notFound();
-  const exams = await prisma.mockExam.findMany({ where: { studentId: selected.studentId }, orderBy: { takenAt: "desc" }, take: 30, include: mockExamViewInclude }); const name = selected.student.user.fullName || selected.student.user.email;
-  return <PanelShell role={session.role} fullName={session.fullName} email={session.email}><header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]"><ShieldCheck size={15} /> Yalnız bağlı öğrenciniz</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em]">{name} · Deneme eğilimi</h1><p className="mt-2 text-sm text-[var(--site-body)]"><ChartNoAxesCombined size={14} className="mr-1 inline" /> Tek sonuca hüküm vermeyen, karşılaştırmasız ve eylem odaklı özet.</p></div>{links.length > 1 ? <nav className="flex gap-2" aria-label="Öğrenci seçimi">{links.map((link) => <Link key={link.studentId} href={`/panel/veli/denemeler?studentId=${link.studentId}`} className={`rounded-full px-3 py-2 text-xs font-bold ${link.studentId === selected.studentId ? "bg-[var(--brand-olive)] text-white" : "border border-[var(--site-line)] bg-white"}`}>{link.student.user.fullName || link.student.user.email}</Link>)}</nav> : null}</header><div className="mt-7"><MockExamWorkspace role={session.role} students={[{ id: selected.studentId, name }]} initialExams={exams.map(toMockExamView)} canCreate={false} /></div></PanelShell>;
+
+/**
+ * VELİ · DENEMELER — onaylı tasarım (Panel.dc.html → pExam).
+ *
+ * Bu ekran tasarım geçişinde geride kalmıştı: eski `--site-*` token'ları,
+ * kendi öğrenci seçicisi ve kendi veli-çocuk çözümü vardı. Artık panelin
+ * ortak parçalarını kullanır — `resolveParentScope` (güvenlik sınırı tek
+ * yerde), topbar'daki `ChildSwitcher` ve dc token'ları.
+ *
+ * ÜRÜN ERİŞİMİ: tasarımın en önemli davranışı burada. Seçili çocuğun deneme
+ * ürünü yoksa ekran boş bırakılmaz; tasarımdaki kesikli çerçeveli dürüst
+ * durum ve "Hesap ve pakete git" yolu gösterilir. Erişim kontrolü ÇOCUĞUN
+ * kendi üyeliğinden gelir, velinin toplamından değil.
+ *
+ * Deneme analizi `MockExamWorkspace` ile korunur (`canCreate={false}` —
+ * veli kayıt oluşturmaz, yalnız okur).
+ */
+
+export default async function ParentMockExamsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ studentId?: string }>;
+}) {
+  const session = await requirePanelRole("PARENT");
+  if (!getPanelFeatureFlags().mockExamAnalysis) notFound();
+
+  const { studentId } = await searchParams;
+  const { children, selected } = await resolveParentScope(session.userId, studentId);
+
+  const shell = (body: React.ReactNode) => (
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Denemeler"
+      topbarSlot={
+        <ChildSwitcher
+          options={children}
+          selectedId={selected?.id ?? null}
+          basePath="/panel/veli/denemeler"
+        />
+      }
+    >
+      <div className="max-w-[1000px]">{body}</div>
+    </PanelShell>
+  );
+
+  if (!selected) {
+    return shell(
+      <>
+        <PanelHeading title="Denemeler" />
+        <PanelEmpty
+          title="Öğrenci bağlantın hazırlanıyor."
+          body="Bağlantı kurulduğunda çocuğunun deneme özeti burada görünür."
+        />
+      </>,
+    );
+  }
+
+  const products = selected.products;
+  /* Deneme analizi OD ürününün bir parçası; Deneme Kulübüm ayrı üründür. */
+  const canSeeExams = products.includes("OD") || products.includes("ODK");
+
+  const heading = (
+    <PanelHeading
+      title="Denemeler"
+      description={
+        products.length
+          ? `Ürün erişimi: ${products.map(productLabel).join(" · ")}`
+          : "Bu öğrencide aktif ürün yok."
+      }
+    />
+  );
+
+  if (!canSeeExams) {
+    return shell(
+      <>
+        {heading}
+        <section className="mt-6 max-w-[700px] rounded-[14px] border border-dashed border-[#CBD6D0] bg-white p-6">
+          <h2 className="text-[17px] font-bold text-dc-ink">
+            Bu öğrencide deneme üyeliği yok
+          </h2>
+          <p className="mt-2 text-[14.5px] leading-[1.65] text-dc-ink-muted">
+            Deneme Kulübüm eklendiğinde denemeler, sonuç dağılımı ve gelişim
+            karşılaştırması bu ekranda görünür.
+          </p>
+          <Link
+            href="/panel/veli/hesap"
+            className="mt-4 inline-block rounded-[10px] border border-[#DDE4E0] bg-white px-[18px] py-[11px] text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+          >
+            Hesap ve pakete git
+          </Link>
+        </section>
+      </>,
+    );
+  }
+
+  const exams = await prisma.mockExam.findMany({
+    where: { studentId: selected.id },
+    orderBy: { takenAt: "desc" },
+    take: 30,
+    include: mockExamViewInclude,
+  });
+
+  return shell(
+    <>
+      {heading}
+      {exams.length === 0 ? (
+        <PanelEmpty
+          title="Henüz kayıtlı deneme yok."
+          body="Öğretmen veya koç bir deneme sonucu girdiğinde net dağılımı ve gelişim burada görünür."
+        />
+      ) : (
+        <div className="mt-7">
+          <MockExamWorkspace
+            role={session.role}
+            students={[{ id: selected.id, name: selected.name }]}
+            initialExams={exams.map(toMockExamView)}
+            canCreate={false}
+          />
+        </div>
+      )}
+    </>,
+  );
 }
