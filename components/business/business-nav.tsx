@@ -90,7 +90,7 @@ export function BusinessNav({
                   <Link
                     href={`/panel/yonetim/isletme/${slug}`}
                     aria-current={selected ? "page" : undefined}
-                    className={`group flex min-w-fit items-center gap-3 rounded-2xl px-3 py-2.5 transition-all lg:w-full ${selected ? "bg-[var(--panel-nav-active)] text-[var(--brand-olive)] shadow-[inset_0_0_0_1px_rgba(58,74,44,.05)]" : "text-[var(--site-body)] hover:bg-white hover:text-[var(--site-ink)]"}`}
+                    className={`group flex min-w-fit items-center gap-3 rounded-2xl px-3 py-2.5 transition-all lg:w-full ${selected ? "bg-[var(--panel-nav-active)] text-[var(--brand-olive-hover)] shadow-[inset_0_0_0_1px_rgba(58,74,44,.05)]" : "text-[var(--site-body)] hover:bg-white hover:text-[var(--site-ink)]"}`}
                   >
                     <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl transition-colors ${selected ? "bg-white text-[var(--brand-olive)] shadow-sm" : "bg-white/65 text-[var(--site-muted)] group-hover:text-[var(--site-ink)]"}`}>
                       <Icon size={16} strokeWidth={2.2} aria-hidden="true" />
