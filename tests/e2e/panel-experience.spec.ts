@@ -379,7 +379,12 @@ test.describe("panel deneyimi", () => {
     const status = await page.evaluate(async ({ name }) => { const response = await fetch("/api/panel/setup", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, subject: "Matematik", level: "8. Sınıf", teacherId: "e2e-user-teacher", studentIds: ["e2e-student-profile"], parentLinks: [{ parentId: "e2e-user-parent", studentId: "e2e-student-profile" }], lessonTitle: "E2E Haftalık Program", startsAt: new Date(Date.now() + 3 * 86400000).toISOString(), repeatWeeks: 4, meetingUrl: "https://example.com/e2e-room" }) }); return response.status; }, { name });
     expect(status).toBe(200);
     await page.goto("/panel/yonetim/egitim");
-    await expect(page.getByRole("main").getByText(name, { exact: true })).toBeVisible();
+    // Grup adı sayfada iki yerde geçer: bu ekranın kendi grup tablosunda
+    // (bağlantı) ve altındaki grup yönetimi akordeonunda (metin). Bağlantı
+    // rolüne daraltmak hem çakışmayı çözer hem daha güçlü bir iddiadır —
+    // grubun tabloya gerçekten girip kendi detay sayfasına bağlandığını
+    // kanıtlar.
+    await expect(page.getByRole("main").getByRole("link", { name, exact: true })).toBeVisible();
     await page.goto("/panel/yonetim/raporlar");
     await expect(page.getByRole("heading", { name: "Kritik yolculuk SLO'ları" })).toBeVisible();
     await expect(page.getByRole("main").getByText("Grup kurulum başarısı", { exact: true })).toBeVisible();
