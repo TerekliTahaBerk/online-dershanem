@@ -28,6 +28,9 @@ All notable changes to this project are documented here. The format follows [Kee
 - Progress bars in reports, group detail, the assignment manager and the ODK outcome breakdown had no accessible role, value or label
 - Every panel page rendered two `h1` elements, one from the topbar title and one from the page heading
 - The parent exams screen no longer omits which child's data is being shown when only one child is linked
+- Parent notifications 404'd for a parent whose child holds only Online Koçum or only Deneme Kulübü, because the redirect guard demanded OD product membership the destination page never required
+- Four dead spacing classes (`mt-4.5`, `px-4.5`, `my-4.5` — outside Tailwind's default fractional scale) rendered no margin or padding at all; two were visibly broken, a filter-chip row with no horizontal padding and a divider line touching its surrounding content
+- A pre-existing WCAG AA contrast failure in the business panel's active nav link (4.42:1, under the 4.5:1 minimum)
 
 ## [0.1.1] - 2026-08-11
 
