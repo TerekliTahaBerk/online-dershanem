@@ -225,7 +225,7 @@ export function CrossSellWithPrice({
             </div>
           ))}
         </div>
-        <p className="mt-4.5 pt-4 text-[15px] font-semibold text-dc-brand-hover">
+        <p className="mt-[18px] pt-4 text-[15px] font-semibold text-dc-brand-hover">
           {advantageNote}
         </p>
       </div>
@@ -284,7 +284,7 @@ export function CrossSellWithPrice({
           </div>
         ) : null}
 
-        <div className="my-4.5 h-px bg-dc-line-soft" />
+        <div className="my-[18px] h-px bg-dc-line-soft" />
 
         <ul className="flex flex-col gap-2 text-[14.5px] font-medium text-[var(--pd-ink-3)]">
           {features.map((f) => (

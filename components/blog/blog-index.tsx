@@ -68,7 +68,7 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
               type="button"
               onClick={() => setActive(c)}
               aria-pressed={active === c}
-              className={`rounded-full px-4.5 py-2.5 text-[13px] font-bold transition-colors ${
+              className={`rounded-full px-[18px] py-2.5 text-[13px] font-bold transition-colors ${
                 active === c
                   ? "bg-dc-brand-strong text-white"
                   : "border border-[#DDE4E0] bg-white text-dc-ink hover:border-dc-brand"
@@ -98,7 +98,7 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
               </p>
               <Link
                 href={`/blog/${featured.slug}/`}
-                className="mt-4.5 inline-block pt-4 text-[15px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
+                className="mt-[18px] inline-block pt-4 text-[15px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
               >
                 Yazıyı oku →
               </Link>
