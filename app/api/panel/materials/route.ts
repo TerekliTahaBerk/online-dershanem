@@ -5,8 +5,72 @@ import { requireApiRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 const schema = z.object({ groupId: z.string().min(1), lessonId: z.string().min(1).nullable().optional(), assignmentId: z.string().min(1).nullable().optional(), title: z.string().trim().min(2).max(140), description: z.string().trim().max(1000).optional(), url: z.string().url().max(1000).refine((value) => value.startsWith("https://") || value.startsWith("http://")), kind: z.enum(["LINK", "PDF", "VIDEO"]), captionsAvailable: z.boolean().default(false), transcript: z.string().trim().max(8000).optional() }).strict();
+
+/**
+ * Öğrenci Materyaller verisi — JSON karşılığı.
+ *
+ * `app/panel/ogrenci/materyaller/page.tsx` ile AYNI sorgu, tercih puanlama
+ * (`score`) ve sıralama mantığı. Dosya İNDİRME ayrı kalır — mevcut
+ * `/api/panel/materials/[id]/file` route'u zaten Bearer destekli
+ * (`requireApiRole` üzerinden), YENİDEN YAZILMADI.
+ */
+export async function GET() {
+  const auth = await requireApiRole("STUDENT");
+  if (!auth.ok) return auth.response;
+
+  const flags = getPanelFeatureFlags();
+  const accessibilityEnabled = flags.accessibilityProfile;
+  const [profile, preference, networkPreference] = await Promise.all([
+    prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } }),
+    accessibilityEnabled
+      ? prisma.accessibilityPreference.findUnique({ where: { userId: auth.session.userId }, select: { captionsPreferred: true, transcriptPreferred: true } })
+      : null,
+    flags.offlineMode ? prisma.networkPreference.findUnique({ where: { userId: auth.session.userId }, select: { lowDataMode: true } }) : null,
+  ]);
+
+  if (!profile) {
+    return NextResponse.json({ profile: null, lowDataMode: false, materials: [] });
+  }
+
+  const materials = await prisma.learningMaterial.findMany({
+    where: { isActive: true, group: { enrollments: { some: { studentId: profile.id, endedAt: null } } } },
+    orderBy: { createdAt: "desc" },
+    include: { group: { select: { name: true, subject: true } } },
+  });
+
+  const lowDataMode = Boolean(networkPreference?.lowDataMode);
+  const score = (material: (typeof materials)[number]) =>
+    Number(Boolean(preference?.captionsPreferred && material.captionsAvailable)) +
+    Number(Boolean(preference?.transcriptPreferred && material.transcript)) +
+    Number(Boolean(lowDataMode && material.transcript)) * 3 +
+    Number(Boolean(lowDataMode && material.kind === "LINK"));
+
+  const ordered = [...materials].sort((a, b) => score(b) - score(a) || b.createdAt.getTime() - a.createdAt.getTime());
+
+  return NextResponse.json({
+    profile: { id: profile.id },
+    lowDataMode,
+    preferenceActive: Boolean(preference?.captionsPreferred || preference?.transcriptPreferred),
+    materials: ordered.map((m) => ({
+      id: m.id,
+      kind: m.kind,
+      title: m.title,
+      description: m.description,
+      groupName: m.group.name,
+      subject: m.group.subject,
+      url: m.blobPathname ? null : m.url,
+      hasFile: Boolean(m.blobPathname),
+      fileName: m.fileName,
+      mimeType: m.mimeType,
+      captionsAvailable: m.captionsAvailable,
+      transcript: m.transcript,
+      preferred: score(m) > 0,
+    })),
+  });
+}
 
 export async function POST(request: Request) {
   const auth = await requireApiRole("ADMIN", "TEACHER"); if (!auth.ok) return auth.response;

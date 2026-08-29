@@ -20,6 +20,82 @@ const schema = z.object({
   rubricCriteria: z.array(z.string().trim().min(2).max(120)).max(4).default([]),
 });
 
+/**
+ * Öğrenci Çalışmalar verisi — JSON karşılığı.
+ *
+ * `app/panel/ogrenci/odevler/page.tsx` ile AYNI iki kaynak (Assignment +
+ * WeeklyPlanTask) ve AYNI Bugün/Bu hafta/Sonraki/Tamamlananlar gruplama
+ * mantığı. Web sayfası bu route'a geçirilmedi (riskten kaçınmak için).
+ */
+export async function GET() {
+  const auth = await requireApiRole("STUDENT");
+  if (!auth.ok) return auth.response;
+
+  const evidenceEnabled = getPanelFeatureFlags().assignmentEvidence;
+  const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });
+  if (!profile) {
+    return NextResponse.json({ profile: null, assignments: [], planTasks: [], evidenceEnabled });
+  }
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { studentId: profile.id, endedAt: null },
+    select: { groupId: true },
+  });
+  const groupIds = enrollments.map((e) => e.groupId);
+
+  const [assignments, plan] = await Promise.all([
+    groupIds.length
+      ? prisma.assignment.findMany({
+          where: { isActive: true, groupId: { in: groupIds } },
+          orderBy: { dueAt: "asc" },
+          include: {
+            progress: { where: { studentId: profile.id }, take: 1 },
+            group: { select: { name: true, subject: true } },
+            rubricCriteria: { orderBy: { position: "asc" } },
+            submissions: { where: { studentId: profile.id }, orderBy: { attemptNumber: "desc" }, include: { scores: true } },
+          },
+        })
+      : Promise.resolve([]),
+    prisma.weeklyPlan.findFirst({
+      where: { studentId: profile.id },
+      orderBy: { weekStart: "desc" },
+      include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
+    }),
+  ]);
+
+  return NextResponse.json({
+    profile: { id: profile.id },
+    evidenceEnabled,
+    assignments: assignments.map((item) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description || "",
+      dueAt: item.dueAt,
+      groupName: item.group.name,
+      subject: item.group.subject,
+      status: item.progress[0]?.status || "TODO",
+      version: item.progress[0]?.version || 0,
+      evidenceRequired: item.evidenceRequired,
+      criteria: item.rubricCriteria.map((criterion) => ({ id: criterion.id, label: criterion.label })),
+      submissions: item.submissions.map((submission) => ({
+        id: submission.id,
+        attemptNumber: submission.attemptNumber,
+        status: submission.status,
+        textEvidence: submission.textEvidence,
+        feedback: submission.feedback,
+        scores: submission.scores.map((score) => ({ criterionId: score.criterionId, level: score.level })),
+      })),
+    })),
+    planTasks: (plan?.tasks ?? []).map((t) => ({
+      id: t.id,
+      title: t.title,
+      durationMinutes: t.durationMinutes,
+      scheduledFor: t.scheduledFor,
+      done: t.status === "DONE",
+    })),
+  });
+}
+
 export async function POST(request: Request) {
   const auth = await requireApiRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;

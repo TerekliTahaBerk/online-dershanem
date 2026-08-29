@@ -9,6 +9,7 @@ import { logAudit } from "@/lib/audit";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
 import { initialReviewDueAt } from "@/lib/review-scheduler";
+import { netScore } from "@/lib/goals";
 
 const category = z.enum(["KNOWLEDGE", "PROCESS", "ATTENTION", "TIME", "BLANK"]);
 const schema = z.object({
@@ -22,6 +23,69 @@ const schema = z.object({
   source: z.enum(["MANUAL", "PASTE"]).default("MANUAL"),
   sections: z.array(z.object({ subjectCode: z.string().min(1).max(20), correctCount: z.number().int(), incorrectCount: z.number().int(), blankCount: z.number().int(), durationMinutes: z.number().int().min(0).max(600).nullable().optional(), errorCategories: z.array(category).max(3).default([]) })).min(1).max(8),
 });
+
+/**
+ * Öğrenci Denemeler verisi — JSON karşılığı.
+ *
+ * `app/panel/ogrenci/denemeler/page.tsx`'in GÖRÜNTÜLEME kısmıyla (üst şerit,
+ * ders-bazlı bar, kendi geçmişine göre trend) AYNI sorgu — net formülü
+ * `lib/goals.ts` → `netScore`'dan. **Deneme GİRİŞİ formu
+ * (`MockExamWorkspace` — CSV yapıştırma, hata nedeni etiketleme, ısı
+ * haritası) bu turda taşınmadı**, ayrı ve daha büyük bir kapsam; bu route
+ * yalnız salt-okunur analiz verisini döner.
+ */
+export async function GET(request: Request) {
+  const auth = await requireApiRole("STUDENT");
+  if (!auth.ok) return auth.response;
+  if (!getPanelFeatureFlags().mockExamAnalysis) {
+    return NextResponse.json({ error: "Deneme analizi henüz açık değil." }, { status: 404 });
+  }
+
+  const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });
+  if (!profile) {
+    return NextResponse.json({ profile: null, exams: [] });
+  }
+
+  const exams = await prisma.mockExam.findMany({
+    where: { studentId: profile.id },
+    orderBy: { takenAt: "desc" },
+    take: 10,
+    include: { sections: { orderBy: { position: "asc" } } },
+  });
+
+  const url = new URL(request.url);
+  const requested = url.searchParams.get("deneme");
+  const currentIndex = requested ? exams.findIndex((e) => e.id === requested) : 0;
+  const current = exams[currentIndex >= 0 ? currentIndex : 0] ?? null;
+  const previous = current ? exams[(currentIndex >= 0 ? currentIndex : 0) + 1] : undefined;
+
+  const examTotal = (e: (typeof exams)[number]) => e.sections.reduce((sum, s) => sum + netScore(s.correctCount, s.incorrectCount), 0);
+
+  return NextResponse.json({
+    profile: { id: profile.id },
+    exams: exams.map((e) => ({ id: e.id, title: e.title || e.exam, takenAt: e.takenAt })),
+    // Kendi geçmişi — eskiden yeniye, trend çizgisi için.
+    trend: [...exams].reverse().map((e) => ({ id: e.id, takenAt: e.takenAt, net: Number(examTotal(e).toFixed(2)) })),
+    current: current
+      ? {
+          id: current.id,
+          title: current.title || current.exam,
+          takenAt: current.takenAt,
+          durationMinutes: current.durationMinutes,
+          nextAction: current.nextAction,
+          total: Number(examTotal(current).toFixed(2)),
+          delta: previous ? Number((examTotal(current) - examTotal(previous)).toFixed(2)) : null,
+          sections: current.sections.map((s) => ({
+            id: s.id,
+            subjectName: s.subjectName,
+            correctCount: s.correctCount,
+            incorrectCount: s.incorrectCount,
+            net: Number(netScore(s.correctCount, s.incorrectCount).toFixed(2)),
+          })),
+        }
+      : null,
+  });
+}
 
 export async function POST(request: Request) {
   const auth = await requireApiRole("ADMIN", "TEACHER", "STUDENT");

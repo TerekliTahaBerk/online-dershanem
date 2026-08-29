@@ -21,6 +21,7 @@ export default defineConfig([
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    "mobile/**",
     "mobile-app/**",
     "scripts/**",
     "tests/**",

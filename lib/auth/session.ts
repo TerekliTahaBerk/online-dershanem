@@ -2,10 +2,11 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { cache } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { UserRole, UserStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { SESSION_POLICIES, absoluteSessionExpiry, sessionExpiryReason } from "@/lib/auth/session-policy";
+import { parseBearerToken } from "@/lib/auth/bearer-token";
 
 /**
  * Oturum yönetimi.
@@ -35,14 +36,31 @@ function hashToken(token: string): string {
 }
 
 /**
+ * Çerezi bulamazsa mobil istemciler için `Authorization: Bearer` header'ına
+ * bakar. Route handler'larda `next/headers`'ın `headers()`'ı isteğin gerçek
+ * header'larını verir — imza değişmediği için tüm çağıranlar (guards.ts,
+ * api-guards.ts, sayfalar) dokunulmadan bu yoldan da faydalanır.
+ */
+async function resolveToken(): Promise<string | null> {
+  const store = await cookies();
+  const cookieToken = store.get(SESSION_COOKIE_NAME)?.value;
+  if (cookieToken) return cookieToken;
+
+  const h = await headers();
+  return parseBearerToken(h.get("authorization"));
+}
+
+/**
  * Yeni oturum açar ve çerezi yazar. Yalnızca route handler / server action
- * içinden çağrılabilir (render sırasında çerez yazılamaz).
+ * içinden çağrılabilir (render sırasında çerez yazılamaz). Ham token'ı da
+ * döner — mobil giriş uç noktası bunu yanıt gövdesine koyup `SecureStore`'a
+ * kaydettirir; web akışı yalnızca çerezi kullanmaya devam eder.
  */
 export async function createSession(
   userId: string,
   role: UserRole,
   meta: { ip?: string | null; userAgent?: string | null; mfaVerified?: boolean } = {},
-): Promise<void> {
+): Promise<{ token: string; expiresAt: Date }> {
   // 256 bit opak token — tahmin edilemez, içinde bilgi taşımaz.
   const token = randomBytes(32).toString("base64url");
   const now = new Date();
@@ -70,18 +88,20 @@ export async function createSession(
     path: "/",
     expires: expiresAt,
   });
+
+  return { token, expiresAt };
 }
 
 /**
- * Çerezdeki token'dan oturumu çözer. Geçersiz/süresi geçmiş/iptal edilmiş ya da
- * kullanıcı askıya alınmışsa `null` döner.
+ * Çerez ya da `Authorization: Bearer` token'ından oturumu çözer.
+ * Geçersiz/süresi geçmiş/iptal edilmiş ya da kullanıcı askıya alınmışsa
+ * `null` döner.
  *
  * `cache()`: aynı istek içinde kaç kez çağrılırsa çağrılsın DB'ye bir kez gider
  * (layout + sayfa + guard hepsi çağırıyor).
  */
 export const getSession = cache(async (): Promise<SessionUser | null> => {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE_NAME)?.value;
+  const token = await resolveToken();
   if (!token) return null;
 
   const session = await prisma.session.findUnique({
