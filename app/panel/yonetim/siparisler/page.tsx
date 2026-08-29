@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { istanbulMonthStart } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelHeading,
@@ -54,9 +55,7 @@ export default async function AdminOrdersPage({
   const filtre = ["sorun", "ay"].includes(sp.filtre ?? "") ? (sp.filtre ?? "") : "";
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
 
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  monthStart.setHours(0, 0, 0, 0);
+  const monthStart = istanbulMonthStart(new Date());
 
   const where: Prisma.OdOrderWhereInput = {
     ...(filtre === "sorun"

@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   formatIstanbulDateInput,
+  addIstanbulCalendarDays,
   istanbulDayEnd,
   istanbulDayStart,
+  istanbulIsoWeekday,
+  istanbulMonthStart,
+  istanbulNextDayStart,
+  istanbulWeekStart,
   parseIstanbulDateInput,
   resolveIstanbulDateRange,
 } from "./istanbul-time";
@@ -21,6 +26,21 @@ test("İstanbul gece yarısından hemen önce yerel gün değişmez", () => {
   assert.equal(formatIstanbulDateInput(instant), "2026-03-14");
 });
 
+test("23:30–03:30 sınırında bütün calendar-day helper'ları İstanbul gününü paylaşır", () => {
+  const beforeMidnight = new Date("2026-07-18T20:30:00.000Z"); // 23:30 Cumartesi
+  const afterMidnight = new Date("2026-07-18T21:30:00.000Z"); // 00:30 Pazar
+  const earlyMorning = new Date("2026-07-19T00:30:00.000Z"); // 03:30 Pazar
+
+  assert.equal(formatIstanbulDateInput(beforeMidnight), "2026-07-18");
+  assert.equal(formatIstanbulDateInput(afterMidnight), "2026-07-19");
+  assert.equal(formatIstanbulDateInput(earlyMorning), "2026-07-19");
+  assert.equal(istanbulDayStart(afterMidnight).toISOString(), "2026-07-18T21:00:00.000Z");
+  assert.equal(istanbulNextDayStart(afterMidnight).toISOString(), "2026-07-19T21:00:00.000Z");
+  assert.equal(istanbulIsoWeekday(afterMidnight), 7);
+  assert.equal(istanbulWeekStart(afterMidnight).toISOString(), "2026-07-12T21:00:00.000Z");
+  assert.equal(addIstanbulCalendarDays(afterMidnight, 1).toISOString(), "2026-07-19T21:00:00.000Z");
+});
+
 test("gün başlangıcı ve sonu İstanbul sınırlarına oturur", () => {
   const instant = new Date("2026-03-15T12:00:00.000Z");
   assert.equal(istanbulDayStart(instant).toISOString(), "2026-03-14T21:00:00.000Z");
@@ -35,6 +55,11 @@ test("ay sınırı doğru yorumlanır", () => {
 test("yıl sınırı doğru yorumlanır", () => {
   const instant = new Date("2025-12-31T21:30:00.000Z"); // 2026-01-01 00:30 +03:00
   assert.equal(formatIstanbulDateInput(instant), "2026-01-01");
+});
+
+test("ay başlangıcı UTC ayına değil İstanbul takvim ayına göre hesaplanır", () => {
+  const localFebruary = new Date("2026-01-31T21:30:00.000Z");
+  assert.equal(istanbulMonthStart(localFebruary).toISOString(), "2026-01-31T21:00:00.000Z");
 });
 
 test("29 Şubat artık yılda kabul, artık olmayan yılda ret edilir", () => {

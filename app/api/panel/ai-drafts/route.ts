@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { buildSafeTeacherAiSource, aiDraftTaskSchema, TEACHER_AI_PROMPT_VERSION } from "@/lib/teacher-ai";
 import { generateTeacherAiDraft } from "@/lib/teacher-ai-gateway";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { logAudit } from "@/lib/audit";
+import { istanbulDayStart } from "@/lib/istanbul-time";
 
 const schema = z.object({ lessonId: z.string().min(1).max(80), taskType: aiDraftTaskSchema, requestKey: z.string().uuid() }).strict();
 const redactionBand = (count: number) => count === 0 ? "0" as const : count <= 2 ? "1-2" as const : "3+" as const;
@@ -28,7 +29,7 @@ function boundedInteger(value: string | undefined, fallback: number, minimum: nu
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("TEACHER"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("TEACHER"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().teacherAiDrafts) return NextResponse.json({ error: "AI taslak pilotu henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.ai_draft.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:ai-draft:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
   if (!lesson) return NextResponse.json({ error: "Yetkili olduğunuz ders bulunamadı." }, { status: 404 });
   const shared = lesson.notes[0];
   const prepared = buildSafeTeacherAiSource({ taskType: parsed.data.taskType, subject: lesson.group.subject, level: lesson.group.level, lessonTitle: lesson.title, topic: shared?.topic || null, sharedNote: shared?.note || null, nextGoal: shared?.nextGoal || null, homework: shared?.homework || null, outcomes: lesson.outcomeLinks.map((item) => item.outcome) }, lesson.group.enrollments.flatMap((item) => item.student.user.fullName ? [item.student.user.fullName] : []));
-  const since = new Date(); since.setHours(0, 0, 0, 0);
+  const since = istanbulDayStart(new Date());
   const [dailyCount, dailyCost] = await Promise.all([prisma.teacherAiDraft.count({ where: { teacherId: auth.session.userId, createdAt: { gte: since } } }), prisma.teacherAiDraft.aggregate({ where: { teacherId: auth.session.userId, createdAt: { gte: since } }, _sum: { estimatedCostMicrousd: true } })]);
   const maxDaily = boundedInteger(process.env.AI_DRAFT_MAX_DAILY_REQUESTS, 10, 1, 50);
   const maxCost = boundedInteger(process.env.AI_DRAFT_MAX_DAILY_MICRO_USD, 100_000, 1_000, 10_000_000);

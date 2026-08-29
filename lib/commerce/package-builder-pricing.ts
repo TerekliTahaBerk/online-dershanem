@@ -14,10 +14,9 @@
  *   - `listCents`     kampanya öncesi liste fiyatı (üstü çizili gösterilir)
  *   - `campaignCents` bugün ödenecek kampanya fiyatı
  *
- * Buna ek olarak birden fazla ürün seçildiğinde `bundleDiscountCents` kadar
- * PAKET İNDİRİMİ uygulanır. Paket indirimi bir ORAN DEĞİL, sabit bir tutardır:
- * böylece birebir ders / ek ders gibi yapılandırmalarda da doğru kalır ve
- * "toplamdan türetilmiş uydurma indirim" üretmez.
+ * Buna ek olarak birden fazla ürün seçildiğinde faturalama dönemine açıkça
+ * atanmış PAKET İNDİRİMİ uygulanır. Aylık ve dönemlik para tutarları hiçbir
+ * zaman tek bir toplamda birleştirilmez.
  *
  * ── HUKUKİ NOT (üstü çizili fiyat) ────────────────────────────────────────
  * Türkiye'de Fiyat Etiketi Yönetmeliği, indirimli satışta gösterilen üstü
@@ -50,8 +49,8 @@ export type ExamTrack = "LGS" | "YKS";
 export type LessonFormat = "grup" | "birebir";
 export type ProductKey = "dershanem" | "kocum" | "denemeKulubum";
 
-/** Faturalama dönemi — tasarım: ders/koçluk aylık, deneme dönemsel. */
-export type BillingPeriod = "monthly" | "period";
+/** Faturalama dönemi — her para tutarı tam olarak bir bucket'a aittir. */
+export type BillingPeriod = "monthly" | "period" | "oneTime";
 
 /**
  * Online Dershanem grup dersinin fiyatı ödeme-kritik katalogdan okunur.
@@ -118,7 +117,7 @@ const EXAM_CLUB: PricePair = {
 };
 
 /**
- * PAKET (KOMBİNASYON) İNDİRİMİ — kampanya fiyatları toplamından düşülen tutar.
+ * PAKET (KOMBİNASYON) İNDİRİMİ — yalnız atandığı billing bucket'ından düşer.
  *
  * Anahtar, seçili ürünlerin sabit sırada birleşimidir:
  * "dk" = Dershanem+Koçum, "dn" = Dershanem+Deneme, "kn" = Koçum+Deneme,
@@ -127,11 +126,14 @@ const EXAM_CLUB: PricePair = {
  * Bilinçli olarak KÜÇÜK tutulmuştur: asıl indirim kalem bazındaki kampanya
  * fiyatıdır; bu, birlikte almanın üstüne binen ek avantajdır.
  */
-const BUNDLE_DISCOUNT_CENTS: Record<"dk" | "dn" | "kn" | "dkn", number> = {
-  dk: 50_000, // ₺500
-  dn: 25_000, // ₺250
-  kn: 25_000, // ₺250
-  dkn: 75_000, // ₺750
+const BUNDLE_DISCOUNT_CENTS: Record<
+  "dk" | "dn" | "kn" | "dkn",
+  Readonly<Partial<Record<BillingPeriod, number>>>
+> = {
+  dk: { monthly: 50_000 },
+  dn: { period: 25_000 },
+  kn: { period: 25_000 },
+  dkn: { monthly: 50_000, period: 25_000 },
 };
 
 /**
@@ -195,21 +197,28 @@ export type QuoteLine = {
   listCents: PriceCents;
 };
 
+export type BillingTotal = {
+  billing: BillingPeriod;
+  selectedLineCount: number;
+  /** Bu dönemdeki seçili kalemlerin liste fiyatı. */
+  listCents: PriceCents;
+  /** Bu dönemdeki kalemlerin paket indirimi öncesi kampanya fiyatı. */
+  campaignCents: PriceCents;
+  campaignSavingsCents: PriceCents;
+  /** Yalnız bu faturalama dönemine uygulanan birlikte alma indirimi. */
+  bundleDiscountCents: PriceCents;
+  /** Bu faturalama döneminde ödenecek tutar. */
+  payableCents: PriceCents;
+  /** Yalnız bu faturalama dönemindeki liste fiyatına göre avantaj. */
+  savingsCents: PriceCents;
+};
+
 export type PackageQuote = {
   selectedCount: number;
   lines: QuoteLine[];
-  /** Seçili kalemlerin LİSTE fiyatı toplamı. */
-  listTotalCents: PriceCents;
-  /** Seçili kalemlerin KAMPANYA fiyatı toplamı (paket indirimi hariç). */
-  individualTotalCents: PriceCents;
-  /** Kalem bazındaki kampanya indirimi: liste toplamı − kampanya toplamı. */
-  campaignSavingsCents: PriceCents;
-  /** Birlikte almaktan gelen ek indirim. Tek ürün seçiliyse 0. */
-  bundleDiscountCents: PriceCents;
-  /** Ödenecek toplam: kampanya toplamı − paket indirimi. */
-  bundleTotalCents: PriceCents;
-  /** Toplam avantaj: liste toplamı − ödenecek toplam. */
-  savingsCents: PriceCents;
+  monthlyTotal: BillingTotal;
+  periodTotal: BillingTotal;
+  oneTimeTotal: BillingTotal;
   /**
    * Fiyatın tam olarak hesaplanabildiği durum. `false` ise arayüz rakam
    * göstermez; ön görüşmeye yönlendirir.
@@ -255,6 +264,57 @@ function bundleKey(selection: BuilderSelection): keyof typeof BUNDLE_DISCOUNT_CE
   return null;
 }
 
+function resolveBillingTotal(
+  billing: BillingPeriod,
+  selectedLines: readonly QuoteLine[],
+  bundleDiscountCents: number,
+): BillingTotal {
+  const lines = selectedLines.filter((line) => line.billing === billing);
+  if (lines.length === 0) {
+    return {
+      billing,
+      selectedLineCount: 0,
+      listCents: 0,
+      campaignCents: 0,
+      campaignSavingsCents: 0,
+      bundleDiscountCents: 0,
+      payableCents: 0,
+      savingsCents: 0,
+    };
+  }
+
+  if (lines.some((line) => line.cents === null)) {
+    return {
+      billing,
+      selectedLineCount: lines.length,
+      listCents: null,
+      campaignCents: null,
+      campaignSavingsCents: null,
+      bundleDiscountCents: null,
+      payableCents: null,
+      savingsCents: null,
+    };
+  }
+
+  const campaignCents = lines.reduce((sum, line) => sum + (line.cents ?? 0), 0);
+  const listCents = lines.reduce((sum, line) => sum + (line.listCents ?? line.cents ?? 0), 0);
+  if (bundleDiscountCents > campaignCents) {
+    throw new Error(`Paket indirimi ${billing} kampanya tutarını aşamaz.`);
+  }
+
+  const payableCents = campaignCents - bundleDiscountCents;
+  return {
+    billing,
+    selectedLineCount: lines.length,
+    listCents,
+    campaignCents,
+    campaignSavingsCents: listCents - campaignCents,
+    bundleDiscountCents,
+    payableCents,
+    savingsCents: listCents - payableCents,
+  };
+}
+
 /**
  * Seçime göre teklif üretir. Tasarımın 8 durumunu (0 seçim → 3 ürün) besler.
  */
@@ -295,45 +355,19 @@ export function resolvePackageQuote(selection: BuilderSelection): PackageQuote {
     .map((line) => line.product);
 
   const resolved = selectedCount > 0 && missingPriceFor.length === 0;
-
-  const individualTotalCents = resolved
-    ? selectedLines.reduce((sum, line) => sum + (line.cents ?? 0), 0)
-    : null;
-
-  // Liste toplamı: liste fiyatı tanımsız olan kalem kendi kampanya fiyatıyla
-  // sayılır — böylece "avantajın" olduğundan büyük görünmez.
-  const listTotalCents = resolved
-    ? selectedLines.reduce((sum, line) => sum + (line.listCents ?? line.cents ?? 0), 0)
-    : null;
-
   const key = bundleKey(selection);
-  const bundleDiscountCents = resolved ? (key ? BUNDLE_DISCOUNT_CENTS[key] : 0) : null;
-
-  const bundleTotalCents =
-    individualTotalCents !== null && bundleDiscountCents !== null
-      ? individualTotalCents - bundleDiscountCents
-      : null;
-
-  const campaignSavingsCents =
-    listTotalCents !== null && individualTotalCents !== null
-      ? listTotalCents - individualTotalCents
-      : null;
-
-  const savingsCents =
-    listTotalCents !== null && bundleTotalCents !== null
-      ? listTotalCents - bundleTotalCents
-      : null;
+  const discounts = resolved && key ? BUNDLE_DISCOUNT_CENTS[key] : {};
+  const monthlyTotal = resolveBillingTotal("monthly", selectedLines, discounts.monthly ?? 0);
+  const periodTotal = resolveBillingTotal("period", selectedLines, discounts.period ?? 0);
+  const oneTimeTotal = resolveBillingTotal("oneTime", selectedLines, discounts.oneTime ?? 0);
 
   return {
     selectedCount,
     lines,
-    listTotalCents,
-    individualTotalCents,
-    campaignSavingsCents,
-    bundleDiscountCents,
-    bundleTotalCents,
-    savingsCents,
-    priceResolved: resolved && bundleTotalCents !== null,
+    monthlyTotal,
+    periodTotal,
+    oneTimeTotal,
+    priceResolved: resolved,
     missingPriceFor,
   };
 }
@@ -377,6 +411,24 @@ export function resolveBuilderCheckout(selection: BuilderSelection): {
 }
 
 /**
+ * Ürün kartında kesin fiyat ancak tek başına satın alınabilir bir SKU'ya
+ * bağlanabiliyorsa gösterilebilir. Koçum, Deneme Kulübü, birebir ve ek ders
+ * için checkout SKU'su oluşana kadar bu fonksiyon `null` döner.
+ */
+export function resolveBuilderProductCheckout(
+  selection: BuilderSelection,
+  product: ProductKey,
+): ReturnType<typeof resolveBuilderCheckout> {
+  if (product !== "dershanem") return null;
+  return resolveBuilderCheckout({
+    ...selection,
+    dershanem: true,
+    kocum: false,
+    denemeKulubum: false,
+  });
+}
+
+/**
  * Ön görüşmeye giderken seçimi TAŞIR. Daha önce kurucunun CTA'sı düz
  * `/iletisim`'e gidiyordu ve kullanıcının kurduğu paket (sınav, format, dersler)
  * tamamen kayboluyordu.
@@ -404,6 +456,9 @@ export function builderContactQuery(selection: BuilderSelection): string {
   const params = new URLSearchParams();
   if (selection.exam) params.set("sinav", selection.exam);
   if (summary) params.set("paket", summary);
+  if (products.length > 0 && resolveBuilderCheckout(selection) === null) {
+    params.set("fiyat", "on_gorusme");
+  }
   return params.toString() ? `?${params.toString()}` : "";
 }
 
@@ -432,7 +487,9 @@ export function discountPercent(listCents: PriceCents, campaignCents: PriceCents
 
 /** Faturalama dönemi eki — tasarım: "/ ay" ve "/ dönem". */
 export function billingSuffix(billing: BillingPeriod): string {
-  return billing === "monthly" ? "/ ay" : "/ dönem";
+  if (billing === "monthly") return "/ ay";
+  if (billing === "period") return "/ dönem";
+  return "tek sefer";
 }
 
 /**

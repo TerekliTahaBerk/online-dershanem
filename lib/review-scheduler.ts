@@ -1,4 +1,5 @@
 import type { ReviewResponse } from "@prisma/client";
+import { formatIstanbulDateInput } from "./istanbul-time";
 
 export const reviewIntervalsDays = [1, 3, 7, 14, 30] as const;
 export const dailyReviewLimit = 5;
@@ -25,6 +26,5 @@ export function initialReviewDueAt(sourceAt: Date, now = new Date()): Date {
 }
 
 export function sameLocalDay(a: Date, b: Date): boolean {
-  const key = (date: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
-  return key(a) === key(b);
+  return formatIstanbulDateInput(a) === formatIstanbulDateInput(b);
 }

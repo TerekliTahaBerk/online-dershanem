@@ -1,3 +1,5 @@
+import { istanbulWeekStart } from "./istanbul-time";
+
 export const INTERVENTION_RULE_VERSION = "intervention-v1";
 
 export type InterventionReasonCode = "ATTENDANCE_PATTERN" | "OVERDUE_WORK" | "REPEATED_REVIEW_DIFFICULTY" | "PLAN_STALLED";
@@ -10,10 +12,7 @@ export type InterventionSignal = {
 };
 
 export function interventionWindowStart(now = new Date()): Date {
-  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() - day + 1);
-  return date;
+  return istanbulWeekStart(now);
 }
 
 export function buildInterventionSignals(input: {

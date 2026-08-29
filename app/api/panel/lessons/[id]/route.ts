@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
@@ -9,7 +9,7 @@ import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/pane
 const schema = z.object({ title: z.string().trim().min(2).max(120), startsAt: z.string().datetime(), status: z.enum(["PLANNED", "COMPLETED", "CANCELLED"]), meetingUrl: z.string().url().max(500).optional().or(z.literal("")) });
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.lessons.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:lessons:update:${auth.session.userId}`, rateLimit: { max: 100, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

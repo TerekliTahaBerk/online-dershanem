@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 const schema = z.object({ helpful: z.boolean().nullable(), anxietyPulse: z.number().int().min(1).max(5).nullable() }).refine((value) => value.helpful !== null || value.anxietyPulse !== null);
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("STUDENT", "PARENT"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("STUDENT", "PARENT"); if (!auth.ok) return auth.response;
   const viewerRole = auth.session.role === "STUDENT" ? "STUDENT" as const : "PARENT" as const;
   if (!getPanelFeatureFlags().parentWeeklyDigest) return NextResponse.json({ error: "Haftalık özet henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.weekly_digest.feedback", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:digest-feedback:${auth.session.userId}`, rateLimit: { max: 30, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });

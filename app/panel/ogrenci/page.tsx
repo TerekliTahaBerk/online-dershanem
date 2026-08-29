@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
-import { getAccessibleProducts } from "@/lib/auth/products";
+import { getStudentHomeData } from "@/lib/panel/student-home-server";
+import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { NoProductAccess } from "@/components/panel/no-product-access";
@@ -11,51 +11,46 @@ import {
   NetTrendCard,
   DinoInsightCard,
   type PlanTaskRow,
-  type ExamSubjectRow,
   type TrendPoint,
 } from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
 
 /**
- * ÖĞRENCİ ANA SAYFASI — onaylı tasarım (Panel.dc.html → scStudentHome).
- *
- * TEK PANEL: sayfa `requirePanelRole` ile korunur (rol yeter, ürün şart
- * değil). Ürün bölümleri satın alıma göre açılır:
- *   OD  → Bugün'deki canlı ders satırı
- *   OK  → Bugün'deki plan görevleri, haftalık plan kartı
- *   ODK → son deneme kartı, net gelişimi
- * Erişimi olmayan ürünün bölümü HİÇ render edilmez (§16).
- *
- * Hiç ürünü olmayan (yeni kayıt olmuş) kullanıcı `NoProductAccess` görür.
+ * TEK PANEL öğrenci ana sayfası. API ile aynı domain service'ini kullanır;
+ * erişimi olmayan ürünün sorgusu çalışmaz ve bölümü render edilmez.
  */
 
 const TR_DATE = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
   weekday: "long",
   day: "numeric",
   month: "long",
 });
-const TR_TIME = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
-const TR_SHORT = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+const TR_TIME = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, hour: "2-digit", minute: "2-digit" });
+const TR_SHORT = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
 
 function greeting(now: Date): string {
-  const h = now.getHours();
-  if (h < 11) return "Günaydın";
-  if (h < 18) return "İyi günler";
+  const hour = Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: ISTANBUL_TIME_ZONE,
+      hour: "2-digit",
+      hourCycle: "h23",
+    }).format(now),
+  );
+  if (hour < 11) return "Günaydın";
+  if (hour < 18) return "İyi günler";
   return "İyi akşamlar";
-}
-
-/** Bir denemenin toplam neti: doğru − yanlış/4, bölüm bölüm toplanır. */
-function examNet(sections: { correctCount: number; incorrectCount: number }[]): number {
-  return sections.reduce((sum, s) => sum + (s.correctCount - s.incorrectCount / 4), 0);
 }
 
 export default async function StudentHomePage() {
   const session = await requirePanelRole("STUDENT");
-  const products = await getAccessibleProducts(session.userId, session.role);
-  const hasOD = products.includes("OD");
-  const hasOK = products.includes("OK");
-  const hasODK = products.includes("ODK");
+  const now = new Date();
+  const data = await getStudentHomeData({
+    userId: session.userId,
+    role: session.role,
+    now,
+  });
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -68,13 +63,8 @@ export default async function StudentHomePage() {
     </PanelShell>
   );
 
-  // Hiç ürün yok → dürüst durum, uydurma içerik yok.
-  if (products.length === 0) {
-    return shell(<NoProductAccess role="STUDENT" />);
-  }
-
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
-  if (!profile) {
+  if (data.products.length === 0) return shell(<NoProductAccess role="STUDENT" />);
+  if (!data.profile) {
     return shell(
       <PanelEmptyState
         title="Profiliniz hazırlanıyor."
@@ -83,106 +73,40 @@ export default async function StudentHomePage() {
     );
   }
 
-  const now = new Date();
-  const dayStart = new Date(now);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
+  const od = data.productData.OD;
+  const ok = data.productData.OK;
+  const odk = data.productData.ODK;
+  const latest = odk?.latestExam ?? null;
+  const plan = ok?.weeklyPlan ?? null;
 
-  const enrollments = hasOD
-    ? await prisma.enrollment.findMany({
-        where: { studentId: profile.id, endedAt: null },
-        select: { groupId: true },
-      })
-    : [];
-  const groupIds = enrollments.map((e) => e.groupId);
-
-  const todayLessons =
-    hasOD && groupIds.length
-      ? await prisma.lesson.findMany({
-          where: {
-            groupId: { in: groupIds },
-            startsAt: { gte: dayStart, lt: dayEnd },
-            status: "PLANNED",
-          },
-          orderBy: { startsAt: "asc" },
-          include: { group: true, teacher: { select: { fullName: true } } },
-        })
-      : [];
-
-  const [weeklyPlan, recentExams] = await Promise.all([
-
-    // Koçluk — bu haftanın planı (Online Koçum kapsamı)
-    hasOK
-      ? prisma.weeklyPlan.findFirst({
-          where: { studentId: profile.id },
-          orderBy: { weekStart: "desc" },
-          include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
-        })
-      : Promise.resolve(null),
-
-    // Deneme geçmişi — son deneme kartı ve net gelişimi
-    prisma.mockExam.findMany({
-      where: { studentId: profile.id },
-      orderBy: { takenAt: "desc" },
-      take: 6,
-      include: { sections: { orderBy: { position: "asc" } } },
-    }),
-  ]);
-
-  /* ── Bugün akışı ── */
-  const rows: TodayRow[] = [];
-
-  for (const lesson of todayLessons) {
-    rows.push({
+  const rows: TodayRow[] = [
+    ...(od?.todayLessons ?? []).map((lesson) => ({
       id: `lesson-${lesson.id}`,
       when: TR_TIME.format(lesson.startsAt),
       title: `${lesson.title} · Canlı ders`,
-      meta: [lesson.teacher.fullName, lesson.group.name].filter(Boolean).join(" · "),
+      meta: [lesson.teacherName, lesson.groupName].filter(Boolean).join(" · "),
       action: { label: "Derse katıl", href: "/panel/ogrenci/takvim", primary: true },
-    });
-  }
-
-  const todayTasks = (weeklyPlan?.tasks ?? []).filter(
-    (t) => t.scheduledFor >= dayStart && t.scheduledFor < dayEnd,
-  );
-  for (const task of todayTasks) {
-    rows.push({
+    })),
+    ...(ok?.todayTasks ?? []).map((task) => ({
       id: `task-${task.id}`,
       when: TR_TIME.format(task.scheduledFor),
       title: `${task.title} · ${task.durationMinutes} dk`,
       meta: "Haftalık plan görevi",
       action: { label: "Görevi aç", href: "/panel/ogrenci/plan" },
-    });
-  }
+    })),
+  ];
 
-  /* ── Haftalık plan özeti ── */
-  const planTasks: PlanTaskRow[] = (weeklyPlan?.tasks ?? []).slice(0, 3).map((t) => ({
-    id: t.id,
-    title: `${t.title} · ${t.durationMinutes} dk`,
-    meta: TR_SHORT.format(t.scheduledFor),
-    done: t.status === "DONE",
-  }));
-  const planDone = (weeklyPlan?.tasks ?? []).filter((t) => t.status === "DONE").length;
-  const planTotal = weeklyPlan?.tasks.length ?? 0;
-
-  /* ── Deneme kartı ve gelişim ── */
-  const latest = recentExams[0];
-  const previous = recentExams[1];
-  const latestNet = latest ? examNet(latest.sections) : 0;
-  const delta = latest && previous ? latestNet - examNet(previous.sections) : null;
-
-  const subjects: ExamSubjectRow[] = (latest?.sections ?? []).map((s) => ({
-    name: s.subjectName,
-    correct: s.correctCount,
-    incorrect: s.incorrectCount,
-    net: s.correctCount - s.incorrectCount / 4,
+  const planTasks: PlanTaskRow[] = (plan?.tasks ?? []).map((task) => ({
+    id: task.id,
+    title: `${task.title} · ${task.durationMinutes} dk`,
+    meta: TR_SHORT.format(task.scheduledFor),
+    done: task.done,
   }));
 
-  const trend: TrendPoint[] = [...recentExams]
-    .reverse()
-    .map((exam, i) => ({ label: `D${i + 1}`, net: Number(examNet(exam.sections).toFixed(2)) }));
-
+  const trend: TrendPoint[] = (odk?.trend ?? []).map((point, index) => ({
+    label: `D${index + 1}`,
+    net: point.net,
+  }));
   const trendCaption =
     trend.length >= 2
       ? `Toplam netin ${trend[0].net.toLocaleString("tr-TR")}'ten ${trend[trend.length - 1].net.toLocaleString("tr-TR")}'e ${
@@ -191,8 +115,8 @@ export default async function StudentHomePage() {
       : "";
 
   const summaryParts = [
-    todayLessons.length ? `bugün ${todayLessons.length} dersin var` : null,
-    planTotal ? `haftalık planında ${planTotal - planDone} görev kaldı` : null,
+    od?.todayLessons.length ? `bugün ${od.todayLessons.length} dersin var` : null,
+    plan?.total ? `haftalık planında ${plan.total - plan.done} görev kaldı` : null,
     latest ? `son denemen ${TR_SHORT.format(latest.takenAt)}` : null,
   ].filter(Boolean);
 
@@ -210,10 +134,10 @@ export default async function StudentHomePage() {
       <TodayCard rows={rows} dateLabel={TR_DATE.format(now)} />
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        {hasOK && weeklyPlan ? (
+        {plan ? (
           <WeeklyPlanCard
-            done={planDone}
-            total={planTotal}
+            done={plan.done}
+            total={plan.total}
             tasks={planTasks}
             href="/panel/ogrenci/plan"
           />
@@ -221,11 +145,11 @@ export default async function StudentHomePage() {
 
         {latest ? (
           <LatestExamCard
-            net={latestNet}
-            delta={delta}
-            title={latest.title || latest.exam}
+            net={latest.net}
+            delta={latest.delta}
+            title={latest.title}
             dateLabel={TR_SHORT.format(latest.takenAt)}
-            subjects={subjects}
+            subjects={latest.sections}
             href="/panel/ogrenci/denemeler"
           />
         ) : null}
@@ -233,10 +157,9 @@ export default async function StudentHomePage() {
 
       {trend.length >= 2 ? <NetTrendCard points={trend} caption={trendCaption} /> : null}
 
-      {/* Dino AI arka ucu yok — bileşen dürüst durumu kendisi gösterir (§22). */}
       <DinoInsightCard insight={null} basis={null} />
 
-      {hasODK && !latest ? (
+      {odk && !latest ? (
         <p className="mt-5 text-[14px] text-dc-ink-muted">
           Deneme Kulübü sonuçların girildiğinde net gelişimin ve analiz burada açılır.
         </p>

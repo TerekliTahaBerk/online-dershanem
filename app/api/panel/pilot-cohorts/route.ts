@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -12,7 +12,7 @@ const schema = z.object({ groupId: z.string().min(1).max(80), requestKey: z.stri
 const memberBand = (count: number) => count <= 4 ? "1-4" as const : count <= 12 ? "5-12" as const : "13+" as const;
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("ADMIN"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.pilot.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:pilot:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));

@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { ADAPTIVE_PLAN_RULE_VERSION, buildAdaptiveWeek, planningWeekStart } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiProductRole("OK", "STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.generate", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-generate:${auth.session.userId}`, rateLimit: { max: 12, windowMs: 15 * 60 * 1000 } });
@@ -19,7 +20,13 @@ export async function POST(request: Request) {
   if (!preference) return NextResponse.json({ error: "Önce uygun gün ve çalışma sürenizi seçin." }, { status: 400 });
   if (!preference.planningEnabled) return NextResponse.json({ error: "Haftalık plan tercihiniz kapalı." }, { status: 400 });
   const weekStart = planningWeekStart();
-  const existing = await prisma.weeklyPlan.findUnique({ where: { studentId_weekStart: { studentId: profile.id, weekStart } }, include: { tasks: true } });
+  const weekEnd = addIstanbulCalendarDays(weekStart, 7);
+  // Eski kayıtlar UTC 00:00'da olabilir; aynı İstanbul haftasında tek plan sayılır.
+  const existing = await prisma.weeklyPlan.findFirst({
+    where: { studentId: profile.id, weekStart: { gte: weekStart, lt: weekEnd } },
+    orderBy: { weekStart: "asc" },
+    include: { tasks: true },
+  });
   if (existing?.status === "APPROVED") return NextResponse.json({ error: "Onaylı plan kilitli. Önce değişiklik isteyin." }, { status: 409 });
   const completedSources = new Set(existing?.tasks.filter((task) => task.status === "DONE").map((task) => `${task.sourceType}:${task.sourceReferenceId || task.title}`) || []);
   const candidates = (await collectPlanCandidates(profile.id, preference)).filter((item) => !completedSources.has(`${item.sourceType}:${item.sourceReferenceId || item.title}`));

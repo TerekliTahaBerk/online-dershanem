@@ -1,11 +1,10 @@
+import { istanbulWeekStart } from "./istanbul-time";
+
 export const CALM_DIGEST_RULE_VERSION = "calm-digest-v1";
 export type DigestTrendBand = "IMPROVING" | "STEADY" | "BUILDING" | "LIMITED_DATA";
 
 export function digestWeekStart(now = new Date()): Date {
-  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() - day + 1);
-  return date;
+  return istanbulWeekStart(now);
 }
 
 export function buildCalmWeeklyDigest(input: {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
@@ -9,7 +9,7 @@ import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/pane
 const schema = z.object({ groupId: z.string().min(1), title: z.string().trim().min(2).max(120), startsAt: z.string().datetime(), repeatWeeks: z.number().int().min(1).max(12).default(1), meetingUrl: z.string().url().max(500).optional().or(z.literal("")) });
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.lessons.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:lessons:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });

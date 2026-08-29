@@ -2,7 +2,7 @@ import { del, put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
@@ -18,7 +18,7 @@ function cleanFileName(value: string) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN", "TEACHER");
+  const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.materials.upload", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:materials:upload:${auth.session.userId}`, rateLimit: { max: 30, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });

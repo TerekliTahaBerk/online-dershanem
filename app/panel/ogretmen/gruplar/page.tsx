@@ -72,8 +72,7 @@ export default async function TeacherStudentsPage() {
   );
 
   const studentIds = rows.map((r) => r.studentId);
-  const twoWeeksAgo = new Date();
-  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
 
   const [attendance, progress, products] = await Promise.all([
     studentIds.length

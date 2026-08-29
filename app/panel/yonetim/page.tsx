@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelHeading, PanelCard, PanelCardTitle } from "@/components/panel/ui";
+import { istanbulDayStart, istanbulNextDayStart } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +36,9 @@ export default async function AdminHomePage() {
   const session = await requireRole("ADMIN");
 
   const now = new Date();
-  const dayStart = new Date(now);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
-  const weekAgo = new Date(now);
-  weekAgo.setDate(weekAgo.getDate() - 7);
+  const dayStart = istanbulDayStart(now);
+  const dayEnd = istanbulNextDayStart(now);
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   const [
     todayLessons,

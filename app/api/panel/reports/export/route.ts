@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { csvDocument } from "@/lib/csv";
 
 const querySchema = z.object({ range: z.enum(["7", "30", "90"]).default("30") });
 
 export async function GET(request: Request) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
   const url = new URL(request.url);
   const parsed = querySchema.safeParse({ range: url.searchParams.get("range") || undefined });

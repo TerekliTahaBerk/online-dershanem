@@ -12,6 +12,7 @@ import { reconcileAllBusinessUnits } from "@/lib/business/reconciliation";
 import { applyBusinessRetention } from "@/lib/business/retention";
 import { getAdPlatformProvider } from "@/lib/business/providers";
 import { log } from "@/lib/logger";
+import { formatIstanbulDateInput } from "@/lib/istanbul-time";
 
 async function ensureAccount(tx: Prisma.TransactionClient, externalId: string) {
   const existing = await tx.instagramAccount.findUnique({ where: { externalId } });
@@ -170,7 +171,8 @@ export async function processBackgroundJobs(limit = 10) {
 }
 
 export async function scheduleBusinessMaintenanceJobs(now = new Date()) {
-  const hourly = now.toISOString().slice(0, 13); const daily = now.toISOString().slice(0, 10);
+  const hourly = now.toISOString().slice(0, 13);
+  const daily = formatIstanbulDateInput(now);
   const jobs = [
     { type: "RECONCILE_FINANCE", key: `maintenance:reconcile:${hourly}`, enabled: true },
     { type: "CHECK_UNANSWERED_HOT_LEADS", key: `maintenance:unanswered:${hourly}`, enabled: true },

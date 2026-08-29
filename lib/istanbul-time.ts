@@ -13,6 +13,7 @@
  * input'ları her zaman `formatIstanbulDateInput` ile üretilmelidir.
  */
 
+export const ISTANBUL_TIME_ZONE = "Europe/Istanbul";
 export const ISTANBUL_UTC_OFFSET_MINUTES = 180;
 const OFFSET_MS = ISTANBUL_UTC_OFFSET_MINUTES * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -49,6 +50,34 @@ export function istanbulDayStart(instant: Date): Date {
 /** Verilen anın İstanbul gününün sonu (23:59:59.999 +03:00), dahil. */
 export function istanbulDayEnd(instant: Date): Date {
   return new Date(istanbulDayStart(instant).getTime() + DAY_MS - 1);
+}
+
+/** Verilen İstanbul gününden `days` takvim günü ilerideki gün başlangıcı. */
+export function addIstanbulCalendarDays(instant: Date, days: number): Date {
+  return new Date(istanbulDayStart(instant).getTime() + days * DAY_MS);
+}
+
+/** Verilen anı içeren İstanbul gününün bitiş sınırı; sorgularda hariç tutulur. */
+export function istanbulNextDayStart(instant: Date): Date {
+  return addIstanbulCalendarDays(instant, 1);
+}
+
+/** İstanbul takvimindeki ISO hafta günü: pazartesi 1, pazar 7. */
+export function istanbulIsoWeekday(instant: Date): number {
+  const shifted = new Date(instant.getTime() + OFFSET_MS);
+  return shifted.getUTCDay() || 7;
+}
+
+/** Verilen anın İstanbul takvim haftasının pazartesi 00:00 başlangıcı. */
+export function istanbulWeekStart(instant: Date, offsetWeeks = 0): Date {
+  const dayStart = istanbulDayStart(instant);
+  return addIstanbulCalendarDays(dayStart, 1 - istanbulIsoWeekday(instant) + offsetWeeks * 7);
+}
+
+/** Verilen anın İstanbul takvim ayının ilk günü 00:00 başlangıcı. */
+export function istanbulMonthStart(instant: Date): Date {
+  const date = formatIstanbulDateInput(instant);
+  return parseIstanbulDateInput(`${date.slice(0, 7)}-01`)!;
 }
 
 export type IstanbulDateRange = {

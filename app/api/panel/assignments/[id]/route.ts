@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 const schema = z.object({ title: z.string().trim().min(2).max(140), description: z.string().trim().max(2000).optional(), dueAt: z.string().datetime(), isActive: z.boolean(), outcomeIds: z.array(z.string().min(1)).max(3).optional(), outcomeSkipReason: z.enum(["CATALOG_MISSING", "COMPLETE_LATER", "NOT_APPLICABLE"]).nullable().optional() });
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN", "TEACHER");
+  const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.assignments.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignments:update:${auth.session.userId}`, rateLimit: { max: 100, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

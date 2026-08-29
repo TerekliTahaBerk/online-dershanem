@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
@@ -13,7 +13,7 @@ class AssignmentProgressConflict extends Error {}
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const startedAt = performance.now();
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
   const recordFinished = (outcome: "success" | "validation" | "rejected" | "system_error", targetStatus: "TODO" | "IN_PROGRESS" | "DONE" | "UNKNOWN" = "UNKNOWN") => recordPanelProductEvent({ name: "student_assignment_progress_finished", properties: { durationMs: Math.round(performance.now() - startedAt), outcome, targetStatus } }, auth.session.role);
   const guard = await guardMutation({ action: "panel.assignments.progress", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignment-progress:${auth.session.userId}`, rateLimit: { max: 160, windowMs: 15 * 60 * 1000 } });

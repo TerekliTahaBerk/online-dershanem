@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { logAudit } from "@/lib/audit";
@@ -11,7 +11,7 @@ const category = z.enum(["KNOWLEDGE", "PROCESS", "ATTENTION", "TIME", "BLANK"]);
 const schema = z.object({ reasons: z.array(z.object({ sectionId: z.string().min(1), categories: z.array(category).max(3) })).max(8), nextAction: z.string().trim().max(240).nullable().optional() });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN", "TEACHER", "STUDENT");
+  const auth = await requireApiOdRole("ADMIN", "TEACHER", "STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().mockExamAnalysis) return NextResponse.json({ error: "Deneme analizi henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.mock_exam.review", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:mock-exam-review:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });

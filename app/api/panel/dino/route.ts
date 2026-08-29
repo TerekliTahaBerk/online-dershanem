@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiAccountRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { DINO_PROMPT_VERSION, dinoAudienceSchema, findDinoQuestion } from "@/lib/dino";
@@ -10,6 +10,7 @@ import { prepareDinoSource } from "@/lib/panel/dino-source";
 import { generateDinoAnswer } from "@/lib/dino-gateway";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { logAudit } from "@/lib/audit";
+import { istanbulDayStart } from "@/lib/istanbul-time";
 
 /**
  * DINO AI — yanıt üretimi.
@@ -45,7 +46,7 @@ function boundedInteger(value: string | undefined, fallback: number, min: number
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("STUDENT", "PARENT", "TEACHER");
+  const auth = await requireApiAccountRole("STUDENT", "PARENT", "TEACHER");
   if (!auth.ok) return auth.response;
 
   if (!getPanelFeatureFlags().dinoAi) {
@@ -129,8 +130,7 @@ export async function POST(request: Request) {
   });
 
   /* ── Günlük kota ── */
-  const since = new Date();
-  since.setHours(0, 0, 0, 0);
+  const since = istanbulDayStart(new Date());
   const [dailyCount, dailyCost] = await Promise.all([
     prisma.dinoAnswer.count({ where: { userId: auth.session.userId, createdAt: { gte: since } } }),
     prisma.dinoAnswer.aggregate({

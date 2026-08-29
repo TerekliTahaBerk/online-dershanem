@@ -92,11 +92,14 @@ export function ContactLeadForm() {
     const params = new URLSearchParams(window.location.search);
     const exam = params.get("sinav");
     const pack = params.get("paket");
+    const pricing = params.get("fiyat");
     if (!exam && !pack) return;
     setForm((prev) => ({
       ...prev,
       goal: exam === "LGS" ? goals[0] : exam === "YKS" ? goals[1] : prev.goal,
-      topic: pack ? `Paket kurucudaki seçimim: ${pack}` : prev.topic,
+      topic: pack
+        ? `Paket kurucudaki seçimim: ${pack}${pricing === "on_gorusme" ? " · Kesin fiyat ön görüşmede oluşturulacak." : ""}`
+        : prev.topic,
     }));
   }, []);
 

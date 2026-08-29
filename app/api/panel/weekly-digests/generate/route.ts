@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { generateCalmDigest } from "@/lib/calm-weekly-digest-server";
@@ -9,7 +9,7 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 const schema = z.object({ studentId: z.string().min(1) });
 export async function POST(request: Request) {
-  const auth = await requireApiRole("TEACHER"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("TEACHER"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().parentWeeklyDigest) return NextResponse.json({ error: "Haftalık özet henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.weekly_digest.generate", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:digest-generate:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Öğrenci seçimini kontrol edin." }, { status: 400 });

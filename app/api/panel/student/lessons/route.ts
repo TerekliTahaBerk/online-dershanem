@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { formatIstanbulDateInput } from "@/lib/istanbul-time";
 
 /**
  * Öğrenci Dersler verisi — JSON karşılığı.
@@ -10,7 +11,7 @@ import { requireApiRole } from "@/lib/auth/api-guards";
  * tarafına bulaştırmamak için, önceki Ana Sayfa route'uyla aynı disiplin).
  */
 export async function GET(request: Request) {
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
@@ -50,7 +51,8 @@ export async function GET(request: Request) {
   const rows = lessons.map((lesson) => {
     const attendance = lesson.attendances[0]?.status;
     const missed = attendance === "ABSENT";
-    const isToday = lesson.startsAt.toDateString() === now.toDateString();
+    const isToday =
+      formatIstanbulDateInput(lesson.startsAt) === formatIstanbulDateInput(now);
     const completed = lesson.status === "COMPLETED";
 
     const statusLabel = missed

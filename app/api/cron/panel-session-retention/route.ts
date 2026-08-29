@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { runJob } from "@/lib/jobs/runner";
+import { formatIstanbulDateInput } from "@/lib/istanbul-time";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
           data: {
             actorType: "SYSTEM",
             entityType: "RetentionBatch",
-            entityId: now.toISOString().slice(0, 10),
+            entityId: formatIstanbulDateInput(now),
             action: "retention.panel_data_pruned",
             summary: "Süresi dolmuş panel operasyon verileri temizlendi",
             payload: { sessionCount: deletedSessions.count, productEventCount: deletedProductEvents.count, revokedSessionRetentionDays: REVOKED_SESSION_RETENTION_DAYS, productEventRetentionDays: PRODUCT_EVENT_RETENTION_DAYS },

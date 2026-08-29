@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
 const code = z.string().trim().min(1).max(50).regex(/^[A-Za-z0-9._-]+$/);
@@ -21,7 +21,7 @@ function normalizedCode(value: string) { return value.toUpperCase(); }
 function skillCode(value: string) { return value.toLocaleLowerCase("tr-TR").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "beceri"; }
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.curriculum.outcome.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:curriculum:${auth.session.userId}`, rateLimit: { max: 160, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

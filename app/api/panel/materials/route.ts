@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
@@ -15,10 +15,10 @@ const schema = z.object({ groupId: z.string().min(1), lessonId: z.string().min(1
  * `app/panel/ogrenci/materyaller/page.tsx` ile AYNI sorgu, tercih puanlama
  * (`score`) ve sıralama mantığı. Dosya İNDİRME ayrı kalır — mevcut
  * `/api/panel/materials/[id]/file` route'u zaten Bearer destekli
- * (`requireApiRole` üzerinden), YENİDEN YAZILMADI.
+ * (`requireApiOdRole` üzerinden), YENİDEN YAZILMADI.
  */
 export async function GET() {
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
 
   const flags = getPanelFeatureFlags();
@@ -73,7 +73,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.materials.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:materials:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Materyal alanlarını kontrol edin." }, { status: 400 });
   const data = parsed.data;

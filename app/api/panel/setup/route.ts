@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
@@ -16,7 +16,7 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   const startedAt = performance.now();
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
   const recordFinished = (outcome: "success" | "validation" | "rejected" | "system_error", counts = { studentCount: 0, parentLinkCount: 0, lessonCount: 0 }) => recordPanelProductEvent({ name: "admin_setup_finished", properties: { durationMs: Math.round(performance.now() - startedAt), outcome, ...counts } }, auth.session.role);
   const guard = await guardMutation({ action: "panel.setup.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:setup:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPilotReadiness } from "@/lib/pilot-readiness-server";
 import { pilotTransitionAllowed } from "@/lib/pilot-rollout";
@@ -12,7 +12,7 @@ const schema = z.object({ action: z.enum(["ACTIVATE", "PAUSE", "RESUME", "COMPLE
 const memberBand = (count: number) => count <= 4 ? "1-4" as const : count <= 12 ? "5-12" as const : "13+" as const;
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("ADMIN"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.pilot.transition", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:pilot-transition:${auth.session.userId}`, rateLimit: { max: 30, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Pilot geçişini kontrol edin." }, { status: 400 });

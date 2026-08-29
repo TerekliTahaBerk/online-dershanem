@@ -8,7 +8,7 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "Paketler | Kendi paketini oluştur",
   description:
-    "Online Dershanem, Online Koçum ve Online Deneme Kulübüm'ü tek tek ya da birlikte seç. Birlikte aldığında toplam paket fiyatın düşer.",
+    "Online Dershanem, Online Koçum ve Online Deneme Kulübüm'ü tek tek ya da birlikte seç; online alınabilir ürünü doğrudan satın al, diğer seçimler için ön görüşme talep et.",
   canonical: "/paketler",
 });
 
@@ -22,11 +22,11 @@ export default function PackagesPage() {
           <h1 className="mx-auto mt-4 max-w-[760px] font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
             İhtiyacın olan desteği seç.
             <br />
-            Birlikte aldıkça daha avantajlı.
+            Birlikte kurgula.
           </h1>
           <p className="mx-auto mt-4 max-w-[640px] text-[18px] leading-[1.65] text-dc-ink-body">
-            Üç ürünü tek tek alabilirsin. İki veya üç ürünü birleştirdiğinde toplam paket
-            fiyatın tek tek toplamın altına düşer.
+            Satın alınabilir ders paketinin fiyatını doğrudan görürsün. Koçluk, deneme,
+            birebir ve birleşik seçimlerin kesin teklifi ön görüşmede oluşturulur.
           </p>
         </section>
 
@@ -59,7 +59,7 @@ export default function PackagesPage() {
             },
             {
               q: "Birden fazla ürün aldığımda fiyat nasıl değişiyor?",
-              a: "Her ürünün zaten indirimli bir kampanya fiyatı var. İki ürünü birlikte aldığında bunun üstüne bir de paket indirimi eklenir; üç ürün en avantajlı toplamı verir. Özet kutusunda liste fiyatı, kampanya indirimi ve paket indirimi ayrı ayrı gösterilir.",
+              a: "Birleşik seçimler henüz online satın alınabilir bir SKU'ya bağlı olmadığı için kesin rakam gösterilmez. Seçimin ön görüşme formuna taşınır; fiyat, faturalama dönemleri ve varsa indirimler yazılı teklifte netleştirilir.",
             },
             {
               q: "Ders fiyatı derse göre değişiyor mu?",
@@ -67,11 +67,11 @@ export default function PackagesPage() {
             },
             {
               q: "Faturalama nasıl işliyor?",
-              a: "Ders ve koçluk aylık, deneme kulübü dönemsel faturalanır. Farklı dönemler paket özetinde ayrı gösterilir.",
+              a: "Online satın alınabilir ders paketi aylıktır. Koçluk, deneme kulübü ve birleşik seçimlerin faturalama dönemleri kesin teklifte ayrı ayrı belirtilir.",
             },
             {
               q: "Paket fiyatımı sonradan değiştirebilir miyim?",
-              a: "Ürün ekleme ve çıkarma talebini ön görüşmede ilettiğinde paketin yeniden hesaplanır.",
+              a: "Online satın alınabilir ürünün fiyatı ödeme adımında sunucu kataloğundan doğrulanır. Ön görüşmeli seçimlerde ise kabul ettiğin yazılı teklif esas alınır.",
             },
           ]}
         />

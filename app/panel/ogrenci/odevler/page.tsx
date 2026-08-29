@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { StudentAssignmentList } from "@/components/panel/student-assignment-list";
 import { requireRole } from "@/lib/auth/guards";
+import { addIstanbulCalendarDays, istanbulDayEnd } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelHeading,
@@ -88,10 +89,8 @@ export default async function StudentTasksPage() {
   ]);
 
   const now = new Date();
-  const todayEnd = new Date(now);
-  todayEnd.setHours(23, 59, 59, 999);
-  const weekEnd = new Date(todayEnd);
-  weekEnd.setDate(weekEnd.getDate() + 7);
+  const todayEnd = istanbulDayEnd(now);
+  const weekEnd = istanbulDayEnd(addIstanbulCalendarDays(now, 7));
 
   /*
    * Koçluk plan görevleri okunur listede kalır; ders çalışmaları ise

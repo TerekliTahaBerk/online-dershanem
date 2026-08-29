@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { netScore } from "@/lib/goals";
 
 /**
@@ -15,7 +15,7 @@ import { netScore } from "@/lib/goals";
 const SERIES_COLORS = ["#14976B", "#E0A34A", "#5C7BA6", "#9C5340", "#6B7A73"];
 
 export async function GET() {
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
 
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });

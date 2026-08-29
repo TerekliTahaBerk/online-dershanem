@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { generateRecoveryPackage } from "@/lib/recovery-package-server";
@@ -8,7 +8,7 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 const schema = z.object({ attendanceId: z.string().min(1).max(100) }).strict();
 export async function POST(request: Request) {
-  const auth = await requireApiRole("TEACHER"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("TEACHER"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().recoveryPackage) return NextResponse.json({ error: "Telafi paketi henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.recovery.generate", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:recovery-generate:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

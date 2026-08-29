@@ -6,6 +6,12 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
+import {
+  addIstanbulCalendarDays,
+  formatIstanbulDateInput,
+  ISTANBUL_TIME_ZONE,
+  istanbulWeekStart,
+} from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -21,17 +27,9 @@ export const dynamic = "force-dynamic";
  */
 
 const DAY_LABEL = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-const RANGE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
-const TIME = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
-
-/** Haftanın pazartesi başlangıcı (JS'te pazar 0). */
-function mondayOf(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  const offset = (d.getDay() + 6) % 7;
-  d.setDate(d.getDate() - offset);
-  return d;
-}
+const RANGE = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
+const TIME = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, hour: "2-digit", minute: "2-digit" });
+const DAY_NUMBER = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric" });
 
 export default async function StudentPlanPage() {
   const session = await requireProductRole("OK", "STUDENT");
@@ -126,19 +124,14 @@ export default async function StudentPlanPage() {
     );
   }
 
-  const start = mondayOf(plan.weekStart);
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+  const start = istanbulWeekStart(plan.weekStart);
+  const days = Array.from({ length: 7 }, (_, i) => addIstanbulCalendarDays(start, i));
 
   const done = plan.tasks.filter((t) => t.status === "DONE").length;
   const total = plan.tasks.length;
   const pct = total ? Math.round((done / total) * 100) : 0;
 
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
+  const end = addIstanbulCalendarDays(start, 6);
 
   /* Tasarımın "Koçum" bölümü: kim, ne zaman, hangi odak. */
   const coaching = await getStudentCoaching(profile.id);
@@ -200,12 +193,12 @@ export default async function StudentPlanPage() {
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {days.map((day, i) => {
           const tasks = plan.tasks.filter(
-            (t) => t.scheduledFor.toDateString() === day.toDateString(),
+            (t) => formatIstanbulDateInput(t.scheduledFor) === formatIstanbulDateInput(day),
           );
           return (
             <div key={day.toISOString()}>
               <p className="text-[13px] font-bold text-dc-ink">
-                {DAY_LABEL[i]} {day.getDate()}
+                {DAY_LABEL[i]} {DAY_NUMBER.format(day)}
               </p>
               <div className="mt-2.5 flex flex-col gap-2">
                 {tasks.length === 0 ? (

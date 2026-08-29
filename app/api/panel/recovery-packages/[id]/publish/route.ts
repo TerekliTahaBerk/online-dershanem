@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
@@ -11,7 +11,7 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 const schema = z.object({ expectedVersion: z.number().int().min(1) }).strict();
 const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("TEACHER"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("TEACHER"); if (!auth.ok) return auth.response;
   const flags = getPanelFeatureFlags(); if (!flags.recoveryPackage) return NextResponse.json({ error: "Telafi paketi henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.recovery.publish", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:recovery-publish:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

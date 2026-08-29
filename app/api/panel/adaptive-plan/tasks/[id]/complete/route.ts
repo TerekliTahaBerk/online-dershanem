@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiProductRole("OK", "STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.task_complete", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-task:${auth.session.userId}`, rateLimit: { max: 120, windowMs: 15 * 60 * 1000 } });

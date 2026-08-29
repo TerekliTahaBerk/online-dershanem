@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
@@ -35,7 +35,7 @@ class LessonCloseConflict extends Error {}
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   const requestStartedAt = performance.now();
-  const auth = await requireApiRole("TEACHER");
+  const auth = await requireApiOdRole("TEACHER");
   if (!auth.ok) return auth.response;
   const recordFinished = (outcome: "success" | "validation" | "rejected" | "system_error", data = { completionAttempt: false, groupSize: 0, privateNoteCount: 0, filledSharedFieldCount: 0 }) => recordPanelProductEvent({ name: "lesson_notes_finished", properties: { durationMs: Math.round(performance.now() - requestStartedAt), outcome, ...data } }, auth.session.role);
   const guard = await guardMutation({ action: "panel.lesson_notes.save", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:notes:${auth.session.userId}`, rateLimit: { max: 240, windowMs: 15 * 60 * 1000 } });

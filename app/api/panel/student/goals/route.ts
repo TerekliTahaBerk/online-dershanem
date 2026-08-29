@@ -9,7 +9,7 @@ import { getStudentCoaching } from "@/lib/panel/coaching";
  *
  * `app/panel/ogrenci/hedefler/page.tsx` ile AYNI iki fonksiyonu çağırır
  * (`getStudentGoals`, `getStudentCoaching`) — hesap ikinci kez YAZILMADI.
- * ÜRÜN KAPSAMI web'deki gibi Online Koçum (OK) — `requireApiRole` (yalnız
+ * ÜRÜN KAPSAMI web'deki gibi Online Koçum (OK) — `requireApiOdRole` (yalnız
  * OD) DEĞİL, `requireApiProductRole("OK", ...)` kullanılır.
  */
 export async function GET() {

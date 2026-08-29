@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { icalDocument } from "@/lib/ical";
 
 export async function GET(request: Request) {
-  const auth = await requireApiRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+  const auth = await requireApiOdRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
   if (!auth.ok) return auth.response;
   const url = new URL(request.url);
   const now = Date.now();

@@ -5,6 +5,12 @@ import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
+import {
+  addIstanbulCalendarDays,
+  formatIstanbulDateInput,
+  ISTANBUL_TIME_ZONE,
+  istanbulWeekStart,
+} from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -22,14 +28,8 @@ export const dynamic = "force-dynamic";
  */
 
 const DAY_LABEL = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-const RANGE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
-
-function mondayOf(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  return d;
-}
+const RANGE = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
+const DAY_NUMBER = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric" });
 
 export default async function ParentCoachingPage({
   searchParams,
@@ -151,19 +151,14 @@ export default async function ParentCoachingPage({
     );
   }
 
-  const start = mondayOf(plan.weekStart);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
+  const start = istanbulWeekStart(plan.weekStart);
+  const end = addIstanbulCalendarDays(start, 6);
 
   const done = plan.tasks.filter((t) => t.status === "DONE").length;
   const total = plan.tasks.length;
   const pct = total ? Math.round((done / total) * 100) : 0;
 
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+  const days = Array.from({ length: 7 }, (_, i) => addIstanbulCalendarDays(start, i));
 
   return shell(
     <>
@@ -194,12 +189,12 @@ export default async function ParentCoachingPage({
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {days.map((day, i) => {
           const tasks = plan.tasks.filter(
-            (t) => t.scheduledFor.toDateString() === day.toDateString(),
+            (t) => formatIstanbulDateInput(t.scheduledFor) === formatIstanbulDateInput(day),
           );
           return (
             <div key={day.toISOString()}>
               <p className="text-[13px] font-bold text-dc-ink">
-                {DAY_LABEL[i]} {day.getDate()}
+                {DAY_LABEL[i]} {DAY_NUMBER.format(day)}
               </p>
               <div className="mt-2.5 flex flex-col gap-2">
                 {tasks.length === 0 ? (

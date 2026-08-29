@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
@@ -28,7 +28,7 @@ const schema = z.object({
  * mantığı. Web sayfası bu route'a geçirilmedi (riskten kaçınmak için).
  */
 export async function GET() {
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
 
   const evidenceEnabled = getPanelFeatureFlags().assignmentEvidence;
@@ -97,7 +97,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN", "TEACHER");
+  const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.assignments.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignments:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

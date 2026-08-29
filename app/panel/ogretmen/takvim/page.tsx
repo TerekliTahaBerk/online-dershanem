@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
+import {
+  addIstanbulCalendarDays,
+  formatIstanbulDateInput,
+  ISTANBUL_TIME_ZONE,
+  istanbulWeekStart,
+} from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -18,17 +24,17 @@ export const dynamic = "force-dynamic";
  */
 
 const DAY_LABEL = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-const RANGE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
-
-function mondayOf(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  return d;
-}
-
-const hhmm = (d: Date) =>
-  `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+const RANGE = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
+const HHMM = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+const DAY_NUMBER = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  day: "numeric",
+});
 
 export default async function TeacherCalendarPage({
   searchParams,
@@ -38,10 +44,8 @@ export default async function TeacherCalendarPage({
   const session = await requireRole("TEACHER");
   const offset = Number((await searchParams).hafta ?? 0) || 0;
 
-  const start = mondayOf(new Date());
-  start.setDate(start.getDate() + offset * 7);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 7);
+  const start = istanbulWeekStart(new Date(), offset);
+  const end = addIstanbulCalendarDays(start, 7);
 
   const lessons = await prisma.lesson.findMany({
     where: { teacherId: session.userId, startsAt: { gte: start, lt: end } },
@@ -61,16 +65,11 @@ export default async function TeacherCalendarPage({
   const loadHours = Math.round((totalMinutes / 60) * 10) / 10;
 
   // Yalnız dolu saat dilimleri satır olur
-  const slots = [...new Set(lessons.map((l) => hhmm(l.startsAt)))].sort();
+  const slots = [...new Set(lessons.map((l) => HHMM.format(l.startsAt)))].sort();
 
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
+  const days = Array.from({ length: 7 }, (_, i) => addIstanbulCalendarDays(start, i));
 
-  const endLabel = new Date(end);
-  endLabel.setDate(endLabel.getDate() - 1);
+  const endLabel = addIstanbulCalendarDays(end, -1);
 
   return (
     <PanelShell
@@ -121,7 +120,7 @@ export default async function TeacherCalendarPage({
                       scope="col"
                       className="px-2.5 py-3 text-[12.5px] font-bold text-dc-ink-muted"
                     >
-                      {DAY_LABEL[i]} {d.getDate()}
+                      {DAY_LABEL[i]} {DAY_NUMBER.format(d)}
                     </th>
                   ))}
                 </tr>
@@ -138,8 +137,8 @@ export default async function TeacherCalendarPage({
                     {days.map((day) => {
                       const cell = lessons.filter(
                         (l) =>
-                          hhmm(l.startsAt) === slot &&
-                          l.startsAt.toDateString() === day.toDateString(),
+                          HHMM.format(l.startsAt) === slot &&
+                          formatIstanbulDateInput(l.startsAt) === formatIstanbulDateInput(day),
                       );
                       return (
                         <td key={day.toISOString()} className="p-2 align-top">

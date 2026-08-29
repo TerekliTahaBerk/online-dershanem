@@ -17,7 +17,7 @@ import { hasFreshStepUp } from "@/lib/auth/mfa-policy";
  * anlamsız bir HTML döndürür. Burada JSON dönüyoruz.
  *
  * Kullanım:
- *   const auth = await requireApiRole("ADMIN");
+ *   const auth = await requireApiProductRole("OD", "ADMIN");
  *   if (!auth.ok) return auth.response;
  *   // auth.session güvenle kullanılabilir
  */
@@ -73,7 +73,7 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireAdminMfa = tru
 }
 
 export async function requireApiRecentAdminStepUp(): Promise<ApiAuth> {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiAccountRole("ADMIN");
   if (!auth.ok) return auth;
   if (!hasFreshStepUp(auth.session.stepUpAt)) {
     return { ok: false, response: NextResponse.json({ error: "Bu hassas işlem için kimliğinizi yeniden doğrulayın.", code: "STEP_UP_REQUIRED", redirect: "/panel/guvenlik" }, { status: 428 }) };
@@ -85,18 +85,6 @@ async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, 
   const pilot = product === "ODK" ? await checkOdkPilotAccess(auth.session.userId, auth.session.role) : await checkPilotAccess(auth.session.userId, auth.session.role);
   if (pilot.allowed) return auth;
   return { ok: false, response: NextResponse.json({ error: pilot.reason === "KILL_SWITCH" ? "Pilot geçici olarak durduruldu." : "Bu pilot erişimi etkin değil." }, { status: pilot.reason === "KILL_SWITCH" ? 503 : 404 }) };
-}
-
-/** Mevcut panel API'leri Online Dershanem ürün kapsamındadır. */
-export async function requireApiRole(...roles: UserRole[]): Promise<ApiAuth> {
-  let auth = await requireApiAuthorizedRole(roles);
-  if (!auth.ok) return auth;
-  auth = await requireApiProductPilot(auth, "OD");
-  if (!auth.ok) return auth;
-  if (!(await hasProductAccess(auth.session.userId, auth.session.role, "OD"))) {
-    return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
-  }
-  return auth;
 }
 
 /** Bildirim ve görünüm tercihi gibi iki üründe ortak hesap işlemleri. */
@@ -123,4 +111,9 @@ export async function requireApiProductRole(product: ProductCode, ...roles: User
     return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
   }
   return auth;
+}
+
+/** Online Dershanem'e ait legacy route'lar için açık ürün adı taşıyan kısayol. */
+export async function requireApiOdRole(...roles: UserRole[]): Promise<ApiAuth> {
+  return requireApiProductRole("OD", ...roles);
 }

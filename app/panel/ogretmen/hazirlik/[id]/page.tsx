@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
+import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
 import { resolveTeacherStudent } from "@/lib/panel/teacher-scope";
 import { findCoachAssignmentForCoach, getStudentCoaching } from "@/lib/panel/coaching";
 import { getStudentExamSubjects, getStudentGoals } from "@/lib/panel/goals";
@@ -44,13 +45,13 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
 
   /* Geçen haftanın planı — planlama haftasının bir öncesi. */
   const thisWeek = planningWeekStart();
-  const lastWeek = new Date(thisWeek);
-  lastWeek.setDate(lastWeek.getDate() - 7);
+  const lastWeek = new Date(thisWeek.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   const [lastPlan, currentPlan, notes, attendances, examSections, coaching, assignment] =
     await Promise.all([
-    prisma.weeklyPlan.findUnique({
-      where: { studentId_weekStart: { studentId: student.id, weekStart: lastWeek } },
+    prisma.weeklyPlan.findFirst({
+      where: { studentId: student.id, weekStart: { gte: lastWeek, lt: thisWeek } },
+      orderBy: { weekStart: "asc" },
       select: {
         tasks: {
           where: { status: { not: "SKIPPED" } },
@@ -59,8 +60,12 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
         },
       },
     }),
-    prisma.weeklyPlan.findUnique({
-      where: { studentId_weekStart: { studentId: student.id, weekStart: thisWeek } },
+    prisma.weeklyPlan.findFirst({
+      where: {
+        studentId: student.id,
+        weekStart: { gte: thisWeek, lt: addIstanbulCalendarDays(thisWeek, 7) },
+      },
+      orderBy: { weekStart: "asc" },
       select: { id: true, status: true },
     }),
     prisma.lessonNote.findMany({

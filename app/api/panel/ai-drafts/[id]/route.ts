@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { aiDraftContentSchema, changedFieldCount, type AiDraftContent } from "@/lib/teacher-ai";
@@ -14,7 +14,7 @@ const schema = z.object({ action: z.enum(["APPROVE", "REJECT", "FLAG"]), expecte
 const ageBand = (ms: number) => ms <= 5 * 60_000 ? "0-5M" as const : ms <= 86_400_000 ? "6M-24H" as const : "24H+" as const;
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("TEACHER"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("TEACHER"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().teacherAiDrafts) return NextResponse.json({ error: "AI taslak pilotu henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.ai_draft.review", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:ai-review:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

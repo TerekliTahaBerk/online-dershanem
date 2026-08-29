@@ -3,7 +3,7 @@ import test from "node:test";
 import { buildInterventionSignals, interventionWindowStart } from "./intervention-rules";
 
 test("müdahale değerlendirme penceresi pazartesi başlar", () => {
-  assert.equal(interventionWindowStart(new Date("2026-07-19T12:00:00Z")).toISOString(), "2026-07-13T00:00:00.000Z");
+  assert.equal(interventionWindowStart(new Date("2026-07-19T12:00:00Z")).toISOString(), "2026-07-12T21:00:00.000Z");
 });
 
 test("tek günlük dalgalanma vaka üretmez", () => {

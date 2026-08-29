@@ -13,12 +13,20 @@ import {
   formatCents,
   lessonSubjects,
   resolveBuilderCheckout,
+  resolveBuilderProductCheckout,
   resolvePackageQuote,
+  type BillingPeriod,
   type BuilderSelection,
   type ExamTrack,
   type LessonFormat,
   type ProductKey,
 } from "@/lib/commerce/package-builder-pricing";
+
+const billingCopy: Record<BillingPeriod, { label: string; savingsLabel: string }> = {
+  monthly: { label: "Aylık", savingsLabel: "Aylık avantajın" },
+  period: { label: "Dönemlik", savingsLabel: "Dönemlik avantajın" },
+  oneTime: { label: "Tek seferlik", savingsLabel: "Tek seferlik avantajın" },
+};
 
 /**
  * PAKET KURUCU — onaylı tasarım (Web.dc.html → isPack).
@@ -88,26 +96,26 @@ const productCopy = {
 function crossSellText(selection: BuilderSelection, count: number): string | null {
   if (count === 1) {
     if (selection.dershanem)
-      return "Koçluğu da eklersen haftalık plan ve düzenli takip pakete dahil olur; toplam fiyat da ayrı almaktan düşük olur.";
+      return "Koçluğu da eklersen haftalık plan ve düzenli takip aynı çözüm içinde kurgulanır.";
     if (selection.kocum)
-      return "Canlı dersi de eklersen planda eksik kalan konuyu öğretmenle çalışırsın; toplam fiyat da ayrı almaktan düşük olur.";
-    return "Canlı dersi de eklersen denemede çıkan eksik konuyu öğretmenle kapatırsın; toplam fiyat da ayrı almaktan düşük olur.";
+      return "Canlı dersi de eklersen planda eksik kalan konuyu öğretmenle çalışırsın.";
+    return "Canlı dersi de eklersen denemede çıkan eksik konuyu öğretmenle kapatırsın.";
   }
   if (count === 2) {
     if (!selection.denemeKulubum)
-      return "Deneme Kulübü'nü eklediğinde ölçme ve analiz de aynı pakete girer; toplam avantajın artar.";
+      return "Deneme Kulübü'nü eklediğinde ölçme ve analiz de aynı çözüm kapsamına girer.";
     if (!selection.kocum)
-      return "Koçluğu eklediğinde haftalık plan da aynı pakete girer; toplam avantajın artar.";
-    return "Canlı dersi eklediğinde konu anlatımı da aynı pakete girer; toplam avantajın artar.";
+      return "Koçluğu eklediğinde haftalık plan da aynı çözüm kapsamına girer.";
+    return "Canlı dersi eklediğinde konu anlatımı da aynı çözüm kapsamına girer.";
   }
   return null;
 }
 
 function hintText(count: number): string {
   if (count === 0) return "Nereden başlamak istiyorsun?";
-  if (count === 1) return "İkinci ürünü eklediğinde paket avantajı başlar.";
-  if (count === 2) return "Üçüncü ürünü eklediğinde toplam avantajın artar.";
-  return "Üç ürünü birlikte kullanıyorsun: en avantajlı toplam.";
+  if (count === 1) return "Seçimini online satın alabilir veya ön görüşmede netleştirebilirsin.";
+  if (count === 2) return "Birlikte seçilen ürünlerin kesin teklifi ön görüşmede oluşturulur.";
+  return "Üç ürünün kesin teklifi ve ödeme planı ön görüşmede oluşturulur.";
 }
 
 export function PackageBuilder() {
@@ -123,6 +131,9 @@ export function PackageBuilder() {
 
   const quote = useMemo(() => resolvePackageQuote(selection), [selection]);
   const count = quote.selectedCount;
+  const activeTotals = [quote.monthlyTotal, quote.periodTotal, quote.oneTimeTotal].filter(
+    (total) => total.selectedLineCount > 0,
+  );
   const subjects = selection.exam ? lessonSubjects[selection.exam] : [];
 
   // Seçim gerçekten satın alınabiliyorsa CTA sepete gider; aksi halde seçimi
@@ -246,6 +257,7 @@ export function PackageBuilder() {
             const copy = productCopy[key];
             const line = quote.lines.find((l) => l.product === key)!;
             const active = selection[key];
+            const productCheckout = resolveBuilderProductCheckout(selection, key);
 
             return (
               <div
@@ -297,7 +309,7 @@ export function PackageBuilder() {
                       tasarımdaki gibi sağ sütun. */}
                   <span className="flex w-full flex-none items-center justify-between gap-3 border-t border-dc-line-soft pt-3.5 sm:block sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
                     <span className="block">
-                      {line.cents !== null ? (
+                      {productCheckout && line.cents !== null ? (
                         <>
                           {/* Kampanya öncesi liste fiyatı — yalnızca gerçekten
                               yüksekse basılır. */}
@@ -316,6 +328,9 @@ export function PackageBuilder() {
                           </span>
                           <span className="block text-[12.5px] font-medium text-dc-ink-faint">
                             {billingSuffix(line.billing)}
+                          </span>
+                          <span className="mt-0.5 block text-[10.5px] font-semibold text-dc-brand-hover">
+                            Tek başına online alınabilir
                           </span>
                         </>
                       ) : (
@@ -444,12 +459,12 @@ export function PackageBuilder() {
             );
           })}
 
-          {/* Avantaj kademeleri — 3 basamaklı gösterge */}
+          {/* Seçim kapsamı — fiyat vaadi değil, ürün sayısını gösterir. */}
           <div className="grid gap-5 px-1 pt-1 sm:grid-cols-3 sm:gap-6">
             {[
-              { tier: 1, label: "1 ürün — standart fiyat" },
-              { tier: 2, label: "2 ürün — toplam daha az" },
-              { tier: 3, label: "3 ürün — en düşük toplam" },
+              { tier: 1, label: "1 ürün — odaklı çözüm" },
+              { tier: 2, label: "2 ürün — birlikte planlama" },
+              { tier: 3, label: "3 ürün — tam kapsam" },
             ].map(({ tier, label }) => (
               <div key={tier}>
                 <div
@@ -478,7 +493,7 @@ export function PackageBuilder() {
             </div>
             {count === 3 ? (
               <span className="rounded-full bg-dc-brand-soft px-3 py-1.5 text-[12px] font-bold text-dc-brand-hover">
-                En Avantajlı
+                Tam kapsam
               </span>
             ) : null}
           </div>
@@ -507,7 +522,9 @@ export function PackageBuilder() {
                     {line.label}
                   </span>
                   <span className="ml-auto text-[13.5px] font-semibold text-dc-ink-faint">
-                    {line.cents !== null ? formatCents(line.cents) : "—"}
+                    {checkoutItem && line.selected && line.cents !== null
+                      ? `${formatCents(line.cents)} ${billingSuffix(line.billing)}`
+                      : "—"}
                   </span>
                 </div>
 
@@ -538,13 +555,21 @@ export function PackageBuilder() {
 
           <div className="my-5 h-px bg-dc-line-soft" />
 
-          <div className="text-[13.5px] font-medium text-dc-ink-muted">
-            {count <= 1 ? "Tek ürün fiyatı" : "Paket fiyatı"}
-          </div>
+          <div className="text-[13.5px] font-medium text-dc-ink-muted">Ödeme özeti</div>
 
-          {quote.priceResolved && quote.bundleTotalCents !== null ? (
-            <div className="mt-0.5 text-[34px] font-extrabold tracking-[-0.025em] text-dc-ink">
-              {formatCents(quote.bundleTotalCents)}
+          {checkoutItem && quote.priceResolved ? (
+            <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-dc-ink">
+              {activeTotals.map((total, index) => (
+                <span key={total.billing} className="contents">
+                  {index > 0 ? <span className="text-[24px] font-semibold">+</span> : null}
+                  <span className="whitespace-nowrap">
+                    <span className="text-[15px] font-bold">{billingCopy[total.billing].label}</span>{" "}
+                    <span className="text-[30px] font-extrabold tracking-[-0.025em]">
+                      {formatCents(total.payableCents ?? 0)}
+                    </span>
+                  </span>
+                </span>
+              ))}
             </div>
           ) : (
             <div className="mt-1 text-[15px] font-semibold leading-[1.5] text-dc-ink">
@@ -553,59 +578,51 @@ export function PackageBuilder() {
           )}
 
           <p className="mt-1.5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
-            Ders ve koçluk aylık, deneme kulübü dönemsel faturalanır. Farklı dönemler
-            özet içinde ayrı gösterilir.
+            {checkoutItem
+              ? "Bu tutar ödeme-kritik katalogdaki satın alınabilir ürünle aynıdır."
+              : count > 0
+                ? "Bu seçim henüz online satın alınamıyor; kesin fiyat ve ödeme planı ön görüşmede oluşturulur."
+                : "Satın almak veya ön görüşmeye geçmek için ürün seç."}
           </p>
 
-          {/* İndirim dökümü — hangi rakamın nereden geldiği açıkça yazılır:
-              liste fiyatı, kalem bazlı kampanya, birlikte alma indirimi. */}
-          {quote.priceResolved &&
-          quote.listTotalCents !== null &&
-          quote.savingsCents !== null &&
-          quote.savingsCents > 0 ? (
-            <dl className="mt-3.5 flex flex-col gap-1.5 rounded-dc-card-sm border border-dc-line-soft px-3.5 py-3">
-              <div className="flex items-baseline justify-between gap-3">
-                <dt className="text-[13px] text-dc-ink-faint">Liste fiyatı</dt>
-                <dd className="text-[14px] text-dc-ink-faint line-through">
-                  {formatCents(quote.listTotalCents)}
-                </dd>
-              </div>
-
-              {quote.campaignSavingsCents !== null && quote.campaignSavingsCents > 0 ? (
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-[13px] text-dc-ink-muted">Kampanya indirimi</dt>
-                  <dd className="text-[14px] font-semibold text-dc-brand-hover">
-                    −{formatCents(quote.campaignSavingsCents)}
-                  </dd>
+          {/* Her dönem kendi liste, indirim ve ödenecek tutarıyla uzlaşır. */}
+          {checkoutItem && quote.priceResolved
+            ? activeTotals.map((total) => (
+                <div key={total.billing} className="mt-3.5 rounded-dc-card-sm border border-dc-line-soft px-3.5 py-3">
+                  <div className="text-[12px] font-bold uppercase tracking-[0.06em] text-dc-ink-muted">
+                    {billingCopy[total.billing].label}
+                  </div>
+                  <dl className="mt-2 flex flex-col gap-1.5">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <dt className="text-[13px] text-dc-ink-faint">Liste fiyatı</dt>
+                      <dd className="text-[14px] text-dc-ink-faint line-through">{formatCents(total.listCents ?? 0)}</dd>
+                    </div>
+                    {total.campaignSavingsCents !== null && total.campaignSavingsCents > 0 ? (
+                      <div className="flex items-baseline justify-between gap-3">
+                        <dt className="text-[13px] text-dc-ink-muted">Kampanya indirimi</dt>
+                        <dd className="text-[14px] font-semibold text-dc-brand-hover">−{formatCents(total.campaignSavingsCents)}</dd>
+                      </div>
+                    ) : null}
+                    {total.bundleDiscountCents !== null && total.bundleDiscountCents > 0 ? (
+                      <div className="flex items-baseline justify-between gap-3">
+                        <dt className="text-[13px] text-dc-ink-muted">Paket indirimi</dt>
+                        <dd className="text-[14px] font-semibold text-dc-brand-hover">−{formatCents(total.bundleDiscountCents)}</dd>
+                      </div>
+                    ) : null}
+                    <div className="flex items-baseline justify-between gap-3 border-t border-dc-line-soft pt-1.5">
+                      <dt className="text-[13px] font-semibold text-dc-ink">Ödenecek</dt>
+                      <dd className="text-[14px] font-extrabold text-dc-ink">{formatCents(total.payableCents ?? 0)}</dd>
+                    </div>
+                  </dl>
+                  {total.savingsCents !== null && total.savingsCents > 0 ? (
+                    <div className="mt-2 flex items-center justify-between rounded-lg bg-dc-brand-soft px-2.5 py-2">
+                      <span className="text-[12.5px] font-semibold text-dc-brand-hover">{billingCopy[total.billing].savingsLabel}</span>
+                      <span className="text-[14px] font-extrabold text-dc-brand-hover">{formatCents(total.savingsCents)}</span>
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-
-              {quote.bundleDiscountCents !== null && quote.bundleDiscountCents > 0 ? (
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-[13px] text-dc-ink-muted">
-                    Paket indirimi
-                    <span className="block text-[11.5px] text-dc-ink-faint">
-                      {count} ürünü birlikte aldığın için
-                    </span>
-                  </dt>
-                  <dd className="text-[14px] font-semibold text-dc-brand-hover">
-                    −{formatCents(quote.bundleDiscountCents)}
-                  </dd>
-                </div>
-              ) : null}
-            </dl>
-          ) : null}
-
-          {quote.savingsCents !== null && quote.savingsCents > 0 ? (
-            <div className="mt-3 flex items-center justify-between rounded-dc-card-sm bg-dc-brand-soft px-3.5 py-2.5">
-              <span className="text-[13.5px] font-semibold text-dc-brand-hover">
-                Toplam avantajın
-              </span>
-              <span className="text-[15px] font-extrabold text-dc-brand-hover">
-                {formatCents(quote.savingsCents)}
-              </span>
-            </div>
-          ) : null}
+              ))
+            : null}
 
           {/* Pasif durum opaklıkla değil, kendi erişilebilir tonuyla:
               yeşilin üstüne opacity uygulanınca beyaz metin 2.1:1'e düşüyordu. */}
@@ -625,7 +642,7 @@ export function PackageBuilder() {
               href={`/iletisim/${builderContactQuery(selection)}`}
               className="site-btn site-btn-primary mt-5 w-full"
             >
-              {quote.priceResolved ? "Bu Paketle Devam Et" : "Ön Görüşme Talep Et"}
+              Ön Görüşme Talep Et
             </Link>
           )}
 
@@ -633,9 +650,7 @@ export function PackageBuilder() {
               CTA'nın neden değiştiğini görebilsin. */}
           {count > 0 && !checkoutItem ? (
             <p className="mt-2.5 text-center text-[12px] leading-[1.5] text-dc-ink-faint">
-              {selection.dershanem && !selection.kocum && !selection.denemeKulubum
-                ? "Birebir ders ve ek ders yapılandırmaları ön görüşmede kesinleşir."
-                : "Koçluk ve Deneme Kulübü için online kayıt akışı yayına alınmadan ödeme almıyoruz."}
+              Gösterilen seçim kapsamdır; kesin teklif satış ekibinin oluşturduğu yazılı fiyatla korunur.
             </p>
           ) : null}
 

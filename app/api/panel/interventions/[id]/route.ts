@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -21,7 +21,7 @@ const schema = z.discriminatedUnion("action", [
 const DAY = 86_400_000;
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN", "TEACHER");
+  const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().interventionInbox) return NextResponse.json({ error: "Müdahale kutusu henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.interventions.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:intervention-update:${auth.session.userId}`, rateLimit: { max: 100, windowMs: 15 * 60 * 1000 } });

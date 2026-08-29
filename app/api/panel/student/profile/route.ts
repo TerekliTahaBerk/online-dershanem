@@ -8,7 +8,7 @@ import { productLabel } from "@/lib/auth/roles";
  *
  * `app/panel/ogrenci/profil/page.tsx` ile AYNI iki sorgu. ÜRÜNDEN BAĞIMSIZ
  * (web'in kendi yorumu: `requireRole` OD şartı koşar, burada YANLIŞ olurdu)
- * — bu yüzden `requireApiRole` DEĞİL, rol-yalnız `requireApiAccountRole`
+ * — bu yüzden `requireApiOdRole` DEĞİL, rol-yalnız `requireApiAccountRole`
  * kullanılır; öğrenci hangi ürünü almış olursa olsun kendi profilini
  * görebilmeli.
  */

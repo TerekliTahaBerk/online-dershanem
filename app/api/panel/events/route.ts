@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiAccountRole } from "@/lib/auth/api-guards";
 import { isClientPanelEvent, panelEventSchema } from "@/lib/panel-events";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+  const auth = await requireApiAccountRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().baselineMetrics) return new NextResponse(null, { status: 204 });
 

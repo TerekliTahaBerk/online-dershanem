@@ -3,6 +3,7 @@ import "server-only";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
+import { hasProductEntitlement } from "@/lib/auth/product-entitlements";
 
 const STAFF_PRODUCTS: ProductCode[] = ["OD", "OK", "ODK"];
 
@@ -25,7 +26,7 @@ export async function getAccessibleProducts(userId: string, role: UserRole, now 
 }
 
 export async function hasProductAccess(userId: string, role: UserRole, product: ProductCode): Promise<boolean> {
-  return (await getAccessibleProducts(userId, role)).includes(product);
+  return hasProductEntitlement(await getAccessibleProducts(userId, role), product);
 }
 
 /**

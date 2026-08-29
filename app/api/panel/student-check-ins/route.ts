@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -19,7 +19,7 @@ const schema = z.object({
 }).strict().refine((value) => !value.helpRequested || value.shareWithTeacher, { message: "Yardım isteği öğretmenle paylaşılmalıdır." });
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("STUDENT");
+  const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().studentCheckIn) return NextResponse.json({ error: "Check-in henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.student_check_in.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:student-check-in:${auth.session.userId}`, rateLimit: { max: 10, windowMs: 15 * 60 * 1000 } });

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 const schema = z.object({ expectedVersion: z.number().int().min(1) });
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("TEACHER");
+  const auth = await requireApiProductRole("OK", "TEACHER");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.approve", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-approve:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });

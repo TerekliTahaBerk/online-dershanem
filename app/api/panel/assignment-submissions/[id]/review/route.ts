@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -10,7 +10,7 @@ import { logAudit } from "@/lib/audit";
 const schema = z.object({ expectedVersion: z.number().int().min(1), decision: z.enum(["APPROVE", "REQUEST_CHANGES"]), feedback: z.string().trim().min(2).max(1000), interactionDurationMs: z.number().int().min(0).max(30 * 60 * 1000), scores: z.array(z.object({ criterionId: z.string().min(1), level: z.enum(["NEEDS_WORK", "DEVELOPING", "MEETS"]) }).strict()).min(2).max(4) }).strict();
 const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("TEACHER"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("TEACHER"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().assignmentEvidence) return NextResponse.json({ error: "Kanıtlı teslim henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.assignment-evidence.review", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignment-review:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Rubric ve geri bildirim alanlarını kontrol edin." }, { status: 400 }); const { id } = await context.params;

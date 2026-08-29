@@ -1,3 +1,10 @@
+import {
+  addIstanbulCalendarDays,
+  istanbulDayStart,
+  istanbulIsoWeekday,
+  istanbulWeekStart,
+} from "./istanbul-time";
+
 export const ADAPTIVE_PLAN_RULE_VERSION = "adaptive-v1";
 
 export type PlanCandidate = {
@@ -16,15 +23,7 @@ export type PlannedTask = Omit<PlanCandidate, "priority" | "dueAt"> & {
 };
 
 export function planningWeekStart(now = new Date()): Date {
-  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() - day + 1);
-  if (day === 7) date.setUTCDate(date.getUTCDate() + 7);
-  return date;
-}
-
-function isoDay(date: Date): number {
-  return date.getUTCDay() || 7;
+  return istanbulWeekStart(now, istanbulIsoWeekday(now) === 7 ? 1 : 0);
 }
 
 /** Günlük görev ve dakika kapasitesini asla aşmayan açıklanabilir v1 çözücü. */
@@ -36,9 +35,9 @@ export function buildAdaptiveWeek(input: {
   candidates: PlanCandidate[];
 }): PlannedTask[] {
   const weekStart = planningWeekStart(input.now);
-  const today = new Date(Date.UTC(input.now.getUTCFullYear(), input.now.getUTCMonth(), input.now.getUTCDate()));
+  const today = istanbulDayStart(input.now);
   const available = new Set(input.availableDays);
-  const days = Array.from({ length: 7 }, (_, index) => new Date(weekStart.getTime() + index * 86400000)).filter((day) => day >= today && available.has(isoDay(day)));
+  const days = Array.from({ length: 7 }, (_, index) => addIstanbulCalendarDays(weekStart, index)).filter((day) => day >= today && available.has(istanbulIsoWeekday(day)));
   const candidates = [...input.candidates].sort((a, b) => b.priority - a.priority || (a.dueAt?.getTime() || Number.MAX_SAFE_INTEGER) - (b.dueAt?.getTime() || Number.MAX_SAFE_INTEGER) || a.title.localeCompare(b.title, "tr"));
   const result: PlannedTask[] = [];
 

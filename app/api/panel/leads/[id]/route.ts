@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 
 const schema = z.object({ status: z.enum(["NEW", "REVIEWING", "CONTACTED", "ENROLLED", "ARCHIVED"]) });
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.leads.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:leads:${auth.session.userId}`, rateLimit: { max: 120, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });

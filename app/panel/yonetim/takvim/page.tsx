@@ -4,14 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
+import { addIstanbulCalendarDays, istanbulWeekStart } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
 function weekBounds(offset: number) {
-  const tr = new Date(Date.now() + 3 * 3600000);
-  const dayFromMonday = (tr.getUTCDay() + 6) % 7;
-  const start = new Date(Date.UTC(tr.getUTCFullYear(), tr.getUTCMonth(), tr.getUTCDate() - dayFromMonday + offset * 7) - 3 * 3600000);
-  return { start, end: new Date(start.getTime() + 7 * 86400000) };
+  const start = istanbulWeekStart(new Date(), offset);
+  return { start, end: addIstanbulCalendarDays(start, 7) };
 }
 
 const dayTitle = new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", weekday: "short", day: "numeric", month: "short" });
@@ -28,7 +27,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     prisma.user.findMany({ where: { role: "TEACHER", status: "ACTIVE" }, orderBy: { fullName: "asc" }, select: { id: true, fullName: true, email: true } }),
     prisma.group.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, select: { id: true, name: true } }),
   ]);
-  const days = Array.from({ length: 7 }, (_, index) => new Date(start.getTime() + index * 86400000));
+  const days = Array.from({ length: 7 }, (_, index) => addIstanbulCalendarDays(start, index));
   const query = (nextWeek: number) => { const qs = new URLSearchParams({ week: String(nextWeek) }); if (params.teacher) qs.set("teacher", params.teacher); if (params.group) qs.set("group", params.group); return `/panel/yonetim/takvim?${qs}`; };
 
   return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>

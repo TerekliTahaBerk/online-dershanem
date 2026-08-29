@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { sameLocalDay } from "@/lib/review-scheduler";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("STUDENT"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("STUDENT"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().reviewQueue) return NextResponse.json({ error: "Tekrar kuyruğu henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.review_item.defer", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:review-defer:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 }); const { id } = await params; const now = new Date();

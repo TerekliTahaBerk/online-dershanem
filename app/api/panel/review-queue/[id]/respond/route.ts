@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { scheduleReview } from "@/lib/review-scheduler";
@@ -10,7 +10,7 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 const schema = z.object({ response: z.enum(["WRONG", "UNSURE", "CORRECT"]), idempotencyKey: z.string().min(8).max(100).regex(/^[a-zA-Z0-9_-]+$/), solutionNote: z.string().trim().max(500).optional() });
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("STUDENT"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("STUDENT"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().reviewQueue) return NextResponse.json({ error: "Tekrar kuyruğu henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.review_item.respond", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:review-response:${auth.session.userId}`, rateLimit: { max: 100, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

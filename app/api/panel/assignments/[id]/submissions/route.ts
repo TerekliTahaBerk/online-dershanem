@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -11,7 +11,7 @@ function attemptBand(value: number): "1" | "2" | "3+" { return value === 1 ? "1"
 function characterBand(value: number): "20-199" | "200-499" | "500+" { return value < 200 ? "20-199" : value < 500 ? "200-499" : "500+"; }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("STUDENT"); if (!auth.ok) return auth.response;
+  const auth = await requireApiOdRole("STUDENT"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().assignmentEvidence) return NextResponse.json({ error: "Kanıtlı teslim henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.assignment-evidence.submit", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignment-evidence:${auth.session.userId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

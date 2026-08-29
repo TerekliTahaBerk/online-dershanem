@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
 const code = z.string().trim().min(2).max(40).regex(/^[A-Za-z0-9._-]+$/);
 const schema = z.object({ code, title: z.string().trim().min(3).max(120), exam: z.enum(["LGS", "TYT", "AYT", "YDT"]), academicYear: z.number().int().min(2024).max(2100), sourceUrl: z.string().url().max(500).optional().or(z.literal("")) });
 
 export async function POST(request: Request) {
-  const auth = await requireApiRole("ADMIN");
+  const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.curriculum.version.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:curriculum:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

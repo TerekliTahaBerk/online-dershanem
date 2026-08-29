@@ -1,12 +1,12 @@
 import { get } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { learningMaterialAccessScope } from "@/lib/auth/resource-scopes";
 import { logPrivateMaterialAccessed, logResourceAccessDenied } from "@/lib/security/resource-access-log";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+  const auth = await requireApiOdRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
   if (!auth.ok) return auth.response;
   const { id } = await context.params;
   const roleScope = learningMaterialAccessScope(auth.session.role, auth.session.userId);

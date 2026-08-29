@@ -5,11 +5,16 @@ import { buildAdaptiveWeek, planningWeekStart } from "./adaptive-plan";
 const candidates = Array.from({ length: 10 }, (_, index) => ({ sourceType: "ASSIGNMENT" as const, sourceReferenceId: `a${index}`, title: `Görev ${index}`, durationMinutes: 20, reasonCode: "DUE_SOON" as const, priority: 100 - index, dueAt: new Date(`2026-07-${20 + index}T00:00:00Z`) }));
 
 test("plan haftayı pazartesi başlatır", () => {
-  assert.equal(planningWeekStart(new Date("2026-07-22T12:00:00Z")).toISOString(), "2026-07-20T00:00:00.000Z");
+  assert.equal(planningWeekStart(new Date("2026-07-22T12:00:00Z")).toISOString(), "2026-07-19T21:00:00.000Z");
 });
 
 test("pazar günü yeni haftayı hazırlamaya geçer", () => {
-  assert.equal(planningWeekStart(new Date("2026-07-19T12:00:00Z")).toISOString(), "2026-07-20T00:00:00.000Z");
+  assert.equal(planningWeekStart(new Date("2026-07-19T12:00:00Z")).toISOString(), "2026-07-19T21:00:00.000Z");
+});
+
+test("UTC cumartesi olsa da İstanbul'da pazar başladıysa sonraki plan haftasına geçer", () => {
+  const istanbulSunday0030 = new Date("2026-07-18T21:30:00.000Z");
+  assert.equal(planningWeekStart(istanbulSunday0030).toISOString(), "2026-07-19T21:00:00.000Z");
 });
 
 test("günlük üç görev ve dakika kapasitesini aşmaz", () => {
@@ -24,8 +29,8 @@ test("günlük üç görev ve dakika kapasitesini aşmaz", () => {
 
 test("kaçan günleri geçmişe veya borç yığınına dönüştürmez", () => {
   const tasks = buildAdaptiveWeek({ now: new Date("2026-07-23T10:00:00Z"), availableDays: [1, 2, 3, 4, 5], minutesPerDay: 40, maxTasksPerDay: 3, candidates });
-  assert.ok(tasks.every((task) => task.scheduledFor >= new Date("2026-07-23T00:00:00Z")));
-  assert.ok(tasks.filter((task) => task.scheduledFor.toISOString().startsWith("2026-07-23")).length <= 2);
+  assert.ok(tasks.every((task) => task.scheduledFor >= new Date("2026-07-22T21:00:00Z")));
+  assert.ok(tasks.filter((task) => task.scheduledFor.toISOString() === "2026-07-22T21:00:00.000Z").length <= 2);
 });
 
 test("yüksek öncelikli ve yakın tarihli işi önce seçer", () => {

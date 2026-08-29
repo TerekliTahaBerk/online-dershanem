@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { formatIstanbulDateInput } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelHeading,
@@ -125,7 +126,8 @@ export default async function StudentLessonsPage({
           {lessons.map((lesson) => {
             const attendance = lesson.attendances[0]?.status;
             const missed = attendance === "ABSENT";
-            const isToday = lesson.startsAt.toDateString() === now.toDateString();
+            const isToday =
+              formatIstanbulDateInput(lesson.startsAt) === formatIstanbulDateInput(now);
             const completed = lesson.status === "COMPLETED";
 
             const statusLabel = missed
