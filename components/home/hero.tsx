@@ -13,25 +13,20 @@ export function HomeHero() {
       <div className="grid items-center gap-10 lg:grid-cols-[1.08fr_1fr]">
         <div>
           <h1 className="max-w-[560px] font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink [text-wrap:pretty]">
-            Canlı derste öğren, hafta boyunca ne çalışacağını bil.
+            Canlı derste öğren. Haftanı planla. Denemeyle ölç.
           </h1>
           <p className="mt-5 max-w-[480px] text-[17px] leading-[1.65] text-dc-ink-body [text-wrap:pretty] sm:text-[18.5px]">
-            LGS ve YKS için canlı ders, koçluk ve deneme analizi. Üçünü ayrı ayrı
-            alabilirsin; birlikte aldığında toplam fiyat düşer.
+            LGS ve YKS için canlı ders, eğitim koçluğu ve online deneme. İhtiyacın
+            olan ürünü tek başına veya birlikte kullan.
           </p>
 
-          {/*
-            İkinci CTA satın alma yolunu açık tutar: ana sayfadan ödemeye giden
-            tek bağlantı footer'daki küçük "Ders paketleri" linkiydi. Kurucu
-            keşif içindir, `/ders-paketleri` ise doğrudan alma yoludur.
-          */}
           <div className="mt-7 flex flex-wrap items-center gap-3.5">
             <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
               Paketini Oluştur
               <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
             </Link>
-            <Link href="/ders-paketleri" className="site-btn site-btn-secondary site-btn-lg">
-              Ders Paketlerini Gör
+            <Link href="/urunler" className="site-btn site-btn-secondary site-btn-lg">
+              Ürünleri Karşılaştır
             </Link>
           </div>
 
@@ -48,7 +43,7 @@ export function HomeHero() {
           </dl>
         </div>
 
-        {/* Maskot + ders sonrası içgörü kartı */}
+        {/* Ürün panelinden bir akış örneği; Dino ana mesaj değil destek katmanı */}
         <div className="relative mt-4 h-[380px] sm:h-[480px] lg:mt-0">
           <Image
             src="/design/dino-mascot.png"
@@ -61,19 +56,14 @@ export function HomeHero() {
             className="absolute bottom-0 left-[8%] w-[74%] max-w-[450px] lg:left-[70px]"
           />
           <div className="absolute bottom-16 right-0 w-[230px] rounded-dc-card-sm border border-dc-line bg-white p-4 shadow-dc-raised sm:bottom-24 sm:w-[250px] sm:px-[18px]">
-            <p className="text-[12.5px] text-dc-ink-faint">Ders sonrası</p>
+            <p className="text-[12.5px] text-dc-ink-faint">Bugünün akışı</p>
             <p className="mt-1.5 text-[15px] font-bold leading-[1.4] text-dc-ink">
-              Bugün yüzde problemlerinde takıldın. Yarın 40 dakika bu konuya ayır.
+              Derse gir, haftalık planını gör, deneme sonucundan sıradaki odağını seç.
             </p>
           </div>
         </div>
       </div>
 
-      {/* 03 — doğruluk notu */}
-      <p className="pt-8 text-[11.5px] text-dc-ink-ghost">
-        Sitede öğrenci sayısı ya da başarı oranı yazmıyor. Elimizde doğrulanmış bir
-        rakam olmadan böyle bir şey yazmıyoruz.
-      </p>
     </section>
   );
 }

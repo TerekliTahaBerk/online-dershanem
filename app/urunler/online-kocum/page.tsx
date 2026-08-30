@@ -180,7 +180,7 @@ export default function OnlineKocumPage() {
             },
             {
               q: "Ders almadan koçluk alabilir miyim?",
-              a: "Evet, Online Koçum tek başına satın alınabilir.",
+              a: "Evet, Online Koçum tek başına planlanabilir. Koçluk kontenjanı ve başlangıç tarihi ön görüşmede netleşir; online kayıt akışı açılmadan ödeme alınmaz.",
             },
           ]}
         />

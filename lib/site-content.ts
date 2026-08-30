@@ -18,7 +18,7 @@ export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
 
 /**
  * Ana menü — onaylı tasarım (Site Nav.dc.html):
- * Ürünler ▼ · Paketler · Dino AI · Hakkımızda · Blog
+ * Ürünler ▼ · Dino AI · Hakkımızda · Blog
  * "Ürünler" üç ürünü açan bir alt menüdür; diğerleri düz bağlantıdır.
  */
 export const productsMenu = {
@@ -32,14 +32,7 @@ export const productsMenu = {
   })),
 } as const;
 
-/**
- * "Ders Paketleri" menüde ZORUNLU: `/ders-paketleri` sitedeki TEK online satın
- * alma sayfası. Daha önce yalnız footer'dan erişiliyordu; navbar, ana sayfa ve
- * ürün sayfalarının hiçbirinde ödemeye giden bağlantı yoktu.
- */
 export const primaryNav = [
-  { label: "Paketler", accessibleLabel: "Paketler", href: "/paketler" },
-  { label: "Ders Paketleri", accessibleLabel: "Ders paketleri ve fiyatları", href: "/ders-paketleri" },
   {
     label: sharedIntelligenceLayer.name,
     accessibleLabel: sharedIntelligenceLayer.name,
@@ -65,7 +58,7 @@ export const homeFaqs: Faq[] = [
   },
   {
     q: "Üçünü birden almak zorunda mıyım?",
-    a: "Hayır. Çoğu öğrenci tek ürünle başlıyor. Sonradan eklemek istersen ön görüşmede söylersin, paketin yeniden hesaplanır.",
+    a: "Hayır. Tek ürünle başlayabilirsin. Online ödeme akışı şu an ders paketinde açıktır; koçluk veya deneme eklemek istersen süreç ön görüşmede netleşir.",
   },
   {
     q: "Hangisiyle başlamalıyım?",

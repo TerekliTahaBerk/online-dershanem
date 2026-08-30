@@ -714,8 +714,8 @@ export const faq = [
 ];
 
 // Kategori bazlı SSS — /sss sayfası ve FAQPage JSON-LD bu listeyi kullanır.
-// Operasyonel cevaplar (ders süresi 90 dk, haftada 1 ders, telafi yerine ders
-// kaydı paylaşımı) ekip tarafından onaylanan rakamlarla yazılmıştır.
+// Operasyonel cevaplar (ders süresi 90 dk, haftada 1 ders, kaçırılan ders için
+// telafi paketi) ekip tarafından onaylanan rakamlarla yazılmıştır.
 export const faqCategories = [
   {
     category: "Ders modeli",
@@ -805,7 +805,7 @@ export const faqCategories = [
       },
       {
         q: "Telafi dersi var mı?",
-        a: "Ayrı bir telafi dersi yapılmaz. Bunun yerine, öğrenci bir derse katılamadığında o dersin kaydını ve ders sonu özetini paylaşırız; öğrenci işlenen konuyu ve verilen ödevi bu şekilde takip eder. Düzenli devamsızlık durumunda ekibimiz sizinle iletişime geçer.",
+        a: "Ayrı bir telafi dersi yapılmaz. Bunun yerine, kaçırılan ders için panelde ortak konu özeti, aktif materyal ve küçük çalışma adımı içeren telafi paketi paylaşılır. Düzenli devamsızlık durumunda ekibimiz sizinle iletişime geçer.",
       },
     ],
   },

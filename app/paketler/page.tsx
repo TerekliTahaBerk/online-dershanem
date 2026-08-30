@@ -22,11 +22,11 @@ export default function PackagesPage() {
           <h1 className="mx-auto mt-4 max-w-[760px] font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
             İhtiyacın olan desteği seç.
             <br />
-            Birlikte kurgula.
+            Birlikte kullan.
           </h1>
           <p className="mx-auto mt-4 max-w-[640px] text-[18px] leading-[1.65] text-dc-ink-body">
             Satın alınabilir ders paketinin fiyatını doğrudan görürsün. Koçluk, deneme,
-            birebir ve birleşik seçimlerin kesin teklifi ön görüşmede oluşturulur.
+            birebir ve birleşik seçimlerin net tutarı ön görüşmede paylaşılır.
           </p>
         </section>
 
@@ -55,11 +55,11 @@ export default function PackagesPage() {
           items={[
             {
               q: "Ürünleri ayrı ayrı alabilir miyim?",
-              a: "Evet. Üç ürün de tek başına satın alınabilir. İhtiyacın tek üründeyse yalnızca onu seçebilirsin.",
+              a: "Evet. Üç ürün de tek başına seçilebilir. Online ödeme akışı şu an ders paketinde açıktır; diğer tek ürün seçimlerinde net fiyat ve başlangıç planı ön görüşmede paylaşılır.",
             },
             {
               q: "Birden fazla ürün aldığımda fiyat nasıl değişiyor?",
-              a: "Birleşik seçimler henüz online satın alınabilir bir SKU'ya bağlı olmadığı için kesin rakam gösterilmez. Seçimin ön görüşme formuna taşınır; fiyat, faturalama dönemleri ve varsa indirimler yazılı teklifte netleştirilir.",
+              a: "İki ya da üç ürünü birlikte seçtiğinde toplam tutar düşer. Bu birleşik seçenekler online ödeme adımına açık olmadığı için net rakam ön görüşmede yazılı olarak paylaşılır.",
             },
             {
               q: "Ders fiyatı derse göre değişiyor mu?",
@@ -71,7 +71,7 @@ export default function PackagesPage() {
             },
             {
               q: "Paket fiyatımı sonradan değiştirebilir miyim?",
-              a: "Online satın alınabilir ürünün fiyatı ödeme adımında sunucu kataloğundan doğrulanır. Ön görüşmeli seçimlerde ise kabul ettiğin yazılı teklif esas alınır.",
+              a: "Online satın alınabilir ürünün fiyatı ödeme adımında güncel tutarla doğrulanır. Ön görüşmeli seçimlerde ise kabul ettiğin yazılı teklif esas alınır.",
             },
           ]}
         />

@@ -48,37 +48,32 @@ const productCopy = {
   dershanem: {
     glyph: "▶",
     title: "Online Dershanem",
-    summary: "LGS ve YKS için canlı online dersler.",
+    summary: "Canlı derste öğrenme eksiğini kapatırsın.",
     tracks: ["LGS", "YKS"],
     points: [
       "Birebir ya da en fazla 4 kişilik canlı ders",
-      "Ders sonrası öğretmen notu ve çalışma yönü",
-      "Derse katılım ve ilerlemede veli görünümü",
-      "Dino AI ders analizi",
+      "Ders sonrası tekrar odağı",
     ],
   },
   kocum: {
     glyph: "▦",
     title: "Online Koçum",
-    summary: "Haftalık plan, birebir takip ve eğitim koçluğu. Tüm dersleri kapsar.",
+    summary: "Haftalık planı kurar ve düzeni korursun.",
     tracks: ["LGS", "YKS"],
     points: [
       "Haftalık çalışma planı",
-      "Birebir koç görüşmeleri",
-      "Planın ne kadarının yapıldığının takibi",
-      "Dino AI'ın koça verdiği haftalık odak önerisi",
+      "Koç görüşmeleriyle uygulama takibi",
     ],
   },
   denemeKulubum: {
     glyph: "◔",
     title: "Online Deneme Kulübüm",
-    summary: "LGS, TYT ve AYT denemeleri ve sonuç analizi.",
+    summary: "Denemeyle seviyeni ölçer, eksiği görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
     points: [
       "Gerçek sınav formatında denemeler",
       "Konu ve soru tipine göre kayıp analizi",
       "Denemeler arası gelişim karşılaştırması",
-      "Dino AI deneme yorumu",
     ],
   },
 } as const satisfies Record<
@@ -96,26 +91,30 @@ const productCopy = {
 function crossSellText(selection: BuilderSelection, count: number): string | null {
   if (count === 1) {
     if (selection.dershanem)
-      return "Koçluğu da eklersen haftalık plan ve düzenli takip aynı çözüm içinde kurgulanır.";
+      return "Koçluğu da eklersen haftalık plan ve düzenli takip aynı akışta birleşir.";
     if (selection.kocum)
       return "Canlı dersi de eklersen planda eksik kalan konuyu öğretmenle çalışırsın.";
     return "Canlı dersi de eklersen denemede çıkan eksik konuyu öğretmenle kapatırsın.";
   }
   if (count === 2) {
     if (!selection.denemeKulubum)
-      return "Deneme Kulübü'nü eklediğinde ölçme ve analiz de aynı çözüm kapsamına girer.";
+      return "Deneme Kulübü'nü eklediğinde ölçme ve analiz de aynı pakete eklenir.";
     if (!selection.kocum)
-      return "Koçluğu eklediğinde haftalık plan da aynı çözüm kapsamına girer.";
-    return "Canlı dersi eklediğinde konu anlatımı da aynı çözüm kapsamına girer.";
+      return "Koçluğu eklediğinde haftalık plan da aynı pakete eklenir.";
+    return "Canlı dersi eklediğinde konu anlatımı da aynı pakete eklenir.";
   }
   return null;
 }
 
-function hintText(count: number): string {
+function hintText(count: number, hasDirectCheckout: boolean): string {
   if (count === 0) return "Nereden başlamak istiyorsun?";
-  if (count === 1) return "Seçimini online satın alabilir veya ön görüşmede netleştirebilirsin.";
-  if (count === 2) return "Birlikte seçilen ürünlerin kesin teklifi ön görüşmede oluşturulur.";
-  return "Üç ürünün kesin teklifi ve ödeme planı ön görüşmede oluşturulur.";
+  if (count === 1) {
+    return hasDirectCheckout
+      ? "Seçimini doğrudan online satın alabilir veya ön görüşmede netleştirebilirsin."
+      : "Bu seçim için net fiyat ve başlangıç planı ön görüşmede paylaşılır.";
+  }
+  if (count === 2) return "Birlikte seçtiğin ürünlerin net tutarını ön görüşmede yazılı alırsın.";
+  return "Üç ürünü birlikte seçtiğinde net tutar ve ödeme planı ön görüşmede paylaşılır.";
 }
 
 export function PackageBuilder() {
@@ -194,7 +193,7 @@ export function PackageBuilder() {
             </p>
           </div>
           <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-dc-ink-faint">
-            {selection.exam ? `${selection.exam} hedefine göre kurgulanıyor` : "Önce hedef sınavını seç"}
+            {selection.exam ? `${selection.exam} hedefine göre uyarlanıyor` : "Önce hedef sınavını seç"}
           </span>
         </div>
 
@@ -462,9 +461,9 @@ export function PackageBuilder() {
           {/* Seçim kapsamı — fiyat vaadi değil, ürün sayısını gösterir. */}
           <div className="grid gap-5 px-1 pt-1 sm:grid-cols-3 sm:gap-6">
             {[
-              { tier: 1, label: "1 ürün — odaklı çözüm" },
-              { tier: 2, label: "2 ürün — birlikte planlama" },
-              { tier: 3, label: "3 ürün — tam kapsam" },
+              { tier: 1, label: "1 ürün — Tek ihtiyaca odaklan" },
+              { tier: 2, label: "2 ürün — Birbirini tamamlayan iki ürün" },
+              { tier: 3, label: "3 ürün — Ders + plan + deneme" },
             ].map(({ tier, label }) => (
               <div key={tier}>
                 <div
@@ -579,9 +578,9 @@ export function PackageBuilder() {
 
           <p className="mt-1.5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
             {checkoutItem
-              ? "Bu tutar ödeme-kritik katalogdaki satın alınabilir ürünle aynıdır."
+              ? "Bu tutar ödeme sayfasında çıkacak güncel fiyatla aynıdır."
               : count > 0
-                ? "Bu seçim henüz online satın alınamıyor; kesin fiyat ve ödeme planı ön görüşmede oluşturulur."
+                ? "Bu seçim için online satış açık değil; net fiyat ve ödeme planı ön görüşmede paylaşılır."
                 : "Satın almak veya ön görüşmeye geçmek için ürün seç."}
           </p>
 
@@ -655,7 +654,7 @@ export function PackageBuilder() {
           ) : null}
 
           <p className="mt-3 text-center text-[12.5px] font-medium leading-[1.5] text-dc-ink-faint">
-            {hintText(count)}
+            {hintText(count, Boolean(checkoutItem))}
           </p>
 
           {crossSellText(selection, count) ? (

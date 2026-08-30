@@ -18,7 +18,7 @@ const steps = [
   {
     n: "04",
     title: "Başla ve takipte kal",
-    body: "Her ders sonrası not, veli özeti ve Dino AI önerileri panelinde.",
+    body: "Her ders sonrası özet ve veli takibi panelinde; Dino AI yüzeyleri geliştirme aşamasına göre açılır.",
   },
 ];
 

@@ -5,28 +5,32 @@
 
 const faqs = [
   {
+    q: "Hangi ürünle başlamalıyım?",
+    a: "Konuyu öğrenme tarafında zorlanıyorsan Online Dershanem ile, planı uygulamada zorlanıyorsan Online Koçum ile, seviyeni ölçmek istiyorsan Online Deneme Kulübüm ile başlayabilirsin.",
+  },
+  {
     q: "Ürünleri ayrı ayrı alabilir miyim?",
-    a: "Evet. Üç ürün de tek başına satın alınabilir. İhtiyacın tek üründeyse yalnızca onu seçebilirsin.",
-  },
-  {
-    q: "Birden fazla ürün aldığımda fiyat nasıl değişiyor?",
-    a: "İki ürünü birlikte aldığında toplam, tek tek fiyatların altına düşer. Üç ürün en avantajlı toplamı verir. Kesin tutarlar fiyat tablosundan gelir.",
-  },
-  {
-    q: "Online Dershanem nedir?",
-    a: "LGS ve YKS için canlı ders ürünü. Maks. 4 kişilik gruplarda öğretmenle birlikte çalışma, ders takibi ve veli özeti içerir.",
-  },
-  {
-    q: "Online Koçum nedir?",
-    a: "Eğitim koçluğu ürünü: haftalık plan, birebir görüşme, düzenli takip ve hedef yönetimi. Dino AI koça öneri üretir, koçun yerini almaz.",
-  },
-  {
-    q: "Online Deneme Kulübüm nedir?",
-    a: "LGS, TYT ve AYT denemeleri, sonuç ekranı, güçlü/zayıf alan analizi ve zaman içindeki gelişim takibi.",
+    a: "Evet. Üç ürün de tek başına seçilebilir. Online ödeme akışı şu an ders paketinde açıktır; koçluk ve deneme için süreç ön görüşmeyle netleşir.",
   },
   {
     q: "Dino AI nedir?",
-    a: "Üç ürünün verisini birlikte okuyan zekâ katmanı. Ders, koçluk ve deneme akışlarında öneri ve analiz üretir; ayrı satılan bir ürün değildir.",
+    a: "Dino AI, ders, plan ve deneme verisini açıklamaya yardımcı olan ortak katmandır. Ayrı satılan bir ürün değildir; öğretmen ve koçun kararını destekler.",
+  },
+  {
+    q: "Online satın alma nasıl oluyor?",
+    a: "Checkout adımında online satın alma açık olan yapılandırmayı doğrudan tamamlayabilirsin. Uygun olmayan kombinasyonlarda ön görüşme ile net teklif paylaşılır.",
+  },
+  {
+    q: "Paketimi sonradan değiştirebilir miyim?",
+    a: "Evet. İhtiyacın değiştiğinde tek ürünle devam edebilir, yeni ürün ekleyebilir veya kapsamı ön görüşmede güncelleyebilirsin.",
+  },
+  {
+    q: "Canlı ders formatı nasıl?",
+    a: "Online Dershanem canlı derslerinde birebir veya en fazla 4 kişilik küçük grup seçenekleri bulunur.",
+  },
+  {
+    q: "Veli neleri görür?",
+    a: "Veli görünümünde katılım, plan ilerlemesi ve gelişim özeti yer alır. Öğrencinin ekranı birebir yansıtılmaz.",
   },
   {
     q: "Mobil uygulama mevcut mu?",

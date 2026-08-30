@@ -34,8 +34,8 @@ export function DinoLayer() {
             Dino AI ne yapıyor?
           </h2>
           <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
-            Ders notunu, planı ve deneme sonucunu birlikte okur; öğrenciye o hafta ne
-            yapması gerektiğini sade bir dille söyler. Kararı öğretmen ve koç verir.
+            Ders notunu, planı ve deneme sonucunu birlikte okur; hangi konuya dönmenin
+            faydalı olabileceğini sade bir dille açıklar. Kararı öğretmen ve koç verir.
           </p>
           <Link
             href="/dino-ai"

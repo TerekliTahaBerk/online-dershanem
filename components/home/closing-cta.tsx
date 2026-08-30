@@ -11,21 +11,21 @@ export function ClosingCta() {
       <div className="relative grid items-center gap-6 overflow-hidden rounded-dc-banner border border-dc-brand-soft-line bg-dc-brand-soft px-8 py-12 sm:px-14 sm:py-14 lg:grid-cols-[1fr_320px]">
         <div>
           <h2 className="font-display text-[length:var(--public-title)] leading-[1.12] tracking-[-0.025em] text-dc-brand-deep">
-            Hedefine uygun paketi oluştur.
+            İhtiyacın olan desteği seç.
           </h2>
           <p className="mt-3.5 max-w-[520px] text-[16.5px] leading-[1.65] text-[#3F5C51]">
-            Ders, koçluk ve denemeyi ihtiyacına göre seç. Birlikte aldıkça toplam paket
-            fiyatın düşer.
+            Canlı ders, koçluk ve denemeyi tek tek ya da birlikte seçebilir, sana uygun
+            paketi tek adımda oluşturabilirsin.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-5">
             <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
               Paketini Oluştur →
             </Link>
             <Link
-              href="/iletisim"
+              href="/urunler"
               className="text-[15px] font-bold text-dc-brand-hover hover:text-dc-brand-deep"
             >
-              Ücretsiz görüşme talep et
+              Tüm Ürünleri Karşılaştır
             </Link>
           </div>
         </div>

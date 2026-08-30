@@ -42,7 +42,7 @@ export default function ProductsPage() {
           title="Üç ürün, üç ayrı iş"
           lede="Aşağıda her birinin ne yaptığı ve kimin için olduğu yazıyor."
         />
-        <Ecosystem />
+        <Ecosystem showDinoLayer={false} />
         <DinoLayer />
         <ClosingCta />
       </main>

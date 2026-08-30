@@ -23,7 +23,7 @@ export default function LGSLandingPage() {
     },
     {
       q: "Ders kaçırılırsa süreç nasıl ilerliyor?",
-      a: "Ayrı bir telafi dersi yapılmaz. Öğrenci katılamadığında ders kaydı ve ders sonu özeti paylaşılır; işlenen konu ile verilen ödev bu şekilde takip edilir."
+      a: "Kaçırılan ders için ayrı bir canlı telafi dersi açılmıyor. Bunun yerine panelde konu özeti, aktif materyal ve küçük çalışma adımı içeren telafi paketi paylaşılır."
     },
     {
       q: "Dersler canlı mı, kayıt mı?",

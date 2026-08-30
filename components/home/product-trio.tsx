@@ -90,9 +90,9 @@ function ExamPreview() {
 const products = [
   {
     eyebrow: "ONLINE DERSHANEM",
-    title: "Canlı derste öğretmenle ilerle.",
+    title: "Öğrenme eksiğini canlı derste kapat.",
     body:
-      "Birebir ya da en fazla 4 kişilik grupta ders. Öğretmen soruyu derste seninle çözer, ders sonrası neyi tekrar edeceğin yazılı kalır.",
+      "Takıldığın konuyu öğretmenle anında çözersin. Ders sonrası neyi tekrar edeceğin netleşir.",
     tracks: ["LGS", "YKS"],
     cta: "Online Dershanem'i İncele",
     href: "/urunler/online-dershanem",
@@ -100,9 +100,9 @@ const products = [
   },
   {
     eyebrow: "ONLINE KOÇUM",
-    title: "Haftanın planını yalnız kurmak zorunda değilsin.",
+    title: "Haftanı plansız bırakma.",
     body:
-      "Koçun haftanı planlar; bir sonraki görüşmede ne kadarını yaptığınızı birlikte kontrol edersiniz. Tüm dersleri kapsar.",
+      "Koçun haftalık planını kurar ve görüşmelerde uygulama durumunu takip eder.",
     tracks: ["LGS", "YKS"],
     cta: "Online Koçum'u İncele",
     href: "/urunler/online-kocum",
@@ -110,9 +110,9 @@ const products = [
   },
   {
     eyebrow: "ONLINE DENEME KULÜBÜM",
-    title: "Sonucun sadece net sayısı olarak kalmasın.",
+    title: "Sadece nete değil, eksiğin nedenine bak.",
     body:
-      "LGS, TYT ve AYT denemeleri. Hangi konuda ve hangi soru tipinde puan kaybettiğini görürsün.",
+      "LGS, TYT ve AYT denemelerinde hangi konu ve soru tipinde puan kaybettiğini görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
     cta: "Deneme Kulübünü İncele",
     href: "/urunler/online-deneme-kulubum",
@@ -121,8 +121,8 @@ const products = [
 ];
 
 export function ProductTrio({
-  title = "Hangisi sana gerekiyor?",
-  lede = "Üç ürün ayrı ayrı çalışır: ders, koçluk, deneme. Hangisini alacağına sen karar veriyorsun.",
+  title = "Hangi ürün sana uygun?",
+  lede = "Üç ürün üç farklı ihtiyaca odaklanır: öğren, planla, ölç.",
 }: {
   title?: string;
   lede?: string;

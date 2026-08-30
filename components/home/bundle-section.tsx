@@ -14,12 +14,11 @@ export function BundleSection() {
       <div className="site-container">
         <div className="max-w-[660px]">
           <h2 className="font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
-            Ürünleri birlikte almak neden daha avantajlı?
+            Paketini ihtiyacına göre oluştur
           </h2>
           <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
-            Bir ürün alırsan standart fiyatını ödersin. İki ürünü birlikte aldığında
-            toplam, ikisini ayrı almaktan daha az olur. Üç ürünü birlikte aldığında
-            toplam en düşük seviyeye gelir.
+            Tek üründen başlayabilir, iki ürünü birlikte tamamlayabilir veya üç ürünü
+            aynı pakette birleştirebilirsin. Seçimin ve teklifin tek bir akışta görünür.
           </p>
         </div>
       </div>

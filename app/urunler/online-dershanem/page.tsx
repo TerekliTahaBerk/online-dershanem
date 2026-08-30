@@ -114,7 +114,7 @@ export default function OnlineDershanemPage() {
         <ProductDinoBand
           eyebrow="Dino AI · Ders analizi"
           title="Derste zorlandığın yer kaybolmuyor."
-          body="Dino AI ders sonrası zorlanılan kazanımları öne çıkarır; tekrar önerisi üretir ve koçluk aldıysan plana taşır."
+          body="Dino AI ders sonrası zorlanılan kazanımları öne çıkarır ve tekrar için açıklayıcı öneri üretir. Koçluk planına nasıl yansıyacağına koçunla birlikte karar verilir."
           quote="&ldquo;Bu derste türev kurallarında zorlandın.&rdquo;"
           quoteBody="Önerilen tekrar: 2 soru seti + kısa video özeti."
         />
@@ -134,13 +134,13 @@ export default function OnlineDershanemPage() {
           ]}
           advantageNote="Birlikte aldığında paket fiyatın düşer."
           price={singleProductPriceLabel("dershanem")}
-          priceLabel="Maks. 4 kişilik grup · ders başına"
+          priceLabel="Maks. 4 kişilik grup · aylık paket"
           priceSuffix="/ ay"
           secondaryPrice={
             oneToOne.campaignCents === null
               ? null
               : {
-                  label: "Birebir özel ders · ders başına",
+                  label: "Birebir özel ders · aylık paket",
                   price: formatCents(oneToOne.campaignCents),
                   listPrice:
                     oneToOne.listCents === null ? null : formatCents(oneToOne.listCents),
@@ -155,11 +155,11 @@ export default function OnlineDershanemPage() {
           items={[
             {
               q: "Dersler canlı mı?",
-              a: "Evet. Ders saatinde öğretmen ve öğrenciler aynı anda bağlanır; kayıttan izlenen bir video dersi değildir. Dersler kaydedilmez, çünkü derste konuşulanlar gruba özeldir.",
+              a: "Evet. Ders saatinde öğretmen ve öğrenciler aynı anda bağlanır; kayıttan izlenen bir video dersi değildir.",
             },
             {
               q: "Derse katılamazsam ne olur?",
-              a: "Ders öncesinden haber verdiğinde telafi için uygun bir saat ararız. Habersiz kaçırılan ders telafi edilmez; grup dört kişilik olduğu için o saat başka bir öğrenciye ayrılmış oluyor.",
+              a: "Kaçırılan ders için ayrı bir canlı telafi dersi açılmıyor. Bunun yerine panelde konu özeti, aktif materyal ve küçük çalışma adımı içeren telafi paketi paylaşılır.",
             },
             {
               q: "Hangi dersler var?",

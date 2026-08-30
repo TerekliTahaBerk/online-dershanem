@@ -48,8 +48,8 @@ export default function DinoAiPage() {
               </h1>
               <p className="mt-4 max-w-[500px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
                 Derste zorlandığın konu, planda yapamadığın oturum ve denemede
-                kaybettiğin puan aynı yerde birleşir. Dino AI bunlardan bir sonraki adımı
-                çıkarır; kararı öğretmen ve koç verir.
+                kaybettiğin puan aynı yerde birleşir. Dino AI bunları sade bir dille
+                açıklar; kararı öğretmen ve koç verir.
               </p>
 
               <div className="mt-6 max-w-[520px] rounded-2xl border border-dc-line bg-white px-5 py-4">

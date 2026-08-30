@@ -85,9 +85,9 @@ function groupLessonPrice(exam: ExamTrack | null): PricePair {
 }
 
 /**
- * Birebir özel ders — aylık, ders başına.
+ * Birebir özel ders — aylık paket.
  *
- * Grup dersiyle aynı ritimde (aylık, ders başına) satılır; tek farkı öğretmenin
+ * Grup dersiyle aynı ritimde (aylık) satılır; tek farkı öğretmenin
  * tek öğrenciye ayrılmasıdır.
  */
 const ONE_TO_ONE_LESSON: PricePair = {

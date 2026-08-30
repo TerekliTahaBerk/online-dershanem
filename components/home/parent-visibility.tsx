@@ -13,12 +13,12 @@ export function ParentVisibility() {
     <section className="site-container py-[var(--dc-section-tight)]">
       <div className="max-w-[640px]">
         <h2 className="font-display text-[28px] leading-[1.12] tracking-[-0.025em] text-dc-ink sm:text-[36px]">
-          Veliler neyi takip edebilir?
+          Süreci takip et, öğrencinin alanını koru.
         </h2>
         <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
-          Derse katılım, ders sonrası öğretmen notu, haftalık planın ne kadarının
-          yapıldığı ve deneme sonuçları. Veli özeti, öğrencinin ekranıyla aynı veriyi
-          gösterir.
+          Veli görünümünde derse katılım, plan ilerlemesi ve gelişim özeti görünür.
+          Öğrencinin ekranı birebir paylaşılmaz; veliye uygun takip bilgileri ayrı
+          bir özet olarak sunulur.
         </p>
       </div>
     </section>
