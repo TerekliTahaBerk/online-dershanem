@@ -1,10 +1,10 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { buildCalmWeeklyDigest, CALM_DIGEST_RULE_VERSION, digestWeekStart } from "@/lib/calm-weekly-digest";
-import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
+import { buildCalmWeeklyDigest, CALM_DIGEST_RULE_VERSION, digestWeekWindow } from "@/lib/calm-weekly-digest";
 
 export async function generateCalmDigest(studentId: string, generatedById: string) {
-  const now = new Date(); const weekStart = digestWeekStart(now); const previousStart = addIstanbulCalendarDays(weekStart, -7); const weekEnd = addIstanbulCalendarDays(weekStart, 7);
+  const now = new Date();
+  const { weekStart, previousWeekStart: previousStart, weekEnd } = digestWeekWindow(now);
   const existing = await prisma.weeklyDigest.findFirst({ where: { studentId, weekStart: { gte: weekStart, lt: weekEnd } }, orderBy: { weekStart: "asc" } });
   if (existing?.status === "PUBLISHED") return { digest: existing, reused: true };
   const [attendance, completedTasks, evidence, review] = await Promise.all([

@@ -13,7 +13,7 @@ Bu özellik akademik ve operasyonel sinyalleri sahipsiz bir “risk listesi” o
 | Tekrarlayan çözüm güçlüğü | En az 1 tekrar öğesinde 3 `WRONG/UNSURE` | 30 gün | Zekâ, kalıcı yetersizlik veya tanı |
 | Plan kapasitesi | Onaylı mevcut haftada en az 3 geçmiş açık görev | İçinde bulunulan hafta | Borç, seri kaybı veya irade yorumu |
 
-Her çıktı yalnız kontrollü neden kodu, kanıt sayısı, açıklama, değerlendirme penceresi ve önerilen tek küçük eylem taşır. Sınıf sırası, akran karşılaştırması, birleşik risk puanı ve tahmine dayalı ML kapsam dışıdır. Haftalık hash parmak izi aynı öğrenci/neden/pencere için çift vaka oluşmasını önler; yanlış işaretlenen aynı pencere sessizce yeniden üretilmez.
+Her çıktı yalnız kontrollü neden kodu, kanıt sayısı, açıklama, değerlendirme penceresi ve önerilen tek küçük eylem taşır. Sınıf sırası, akran karşılaştırması, birleşik risk puanı ve tahmine dayalı ML kapsam dışıdır. Haftalık hash parmak izi aynı öğrenci/neden/pencere için çift vaka oluşmasını önler; yanlış işaretlenen aynı pencere sessizce yeniden üretilmez. Pencere hesabı `lib/istanbul-time.ts` ile aynı İstanbul takvim kaynağını kullanır.
 
 ## Yaşam döngüsü ve SLA
 

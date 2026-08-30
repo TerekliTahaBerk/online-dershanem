@@ -25,7 +25,7 @@ export default async function EducationAdminPage() {
     prisma.lesson.findMany({ where: { startsAt: { gte: new Date(Date.now() - 7 * 86400000) } }, orderBy: { startsAt: "asc" }, take: 24, include: { group: { select: { name: true } }, teacher: { select: { fullName: true, email: true } } } }),
     prisma.assignment.findMany({ orderBy: { dueAt: "desc" }, take: 40, include: { group: { select: { name: true } }, progress: true, outcomeLinks: { include: { outcome: { select: { code: true } } } } } }),
     prisma.learningMaterial.findMany({ orderBy: { createdAt: "desc" }, take: 60, include: { group: { select: { name: true } } } }),
-    featureFlags.learningOutcomes ? prisma.learningOutcome.findMany({ where: { isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } }, orderBy: { code: "asc" }, take: 300, include: { unit: { include: { subject: true } }, skills: { include: { skill: true } }, favorites: { where: { userId: session.userId } }, assignments: { where: { linkedById: session.userId }, take: 1 } } }) : Promise.resolve([]),
+    featureFlags.learningOutcomes ? prisma.learningOutcome.findMany({ where: { isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } }, orderBy: [{ favorites: { _count: "desc" } }, { assignments: { _count: "desc" } }, { updatedAt: "desc" }, { code: "asc" }], take: 15, include: { unit: { include: { subject: true } }, skills: { include: { skill: true } }, favorites: { where: { userId: session.userId } }, assignments: { where: { linkedById: session.userId }, take: 1 } } }) : Promise.resolve([]),
   ]);
   const name = (item: { fullName: string | null; email: string }) => item.fullName || item.email;
 

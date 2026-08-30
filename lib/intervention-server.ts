@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { buildInterventionSignals, INTERVENTION_RULE_VERSION, interventionWindowStart, type InterventionReasonCode } from "@/lib/intervention-rules";
+import { buildInterventionSignals, INTERVENTION_RULE_VERSION, interventionEvaluationWindow, type InterventionReasonCode } from "@/lib/intervention-rules";
 
 const DAY = 86_400_000;
 
@@ -11,9 +11,7 @@ function fingerprint(studentId: string, reasonCode: InterventionReasonCode, wind
 
 export async function generateInterventionCases(scope: { teacherId?: string }) {
   const now = new Date();
-  const windowStart = interventionWindowStart(now);
-  const attendanceSince = new Date(now.getTime() - 14 * DAY);
-  const evidenceSince = new Date(now.getTime() - 30 * DAY);
+  const { windowStart, attendanceSince, evidenceSince } = interventionEvaluationWindow(now);
 
   const students = await prisma.studentProfile.findMany({
     where: {

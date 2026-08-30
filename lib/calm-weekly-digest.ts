@@ -7,6 +7,13 @@ export function digestWeekStart(now = new Date()): Date {
   return istanbulWeekStart(now);
 }
 
+export function digestWeekWindow(now = new Date()) {
+  const weekStart = digestWeekStart(now);
+  const previousWeekStart = new Date(weekStart.getTime() - 7 * 86_400_000);
+  const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
+  return { weekStart, previousWeekStart, weekEnd };
+}
+
 export function buildCalmWeeklyDigest(input: {
   currentAttendance: { attended: number; total: number };
   previousAttendance: { attended: number; total: number };

@@ -119,3 +119,8 @@ test("filtre input'u kendi çözümlediği aralığa geri dönüştürülebilir"
   assert.equal(formatIstanbulDateInput(range.from), "2026-04-01");
   assert.equal(formatIstanbulDateInput(range.to), "2026-04-30");
 });
+
+test("hafta başlangıcı ve digest window aynı İstanbul kaynağını paylaşır", () => {
+  const instant = new Date("2026-08-30T22:30:00.000Z");
+  assert.equal(istanbulWeekStart(instant).toISOString(), "2026-08-30T21:00:00.000Z");
+});

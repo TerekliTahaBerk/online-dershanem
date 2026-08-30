@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { interventionReasonCodes } from "@/lib/intervention-rules";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -71,13 +72,13 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   });
   if (!updated) return NextResponse.json({ error: "Kayıt başka bir sekmede değişti." }, { status: 409 });
 
-  if (action === "ASSIGN_SELF") await recordPanelProductEvent({ name: "case_assigned", properties: { ownerRole: actorRole, reasonCode: item.reasonCode } }, auth.session.role);
+  if (action === "ASSIGN_SELF") await recordPanelProductEvent({ name: "case_assigned", properties: { ownerRole: actorRole, reasonCode: item.reasonCode as (typeof interventionReasonCodes)[number] } }, auth.session.role);
   if (action !== "ASSIGN_SELF") {
     const timeToActionMs = isFirstHumanAction ? Math.max(0, now.getTime() - item.createdAt.getTime()) : null;
-    await recordPanelProductEvent({ name: "intervention_logged", properties: { action, reasonCode: item.reasonCode, timeToActionMs, withinSla: timeToActionMs === null ? null : timeToActionMs <= DAY, noteProvided: Boolean(note) } }, auth.session.role);
+    await recordPanelProductEvent({ name: "intervention_logged", properties: { action, reasonCode: item.reasonCode as (typeof interventionReasonCodes)[number], timeToActionMs, withinSla: timeToActionMs === null ? null : timeToActionMs <= DAY, noteProvided: Boolean(note) } }, auth.session.role);
   }
-  if (action === "SNOOZE") await recordPanelProductEvent({ name: "case_snoozed", properties: { reasonCode: item.reasonCode, days: parsed.data.days } }, auth.session.role);
-  if (action === "RESOLVE") await recordPanelProductEvent({ name: "case_closed", properties: { reasonCode: item.reasonCode, outcomeCode: parsed.data.outcomeCode } }, auth.session.role);
-  if (action === "FALSE_POSITIVE") await recordPanelProductEvent({ name: "case_false_positive", properties: { reasonCode: item.reasonCode, falsePositiveReason: parsed.data.falsePositiveReason } }, auth.session.role);
+  if (action === "SNOOZE") await recordPanelProductEvent({ name: "case_snoozed", properties: { reasonCode: item.reasonCode as (typeof interventionReasonCodes)[number], days: parsed.data.days } }, auth.session.role);
+  if (action === "RESOLVE") await recordPanelProductEvent({ name: "case_closed", properties: { reasonCode: item.reasonCode as (typeof interventionReasonCodes)[number], outcomeCode: parsed.data.outcomeCode } }, auth.session.role);
+  if (action === "FALSE_POSITIVE") await recordPanelProductEvent({ name: "case_false_positive", properties: { reasonCode: item.reasonCode as (typeof interventionReasonCodes)[number], falsePositiveReason: parsed.data.falsePositiveReason } }, auth.session.role);
   return NextResponse.json({ updated: true });
 }

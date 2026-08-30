@@ -6,6 +6,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherLessonWorkspace } from "@/components/panel/teacher-lesson-workspace";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { academicSupportLabels } from "@/lib/accessibility-preferences";
+import type { OutcomeSearchItem } from "@/lib/outcome-search";
 
 export const dynamic = "force-dynamic";
 
@@ -74,11 +75,14 @@ export default async function TeacherLessonClosePage({
     }),
     featureFlags.learningOutcomes
       ? prisma.learningOutcome.findMany({
-          where: { isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } },
-          orderBy: { code: "asc" },
-          take: 300,
+          where: {
+            isActive: true,
+            unit: { subject: { version: { status: "ACTIVE", level: lesson.group.level || undefined } } },
+          },
+          orderBy: [{ favorites: { _count: "desc" } }, { lessons: { _count: "desc" } }, { updatedAt: "desc" }, { code: "asc" }],
+          take: 15,
           include: {
-            unit: { include: { subject: { include: { version: { select: { code: true } } } } } },
+            unit: { include: { subject: true } },
             skills: { include: { skill: { select: { name: true } } } },
             favorites: { where: { userId: session.userId }, select: { userId: true } },
             lessons: { where: { linkedById: session.userId }, take: 1, select: { lessonId: true } },
@@ -174,7 +178,7 @@ export default async function TeacherLessonClosePage({
               skills: outcome.skills.map((item) => item.skill.name),
               favorite: outcome.favorites.length > 0,
               recent: outcome.lessons.length > 0,
-            }))}
+            })) as OutcomeSearchItem[]}
           />
         </div>
       </div>

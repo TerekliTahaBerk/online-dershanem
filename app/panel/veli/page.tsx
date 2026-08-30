@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
@@ -65,6 +66,7 @@ export default async function ParentHomePage({
   const hasOD = selected.products.includes("OD");
   const hasOK = selected.products.includes("OK");
   const hasODK = selected.products.includes("ODK");
+  const calmDigestEnabled = getPanelFeatureFlags().parentWeeklyDigest;
 
   const enrollments = await prisma.enrollment.findMany({
     where: { studentId: selected.id, endedAt: null },
@@ -105,6 +107,13 @@ export default async function ParentHomePage({
       : Promise.resolve([]),
   ]);
 
+  const digest = calmDigestEnabled
+    ? await prisma.weeklyDigest.findFirst({
+        where: { status: "PUBLISHED", studentId: selected.id },
+        orderBy: { weekStart: "desc" },
+      })
+    : null;
+
   const attended = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
   const planDone = plan?.tasks.filter((t) => t.status === "DONE").length ?? 0;
   const planTotal = plan?.tasks.length ?? 0;
@@ -114,16 +123,7 @@ export default async function ParentHomePage({
   const latestNet = latestExam ? latestExam.sections.reduce((s, x) => s + net(x), 0) : null;
   const prevNet = exams[1] ? exams[1].sections.reduce((s, x) => s + net(x), 0) : null;
 
-  const missed = attendance.filter((a) => a.status === "ABSENT").length;
-  const overduePlan = planTotal - planDone;
-
-  /* "Dikkat edilmesi gereken" — yalnız gerçek sinyal varsa gösterilir. */
-  const attention =
-    missed > 0
-      ? `Son ${attendance.length} derste ${missed} katılmama var. Devamsızlığın sebebini öğrenciyle konuşmak iyi olabilir.`
-      : planTotal > 0 && planPct < 60
-        ? `Bu haftanın planında ${overduePlan} görev bekliyor (%${planPct} tamamlandı).`
-        : null;
+  const attention = digest?.supportArea ?? null;
 
   const stat = (label: string, value: string, tone?: "brand") => (
     <div className="border-b border-dc-line-soft px-[22px] py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
@@ -145,6 +145,7 @@ export default async function ParentHomePage({
         description={[
           hasOD ? `${attended}/${attendance.length} derse katıldı` : null,
           planTotal ? `plan %${planPct}` : null,
+          digest ? "sakin özet hazır" : null,
           latestNet !== null ? `son deneme ${latestNet.toFixed(2)} net` : null,
         ]
           .filter(Boolean)
@@ -164,7 +165,7 @@ export default async function ParentHomePage({
 
       {attention ? (
         <div className="mt-5 max-w-[760px] rounded-[14px] border border-dc-line border-l-[3px] border-l-[#E0A34A] bg-white px-[22px] py-5">
-          <h2 className="text-[15.5px] font-bold text-dc-ink">Dikkat edilmesi gereken</h2>
+          <h2 className="text-[15.5px] font-bold text-dc-ink">Destek alanı</h2>
           <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{attention}</p>
         </div>
       ) : null}

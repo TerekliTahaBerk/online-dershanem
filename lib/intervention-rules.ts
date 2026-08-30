@@ -2,7 +2,8 @@ import { istanbulWeekStart } from "./istanbul-time";
 
 export const INTERVENTION_RULE_VERSION = "intervention-v1";
 
-export type InterventionReasonCode = "ATTENDANCE_PATTERN" | "OVERDUE_WORK" | "REPEATED_REVIEW_DIFFICULTY" | "PLAN_STALLED";
+export const interventionReasonCodes = ["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"] as const;
+export type InterventionReasonCode = (typeof interventionReasonCodes)[number];
 
 export type InterventionSignal = {
   reasonCode: InterventionReasonCode;
@@ -13,6 +14,15 @@ export type InterventionSignal = {
 
 export function interventionWindowStart(now = new Date()): Date {
   return istanbulWeekStart(now);
+}
+
+export function interventionEvaluationWindow(now = new Date()) {
+  const windowStart = interventionWindowStart(now);
+  return {
+    windowStart,
+    attendanceSince: new Date(now.getTime() - 14 * 86_400_000),
+    evidenceSince: new Date(now.getTime() - 30 * 86_400_000),
+  };
 }
 
 export function buildInterventionSignals(input: {
