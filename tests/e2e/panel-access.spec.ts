@@ -51,20 +51,6 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     expect(aiStatus).toBe(403);
   });
 
-  test("öğrenci ve veli ana sayfası Dino'nun tek kanıtlı sonraki adımını gösterir", async ({ page }) => {
-    await login(page, accounts.student);
-    await page.goto("/panel/ogrenci");
-    const studentDino = page.getByRole("heading", { name: "Dino bu hafta ne görüyor?" }).locator("..");
-    await expect(studentDino.getByText(/Dayanak:/)).toBeVisible();
-    await expect(studentDino.getByRole("link", { name: /Görevi aç|Tekrarı aç/ })).toBeVisible();
-
-    await login(page, accounts.parent);
-    await page.goto("/panel/veli");
-    const parentDino = page.getByRole("heading", { name: "Dino bu hafta ne görüyor?" }).locator("..");
-    await expect(parentDino.getByText(/Dayanak:/)).toBeVisible();
-    await expect(parentDino.getByRole("link", { name: "Takibi aç" })).toBeVisible();
-  });
-
   test("veli URL ile başka öğrenciyi açamaz", async ({ page }) => {
     test.skip(!process.env.PANEL_E2E_FOREIGN_STUDENT_ID, "Yabancı öğrenci kimliği tanımlı değil.");
     await login(page, accounts.parent);
@@ -96,8 +82,6 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
     expect(digestStatus).toBe(404);
     const interventionStatus = await page.evaluate(async () => (await fetch("/api/panel/interventions/e2e-intervention-foreign", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "ASSIGN_SELF", expectedVersion: 1 }) })).status);
     expect(interventionStatus).toBe(404);
-    const concernStatus = await page.evaluate(async () => (await fetch("/api/panel/interventions/concerns", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ studentId: "e2e-student-profile-plan-foreign" }) })).status);
-    expect(concernStatus).toBe(404);
     const recoveryStatus = await page.evaluate(async () => (await fetch("/api/panel/recovery-packages/e2e-recovery-package-foreign/publish", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1 }) })).status);
     expect(recoveryStatus).toBe(404);
     const submissionStatus = await page.evaluate(async () => (await fetch("/api/panel/assignment-submissions/e2e-assignment-submission-foreign/review", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedVersion: 1, decision: "APPROVE", feedback: "Yabancı erişim denemesi", interactionDurationMs: 1000, scores: [{ criterionId: "e2e-rubric-foreign-method", level: "MEETS" }, { criterionId: "e2e-rubric-foreign-check", level: "MEETS" }] }) })).status);

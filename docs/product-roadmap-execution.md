@@ -45,7 +45,6 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 - İstemci yalnız UX event'lerini gönderebilir; başarı, doğrulama, ret ve sistem hatası sonuçları güvenilir biçimde sunucu tarafından üretilir.
 - Kimliksiz event'ler 90 gün tutulur; kullanıcı, öğrenci, ders, grup, ödev veya materyal kimliği ile serbest metin kabul edilmez.
 - Admin rapor ekranı beş kritik SLO'yu 30 günlük pencere ve minimum beş örnek kuralıyla gösterir. Az örneklem yeşil başarı gibi sunulmaz.
-- Haftalık plan üretimi ayrıca uygun istek paydasıyla ölçülür; 15 dakikada `%3` üzeri sistem hata oranı beş dakikalık `domain-sli` işiyle alarm kanalına ve admin bildirimine taşınır.
 - Yeni fazların rollout büyütme kapıları ve alarm eşikleri [panel SLO kataloğunda](./panel-slo-catalog.md) tanımlıdır.
 
 ## Aşama 3 kararları
@@ -87,7 +86,7 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 
 ## Aşama 7 kararları
 
-- `adaptive-v2` AI kullanmayan, sürümlü ve deterministik kural/kısıt çözücüdür. Ödev, tekrar, öğretmen kanıtı, yaklaşan sınav ve öğrencinin seçtiği kapasite dışında girdi kullanmaz; `adaptive-score-v2` kaynak/aciliyet/güncellik/güven/çelişki ayrımını ve kullanıcı açıklamasını görev bazında snapshot'lar.
+- `adaptive-v1` AI kullanmayan, sürümlü ve deterministik kural/kısıt çözücüdür. Ödev, tekrar, öğretmen kanıtı, yaklaşan sınav ve öğrencinin seçtiği kapasite dışında girdi kullanmaz.
 - Günlük görev sayısı üçü ve seçilen dakika kapasitesini aşmaz. Kaçan günler geçmişe yazılmaz; yeniden dengelemede eski açık görevler `SKIPPED` iziyle korunur, borç veya ceza dili üretilmez.
 - Her görev kontrollü neden koduyla açıklanır. Plan taslak başlar; yalnız aktif grup öğretmeni sürüm kontrolüyle onaylayıp kilitler.
 - Öğrenci serbest metin paylaşmadan yoğunluk, yanlış gün, öncelik veya başka neden kategorisiyle değişiklik isteyebilir. 1–5 bunaltı pulse'u isteğe bağlıdır.
@@ -105,12 +104,11 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 
 ## Aşama 9 kararları
 
-- `intervention-v3` AI veya tahmine dayalı risk skoru kullanmaz. Katılım, teslim, tekrar ve plan sinyallerine aynı sınav türündeki son iki ölçümde en az 5 net düşüş, 7 tam günlük panel etkinlik boşluğu ve öğretmen/admin'in kontrollü insan concern işareti eklenir; aynı öğrenci ve haftadaki sinyaller tek sahip, SLA ve insan sonucu olan `Student Support Episode` altında toplanır.
+- `intervention-v1` AI veya tahmine dayalı risk skoru kullanmaz. Yalnız katılım örüntüsü, teslimi geçen çalışma, üç kez tekrarlayan çözüm güçlüğü ve durmuş plan kapasitesi için açık eşikler çalışır.
 - Tek devamsızlık, tek gecikmiş çalışma veya iki açık plan görevi vaka üretmez. Açıklama kanıt sayısını ve değerlendirme penceresini gösterir; motivasyon, sağlık veya aile bağlamı hakkında çıkarım yapmaz.
-- Her destek bölümü 24 saatlik ilk insan aksiyonu hedefi, tek sahip, önerilen tek küçük eylem, sürüm ve işlem geçmişi taşır. Sahibi olmayan bölümü öğretmen/admin üstlenebilir; başka öğretmenin sahipliğine öğretmen müdahale edemez.
+- Her vaka 24 saatlik ilk insan aksiyonu hedefi, sahip, önerilen tek küçük eylem, sürüm ve işlem geçmişi taşır. Sahibi olmayan vakayı öğretmen/admin üstlenebilir; başka öğretmenin sahipliğine öğretmen müdahale edemez.
 - Bekletme 1/3/7 günlük kontrollü aralıklarla yapılır. Süresi geçen kayıt yeniden açılır; kapanış kontrollü sonuç koduyla, yanlış işaret ise kural iyileştirme nedeniyle kaydedilir.
 - İç aksiyon notları en fazla 500 karakterdir, yalnız admin/aktif grup öğretmeni görür ve ürün event'lerine kopyalanmaz. Öğrenci veya veli ekranında vaka, sahiplik, SLA ya da iç not görünmez.
-- Öğretmen ana sayfası historical assignment progress üzerinden ayrı oran hesaplamaz; indeksli `TeacherStudentAttentionSnapshot` servisi canonical açık destek bölümlerinden en fazla beş kayıt okur.
 - Kural, yaşam döngüsü, rollout ve geri alma ayrıntıları [müdahale kutusu işletim standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
 
 ## Aşama 10 kararları

@@ -88,12 +88,6 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/integration_test?schema=public
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/integration_test?schema=public
       BUSINESS_INTEGRATION_TEST: "true"
-      # OD-012: panel alanı ve hız limiti kapıları. Hız limiti suite'i yazıldığı
-      # günden beri bayrağı set edilmediği için CI'da sessizce atlanıyordu.
-      PANEL_INTEGRATION_TEST: "true"
-      RATE_LIMIT_INTEGRATION_TEST: "true"
-      # OD-013: hesap devralma token'ları bu gizli anahtardan HMAC türetir.
-      NEXTAUTH_SECRET: ci-only-nextauth-secret-0123456789abcdef0123456789abcdef
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

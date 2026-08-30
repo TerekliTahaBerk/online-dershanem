@@ -2,9 +2,7 @@
 
 ## Kapsam ve güvenli ürün davranışı
 
-- Plan yapay zekâ kullanmaz. `adaptive-v2` sürümlü ve deterministik bir kural/kısıt çözücüdür.
-- Her aday `adaptive-score-v2` ile kaynak, aciliyet, kanıt güncelliği, güven ve çelişki bileşenlerine ayrılır. Toplam skor, bileşenler ve kullanıcı açıklaması görev oluşturulurken snapshot olarak saklanır; böylece model değişse de geçmiş planın gerekçesi korunur.
-- Güncel kanıt eski kanıttan daha fazla ağırlık alır. Son tekrar yanıtları güveni artırabilir veya azaltabilir; yakın tarihli başarılı ve başarısız kanıtların birlikte bulunması çelişki cezası üretir.
+- Plan yapay zekâ kullanmaz. `adaptive-v1` sürümlü ve deterministik bir kural/kısıt çözücüdür.
 - Girdiler yalnız öğrencinin seçtiği uygun gün ve günlük süre, yaklaşan sınav, açık ödev, aktif tekrar öğesi ve öğretmenin `NEEDS_REVIEW` kanıtıdır.
 - Bir günde en fazla üç görev ve öğrencinin seçtiği dakika kapasitesi kullanılır. Görev sığmıyorsa kapasite aşılmaz.
 - Geçmiş günlere yeni görev yazılmaz. Yeniden dengeleme eski açık görevleri `SKIPPED` olarak korur ve yalnız kalan kapasiteye yeni öneri yerleştirir; “borç”, seri kaybı veya ceza dili kullanılmaz.

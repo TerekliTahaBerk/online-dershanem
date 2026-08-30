@@ -9,7 +9,6 @@ import { log } from "@/lib/logger";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { initialReviewDueAt } from "@/lib/review-scheduler";
 import { lessonCloseRequestHash } from "@/lib/lesson-close";
-import { claimLessonClose } from "@/lib/lesson-close-server";
 
 const attendance = z.enum(["PRESENT", "ABSENT", "LATE", "EXCUSED"]);
 const outcomeEvidence = z.enum(["TAUGHT", "OBSERVED", "INDEPENDENT", "NEEDS_REVIEW"]);
@@ -99,8 +98,8 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   try {
     await prisma.$transaction(async (tx) => {
     if (featureFlags.quickLessonClose && parsed.data.complete) {
-      const claimed = await claimLessonClose(tx, { lessonId: id, teacherId: auth.session.userId, expectedVersion: parsed.data.expectedVersion, idempotencyKey: parsed.data.idempotencyKey, requestHash: closeHash });
-      if (!claimed) throw new LessonCloseConflict();
+      const claimed = await tx.lesson.updateMany({ where: { id, teacherId: auth.session.userId, closeVersion: parsed.data.expectedVersion }, data: { closeVersion: { increment: 1 }, closeIdempotencyKey: parsed.data.idempotencyKey, closeRequestHash: closeHash, completedAt: new Date() } });
+      if (claimed.count !== 1) throw new LessonCloseConflict();
     }
     const common = await tx.lessonNote.findFirst({ where: { lessonId: id, studentId: null }, select: { id: true } });
     const commonData = { topic: parsed.data.topic || null, note: parsed.data.note || null, nextGoal: parsed.data.nextGoal || null, homework: parsed.data.homework || null };

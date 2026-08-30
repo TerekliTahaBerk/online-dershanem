@@ -1,12 +1,10 @@
 import { requirePanelRole } from "@/lib/auth/guards";
 import { getStudentHomeData } from "@/lib/panel/student-home-server";
-import { getStudentFirstValue } from "@/lib/od/first-value-server";
 import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { NoProductAccess } from "@/components/panel/no-product-access";
 import { TodayCard, type TodayRow } from "@/components/panel/student/today-card";
-import { FirstValueChecklist } from "@/components/panel/first-value-checklist";
 import {
   WeeklyPlanCard,
   LatestExamCard,
@@ -48,10 +46,11 @@ function greeting(now: Date): string {
 export default async function StudentHomePage() {
   const session = await requirePanelRole("STUDENT");
   const now = new Date();
-  const [data, firstValueSteps] = await Promise.all([
-    getStudentHomeData({ userId: session.userId, role: session.role, now }),
-    getStudentFirstValue(session.userId),
-  ]);
+  const data = await getStudentHomeData({
+    userId: session.userId,
+    role: session.role,
+    now,
+  });
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -134,8 +133,6 @@ export default async function StudentHomePage() {
 
       <TodayCard rows={rows} dateLabel={TR_DATE.format(now)} />
 
-      <FirstValueChecklist steps={firstValueSteps} />
-
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         {plan ? (
           <WeeklyPlanCard
@@ -160,11 +157,7 @@ export default async function StudentHomePage() {
 
       {trend.length >= 2 ? <NetTrendCard points={trend} caption={trendCaption} /> : null}
 
-      <DinoInsightCard
-        insight={data.dinoInsight?.insight ?? null}
-        basis={data.dinoInsight?.basis ?? null}
-        action={data.dinoInsight?.action ?? null}
-      />
+      <DinoInsightCard insight={null} basis={null} />
 
       {odk && !latest ? (
         <p className="mt-5 text-[14px] text-dc-ink-muted">

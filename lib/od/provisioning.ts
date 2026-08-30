@@ -8,8 +8,6 @@ import { dueAtForOdOnboardingState } from "@/lib/od/onboarding-state";
 import { prisma } from "@/lib/prisma";
 import { contractAccessWindow, parseOdkProductContract } from "@/lib/odk/product-contract";
 import { COMMERCE_TO_PRODUCT_CODE, MEMBERSHIP_BACKED_PRODUCTS } from "@/lib/commerce/product-mapping";
-import { createAccountClaimToken } from "@/lib/od/account-claim";
-import { issueAccountClaim } from "@/lib/od/account-claim-server";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -58,7 +56,6 @@ async function provisionRemainingOdLines(orderId: string) {
       const email = normalizeEmail(line.fulfillmentOwnerKey);
       if (!email) throw new OdProvisioningError("Satır öğrenci e-postası eksik.", "LINE_OWNER_EMAIL_MISSING");
       const passwordHash = await hashPassword(randomBytes(32).toString("base64url"));
-      const lineClaimToken = await createAccountClaimToken().catch(() => null);
       const user = await prisma.user.upsert({
         where: { email },
         create: { email, fullName: textField(owner, "fullName") ?? "OD Öğrencisi", phone: textField(owner, "phone"), role: "STUDENT", status: "ACTIVE", passwordHash, mustChangePassword: true },
@@ -106,11 +103,6 @@ async function provisionRemainingOdLines(orderId: string) {
           });
         }
         await tx.commerceOrderLine.update({ where: { id: line.id }, data: { fulfillmentOwnerUserId: user.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() } });
-        // Çok satırlı siparişte her satırın sahibi ayrı bir hesaptır ve o da
-        // hesabını devralabilmelidir; aksi hâlde yalnız ilk öğrenci davet alır.
-        // Davet üretilemezse satır yine de teslim edilmiş sayılır: erişim
-        // açılmıştır ve bir e-posta yüzünden geri alınması daha kötüdür.
-        if (lineClaimToken) await issueAccountClaim(tx, { userId: user.id, audience: "STUDENT", odOrderId: orderId, generated: lineClaimToken });
       });
     } catch (error) {
       const message = error instanceof Error ? error.message.slice(0, 500) : "Bilinmeyen satır provisioning hatası";
@@ -223,17 +215,6 @@ export async function provisionOdOrder(
 
   try {
     const passwordHash = await hashPassword(randomBytes(32).toString("base64url"));
-    /*
-     * `passwordHash` gibi, davet token'ları da transaction'dan ÖNCE üretilir:
-     * ikisi de scrypt çalıştırır ve Serializable kilidi altında beklemeleri eş
-     * zamanlı ödeme callback'lerinde gereksiz çakışma üretir.
-     *
-     * ÜRETİM BAŞARISIZSA PROVISIONING DEVAM EDER. Token üretimi
-     * `NEXTAUTH_SECRET`'e bağlıdır; o yapılandırma eksikse davet gönderilemez
-     * ama PARA ÇOKTAN ALINMIŞTIR — hesabın ve ürün erişiminin açılmaması çok
-     * daha kötü bir sonuçtur. Davetsiz kalan sipariş operasyona görünür kalır.
-     */
-    const claimTokens = await Promise.all([createAccountClaimToken(), createAccountClaimToken()]).catch(() => null);
     const result = await prisma.$transaction(async (tx) => {
       const order = await tx.odOrder.findUniqueOrThrow({ where: { id: orderId }, include: { onboarding: true } });
       const buyer = (order.buyerInfo ?? {}) as Buyer;
@@ -350,23 +331,6 @@ export async function provisionOdOrder(
         where: { id: onboarding.id },
         data: { state: targetState, flowType: existingStudent ? "EXISTING_STUDENT" : "NEW_STUDENT", dueAt: dueAtForOdOnboardingState(targetState, now), blockerReason: null, blockedFromState: null, stateEnteredAt: now, version: { increment: 1 } },
       });
-      /*
-       * HESAP DEVRALMA DAVETİ (OD-013).
-       *
-       * Hesap rastgele bir parolayla açıldı; sahibi onu bilmiyor. Davet
-       * gitmezse müşterinin panele girebilmesi için bir insanın arayıp geçici
-       * parola iletmesi gerekir — 100 müşteride sürdürülebilen, 10.000'de SLA
-       * üreten adım tam olarak budur. Davet ZATEN DEVRALINMIŞ hesaba
-       * gönderilmez (`issueAccountClaim` kontrol eder), yani ikinci bir ürün
-       * satın alan mevcut müşteri gereksiz e-posta almaz.
-       */
-      if (claimTokens) {
-        await issueAccountClaim(tx, { userId: student.id, audience: "STUDENT", odOrderId: orderId, generated: claimTokens[0] });
-        if (parentUserId) await issueAccountClaim(tx, { userId: parentUserId, audience: "PARENT", odOrderId: orderId, generated: claimTokens[1] });
-      } else {
-        await tx.auditLog.create({ data: { actorType: "SYSTEM", entityType: "OdOrder", entityId: orderId, action: "account_claim.issue_skipped", summary: "Davet üretilemedi; hesap açıldı fakat davet gönderilmedi.", payload: { userId: student.id, parentUserId: parentUserId ?? null } } });
-      }
-
       await tx.auditLog.createMany({ data: [
         { actorType: "SYSTEM", entityType: "ProductMembership", entityId: membership.id, action: existingMembership ? "product_membership.purchase_refreshed" : "product_membership.purchase_granted", summary: "OD satın alma erişimi açıldı", payload: { orderId, userId: student.id, product: "OD", source: "PURCHASE" } },
         ...(parentUserId ? [{ actorType: "SYSTEM" as const, entityType: "ParentStudent", entityId: `${parentUserId}:${profile.id}`, action: parentLinkCreated ? "parent_student.auto_linked" : "parent_student.link_confirmed", summary: "Veli öğrenci bağlantısı doğrulandı", payload: { orderId, parentUserId, studentProfileId: profile.id } }] : []),

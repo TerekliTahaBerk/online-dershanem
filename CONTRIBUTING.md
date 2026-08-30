@@ -20,7 +20,7 @@ npm run typecheck
 npm run test:unit
 ```
 
-Run integration, Playwright, and production build checks when the change affects those surfaces. Integration suites are opt-in per area and documented in [docs/integration-test-strategy.md](docs/integration-test-strategy.md). Schema changes must include a migration. Never use `prisma db push` against a production database.
+Run integration, Playwright, and production build checks when the change affects those surfaces. Schema changes must include a migration. Never use `prisma db push` against a production database.
 
 ## Commit and pull request standards
 

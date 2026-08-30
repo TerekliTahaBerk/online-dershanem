@@ -229,19 +229,16 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
 /**
  * Dino AI özeti.
  *
- * Ana sayfada serbest sohbet yerine sunucunun first-party kayıtlardan seçtiği
- * tek bir sonraki adımı gösterir. CTA yalnız mevcut ekrana gider; mutation yapmaz.
+ * §22: canlı bir Dino AI arka ucu HENÜZ YOK. Bu yüzden burada uydurma bir
+ * "AI çıktısı" üretilmez — `insight` verilmediğinde bileşen, özetin neye
+ * dayanacağını ve ne zaman görüneceğini söyleyen dürüst bir durum gösterir.
  */
 export function DinoInsightCard({
   insight,
   basis,
-  action,
-  audience = "STUDENT",
 }: {
   insight: string | null;
   basis: string | null;
-  action?: { label: string; href: string } | null;
-  audience?: "STUDENT" | "PARENT";
 }) {
   return (
     <section className="mt-5 flex items-start gap-5 rounded-[14px] border border-dc-line bg-white p-[22px]">
@@ -261,13 +258,12 @@ export function DinoInsightCard({
           <>
             <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{insight}</p>
             {basis ? <p className="mt-2 text-[12.5px] text-dc-ink-faint">{basis}</p> : null}
-            {action ? <Link href={action.href} className="mt-3.5 inline-flex rounded-[10px] bg-dc-brand px-4 py-2.5 text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover">{action.label}</Link> : null}
           </>
         ) : (
           <p className="mt-2 text-[14.5px] leading-[1.65] text-dc-ink-muted">
-            Haftalık Dino özeti, yeterli ders ve tekrar verisi biriktiğinde burada
-            görünecek. Özet yalnızca {audience === "STUDENT" ? "senin" : "öğrencinin"}
-            {" "}ders, plan ve tekrar kayıtlarına dayanır.
+            Haftalık Dino özeti, yeterli ders ve deneme verisi biriktiğinde burada
+            görünecek. Özet yalnızca senin ders notların, plan görevlerin ve deneme
+            sonuçlarına dayanır.
           </p>
         )}
       </div>

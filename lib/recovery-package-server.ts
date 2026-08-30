@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { buildRecoveryDraft } from "@/lib/recovery-package";
-import { ADAPTIVE_PLAN_RULE_VERSION, buildAdaptiveWeek } from "@/lib/adaptive-plan";
+import { buildAdaptiveWeek } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
 
 export async function generateRecoveryPackage(attendanceId: string, teacherId: string) {
@@ -47,7 +47,7 @@ export async function rebalanceApprovedPlanForRecovery(studentId: string, approv
   const availableDays = Array.isArray(preference.availableDays) ? preference.availableDays.filter((day): day is number => typeof day === "number") : [];
   const tasks = buildAdaptiveWeek({ now: new Date(), availableDays, minutesPerDay: preference.minutesPerDay, maxTasksPerDay: Math.min(3, preference.maxTasksPerDay), candidates });
   await prisma.$transaction(async (tx) => {
-    await tx.weeklyPlan.update({ where: { id: plan.id }, data: { ruleVersion: ADAPTIVE_PLAN_RULE_VERSION, approvedById, approvedAt: new Date(), generatedAt: new Date(), version: { increment: 1 } } });
+    await tx.weeklyPlan.update({ where: { id: plan.id }, data: { ruleVersion: "adaptive-v1", approvedById, approvedAt: new Date(), generatedAt: new Date(), version: { increment: 1 } } });
     await tx.weeklyPlanTask.updateMany({ where: { planId: plan.id, status: "PLANNED" }, data: { status: "SKIPPED" } });
     if (tasks.length) await tx.weeklyPlanTask.createMany({ data: tasks.map((task) => ({ planId: plan.id, ...task })) });
   });

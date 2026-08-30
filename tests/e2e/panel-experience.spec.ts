@@ -260,7 +260,7 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/plan");
     const studentPlan = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
-    await expect(studentPlan.getByText(/adaptive-v2/)).toBeVisible();
+    await expect(studentPlan.getByText(/adaptive-v1/)).toBeVisible();
     await studentPlan.getByRole("button", { name: "Onayla ve kilitle" }).click();
     await expect(page.getByText(/plan onaylandı ve kilitlendi/i)).toBeVisible();
 
@@ -351,12 +351,8 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/mudahale");
     await expect(page.getByRole("heading", { name: "Sinyal, sahibi ve küçük eylemiyle gelsin." })).toBeVisible();
-    await page.getByLabel("Destek ihtiyacı işaretlenecek öğrenci").selectOption({ label: "Ada Öğrenci" });
-    await Promise.all([page.waitForNavigation(), page.getByRole("button", { name: "Destek ihtiyacı işaretle" }).click()]);
     await Promise.all([page.waitForNavigation(), page.getByRole("button", { name: "Açıklanabilir sinyalleri yenile" }).click()]);
     const row = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "Tekrarlayan çözüm güçlüğü" }).first();
-    await expect(row.getByText(/Öğrenci destek bölümü · \d+ sinyal/i)).toBeVisible();
-    await expect(row.getByText("İnsan tarafından işaretlenen destek ihtiyacı", { exact: true })).toBeVisible();
     await expect(row.getByText(/en az üç “yanlış” veya “emin değilim”/)).toBeVisible();
     await expect(row.getByText(/puanlama veya teşhis yok/)).toBeVisible();
     await Promise.all([page.waitForNavigation(), row.getByRole("button", { name: "Üstlen" }).click()]);

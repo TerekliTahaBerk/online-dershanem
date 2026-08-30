@@ -1,8 +1,8 @@
 import { istanbulWeekStart } from "./istanbul-time";
 
-export const INTERVENTION_RULE_VERSION = "intervention-v3";
+export const INTERVENTION_RULE_VERSION = "intervention-v1";
 
-export type InterventionReasonCode = "ATTENDANCE_PATTERN" | "OVERDUE_WORK" | "REPEATED_REVIEW_DIFFICULTY" | "PLAN_STALLED" | "RECENT_EXAM_DROP" | "ENGAGEMENT_GAP" | "HUMAN_CONCERN";
+export type InterventionReasonCode = "ATTENDANCE_PATTERN" | "OVERDUE_WORK" | "REPEATED_REVIEW_DIFFICULTY" | "PLAN_STALLED";
 
 export type InterventionSignal = {
   reasonCode: InterventionReasonCode;
@@ -11,39 +11,8 @@ export type InterventionSignal = {
   suggestedAction: string;
 };
 
-export type StudentSupportEpisode = {
-  primaryReasonCode: InterventionReasonCode;
-  signals: InterventionSignal[];
-  evidenceCount: number;
-  explanation: string;
-  suggestedAction: string;
-};
-
-export function buildStudentSupportEpisode(signals: InterventionSignal[]): StudentSupportEpisode | null {
-  if (!signals.length) return null;
-
-  return {
-    primaryReasonCode: signals[0].reasonCode,
-    signals,
-    evidenceCount: signals.reduce((sum, signal) => sum + signal.evidenceCount, 0),
-    explanation: `${signals.length} açıklanabilir sinyal aynı öğrenci destek bölümünde birleştirildi.`,
-    suggestedAction: signals.length === 1
-      ? signals[0].suggestedAction
-      : "Öğrenciyle kısa bir görüşmede sinyalleri birlikte doğrulayın; ardından yalnız bir küçük destek adımı seçin.",
-  };
-}
-
 export function interventionWindowStart(now = new Date()): Date {
   return istanbulWeekStart(now);
-}
-
-export function buildHumanConcernSignal(): InterventionSignal {
-  return {
-    reasonCode: "HUMAN_CONCERN",
-    evidenceCount: 1,
-    explanation: "Bir öğretmen veya yönetici bu hafta öğrenciyle kısa bir destek kontrolü yapılmasını istedi. Serbest metin, tanı veya neden çıkarımı kaydedilmedi.",
-    suggestedAction: "İşareti oluşturan insan kararını öğrenciyle kısa bir görüşmede doğrulayın ve gerekiyorsa tek destek adımı belirleyin.",
-  };
 }
 
 export function buildInterventionSignals(input: {
@@ -52,8 +21,6 @@ export function buildInterventionSignals(input: {
   overdueWorkCount: number;
   repeatedDifficultyCount: number;
   stalledPlanTaskCount: number;
-  recentExamDrop?: { previousNet: number; currentNet: number } | null;
-  engagementGapDays?: number;
 }): InterventionSignal[] {
   const signals: InterventionSignal[] = [];
 
@@ -90,24 +57,6 @@ export function buildInterventionSignals(input: {
       evidenceCount: input.stalledPlanTaskCount,
       explanation: `Onaylı haftalık plandaki ${input.stalledPlanTaskCount} geçmiş görev henüz tamamlanmadı. Bu kayıt motivasyon nedeni hakkında çıkarım yapmaz.`,
       suggestedAction: "Plan kapasitesini kontrol edip bugüne yalnız bir küçük öncelik bırakın.",
-    });
-  }
-
-  if (input.recentExamDrop && input.recentExamDrop.previousNet - input.recentExamDrop.currentNet >= 5) {
-    signals.push({
-      reasonCode: "RECENT_EXAM_DROP",
-      evidenceCount: 2,
-      explanation: `Aynı sınav türündeki son iki denemede toplam net ${input.recentExamDrop.previousNet.toFixed(2)} seviyesinden ${input.recentExamDrop.currentNet.toFixed(2)} seviyesine indi. Yalnız son iki ölçüm karşılaştırıldı; kalıcı eğilim veya neden çıkarımı yapılmadı.`,
-      suggestedAction: "Son denemenin koşullarını ve en çok değişen bölümü öğrenciyle doğrulayın; tek bir sonraki adım seçin.",
-    });
-  }
-
-  if ((input.engagementGapDays || 0) >= 7) {
-    signals.push({
-      reasonCode: "ENGAGEMENT_GAP",
-      evidenceCount: 1,
-      explanation: `Öğrencinin panelde gözlenen son etkinliğinin üzerinden ${input.engagementGapDays} tam gün geçti. Erişim, motivasyon veya kişisel neden hakkında çıkarım yapılmadı.`,
-      suggestedAction: "Öğrencinin erişim durumunu kısa bir temasla doğrulayın; gerekiyorsa dönüş için tek küçük görev seçin.",
     });
   }
 

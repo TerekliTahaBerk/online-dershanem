@@ -1,8 +1,7 @@
 import { Resend } from "resend";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { materializePasswordResetEmailHtml, passwordResetUrlMarker } from "@/lib/auth/password-reset";
-import { ACCOUNT_CLAIM_TTL_MS, accountClaimUrlMarker, materializeAccountClaimEmailHtml } from "@/lib/od/account-claim";
+import { passwordResetUrlMarker } from "@/lib/auth/password-reset";
 
 let resend: Resend | null = null;
 const sender = process.env.MAIL_FROM || "Online Dershanem <noreply@onlinedershanem.com>";
@@ -21,15 +20,6 @@ function template(title: string, body: string): string {
   return `<!doctype html><html lang="tr"><body style="margin:0;background:#f2f2ef;font-family:Arial,sans-serif"><div style="max-width:600px;margin:32px auto;background:#fff;padding:32px;border-radius:14px"><h1 style="color:#091413;font-size:24px">${title}</h1>${body}<p style="margin-top:32px;color:#777;font-size:12px">Online Dershanem · destek@onlinedershanem.com</p></div></body></html>`;
 }
 
-/**
- * Outbox HTML'indeki gizli-değer işaretlerini teslimden hemen ÖNCE gerçek
- * bağlantıya çevirir. Tek yerde durur ki yeni bir işaret türü eklendiğinde
- * cron ile anlık gönderim yolu birbirinden ayrışmasın.
- */
-export function materializeOutboxHtml(html: string): string {
-  return materializeAccountClaimEmailHtml(materializePasswordResetEmailHtml(html));
-}
-
 async function send(to: string | string[], subject: string, html: string): Promise<void> {
   const recipients = Array.isArray(to) ? to : [to];
   const row = await prisma.emailOutbox.create({ data: { recipients: JSON.stringify(recipients), subject, html }, select: { id: true } }).catch(() => null);
@@ -37,7 +27,7 @@ async function send(to: string | string[], subject: string, html: string): Promi
   // cron tarafından anahtar yeniden sağlandığında gönderilebilir.
   if (!process.env.RESEND_API_KEY) return;
   try {
-    await client().emails.send({ from: sender, to: recipients, subject, html: materializeOutboxHtml(html) });
+    await client().emails.send({ from: sender, to: recipients, subject, html });
     if (row) await prisma.emailOutbox.update({ where: { id: row.id }, data: { status: "SENT", sentAt: new Date() } });
   } catch (error) {
     if (row) await prisma.emailOutbox.update({ where: { id: row.id }, data: { status: "FAILED", attempts: 1, lastError: String(error).slice(0, 500), nextRetryAt: new Date(Date.now() + 60_000) } }).catch(() => undefined);
@@ -72,7 +62,7 @@ export async function sendOrderPaidUserEmail(input: {
   packageName: string; totalCents: number;
 }): Promise<void> {
   const total = (input.totalCents / 100).toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
-  await send(input.to, "Ödemeniz alındı – Online Dershanem", template("Ödemeniz başarıyla alındı", `<p>Merhaba ${escapeHtml(input.name || "")},</p><p><strong>${escapeHtml(input.packageName)}</strong> siparişiniz için ${escapeHtml(total)} tutarındaki ödeme kaydedildi.</p><p>Sipariş: ${escapeHtml(input.orderId)}</p><p>Hesabınızı kurmanız için ayrı bir davet e-postası gönderiyoruz; oradaki bağlantıdan kendi parolanızı belirleyebilirsiniz.</p>`));
+  await send(input.to, "Ödemeniz alındı – Online Dershanem", template("Ödemeniz başarıyla alındı", `<p>Merhaba ${escapeHtml(input.name || "")},</p><p><strong>${escapeHtml(input.packageName)}</strong> siparişiniz için ${escapeHtml(total)} tutarındaki ödeme kaydedildi.</p><p>Sipariş: ${escapeHtml(input.orderId)}</p><p>Ekibimiz gerekli bilgilendirme için sizinle iletişime geçecektir.</p>`));
 }
 
 export async function sendOrderPaidAdminEmail(input: {
@@ -132,58 +122,4 @@ export async function queuePasswordResetEmail(input: {
       html,
     },
   });
-}
-
-
-/**
- * Hesap devralma daveti.
- *
- * `queuePasswordResetEmail` ile aynı gizlilik kuralı: HTML'e gizli değer
- * DEĞİL, yalnız kayıt kimliği işareti yazılır. Gerçek bağlantı teslimden hemen
- * önce bellekte üretilir (`materializeOutboxHtml`), böylece veritabanı ya da
- * outbox dökümü kullanılabilir bir davet içermez.
- *
- * Anlık gönderim DENENİR ama başarısızlığı çağıranı etkilemez: satır outbox'ta
- * kaldığı için `email-retry` cron'u yeniden dener. Ödeme akışı bir e-posta
- * hatası yüzünden bozulmaz.
- */
-export async function queueAccountClaimEmail(input: {
-  to: string;
-  name?: string | null;
-  tokenId: string;
-  audience: "STUDENT" | "PARENT";
-  /** Hatırlatma gönderimlerinde konu ve metin değişir. */
-  reminder?: boolean;
-}, db: Pick<Prisma.TransactionClient, "emailOutbox"> = prisma): Promise<void> {
-  const claimUrl = accountClaimUrlMarker(input.tokenId);
-  const days = Math.round(ACCOUNT_CLAIM_TTL_MS / 86_400_000);
-  const intro = input.audience === "PARENT"
-    ? "Veli hesabınız hazır. Aşağıdaki bağlantıdan parolanızı belirleyip çocuğunuzun bağlantısını onaylayabilirsiniz."
-    : "Öğrenci hesabınız hazır. Aşağıdaki bağlantıdan kendi parolanızı belirleyebilirsiniz.";
-  const title = input.reminder ? "Hesabınız sizi bekliyor" : "Hesabınızı kurun";
-  const nudge = input.reminder
-    ? "<p style=\"line-height:1.6\">Daha önce gönderdiğimiz davet henüz kullanılmadı. Bir sorun yaşıyorsanız bu e-postayı yanıtlamanız yeterli.</p>"
-    : "";
-  const html = template(
-    title,
-    `<p>Merhaba ${escapeHtml(input.name || "")},</p><p style="line-height:1.6">${intro}</p>${nudge}<p style="margin-top:24px"><a href="${claimUrl}" style="display:inline-block;background:#3a4a2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Hesabımı kur</a></p><p style="line-height:1.6">Bu bağlantı ${days} gün geçerlidir ve yalnızca bir kez kullanılabilir. Kurulum bir dakikadan kısa sürer.</p>`,
-  );
-  const subject = `${title} – Online Dershanem`;
-  const row = await db.emailOutbox.create({
-    data: { recipients: JSON.stringify([input.to]), subject, html },
-    select: { id: true },
-  });
-
-  // Transaction içindeyken anlık gönderim denenmez: commit olmayabilir ve
-  // gönderilmiş bir davet geri alınamaz. Cron 15 dakika içinde teslim eder.
-  if (db !== prisma || !process.env.RESEND_API_KEY) return;
-  try {
-    await client().emails.send({ from: sender, to: [input.to], subject, html: materializeOutboxHtml(html) });
-    await prisma.emailOutbox.update({ where: { id: row.id }, data: { status: "SENT", sentAt: new Date() } });
-  } catch (error) {
-    await prisma.emailOutbox
-      .update({ where: { id: row.id }, data: { status: "FAILED", attempts: 1, lastError: String(error).slice(0, 500), nextRetryAt: new Date(Date.now() + 60_000) } })
-      .catch(() => undefined);
-    console.error("[email] account claim send failed; queued for retry", { error });
-  }
 }
