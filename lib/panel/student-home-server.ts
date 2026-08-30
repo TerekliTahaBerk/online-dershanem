@@ -60,6 +60,15 @@ export async function getStudentHomeData(input: {
           groupName: row.group.name,
         }));
       },
+      async getNextRecoveryPackage(studentId) {
+        const row = await prisma.recoveryPackage.findFirst({
+          where: { studentId, status: "PUBLISHED" },
+          orderBy: { dueAt: "asc" },
+          select: { id: true, dueAt: true, lesson: { select: { title: true } } },
+        });
+        if (!row) return null;
+        return { id: row.id, lessonTitle: row.lesson.title, dueAt: row.dueAt };
+      },
       getWeeklyPlan(studentId) {
         return prisma.weeklyPlan.findFirst({
           where: { studentId },

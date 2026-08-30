@@ -24,7 +24,7 @@ export function createIntegrationPrismaClient() {
 }
 
 export async function assertIntegrationSchemaReady(client = prisma) {
-  const requiredTables = ["teacher_home_snapshots", "background_jobs", "student_profiles", "rate_limit_entries"];
+  const requiredTables = ["teacher_home_snapshots", "background_jobs", "student_profiles", "RateLimitEntry"];
   const rows = await client.$queryRaw<Array<{ table_name: string }>>`
     SELECT table_name
     FROM information_schema.tables

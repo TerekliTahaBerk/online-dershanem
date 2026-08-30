@@ -3,6 +3,7 @@ import { hashPassword } from "../lib/auth/password";
 import { planningWeekStart } from "../lib/adaptive-plan";
 import { digestWeekStart } from "../lib/calm-weekly-digest";
 import { interventionWindowStart } from "../lib/intervention-rules";
+import { panelE2EAccounts } from "../lib/e2e/panel-accounts";
 
 const prisma = new PrismaClient();
 const odkContractPolicy = {
@@ -86,19 +87,26 @@ async function main() {
     throw new Error("E2E seed production ortamında çalıştırılamaz.");
   }
 
-  const password = process.env.E2E_PASSWORD || "testpass123";
-  const passwordHash = await hashPassword(password);
+  const fallbackPassword = process.env.E2E_PASSWORD ?? "testpass123";
+  const hashCache = new Map<string, string>();
+  const hashFor = async (password: string) => {
+    const cached = hashCache.get(password);
+    if (cached) return cached;
+    const next = await hashPassword(password);
+    hashCache.set(password, next);
+    return next;
+  };
   const users = [
-    { id: ids.admin, email: "admin.e2e@example.com", fullName: "E2E Yönetici", role: "ADMIN" as const },
-    { id: ids.teacher, email: "teacher.e2e@example.com", fullName: "E2E Öğretmen", role: "TEACHER" as const },
+    { id: ids.admin, email: panelE2EAccounts.admin.email, password: panelE2EAccounts.admin.password, fullName: "E2E Yönetici", role: "ADMIN" as const },
+    { id: ids.teacher, email: panelE2EAccounts.teacher.email, password: panelE2EAccounts.teacher.password, fullName: "E2E Öğretmen", role: "TEACHER" as const },
     { id: ids.otherTeacher, email: "other.teacher.e2e@example.com", fullName: "Başka Öğretmen", role: "TEACHER" as const },
-    { id: ids.student, email: "student.e2e@example.com", fullName: "Ada Öğrenci", role: "STUDENT" as const },
+    { id: ids.student, email: panelE2EAccounts.student.email, password: panelE2EAccounts.student.password, fullName: "Ada Öğrenci", role: "STUDENT" as const },
     { id: ids.foreignStudent, email: "foreign.student.e2e@example.com", fullName: "Bora Yabancı", role: "STUDENT" as const },
     { id: ids.student3, email: "student3.e2e@example.com", fullName: "Cem Öğrenci", role: "STUDENT" as const },
     { id: ids.student4, email: "student4.e2e@example.com", fullName: "Duru Öğrenci", role: "STUDENT" as const },
-    { id: ids.odkStudent, email: "odk.student.e2e@example.com", fullName: "Ece ODK Öğrenci", role: "STUDENT" as const },
+    { id: ids.odkStudent, email: panelE2EAccounts.odkStudent.email, password: panelE2EAccounts.odkStudent.password, fullName: "Ece ODK Öğrenci", role: "STUDENT" as const },
     { id: ids.planForeignStudent, email: "plan.foreign.student.e2e@example.com", fullName: "Yalnız Yabancı Öğrenci", role: "STUDENT" as const },
-    { id: ids.parent, email: "parent.e2e@example.com", fullName: "E2E Veli", role: "PARENT" as const },
+    { id: ids.parent, email: panelE2EAccounts.parent.email, password: panelE2EAccounts.parent.password, fullName: "E2E Veli", role: "PARENT" as const },
     // İşletme RBAC fixture'ları. Hepsi platformda ADMIN'dir; aralarındaki tek
     // fark BusinessRoleAssignment satırlarıdır. Böylece testler gerçekten
     // işletme rolünü ölçer, platform rolünü değil.
@@ -110,10 +118,30 @@ async function main() {
     { id: ids.businessNoAccess, email: "business.noaccess.e2e@example.com", fullName: "E2E Atamasız", role: "ADMIN" as const },
   ];
 
+  const requiredFixtureEmails = [
+    panelE2EAccounts.admin.email,
+    panelE2EAccounts.teacher.email,
+    panelE2EAccounts.student.email,
+    panelE2EAccounts.parent.email,
+    panelE2EAccounts.odkStudent.email,
+  ];
+  if (new Set(requiredFixtureEmails).size !== requiredFixtureEmails.length) {
+    throw new Error("PANEL_E2E fixture email values must be distinct for admin/teacher/student/parent/odkStudent.");
+  }
+
   for (const user of users) {
+    const passwordHash = await hashFor(user.password ?? fallbackPassword);
     await prisma.user.upsert({
       where: { email: user.email },
-      create: { ...user, passwordHash, mustChangePassword: false, status: "ACTIVE" },
+      create: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        passwordHash,
+        mustChangePassword: false,
+        status: "ACTIVE",
+      },
       update: { passwordHash, fullName: user.fullName, role: user.role, status: "ACTIVE", mustChangePassword: false, failedAttempts: 0, lockedUntil: null },
     });
   }

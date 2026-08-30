@@ -51,7 +51,7 @@ test("readiness DB ve bütün kritik heartbeat'ler sağlıklıysa hazırdır", (
   const report = buildReadinessReport({ db: { ok: true, latencyMs: 4 }, heartbeats, now, env });
   assert.equal(report.ready, true);
   assert.equal(report.checks.database.status, "ok");
-  assert.equal(report.checks.cron.jobs.length, 6);
+  assert.equal(report.checks.cron.jobs.length, CRITICAL_CRON_DEFINITIONS.length);
 });
 
 test("stale cron readiness'i düşürürken secret değerleri çıktıya girmez", () => {

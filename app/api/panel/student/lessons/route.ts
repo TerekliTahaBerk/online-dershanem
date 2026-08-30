@@ -67,7 +67,8 @@ export async function GET(request: Request) {
 
     const statusTone: "default" | "ok" | "warn" = missed ? "warn" : isToday && !completed ? "ok" : "default";
 
-    const actionLabel = missed ? "Telafi" : completed ? "Notları gör" : isToday ? "Derse katıl" : "Detay";
+    const actionLabel = missed ? "Telafi et" : completed ? "Notları gör" : isToday ? "Derse katıl" : "Detay";
+    const actionHref = missed ? `/panel/ogrenci/telafi?lessonId=${lesson.id}` : `/panel/ogrenci/takvim/${lesson.id}`;
 
     return {
       id: lesson.id,
@@ -78,6 +79,7 @@ export async function GET(request: Request) {
       statusLabel,
       statusTone,
       actionLabel,
+      actionHref,
     };
   });
 

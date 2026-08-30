@@ -25,7 +25,7 @@ async function loadTeacherHomeSourceData(teacherId: string, now: Date): Promise<
   const dayEnd = istanbulNextDayStart(now);
   const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-  const [todayLessons, awaitingNotes, groups] = await Promise.all([
+  const [todayLessons, awaitingNotes] = await Promise.all([
     prisma.lesson.findMany({
       where: { teacherId, startsAt: { gte: dayStart, lt: dayEnd } },
       orderBy: { startsAt: "asc" },
@@ -53,44 +53,9 @@ async function loadTeacherHomeSourceData(teacherId: string, now: Date): Promise<
       select: {
         id: true,
         startsAt: true,
-        group: { select: { name: true } },
+          group: { select: { name: true } },
       },
     }),
-    prisma.group.findMany({
-      where: { teacherId, isActive: true },
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        enrollments: {
-          where: { endedAt: null },
-          select: {
-            student: {
-              select: {
-                id: true,
-                user: { select: { fullName: true, email: true } },
-              },
-            },
-          },
-        },
-      },
-    }),
-  ]);
-
-  const studentIds = groups.flatMap((group) => group.enrollments.map((enrollment) => enrollment.student.id));
-  const [attendance, assignmentProgress] = await Promise.all([
-    studentIds.length
-      ? prisma.attendance.findMany({
-          where: { studentId: { in: studentIds }, createdAt: { gte: twoWeeksAgo } },
-          select: { studentId: true, status: true },
-        })
-      : Promise.resolve([]),
-    studentIds.length
-      ? prisma.assignmentProgress.findMany({
-          where: { studentId: { in: studentIds } },
-          select: { studentId: true, status: true },
-        })
-      : Promise.resolve([]),
   ]);
 
   return {
@@ -108,16 +73,9 @@ async function loadTeacherHomeSourceData(teacherId: string, now: Date): Promise<
       startsAt: lesson.startsAt,
       groupName: lesson.group.name,
     })),
-    groups: groups.map((group) => ({
-      id: group.id,
-      name: group.name,
-      students: group.enrollments.map((enrollment) => ({
-        id: enrollment.student.id,
-        name: enrollment.student.user.fullName || enrollment.student.user.email,
-      })),
-    })),
-    attendance,
-    assignmentProgress,
+    groups: [],
+    attendance: [],
+    assignmentProgress: [],
   };
 }
 

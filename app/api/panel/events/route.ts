@@ -30,6 +30,10 @@ export async function POST(request: Request) {
   if (parsed.data.name === "mock_exam_entry_started" && parsed.data.properties.actorRole !== auth.session.role) return NextResponse.json({ error: "Event rolü oturumla eşleşmiyor." }, { status: 400 });
   if (parsed.data.name === "review_queue_viewed" && parsed.data.properties.actorRole !== auth.session.role) return NextResponse.json({ error: "Event rolü oturumla eşleşmiyor." }, { status: 400 });
   if (parsed.data.name === "plan_review_completed" && auth.session.role !== "TEACHER") return NextResponse.json({ error: "Bu event yalnız öğretmen oturumundan gönderilebilir." }, { status: 400 });
+  if (parsed.data.name === "student_next_action_clicked" && (auth.session.role !== "STUDENT" || parsed.data.properties.role !== auth.session.role)) return NextResponse.json({ error: "Bu event yalnız öğrenci oturumundan gönderilebilir." }, { status: 400 });
+  if (parsed.data.name === "plan_task_started" && (auth.session.role !== "STUDENT" || parsed.data.properties.role !== auth.session.role)) return NextResponse.json({ error: "Bu event yalnız öğrenci oturumundan gönderilebilir." }, { status: 400 });
+  if (parsed.data.name === "odk_recovery_action_started" && (auth.session.role !== "STUDENT" || parsed.data.properties.role !== auth.session.role)) return NextResponse.json({ error: "Bu event yalnız öğrenci oturumundan gönderilebilir." }, { status: 400 });
+  if (parsed.data.name === "parent_action_clicked" && (auth.session.role !== "PARENT" || parsed.data.properties.role !== auth.session.role)) return NextResponse.json({ error: "Bu event yalnız veli oturumundan gönderilebilir." }, { status: 400 });
 
   await recordPanelProductEvent(parsed.data, auth.session.role);
   return new NextResponse(null, { status: 204 });

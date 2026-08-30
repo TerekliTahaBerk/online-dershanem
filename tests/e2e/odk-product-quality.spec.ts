@@ -1,13 +1,29 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { uniqueTestClientIp } from "./helpers/client-ip";
+import { panelE2EAccounts } from "../../lib/e2e/panel-accounts";
+import { loginAs } from "./helpers/panel-login";
 
-const password = process.env.E2E_PASSWORD || "testpass123";
 const accounts = {
-  admin: { email: "admin.e2e@example.com", root: "/panel/odk/yonetim" },
-  teacher: { email: "teacher.e2e@example.com", root: "/panel/odk/ogretmen" },
-  student: { email: "odk.student.e2e@example.com", root: "/panel/odk/ogrenci" },
-  parent: { email: "parent.e2e@example.com", root: "/panel/odk/veli" },
+  admin: {
+    ...panelE2EAccounts.admin,
+    root: "/panel/odk/yonetim",
+    failureLabel: "ODK ADMIN",
+  },
+  teacher: {
+    ...panelE2EAccounts.teacher,
+    root: "/panel/odk/ogretmen",
+    failureLabel: "ODK TEACHER",
+  },
+  student: {
+    ...panelE2EAccounts.odkStudent,
+    root: "/panel/odk/ogrenci",
+    failureLabel: "ODK STUDENT",
+  },
+  parent: {
+    ...panelE2EAccounts.parent,
+    root: "/panel/odk/veli",
+    failureLabel: "ODK PARENT",
+  },
 } as const;
 
 const routes = {
@@ -31,19 +47,13 @@ const routes = {
 
 async function login(page: Page, role: keyof typeof accounts) {
   const account = accounts[role];
-  await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
-  await page.request.post("/api/auth/logout");
-  await page.goto("/giris");
-  await page.getByRole("textbox", { name: "E-posta" }).fill(account.email);
-  await page.getByLabel("Şifre").fill(password);
-  await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
+  await loginAs(page, account);
   /*
    * TEK PANEL: giriş artık ürün seçici göstermez ve herkesi kendi ROL
    * paneline yollar; Deneme Kulübü o panelin bir bölümüdür. Bu yüzden test
    * önce panele girer, sonra ODK bölümüne gider. Kapsam daralmadı —
    * aşağıdaki ODK yüzeylerinin hepsi yine tek tek geziliyor.
    */
-  await page.waitForURL(/\/panel\//);
   await page.goto(account.root);
   await page.waitForURL((url) => url.pathname === account.root);
 }

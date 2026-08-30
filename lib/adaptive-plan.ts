@@ -15,6 +15,14 @@ export type PlanCandidate = {
   reasonCode: "DUE_SOON" | "REVIEW_DUE" | "NEEDS_REVIEW" | "EXAM_APPROACHING" | "CAPACITY_BALANCE" | "MISSED_LESSON";
   priority: number;
   dueAt?: Date | null;
+  signalMeta?: {
+    source: "ODK_RESULT";
+    confidence: number;
+    evidenceCount: number;
+    questionCount: number;
+    latestAccuracy: number;
+    previousAccuracy: number | null;
+  };
 };
 
 export type CandidateScoreBreakdown = {

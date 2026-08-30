@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PanelCard, PanelCardTitle, PanelProgress } from "@/components/panel/ui";
 
 /**
  * ÖĞRENCİ ANA SAYFA KARTLARI — onaylı tasarım (Panel.dc.html → scStudentHome).
@@ -25,24 +26,15 @@ export function WeeklyPlanCard({
   const remaining = Math.max(0, total - done);
 
   return (
-    <section className="rounded-[14px] border border-dc-line bg-white p-[22px]">
+    <PanelCard>
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[16px] font-bold text-dc-ink">Bu haftaki planın</h2>
+        <PanelCardTitle>Bu haftaki planın</PanelCardTitle>
         <span className="text-[13px] text-dc-ink-faint">
           {done} / {total} görev
         </span>
       </div>
 
-      <div
-        className="mt-3.5 h-2 overflow-hidden rounded-full bg-dc-line-soft"
-        role="progressbar"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="Haftalık plan ilerlemesi"
-      >
-        <div className="h-full rounded-full bg-dc-brand" style={{ width: `${pct}%` }} />
-      </div>
+      <PanelProgress label="Haftalık plan ilerlemesi" value={pct} className="mt-3.5" />
       <p className="mt-2 text-[13px] text-dc-ink-muted">
         {remaining > 0
           ? `Hafta sonuna kadar ${remaining} görev kaldı.`
@@ -62,7 +54,7 @@ export function WeeklyPlanCard({
               className={`grid h-4 w-4 flex-none place-items-center rounded ${
                 task.done
                   ? "bg-dc-brand-strong text-[9px] font-bold text-white"
-                  : "border border-[#DDE4E0]"
+                  : "border border-dc-line-soft"
               }`}
             >
               {task.done ? "✓" : ""}
@@ -79,7 +71,7 @@ export function WeeklyPlanCard({
       >
         Planın tamamını gör →
       </Link>
-    </section>
+    </PanelCard>
   );
 }
 
@@ -106,8 +98,8 @@ export function LatestExamCard({
     value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <section className="rounded-[14px] border border-dc-line bg-white p-[22px]">
-      <h2 className="text-[16px] font-bold text-dc-ink">Son deneme</h2>
+    <PanelCard>
+      <PanelCardTitle>Son deneme</PanelCardTitle>
 
       <p className="mt-3 flex items-baseline gap-2.5">
         <span className="text-[30px] font-extrabold tracking-[-0.02em] text-dc-ink">
@@ -116,7 +108,7 @@ export function LatestExamCard({
         {delta !== null ? (
           <span
             className={`text-[13.5px] font-bold ${
-              delta >= 0 ? "text-dc-brand-hover" : "text-[#8A5F37]"
+              delta >= 0 ? "text-dc-brand-hover" : "text-[var(--pd-pastel-yellow-ink)]"
             }`}
           >
             {delta >= 0 ? "+" : ""}
@@ -145,7 +137,7 @@ export function LatestExamCard({
       >
         Sonucu ve analizi aç →
       </Link>
-    </section>
+    </PanelCard>
   );
 }
 
@@ -177,11 +169,9 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
   }));
 
   return (
-    <section className="mt-5 rounded-[14px] border border-dc-line bg-white p-[22px]">
+    <PanelCard className="mt-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[16px] font-bold text-dc-ink">
-          Son {points.length} deneme · toplam net
-        </h2>
+        <PanelCardTitle>Son {points.length} deneme · toplam net</PanelCardTitle>
       </div>
 
       <svg
@@ -191,12 +181,12 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
         aria-label={`Toplam net gelişimi: ${points.map((p) => `${p.label} ${p.net}`).join(", ")}`}
       >
         {[20, 70, 120].map((y) => (
-          <line key={y} x1="0" y1={y} x2={W} y2={y} stroke="#EDF0EE" strokeWidth="1" />
+          <line key={y} x1="0" y1={y} x2={W} y2={y} stroke="var(--dc-line-soft)" strokeWidth="1" />
         ))}
         <polyline
           points={coords.map((c) => `${c.x},${c.y}`).join(" ")}
           fill="none"
-          stroke="#14976B"
+          stroke="var(--dc-brand)"
           strokeWidth="2.5"
           strokeLinejoin="round"
         />
@@ -206,7 +196,7 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
             cx={c.x}
             cy={c.y}
             r={i === coords.length - 1 ? 5 : 4}
-            fill={i === coords.length - 1 ? "#0C4A38" : "#14976B"}
+            fill={i === coords.length - 1 ? "var(--dc-brand-deep)" : "var(--dc-brand)"}
           />
         ))}
       </svg>
@@ -220,7 +210,7 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
       <p className="mt-4 max-w-[720px] text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
         {caption}
       </p>
-    </section>
+    </PanelCard>
   );
 }
 
@@ -241,7 +231,7 @@ export function DinoInsightCard({
   basis: string | null;
 }) {
   return (
-    <section className="mt-5 flex items-start gap-5 rounded-[14px] border border-dc-line bg-white p-[22px]">
+    <PanelCard className="mt-5 flex items-start gap-5">
       <Image
         src="/design/dino-mascot.png"
         alt=""
@@ -267,6 +257,6 @@ export function DinoInsightCard({
           </p>
         )}
       </div>
-    </section>
+    </PanelCard>
   );
 }

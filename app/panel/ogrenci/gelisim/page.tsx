@@ -4,6 +4,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentWeeklyGoal } from "@/components/panel/student-weekly-goal";
 import { PanelHeading, PanelStatCard, PanelEmpty } from "@/components/panel/ui";
 import { SubjectTrendCard, type SubjectSeries } from "@/components/panel/student/subject-trend";
+import { buildTrendCaption } from "@/lib/student-progress-trend";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,10 @@ export const dynamic = "force-dynamic";
 const SERIES_COLORS = ["#14976B", "#E0A34A", "#5C7BA6", "#9C5340", "#6B7A73"];
 
 const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+
+function netFromSection(section: { correctCount: number; incorrectCount: number }) {
+  return Number((section.correctCount - section.incorrectCount / 4).toFixed(2));
+}
 
 export default async function StudentProgressPage() {
   const session = await requireRole("STUDENT");
@@ -53,10 +58,10 @@ export default async function StudentProgressPage() {
   });
   const groupIds = enrollments.map((e) => e.groupId);
 
-  const [exams, attendance, assignments] = await Promise.all([
+  const [recentExamsDesc, attendance, assignments] = await Promise.all([
     prisma.mockExam.findMany({
       where: { studentId: profile.id },
-      orderBy: { takenAt: "asc" },
+      orderBy: { takenAt: "desc" },
       take: 6,
       include: { sections: { orderBy: { position: "asc" } } },
     }),
@@ -74,6 +79,8 @@ export default async function StudentProgressPage() {
       : Promise.resolve([]),
   ]);
 
+  const exams = [...recentExamsDesc].sort((a, b) => a.takenAt.getTime() - b.takenAt.getTime());
+
   /* ── Ders bazında net serileri ── */
   const labels = exams.map((_, i) => `D${i + 1}`);
   const subjectNames = [...new Set(exams.flatMap((e) => e.sections.map((s) => s.subjectName)))];
@@ -82,21 +89,11 @@ export default async function StudentProgressPage() {
     color: SERIES_COLORS[idx % SERIES_COLORS.length],
     nets: exams.map((exam) => {
       const s = exam.sections.find((x) => x.subjectName === name);
-      return s ? Number((s.correctCount - s.incorrectCount / 4).toFixed(2)) : 0;
+      return s ? netFromSection(s) : null;
     }),
   }));
 
-  const trendCaption =
-    series.length && exams.length >= 2
-      ? series
-          .map((s) => {
-            const first = s.nets[0];
-            const last = s.nets[s.nets.length - 1];
-            const dir = last > first ? "yükseldi" : last < first ? "geriledi" : "sabit kaldı";
-            return `${s.name} neti ${first.toLocaleString("tr-TR")} → ${last.toLocaleString("tr-TR")} (${dir})`;
-          })
-          .join(". ") + "."
-      : undefined;
+  const trendCaption = buildTrendCaption(series);
 
   /* ── Katılım ── */
   const attended = attendance.filter(

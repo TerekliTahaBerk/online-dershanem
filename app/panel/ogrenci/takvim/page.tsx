@@ -141,12 +141,13 @@ export default async function StudentLessonsPage({
                     : "Yaklaşıyor";
 
             const actionLabel = missed
-              ? "Telafi"
+              ? "Telafi et"
               : completed
                 ? "Notları gör"
                 : isToday
                   ? "Derse katıl"
                   : "Detay";
+            const actionHref = missed ? `/panel/ogrenci/telafi?lessonId=${lesson.id}` : `/panel/ogrenci/takvim/${lesson.id}`;
 
             return (
               <PanelTableRow key={lesson.id}>
@@ -168,7 +169,7 @@ export default async function StudentLessonsPage({
                 </PanelTableCell>
                 <PanelTableCell>
                   <Link
-                    href={`/panel/ogrenci/takvim/${lesson.id}`}
+                    href={actionHref}
                     className="text-[13px] font-semibold text-dc-brand-strong hover:text-dc-brand-hover"
                   >
                     {actionLabel}

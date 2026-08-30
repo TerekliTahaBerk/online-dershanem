@@ -6,7 +6,6 @@ import {
   dinoFallbackAnswer,
   dinoQuestionsFor,
   findDinoQuestion,
-  buildNextBestActions,
   validateDinoOutput,
   type SafeDinoSource,
 } from "./dino";
@@ -37,6 +36,14 @@ test("her rolün en az bir sorusu var ve katalogda çakışan anahtar yok", () =
   }
   const keys = DINO_QUESTIONS.map((q) => q.key);
   assert.equal(new Set(keys).size, keys.length);
+});
+
+test("dahili explanation soruları çip listesine çıkmaz ama allowlistte kalır", () => {
+  const studentChips = dinoQuestionsFor("STUDENT").map((item) => item.key);
+  assert.equal(studentChips.includes("student_nba_reason"), false);
+  assert.equal(studentChips.includes("student_odk_reason"), false);
+  assert.ok(findDinoQuestion("student_nba_reason", "STUDENT"));
+  assert.ok(findDinoQuestion("student_odk_reason", "STUDENT"));
 });
 
 /* ── Çıktı doğrulama ───────────────────────────────────────────────── */
@@ -116,18 +123,6 @@ test("kaynak yokken yedek yanıt veri olmadığını söyler", () => {
     questionKey: "parent_week",
     questionLabel: "Çocuğum bu hafta nasıl gitti?",
     sources: [],
-  });
-
-  test("next best actions her rol için deterministik ve açıklanabilir olur", () => {
-    const actions = buildNextBestActions({
-      audience: "STUDENT",
-      questionKey: "student_week",
-      questionLabel: "Bu hafta nasıl gidiyorum?",
-      sources,
-    });
-    assert.ok(actions.length >= 3);
-    assert.equal(actions[0].action.type, "OPEN_PLAN");
-    assert.ok(actions.every((action) => action.title.length > 0 && action.explanation.length > 0));
   });
   assert.match(fallback.text, /kayıtlı veri bulunamadı/i);
 });

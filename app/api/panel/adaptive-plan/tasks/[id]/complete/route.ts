@@ -19,5 +19,16 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (task.sourceType === "ASSIGNMENT" && task.sourceReferenceId) await tx.assignmentProgress.updateMany({ where: { assignmentId: task.sourceReferenceId, studentId: task.plan.studentId }, data: { status: "DONE", completedAt: new Date() } });
   });
   await recordPanelProductEvent({ name: "plan_task_completed", properties: { sourceType: task.sourceType, reasonCode: task.reasonCode } }, auth.session.role);
+  await recordPanelProductEvent({
+    name: "student_next_action_completed",
+    properties: {
+      product: "OK",
+      actionKind: "COMPLETE_PLAN_TASK",
+      reasonCode: task.reasonCode,
+      ageBand: "NA",
+      evidenceBand: "NA",
+      role: "STUDENT",
+    },
+  }, auth.session.role);
   return NextResponse.json({ completed: true });
 }

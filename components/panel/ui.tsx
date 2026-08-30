@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
+
+type PanelTone = "neutral" | "info" | "success" | "warning" | "danger";
 
 /**
  * PANEL PRIMITIVE'LERİ — onaylı tasarım (Panel.dc.html).
@@ -43,6 +47,38 @@ export function PanelHeading({
   );
 }
 
+export function PanelPageHeader({
+  eyebrow,
+  title,
+  description,
+  icon: Icon,
+  action,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  icon?: LucideIcon;
+  action?: ReactNode;
+}) {
+  return (
+    <header className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="min-w-0">
+        {eyebrow ? (
+          <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.09em] text-dc-brand-strong">
+            {Icon ? <Icon size={15} aria-hidden="true" /> : null}
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1 className={cn("max-w-4xl font-semibold tracking-[-.04em] text-dc-ink", eyebrow ? "mt-2.5 text-3xl sm:text-4xl" : "text-[26px] sm:text-[28px]")}>
+          {title}
+        </h1>
+        {description ? <p className="mt-2.5 max-w-3xl text-sm leading-7 text-dc-ink-body">{description}</p> : null}
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </header>
+  );
+}
+
 /** Tasarımdaki beyaz kart. */
 export function PanelCard({
   children,
@@ -59,7 +95,7 @@ export function PanelCard({
   return (
     <section
       id={id}
-      className={`rounded-[14px] border border-dc-line bg-white ${padded ? "p-[22px]" : ""} ${className}`}
+      className={cn("rounded-[14px] border border-dc-line bg-white", padded ? "p-[22px]" : "", className)}
     >
       {children}
     </section>
@@ -108,11 +144,140 @@ export function PanelFilterLink({
       className={`rounded-lg px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
         active
           ? "bg-dc-brand-strong text-white"
-          : "border border-[#DDE4E0] bg-white text-dc-ink-muted hover:border-dc-brand"
+          : "border border-dc-line-soft bg-white text-dc-ink-muted hover:border-dc-brand"
       }`}
     >
       {children}
     </Link>
+  );
+}
+
+export function PanelMetric({
+  label,
+  value,
+  icon: Icon,
+  tone = "info",
+  description,
+  valueClassName,
+}: {
+  label: string;
+  value: ReactNode;
+  icon?: LucideIcon;
+  tone?: PanelTone;
+  description?: string;
+  valueClassName?: string;
+}) {
+  const toneClasses: Record<PanelTone, string> = {
+    neutral: "bg-dc-surface-soft text-dc-ink-muted",
+    info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
+    success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
+    warning: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
+    danger: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+  };
+  return (
+    <PanelCard className="p-4 sm:p-[18px]">
+    {Icon ? (
+      <span className={cn("grid h-9 w-9 place-items-center rounded-[10px]", toneClasses[tone])}>
+        <Icon size={18} aria-hidden="true" />
+      </span>
+    ) : null}
+    <p className={cn(Icon ? "mt-3" : "", "text-2xl font-black text-dc-ink", valueClassName)}>{value}</p>
+    <p className="mt-1 text-xs text-dc-ink-muted">{label}</p>
+    {description ? <p className="mt-1.5 text-xs text-dc-ink-faint">{description}</p> : null}
+    </PanelCard>
+  );
+}
+
+export function PanelStatusBadge({
+  label,
+  tone = "neutral",
+  pulse = false,
+}: {
+  label: string;
+  tone?: PanelTone;
+  pulse?: boolean;
+}) {
+  const toneClasses: Record<PanelTone, string> = {
+    neutral: "bg-slate-100 text-slate-700",
+    info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
+    warning: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
+    success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
+    danger: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+  };
+  return (
+    <span className={cn("inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold", toneClasses[tone])}>
+    {pulse ? <span className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse" aria-hidden="true" /> : null}
+    {label}
+    </span>
+  );
+}
+
+export function PanelAttentionCard({
+  title,
+  body,
+  tone = "warning",
+  action,
+  className,
+}: {
+  title: string;
+  body: string;
+  tone?: Exclude<PanelTone, "neutral" | "success">;
+  action?: ReactNode;
+  className?: string;
+}) {
+  const toneClasses: Record<Exclude<PanelTone, "neutral" | "success">, string> = {
+    info: "border-[var(--pd-pastel-sky-ink)]/20 bg-[var(--pd-pastel-sky-soft)]",
+    warning: "border-[var(--pd-pastel-yellow-ink)]/20 bg-[var(--pd-pastel-yellow-soft)]",
+    danger: "border-[var(--pd-pastel-blush-ink)]/25 bg-[var(--pd-pastel-blush-soft)]",
+  };
+  return (
+    <PanelCard className={cn("border-dc-line-soft p-4 sm:p-5", toneClasses[tone], className)}>
+    <h3 className="text-[15px] font-bold text-dc-ink">{title}</h3>
+    <p className="mt-1.5 text-sm leading-6 text-dc-ink-body">{body}</p>
+    {action ? <div className="mt-3">{action}</div> : null}
+    </PanelCard>
+  );
+}
+
+export function PanelActionRow({
+  primaryAction,
+  secondaryAction,
+  className,
+}: {
+  primaryAction?: ReactNode;
+  secondaryAction?: ReactNode;
+  className?: string;
+}) {
+  if (!primaryAction && !secondaryAction) return null;
+  return (
+    <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:items-center", className)}>
+    {secondaryAction ? <div>{secondaryAction}</div> : null}
+    {primaryAction ? <div>{primaryAction}</div> : null}
+    </div>
+  );
+}
+
+export function PanelProgress({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: number;
+  className?: string;
+}) {
+  const normalized = Math.max(0, Math.min(100, Math.round(value)));
+  return (
+    <div
+    className={cn("h-2 overflow-hidden rounded-full bg-dc-line-soft", className)}
+    role="progressbar"
+    aria-valuenow={normalized}
+    aria-valuemin={0}
+    aria-valuemax={100}
+    aria-label={label}
+    >
+    <div className="h-full rounded-full bg-dc-brand" style={{ width: `${normalized}%` }} />
+    </div>
   );
 }
 
@@ -170,7 +335,7 @@ export function PanelTableCell({
   tone?: "default" | "ok" | "warn";
 }) {
   const color =
-    tone === "ok" ? "text-dc-brand-hover" : tone === "warn" ? "text-[#8A5F37]" : "";
+    tone === "ok" ? "text-dc-brand-hover" : tone === "warn" ? "text-[var(--pd-pastel-yellow-ink)]" : "";
   return <td className={`px-4 py-3.5 first:pl-[18px] ${color}`}>{children}</td>;
 }
 
@@ -202,7 +367,7 @@ export function PanelTaskRow({
         className={`grid h-[18px] w-[18px] flex-none place-items-center rounded-[5px] ${
           done
             ? "bg-dc-brand-strong text-[10px] font-bold text-white"
-            : "border border-[#DDE4E0]"
+            : "border border-dc-line-soft"
         }`}
       >
         {done ? "✓" : ""}
@@ -220,7 +385,7 @@ export function PanelTaskRow({
       {right ? (
         <span
           className={`shrink-0 text-[13px] ${
-            rightTone === "warn" ? "text-[#8A5F37]" : "text-dc-ink-muted"
+            rightTone === "warn" ? "text-[var(--pd-pastel-yellow-ink)]" : "text-dc-ink-muted"
           }`}
         >
           {right}
@@ -265,11 +430,22 @@ export function PanelStatCard({
 }
 
 /** Veri yokken gösterilecek dürüst durum. */
-export function PanelEmpty({ title, body }: { title: string; body: string }) {
+export function PanelEmpty({
+  title,
+  body,
+  action,
+  className,
+}: {
+  title: string;
+  body: string;
+  action?: ReactNode;
+  className?: string;
+}) {
   return (
-    <PanelCard className="mt-5">
+    <PanelCard className={cn("mt-5", className)}>
       <p className="text-[15px] font-bold text-dc-ink">{title}</p>
       <p className="mt-1.5 text-[14px] leading-[1.6] text-dc-ink-muted">{body}</p>
+      {action ? <div className="mt-4">{action}</div> : null}
     </PanelCard>
   );
 }

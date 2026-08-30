@@ -10,6 +10,7 @@ import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
 import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
+import { withParentStudentContext } from "@/lib/parent-home-summary";
 
 export const dynamic = "force-dynamic";
 
@@ -107,7 +108,7 @@ export default async function ParentMockExamsPage({
             karşılaştırması bu ekranda görünür.
           </p>
           <Link
-            href="/panel/veli/hesap"
+            href={withParentStudentContext("/panel/veli/hesap", selected.id)}
             className="mt-4 inline-block rounded-[10px] border border-[#DDE4E0] bg-white px-[18px] py-[11px] text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
           >
             Hesap ve pakete git

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { buildRecoveryDraft } from "@/lib/recovery-package";
 import { buildAdaptiveWeek } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
+import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 
 export async function generateRecoveryPackage(attendanceId: string, teacherId: string) {
   const attendance = await prisma.attendance.findFirst({
@@ -34,6 +35,63 @@ export async function generateRecoveryPackage(attendanceId: string, teacherId: s
     return tx.recoveryPackage.findUniqueOrThrow({ where: { id: packageRow.id }, include: { items: { orderBy: { position: "asc" } } } });
   });
   return { package: row, reused: false };
+}
+
+export type PublishRecoveryPackageResult =
+  | { kind: "NOT_FOUND" }
+  | { kind: "CONFLICT" }
+  | { kind: "REPLAYED"; itemCount: number; publishDelayMs: number }
+  | { kind: "PUBLISHED"; itemCount: number; publishDelayMs: number; planRebalanced: boolean };
+
+const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
+
+export async function publishRecoveryPackage(input: {
+  packageId: string;
+  teacherId: string;
+  expectedVersion?: number;
+  rebalancePlan?: boolean;
+}): Promise<PublishRecoveryPackageResult> {
+  const item = await prisma.recoveryPackage.findFirst({
+    where: { id: input.packageId, lesson: { teacherId: input.teacherId, status: "COMPLETED", group: { isActive: true } } },
+    include: { lesson: { select: { groupId: true, endsAt: true } }, student: { include: { user: { select: { id: true } } } }, items: true },
+  });
+  if (!item) return { kind: "NOT_FOUND" };
+  const enrollment = await prisma.enrollment.findFirst({
+    where: { groupId: item.lesson.groupId, studentId: item.studentId, endedAt: null },
+    select: { id: true },
+  });
+  if (!enrollment) return { kind: "NOT_FOUND" };
+  const publishDelayMs = Math.min(MAX_AGE, Math.max(0, Date.now() - item.lesson.endsAt.getTime()));
+  if (item.status !== "DRAFT") {
+    if (input.expectedVersion !== undefined && (!item.publishedAt || item.version !== input.expectedVersion + 1)) return { kind: "CONFLICT" };
+    return { kind: "REPLAYED", itemCount: item.items.length, publishDelayMs };
+  }
+  const rawRows = [{ userId: item.student.user.id, type: "ABSENCE" as const, title: "Kaçırdığın ders için küçük telafi hazır", body: "Özet, kaynak ve mini kontrol tek sırada hazır.", href: "/panel/ogrenci/telafi" }];
+  const rows = await filterNotificationRows(rawRows, "absence");
+  const changed = await prisma.$transaction(async (tx) => {
+    const where = input.expectedVersion === undefined
+      ? { id: item.id, status: "DRAFT" as const }
+      : { id: item.id, status: "DRAFT" as const, version: input.expectedVersion };
+    const updated = await tx.recoveryPackage.updateMany({
+      where,
+      data: { status: "PUBLISHED", publishedById: input.teacherId, publishedAt: new Date(), version: { increment: 1 } },
+    });
+    if (updated.count !== 1) return false;
+    if (rows.length) await tx.notification.createMany({ data: rows });
+    return true;
+  });
+  if (!changed) {
+    const latest = await prisma.recoveryPackage.findUnique({ where: { id: item.id }, select: { status: true, version: true, publishedAt: true } });
+    if (!latest) return { kind: "CONFLICT" };
+    if (latest.status !== "DRAFT") {
+      if (input.expectedVersion !== undefined && (!latest.publishedAt || latest.version !== input.expectedVersion + 1)) return { kind: "CONFLICT" };
+      return { kind: "REPLAYED", itemCount: item.items.length, publishDelayMs };
+    }
+    return { kind: "CONFLICT" };
+  }
+  await queuePanelNotificationEmails(rawRows, "absence");
+  const planRebalanced = input.rebalancePlan ? await rebalanceApprovedPlanForRecovery(item.studentId, input.teacherId).catch(() => false) : false;
+  return { kind: "PUBLISHED", itemCount: item.items.length, publishDelayMs, planRebalanced };
 }
 
 /** Yayın onayı, kilitli planı telafi önceliğiyle fakat aynı günlük kapasite sınırlarıyla yeniden kurar. */

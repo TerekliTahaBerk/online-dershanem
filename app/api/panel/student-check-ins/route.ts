@@ -54,5 +54,18 @@ export async function POST(request: Request) {
   const created = result;
   await logAudit({ actorUserId: auth.session.userId, entityType: "StudentCheckIn", entityId: created.checkIn.id, action: "student_check_in.created", summary: "Kontrollü öğrenci check-in'i kaydedildi", payload: { sharedWithTeacher: parsed.data.shareWithTeacher, helpRequested: parsed.data.helpRequested } });
   await recordPanelProductEvent({ name: "student_check_in_submitted", properties: { energy: parsed.data.energy, confidence: parsed.data.confidence, barrier: parsed.data.barrier, sharedWithTeacher: parsed.data.shareWithTeacher, helpRequested: parsed.data.helpRequested, weeklyCount: created.weeklyCount } }, auth.session.role);
+  if (created.helpRequest) {
+    await recordPanelProductEvent({
+      name: "student_help_requested",
+      properties: {
+        product: "HELP",
+        actionKind: "REQUEST_HELP",
+        reasonCode: parsed.data.barrier,
+        ageBand: "NA",
+        evidenceBand: "NA",
+        role: "STUDENT",
+      },
+    }, auth.session.role);
+  }
   return NextResponse.json({ created: true, checkIn: { id: created.checkIn.id, createdAt: created.checkIn.createdAt, groupName: enrollment.group.name, energy: parsed.data.energy, confidence: parsed.data.confidence, barrier: parsed.data.barrier, shared: parsed.data.shareWithTeacher, request: created.helpRequest ? { id: created.helpRequest.id, status: created.helpRequest.status, version: created.helpRequest.version, helpful: null, action: null } : null }, remaining: STUDENT_CHECK_IN_WEEKLY_LIMIT - created.weeklyCount }, { status: 201 });
 }

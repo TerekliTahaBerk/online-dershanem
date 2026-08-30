@@ -5,6 +5,8 @@ const smallCount = z.number().int().min(0).max(100);
 const duration = z.number().int().min(0).max(8 * 60 * 60 * 1000);
 const operationDuration = z.number().int().min(0).max(5 * 60 * 1000);
 const operationOutcome = z.enum(["success", "validation", "rejected", "system_error"]);
+const boundedAgeBand = z.enum(["NA", "0-24H", "25H-7D", "8D+", "0-2D", "3-7D"]);
+const boundedEvidenceBand = z.enum(["NA", "LOW", "MEDIUM", "HIGH"]);
 
 export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({
@@ -149,12 +151,133 @@ export const panelEventSchema = z.discriminatedUnion("name", [
     properties: z.object({ durationMs: z.number().int().min(0).max(30 * 60 * 1000), taskCount: z.number().int().min(0).max(21), approved: z.boolean() }).strict(),
   }),
   z.object({
+    name: z.literal("plan_overload_reported"),
+    properties: z.object({
+      category: z.enum(["TOO_MUCH", "WRONG_DAYS", "PRIORITY", "OTHER"]),
+      overwhelmPulse: z.number().int().min(1).max(5).nullable(),
+      option: z.enum(["REDUCE_LIGHT", "REDUCE_HEAVY", "CHANGE_DAYS", "UNSPECIFIED"]),
+    }).strict(),
+  }),
+  z.object({
     name: z.literal("plan_change_requested"),
-    properties: z.object({ category: z.enum(["TOO_MUCH", "WRONG_DAYS", "PRIORITY", "OTHER"]) }).strict(),
+    properties: z.object({
+      category: z.enum(["TOO_MUCH", "WRONG_DAYS", "PRIORITY", "OTHER"]),
+      option: z.enum(["REDUCE_LIGHT", "REDUCE_HEAVY", "CHANGE_DAYS", "UNSPECIFIED"]),
+    }).strict(),
   }),
   z.object({
     name: z.literal("plan_task_completed"),
     properties: z.object({ sourceType: z.enum(["ASSIGNMENT", "REVIEW", "WEAK_OUTCOME", "EXAM_PREP", "RECOVERY"]), reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]) }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_next_action_viewed"),
+    properties: z.object({
+      product: z.enum(["OD", "OK"]),
+      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN"]),
+      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE"]),
+      ageBand: boundedAgeBand,
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_next_action_clicked"),
+    properties: z.object({
+      product: z.enum(["OD", "OK"]),
+      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN"]),
+      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE"]),
+      ageBand: boundedAgeBand,
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_next_action_completed"),
+    properties: z.object({
+      product: z.enum(["OD", "OK"]),
+      actionKind: z.enum(["COMPLETE_PLAN_TASK", "COMPLETE_RECOVERY"]),
+      reasonCode: z.enum(["MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE"]),
+      ageBand: boundedAgeBand,
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("plan_task_started"),
+    properties: z.object({
+      product: z.literal("OK"),
+      actionKind: z.literal("COMPLETE_PLAN_TASK"),
+      reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]),
+      ageBand: z.literal("NA"),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("missed_lesson_recovery_started"),
+    properties: z.object({
+      product: z.literal("OD"),
+      actionKind: z.literal("COMPLETE_RECOVERY"),
+      reasonCode: z.literal("MISSED_LESSON"),
+      ageBand: z.enum(["0-24H", "25H-7D", "8D+", "NA"]),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_help_requested"),
+    properties: z.object({
+      product: z.literal("HELP"),
+      actionKind: z.literal("REQUEST_HELP"),
+      reasonCode: z.enum(["NONE", "NOT_UNDERSTANDING", "TIME_LOAD", "ACCESS_TECH", "NEED_EXAMPLE", "OTHER"]),
+      ageBand: z.literal("NA"),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("odk_result_viewed"),
+    properties: z.object({
+      product: z.literal("ODK"),
+      actionKind: z.literal("VIEW_RESULT"),
+      reasonCode: z.enum(["NEEDS_REVIEW", "NO_SIGNAL"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: boundedEvidenceBand,
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("odk_recovery_action_viewed"),
+    properties: z.object({
+      product: z.literal("ODK"),
+      actionKind: z.enum(["OPEN_ANSWER_KEY", "OPEN_PLAN", "OPEN_REVIEW", "OPEN_OD_RECOVERY"]),
+      reasonCode: z.enum(["NEEDS_REVIEW", "NO_SIGNAL"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: boundedEvidenceBand,
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("odk_recovery_action_started"),
+    properties: z.object({
+      product: z.literal("ODK"),
+      actionKind: z.enum(["OPEN_ANSWER_KEY", "OPEN_PLAN", "OPEN_REVIEW", "OPEN_OD_RECOVERY"]),
+      reasonCode: z.enum(["NEEDS_REVIEW", "NO_SIGNAL"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: boundedEvidenceBand,
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("parent_action_clicked"),
+    properties: z.object({
+      product: z.literal("PARENT"),
+      actionKind: z.literal("DIGEST_FEEDBACK"),
+      reasonCode: z.enum(["HELPFUL", "NOT_HELPFUL", "ANXIETY_PULSE"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("PARENT"),
+    }).strict(),
   }),
   z.object({
     name: z.literal("plan_preference_updated"),
@@ -211,6 +334,10 @@ const clientPanelEventNames = new Set<PanelEventInput["name"]>([
   "mock_heatmap_viewed",
   "review_queue_viewed",
   "plan_review_completed",
+  "student_next_action_clicked",
+  "plan_task_started",
+  "odk_recovery_action_started",
+  "parent_action_clicked",
   "offline_write_queued",
   "offline_write_synced",
   "offline_write_conflicted",

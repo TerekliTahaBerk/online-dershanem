@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
 
 /**
  * "BUGÜN" KARTI — onaylı tasarım (Panel.dc.html → scStudentHome).
@@ -20,9 +21,9 @@ export type TodayRow = {
 
 export function TodayCard({ rows, dateLabel }: { rows: TodayRow[]; dateLabel: string }) {
   return (
-    <section className="mt-7 rounded-[14px] border border-dc-line bg-white">
+    <PanelCard className="mt-7" padded={false}>
       <div className="flex items-center justify-between gap-3 border-b border-dc-line-soft px-[22px] py-[18px]">
-        <h2 className="text-[17px] font-bold text-dc-ink">Bugün</h2>
+        <PanelCardTitle>Bugün</PanelCardTitle>
         <span className="text-[13px] text-dc-ink-faint">{dateLabel}</span>
       </div>
 
@@ -50,11 +51,7 @@ export function TodayCard({ rows, dateLabel }: { rows: TodayRow[]; dateLabel: st
               {row.action ? (
                 <Link
                   href={row.action.href}
-                  className={`flex-none rounded-[10px] px-4 py-2.5 text-[13.5px] font-bold transition-colors ${
-                    row.action.primary
-                      ? "bg-dc-brand-strong text-white hover:bg-dc-brand-hover"
-                      : "border border-[#DDE4E0] bg-white text-dc-ink hover:border-dc-brand"
-                  }`}
+                  className={`flex-none ${row.action.primary ? "panel-quick-action panel-quick-action-primary" : "panel-quick-action"}`}
                 >
                   {row.action.label}
                 </Link>
@@ -63,6 +60,6 @@ export function TodayCard({ rows, dateLabel }: { rows: TodayRow[]; dateLabel: st
           ))}
         </ul>
       )}
-    </section>
+    </PanelCard>
   );
 }

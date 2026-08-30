@@ -4,27 +4,27 @@ import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
-import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
+import { PanelHeading, PanelEmpty, PanelCard, PanelAttentionCard } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
-import { addIstanbulCalendarDays, ISTANBUL_TIME_ZONE, istanbulWeekStart } from "@/lib/istanbul-time";
+import { addIstanbulCalendarDays, formatIstanbulDateInput, ISTANBUL_TIME_ZONE, istanbulWeekStart } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
 /**
- * ÖĞRENCİ · HAFTALIK PLAN — onaylı tasarım (Panel.dc.html → scPlan).
+ * ÖĞRENCİ · HAFTALIK PLAN — tek dominant deneyim.
  *
  * ÜRÜN KAPSAMI: Online Koçum (OK). Koçluk yetkisi olmayan öğrenci bu
  * route'u açamaz — guard `requireProductRole("OK", …)`.
  *
- * Tasarımın işlev tanımı: hafta aralığı ve odak satırı, ilerleme çubuğu +
- * "x / y görev", 7 günlük ızgara (her gün kendi kartları; tamamlanan görev
- * sol kenarlıkla işaretli, boş gün kesik çizgili), altta koçun notu.
+ * Sayfa tek `<h1>` (PanelHeading) taşır; kalan tüm hiyerarşi
+ * `StudentAdaptivePlan` içinde kurulur: bugünkü odak (primary), haftalık
+ * plan (tek liste, aynı görev iki kez render edilmez), tek tamamlanma
+ * göstergesi, varsayılan kapalı tercihler paneli ve onaylı plan üzerinde
+ * bastırmayan bir değişiklik isteği akışı. Koç bilgisi burada, sayfa
+ * düzeyinde, ikincil/kompakt bir şerit olarak kalır.
  */
 
-const DAY_LABEL = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const RANGE = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
-const TIME = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, hour: "2-digit", minute: "2-digit" });
-const DAY_NUMBER = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric" });
 
 export default async function StudentPlanPage() {
   const session = await requireProductRole("OK", "STUDENT");
@@ -40,7 +40,7 @@ export default async function StudentPlanPage() {
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Haftalık planım"
+      pageTitle="Bu haftanın planı"
     >
       <div className="max-w-[1040px]">{children}</div>
     </PanelShell>
@@ -49,7 +49,7 @@ export default async function StudentPlanPage() {
   if (!profile) {
     return shell(
       <>
-        <PanelHeading title="Haftalık planın" />
+        <PanelHeading title="Bu haftanın planı" />
         <PanelEmpty
           title="Profilin hazırlanıyor."
           body="Öğrenci profilin tamamlandığında koçunun kurduğu plan burada görünecek."
@@ -73,40 +73,6 @@ export default async function StudentPlanPage() {
    * (`/api/panel/adaptive-plan/...`) yerinde duruyordu, yalnız hiçbir sayfadan
    * render edilmiyordu.
    */
-  const adaptivePlan = (
-    <StudentAdaptivePlan
-      initialPreference={{
-        availableDays: Array.isArray(profile.planPreference?.availableDays)
-          ? profile.planPreference.availableDays.filter((day): day is number => typeof day === "number")
-          : [1, 3, 5],
-        minutesPerDay: profile.planPreference?.minutesPerDay || 45,
-        nextExamAt: profile.planPreference?.nextExamAt?.toISOString() || null,
-        examLabel: profile.planPreference?.examLabel || null,
-        planningEnabled: profile.planPreference?.planningEnabled ?? true,
-        overwhelmPulse: profile.planPreference?.overwhelmPulse || null,
-      }}
-      initialPlan={
-        plan
-          ? {
-              id: plan.id,
-              status: plan.status,
-              version: plan.version,
-              capacityMinutes: plan.capacityMinutes,
-              tasks: plan.tasks.map((task) => ({
-                id: task.id,
-                title: task.title,
-                scheduledFor: task.scheduledFor.toISOString(),
-                durationMinutes: task.durationMinutes,
-                sourceType: task.sourceType,
-                reasonCode: task.reasonCode,
-                status: task.status,
-              })),
-            }
-          : null
-      }
-    />
-  );
-
   const coaching = await getStudentCoaching(profile.id);
   const start = plan ? istanbulWeekStart(plan.weekStart) : null;
   const end = start ? addIstanbulCalendarDays(start, 6) : null;
@@ -114,54 +80,67 @@ export default async function StudentPlanPage() {
   return shell(
     <>
       <PanelHeading
-        title="Haftalık planın"
+        title="Bu haftanın planı"
         description={start && end ? `${RANGE.format(start)} – ${RANGE.format(end)}` : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."}
       />
 
       {coaching ? (
-        <PanelCard className="mt-6 max-w-[760px]">
-          <PanelCardTitle>Koçun</PanelCardTitle>
-          <dl className="mt-3 flex flex-col gap-2.5 text-[14px] font-medium text-dc-ink-body">
-            <div className="flex justify-between gap-3">
-              <dt>Koçun</dt>
-              <dd className="text-dc-ink-muted">{coaching.coachName}</dd>
+        coaching.overdue ? (
+          <PanelAttentionCard
+            className="mt-4"
+            tone="warning"
+            title={`${coaching.coachName} · görüşme zamanı geçti`}
+            body={`Sonraki görüşme: ${coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}${coaching.focus ? ` · Haftanın odağı: ${coaching.focus}` : ""}${coaching.sharedNote ? ` · ${coaching.sharedNote}` : ""}`}
+          />
+        ) : (
+          <PanelCard className="mt-4 border-dc-line-soft bg-dc-surface-soft px-4 py-2.5 text-[12.5px] font-medium text-dc-ink-muted">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+              <span className="font-bold text-dc-ink-body">{coaching.coachName}</span>
+              <span>
+                Sonraki görüşme: {coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}
+              </span>
+              {coaching.focus ? <span>Haftanın odağı: {coaching.focus}</span> : null}
             </div>
-            <div className="flex justify-between gap-3">
-              <dt>Sonraki görüşme</dt>
-              <dd className={coaching.overdue ? "text-[#A5764A]" : "text-dc-ink-muted"}>
-                {coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}
-              </dd>
-            </div>
-            {coaching.focus ? (
-              <div className="flex justify-between gap-3">
-                <dt>Haftanın odağı</dt>
-                <dd className="text-dc-ink-muted">{coaching.focus}</dd>
-              </div>
-            ) : null}
-          </dl>
-          {coaching.sharedNote ? (
-            <p className="mt-3.5 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
-              {coaching.sharedNote}
-            </p>
-          ) : null}
-        </PanelCard>
+            {coaching.sharedNote ? <p className="mt-1.5 text-dc-ink-body">{coaching.sharedNote}</p> : null}
+          </PanelCard>
+        )
       ) : null}
 
-      <div className="mt-6">{adaptivePlan}</div>
-
-      {plan ? (
-        <PanelCard className="mt-6 max-w-[760px]">
-          <h2 className="text-[15px] font-bold text-dc-ink">Bu haftanın özeti</h2>
-          <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
-            {start ? `${RANGE.format(start)} haftası için plan hazır.` : "Bu hafta için plan hazır."}
-          </p>
-          {plan.changeRequestCategory ? (
-            <p className="mt-3 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
-              {plan.changeRequestCategory}
-            </p>
-          ) : null}
-        </PanelCard>
-      ) : null}
+      <div className="mt-6">
+        <StudentAdaptivePlan
+          today={formatIstanbulDateInput(new Date())}
+          initialPreference={{
+            availableDays: Array.isArray(profile.planPreference?.availableDays)
+              ? profile.planPreference.availableDays.filter((day): day is number => typeof day === "number")
+              : [1, 3, 5],
+            minutesPerDay: profile.planPreference?.minutesPerDay || 45,
+            nextExamAt: profile.planPreference?.nextExamAt?.toISOString() || null,
+            examLabel: profile.planPreference?.examLabel || null,
+            planningEnabled: profile.planPreference?.planningEnabled ?? true,
+            overwhelmPulse: profile.planPreference?.overwhelmPulse || null,
+          }}
+          initialPlan={
+            plan
+              ? {
+                  id: plan.id,
+                  status: plan.status,
+                  version: plan.version,
+                  capacityMinutes: plan.capacityMinutes,
+                  changeRequestCategory: plan.changeRequestCategory,
+                  tasks: plan.tasks.map((task) => ({
+                    id: task.id,
+                    title: task.title,
+                    scheduledFor: task.scheduledFor.toISOString(),
+                    durationMinutes: task.durationMinutes,
+                    sourceType: task.sourceType,
+                    reasonCode: task.reasonCode,
+                    status: task.status,
+                  })),
+                }
+              : null
+          }
+        />
+      </div>
     </>,
   );
 }

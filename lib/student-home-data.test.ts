@@ -8,7 +8,7 @@ import {
 } from "./panel/student-home-data";
 
 function createQueries() {
-  const calls = { enrollments: 0, lessons: 0, plan: 0, exams: 0 };
+  const calls = { enrollments: 0, lessons: 0, recovery: 0, plan: 0, exams: 0 };
   const queries: StudentHomeQueries = {
     async listEnrollmentGroupIds() {
       calls.enrollments += 1;
@@ -17,6 +17,10 @@ function createQueries() {
     async listTodayLessons() {
       calls.lessons += 1;
       return [];
+    },
+    async getNextRecoveryPackage() {
+      calls.recovery += 1;
+      return null;
     },
     async getWeeklyPlan() {
       calls.plan += 1;
@@ -64,7 +68,7 @@ test("ODK-only öğrenci yalnız ODK sorgusunu ve DTO bloğunu alır", async () 
     queries,
   });
 
-  assert.deepEqual(calls, { enrollments: 0, lessons: 0, plan: 0, exams: 1 });
+  assert.deepEqual(calls, { enrollments: 0, lessons: 0, recovery: 0, plan: 0, exams: 1 });
   assert.equal(data.OD, null);
   assert.equal(data.OK, null);
   assert.equal(data.ODK?.latestExam?.net, 19);
@@ -72,7 +76,7 @@ test("ODK-only öğrenci yalnız ODK sorgusunu ve DTO bloğunu alır", async () 
 });
 
 test("öğrenci ana sayfasının bugün aralığı İstanbul 00:00 sınırını kullanır", async () => {
-  const { queries } = createQueries();
+  const { calls, queries } = createQueries();
   queries.listTodayLessons = async (_groupIds, dayStart, dayEnd) => {
     assert.equal(dayStart.toISOString(), "2026-08-29T21:00:00.000Z");
     assert.equal(dayEnd.toISOString(), "2026-08-30T21:00:00.000Z");
@@ -85,6 +89,7 @@ test("öğrenci ana sayfasının bugün aralığı İstanbul 00:00 sınırını 
     now: new Date("2026-08-29T21:30:00.000Z"), // İstanbul 00:30
     queries,
   });
+  assert.equal(calls.recovery, 1);
 });
 
 test("öğrenci ana sayfası ve API aynı server domain service'ini kullanır", () => {
@@ -93,6 +98,23 @@ test("öğrenci ana sayfası ve API aynı server domain service'ini kullanır", 
     assert.match(source, /getStudentHomeData/);
     assert.doesNotMatch(source, /prisma\.mockExam/);
   }
+});
+
+test("OD bloğu yayımlanmış telafi adayını taşır", async () => {
+  const { queries } = createQueries();
+  queries.getNextRecoveryPackage = async () => ({
+    id: "recovery-1",
+    lessonTitle: "Köklü ifadeler",
+    dueAt: new Date("2026-08-31T12:00:00.000Z"),
+  });
+  const data = await loadStudentHomeProductData({
+    studentId: "student-1",
+    products: ["OD"],
+    now: new Date("2026-08-30T12:00:00.000Z"),
+    queries,
+  });
+  assert.equal(data.OD?.nextRecovery?.id, "recovery-1");
+  assert.equal(data.OD?.nextRecovery?.lessonTitle, "Köklü ifadeler");
 });
 
 test("günlük AI kotaları process timezone yerine canonical İstanbul helper'ını kullanır", () => {

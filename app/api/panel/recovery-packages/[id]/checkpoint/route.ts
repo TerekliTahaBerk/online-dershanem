@@ -7,6 +7,13 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 const schema = z.object({ response: z.enum(["NOT_YET", "NEED_HELP", "READY"]) }).strict(); const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
+function recoveryAgeBand(lessonEndedAt: Date): "0-24H" | "25H-7D" | "8D+" {
+  const elapsed = Math.max(0, Date.now() - lessonEndedAt.getTime());
+  const day = 24 * 60 * 60 * 1000;
+  if (elapsed <= day) return "0-24H";
+  if (elapsed <= 7 * day) return "25H-7D";
+  return "8D+";
+}
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiOdRole("STUDENT"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().recoveryPackage) return NextResponse.json({ error: "Telafi paketi henüz açık değil." }, { status: 404 });
@@ -17,5 +24,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   await prisma.recoveryPackage.update({ where: { id }, data: { checkpointResponse: parsed.data.response, ...(completed ? { status: "COMPLETED", completedAt: now } : {}), version: { increment: 1 } } });
   await recordPanelProductEvent({ name: "recovery_checkpoint_submitted", properties: { response: parsed.data.response } }, auth.session.role);
   if (completed) await recordPanelProductEvent({ name: "recovery_package_completed", properties: { completionDurationMs: Math.min(MAX_AGE, Math.max(0, now.getTime() - item.lesson.endsAt.getTime())), within72h: now <= item.dueAt, itemCount: item.items.length } }, auth.session.role);
+  if (completed) {
+    await recordPanelProductEvent({
+      name: "student_next_action_completed",
+      properties: {
+        product: "OD",
+        actionKind: "COMPLETE_RECOVERY",
+        reasonCode: "MISSED_LESSON",
+        ageBand: recoveryAgeBand(item.lesson.endsAt),
+        evidenceBand: "NA",
+        role: "STUDENT",
+      },
+    }, auth.session.role);
+  }
   return NextResponse.json({ completed });
 }

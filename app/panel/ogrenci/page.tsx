@@ -1,15 +1,18 @@
 import { requirePanelRole } from "@/lib/auth/guards";
 import { getStudentHomeData } from "@/lib/panel/student-home-server";
 import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
+import { buildHomeDeterministicReason } from "@/lib/panel/dino-explanations";
+import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelEmptyState } from "@/components/panel/empty-state";
 import { NoProductAccess } from "@/components/panel/no-product-access";
+import { PanelHeading, PanelEmpty, PanelCard } from "@/components/panel/ui";
+import { TrackedPanelLink } from "@/components/panel/tracked-panel-link";
 import { TodayCard, type TodayRow } from "@/components/panel/student/today-card";
+import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import {
   WeeklyPlanCard,
   LatestExamCard,
   NetTrendCard,
-  DinoInsightCard,
   type PlanTaskRow,
   type TrendPoint,
 } from "@/components/panel/student/home-cards";
@@ -43,6 +46,14 @@ function greeting(now: Date): string {
   return "İyi akşamlar";
 }
 
+function ageBandForDate(target: Date, now: Date): "0-24H" | "25H-7D" | "8D+" {
+  const diff = Math.max(0, target.getTime() - now.getTime());
+  const day = 24 * 60 * 60 * 1000;
+  if (diff <= day) return "0-24H";
+  if (diff <= 7 * day) return "25H-7D";
+  return "8D+";
+}
+
 export default async function StudentHomePage() {
   const session = await requirePanelRole("STUDENT");
   const now = new Date();
@@ -66,9 +77,10 @@ export default async function StudentHomePage() {
   if (data.products.length === 0) return shell(<NoProductAccess role="STUDENT" />);
   if (!data.profile) {
     return shell(
-      <PanelEmptyState
+      <PanelEmpty
         title="Profiliniz hazırlanıyor."
         body="Yönetim ekibi öğrenci profilinizi tamamladığında dersleriniz burada görünecek."
+        className="mt-0 border-dashed px-6 py-14 text-center"
       />,
     );
   }
@@ -87,6 +99,15 @@ export default async function StudentHomePage() {
       meta: [lesson.teacherName, lesson.groupName].filter(Boolean).join(" · "),
       action: { label: "Derse katıl", href: "/panel/ogrenci/takvim", primary: true },
     })),
+    ...(od?.nextRecovery
+      ? [{
+          id: `recovery-${od.nextRecovery.id}`,
+          when: "72 saat",
+          title: `${od.nextRecovery.lessonTitle} · Kaçırılan ders`,
+          meta: `Hedef: ${TR_SHORT.format(od.nextRecovery.dueAt)}`,
+          action: { label: "Telafi et", href: "/panel/ogrenci/telafi" },
+        }]
+      : []),
     ...(ok?.todayTasks ?? []).map((task) => ({
       id: `task-${task.id}`,
       when: TR_TIME.format(task.scheduledFor),
@@ -116,20 +137,71 @@ export default async function StudentHomePage() {
 
   const summaryParts = [
     od?.todayLessons.length ? `bugün ${od.todayLessons.length} dersin var` : null,
+    od?.nextRecovery ? "kaçırdığın ders için telafi adımı hazır" : null,
     plan?.total ? `haftalık planında ${plan.total - plan.done} görev kaldı` : null,
     latest ? `son denemen ${TR_SHORT.format(latest.takenAt)}` : null,
   ].filter(Boolean);
 
+  const nextBestAction = od?.todayLessons[0]
+    ? {
+        product: "OD" as const,
+        actionKind: "OPEN_LESSON" as const,
+        reasonCode: "LIVE_LESSON" as const,
+        ageBand: ageBandForDate(od.todayLessons[0].startsAt, now),
+        title: `${od.todayLessons[0].title} · Canlı ders`,
+        actionLabel: "Derse katıl",
+        href: "/panel/ogrenci/takvim",
+        reason: buildHomeDeterministicReason({ kind: "LESSON", startsAt: od.todayLessons[0].startsAt }, now),
+        questionKey: "student_nba_reason",
+      }
+    : od?.nextRecovery
+      ? {
+          product: "OD" as const,
+          actionKind: "OPEN_RECOVERY" as const,
+          reasonCode: "MISSED_LESSON" as const,
+          ageBand: ageBandForDate(od.nextRecovery.dueAt, now),
+          title: `${od.nextRecovery.lessonTitle} · Kaçırılan ders`,
+          actionLabel: "Telafi et",
+          href: "/panel/ogrenci/telafi",
+          reason: buildHomeDeterministicReason({ kind: "RECOVERY", dueAt: od.nextRecovery.dueAt }, now),
+          questionKey: "student_nba_reason",
+        }
+      : ok?.todayTasks[0]
+        ? {
+            product: "OK" as const,
+            actionKind: "OPEN_PLAN" as const,
+            reasonCode: ok.todayTasks[0].reasonCode,
+            ageBand: ageBandForDate(ok.todayTasks[0].scheduledFor, now),
+            title: `${ok.todayTasks[0].title} · ${ok.todayTasks[0].durationMinutes} dk`,
+            actionLabel: "Görevi aç",
+            href: "/panel/ogrenci/plan",
+            reason: buildHomeDeterministicReason({ kind: "PLAN_TASK", scheduledFor: ok.todayTasks[0].scheduledFor }, now),
+            questionKey: "student_nba_reason",
+          }
+        : null;
+  if (nextBestAction) {
+    await recordPanelProductEvent(
+      {
+        name: "student_next_action_viewed",
+        properties: {
+          product: nextBestAction.product,
+          actionKind: nextBestAction.actionKind,
+          reasonCode: nextBestAction.reasonCode,
+          ageBand: nextBestAction.ageBand,
+          evidenceBand: "NA",
+          role: "STUDENT",
+        },
+      },
+      session.role,
+    );
+  }
+
   return shell(
     <div className="max-w-[1040px]">
-      <h1 className="text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink sm:text-[28px]">
-        {greeting(now)}, {session.fullName?.split(" ")[0] || "hoş geldin"}.
-      </h1>
-      {summaryParts.length ? (
-        <p className="mt-2 text-[15.5px] leading-[1.6] text-dc-ink-muted">
-          {summaryParts.join(" · ")}.
-        </p>
-      ) : null}
+      <PanelHeading
+        title={`${greeting(now)}, ${session.fullName?.split(" ")[0] || "hoş geldin"}.`}
+        description={summaryParts.length ? `${summaryParts.join(" · ")}.` : undefined}
+      />
 
       <TodayCard rows={rows} dateLabel={TR_DATE.format(now)} />
 
@@ -157,7 +229,33 @@ export default async function StudentHomePage() {
 
       {trend.length >= 2 ? <NetTrendCard points={trend} caption={trendCaption} /> : null}
 
-      <DinoInsightCard insight={null} basis={null} />
+      {nextBestAction ? (
+        <PanelCard className="mt-5">
+          <h2 className="text-[16px] font-bold text-dc-ink">Sonraki en iyi adım</h2>
+          <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{nextBestAction.title}</p>
+          <TrackedPanelLink
+            href={nextBestAction.href}
+            className="panel-quick-action panel-quick-action-primary mt-3 inline-flex"
+            event={{
+              name: "student_next_action_clicked",
+              properties: {
+                product: nextBestAction.product,
+                actionKind: nextBestAction.actionKind,
+                reasonCode: nextBestAction.reasonCode,
+                ageBand: nextBestAction.ageBand,
+                evidenceBand: "NA",
+                role: "STUDENT",
+              },
+            }}
+          >
+            {nextBestAction.actionLabel}
+          </TrackedPanelLink>
+          <DinoExplanationAction
+            deterministicReason={nextBestAction.reason}
+            questionKey={nextBestAction.questionKey}
+          />
+        </PanelCard>
+      ) : null}
 
       {odk && !latest ? (
         <p className="mt-5 text-[14px] text-dc-ink-muted">

@@ -9,6 +9,7 @@ import { log } from "@/lib/logger";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { initialReviewDueAt } from "@/lib/review-scheduler";
 import { lessonCloseRequestHash } from "@/lib/lesson-close";
+import { generateRecoveryPackage, publishRecoveryPackage } from "@/lib/recovery-package-server";
 
 const attendance = z.enum(["PRESENT", "ABSENT", "LATE", "EXCUSED"]);
 const outcomeEvidence = z.enum(["TAUGHT", "OBSERVED", "INDEPENDENT", "NEEDS_REVIEW"]);
@@ -140,6 +141,17 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       queuePanelNotificationEmails(rawAbsenceRows, "absence"),
       queuePanelNotificationEmails(rawAssignmentRows, "assignment"),
     ]);
+    if (featureFlags.recoveryPackage) {
+      const absences = await prisma.attendance.findMany({ where: { lessonId: id, status: "ABSENT" }, select: { id: true } });
+      for (const attendance of absences) {
+        const generated = await generateRecoveryPackage(attendance.id, auth.session.userId);
+        if (!generated) continue;
+        const items = generated.package.items;
+        await recordPanelProductEvent({ name: "recovery_package_generated", properties: { ruleVersion: "recovery-v1", itemCount: items.length, hasMaterial: items.some((item) => item.kind === "MATERIAL"), hasAssignment: items.some((item) => item.kind === "ASSIGNMENT"), reused: generated.reused } }, auth.session.role);
+        const published = await publishRecoveryPackage({ packageId: generated.package.id, teacherId: auth.session.userId, rebalancePlan: featureFlags.adaptivePlan });
+        if (published.kind === "PUBLISHED") await recordPanelProductEvent({ name: "recovery_package_published", properties: { publishDelayMs: published.publishDelayMs, itemCount: published.itemCount, planRebalanced: published.planRebalanced } }, auth.session.role);
+      }
+    }
   }
   if (featureFlags.baselineMetrics) {
     log.info("panel.lesson_notes.saved", {

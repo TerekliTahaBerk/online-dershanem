@@ -16,6 +16,7 @@ type PlanTaskRow = {
   durationMinutes: number;
   scheduledFor: Date;
   status: string;
+  reasonCode: "DUE_SOON" | "REVIEW_DUE" | "NEEDS_REVIEW" | "EXAM_APPROACHING" | "CAPACITY_BALANCE" | "MISSED_LESSON";
 };
 
 type ExamRow = {
@@ -31,7 +32,10 @@ type ExamRow = {
 };
 
 export type StudentHomeProductData = {
-  OD: { todayLessons: LessonRow[] } | null;
+  OD: {
+    todayLessons: LessonRow[];
+    nextRecovery: { id: string; lessonTitle: string; dueAt: Date } | null;
+  } | null;
   OK: {
     weeklyPlan: {
       done: number;
@@ -61,6 +65,7 @@ export type StudentHomeProductData = {
 export type StudentHomeQueries = {
   listEnrollmentGroupIds(studentId: string): Promise<string[]>;
   listTodayLessons(groupIds: string[], dayStart: Date, dayEnd: Date): Promise<LessonRow[]>;
+  getNextRecoveryPackage(studentId: string): Promise<{ id: string; lessonTitle: string; dueAt: Date } | null>;
   getWeeklyPlan(studentId: string): Promise<{ tasks: PlanTaskRow[] } | null>;
   listRecentExams(studentId: string): Promise<ExamRow[]>;
 };
@@ -88,7 +93,8 @@ export async function loadStudentHomeProductData(input: {
         const todayLessons = groupIds.length
           ? await input.queries.listTodayLessons(groupIds, dayStart, dayEnd)
           : [];
-        return { todayLessons };
+        const nextRecovery = await input.queries.getNextRecoveryPackage(input.studentId);
+        return { todayLessons, nextRecovery };
       })()
     : Promise.resolve(null);
 

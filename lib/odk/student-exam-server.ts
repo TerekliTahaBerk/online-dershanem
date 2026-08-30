@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { attemptHasExpired, decideAttemptStart } from "@/lib/odk/attempt-domain";
 import { getActiveOdkExamGrant, listActiveOdkContracts } from "@/lib/odk/product-contract-server";
 import { contractAnswerKeyAvailable, contractExamSchedule, contractResultAvailable } from "@/lib/odk/product-contract";
+import { buildOutcomeTrends, buildWeakOutcomeSignals } from "@/lib/odk/reporting";
 
 export const studentExamInclude = {
   currentVersion: {
@@ -77,7 +78,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
             select: {
               correctCount: true, wrongCount: true, blankCount: true, totalNet: true,
               questionResults: { orderBy: { question: { position: "asc" } }, select: { selectedOption: true, correctOption: true, result: true, question: { select: { questionNumber: true } } } },
-              outcomeScores: { orderBy: [{ accuracyRate: "asc" }, { outcome: { code: "asc" } }], select: { questionCount: true, correctCount: true, wrongCount: true, blankCount: true, accuracyRate: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } },
+              outcomeScores: { orderBy: [{ accuracyRate: "asc" }, { outcome: { code: "asc" } }], select: { outcomeId: true, questionCount: true, correctCount: true, wrongCount: true, blankCount: true, accuracyRate: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } },
             },
           },
         },
@@ -86,5 +87,41 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
   });
   if (!exam || !contractResultAvailable(grant.exam, exam)) return null;
   const attempt = exam?.attempts[0];
-  return attempt?.score ? { exam, attempt, score: attempt.score, answerKeyAvailable: contractAnswerKeyAvailable(grant.exam, exam) } : null;
+  if (!attempt?.score) return null;
+  const attempts = await prisma.odkExamAttempt.findMany({
+    where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED" }, score: { isNot: null } },
+    orderBy: [{ exam: { startsAt: "desc" } }, { submittedAt: "desc" }, { attemptNumber: "desc" }],
+    take: 30,
+    select: {
+      examId: true,
+      submittedAt: true,
+      exam: { select: { startsAt: true } },
+      score: { select: { outcomeScores: { select: { outcomeId: true, questionCount: true, accuracyRate: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } } } },
+    },
+  });
+  const latestByExam = new Map<string, (typeof attempts)[number]>();
+  for (const row of attempts) if (!latestByExam.has(row.examId)) latestByExam.set(row.examId, row);
+  const outcomeEvidence = [...latestByExam.values()].flatMap((row) => row.score ? row.score.outcomeScores.map((outcome) => ({
+    examId: row.examId,
+    takenAt: row.exam.startsAt || row.submittedAt || new Date(0),
+    outcomeId: outcome.outcomeId,
+    code: outcome.outcome.code,
+    title: outcome.outcome.title,
+    unitName: outcome.outcome.unit.name,
+    questionCount: outcome.questionCount,
+    accuracyRate: Number(outcome.accuracyRate),
+  })) : []);
+  const outcomeTrends = buildOutcomeTrends(outcomeEvidence);
+  const weakOutcomeSignals = buildWeakOutcomeSignals({
+    latestScores: attempt.score.outcomeScores.map((item) => ({
+      outcomeId: item.outcomeId,
+      code: item.outcome.code,
+      title: item.outcome.title,
+      unitName: item.outcome.unit.name,
+      questionCount: item.questionCount,
+      accuracyRate: Number(item.accuracyRate),
+    })),
+    trends: outcomeTrends,
+  });
+  return { exam, attempt, score: attempt.score, answerKeyAvailable: contractAnswerKeyAvailable(grant.exam, exam), outcomeTrends, weakOutcomeSignals };
 }

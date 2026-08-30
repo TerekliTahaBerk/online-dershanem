@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { expect, test, type Page } from "@playwright/test";
+import { panelE2EAccounts } from "../../lib/e2e/panel-accounts";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const prisma = new PrismaClient();
@@ -8,10 +9,7 @@ const attemptId = "e2e-odk-attempt-live";
 const foreignAttemptId = "e2e-odk-attempt-foreign";
 const question1 = "e2e-odk-question-live-1";
 const question2 = "e2e-odk-question-live-2";
-const account = {
-  email: process.env.PANEL_E2E_ODK_STUDENT_EMAIL || "odk.student.e2e@example.com",
-  password: process.env.PANEL_E2E_ODK_STUDENT_PASSWORD || process.env.PANEL_E2E_STUDENT_PASSWORD || process.env.E2E_PASSWORD,
-};
+const account = panelE2EAccounts.odkStudent;
 
 async function resetAttempt(deadline = new Date(Date.now() + 60 * 60_000)) {
   await prisma.rateLimitEntry.deleteMany({
@@ -68,7 +66,7 @@ async function apiLogin(page: Page, email: string) {
 }
 
 async function openRunnerFromPanel(page: Page) {
-  const examsLink = page.getByRole("link", { name: "Denemelerim" });
+  const examsLink = page.getByRole("link", { name: "Denemeler", exact: true });
   await examsLink.focus();
   await expect(examsLink).toBeFocused();
   await page.keyboard.press("Enter");

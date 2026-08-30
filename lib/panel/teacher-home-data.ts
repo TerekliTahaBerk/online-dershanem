@@ -107,53 +107,6 @@ export const teacherHomeSnapshotSchema = z.object({
 
 export function buildTeacherHomeSnapshot(input: TeacherHomeSourceData): TeacherHomeSnapshot {
   const now = input.now ?? new Date();
-  const nameOf = new Map<string, { name: string; group: string }>();
-  const absentCounts = new Map<string, number>();
-  const progressCounts = new Map<string, { done: number; total: number }>();
-
-  for (const group of input.groups) {
-    for (const student of group.students) {
-      nameOf.set(student.id, { name: student.name, group: group.name });
-    }
-  }
-
-  for (const row of input.attendance) {
-    if (row.status === "ABSENT") {
-      absentCounts.set(row.studentId, (absentCounts.get(row.studentId) ?? 0) + 1);
-    }
-  }
-
-  for (const row of input.assignmentProgress) {
-    const current = progressCounts.get(row.studentId) ?? { done: 0, total: 0 };
-    current.total += 1;
-    if (row.status === "DONE") current.done += 1;
-    progressCounts.set(row.studentId, current);
-  }
-
-  const flags: TeacherHomeFlag[] = [];
-  for (const [studentId, info] of nameOf) {
-    const absent = absentCounts.get(studentId) ?? 0;
-    const progress = progressCounts.get(studentId);
-    const pct = progress?.total ? Math.round((progress.done / progress.total) * 100) : null;
-
-    if (absent >= 2) {
-      flags.push({
-        id: studentId,
-        ...info,
-        reason: `Son iki haftada ${absent} derse katılmadı.`,
-      });
-      continue;
-    }
-
-    if (pct !== null && pct < 50 && (progress?.total ?? 0) >= 2) {
-      flags.push({
-        id: studentId,
-        ...info,
-        reason: `Çalışma tamamlama oranı %${pct}.`,
-      });
-    }
-  }
-
   const todayLessons = input.todayLessons.map((lesson) => ({
     id: lesson.id,
     startsAt: lesson.startsAt.toISOString(),
@@ -183,10 +136,10 @@ export function buildTeacherHomeSnapshot(input: TeacherHomeSourceData): TeacherH
     counts: {
       todayLessons: todayLessons.length,
       awaitingNotes: awaitingNotes.length,
-      flags: flags.length,
+      flags: 0,
     },
     todayLessons,
     awaitingNotes,
-    flags,
+    flags: [],
   };
 }

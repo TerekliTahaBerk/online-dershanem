@@ -3,16 +3,91 @@ import type { StudentPlanPreference } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { buildSupportSignals, type SupportSnapshot } from "@/lib/support-signals";
 import type { PlanCandidate } from "@/lib/adaptive-plan";
+import { buildOutcomeTrends, buildWeakOutcomeSignals } from "@/lib/odk/reporting";
 
 export async function collectPlanCandidates(studentId: string, preference: StudentPlanPreference): Promise<PlanCandidate[]> {
   const now = new Date();
   const inTwoWeeks = new Date(now.getTime() + 14 * 86400000);
-  const [assignmentRows, reviewRows, weakRows, recoveryRows] = await Promise.all([
+  const [student, assignmentRows, reviewRows, weakRows, recoveryRows] = await Promise.all([
+    prisma.studentProfile.findUnique({ where: { id: studentId }, select: { userId: true } }),
     prisma.assignmentProgress.findMany({ where: { studentId, status: { not: "DONE" }, assignment: { isActive: true } }, orderBy: { assignment: { dueAt: "asc" } }, take: 20, include: { assignment: { select: { id: true, title: true, dueAt: true } } } }),
     prisma.reviewItem.findMany({ where: { studentId, status: "ACTIVE" }, orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }], take: 20, select: { id: true, title: true, dueAt: true, sourceType: true } }),
     prisma.lessonOutcome.findMany({ where: { evidenceType: "NEEDS_REVIEW", lesson: { status: "COMPLETED", group: { enrollments: { some: { studentId, endedAt: null } } } } }, orderBy: { createdAt: "desc" }, take: 10, select: { outcomeId: true, outcome: { select: { title: true } } } }),
     prisma.recoveryPackage.findMany({ where: { studentId, status: "PUBLISHED" }, orderBy: { dueAt: "asc" }, take: 5, select: { id: true, dueAt: true, lesson: { select: { title: true } } } }),
   ]);
+  const odkMembership = student?.userId
+    ? await prisma.productMembership.findFirst({
+        where: {
+          userId: student.userId,
+          product: "ODK",
+          startsAt: { lte: now },
+          revokedAt: null,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+        select: { id: true },
+      })
+    : null;
+  let odkWeakCandidates: PlanCandidate[] = [];
+  if (student?.userId && odkMembership) {
+    const attempts = await prisma.odkExamAttempt.findMany({
+      where: { studentUserId: student.userId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED" }, score: { isNot: null } },
+      orderBy: [{ exam: { startsAt: "desc" } }, { submittedAt: "desc" }, { attemptNumber: "desc" }],
+      take: 30,
+      select: {
+        examId: true,
+        submittedAt: true,
+        exam: { select: { startsAt: true } },
+        score: { select: { outcomeScores: { select: { outcomeId: true, questionCount: true, accuracyRate: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } } } },
+      },
+    });
+    if (attempts.length) {
+      const latestByExam = new Map<string, (typeof attempts)[number]>();
+      for (const row of attempts) if (!latestByExam.has(row.examId)) latestByExam.set(row.examId, row);
+      const orderedAttempts = [...latestByExam.values()].sort((a, b) => (b.exam.startsAt || b.submittedAt || new Date(0)).getTime() - (a.exam.startsAt || a.submittedAt || new Date(0)).getTime());
+      const latestAttempt = orderedAttempts[0];
+      if (latestAttempt?.score) {
+        const rows = orderedAttempts.flatMap((attemptRow) => attemptRow.score ? attemptRow.score.outcomeScores.map((score) => ({
+          examId: attemptRow.examId,
+          takenAt: attemptRow.exam.startsAt || attemptRow.submittedAt || new Date(0),
+          outcomeId: score.outcomeId,
+          code: score.outcome.code,
+          title: score.outcome.title,
+          unitName: score.outcome.unit.name,
+          questionCount: score.questionCount,
+          accuracyRate: Number(score.accuracyRate),
+        })) : []);
+        const trends = buildOutcomeTrends(rows);
+        const weakSignals = buildWeakOutcomeSignals({
+          latestScores: latestAttempt.score.outcomeScores.map((score) => ({
+            outcomeId: score.outcomeId,
+            code: score.outcome.code,
+            title: score.outcome.title,
+            unitName: score.outcome.unit.name,
+            questionCount: score.questionCount,
+            accuracyRate: Number(score.accuracyRate),
+          })),
+          trends,
+        }).filter((signal) => signal.needsReview);
+        odkWeakCandidates = weakSignals.slice(0, 3).map((signal) => ({
+          sourceType: "WEAK_OUTCOME",
+          sourceReferenceId: signal.outcomeId,
+          title: signal.title,
+          durationMinutes: 20,
+          reasonCode: "NEEDS_REVIEW",
+          // Deterministik: aynı sinyal her zaman aynı önceliği üretir.
+          priority: Math.max(68, Math.min(96, signal.priority + Math.round(signal.confidenceScore * 10))),
+          signalMeta: {
+            source: "ODK_RESULT",
+            confidence: signal.confidenceScore,
+            evidenceCount: signal.evidenceCount,
+            questionCount: signal.questionCount,
+            latestAccuracy: signal.latestAccuracy,
+            previousAccuracy: signal.previousAccuracy,
+          },
+        }));
+      }
+    }
+  }
 
   const baseCandidates: PlanCandidate[] = [
     ...assignmentRows.map((row) => ({ sourceType: "ASSIGNMENT" as const, sourceReferenceId: row.assignment.id, title: row.assignment.title, durationMinutes: 30, reasonCode: "DUE_SOON" as const, priority: row.assignment.dueAt <= inTwoWeeks ? 100 : 70, dueAt: row.assignment.dueAt })),
@@ -37,7 +112,7 @@ export async function collectPlanCandidates(studentId: string, preference: Stude
     return [];
   });
   const seen = new Set<string>();
-  const candidates = [...baseCandidates, ...supportCandidates].filter((candidate) => {
+  const candidates = [...baseCandidates, ...supportCandidates, ...odkWeakCandidates].filter((candidate) => {
     const key = `${candidate.sourceType}:${candidate.sourceReferenceId || candidate.title}`;
     if (seen.has(key)) return false;
     seen.add(key);

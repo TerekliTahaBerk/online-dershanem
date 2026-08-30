@@ -169,17 +169,6 @@ export async function POST(request: Request) {
         answer: {
           text: generated.content.text,
           citations: generated.content.citations,
-          nextBestActions: generated.nextBestActions.map((action) => ({
-            key: action.key,
-            audience: action.audience,
-            priority: action.priority,
-            title: action.title,
-            explanation: action.explanation,
-            action: action.action,
-            evidenceRefs: action.evidenceRefs,
-            generatedAt: action.generatedAt.toISOString(),
-            expiresAt: action.expiresAt?.toISOString() ?? null,
-          })),
         } as unknown as Prisma.InputJsonValue,
         fallbackReason: generated.fallbackReason,
         redactionCount: prepared.redactionCount,
@@ -209,7 +198,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ answer, replayed: false, nextBestActions: generated.nextBestActions });
+    return NextResponse.json({ answer, replayed: false });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       const duplicate = await prisma.dinoAnswer.findFirst({

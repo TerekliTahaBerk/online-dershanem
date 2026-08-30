@@ -4,7 +4,7 @@ import test from "node:test";
 
 import { buildTeacherHomeSnapshot } from "./panel/teacher-home-data";
 
-test("öğretmen ana sayfası read-model'i canlı join yerine snapshot üretir", () => {
+test("öğretmen ana sayfası ders snapshot'ı öğrenci risk hesabı üretmez", () => {
   const snapshot = buildTeacherHomeSnapshot({
     now: new Date("2026-08-30T09:00:00.000Z"),
     todayLessons: [
@@ -47,9 +47,8 @@ test("öğretmen ana sayfası read-model'i canlı join yerine snapshot üretir",
 
   assert.equal(snapshot.schemaVersion, 1);
   assert.equal(snapshot.summary, "1 ders · 1 ders için not girişi bekliyor");
-  assert.equal(snapshot.flags.length, 2);
-  assert.equal(snapshot.flags[0].reason, "Son iki haftada 2 derse katılmadı.");
-  assert.equal(snapshot.flags[1].reason, "Çalışma tamamlama oranı %0.");
+  assert.deepEqual(snapshot.flags, []);
+  assert.equal(snapshot.counts.flags, 0);
   assert.equal(snapshot.todayLessons[0].hasPendingNote, true);
 });
 

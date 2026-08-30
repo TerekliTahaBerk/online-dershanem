@@ -83,6 +83,8 @@ jobs:
       PANEL_E2E_TEACHER_PASSWORD: testpass123
       PANEL_E2E_STUDENT_EMAIL: student.e2e@example.com
       PANEL_E2E_STUDENT_PASSWORD: testpass123
+      PANEL_E2E_ODK_STUDENT_EMAIL: odk.student.e2e@example.com
+      PANEL_E2E_ODK_STUDENT_PASSWORD: testpass123
       PANEL_E2E_PARENT_EMAIL: parent.e2e@example.com
       PANEL_E2E_PARENT_PASSWORD: testpass123
       PANEL_E2E_FOREIGN_STUDENT_ID: e2e-student-profile-foreign
@@ -214,6 +216,8 @@ jobs:
       CRON_SECRET: e2e-only-cron-secret-0123456789abcdef
       BLOB_READ_WRITE_TOKEN: vercel_blob_rw_e2e_placeholder
       E2E_PASSWORD: testpass123
+      PANEL_E2E_ODK_STUDENT_EMAIL: odk.student.e2e@example.com
+      PANEL_E2E_ODK_STUDENT_PASSWORD: testpass123
       PANEL_E2E_STUDENT_PASSWORD: testpass123
       PLAYWRIGHT_ODK_DEVICE_MATRIX: "true"
       CI: "true"
