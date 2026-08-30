@@ -51,6 +51,7 @@ export function buildReadinessReport(input: {
     required: production,
     configured: Boolean(env.ERROR_ALERT_WEBHOOK_URL?.trim()),
     code: env.ERROR_ALERT_WEBHOOK_URL?.trim() ? null : "ALERT_CHANNEL_NOT_CONFIGURED",
+    requiredEnv: production ? ["ERROR_ALERT_WEBHOOK_URL"] : [],
   };
   const cache = input.cache ?? {
     backend: env.UPSTASH_REDIS_REST_URL?.trim() && env.UPSTASH_REDIS_REST_TOKEN?.trim() ? "upstash" as const : production ? "unavailable" as const : "memory" as const,

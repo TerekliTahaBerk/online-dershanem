@@ -80,6 +80,7 @@ test("production readiness etkin Upstash backend'ini açıkça raporlar", () => 
   assert.equal(report.ready, true);
   assert.equal(report.checks.cache.status, "ok");
   assert.equal(report.checks.cache.backend, "upstash");
+  assert.deepEqual(report.checks.alerts.requiredEnv, ["ERROR_ALERT_WEBHOOK_URL"]);
 });
 
 test("production readiness Redis outage'ında kapanır ve degradation sebebini gösterir", () => {
