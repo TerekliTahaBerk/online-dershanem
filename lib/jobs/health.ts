@@ -2,9 +2,11 @@ export const CRITICAL_CRON_DEFINITIONS = [
   { name: "odk-exam-lifecycle", label: "ODK sınav yaşam döngüsü", cadenceMinutes: 5, staleAfterMinutes: 8, alertCooldownMinutes: 10 },
   { name: "business-jobs", label: "İşletme işleri", cadenceMinutes: 5, staleAfterMinutes: 10, alertCooldownMinutes: 30 },
   { name: "email-retry", label: "E-posta yeniden deneme", cadenceMinutes: 15, staleAfterMinutes: 30, alertCooldownMinutes: 60 },
+  { name: "domain-sli", label: "Domain SLI değerlendirmesi", cadenceMinutes: 5, staleAfterMinutes: 10, alertCooldownMinutes: 15 },
   { name: "panel-reminders", label: "Panel hatırlatmaları", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
   { name: "panel-session-retention", label: "Panel oturum saklama", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
   { name: "rate-limit-prune", label: "Rate limit temizliği", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
+  { name: "account-claims", label: "Hesap devralma davetleri", cadenceMinutes: 6 * 60, staleAfterMinutes: 12 * 60, alertCooldownMinutes: 12 * 60 },
 ] as const;
 
 export type CriticalCronName = (typeof CRITICAL_CRON_DEFINITIONS)[number]["name"];

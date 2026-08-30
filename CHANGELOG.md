@@ -14,9 +14,15 @@ All notable changes to this project are documented here. The format follows [Kee
 - Student goals with targets set by the coach and progress computed live from exam and plan data
 - Dino AI summaries for students, parents and educators, backed by Gemini behind allowlisted questions, redaction, citation validation, daily cost and request caps, and an honest fallback when unavailable
 - Server-side search, filtering and pagination on the admin people list
+- Automated post-purchase account lifecycle: a single-use account claim invitation is issued and emailed when an order is provisioned, and the buyer sets their own password, confirms the student relationship and picks baseline preferences in one step — replacing the manual "we will contact you" handover
+- First-value setup checklist on the student and parent home, derived from real records and removed once complete
+- Account claim maintenance cron that reminds on day 3 and 8 and expires invitations after 14 days
+- Real-Postgres integration coverage for the seven highest-risk contracts — product entitlement, lesson close, adaptive plan, intervention deduplication, parent and educator scope, coaching privacy, and Dino request replay — plus a documented strategy for what does and does not belong in that layer
 
 ### Changed
 
+- The operations queue now shows exceptions first: post-purchase orders that advance on their own collapse into a counter, and genuine placement decisions get their own section
+- Parent-student links now record who confirmed them and when; an explicit rejection removes the link and raises an exception instead of leaving a wrong child linked
 - Dino AI marketing copy now describes planned rather than live capability
 - Admin and panel headings now use the design's typography scale instead of marketing type
 - The admin "Siparişler" entry now opens a dedicated order list; the wider operations queue moved to its own entry
@@ -24,6 +30,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- The rate-limit integration suite now actually runs in CI; its opt-in flag had never been set, so every case had been silently skipped
 - Group detail reported capacity as a fixed four regardless of the group's actual capacity
 - Progress bars in reports, group detail, the assignment manager and the ODK outcome breakdown had no accessible role, value or label
 - Every panel page rendered two `h1` elements, one from the topbar title and one from the page heading

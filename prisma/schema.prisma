@@ -310,6 +310,8 @@ model User {
   studentProfile                StudentProfile?
   teacherProfile                TeacherProfile?
   parentStudents                ParentStudent[]            @relation("ParentLinks")
+  confirmedParentLinks          ParentStudent[]            @relation("ParentLinkConfirmer")
+  accountClaims                 AccountClaim[]
   taughtGroups                  Group[]                    @relation("GroupTeacher")
   taughtLessons                 Lesson[]                   @relation("LessonTeacher")
   createdAssignments            Assignment[]               @relation("AssignmentCreator")
@@ -1306,10 +1308,14 @@ enum InterventionReason {
   OVERDUE_WORK
   REPEATED_REVIEW_DIFFICULTY
   PLAN_STALLED
+  RECENT_EXAM_DROP
+  ENGAGEMENT_GAP
+  HUMAN_CONCERN
 }
 
 enum InterventionActivityType {
   GENERATED
+  HUMAN_CONCERN_RAISED
   ASSIGNED
   STARTED
   ACTION_LOGGED
@@ -1339,7 +1345,7 @@ enum InterventionFalsePositiveReason {
 model InterventionCase {
   id              String                     @id @default(cuid())
   studentId       String                     @map("student_id")
-  ruleVersion     String                     @default("intervention-v1") @map("rule_version")
+  ruleVersion     String                     @default("intervention-v3") @map("rule_version")
   reasonCode      InterventionReason         @map("reason_code")
   fingerprint     String                     @unique
   explanation     String
@@ -1360,11 +1366,27 @@ model InterventionCase {
   student         StudentProfile             @relation(fields: [studentId], references: [id], onDelete: Cascade)
   owner           User?                      @relation("InterventionCaseOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   activities      InterventionCaseActivity[]
+  signals         InterventionCaseSignal[]
 
   @@index([status, dueAt])
   @@index([studentId, status, createdAt])
   @@index([ownerId, status, dueAt])
   @@map("intervention_cases")
+}
+
+model InterventionCaseSignal {
+  id              String             @id @default(cuid())
+  caseId          String             @map("case_id")
+  reasonCode      InterventionReason @map("reason_code")
+  explanation     String
+  suggestedAction String             @map("suggested_action")
+  evidenceCount   Int                @map("evidence_count")
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  case            InterventionCase   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, reasonCode])
+  @@index([caseId, reasonCode])
+  @@map("intervention_case_signals")
 }
 
 model InterventionCaseActivity {
@@ -1429,7 +1451,7 @@ model WeeklyPlan {
   studentId             String           @map("student_id")
   weekStart             DateTime         @map("week_start") @db.Timestamptz(3)
   status                WeeklyPlanStatus @default(DRAFT)
-  ruleVersion           String           @default("adaptive-v1") @map("rule_version")
+  ruleVersion           String           @default("adaptive-v2") @map("rule_version")
   capacityMinutes       Int              @map("capacity_minutes")
   createdById           String           @map("created_by_id")
   approvedById          String?          @map("approved_by_id")
@@ -1457,6 +1479,10 @@ model WeeklyPlanTask {
   sourceType        WeeklyPlanTaskSource @map("source_type")
   sourceReferenceId String?              @map("source_reference_id")
   reasonCode        WeeklyPlanReason     @map("reason_code")
+  score             Int                  @default(0)
+  scoreVersion      String               @default("adaptive-score-v1") @map("score_version")
+  scoreBreakdown    Json                 @default("[]") @map("score_breakdown")
+  explanation       String               @default("")
   status            WeeklyPlanTaskStatus @default(PLANNED)
   completedAt       DateTime?            @map("completed_at") @db.Timestamptz(3)
   createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -1636,12 +1662,25 @@ model ParentStudent {
   parentId     String         @map("parent_id")
   studentId    String         @map("student_id")
   relationship String?
+
+  /// Veli bu bağı hesap kurulumunda AÇIKÇA onayladı mı?
+  ///
+  /// Erişimi KAPATMAZ: bağ ödenmiş bir siparişten doğuyor ve veli ödeme
+  /// yaparken çocuğunu zaten bildirdi. Onay, bağın DOĞRU çocuğa kurulduğunun
+  /// insan teyididir. Veli "bu benim çocuğum değil" derse bağ silinir ve
+  /// sipariş istisna kuyruğuna düşer; onaylanmadan uzun süre bekleyen bağ da
+  /// istisna sayılır (bkz. lib/od/lifecycle-exceptions.ts).
+  confirmedAt   DateTime? @map("confirmed_at") @db.Timestamptz(3)
+  confirmedById String?   @map("confirmed_by_id")
+
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   parent       User           @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
   student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  confirmedBy  User?          @relation("ParentLinkConfirmer", fields: [confirmedById], references: [id], onDelete: SetNull)
 
   @@unique([parentId, studentId])
   @@index([studentId])
+  @@index([confirmedAt])
   @@map("parent_students")
 }
 
@@ -2214,6 +2253,59 @@ model Session {
   @@index([userId])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+enum AccountClaimStatus {
+  PENDING
+  CLAIMED
+  EXPIRED
+  /// Aynı kullanıcı için yeni davet üretildi; eski davet artık kullanılamaz.
+  SUPERSEDED
+}
+
+enum AccountClaimAudience {
+  STUDENT
+  PARENT
+}
+
+/// Ödeme sonrası hesap devralma daveti.
+///
+/// Hesap provisioning sırasında rastgele bir parolayla açılır; sahibi onu
+/// bilmez. Davet, sahibinin hesabı kendi parolasıyla DEVRALMASINI sağlar ve
+/// operasyondaki "geçici parolayı elden ilet" adımını ortadan kaldırır.
+///
+/// `PasswordResetToken` ile aynı gizlilik modeli: bağlantı `id` + HMAC kanıtı
+/// taşır, veritabanında yalnız tam token'ın scrypt doğrulayıcısı durur ve
+/// outbox'a yazılan HTML gizli değeri değil yalnız `id` işaretini içerir.
+/// AYRI bir model olmasının sebebi ömrü ve anlamı: parola sıfırlama 60 dakika
+/// yaşar ve kullanıcı ister; davet günlerce yaşar, sistem üretir, hatırlatma
+/// ve süre dolumu operasyon istisnası doğurur.
+model AccountClaim {
+  id        String @id
+  userId    String @map("user_id")
+  tokenHash String @unique @map("token_hash")
+
+  audience AccountClaimAudience
+  status   AccountClaimStatus   @default(PENDING)
+
+  /// Daveti tetikleyen sipariş. Sipariş silinse bile davet geçmişi kalır.
+  odOrderId String? @map("od_order_id")
+
+  expiresAt     DateTime  @map("expires_at") @db.Timestamptz(3)
+  claimedAt     DateTime? @map("claimed_at") @db.Timestamptz(3)
+  lastRemindedAt DateTime? @map("last_reminded_at") @db.Timestamptz(3)
+  reminderCount Int       @default(0) @map("reminder_count")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  odOrder OdOrder? @relation(fields: [odOrderId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([status, expiresAt])
+  @@index([odOrderId])
+  @@map("account_claims")
 }
 
 model PasswordResetToken {
@@ -3256,6 +3348,7 @@ model OdOrder {
   onboarding           OdOnboarding?
   sourcedMemberships   ProductMembership[]
   lines                CommerceOrderLine[]
+  accountClaims        AccountClaim[]
 
   @@index([status, createdAt])
   @@index([intentId])

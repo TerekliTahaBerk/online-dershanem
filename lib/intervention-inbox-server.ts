@@ -16,6 +16,7 @@ export async function getInterventionInbox(input: { role: Extract<UserRole, "ADM
     include: {
       student: { include: { user: { select: { fullName: true, email: true } } } },
       owner: { select: { id: true, fullName: true, email: true, role: true } },
+      signals: { orderBy: { createdAt: "asc" } },
       activities: { orderBy: { createdAt: "desc" }, take: 5, include: { actor: { select: { fullName: true, email: true } } } },
     },
   });
@@ -29,6 +30,7 @@ export async function getInterventionInbox(input: { role: Extract<UserRole, "ADM
     explanation: row.explanation,
     suggestedAction: row.suggestedAction,
     evidenceCount: row.evidenceCount,
+    signals: row.signals.map((signal) => ({ reasonCode: signal.reasonCode, explanation: signal.explanation, suggestedAction: signal.suggestedAction, evidenceCount: signal.evidenceCount })),
     dueAt: row.dueAt.toISOString(),
     status: row.status,
     ownerName: row.owner ? row.owner.fullName || row.owner.email : null,
@@ -39,4 +41,16 @@ export async function getInterventionInbox(input: { role: Extract<UserRole, "ADM
     version: row.version,
     activities: row.activities.map((activity) => ({ id: activity.id, type: activity.type, note: activity.note, outcomeCode: activity.outcomeCode, falsePositiveReason: activity.falsePositiveReason, actorName: activity.actor ? activity.actor.fullName || activity.actor.email : "Sistem", createdAt: activity.createdAt.toISOString() })),
   }));
+}
+
+export async function getInterventionConcernTargets(input: { role: Extract<UserRole, "ADMIN" | "TEACHER">; userId: string }) {
+  const students = await prisma.studentProfile.findMany({
+    where: {
+      user: { status: "ACTIVE" },
+      enrollments: { some: { endedAt: null, group: { isActive: true, ...(input.role === "TEACHER" ? { teacherId: input.userId } : {}) } } },
+    },
+    orderBy: { user: { fullName: "asc" } },
+    select: { id: true, user: { select: { fullName: true, email: true } } },
+  });
+  return students.map((student) => ({ id: student.id, name: student.user.fullName || student.user.email }));
 }

@@ -24,7 +24,7 @@ Bu katalog teknik uptime ile kullanıcı işinin gerçekten tamamlanmasını ayr
 | `review_item_answered/deferred` | Sunucu | Öğrenci | Basamak geçişi, geri çağırma yanıtı ve bir günlük erteleme |
 | `review_queue_viewed` | İstemci | Öğrenci, öğretmen | Kimliksiz aktif/bekleyen sayı bantları |
 | `lesson_close_quality/revised/conflict` | Sunucu | Öğretmen | Eksik alan, 24 saatlik düzeltme ve güvenli kayıt çakışması |
-| `plan_generated/task_completed/change_requested/preference_updated` | Sunucu | Öğrenci | Kural çıktısı, uygulama, geri bildirim ve kapasite guardrail'i |
+| `plan_generation_finished/generated/task_completed/change_requested/preference_updated` | Sunucu | Öğrenci | Uygun üretim isteği sonucu, kural çıktısı, uygulama, geri bildirim ve kapasite guardrail'i |
 | `plan_review_completed` | İstemci | Öğretmen | Kimliksiz plan inceleme süresi ve onay |
 | `weekly_digest_generated/published` | Sunucu | Öğretmen | Kural sürümü, eğilim bandı ve alıcı büyüklük bandı |
 | `weekly_digest_viewed/feedback` | Sunucu render / sunucu | Öğrenci, veli | Görüntüleme, yararlılık ve isteğe bağlı kaygı pulse'u |
@@ -64,6 +64,7 @@ Sunucu operasyonlarında sonuç sınıfları:
 | 7 gün içinde yeniden çözüm | ≥ %60 | 30 gün | 30 uygun öğe | İki ardışık haftada hedef dışı |
 | 30 günlük doğru geri çağırma | Pilot baz çizgisine göre artış | 30–90 gün | 30 adet 30 günlük attempt | Düşüşte algoritma ve içerik kalitesini incele |
 | Haftalık plan kabulü | ≥ %65 | 30 gün | 30 plan | İki ardışık haftada hedef dışı |
+| Haftalık plan üretim hata oranı | ≤ %3 | 15 dakika | Uygun üretim istekleri | Her 5 dakikalık kontrolde >%3 ise anlık operasyon alarmı |
 | Öğretmen plan inceleme p50 | < 120 sn | 30 gün | 5 inceleme | İki ardışık günlük kontrolde hedef dışı |
 | “Plan fazla geliyor” pulse'u | Pilot baz çizgisine göre artmamalı | 30–90 gün | 30 gönüllü yanıt | Artışta varsayılan kapasiteyi düşür |
 | Haftalık özet görüntüleme | ≥ %50 | 30 gün | 30 yayın | İki ardışık haftada hedef dışıysa teslimat ve değer önerisini incele |
@@ -87,6 +88,7 @@ Başarı oranı bütün kimliği doğrulanmış operasyon sonuçları üzerinden
 - Beşten az örnekte yeşil/kırmızı karar verilmez; admin ekranı “Veri bekleniyor” gösterir.
 - Yüzdeler kullanıcı veya öğretmen sıralaması için kullanılmaz. Bireysel performans puanı üretilmez.
 - Event kaybı kullanıcı işini başarısız yapmaz; telemetri yazımı non-throwing'dir. Event persistence hataları `product.event_persist_failed` structured log'uyla izlenir.
+- `plan_generated / eligible_plan_requests`, `plan_generation_finished` içindeki `eligible=true` ve `outcome=success` sonuçlarından hesaplanır. Tercihi kapalı, profili eksik veya onaylı planı kilitli istekler paydaya girmez. `system_error / eligible_plan_requests > %3` son 15 dakikalık pencerede alarm üretir.
 - SLO ihlali önce rol, event sonucu ve zaman aralığına göre incelenir. Kimliksiz event deposundan kişiye geri çözüm yapılmaz.
 - `ProductEvent` kayıtları 90 gün sonunda günlük retention işiyle silinir. Uzun dönem trend gerekiyorsa yalnız toplu haftalık oranlar dış sisteme aktarılmalıdır.
 

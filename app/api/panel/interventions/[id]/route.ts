@@ -37,7 +37,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         OR: [{ ownerId: null }, { ownerId: auth.session.userId }],
       } : {}),
     },
-    select: { id: true, status: true, version: true, ownerId: true, reasonCode: true, createdAt: true, firstActionAt: true },
+    select: { id: true, status: true, version: true, ownerId: true, reasonCode: true, createdAt: true, firstActionAt: true, signals: { select: { reasonCode: true } } },
   });
   if (!item) return NextResponse.json({ error: "Müdahale kaydı bulunamadı." }, { status: 404 });
   if (item.version !== parsed.data.expectedVersion) return NextResponse.json({ error: "Kayıt başka bir sekmede değişti." }, { status: 409 });
@@ -78,6 +78,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   }
   if (action === "SNOOZE") await recordPanelProductEvent({ name: "case_snoozed", properties: { reasonCode: item.reasonCode, days: parsed.data.days } }, auth.session.role);
   if (action === "RESOLVE") await recordPanelProductEvent({ name: "case_closed", properties: { reasonCode: item.reasonCode, outcomeCode: parsed.data.outcomeCode } }, auth.session.role);
-  if (action === "FALSE_POSITIVE") await recordPanelProductEvent({ name: "case_false_positive", properties: { reasonCode: item.reasonCode, falsePositiveReason: parsed.data.falsePositiveReason } }, auth.session.role);
+  if (action === "FALSE_POSITIVE") for (const signal of item.signals) await recordPanelProductEvent({ name: "case_false_positive", properties: { reasonCode: signal.reasonCode, falsePositiveReason: parsed.data.falsePositiveReason } }, auth.session.role);
   return NextResponse.json({ updated: true });
 }

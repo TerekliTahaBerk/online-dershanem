@@ -58,6 +58,20 @@ export const RATE_LIMIT_POLICIES = {
     action: "odk.attempt.submit",
     limit: { max: 15, windowMs: 15 * 60_000 },
   },
+  /**
+   * Hesap devralma daveti kimlik doğrulaması OLMADAN parola belirletir; bu
+   * yüzden parola sıfırlamayla aynı sınıfta tutulur. Tavan gerçek kullanım
+   * için değil, token tahmini için dardır: davet bağlantısı e-postadan tek
+   * tıkla açılır, normal bir kullanıcı birkaç denemeden fazlasını yapmaz.
+   */
+  accountClaim: {
+    action: "auth.account_claim",
+    limit: {
+      max: 12,
+      windowMs: 15 * 60_000,
+      message: "Çok fazla deneme. Biraz sonra tekrar deneyin.",
+    },
+  },
 } as const satisfies Record<
   string,
   { action: string; limit: RateLimitOpts }
