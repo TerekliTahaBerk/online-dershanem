@@ -6,6 +6,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
 import { DinoInsightCard } from "@/components/panel/student/home-cards";
+import { digestWeekStart } from "@/lib/calm-weekly-digest";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +73,10 @@ export default async function ParentHomePage({
   });
   const groupIds = enrollments.map((e) => e.groupId);
 
-  const [attendance, lessons, plan, exams] = await Promise.all([
+  const weekStart = digestWeekStart();
+  const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
+
+  const [attendance, lessons, plan, exams, latestPublishedDigest] = await Promise.all([
     prisma.attendance.findMany({
       where: { studentId: selected.id },
       orderBy: { createdAt: "desc" },
@@ -103,6 +107,15 @@ export default async function ParentHomePage({
           include: { sections: true },
         })
       : Promise.resolve([]),
+    prisma.weeklyDigest.findFirst({
+      where: {
+        studentId: selected.id,
+        status: "PUBLISHED",
+        weekStart: { gte: weekStart, lt: weekEnd },
+      },
+      orderBy: { weekStart: "desc" },
+      select: { supportArea: true },
+    }),
   ]);
 
   const attended = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
@@ -114,16 +127,7 @@ export default async function ParentHomePage({
   const latestNet = latestExam ? latestExam.sections.reduce((s, x) => s + net(x), 0) : null;
   const prevNet = exams[1] ? exams[1].sections.reduce((s, x) => s + net(x), 0) : null;
 
-  const missed = attendance.filter((a) => a.status === "ABSENT").length;
-  const overduePlan = planTotal - planDone;
-
-  /* "Dikkat edilmesi gereken" — yalnız gerçek sinyal varsa gösterilir. */
-  const attention =
-    missed > 0
-      ? `Son ${attendance.length} derste ${missed} katılmama var. Devamsızlığın sebebini öğrenciyle konuşmak iyi olabilir.`
-      : planTotal > 0 && planPct < 60
-        ? `Bu haftanın planında ${overduePlan} görev bekliyor (%${planPct} tamamlandı).`
-        : null;
+  const attention = latestPublishedDigest?.supportArea ?? null;
 
   const stat = (label: string, value: string, tone?: "brand") => (
     <div className="border-b border-dc-line-soft px-[22px] py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
