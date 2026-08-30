@@ -353,6 +353,7 @@ model User {
   odkExamAttempts               OdkExamAttempt[]           @relation("OdkExamAttemptStudent")
   scoredOdkExamAttempts         OdkAttemptScore[]          @relation("OdkAttemptScoreAdmin")
   businessRoleAssignments       BusinessRoleAssignment[]
+  teacherHomeSnapshot           TeacherHomeSnapshot?
 
   @@index([role, status])
   @@index([createdById])
@@ -1107,6 +1108,17 @@ model CronHeartbeat {
 
   @@index([lastSucceededAt])
   @@map("cron_heartbeats")
+}
+
+model TeacherHomeSnapshot {
+  teacherId   String   @id @map("teacher_id")
+  generatedAt DateTime @map("generated_at") @db.Timestamptz(3)
+  snapshot    Json
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("teacher_home_snapshots")
 }
 
 /// Bir kullanıcının hangi alt ürüne erişebildiğini rolünden bağımsız tutar.

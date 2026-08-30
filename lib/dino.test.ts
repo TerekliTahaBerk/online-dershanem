@@ -6,6 +6,7 @@ import {
   dinoFallbackAnswer,
   dinoQuestionsFor,
   findDinoQuestion,
+  buildNextBestActions,
   validateDinoOutput,
   type SafeDinoSource,
 } from "./dino";
@@ -115,6 +116,18 @@ test("kaynak yokken yedek yanıt veri olmadığını söyler", () => {
     questionKey: "parent_week",
     questionLabel: "Çocuğum bu hafta nasıl gitti?",
     sources: [],
+  });
+
+  test("next best actions her rol için deterministik ve açıklanabilir olur", () => {
+    const actions = buildNextBestActions({
+      audience: "STUDENT",
+      questionKey: "student_week",
+      questionLabel: "Bu hafta nasıl gidiyorum?",
+      sources,
+    });
+    assert.ok(actions.length >= 3);
+    assert.equal(actions[0].action.type, "OPEN_PLAN");
+    assert.ok(actions.every((action) => action.title.length > 0 && action.explanation.length > 0));
   });
   assert.match(fallback.text, /kayıtlı veri bulunamadı/i);
 });

@@ -6,12 +6,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
-import {
-  addIstanbulCalendarDays,
-  formatIstanbulDateInput,
-  ISTANBUL_TIME_ZONE,
-  istanbulWeekStart,
-} from "@/lib/istanbul-time";
+import { addIstanbulCalendarDays, ISTANBUL_TIME_ZONE, istanbulWeekStart } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -112,35 +107,15 @@ export default async function StudentPlanPage() {
     />
   );
 
-  if (!plan) {
-    return shell(
-      <>
-        <PanelHeading
-          title="Haftalık planın"
-          description="Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."
-        />
-        <div className="mt-6">{adaptivePlan}</div>
-      </>,
-    );
-  }
-
-  const start = istanbulWeekStart(plan.weekStart);
-  const days = Array.from({ length: 7 }, (_, i) => addIstanbulCalendarDays(start, i));
-
-  const done = plan.tasks.filter((t) => t.status === "DONE").length;
-  const total = plan.tasks.length;
-  const pct = total ? Math.round((done / total) * 100) : 0;
-
-  const end = addIstanbulCalendarDays(start, 6);
-
-  /* Tasarımın "Koçum" bölümü: kim, ne zaman, hangi odak. */
   const coaching = await getStudentCoaching(profile.id);
+  const start = plan ? istanbulWeekStart(plan.weekStart) : null;
+  const end = start ? addIstanbulCalendarDays(start, 6) : null;
 
   return shell(
     <>
       <PanelHeading
         title="Haftalık planın"
-        description={`${RANGE.format(start)} – ${RANGE.format(end)}`}
+        description={start && end ? `${RANGE.format(start)} – ${RANGE.format(end)}` : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."}
       />
 
       {coaching ? (
@@ -174,65 +149,17 @@ export default async function StudentPlanPage() {
 
       <div className="mt-6">{adaptivePlan}</div>
 
-      <div className="mt-8 flex items-center gap-4">
-        <div
-          className="h-2 flex-1 overflow-hidden rounded-full bg-dc-line-soft"
-          role="progressbar"
-          aria-valuenow={pct}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Haftalık plan ilerlemesi"
-        >
-          <div className="h-full rounded-full bg-dc-brand" style={{ width: `${pct}%` }} />
-        </div>
-        <span className="shrink-0 text-[14px] font-bold text-dc-ink">
-          {done} / {total} görev
-        </span>
-      </div>
-
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-        {days.map((day, i) => {
-          const tasks = plan.tasks.filter(
-            (t) => formatIstanbulDateInput(t.scheduledFor) === formatIstanbulDateInput(day),
-          );
-          return (
-            <div key={day.toISOString()}>
-              <p className="text-[13px] font-bold text-dc-ink">
-                {DAY_LABEL[i]} {DAY_NUMBER.format(day)}
-              </p>
-              <div className="mt-2.5 flex flex-col gap-2">
-                {tasks.length === 0 ? (
-                  <p className="rounded-[10px] border border-dashed border-[#CBD6D0] p-3 text-[11.5px] text-dc-ink-ghost">
-                    Boş gün
-                  </p>
-                ) : (
-                  tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className={`rounded-[10px] border border-dc-line bg-white p-3 ${
-                        task.status === "DONE" ? "border-l-[3px] border-l-dc-brand" : ""
-                      }`}
-                    >
-                      <p className="text-[12.5px] font-semibold text-dc-ink">{task.title}</p>
-                      <p className="mt-0.5 text-[11.5px] text-dc-ink-faint">
-                        {task.durationMinutes} dk ·{" "}
-                        {task.status === "DONE" ? "tamamlandı" : TIME.format(task.scheduledFor)}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {plan.changeRequestCategory ? (
+      {plan ? (
         <PanelCard className="mt-6 max-w-[760px]">
-          <h2 className="text-[15px] font-bold text-dc-ink">Koçunun notu</h2>
+          <h2 className="text-[15px] font-bold text-dc-ink">Bu haftanın özeti</h2>
           <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
-            {plan.changeRequestCategory}
+            {start ? `${RANGE.format(start)} haftası için plan hazır.` : "Bu hafta için plan hazır."}
           </p>
+          {plan.changeRequestCategory ? (
+            <p className="mt-3 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
+              {plan.changeRequestCategory}
+            </p>
+          ) : null}
         </PanelCard>
       ) : null}
     </>,

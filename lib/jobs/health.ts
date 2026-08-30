@@ -3,6 +3,7 @@ export const CRITICAL_CRON_DEFINITIONS = [
   { name: "business-jobs", label: "İşletme işleri", cadenceMinutes: 5, staleAfterMinutes: 10, alertCooldownMinutes: 30 },
   { name: "email-retry", label: "E-posta yeniden deneme", cadenceMinutes: 15, staleAfterMinutes: 30, alertCooldownMinutes: 60 },
   { name: "panel-reminders", label: "Panel hatırlatmaları", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
+  { name: "teacher-home-refresh", label: "Öğretmen ana sayfası yenileme", cadenceMinutes: 10, staleAfterMinutes: 20, alertCooldownMinutes: 30 },
   { name: "panel-session-retention", label: "Panel oturum saklama", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
   { name: "rate-limit-prune", label: "Rate limit temizliği", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
 ] as const;

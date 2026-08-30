@@ -76,6 +76,79 @@ export type SafeDinoSource = {
   sources: DinoSourceRow[];
 };
 
+export type NextBestActionAudience = DinoAudience;
+export type NextBestActionAction =
+  | { type: "OPEN_PLAN"; href: string }
+  | { type: "OPEN_REVIEW"; href: string }
+  | { type: "CONTACT_STUDENT"; studentId: string }
+  | { type: "OPEN_INTERVENTION"; href: string }
+  | { type: "OPEN_DIGEST"; href: string }
+  | { type: "ASK_QUESTION"; prompt: string };
+
+export type NextBestAction = {
+  key: string;
+  audience: NextBestActionAudience;
+  priority: number;
+  title: string;
+  explanation: string;
+  action: NextBestActionAction;
+  evidenceRefs: DinoSourceRow[];
+  generatedAt: Date;
+  expiresAt?: Date;
+};
+
+export function buildNextBestActions(source: SafeDinoSource): NextBestAction[] {
+  const evidenceRefs = source.sources.slice(0, 3);
+  const base = source.sources.map((row) => row.text).join(" ");
+  const planHref = source.audience === "STUDENT" ? "/panel/ogrenci/plan" : "/panel/ogretmen/plan";
+  const reviewHref = source.audience === "STUDENT" ? "/panel/ogrenci/tekrar" : "/panel/ogretmen/tekrar";
+  const digestHref = source.audience === "PARENT" ? "/panel/veli/haftalik" : "/panel/ogrenci/haftalik";
+  const interventionHref = source.audience === "TEACHER" ? "/panel/ogretmen/mudahale" : "/panel/yonetim/mudahale";
+  return [
+    {
+      key: `${source.questionKey}:plan`,
+      audience: source.audience,
+      priority: 90,
+      title: source.audience === "PARENT" ? "Bu hafta tek bir küçük destek seç" : "Bugün ilk olarak plana gir",
+      explanation: source.sources.length ? `Kayıtlarda plan odaklı sinyal var: ${base.slice(0, 180)}` : "Planı destekleyecek veri sınırlı.",
+      action: { type: "OPEN_PLAN", href: planHref },
+      evidenceRefs,
+      generatedAt: new Date(),
+    },
+    {
+      key: `${source.questionKey}:review`,
+      audience: source.audience,
+      priority: 82,
+      title: source.audience === "STUDENT" ? "Kısa tekrar için tek konu seç" : "Bir tekrar konusunu birlikte netleştir",
+      explanation: source.sources.length ? `Tekrar için en yakın kanıtlar: ${base.slice(0, 180)}` : "Tekrar için dayanak az.",
+      action: { type: "OPEN_REVIEW", href: reviewHref },
+      evidenceRefs,
+      generatedAt: new Date(),
+    },
+    {
+      key: `${source.questionKey}:digest`,
+      audience: source.audience,
+      priority: 74,
+      title: source.audience === "PARENT" ? "Sakin özetini aç" : "Sakin özetini kontrol et",
+      explanation: "Özet, AI olmasa da son veriden türetilmiş kısa yönlendirme sunar.",
+      action: { type: "OPEN_DIGEST", href: digestHref },
+      evidenceRefs,
+      generatedAt: new Date(),
+    },
+    {
+      key: `${source.questionKey}:intervention`,
+      audience: source.audience,
+      priority: source.audience === "TEACHER" ? 88 : 60,
+      title: source.audience === "TEACHER" ? "Müdahale ekranını aç" : "Gerekirse öğretmene ilet",
+      explanation: "İnsan takibi gerekiyorsa açıklanabilir müdahale listesi doğru yüzeydir.",
+      action: source.audience === "TEACHER" ? { type: "OPEN_INTERVENTION", href: interventionHref } : { type: "ASK_QUESTION", prompt: "Bu konuda kısa bir insan takibi ister misin?" },
+      evidenceRefs,
+      generatedAt: new Date(),
+      expiresAt: new Date(Date.now() + 7 * 86_400_000),
+    },
+  ];
+}
+
 /**
  * Model çıktısını kabul etmeden önceki son kapı.
  *
@@ -110,4 +183,8 @@ export function dinoFallbackAnswer(source: SafeDinoSource): DinoAnswerContent {
       : "Şu an yorum üretilemiyor ve bu soru için kayıtlı veri bulunamadı.",
     citations: rows.length ? rows.map((r) => r.id) : ["NO_DATA"],
   };
+}
+
+export function dinoNextBestActionFallback(source: SafeDinoSource) {
+  return buildNextBestActions(source);
 }

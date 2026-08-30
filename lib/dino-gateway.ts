@@ -2,10 +2,12 @@ import type { AiDraftProvider } from "@prisma/client";
 import {
   DINO_MAX_OUTPUT_TOKENS,
   DINO_PROMPT_VERSION,
+  buildNextBestActions,
   dinoAnswerSchema,
   dinoFallbackAnswer,
   validateDinoOutput,
   type DinoAnswerContent,
+  type NextBestAction,
   type SafeDinoSource,
 } from "@/lib/dino";
 
@@ -31,6 +33,7 @@ export type DinoGatewayResult = {
   inputTokens: number | null;
   outputTokens: number | null;
   estimatedCostMicrousd: number | null;
+  nextBestActions: NextBestAction[];
 };
 
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -84,6 +87,7 @@ function fallback(
     inputTokens: null,
     outputTokens: null,
     estimatedCostMicrousd: 0,
+    nextBestActions: buildNextBestActions(source),
   };
 }
 
@@ -178,6 +182,7 @@ export async function generateDinoAnswer(
       inputTokens,
       outputTokens,
       estimatedCostMicrousd: estimateCost(inputTokens, outputTokens),
+      nextBestActions: buildNextBestActions(source),
     };
   } catch {
     return fallback(source, startedAt, "TIMEOUT_OR_PARSE");

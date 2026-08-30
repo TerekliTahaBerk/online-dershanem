@@ -22,6 +22,7 @@ type Turn = {
   sources: string[];
   fromModel: boolean;
   note: string | null;
+  nextBestActions: Array<{ key: string; title: string; explanation: string; href: string }>;
 };
 
 const FALLBACK_NOTE: Record<string, string> = {
@@ -77,6 +78,9 @@ export function DinoChat({
         ? (answer.sourceRefs as Array<{ label?: string }>)
         : [];
       const reason = typeof answer.fallbackReason === "string" ? answer.fallbackReason : null;
+      const nba = Array.isArray(payload.answer?.nextBestActions)
+        ? (payload.answer.nextBestActions as Array<{ key?: string; title?: string; explanation?: string; action?: { href?: string } }>)
+        : [];
 
       setTurns((current) => [
         ...current,
@@ -86,6 +90,14 @@ export function DinoChat({
           sources: refs.map((ref) => ref.label || "").filter(Boolean),
           fromModel: answer.provider === "GEMINI" || answer.provider === "OPENAI",
           note: reason ? (FALLBACK_NOTE[reason] ?? "Bu yanıt model tarafından üretilmedi.") : null,
+          nextBestActions: nba
+            .map((item) => ({
+              key: item.key || crypto.randomUUID(),
+              title: item.title || "Sonraki adım",
+              explanation: item.explanation || "",
+              href: item.action?.href || "",
+            }))
+            .filter((item) => item.href),
         },
       ]);
     } catch {
@@ -134,6 +146,16 @@ export function DinoChat({
                 Kaynak: {turn.sources.join(" · ")}
                 {turn.fromModel ? "" : " · model yorumu değil"}
               </p>
+            ) : null}
+            {turn.nextBestActions.length ? (
+              <div className="mt-4 grid gap-2">
+                {turn.nextBestActions.slice(0, 2).map((action) => (
+                  <a key={action.key} href={action.href} className="rounded-xl border border-dc-line-soft bg-[#FCFDFC] px-3 py-2 text-[12.5px] font-semibold text-dc-ink">
+                    <span className="block">{action.title}</span>
+                    {action.explanation ? <span className="mt-0.5 block text-[12px] font-normal text-dc-ink-muted">{action.explanation}</span> : null}
+                  </a>
+                ))}
+              </div>
             ) : null}
           </article>
         ))}
