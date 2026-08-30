@@ -81,31 +81,29 @@ export const homeFaqs: Faq[] = [
 /* ---------------- Footer ---------------- */
 
 /**
- * Footer kolonları — onaylı tasarım (Site Footer.dc.html): ÜRÜNLER / KURUMSAL / DESTEK.
+ * Footer kolonları — onaylı tasarım (Site Footer.dc.html): ÜRÜNLER / REHBERLER / DESTEK.
  *
  * Tasarımdaki "Yardım merkezi" için depoda bir route YOK; uydurma bağlantı
  * yerine mevcut gerçek destek sayfalarına bağlanır (§11 — yasal/destek route
- * uydurulmaz, çalışan bağlantı kaldırılmaz). LGS/YKS ve ders paketleri
- * bağlantıları SEO değeri taşıdığı için ÜRÜNLER altında korunur.
+ * uydurulmaz, çalışan bağlantı kaldırılmaz). LGS/YKS ve ders seçenekleri
+ * bağlantıları SEO değeri taşıdığı için rehber sütununda korunur.
  */
 export const footerColumns = [
   {
     title: "Ürünler",
     links: [
       ...publicProducts.map(({ name, href }) => ({ label: name, href })),
-      { label: "Paketler", href: "/paketler" },
-      { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
-      { label: "LGS çözümleri", href: "/lgs" },
-      { label: "YKS çözümleri", href: "/yks" },
-      { label: "Ders paketleri", href: "/ders-paketleri" },
+      { label: "Paketini Oluştur", href: "/paketler" },
     ],
   },
   {
-    title: "Kurumsal",
+    title: "Rehberler",
     links: [
-      { label: "Hakkımızda", href: "/hakkimizda" },
+      { label: "LGS canlı ders", href: "/lgs" },
+      { label: "YKS canlı ders", href: "/yks" },
+      { label: "Ders seçenekleri", href: "/ders-paketleri" },
+      { label: "Matematik", href: "/matematik" },
       { label: "Blog", href: "/blog" },
-      { label: "İletişim", href: "/iletisim" },
     ],
   },
   {
@@ -114,6 +112,7 @@ export const footerColumns = [
       { label: "Sıkça sorulan sorular", href: "/sss" },
       { label: "Ücretsiz görüşme", href: "/iletisim" },
       { label: "Öğrenci girişi", href: "/giris" },
+      { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
     ],
   },
 ] as const;

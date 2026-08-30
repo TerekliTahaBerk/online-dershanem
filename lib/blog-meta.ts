@@ -43,11 +43,10 @@ export const blogReviewedAt: Record<string, string> = {
 
 const authorByCategory: Record<string, string> = {
   "Online Dershane": "Online Dershanem Ekibi",
-  "Online Özel Ders": "Online Dershanem Ekibi",
+  "Online Ders": "Online Dershanem Eğitim Ekibi",
   YKS: "Online Dershanem Eğitim Ekibi",
   LGS: "Online Dershanem Eğitim Ekibi",
   "e-Dershane": "Online Dershanem Ekibi",
-  "Online Ders": "Online Dershanem Eğitim Ekibi",
   "Sınav Stratejisi": "Online Dershanem Eğitim Ekibi",
 };
 

@@ -3,19 +3,19 @@ import { breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "YKS Matematik Kursu | TYT ve AYT",
+  title: "YKS Matematik Canlı Ders | Online Dershanem",
   description:
     "YKS matematik kursu: en fazla 4 öğrencilik online canlı ders, TYT-AYT çalışma planı, soru çözümü, deneme analizi ve öğretmen yönlendirmesi.",
   canonical: "/yks",
   imagePath: "/yks/opengraph-image",
-  imageAlt: "YKS Matematik Dersi — Online Dershanem",
+  imageAlt: "YKS matematik canlı ders — Online Dershanem",
 });
 
 export default function TYTLandingPage() {
   const yksFaq = [
     {
       q: "TYT ve AYT matematik aynı YKS paketinde mi ilerliyor?",
-      a: "Evet. YKS Matematik Ders Paketi öğrencinin seviyesine göre TYT temelini ve AYT derinliğini aynı canlı ders takibinde planlar."
+      a: "Evet. Online Dershanem içindeki YKS Matematik Ders Paketi öğrencinin seviyesine göre TYT temelini ve AYT derinliğini aynı canlı ders takibinde planlar."
     },
     {
       q: "Gruplar nasıl oluşturuluyor?",
@@ -35,14 +35,15 @@ export default function TYTLandingPage() {
     }
   ];
   const courseLd = courseJsonLd({
-    name: "YKS Matematik",
+    name: "Online Dershanem YKS Matematik Canlı Ders",
     description:
       "YKS matematik için küçük grup canlı ders (en fazla 4 öğrenci), TYT-AYT dengesi, ders sonrası çalışma yönü ve sınav odaklı matematik planı.",
     url: "/yks/",
   });
   const breadcrumbLd = breadcrumbJsonLd([
     { name: "Ana Sayfa", url: "/" },
-    { name: "YKS Matematik", url: "/yks/" },
+    { name: "Online Dershanem", url: "/urunler/online-dershanem/" },
+    { name: "YKS Matematik Canlı Ders", url: "/yks/" },
   ]);
   return (
     <>
@@ -55,7 +56,7 @@ export default function TYTLandingPage() {
         heroBadge: "YKS Matematik",
         heroTitle: "YKS matematikte TYT ve AYT birlikte, dengeli ilerlesin.",
         heroText:
-          "YKS öğrencisi derste yalnızca dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda TYT-AYT çalışmasında hangi adımla devam edeceğini bilir.",
+          "YKS öğrencisi derste yalnızca dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda TYT-AYT çalışmasında hangi adımla devam edeceğini bilir. İhtiyaç olursa bu akış, Online Koçum plan takibi ve Online Deneme Kulübüm deneme analiziyle desteklenebilir.",
         highlights: [
           "En fazla 4 öğrencilik matematik grubu",
           "Ders sonrası ödevlendirme ve açık bir çalışma yönü",

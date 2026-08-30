@@ -21,7 +21,7 @@ export default function OnlineOzelDersPage() {
       <SchemaJsonLd
         schema={breadcrumbJsonLd([
           { name: "Ana Sayfa", url: "/" },
-          { name: "Online Özel Ders", url: "/online-ozel-ders/" },
+          { name: "Online Matematik Özel Ders", url: "/online-ozel-ders/" },
         ])}
       />
       <SiteHeader />

@@ -12,7 +12,7 @@ export default async function Image() {
     (
       <OgTemplate
         title="Deneme Kulübü yayında değil"
-        subtitle="Şu anda LGS ve YKS Matematik Ders Paketleri satışta."
+        subtitle="LGS, TYT ve AYT için Online Deneme Kulübüm paketlerini inceleyin."
         badge="Online Dershanem"
         variant="package"
       />
