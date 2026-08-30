@@ -77,7 +77,7 @@ export default async function TeacherLessonClosePage({
       ? prisma.learningOutcome.findMany({
           where: {
             isActive: true,
-            unit: { subject: { version: { status: "ACTIVE", level: lesson.group.level || undefined } } },
+            unit: { subject: { version: { status: "ACTIVE" } } },
           },
           orderBy: [{ favorites: { _count: "desc" } }, { lessons: { _count: "desc" } }, { updatedAt: "desc" }, { code: "asc" }],
           take: 15,
@@ -169,7 +169,12 @@ export default async function TeacherLessonClosePage({
             baselineMetricsEnabled={featureFlags.baselineMetrics}
             learningOutcomesEnabled={featureFlags.learningOutcomes}
             quickLessonCloseEnabled={featureFlags.quickLessonClose}
-            outcomes={outcomes.map((outcome) => ({
+            outcomes={(outcomes as Array<typeof outcomes[number] & {
+              unit: { name: string; subject: { name: string } };
+              skills: Array<{ skill: { name: string } }>;
+              favorites: Array<unknown>;
+              lessons: Array<unknown>;
+            }>).map((outcome) => ({
               id: outcome.id,
               code: outcome.code,
               title: outcome.title,
