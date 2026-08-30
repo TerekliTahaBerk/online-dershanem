@@ -124,9 +124,12 @@ test("pilot eventleri kullanıcı ve grup kimliği taşımadan yayın durumunu �
 });
 
 test("plan eventleri kimlik ve görev başlığı taşımadan ölçülür", () => {
-  const generated = { name: "plan_generated", properties: { ruleVersion: "adaptive-v1", taskCount: 6, capacityMinutes: 135, reasonCount: 3, rebalanced: false } };
+  const generated = { name: "plan_generated", properties: { ruleVersion: "adaptive-v2", taskCount: 6, capacityMinutes: 135, reasonCount: 3, rebalanced: false } };
   assert.equal(panelEventSchema.safeParse(generated).success, true);
   assert.equal(panelEventSchema.safeParse({ ...generated, properties: { ...generated.properties, studentId: "secret", taskTitle: "özel içerik" } }).success, false);
+  const finished = { name: "plan_generation_finished", properties: { durationMs: 420, outcome: "system_error", eligible: true } };
+  assert.equal(panelEventSchema.safeParse(finished).success, true);
+  assert.equal(panelEventSchema.safeParse({ ...finished, properties: { ...finished.properties, studentId: "secret" } }).success, false);
   const review = panelEventSchema.parse({ name: "plan_review_completed", properties: { durationMs: 42_000, taskCount: 6, approved: true } });
   assert.equal(isClientPanelEvent(review), true);
 });
@@ -139,6 +142,7 @@ test("sakin özet eventleri içerik veya öğrenci kimliği taşımaz", () => {
 
 test("müdahale eventleri kimlik, açıklama veya iç not taşımaz", () => {
   assert.equal(panelEventSchema.safeParse({ name: "intervention_logged", properties: { action: "START", reasonCode: "REPEATED_REVIEW_DIFFICULTY", timeToActionMs: 1200, withinSla: true, noteProvided: false } }).success, true);
+  for (const reasonCode of ["RECENT_EXAM_DROP", "ENGAGEMENT_GAP", "HUMAN_CONCERN"]) assert.equal(panelEventSchema.safeParse({ name: "case_false_positive", properties: { reasonCode, falsePositiveReason: "CONTEXT_MISSING" } }).success, true);
   assert.equal(panelEventSchema.safeParse({ name: "intervention_logged", properties: { action: "START", reasonCode: "REPEATED_REVIEW_DIFFICULTY", timeToActionMs: 1200, withinSla: true, noteProvided: false, studentId: "secret", note: "özel" } }).success, false);
 });
 

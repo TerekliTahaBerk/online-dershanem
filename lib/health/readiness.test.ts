@@ -51,7 +51,7 @@ test("readiness DB ve bütün kritik heartbeat'ler sağlıklıysa hazırdır", (
   const report = buildReadinessReport({ db: { ok: true, latencyMs: 4 }, heartbeats, now, env });
   assert.equal(report.ready, true);
   assert.equal(report.checks.database.status, "ok");
-  assert.equal(report.checks.cron.jobs.length, 6);
+  assert.equal(report.checks.cron.jobs.length, CRITICAL_CRON_DEFINITIONS.length);
 });
 
 test("stale cron readiness'i düşürürken secret değerleri çıktıya girmez", () => {
@@ -102,4 +102,27 @@ test("production readiness Redis outage'ında kapanır ve degradation sebebini g
   assert.equal(report.checks.cache.status, "down");
   assert.equal(report.checks.cache.code, "CACHE_UNAVAILABLE");
   assert.equal(JSON.stringify(report).includes("configured-redis-token"), false);
+});
+
+test("plan generation business-SLI ihlali görünürdür fakat pod readiness'ini düşürmez", () => {
+  const report = buildReadinessReport({
+    db: { ok: true, latencyMs: 3 },
+    heartbeats,
+    now,
+    env,
+    planGenerationSli: {
+      status: "breached",
+      windowMinutes: 15,
+      eligibleRequests: 20,
+      generatedPlans: 17,
+      systemErrors: 3,
+      generationRate: 85,
+      errorRate: 15,
+      errorRateThreshold: 3,
+    },
+  });
+
+  assert.equal(report.ready, true);
+  assert.equal(report.checks.businessSli.status, "degraded");
+  assert.equal(report.checks.businessSli.code, "PLAN_GENERATION_ERROR_RATE_BREACHED");
 });

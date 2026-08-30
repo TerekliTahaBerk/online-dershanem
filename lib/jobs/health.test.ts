@@ -28,6 +28,6 @@ test("son başarının ardından gelen hata sağlıklı heartbeat'i geçersiz k�
 
 test("eksik kritik işler ayrı ayrı missing raporlanır", () => {
   const report = evaluateCronHeartbeats([], now);
-  assert.equal(report.jobs.length, 6);
+  assert.equal(report.jobs.length, 8);
   assert.equal(report.jobs.every((job) => job.status === "missing"), true);
 });

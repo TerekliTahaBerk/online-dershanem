@@ -1,6 +1,7 @@
 import { deploymentEnvironment, evaluateConfiguration, RESTORE_DRILL_MAX_AGE_DAYS } from "@/lib/env-contract";
 import { evaluateCronHeartbeats, type CronHeartbeatSnapshot, type CriticalCronName } from "@/lib/jobs/health";
 import type { CacheStatus } from "@/lib/cache-core";
+import type { PlanGenerationSliSnapshot } from "@/lib/plan-generation-sli";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -37,6 +38,7 @@ export function buildReadinessReport(input: {
   now?: Date;
   env?: NodeJS.ProcessEnv;
   cache?: CacheStatus;
+  planGenerationSli?: PlanGenerationSliSnapshot | null;
 }) {
   const now = input.now ?? new Date();
   const env = input.env ?? process.env;
@@ -52,6 +54,7 @@ export function buildReadinessReport(input: {
     configured: Boolean(env.ERROR_ALERT_WEBHOOK_URL?.trim()),
     code: env.ERROR_ALERT_WEBHOOK_URL?.trim() ? null : "ALERT_CHANNEL_NOT_CONFIGURED",
   };
+  const planGenerationSli = input.planGenerationSli ?? null;
   const cache = input.cache ?? {
     backend: env.UPSTASH_REDIS_REST_URL?.trim() && env.UPSTASH_REDIS_REST_TOKEN?.trim() ? "upstash" as const : production ? "unavailable" as const : "memory" as const,
     state: env.UPSTASH_REDIS_REST_URL?.trim() && env.UPSTASH_REDIS_REST_TOKEN?.trim() ? "ready" as const : production ? "degraded" as const : "ready" as const,
@@ -74,6 +77,16 @@ export function buildReadinessReport(input: {
     paytr,
     restore,
     cron: { status: cron.ok ? "ok" as const : "degraded" as const, required: true, jobs: cron.jobs },
+    businessSli: {
+      status: planGenerationSli?.status === "breached" ? "degraded" as const : planGenerationSli?.status === "healthy" ? "ok" as const : "unknown" as const,
+      required: false,
+      code: planGenerationSli?.status === "breached"
+        ? "PLAN_GENERATION_ERROR_RATE_BREACHED"
+        : planGenerationSli?.status === "no_data"
+          ? "PLAN_GENERATION_SLI_NO_DATA"
+          : planGenerationSli ? null : "BUSINESS_SLI_UNAVAILABLE",
+      planGeneration: planGenerationSli,
+    },
     alerts,
     cache: {
       status: cache.backend === "upstash" && cache.state === "ready" ? "ok" as const : production ? "down" as const : "degraded" as const,

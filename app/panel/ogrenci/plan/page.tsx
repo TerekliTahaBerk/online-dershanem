@@ -6,6 +6,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
+import { readScoreBreakdown } from "@/lib/adaptive-plan";
 import {
   addIstanbulCalendarDays,
   formatIstanbulDateInput,
@@ -105,6 +106,10 @@ export default async function StudentPlanPage() {
                 sourceType: task.sourceType,
                 reasonCode: task.reasonCode,
                 status: task.status,
+                score: task.score,
+                scoreVersion: task.scoreVersion,
+                scoreBreakdown: readScoreBreakdown(task.scoreBreakdown),
+                explanation: task.explanation,
               })),
             }
           : null

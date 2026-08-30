@@ -149,3 +149,92 @@ export async function transitionOdOnboarding(input: {
     return tx.odOnboarding.findUniqueOrThrow({ where: { id: onboarding.id } });
   }, { isolationLevel: "Serializable" });
 }
+
+
+/**
+ * Otomasyonun kendi kendine ilerlettiği durum: `PLACEMENT_PENDING`'e kadar.
+ *
+ * TAVAN BİLEREK KONULDU. Grup ataması ve ilk dersin takvime girmesi gerçek bir
+ * KAPASİTE KARARIDIR — kimin hangi gruba, hangi saate gireceğini bir insan
+ * bilir. Otomasyonun oraya uzanması, kuyruğu boşaltmak uğruna yanlış grup
+ * ataması yapmak olurdu. Buraya kadarki adımlar ise mekaniktir: hesap açıldı,
+ * davet kullanıldı, veli bağı onaylandı.
+ *
+ * `transitionOdOnboarding`'den AYRIDIR çünkü o fonksiyon her geçiş için bir
+ * operasyon SAHİBİ ister; bu yol tanımı gereği sahipsizdir. Ön koşul ve izinli
+ * geçiş kuralları aynı saf modülden okunur, kopyalanmaz.
+ *
+ * İstisna durumlarında (MANUAL_REVIEW, BLOCKED, iade) HİÇ ilerlemez: orada bir
+ * insanın bakması gerekiyor ve otomasyon o kararı gizlememelidir.
+ */
+const AUTO_ADVANCE_CEILING: OdOnboardingStateValue = "PLACEMENT_PENDING";
+const AUTO_ADVANCE_ORDER: OdOnboardingStateValue[] = ["ACCOUNT_READY", "PARENT_LINKED", "PLACEMENT_PENDING"];
+
+export async function autoAdvanceOdOnboarding(
+  tx: DbClient,
+  orderId: string,
+  note: string,
+): Promise<{ from: OdOnboardingStateValue; to: OdOnboardingStateValue; steps: number } | null> {
+  const onboarding = await tx.odOnboarding.findUnique({
+    where: { orderId },
+    include: {
+      order: {
+        select: {
+          user: {
+            select: {
+              studentProfile: {
+                select: {
+                  parents: { select: { id: true }, take: 1 },
+                  enrollments: {
+                    where: { endedAt: null },
+                    select: { group: { select: { lessons: { where: { status: "PLANNED" }, select: { id: true }, take: 1 } } } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  if (!onboarding) return null;
+
+  const startState = onboarding.state as OdOnboardingStateValue;
+  const startIndex = AUTO_ADVANCE_ORDER.indexOf(startState);
+  if (startIndex === -1 || startState === AUTO_ADVANCE_CEILING) return null;
+
+  const profile = onboarding.order.user?.studentProfile;
+  const readiness = {
+    hasStudentAccount: Boolean(profile),
+    hasParentLink: Boolean(profile?.parents.length),
+    hasGroupAssignment: Boolean(profile?.enrollments.length),
+    hasFirstLesson: Boolean(profile?.enrollments.some((enrollment) => enrollment.group.lessons.length > 0)),
+  };
+
+  let current = startState;
+  let steps = 0;
+  const now = new Date();
+  for (const next of AUTO_ADVANCE_ORDER.slice(startIndex + 1)) {
+    if (!allowedOdOnboardingTransitions(current).includes(next)) break;
+    if (validateOdOnboardingPrerequisite(next, readiness)) break;
+    await tx.odOnboardingTransition.create({
+      data: { onboardingId: onboarding.id, fromState: current as OdOnboardingState, toState: next as OdOnboardingState, actorType: "SYSTEM", note, metadata: { readiness, automated: true }, occurredAt: now },
+    });
+    current = next;
+    steps += 1;
+  }
+  if (!steps) return null;
+
+  await tx.odOnboarding.update({
+    where: { id: onboarding.id },
+    data: {
+      state: current as OdOnboardingState,
+      dueAt: dueAtForOdOnboardingState(current, now),
+      blockerReason: null,
+      blockedFromState: null,
+      stateEnteredAt: now,
+      version: { increment: 1 },
+    },
+  });
+  return { from: startState, to: current, steps };
+}

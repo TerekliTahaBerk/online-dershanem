@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { buildReadinessReport } from "@/lib/health/readiness";
 import { notifyCronIncident } from "@/lib/jobs/heartbeat";
 import { cacheHealth } from "@/lib/cache";
+import { getPlanGenerationSliSnapshot } from "@/lib/plan-generation-sli-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,10 +13,14 @@ export async function GET() {
   let dbOk = false;
   let dbLatencyMs: number | null = null;
   let heartbeats: Awaited<ReturnType<typeof prisma.cronHeartbeat.findMany>> = [];
+  let planGenerationSli: Awaited<ReturnType<typeof getPlanGenerationSliSnapshot>> | null = null;
   try {
     const dbStartedAt = Date.now();
     await prisma.$queryRaw`SELECT 1`;
-    heartbeats = await prisma.cronHeartbeat.findMany();
+    [heartbeats, planGenerationSli] = await Promise.all([
+      prisma.cronHeartbeat.findMany(),
+      getPlanGenerationSliSnapshot(),
+    ]);
     dbLatencyMs = Date.now() - dbStartedAt;
     dbOk = true;
   } catch {
@@ -23,7 +28,7 @@ export async function GET() {
   }
 
   const cache = await cacheHealth();
-  const report = buildReadinessReport({ db: { ok: dbOk, latencyMs: dbLatencyMs }, heartbeats, cache });
+  const report = buildReadinessReport({ db: { ok: dbOk, latencyMs: dbLatencyMs }, heartbeats, cache, planGenerationSli });
   if (dbOk) {
     const alerts: Array<Promise<void>> = [];
     for (const job of report.checks.cron.jobs) {

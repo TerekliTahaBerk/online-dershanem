@@ -4,6 +4,7 @@ const smallCount = z.number().int().min(0).max(100);
 const duration = z.number().int().min(0).max(8 * 60 * 60 * 1000);
 const operationDuration = z.number().int().min(0).max(5 * 60 * 1000);
 const operationOutcome = z.enum(["success", "validation", "rejected", "system_error"]);
+const interventionReason = z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED", "RECENT_EXAM_DROP", "ENGAGEMENT_GAP", "HUMAN_CONCERN"]);
 
 export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({
@@ -141,7 +142,11 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   }),
   z.object({
     name: z.literal("plan_generated"),
-    properties: z.object({ ruleVersion: z.literal("adaptive-v1"), taskCount: z.number().int().min(0).max(21), capacityMinutes: z.number().int().min(0).max(7 * 180), reasonCount: z.number().int().min(0).max(5), rebalanced: z.boolean() }).strict(),
+    properties: z.object({ ruleVersion: z.literal("adaptive-v2"), taskCount: z.number().int().min(0).max(21), capacityMinutes: z.number().int().min(0).max(7 * 180), reasonCount: z.number().int().min(0).max(6), rebalanced: z.boolean() }).strict(),
+  }),
+  z.object({
+    name: z.literal("plan_generation_finished"),
+    properties: z.object({ durationMs: operationDuration, outcome: operationOutcome, eligible: z.boolean() }).strict(),
   }),
   z.object({
     name: z.literal("plan_review_completed"),
@@ -164,13 +169,13 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({ name: z.literal("weekly_digest_viewed"), properties: z.object({ actorRole: z.enum(["STUDENT", "PARENT"]), trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), ageBand: z.enum(["0-2D", "3-7D", "8D+"])}).strict() }),
   z.object({ name: z.literal("weekly_digest_feedback"), properties: z.object({ actorRole: z.enum(["STUDENT", "PARENT"]), helpful: z.boolean().nullable(), anxietyPulse: z.number().int().min(1).max(5).nullable() }).strict() }),
   z.object({ name: z.literal("weekly_digest_preference_updated"), properties: z.object({ actorRole: z.enum(["STUDENT", "PARENT"]), enabled: z.boolean(), emailEnabled: z.boolean() }).strict() }),
-  z.object({ name: z.literal("case_rule_triggered"), properties: z.object({ ruleVersion: z.literal("intervention-v1"), reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]) }).strict() }),
+  z.object({ name: z.literal("case_rule_triggered"), properties: z.object({ ruleVersion: z.literal("intervention-v3"), reasonCode: interventionReason }).strict() }),
   z.object({ name: z.literal("case_opened"), properties: z.object({ actorRole: z.enum(["ADMIN", "TEACHER"]), openCountBand: z.enum(["0", "1-5", "6-20", "21+"]), overdueCountBand: z.enum(["0", "1-5", "6-20", "21+"]) }).strict() }),
-  z.object({ name: z.literal("case_assigned"), properties: z.object({ ownerRole: z.enum(["ADMIN", "TEACHER"]), reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]) }).strict() }),
-  z.object({ name: z.literal("intervention_logged"), properties: z.object({ action: z.enum(["START", "LOG_ACTION", "SNOOZE", "RESOLVE", "FALSE_POSITIVE", "REOPEN"]), reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), timeToActionMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000).nullable(), withinSla: z.boolean().nullable(), noteProvided: z.boolean() }).strict() }),
-  z.object({ name: z.literal("case_snoozed"), properties: z.object({ reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), days: z.union([z.literal(1), z.literal(3), z.literal(7)]) }).strict() }),
-  z.object({ name: z.literal("case_closed"), properties: z.object({ reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), outcomeCode: z.enum(["CHECK_IN_COMPLETED", "SUPPORT_PLANNED", "PRACTICE_ADJUSTED", "FAMILY_CONTACTED", "NO_ACTION_NEEDED", "OTHER"]) }).strict() }),
-  z.object({ name: z.literal("case_false_positive"), properties: z.object({ reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), falsePositiveReason: z.enum(["CONTEXT_MISSING", "DATA_OUTDATED", "THRESHOLD_TOO_SENSITIVE", "DUPLICATE", "OTHER"]) }).strict() }),
+  z.object({ name: z.literal("case_assigned"), properties: z.object({ ownerRole: z.enum(["ADMIN", "TEACHER"]), reasonCode: interventionReason }).strict() }),
+  z.object({ name: z.literal("intervention_logged"), properties: z.object({ action: z.enum(["START", "LOG_ACTION", "SNOOZE", "RESOLVE", "FALSE_POSITIVE", "REOPEN"]), reasonCode: interventionReason, timeToActionMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000).nullable(), withinSla: z.boolean().nullable(), noteProvided: z.boolean() }).strict() }),
+  z.object({ name: z.literal("case_snoozed"), properties: z.object({ reasonCode: interventionReason, days: z.union([z.literal(1), z.literal(3), z.literal(7)]) }).strict() }),
+  z.object({ name: z.literal("case_closed"), properties: z.object({ reasonCode: interventionReason, outcomeCode: z.enum(["CHECK_IN_COMPLETED", "SUPPORT_PLANNED", "PRACTICE_ADJUSTED", "FAMILY_CONTACTED", "NO_ACTION_NEEDED", "OTHER"]) }).strict() }),
+  z.object({ name: z.literal("case_false_positive"), properties: z.object({ reasonCode: interventionReason, falsePositiveReason: z.enum(["CONTEXT_MISSING", "DATA_OUTDATED", "THRESHOLD_TOO_SENSITIVE", "DUPLICATE", "OTHER"]) }).strict() }),
   z.object({ name: z.literal("recovery_package_generated"), properties: z.object({ ruleVersion: z.literal("recovery-v1"), itemCount: z.number().int().min(0).max(5), hasMaterial: z.boolean(), hasAssignment: z.boolean(), reused: z.boolean() }).strict() }),
   z.object({ name: z.literal("recovery_package_published"), properties: z.object({ publishDelayMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), itemCount: z.number().int().min(0).max(5), planRebalanced: z.boolean() }).strict() }),
   z.object({ name: z.literal("recovery_package_viewed"), properties: z.object({ ageMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), itemCount: z.number().int().min(0).max(5) }).strict() }),

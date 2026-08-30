@@ -6,6 +6,9 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
 import { DinoInsightCard } from "@/components/panel/student/home-cards";
+import { getActionableDinoInsight } from "@/lib/panel/dino-actionable-insight-server";
+import { getParentFirstValue } from "@/lib/od/first-value-server";
+import { FirstValueChecklist } from "@/components/panel/first-value-checklist";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +75,7 @@ export default async function ParentHomePage({
   });
   const groupIds = enrollments.map((e) => e.groupId);
 
-  const [attendance, lessons, plan, exams] = await Promise.all([
+  const [attendance, lessons, plan, exams, dinoInsight, firstValueSteps] = await Promise.all([
     prisma.attendance.findMany({
       where: { studentId: selected.id },
       orderBy: { createdAt: "desc" },
@@ -103,6 +106,8 @@ export default async function ParentHomePage({
           include: { sections: true },
         })
       : Promise.resolve([]),
+    getActionableDinoInsight({ studentId: selected.id, audience: "PARENT" }),
+    getParentFirstValue(session.userId, selected.id),
   ]);
 
   const attended = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
@@ -150,6 +155,8 @@ export default async function ParentHomePage({
           .filter(Boolean)
           .join(" · ")}
       />
+
+      <FirstValueChecklist steps={firstValueSteps} />
 
       <div className="mt-6 grid overflow-hidden rounded-[14px] border border-dc-line bg-white sm:grid-cols-2 lg:grid-cols-4">
         {stat("Derse katılım", attendance.length ? `${attended} / ${attendance.length}` : "—")}
@@ -254,7 +261,12 @@ export default async function ParentHomePage({
         )}
       </div>
 
-      <DinoInsightCard insight={null} basis={null} />
+      <DinoInsightCard
+        insight={dinoInsight?.insight ?? null}
+        basis={dinoInsight?.basis ?? null}
+        action={dinoInsight?.action ?? null}
+        audience="PARENT"
+      />
     </>,
   );
 }

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildAdaptiveWeek, planningWeekStart } from "./adaptive-plan";
+import { ADAPTIVE_SCORE_VERSION, buildAdaptiveWeek, planningWeekStart, scorePlanCandidate } from "./adaptive-plan";
 
-const candidates = Array.from({ length: 10 }, (_, index) => ({ sourceType: "ASSIGNMENT" as const, sourceReferenceId: `a${index}`, title: `Görev ${index}`, durationMinutes: 20, reasonCode: "DUE_SOON" as const, priority: 100 - index, dueAt: new Date(`2026-07-${20 + index}T00:00:00Z`) }));
+const candidates = Array.from({ length: 10 }, (_, index) => ({ sourceType: "ASSIGNMENT" as const, sourceReferenceId: `a${index}`, title: `Görev ${index}`, durationMinutes: 20, reasonCode: "DUE_SOON" as const, dueAt: new Date(`2026-07-${20 + index}T00:00:00Z`), evidenceAt: new Date("2026-07-19T10:00:00Z") }));
 
 test("plan haftayı pazartesi başlatır", () => {
   assert.equal(planningWeekStart(new Date("2026-07-22T12:00:00Z")).toISOString(), "2026-07-19T21:00:00.000Z");
@@ -33,7 +33,22 @@ test("kaçan günleri geçmişe veya borç yığınına dönüştürmez", () => 
   assert.ok(tasks.filter((task) => task.scheduledFor.toISOString() === "2026-07-22T21:00:00.000Z").length <= 2);
 });
 
-test("yüksek öncelikli ve yakın tarihli işi önce seçer", () => {
-  const tasks = buildAdaptiveWeek({ now: new Date("2026-07-20T10:00:00Z"), availableDays: [1], minutesPerDay: 20, maxTasksPerDay: 1, candidates: [{ ...candidates[0], title: "Düşük", priority: 10 }, { ...candidates[1], title: "Yüksek", priority: 90 }] });
-  assert.equal(tasks[0]?.title, "Yüksek");
+test("yakın ve güncel kanıtlı işi eski kanıttan önce seçer", () => {
+  const tasks = buildAdaptiveWeek({ now: new Date("2026-07-20T10:00:00Z"), availableDays: [1], minutesPerDay: 20, maxTasksPerDay: 1, candidates: [{ ...candidates[0], title: "Eski kanıt", dueAt: null, evidenceAt: new Date("2026-05-01T10:00:00Z") }, { ...candidates[1], title: "Yeni kanıt", dueAt: null, evidenceAt: new Date("2026-07-19T10:00:00Z") }] });
+  assert.equal(tasks[0]?.title, "Yeni kanıt");
+});
+
+test("skor bileşenlerini ve insan okunur nedeni sürümleyerek snapshot'lar", () => {
+  const scored = scorePlanCandidate({ sourceType: "REVIEW", title: "Kesirler", durationMinutes: 15, reasonCode: "NEEDS_REVIEW", dueAt: new Date("2026-07-17T10:00:00Z"), evidenceAt: new Date("2026-07-19T10:00:00Z"), evidenceCount: 3, latestReviewResponse: "WRONG" }, new Date("2026-07-20T10:00:00Z"));
+  assert.equal(scored.scoreVersion, ADAPTIVE_SCORE_VERSION);
+  assert.deepEqual(scored.scoreBreakdown.map((item) => item.key), ["source", "urgency", "recency", "confidence", "conflict"]);
+  assert.match(scored.explanation, /son derste tekrar gerekiyor \+ son tekrar başarısız \+ 3 gündür bekliyor/);
+});
+
+test("çelişen yakın kanıt skoru düşürür ve açıklamada görünür", () => {
+  const base = { sourceType: "REVIEW" as const, title: "Denklemler", durationMinutes: 15, reasonCode: "REVIEW_DUE" as const, evidenceAt: new Date("2026-07-19T10:00:00Z"), evidenceCount: 3 };
+  const clear = scorePlanCandidate(base, new Date("2026-07-20T10:00:00Z"));
+  const conflicted = scorePlanCandidate({ ...base, hasConflictingEvidence: true }, new Date("2026-07-20T10:00:00Z"));
+  assert.equal(clear.score - conflicted.score, 14);
+  assert.match(conflicted.explanation, /kanıtlar birbiriyle çelişiyor/);
 });

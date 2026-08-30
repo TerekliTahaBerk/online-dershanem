@@ -4,7 +4,7 @@ Bu özellik akademik ve operasyonel sinyalleri sahipsiz bir “risk listesi” o
 
 ## Kural sözleşmesi
 
-`intervention-v1` haftalık idempotent değerlendirme penceresinde yalnız dört kural çalıştırır:
+`intervention-v3` haftalık idempotent değerlendirme penceresinde yedi kontrollü sinyal çalıştırır:
 
 | Neden | Eşik | Pencere | Özellikle yapılmayan çıkarım |
 |---|---:|---:|---|
@@ -12,12 +12,17 @@ Bu özellik akademik ve operasyonel sinyalleri sahipsiz bir “risk listesi” o
 | Teslimi geçen çalışma | En az 2 tamamlanmamış aktif çalışma | 30 gün | Tembellik, isteksizlik veya başarı etiketi |
 | Tekrarlayan çözüm güçlüğü | En az 1 tekrar öğesinde 3 `WRONG/UNSURE` | 30 gün | Zekâ, kalıcı yetersizlik veya tanı |
 | Plan kapasitesi | Onaylı mevcut haftada en az 3 geçmiş açık görev | İçinde bulunulan hafta | Borç, seri kaybı veya irade yorumu |
+| Yakın deneme düşüşü | Aynı sınav türündeki son iki ölçümde en az 5 net düşüş; son ölçüm en fazla 14 günlük | 30 gün | Kalıcı eğilim, sınav koşulu veya başarı etiketi |
+| Etkinlik boşluğu | Son gözlenen panel etkinliğinin üzerinden en az 7 tam gün | Son etkinlik | Erişim, motivasyon veya kişisel neden |
+| İnsan concern | Öğretmen/admin aynı hafta kontrollü işaret verir | İçinde bulunulan hafta | Serbest metin, tanı veya otomatik çıkarım |
 
-Her çıktı yalnız kontrollü neden kodu, kanıt sayısı, açıklama, değerlendirme penceresi ve önerilen tek küçük eylem taşır. Sınıf sırası, akran karşılaştırması, birleşik risk puanı ve tahmine dayalı ML kapsam dışıdır. Haftalık hash parmak izi aynı öğrenci/neden/pencere için çift vaka oluşmasını önler; yanlış işaretlenen aynı pencere sessizce yeniden üretilmez.
+Her kural çıktısı yalnız kontrollü neden kodu, kanıt sayısı, açıklama, değerlendirme penceresi ve önerilen küçük eylem taşır. Aynı öğrenci için aynı haftada oluşan çıktılar tek `Student Support Episode` altında sinyal olarak toplanır. Bölüm öğrenci + hafta parmak iziyle idempotenttir; tek owner, tek 24 saat SLA'sı ve tek insan sonucu taşır. Sınıf sırası, akran karşılaştırması, birleşik risk puanı ve tahmine dayalı ML kapsam dışıdır.
+
+`reasonCode` alanı eski API ve olay sözleşmeleri için bölümün birincil sinyalini taşır; karar arayüzü bütün sinyalleri ayrı açıklama ve kanıtlarıyla gösterir. `case_rule_triggered` her kural sinyali için ölçülür, yaşam döngüsü olayları bölüm başına bir kez ölçülür. `FALSE_POSITIVE` geri bildirimi bölümdeki her sinyal nedeni için ayrı event üretir; böylece yeni üç sinyal kendi yanlış işaret oranıyla kalibre edilir. Migration mevcut vakaları veri kaybı olmadan tek-sinyalli legacy bölümlere dönüştürür; geçmiş owner ve aktiviteleri birleştirmek için silme veya örtük sonuç üretmez.
 
 ## Yaşam döngüsü ve SLA
 
-1. `OPEN`: Kural sinyali oluşturdu; henüz insan aksiyonu yoktur. İlk insan aksiyonu hedefi 24 saattir.
+1. `OPEN`: Bir veya daha fazla kural sinyali destek bölümü oluşturdu; henüz insan aksiyonu yoktur. İlk insan aksiyonu hedefi bölüm başına 24 saattir.
 2. `IN_PROGRESS`: Admin veya aktif grup öğretmeni bağlamı doğrulamaya başladı ya da bir aksiyon kaydetti.
 3. `SNOOZED`: Yalnız 1, 3 veya 7 gün bekletilebilir. Süre dolduğunda kayıt yeniden `OPEN` olur ve yeni 24 saat hedefi başlar.
 4. `RESOLVED`: Kontrollü sonuçlardan biri seçilmiştir: kısa görüşme, destek planı, çalışma ayarı, aile iletişimi, ek işlem gerekmemesi veya diğer.
@@ -33,6 +38,12 @@ Sahip atamak tek başına ilk insan aksiyonu sayılmaz. Başlatma, aksiyon notu,
 - Grup üyeliği veya öğretmen sahipliği değiştiğinde bir sonraki istekte canlı ilişki sorgusu uygulanır. Yetkisiz ve bulunmayan nesne aynı `404` yanıtını kullanır.
 - İç not 500 karakterle sınırlıdır. Not, açıklama ve öğrenci kimliği ürün event'lerine veya structured log'a kopyalanmaz.
 
+## Öğretmen ana sayfası read-model'i
+
+Öğretmen ana sayfasındaki “Takip edilmesi gereken öğrenciler” alanı ayrı bir risk hesabı çalıştırmaz. `TeacherStudentAttentionSnapshot` servisi, canonical `Student Support Episode` kayıtlarından yalnız öğretmenin aktif gruplarındaki açık veya süresi dolmuş bekletilmiş ilk beş bölümü `status + dueAt` sırasıyla okur.
+
+Bu sorgu ham `AssignmentProgress` veya `Attendance` geçmişini taşımaz, öğrenci başına array filtrelemez ve sınırsız tarih aralığı kullanmaz. Sinyal üretme maliyeti dashboard okumasından ayrıdır; dashboard yalnız indeksli, sınırlandırılmış read-model tüketir. Böylece ana sayfa ile müdahale kutusunun reason kodları ve karar mantığı aynı kalır.
+
 ## Adalet ve yanlış işaret denetimi
 
 Yanlış işaret bir kullanıcı hatası değil kural kalitesi sinyalidir. Oran kural nedeni bazında ve en az 30 kapanış kararıyla incelenir. Başlangıç guardrail'i `%15`tir. Eşik aşılırsa:
@@ -47,8 +58,8 @@ Alt grup adaleti ancak yeterli örneklem, veri minimizasyonu ve hukuk/etik onay�
 
 ## Ölçüm, rollout ve geri alma
 
-Pilot için en az 30 vaka ve 30 kapanış kararı gerekir. Kapılar: ilk insan aksiyonu p50 `≤24 saat`, sonuçla kapanma `≥%60`, yanlış işaret `≤%15`, yatay erişim olayı ve sistem hatası `0`.
+Pilot için en az 30 destek bölümü ve 30 kapanış kararı gerekir. Kapılar: ilk insan aksiyonu p50 `≤24 saat`, sonuçla kapanma `≥%60`, yanlış işaret `≤%15`, yatay erişim olayı ve sistem hatası `0`.
 
 Sunucu ve menü bayraklarını kapatmak üretim ve görünümü durdurur; kayıtlar silinmez. Migration geri alınmaz. Geri alma sırasında açık vakalar dışa aktarılmadan kişisel e-posta/mesaj kanallarına kopyalanmaz. Tekrar rollout yeni rule version veya belgelenmiş eşik kararıyla yapılır.
 
-Migration: `0051_explainable_intervention_inbox`. Yayından önce migration, production build, unit test, öğretmen yaşam döngüsü E2E'si ve başka öğretmenin vakasına erişim testi geçmelidir.
+Migration: `0051_explainable_intervention_inbox`, `0087_student_support_episodes` ve `0088_early_warning_signals`. Yayından önce migration, production build, unit test, öğretmen yaşam döngüsü E2E'si ve başka öğretmenin vakasına erişim testi geçmelidir.

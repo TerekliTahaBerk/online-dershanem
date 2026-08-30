@@ -68,7 +68,7 @@ npm run build
 npm run e2e
 ```
 
-Integration tests require `DATABASE_URL`; the relevant tests are skipped when it is not set. To run the Chromium, Firefox, and WebKit acceptance suite:
+Integration tests need a real Postgres (`DATABASE_URL` and `DIRECT_URL`) and are opt-in per area: `PANEL_INTEGRATION_TEST`, `BUSINESS_INTEGRATION_TEST`, and `RATE_LIMIT_INTEGRATION_TEST`. Suites stay skipped, not red, when a flag is unset — see the [integration test strategy](docs/integration-test-strategy.md). To run the Chromium, Firefox, and WebKit acceptance suite:
 
 ```bash
 npx playwright install chromium firefox webkit
@@ -107,6 +107,8 @@ Database migrations do not run automatically when the container starts. Run `npm
 ## Documentation
 
 - [Panel operations](docs/panel-operations.md)
+- [Account lifecycle operations](docs/account-lifecycle-operations.md)
+- [Integration test strategy](docs/integration-test-strategy.md)
 - [Security and KVKK](docs/security-and-kvkk.md)
 - [Business RBAC model](docs/business-rbac.md)
 - [Meta and Instagram setup](docs/meta-instagram-setup.md)

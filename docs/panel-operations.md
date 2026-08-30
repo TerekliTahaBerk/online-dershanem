@@ -12,7 +12,7 @@ Upstash Redis opsiyoneldir. URL ve token birlikte verilirse dağıtık cache kul
 
 ### Liveness, readiness ve cron heartbeat
 
-`/api/health/live` yalnız Node process'inin yanıt verebildiğini ölçer ve bağımlılık sorgulamaz. `/api/health/ready` ise DB, kritik env sözleşmesi, PayTR anahtar bütünlüğü, son restore tatbikatı, alarm kanalı ve altı kritik cron'un kalıcı heartbeat'ini ayrı ayrı raporlar. Eski `/api/health` URL'si geriye uyumluluk için readiness ile aynı yanıtı verir. Health yanıtlarında secret değerleri bulunmaz.
+`/api/health/live` yalnız Node process'inin yanıt verebildiğini ölçer ve bağımlılık sorgulamaz. `/api/health/ready` ise DB, kritik env sözleşmesi, PayTR anahtar bütünlüğü, son restore tatbikatı, alarm kanalı, yedi kritik cron'un kalıcı heartbeat'ini ve haftalık plan business-SLI durumunu ayrı ayrı raporlar. Business-SLI ihlali pod readiness'ini düşürmez; kullanıcı yolculuğu alarmı olarak raporlanır. Eski `/api/health` URL'si geriye uyumluluk için readiness ile aynı yanıtı verir. Health yanıtlarında secret değerleri bulunmaz.
 
 Her cron çalışmasında `lastStartedAt`, `lastSucceededAt`, `lastFailedAt`, `lastDurationMs`, `processedCount` ve `failedCount` güncellenir. Genel stale eşiği cadence'in iki katıdır; beş dakikalık ODK sınav yaşam döngüsü işi sınav açma/kapatma riski nedeniyle sekiz dakikada alarm üretir. Başarısız veya stale işler `/panel/yonetim/isler#cron-durumu` ekranında görünür, yönetici bildirimi oluşturur ve `ERROR_ALERT_WEBHOOK_URL` kanalına deduplikasyonlu alarm yollar.
 
@@ -42,6 +42,8 @@ Akademik kayıtlar, materyal Blob'ları, bildirimler ve audit kayıtları bu iş
 
 Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol edin. Beşten az örnek için durum üretilmez. Hedef dışı kartlarda önce `outcome` dağılımını ve `product.event_persist_failed` loglarını inceleyin; güvenlik reddi ile sistem hatasını birbirine karıştırmayın. Event, hedef ve rollout kapıları [panel SLO kataloğunda](./panel-slo-catalog.md) tanımlıdır.
 
+`domain-sli` işi her 5 dakikada son 15 dakikadaki uygun haftalık plan üretim isteklerini değerlendirir. `system_error / eligible_plan_requests > %3` olduğunda admin bildirimi ve `ERROR_ALERT_WEBHOOK_URL` üzerinden kritik alarm üretir; aynı ihlal 30 dakika içinde tekrar bildirilmez, sağlıklı pencere yeni alarm episode'unu açar. Bu sözleşmeyle event deposu ve alarm kanalı çalışıyorsa plan üretimindeki %15'lik bir bozulma ilk uygun hatalı istekten sonra en geç yaklaşık 5 dakikada fark edilir. `/api/health/ready` içindeki `checks.businessSli.planGeneration` aynı pencerenin başarı oranını, hata oranını ve paydasını gösterir.
+
 ### Kazanım kataloğu rollout'u
 
 `PANEL_FEATURE_LEARNING_OUTCOMES` açılmadan önce `0045_curriculum_outcome_evidence` migration'ını uygulayın, admin “Kazanımlar” ekranında resmî kaynaklı sürümü hazırlayın ve `ACTIVE` durumuna alın. Katalog yaşam döngüsü, erteleme kuyruğu ve kabul ölçütleri [kazanım işletim standardında](./curriculum-evidence-operations.md) tanımlıdır.
@@ -68,7 +70,7 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 
 ### Açıklanabilir müdahale kutusu rollout'u
 
-`0051_explainable_intervention_inbox` migration'ından sonra `PANEL_FEATURE_INTERVENTION_INBOX=true` açılır. İlk pilotta kural bazında üretilen vaka, ilk aksiyon p50, sonuçla kapanma ve yanlış işaret oranı izlenir. Yanlış işaret guardrail'i aşılırsa ilgili kural durdurulur; eşik otomatik düşürülmez ve ML risk skoru eklenmez. Yetki, erteleme ve geri alma ayrıntıları [müdahale kutusu standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
+`0051_explainable_intervention_inbox`, `0087_student_support_episodes` ve `0088_early_warning_signals` migration'larından sonra `PANEL_FEATURE_INTERVENTION_INBOX=true` açılır. İlk pilotta öğrenci-hafta bazlı destek bölümü, bölüm başına ilk aksiyon p50, sonuçla kapanma ve sinyal bazlı yanlış işaret oranı izlenir. `RECENT_EXAM_DROP`, `ENGAGEMENT_GAP` ve `HUMAN_CONCERN` ayrı false-positive oranlarıyla kalibre edilir. Yanlış işaret guardrail'i aşılırsa ilgili kural durdurulur; eşik otomatik düşürülmez ve ML risk skoru eklenmez. Yetki, erteleme ve geri alma ayrıntıları [müdahale kutusu standardında](./explainable-intervention-inbox-operations.md) tanımlıdır.
 
 ### Ders kaçırma telafi paketi rollout'u
 
