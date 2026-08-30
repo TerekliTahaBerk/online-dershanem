@@ -48,6 +48,8 @@ export function createPrismaTeacherAttentionQueries(): TeacherAttentionQueries {
             },
           },
         },
+        orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+        take: 24,
         select: {
           id: true,
           studentId: true,
@@ -132,6 +134,8 @@ export function createPrismaTeacherAttentionQueries(): TeacherAttentionQueries {
             },
           },
         },
+        orderBy: [{ dueAt: "asc" }, { id: "asc" }],
+        take: 24,
         select: {
           id: true,
           studentId: true,

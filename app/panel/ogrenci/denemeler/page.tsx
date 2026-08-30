@@ -6,8 +6,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
 import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
 import { netScore } from "@/lib/goals";
-import { PanelHeading, PanelCard, PanelEmpty } from "@/components/panel/ui";
-import { DinoInsightCard } from "@/components/panel/student/home-cards";
+import { PanelPageHeader, PanelCard, PanelEmpty, PanelFilterLink } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +15,7 @@ export const dynamic = "force-dynamic";
  *
  * Tasarımın işlev tanımı: üst şeritte toplam net / önceki denemeye göre fark /
  * tarih / süre; solda ders bazında bar + D-Y-net dökümü ve kendi denemelerine
- * göre gelişim; sağda Dino analizi.
+ * göre gelişim.
  *
  * KARŞILAŞTIRMA KURALI: tasarım açıkça "Karşılaştırma yalnızca kendi geçmiş
  * denemelerinle yapılır" diyor — başka öğrenciyle/kohortla kıyas YOK.
@@ -53,7 +52,7 @@ export default async function StudentExamResultPage({
   if (!profile) {
     return shell(
       <>
-        <PanelHeading title="Dış deneme sonuçların" />
+        <PanelPageHeader title="Dış deneme sonuçların" />
         <PanelEmpty
           title="Profilin hazırlanıyor."
           body="Öğrenci profilin tamamlandığında dış deneme sonuçların burada açılır."
@@ -92,7 +91,7 @@ export default async function StudentExamResultPage({
   if (exams.length === 0) {
     return shell(
       <>
-        <PanelHeading
+        <PanelPageHeader
           title="Dış deneme sonuçların"
           description="Okulda, kursta veya başka bir platformda çözdüğün denemenin sonucunu gelişim takibine ekleyebilirsin."
         />
@@ -119,27 +118,22 @@ export default async function StudentExamResultPage({
 
   return shell(
     <>
-      <PanelHeading
+      <PanelPageHeader
         eyebrow="Dış Deneme Sonuçları"
         title={current.title || current.exam}
         actions={
           exams.length > 1 ? (
             <div className="flex flex-wrap gap-2">
               {exams.slice(0, 5).map((e) => (
-                <a
+                <PanelFilterLink
                   key={e.id}
                   href={`/panel/ogrenci/denemeler?deneme=${e.id}`}
-                  aria-current={e.id === current.id ? "page" : undefined}
-                  className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition-colors ${
-                    e.id === current.id
-                      ? "bg-dc-brand-strong text-white"
-                      : "border border-[#DDE4E0] bg-white text-dc-ink-muted hover:border-dc-brand"
-                  }`}
+                  active={e.id === current.id}
                 >
                   {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short" }).format(
                     e.takenAt,
                   )}
-                </a>
+                </PanelFilterLink>
               ))}
             </div>
           ) : undefined
@@ -178,7 +172,7 @@ export default async function StudentExamResultPage({
         ) : null}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_1fr]">
+      <div className="mt-6">
         <div>
           <h2 className="text-[16px] font-bold text-dc-ink">Ders bazında</h2>
           <ul className="mt-3.5">
@@ -224,7 +218,7 @@ export default async function StudentExamResultPage({
                 aria-label={`Toplam net gelişimi: ${historyNets.map((n) => fmt(n)).join(", ")}`}
               >
                 {[20, 70, 118].map((y) => (
-                  <line key={y} x1="0" y1={y} x2="520" y2={y} stroke="#EDF0EE" />
+                  <line key={y} x1="0" y1={y} x2="520" y2={y} stroke="var(--dc-line-soft)" />
                 ))}
                 <polyline
                   points={historyNets
@@ -237,7 +231,7 @@ export default async function StudentExamResultPage({
                     })
                     .join(" ")}
                   fill="none"
-                  stroke="#14976B"
+                  stroke="var(--dc-brand)"
                   strokeWidth="2.5"
                 />
               </svg>
@@ -247,9 +241,6 @@ export default async function StudentExamResultPage({
             </>
           ) : null}
         </div>
-
-        {/* Dino analizi — arka uç yok, bileşen dürüst durumu gösterir (§22). */}
-        <DinoInsightCard insight={null} basis={null} />
       </div>
 
       {current.nextAction ? (

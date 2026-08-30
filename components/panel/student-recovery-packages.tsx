@@ -77,14 +77,14 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                 </section>
 
                 <section className="rounded-2xl border border-[var(--site-line)] p-4">
-                  <p className="text-xs font-extrabold text-[var(--brand-olive)]">2. Materyali aç</p>
+                  <p className="text-xs font-extrabold text-[var(--brand-olive)]">2. Materyali Aç</p>
                   {materials.length ? (
                     <div className="mt-3 space-y-2">
                       {materials.map((item) => (
                         <div key={item.id} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <p className="text-sm font-bold">{item.title}</p>
                           <div className="flex gap-2">
-                            {item.href ? <a href={item.href} target="_blank" rel="noreferrer" className="panel-quick-action">Aç <ExternalLink size={13} /></a> : <span className="text-xs text-[var(--site-muted)]">Materyal artık aktif değil</span>}
+                            {item.href ? <a href={item.href} target="_blank" rel="noreferrer" className="panel-quick-action">Materyali Aç <ExternalLink size={13} /></a> : <span className="text-xs text-[var(--site-muted)]">Materyal artık aktif değil</span>}
                             {row.status === "PUBLISHED" ? <button type="button" disabled={busy !== null || item.completed} onClick={() => completeItem(row.id, item.id)} className="panel-quick-action">{item.completed ? "İşaretlendi" : "Açtım"} {item.completed ? <Check size={13} /> : null}</button> : null}
                           </div>
                         </div>
@@ -104,7 +104,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                         <div key={item.id} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <p className="text-sm font-bold">{item.title}</p>
                           <div className="flex gap-2">
-                            {item.href ? <a href={item.href} className="panel-quick-action">Aç <ExternalLink size={13} /></a> : <span className="text-xs text-[var(--site-muted)]">Çalışma artık aktif değil</span>}
+                            {item.href ? <a href={item.href} className="panel-quick-action">Çalışmayı Aç <ExternalLink size={13} /></a> : <span className="text-xs text-[var(--site-muted)]">Çalışma artık aktif değil</span>}
                             {row.status === "PUBLISHED" ? <button type="button" disabled={busy !== null || item.completed} onClick={() => completeItem(row.id, item.id)} className="panel-quick-action">{item.completed ? "İşaretlendi" : "Tamamladım"} {item.completed ? <Check size={13} /> : null}</button> : null}
                           </div>
                         </div>

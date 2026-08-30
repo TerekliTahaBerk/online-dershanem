@@ -42,7 +42,7 @@ export const Overview: Story = {
           <PanelStatusBadge label="Bilgi" tone="info" />
           <PanelStatusBadge label="Başarılı" tone="success" />
           <PanelStatusBadge label="Uyarı" tone="warning" />
-          <PanelStatusBadge label="Canlı" tone="danger" pulse />
+          <PanelStatusBadge label="Canlı" tone="critical" pulse />
         </div>
       </PanelCard>
 

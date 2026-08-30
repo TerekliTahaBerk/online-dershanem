@@ -41,7 +41,7 @@ export default async function OperationsPage() {
   const now = new Date();
   const dateTime = new Intl.DateTimeFormat("tr-TR", { dateStyle: "short", timeStyle: "medium", timeZone: "Europe/Istanbul" });
   return <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
-    <AdminPageHeader eyebrow="Operasyon kuyruğu" title="Siparişler ve talepler" description="Ödeme sonrası hesabı, veli bağlantısını, yerleştirmeyi ve ilk dersi SLA ile tek akışta yönetin." icon={CreditCard} meta={`${onboardingQueue.length} aktivasyon bekliyor`} />
+    <AdminPageHeader eyebrow="İşler / Provisioning" title="Siparişler ve talepler" description="Ödeme sonrası hesabı, veli bağlantısını, yerleştirmeyi ve ilk dersi SLA ile tek akışta yönetin." icon={CreditCard} meta={`${onboardingQueue.length} aktivasyon bekliyor`} />
     <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <PlacementMetric label="İlk iletişim" value={placementMetrics.firstContactHours === null ? "—" : `${placementMetrics.firstContactHours} sa`} detail={`${placementMetrics.firstContactSample} ölçüm · hedef ≤24 sa`} />
       <PlacementMetric label="Yerleştirme süresi" value={placementMetrics.placementHours === null ? "—" : `${placementMetrics.placementHours} sa`} detail={`${placementMetrics.placementSample} ölçüm · hedef ≤48 sa`} />

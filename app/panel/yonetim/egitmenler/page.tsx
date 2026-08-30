@@ -124,7 +124,7 @@ export default async function AdminEducatorsPage() {
                         href={`/panel/yonetim/kullanicilar/${teacher.id}`}
                         className="text-[13px] font-semibold text-dc-brand hover:underline"
                       >
-                        Aç
+                        Eğitmeni Gör
                       </Link>
                     </PanelTableCell>
                   </PanelTableRow>

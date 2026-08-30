@@ -9,6 +9,7 @@ export const ATTENTION_OVERDUE_ASSIGNMENT_THRESHOLD = 2;
 export const ATTENTION_EXAM_NET_DROP = 8;
 export const ATTENTION_WINDOW_DAYS = 14;
 export const ATTENTION_EXAM_WINDOW_DAYS = 90;
+export const ATTENTION_MAX_VISIBLE_ITEMS = 8;
 
 export type TeacherAttentionPriority = "P0" | "P1" | "P2";
 export type TeacherAttentionSource =
@@ -41,6 +42,8 @@ export type TeacherAttentionRow = {
 
 export type TeacherAttentionInbox = {
   rows: TeacherAttentionRow[];
+  totalRowCount: number;
+  hiddenRowCount: number;
   scopedStudentCount: number;
   quietStudentCount: number;
 };
@@ -111,7 +114,6 @@ export type TeacherAttentionQueries = {
   listRecentExams(teacherId: string, studentIds: string[], since: Date): Promise<TeacherAttentionExam[]>;
 };
 
-const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
 const PRIORITY_RANK: Record<TeacherAttentionPriority, number> = { P0: 0, P1: 1, P2: 2 };
 const P2_SOURCE_RANK: Record<TeacherAttentionSource, number> = {
   HELP_REQUEST: 0,
@@ -186,24 +188,7 @@ export function buildTeacherAttentionInbox(input: TeacherAttentionSourceData): T
       severity: overdue ? "overdue" : "high",
       createdAt: request.createdAt.toISOString(),
       dueAt: request.dueAt.toISOString(),
-      cta: { label: "Yanıtla", href: "/panel/ogretmen/yardim" },
-    });
-  }
-
-  for (const note of input.pendingNotes) {
-    rows.push({
-      id: `note:${note.id}`,
-      studentId: null,
-      studentName: null,
-      context: note.groupName,
-      headline: `Not girişi bekliyor · ${formatAttentionAge(note.startsAt, input.now)}`,
-      reason: `${note.groupName} · ${DAY.format(note.startsAt)} dersi not girişi`,
-      source: "LESSON_NOTE",
-      priority: "P1",
-      severity: "high",
-      createdAt: note.startsAt.toISOString(),
-      dueAt: note.startsAt.toISOString(),
-      cta: { label: "Gir", href: `/panel/ogretmen/ders/${note.id}` },
+      cta: { label: "Yanıtla", href: `/panel/ogretmen/yardim#yardim-${request.id}` },
     });
   }
 
@@ -227,7 +212,7 @@ export function buildTeacherAttentionInbox(input: TeacherAttentionSourceData): T
       severity: count >= ATTENTION_ABSENT_THRESHOLD + 1 ? "high" : "normal",
       createdAt: input.now.toISOString(),
       dueAt: null,
-      cta: { label: "Öğrenciyi aç", href: `/panel/ogretmen/ogrenci/${studentId}` },
+      cta: { label: "Öğrenciyi Gör", href: `/panel/ogretmen/ogrenci/${studentId}` },
     });
   }
 
@@ -251,7 +236,7 @@ export function buildTeacherAttentionInbox(input: TeacherAttentionSourceData): T
       severity: "high",
       createdAt: input.now.toISOString(),
       dueAt: null,
-      cta: { label: "Öğrenciyi aç", href: `/panel/ogretmen/ogrenci/${studentId}` },
+      cta: { label: "Öğrenciyi Gör", href: `/panel/ogretmen/ogrenci/${studentId}` },
     });
   }
 
@@ -271,7 +256,7 @@ export function buildTeacherAttentionInbox(input: TeacherAttentionSourceData): T
       severity: overdue ? "overdue" : "high",
       createdAt: input.now.toISOString(),
       dueAt: item.dueAt.toISOString(),
-      cta: { label: "Müdahale kutusunu aç", href: "/panel/ogretmen/mudahale" },
+      cta: { label: "Müdahaleyi Gör", href: "/panel/ogretmen/mudahale" },
     });
   }
 
@@ -292,7 +277,7 @@ export function buildTeacherAttentionInbox(input: TeacherAttentionSourceData): T
       severity: "high",
       createdAt: trend.takenAt.toISOString(),
       dueAt: null,
-      cta: { label: "Öğrenciyi aç", href: `/panel/ogretmen/ogrenci/${studentId}` },
+      cta: { label: "Öğrenciyi Gör", href: `/panel/ogretmen/ogrenci/${studentId}` },
     });
   }
 
@@ -307,9 +292,13 @@ export function buildTeacherAttentionInbox(input: TeacherAttentionSourceData): T
     deduped.push(row);
   }
 
+  const totalRowCount = deduped.length;
+  const visibleRows = deduped.slice(0, ATTENTION_MAX_VISIBLE_ITEMS);
   const scopedStudentCount = rosterById.size;
   return {
-    rows: deduped,
+    rows: visibleRows,
+    totalRowCount,
+    hiddenRowCount: Math.max(0, totalRowCount - visibleRows.length),
     scopedStudentCount,
     quietStudentCount: Math.max(0, scopedStudentCount - seenStudents.size),
   };
@@ -324,11 +313,13 @@ export function rankTeacherAttentionRows(rows: TeacherAttentionRow[]): TeacherAt
       const aOverdue = a.severity === "overdue" ? 0 : 1;
       const bOverdue = b.severity === "overdue" ? 0 : 1;
       if (aOverdue !== bOverdue) return aOverdue - bOverdue;
-      return (a.dueAt ?? a.createdAt).localeCompare(b.dueAt ?? b.createdAt);
+      const byTime = (a.dueAt ?? a.createdAt).localeCompare(b.dueAt ?? b.createdAt);
+      return byTime !== 0 ? byTime : a.id.localeCompare(b.id);
     }
 
     if (a.priority === "P1") {
-      return a.createdAt.localeCompare(b.createdAt);
+      const byTime = a.createdAt.localeCompare(b.createdAt);
+      return byTime !== 0 ? byTime : a.id.localeCompare(b.id);
     }
 
     const source = P2_SOURCE_RANK[a.source] - P2_SOURCE_RANK[b.source];
@@ -336,7 +327,8 @@ export function rankTeacherAttentionRows(rows: TeacherAttentionRow[]): TeacherAt
     const aOverdue = a.severity === "overdue" ? 0 : 1;
     const bOverdue = b.severity === "overdue" ? 0 : 1;
     if (aOverdue !== bOverdue) return aOverdue - bOverdue;
-    return (a.dueAt ?? a.createdAt).localeCompare(b.dueAt ?? b.createdAt);
+    const byTime = (a.dueAt ?? a.createdAt).localeCompare(b.dueAt ?? b.createdAt);
+    return byTime !== 0 ? byTime : a.id.localeCompare(b.id);
   });
 }
 
@@ -355,9 +347,8 @@ export async function loadTeacherAttentionInbox(input: {
   const since = new Date(now.getTime() - ATTENTION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   const examSince = new Date(now.getTime() - ATTENTION_EXAM_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-  const [roster, pendingNotes, helpRequests, interventions] = await Promise.all([
+  const [roster, helpRequests, interventions] = await Promise.all([
     input.queries.listRoster(input.teacherId),
-    input.queries.listPendingNotes(input.teacherId, now, since),
     flags.studentCheckIn ? input.queries.listOpenHelp(input.teacherId) : Promise.resolve([]),
     flags.interventionInbox ? input.queries.listOpenInterventions(input.teacherId) : Promise.resolve([]),
   ]);
@@ -377,7 +368,7 @@ export async function loadTeacherAttentionInbox(input: {
     now,
     roster,
     helpRequests,
-    pendingNotes,
+    pendingNotes: [],
     attendanceAbsentCounts,
     assignmentOverdueCounts,
     interventions,

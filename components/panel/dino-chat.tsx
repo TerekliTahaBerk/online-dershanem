@@ -20,16 +20,15 @@ type Turn = {
   question: string;
   text: string;
   sources: string[];
-  fromModel: boolean;
   note: string | null;
 };
 
 const FALLBACK_NOTE: Record<string, string> = {
-  PROVIDER_DISABLED: "Dino şu anda kapalı; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  EXTERNAL_TRANSFER_NOT_READY: "Dino henüz yapılandırılmadı; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  COST_CONFIG_MISSING: "Dino yapılandırması eksik; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  DAILY_QUOTA: "Bugünkü Dino hakkın doldu; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  NO_SOURCE_DATA: "Bu soru için henüz kayıtlı veri yok.",
+  PROVIDER_DISABLED: "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+  EXTERNAL_TRANSFER_NOT_READY: "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+  COST_CONFIG_MISSING: "Dino açıklama yapılandırması eksik. Dayanakları yine de görebilirsin.",
+  DAILY_QUOTA: "Bugünkü Dino açıklama hakkını kullandın.",
+  NO_SOURCE_DATA: "Bu konuda açıklama yapmak için yeterli dayanak yok.",
   PROMPT_INJECTION: "Kayıtlarda beklenmedik bir içerik bulundu; güvenlik için yorum üretilmedi.",
 };
 
@@ -67,7 +66,7 @@ export function DinoChat({
         | null;
 
       if (!response.ok || !payload?.answer) {
-        setError(payload?.error || "Dino şu anda yanıt veremedi.");
+        setError(payload?.error || "Dino açıklamayı şu anda hazırlayamadı.");
         return;
       }
 
@@ -83,12 +82,11 @@ export function DinoChat({
           question: question.label,
           text: content?.text || "",
           sources: refs.map((ref) => ref.label || "").filter(Boolean),
-          fromModel: answer.provider === "GEMINI" || answer.provider === "OPENAI",
           note: reason ? (FALLBACK_NOTE[reason] ?? "Bu yanıt model tarafından üretilmedi.") : null,
         },
       ]);
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Dino açıklamayı şu anda hazırlayamadı.");
     } finally {
       setBusy(null);
     }
@@ -130,8 +128,7 @@ export function DinoChat({
 
             {turn.sources.length ? (
               <p className="mt-3 text-[12.5px] text-dc-ink-faint">
-                Kaynak: {turn.sources.join(" · ")}
-                {turn.fromModel ? "" : " · model yorumu değil"}
+                Dayanaklar: {turn.sources.join(" · ")}
               </p>
             ) : null}
           </article>

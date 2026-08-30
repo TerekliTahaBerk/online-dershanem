@@ -6,7 +6,14 @@ import { buildStudentHomeActionPlan } from "@/lib/panel/student-home-actions";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { NoProductAccess } from "@/components/panel/no-product-access";
-import { PanelHeading, PanelEmpty, PanelCard } from "@/components/panel/ui";
+import {
+  PanelPageHeader,
+  PanelEmpty,
+  PanelCard,
+  PanelAttentionCard,
+  PanelActionRow,
+  PanelMetric,
+} from "@/components/panel/ui";
 import { TrackedPanelLink } from "@/components/panel/tracked-panel-link";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import {
@@ -134,87 +141,88 @@ export default async function StudentHomePage() {
 
   return shell(
     <div className="max-w-[1040px]">
-      <PanelHeading
+      <PanelPageHeader
         title={`${greeting(now)}, ${session.fullName?.split(" ")[0] || "hoş geldin"}.`}
         description={summaryParts.length ? `${summaryParts.join(" · ")}.` : undefined}
       />
 
       {primaryAction ? (
-        <PanelCard className="mt-6">
-          <h2 className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-dc-brand-hover">
-            Şimdi
-          </h2>
-          <h3 className="mt-2 text-[18px] font-bold text-dc-ink">{primaryAction.title}</h3>
-          {primaryAction.description ? (
-            <p className="mt-1 text-[13.5px] text-dc-ink-faint">{primaryAction.description}</p>
-          ) : null}
-          <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{primaryAction.reason}</p>
-          <TrackedPanelLink
-            href={primaryAction.href}
-            className="panel-quick-action panel-quick-action-primary mt-4 inline-flex"
-            event={{
-              name: "student_next_action_clicked",
-              properties: {
-                product: primaryAction.product,
-                actionKind: primaryAction.actionKind,
-                reasonCode: primaryAction.reasonCode,
-                ageBand: primaryAction.ageBand,
-                evidenceBand: "NA",
-                role: "STUDENT",
-              },
-            }}
-          >
-            {primaryAction.ctaLabel}
-          </TrackedPanelLink>
+        <PanelAttentionCard
+          className="mt-6"
+          tone="warning"
+          title={`Şimdi · ${primaryAction.title}`}
+          body={`${primaryAction.description ? `${primaryAction.description} ` : ""}${primaryAction.reason}`}
+          action={
+            <TrackedPanelLink
+              href={primaryAction.href}
+              className="panel-quick-action panel-quick-action-primary inline-flex"
+              event={{
+                name: "student_next_action_clicked",
+                properties: {
+                  product: primaryAction.product,
+                  actionKind: primaryAction.actionKind,
+                  reasonCode: primaryAction.reasonCode,
+                  ageBand: primaryAction.ageBand,
+                  evidenceBand: "NA",
+                  role: "STUDENT",
+                },
+              }}
+            >
+              {primaryAction.ctaLabel}
+            </TrackedPanelLink>
+          }
+        />
+      ) : (
+        <PanelAttentionCard
+          className="mt-6"
+          tone="info"
+          title="Şimdi · Bekleyen bir çalışma görünmüyor"
+          body="Haftana göz atabilir veya gelişimini inceleyebilirsin."
+          action={
+            <div className="flex flex-wrap gap-2">
+              {data.products.includes("OK") ? (
+                <Link href="/panel/ogrenci/plan" className="panel-quick-action">
+                  Haftayı Gör
+                </Link>
+              ) : null}
+              {data.products.includes("OD") ? (
+                <Link href="/panel/ogrenci/gelisim" className="panel-quick-action">
+                  Gelişimime Bak
+                </Link>
+              ) : null}
+              {data.products.includes("ODK") ? (
+                <Link href="/panel/odk/ogrenci/denemeler" className="panel-quick-action">
+                  Denemelerime Bak
+                </Link>
+              ) : null}
+            </div>
+          }
+        />
+      )}
+      {primaryAction ? (
+        <div className="mt-3">
           <DinoExplanationAction
             deterministicReason={primaryAction.reason}
             questionKey="student_nba_reason"
           />
-        </PanelCard>
-      ) : (
-        <PanelCard className="mt-6">
-          <h2 className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-dc-brand-hover">
-            Şimdi
-          </h2>
-          <p className="mt-2 text-[15px] font-semibold text-dc-ink">
-            Bugün için bekleyen bir çalışman görünmüyor.
-          </p>
-          <p className="mt-1.5 text-[14px] text-dc-ink-muted">
-            Haftana göz atabilir veya gelişimini inceleyebilirsin.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {data.products.includes("OK") ? (
-              <Link href="/panel/ogrenci/plan" className="panel-quick-action">
-                Haftayı Gör
-              </Link>
-            ) : null}
-            {data.products.includes("OD") ? (
-              <Link href="/panel/ogrenci/gelisim" className="panel-quick-action">
-                Gelişimime Bak
-              </Link>
-            ) : null}
-            {data.products.includes("ODK") ? (
-              <Link href="/panel/odk/ogrenci/denemeler" className="panel-quick-action">
-                Denemelerime Bak
-              </Link>
-            ) : null}
-          </div>
-        </PanelCard>
-      )}
+        </div>
+      ) : null}
 
       {nextActions.length ? (
-        <PanelCard className="mt-5">
-          <h2 className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-dc-ink-muted">
-            Sonra
-          </h2>
-          <ul className="mt-3 space-y-3">
-            {nextActions.map((action) => (
-              <li key={action.id} className="rounded-xl border border-dc-line-soft p-3.5">
-                <p className="text-[14.5px] font-semibold text-dc-ink">{action.title}</p>
-                <p className="mt-1 text-[13.5px] text-dc-ink-muted">{action.reason}</p>
+        <PanelCard className="mt-5" padded={false}>
+          <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
+            <h2 className="text-sm font-bold text-dc-ink">Sonra</h2>
+          </div>
+          {nextActions.map((action, index) => (
+            <PanelActionRow
+              key={action.id}
+              title={action.title}
+              description={action.reason}
+              status={<span className="text-xs text-dc-ink-faint">{action.product}</span>}
+              cta={
                 <TrackedPanelLink
                   href={action.href}
-                  className="panel-quick-action mt-2 inline-flex"
+                  className="panel-quick-action inline-flex"
                   event={{
                     name: "student_next_action_clicked",
                     properties: {
@@ -229,38 +237,28 @@ export default async function StudentHomePage() {
                 >
                   {action.ctaLabel}
                 </TrackedPanelLink>
-              </li>
-            ))}
-          </ul>
+              }
+              last={index === nextActions.length - 1}
+            />
+          ))}
         </PanelCard>
       ) : null}
 
-      <PanelCard className="mt-5">
+      <PanelCard className="mt-5" variant="subtle">
         <div className="flex items-center justify-between">
-          <h2 className="text-[12px] font-extrabold uppercase tracking-[0.08em] text-dc-ink-muted">
+          <h2 className="text-sm font-bold text-dc-ink">
             Bu hafta
           </h2>
           <span className="text-[12.5px] text-dc-ink-faint">{TR_DATE.format(now)}</span>
         </div>
-        <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
-          <div className="rounded-xl border border-dc-line-soft px-3.5 py-3">
-            <p className="text-[12px] text-dc-ink-faint">Plan tamamlanan</p>
-            <p className="mt-1 text-[18px] font-bold text-dc-ink">
-              {plan ? `${plan.done}/${plan.total}` : "—"}
-            </p>
-          </div>
-          <div className="rounded-xl border border-dc-line-soft px-3.5 py-3">
-            <p className="text-[12px] text-dc-ink-faint">Yaklaşan ders</p>
-            <p className="mt-1 text-[18px] font-bold text-dc-ink">
-              {(od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now).length}
-            </p>
-          </div>
-          <div className="rounded-xl border border-dc-line-soft px-3.5 py-3">
-            <p className="text-[12px] text-dc-ink-faint">Yaklaşan deneme</p>
-            <p className="mt-1 text-[18px] font-bold text-dc-ink">
-              {odk?.upcomingExam ? 1 : 0}
-            </p>
-          </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <PanelMetric label="Plan tamamlanan" value={plan ? `${plan.done}/${plan.total}` : "—"} tone="info" />
+          <PanelMetric
+            label="Yaklaşan ders"
+            value={(od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now).length}
+            tone="neutral"
+          />
+          <PanelMetric label="Yaklaşan deneme" value={odk?.upcomingExam ? 1 : 0} tone="warning" />
         </div>
       </PanelCard>
 

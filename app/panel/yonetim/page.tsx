@@ -2,35 +2,114 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelHeading, PanelCard, PanelCardTitle } from "@/components/panel/ui";
+import {
+  PanelCard,
+  PanelCardTitle,
+  PanelPageHeader,
+  PanelStatusBadge,
+  PanelActionRow,
+  PanelMetric,
+} from "@/components/panel/ui";
+import { evaluateCronHeartbeats } from "@/lib/jobs/health";
 import { istanbulDayStart, istanbulNextDayStart } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
-/**
- * ADMIN · BUGÜNÜN OPERASYONU — onaylı tasarım (Panel.dc.html → scAdminHome).
- *
- * Tasarımın işlev tanımı: en üstte "Dikkat gerekenler" (kırmızı/sarı noktalı
- * istisna listesi, her satırda tek aksiyon), altında "Bugün" operasyon
- * sayaçları ve "Eğitmen kapasitesi".
- *
- * §26: SAĞLIKLI SİSTEM AZ YER KAPLAR. Bu yüzden istisna listesi ilk sırada ve
- * yalnız GERÇEK sinyal varken satır üretir; sorun yoksa tek satırlık sakin bir
- * durum gösterilir. Widget duvarı kurulmaz.
- *
- * Tasarımdaki "ürün dağılımı" grafiği kendi üzerinde "tasarım örnek verisi"
- * etiketi taşıyor; uydurma veri yayınlanmayacağı için (§54) o blok gerçek
- * sayımla değiştirildi.
- */
+const COMPACT_WHEN = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Europe/Istanbul",
+});
 
-const TIME = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
+type AdminExceptionSeverity = "BLOCKING" | "ACTION_REQUIRED" | "WATCH";
 
-type Alert = {
+type AdminExceptionItem = {
   id: string;
-  severity: "high" | "medium";
-  text: string;
-  action?: { label: string; href: string };
+  source: "commerce" | "education" | "system";
+  severity: AdminExceptionSeverity;
+  title: string;
+  description: string;
+  href: string;
+  ctaLabel: string;
+  createdAt?: Date | null;
 };
+
+type ExceptionSectionProps = {
+  title: string;
+  items: AdminExceptionItem[];
+  emptyText: string;
+};
+
+const severityPresentation: Record<AdminExceptionSeverity, { label: string; tone: "critical" | "warning" | "neutral"; rank: number }> = {
+  BLOCKING: {
+    label: "Bloke",
+    tone: "critical",
+    rank: 0,
+  },
+  ACTION_REQUIRED: {
+    label: "Aksiyon gerekli",
+    tone: "warning",
+    rank: 1,
+  },
+  WATCH: {
+    label: "İzle",
+    tone: "neutral",
+    rank: 2,
+  },
+};
+
+function formatAge(from: Date, now: Date): string {
+  const diffMs = Math.max(0, now.getTime() - from.getTime());
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 60) return `${minutes} dk`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} sa`;
+  const days = Math.floor(hours / 24);
+  return `${days} gün`;
+}
+
+function byPriorityThenAge(a: AdminExceptionItem, b: AdminExceptionItem): number {
+  const rankDiff = severityPresentation[a.severity].rank - severityPresentation[b.severity].rank;
+  if (rankDiff !== 0) return rankDiff;
+  const aTime = a.createdAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+  const bTime = b.createdAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+  return aTime - bTime;
+}
+
+function ExceptionSection({ title, items, emptyText }: ExceptionSectionProps) {
+  return (
+    <PanelCard>
+      <PanelCardTitle>{title}</PanelCardTitle>
+      {items.length === 0 ? (
+        <p className="mt-3 text-[13.5px] text-dc-ink-muted">{emptyText}</p>
+      ) : (
+        <div className="mt-3.5 rounded-[10px] border border-dc-line-soft bg-white">
+          {items.map((item, index) => (
+            <PanelActionRow
+              key={item.id}
+              title={item.title}
+              description={item.description}
+              status={
+                <PanelStatusBadge
+                  label={severityPresentation[item.severity].label}
+                  tone={severityPresentation[item.severity].tone}
+                />
+              }
+              cta={
+                <Link href={item.href} className="panel-quick-action inline-flex">
+                  {item.ctaLabel}
+                </Link>
+              }
+              last={index === items.length - 1}
+            />
+          ))}
+        </div>
+      )}
+    </PanelCard>
+  );
+}
 
 export default async function AdminHomePage() {
   const session = await requireRole("ADMIN");
@@ -41,15 +120,58 @@ export default async function AdminHomePage() {
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   const [
-    todayLessons,
-    unnotedLessons,
-    stalePlans,
+    manualReviewCount,
     manualReviewOrders,
-    paidUnprovisioned,
+    pendingProvisioningCount,
+    pendingProvisioningOrders,
+    retryPendingCount,
+    retryPendingOrders,
     odCount,
     odkCount,
-    teachers,
   ] = await Promise.all([
+    prisma.odOrder.count({ where: { status: "PAID", provisioningStatus: "MANUAL_REVIEW" } }),
+    prisma.odOrder.findMany({
+      where: { status: "PAID", provisioningStatus: "MANUAL_REVIEW" },
+      orderBy: { updatedAt: "asc" },
+      take: 4,
+      select: {
+        id: true,
+        packageName: true,
+        updatedAt: true,
+        user: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.odOrder.count({
+      where: { status: "PAID", provisioningStatus: { in: ["PENDING", "RUNNING"] } },
+    }),
+    prisma.odOrder.findMany({
+      where: { status: "PAID", provisioningStatus: { in: ["PENDING", "RUNNING"] } },
+      orderBy: { updatedAt: "asc" },
+      take: 3,
+      select: {
+        id: true,
+        packageName: true,
+        updatedAt: true,
+        user: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.odOrder.count({ where: { status: "PAID", provisioningStatus: "RETRY_PENDING" } }),
+    prisma.odOrder.findMany({
+      where: { status: "PAID", provisioningStatus: "RETRY_PENDING" },
+      orderBy: { updatedAt: "asc" },
+      take: 3,
+      select: {
+        id: true,
+        packageName: true,
+        updatedAt: true,
+        user: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.productMembership.count({ where: { product: "OD", revokedAt: null } }),
+    prisma.productMembership.count({ where: { product: "ODK", revokedAt: null } }),
+  ]);
+
+  const optionalResults = await Promise.allSettled([
     prisma.lesson.findMany({
       where: { startsAt: { gte: dayStart, lt: dayEnd } },
       select: { id: true, status: true, startsAt: true, group: { select: { name: true } } },
@@ -58,12 +180,7 @@ export default async function AdminHomePage() {
       where: { startsAt: { lt: now, gte: weekAgo }, notes: { none: { studentId: null } } },
     }),
     prisma.weeklyPlan.count({ where: { status: "DRAFT", weekStart: { lt: weekAgo } } }),
-    prisma.odOrder.count({ where: { provisioningStatus: "MANUAL_REVIEW" } }),
-    prisma.odOrder.count({
-      where: { status: "PAID", provisioningStatus: { notIn: ["SUCCEEDED", "MANUAL_REVIEW"] } },
-    }),
-    prisma.productMembership.count({ where: { product: "OD", revokedAt: null } }),
-    prisma.productMembership.count({ where: { product: "ODK", revokedAt: null } }),
+    prisma.cronHeartbeat.findMany(),
     prisma.user.findMany({
       where: { role: "TEACHER", status: "ACTIVE" },
       select: {
@@ -78,214 +195,333 @@ export default async function AdminHomePage() {
     }),
   ]);
 
-  const cancelledToday = todayLessons.filter((l) => l.status === "CANCELLED");
+  const todayLessons = optionalResults[0].status === "fulfilled" ? optionalResults[0].value : null;
+  const unnotedLessons = optionalResults[1].status === "fulfilled" ? optionalResults[1].value : null;
+  const stalePlans = optionalResults[2].status === "fulfilled" ? optionalResults[2].value : null;
+  const cronHealth =
+    optionalResults[3].status === "fulfilled"
+      ? evaluateCronHeartbeats(optionalResults[3].value, now)
+      : null;
+  const teachers = optionalResults[4].status === "fulfilled" ? optionalResults[4].value : null;
 
-  /* ── İstisnalar — yalnız gerçek sinyal ── */
-  const alerts: Alert[] = [];
+  const hasOptionalDataFailure = optionalResults.some((result) => result.status === "rejected");
+  const cancelledToday = todayLessons?.filter((lesson) => lesson.status === "CANCELLED") ?? [];
 
-  if (paidUnprovisioned > 0) {
-    alerts.push({
-      id: "paid-unprovisioned",
-      severity: "high",
-      text: `${paidUnprovisioned} siparişin ödemesi alındı, ürün erişimi henüz açılmadı.`,
-      // Doğrudan "erişim sorunu" filtresine açılır; admin listeyi elle taramaz.
-      action: { label: "Siparişleri aç", href: "/panel/yonetim/siparisler?filtre=sorun" },
+  const exceptions: AdminExceptionItem[] = [];
+  const seenOrderIds = new Set<string>();
+
+  for (const order of manualReviewOrders) {
+    const owner = order.user?.fullName || order.user?.email || "hesap bağlantısı bekleniyor";
+    exceptions.push({
+      id: `manual-${order.id}`,
+      source: "commerce",
+      severity: "BLOCKING",
+      title: `${order.packageName} · erişim açma başarısız`,
+      description: `${owner} · ${COMPACT_WHEN.format(order.updatedAt)} · ${formatAge(order.updatedAt, now)} açık`,
+      href: `/panel/yonetim/siparisler/${order.id}`,
+      ctaLabel: "Siparişi Aç",
+      createdAt: order.updatedAt,
+    });
+    seenOrderIds.add(order.id);
+  }
+
+  for (const order of pendingProvisioningOrders) {
+    if (seenOrderIds.has(order.id)) continue;
+    const owner = order.user?.fullName || order.user?.email || "hesap bağlantısı bekleniyor";
+    exceptions.push({
+      id: `pending-${order.id}`,
+      source: "commerce",
+      severity: "ACTION_REQUIRED",
+      title: `${order.packageName} · provisioning tamamlanmadı`,
+      description: `${owner} · ${COMPACT_WHEN.format(order.updatedAt)} · ${formatAge(order.updatedAt, now)} açık`,
+      href: `/panel/yonetim/siparisler/${order.id}`,
+      ctaLabel: "Siparişi Aç",
+      createdAt: order.updatedAt,
+    });
+    seenOrderIds.add(order.id);
+  }
+
+  for (const order of retryPendingOrders) {
+    if (seenOrderIds.has(order.id)) continue;
+    const owner = order.user?.fullName || order.user?.email || "hesap bağlantısı bekleniyor";
+    exceptions.push({
+      id: `retry-${order.id}`,
+      source: "commerce",
+      severity: "WATCH",
+      title: `${order.packageName} · provisioning yeniden denenecek`,
+      description: `${owner} · ${COMPACT_WHEN.format(order.updatedAt)} · ${formatAge(order.updatedAt, now)} açık`,
+      href: `/panel/yonetim/siparisler/${order.id}`,
+      ctaLabel: "İşi İncele",
+      createdAt: order.updatedAt,
+    });
+    seenOrderIds.add(order.id);
+  }
+
+  if (manualReviewCount > manualReviewOrders.length) {
+    exceptions.push({
+      id: "manual-overflow",
+      source: "commerce",
+      severity: "BLOCKING",
+      title: `${manualReviewCount - manualReviewOrders.length} siparişte daha manuel inceleme bekleniyor`,
+      description: "Tümünü görmek için ticaret işlerine gidin.",
+      href: "/panel/yonetim/siparisler?filtre=sorun",
+      ctaLabel: "Tümünü Aç",
     });
   }
-  if (manualReviewOrders > 0) {
-    alerts.push({
-      id: "provisioning-failed",
-      severity: "high",
-      text: `${manualReviewOrders} sipariş erişim açma için elle inceleme bekliyor.`,
-      // Doğrudan "erişim sorunu" filtresine açılır; admin listeyi elle taramaz.
-      action: { label: "Siparişleri aç", href: "/panel/yonetim/siparisler?filtre=sorun" },
+
+  if (pendingProvisioningCount > pendingProvisioningOrders.length) {
+    exceptions.push({
+      id: "pending-overflow",
+      source: "commerce",
+      severity: "ACTION_REQUIRED",
+      title: `${pendingProvisioningCount - pendingProvisioningOrders.length} siparişte erişim açma bekliyor`,
+      description: "Ödeme doğrulandı, provisioning süreci tamamlanmadı.",
+      href: "/panel/yonetim/siparisler?filtre=sorun",
+      ctaLabel: "Siparişleri Aç",
     });
   }
+
+  if (retryPendingCount > retryPendingOrders.length) {
+    exceptions.push({
+      id: "retry-overflow",
+      source: "commerce",
+      severity: "WATCH",
+      title: `${retryPendingCount - retryPendingOrders.length} siparişte otomatik retry sürüyor`,
+      description: "Süreç kapanmazsa ticaret işlerinden manuel takip edin.",
+      href: "/panel/yonetim/isler",
+      ctaLabel: "Operasyonu Aç",
+    });
+  }
+
   if (cancelledToday.length > 0) {
-    alerts.push({
-      id: "cancelled",
-      severity: "high",
-      text: `Bugün ${cancelledToday.length} ders iptal edildi · ${cancelledToday
-        .slice(0, 2)
-        .map((l) => `${l.group.name} ${TIME.format(l.startsAt)}`)
-        .join(", ")}`,
-      action: { label: "Takvimi aç", href: "/panel/yonetim/takvim" },
+    const sample = cancelledToday
+      .slice(0, 2)
+      .map((lesson) => `${lesson.group.name} ${COMPACT_WHEN.format(lesson.startsAt).split("·")[1]?.trim() ?? ""}`)
+      .filter(Boolean)
+      .join(", ");
+    exceptions.push({
+      id: "cancelled-lessons",
+      source: "education",
+      severity: "ACTION_REQUIRED",
+      title: `Bugün ${cancelledToday.length} ders iptal edildi`,
+      description: sample || "Etkilenen dersleri takvimde açın.",
+      href: "/panel/yonetim/takvim",
+      ctaLabel: "Takvimi Aç",
     });
   }
-  if (unnotedLessons > 0) {
-    alerts.push({
-      id: "unnoted",
-      severity: "medium",
-      text: `${unnotedLessons} tamamlanmış derse henüz ders notu girilmedi.`,
-      action: { label: "Eğitimi aç", href: "/panel/yonetim/egitim" },
+
+  if ((unnotedLessons ?? 0) > 0) {
+    exceptions.push({
+      id: "unnoted-lessons",
+      source: "education",
+      severity: "WATCH",
+      title: `${unnotedLessons} ders için not girişi bekleniyor`,
+      description: "Tamamlanmış derslerde içerik kanıtı eksik.",
+      href: "/panel/yonetim/egitim",
+      ctaLabel: "Eğitimi Aç",
     });
   }
-  if (stalePlans > 0) {
-    alerts.push({
+
+  if ((stalePlans ?? 0) > 0) {
+    exceptions.push({
       id: "stale-plans",
-      severity: "medium",
-      text: `${stalePlans} haftalık plan bir haftadan uzun süredir taslak durumunda.`,
-      action: { label: "Listeyi gör", href: "/panel/yonetim/egitim" },
+      source: "education",
+      severity: "WATCH",
+      title: `${stalePlans} haftalık plan uzun süredir taslak`,
+      description: "Koçluk planı kapanışlarını kontrol edin.",
+      href: "/panel/yonetim/kocluk",
+      ctaLabel: "Koçluğu Aç",
     });
   }
 
-  const capacity = teachers
-    .map((t) => ({
-      id: t.id,
-      name: t.fullName || t.email,
-      students: t.taughtGroups.reduce((sum, g) => sum + g.enrollments.length, 0),
-      groups: t.taughtGroups.length,
-    }))
-    .filter((t) => t.groups > 0)
-    .sort((a, b) => b.students - a.students)
-    .slice(0, 6);
+  if (cronHealth) {
+    const failed = cronHealth.jobs.filter((job) => job.status === "failed" || job.status === "missing");
+    const stale = cronHealth.jobs.filter((job) => job.status === "stale");
 
-  const maxStudents = Math.max(1, ...capacity.map((c) => c.students));
+    if (failed.length > 0) {
+      exceptions.push({
+        id: "cron-failed",
+        source: "system",
+        severity: "ACTION_REQUIRED",
+        title: `${failed.length} kritik cron sağlıksız`,
+        description: failed.map((job) => job.label).slice(0, 2).join(", "),
+        href: "/panel/yonetim/isler#cron-durumu",
+        ctaLabel: "Cron Durumunu Aç",
+      });
+    }
+
+    if (stale.length > 0) {
+      exceptions.push({
+        id: "cron-stale",
+        source: "system",
+        severity: "WATCH",
+        title: `${stale.length} kritik cron gecikmiş`,
+        description: stale.map((job) => job.label).slice(0, 2).join(", "),
+        href: "/panel/yonetim/isler#cron-durumu",
+        ctaLabel: "Cron Durumunu Aç",
+      });
+    }
+  }
+
+  if (hasOptionalDataFailure) {
+    exceptions.push({
+      id: "partial-data-failure",
+      source: "system",
+      severity: "ACTION_REQUIRED",
+      title: "Bazı operasyon kaynakları şu anda okunamıyor",
+      description: "Eksik kaynaklar düzelene kadar özet eksik görünebilir.",
+      href: "/panel/yonetim/isler",
+      ctaLabel: "Operasyonu Aç",
+    });
+  }
+
+  const prioritized = exceptions.sort(byPriorityThenAge).slice(0, 10);
+  const blocking = prioritized.filter((item) => item.severity === "BLOCKING");
+  const actionRequired = prioritized.filter((item) => item.severity === "ACTION_REQUIRED");
+  const watch = prioritized.filter((item) => item.severity === "WATCH");
+
+  const totalOpenOperations =
+    manualReviewCount +
+    pendingProvisioningCount +
+    retryPendingCount +
+    cancelledToday.length +
+    (unnotedLessons ?? 0) +
+    (stalePlans ?? 0) +
+    (cronHealth ? cronHealth.jobs.filter((job) => job.status !== "healthy").length : 0);
+
+  const capacity =
+    teachers
+      ?.map((teacher) => ({
+        id: teacher.id,
+        name: teacher.fullName || teacher.email,
+        students: teacher.taughtGroups.reduce((sum, group) => sum + group.enrollments.length, 0),
+        groups: teacher.taughtGroups.length,
+      }))
+      .filter((teacher) => teacher.groups > 0)
+      .sort((a, b) => b.students - a.students)
+      .slice(0, 6) ?? [];
+
+  const maxStudents = Math.max(1, ...capacity.map((item) => item.students));
+  const hasAnyException = prioritized.length > 0;
 
   return (
     <PanelShell
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Ana Sayfa"
+      pageTitle="Bugün"
     >
       <div className="max-w-[1080px]">
-        <PanelHeading
-          title="Bugünün operasyonu"
-          description={`${todayLessons.length} ders planlandı${
-            alerts.length ? ` · ${alerts.length} kayıt müdahale bekliyor` : " · müdahale bekleyen kayıt yok"
-          }`}
+        <PanelPageHeader
+          title="Bugün"
+          description={`${totalOpenOperations} açık operasyon sinyali · önce bloke edenler`}
         />
 
-        <div className="mt-6 overflow-hidden rounded-[14px] border border-dc-line bg-white">
-          <h2 className="border-b border-dc-line-soft px-[22px] py-4 text-[16px] font-bold text-dc-ink">
-            Dikkat gerekenler
-          </h2>
-
-          {alerts.length === 0 ? (
-            <p className="px-[22px] py-5 text-[14.5px] text-dc-ink-muted">
-              Müdahale bekleyen kayıt yok. Ödemeler, ders notları ve planlar beklenen
-              durumda.
+        {!hasAnyException ? (
+          <PanelCard className="mt-6">
+            <PanelCardTitle>Bugün aksiyon bekleyenler</PanelCardTitle>
+            <p className="mt-3 text-[14px] text-dc-ink-muted">
+              Şu anda aksiyon bekleyen kritik bir işlem görünmüyor.
             </p>
-          ) : (
-            <ul>
-              {alerts.map((alert, i) => (
-                <li
-                  key={alert.id}
-                  className={`flex flex-wrap items-center gap-4 px-[22px] py-4 ${
-                    i < alerts.length - 1 ? "border-b border-dc-line-soft" : ""
-                  }`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="h-2 w-2 flex-none rounded-full"
-                    style={{ background: alert.severity === "high" ? "#C2493D" : "#E0A34A" }}
-                  />
-                  <span className="min-w-0 flex-1 text-[14.5px] font-medium text-[var(--pd-ink-3)]">
-                    <span className="sr-only">
-                      {alert.severity === "high" ? "Yüksek öncelik: " : "Orta öncelik: "}
-                    </span>
-                    {alert.text}
-                  </span>
-                  {alert.action ? (
-                    <Link
-                      href={alert.action.href}
-                      className="flex-none rounded-lg border border-[#DDE4E0] bg-white px-3.5 py-2 text-[13px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-                    >
-                      {alert.action.label}
-                    </Link>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+            <Link
+              href="/panel/yonetim/isler"
+              className="mt-3 inline-block text-[13px] font-semibold text-dc-brand hover:underline"
+            >
+              Operasyon detaylarını incele
+            </Link>
+          </PanelCard>
+        ) : (
+          <div className="mt-6 grid gap-5">
+            <ExceptionSection
+              title="Acil / Bloke Edenler"
+              items={blocking}
+              emptyText="Bloke eden bir kayıt görünmüyor."
+            />
+            <ExceptionSection
+              title="Bugün Aksiyon Bekleyenler"
+              items={actionRequired}
+              emptyText="Aksiyon gerektiren kayıt görünmüyor."
+            />
+            <ExceptionSection
+              title="İzlenmesi Gerekenler"
+              items={watch}
+              emptyText="İzleme düzeyinde kayıt görünmüyor."
+            />
+          </div>
+        )}
 
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           <PanelCard>
-            <PanelCardTitle>Bugün</PanelCardTitle>
+            <PanelCardTitle>Kısa operasyon özeti</PanelCardTitle>
             <dl className="mt-3.5 flex flex-col gap-3 text-[14px] font-medium text-[var(--pd-ink-3)]">
               <div className="flex justify-between gap-3">
-                <dt>Canlı ders</dt>
+                <dt>Manuel inceleme bekleyen sipariş</dt>
+                <dd className="text-dc-ink-muted">{manualReviewCount}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Provisioning bekleyen sipariş</dt>
+                <dd className="text-dc-ink-muted">{pendingProvisioningCount}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Retry durumundaki sipariş</dt>
+                <dd className="text-dc-ink-muted">{retryPendingCount}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Bugün planlı ders</dt>
                 <dd className="text-dc-ink-muted">
-                  {todayLessons.length} planlı
-                  {cancelledToday.length ? ` · ${cancelledToday.length} iptal` : ""}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt>Ders notu bekleyen</dt>
-                <dd className="text-dc-ink-muted">{unnotedLessons}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt>Taslak haftalık plan</dt>
-                <dd className="text-dc-ink-muted">{stalePlans}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt>Erişim açma (provisioning)</dt>
-                <dd className="text-dc-ink-muted">
-                  {manualReviewOrders ? `${manualReviewOrders} elle inceleme` : "bekleyen yok"}
+                  {todayLessons ? `${todayLessons.length} planlı` : "Veri alınamadı"}
                 </dd>
               </div>
             </dl>
           </PanelCard>
 
-          <PanelCard>
-            <PanelCardTitle>Eğitmen yükü</PanelCardTitle>
-            {capacity.length ? (
-              <>
-                <ul className="mt-3.5 flex flex-col gap-3.5">
-                  {capacity.map((t) => {
-                    const pct = Math.round((t.students / maxStudents) * 100);
-                    return (
-                      <li key={t.id}>
-                        <div className="flex justify-between gap-3 text-[13.5px] font-medium text-[var(--pd-ink-3)]">
-                          <span className="min-w-0 truncate">{t.name}</span>
-                          <span className="shrink-0 text-dc-ink-muted">
-                            {t.students} öğrenci · {t.groups} grup
-                          </span>
-                        </div>
-                        <div
-                          className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-dc-line-soft"
-                          role="progressbar"
-                          aria-valuenow={pct}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-label={`${t.name} yükü`}
-                        >
-                          <div
-                            className="h-full rounded-full bg-dc-brand"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-                <p className="mt-3 text-[12.5px] text-dc-ink-faint">
-                  Yük, aktif gruplardaki öğrenci sayısından çıkar. Kapasite eşiği tanımlı
-                  değil; yeni atama öncesi dağılıma bakılmalı.
-                </p>
-              </>
-            ) : (
-              <p className="mt-3 text-[14px] text-dc-ink-muted">
-                Aktif grubu olan eğitmen yok.
-              </p>
-            )}
+          <PanelCard variant="subtle">
+            <PanelCardTitle>Secondary metrics</PanelCardTitle>
+            <div className="mt-3.5 grid gap-3 sm:grid-cols-2">
+              <PanelMetric label="Online Dershanem üyelik" value={odCount} tone="neutral" />
+              <PanelMetric label="Online Deneme Kulübüm üyelik" value={odkCount} tone="neutral" />
+            </div>
           </PanelCard>
         </div>
 
         <PanelCard className="mt-5">
-          <PanelCardTitle>Ürün erişimi · aktif üyelikler</PanelCardTitle>
-          <dl className="mt-3.5 flex flex-wrap gap-9 text-[14px]">
-            <div>
-              <dt className="text-[13px] text-dc-ink-faint">Online Dershanem</dt>
-              <dd className="mt-1 text-[24px] font-extrabold text-dc-ink">{odCount}</dd>
-            </div>
-            <div>
-              <dt className="text-[13px] text-dc-ink-faint">Online Deneme Kulübüm</dt>
-              <dd className="mt-1 text-[24px] font-extrabold text-dc-ink">{odkCount}</dd>
-            </div>
-          </dl>
+          <PanelCardTitle>Eğitmen yükü</PanelCardTitle>
+          {capacity.length ? (
+            <>
+              <ul className="mt-3.5 flex flex-col gap-3.5">
+                {capacity.map((teacher) => {
+                  const pct = Math.round((teacher.students / maxStudents) * 100);
+                  return (
+                    <li key={teacher.id}>
+                      <div className="flex justify-between gap-3 text-[13.5px] font-medium text-[var(--pd-ink-3)]">
+                        <span className="min-w-0 truncate">{teacher.name}</span>
+                        <span className="shrink-0 text-dc-ink-muted">
+                          {teacher.students} öğrenci · {teacher.groups} grup
+                        </span>
+                      </div>
+                      <div
+                        className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-dc-line-soft"
+                        role="progressbar"
+                        aria-valuenow={pct}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${teacher.name} yükü`}
+                      >
+                        <div className="h-full rounded-full bg-dc-brand" style={{ width: `${pct}%` }} />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-3 text-[12.5px] text-dc-ink-faint">
+                Yük, aktif gruplardaki öğrenci sayısından çıkar.
+              </p>
+            </>
+          ) : (
+            <p className="mt-3 text-[14px] text-dc-ink-muted">
+              Eğitmen yükü için gerekli kaynaklar şu anda okunamıyor.
+            </p>
+          )}
         </PanelCard>
       </div>
     </PanelShell>

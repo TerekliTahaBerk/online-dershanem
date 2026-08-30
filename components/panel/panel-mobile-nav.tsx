@@ -84,7 +84,7 @@ export function PanelMobileNav({
       >
         <ul
           className="grid gap-1"
-          style={{ gridTemplateColumns: `repeat(${quickItems.length + 1}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${Math.min(3, quickItems.length + 1)}, minmax(0, 1fr))` }}
         >
           {quickItems.map((item) => {
             const active =
@@ -100,7 +100,7 @@ export function PanelMobileNav({
                 <Link
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={`block rounded-[10px] px-2 py-2 text-center text-[11.5px] font-semibold transition-colors ${
+                  className={`block min-h-11 rounded-[10px] px-2 py-2 text-center text-[12.5px] font-semibold leading-tight transition-colors ${
                     active
                       ? "bg-dc-brand-soft text-dc-brand-deep"
                       : "text-dc-ink-muted hover:bg-dc-surface-muted hover:text-dc-ink"
@@ -119,7 +119,7 @@ export function PanelMobileNav({
               aria-label="Panel menüsünü aç"
               aria-expanded={open}
               aria-controls="panel-mobile-nav"
-              className="flex w-full items-center justify-center gap-1 rounded-[10px] border border-dc-line px-2 py-2 text-[11.5px] font-semibold text-dc-ink"
+              className="flex min-h-11 w-full items-center justify-center gap-1 rounded-[10px] border border-dc-line px-2 py-2 text-[12.5px] font-semibold text-dc-ink"
             >
               <Menu size={14} strokeWidth={2} aria-hidden="true" /> Menü
             </button>

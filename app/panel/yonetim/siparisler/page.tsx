@@ -169,7 +169,7 @@ export default async function AdminOrdersPage({
                         href={`/panel/yonetim/siparisler/${order.id}`}
                         className="text-[13px] font-semibold text-dc-brand hover:underline"
                       >
-                        Aç
+                        Siparişi Aç
                       </Link>
                     </PanelTableCell>
                   </PanelTableRow>
@@ -211,7 +211,7 @@ export default async function AdminOrdersPage({
         <p className="mt-5 text-[12.5px] text-dc-ink-faint">
           Onboarding SLA'sı, cron sağlığı, talepler ve e-posta kuyruğu için{" "}
           <Link href="/panel/yonetim/isler" className="font-semibold text-dc-brand hover:underline">
-            operasyon kuyruğuna
+            işler / provisioning ekranına
           </Link>{" "}
           bak.
         </p>

@@ -561,7 +561,7 @@ export function PackageBuilder() {
               {activeTotals.map((total, index) => (
                 <span key={total.billing} className="contents">
                   {index > 0 ? <span className="text-[24px] font-semibold">+</span> : null}
-                  <span className="whitespace-nowrap">
+                  <span className="inline-flex flex-wrap items-baseline gap-x-1">
                     <span className="text-[15px] font-bold">{billingCopy[total.billing].label}</span>{" "}
                     <span className="text-[30px] font-extrabold tracking-[-0.025em]">
                       {formatCents(total.payableCents ?? 0)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 
 type DinoAnswerPayload = {
   answer?: {
@@ -13,11 +13,11 @@ type DinoAnswerPayload = {
 };
 
 const FALLBACK_NOTE: Record<string, string> = {
-  PROVIDER_DISABLED: "Dino şu anda kapalı; yalnız kayıtlar gösteriliyor.",
-  EXTERNAL_TRANSFER_NOT_READY: "Dino henüz yapılandırılmadı; yalnız kayıtlar gösteriliyor.",
-  COST_CONFIG_MISSING: "Dino yapılandırması eksik; yalnız kayıtlar gösteriliyor.",
-  DAILY_QUOTA: "Bugünkü Dino hakkın doldu; yalnız kayıtlar gösteriliyor.",
-  NO_SOURCE_DATA: "Bu sinyal için henüz kayıtlı veri yok.",
+  PROVIDER_DISABLED: "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+  EXTERNAL_TRANSFER_NOT_READY: "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+  COST_CONFIG_MISSING: "Dino açıklama yapılandırması eksik. Dayanakları yine de görebilirsin.",
+  DAILY_QUOTA: "Bugünkü Dino açıklama hakkını kullandın.",
+  NO_SOURCE_DATA: "Bu konuda açıklama yapmak için yeterli dayanak yok.",
   PROMPT_INJECTION: "Kayıtlarda beklenmedik içerik bulundu; güvenlik için yorum üretilmedi.",
 };
 
@@ -34,7 +34,7 @@ export function DinoExplanationAction({
   const [text, setText] = useState<string | null>(null);
   const [sources, setSources] = useState<string[]>([]);
   const [note, setNote] = useState<string | null>(null);
-  const [fromModel, setFromModel] = useState(false);
+  const disclosureId = useId();
 
   async function explainWithDino() {
     if (loading || text) return;
@@ -52,18 +52,17 @@ export function DinoExplanationAction({
       });
       const payload = (await response.json().catch(() => null)) as DinoAnswerPayload | null;
       if (!response.ok || !payload?.answer) {
-        setError(payload?.error || "Dino şu anda açıklama üretemedi.");
+        setError(payload?.error || "Dino açıklamayı şu anda hazırlayamadı.");
         return;
       }
       const answerText = payload.answer.answer?.text?.trim() || "";
       const labels = (payload.answer.sourceRefs || []).map((item) => item.label || "").filter(Boolean);
       const fallbackReason = payload.answer.fallbackReason || null;
-      setText(answerText || "Dino bu sinyal için açıklama üretemedi.");
+      setText(answerText || "Bu konuda açıklama yapmak için yeterli dayanak yok.");
       setSources(labels);
-      setFromModel(payload.answer.provider === "GEMINI" || payload.answer.provider === "OPENAI");
       setNote(fallbackReason ? (FALLBACK_NOTE[fallbackReason] ?? "Bu açıklama model tarafından üretilmedi.") : null);
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Dino açıklamayı şu anda hazırlayamadı.");
     } finally {
       setLoading(false);
     }
@@ -74,12 +73,14 @@ export function DinoExplanationAction({
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-controls={disclosureId}
         className="text-[12.5px] font-semibold text-dc-ink-muted underline underline-offset-2"
       >
-        Neden bunu öneriyoruz?
+        Bu neden öneriliyor?
       </button>
       {open ? (
-        <div className="mt-2 rounded-xl border border-dc-line-soft bg-[#FCFDFC] p-3">
+        <div id={disclosureId} className="mt-2 rounded-xl border border-dc-line-soft bg-[#FCFDFC] p-3">
           <p className="text-[13px] text-dc-ink-body">{deterministicReason}</p>
           <button
             type="button"
@@ -87,20 +88,30 @@ export function DinoExplanationAction({
             disabled={loading || Boolean(text)}
             className="mt-2 text-[12.5px] font-semibold text-dc-brand-strong disabled:opacity-70"
           >
-            {loading ? "Dino açıklıyor…" : text ? "Dino açıklaması alındı" : "Dino ile açıkla"}
+            {loading
+              ? "Dino açıklamayı hazırlıyor…"
+              : text
+                ? "Dino açıklaması hazır"
+                : error
+                  ? "Tekrar dene"
+                  : "Dino açıklamasını hazırla"}
           </button>
           {error ? <p className="mt-2 text-[12.5px] font-semibold text-[#C2493D]">{error}</p> : null}
-          {text ? <p className="mt-2 text-[13px] leading-6 text-dc-ink-body">{text}</p> : null}
+          {text ? (
+            <div aria-live="polite" className="mt-2">
+              <p className="text-[12px] font-semibold text-dc-ink-faint">Dino açıklaması</p>
+              <p className="mt-1 text-[13px] leading-6 text-dc-ink-body">{text}</p>
+            </div>
+          ) : null}
           {note ? <p className="mt-2 text-[12px] text-dc-ink-muted">{note}</p> : null}
           {sources.length ? (
-            <p className="mt-2 text-[12px] text-dc-ink-faint">
-              Kaynak: {sources.join(" · ")}
-              {fromModel ? "" : " · model yorumu değil"}
-            </p>
+            <div className="mt-2">
+              <p className="text-[12px] font-semibold text-dc-ink-faint">Dayanaklar</p>
+              <p className="mt-1 text-[12px] text-dc-ink-faint">{sources.join(" · ")}</p>
+            </div>
           ) : null}
         </div>
       ) : null}
     </div>
   );
 }
-

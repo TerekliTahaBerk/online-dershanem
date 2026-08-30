@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelHeading, PanelCard } from "@/components/panel/ui";
-import { DinoInsightCard } from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
 
@@ -168,8 +167,6 @@ export default async function StudentLessonDetailPage({
             </p>
           </section>
         ) : null}
-
-        <DinoInsightCard insight={null} basis={null} />
 
         <p className="mt-4 text-[12.5px] leading-[1.6] text-dc-ink-faint">
           Bu dersin veliye açık özeti: işlenen konu, katılım ve verilen çalışma.

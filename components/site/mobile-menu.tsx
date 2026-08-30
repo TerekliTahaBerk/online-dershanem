@@ -69,7 +69,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       role="dialog"
       aria-modal="true"
       aria-label="Mobil menü"
-      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] xl:hidden"
+      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] lg:hidden"
     >
       <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--site-line)] px-[clamp(20px,6vw,28px)]">
         <Link href="/" onClick={onClose} aria-label="Online Dershanem ana sayfa">
@@ -104,7 +104,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
                   href={item.href}
                   onClick={onClose}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`block font-display text-[23px] ${
+                  className={`block break-words font-display text-[clamp(1.2rem,5vw,1.45rem)] leading-tight ${
                     isActive(item.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
                   }`}
                 >
@@ -124,7 +124,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
             aria-label={link.accessibleLabel}
             onClick={onClose}
             aria-current={isActive(link.href) ? "page" : undefined}
-            className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] ${
+            className={`block break-words border-b border-[var(--site-line)] py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
               isActive(link.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
             }`}
           >
@@ -135,7 +135,7 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
           href={navLogin.href}
           onClick={onClose}
           aria-current={isActive(navLogin.href) ? "page" : undefined}
-          className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] ${
+          className={`block break-words border-b border-[var(--site-line)] py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
             isActive(navLogin.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
           }`}
         >

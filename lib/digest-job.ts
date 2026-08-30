@@ -1,7 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { generateCalmDigest } from "@/lib/calm-weekly-digest-server";
-import { type JobStatus } from "@prisma/client";
 import { reportOperationalAlert } from "@/lib/error-capture";
 
 export const DIGEST_JOB_TYPE = "weekly_digest_batch";

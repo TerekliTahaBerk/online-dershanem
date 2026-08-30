@@ -4,7 +4,7 @@ import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
-import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
+import { PanelPageHeader, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { addIstanbulCalendarDays, formatIstanbulDateInput, ISTANBUL_TIME_ZONE, istanbulWeekStart } from "@/lib/istanbul-time";
 
@@ -47,7 +47,7 @@ export default async function StudentPlanPage() {
   if (!profile) {
     return shell(
       <>
-        <PanelHeading title="Bu haftanın planı" />
+        <PanelPageHeader title="Bu haftanın planı" />
         <PanelEmpty
           title="Profilin hazırlanıyor."
           body="Öğrenci profilin tamamlandığında koçunun kurduğu plan burada görünecek."
@@ -77,7 +77,7 @@ export default async function StudentPlanPage() {
 
   return shell(
     <>
-      <PanelHeading
+      <PanelPageHeader
         title="Bu haftanın planı"
         description={start && end ? `${RANGE.format(start)} – ${RANGE.format(end)}` : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."}
       />

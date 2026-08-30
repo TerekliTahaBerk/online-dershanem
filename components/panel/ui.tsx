@@ -3,7 +3,12 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-type PanelTone = "neutral" | "info" | "success" | "warning" | "danger";
+type PanelTone = "neutral" | "info" | "success" | "warning" | "critical" | "danger";
+type PanelCardVariant = "default" | "subtle" | "emphasis" | "critical";
+
+function normalizeTone(tone: PanelTone): Exclude<PanelTone, "danger"> {
+  return tone === "danger" ? "critical" : tone;
+}
 
 /**
  * PANEL PRIMITIVE'LERİ — onaylı tasarım (Panel.dc.html).
@@ -53,13 +58,18 @@ export function PanelPageHeader({
   description,
   icon: Icon,
   action,
+  actions,
+  metadata,
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   icon?: LucideIcon;
   action?: ReactNode;
+  actions?: ReactNode;
+  metadata?: ReactNode;
 }) {
+  const actionNode = actions ?? action;
   return (
     <header className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
       <div className="min-w-0">
@@ -73,8 +83,9 @@ export function PanelPageHeader({
           {title}
         </h1>
         {description ? <p className="mt-2.5 max-w-3xl text-sm leading-7 text-dc-ink-body">{description}</p> : null}
+        {metadata ? <div className="mt-2.5 text-xs text-dc-ink-muted">{metadata}</div> : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
+      {actionNode ? <div className="shrink-0">{actionNode}</div> : null}
     </header>
   );
 }
@@ -84,18 +95,26 @@ export function PanelCard({
   children,
   className = "",
   padded = true,
+  variant = "default",
   id,
 }: {
   children: ReactNode;
   className?: string;
   padded?: boolean;
+  variant?: PanelCardVariant;
   /** Sayfa içi çapa hedefi (ör. "#yeni-hesap" bağlantısı). */
   id?: string;
 }) {
+  const variantClasses: Record<PanelCardVariant, string> = {
+    default: "border-dc-line bg-white",
+    subtle: "border-dc-line-soft bg-dc-surface-soft",
+    emphasis: "border-dc-brand/25 bg-dc-brand-soft/40",
+    critical: "border-red-300 bg-red-50",
+  };
   return (
     <section
       id={id}
-      className={cn("rounded-[14px] border border-dc-line bg-white", padded ? "p-[22px]" : "", className)}
+      className={cn("rounded-[14px] border", variantClasses[variant], padded ? "p-4 sm:p-5 lg:p-[22px]" : "", className)}
     >
       {children}
     </section>
@@ -158,6 +177,7 @@ export function PanelMetric({
   icon: Icon,
   tone = "info",
   description,
+  supportingText,
   valueClassName,
 }: {
   label: string;
@@ -165,25 +185,27 @@ export function PanelMetric({
   icon?: LucideIcon;
   tone?: PanelTone;
   description?: string;
+  supportingText?: string;
   valueClassName?: string;
 }) {
-  const toneClasses: Record<PanelTone, string> = {
+  const toneClasses: Record<Exclude<PanelTone, "danger">, string> = {
     neutral: "bg-dc-surface-soft text-dc-ink-muted",
     info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
     success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
     warning: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
-    danger: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+    critical: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
   };
+  const semanticTone = normalizeTone(tone);
   return (
     <PanelCard className="p-4 sm:p-[18px]">
     {Icon ? (
-      <span className={cn("grid h-9 w-9 place-items-center rounded-[10px]", toneClasses[tone])}>
+      <span className={cn("grid h-9 w-9 place-items-center rounded-[10px]", toneClasses[semanticTone])}>
         <Icon size={18} aria-hidden="true" />
       </span>
     ) : null}
     <p className={cn(Icon ? "mt-3" : "", "text-2xl font-black text-dc-ink", valueClassName)}>{value}</p>
     <p className="mt-1 text-xs text-dc-ink-muted">{label}</p>
-    {description ? <p className="mt-1.5 text-xs text-dc-ink-faint">{description}</p> : null}
+    {supportingText || description ? <p className="mt-1.5 text-xs text-dc-ink-faint">{supportingText ?? description}</p> : null}
     </PanelCard>
   );
 }
@@ -197,15 +219,16 @@ export function PanelStatusBadge({
   tone?: PanelTone;
   pulse?: boolean;
 }) {
-  const toneClasses: Record<PanelTone, string> = {
+  const toneClasses: Record<Exclude<PanelTone, "danger">, string> = {
     neutral: "bg-slate-100 text-slate-700",
     info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
     warning: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
     success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
-    danger: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+    critical: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
   };
+  const semanticTone = normalizeTone(tone);
   return (
-    <span className={cn("inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-extrabold", toneClasses[tone])}>
+    <span className={cn("inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold", toneClasses[semanticTone])}>
     {pulse ? <span className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse" aria-hidden="true" /> : null}
     {label}
     </span>
@@ -221,17 +244,18 @@ export function PanelAttentionCard({
 }: {
   title: string;
   body: string;
-  tone?: Exclude<PanelTone, "neutral" | "success">;
+  tone?: "info" | "warning" | "critical" | "danger";
   action?: ReactNode;
   className?: string;
 }) {
-  const toneClasses: Record<Exclude<PanelTone, "neutral" | "success">, string> = {
+  const toneClasses: Record<"info" | "warning" | "critical", string> = {
     info: "border-[var(--pd-pastel-sky-ink)]/20 bg-[var(--pd-pastel-sky-soft)]",
     warning: "border-[var(--pd-pastel-yellow-ink)]/20 bg-[var(--pd-pastel-yellow-soft)]",
-    danger: "border-[var(--pd-pastel-blush-ink)]/25 bg-[var(--pd-pastel-blush-soft)]",
+    critical: "border-[var(--pd-pastel-blush-ink)]/25 bg-[var(--pd-pastel-blush-soft)]",
   };
+  const semanticTone = tone === "danger" ? "critical" : tone;
   return (
-    <PanelCard className={cn("border-dc-line-soft p-4 sm:p-5", toneClasses[tone], className)}>
+    <PanelCard className={cn("border-dc-line-soft p-4 sm:p-5", toneClasses[semanticTone], className)}>
     <h3 className="text-[15px] font-bold text-dc-ink">{title}</h3>
     <p className="mt-1.5 text-sm leading-6 text-dc-ink-body">{body}</p>
     {action ? <div className="mt-3">{action}</div> : null}
@@ -240,14 +264,41 @@ export function PanelAttentionCard({
 }
 
 export function PanelActionRow({
+  title,
+  description,
+  meta,
+  status,
+  cta,
+  last = false,
   primaryAction,
   secondaryAction,
   className,
 }: {
+  title?: ReactNode;
+  description?: ReactNode;
+  meta?: ReactNode;
+  status?: ReactNode;
+  cta?: ReactNode;
+  last?: boolean;
   primaryAction?: ReactNode;
   secondaryAction?: ReactNode;
   className?: string;
 }) {
+  if (title) {
+    return (
+      <div className={cn("flex flex-wrap items-start gap-3 px-4 py-3 sm:px-5", !last ? "border-b border-dc-line-soft" : "", className)}>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[14.5px] font-semibold text-dc-ink">{title}</p>
+            {status ? <div>{status}</div> : null}
+          </div>
+          {description ? <p className="mt-1 text-[13.5px] text-dc-ink-muted">{description}</p> : null}
+          {meta ? <p className="mt-1 text-[12.5px] text-dc-ink-faint">{meta}</p> : null}
+        </div>
+        {cta ? <div className="w-full sm:w-auto sm:shrink-0 [&>*]:w-full sm:[&>*]:w-auto">{cta}</div> : null}
+      </div>
+    );
+  }
   if (!primaryAction && !secondaryAction) return null;
   return (
     <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:items-center", className)}>
@@ -260,23 +311,31 @@ export function PanelActionRow({
 export function PanelProgress({
   label,
   value,
+  max = 100,
+  text,
   className,
 }: {
   label: string;
   value: number;
+  max?: number;
+  text?: string;
   className?: string;
 }) {
-  const normalized = Math.max(0, Math.min(100, Math.round(value)));
+  const safeMax = Math.max(1, max);
+  const normalized = Math.max(0, Math.min(100, Math.round((value / safeMax) * 100)));
   return (
-    <div
-    className={cn("h-2 overflow-hidden rounded-full bg-dc-line-soft", className)}
-    role="progressbar"
-    aria-valuenow={normalized}
-    aria-valuemin={0}
-    aria-valuemax={100}
-    aria-label={label}
-    >
-    <div className="h-full rounded-full bg-dc-brand" style={{ width: `${normalized}%` }} />
+    <div className={className}>
+      <div
+        className="h-2 overflow-hidden rounded-full bg-dc-line-soft"
+        role="progressbar"
+        aria-valuenow={Math.max(0, Math.min(safeMax, value))}
+        aria-valuemin={0}
+        aria-valuemax={safeMax}
+        aria-label={label}
+      >
+        <div className="h-full rounded-full bg-dc-brand" style={{ width: `${normalized}%` }} />
+      </div>
+      {text ? <p className="mt-1.5 text-xs text-dc-ink-muted">{text}</p> : null}
     </div>
   );
 }

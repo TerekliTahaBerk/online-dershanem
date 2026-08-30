@@ -73,7 +73,7 @@ function parentSections(root: string, products: ProductCode[], flags: PanelFeatu
 
   return [
     ...section("BUGÜN", [
-      { href: root, label: "Ana Sayfa" },
+      { href: root, label: "Bugün" },
       { href: `${root}/takip`, label: "Gelişim" },
     ]),
     ...section("DERSHANEM", hasOD ? [{ href: `${root}/takvim`, label: "Dersler" }] : []),
@@ -100,60 +100,66 @@ function parentSections(root: string, products: ProductCode[], flags: PanelFeatu
 
 function teacherSections(root: string, flags: PanelFeatureFlags): NavSection[] {
   return [
-    ...section("Bugün", [
-      { href: root, label: "Ana Sayfa" },
+    ...section("BUGÜN", [
+      { href: root, label: "Bugün" },
       { href: `${root}/takvim`, label: "Takvim" },
     ]),
-    ...section("Dersler / Öğrenciler", [
+    ...section("DERS", [
       { href: `${root}/odevler`, label: "Dersler" },
-      { href: `${root}/gruplar`, label: "Öğrenciler" },
     ]),
-    ...section("Koçluk", [
+    ...section("KOÇLUK", [
       ...(flags.adaptivePlan ? [{ href: `${root}/plan`, label: "Koçluk planı" }] : []),
       ...(flags.reviewQueue ? [{ href: `${root}/tekrar`, label: "Tekrar kuyruğu" }] : []),
     ]),
-    ...section("Öğrenci desteği", [
-      ...(flags.studentCheckIn ? [{ href: `${root}/yardim`, label: "Teacher Help inbox" }] : []),
+    ...section("TAKİP", [
+      ...(flags.studentCheckIn ? [{ href: `${root}/yardim`, label: "Yardım İsteyenler" }] : []),
       ...(flags.interventionInbox ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu" }] : []),
+      { href: `${root}/gruplar`, label: "Öğrenciler" },
     ]),
-    ...section("Denemeler", [
+    ...section("ÖLÇME", [
       ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Denemeler" }] : []),
-      { href: "/panel/odk/ogretmen/raporlar", label: "Deneme raporları" },
+      ...(flags.mockExamAnalysis
+        ? [{ href: "/panel/odk/ogretmen/raporlar", label: "Deneme raporları" }]
+        : []),
     ]),
-    ...section("Kaynaklar", [{ href: `${root}/materyaller`, label: "Kaynaklar" }]),
-    ...section("Genel", commonNav(flags)),
+    ...section("KAYNAKLAR", [{ href: `${root}/materyaller`, label: "Kaynaklar" }]),
+    ...section("AYARLAR", commonNav(flags)),
   ];
 }
 
 function adminSections(root: string, flags: PanelFeatureFlags): NavSection[] {
+  const operationHref = flags.interventionInbox ? `${root}/mudahale` : `${root}/raporlar`;
+
   return [
-    ...section("Bugün", [
-      { href: root, label: "Ana Sayfa" },
-      { href: `${root}/takvim`, label: "Takvim" },
+    ...section("BUGÜN", [
+      { href: root, label: "Bugün" },
+      { href: operationHref, label: "Operasyon" },
     ]),
-    ...section("Kullanıcı ve eğitim", [
+    ...section("EĞİTİM", [
       { href: `${root}/kullanicilar`, label: "Öğrenciler" },
       { href: `${root}/egitmenler`, label: "Eğitmenler" },
-      { href: `${root}/egitim`, label: "Dersler ve gruplar" },
+      { href: `${root}/egitim`, label: "Dersler & Gruplar" },
+      { href: `${root}/takvim`, label: "Takvim" },
+    ]),
+    ...section("KOÇLUK", [
       ...(flags.adaptivePlan ? [{ href: `${root}/kocluk`, label: "Koçluk" }] : []),
     ]),
-    ...section("Deneme operasyonu", [
-      ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Deneme analizi" }] : []),
-      { href: "/panel/odk/yonetim", label: "Deneme Kulübüm" },
-      { href: "/panel/odk/yonetim/sinavlar", label: "Deneme planlama" },
-      { href: "/panel/odk/yonetim/operasyon", label: "Canlı operasyon" },
+    ...section("DENEMELER", [
+      { href: "/panel/odk/yonetim/sinavlar", label: "Deneme Planlama" },
+      { href: "/panel/odk/yonetim/operasyon", label: "Canlı Operasyon" },
+      { href: "/panel/odk/yonetim/raporlar", label: "Raporlar" },
+      ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Sonuç Analizi" }] : []),
     ]),
-    ...section("Operasyon", [
+    ...section("TİCARET", [
       { href: `${root}/siparisler`, label: "Siparişler" },
-      { href: `${root}/isler`, label: "Operasyon kuyruğu" },
-      ...(flags.interventionInbox ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu" }] : []),
+      { href: `${root}/isler`, label: "İşler / Provisioning" },
     ]),
-    ...section("Raporlama ve sistem", [
-      { href: `${root}/raporlar`, label: "Raporlar" },
+    ...section("SİSTEM", [
+      { href: `${root}/ozellikler`, label: "Özellikler / Sistem" },
       { href: `${root}/kayitlar`, label: "İşlem geçmişi" },
-      { href: `${root}/ozellikler`, label: "Sistem" },
+      { href: `${root}/raporlar`, label: "Operasyon raporları" },
     ]),
-    ...section("Genel", commonNav(flags)),
+    ...section("GENEL", commonNav(flags)),
   ];
 }
 
@@ -201,13 +207,17 @@ export function mobilePrimaryNav(
   }
 
   if (role === "TEACHER") {
+    const fourth =
+      flags.studentCheckIn
+        ? { href: `${root}/yardim`, label: "Yardım" }
+        : flags.mockExamAnalysis
+          ? { href: `${root}/denemeler`, label: "Denemeler" }
+          : { href: `${root}/gruplar`, label: "Öğrenciler" };
     return [
       { href: root, label: "Bugün" },
       { href: `${root}/odevler`, label: "Çalışmalar" },
       { href: `${root}/takvim`, label: "Dersler" },
-      ...(flags.mockExamAnalysis
-        ? [{ href: `${root}/denemeler`, label: "Denemeler" }]
-        : [{ href: `${root}/gruplar`, label: "Öğrenciler" }]),
+      fourth,
     ];
   }
 
@@ -215,10 +225,8 @@ export function mobilePrimaryNav(
     return [
       { href: root, label: "Bugün" },
       { href: `${root}/isler`, label: "Operasyon" },
-      { href: `${root}/egitim`, label: "Dersler" },
-      ...(flags.mockExamAnalysis
-        ? [{ href: `${root}/denemeler`, label: "Denemeler" }]
-        : [{ href: `${root}/raporlar`, label: "Raporlar" }]),
+      { href: `${root}/siparisler`, label: "Siparişler" },
+      { href: "/panel/odk/yonetim/operasyon", label: "Denemeler" },
     ];
   }
 
@@ -282,7 +290,7 @@ export function PanelNav({
                 <span
                   aria-hidden="true"
                   className={`h-1.5 w-1.5 flex-none rounded-full ${
-                    active ? "bg-dc-brand" : "bg-[#C9D3CE]"
+                    active ? "bg-dc-brand" : "bg-dc-line"
                   }`}
                 />
                 {item.label}

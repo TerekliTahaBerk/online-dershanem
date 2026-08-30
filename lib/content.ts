@@ -152,7 +152,7 @@ export const blogPosts = [
           "Çoğu durumda en işlevsel yol, dershane düzenine ihtiyaç olduğunda ders bazlı özel destekle birleşmiş bir yaklaşım oluyor."
         ],
         links: [
-          { label: "Online özel ders modeli nasıl çalışıyor?", href: "/online-ozel-ders" },
+          { label: "Canlı ders modeli nasıl işliyor?", href: "/online-ozel-ders" },
           { label: "Ders bazlı küçük grup sistemini incele", href: "/online-dershane" }
         ]
       }
@@ -206,7 +206,7 @@ export const blogPosts = [
     cta: {
       title: "Küçük grup yaklaşımını yakından incele",
       text: "Öğrencinin seviyesine göre en uygun grubu birlikte seçelim.",
-      buttonLabel: "Online Dershaneyi İncele",
+      buttonLabel: "Online Dershanem'i İncele",
       href: "/online-dershane"
     },
     relatedSlugs: ["online-dershane-nedir", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
@@ -259,7 +259,7 @@ export const blogPosts = [
         paragraphs: [
           "Öğrencilerin çoğu plan yapmayı biliyor ama planı uygulamakta zorlanıyor. Düzenli takip olmadığında program kısa sürede dağılıyor."
         ],
-        links: [{ label: "Online özel ders sistemimizi incele", href: "/online-ozel-ders" }]
+        links: [{ label: "Canlı ders modelini incele", href: "/online-ozel-ders" }]
       }
     ],
     cta: {
@@ -329,7 +329,7 @@ export const blogPosts = [
         ],
         links: [
           { label: "Online dershane sistemini incele", href: "/online-dershane" },
-          { label: "Online özel ders modelini incele", href: "/online-ozel-ders" }
+          { label: "Canlı ders yaklaşımını incele", href: "/online-ozel-ders" }
         ]
       }
     ],
@@ -453,7 +453,7 @@ export const blogPosts = [
       {
         h2: "Programı sürdürmek için takip şart",
         paragraphs: ["Programı yazmak kadar uygulamayı izlemek de önemlidir. Öğretmen geri bildirimi, tamamlanmayan hedefin nedenini görüp planı yeniden düzenlemeye yardımcı olabilir."],
-        links: [{ label: "Online özel ders desteğiyle planını gözden geçir", href: "/online-ozel-ders" }]
+        links: [{ label: "Canlı ders desteğiyle planını gözden geçir", href: "/online-ozel-ders" }]
       }
     ],
     cta: {
@@ -523,7 +523,7 @@ export const blogPosts = [
       {
         h2: "Süre yönetimi nasıl geliştirilir?",
         paragraphs: ["Soru başına bir takılma eşiği belirlemek, öğrencinin deneme sırasında geçme ve geri dönme kararını daha bilinçli vermesine yardımcı olur."],
-        links: [{ label: "YKS için online özel ders desteğini incele", href: "/online-ozel-ders" }]
+        links: [{ label: "YKS için canlı ders desteğini incele", href: "/online-ozel-ders" }]
       }
     ],
     cta: {

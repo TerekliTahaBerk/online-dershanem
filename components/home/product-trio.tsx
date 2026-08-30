@@ -114,7 +114,7 @@ const products = [
     body:
       "LGS, TYT ve AYT denemelerinde hangi konu ve soru tipinde puan kaybettiğini görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
-    cta: "Deneme Kulübünü İncele",
+    cta: "Deneme Kulübüm'ü İncele",
     href: "/urunler/online-deneme-kulubum",
     Preview: ExamPreview,
   },

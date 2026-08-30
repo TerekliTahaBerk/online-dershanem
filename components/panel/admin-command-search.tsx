@@ -5,14 +5,17 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpenCheck, CalendarDays, CreditCard, History, LayoutDashboard, Plus, Search, UsersRound, X } from "lucide-react";
 
 const commands = [
-  { label: "Kontrol merkezine git", detail: "Bugünün özeti ve uyarılar", href: "/panel/yonetim", icon: LayoutDashboard },
+  { label: "Bugün ekranına git", detail: "Aksiyon bekleyen operasyon özeti", href: "/panel/yonetim", icon: LayoutDashboard },
+  { label: "Operasyonu aç", detail: "İş kuyruğu, onboarding ve cron durumu", href: "/panel/yonetim/isler", icon: CreditCard },
+  { label: "Siparişleri aç", detail: "Ödeme ve provisioning durumları", href: "/panel/yonetim/siparisler", icon: CreditCard },
   { label: "Haftalık takvimi aç", detail: "Tüm dersleri gün gün gör", href: "/panel/yonetim/takvim", icon: CalendarDays },
   { label: "Kişileri aç", detail: "Öğrenci, öğretmen ve veli hesapları", href: "/panel/yonetim/kullanicilar", icon: UsersRound },
   { label: "Yeni hesap aç", detail: "Geçici parolalı kullanıcı oluştur", href: "/panel/yonetim/kullanicilar#yeni-hesap", icon: Plus },
   { label: "Grup ve dersleri aç", detail: "Eğitim operasyonu", href: "/panel/yonetim/egitim", icon: BookOpenCheck },
   { label: "Yeni grup kur", detail: "En fazla dört öğrenci", href: "/panel/yonetim/egitim#yeni-grup", icon: Plus },
   { label: "Ders planla", detail: "Gruba 60 dakikalık ders ekle", href: "/panel/yonetim/egitim#ders-planla", icon: Plus },
-  { label: "Sipariş ve talepleri aç", detail: "Operasyon kuyruğu", href: "/panel/yonetim/isler", icon: CreditCard },
+  { label: "Deneme operasyonunu aç", detail: "Canlı deneme akışı ve incident takibi", href: "/panel/odk/yonetim/operasyon", icon: CalendarDays },
+  { label: "Deneme planlamayı aç", detail: "Sınav planı, hazırlık ve yayın akışı", href: "/panel/odk/yonetim/sinavlar", icon: CalendarDays },
   { label: "İşlem geçmişini aç", detail: "Yönetim ve güvenlik kayıtları", href: "/panel/yonetim/kayitlar", icon: History },
 ];
 

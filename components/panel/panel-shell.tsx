@@ -294,7 +294,7 @@ export async function PanelShell({
             <main
               id="panel-content"
               tabIndex={-1}
-              className="flex-1 px-4 pb-24 pt-6 sm:px-8 sm:pb-10 sm:pt-7"
+              className="flex-1 px-4 pb-32 pt-6 sm:px-8 sm:pb-10 sm:pt-7"
             >
               {children}
             </main>

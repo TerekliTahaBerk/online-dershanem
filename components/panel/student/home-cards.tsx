@@ -45,7 +45,7 @@ export function WeeklyPlanCard({
         {tasks.map((task) => (
           <li
             key={task.id}
-            className={`flex items-center gap-2.5 text-[14px] font-medium ${
+            className={`flex flex-wrap items-start gap-2.5 text-[14px] font-medium ${
               task.done ? "text-dc-ink-ghost" : "text-[var(--pd-ink-3)]"
             }`}
           >
@@ -59,8 +59,10 @@ export function WeeklyPlanCard({
             >
               {task.done ? "✓" : ""}
             </span>
-            <span className={task.done ? "line-through" : ""}>{task.title}</span>
-            <span className="ml-auto shrink-0 text-[12.5px] text-dc-ink-faint">{task.meta}</span>
+            <span className={`min-w-0 flex-1 ${task.done ? "line-through" : ""}`}>{task.title}</span>
+            <span className="w-full pl-[26px] text-[12.5px] text-dc-ink-faint sm:w-auto sm:pl-0">
+              {task.meta}
+            </span>
           </li>
         ))}
       </ul>
@@ -122,9 +124,9 @@ export function LatestExamCard({
 
       <ul className="mt-4 flex flex-col gap-2.5 text-[13.5px] font-medium text-[var(--pd-ink-3)]">
         {subjects.map((s) => (
-          <li key={s.name} className="flex gap-3">
-            <span className="flex-1">{s.name}</span>
-            <span className="text-dc-ink-faint">
+          <li key={s.name} className="flex flex-wrap gap-1.5 sm:gap-3">
+            <span className="min-w-0 flex-1">{s.name}</span>
+            <span className="w-full text-dc-ink-faint sm:w-auto">
               {s.correct}D / {s.incorrect}Y · {fmt(s.net)}
             </span>
           </li>
@@ -219,9 +221,7 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
 /**
  * Dino AI özeti.
  *
- * §22: canlı bir Dino AI arka ucu HENÜZ YOK. Bu yüzden burada uydurma bir
- * "AI çıktısı" üretilmez — `insight` verilmediğinde bileşen, özetin neye
- * dayanacağını ve ne zaman görüneceğini söyleyen dürüst bir durum gösterir.
+ * Contextual yüzeylerde gerçek açıklama yoksa kart render edilmez.
  */
 export function DinoInsightCard({
   insight,
@@ -230,6 +230,8 @@ export function DinoInsightCard({
   insight: string | null;
   basis: string | null;
 }) {
+  if (!insight) return null;
+
   return (
     <PanelCard className="mt-5 flex items-start gap-5">
       <Image
@@ -242,20 +244,9 @@ export function DinoInsightCard({
         className="w-12 flex-none sm:w-16"
       />
       <div className="min-w-0 flex-1">
-        <h2 className="text-[16px] font-bold text-dc-ink">Dino bu hafta ne görüyor?</h2>
-
-        {insight ? (
-          <>
-            <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{insight}</p>
-            {basis ? <p className="mt-2 text-[12.5px] text-dc-ink-faint">{basis}</p> : null}
-          </>
-        ) : (
-          <p className="mt-2 text-[14.5px] leading-[1.65] text-dc-ink-muted">
-            Haftalık Dino özeti, yeterli ders ve deneme verisi biriktiğinde burada
-            görünecek. Özet yalnızca senin ders notların, plan görevlerin ve deneme
-            sonuçlarına dayanır.
-          </p>
-        )}
+        <h2 className="text-[16px] font-bold text-dc-ink">Dino açıklaması</h2>
+        <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{insight}</p>
+        {basis ? <p className="mt-2 text-[12.5px] text-dc-ink-faint">Dayanak: {basis}</p> : null}
       </div>
     </PanelCard>
   );

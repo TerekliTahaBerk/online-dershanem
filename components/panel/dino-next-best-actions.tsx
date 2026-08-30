@@ -20,6 +20,21 @@ type NextBestAction = {
   expiresAt?: string | null;
 };
 
+function getActionLabel(action: NextBestAction["action"]): string {
+  switch (action.type) {
+    case "OPEN_PLAN":
+      return "Haftalık Planı Gör";
+    case "OPEN_REVIEW":
+      return "Sonucunu Gör";
+    case "OPEN_INTERVENTION":
+      return "Öğrenciyi Gör";
+    case "OPEN_DIGEST":
+      return "Haftalık Özeti Gör";
+    default:
+      return "Detayı Gör";
+  }
+}
+
 export function DinoNextBestActions({ items }: { items: NextBestAction[] }) {
   if (!items.length) return null;
   return (
@@ -36,7 +51,7 @@ export function DinoNextBestActions({ items }: { items: NextBestAction[] }) {
             <div className="mt-3 flex flex-wrap gap-2">
               {"href" in item.action ? (
                 <Link href={item.action.href} className="site-btn site-btn-secondary text-[12.5px]">
-                  Aç
+                  {getActionLabel(item.action)}
                 </Link>
               ) : (
                 <span className="rounded-full border border-[var(--site-line)] px-3 py-1 text-[12px] font-medium text-[var(--site-body)]">

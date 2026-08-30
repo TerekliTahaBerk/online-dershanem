@@ -40,17 +40,17 @@ export type DinoQuestion = {
 };
 
 export const DINO_QUESTIONS: readonly DinoQuestion[] = [
-  { key: "student_week", audience: "STUDENT", label: "Bu hafta nasıl gidiyorum?", scope: "WEEK" },
-  { key: "student_exam", audience: "STUDENT", label: "Son denemem ne söylüyor?", scope: "LAST_EXAM" },
-  { key: "student_focus", audience: "STUDENT", label: "Bu hafta neye odaklanmalıyım?", scope: "COACHING" },
-  { key: "student_nba_reason", audience: "STUDENT", label: "Bu adımı neden öneriyoruz?", scope: "WEEK", internal: true },
-  { key: "student_odk_reason", audience: "STUDENT", label: "Bu kazanım neden öne çıktı?", scope: "LAST_EXAM", internal: true },
+  { key: "student_week", audience: "STUDENT", label: "Bu hafta hangi veriler öne çıkıyor?", scope: "WEEK" },
+  { key: "student_exam", audience: "STUDENT", label: "Son denememde ne öne çıkıyor?", scope: "LAST_EXAM" },
+  { key: "student_focus", audience: "STUDENT", label: "Bu haftaki planım ne söylüyor?", scope: "COACHING" },
+  { key: "student_nba_reason", audience: "STUDENT", label: "Bu neden öneriliyor?", scope: "WEEK", internal: true },
+  { key: "student_odk_reason", audience: "STUDENT", label: "Bu sonuç ne söylüyor?", scope: "LAST_EXAM", internal: true },
 
-  { key: "parent_week", audience: "PARENT", label: "Çocuğum bu hafta nasıl gitti?", scope: "WEEK" },
-  { key: "parent_exam", audience: "PARENT", label: "Son deneme sonucunu sade anlat", scope: "LAST_EXAM" },
+  { key: "parent_week", audience: "PARENT", label: "Bu özet neye dayanıyor?", scope: "WEEK" },
+  { key: "parent_exam", audience: "PARENT", label: "Son deneme özeti neye dayanıyor?", scope: "LAST_EXAM" },
 
-  { key: "teacher_prep", audience: "TEACHER", label: "Görüşmeye hazırlık özeti", scope: "COACHING" },
-  { key: "teacher_week", audience: "TEACHER", label: "Bu öğrencide dikkat edilmesi gerekenler", scope: "WEEK" },
+  { key: "teacher_prep", audience: "TEACHER", label: "Görüşme özeti neye dayanıyor?", scope: "COACHING" },
+  { key: "teacher_week", audience: "TEACHER", label: "Bu sinyal neye dayanıyor?", scope: "WEEK" },
 ] as const;
 
 export function findDinoQuestion(key: string, audience: DinoAudience): DinoQuestion | null {
@@ -110,8 +110,8 @@ export function dinoFallbackAnswer(source: SafeDinoSource): DinoAnswerContent {
   const listed = rows.map((r) => `${r.label}: ${r.text}`).join(" · ");
   return {
     text: listed
-      ? `Şu an yorum üretilemiyor; aşağıdaki kayıtlar olduğu gibi listelendi. ${listed}`
-      : "Şu an yorum üretilemiyor ve bu soru için kayıtlı veri bulunamadı.",
+      ? `Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin: ${listed}`
+      : "Bu konuda açıklama yapmak için yeterli dayanak yok.",
     citations: rows.length ? rows.map((r) => r.id) : ["NO_DATA"],
   };
 }

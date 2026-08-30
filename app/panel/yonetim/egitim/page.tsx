@@ -80,7 +80,7 @@ export default async function EducationAdminPage() {
                   <PanelTableCell>{name(group.teacher)}</PanelTableCell>
                   <PanelTableCell tone={full ? "warn" : undefined}>{filled} / {group.capacity}{full ? " · dolu" : ""}</PanelTableCell>
                   <PanelTableCell>{next ? WHEN.format(next) : "Planlı ders yok"}</PanelTableCell>
-                  <PanelTableCell><Link href={`/panel/yonetim/gruplar/${group.id}`} className="text-[13px] font-semibold text-dc-brand hover:underline">Aç</Link></PanelTableCell>
+                  <PanelTableCell><Link href={`/panel/yonetim/gruplar/${group.id}`} className="text-[13px] font-semibold text-dc-brand hover:underline">Grubu Gör</Link></PanelTableCell>
                 </PanelTableRow>
               );
             })}

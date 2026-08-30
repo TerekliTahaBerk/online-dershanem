@@ -82,6 +82,30 @@ test.describe("panel deneyimi", () => {
     expect(csv.text).toContain("Kategori");
   });
 
+  test("admin menüsü domain bazlı gruplanır ve bugün odağını korur", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await login(page, accounts.admin);
+    await page.goto("/panel/yonetim");
+    const nav = page.getByRole("navigation", { name: "Panel menüsü" });
+
+    for (const heading of ["BUGÜN", "EĞİTİM", "KOÇLUK", "DENEMELER", "TİCARET", "SİSTEM"]) {
+      await expect(nav.getByText(heading, { exact: true })).toBeVisible();
+    }
+    await expect(nav.getByRole("link", { name: "Bugün", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Operasyon", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Siparişler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "İşler / Provisioning", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Özellikler / Sistem", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Ana Sayfa", exact: true })).toHaveCount(0);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("button", { name: "Panel menüsünü aç" }).click();
+    const drawer = page.getByRole("dialog", { name: "Panel menüsü" });
+    await expect(drawer.getByRole("navigation", { name: "Panel menüsü" })).toBeVisible();
+    await expect(drawer.getByText("TİCARET", { exact: true })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "İşler / Provisioning", exact: true })).toBeVisible();
+  });
+
   test("admin kalite panosu küçük kohortu bastırır ve sıralama üretmez", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page, accounts.admin);

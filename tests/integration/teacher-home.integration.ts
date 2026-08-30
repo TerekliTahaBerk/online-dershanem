@@ -325,7 +325,7 @@ integration("teacher attention inbox kapsam, öncelik ve sorgu sayısını korur
     assert.deepEqual(calls, {
       roster: 1,
       help: 1,
-      notes: 1,
+      notes: 0,
       absences: 1,
       assignments: 1,
       interventions: 1,

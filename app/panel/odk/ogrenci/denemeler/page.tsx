@@ -120,23 +120,23 @@ function ExamSection({
               href={info.href}
               className="flex flex-col gap-4 rounded-3xl border border-[var(--site-line)] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
             >
-              <div className="flex gap-4">
+              <div className="flex min-w-0 gap-4">
                 <span
                   className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${info.tone}`}
                 >
                   <Icon size={20} />
                 </span>
-                <div>
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-extrabold text-[var(--site-ink)]">{exam.title}</h3>
+                    <h3 className="break-words font-extrabold text-[var(--site-ink)]">{exam.title}</h3>
                     <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-600">
                       {exam.family}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-[var(--site-body)]">{examMeta(exam)}</p>
+                  <p className="mt-1 text-sm leading-6 text-[var(--site-body)]">{examMeta(exam)}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-end">
                 <span className={`w-fit rounded-full px-3 py-1.5 text-xs font-extrabold ${info.tone}`}>
                   {info.label}
                 </span>

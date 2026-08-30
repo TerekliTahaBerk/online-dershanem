@@ -123,7 +123,7 @@ export default async function AdminOrderDetailPage({
     >
       <div className="max-w-[900px]">
         <p className="text-[13px] text-dc-ink-faint">
-          <Link href="/panel/yonetim/isler" className="hover:text-dc-brand-hover hover:underline">
+          <Link href="/panel/yonetim/siparisler" className="hover:text-dc-brand-hover hover:underline">
             Siparişler
           </Link>
         </p>
@@ -223,7 +223,7 @@ export default async function AdminOrderDetailPage({
                 </Link>
               ) : (
                 <Link
-                  href="/panel/yonetim/isler"
+                  href="/panel/yonetim/siparisler"
                   className="rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
                 >
                   Siparişi bir öğrenciye bağla

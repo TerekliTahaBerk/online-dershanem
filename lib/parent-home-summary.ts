@@ -1,87 +1,165 @@
-type DigestSummary = {
-  trendBand: string;
-  goodThingOne: string;
-  goodThingTwo: string;
-  supportArea: string;
-  homeQuestion: string;
-};
+export type ParentHomeStatusCode = "ON_TRACK" | "NEEDS_ATTENTION" | "LOW_DATA";
 
-export type ParentHomeHero = {
+export type ParentHomeStatusSummary = {
+  code: ParentHomeStatusCode;
   title: string;
   description: string;
-  actionLabel: string;
-  actionText: string;
-  ctaLabel?: string;
-  ctaHref?: string;
+  evidence: string[];
+  hasEnoughEvidence: boolean;
+  needsPlanSupport: boolean;
 };
 
-export type ParentSecondaryMetrics = {
-  attendance: string;
-  planCompletion: string;
-  lastExam: string;
+export type ParentSecondaryMetric = {
+  id: "attendance" | "plan" | "exam";
+  label: string;
+  value: string;
+  description?: string;
 };
 
-export function buildParentHomeHero(input: {
-  digest: DigestSummary | null;
-  digestEnabled: boolean;
-  hasCoaching: boolean;
-  coachingHref: string;
-}): ParentHomeHero {
-  if (input.digest) {
-    const supportMode = input.digest.trendBand === "BUILDING";
-    if (supportMode) {
-      return {
-        title: "Küçük bir destek iyi olabilir",
-        description: input.digest.supportArea,
-        actionLabel: "Bu akşam sorabileceğiniz soru:",
-        actionText: input.digest.homeQuestion,
-      };
-    }
-    return {
-      title: "Genel olarak yolunda",
-      description: `${input.digest.goodThingOne} ${input.digest.goodThingTwo}`.trim(),
-      actionLabel: "Durum",
-      actionText: "Sizden aksiyon beklenmiyor.",
-    };
-  }
-
-  if (input.hasCoaching) {
-    return {
-      title: input.digestEnabled ? "Haftalık özet henüz yayınlanmadı" : "Genel durum takibi",
-      description: input.digestEnabled
-        ? "Özet yayınlandığında burada tek bakışta görünecek."
-        : "Bu hafta için sakin durum özeti mevcut değil.",
-      actionLabel: "Bugün için tek adım",
-      actionText: "Koçluk planındaki haftayı birlikte kontrol edin.",
-      ctaLabel: "Koçluğu aç",
-      ctaHref: input.coachingHref,
-    };
-  }
-
-  return {
-    title: input.digestEnabled ? "Haftalık özet henüz yayınlanmadı" : "Genel durum takibi",
-    description: input.digestEnabled
-      ? "Özet yayınlandığında burada tek bakışta görünecek."
-      : "Bu hafta için sakin durum özeti mevcut değil.",
-    actionLabel: "Durum",
-    actionText: "Sizden aksiyon beklenmiyor.",
-  };
+function ratio(numerator: number, denominator: number): number | null {
+  if (denominator <= 0) return null;
+  return numerator / denominator;
 }
 
-export function buildParentSecondaryMetrics(input: {
+export function buildParentHomeStatus(input: {
+  hasOD: boolean;
+  hasOK: boolean;
+  hasExamAccess: boolean;
   attendanceTotal: number;
   attendanceAttended: number;
   planDone: number;
   planTotal: number;
   latestExamNet: number | null;
-}): ParentSecondaryMetrics {
+  latestExamLabel?: string | null;
+}): ParentHomeStatusSummary {
+  const attendanceRatio = ratio(input.attendanceAttended, input.attendanceTotal);
+  const planRatio = ratio(input.planDone, input.planTotal);
+
+  const hasAttendanceData = input.hasOD && input.attendanceTotal > 0;
+  const hasPlanData = input.hasOK && input.planTotal > 0;
+  const hasExamData = input.hasExamAccess && input.latestExamNet !== null;
+
+  const expectedSignalCount = Number(input.hasOD) + Number(input.hasOK) + Number(input.hasExamAccess);
+  const availableSignalCount = Number(hasAttendanceData) + Number(hasPlanData) + Number(hasExamData);
+  const hasEnoughEvidence =
+    expectedSignalCount <= 1 ? availableSignalCount >= 1 : availableSignalCount >= 2;
+
+  const attendanceIssue =
+    hasAttendanceData && input.attendanceTotal >= 6 && (attendanceRatio ?? 1) < 0.8;
+  const planIssue = hasPlanData && input.planTotal >= 4 && (planRatio ?? 1) < 0.6;
+
+  const evidence: string[] = [];
+  if (hasAttendanceData) {
+    evidence.push(`Son ${input.attendanceTotal} dersin ${input.attendanceAttended}'ine katıldı.`);
+  }
+  if (hasPlanData) {
+    evidence.push(
+      `Bu haftaki planın ${input.planDone} / ${input.planTotal} çalışması tamamlandı.`,
+    );
+  }
+  if (hasExamData) {
+    evidence.push(
+      input.latestExamLabel
+        ? `Son deneme (${input.latestExamLabel}) sonucu ${input.latestExamNet!.toFixed(2)} net.`
+        : `Son deneme sonucu ${input.latestExamNet!.toFixed(2)} net.`,
+    );
+  }
+
+  if (!hasEnoughEvidence) {
+    const sourceCount = evidence.length;
+    return {
+      code: "LOW_DATA",
+      title: "Bu hafta genel durum için henüz yeterli veri görünmüyor.",
+      description:
+        sourceCount === 0
+          ? "Genel değerlendirme için bu hafta katılım, plan veya deneme verisi henüz oluşmadı."
+          : "Şu an sınırlı sayıda sinyal var; genel değerlendirme için biraz daha veri oluşması gerekiyor.",
+      evidence: evidence.slice(0, 2),
+      hasEnoughEvidence: false,
+      needsPlanSupport: false,
+    };
+  }
+
+  if (attendanceIssue || planIssue) {
+    let description = "Bu hafta birkaç noktaya dikkat etmek faydalı olabilir.";
+    if (attendanceIssue && !planIssue && hasPlanData && (planRatio ?? 0) >= 0.6) {
+      description = "Ders katılımında düşüş görünüyor; haftalık plan tarafı daha dengeli ilerliyor.";
+    } else if (planIssue && !attendanceIssue && hasAttendanceData && (attendanceRatio ?? 0) >= 0.8) {
+      description = "Ders katılımı düzenli; haftalık planda bekleyen çalışmalar var.";
+    } else if (attendanceIssue && planIssue) {
+      description = "Ders katılımı ve haftalık planda takip gerektiren noktalar var.";
+    }
+    return {
+      code: "NEEDS_ATTENTION",
+      title: "Bu hafta birkaç noktaya dikkat etmek faydalı olabilir.",
+      description,
+      evidence: evidence.slice(0, 3),
+      hasEnoughEvidence: true,
+      needsPlanSupport: planIssue,
+    };
+  }
+
+  let description = "Bu hafta görünen sinyaller dengeli ilerliyor.";
+  if (hasAttendanceData && hasPlanData) {
+    description = "Ders katılımı ve haftalık plan düzenli ilerliyor.";
+  } else if (hasAttendanceData) {
+    description = "Ders katılımı düzenli görünüyor.";
+  } else if (hasPlanData) {
+    description = "Haftalık plan adımları düzenli ilerliyor.";
+  } else if (hasExamData) {
+    description = "Son deneme sonucu güncel ve izlenebilir durumda.";
+  }
+
   return {
-    attendance: input.attendanceTotal
-      ? `${input.attendanceAttended} / ${input.attendanceTotal}`
-      : "—",
-    planCompletion: input.planTotal ? `${input.planDone} / ${input.planTotal}` : "—",
-    lastExam: input.latestExamNet !== null ? `${input.latestExamNet.toFixed(2)} net` : "—",
+    code: "ON_TRACK",
+    title: "Genel olarak düzenli ilerliyor.",
+    description,
+    evidence: evidence.slice(0, 3),
+    hasEnoughEvidence: true,
+    needsPlanSupport: false,
   };
+}
+
+export function buildParentSecondaryMetrics(input: {
+  hasOD: boolean;
+  hasOK: boolean;
+  hasExamAccess: boolean;
+  attendanceTotal: number;
+  attendanceAttended: number;
+  planDone: number;
+  planTotal: number;
+  latestExamNet: number | null;
+  latestExamLabel?: string | null;
+}): ParentSecondaryMetric[] {
+  const metrics: ParentSecondaryMetric[] = [];
+
+  if (input.hasOD && input.attendanceTotal > 0) {
+    metrics.push({
+      id: "attendance",
+      label: `Son ${input.attendanceTotal} derste katılım`,
+      value: `${input.attendanceAttended} / ${input.attendanceTotal}`,
+      description: `%${Math.round((input.attendanceAttended / input.attendanceTotal) * 100)}`,
+    });
+  }
+
+  if (input.hasOK && input.planTotal > 0) {
+    metrics.push({
+      id: "plan",
+      label: "Bu haftaki plan",
+      value: `${input.planDone} / ${input.planTotal}`,
+      description: "çalışma tamamlandı",
+    });
+  }
+
+  if (input.hasExamAccess && input.latestExamNet !== null) {
+    metrics.push({
+      id: "exam",
+      label: input.latestExamLabel ? `Son deneme · ${input.latestExamLabel}` : "Son deneme",
+      value: `${input.latestExamNet.toFixed(2)} net`,
+    });
+  }
+
+  return metrics;
 }
 
 export function withParentStudentContext(href: string, studentId: string | null): string {

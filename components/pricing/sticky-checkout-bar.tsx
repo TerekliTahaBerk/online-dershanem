@@ -63,20 +63,20 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, package
   return (
     <div className="fixed inset-x-0 bottom-0 z-40" role="region" aria-label="Hızlı paket satın alma">
       <div className="border-t border-[var(--site-line)] bg-white/95 shadow-[0_-12px_35px_-28px_rgba(20,20,15,.4)] backdrop-blur-md">
-        <div className="site-container flex items-center gap-3 py-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:gap-5 sm:py-4">
+        <div className="site-container flex flex-col gap-3 py-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:gap-5 sm:py-4">
           <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[15px] font-bold text-[var(--brand-orange-ink)] sm:flex">
             ₺
           </div>
           <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between sm:gap-8">
-            <div className="truncate text-[13.5px] font-semibold text-[var(--site-ink)] sm:text-[15px]">
+            <div className="text-[13.5px] font-semibold text-[var(--site-ink)] sm:text-[15px]">
               {hasMultiple ? "LGS veya YKS paketini seç" : items[0].name}
             </div>
-            <div className="truncate text-[12px] text-[var(--site-muted)] sm:text-[13px]">
+            <div className="text-[12px] leading-5 text-[var(--site-muted)] sm:text-[13px]">
               {items[0].priceLabel}
               {note ? ` · ${note}` : ""}
             </div>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="grid w-full shrink-0 gap-2 sm:flex sm:w-auto">
             {items.map((item) => (
               <PurchaseFunnelTrigger
                 key={`${item.category}-${item.subject}`}
@@ -86,7 +86,7 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, package
                 subject={item.subject}
                 priceLabel={item.priceLabel}
                 paymentLink=""
-                className="site-btn site-btn-primary px-4 py-3 text-[13px] sm:px-6 sm:text-[14px]"
+                className="site-btn site-btn-primary w-full px-4 py-3 text-[13px] sm:w-auto sm:px-6 sm:text-[14px]"
               >
                 {hasMultiple ? item.category : "Satın al"}
               </PurchaseFunnelTrigger>

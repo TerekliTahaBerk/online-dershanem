@@ -235,7 +235,7 @@ test("öğrenci sayısı artsa da her sorgu en fazla bir kez çalışır", async
   assert.deepEqual(calls, {
     roster: 1,
     help: 1,
-    notes: 1,
+    notes: 0,
     absences: 1,
     assignments: 1,
     interventions: 1,
@@ -254,9 +254,34 @@ test("özellik kapalıysa yardım ve deneme sorgusu çalışmaz", async () => {
   });
 
   assert.equal(calls.help, 0);
+  assert.equal(calls.notes, 0);
   assert.equal(calls.interventions, 0);
   assert.equal(calls.exams, 0);
   assert.equal(calls.absences, 1);
+});
+
+test("attention listesi üstten 8 kayıtla sınırlanır", () => {
+  const inbox = buildTeacherAttentionInbox({
+    ...source({
+      roster: Array.from({ length: 12 }, (_, i) => ({
+        id: `student-${i}`,
+        name: `Öğrenci ${i}`,
+        groupName: "10-A",
+      })),
+      attendanceAbsentCounts: Array.from({ length: 12 }, (_, i) => ({
+        studentId: `student-${i}`,
+        count: ATTENTION_ABSENT_THRESHOLD + 1,
+      })),
+    }),
+    helpRequests: [],
+    assignmentOverdueCounts: [],
+    interventions: [],
+    exams: [],
+  });
+
+  assert.equal(inbox.rows.length, 8);
+  assert.equal(inbox.totalRowCount, 12);
+  assert.equal(inbox.hiddenRowCount, 4);
 });
 
 test("öğretmen ana sayfası attention read-model'ini kullanır ve deneme iddiasını uydurmaz", () => {
