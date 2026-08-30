@@ -82,8 +82,9 @@ export function UserRowActions({
       router.refresh();
     } catch {
       setError("Bağlantı kurulamadı.");
+    } finally {
+      setPending(null);
     }
-    setPending(null);
   }
 
   if (tempPassword) {
