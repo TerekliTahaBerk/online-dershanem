@@ -49,7 +49,7 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     const nav = page.getByRole("navigation", { name: "Panel menüsü" });
     await expect(nav.getByText("BUGÜN", { exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Çalışmalarım", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Çalışmalar", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Ödevler", exact: true })).toHaveCount(0);
     await expect(nav.getByText("BEN", { exact: true })).toBeVisible();
   });
@@ -131,7 +131,7 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/denemeler");
     const studentExamMain = page.getByRole("main");
-    await expect(page.getByRole("heading", { name: "Denemelerin" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dış deneme sonuçların" })).toBeVisible();
     // Eski "işlem/yöntem · son 3 denemede N işaret" sinyal satırı tasarımda yok;
     // ekranın kendi özet bloğu doğrulanır.
     await expect(studentExamMain.getByText("Ders bazında").first()).toBeVisible();

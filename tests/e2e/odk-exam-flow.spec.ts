@@ -72,7 +72,7 @@ async function openRunnerFromPanel(page: Page) {
   await page.keyboard.press("Enter");
   await page.waitForURL(/\/panel\/odk\/ogrenci\/denemeler$/);
   await page.getByRole("link", { name: /E2E Canlı Matematik Denemesi/ }).click();
-  await page.getByRole("button", { name: "Denemeye devam et" }).click();
+  await page.getByRole("button", { name: "Denemeye Devam Et" }).click();
   await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}/coz$`));
   if (await page.getByRole("button", { name: /Cevaplar/ }).isVisible()) {
     await page.getByRole("button", { name: /Cevaplar/ }).click();
@@ -172,7 +172,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`));
-    await expect(page.getByText("Denemen teslim edildi.")).toBeVisible();
+    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
     expect((await page.request.get(`/api/odk/student/exams/${examId}/answer-key`)).status()).toBe(404);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/sonuc`);
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
@@ -188,7 +188,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
 
     await apiLogin(page, account.email);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/sonuc`);
-    await expect(page.getByRole("heading", { name: "E2E Canlı Matematik Denemesi" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Deneme Sonucun" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Soru cevap dökümü" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Cevap anahtarı PDF" })).toHaveCount(0);
   });
@@ -203,7 +203,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await login(page);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`), { timeout: 20_000 });
-    await expect(page.getByText("Denemen teslim edildi.")).toBeVisible();
+    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
     const attempt = await prisma.odkExamAttempt.findUniqueOrThrow({ where: { id: attemptId } });
     expect(attempt.status).toBe("AUTO_SUBMITTED");
   });

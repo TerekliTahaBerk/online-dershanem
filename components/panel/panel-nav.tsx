@@ -32,8 +32,8 @@ function studentSections(root: string, products: ProductCode[], flags: PanelFeat
 
   return [
     ...section("BUGÜN", [
-      { href: root, label: "Ana Sayfa" },
-      { href: `${root}/odevler`, label: "Çalışmalarım" },
+      { href: root, label: "Bugün" },
+      { href: `${root}/odevler`, label: "Çalışmalar" },
     ]),
     ...section(
       "DERSHANEM",
@@ -61,8 +61,8 @@ function studentSections(root: string, products: ProductCode[], flags: PanelFeat
       { href: `${root}/gelisim`, label: "Gelişimim" },
       ...(flags.studentCheckIn ? [{ href: `${root}/check-in`, label: "Nasılım?" }] : []),
       ...(flags.dinoAi ? [{ href: `${root}/dino`, label: "Dino AI" }] : []),
-      ...commonNav(flags),
     ]),
+    ...section("AYARLAR", commonNav(flags)),
   ];
 }
 
@@ -179,19 +179,25 @@ export function mobilePrimaryNav(
   root: string,
 ): NavItem[] {
   const hasOD = products.includes("OD");
+  const hasOK = products.includes("OK");
   const hasODK = products.includes("ODK");
 
   if (role === "STUDENT") {
-    return [
+    const primary = [
       { href: root, label: "Bugün" },
       { href: `${root}/odevler`, label: "Çalışmalar" },
-      ...(hasOD ? [{ href: `${root}/takvim`, label: "Dersler" }] : []),
+      ...(hasOD
+        ? [{ href: `${root}/takvim`, label: "Dersler" }]
+        : flags.adaptivePlan && hasOK
+          ? [{ href: `${root}/plan`, label: "Haftalık Plan" }]
+          : []),
       ...(hasODK
         ? [{ href: "/panel/odk/ogrenci/denemeler", label: "Denemeler" }]
-        : hasOD
-          ? [{ href: `${root}/denemeler`, label: "Denemeler" }]
-          : []),
-    ].slice(0, 4);
+        : hasOK
+            ? [{ href: `${root}/hedefler`, label: "Hedefler" }]
+            : []),
+    ];
+    return primary.slice(0, 4);
   }
 
   if (role === "TEACHER") {

@@ -202,6 +202,11 @@ test("yeni funnel eventleri bounded alanlar dışında veri taşımaz", () => {
     properties: { product: "ODK", actionKind: "OPEN_PLAN", reasonCode: "NEEDS_REVIEW", ageBand: "0-2D", evidenceBand: "MEDIUM", role: "STUDENT" },
   });
   assert.equal(odk.success, true);
+  const studentOdkClick = panelEventSchema.safeParse({
+    name: "student_next_action_clicked",
+    properties: { product: "ODK", actionKind: "RESUME_ODK_ATTEMPT", reasonCode: "ODK_ACTIVE_ATTEMPT", ageBand: "0-24H", evidenceBand: "NA", role: "STUDENT" },
+  });
+  assert.equal(studentOdkClick.success, true);
   assert.equal(panelEventSchema.safeParse({
     name: "parent_action_clicked",
     properties: { product: "PARENT", actionKind: "DIGEST_FEEDBACK", reasonCode: "HELPFUL", ageBand: "NA", evidenceBand: "NA", role: "PARENT", email: "secret@example.com" },

@@ -1,4 +1,4 @@
-import type { ProductCode } from "@prisma/client";
+import type { OdkExamStatus, ProductCode } from "@prisma/client";
 import { netScore } from "@/lib/goals";
 import { istanbulDayStart, istanbulNextDayStart } from "@/lib/istanbul-time";
 
@@ -16,7 +16,24 @@ type PlanTaskRow = {
   durationMinutes: number;
   scheduledFor: Date;
   status: string;
+  sourceType?: "ASSIGNMENT" | "REVIEW" | "WEAK_OUTCOME" | "EXAM_PREP" | "RECOVERY";
+  sourceReferenceId?: string | null;
   reasonCode: "DUE_SOON" | "REVIEW_DUE" | "NEEDS_REVIEW" | "EXAM_APPROACHING" | "CAPACITY_BALANCE" | "MISSED_LESSON";
+};
+
+type OdkExamSignalRow = {
+  id: string;
+  title: string;
+  status: OdkExamStatus;
+  startsAt: Date | null;
+  endsAt: Date | null;
+  hasActiveAttempt: boolean;
+};
+
+type ReviewQueueRow = {
+  id: string;
+  title: string;
+  dueAt: Date;
 };
 
 type ExamRow = {
@@ -34,7 +51,7 @@ type ExamRow = {
 export type StudentHomeProductData = {
   OD: {
     todayLessons: LessonRow[];
-    nextRecovery: { id: string; lessonTitle: string; dueAt: Date } | null;
+    nextRecovery: { id: string; lessonId: string; lessonTitle: string; dueAt: Date } | null;
   } | null;
   OK: {
     weeklyPlan: {
@@ -43,8 +60,11 @@ export type StudentHomeProductData = {
       tasks: Array<PlanTaskRow & { done: boolean }>;
     } | null;
     todayTasks: PlanTaskRow[];
+    overdueTasks: PlanTaskRow[];
   } | null;
   ODK: {
+    activeAttempt: OdkExamSignalRow | null;
+    upcomingExam: OdkExamSignalRow | null;
     latestExam: {
       id: string;
       title: string;
@@ -60,14 +80,19 @@ export type StudentHomeProductData = {
     } | null;
     trend: Array<{ takenAt: Date; net: number }>;
   } | null;
+  SHARED: {
+    dueReview: ReviewQueueRow | null;
+  } | null;
 };
 
 export type StudentHomeQueries = {
   listEnrollmentGroupIds(studentId: string): Promise<string[]>;
   listTodayLessons(groupIds: string[], dayStart: Date, dayEnd: Date): Promise<LessonRow[]>;
-  getNextRecoveryPackage(studentId: string): Promise<{ id: string; lessonTitle: string; dueAt: Date } | null>;
+  getNextRecoveryPackage(studentId: string): Promise<{ id: string; lessonId: string; lessonTitle: string; dueAt: Date } | null>;
   getWeeklyPlan(studentId: string): Promise<{ tasks: PlanTaskRow[] } | null>;
   listRecentExams(studentId: string): Promise<ExamRow[]>;
+  listOdkExamSignals(studentUserId: string): Promise<OdkExamSignalRow[]>;
+  getDueReview(studentId: string, now: Date): Promise<ReviewQueueRow | null>;
 };
 
 function examNet(sections: ExamRow["sections"]): number {
@@ -80,6 +105,7 @@ function examNet(sections: ExamRow["sections"]): number {
 /** Her ürün sorgusu yalnız ilgili entitlement varsa başlatılır. */
 export async function loadStudentHomeProductData(input: {
   studentId: string;
+  studentUserId: string;
   products: readonly ProductCode[];
   now: Date;
   queries: StudentHomeQueries;
@@ -113,18 +139,33 @@ export async function loadStudentHomeProductData(input: {
               }
             : null,
           todayTasks: tasks.filter(
-            (task) => task.scheduledFor >= dayStart && task.scheduledFor < dayEnd,
+            (task) =>
+              task.status === "PLANNED" &&
+              task.scheduledFor >= dayStart &&
+              task.scheduledFor < dayEnd,
+          ),
+          overdueTasks: tasks.filter(
+            (task) => task.status === "PLANNED" && task.scheduledFor < dayStart,
           ),
         };
       })
     : Promise.resolve(null);
 
   const odkPromise = input.products.includes("ODK")
-    ? input.queries.listRecentExams(input.studentId).then((exams) => {
+    ? Promise.all([
+        input.queries.listRecentExams(input.studentId),
+        input.queries.listOdkExamSignals(input.studentUserId),
+      ]).then(([exams, examSignals]) => {
         const latest = exams[0] ?? null;
         const previous = exams[1] ?? null;
         const latestNet = latest ? examNet(latest.sections) : null;
+        const activeAttempt = examSignals.find((exam) => exam.hasActiveAttempt) ?? null;
+        const upcomingExam =
+          examSignals.find((exam) => !exam.hasActiveAttempt && (!exam.endsAt || exam.endsAt > input.now)) ??
+          null;
         return {
+          activeAttempt,
+          upcomingExam,
           latestExam:
             latest && latestNet !== null
               ? {
@@ -151,6 +192,17 @@ export async function loadStudentHomeProductData(input: {
       })
     : Promise.resolve(null);
 
-  const [OD, OK, ODK] = await Promise.all([odPromise, okPromise, odkPromise]);
-  return { OD, OK, ODK };
+  const sharedPromise = input.products.includes("OD")
+    ? input.queries.getDueReview(input.studentId, input.now).then((dueReview) => ({
+        dueReview,
+      }))
+    : Promise.resolve(null);
+
+  const [OD, OK, ODK, SHARED] = await Promise.all([
+    odPromise,
+    okPromise,
+    odkPromise,
+    sharedPromise,
+  ]);
+  return { OD, OK, ODK, SHARED };
 }

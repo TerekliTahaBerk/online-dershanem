@@ -40,6 +40,12 @@ function createQueries() {
         },
       ];
     },
+    async listOdkExamSignals() {
+      return [];
+    },
+    async getDueReview() {
+      return null;
+    },
   };
   return { calls, queries };
 }
@@ -48,6 +54,7 @@ test("ODK entitlement yoksa deneme sorgusu çalışmaz ve ODK bloğu dönmez", a
   const { calls, queries } = createQueries();
   const data = await loadStudentHomeProductData({
     studentId: "student-1",
+    studentUserId: "user-1",
     products: ["OD", "OK"],
     now: new Date("2026-08-30T12:00:00.000Z"),
     queries,
@@ -63,6 +70,7 @@ test("ODK-only öğrenci yalnız ODK sorgusunu ve DTO bloğunu alır", async () 
   const { calls, queries } = createQueries();
   const data = await loadStudentHomeProductData({
     studentId: "student-1",
+    studentUserId: "user-1",
     products: ["ODK"],
     now: new Date("2026-08-30T12:00:00.000Z"),
     queries,
@@ -85,6 +93,7 @@ test("öğrenci ana sayfasının bugün aralığı İstanbul 00:00 sınırını 
 
   await loadStudentHomeProductData({
     studentId: "student-1",
+    studentUserId: "user-1",
     products: ["OD"],
     now: new Date("2026-08-29T21:30:00.000Z"), // İstanbul 00:30
     queries,
@@ -104,11 +113,13 @@ test("OD bloğu yayımlanmış telafi adayını taşır", async () => {
   const { queries } = createQueries();
   queries.getNextRecoveryPackage = async () => ({
     id: "recovery-1",
+    lessonId: "lesson-1",
     lessonTitle: "Köklü ifadeler",
     dueAt: new Date("2026-08-31T12:00:00.000Z"),
   });
   const data = await loadStudentHomeProductData({
     studentId: "student-1",
+    studentUserId: "user-1",
     products: ["OD"],
     now: new Date("2026-08-30T12:00:00.000Z"),
     queries,

@@ -55,12 +55,5 @@ export function buildResultNextStepRecommendations(input: {
       href: input.recoveryHref,
     });
   }
-  if (!input.hasOK && !input.hasOD && recommendations.length < 2) {
-    recommendations.push({
-      tone: "secondary",
-      title: "20 dk kısa tekrar",
-      detail: "Yanlış ve boş soruları adım adım yeniden çöz",
-    });
-  }
   return recommendations.slice(0, 3);
 }

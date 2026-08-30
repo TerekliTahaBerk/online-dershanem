@@ -28,14 +28,29 @@ export async function listStudentExams(studentUserId: string) {
     orderBy: [{ startsAt: "desc" }],
     take: 50,
     select: {
-      id: true, title: true, family: true, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true,
+      id: true, title: true, family: true, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true, resultsReleasedAt: true,
       currentVersion: { select: { durationMinutes: true } },
       attempts: { where: { studentUserId }, orderBy: { attemptNumber: "desc" }, take: 1, select: { id: true, status: true, deadlineAt: true, submittedAt: true } },
     },
   }).then((exams) => exams.map((exam) => {
     const grant = grants.get(exam.id);
     const schedule = grant ? contractExamSchedule(grant.exam) : null;
-    return { ...exam, ...(schedule || {}), meetRequired: Boolean(grant?.exam.liveServiceRequired && grant.liveService), serverNow: now };
+    const startDecision = schedule && exam.currentVersion
+      ? decideAttemptStart({
+          status: exam.status,
+          ...schedule,
+          durationMinutes: exam.currentVersion.durationMinutes,
+        }, now)
+      : { ok: false as const, code: "NOT_SCHEDULED" as const };
+    const resultAvailable = grant ? contractResultAvailable(grant.exam, exam) : false;
+    return {
+      ...exam,
+      ...(schedule || {}),
+      meetRequired: Boolean(grant?.exam.liveServiceRequired && grant.liveService),
+      serverNow: now,
+      startDecision,
+      resultAvailable,
+    };
   }));
 }
 

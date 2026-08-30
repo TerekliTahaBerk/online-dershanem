@@ -4,7 +4,7 @@ import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
-import { PanelHeading, PanelEmpty, PanelCard, PanelAttentionCard } from "@/components/panel/ui";
+import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { addIstanbulCalendarDays, formatIstanbulDateInput, ISTANBUL_TIME_ZONE, istanbulWeekStart } from "@/lib/istanbul-time";
 
@@ -17,11 +17,9 @@ export const dynamic = "force-dynamic";
  * route'u açamaz — guard `requireProductRole("OK", …)`.
  *
  * Sayfa tek `<h1>` (PanelHeading) taşır; kalan tüm hiyerarşi
- * `StudentAdaptivePlan` içinde kurulur: bugünkü odak (primary), haftalık
- * plan (tek liste, aynı görev iki kez render edilmez), tek tamamlanma
- * göstergesi, varsayılan kapalı tercihler paneli ve onaylı plan üzerinde
- * bastırmayan bir değişiklik isteği akışı. Koç bilgisi burada, sayfa
- * düzeyinde, ikincil/kompakt bir şerit olarak kalır.
+ * `StudentAdaptivePlan` içinde kurulur: bugünkü odak, bugünkü çalışmalar,
+ * haftalık ilerleme, koç bölümü, haftanın kalanı, değişiklik/destek ve
+ * en altta tercihler. Sunucu tarafı burada yalnız veriyi toplar.
  */
 
 const RANGE = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
@@ -84,28 +82,6 @@ export default async function StudentPlanPage() {
         description={start && end ? `${RANGE.format(start)} – ${RANGE.format(end)}` : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."}
       />
 
-      {coaching ? (
-        coaching.overdue ? (
-          <PanelAttentionCard
-            className="mt-4"
-            tone="warning"
-            title={`${coaching.coachName} · görüşme zamanı geçti`}
-            body={`Sonraki görüşme: ${coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}${coaching.focus ? ` · Haftanın odağı: ${coaching.focus}` : ""}${coaching.sharedNote ? ` · ${coaching.sharedNote}` : ""}`}
-          />
-        ) : (
-          <PanelCard className="mt-4 border-dc-line-soft bg-dc-surface-soft px-4 py-2.5 text-[12.5px] font-medium text-dc-ink-muted">
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
-              <span className="font-bold text-dc-ink-body">{coaching.coachName}</span>
-              <span>
-                Sonraki görüşme: {coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}
-              </span>
-              {coaching.focus ? <span>Haftanın odağı: {coaching.focus}</span> : null}
-            </div>
-            {coaching.sharedNote ? <p className="mt-1.5 text-dc-ink-body">{coaching.sharedNote}</p> : null}
-          </PanelCard>
-        )
-      ) : null}
-
       <div className="mt-6">
         <StudentAdaptivePlan
           today={formatIstanbulDateInput(new Date())}
@@ -136,6 +112,17 @@ export default async function StudentPlanPage() {
                     reasonCode: task.reasonCode,
                     status: task.status,
                   })),
+                }
+              : null
+          }
+          initialCoaching={
+            coaching
+              ? {
+                  coachName: coaching.coachName,
+                  nextScheduledAt: coaching.nextScheduledAt ? coaching.nextScheduledAt.toISOString() : null,
+                  sharedNote: coaching.sharedNote,
+                  focus: coaching.focus,
+                  overdue: coaching.overdue,
                 }
               : null
           }

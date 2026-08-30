@@ -1,5 +1,8 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { netScore } from "@/lib/goals";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentWeeklyGoal } from "@/components/panel/student-weekly-goal";
 import { PanelHeading, PanelStatCard, PanelEmpty } from "@/components/panel/ui";
@@ -22,11 +25,12 @@ const SERIES_COLORS = ["#14976B", "#E0A34A", "#5C7BA6", "#9C5340", "#6B7A73"];
 const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
 
 function netFromSection(section: { correctCount: number; incorrectCount: number }) {
-  return Number((section.correctCount - section.incorrectCount / 4).toFixed(2));
+  return Number(netScore(section.correctCount, section.incorrectCount).toFixed(2));
 }
 
 export default async function StudentProgressPage() {
   const session = await requireRole("STUDENT");
+  const flags = getPanelFeatureFlags();
   const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
 
   const shell = (children: React.ReactNode) => (
@@ -158,6 +162,19 @@ export default async function StudentProgressPage() {
               />
             ) : null}
           </div>
+
+          {flags.mockExamAnalysis ? (
+            <div className="mt-5 rounded-2xl border border-dc-line-soft bg-white p-4">
+              <h2 className="text-sm font-bold text-dc-ink">Dış Deneme Sonucu</h2>
+              <p className="mt-1 text-xs leading-6 text-dc-ink-muted">
+                Okulda, kursta veya başka bir platformda çözdüğün deneme sonucunu buraya
+                ekleyebilirsin.
+              </p>
+              <Link href="/panel/ogrenci/denemeler" className="panel-quick-action mt-3 inline-flex">
+                Dış Deneme Ekle
+              </Link>
+            </div>
+          ) : null}
         </>
       )}
     </>,

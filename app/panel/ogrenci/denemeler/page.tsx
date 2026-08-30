@@ -5,6 +5,7 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
 import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
+import { netScore } from "@/lib/goals";
 import { PanelHeading, PanelCard, PanelEmpty } from "@/components/panel/ui";
 import { DinoInsightCard } from "@/components/panel/student/home-cards";
 
@@ -26,7 +27,7 @@ const fmt = (v: number) =>
   v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const net = (s: { correctCount: number; incorrectCount: number }) =>
-  s.correctCount - s.incorrectCount / 4;
+  netScore(s.correctCount, s.incorrectCount);
 
 export default async function StudentExamResultPage({
   searchParams,
@@ -43,7 +44,7 @@ export default async function StudentExamResultPage({
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Denemeler"
+      pageTitle="Dış deneme sonuçları"
     >
       <div className="max-w-[1040px]">{children}</div>
     </PanelShell>
@@ -52,10 +53,10 @@ export default async function StudentExamResultPage({
   if (!profile) {
     return shell(
       <>
-        <PanelHeading title="Denemelerin" />
+        <PanelHeading title="Dış deneme sonuçların" />
         <PanelEmpty
           title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında deneme sonuçların burada açılır."
+          body="Öğrenci profilin tamamlandığında dış deneme sonuçların burada açılır."
         />
       </>,
     );
@@ -92,8 +93,8 @@ export default async function StudentExamResultPage({
     return shell(
       <>
         <PanelHeading
-          title="Denemelerin"
-          description="İlk deneme sonucunu aşağıdan gir; analiz ve karşılaştırma ondan sonra açılır."
+          title="Dış deneme sonuçların"
+          description="Okulda, kursta veya başka bir platformda çözdüğün denemenin sonucunu gelişim takibine ekleyebilirsin."
         />
         <div className="mt-6">{examEntry}</div>
       </>,
@@ -119,7 +120,7 @@ export default async function StudentExamResultPage({
   return shell(
     <>
       <PanelHeading
-        eyebrow="Deneme Kulübüm · Sonuçlar"
+        eyebrow="Dış Deneme Sonuçları"
         title={current.title || current.exam}
         actions={
           exams.length > 1 ? (

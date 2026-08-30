@@ -172,9 +172,9 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({
     name: z.literal("student_next_action_viewed"),
     properties: z.object({
-      product: z.enum(["OD", "OK"]),
-      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN"]),
-      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE"]),
+      product: z.enum(["OD", "OK", "ODK", "SHARED"]),
+      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN", "OPEN_ODK_EXAM", "RESUME_ODK_ATTEMPT", "OPEN_REVIEW"]),
+      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "PLAN_OVERDUE", "ODK_ACTIVE_ATTEMPT", "ODK_EXAM_WINDOW"]),
       ageBand: boundedAgeBand,
       evidenceBand: z.literal("NA"),
       role: z.literal("STUDENT"),
@@ -183,9 +183,9 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({
     name: z.literal("student_next_action_clicked"),
     properties: z.object({
-      product: z.enum(["OD", "OK"]),
-      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN"]),
-      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE"]),
+      product: z.enum(["OD", "OK", "ODK", "SHARED"]),
+      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN", "OPEN_ODK_EXAM", "RESUME_ODK_ATTEMPT", "OPEN_REVIEW"]),
+      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "PLAN_OVERDUE", "ODK_ACTIVE_ATTEMPT", "ODK_EXAM_WINDOW"]),
       ageBand: boundedAgeBand,
       evidenceBand: z.literal("NA"),
       role: z.literal("STUDENT"),
