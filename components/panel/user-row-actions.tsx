@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Loader2, Pause, Play } from "lucide-react";
+import { KeyRound, Loader2, Pause, Play, Trash2 } from "lucide-react";
 import type { UserStatus } from "@prisma/client";
 import { TempPasswordReveal } from "@/components/panel/temp-password-reveal";
 
@@ -22,7 +22,7 @@ export function UserRowActions({
   isSelf: boolean;
 }) {
   const router = useRouter();
-  const [pending, setPending] = useState<"reset" | "status" | null>(null);
+  const [pending, setPending] = useState<"reset" | "status" | "delete" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tempPassword, setTempPassword] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState(status);
@@ -67,6 +67,21 @@ export function UserRowActions({
     setPending(null);
   }
 
+  async function deleteAccount() {
+    if (!confirm(`${email} hesabı kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?`)) return;
+    setError(null);
+    setPending("delete");
+    try {
+      const r = await fetch(`/api/panel/users/${userId}`, { method: "DELETE" });
+      const d = (await r.json().catch(() => null)) as { error?: string } | null;
+      if (!r.ok) setError(d?.error ?? "Hesap silinemedi.");
+      else router.refresh();
+    } catch {
+      setError("Bağlantı kurulamadı.");
+    }
+    setPending(null);
+  }
+
   if (tempPassword) {
     return (
       <TempPasswordReveal
@@ -96,16 +111,32 @@ export function UserRowActions({
 
         {/* Kendini askıya alma butonu hiç gösterilmez — sunucu da reddeder. */}
         {isSelf ? null : (
-          <button type="button" onClick={toggleStatus} disabled={pending !== null} className={btn}>
-            {pending === "status" ? (
-              <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-            ) : currentStatus === "ACTIVE" ? (
-              <Pause size={12} aria-hidden="true" />
-            ) : (
-              <Play size={12} aria-hidden="true" />
-            )}
-            {currentStatus === "ACTIVE" ? "Askıya al" : "Aktifleştir"}
-          </button>
+          <>
+            <button type="button" onClick={toggleStatus} disabled={pending !== null} className={btn}>
+              {pending === "status" ? (
+                <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              ) : currentStatus === "ACTIVE" ? (
+                <Pause size={12} aria-hidden="true" />
+              ) : (
+                <Play size={12} aria-hidden="true" />
+              )}
+              {currentStatus === "ACTIVE" ? "Askıya al" : "Aktifleştir"}
+            </button>
+
+            <button
+              type="button"
+              onClick={deleteAccount}
+              disabled={pending !== null}
+              className={`${btn} border-rose-200 text-rose-700 hover:border-rose-300 hover:text-rose-800`}
+            >
+              {pending === "delete" ? (
+                <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              ) : (
+                <Trash2 size={12} aria-hidden="true" />
+              )}
+              Hesabı sil
+            </button>
+          </>
         )}
       </div>
 
