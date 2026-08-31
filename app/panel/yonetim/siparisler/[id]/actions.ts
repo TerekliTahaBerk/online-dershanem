@@ -34,7 +34,7 @@ export async function retryOrderProvisioning(formData: FormData) {
 
   const order = await prisma.odOrder.findUnique({
     where: { id: orderId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, userId: true },
   });
   if (!order) return;
 
@@ -64,4 +64,6 @@ export async function retryOrderProvisioning(formData: FormData) {
   });
 
   revalidatePath(`/panel/yonetim/siparisler/${orderId}`);
+  revalidatePath("/panel/yonetim/ogrenciler");
+  if (order.userId) revalidatePath(`/panel/yonetim/kullanicilar/${order.userId}`);
 }

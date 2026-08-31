@@ -56,7 +56,9 @@ const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "dikkat", label: "Dikkat gerekenler" },
   { value: "profil", label: "Profil eksik" },
   { value: "erisim-yok", label: "Erişim eksik" },
+  { value: "davet", label: "Davet bekliyor" },
   { value: "askida", label: "Askıda" },
+  { value: "arsiv", label: "Arşivde" },
   { value: "parola", label: "Parola bekliyor" },
 ];
 
@@ -127,7 +129,9 @@ export default async function UsersPage({
         }
       : {}),
     ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
-    ...(durum === "parola" ? { mustChangePassword: true } : {}),
+    ...(durum === "arsiv" ? { status: "ARCHIVED" as const } : {}),
+    ...(durum === "davet" ? { inviteAcceptedAt: null } : {}),
+    ...(durum === "parola" ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } } : {}),
     ...(durum === "profil"
       ? {
           OR: [
@@ -170,6 +174,7 @@ export default async function UsersPage({
         role: true,
         status: true,
         mustChangePassword: true,
+        inviteAcceptedAt: true,
         lastLoginAt: true,
         createdAt: true,
         productMemberships: {
@@ -361,8 +366,12 @@ export default async function UsersPage({
                 const enrollment = user.studentProfile?.enrollments[0];
                 const status = user.odOrders.length
                   ? { label: "Ödeme alındı, erişim yok", tone: "warn" as const }
+                  : user.status === "ARCHIVED"
+                    ? { label: "Arşivde", tone: "warn" as const }
                   : user.status === "SUSPENDED"
                     ? { label: "Askıda", tone: "warn" as const }
+                    : !user.inviteAcceptedAt
+                      ? { label: "Davet bekliyor", tone: "warn" as const }
                     : user.mustChangePassword
                       ? { label: "Parola bekliyor", tone: "warn" as const }
                       : user.role === "STUDENT" && !user.studentProfile
@@ -402,6 +411,7 @@ export default async function UsersPage({
                         fullName={user.fullName}
                         phone={user.phone}
                         status={user.status}
+                        inviteAcceptedAt={user.inviteAcceptedAt?.toISOString() ?? null}
                         isSelf={user.id === session.userId}
                       />
                     </PanelTableCell>

@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Loader2, Pause, Play, Trash2 } from "lucide-react";
+import { Archive, KeyRound, Loader2, Pause, Play, RotateCcw, Trash2 } from "lucide-react";
 import type { UserStatus } from "@prisma/client";
-import { TempPasswordReveal } from "@/components/panel/temp-password-reveal";
+import { InviteLinkReveal } from "@/components/panel/temp-password-reveal";
 
 type DeletePreview = {
   canDelete: boolean;
   blockers: Array<{ code: string; label: string; count: number }>;
-  suggestedAction: "DELETE" | "SUSPEND";
+  suggestedAction: "DELETE" | "SUSPEND" | "ARCHIVE";
 };
 
 export function UserRowActions({
@@ -18,6 +18,7 @@ export function UserRowActions({
   fullName,
   phone,
   status,
+  inviteAcceptedAt,
   isSelf,
 }: {
   userId: string;
@@ -25,29 +26,32 @@ export function UserRowActions({
   fullName: string | null;
   phone: string | null;
   status: UserStatus;
+  inviteAcceptedAt: string | null;
   isSelf: boolean;
 }) {
   const router = useRouter();
-  const [pending, setPending] = useState<"reset" | "status" | "delete" | null>(null);
+  const [pending, setPending] = useState<"invite" | "status" | "delete" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [invite, setInvite] = useState<{ url: string; message: string; expiresAt: string } | null>(null);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletePreview, setDeletePreview] = useState<DeletePreview | null>(null);
   const [loadingDeletePreview, setLoadingDeletePreview] = useState(false);
 
-  async function resetPassword() {
-    // Yıkıcı olmayan ama etkisi büyük: kullanıcının açık oturumları kapanır.
-    if (!confirm(`${email} için yeni geçici parola oluşturulacak ve açık oturumları kapanacak. Devam edilsin mi?`)) return;
+  async function refreshInvite() {
+    if (!confirm(`${email} için davet bağlantısı yenilenecek ve açık oturumlar kapanacak. Devam edilsin mi?`)) return;
     setError(null);
-    setPending("reset");
+    setPending("invite");
     try {
       const r = await fetch(`/api/panel/users/${userId}/reset-password`, { method: "POST" });
-      const d = (await r.json()) as { tempPassword?: string; error?: string };
-      if (!r.ok || !d.tempPassword) {
-        setError(d.error ?? "Parola sıfırlanamadı.");
+      const d = (await r.json()) as {
+        invite?: { url: string; message: string; expiresAt: string };
+        error?: string;
+      };
+      if (!r.ok || !d.invite) {
+        setError(d.error ?? "Davet yenilenemedi.");
       } else {
-        setTempPassword(d.tempPassword);
+        setInvite(d.invite);
         router.refresh();
       }
     } catch {
@@ -56,9 +60,9 @@ export function UserRowActions({
     setPending(null);
   }
 
-  async function toggleStatus() {
-    const next: UserStatus = currentStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+  async function setStatus(next: UserStatus) {
     if (next === "SUSPENDED" && !confirm(`${email} askıya alınacak ve anında çıkış yapacak. Devam edilsin mi?`)) return;
+    if (next === "ARCHIVED" && !confirm(`${email} arşivlenecek ve panele erişimi kapanacak. Devam edilsin mi?`)) return;
     setError(null);
     setPending("status");
     try {
@@ -114,14 +118,16 @@ export function UserRowActions({
     }
   }
 
-  if (tempPassword) {
+  if (invite) {
     return (
-      <TempPasswordReveal
+      <InviteLinkReveal
         email={email}
         fullName={fullName}
         phone={phone}
-        tempPassword={tempPassword}
-        onDone={() => setTempPassword(null)}
+        inviteUrl={invite.url}
+        inviteMessage={invite.message}
+        inviteExpiresAt={invite.expiresAt}
+        onDone={() => setInvite(null)}
       />
     );
   }
@@ -129,32 +135,90 @@ export function UserRowActions({
   const btn =
     "inline-flex items-center gap-1.5 rounded-full border border-[var(--site-line)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-50";
 
+  const inviteButtonText = inviteAcceptedAt ? "Daveti yenile" : "Daveti gönder";
+  const canSuspend = currentStatus === "ACTIVE";
+  const canActivate = currentStatus === "SUSPENDED";
+  const canArchive = currentStatus !== "ARCHIVED";
+
   return (
     <>
       <div className="flex flex-col items-start gap-1.5 sm:items-end">
         <div className="flex flex-wrap gap-1.5">
-        <button type="button" onClick={resetPassword} disabled={pending !== null} className={btn}>
-          {pending === "reset" ? (
+        <button type="button" onClick={refreshInvite} disabled={pending !== null} className={btn}>
+          {pending === "invite" ? (
             <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
           ) : (
             <KeyRound size={12} aria-hidden="true" />
           )}
-          Parola ver
+          {inviteButtonText}
         </button>
 
         {/* Kendini askıya alma butonu hiç gösterilmez — sunucu da reddeder. */}
         {isSelf ? null : (
           <>
-            <button type="button" onClick={toggleStatus} disabled={pending !== null} className={btn}>
-              {pending === "status" ? (
-                <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-              ) : currentStatus === "ACTIVE" ? (
-                <Pause size={12} aria-hidden="true" />
-              ) : (
-                <Play size={12} aria-hidden="true" />
-              )}
-              {currentStatus === "ACTIVE" ? "Askıya al" : "Aktifleştir"}
-            </button>
+            {canSuspend ? (
+              <button
+                type="button"
+                onClick={() => void setStatus("SUSPENDED")}
+                disabled={pending !== null}
+                className={btn}
+              >
+                {pending === "status" ? (
+                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                ) : (
+                  <Pause size={12} aria-hidden="true" />
+                )}
+                Askıya al
+              </button>
+            ) : null}
+
+            {canActivate ? (
+              <button
+                type="button"
+                onClick={() => void setStatus("ACTIVE")}
+                disabled={pending !== null}
+                className={btn}
+              >
+                {pending === "status" ? (
+                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                ) : (
+                  <Play size={12} aria-hidden="true" />
+                )}
+                Aktifleştir
+              </button>
+            ) : null}
+
+            {currentStatus === "ARCHIVED" ? (
+              <button
+                type="button"
+                onClick={() => void setStatus("ACTIVE")}
+                disabled={pending !== null}
+                className={btn}
+              >
+                {pending === "status" ? (
+                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                ) : (
+                  <RotateCcw size={12} aria-hidden="true" />
+                )}
+                Arşivden çıkar
+              </button>
+            ) : null}
+
+            {canArchive ? (
+              <button
+                type="button"
+                onClick={() => void setStatus("ARCHIVED")}
+                disabled={pending !== null}
+                className={btn}
+              >
+                {pending === "status" ? (
+                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                ) : (
+                  <Archive size={12} aria-hidden="true" />
+                )}
+                Arşivle
+              </button>
+            ) : null}
 
             <button
               type="button"
@@ -214,7 +278,7 @@ export function UserRowActions({
               ) : (
                 <div className="mt-3 rounded-[10px] border border-amber-200 bg-amber-50 p-3">
                   <p className="text-[12.5px] font-semibold text-amber-800">
-                    Bu hesap silinemez; güvenli aksiyon askıya alma.
+                    Bu hesap silinemez; önce arşivleyin veya güvenli aksiyon askıya alma.
                   </p>
                   <ul className="mt-1.5 space-y-1 text-[12.5px] text-amber-900">
                     {deletePreview.blockers.map((blocker) => (

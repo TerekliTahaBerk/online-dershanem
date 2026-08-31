@@ -87,7 +87,7 @@ async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, 
   return { ok: false, response: NextResponse.json({ error: pilot.reason === "KILL_SWITCH" ? "Pilot geçici olarak durduruldu." : "Bu pilot erişimi etkin değil." }, { status: pilot.reason === "KILL_SWITCH" ? 503 : 404 }) };
 }
 
-/** Bildirim ve görünüm tercihi gibi iki üründe ortak hesap işlemleri. */
+/** Bildirim ve görünüm tercihi gibi ürünler arasında ortak hesap işlemleri. */
 export async function requireApiActiveUser(): Promise<ApiAuth> {
   return requireApiAuthorizedRole(["ADMIN", "TEACHER", "STUDENT", "PARENT"]);
 }

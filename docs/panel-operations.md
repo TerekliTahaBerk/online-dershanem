@@ -115,7 +115,7 @@ Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WR
 1. `/api/health/ready` yanıtında `status=ready`, `ready=true` ve bütün zorunlu kontrollerin `status=ok` olduğunu doğrulayın.
 2. Yönetim panelindeki “İlginizi bekleyenler” ve “E-posta kuyruğu” bölümlerini kontrol edin.
 3. `Yönetim > Eğitim > Öğrenciler` ekranında öğrenci kapsamını; `Yönetim > Eğitim > Kişiler` ekranında rol/profil bütünlüğü sinyallerini kontrol edin.
-4. Kalıcı silme öncesi kişi detayındaki “Hesap yaşam döngüsü” bölümünde silme etkisini doğrulayın; blocker varsa silmeyin, hesabı askıya alın.
+4. Kalıcı silme öncesi kişi detayındaki “Hesap yaşam döngüsü” bölümünde silme etkisini doğrulayın; blocker varsa silmeyin, hesabı arşivde tutun veya gerektiğinde askıya alın.
 5. Başarısız makbuzu “Yeniden dene” ile kuyruğa alın; cron en geç 15 dakika içinde yeniden dener.
 6. Eşleşmemiş ödenmiş siparişleri doğru öğrenci hesabına bağlayın.
 

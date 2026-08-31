@@ -28,7 +28,7 @@ export class OdProvisioningError extends Error {
 
 type DbClient = Prisma.TransactionClient;
 type Buyer = Record<string, unknown>;
-type IdentityUser = { id: string; role: UserRole; status: "ACTIVE" | "SUSPENDED" };
+type IdentityUser = { id: string; role: UserRole; status: "ACTIVE" | "SUSPENDED" | "ARCHIVED" };
 
 function textField(source: Buyer, key: string): string | null {
   const value = source[key];

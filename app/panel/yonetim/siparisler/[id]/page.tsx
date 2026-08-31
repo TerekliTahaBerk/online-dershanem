@@ -82,7 +82,7 @@ export default async function AdminOrderDetailPage({
       provisioningAttempts: true,
       provisioningError: true,
       provisionedAt: true,
-      user: { select: { id: true, fullName: true, email: true } },
+      user: { select: { id: true, fullName: true, email: true, studentProfile: { select: { id: true } } } },
       payments: {
         select: {
           status: true,
@@ -216,7 +216,11 @@ export default async function AdminOrderDetailPage({
             <div className="mt-4 flex flex-wrap gap-2.5">
               {order.user ? (
                 <Link
-                  href={`/panel/yonetim/kullanicilar/${order.user.id}`}
+                  href={
+                    order.user.studentProfile?.id
+                      ? `/panel/yonetim/ogrenciler/${order.user.studentProfile.id}`
+                      : `/panel/yonetim/kullanicilar/${order.user.id}`
+                  }
                   className="rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
                 >
                   Öğrenci kaydını aç

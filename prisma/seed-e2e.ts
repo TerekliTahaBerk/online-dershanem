@@ -140,9 +140,21 @@ async function main() {
         role: user.role,
         passwordHash,
         mustChangePassword: false,
+        inviteAcceptedAt: new Date(),
+        passwordChangedAt: new Date(),
         status: "ACTIVE",
       },
-      update: { passwordHash, fullName: user.fullName, role: user.role, status: "ACTIVE", mustChangePassword: false, failedAttempts: 0, lockedUntil: null },
+      update: {
+        passwordHash,
+        fullName: user.fullName,
+        role: user.role,
+        status: "ACTIVE",
+        mustChangePassword: false,
+        inviteAcceptedAt: new Date(),
+        passwordChangedAt: new Date(),
+        failedAttempts: 0,
+        lockedUntil: null,
+      },
     });
   }
 

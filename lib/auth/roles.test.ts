@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { UserRole } from "@prisma/client";
-import { LOGIN_PATH, PANEL_ROOT, PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, rolePath, roleLabel } from "./roles";
+import { LOGIN_PATH, PANEL_ROOT, PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, rolePath, roleLabel, roleStudentsPath } from "./roles";
 
 const ALL_ROLES: UserRole[] = ["ADMIN", "TEACHER", "STUDENT", "PARENT"];
 
@@ -68,4 +68,11 @@ test("ürün etiketleri kullanıcıya gösterilecek kadar açık", () => {
   assert.equal(productLabel("OD"), "Online Dershanem");
   assert.equal(productLabel("OK"), "Online Koçum");
   assert.equal(productLabel("ODK"), "Online Deneme Kulübüm");
+});
+
+test("öğrenciler menüsü rol bazında doğru hedefe gider", () => {
+  assert.equal(roleStudentsPath("ADMIN"), "/panel/yonetim/ogrenciler");
+  assert.equal(roleStudentsPath("TEACHER"), "/panel/ogretmen/gruplar");
+  assert.equal(roleStudentsPath("STUDENT"), null);
+  assert.equal(roleStudentsPath("PARENT"), null);
 });

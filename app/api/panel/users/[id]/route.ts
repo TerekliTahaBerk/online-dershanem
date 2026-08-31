@@ -81,12 +81,16 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     select: {
       id: true,
       role: true,
+      status: true,
       _count: { select: USER_DELETE_COUNT_SELECT },
     },
   });
   if (!target) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
 
   const blockers = collectDeleteBlockers(target._count);
+  if (target.status !== "ARCHIVED") {
+    blockers.unshift({ code: "not_archived", label: "hesap önce arşivlenmeli", count: 1 });
+  }
   if (target.role === "ADMIN") {
     const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
     if (adminCount <= 1) blockers.unshift({ code: "last_admin", label: "son yönetici hesabı", count: 1 });
@@ -95,7 +99,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   return NextResponse.json({
     canDelete: blockers.length === 0,
     blockers,
-    suggestedAction: blockers.length === 0 ? "DELETE" : "SUSPEND",
+    suggestedAction: blockers.length === 0 ? "DELETE" : target.status !== "ARCHIVED" ? "ARCHIVE" : "SUSPEND",
   });
 }
 
@@ -158,6 +162,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
       id: true,
       email: true,
       role: true,
+      status: true,
       _count: { select: USER_DELETE_COUNT_SELECT },
     },
   });
@@ -173,13 +178,20 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
         { status: 400 },
       );
     }
+
+    if (target.status !== "ARCHIVED") {
+      return NextResponse.json(
+        { error: "Kalıcı silmeden önce hesabı arşivleyin." },
+        { status: 409 },
+      );
+    }
   }
 
   const blockers = collectDeleteBlockers(target._count);
 
   if (blockers.length > 0) {
     return NextResponse.json(
-      { error: `Bu hesapta korunması gereken geçmiş var (${formatDeleteBlockers(blockers.map((item) => item.label))}). Silmek yerine askıya alın.` },
+      { error: `Bu hesapta korunması gereken geçmiş var (${formatDeleteBlockers(blockers.map((item) => item.label))}). Silmek yerine arşivde tutun.` },
       { status: 409 },
     );
   }

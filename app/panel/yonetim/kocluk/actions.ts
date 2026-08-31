@@ -70,4 +70,5 @@ export async function assignCoach(formData: FormData) {
   });
 
   revalidatePath("/panel/yonetim/kocluk");
+  revalidatePath("/panel/yonetim/ogrenciler");
 }

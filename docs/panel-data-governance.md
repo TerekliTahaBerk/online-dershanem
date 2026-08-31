@@ -68,9 +68,11 @@ Bu fazda akademik veya finansal veriyi otomatik silen bir cron özellikle eklenm
 ## Hesap yaşam döngüsü operasyon notu
 
 - `Yönetim > Eğitim > Öğrenciler` yalnız öğrenci hesaplarını gösterir; `Yönetim > Eğitim > Kişiler` tüm rollerde hesap operasyonu ve veri bütünlüğü kontrolü içindir.
+- Hesap açma sonrası kullanıcıya geçici parola yerine tek kullanımlık davet bağlantısı üretilir; bağlantı WhatsApp mesajı veya kopyala akışıyla iletilir.
 - Kalıcı silme denemesi öncesi sistem silme etkisini (bağlı geçmiş blokajları) hesaplar.
-- Blokaj varsa kalıcı silme reddedilir ve önerilen aksiyon askıya almadır.
-- Askıya alma geri alınabilir bir güvenlik aksiyonudur; kalıcı silme geri alınamaz.
+- Blokaj varsa kalıcı silme reddedilir; önerilen aksiyon önce arşivleme, gerekirse askıya almadır.
+- Askıya alma ve arşivleme geri alınabilir güvenlik aksiyonlarıdır; kalıcı silme geri alınamaz.
+- Kalıcı silme yalnız arşivli hesaplar için açılır; hard-delete blocker kontrolleri ayrıca korunur.
 
 ## Güvenlik regresyon kontrol listesi
 

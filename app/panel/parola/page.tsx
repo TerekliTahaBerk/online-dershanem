@@ -26,7 +26,7 @@ export default async function ChangePasswordPage() {
 
         <p className="mt-3 text-[14.5px] leading-7 text-[var(--site-body)]">
           {forced
-            ? "Hesabınızı ekibimiz açtı ve size geçici bir parola iletti. Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
+            ? "Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
             : "Yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapanır."}
         </p>
 

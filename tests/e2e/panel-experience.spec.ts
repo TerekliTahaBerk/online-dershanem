@@ -126,6 +126,13 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/yonetim/ogrenciler");
     await expect(page.getByRole("heading", { name: "Öğrenciler", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Öğrenci hesabı aç" })).toBeVisible();
+    const firstStudentLink = page.locator('a[href^="/panel/yonetim/ogrenciler/"]').first();
+    await expect(firstStudentLink).toBeVisible();
+    await firstStudentLink.click();
+    await expect(page.getByText("Öğrenci 360 operasyon", { exact: true })).toBeVisible();
+    await expect(page.getByText("Ürünler ve siparişler", { exact: true })).toBeVisible();
+    await expect(page.getByText("Atamalar ve yaklaşan etkinlik", { exact: true })).toBeVisible();
+    await expect(page.getByText("Veli bağlantıları", { exact: true })).toBeVisible();
 
     await page.goto("/panel/yonetim/kullanicilar");
     await expect(page.getByRole("heading", { name: "Kişiler", exact: true })).toBeVisible();

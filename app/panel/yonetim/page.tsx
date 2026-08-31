@@ -380,7 +380,7 @@ export default async function AdminHomePage() {
         title: `${accountSignals.deleteRiskUsers} hesapta geçmiş bağlı kayıt var`,
         description: "Bu hesaplar için kalıcı silme yerine askıya alma tercih edilmelidir.",
         href: "/panel/yonetim/kullanicilar",
-        ctaLabel: "Hesapları Aç",
+        ctaLabel: "Kişileri Aç",
       });
     }
   }

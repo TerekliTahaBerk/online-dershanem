@@ -72,6 +72,7 @@ async function main() {
         role: "ADMIN",
         passwordHash: await hashPassword(tempPassword),
         mustChangePassword: true,
+        inviteAcceptedAt: new Date(),
       },
     });
 

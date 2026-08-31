@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ProductCode, UserRole } from "@prisma/client";
-import { rolePath } from "@/lib/auth/roles";
+import { rolePath, roleStudentsPath } from "@/lib/auth/roles";
 import { usePanelFeatureFlags } from "@/components/panel/panel-feature-provider";
 import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
@@ -100,6 +100,7 @@ function parentSections(root: string, products: ProductCode[], flags: PanelFeatu
 }
 
 function teacherSections(root: string, flags: PanelFeatureFlags): NavSection[] {
+  const studentsHref = roleStudentsPath("TEACHER");
   return [
     ...section("BUGÜN", [
       { href: root, label: "Bugün" },
@@ -115,7 +116,7 @@ function teacherSections(root: string, flags: PanelFeatureFlags): NavSection[] {
     ...section("TAKİP", [
       ...(flags.studentCheckIn ? [{ href: `${root}/yardim`, label: "Yardım İsteyenler" }] : []),
       ...(flags.interventionInbox ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu" }] : []),
-      { href: `${root}/gruplar`, label: "Öğrenciler" },
+      ...(studentsHref ? [{ href: studentsHref, label: "Öğrenciler" }] : []),
     ]),
     ...section("ÖLÇME", [
       ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Denemeler" }] : []),
@@ -130,6 +131,7 @@ function teacherSections(root: string, flags: PanelFeatureFlags): NavSection[] {
 
 function adminSections(root: string, flags: PanelFeatureFlags): NavSection[] {
   const operationHref = flags.interventionInbox ? `${root}/mudahale` : `${root}/raporlar`;
+  const studentsHref = roleStudentsPath("ADMIN");
 
   return [
     ...section("BUGÜN", [
@@ -137,9 +139,10 @@ function adminSections(root: string, flags: PanelFeatureFlags): NavSection[] {
       { href: operationHref, label: "Operasyon" },
     ]),
     ...section("EĞİTİM", [
-      { href: `${root}/ogrenciler`, label: "Öğrenciler" },
-      { href: `${root}/kullanicilar`, label: "Kişiler" },
+      ...(studentsHref ? [{ href: studentsHref, label: "Öğrenciler" }] : []),
       { href: `${root}/egitmenler`, label: "Eğitmenler" },
+      { href: `${root}/veliler`, label: "Veliler" },
+      { href: `${root}/kullanicilar`, label: "Kişiler" },
       { href: `${root}/egitim`, label: "Dersler & Gruplar" },
       { href: `${root}/takvim`, label: "Takvim" },
     ]),

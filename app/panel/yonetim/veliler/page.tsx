@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
-import { productLabel } from "@/lib/auth/roles";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelHeading,
@@ -19,7 +18,7 @@ const PAGE_SIZE = 25;
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "", label: "Tümü" },
-  { value: "dikkat", label: "Dikkat gerekenler" },
+  { value: "baglantisiz", label: "Öğrenci bağlantısı yok" },
   { value: "davet", label: "Davet bekliyor" },
   { value: "askida", label: "Askıda" },
   { value: "arsiv", label: "Arşivde" },
@@ -31,7 +30,7 @@ function chipHref(base: Record<string, string>, key: string, value: string): str
   const qs = new URLSearchParams(
     Object.entries(next).filter(([, v]) => v) as [string, string][],
   ).toString();
-  return qs ? `/panel/yonetim/ogrenciler?${qs}` : "/panel/yonetim/ogrenciler";
+  return qs ? `/panel/yonetim/veliler?${qs}` : "/panel/yonetim/veliler";
 }
 
 function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
@@ -50,22 +49,21 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
   );
 }
 
-export default async function StudentsPage({
+export default async function ParentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; urun?: string; durum?: string; sayfa?: string }>;
+  searchParams: Promise<{ q?: string; durum?: string; sayfa?: string }>;
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
 
   const q = (sp.q ?? "").trim();
-  const urun = ["OD", "OK", "ODK"].includes(sp.urun ?? "") ? (sp.urun ?? "") : "";
   const durum = STATUS_FILTERS.some((s) => s.value === sp.durum) ? (sp.durum ?? "") : "";
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
-  const base = { q, urun, durum };
+  const base = { q, durum };
 
   const where: Prisma.UserWhereInput = {
-    role: "STUDENT",
+    role: "PARENT",
     ...(q
       ? {
           OR: [
@@ -75,27 +73,14 @@ export default async function StudentsPage({
           ],
         }
       : {}),
-    ...(urun
-      ? {
-          productMemberships: {
-            some: {
-              product: urun as "OD" | "OK" | "ODK",
-              revokedAt: null,
-              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-            },
-          },
-        }
-      : {}),
     ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
     ...(durum === "arsiv" ? { status: "ARCHIVED" as const } : {}),
     ...(durum === "davet" ? { inviteAcceptedAt: null } : {}),
     ...(durum === "parola" ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } } : {}),
-    ...(durum === "dikkat"
-      ? { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } }
-      : {}),
+    ...(durum === "baglantisiz" ? { parentStudents: { none: {} } } : {}),
   };
 
-  const [total, students, attentionCount] = await Promise.all([
+  const [total, parents, withoutRelationshipCount] = await Promise.all([
     prisma.user.count({ where }),
     prisma.user.findMany({
       where,
@@ -110,38 +95,19 @@ export default async function StudentsPage({
         status: true,
         inviteAcceptedAt: true,
         mustChangePassword: true,
-        productMemberships: {
-          where: { revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
-          select: { product: true },
-        },
-        odOrders: {
-          where: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
-          select: { id: true },
-          take: 1,
-        },
-        studentProfile: {
+        parentStudents: {
           select: {
-            id: true,
-            targetGoal: true,
-            enrollments: {
-              where: { endedAt: null },
-              select: {
-                group: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-              take: 2,
-            },
+            relationship: true,
+            student: { select: { user: { select: { fullName: true, email: true } } } },
           },
+          take: 3,
         },
       },
     }),
     prisma.user.count({
       where: {
-        role: "STUDENT",
-        odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } },
+        role: "PARENT",
+        parentStudents: { none: {} },
       },
     }),
   ]);
@@ -153,37 +119,36 @@ export default async function StudentsPage({
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Öğrenciler"
+      pageTitle="Veliler"
     >
       <div className="max-w-[1200px]">
         <PanelHeading
-          title="Öğrenciler"
-          description={`${total} öğrenci${
-            attentionCount ? ` · ${attentionCount} tanesi erişim bekliyor` : ""
+          title="Veliler"
+          description={`${total} veli${
+            withoutRelationshipCount ? ` · ${withoutRelationshipCount} tanesi bağlantısız` : ""
           }`}
           actions={
             <Link
               href="/panel/yonetim/kullanicilar#yeni-hesap"
               className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
-              Öğrenci hesabı aç
+              Veli hesabı aç
             </Link>
           }
         />
 
         <form method="get" role="search" className="mt-5 flex flex-wrap items-center gap-2.5">
-          <label className="sr-only" htmlFor="ogrenci-ara">
+          <label className="sr-only" htmlFor="veli-ara">
             Ad, e-posta veya telefon ara
           </label>
           <input
-            id="ogrenci-ara"
+            id="veli-ara"
             type="search"
             name="q"
             defaultValue={q}
             placeholder="Ad, e-posta ya da telefon ara"
             className="min-w-[240px] rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[14px] text-dc-ink placeholder:text-dc-ink-ghost"
           />
-          {urun ? <input type="hidden" name="urun" value={urun} /> : null}
           {durum ? <input type="hidden" name="durum" value={durum} /> : null}
           <button
             type="submit"
@@ -191,9 +156,9 @@ export default async function StudentsPage({
           >
             Ara
           </button>
-          {q || urun || durum ? (
+          {q || durum ? (
             <Link
-              href="/panel/yonetim/ogrenciler"
+              href="/panel/yonetim/veliler"
               className="text-[13.5px] font-semibold text-dc-brand hover:underline"
             >
               Filtreleri temizle
@@ -214,63 +179,59 @@ export default async function StudentsPage({
           ))}
         </div>
 
-        {students.length === 0 ? (
+        {parents.length === 0 ? (
           <PanelEmpty
-            title="Bu filtrelerle öğrenci bulunamadı."
+            title="Bu filtrelerle veli bulunamadı."
             body="Aramayı değiştirebilir ya da filtreleri temizleyebilirsin."
           />
         ) : (
           <div className="mt-5">
             <PanelTable
-              caption="Öğrenci kayıtları"
-              columns={["Öğrenci", "Hedef", "Ürünler", "Grup", "Durum", ""]}
+              caption="Veli kayıtları"
+              columns={["Veli", "Bağlı öğrenci", "Öğrenci listesi", "Durum", ""]}
             >
-              {students.map((student) => {
-                const products = student.productMemberships.map((m) => productLabel(m.product));
-                const enrollment = student.studentProfile?.enrollments[0];
-                const status = student.odOrders.length
-                  ? { label: "Ödeme alındı, erişim yok", tone: "warn" as const }
-                  : student.status === "ARCHIVED"
+              {parents.map((parent) => {
+                const status = parent.status === "SUSPENDED"
+                  ? { label: "Askıda", tone: "warn" as const }
+                  : parent.status === "ARCHIVED"
                     ? { label: "Arşivde", tone: "warn" as const }
-                    : student.status === "SUSPENDED"
-                    ? { label: "Askıda", tone: "warn" as const }
-                    : !student.inviteAcceptedAt
+                    : !parent.inviteAcceptedAt
                       ? { label: "Davet bekliyor", tone: "warn" as const }
-                    : student.mustChangePassword
-                      ? { label: "Parola bekliyor", tone: "warn" as const }
+                  : parent.mustChangePassword
+                    ? { label: "Parola bekliyor", tone: "warn" as const }
+                    : parent.parentStudents.length === 0
+                      ? { label: "Öğrenci bağlantısı yok", tone: "warn" as const }
                       : { label: "Aktif", tone: "ok" as const };
 
+                const relatedStudents = parent.parentStudents.map((link) => {
+                  const studentName = link.student.user.fullName || link.student.user.email;
+                  return link.relationship ? `${studentName} (${link.relationship})` : studentName;
+                });
+
                 return (
-                  <PanelTableRow key={student.id}>
+                  <PanelTableRow key={parent.id}>
                     <PanelTableCell>
                       <Link
-                        href={
-                          student.studentProfile?.id
-                            ? `/panel/yonetim/ogrenciler/${student.studentProfile.id}`
-                            : `/panel/yonetim/kullanicilar/${student.id}`
-                        }
+                        href={`/panel/yonetim/kullanicilar/${parent.id}`}
                         className="text-[14px] font-bold text-dc-ink underline-offset-2 hover:text-dc-brand-hover hover:underline"
                       >
-                        {student.fullName || student.email}
+                        {parent.fullName || parent.email}
                       </Link>
                       <span className="mt-0.5 block text-[12.5px] text-dc-ink-faint">
-                        {student.email}
+                        {parent.email}
                       </span>
                     </PanelTableCell>
-                    <PanelTableCell>{student.studentProfile?.targetGoal || "—"}</PanelTableCell>
-                    <PanelTableCell>{products.length ? products.join(" · ") : "—"}</PanelTableCell>
-                    <PanelTableCell>
-                      {enrollment ? enrollment.group.name : "—"}
-                    </PanelTableCell>
+                    <PanelTableCell>{parent.parentStudents.length}</PanelTableCell>
+                    <PanelTableCell>{relatedStudents.length ? relatedStudents.join(" · ") : "—"}</PanelTableCell>
                     <PanelTableCell tone={status.tone}>{status.label}</PanelTableCell>
                     <PanelTableCell>
                       <UserRowActions
-                        userId={student.id}
-                        email={student.email}
-                        fullName={student.fullName}
-                        phone={student.phone}
-                        status={student.status}
-                        inviteAcceptedAt={student.inviteAcceptedAt?.toISOString() ?? null}
+                        userId={parent.id}
+                        email={parent.email}
+                        fullName={parent.fullName}
+                        phone={parent.phone}
+                        status={parent.status}
+                        inviteAcceptedAt={parent.inviteAcceptedAt?.toISOString() ?? null}
                         isSelf={false}
                       />
                     </PanelTableCell>

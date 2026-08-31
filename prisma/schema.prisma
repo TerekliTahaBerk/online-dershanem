@@ -26,6 +26,7 @@ enum UserRole {
 enum UserStatus {
   ACTIVE
   SUSPENDED
+  ARCHIVED
 }
 
 enum MfaChallengePurpose {
@@ -273,14 +274,19 @@ model User {
   /// scrypt — biçim: `scrypt$N$r$p$salt_b64$hash_b64` (bkz. lib/auth/password.ts)
   passwordHash String @map("password_hash")
 
-  /// Admin geçici parola verdiği için ilk giriş zorunlu değişimle biter.
+  /// Davet bağlantısı tamamlanana kadar girişe izin verilmez.
   mustChangePassword Boolean @default(true) @map("must_change_password")
+  inviteTokenHash      String?   @unique @map("invite_token_hash")
+  inviteTokenExpiresAt DateTime? @map("invite_token_expires_at") @db.Timestamptz(3)
+  inviteSentAt         DateTime? @map("invite_sent_at") @db.Timestamptz(3)
+  inviteAcceptedAt     DateTime? @map("invite_accepted_at") @db.Timestamptz(3)
+  passwordChangedAt    DateTime? @map("password_changed_at") @db.Timestamptz(3)
 
   role   UserRole
   status UserStatus @default(ACTIVE)
 
   fullName String? @map("full_name")
-  /// Parola bu numaradan iletiliyor — panelde kritik alan.
+  /// Davet bağlantısı bu numaradan iletilebilir — panelde kritik alan.
   phone    String?
 
   failedAttempts Int       @default(0) @map("failed_attempts")
@@ -291,6 +297,10 @@ model User {
   createdById  String? @map("created_by_id")
   createdBy    User?   @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   createdUsers User[]  @relation("UserCreatedBy")
+  archivedAt   DateTime? @map("archived_at") @db.Timestamptz(3)
+  archivedById String?   @map("archived_by_id")
+  archivedBy   User?     @relation("UserArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
+  archivedUsers User[]   @relation("UserArchivedBy")
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -357,6 +367,7 @@ model User {
 
   @@index([role, status])
   @@index([createdById])
+  @@index([archivedById])
   @@map("users")
 }
 

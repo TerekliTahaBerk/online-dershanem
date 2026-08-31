@@ -63,7 +63,7 @@ test.describe("ODK ödeme → provisioning bütünlüğü", () => {
   test("mevcut OD öğrencisini yeniden kullanıp yalnız ODK erişimini ekler", async ({ request }) => {
     const email = `cross-sell-${crypto.randomUUID()}@example.com`;
     const passwordHash = (await prisma.user.findUniqueOrThrow({ where: { id: "e2e-user-student" }, select: { passwordHash: true } })).passwordHash;
-    const existing = await prisma.user.create({ data: { email, fullName: "Mevcut OD Öğrencisi", role: "STUDENT", passwordHash, mustChangePassword: false, studentProfile: { create: {} }, productMemberships: { create: { product: "OD", source: "MANUAL" } } } });
+    const existing = await prisma.user.create({ data: { email, fullName: "Mevcut OD Öğrencisi", role: "STUDENT", passwordHash, mustChangePassword: false, inviteAcceptedAt: new Date(), studentProfile: { create: {} }, productMemberships: { create: { product: "OD", source: "MANUAL" } } } });
     const { order, merchantOid } = await fixture("cross-sell", { email, fullName: "Mevcut OD Öğrencisi" });
     expect((await postPaytrCallback(request, { merchantOid, amountCents })).status()).toBe(200);
     const state = await chain(order.id, email);
@@ -112,7 +112,7 @@ test.describe("ODK ödeme → provisioning bütünlüğü", () => {
   test("membership ve entitlement revoke/expire edilince sınav başlangıcı kapanır", async ({ page }) => {
     const email = `access-${crypto.randomUUID()}@example.com`;
     const passwordHash = (await prisma.user.findUniqueOrThrow({ where: { id: "e2e-user-student" }, select: { passwordHash: true } })).passwordHash;
-    const user = await prisma.user.create({ data: { email, fullName: "Erişim Öğrencisi", role: "STUDENT", passwordHash, mustChangePassword: false, studentProfile: { create: {} }, productMemberships: { create: { product: "ODK", source: "PURCHASE" } } } });
+    const user = await prisma.user.create({ data: { email, fullName: "Erişim Öğrencisi", role: "STUDENT", passwordHash, mustChangePassword: false, inviteAcceptedAt: new Date(), studentProfile: { create: {} }, productMemberships: { create: { product: "ODK", source: "PURCHASE" } } } });
     const pack = await prisma.odkPackage.findUniqueOrThrow({ where: { id: "e2e-odk-package-live" } });
     const contractSnapshot = await testContract(pack.id);
     const order = await prisma.odkOrder.create({ data: { packageId: pack.id, status: "PAID", subtotalCents: pack.priceCents, totalCents: pack.priceCents, studentUserId: user.id, provisioningStatus: "SUCCEEDED", provisionedAt: new Date(), buyerInfo: { email }, contractSnapshot } });

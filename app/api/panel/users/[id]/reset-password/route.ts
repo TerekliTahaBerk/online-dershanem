@@ -3,18 +3,24 @@ import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
-import { generateTemporaryPassword, hashPassword } from "@/lib/auth/password";
+import {
+  buildInviteMessage,
+  buildInviteUrl,
+  issueInvitePlaceholderSecret,
+  issueUserInvite,
+  resolveAppOrigin,
+} from "@/lib/auth/invitation";
+import { hashPassword } from "@/lib/auth/password";
 import { revokeAllUserSessions } from "@/lib/auth/session";
 
 /**
- * Admin parola sıfırlama.
+ * Admin davet yenileme.
  *
  * Self-servis "şifremi unuttum" YOK — e-posta göndermiyoruz. Kullanıcı arar,
- * admin buradan sıfırlar, yeni geçici parolayı elden iletir.
+ * admin buradan daveti yeniler; kullanıcı linkten kendi parolasını belirler.
  *
- * Sıfırlama o kullanıcının TÜM oturumlarını iptal eder: parola sıfırlamanın
- * sebebi genelde "erişim kaybı veya şüphe"dir; eski oturumu ayakta bırakmak
- * sıfırlamayı anlamsız kılardı.
+ * Davet yenileme o kullanıcının TÜM oturumlarını iptal eder: eski kimlik
+ * materyali geçersiz kalmalıdır.
  */
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentAdminStepUp();
@@ -39,15 +45,25 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!target) {
     return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
   }
+  if (target.status !== "ACTIVE") {
+    return NextResponse.json(
+      { error: "Davet yenilemeden önce hesabı aktifleştirin." },
+      { status: 409 },
+    );
+  }
 
-  const tempPassword = generateTemporaryPassword();
+  const invite = issueUserInvite();
   await prisma.user.update({
     where: { id: target.id },
     data: {
-      passwordHash: await hashPassword(tempPassword),
+      passwordHash: await hashPassword(issueInvitePlaceholderSecret()),
       mustChangePassword: true,
       failedAttempts: 0,
       lockedUntil: null,
+      inviteTokenHash: invite.tokenHash,
+      inviteTokenExpiresAt: invite.expiresAt,
+      inviteSentAt: new Date(),
+      inviteAcceptedAt: null,
     },
   });
 
@@ -57,12 +73,26 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     actorUserId: auth.session.userId,
     entityType: "User",
     entityId: target.id,
-    action: "panel.password_reset_by_admin",
-    summary: `${target.email} parolası sıfırlandı; ${revoked} oturum kapatıldı`,
+    action: "panel.user_invite_reset_by_admin",
+    summary: `${target.email} daveti yenilendi; ${revoked} oturum kapatıldı`,
+    payload: { inviteExpiresAt: invite.expiresAt.toISOString() },
+  });
+
+  const origin = resolveAppOrigin(new URL(request.url).origin);
+  const inviteUrl = buildInviteUrl(origin, invite.token);
+  const inviteMessage = buildInviteMessage({
+    fullName: target.fullName,
+    email: target.email,
+    inviteUrl,
+    expiresAt: invite.expiresAt,
   });
 
   return NextResponse.json({
     user: { id: target.id, email: target.email },
-    tempPassword,
+    invite: {
+      url: inviteUrl,
+      message: inviteMessage,
+      expiresAt: invite.expiresAt.toISOString(),
+    },
   });
 }

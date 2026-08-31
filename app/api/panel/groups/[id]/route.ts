@@ -3,13 +3,14 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { DEFAULT_GROUP_CAPACITY } from "@/lib/panel-group-capacity";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
   subject: z.string().trim().min(2).max(80),
   level: z.string().trim().max(40).optional(),
   teacherId: z.string().min(1),
-  studentIds: z.array(z.string().min(1)).max(4),
+  studentIds: z.array(z.string().min(1)).max(DEFAULT_GROUP_CAPACITY),
   isActive: z.boolean(),
 });
 

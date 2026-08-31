@@ -5,14 +5,20 @@ import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { isPlausibleEmail, normalizeEmail } from "@/lib/auth/email";
-import { generateTemporaryPassword, hashPassword } from "@/lib/auth/password";
+import {
+  buildInviteMessage,
+  buildInviteUrl,
+  issueInvitePlaceholderSecret,
+  issueUserInvite,
+  resolveAppOrigin,
+} from "@/lib/auth/invitation";
+import { hashPassword } from "@/lib/auth/password";
 
 /**
  * Hesap açma — YALNIZCA admin.
  *
- * Public self-register yoktur. Üretilen geçici parola yanıtla BİR KEZ döner;
- * hiçbir yerde düz saklanmaz. Admin onu ekrandan alıp WhatsApp/telefonla
- * iletir, kullanıcı ilk girişte değiştirmek zorundadır.
+ * Public self-register yoktur. Admin hesabı açar ve tek kullanımlık davet linki
+ * üretir. Kullanıcı ilk girişte parolasını bu linkle belirler.
  */
 
 const createUserSchema = z.object({
@@ -20,7 +26,7 @@ const createUserSchema = z.object({
   fullName: z.string().trim().min(2).max(120).optional().or(z.literal("")),
   phone: z.string().trim().max(32).optional().or(z.literal("")),
   role: z.enum(["ADMIN", "TEACHER", "STUDENT", "PARENT"]),
-  products: z.array(z.enum(["OD", "OK", "ODK"])).min(1).max(3),
+  products: z.array(z.enum(["OD", "OK", "ODK"])).max(3).optional(),
 });
 
 export async function POST(request: Request) {
@@ -61,21 +67,31 @@ export async function POST(request: Request) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     return NextResponse.json(
-      { error: `Bu e-posta zaten kayıtlı (${existing.role}). Parola vermek için mevcut hesabı sıfırlayın.` },
+      { error: `Bu e-posta zaten kayıtlı (${existing.role}). Davet yenilemek için mevcut hesabı seçin.` },
       { status: 409 },
     );
   }
 
-  const tempPassword = generateTemporaryPassword();
-  const products = parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER" ? (["OD", "OK", "ODK"] as const) : [...new Set(parsed.data.products)];
+  const invite = issueUserInvite();
+  const requestedProducts = parsed.data.products ? [...new Set(parsed.data.products)] : [];
+  const products = parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER"
+    ? (["OD", "OK", "ODK"] as const)
+    : requestedProducts.length
+      ? requestedProducts
+      : (["OD"] as const);
   const user = await prisma.user.create({
     data: {
       email,
       fullName: parsed.data.fullName?.trim() || null,
       phone: parsed.data.phone?.trim() || null,
       role: parsed.data.role,
-      passwordHash: await hashPassword(tempPassword),
+      // Davet tamamlanmadan giriş yapılamasın diye bilinmeyen bir parola hash'i.
+      passwordHash: await hashPassword(issueInvitePlaceholderSecret()),
       mustChangePassword: true,
+      inviteTokenHash: invite.tokenHash,
+      inviteTokenExpiresAt: invite.expiresAt,
+      inviteSentAt: new Date(),
+      inviteAcceptedAt: null,
       createdById: auth.session.userId,
       ...(parsed.data.role === "STUDENT" ? { studentProfile: { create: {} } } : {}),
       ...(parsed.data.role === "TEACHER" ? { teacherProfile: { create: {} } } : {}),
@@ -89,13 +105,31 @@ export async function POST(request: Request) {
     entityType: "User",
     entityId: user.id,
     action: "panel.user_created",
-    summary: `${user.email} (${user.role}) hesabı açıldı`,
-    payload: { products },
+    summary: `${user.email} (${user.role}) hesabı açıldı ve davet oluşturuldu`,
+    payload: { products, inviteExpiresAt: invite.expiresAt.toISOString() },
+  });
+
+  const origin = resolveAppOrigin(new URL(request.url).origin);
+  const inviteUrl = buildInviteUrl(origin, invite.token);
+  const inviteMessage = buildInviteMessage({
+    fullName: user.fullName,
+    email: user.email,
+    inviteUrl,
+    expiresAt: invite.expiresAt,
   });
 
   return NextResponse.json({
-    user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, studentProfileId: user.studentProfile?.id || null },
-    // BİR KEZ döner. Sunucu bunu bir daha üretemez.
-    tempPassword,
+    user: {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      studentProfileId: user.studentProfile?.id || null,
+    },
+    invite: {
+      url: inviteUrl,
+      message: inviteMessage,
+      expiresAt: invite.expiresAt.toISOString(),
+    },
   });
 }

@@ -53,7 +53,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
     <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-4" noValidate>
       <div className="flex flex-col gap-2">
         <label htmlFor="currentPassword" className="text-[13px] font-semibold text-[var(--site-ink)]">
-          {forced ? "Size iletilen geçici parola" : "Mevcut parolanız"}
+          {forced ? "Mevcut parola" : "Mevcut parolanız"}
         </label>
         <input
           id="currentPassword"

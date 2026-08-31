@@ -5,9 +5,16 @@ import { useRouter } from "next/navigation";
 import { Loader2, UserPlus } from "lucide-react";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { productLabel } from "@/lib/auth/roles";
-import { TempPasswordReveal } from "@/components/panel/temp-password-reveal";
+import { InviteLinkReveal } from "@/components/panel/temp-password-reveal";
 
-type Created = { email: string; fullName: string | null; tempPassword: string; phone: string | null };
+type Created = {
+  email: string;
+  fullName: string | null;
+  phone: string | null;
+  inviteUrl: string;
+  inviteMessage: string;
+  inviteExpiresAt: string;
+};
 
 const ROLE_OPTIONS: { value: UserRole; label: string; hint: string }[] = [
   { value: "STUDENT", label: "Öğrenci", hint: "Dersini, çalışma yönünü ve ödevlerini görür." },
@@ -40,11 +47,11 @@ export function CreateUserForm() {
       });
       const data = (await response.json()) as {
         user?: { email: string; fullName: string | null };
-        tempPassword?: string;
+        invite?: { url: string; message: string; expiresAt: string };
         error?: string;
       };
 
-      if (!response.ok || !data.tempPassword || !data.user) {
+      if (!response.ok || !data.user || !data.invite) {
         setError(data.error ?? "Hesap açılamadı.");
         setPending(false);
         return;
@@ -53,8 +60,10 @@ export function CreateUserForm() {
       setCreated({
         email: data.user.email,
         fullName: data.user.fullName,
-        tempPassword: data.tempPassword,
         phone: phone || null,
+        inviteUrl: data.invite.url,
+        inviteMessage: data.invite.message,
+        inviteExpiresAt: data.invite.expiresAt,
       });
       setEmail("");
       setFullName("");
@@ -73,11 +82,13 @@ export function CreateUserForm() {
 
   if (created) {
     return (
-      <TempPasswordReveal
+      <InviteLinkReveal
         email={created.email}
         fullName={created.fullName}
         phone={created.phone}
-        tempPassword={created.tempPassword}
+        inviteUrl={created.inviteUrl}
+        inviteMessage={created.inviteMessage}
+        inviteExpiresAt={created.inviteExpiresAt}
         onDone={() => setCreated(null)}
       />
     );
@@ -161,7 +172,7 @@ export function CreateUserForm() {
         <div className="mt-1 flex flex-wrap gap-3">
           {(["OD", "OK", "ODK"] as ProductCode[]).map((product) => <label key={product} className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]"><input type="checkbox" checked={products.includes(product)} disabled={pending || role === "ADMIN" || role === "TEACHER"} onChange={(event) => setProducts((current) => event.target.checked ? [...new Set([...current, product])] : current.filter((item) => item !== product))} />{productLabel(product)}</label>)}
         </div>
-        <p className="mt-2 text-[11.5px] leading-5 text-[var(--site-muted)]">Yönetici ve öğretmenler görev gereği iki ürüne de erişir. Öğrenci ve velide en az bir ürün seçilmelidir.</p>
+        <p className="mt-2 text-[11.5px] leading-5 text-[var(--site-muted)]">Yönetici ve öğretmenler görev gereği üç ürüne de erişir. Öğrenci ve velide en az bir ürün seçilmelidir.</p>
       </fieldset>
 
       {error ? (
@@ -189,7 +200,7 @@ export function CreateUserForm() {
           )}
         </button>
         <p className="text-[12px] text-[var(--site-muted)]">
-          Geçici parola otomatik üretilir ve bir kez gösterilir.
+          Hesap açıldığında tek kullanımlık davet bağlantısı üretilir.
         </p>
       </div>
     </form>

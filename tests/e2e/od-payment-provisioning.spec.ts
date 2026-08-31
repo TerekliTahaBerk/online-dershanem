@@ -56,7 +56,7 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
 
   test("mevcut öğrenciyi e-postayla yeniden kullanır ve duplicate user/membership açmaz", async ({ request }) => {
     const email = `existing-od-${crypto.randomUUID()}@example.com`;
-    const existing = await prisma.user.create({ data: { email, fullName: "Mevcut Öğrenci", role: "STUDENT", passwordHash: await passwordHash(), mustChangePassword: false, studentProfile: { create: {} } } });
+    const existing = await prisma.user.create({ data: { email, fullName: "Mevcut Öğrenci", role: "STUDENT", passwordHash: await passwordHash(), mustChangePassword: false, inviteAcceptedAt: new Date(), studentProfile: { create: {} } } });
     const { order, merchantOid } = await fixture("existing", { email, fullName: "Mevcut Öğrenci", phone: "05552000001" });
     const responses = await Promise.all([
       postPaytrCallback(request, { merchantOid, amountCents }),
@@ -73,7 +73,7 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
 
   test("rol çakışmasını merge etmeden MANUAL_REVIEW durumuna düşürür", async ({ request }) => {
     const email = `identity-conflict-${crypto.randomUUID()}@example.com`;
-    await prisma.user.create({ data: { email, fullName: "Veli Rolü", role: "PARENT", passwordHash: await passwordHash(), mustChangePassword: false } });
+    await prisma.user.create({ data: { email, fullName: "Veli Rolü", role: "PARENT", passwordHash: await passwordHash(), mustChangePassword: false, inviteAcceptedAt: new Date() } });
     const { order, merchantOid } = await fixture("manual-review", { email, fullName: "Aynı E-postalı Öğrenci", phone: "05553000001" });
     expect((await postPaytrCallback(request, { merchantOid, amountCents })).status()).toBe(200);
     const stored = await prisma.odOrder.findUniqueOrThrow({ where: { id: order.id }, include: { payments: true, onboarding: true } });

@@ -57,7 +57,14 @@ export async function POST(request: Request) {
 
     await tx.user.update({
       where: { id: reset.userId },
-      data: { passwordHash, mustChangePassword: false, failedAttempts: 0, lockedUntil: null },
+      data: {
+        passwordHash,
+        mustChangePassword: false,
+        failedAttempts: 0,
+        lockedUntil: null,
+        inviteAcceptedAt: new Date(),
+        passwordChangedAt: new Date(),
+      },
     });
     const revoked = await tx.session.updateMany({
       where: { userId: reset.userId, revokedAt: null },

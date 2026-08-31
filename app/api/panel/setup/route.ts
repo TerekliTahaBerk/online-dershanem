@@ -5,10 +5,11 @@ import { logAudit } from "@/lib/audit";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { DEFAULT_GROUP_CAPACITY } from "@/lib/panel-group-capacity";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80), subject: z.string().trim().min(2).max(80), level: z.string().trim().max(40).optional(),
-  teacherId: z.string().min(1), studentIds: z.array(z.string().min(1)).min(1).max(4),
+  teacherId: z.string().min(1), studentIds: z.array(z.string().min(1)).min(1).max(DEFAULT_GROUP_CAPACITY),
   parentLinks: z.array(z.object({ parentId: z.string().min(1), studentId: z.string().min(1) })).max(8).default([]),
   lessonTitle: z.string().trim().min(2).max(120), startsAt: z.string().datetime(), repeatWeeks: z.number().int().min(1).max(12),
   meetingUrl: z.string().url().max(500).refine((value) => value.startsWith("https://") || value.startsWith("http://")).optional().or(z.literal("")),
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   let group;
   try {
     group = await prisma.$transaction(async (tx) => {
-      const created = await tx.group.create({ data: { name: data.name, subject: data.subject, level: data.level || null, teacherId: teacher.id, capacity: 4, enrollments: { create: studentIds.map((studentId) => ({ studentId })) } } });
+      const created = await tx.group.create({ data: { name: data.name, subject: data.subject, level: data.level || null, teacherId: teacher.id, capacity: DEFAULT_GROUP_CAPACITY, enrollments: { create: studentIds.map((studentId) => ({ studentId })) } } });
       for (const link of data.parentLinks) await tx.parentStudent.upsert({ where: { parentId_studentId: link }, create: { ...link, relationship: "Veli" }, update: {} });
       await tx.lesson.createMany({ data: Array.from({ length: data.repeatWeeks }, (_, index) => { const startsAt = new Date(start.getTime() + index * 7 * 86400000); return { groupId: created.id, teacherId: teacher.id, title: data.lessonTitle, startsAt, endsAt: new Date(startsAt.getTime() + 3600000), meetingUrl: data.meetingUrl || null }; }) });
       return created;

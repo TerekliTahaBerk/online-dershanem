@@ -136,7 +136,11 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             eyebrow={roleLabel(user.role)}
             title={user.fullName || user.email}
             description={`${user.email}${user.phone ? ` · ${user.phone}` : ""} · kayıt ${DATE.format(user.createdAt)}${
-              user.status === "ACTIVE" ? "" : " · hesap askıda"
+              user.status === "ACTIVE"
+                ? ""
+                : user.status === "ARCHIVED"
+                  ? " · hesap arşivde"
+                  : " · hesap askıda"
             }`}
             actions={
               blocked ? (
@@ -191,7 +195,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
         <PanelCard className="mt-5">
           <PanelCardTitle>Hesap yaşam döngüsü</PanelCardTitle>
           <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-muted">
-            Kalıcı silme geri alınamaz. Kritik kayıtlar varsa sistem silmeyi engeller ve hesabı askıya almanızı ister.
+            Kalıcı silme geri alınamaz. Hesap önce arşivlenir; kritik kayıtlar varsa sistem silmeyi engeller.
           </p>
           <div className="mt-4">
             <UserRowActions
@@ -200,6 +204,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
               fullName={user.fullName}
               phone={user.phone}
               status={user.status}
+              inviteAcceptedAt={user.inviteAcceptedAt?.toISOString() ?? null}
               isSelf={user.id === session.userId}
             />
           </div>
