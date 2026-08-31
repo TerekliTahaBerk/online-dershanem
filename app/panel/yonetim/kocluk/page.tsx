@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { planningWeekStart } from "@/lib/adaptive-plan";
+import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
 import { coachingOverdue } from "@/lib/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
@@ -33,8 +36,11 @@ const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" })
 
 export default async function AdminCoachingPage() {
   const session = await requireRole("ADMIN");
+  const adaptivePlanEnabled = getPanelFeatureFlags().adaptivePlan;
+  const thisWeekStart = planningWeekStart();
+  const thisWeekEnd = addIstanbulCalendarDays(thisWeekStart, 7);
 
-  const [assignments, coaches, unassigned] = await Promise.all([
+  const [assignments, coaches, unassigned, recentSessions, studentsWithoutPlan, studentsWithoutGoals] = await Promise.all([
     prisma.coachAssignment.findMany({
       where: { endedAt: null },
       select: {
@@ -81,6 +87,55 @@ export default async function AdminCoachingPage() {
       },
       select: { id: true, user: { select: { fullName: true, email: true } } },
       orderBy: { user: { fullName: "asc" } },
+    }),
+    prisma.coachingSession.findMany({
+      where: { status: "COMPLETED", assignment: { endedAt: null } },
+      orderBy: { completedAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        completedAt: true,
+        focus: true,
+        assignment: {
+          select: {
+            student: { select: { id: true, user: { select: { fullName: true, email: true } } } },
+            coach: { select: { user: { select: { fullName: true, email: true } } } },
+          },
+        },
+      },
+    }),
+    prisma.coachAssignment.findMany({
+      where: {
+        endedAt: null,
+        student: {
+          weeklyPlans: {
+            none: {
+              weekStart: { gte: thisWeekStart, lt: thisWeekEnd },
+              status: { in: ["DRAFT", "APPROVED", "CHANGE_REQUESTED"] },
+            },
+          },
+        },
+      },
+      orderBy: { student: { user: { fullName: "asc" } } },
+      take: 12,
+      select: {
+        id: true,
+        student: { select: { id: true, user: { select: { fullName: true, email: true } } } },
+        coach: { select: { user: { select: { fullName: true, email: true } } } },
+      },
+    }),
+    prisma.coachAssignment.findMany({
+      where: {
+        endedAt: null,
+        student: { goals: { none: { archivedAt: null } } },
+      },
+      orderBy: { student: { user: { fullName: "asc" } } },
+      take: 12,
+      select: {
+        id: true,
+        student: { select: { id: true, user: { select: { fullName: true, email: true } } } },
+        coach: { select: { user: { select: { fullName: true, email: true } } } },
+      },
     }),
   ]);
 
@@ -154,6 +209,15 @@ export default async function AdminCoachingPage() {
           <PanelStatCard title="Görüşmesi geciken" value={String(overdueRows.length)} />
           <PanelStatCard title="Kapasitesi aşan koç" value={String(overCapacity.length)} />
         </div>
+
+        {!adaptivePlanEnabled ? (
+          <PanelCard className="mt-5">
+            <PanelCardTitle>Uyarlanabilir plan şu anda kapalı</PanelCardTitle>
+            <p className="mt-2 text-[13.5px] leading-[1.7] text-dc-ink-muted">
+              Koç atama, görüşme takibi ve hedef operasyonu aktif kalır. Haftalık plan üretme/onaylama ekranları pilot yeniden açıldığında otomatik genişler.
+            </p>
+          </PanelCard>
+        ) : null}
 
         {/* ── Müdahale bekleyenler ── */}
         <PanelCard className="mt-5" padded={false}>
@@ -253,6 +317,90 @@ export default async function AdminCoachingPage() {
                   </li>
                 );
               })}
+            </ul>
+          )}
+        </PanelCard>
+
+        <PanelCard className="mt-5">
+          <PanelCardTitle>Son tamamlanan görüşmeler</PanelCardTitle>
+          {recentSessions.length === 0 ? (
+            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
+              Henüz tamamlanmış koç görüşmesi kaydı yok.
+            </p>
+          ) : (
+            <ul className="mt-3 flex flex-col gap-2.5 text-[13.5px] leading-[1.7] text-dc-ink-body">
+              {recentSessions.map((row) => {
+                const studentName =
+                  row.assignment.student.user.fullName || row.assignment.student.user.email;
+                const coachName = row.assignment.coach.user.fullName || row.assignment.coach.user.email;
+                return (
+                  <li key={row.id} className="rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3">
+                    <p className="font-semibold text-dc-ink">
+                      {studentName} · {coachName}
+                    </p>
+                    <p className="mt-1 text-dc-ink-muted">
+                      {row.completedAt ? DATE.format(row.completedAt) : "Tarih yok"}
+                      {row.focus ? ` · odak: ${row.focus}` : ""}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </PanelCard>
+
+        <PanelCard className="mt-5">
+          <PanelCardTitle>Bu hafta planı olmayan koçluk öğrencileri</PanelCardTitle>
+          {!adaptivePlanEnabled ? (
+            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
+              Plan pilotu kapalı olduğu için bu kontrol şu an beklemede.
+            </p>
+          ) : studentsWithoutPlan.length === 0 ? (
+            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
+              Aktif koçluk öğrencilerinin bu hafta için plan kaydı var.
+            </p>
+          ) : (
+            <ul className="mt-3 flex flex-col gap-2 text-[13.5px] text-dc-ink-body">
+              {studentsWithoutPlan.map((row) => (
+                <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3">
+                  <span>
+                    <strong>{row.student.user.fullName || row.student.user.email}</strong> ·{" "}
+                    {row.coach.user.fullName || row.coach.user.email}
+                  </span>
+                  <Link
+                    href={`/panel/yonetim/ogrenciler?q=${encodeURIComponent(row.student.user.fullName || row.student.user.email)}`}
+                    className="text-[12.5px] font-semibold text-dc-brand hover:underline"
+                  >
+                    Öğrenciyi aç
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </PanelCard>
+
+        <PanelCard className="mt-5">
+          <PanelCardTitle>Hedefi olmayan koçluk öğrencileri</PanelCardTitle>
+          {studentsWithoutGoals.length === 0 ? (
+            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
+              Aktif koçluk öğrencilerinin hepsinde en az bir hedef tanımlı.
+            </p>
+          ) : (
+            <ul className="mt-3 flex flex-col gap-2 text-[13.5px] text-dc-ink-body">
+              {studentsWithoutGoals.map((row) => (
+                <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3">
+                  <span>
+                    <strong>{row.student.user.fullName || row.student.user.email}</strong> ·{" "}
+                    {row.coach.user.fullName || row.coach.user.email}
+                  </span>
+                  <Link
+                    href={`/panel/yonetim/ogrenciler?q=${encodeURIComponent(row.student.user.fullName || row.student.user.email)}`}
+                    className="text-[12.5px] font-semibold text-dc-brand hover:underline"
+                  >
+                    Öğrenciyi aç
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </PanelCard>

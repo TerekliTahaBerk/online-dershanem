@@ -62,6 +62,8 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 
 `0049_adaptive_weekly_plan` migration'ından sonra `PANEL_FEATURE_ADAPTIVE_PLAN=true` açılır. İlk dört hafta kabul, görev tamamlama, öğretmen inceleme süresi ve bunaltı pulse'u baz çizgi olarak izlenir. Kural sırası, kapasite sınırı ve geri alma adımları [uyarlanabilir plan standardında](./adaptive-weekly-plan-operations.md) tanımlıdır.
 
+Koçluk merkez ekranları (`/panel/ogrenci/kocluk`, `/panel/yonetim/kocluk`) bu bayrak kapalıyken de görünür kalır; plan üretme/onaylama alt akışları ve plan görev üretimi kapalı olduğunda ekranlar sade özet + yönlendirici boş durumla çalışır.
+
 ### Sakin haftalık özet rollout'u
 
 `0050_calm_weekly_digest` migration'ından sonra `PANEL_FEATURE_PARENT_WEEKLY_DIGEST=true` açılır. İlk pilotta yayın, öğrenci/veli görüntüleme, kaygı pulse'u ve opt-out oranı izlenir; özel öğretmen notlarının özet içeriğine girmediği örneklemle doğrulanır. İçerik ve geri alma kuralları [sakin haftalık özet standardında](./calm-weekly-digest-operations.md) tanımlıdır.

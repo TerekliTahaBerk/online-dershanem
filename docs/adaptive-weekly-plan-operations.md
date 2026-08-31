@@ -50,4 +50,6 @@ En az 30 öneri ve dört haftalık karşılaştırma olmadan etki sonucu ilan ed
 
 Migration: `0049_adaptive_weekly_plan`.
 
-`PANEL_FEATURE_ADAPTIVE_PLAN=true` aynı server snapshot'ı üzerinden menü, sayfa ve API'yi açar. Bayrak kapalıyken API ve sayfalar 404 verir. Geri almada bayrak kapatılır; plan geçmişi ve akademik kaynak kayıtları silinmez.
+`PANEL_FEATURE_ADAPTIVE_PLAN=true` aynı server snapshot'ı üzerinden plan üretme/onaylama menülerini, plan sayfalarını ve API uçlarını açar. Bayrak kapalıyken bu uçlar ve plan odaklı sayfalar 404 verir.
+
+Koçluk merkez yüzeyleri (`/panel/ogrenci/kocluk`, `/panel/yonetim/kocluk`) geri alma sırasında da açık kalır; plan blokları sade boş durumla çalışır. Plan geçmişi ve akademik kaynak kayıtları silinmez.

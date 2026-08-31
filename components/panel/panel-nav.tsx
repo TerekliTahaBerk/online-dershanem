@@ -48,6 +48,7 @@ function studentSections(root: string, products: ProductCode[], flags: PanelFeat
       "KOÇUM",
       hasOK
         ? [
+            { href: `${root}/kocluk`, label: "Koçluk Merkezi" },
             ...(flags.adaptivePlan ? [{ href: `${root}/plan`, label: "Haftalık Plan" }] : []),
             { href: `${root}/hedefler`, label: "Hedefler" },
           ]
@@ -143,7 +144,7 @@ function adminSections(root: string, flags: PanelFeatureFlags): NavSection[] {
       { href: `${root}/takvim`, label: "Takvim" },
     ]),
     ...section("KOÇLUK", [
-      ...(flags.adaptivePlan ? [{ href: `${root}/kocluk`, label: "Koçluk" }] : []),
+      { href: `${root}/kocluk`, label: "Koçluk" },
     ]),
     ...section("DENEMELER", [
       { href: "/panel/odk/yonetim/sinavlar", label: "Deneme Planlama" },
@@ -195,12 +196,14 @@ export function mobilePrimaryNav(
       { href: `${root}/odevler`, label: "Çalışmalar" },
       ...(hasOD
         ? [{ href: `${root}/takvim`, label: "Dersler" }]
-        : flags.adaptivePlan && hasOK
-          ? [{ href: `${root}/plan`, label: "Haftalık Plan" }]
+        : hasOK
+          ? [{ href: `${root}/kocluk`, label: "Koçluk" }]
           : []),
       ...(hasODK
         ? [{ href: "/panel/odk/ogrenci/denemeler", label: "Denemeler" }]
-        : hasOK
+        : flags.adaptivePlan && hasOK
+            ? [{ href: `${root}/plan`, label: "Haftalık Plan" }]
+            : hasOK
             ? [{ href: `${root}/hedefler`, label: "Hedefler" }]
             : []),
     ];
