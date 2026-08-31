@@ -87,6 +87,38 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     }
   }
 
+  if (
+    statusChanged &&
+    target.role === "TEACHER" &&
+    currentStatus === "ACTIVE" &&
+    (nextStatus === "SUSPENDED" || nextStatus === "ARCHIVED")
+  ) {
+    const teacherProfile = await prisma.teacherProfile.findUnique({
+      where: { userId: target.id },
+      select: { id: true, isCoach: true },
+    });
+    const now = new Date();
+    const [activeGroups, upcomingLessons, activeCoachAssignments, openInterventions] = await Promise.all([
+      prisma.group.count({ where: { teacherId: target.id, isActive: true } }),
+      prisma.lesson.count({ where: { teacherId: target.id, status: "PLANNED", startsAt: { gte: now } } }),
+      teacherProfile?.isCoach
+        ? prisma.coachAssignment.count({ where: { coachId: teacherProfile.id, endedAt: null } })
+        : Promise.resolve(0),
+      prisma.interventionCase.count({
+        where: { ownerId: target.id, status: { in: ["OPEN", "IN_PROGRESS", "SNOOZED"] } },
+      }),
+    ]);
+    if (activeGroups > 0 || upcomingLessons > 0 || activeCoachAssignments > 0 || openInterventions > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Öğretmen askıya alınmadan önce grup, gelecek ders ve aktif sorumluluk devri tamamlanmalı. Kişi detayındaki güvenli offboarding akışını kullanın.",
+        },
+        { status: 409 },
+      );
+    }
+  }
+
   const allowedTransitions: Record<"ACTIVE" | "SUSPENDED" | "ARCHIVED", Array<"ACTIVE" | "SUSPENDED" | "ARCHIVED">> = {
     ACTIVE: ["SUSPENDED", "ARCHIVED"],
     SUSPENDED: ["ACTIVE", "ARCHIVED"],

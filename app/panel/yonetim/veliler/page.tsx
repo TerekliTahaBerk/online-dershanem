@@ -5,16 +5,29 @@ import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelHeading,
+  PanelCard,
+  PanelCardTitle,
   PanelEmpty,
   PanelTable,
   PanelTableRow,
   PanelTableCell,
 } from "@/components/panel/ui";
 import { UserRowActions } from "@/components/panel/user-row-actions";
+import { StudentParentLinkForm } from "@/components/panel/student-parent-link-form";
+import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
+import { RelationshipUpdateForm } from "@/components/panel/relationship-update-form";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 25;
+const DATE_TIME = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "Europe/Istanbul",
+});
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "", label: "Tümü" },
@@ -80,7 +93,8 @@ export default async function ParentsPage({
     ...(durum === "baglantisiz" ? { parentStudents: { none: {} } } : {}),
   };
 
-  const [total, parents, withoutRelationshipCount] = await Promise.all([
+  const [total, parents, withoutRelationshipCount, activeRelationships, relationshipHistory, studentOptions, parentOptions] =
+    await Promise.all([
     prisma.user.count({ where }),
     prisma.user.findMany({
       where,
@@ -104,13 +118,44 @@ export default async function ParentsPage({
         },
       },
     }),
-    prisma.user.count({
-      where: {
-        role: "PARENT",
-        parentStudents: { none: {} },
-      },
-    }),
-  ]);
+      prisma.user.count({
+        where: {
+          role: "PARENT",
+          parentStudents: { none: {} },
+        },
+      }),
+      prisma.parentStudent.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 80,
+        include: {
+          parent: { select: { fullName: true, email: true } },
+          student: { include: { user: { select: { fullName: true, email: true } } } },
+        },
+      }),
+      prisma.parentStudentHistory.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 60,
+        include: {
+          parent: { select: { fullName: true, email: true } },
+          student: { include: { user: { select: { fullName: true, email: true } } } },
+          actor: { select: { fullName: true, email: true } },
+        },
+      }),
+      prisma.studentProfile.findMany({
+        orderBy: { user: { fullName: "asc" } },
+        take: 300,
+        select: {
+          id: true,
+          user: { select: { fullName: true, email: true } },
+        },
+      }),
+      prisma.user.findMany({
+        where: { role: "PARENT", status: { in: ["ACTIVE", "SUSPENDED"] } },
+        orderBy: { fullName: "asc" },
+        take: 300,
+        select: { id: true, fullName: true, email: true },
+      }),
+    ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -270,6 +315,76 @@ export default async function ParentsPage({
             </div>
           </div>
         )}
+
+        <div className="mt-7 grid gap-5 xl:grid-cols-2">
+          <PanelCard>
+            <PanelCardTitle>İlişki işlemleri</PanelCardTitle>
+            <p className="mt-2 text-[12.5px] text-dc-ink-faint">
+              Veli–öğrenci bağlantısı ekleyin, yakınlık bilgisini güncelleyin veya bağlantıyı kaldırın.
+            </p>
+            <StudentParentLinkForm
+              parents={parentOptions.map((parent) => ({ id: parent.id, name: parent.fullName || parent.email }))}
+              students={studentOptions.map((student) => ({
+                id: student.id,
+                name: student.user.fullName || student.user.email,
+              }))}
+            />
+            <div className="mt-3.5 flex max-h-[360px] flex-col gap-2 overflow-auto pr-1">
+              {activeRelationships.map((relationship) => (
+                <div
+                  key={relationship.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line p-3"
+                >
+                  <div className="min-w-[220px] flex-1">
+                    <p className="text-[13px] font-bold text-dc-ink">
+                      {relationship.parent.fullName || relationship.parent.email}
+                    </p>
+                    <p className="mt-1 text-[12px] text-dc-ink-muted">
+                      {relationship.relationship || "Veli"} →{" "}
+                      {relationship.student.user.fullName || relationship.student.user.email}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <RelationshipUpdateForm id={relationship.id} initialRelationship={relationship.relationship} />
+                    <RelationshipRemoveButton id={relationship.id} />
+                  </div>
+                </div>
+              ))}
+              {!activeRelationships.length ? (
+                <p className="text-[13px] text-dc-ink-muted">Aktif veli bağlantısı yok.</p>
+              ) : null}
+            </div>
+          </PanelCard>
+
+          <PanelCard>
+            <PanelCardTitle>İlişki geçmişi</PanelCardTitle>
+            <div className="mt-3.5 flex max-h-[420px] flex-col gap-2 overflow-auto pr-1">
+              {relationshipHistory.map((item) => (
+                <div key={item.id} className="rounded-[10px] border border-dc-line p-3">
+                  <p className="text-[12.5px] font-semibold text-dc-ink">
+                    {item.parent.fullName || item.parent.email} ·{" "}
+                    {item.student.user.fullName || item.student.user.email}
+                  </p>
+                  <p className="mt-1 text-[12px] text-dc-ink-muted">
+                    {item.action === "LINKED"
+                      ? "Bağlantı eklendi"
+                      : item.action === "UPDATED"
+                        ? "Yakınlık güncellendi"
+                        : "Bağlantı kaldırıldı"}
+                    {item.relationship ? ` · ${item.relationship}` : ""}
+                  </p>
+                  <p className="mt-1 text-[11.5px] text-dc-ink-faint">
+                    {DATE_TIME.format(item.createdAt)} ·{" "}
+                    {item.actor?.fullName || item.actor?.email || "Sistem"}
+                  </p>
+                </div>
+              ))}
+              {!relationshipHistory.length ? (
+                <p className="text-[13px] text-dc-ink-muted">Henüz ilişki geçmişi kaydı yok.</p>
+              ) : null}
+            </div>
+          </PanelCard>
+        </div>
       </div>
     </PanelShell>
   );

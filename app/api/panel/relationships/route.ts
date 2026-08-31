@@ -20,13 +20,24 @@ export async function POST(request: Request) {
   if (!parent || !student) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
   const existing = await prisma.parentStudent.findUnique({
     where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
-    select: { id: true },
+    select: { id: true, relationship: true },
   });
   await prisma.$transaction(async (tx) => {
     const relation = await tx.parentStudent.upsert({
       where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
       create: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null },
       update: { relationship: parsed.data.relationship || null },
+    });
+    await tx.parentStudentHistory.create({
+      data: {
+        parentStudentId: relation.id,
+        parentId: parent.id,
+        studentId: student.id,
+        action: existing ? "UPDATED" : "LINKED",
+        relationship: parsed.data.relationship || null,
+        previousValue: existing?.relationship || null,
+        actorUserId: auth.session.userId,
+      },
     });
     await tx.auditLog.create({
       data: {

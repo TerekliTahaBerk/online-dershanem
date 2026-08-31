@@ -12,6 +12,8 @@ import { AdminAccessibilityAccommodationForm } from "@/components/panel/admin-ac
 import { AdminProductAccessForm } from "@/components/panel/admin-product-access-form";
 import { RequestMfaResetForm } from "@/components/panel/mfa-reset-controls";
 import { UserRowActions } from "@/components/panel/user-row-actions";
+import { TeacherOffboardingForm } from "@/components/panel/teacher-offboarding-form";
+import { getTeacherLifecycleSummary } from "@/lib/panel/teacher-lifecycle-server";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +111,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const attended = attendance.filter((a) => a.status === "PRESENT" || a.status === "LATE").length;
   const activeProducts = new Set(user.productMemberships.map((m) => m.product));
   const coach = student?.coachAssignments[0] ?? null;
+  const teacherLifecycle = user.role === "TEACHER" ? await getTeacherLifecycleSummary(user.id) : null;
 
   /* Tasarımın kırmızı uyarısı: ödendi ama erişim açılmadı. */
   const blockedOrders = user.odOrders.filter(
@@ -394,49 +397,84 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
         ) : null}
 
         {user.role === "TEACHER" ? (
-          <div className="mt-5 grid gap-5 xl:grid-cols-2">
-            <PanelCard>
-              <PanelCardTitle>Sorumlu gruplar</PanelCardTitle>
-              <div className="mt-3.5 flex flex-col gap-2">
-                {user.taughtGroups.map((group) => (
-                  <Link
-                    key={group.id}
-                    href={`/panel/yonetim/gruplar/${group.id}`}
-                    className="flex items-center justify-between rounded-[10px] border border-dc-line p-3 transition-colors hover:border-dc-brand"
-                  >
-                    <span>
-                      <span className="block text-[13.5px] font-bold text-dc-ink">{group.name}</span>
-                      <span className="mt-1 block text-[12.5px] text-dc-ink-muted">
-                        {group.subject}
-                      </span>
-                    </span>
-                    <span className="text-[13px] font-bold text-dc-brand">
-                      {group.enrollments.length}/{group.capacity}
-                    </span>
-                  </Link>
-                ))}
-                {!user.taughtGroups.length ? (
-                  <p className="text-[13px] text-dc-ink-muted">Sorumlu grup yok.</p>
-                ) : null}
-              </div>
-            </PanelCard>
+          <div className="mt-5 space-y-5">
+            {teacherLifecycle ? (
+              <PanelCard>
+                <PanelCardTitle>Öğretmen yaşam döngüsü</PanelCardTitle>
+                <dl className="mt-3 grid gap-2 text-[13px] md:grid-cols-2">
+                  <Row label="Ders alanları" value={teacherLifecycle.teacher.subjects.join(", ") || "Tanımlı değil"} />
+                  <Row
+                    label="Koç capability"
+                    value={
+                      teacherLifecycle.teacher.isCoach
+                        ? `Evet${teacherLifecycle.teacher.coachCapacity ? ` · kapasite ${teacherLifecycle.teacher.coachCapacity}` : ""}`
+                        : "Hayır"
+                    }
+                  />
+                  <Row label="Aktif grup" value={`${teacherLifecycle.counts.activeGroups}`} />
+                  <Row label="Aktif öğrenci" value={`${teacherLifecycle.counts.activeStudents}`} />
+                  <Row label="Gelecek ders" value={`${teacherLifecycle.counts.upcomingLessons}`} />
+                  <Row label="Bekleyen ders kapanışı" value={`${teacherLifecycle.counts.pendingLessonClosures}`} />
+                  <Row
+                    label="Açık yardım talebi"
+                    value={`${teacherLifecycle.activeResponsibilities.openHelpRequests}`}
+                  />
+                  <Row
+                    label="Açık müdahale/koç sorumluluğu"
+                    value={`${teacherLifecycle.activeResponsibilities.openInterventions + teacherLifecycle.activeResponsibilities.coachAssignments}`}
+                  />
+                </dl>
+                <div className="mt-4 border-t border-dc-line pt-4">
+                  <p className="mb-2 text-[12.5px] font-semibold text-dc-ink-faint">Güvenli offboarding</p>
+                  <TeacherOffboardingForm teacherId={user.id} />
+                </div>
+              </PanelCard>
+            ) : null}
 
-            <PanelCard>
-              <PanelCardTitle>Son dersler</PanelCardTitle>
-              <div className="mt-3.5 flex flex-col gap-2">
-                {user.taughtLessons.map((lesson) => (
-                  <div key={lesson.id} className="rounded-[10px] border border-dc-line p-3">
-                    <p className="text-[13.5px] font-bold text-dc-ink">{lesson.title}</p>
-                    <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-                      {lesson.group.name} · {DATE.format(lesson.startsAt)}
-                    </p>
-                  </div>
-                ))}
-                {!user.taughtLessons.length ? (
-                  <p className="text-[13px] text-dc-ink-muted">Kayıtlı ders yok.</p>
-                ) : null}
-              </div>
-            </PanelCard>
+            <div className="grid gap-5 xl:grid-cols-2">
+              <PanelCard>
+                <PanelCardTitle>Sorumlu gruplar</PanelCardTitle>
+                <div className="mt-3.5 flex flex-col gap-2">
+                  {user.taughtGroups.map((group) => (
+                    <Link
+                      key={group.id}
+                      href={`/panel/yonetim/gruplar/${group.id}`}
+                      className="flex items-center justify-between rounded-[10px] border border-dc-line p-3 transition-colors hover:border-dc-brand"
+                    >
+                      <span>
+                        <span className="block text-[13.5px] font-bold text-dc-ink">{group.name}</span>
+                        <span className="mt-1 block text-[12.5px] text-dc-ink-muted">
+                          {group.subject}
+                        </span>
+                      </span>
+                      <span className="text-[13px] font-bold text-dc-brand">
+                        {group.enrollments.length}/{group.capacity}
+                      </span>
+                    </Link>
+                  ))}
+                  {!user.taughtGroups.length ? (
+                    <p className="text-[13px] text-dc-ink-muted">Sorumlu grup yok.</p>
+                  ) : null}
+                </div>
+              </PanelCard>
+
+              <PanelCard>
+                <PanelCardTitle>Son dersler</PanelCardTitle>
+                <div className="mt-3.5 flex flex-col gap-2">
+                  {user.taughtLessons.map((lesson) => (
+                    <div key={lesson.id} className="rounded-[10px] border border-dc-line p-3">
+                      <p className="text-[13.5px] font-bold text-dc-ink">{lesson.title}</p>
+                      <p className="mt-1 text-[12.5px] text-dc-ink-muted">
+                        {lesson.group.name} · {DATE.format(lesson.startsAt)}
+                      </p>
+                    </div>
+                  ))}
+                  {!user.taughtLessons.length ? (
+                    <p className="text-[13px] text-dc-ink-muted">Kayıtlı ders yok.</p>
+                  ) : null}
+                </div>
+              </PanelCard>
+            </div>
           </div>
         ) : null}
 

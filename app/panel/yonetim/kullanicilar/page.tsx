@@ -15,7 +15,6 @@ import {
 } from "@/components/panel/ui";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserRowActions } from "@/components/panel/user-row-actions";
-import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
 import { ApproveMfaResetButton } from "@/components/panel/mfa-reset-controls";
 
 export const dynamic = "force-dynamic";
@@ -36,8 +35,7 @@ export const dynamic = "force-dynamic";
  * ilk giriş ve ödenmiş ama erişimi açılmamış sipariş. Tasarımdaki kırmızı
  * "Ödeme alındı, erişim yok" satırı budur ve kişi detayına bağlanır.
  *
- * Korunan bölümler: yeni hesap formu, MFA sıfırlama onay kuyruğu ve
- * veli–öğrenci bağlantıları.
+ * Korunan bölümler: yeni hesap formu ve MFA sıfırlama onay kuyruğu.
  */
 
 const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", year: "numeric" });
@@ -159,7 +157,7 @@ export default async function UsersPage({
       : {}),
   };
 
-  const [total, users, relationships, pendingMfaResets, attentionCount] = await Promise.all([
+  const [total, users, pendingMfaResets, attentionCount] = await Promise.all([
     prisma.user.count({ where }),
     prisma.user.findMany({
       where,
@@ -199,14 +197,6 @@ export default async function UsersPage({
           },
         },
         teacherProfile: { select: { id: true } },
-      },
-    }),
-    prisma.parentStudent.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      include: {
-        parent: { select: { fullName: true, email: true } },
-        student: { include: { user: { select: { fullName: true, email: true } } } },
       },
     }),
     // Çift kontrollü MFA sıfırlama kuyruğu — onayı isteği açandan BAŞKA bir
@@ -504,32 +494,19 @@ export default async function UsersPage({
           </div>
         </PanelCard>
 
-        {/* ── Veli–öğrenci bağlantıları ── */}
+        {/* ── Veli operasyonları ── */}
         <PanelCard className="mt-5">
-          <PanelCardTitle>Veli–öğrenci bağlantıları ({relationships.length})</PanelCardTitle>
-          <div className="mt-3.5 grid gap-2 lg:grid-cols-2">
-            {relationships.map((relationship) => (
-              <div
-                key={relationship.id}
-                className="flex items-center justify-between gap-3 rounded-[10px] border border-dc-line p-4"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] font-bold text-dc-ink">
-                    {relationship.parent.fullName || relationship.parent.email}
-                  </p>
-                  <p className="mt-1 truncate text-[12px] text-dc-ink-muted">
-                    {relationship.relationship || "Veli"} →{" "}
-                    {relationship.student.user.fullName || relationship.student.user.email}
-                  </p>
-                </div>
-                <RelationshipRemoveButton id={relationship.id} />
-              </div>
-            ))}
-            {!relationships.length ? (
-              <p className="text-[13px] text-dc-ink-muted lg:col-span-2">
-                Henüz veli bağlantısı yok.
-              </p>
-            ) : null}
+          <PanelCardTitle>Veli ve ilişki operasyonları</PanelCardTitle>
+          <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-dc-line p-4">
+            <p className="text-[13px] text-dc-ink-muted">
+              Veli dizini, öğrenci bağlantıları ve ilişki geçmişi artık ayrı operasyon ekranında yönetilir.
+            </p>
+            <Link
+              href="/panel/yonetim/veliler"
+              className="rounded-[10px] bg-dc-brand px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+            >
+              Veliler ekranını aç
+            </Link>
           </div>
         </PanelCard>
       </div>

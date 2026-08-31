@@ -110,6 +110,15 @@ Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WR
 
 Öğrenci ve veli Bildirim Merkezi'nde e-posta kanalı açılırsa ders özeti, devamsızlık, ödev ve ödeme bildirimleri güvenli `EmailOutbox` üzerinden gönderilir. Geciken ödev işi her gün çalışır ve aynı kullanıcıya aynı kayıt için 24 saat içinde tekrar bildirim üretmez. WhatsApp tercihi hazırdır; gerçek teslimat için ayrıca kurumsal WhatsApp sağlayıcısı ve onaylı mesaj şablonları gerekir.
 
+### Öğretmen offboarding ve veli ilişki operasyonları
+
+`0087_teacher_staff_parent_relationship_lifecycle` migration'ı sonrası iki kritik operasyon canlıdır:
+
+- Öğretmen güvenli offboarding: kişi detayında “Devret ve askıya al” akışı aktif grupları, gelecekteki `PLANNED` dersleri ve açık sorumlulukları devretmeden askıya alma yapmaz. Doğrudan kullanıcı durumunu askıya/arşive çekme denemesi de aynı devir kurallarına takılır.
+- Veli ilişki geçmişi: veli–öğrenci bağlantısı ekleme/güncelleme/kaldırma işlemleri `parent_student_history` tablosuna actor ve zaman bilgisiyle yazılır. İlişki kaldırma hard-delete olsa da geçmiş kaydı korunur.
+
+Operasyon sırası: önce migration deploy edilir, sonra `Yönetim > Veliler` ekranından ilişki işlemleri ve geçmiş doğrulanır, öğretmen ayrılışında yalnız kişi detayındaki güvenli offboarding adımı kullanılır.
+
 ## Günlük kontroller
 
 1. `/api/health/ready` yanıtında `status=ready`, `ready=true` ve bütün zorunlu kontrollerin `status=ok` olduğunu doğrulayın.

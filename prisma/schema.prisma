@@ -320,6 +320,8 @@ model User {
   studentProfile                StudentProfile?
   teacherProfile                TeacherProfile?
   parentStudents                ParentStudent[]            @relation("ParentLinks")
+  parentRelationshipHistory     ParentStudentHistory[]     @relation("ParentRelationshipParent")
+  parentRelationshipChanges     ParentStudentHistory[]     @relation("ParentRelationshipActor")
   taughtGroups                  Group[]                    @relation("GroupTeacher")
   taughtLessons                 Lesson[]                   @relation("LessonTeacher")
   createdAssignments            Assignment[]               @relation("AssignmentCreator")
@@ -1258,6 +1260,7 @@ model StudentProfile {
   coachAssignments      CoachAssignment[]
   goals                 StudentGoal[]
   dinoAnswers           DinoAnswer[]
+  parentRelationshipHistory ParentStudentHistory[] @relation("ParentRelationshipStudent")
 
   @@map("student_profiles")
 }
@@ -1607,6 +1610,12 @@ enum CoachingSessionStatus {
   CANCELLED
 }
 
+enum ParentRelationshipAction {
+  LINKED
+  UPDATED
+  UNLINKED
+}
+
 /// BİREBİR KOÇ GÖRÜŞMESİ.
 ///
 /// GİZLİLİK — iki ayrı not alanı bilinçlidir:
@@ -1662,10 +1671,32 @@ model ParentStudent {
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   parent       User           @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
   student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  history      ParentStudentHistory[]
 
   @@unique([parentId, studentId])
   @@index([studentId])
   @@map("parent_students")
+}
+
+model ParentStudentHistory {
+  id              String                   @id @default(cuid())
+  parentStudentId String?                  @map("parent_student_id")
+  parentId        String                   @map("parent_id")
+  studentId       String                   @map("student_id")
+  action          ParentRelationshipAction
+  relationship    String?
+  previousValue   String?                  @map("previous_value")
+  actorUserId     String?                  @map("actor_user_id")
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  parentStudent   ParentStudent?           @relation(fields: [parentStudentId], references: [id], onDelete: SetNull)
+  parent          User                     @relation("ParentRelationshipParent", fields: [parentId], references: [id], onDelete: Cascade)
+  student         StudentProfile           @relation("ParentRelationshipStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  actor           User?                    @relation("ParentRelationshipActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([parentId, createdAt])
+  @@index([studentId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("parent_student_history")
 }
 
 model Group {
