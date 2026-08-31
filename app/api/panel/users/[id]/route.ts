@@ -14,6 +14,91 @@ const schema = z.object({
   subjects: z.array(z.string().trim().min(1).max(80)).max(20).optional(), bio: z.string().trim().max(1200).optional(),
 });
 
+const USER_DELETE_COUNT_SELECT = {
+  taughtGroups: true,
+  taughtLessons: true,
+  createdAssignments: true,
+  createdMaterials: true,
+  generatedRecoveryPackages: true,
+  studentHelpResponses: true,
+  requestedMfaResets: true,
+  approvedMfaResets: true,
+  createdCurriculums: true,
+  linkedLessonOutcomes: true,
+  linkedAssignmentOutcomes: true,
+  createdMockExams: true,
+  createdPilotCohorts: true,
+  createdOdkPilotRuns: true,
+  createdOdkExamSeries: true,
+  createdOdkExams: true,
+  createdOdkExamVersions: true,
+  uploadedOdkExamFiles: true,
+  odkExamAttempts: true,
+  scoredOdkExamAttempts: true,
+} as const;
+
+type DeleteBlocker = {
+  code: string;
+  label: string;
+  count: number;
+};
+
+type DeleteCountSnapshot = Prisma.UserGetPayload<{
+  select: { _count: { select: typeof USER_DELETE_COUNT_SELECT } };
+}>["_count"];
+
+function collectDeleteBlockers(counts: DeleteCountSnapshot): DeleteBlocker[] {
+  const blockers: DeleteBlocker[] = [];
+  if (counts.taughtGroups > 0) blockers.push({ code: "taught_groups", label: "aktif/pasif grup sorumluluğu", count: counts.taughtGroups });
+  if (counts.taughtLessons > 0) blockers.push({ code: "taught_lessons", label: "ders kayıtları", count: counts.taughtLessons });
+  if (counts.createdAssignments > 0) blockers.push({ code: "created_assignments", label: "oluşturulmuş ödevler", count: counts.createdAssignments });
+  if (counts.createdMaterials > 0) blockers.push({ code: "created_materials", label: "oluşturulmuş materyaller", count: counts.createdMaterials });
+  if (counts.generatedRecoveryPackages > 0) blockers.push({ code: "recovery_packages", label: "oluşturulmuş telafi paketleri", count: counts.generatedRecoveryPackages });
+  if (counts.studentHelpResponses > 0) blockers.push({ code: "student_help_responses", label: "öğrenci yardım yanıtları", count: counts.studentHelpResponses });
+  if (counts.requestedMfaResets > 0 || counts.approvedMfaResets > 0) blockers.push({ code: "mfa_resets", label: "MFA sıfırlama kayıtları", count: counts.requestedMfaResets + counts.approvedMfaResets });
+  if (counts.createdCurriculums > 0) blockers.push({ code: "created_curriculums", label: "oluşturulmuş müfredat sürümleri", count: counts.createdCurriculums });
+  if (counts.linkedLessonOutcomes > 0 || counts.linkedAssignmentOutcomes > 0) blockers.push({ code: "outcome_links", label: "kazanım eşleştirme kayıtları", count: counts.linkedLessonOutcomes + counts.linkedAssignmentOutcomes });
+  if (counts.createdMockExams > 0) blockers.push({ code: "mock_exams", label: "oluşturulmuş deneme analizleri", count: counts.createdMockExams });
+  if (counts.createdPilotCohorts > 0 || counts.createdOdkPilotRuns > 0) blockers.push({ code: "pilot_rollout", label: "pilot rollout kayıtları", count: counts.createdPilotCohorts + counts.createdOdkPilotRuns });
+  if (counts.createdOdkExamSeries > 0 || counts.createdOdkExams > 0 || counts.createdOdkExamVersions > 0 || counts.uploadedOdkExamFiles > 0) blockers.push({ code: "odk_exam_content", label: "ODK sınav içerik geçmişi", count: counts.createdOdkExamSeries + counts.createdOdkExams + counts.createdOdkExamVersions + counts.uploadedOdkExamFiles });
+  if (counts.odkExamAttempts > 0 || counts.scoredOdkExamAttempts > 0) blockers.push({ code: "odk_exam_attempts", label: "ODK deneme sonuçları", count: counts.odkExamAttempts + counts.scoredOdkExamAttempts });
+  return blockers;
+}
+
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+  const auth = await requireApiRecentAdminStepUp();
+  if (!auth.ok) return auth.response;
+  const guard = await guardMutation({ action: "panel.users.delete.preview", requireSameOrigin: true, headers: { get: (name: string) => request.headers.get(name) }, rateLimitKey: `panel:users:delete-preview:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
+  if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
+
+  const { id } = await context.params;
+  if (id === auth.session.userId) {
+    return NextResponse.json({ canDelete: false, blockers: [{ code: "self_account", label: "kendi hesabınızı silemezsiniz", count: 1 }], suggestedAction: "SUSPEND" as const });
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      role: true,
+      _count: { select: USER_DELETE_COUNT_SELECT },
+    },
+  });
+  if (!target) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+
+  const blockers = collectDeleteBlockers(target._count);
+  if (target.role === "ADMIN") {
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (adminCount <= 1) blockers.unshift({ code: "last_admin", label: "son yönetici hesabı", count: 1 });
+  }
+
+  return NextResponse.json({
+    canDelete: blockers.length === 0,
+    blockers,
+    suggestedAction: blockers.length === 0 ? "DELETE" : "SUSPEND",
+  });
+}
+
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
@@ -73,30 +158,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
       id: true,
       email: true,
       role: true,
-      _count: {
-        select: {
-          taughtGroups: true,
-          taughtLessons: true,
-          createdAssignments: true,
-          createdMaterials: true,
-          generatedRecoveryPackages: true,
-          studentHelpResponses: true,
-          requestedMfaResets: true,
-          approvedMfaResets: true,
-          createdCurriculums: true,
-          linkedLessonOutcomes: true,
-          linkedAssignmentOutcomes: true,
-          createdMockExams: true,
-          createdPilotCohorts: true,
-          createdOdkPilotRuns: true,
-          createdOdkExamSeries: true,
-          createdOdkExams: true,
-          createdOdkExamVersions: true,
-          uploadedOdkExamFiles: true,
-          odkExamAttempts: true,
-          scoredOdkExamAttempts: true,
-        },
-      },
+      _count: { select: USER_DELETE_COUNT_SELECT },
     },
   });
   if (!target) {
@@ -113,24 +175,11 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     }
   }
 
-  const blockers: string[] = [];
-  if (target._count.taughtGroups > 0) blockers.push("aktif/pasif grup sorumluluğu");
-  if (target._count.taughtLessons > 0) blockers.push("ders kayıtları");
-  if (target._count.createdAssignments > 0) blockers.push("oluşturulmuş ödevler");
-  if (target._count.createdMaterials > 0) blockers.push("oluşturulmuş materyaller");
-  if (target._count.generatedRecoveryPackages > 0) blockers.push("oluşturulmuş telafi paketleri");
-  if (target._count.studentHelpResponses > 0) blockers.push("öğrenci yardım yanıtları");
-  if (target._count.requestedMfaResets > 0 || target._count.approvedMfaResets > 0) blockers.push("MFA sıfırlama kayıtları");
-  if (target._count.createdCurriculums > 0) blockers.push("oluşturulmuş müfredat sürümleri");
-  if (target._count.linkedLessonOutcomes > 0 || target._count.linkedAssignmentOutcomes > 0) blockers.push("kazanım eşleştirme kayıtları");
-  if (target._count.createdMockExams > 0) blockers.push("oluşturulmuş deneme analizleri");
-  if (target._count.createdPilotCohorts > 0 || target._count.createdOdkPilotRuns > 0) blockers.push("pilot rollout kayıtları");
-  if (target._count.createdOdkExamSeries > 0 || target._count.createdOdkExams > 0 || target._count.createdOdkExamVersions > 0 || target._count.uploadedOdkExamFiles > 0) blockers.push("ODK sınav içerik geçmişi");
-  if (target._count.odkExamAttempts > 0 || target._count.scoredOdkExamAttempts > 0) blockers.push("ODK deneme sonuçları");
+  const blockers = collectDeleteBlockers(target._count);
 
   if (blockers.length > 0) {
     return NextResponse.json(
-      { error: `Bu hesapta korunması gereken geçmiş var (${formatDeleteBlockers(blockers)}). Silmek yerine askıya alın.` },
+      { error: `Bu hesapta korunması gereken geçmiş var (${formatDeleteBlockers(blockers.map((item) => item.label))}). Silmek yerine askıya alın.` },
       { status: 409 },
     );
   }

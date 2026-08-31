@@ -136,7 +136,8 @@ function adminSections(root: string, flags: PanelFeatureFlags): NavSection[] {
       { href: operationHref, label: "Operasyon" },
     ]),
     ...section("EĞİTİM", [
-      { href: `${root}/kullanicilar`, label: "Öğrenciler" },
+      { href: `${root}/ogrenciler`, label: "Öğrenciler" },
+      { href: `${root}/kullanicilar`, label: "Kişiler" },
       { href: `${root}/egitmenler`, label: "Eğitmenler" },
       { href: `${root}/egitim`, label: "Dersler & Gruplar" },
       { href: `${root}/takvim`, label: "Takvim" },

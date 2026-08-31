@@ -65,6 +65,13 @@ Kurallar:
 
 Bu fazda akademik veya finansal veriyi otomatik silen bir cron özellikle eklenmemiştir. Kesin süre ve hukuki dayanak onaylanmadan geri döndürülemez toplu silme yapılmamalıdır.
 
+## Hesap yaşam döngüsü operasyon notu
+
+- `Yönetim > Eğitim > Öğrenciler` yalnız öğrenci hesaplarını gösterir; `Yönetim > Eğitim > Kişiler` tüm rollerde hesap operasyonu ve veri bütünlüğü kontrolü içindir.
+- Kalıcı silme denemesi öncesi sistem silme etkisini (bağlı geçmiş blokajları) hesaplar.
+- Blokaj varsa kalıcı silme reddedilir ve önerilen aksiyon askıya almadır.
+- Askıya alma geri alınabilir bir güvenlik aksiyonudur; kalıcı silme geri alınamaz.
+
 ## Güvenlik regresyon kontrol listesi
 
 - İkinci öğretmen başka öğretmenin dersini/notunu değiştiremez.

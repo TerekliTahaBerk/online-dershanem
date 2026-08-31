@@ -65,7 +65,7 @@ test.describe("panel deneyimi", () => {
 
   test("admin temel yönetim bölümlerini tek oturumda açabilir", async ({ page }) => {
     await login(page, accounts.admin);
-    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/yonetim/pilot", "/panel/yonetim/ozellikler", "/panel/yonetim/kalite", "/panel/bildirimler"]) {
+    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/ogrenciler", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/yonetim/pilot", "/panel/yonetim/ozellikler", "/panel/yonetim/kalite", "/panel/bildirimler"]) {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.getByRole("main")).toBeVisible();
@@ -93,6 +93,8 @@ test.describe("panel deneyimi", () => {
     }
     await expect(nav.getByRole("link", { name: "Bugün", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Operasyon", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Öğrenciler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Kişiler", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Siparişler", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "İşler / Provisioning", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Özellikler / Sistem", exact: true })).toBeVisible();
@@ -117,6 +119,17 @@ test.describe("panel deneyimi", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
     const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
     expect(result.violations).toEqual([]);
+  });
+
+  test("admin öğrenci ve kişiler yüzeylerini ayrı görür", async ({ page }) => {
+    await login(page, accounts.admin);
+    await page.goto("/panel/yonetim/ogrenciler");
+    await expect(page.getByRole("heading", { name: "Öğrenciler", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Öğrenci hesabı aç" })).toBeVisible();
+
+    await page.goto("/panel/yonetim/kullanicilar");
+    await expect(page.getByRole("heading", { name: "Kişiler", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Hesap ekle" })).toBeVisible();
   });
 
   test("öğretmen kaynaklı AI taslağını düzenleyip onaylar; içerik otomatik yayınlanmaz", async ({ page }) => {

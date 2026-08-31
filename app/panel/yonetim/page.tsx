@@ -193,6 +193,23 @@ export default async function AdminHomePage() {
         },
       },
     }),
+    prisma.$transaction([
+      prisma.user.count({ where: { status: "SUSPENDED" } }),
+      prisma.user.count({ where: { role: "STUDENT", studentProfile: null } }),
+      prisma.user.count({ where: { role: "TEACHER", teacherProfile: null } }),
+      prisma.user.count({
+        where: {
+          OR: [
+            { taughtGroups: { some: {} } },
+            { taughtLessons: { some: {} } },
+            { createdAssignments: { some: {} } },
+            { createdMaterials: { some: {} } },
+            { createdMockExams: { some: {} } },
+            { odkExamAttempts: { some: {} } },
+          ],
+        },
+      }),
+    ]),
   ]);
 
   const todayLessons = optionalResults[0].status === "fulfilled" ? optionalResults[0].value : null;
@@ -203,6 +220,14 @@ export default async function AdminHomePage() {
       ? evaluateCronHeartbeats(optionalResults[3].value, now)
       : null;
   const teachers = optionalResults[4].status === "fulfilled" ? optionalResults[4].value : null;
+  const accountSignals = optionalResults[5].status === "fulfilled"
+    ? {
+        suspendedUsers: optionalResults[5].value[0],
+        studentsWithoutProfile: optionalResults[5].value[1],
+        teachersWithoutProfile: optionalResults[5].value[2],
+        deleteRiskUsers: optionalResults[5].value[3],
+      }
+    : null;
 
   const hasOptionalDataFailure = optionalResults.some((result) => result.status === "rejected");
   const cancelledToday = todayLessons?.filter((lesson) => lesson.status === "CANCELLED") ?? [];
@@ -332,6 +357,32 @@ export default async function AdminHomePage() {
       href: "/panel/yonetim/kocluk",
       ctaLabel: "Koçluğu Aç",
     });
+  }
+
+  if (accountSignals) {
+    if (accountSignals.studentsWithoutProfile + accountSignals.teachersWithoutProfile > 0) {
+      exceptions.push({
+        id: "account-profile-mismatch",
+        source: "system",
+        severity: "ACTION_REQUIRED",
+        title: `${accountSignals.studentsWithoutProfile + accountSignals.teachersWithoutProfile} hesapta rol/profil uyumsuzluğu var`,
+        description: "Kişiler merkezinde veri bütünlüğü sinyallerini düzeltin.",
+        href: "/panel/yonetim/kullanicilar?durum=profil",
+        ctaLabel: "Kişileri Aç",
+      });
+    }
+
+    if (accountSignals.deleteRiskUsers > 0) {
+      exceptions.push({
+        id: "account-delete-risk",
+        source: "system",
+        severity: "WATCH",
+        title: `${accountSignals.deleteRiskUsers} hesapta geçmiş bağlı kayıt var`,
+        description: "Bu hesaplar için kalıcı silme yerine askıya alma tercih edilmelidir.",
+        href: "/panel/yonetim/kullanicilar",
+        ctaLabel: "Hesapları Aç",
+      });
+    }
   }
 
   if (cronHealth) {
@@ -470,6 +521,12 @@ export default async function AdminHomePage() {
                 <dt>Bugün planlı ders</dt>
                 <dd className="text-dc-ink-muted">
                   {todayLessons ? `${todayLessons.length} planlı` : "Veri alınamadı"}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Askıda hesap</dt>
+                <dd className="text-dc-ink-muted">
+                  {accountSignals ? accountSignals.suspendedUsers : "Veri alınamadı"}
                 </dd>
               </div>
             </dl>

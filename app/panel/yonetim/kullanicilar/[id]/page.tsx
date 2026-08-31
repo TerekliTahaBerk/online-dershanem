@@ -11,6 +11,7 @@ import { AdminUserProfileForm } from "@/components/panel/admin-user-profile-form
 import { AdminAccessibilityAccommodationForm } from "@/components/panel/admin-accessibility-accommodation-form";
 import { AdminProductAccessForm } from "@/components/panel/admin-product-access-form";
 import { RequestMfaResetForm } from "@/components/panel/mfa-reset-controls";
+import { UserRowActions } from "@/components/panel/user-row-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -186,6 +187,23 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             }}
           />
         </div>
+
+        <PanelCard className="mt-5">
+          <PanelCardTitle>Hesap yaşam döngüsü</PanelCardTitle>
+          <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-muted">
+            Kalıcı silme geri alınamaz. Kritik kayıtlar varsa sistem silmeyi engeller ve hesabı askıya almanızı ister.
+          </p>
+          <div className="mt-4">
+            <UserRowActions
+              userId={user.id}
+              email={user.email}
+              fullName={user.fullName}
+              phone={user.phone}
+              status={user.status}
+              isSelf={user.id === session.userId}
+            />
+          </div>
+        </PanelCard>
 
         <AdminProductAccessForm
           userId={user.id}

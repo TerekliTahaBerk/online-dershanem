@@ -54,6 +54,8 @@ const ROLE_FILTERS: { value: string; label: string }[] = [
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "", label: "Tümü" },
   { value: "dikkat", label: "Dikkat gerekenler" },
+  { value: "profil", label: "Profil eksik" },
+  { value: "erisim-yok", label: "Erişim eksik" },
   { value: "askida", label: "Askıda" },
   { value: "parola", label: "Parola bekliyor" },
 ];
@@ -126,6 +128,27 @@ export default async function UsersPage({
       : {}),
     ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
     ...(durum === "parola" ? { mustChangePassword: true } : {}),
+    ...(durum === "profil"
+      ? {
+          OR: [
+            { role: "STUDENT", studentProfile: null },
+            { role: "TEACHER", teacherProfile: null },
+          ],
+        }
+      : {}),
+    ...(durum === "erisim-yok"
+      ? {
+          role: "STUDENT",
+          NOT: {
+            productMemberships: {
+              some: {
+                revokedAt: null,
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+              },
+            },
+          },
+        }
+      : {}),
     // "Dikkat gerekenler": ödenmiş ama erişimi açılmamış siparişi olanlar.
     ...(durum === "dikkat"
       ? { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } }
@@ -170,6 +193,7 @@ export default async function UsersPage({
             },
           },
         },
+        teacherProfile: { select: { id: true } },
       },
     }),
     prisma.parentStudent.findMany({
@@ -194,15 +218,34 @@ export default async function UsersPage({
       where: { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } },
     }),
   ]);
+  const [studentsWithoutProfile, teachersWithoutProfile, studentsWithoutActiveProduct] =
+    await Promise.all([
+      prisma.user.count({ where: { role: "STUDENT", studentProfile: null } }),
+      prisma.user.count({ where: { role: "TEACHER", teacherProfile: null } }),
+      prisma.user.count({
+        where: {
+          role: "STUDENT",
+          NOT: {
+            productMemberships: {
+              some: {
+                revokedAt: null,
+                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+              },
+            },
+          },
+        },
+      }),
+    ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const integrityCount = studentsWithoutProfile + teachersWithoutProfile + studentsWithoutActiveProduct;
 
   return (
     <PanelShell
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Kullanıcılar"
+      pageTitle="Kişiler"
     >
       <div className="max-w-[1200px]">
         <PanelHeading
@@ -219,6 +262,33 @@ export default async function UsersPage({
             </Link>
           }
         />
+
+        {integrityCount > 0 ? (
+          <PanelCard className="mt-5 border-amber-200 bg-amber-50/50">
+            <PanelCardTitle>Veri bütünlüğü sinyali</PanelCardTitle>
+            <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-body">
+              Rol ve profil verileri tam eşleşmeyen hesaplar var. Bu kayıtlar operasyon akışında
+              sessiz hataya yol açabilir.
+            </p>
+            <ul className="mt-3 space-y-1.5 text-[13px] text-dc-ink-body">
+              {studentsWithoutProfile > 0 ? (
+                <li>
+                  • <Link href="/panel/yonetim/kullanicilar?durum=profil&rol=STUDENT" className="font-semibold text-dc-brand hover:underline">Profili olmayan öğrenci</Link>: {studentsWithoutProfile}
+                </li>
+              ) : null}
+              {teachersWithoutProfile > 0 ? (
+                <li>
+                  • <Link href="/panel/yonetim/kullanicilar?durum=profil&rol=TEACHER" className="font-semibold text-dc-brand hover:underline">Profili olmayan öğretmen</Link>: {teachersWithoutProfile}
+                </li>
+              ) : null}
+              {studentsWithoutActiveProduct > 0 ? (
+                <li>
+                  • <Link href="/panel/yonetim/kullanicilar?durum=erisim-yok" className="font-semibold text-dc-brand hover:underline">Aktif ürün erişimi olmayan öğrenci</Link>: {studentsWithoutActiveProduct}
+                </li>
+              ) : null}
+            </ul>
+          </PanelCard>
+        ) : null}
 
         {/* ── Arama ve filtreler ── */}
         <form method="get" role="search" className="mt-5 flex flex-wrap items-center gap-2.5">
@@ -295,6 +365,12 @@ export default async function UsersPage({
                     ? { label: "Askıda", tone: "warn" as const }
                     : user.mustChangePassword
                       ? { label: "Parola bekliyor", tone: "warn" as const }
+                      : user.role === "STUDENT" && !user.studentProfile
+                        ? { label: "Profil eksik", tone: "warn" as const }
+                        : user.role === "TEACHER" && !user.teacherProfile
+                          ? { label: "Profil eksik", tone: "warn" as const }
+                          : user.role === "STUDENT" && products.length === 0
+                            ? { label: "Erişim eksik", tone: "warn" as const }
                       : { label: "Aktif", tone: "ok" as const };
 
                 return (

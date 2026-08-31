@@ -9,8 +9,8 @@ import { revokeAllUserSessions } from "@/lib/auth/session";
 /**
  * Hesabı askıya alma / yeniden açma.
  *
- * SİLME YOK — bilerek. Bir kullanıcıyı silmek ders notlarını, yoklamayı ve
- * ödeme bağını da götürür. Askıya alma geri alınabilir; silme alınamaz.
+ * Varsayılan güvenli aksiyon ASKIDA tutmaktır. Kalıcı silme ayrı endpointte
+ * bağımlılık kontrollerinden geçer; riskli geçmiş varsa yine askıya alma önerilir.
  *
  * İki kilitlenme tuzağı burada kapatılıyor (aşağıdaki kontroller).
  */
