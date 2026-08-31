@@ -19,6 +19,7 @@ export function TrackedPanelLink({
   return (
     <Link
       href={href}
+      prefetch
       className={className}
       onClick={() => sendPanelEvent(event)}
     >

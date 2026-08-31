@@ -61,41 +61,41 @@ export async function PanelShell({
 }) {
   const isBusinessWorkspace = workspace === "BUSINESS";
   const session = await getSession();
-
-  const unread = session
-    ? await prisma.notification.count({ where: { userId: session.userId, readAt: null } })
-    : 0;
-
   const flags = getPanelFeatureFlags();
   const accessibilityEnabled = flags.accessibilityProfile;
-  const storedPreference =
-    accessibilityEnabled && session
-      ? await prisma.accessibilityPreference.findUnique({
-          where: { userId: session.userId },
-          select: {
-            reducedMotion: true,
-            highContrast: true,
-            textScale: true,
-            comfortableSpacing: true,
-            captionsPreferred: true,
-            transcriptPreferred: true,
-          },
-        })
-      : null;
+
+  const [unread, storedPreference, networkPreference, products, businessUnits] = session
+    ? await Promise.all([
+        prisma.notification.count({ where: { userId: session.userId, readAt: null } }),
+        accessibilityEnabled
+          ? prisma.accessibilityPreference.findUnique({
+              where: { userId: session.userId },
+              select: {
+                reducedMotion: true,
+                highContrast: true,
+                textScale: true,
+                comfortableSpacing: true,
+                captionsPreferred: true,
+                transcriptPreferred: true,
+              },
+            })
+          : Promise.resolve(null),
+        flags.offlineMode
+          ? prisma.networkPreference.findUnique({
+              where: { userId: session.userId },
+              select: { lowDataMode: true, offlineWritesEnabled: true },
+            })
+          : Promise.resolve(null),
+        // Menü yetkiye göre daraltılır; asıl kontrol sunucu guard'larındadır.
+        getAccessibleProducts(session.userId, session.role),
+        !isBusinessWorkspace && process.env.CRM_PANEL_ENABLED !== "false"
+          ? getBusinessAccess(session, "dashboard:read")
+          : Promise.resolve([]),
+      ])
+    : [0, null, null, [], []];
+
   const accessibilityPreference = storedPreference || defaultAccessibilityViewPreference;
-
-  const networkPreference =
-    flags.offlineMode && session
-      ? await prisma.networkPreference.findUnique({
-          where: { userId: session.userId },
-          select: { lowDataMode: true, offlineWritesEnabled: true },
-        })
-      : null;
   const offlineScope = session ? offlineSessionScope(session.sessionId) : "";
-
-  // Menü yetkiye göre daraltılır; asıl kontrol sunucu guard'larındadır.
-  const products = session ? await getAccessibleProducts(session.userId, session.role) : [];
-  void products;
 
   const homeHref = isBusinessWorkspace
     ? "/panel/yonetim/isletme/genel-bakis"
@@ -112,10 +112,6 @@ export async function PanelShell({
    * Görünürlük gerçek işletme atamasından türetilir (rol tahmininden değil),
    * böylece 404'e giden bir bağlantı gösterilmez.
    */
-  const businessUnits =
-    session && !isBusinessWorkspace && process.env.CRM_PANEL_ENABLED !== "false"
-      ? await getBusinessAccess(session, "dashboard:read")
-      : [];
   const workspaceSwitch = isBusinessWorkspace
     ? { href: productRolePath(product, role), label: "Eğitim paneline dön" }
     : businessUnits.length > 0

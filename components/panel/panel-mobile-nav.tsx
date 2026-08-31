@@ -99,6 +99,7 @@ export function PanelMobileNav({
               <li key={item.href}>
                 <Link
                   href={href}
+                  prefetch
                   aria-current={active ? "page" : undefined}
                   className={`block min-h-11 rounded-[10px] px-2 py-2 text-center text-[12.5px] font-semibold leading-tight transition-colors ${
                     active

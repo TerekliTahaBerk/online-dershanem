@@ -286,6 +286,7 @@ export function PanelNav({
               <Link
                 key={item.href}
                 href={href}
+                prefetch
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
                 className={`flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[14px] font-semibold transition-colors ${
