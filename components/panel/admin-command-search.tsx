@@ -3,10 +3,26 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpenCheck, CalendarDays, CreditCard, History, LayoutDashboard, Plus, Search, UsersRound, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const commands = [
+type CommandItem = {
+  label: string;
+  detail: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+type EntityResult = {
+  kind: "USER" | "GROUP" | "ORDER";
+  id: string;
+  label: string;
+  detail: string;
+  href: string;
+};
+
+const commands: CommandItem[] = [
   { label: "Bugün ekranına git", detail: "Aksiyon bekleyen operasyon özeti", href: "/panel/yonetim", icon: LayoutDashboard },
-  { label: "Operasyonu aç", detail: "İş kuyruğu, onboarding ve cron durumu", href: "/panel/yonetim/isler", icon: CreditCard },
+  { label: "Operasyon masasını aç", detail: "İş kuyruğu, onboarding ve cron durumu", href: "/panel/yonetim/isler", icon: CreditCard },
   { label: "Siparişleri aç", detail: "Ödeme ve provisioning durumları", href: "/panel/yonetim/siparisler", icon: CreditCard },
   { label: "Haftalık takvimi aç", detail: "Tüm dersleri gün gün gör", href: "/panel/yonetim/takvim", icon: CalendarDays },
   { label: "Öğrencileri aç", detail: "Öğrenci operasyon görünümünü aç", href: "/panel/yonetim/ogrenciler", icon: UsersRound },
@@ -27,6 +43,8 @@ export function AdminCommandSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [entities, setEntities] = useState<EntityResult[]>([]);
+  const [loadingEntities, setLoadingEntities] = useState(false);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -42,14 +60,51 @@ export function AdminCommandSearch() {
 
   useEffect(() => {
     if (open) window.setTimeout(() => inputRef.current?.focus(), 30);
-    else setQuery("");
+    else {
+      setQuery("");
+      setEntities([]);
+      setLoadingEntities(false);
+    }
   }, [open]);
+
+  useEffect(() => {
+    const needle = query.trim();
+    if (!open || needle.length < 2) {
+      setEntities([]);
+      setLoadingEntities(false);
+      return;
+    }
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setLoadingEntities(true);
+      try {
+        const response = await fetch(`/api/panel/admin-search?q=${encodeURIComponent(needle)}`, {
+          signal: controller.signal,
+        });
+        const payload = (await response.json().catch(() => null)) as { results?: EntityResult[] } | null;
+        if (!response.ok || !payload?.results) {
+          setEntities([]);
+          return;
+        }
+        setEntities(payload.results);
+      } finally {
+        setLoadingEntities(false);
+      }
+    }, 180);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, [open, query]);
 
   const results = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("tr-TR");
-    if (!needle) return commands;
-    return commands.filter((item) => `${item.label} ${item.detail}`.toLocaleLowerCase("tr-TR").includes(needle));
-  }, [query]);
+    const commandMatches = !needle
+      ? commands
+      : commands.filter((item) => `${item.label} ${item.detail}`.toLocaleLowerCase("tr-TR").includes(needle));
+    if (!needle.length) return commandMatches;
+    return [...commandMatches, ...entities.map((item) => ({ ...item, icon: UsersRound }))];
+  }, [entities, query]);
 
   function go(href: string) {
     setOpen(false);
@@ -74,8 +129,12 @@ export function AdminCommandSearch() {
             <div className="max-h-[420px] overflow-y-auto p-2">
               {results.map((item) => {
                 const Icon = item.icon;
-                return <button key={item.href + item.label} type="button" onClick={() => go(item.href)} className="group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left hover:bg-[var(--site-bg-warm)]"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"><Icon size={16} /></span><span className="min-w-0 flex-1"><span className="block text-[13px] font-bold text-[var(--site-ink)]">{item.label}</span><span className="mt-0.5 block truncate text-[11.5px] text-[var(--site-muted)]">{item.detail}</span></span><ArrowRight size={15} className="text-[var(--site-muted)] opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" /></button>;
+                const kind = "kind" in item ? item.kind : null;
+                return <button key={item.href + item.label} type="button" onClick={() => go(item.href)} className="group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left hover:bg-[var(--site-bg-warm)]"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"><Icon size={16} /></span><span className="min-w-0 flex-1"><span className="flex items-center gap-2"><span className="block text-[13px] font-bold text-[var(--site-ink)]">{item.label}</span>{kind ? <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-700">{kind === "USER" ? "Kişi" : kind === "GROUP" ? "Grup" : "Sipariş"}</span> : null}</span><span className="mt-0.5 block truncate text-[11.5px] text-[var(--site-muted)]">{item.detail}</span></span><ArrowRight size={15} className="text-[var(--site-muted)] opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" /></button>;
               })}
+              {loadingEntities ? (
+                <p className="px-4 py-2 text-[11px] text-[var(--site-muted)]">Kayıtlarda aranıyor…</p>
+              ) : null}
               {!results.length ? <div className="px-4 py-10 text-center"><p className="text-sm font-bold text-[var(--site-ink)]">Sonuç bulunamadı</p><p className="mt-1 text-xs text-[var(--site-muted)]">Başka bir işlem adı deneyin.</p></div> : null}
             </div>
             <div className="flex items-center justify-between border-t border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-2.5 text-[10.5px] text-[var(--site-muted)]"><span>İlk sonuca gitmek için Enter</span><span>Kapatmak için Esc</span></div>

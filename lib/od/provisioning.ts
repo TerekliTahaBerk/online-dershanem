@@ -316,6 +316,10 @@ export async function provisionOdOrder(
         where: { id: orderId },
         data: { userId: student.id, provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
       });
+      await tx.businessLead.updateMany({
+        where: { relatedOdOrderId: orderId },
+        data: { relatedOdUserId: student.id },
+      });
       await tx.commerceOrderLine.updateMany({
         where: { odOrderId: orderId, product: "OD", fulfillmentOwnerKey: email, fulfillmentStatus: { in: ["PENDING", "RUNNING", "RETRY_PENDING"] } },
         data: { fulfillmentOwnerUserId: student.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() },

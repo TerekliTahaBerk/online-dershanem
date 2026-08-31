@@ -5,8 +5,26 @@ import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
+import { assertLessonNoConflict } from "@/lib/panel/lesson-lifecycle";
 
-const schema = z.object({ groupId: z.string().min(1), title: z.string().trim().min(2).max(120), startsAt: z.string().datetime(), repeatWeeks: z.number().int().min(1).max(12).default(1), meetingUrl: z.string().url().max(500).optional().or(z.literal("")) });
+const schema = z
+  .object({
+    groupId: z.string().min(1),
+    title: z.string().trim().min(2).max(120),
+    startsAt: z.string().datetime(),
+    mode: z.enum(["SINGLE", "SERIES"]).default("SINGLE"),
+    repeatWeeks: z.number().int().min(1).max(12).default(1),
+    meetingUrl: z.string().url().max(500).optional().or(z.literal("")),
+  })
+  .superRefine((value, ctx) => {
+    if (value.mode === "SERIES" && value.repeatWeeks < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Ders serisi için en az 2 hafta seçin.",
+        path: ["repeatWeeks"],
+      });
+    }
+  });
 
 export async function POST(request: Request) {
   const auth = await requireApiOdRole("ADMIN");
@@ -18,12 +36,48 @@ export async function POST(request: Request) {
   const group = await prisma.group.findFirst({ where: { id: parsed.data.groupId, isActive: true }, include: { enrollments: { where: { endedAt: null }, include: { student: { select: { id: true, userId: true, parents: { select: { parentId: true } } } } } } } });
   if (!group) return NextResponse.json({ error: "Aktif grup bulunamadı." }, { status: 404 });
   const startsAt = new Date(parsed.data.startsAt);
-  const lessons = await prisma.$transaction(Array.from({ length: parsed.data.repeatWeeks }, (_, index) => {
-    const lessonStart = new Date(startsAt.getTime() + index * 7 * 86400000);
-    return prisma.lesson.create({ data: { groupId: group.id, teacherId: group.teacherId, title: parsed.data.title, startsAt: lessonStart, endsAt: new Date(lessonStart.getTime() + 60 * 60 * 1000), meetingUrl: parsed.data.meetingUrl || null } });
-  }));
+  const isSeries = parsed.data.mode === "SERIES" || parsed.data.repeatWeeks > 1;
+  const lessonCount = isSeries ? parsed.data.repeatWeeks : 1;
+  const lessons = await prisma.$transaction(async (tx) => {
+    const series = isSeries
+      ? await tx.lessonSeries.create({
+          data: {
+            groupId: group.id,
+            teacherId: group.teacherId,
+            title: parsed.data.title,
+            meetingUrl: parsed.data.meetingUrl || null,
+          },
+        })
+      : null;
+    const created: Array<{ id: string }> = [];
+    for (let index = 0; index < lessonCount; index += 1) {
+      const lessonStart = new Date(startsAt.getTime() + index * 7 * 86400000);
+      const lessonEnd = new Date(lessonStart.getTime() + 60 * 60 * 1000);
+      await assertLessonNoConflict(tx, {
+        lessonId: group.id,
+        teacherId: group.teacherId,
+        groupId: group.id,
+        startsAt: lessonStart,
+        endsAt: lessonEnd,
+      });
+      const lesson = await tx.lesson.create({
+        data: {
+          groupId: group.id,
+          seriesId: series?.id ?? null,
+          teacherId: group.teacherId,
+          title: parsed.data.title,
+          startsAt: lessonStart,
+          endsAt: lessonEnd,
+          meetingUrl: parsed.data.meetingUrl || null,
+        },
+        select: { id: true },
+      });
+      created.push(lesson);
+    }
+    return created;
+  });
   const dateLabel = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" }).format(startsAt);
-  const body = parsed.data.repeatWeeks > 1 ? `${parsed.data.title} · ${dateLabel} başlangıçlı ${parsed.data.repeatWeeks} haftalık program` : `${parsed.data.title} · ${dateLabel}`;
+  const body = lessonCount > 1 ? `${parsed.data.title} · ${dateLabel} başlangıçlı ${lessonCount} haftalık program` : `${parsed.data.title} · ${dateLabel}`;
   const rawNotificationRows = [
     { userId: group.teacherId, type: "SYSTEM" as const, title: "Ders programlandı", body, href: "/panel/ogretmen/takvim" },
     ...group.enrollments.map((item) => ({ userId: item.student.userId, type: "SYSTEM" as const, title: "Yeni ders programı", body, href: "/panel/ogrenci/takvim" })),
@@ -32,6 +86,6 @@ export async function POST(request: Request) {
   const notificationRows = await filterNotificationRows(rawNotificationRows);
   if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
   await queuePanelNotificationEmails(rawNotificationRows);
-  await logAudit({ actorUserId: auth.session.userId, entityType: "Lesson", entityId: lessons[0].id, action: "lesson.created", summary: `${parsed.data.title} dersi planlandı`, payload: { groupId: group.id, repeatWeeks: lessons.length, startsAt: startsAt.toISOString() } });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "Lesson", entityId: lessons[0].id, action: "lesson.created", summary: `${parsed.data.title} dersi planlandı`, payload: { groupId: group.id, repeatWeeks: lessons.length, startsAt: startsAt.toISOString(), mode: isSeries ? "SERIES" : "SINGLE" } });
   return NextResponse.json({ id: lessons[0].id, count: lessons.length });
 }

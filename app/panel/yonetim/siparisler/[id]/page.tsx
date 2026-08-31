@@ -5,21 +5,21 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelCard, PanelCardTitle, PanelHeading } from "@/components/panel/ui";
+import {
+  OD_ONBOARDING_LABELS,
+  OD_ONBOARDING_NEXT_ACTION,
+  type OdOnboardingStateValue,
+} from "@/lib/od/onboarding-state";
 import { retryOrderProvisioning } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 /**
- * ADMIN · SİPARİŞ DETAYI — onaylı tasarım (Panel.dc.html → aOrder).
+ * ADMIN · COMMERCE RESOLUTION CENTER
  *
- * TASARIMIN ANA FİKRİ: ödeme durumu ile erişim açma (provisioning) durumu
- * AYRI iki şeydir ve ekran bunu net göstermelidir. "Ödeme alındı" satırının
- * yanında "Online Koçum · başarısız" durabilir; bu bir tutarsızlık değil,
- * operasyonun müdahale etmesi gereken normal bir hâldir.
- *
- * Ürün bazlı erişim durumu `CommerceOrderLine.fulfillmentStatus` alanından
- * gelir — sipariş seviyesindeki tek durumdan türetilmez, çünkü bir ürün
- * açılıp diğeri başarısız olabilir.
+ * Sipariş → ödeme → kullanıcı → ürün erişimi zinciri tek vaka olarak okunur.
+ * Ana karar alanı üç soruyu önceleyerek operasyonu hızlandırır:
+ * "Ne oldu?", "Kimi etkiliyor?", "Şimdi ne yapacağım?".
  */
 
 const DATE_TIME = new Intl.DateTimeFormat("tr-TR", {
@@ -83,6 +83,13 @@ export default async function AdminOrderDetailPage({
       provisioningError: true,
       provisionedAt: true,
       user: { select: { id: true, fullName: true, email: true, studentProfile: { select: { id: true } } } },
+      onboarding: {
+        select: {
+          state: true,
+          dueAt: true,
+          owner: { select: { fullName: true, email: true } },
+        },
+      },
       payments: {
         select: {
           status: true,
@@ -110,9 +117,22 @@ export default async function AdminOrderDetailPage({
 
   const payment = order.payments[0] ?? null;
   const canRetry = order.status === "PAID" && order.provisioningStatus !== "SUCCEEDED";
+  const canRetryNow = canRetry && Boolean(order.user);
   const failedLines = order.lines.filter(
     (l) => l.fulfillmentStatus === "MANUAL_REVIEW" || l.fulfillmentStatus === "RETRY_PENDING",
   );
+  const onboardingState = order.onboarding?.state as OdOnboardingStateValue | undefined;
+  const requiresRefundFollowup =
+    order.status === "REFUNDED" || order.status === "CANCELLED" || payment?.status === "REFUNDED";
+  const accessSummary = order.lines.length
+    ? order.lines.map((line) => `${line.productName}: ${FULFILLMENT[line.fulfillmentStatus].label}`).join(" · ")
+    : ORDER_PROVISIONING[order.provisioningStatus];
+  const caseSummary =
+    order.status !== "PAID"
+      ? "Sipariş ödenmiş durumda değil; önce ödeme ve iade/iptal kaydını netleştirin."
+      : order.provisioningStatus === "SUCCEEDED"
+        ? "Ödeme alındı ve ürün erişimleri açılmış görünüyor."
+        : "Ödeme alındı, fakat erişim akışında operasyon müdahalesi gerekiyor.";
 
   return (
     <PanelShell
@@ -136,106 +156,167 @@ export default async function AdminOrderDetailPage({
               {DATE_TIME.format(order.createdAt)}
             </p>
           </div>
-
-          {canRetry ? (
-            <form action={retryOrderProvisioning}>
-              <input type="hidden" name="orderId" value={order.id} />
-              <button
-                type="submit"
-                className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
-              >
-                Erişim açmayı yeniden dene
-              </button>
-            </form>
-          ) : null}
         </div>
 
-        <div className="mt-[22px] grid gap-5 md:grid-cols-2">
+        <div className="mt-[22px] grid gap-5 md:grid-cols-3">
           <PanelCard>
-            <PanelCardTitle>Ödeme</PanelCardTitle>
+            <PanelCardTitle>Ne oldu?</PanelCardTitle>
             <dl className="mt-3 flex flex-col gap-2.5 text-[14px] font-medium text-dc-ink-body">
+              <Row label="Sipariş" value={`${order.packageName} · ${LIRA.format(order.totalCents / 100)}`} />
               <Row
-                label="Durum"
+                label="Ödeme"
                 value={payment ? PAYMENT_STATUS[payment.status].label : "Ödeme kaydı yok"}
                 tone={payment ? PAYMENT_STATUS[payment.status].tone : undefined}
               />
-              <Row label="Tutar" value={LIRA.format(order.totalCents / 100)} />
-              {payment ? <Row label="Yöntem" value={payment.provider} /> : null}
-              {payment?.paidAt ? (
-                <Row label="Ödeme zamanı" value={DATE_TIME.format(payment.paidAt)} />
+              <Row
+                label="Kullanıcı"
+                value={order.user?.fullName || order.user?.email || "Henüz hesabı bağlanmadı"}
+              />
+              <Row label="Ürün erişimi" value={accessSummary} />
+            </dl>
+            <p className="mt-3 text-[12.5px] leading-[1.6] text-dc-ink-faint">{caseSummary}</p>
+          </PanelCard>
+
+          <PanelCard>
+            <PanelCardTitle>Kimi etkiliyor?</PanelCardTitle>
+            <dl className="mt-3 flex flex-col gap-2.5 text-[14px] font-medium text-dc-ink-body">
+              <Row
+                label="Öğrenci hesabı"
+                value={order.user ? (order.user.fullName || order.user.email) : "Bağlanmadı"}
+              />
+              {order.user ? (
+                <Row
+                  label="Hesap kaydı"
+                  value={order.user.studentProfile?.id ? "Öğrenci profili var" : "Sadece kullanıcı hesabı var"}
+                />
+              ) : null}
+              <Row
+                label="Onboarding"
+                value={
+                  onboardingState
+                    ? OD_ONBOARDING_LABELS[onboardingState]
+                    : order.status === "PAID"
+                      ? "Henüz onboarding başlatılmamış"
+                      : "Ödeme kesinleşmeden onboarding açılmaz"
+                }
+              />
+              {order.onboarding?.owner ? (
+                <Row
+                  label="Sorumlu"
+                  value={order.onboarding.owner.fullName || order.onboarding.owner.email || "Atanmamış"}
+                />
+              ) : null}
+              {order.onboarding?.dueAt ? (
+                <Row label="Son tarih" value={DATE_TIME.format(order.onboarding.dueAt)} />
               ) : null}
             </dl>
-            {payment?.failureReason ? (
+            {!order.user ? (
               <p className="mt-3 text-[12.5px] leading-[1.6] text-[#C2493D]">
-                {payment.failureReason}
+                Kullanıcı bağlı olmadıkça erişim açma zinciri tamamlanamaz.
               </p>
             ) : null}
           </PanelCard>
 
           <PanelCard>
-            <PanelCardTitle>Erişim açma</PanelCardTitle>
-            {order.lines.length === 0 ? (
-              <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-                Bu siparişte ürün satırı kaydı yok. Genel durum:{" "}
-                {ORDER_PROVISIONING[order.provisioningStatus]}.
-              </p>
-            ) : (
-              <dl className="mt-3 flex flex-col gap-2.5 text-[14px] font-medium text-dc-ink-body">
-                {order.lines.map((line) => (
-                  <Row
-                    key={line.id}
-                    label={line.productName}
-                    value={FULFILLMENT[line.fulfillmentStatus].label}
-                    tone={FULFILLMENT[line.fulfillmentStatus].tone}
-                  />
-                ))}
-              </dl>
-            )}
-            <p className="mt-3 text-[12.5px] leading-[1.6] text-dc-ink-faint">
-              Ödeme ile erişim ayrı süreçlerdir. Ödeme geri alınmadan erişim yeniden
-              denenebilir. Deneme sayısı: {order.provisioningAttempts}.
-            </p>
+            <PanelCardTitle>Şimdi ne yapacağım?</PanelCardTitle>
+            <div className="mt-3 space-y-2 text-[13.5px] text-dc-ink-body">
+              {!order.user ? (
+                <p>
+                  Siparişi bir öğrenci hesabına bağlayın.{" "}
+                  <Link className="font-semibold text-dc-brand hover:underline" href="/panel/yonetim/isler">
+                    İşler ekranına git
+                  </Link>
+                </p>
+              ) : null}
+              {canRetryNow ? (
+                <form action={retryOrderProvisioning} className="pt-1">
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <button
+                    type="submit"
+                    className="rounded-[10px] bg-dc-brand px-[14px] py-[9px] text-[13px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+                  >
+                    Erişim açmayı yeniden dene
+                  </button>
+                </form>
+              ) : null}
+              {canRetry && !order.user ? (
+                <p>Erişim açmayı yeniden denemeden önce siparişi kullanıcı hesabına bağlayın.</p>
+              ) : null}
+              {failedLines.length > 0 ? (
+                <p>
+                  Ürün satırı problemi var ({failedLines.length}). Önce etkilenen hesabı kontrol edin:{" "}
+                  {order.user ? (
+                    <Link
+                      href={
+                        order.user.studentProfile?.id
+                          ? `/panel/yonetim/ogrenciler/${order.user.studentProfile.id}`
+                          : `/panel/yonetim/kullanicilar/${order.user.id}`
+                      }
+                      className="font-semibold text-dc-brand hover:underline"
+                    >
+                      Hesabı aç
+                    </Link>
+                  ) : (
+                    "Hesap bağlı değil"
+                  )}
+                </p>
+              ) : null}
+              {requiresRefundFollowup ? (
+                <p>
+                  Sipariş iade/iptal durumunda. Erişim geri alma ve kapanış adımlarını
+                  ödeme kaydıyla birlikte doğrulayın.
+                </p>
+              ) : null}
+              {onboardingState ? (
+                <p>
+                  Onboarding sıradaki işlem:{" "}
+                  <span className="font-semibold">{OD_ONBOARDING_NEXT_ACTION[onboardingState]}</span>
+                </p>
+              ) : null}
+              {!canRetry && failedLines.length === 0 && order.user && order.provisioningStatus === "SUCCEEDED" ? (
+                <p>Tüm ana adımlar tamamlandı; yalnız rutin takip gerekli.</p>
+              ) : null}
+            </div>
           </PanelCard>
         </div>
 
-        {order.provisioningError || failedLines.length > 0 ? (
-          <PanelCard className="mt-5">
-            <PanelCardTitle>Hata detayı</PanelCardTitle>
-            <pre className="mt-2.5 overflow-x-auto whitespace-pre-wrap rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] p-3.5 font-mono text-[13px] leading-[1.7] text-dc-ink-muted">
-              {[
-                order.provisioningError,
-                ...failedLines.map((l) =>
-                  `${l.productName} · ${FULFILLMENT[l.fulfillmentStatus].label}${
-                    l.fulfillmentError ? ` · ${l.fulfillmentError}` : ""
-                  } · ${l.fulfillmentAttempts} deneme`,
-                ),
-              ]
-                .filter(Boolean)
-                .join("\n")}
-            </pre>
-            <div className="mt-4 flex flex-wrap gap-2.5">
-              {order.user ? (
-                <Link
-                  href={
-                    order.user.studentProfile?.id
-                      ? `/panel/yonetim/ogrenciler/${order.user.studentProfile.id}`
-                      : `/panel/yonetim/kullanicilar/${order.user.id}`
-                  }
-                  className="rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-                >
-                  Öğrenci kaydını aç
-                </Link>
+        <PanelCard className="mt-5">
+          <PanelCardTitle>Teknik ayrıntılar</PanelCardTitle>
+          <details className="mt-2">
+            <summary className="cursor-pointer text-[13px] font-semibold text-dc-brand hover:underline">
+              Provisioning denemeleri, hata nedenleri ve satır bazlı durumlar
+            </summary>
+            <div className="mt-3 space-y-3">
+              <dl className="grid gap-2 text-[13px] text-dc-ink-body sm:grid-cols-2">
+                <Row label="Sipariş provisioning durumu" value={ORDER_PROVISIONING[order.provisioningStatus]} />
+                <Row label="Provisioning deneme sayısı" value={String(order.provisioningAttempts)} />
+                {order.provisionedAt ? <Row label="Erişim açılma zamanı" value={DATE_TIME.format(order.provisionedAt)} /> : null}
+                {payment?.provider ? <Row label="Ödeme sağlayıcısı" value={payment.provider} /> : null}
+              </dl>
+              {payment?.failureReason ? (
+                <p className="rounded-[10px] border border-[#F3DDD7] bg-[#FFF6F3] px-3 py-2 text-[12.5px] text-[#A24839]">
+                  Ödeme hata notu: {payment.failureReason}
+                </p>
+              ) : null}
+              {order.provisioningError || order.lines.length > 0 ? (
+                <pre className="overflow-x-auto whitespace-pre-wrap rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] p-3.5 font-mono text-[13px] leading-[1.7] text-dc-ink-muted">
+                  {[
+                    order.provisioningError ? `order: ${order.provisioningError}` : null,
+                    ...order.lines.map((line) =>
+                      `${line.productName} · ${FULFILLMENT[line.fulfillmentStatus].label}${
+                        line.fulfillmentError ? ` · ${line.fulfillmentError}` : ""
+                      } · ${line.fulfillmentAttempts} deneme`,
+                    ),
+                  ]
+                    .filter(Boolean)
+                    .join("\n")}
+                </pre>
               ) : (
-                <Link
-                  href="/panel/yonetim/siparisler"
-                  className="rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-                >
-                  Siparişi bir öğrenciye bağla
-                </Link>
+                <p className="text-[13px] text-dc-ink-muted">Teknik hata kaydı bulunmuyor.</p>
               )}
             </div>
-          </PanelCard>
-        ) : null}
+          </details>
+        </PanelCard>
       </div>
     </PanelShell>
   );

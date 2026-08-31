@@ -6,6 +6,7 @@ import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { DEFAULT_GROUP_CAPACITY } from "@/lib/panel-group-capacity";
+import { assertLessonNoConflict } from "@/lib/panel/lesson-lifecycle";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80), subject: z.string().trim().min(2).max(80), level: z.string().trim().max(40).optional(),
@@ -39,7 +40,39 @@ export async function POST(request: Request) {
     group = await prisma.$transaction(async (tx) => {
       const created = await tx.group.create({ data: { name: data.name, subject: data.subject, level: data.level || null, teacherId: teacher.id, capacity: DEFAULT_GROUP_CAPACITY, enrollments: { create: studentIds.map((studentId) => ({ studentId })) } } });
       for (const link of data.parentLinks) await tx.parentStudent.upsert({ where: { parentId_studentId: link }, create: { ...link, relationship: "Veli" }, update: {} });
-      await tx.lesson.createMany({ data: Array.from({ length: data.repeatWeeks }, (_, index) => { const startsAt = new Date(start.getTime() + index * 7 * 86400000); return { groupId: created.id, teacherId: teacher.id, title: data.lessonTitle, startsAt, endsAt: new Date(startsAt.getTime() + 3600000), meetingUrl: data.meetingUrl || null }; }) });
+      const lessonCount = Math.max(1, data.repeatWeeks);
+      const series = lessonCount > 1
+        ? await tx.lessonSeries.create({
+            data: {
+              groupId: created.id,
+              teacherId: teacher.id,
+              title: data.lessonTitle,
+              meetingUrl: data.meetingUrl || null,
+            },
+          })
+        : null;
+      for (let index = 0; index < lessonCount; index += 1) {
+        const startsAt = new Date(start.getTime() + index * 7 * 86400000);
+        const endsAt = new Date(startsAt.getTime() + 3600000);
+        await assertLessonNoConflict(tx, {
+          lessonId: created.id,
+          teacherId: teacher.id,
+          groupId: created.id,
+          startsAt,
+          endsAt,
+        });
+        await tx.lesson.create({
+          data: {
+            groupId: created.id,
+            seriesId: series?.id ?? null,
+            teacherId: teacher.id,
+            title: data.lessonTitle,
+            startsAt,
+            endsAt,
+            meetingUrl: data.meetingUrl || null,
+          },
+        });
+      }
       return created;
     });
   } catch (error) {

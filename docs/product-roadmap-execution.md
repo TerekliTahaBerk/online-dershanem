@@ -194,3 +194,42 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 - Admin pilot sırasında kilitlenmez. `PANEL_PILOT_KILL_SWITCH=true`, aktif üyelikten bağımsız son durdurma kapısıdır.
 - Kohort değişiklik event'i yalnız üye bandı, dört rol kapsamı, readiness ve kontrollü eylem taşır; kullanıcı/grup kimliği içermez.
 - Kademeli yayın ve geri alma ayrıntıları [bütünleşik pilot işletim standardında](./integrated-pilot-rollout-operations.md) tanımlıdır.
+
+## Aşama 28 kararları
+
+- İşletme paneli ile eğitim paneli fiziksel olarak birleştirilmeyecek; handoff görünürlüğü lead/satış kayıtlarına eklenecek lifecycle sinyali ve derin linklerle sağlanacak.
+- CRM tarafında `WON` satışlar için sipariş ve hesap bağı zorunlu şekilde izlenecek; `satış var ama sipariş yok` ve `ödeme var ama hesap yok` durumları açık istisna olarak gösterilecek.
+- `BusinessLead.relatedOdOrderId / relatedOdkOrderId / relatedOdUserId / relatedOdkUserId` alanları ödeme + provisioning zincirinde güncel tutulacak, böylece satıştan öğrenciliğe geçiş tek kaynaktan takip edilecek.
+- Handoff durumu yeni black-box skorla değil, adım bazlı deterministik kurallarla üretilecek: satış, sipariş, hesap, veli, grup, ilk hizmet.
+- Sipariş, işler/provisioning ve öğrenci/hesap ekranlarına tek tık geçiş zorunlu olacak; operasyon sahibi bağlam kaybetmeden akışı sürdürecek.
+
+## Aşama 29 kararları
+
+- Unified Operations Inbox yeni bir sayfa yerine mevcut `/panel/yonetim/isler` içinde çalışacak; onboarding, eğitim kesintileri ve ödeme-erişim istisnaları aynı operasyon modelinde birleşecek.
+- Her operasyon satırı aynı zorunlu alanları taşıyacak: `severity`, `owner`, `dueAt`, `nextAction`, `resolution`.
+- Kapsamdaki istisnalar yalnız gerçek ve açıklanabilir kurallardan üretilecek: ödeme alındı ama erişim yok, hesap/veli/grup/ilk ders eksik, öğretmen devri gereksinimi, ders iptali.
+- “Risk skoru” veya tahmine dayalı kara kutu sınıflandırma eklenmeyecek; state-machine ve kanıtlanabilir koşullar üzerinden öncelik verilecek.
+- Yönetim ana sayfasındaki “Bugün” özeti, aynı unified inbox kaynağından açık operasyon sayısını okuyarak operasyon ekranıyla tutarlı çalışacak.
+
+## Aşama 30 kararları
+
+- 500–5000 kayıt ölçeğinde operasyonlar için kişi ekranında filtre-temelli toplu işlem katmanı açılacak; ilk sürüm yalnız üç gerçek ihtiyaçla sınırlı kalacak: toplu davet yenileme, toplu öğrenci grup transferi, toplu öğretmen güvenli devir/offboard.
+- Toplu akış `preview -> execute` olarak çalışacak; kısmi başarı gizlenmeyecek, satır bazlı hata nedeni dönecek.
+- Toplu işlemler `BULK_LIMIT=500` üst sınırıyla çalışacak; daha geniş filtrelerde kullanıcıya cap bilgisi açıkça gösterilecek.
+- `AdminCommandSearch` statik komut listesinden command + entity aramaya genişletilecek; kişi, grup ve siparişe tek adım geçiş sağlanacak.
+
+## Aşama 31 kararları
+
+- İnsan dili yeniden yazımı rol-bazlı olacak: öğrenci, öğretmen, veli, operasyon ve teknik tanılama için ayrı voice kuralları uygulanacak.
+- Teknik/iç terimler son kullanıcı yüzeyinde sonuç gibi gösterilmeyecek; kullanıcıya “şu an ne oldu, şimdi ne yapmalı” dilinde çıktı verilecek.
+- Yeniden yazım string-level arama/değiştir yaklaşımıyla değil, akış ve niyet odaklı metin sistemiyle yürütülecek.
+
+## Aşama 32 kararları
+
+- Kritik iş zinciri tek bir uçtan uca operasyon senaryosu olarak güvenceye alınacak: öğrenci oluşturma, davet, veli bağlantısı, ürün erişimi, grup/koç ataması, ilk ders, öğrenci girişi, ders tamamlama, veli özeti ve güvenli offboard.
+- `paid-order -> active` ve `teacher-transfer` senaryoları ayrı regresyon kapısı olarak korunacak.
+
+## Aşama 33 kararları
+
+- Son kabul sorusu panel içinde görünür olacak: “Bu iş için hâlâ SQL/Prisma/kod müdahalesi gerekiyor mu?”
+- Kritik günlük operasyon matrisi GO/GAP olarak yayınlanacak; GAP varsa eksik yetenek panel yüzeyiyle birlikte açıkça raporlanacak.

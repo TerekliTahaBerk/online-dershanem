@@ -323,6 +323,7 @@ model User {
   parentRelationshipHistory     ParentStudentHistory[]     @relation("ParentRelationshipParent")
   parentRelationshipChanges     ParentStudentHistory[]     @relation("ParentRelationshipActor")
   taughtGroups                  Group[]                    @relation("GroupTeacher")
+  taughtLessonSeries            LessonSeries[]             @relation("LessonSeriesTeacher")
   taughtLessons                 Lesson[]                   @relation("LessonTeacher")
   createdAssignments            Assignment[]               @relation("AssignmentCreator")
   notifications                 Notification[]
@@ -1717,9 +1718,28 @@ model Group {
   checkIns     StudentCheckIn[]
   helpRequests StudentHelpRequest[]
   pilotCohorts PilotCohort[]
+  lessonSeries LessonSeries[]
 
   @@index([teacherId, isActive])
   @@map("groups")
+}
+
+model LessonSeries {
+  id         String   @id @default(cuid())
+  groupId    String   @map("group_id")
+  teacherId  String   @map("teacher_id")
+  title      String
+  meetingUrl String?  @map("meeting_url")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher    User     @relation("LessonSeriesTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  lessons    Lesson[]
+
+  @@index([groupId, isActive])
+  @@index([teacherId, isActive])
+  @@map("lesson_series")
 }
 
 model PilotCohort {
@@ -1898,6 +1918,7 @@ model Enrollment {
 model Lesson {
   id                  String             @id @default(cuid())
   groupId             String             @map("group_id")
+  seriesId            String?            @map("series_id")
   teacherId           String             @map("teacher_id")
   title               String
   startsAt            DateTime           @map("starts_at") @db.Timestamptz(3)
@@ -1912,6 +1933,7 @@ model Lesson {
   createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt           DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
   group               Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  series              LessonSeries?      @relation(fields: [seriesId], references: [id], onDelete: SetNull)
   teacher             User               @relation("LessonTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
   notes               LessonNote[]
   attendances         Attendance[]
@@ -1924,6 +1946,7 @@ model Lesson {
 
   @@index([teacherId, startsAt])
   @@index([groupId, startsAt])
+  @@index([seriesId, startsAt])
   @@map("lessons")
 }
 

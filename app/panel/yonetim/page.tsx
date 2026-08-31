@@ -12,6 +12,8 @@ import {
 } from "@/components/panel/ui";
 import { evaluateCronHeartbeats } from "@/lib/jobs/health";
 import { istanbulDayStart, istanbulNextDayStart } from "@/lib/istanbul-time";
+import { OD_ONBOARDING_NEXT_ACTION } from "@/lib/od/onboarding-state";
+import { deriveUnifiedOperationItems } from "@/lib/panel/operations-inbox";
 
 export const dynamic = "force-dynamic";
 
@@ -128,6 +130,8 @@ export default async function AdminHomePage() {
     retryPendingOrders,
     odCount,
     odkCount,
+    onboardingSignals,
+    cancelledLessonsForInbox,
   ] = await Promise.all([
     prisma.odOrder.count({ where: { status: "PAID", provisioningStatus: "MANUAL_REVIEW" } }),
     prisma.odOrder.findMany({
@@ -169,6 +173,60 @@ export default async function AdminHomePage() {
     }),
     prisma.productMembership.count({ where: { product: "OD", revokedAt: null } }),
     prisma.productMembership.count({ where: { product: "ODK", revokedAt: null } }),
+    prisma.odOnboarding.findMany({
+      where: { order: { status: "PAID" }, state: { not: "ACTIVE" } },
+      orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
+      take: 60,
+      select: {
+        id: true,
+        orderId: true,
+        state: true,
+        dueAt: true,
+        blockerReason: true,
+        stateEnteredAt: true,
+        owner: { select: { fullName: true, email: true } },
+        order: {
+          select: {
+            packageName: true,
+            user: {
+              select: {
+                fullName: true,
+                email: true,
+                studentProfile: {
+                  select: {
+                    id: true,
+                    parents: { select: { id: true }, take: 1 },
+                    enrollments: {
+                      where: { endedAt: null },
+                      select: {
+                        group: { select: { lessons: { where: { status: "PLANNED" }, select: { id: true }, take: 1 } } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.lesson.findMany({
+      where: { status: "CANCELLED", startsAt: { gte: dayStart, lt: dayEnd } },
+      orderBy: { startsAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        title: true,
+        startsAt: true,
+        group: {
+          select: {
+            name: true,
+            lessons: { where: { status: "PLANNED", startsAt: { gt: now } }, select: { id: true }, take: 1 },
+            teacher: { select: { fullName: true, email: true } },
+          },
+        },
+      },
+    }),
   ]);
 
   const optionalResults = await Promise.allSettled([
@@ -231,9 +289,57 @@ export default async function AdminHomePage() {
 
   const hasOptionalDataFailure = optionalResults.some((result) => result.status === "rejected");
   const cancelledToday = todayLessons?.filter((lesson) => lesson.status === "CANCELLED") ?? [];
+  const unifiedOpenItems = deriveUnifiedOperationItems({
+    now,
+    onboardings: onboardingSignals.map((item) => {
+      const profile = item.order.user?.studentProfile;
+      const hasParent = Boolean(profile?.parents.length);
+      const hasGroup = Boolean(profile?.enrollments.length);
+      const hasFirstLesson = Boolean(profile?.enrollments.some((enrollment) => enrollment.group.lessons.length));
+      return {
+        id: item.id,
+        orderId: item.orderId,
+        packageName: item.order.packageName,
+        state: item.state,
+        blockerReason: item.blockerReason,
+        ownerName: item.owner?.fullName || item.owner?.email || null,
+        dueAt: item.dueAt,
+        stateEnteredAt: item.stateEnteredAt,
+        studentLabel: item.order.user?.fullName || item.order.user?.email || "hesap bağlantısı bekleniyor",
+        hasAccount: Boolean(profile),
+        hasParent,
+        hasGroup,
+        hasFirstLesson,
+        studentProfileId: profile?.id || null,
+        nextAction: OD_ONBOARDING_NEXT_ACTION[item.state],
+      };
+    }),
+    cancelledLessons: cancelledLessonsForInbox.map((lesson) => ({
+      id: lesson.id,
+      title: lesson.title,
+      startsAt: lesson.startsAt,
+      groupName: lesson.group.name,
+      teacherName: lesson.group.teacher.fullName || lesson.group.teacher.email,
+      hasFollowUpLesson: lesson.group.lessons.length > 0,
+    })),
+  }).filter((item) => item.resolution === "OPEN");
 
   const exceptions: AdminExceptionItem[] = [];
   const seenOrderIds = new Set<string>();
+
+  if (unifiedOpenItems.length > 0) {
+    const blockingCount = unifiedOpenItems.filter((item) => item.severity === "BLOCKING").length;
+    exceptions.push({
+      id: "unified-operations-open",
+      source: "system",
+      severity: blockingCount > 0 ? "BLOCKING" : "ACTION_REQUIRED",
+      title: `${unifiedOpenItems.length} operasyon istisnası çözüm bekliyor`,
+      description: `${blockingCount} bloke · tek operasyon kuyruğundan sahip/son tarih takibi yapın`,
+      href: "/panel/yonetim/isler",
+      ctaLabel: "Operasyonu Aç",
+      createdAt: unifiedOpenItems[0]?.createdAt,
+    });
+  }
 
   for (const order of manualReviewOrders) {
     const owner = order.user?.fullName || order.user?.email || "hesap bağlantısı bekleniyor";

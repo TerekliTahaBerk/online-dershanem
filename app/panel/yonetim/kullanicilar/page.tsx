@@ -1,8 +1,8 @@
 import Link from "next/link";
-import type { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { productLabel, roleLabel } from "@/lib/auth/roles";
+import { buildUserWhere, parseUserListFilters, ROLE_FILTERS, STATUS_FILTERS } from "@/lib/panel/user-filters";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelCard,
@@ -16,6 +16,7 @@ import {
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserRowActions } from "@/components/panel/user-row-actions";
 import { ApproveMfaResetButton } from "@/components/panel/mfa-reset-controls";
+import { UserBulkOperations } from "@/components/panel/user-bulk-operations";
 
 export const dynamic = "force-dynamic";
 
@@ -40,25 +41,6 @@ export const dynamic = "force-dynamic";
 
 const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", year: "numeric" });
 const PAGE_SIZE = 25;
-
-const ROLE_FILTERS: { value: string; label: string }[] = [
-  { value: "", label: "Tümü" },
-  { value: "STUDENT", label: "Öğrenci" },
-  { value: "TEACHER", label: "Eğitmen" },
-  { value: "PARENT", label: "Veli" },
-  { value: "ADMIN", label: "Yönetici" },
-];
-
-const STATUS_FILTERS: { value: string; label: string }[] = [
-  { value: "", label: "Tümü" },
-  { value: "dikkat", label: "Dikkat gerekenler" },
-  { value: "profil", label: "Profil eksik" },
-  { value: "erisim-yok", label: "Erişim eksik" },
-  { value: "davet", label: "Davet bekliyor" },
-  { value: "askida", label: "Askıda" },
-  { value: "arsiv", label: "Arşivde" },
-  { value: "parola", label: "Parola bekliyor" },
-];
 
 function formatDate(value: Date | null): string {
   return value ? DATE.format(value) : "—";
@@ -96,68 +78,13 @@ export default async function UsersPage({
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
-
-  const q = (sp.q ?? "").trim();
-  const rol = ROLE_FILTERS.some((r) => r.value === sp.rol) ? (sp.rol ?? "") : "";
-  const urun = ["OD", "OK", "ODK"].includes(sp.urun ?? "") ? (sp.urun ?? "") : "";
-  const durum = STATUS_FILTERS.some((s) => s.value === sp.durum) ? (sp.durum ?? "") : "";
+  const { q, rol, urun, durum } = parseUserListFilters(sp);
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
   const base = { q, rol, urun, durum };
+  const where = buildUserWhere({ q, rol, urun, durum });
 
-  const where: Prisma.UserWhereInput = {
-    ...(rol ? { role: rol as UserRole } : {}),
-    ...(q
-      ? {
-          OR: [
-            { fullName: { contains: q, mode: "insensitive" as const } },
-            { email: { contains: q, mode: "insensitive" as const } },
-            { phone: { contains: q } },
-          ],
-        }
-      : {}),
-    ...(urun
-      ? {
-          productMemberships: {
-            some: {
-              product: urun as "OD" | "OK" | "ODK",
-              revokedAt: null,
-              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-            },
-          },
-        }
-      : {}),
-    ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
-    ...(durum === "arsiv" ? { status: "ARCHIVED" as const } : {}),
-    ...(durum === "davet" ? { inviteAcceptedAt: null } : {}),
-    ...(durum === "parola" ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } } : {}),
-    ...(durum === "profil"
-      ? {
-          OR: [
-            { role: "STUDENT", studentProfile: null },
-            { role: "TEACHER", teacherProfile: null },
-          ],
-        }
-      : {}),
-    ...(durum === "erisim-yok"
-      ? {
-          role: "STUDENT",
-          NOT: {
-            productMemberships: {
-              some: {
-                revokedAt: null,
-                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-              },
-            },
-          },
-        }
-      : {}),
-    // "Dikkat gerekenler": ödenmiş ama erişimi açılmamış siparişi olanlar.
-    ...(durum === "dikkat"
-      ? { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } }
-      : {}),
-  };
-
-  const [total, users, pendingMfaResets, attentionCount] = await Promise.all([
+  const [total, users, pendingMfaResets, attentionCount, activeGroups, activeTeachers, interventionOwners] =
+    await Promise.all([
     prisma.user.count({ where }),
     prisma.user.findMany({
       where,
@@ -211,6 +138,24 @@ export default async function UsersPage({
     }),
     prisma.user.count({
       where: { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } },
+    }),
+    prisma.group.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      take: 200,
+      select: { id: true, name: true, subject: true, teacher: { select: { fullName: true, email: true } } },
+    }),
+    prisma.user.findMany({
+      where: { role: "TEACHER", status: "ACTIVE" },
+      orderBy: { fullName: "asc" },
+      take: 200,
+      select: { id: true, fullName: true, email: true, teacherProfile: { select: { isCoach: true } } },
+    }),
+    prisma.user.findMany({
+      where: { role: { in: ["ADMIN", "TEACHER"] }, status: "ACTIVE" },
+      orderBy: [{ role: "asc" }, { fullName: "asc" }],
+      take: 200,
+      select: { id: true, fullName: true, email: true, role: true },
     }),
   ]);
   const [studentsWithoutProfile, teachersWithoutProfile, studentsWithoutActiveProduct] =
@@ -337,6 +282,30 @@ export default async function UsersPage({
               {s.label}
             </Chip>
           ))}
+        </div>
+
+        <div className="mt-5">
+          <UserBulkOperations
+            filters={{ q, rol, urun, durum }}
+            total={total}
+            groups={activeGroups.map((group) => ({
+              id: group.id,
+              name: `${group.name} · ${group.subject}`,
+              teacherName: group.teacher.fullName || group.teacher.email,
+            }))}
+            teachers={activeTeachers.map((teacher) => ({
+              id: teacher.id,
+              name: teacher.fullName || teacher.email,
+              email: teacher.email,
+              isCoach: teacher.teacherProfile?.isCoach ?? false,
+            }))}
+            interventionOwners={interventionOwners.map((owner) => ({
+              id: owner.id,
+              role: owner.role,
+              name: owner.fullName || owner.email,
+              email: owner.email,
+            }))}
+          />
         </div>
 
         {/* ── Liste ── */}

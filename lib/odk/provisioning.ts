@@ -128,6 +128,10 @@ export async function provisionOdkOrder(
         where: { id: orderId },
         data: { provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
       });
+      await tx.businessLead.updateMany({
+        where: { relatedOdkOrderId: orderId },
+        data: { relatedOdkUserId: user.id },
+      });
       await tx.commerceOrderLine.updateMany({
         where: { odkOrderId: orderId, product: "ODK" },
         data: { fulfillmentOwnerUserId: user.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() },

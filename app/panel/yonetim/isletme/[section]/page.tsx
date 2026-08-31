@@ -15,6 +15,7 @@ import { calculateAdMetrics } from "@/lib/business/finance";
 import { businessFlags } from "@/lib/business/flags";
 import { formatIstanbulDateInput, resolveIstanbulDateRange } from "@/lib/istanbul-time";
 import { countConversations, loadBusinessOverviewKpis, loadDeductibleVatCents, loadLeadStageCounts } from "@/lib/business/queries/overview";
+import { deriveLeadLifecycleStatus } from "@/lib/panel/operations-inbox";
 
 export const dynamic = "force-dynamic";
 const tl = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" });
@@ -156,5 +157,83 @@ export default async function BusinessSectionPage({ params, searchParams }: { pa
 }
 
 function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode[] }) { return rows.length?<div className="panel-surface overflow-x-auto"><table className="w-full min-w-[720px] text-left text-xs"><thead><tr>{headers.map(x=><th key={x} className="p-3">{x}</th>)}</tr></thead><tbody>{rows}</tbody></table></div>:<Empty text="Kayıt bulunmuyor."/>; }
-function LeadTable({ leads }: { leads: Awaited<ReturnType<typeof prisma.businessLead.findMany>> }) { return <DataTable headers={["Aday","Kaynak","Ürün","Sıcaklık","Aşama","Son temas","Eşleştirme"]} rows={leads.map(x=>{const suggestion=x.matchSuggestion && typeof x.matchSuggestion==="object" && !Array.isArray(x.matchSuggestion) && "leadId" in x.matchSuggestion && typeof x.matchSuggestion.leadId==="string"?x.matchSuggestion.leadId:null;return <tr key={x.id} className="border-t"><td className="p-3 font-bold">{x.firstName||x.instagramScopedId||"Adsız"}</td><td className="p-3">{x.source}</td><td className="p-3">{x.productInterest}</td><td className="p-3">{x.temperature}</td><td className="p-3">{x.stage}</td><td className="p-3">{dt.format(x.lastContactAt)}</td><td className="p-3">{suggestion?<form action={mergeSuggestedLead}><input type="hidden" name="sourceId" value={x.id}/><input type="hidden" name="targetId" value={suggestion}/><button className="text-amber-800 underline">Önerilen kayıtla birleştir</button></form>:"—"}</td></tr>})}/>; }
+function LeadTable({ leads }: { leads: Awaited<ReturnType<typeof prisma.businessLead.findMany>> }) {
+  return (
+    <DataTable
+      headers={["Aday", "Kaynak", "Ürün", "Sıcaklık", "Aşama", "Lifecycle handoff", "Son temas", "Eşleştirme"]}
+      rows={leads.map((x) => {
+        const suggestion =
+          x.matchSuggestion &&
+          typeof x.matchSuggestion === "object" &&
+          !Array.isArray(x.matchSuggestion) &&
+          "leadId" in x.matchSuggestion &&
+          typeof x.matchSuggestion.leadId === "string"
+            ? x.matchSuggestion.leadId
+            : null;
+        const lifecycle = deriveLeadLifecycleStatus({
+          stage: x.stage,
+          productInterest: x.productInterest,
+          relatedOdOrderId: x.relatedOdOrderId,
+          relatedOdkOrderId: x.relatedOdkOrderId,
+          relatedOdUserId: x.relatedOdUserId,
+          relatedOdkUserId: x.relatedOdkUserId,
+        });
+        const lifecycleTone =
+          lifecycle.tone === "critical"
+            ? "text-rose-700"
+            : lifecycle.tone === "warning"
+              ? "text-amber-800"
+              : lifecycle.tone === "success"
+                ? "text-emerald-700"
+                : "text-[var(--site-muted)]";
+        const orderHref = x.relatedOdOrderId ? `/panel/yonetim/siparisler/${x.relatedOdOrderId}` : null;
+        const userHref = x.relatedOdUserId
+          ? `/panel/yonetim/kullanicilar/${x.relatedOdUserId}`
+          : x.relatedOdkUserId
+            ? `/panel/yonetim/kullanicilar/${x.relatedOdkUserId}`
+            : null;
+        return (
+          <tr key={x.id} className="border-t">
+            <td className="p-3 font-bold">{x.firstName || x.instagramScopedId || "Adsız"}</td>
+            <td className="p-3">{x.source}</td>
+            <td className="p-3">{x.productInterest}</td>
+            <td className="p-3">{x.temperature}</td>
+            <td className="p-3">{x.stage}</td>
+            <td className="p-3">
+              <p className={`font-bold ${lifecycleTone}`}>{lifecycle.label}</p>
+              <p className="mt-1 text-[10px] text-[var(--site-muted)]">{lifecycle.nextAction}</p>
+              <div className="mt-1 flex flex-wrap gap-2 text-[10px]">
+                {orderHref ? (
+                  <Link href={orderHref} className="underline text-[var(--brand-olive)]">
+                    Sipariş
+                  </Link>
+                ) : null}
+                <Link href="/panel/yonetim/isler" className="underline text-[var(--brand-olive)]">
+                  İşler
+                </Link>
+                {userHref ? (
+                  <Link href={userHref} className="underline text-[var(--brand-olive)]">
+                    Hesap
+                  </Link>
+                ) : null}
+              </div>
+            </td>
+            <td className="p-3">{dt.format(x.lastContactAt)}</td>
+            <td className="p-3">
+              {suggestion ? (
+                <form action={mergeSuggestedLead}>
+                  <input type="hidden" name="sourceId" value={x.id} />
+                  <input type="hidden" name="targetId" value={suggestion} />
+                  <button className="text-amber-800 underline">Önerilen kayıtla birleştir</button>
+                </form>
+              ) : (
+                "—"
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    />
+  );
+}
 function TransactionTable({ rows, canReverse }: { rows: Awaited<ReturnType<typeof prisma.financialTransaction.findMany>>; canReverse: boolean }) { return <DataTable headers={["Tarih","Açıklama","Kaynak","Kategori","Net","Vergi","Durum","İşlem"]} rows={rows.map(x=><tr key={x.id} className="border-t"><td className="p-3">{dt.format(x.transactionAt)}</td><td className="p-3 font-bold">{x.description}</td><td className="p-3">{x.source}</td><td className="p-3">{x.category}</td><td className="p-3">{tl.format(x.netCents/100)}</td><td className="p-3">{tl.format(x.vatCents/100)}</td><td className="p-3">{x.status}</td><td className="p-3">{!x.cancelledAt&&canReverse?<form action={reverseFinancialTransaction}><input type="hidden" name="id" value={x.id}/><button className="text-rose-700 underline">Ters kayıt</button></form>:x.cancelledAt?"İptal":"—"}</td></tr>)}/>; }
