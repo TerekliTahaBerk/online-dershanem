@@ -47,7 +47,7 @@ export async function upsertOrderLedger(tx: Prisma.TransactionClient, input: { s
     },
   });
   if (lead) {
-    await tx.businessLead.update({ where: { id: lead.id }, data: { stage: "WON", source: "PURCHASE_COMPLETED", ...(COMMERCE_ORDER_TABLE[product] === "od" ? { relatedOdOrderId: input.orderId } : { relatedOdkOrderId: input.orderId }) } });
+    await tx.businessLead.update({ where: { id: lead.id }, data: { stage: "WON", wonAt: lead.wonAt ?? input.paidAt, source: "PURCHASE_COMPLETED", ...(COMMERCE_ORDER_TABLE[product] === "od" ? { relatedOdOrderId: input.orderId } : { relatedOdkOrderId: input.orderId }) } });
     await tx.leadActivity.create({ data: { leadId: lead.id, type: "PAYMENT_COMPLETED", fromValue: lead.stage, toValue: "WON", metadata: { orderId: input.orderId, source: input.source } } });
     await tx.backgroundJob.upsert({ where: { idempotencyKey: `payment-automation:${product}:${input.orderId}` }, update: {}, create: { businessUnitId: unit.id, type: "AUTOMATE_PAYMENT_COMPLETED", idempotencyKey: `payment-automation:${product}:${input.orderId}`, payload: { leadId: lead.id, orderId: input.orderId } } });
   }

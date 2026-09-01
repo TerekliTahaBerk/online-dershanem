@@ -59,6 +59,7 @@ bilinçli olarak ayrılabilir.
    `AdminCommandSearch` — bkz. [`docs/panel-global-search.md`](./panel-global-search.md).
 9. **Öğretmen günlük çalışma alanı:** `/panel/ogretmen` Bugün akışı — bkz.
    [`docs/teacher-workspace.md`](./teacher-workspace.md).
+10. **Sakin veli paneli:** `/panel/veli` — bkz. [`docs/parent-calm-panel.md`](./parent-calm-panel.md).
 
 ## Testler
 

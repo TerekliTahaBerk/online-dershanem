@@ -11,6 +11,15 @@ Bu özellik öğrencinin haftasını veliye günlük alarm, sıralama veya utand
 - öğrencinin katıldığı tamamlanmış derslerdeki kazanım kanıtı;
 - varsa aktif tekrar öğesinin kontrollü başlığı.
 
+Veli görünümünde özet üç başlıkta okunur:
+
+- **Neler iyi gidiyor?** (`goodThingOne` + `goodThingTwo`)
+- **Nerede destek gerekiyor?** (`supportArea`)
+- **Önümüzdeki hafta ne var?** (`homeQuestion` / yaklaşan ipucu)
+
+Öğretmenin yayınladığı bu metin, veli ekranındaki “sistemden görünenler”
+(takvim / koçluk yaklaşanları) bloğundan ayrı tutulur. İkisi karıştırılmaz.
+
 Çıktı iki iyi giden şey, bir destek alanı ve evde sorulabilecek bir sorudan oluşur. `IMPROVING`, `STEADY`, `BUILDING` ve `LIMITED_DATA` bantları yalnız cümle seçimini belirler; kullanıcıya puan veya etiket olarak gösterilmez. Özet veri kesim zamanını açıkça gösterir. Hafta sınırı ve tarih çözümlemesi `lib/istanbul-time.ts` içindeki İstanbul takvim yardımcılarıyla aynı kaynaktan gelir.
 
 Şunlar hiçbir zaman girdi veya çıktı değildir: öğretmenin kişisel/özel notu, öğrenci bunaltı pulse'u, sınıf sırası, akran karşılaştırması, ham deneme puanı, ödeme bilgisi, serbest metin aile yorumu ve yapay zekâ çıkarımı.

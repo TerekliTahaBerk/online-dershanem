@@ -3,24 +3,29 @@ import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
+import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
-import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
+import { PanelCard, PanelCardTitle, PanelEmpty, PanelHeading } from "@/components/panel/ui";
 import { CalmDigestCard } from "@/components/panel/calm-digest-card";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { ISTANBUL_TIME_ZONE, addIstanbulCalendarDays, istanbulWeekStart } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
 /**
- * VELİ · HAFTALIK ÖZET — onaylı tasarım dili (Panel.dc.html → veli ekranları).
+ * VELİ · HAFTALIK ÖZET
  *
- * Tasarım geçişinde geride kalan ikinci veli ekranı. Artık ortak parçaları
- * kullanır: `resolveParentScope` (bağlı olmayan öğrenci 404), topbar'daki
- * `ChildSwitcher` ve dc token'ları.
- *
- * Korunan davranışlar: sakin özet kartı (`CalmDigestCard`) ve görüntüleme
- * ürün olayı — ikisi de üründe anlamlı, yeniden yazılmadı.
+ * Yayınlanmış öğretmen özeti ile sistemden görünen yaklaşanlar ayrı bloklarda
+ * tutulur. Özel öğretmen notu ve risk skoru buraya girmez.
  */
+
+const TR_DATE = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+  weekday: "short",
+});
 
 export default async function ParentWeeklyDigestPage({
   searchParams,
@@ -63,11 +68,37 @@ export default async function ParentWeeklyDigestPage({
     );
   }
 
-  const digest = await prisma.weeklyDigest.findFirst({
-    where: { studentId: selected.id, status: "PUBLISHED" },
-    orderBy: { weekStart: "desc" },
-    include: { feedback: { where: { userId: session.userId }, take: 1 } },
-  });
+  const now = new Date();
+  const weekStart = istanbulWeekStart(now);
+  const nextWeekEnd = addIstanbulCalendarDays(weekStart, 14);
+
+  const [digest, nextLessons, coaching] = await Promise.all([
+    prisma.weeklyDigest.findFirst({
+      where: { studentId: selected.id, status: "PUBLISHED" },
+      orderBy: { weekStart: "desc" },
+      include: { feedback: { where: { userId: session.userId }, take: 1 } },
+    }),
+    selected.products.includes("OD")
+      ? prisma.lesson.findMany({
+          where: {
+            status: "PLANNED",
+            startsAt: { gte: now, lt: nextWeekEnd },
+            attendances: { some: { studentId: selected.id } },
+          },
+          orderBy: { startsAt: "asc" },
+          take: 4,
+          select: { title: true, startsAt: true },
+        })
+      : Promise.resolve([]),
+    selected.products.includes("OK") ? getStudentCoaching(selected.id) : Promise.resolve(null),
+  ]);
+
+  const systemUpcoming: string[] = nextLessons.map(
+    (lesson) => `${lesson.title} · ${TR_DATE.format(lesson.startsAt)}`,
+  );
+  if (coaching?.nextScheduledAt) {
+    systemUpcoming.push(`Koçluk görüşmesi · ${TR_DATE.format(coaching.nextScheduledAt)}`);
+  }
 
   if (!digest) {
     return shell(
@@ -77,6 +108,19 @@ export default async function ParentWeeklyDigestPage({
           title="Haftalık özet henüz yayınlanmadı."
           body="Öğretmen önizlemeyi tamamladığında öğrenciyle aynı anda burada açılır."
         />
+        {systemUpcoming.length ? (
+          <PanelCard className="mt-5">
+            <PanelCardTitle>Sistemden görünenler · önümüzdeki günler</PanelCardTitle>
+            <p className="mt-1 text-[12.5px] text-dc-ink-faint">
+              Bu liste otomatik kayıtlardan gelir; öğretmen özeti değildir.
+            </p>
+            <ul className="mt-3 space-y-2 text-[14px] text-dc-ink-body">
+              {systemUpcoming.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </PanelCard>
+        ) : null}
       </>,
     );
   }
@@ -118,6 +162,23 @@ export default async function ParentWeeklyDigestPage({
           }}
         />
       </div>
+      <PanelCard className="mt-5">
+        <PanelCardTitle>Sistemden görünenler · önümüzdeki günler</PanelCardTitle>
+        <p className="mt-1 text-[12.5px] text-dc-ink-faint">
+          Otomatik takvim ve koçluk kayıtlarıdır; öğretmen/koç özetinden ayrı tutulur.
+        </p>
+        {systemUpcoming.length ? (
+          <ul className="mt-3 space-y-2 text-[14px] text-dc-ink-body">
+            {systemUpcoming.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-[14px] text-dc-ink-muted">
+            Önümüzdeki iki hafta için planlanmış ders veya görüşme görünmüyor.
+          </p>
+        )}
+      </PanelCard>
     </>,
   );
 }

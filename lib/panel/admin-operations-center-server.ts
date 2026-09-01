@@ -198,6 +198,55 @@ export async function getAdminOperationsCenterSnapshot(options?: {
     cancelledLessonsForInbox,
   ] = critical;
 
+  const [odkRetryCount, odkRetryOrders, odkPendingCount, odkPendingOrders, odkPaidNoAccount] = await Promise.all([
+    prisma.odkOrder.count({ where: { status: "PAID", provisioningStatus: "RETRY_PENDING" } }),
+    prisma.odkOrder.findMany({
+      where: { status: "PAID", provisioningStatus: "RETRY_PENDING" },
+      orderBy: { updatedAt: "asc" },
+      take: SAMPLE,
+      select: {
+        id: true,
+        updatedAt: true,
+        package: { select: { title: true } },
+        student: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.odkOrder.count({ where: { status: "PAID", provisioningStatus: { in: ["PENDING", "RUNNING"] } } }),
+    prisma.odkOrder.findMany({
+      where: { status: "PAID", provisioningStatus: { in: ["PENDING", "RUNNING"] } },
+      orderBy: { updatedAt: "asc" },
+      take: SAMPLE,
+      select: {
+        id: true,
+        updatedAt: true,
+        package: { select: { title: true } },
+        student: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.odkOrder.findMany({
+      where: { status: "PAID", studentUserId: null, provisioningStatus: { not: "SUCCEEDED" } },
+      orderBy: { updatedAt: "asc" },
+      take: SAMPLE,
+      select: {
+        id: true,
+        updatedAt: true,
+        package: { select: { title: true } },
+      },
+    }),
+  ]);
+
+  const mapOdkSample = (order: {
+    id: string;
+    updatedAt: Date;
+    package: { title: string };
+    student?: { fullName: string | null; email: string } | null;
+  }) => ({
+    id: order.id,
+    packageName: order.package.title,
+    updatedAt: order.updatedAt,
+    ownerLabel: ownerLabel(order.student ?? null),
+  });
+
   const optional = await Promise.allSettled([
     prisma.lesson.count({ where: { startsAt: { gte: dayStart, lt: dayEnd } } }),
     prisma.user.count({ where: { role: "STUDENT", status: "ACTIVE" } }),
@@ -372,7 +421,9 @@ export async function getAdminOperationsCenterSnapshot(options?: {
   const todayLessons = settled(optional[0], null as number | null);
   const activeStudents = settled(optional[1], null as number | null);
   const newOrdersToday = settled(optional[2], null as number | null);
-  const provisioningPending = settled(optional[3], null as number | null);
+  const provisioningPendingBase = settled(optional[3], null as number | null);
+  const provisioningPending =
+    provisioningPendingBase === null ? null : provisioningPendingBase + odkRetryCount + odkPendingCount;
   const inviteSamples = settled(optional[4], [] as Array<{
     id: string;
     fullName: string | null;
@@ -492,15 +543,23 @@ export async function getAdminOperationsCenterSnapshot(options?: {
     })),
   }).filter((item) => item.resolution === "OPEN");
 
-  const paidNoAccountOrders = onboardingSignals
-    .filter((item) => !item.order.user?.studentProfile)
-    .slice(0, SAMPLE)
-    .map((item) => ({
-      id: item.orderId,
-      packageName: item.order.packageName,
-      updatedAt: item.stateEnteredAt,
-      ownerLabel: item.order.user?.fullName || item.order.user?.email || "hesap bağlantısı bekleniyor",
-    }));
+  const paidNoAccountOrders = [
+    ...onboardingSignals
+      .filter((item) => !item.order.user?.studentProfile)
+      .slice(0, SAMPLE)
+      .map((item) => ({
+        id: item.orderId,
+        packageName: item.order.packageName,
+        updatedAt: item.stateEnteredAt,
+        ownerLabel: item.order.user?.fullName || item.order.user?.email || "hesap bağlantısı bekleniyor",
+      })),
+    ...odkPaidNoAccount.map((order) => ({
+      id: order.id,
+      packageName: order.package.title,
+      updatedAt: order.updatedAt,
+      ownerLabel: "hesap bağlantısı bekleniyor",
+    })),
+  ].slice(0, SAMPLE);
 
   const openInterventions = interventions.filter((row) => row.status !== "SNOOZED" || row.dueAt < now);
   const interventionSamples = interventions
@@ -572,11 +631,11 @@ export async function getAdminOperationsCenterSnapshot(options?: {
 
   const paymentOk = paytrConfigured();
   const paymentStatus: OpsHealthStatus =
-    !paymentOk ? "degraded" : manualReviewCount > 0 ? "degraded" : "ok";
+    !paymentOk ? "degraded" : manualReviewCount > 0 || odkRetryCount > 0 ? "degraded" : "ok";
   const paymentDetail = !paymentOk
     ? "PayTR yapılandırması eksik"
-    : manualReviewCount > 0
-      ? `${manualReviewCount} manuel inceleme`
+    : manualReviewCount > 0 || odkRetryCount > 0
+      ? `${manualReviewCount + odkRetryCount} provisioning inceleme/retry`
       : "Callback yolu hazır";
 
   const metaEnabled =
@@ -613,7 +672,7 @@ export async function getAdminOperationsCenterSnapshot(options?: {
       provisioningPending,
       todayExams,
       manualReview: manualReviewCount,
-      retryPending: retryPendingOrders.length,
+      retryPending: retryPendingOrders.length + odkRetryOrders.length,
       invitePending: invitePendingCount,
       studentsWithoutGroup: noGroupCount,
       groupsWithInactiveTeacher: inactiveTeacherGroupCount,
@@ -634,18 +693,24 @@ export async function getAdminOperationsCenterSnapshot(options?: {
         updatedAt: order.updatedAt,
         ownerLabel: ownerLabel(order.user),
       })),
-      pendingOrders: pendingProvisioningOrders.map((order) => ({
-        id: order.id,
-        packageName: order.packageName,
-        updatedAt: order.updatedAt,
-        ownerLabel: ownerLabel(order.user),
-      })),
-      retryOrders: retryPendingOrders.map((order) => ({
-        id: order.id,
-        packageName: order.packageName,
-        updatedAt: order.updatedAt,
-        ownerLabel: ownerLabel(order.user),
-      })),
+      pendingOrders: [
+        ...pendingProvisioningOrders.map((order) => ({
+          id: order.id,
+          packageName: order.packageName,
+          updatedAt: order.updatedAt,
+          ownerLabel: ownerLabel(order.user),
+        })),
+        ...odkPendingOrders.map(mapOdkSample),
+      ].slice(0, SAMPLE),
+      retryOrders: [
+        ...retryPendingOrders.map((order) => ({
+          id: order.id,
+          packageName: order.packageName,
+          updatedAt: order.updatedAt,
+          ownerLabel: ownerLabel(order.user),
+        })),
+        ...odkRetryOrders.map(mapOdkSample),
+      ].slice(0, SAMPLE),
       invites: inviteSamples.map((user) => ({
         id: user.id,
         label: user.fullName || user.email,

@@ -46,7 +46,7 @@ export const DINO_QUESTIONS: readonly DinoQuestion[] = [
   { key: "student_nba_reason", audience: "STUDENT", label: "Bu neden öneriliyor?", scope: "WEEK", internal: true },
   { key: "student_odk_reason", audience: "STUDENT", label: "Bu sonuç ne söylüyor?", scope: "LAST_EXAM", internal: true },
 
-  { key: "parent_week", audience: "PARENT", label: "Bu özet neye dayanıyor?", scope: "WEEK" },
+  { key: "parent_week", audience: "PARENT", label: "Bu haftayı açıkla", scope: "WEEK" },
   { key: "parent_exam", audience: "PARENT", label: "Son deneme özeti neye dayanıyor?", scope: "LAST_EXAM" },
 
   { key: "teacher_prep", audience: "TEACHER", label: "Görüşme özeti neye dayanıyor?", scope: "COACHING" },

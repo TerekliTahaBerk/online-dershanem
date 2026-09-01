@@ -1,3 +1,15 @@
+/**
+ * Geriye dönük uyumluluk: eski import yolları `lib/panel/parent-calm` mantığına
+ * yönlendirilir. Yeni kod doğrudan parent-calm kullanmalıdır.
+ */
+
+import {
+  buildParentCalmStatus,
+  withParentStudentContext,
+} from "@/lib/panel/parent-calm";
+
+export { withParentStudentContext };
+
 export type ParentHomeStatusCode = "ON_TRACK" | "NEEDS_ATTENTION" | "LOW_DATA";
 
 export type ParentHomeStatusSummary = {
@@ -32,20 +44,20 @@ export function buildParentHomeStatus(input: {
   latestExamNet: number | null;
   latestExamLabel?: string | null;
 }): ParentHomeStatusSummary {
-  const attendanceRatio = ratio(input.attendanceAttended, input.attendanceTotal);
-  const planRatio = ratio(input.planDone, input.planTotal);
+  const calm = buildParentCalmStatus({
+    hasOD: input.hasOD,
+    hasOK: input.hasOK,
+    hasExamAccess: input.hasExamAccess,
+    attendanceTotal: input.attendanceTotal,
+    attendanceAttended: input.attendanceAttended,
+    planDone: input.planDone,
+    planTotal: input.planTotal,
+    hasExamData: input.latestExamNet !== null,
+  });
 
+  const planRatio = ratio(input.planDone, input.planTotal);
   const hasAttendanceData = input.hasOD && input.attendanceTotal > 0;
   const hasPlanData = input.hasOK && input.planTotal > 0;
-  const hasExamData = input.hasExamAccess && input.latestExamNet !== null;
-
-  const expectedSignalCount = Number(input.hasOD) + Number(input.hasOK) + Number(input.hasExamAccess);
-  const availableSignalCount = Number(hasAttendanceData) + Number(hasPlanData) + Number(hasExamData);
-  const hasEnoughEvidence =
-    expectedSignalCount <= 1 ? availableSignalCount >= 1 : availableSignalCount >= 2;
-
-  const attendanceIssue =
-    hasAttendanceData && input.attendanceTotal >= 6 && (attendanceRatio ?? 1) < 0.8;
   const planIssue = hasPlanData && input.planTotal >= 4 && (planRatio ?? 1) < 0.6;
 
   const evidence: string[] = [];
@@ -53,70 +65,35 @@ export function buildParentHomeStatus(input: {
     evidence.push(`Son ${input.attendanceTotal} dersin ${input.attendanceAttended}'ine katıldı.`);
   }
   if (hasPlanData) {
-    evidence.push(
-      `Bu haftaki planın ${input.planDone} / ${input.planTotal} çalışması tamamlandı.`,
-    );
+    evidence.push(`Bu haftaki planın ${input.planDone} / ${input.planTotal} çalışması tamamlandı.`);
   }
-  if (hasExamData) {
+  if (input.latestExamNet !== null) {
     evidence.push(
       input.latestExamLabel
-        ? `Son deneme (${input.latestExamLabel}) sonucu ${input.latestExamNet!.toFixed(2)} net.`
-        : `Son deneme sonucu ${input.latestExamNet!.toFixed(2)} net.`,
+        ? `Son deneme (${input.latestExamLabel}) sonucu ${input.latestExamNet.toFixed(2)} net.`
+        : `Son deneme sonucu ${input.latestExamNet.toFixed(2)} net.`,
     );
   }
 
-  if (!hasEnoughEvidence) {
-    const sourceCount = evidence.length;
-    return {
-      code: "LOW_DATA",
-      title: "Bu hafta genel durum için henüz yeterli veri görünmüyor.",
-      description:
-        sourceCount === 0
-          ? "Genel değerlendirme için bu hafta katılım, plan veya deneme verisi henüz oluşmadı."
-          : "Şu an sınırlı sayıda sinyal var; genel değerlendirme için biraz daha veri oluşması gerekiyor.",
-      evidence: evidence.slice(0, 2),
-      hasEnoughEvidence: false,
-      needsPlanSupport: false,
-    };
-  }
-
-  if (attendanceIssue || planIssue) {
-    let description = "Bu hafta birkaç noktaya dikkat etmek faydalı olabilir.";
-    if (attendanceIssue && !planIssue && hasPlanData && (planRatio ?? 0) >= 0.6) {
-      description = "Ders katılımında düşüş görünüyor; haftalık plan tarafı daha dengeli ilerliyor.";
-    } else if (planIssue && !attendanceIssue && hasAttendanceData && (attendanceRatio ?? 0) >= 0.8) {
-      description = "Ders katılımı düzenli; haftalık planda bekleyen çalışmalar var.";
-    } else if (attendanceIssue && planIssue) {
-      description = "Ders katılımı ve haftalık planda takip gerektiren noktalar var.";
-    }
-    return {
-      code: "NEEDS_ATTENTION",
-      title: "Bu hafta birkaç noktaya dikkat etmek faydalı olabilir.",
-      description,
-      evidence: evidence.slice(0, 3),
-      hasEnoughEvidence: true,
-      needsPlanSupport: planIssue,
-    };
-  }
-
-  let description = "Bu hafta görünen sinyaller dengeli ilerliyor.";
-  if (hasAttendanceData && hasPlanData) {
-    description = "Ders katılımı ve haftalık plan düzenli ilerliyor.";
-  } else if (hasAttendanceData) {
-    description = "Ders katılımı düzenli görünüyor.";
-  } else if (hasPlanData) {
-    description = "Haftalık plan adımları düzenli ilerliyor.";
-  } else if (hasExamData) {
-    description = "Son deneme sonucu güncel ve izlenebilir durumda.";
-  }
+  const code: ParentHomeStatusCode =
+    calm.code === "ON_TRACK"
+      ? "ON_TRACK"
+      : calm.code === "NEEDS_SUPPORT"
+        ? "NEEDS_ATTENTION"
+        : "LOW_DATA";
 
   return {
-    code: "ON_TRACK",
-    title: "Genel olarak düzenli ilerliyor.",
-    description,
+    code,
+    title:
+      calm.code === "ON_TRACK"
+        ? "Genel olarak düzenli ilerliyor."
+        : calm.code === "NEEDS_SUPPORT"
+          ? "Bu hafta birkaç noktaya dikkat etmek faydalı olabilir."
+          : "Bu hafta genel durum için henüz yeterli veri görünmüyor.",
+    description: calm.sentence,
     evidence: evidence.slice(0, 3),
-    hasEnoughEvidence: true,
-    needsPlanSupport: false,
+    hasEnoughEvidence: calm.code !== "LIMITED_DATA",
+    needsPlanSupport: planIssue,
   };
 }
 
@@ -160,10 +137,4 @@ export function buildParentSecondaryMetrics(input: {
   }
 
   return metrics;
-}
-
-export function withParentStudentContext(href: string, studentId: string | null): string {
-  if (!studentId) return href;
-  const separator = href.includes("?") ? "&" : "?";
-  return `${href}${separator}studentId=${encodeURIComponent(studentId)}`;
 }

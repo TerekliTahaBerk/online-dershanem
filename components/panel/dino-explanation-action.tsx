@@ -24,9 +24,17 @@ const FALLBACK_NOTE: Record<string, string> = {
 export function DinoExplanationAction({
   deterministicReason,
   questionKey,
+  audience = "STUDENT",
+  studentId,
+  openLabel = "Bu neden öneriliyor?",
+  prepareLabel = "Dino açıklamasını hazırla",
 }: {
   deterministicReason: string;
   questionKey: string;
+  audience?: "STUDENT" | "PARENT";
+  studentId?: string;
+  openLabel?: string;
+  prepareLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,9 +53,10 @@ export function DinoExplanationAction({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          audience: "STUDENT",
+          audience,
           questionKey,
           requestKey: crypto.randomUUID(),
+          ...(studentId ? { studentId } : {}),
         }),
       });
       const payload = (await response.json().catch(() => null)) as DinoAnswerPayload | null;
@@ -77,11 +86,14 @@ export function DinoExplanationAction({
         aria-controls={disclosureId}
         className="text-[12.5px] font-semibold text-dc-ink-muted underline underline-offset-2"
       >
-        Bu neden öneriliyor?
+        {openLabel}
       </button>
       {open ? (
         <div id={disclosureId} className="mt-2 rounded-xl border border-dc-line-soft bg-[#FCFDFC] p-3">
           <p className="text-[13px] text-dc-ink-body">{deterministicReason}</p>
+          <p className="mt-1 text-[12px] text-dc-ink-faint">
+            Ana bilgi kaynağı yukarıdaki özetdir. Dino isteğe bağlı bir açıklama katmanıdır.
+          </p>
           <button
             type="button"
             onClick={() => void explainWithDino()}
@@ -94,7 +106,7 @@ export function DinoExplanationAction({
                 ? "Dino açıklaması hazır"
                 : error
                   ? "Tekrar dene"
-                  : "Dino açıklamasını hazırla"}
+                  : prepareLabel}
           </button>
           {error ? <p className="mt-2 text-[12.5px] font-semibold text-[#C2493D]">{error}</p> : null}
           {text ? (

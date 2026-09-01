@@ -50,7 +50,7 @@ export async function executeAutomations(trigger: z.infer<typeof automationTrigg
             if (context.conversationId) await prisma.businessConversation.update({ where: { id: context.conversationId }, data: { assignedUserId: assignee.userId } });
           }
         }
-        if (action.type === "MARK_WON" && context.leadId) await prisma.businessLead.update({ where: { id: context.leadId }, data: { stage: "WON" } });
+        if (action.type === "MARK_WON" && context.leadId) await prisma.businessLead.update({ where: { id: context.leadId }, data: { stage: "WON", wonAt: new Date() } });
         if (action.type === "ADD_TAG") {
           if (context.leadId) await prisma.businessLead.update({ where: { id: context.leadId }, data: { tags: { push: action.tag } } });
           if (context.conversationId) await prisma.businessConversation.update({ where: { id: context.conversationId }, data: { tags: { push: action.tag } } });

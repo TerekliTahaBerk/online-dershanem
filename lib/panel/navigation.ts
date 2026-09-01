@@ -111,6 +111,9 @@ function parentSections(
     ...section("bugun", "BUGÜN", [
       { id: "today", href: root, label: PANEL_DOMAIN.bugun },
       { id: "progress", href: `${root}/takip`, label: PANEL_DOMAIN.gelisim },
+      ...(flags.parentWeeklyDigest
+        ? [{ id: "weekly-digest", href: `${root}/haftalik`, label: "Haftalık özet" }]
+        : []),
     ]),
     ...section(
       "dersler",
@@ -119,9 +122,6 @@ function parentSections(
     ),
     ...section("kocluk", "KOÇLUK", [
       ...(hasOK ? [{ id: "coaching", href: `${root}/kocluk`, label: PANEL_DOMAIN.kocluk }] : []),
-      ...(hasOK && flags.parentWeeklyDigest
-        ? [{ id: "weekly-digest", href: `${root}/haftalik`, label: "Haftalık özet" }]
-        : []),
     ]),
     ...section("denemeler", "DENEMELER", [
       ...(hasODK

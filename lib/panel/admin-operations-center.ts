@@ -413,7 +413,7 @@ function collectActions(input: AdminOperationsCenterInput): OpsActionItem[] {
       ageLabel: formatOpsAge(order.updatedAt, now),
       owner: order.ownerLabel,
       href: `/panel/yonetim/siparisler/${order.id}`,
-      ctaLabel: "Çöz",
+      ctaLabel: "Manuel çöz",
       createdAt: order.updatedAt,
     });
   }
@@ -458,7 +458,7 @@ function collectActions(input: AdminOperationsCenterInput): OpsActionItem[] {
       ageLabel: formatOpsAge(order.updatedAt, now),
       owner: order.ownerLabel,
       href: `/panel/yonetim/siparisler/${order.id}`,
-      ctaLabel: "İncele",
+      ctaLabel: "Retry",
       createdAt: order.updatedAt,
     });
   }

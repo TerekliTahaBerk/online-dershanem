@@ -48,5 +48,32 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     await queuePanelNotificationEmails(rawNotificationRows, "payment");
   }
   await logAudit({ actorUserId: auth.session.userId, entityType: "OdOrder", entityId: id, action: "order.user_linked", summary: "Sipariş öğrenci hesabına bağlandı", payload: { userId: student.id } });
+  await prisma.businessLead.updateMany({
+    where: { relatedOdOrderId: id },
+    data: { relatedOdUserId: student.id },
+  });
+  const linkedLeads = await prisma.businessLead.findMany({
+    where: { relatedOdOrderId: id },
+    select: { id: true },
+    take: 5,
+  });
+  for (const lead of linkedLeads) {
+    await prisma.leadActivity.create({
+      data: {
+        leadId: lead.id,
+        type: "ACCOUNT_LINKED",
+        actorUserId: auth.session.userId,
+        metadata: { orderId: id, userId: student.id, source: "manual_order_link" },
+      },
+    });
+    await logAudit({
+      actorUserId: auth.session.userId,
+      entityType: "BusinessLead",
+      entityId: lead.id,
+      action: "lead.lifecycle.user_linked",
+      summary: "Sipariş üzerinden lead öğrenci hesabına bağlandı",
+      payload: { orderId: id, userId: student.id },
+    });
+  }
   return NextResponse.json({ ok: true });
 }

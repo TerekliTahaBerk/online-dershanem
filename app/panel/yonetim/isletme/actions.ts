@@ -14,8 +14,30 @@ import { generateAIReply } from "@/lib/business/jobs";
 import { automationActionSchema, automationConditionSchema } from "@/lib/business/automation";
 import { reconcileBusinessUnit } from "@/lib/business/reconciliation";
 import { getAdPlatformProvider } from "@/lib/business/providers";
+import { validateStageTransition } from "@/lib/business/leads";
 
 const basePath = "/panel/yonetim/isletme";
+const leadStageEnum = z.enum([
+  "NEW",
+  "CONTACTED",
+  "QUALIFIED",
+  "MEETING_PLANNED",
+  "TRIAL_PLANNED",
+  "OFFER_SENT",
+  "PAYMENT_PENDING",
+  "WON",
+  "LOST",
+  "SPAM",
+]);
+const lostReasonEnum = z.enum([
+  "PRICE",
+  "UNREACHABLE",
+  "COMPETITOR",
+  "DECISION_POSTPONED",
+  "PRODUCT_MISMATCH",
+  "WRONG_LEAD",
+  "OTHER",
+]);
 
 /**
  * İşletme bölümlerini tazeler.
@@ -43,16 +65,231 @@ function redirectToSection(section: string): never {
   redirect(`${basePath}/${section}`);
 }
 const guard = (action: string, userId: string) => enforceMutation({ action: `business.${action}`, userId, requireSameOrigin: true, rateLimit: { max: 60, windowMs: 60_000 } });
+
+type StageMutationResult =
+  | {
+      ok: true;
+      lead: {
+        id: string;
+        stage: z.infer<typeof leadStageEnum>;
+        lostReasonCode: z.infer<typeof lostReasonEnum> | null;
+        lostReason: string | null;
+        wonAt: string | null;
+        lostAt: string | null;
+      };
+    }
+  | { ok: false; error: string };
+
+async function applyLeadStageChange(input: {
+  leadId: string;
+  stage: z.infer<typeof leadStageEnum>;
+  lostReasonCode?: z.infer<typeof lostReasonEnum>;
+  lostReasonDetail?: string;
+  actorUserId: string;
+  unitIds: string[];
+}): Promise<StageMutationResult> {
+  const lead = await prisma.businessLead.findFirst({
+    where: { id: input.leadId, businessUnitId: { in: input.unitIds }, anonymizedAt: null },
+  });
+  if (!lead) return { ok: false, error: "LEAD_NOT_FOUND" };
+
+  const validated = validateStageTransition({
+    from: lead.stage,
+    to: input.stage,
+    lostReasonCode: input.lostReasonCode,
+    lostReasonDetail: input.lostReasonDetail,
+  });
+  if (!validated.ok) return { ok: false, error: validated.error };
+
+  const data = validated.data;
+
+  // WON: e-posta/telefon ile mevcut STUDENT yüksek güvendeyse bağla (duplicate yok).
+  let relatedUserPatch: { relatedOdUserId?: string; relatedOdkUserId?: string } = {};
+  if (data.stage === "WON" && !lead.relatedOdUserId && !lead.relatedOdkUserId) {
+    const { evaluateLeadUserMatch } = await import("@/lib/lifecycle/identity");
+    const candidates = await prisma.user.findMany({
+      where: {
+        role: "STUDENT",
+        status: "ACTIVE",
+        OR: [
+          ...(lead.normalizedEmail ? [{ email: lead.normalizedEmail }] : []),
+          ...(lead.email ? [{ email: lead.email.toLowerCase() }] : []),
+          ...(lead.normalizedPhone ? [{ phone: lead.normalizedPhone }] : []),
+          ...(lead.phone ? [{ phone: lead.phone }] : []),
+        ],
+      },
+      select: { id: true, role: true, status: true, email: true, phone: true, fullName: true },
+      take: 8,
+    });
+    const match = evaluateLeadUserMatch(
+      { email: lead.email, phone: lead.phone },
+      candidates.map((c) => ({
+        userId: c.id,
+        role: c.role,
+        status: c.status,
+        email: c.email,
+        phone: c.phone,
+        fullName: c.fullName,
+      })),
+    );
+    if (match.decision === "LINK" && match.candidate) {
+      if (lead.productInterest === "ONLINE_DENEME_KULUBU") relatedUserPatch = { relatedOdkUserId: match.candidate.userId };
+      else relatedUserPatch = { relatedOdUserId: match.candidate.userId };
+    }
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const row = await tx.businessLead.update({
+      where: { id: lead.id },
+      data: {
+        stage: data.stage,
+        lostReasonCode: data.stage === "LOST" ? data.lostReasonCode : null,
+        lostReason: data.stage === "LOST" ? data.lostReason : data.clearLost ? null : lead.lostReason,
+        wonAt: data.stage === "WON" ? data.wonAt : data.stage === "LOST" || data.clearLost ? null : lead.wonAt,
+        lostAt: data.stage === "LOST" ? data.lostAt : data.stage === "WON" || data.clearLost ? null : lead.lostAt,
+        ...(data.stage === "WON" || data.stage === "CONTACTED" ? { lastContactAt: new Date() } : {}),
+        ...relatedUserPatch,
+      },
+    });
+    await tx.leadActivity.create({
+      data: {
+        leadId: lead.id,
+        type: "STAGE_CHANGED",
+        fromValue: lead.stage,
+        toValue: data.stage,
+        actorUserId: input.actorUserId,
+        metadata:
+          data.stage === "LOST"
+            ? { lostReasonCode: data.lostReasonCode, lostReason: data.lostReason }
+            : relatedUserPatch.relatedOdUserId || relatedUserPatch.relatedOdkUserId
+              ? { linkedUserId: relatedUserPatch.relatedOdUserId || relatedUserPatch.relatedOdkUserId }
+              : undefined,
+      },
+    });
+    return row;
+  });
+
+  void logAudit({
+    actorUserId: input.actorUserId,
+    entityType: "BusinessLead",
+    entityId: lead.id,
+    action: data.stage === "WON" ? "lead.lifecycle.won" : "LEAD_STAGE_CHANGED",
+    payload: {
+      from: lead.stage,
+      to: data.stage,
+      lostReasonCode: data.lostReasonCode,
+      ...relatedUserPatch,
+    },
+  });
+
+  return {
+    ok: true,
+    lead: {
+      id: updated.id,
+      stage: updated.stage,
+      lostReasonCode: updated.lostReasonCode,
+      lostReason: updated.lostReason,
+      wonAt: updated.wonAt?.toISOString() ?? null,
+      lostAt: updated.lostAt?.toISOString() ?? null,
+    },
+  };
+}
+
+/** Form POST (PRG). Lost için lostReasonCode zorunlu. */
 export async function updateLeadStage(formData: FormData) {
   const access = await requireBusinessPage("lead:write");
   await guard("lead.stage", access.session.userId);
-  const parsed = z.object({ id: z.string().cuid(), stage: z.enum(["NEW", "CONTACTED", "QUALIFIED", "MEETING_PLANNED", "TRIAL_PLANNED", "OFFER_SENT", "PAYMENT_PENDING", "WON", "LOST", "SPAM"]) }).parse(Object.fromEntries(formData));
-  const lead = await prisma.businessLead.findFirst({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } } });
-  if (!lead) throw new Error("LEAD_NOT_FOUND");
-  await prisma.$transaction([prisma.businessLead.update({ where: { id: lead.id }, data: { stage: parsed.stage } }), prisma.leadActivity.create({ data: { leadId: lead.id, type: "STAGE_CHANGED", fromValue: lead.stage, toValue: parsed.stage, actorUserId: access.session.userId } })]);
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "LEAD_STAGE_CHANGED", payload: { from: lead.stage, to: parsed.stage } });
+  const parsed = z
+    .object({
+      id: z.string().cuid(),
+      stage: leadStageEnum,
+      lostReasonCode: lostReasonEnum.optional(),
+      lostReasonDetail: z.string().trim().max(500).optional(),
+      redirectTo: z.string().optional(),
+    })
+    .parse(Object.fromEntries(formData));
+
+  const result = await applyLeadStageChange({
+    leadId: parsed.id,
+    stage: parsed.stage,
+    lostReasonCode: parsed.lostReasonCode,
+    lostReasonDetail: parsed.lostReasonDetail,
+    actorUserId: access.session.userId,
+    unitIds: scopedUnitIds(access),
+  });
+  if (!result.ok) throw new Error(result.error);
   revalidateBusiness();
+  if (parsed.redirectTo === "adaylar") {
+    redirect(`${basePath}/adaylar?lead=${parsed.id}&focus=all`);
+  }
   redirectToSection("satis-hunisi");
+}
+
+/**
+ * Client Kanban / optimistic UI. Yanıt authoritative — istemci bu payload ile
+ * yerel state'i hizalar; hata durumunda önceki stage'e döner.
+ */
+export async function transitionLeadStageAction(input: {
+  id: string;
+  stage: z.infer<typeof leadStageEnum>;
+  lostReasonCode?: z.infer<typeof lostReasonEnum>;
+  lostReasonDetail?: string;
+}): Promise<StageMutationResult> {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.stage", access.session.userId);
+  const parsed = z
+    .object({
+      id: z.string().cuid(),
+      stage: leadStageEnum,
+      lostReasonCode: lostReasonEnum.optional(),
+      lostReasonDetail: z.string().trim().max(500).optional(),
+    })
+    .parse(input);
+  const result = await applyLeadStageChange({
+    leadId: parsed.id,
+    stage: parsed.stage,
+    lostReasonCode: parsed.lostReasonCode,
+    lostReasonDetail: parsed.lostReasonDetail,
+    actorUserId: access.session.userId,
+    unitIds: scopedUnitIds(access),
+  });
+  if (result.ok) revalidateBusiness();
+  return result;
+}
+
+/** Lead → sipariş / öğrenci hesabı manuel bağlama (WON handoff). */
+export async function linkLeadLifecycle(formData: FormData) {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.link", access.session.userId);
+  const parsed = z
+    .object({
+      leadId: z.string().cuid(),
+      userId: z.string().optional(),
+      odOrderId: z.string().optional(),
+      odkOrderId: z.string().optional(),
+      force: z.string().optional(),
+    })
+    .parse(Object.fromEntries(formData));
+  const lead = await prisma.businessLead.findFirst({
+    where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) }, anonymizedAt: null },
+    select: { id: true },
+  });
+  if (!lead) throw new Error("LEAD_NOT_FOUND");
+  const cuid = z.string().cuid();
+  const userId = parsed.userId && cuid.safeParse(parsed.userId).success ? parsed.userId : null;
+  const odOrderId = parsed.odOrderId && cuid.safeParse(parsed.odOrderId).success ? parsed.odOrderId : null;
+  const odkOrderId = parsed.odkOrderId && cuid.safeParse(parsed.odkOrderId).success ? parsed.odkOrderId : null;
+  const { linkLeadLifecycleEntities } = await import("@/lib/lifecycle/link");
+  await linkLeadLifecycleEntities({
+    leadId: lead.id,
+    actorUserId: access.session.userId,
+    userId,
+    odOrderId,
+    odkOrderId,
+    force: parsed.force === "1",
+  });
+  revalidateBusiness();
+  redirect(`${basePath}/adaylar?lead=${lead.id}`);
 }
 
 export async function createManualLead(formData: FormData) {
@@ -71,6 +308,7 @@ export async function createManualLead(formData: FormData) {
     ? await prisma.businessLead.findFirst({ where: { businessUnitId: unit.id, OR: duplicateFilters }, select: { id: true, firstName: true } })
     : null;
   const row = await prisma.businessLead.create({ data: { businessUnitId: unit.id, source: "MANUAL", firstName: parsed.firstName, phone: parsed.phone || null, normalizedPhone, email: parsed.email || null, normalizedEmail, productInterest: parsed.productInterest, matchSuggestion: possible ? { leadId: possible.id, name: possible.firstName, confidence: 0.78 } : undefined } });
+  await prisma.leadActivity.create({ data: { leadId: row.id, type: "LEAD_CREATED", toValue: "NEW", actorUserId: access.session.userId } });
   void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: row.id, action: "LEAD_CREATED" });
   revalidateBusiness();
   redirectToSection("adaylar");
@@ -193,15 +431,270 @@ export async function addLeadNote(formData: FormData) {
   const access = await requireBusinessPage("lead:write"); await guard("lead.note", access.session.userId);
   const parsed = z.object({ leadId: z.string().cuid(), note: z.string().trim().min(2).max(2000) }).parse(Object.fromEntries(formData));
   const lead = await prisma.businessLead.findFirst({ where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) } } }); if (!lead) throw new Error("LEAD_NOT_FOUND");
-  await prisma.leadActivity.create({ data: { leadId: lead.id, type: "NOTE", actorUserId: access.session.userId, metadata: { note: parsed.note } } });
+  await prisma.$transaction([
+    prisma.leadActivity.create({ data: { leadId: lead.id, type: "NOTE", actorUserId: access.session.userId, metadata: { note: parsed.note } } }),
+    prisma.businessLead.update({ where: { id: lead.id }, data: { lastContactAt: new Date() } }),
+  ]);
   void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "LEAD_NOTE_ADDED" }); revalidateBusiness();
 }
 
 export async function createLeadTask(formData: FormData) {
   const access = await requireBusinessPage("lead:write"); await guard("lead.task", access.session.userId);
-  const parsed = z.object({ leadId: z.string().cuid(), title: z.string().trim().min(2).max(160), dueAt: z.string().optional() }).parse(Object.fromEntries(formData));
+  const parsed = z.object({
+    leadId: z.string().cuid(),
+    title: z.string().trim().min(2).max(160),
+    note: z.string().trim().max(2000).optional(),
+    dueAt: z.string().optional(),
+    assignedUserId: z.string().cuid().or(z.literal("")).optional(),
+    setFollowUp: z.enum(["1", "true"]).optional(),
+  }).parse(Object.fromEntries(formData));
   const lead = await prisma.businessLead.findFirst({ where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) } } }); if (!lead) throw new Error("LEAD_NOT_FOUND");
-  await prisma.leadTask.create({ data: { leadId: lead.id, title: parsed.title, dueAt: parsed.dueAt ? new Date(parsed.dueAt) : null, assignedUserId: access.session.userId } }); revalidateBusiness();
+  const dueAt = parsed.dueAt ? new Date(parsed.dueAt) : null;
+  const assignedUserId = parsed.assignedUserId || access.session.userId;
+  await prisma.$transaction([
+    prisma.leadTask.create({
+      data: {
+        leadId: lead.id,
+        title: parsed.title,
+        note: parsed.note || null,
+        dueAt,
+        assignedUserId,
+      },
+    }),
+    prisma.businessLead.update({
+      where: { id: lead.id },
+      data: {
+        ...(dueAt && (parsed.setFollowUp || !lead.nextFollowUpAt || (lead.nextFollowUpAt && dueAt < lead.nextFollowUpAt))
+          ? { nextFollowUpAt: dueAt }
+          : {}),
+        ...(assignedUserId && !lead.assignedUserId ? { assignedUserId } : {}),
+      },
+    }),
+  ]);
+  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "LEAD_TASK_CREATED", payload: { dueAt: dueAt?.toISOString() ?? null } });
+  revalidateBusiness();
+}
+
+export async function scheduleLeadFollowUp(formData: FormData) {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.follow-up", access.session.userId);
+  const parsed = z
+    .object({
+      leadId: z.string().cuid(),
+      nextFollowUpAt: z.string().min(1),
+      note: z.string().trim().max(2000).optional(),
+      taskTitle: z.string().trim().max(160).optional(),
+      assignedUserId: z.string().cuid().or(z.literal("")).optional(),
+    })
+    .parse(Object.fromEntries(formData));
+  const lead = await prisma.businessLead.findFirst({
+    where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) }, anonymizedAt: null },
+  });
+  if (!lead) throw new Error("LEAD_NOT_FOUND");
+  const nextFollowUpAt = new Date(parsed.nextFollowUpAt);
+  if (Number.isNaN(nextFollowUpAt.getTime())) throw new Error("INVALID_FOLLOW_UP");
+  const assignedUserId = parsed.assignedUserId || lead.assignedUserId || access.session.userId;
+  await prisma.$transaction(async (tx) => {
+    await tx.businessLead.update({
+      where: { id: lead.id },
+      data: { nextFollowUpAt, assignedUserId },
+    });
+    if (parsed.note?.trim()) {
+      await tx.leadActivity.create({
+        data: {
+          leadId: lead.id,
+          type: "NOTE",
+          actorUserId: access.session.userId,
+          metadata: { note: parsed.note.trim(), kind: "FOLLOW_UP" },
+        },
+      });
+    }
+    await tx.leadActivity.create({
+      data: {
+        leadId: lead.id,
+        type: "FOLLOW_UP_SCHEDULED",
+        toValue: nextFollowUpAt.toISOString(),
+        actorUserId: access.session.userId,
+      },
+    });
+    if (parsed.taskTitle?.trim()) {
+      await tx.leadTask.create({
+        data: {
+          leadId: lead.id,
+          title: parsed.taskTitle.trim(),
+          note: parsed.note?.trim() || null,
+          dueAt: nextFollowUpAt,
+          assignedUserId,
+        },
+      });
+    }
+  });
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "BusinessLead",
+    entityId: lead.id,
+    action: "LEAD_FOLLOW_UP_SCHEDULED",
+    payload: { nextFollowUpAt: nextFollowUpAt.toISOString(), assignedUserId },
+  });
+  revalidateBusiness();
+}
+
+export async function assignLeadOwner(formData: FormData) {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.assign", access.session.userId);
+  const parsed = z
+    .object({
+      leadId: z.string().cuid(),
+      assignedUserId: z.string().cuid().or(z.literal("")),
+    })
+    .parse(Object.fromEntries(formData));
+  const lead = await prisma.businessLead.findFirst({
+    where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) } },
+  });
+  if (!lead) throw new Error("LEAD_NOT_FOUND");
+  await prisma.$transaction([
+    prisma.businessLead.update({
+      where: { id: lead.id },
+      data: { assignedUserId: parsed.assignedUserId || null },
+    }),
+    prisma.leadActivity.create({
+      data: {
+        leadId: lead.id,
+        type: "OWNER_CHANGED",
+        fromValue: lead.assignedUserId,
+        toValue: parsed.assignedUserId || null,
+        actorUserId: access.session.userId,
+      },
+    }),
+  ]);
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "BusinessLead",
+    entityId: lead.id,
+    action: "LEAD_OWNER_ASSIGNED",
+    payload: { assignedUserId: parsed.assignedUserId || null },
+  });
+  revalidateBusiness();
+}
+
+export async function completeLeadTask(formData: FormData) {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.task.complete", access.session.userId);
+  const parsed = z.object({ taskId: z.string().cuid() }).parse(Object.fromEntries(formData));
+  const task = await prisma.leadTask.findFirst({
+    where: { id: parsed.taskId, lead: { businessUnitId: { in: scopedUnitIds(access) } } },
+  });
+  if (!task) throw new Error("TASK_NOT_FOUND");
+  await prisma.leadTask.update({ where: { id: task.id }, data: { completedAt: new Date() } });
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "LeadTask",
+    entityId: task.id,
+    action: "LEAD_TASK_COMPLETED",
+    payload: { leadId: task.leadId },
+  });
+  revalidateBusiness();
+}
+
+export async function linkLeadOrder(formData: FormData) {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.link-order", access.session.userId);
+  const parsed = z
+    .object({
+      leadId: z.string().cuid(),
+      product: z.enum(["OD", "ODK"]),
+      orderId: z.string().cuid(),
+    })
+    .parse(Object.fromEntries(formData));
+  const lead = await prisma.businessLead.findFirst({
+    where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) } },
+  });
+  if (!lead) throw new Error("LEAD_NOT_FOUND");
+  if (parsed.product === "OD") {
+    const order = await prisma.odOrder.findFirst({
+      where: { id: parsed.orderId },
+      select: { id: true, userId: true, provisioningStatus: true },
+    });
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+    await prisma.businessLead.update({
+      where: { id: lead.id },
+      data: {
+        relatedOdOrderId: order.id,
+        relatedOdUserId: order.userId ?? lead.relatedOdUserId,
+        stage: lead.stage === "LOST" || lead.stage === "SPAM" ? lead.stage : "WON",
+        wonAt: lead.wonAt ?? new Date(),
+        productInterest:
+          lead.productInterest === "UNKNOWN" ? "ONLINE_DERSHANEM" : lead.productInterest,
+      },
+    });
+  } else {
+    const order = await prisma.odkOrder.findFirst({
+      where: { id: parsed.orderId },
+      select: { id: true, studentUserId: true, provisioningStatus: true },
+    });
+    if (!order) throw new Error("ORDER_NOT_FOUND");
+    await prisma.businessLead.update({
+      where: { id: lead.id },
+      data: {
+        relatedOdkOrderId: order.id,
+        relatedOdkUserId: order.studentUserId ?? lead.relatedOdkUserId,
+        stage: lead.stage === "LOST" || lead.stage === "SPAM" ? lead.stage : "WON",
+        wonAt: lead.wonAt ?? new Date(),
+        productInterest:
+          lead.productInterest === "UNKNOWN" ? "ONLINE_DENEME_KULUBU" : lead.productInterest,
+      },
+    });
+  }
+  await prisma.leadActivity.create({
+    data: {
+      leadId: lead.id,
+      type: "ORDER_LINKED",
+      toValue: parsed.orderId,
+      actorUserId: access.session.userId,
+      metadata: { product: parsed.product },
+    },
+  });
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "BusinessLead",
+    entityId: lead.id,
+    action: "LEAD_ORDER_LINKED",
+    payload: { product: parsed.product, orderId: parsed.orderId },
+  });
+  revalidateBusiness();
+}
+
+export async function updateLeadPriority(formData: FormData) {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.priority", access.session.userId);
+  const parsed = z
+    .object({
+      leadId: z.string().cuid(),
+      priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]),
+    })
+    .parse(Object.fromEntries(formData));
+  await prisma.businessLead.updateMany({
+    where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) } },
+    data: { priority: parsed.priority },
+  });
+  revalidateBusiness();
+}
+
+export async function dismissLeadDuplicate(formData: FormData) {
+  const access = await requireBusinessPage("lead:write");
+  await guard("lead.duplicate.dismiss", access.session.userId);
+  const leadId = z.string().cuid().parse(formData.get("leadId"));
+  await prisma.businessLead.updateMany({
+    where: { id: leadId, businessUnitId: { in: scopedUnitIds(access) } },
+    data: { matchSuggestion: Prisma.JsonNull },
+  });
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "BusinessLead",
+    entityId: leadId,
+    action: "LEAD_DUPLICATE_DISMISSED",
+  });
+  revalidateBusiness();
 }
 
 export async function markConversationRead(formData: FormData) {

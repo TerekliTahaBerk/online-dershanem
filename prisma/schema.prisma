@@ -425,6 +425,24 @@ enum LeadTemperature {
   HOT
 }
 
+enum LeadPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+/// Structured lost-reason catalog for reporting. Free-text detail stays on `lostReason`.
+enum LeadLostReasonCode {
+  PRICE
+  UNREACHABLE
+  COMPETITOR
+  DECISION_POSTPONED
+  PRODUCT_MISMATCH
+  WRONG_LEAD
+  OTHER
+}
+
 enum MessageDirection {
   INBOUND
   OUTBOUND
@@ -709,6 +727,7 @@ model BusinessLead {
   id                    String                 @id @default(cuid())
   businessUnitId        String                 @map("business_unit_id")
   conversationId        String?                @unique @map("conversation_id")
+  campaignId            String?                @map("campaign_id")
   firstName             String?                @map("first_name")
   lastName              String?                @map("last_name")
   instagramScopedId     String?                @map("instagram_scoped_id")
@@ -725,10 +744,12 @@ model BusinessLead {
   source                LeadSource
   stage                 LeadStage              @default(NEW)
   temperature           LeadTemperature        @default(COLD)
+  priority              LeadPriority           @default(NORMAL)
   assignedUserId        String?                @map("assigned_user_id")
   estimatedValueCents   Int?                   @map("estimated_value_cents")
   tags                  String[]
   consentMetadata       Json?                  @map("consent_metadata")
+  lostReasonCode        LeadLostReasonCode?    @map("lost_reason_code")
   lostReason            String?                @map("lost_reason")
   relatedOdUserId       String?                @map("related_od_user_id")
   relatedOdkUserId      String?                @map("related_odk_user_id")
@@ -738,16 +759,23 @@ model BusinessLead {
   anonymizedAt          DateTime?              @map("anonymized_at") @db.Timestamptz(3)
   firstContactAt        DateTime               @default(now()) @map("first_contact_at") @db.Timestamptz(3)
   lastContactAt         DateTime               @default(now()) @map("last_contact_at") @db.Timestamptz(3)
+  nextFollowUpAt        DateTime?              @map("next_follow_up_at") @db.Timestamptz(3)
+  wonAt                 DateTime?              @map("won_at") @db.Timestamptz(3)
+  lostAt                DateTime?              @map("lost_at") @db.Timestamptz(3)
   createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
   businessUnit          BusinessUnit           @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
   conversation          BusinessConversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  campaign              BusinessCampaign?      @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   activities            LeadActivity[]
   tasks                 LeadTask[]
   attributions          Attribution[]
   financialTransactions FinancialTransaction[]
 
   @@index([businessUnitId, stage, updatedAt])
+  @@index([businessUnitId, nextFollowUpAt])
+  @@index([businessUnitId, assignedUserId, stage])
+  @@index([campaignId])
   @@index([normalizedPhone])
   @@index([normalizedEmail])
   @@index([instagramScopedId])
@@ -773,6 +801,7 @@ model LeadTask {
   id             String       @id @default(cuid())
   leadId         String       @map("lead_id")
   title          String
+  note           String?
   dueAt          DateTime?    @map("due_at") @db.Timestamptz(3)
   assignedUserId String?      @map("assigned_user_id")
   completedAt    DateTime?    @map("completed_at") @db.Timestamptz(3)
@@ -780,6 +809,7 @@ model LeadTask {
   lead           BusinessLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([assignedUserId, completedAt, dueAt])
+  @@index([leadId, dueAt])
   @@map("lead_tasks")
 }
 
@@ -804,6 +834,7 @@ model BusinessCampaign {
   adSets                BusinessAdSet[]
   attributions          Attribution[]
   financialTransactions FinancialTransaction[]
+  leads                 BusinessLead[]
 
   @@unique([businessUnitId, platform, externalId])
   @@index([businessUnitId, status, startsAt])
