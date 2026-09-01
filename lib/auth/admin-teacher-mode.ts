@@ -13,6 +13,7 @@ import {
   canUseAdminTeacherMode,
   decodeAdminTeacherModeCookie,
   encodeAdminTeacherModeCookie,
+  panelShellRoleForContext,
   toAdminTeacherModeContext,
   type AdminTeacherModeContext,
   type AdminTeacherModePayload,
@@ -22,6 +23,7 @@ export {
   ADMIN_TEACHER_MODE_COOKIE,
   ADMIN_TEACHER_MODE_TTL_MS,
   canUseAdminTeacherMode,
+  panelShellRoleForContext,
   toAdminTeacherModeSession,
 } from "@/lib/auth/admin-teacher-mode-core";
 
@@ -67,6 +69,13 @@ export const getResolvedAdminTeacherMode = cache(async (actor: SessionUser): Pro
   if (context.adminUserId !== actor.userId) return { enabled: false };
   return context;
 });
+
+/** requireActiveUser sayfalarında PanelShell'e geçirilecek rol. */
+export async function resolvePanelShellRole(session: SessionUser) {
+  if (session.role !== "ADMIN") return session.role;
+  const teacherMode = await getResolvedAdminTeacherMode(session);
+  return panelShellRoleForContext(session.role, teacherMode.enabled);
+}
 
 export type StartAdminTeacherModeResult =
   | { ok: true; homePath: string }
