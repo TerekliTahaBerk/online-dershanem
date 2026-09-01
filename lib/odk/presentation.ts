@@ -2,15 +2,15 @@ import type { OdkAttemptStatus, OdkExamStatus, PilotCohortStatus } from "@prisma
 
 export type OdkStatusTone = "neutral" | "info" | "warning" | "success" | "danger";
 
-export const examStatusPresentation: Record<OdkExamStatus, { label: string; tone: OdkStatusTone }> = {
-  DRAFT: { label: "Taslak", tone: "neutral" },
-  READY: { label: "Hazır", tone: "info" },
-  SCHEDULED: { label: "Planlandı", tone: "info" },
-  LIVE: { label: "Canlı", tone: "danger" },
-  ENDED: { label: "Sona erdi", tone: "warning" },
-  SCORED: { label: "Puanlandı", tone: "warning" },
-  RELEASED: { label: "Sonuçlar açık", tone: "success" },
-  ARCHIVED: { label: "Arşivlendi", tone: "neutral" },
+export const examStatusPresentation: Record<OdkExamStatus, { label: string; tone: OdkStatusTone; productAlias: string }> = {
+  DRAFT: { label: "Taslak", tone: "neutral", productAlias: "DRAFT" },
+  READY: { label: "Hazır", tone: "info", productAlias: "READY" },
+  SCHEDULED: { label: "Planlandı", tone: "info", productAlias: "SCHEDULED" },
+  LIVE: { label: "Canlı", tone: "danger", productAlias: "LIVE" },
+  ENDED: { label: "Kapandı", tone: "warning", productAlias: "CLOSED" },
+  SCORED: { label: "İnceleme", tone: "warning", productAlias: "REVIEW" },
+  RELEASED: { label: "Yayınlandı", tone: "success", productAlias: "PUBLISHED" },
+  ARCHIVED: { label: "Arşivlendi", tone: "neutral", productAlias: "ARCHIVED" },
 };
 
 export const attemptStatusPresentation: Record<OdkAttemptStatus, { label: string; tone: OdkStatusTone }> = {
@@ -18,6 +18,13 @@ export const attemptStatusPresentation: Record<OdkAttemptStatus, { label: string
   SUBMITTED: { label: "Teslim edildi", tone: "success" },
   AUTO_SUBMITTED: { label: "Otomatik teslim", tone: "warning" },
   VOID: { label: "Geçersiz", tone: "neutral" },
+  REVIEW_REQUIRED: { label: "İnceleme gerekli", tone: "warning" },
+};
+
+export const integrityLevelPresentation: Record<"NORMAL" | "REVIEW" | "HIGH", { label: string; tone: OdkStatusTone }> = {
+  NORMAL: { label: "Normal", tone: "success" },
+  REVIEW: { label: "İncelenmeli", tone: "warning" },
+  HIGH: { label: "Yüksek sinyal", tone: "danger" },
 };
 
 export const pilotStatusPresentation: Record<PilotCohortStatus, { label: string; tone: OdkStatusTone }> = {

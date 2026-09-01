@@ -20,13 +20,27 @@ export async function GET(request: Request) {
       prisma.odkExam.updateMany({ where: { id: { in: endedExams.map((item) => item.id) }, status: { in: ["SCHEDULED", "LIVE"] } }, data: { status: "ENDED" } }),
       prisma.odkExamAttempt.updateMany({ where: { id: { in: expiredAttempts.map((item) => item.id) }, status: "IN_PROGRESS" }, data: { status: "AUTO_SUBMITTED", submittedAt: now, lastActivityAt: now } }),
     ]);
+
+    // Kapandıktan sonra otomatik puanlama (sonuç yayınlamaz — publication ayrı adım).
+    let autoScored = 0;
+    const scoreable = await prisma.odkExam.findMany({
+      where: { status: "ENDED", endsAt: { lte: now } },
+      select: { id: true, createdById: true },
+      take: 20,
+    });
+    for (const exam of scoreable) {
+      const { scoreOdkExam } = await import("@/lib/odk/scoring-service");
+      const scored = await scoreOdkExam(exam.id, exam.createdById);
+      if (scored.ok) autoScored += 1;
+    }
+
     await logAuditMany([
       ...liveExams.map((item) => ({ actorType: "SYSTEM" as const, entityType: "OdkExam", entityId: item.id, action: "odk.exam_live", summary: "Deneme başlangıç saatinde canlı duruma alındı" })),
-      ...endedExams.map((item) => ({ actorType: "SYSTEM" as const, entityType: "OdkExam", entityId: item.id, action: "odk.exam_ended", summary: "Deneme bitiş saatinde sona erdirildi" })),
+      ...endedExams.map((item) => ({ actorType: "SYSTEM" as const, entityType: "OdkExam", entityId: item.id, action: "odk.exam_ended", summary: "Deneme bitiş saatinde kapatıldı (CLOSED)" })),
       ...expiredAttempts.map((item) => ({ actorType: "SYSTEM" as const, entityType: "OdkExamAttempt", entityId: item.id, action: "odk.attempt_auto_submitted", summary: "Süresi dolan öğrenci oturumu otomatik teslim edildi" })),
     ]);
-    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length };
+    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length, autoScored };
     log.info("odk.lifecycle.completed", result);
     return result;
-  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted }) });
+  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted + result.autoScored }) });
 }

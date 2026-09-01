@@ -16,6 +16,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (exam.attempts.some((attempt) => !attempt.score)) return NextResponse.json({ error: "Tüm teslimler puanlanmadan sonuç açıklanamaz." }, { status: 409 });
   const now = new Date();
   await prisma.odkExam.update({ where: { id }, data: { status: "RELEASED", resultsReleasedAt: now, answerKeyReleasedAt: now } });
+  await prisma.odkAttemptScore.updateMany({
+    where: { attempt: { examId: id } },
+    data: { publicationStatus: "PUBLISHED" },
+  });
   await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExam", entityId: id, action: "odk.exam_results_released", summary: "Deneme sonuçları öğrencilere açıklandı", payload: { attemptCount: exam.attempts.length } });
   await recordPanelProductEvent({ name: "odk_results_released", properties: { family: exam.family, attemptBand: odkAttemptBand(exam.attempts.length) } }, "ADMIN");
   return NextResponse.json({ status: "RELEASED", resultsReleasedAt: now });

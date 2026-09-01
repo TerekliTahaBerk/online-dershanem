@@ -115,12 +115,77 @@ enum OdkAttemptStatus {
   SUBMITTED
   AUTO_SUBMITTED
   VOID
+  REVIEW_REQUIRED
 }
 
 enum OdkQuestionResult {
   CORRECT
   WRONG
   BLANK
+}
+
+enum OdkAttemptEventType {
+  EXAM_STARTED
+  QUESTION_OPENED
+  QUESTION_CLOSED
+  ANSWER_SELECTED
+  ANSWER_CHANGED
+  QUESTION_FLAGGED
+  SECTION_CHANGED
+  TAB_HIDDEN
+  TAB_VISIBLE
+  WINDOW_BLUR
+  WINDOW_FOCUS
+  FULLSCREEN_ENTER
+  FULLSCREEN_EXIT
+  COPY_ATTEMPT
+  PASTE_ATTEMPT
+  CONTEXT_MENU
+  NETWORK_OFFLINE
+  NETWORK_ONLINE
+  EXAM_SUBMITTED
+  AUTO_SUBMITTED
+}
+
+enum OdkIntegrityLevel {
+  NORMAL
+  REVIEW
+  HIGH
+}
+
+enum OdkAssignmentSource {
+  STUDENT
+  GROUP
+  CLASS
+  COHORT
+  BULK
+}
+
+enum OdkQuestionContentType {
+  BOOKLET_PDF
+  IMAGE_URL
+  RICH_CONTENT
+}
+
+enum OdkScorePublicationStatus {
+  HIDDEN
+  PUBLISHED
+}
+
+enum OdkImportKind {
+  ANSWER_KEY
+  OUTCOME
+}
+
+enum OdkImportStatus {
+  PREVIEW
+  COMMITTED
+  REJECTED
+}
+
+enum OdkExamStructureMode {
+  MATH_ONLY
+  FULL_TEMPLATE
 }
 
 enum CurriculumExam {
@@ -372,6 +437,10 @@ model User {
   uploadedOdkExamFiles          OdkExamFile[]              @relation("OdkExamFileUploader")
   odkExamAttempts               OdkExamAttempt[]           @relation("OdkExamAttemptStudent")
   scoredOdkExamAttempts         OdkAttemptScore[]          @relation("OdkAttemptScoreAdmin")
+  odkExamAssignments            OdkExamAssignment[]        @relation("OdkExamAssignmentStudent")
+  assignedOdkExams              OdkExamAssignment[]        @relation("OdkExamAssignmentAssigner")
+  odkAnswerKeyRevisions         OdkAnswerKeyRevision[]     @relation("OdkAnswerKeyRevisionAuthor")
+  odkImportAudits               OdkImportAudit[]           @relation("OdkImportAuditActor")
   businessRoleAssignments       BusinessRoleAssignment[]
   createdAutomationRules        AutomationRule[]           @relation("AutomationRuleCreatedBy")
   teacherHomeSnapshot           TeacherHomeSnapshot?
@@ -3361,59 +3430,76 @@ model OdkExamSeries {
 }
 
 /// Takvim ve yayın yaşam döngüsü. Soru içeriği sürümlerde dondurulur.
+/// Durum eşlemesi (ürün dili → DB): CLOSED→ENDED, REVIEW→SCORED, PUBLISHED→RELEASED.
 model OdkExam {
-  id                  String           @id @default(cuid())
-  seriesId            String?          @map("series_id")
+  id                  String              @id @default(cuid())
+  seriesId            String?             @map("series_id")
   title               String
-  slug                String           @unique
+  slug                String              @unique
   family              OdkExamFamily
-  status              OdkExamStatus    @default(DRAFT)
-  currentVersionId    String?          @unique @map("current_version_id")
-  startsAt            DateTime?        @map("starts_at") @db.Timestamptz(3)
-  endsAt              DateTime?        @map("ends_at") @db.Timestamptz(3)
-  lateEntryMinutes    Int              @default(0) @map("late_entry_minutes")
-  attemptLimit        Int              @default(1) @map("attempt_limit")
-  meetRequired        Boolean          @default(true) @map("meet_required")
-  meetUrl             String?          @map("meet_url")
-  answerKeyReleasedAt DateTime?        @map("answer_key_released_at") @db.Timestamptz(3)
-  resultsReleasedAt   DateTime?        @map("results_released_at") @db.Timestamptz(3)
-  publishedAt         DateTime?        @map("published_at") @db.Timestamptz(3)
-  createdById         String           @map("created_by_id")
-  createdAt           DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt           DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
-  series              OdkExamSeries?   @relation(fields: [seriesId], references: [id], onDelete: SetNull)
-  createdBy           User             @relation("OdkExamCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  currentVersion      OdkExamVersion?  @relation("OdkCurrentExamVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
-  versions            OdkExamVersion[] @relation("OdkExamVersions")
+  status              OdkExamStatus       @default(DRAFT)
+  structureMode       OdkExamStructureMode @default(MATH_ONLY) @map("structure_mode")
+  templateCode        String?             @map("template_code")
+  description         String?
+  internalCode        String?             @map("internal_code")
+  academicYear        Int?                @map("academic_year")
+  publisher           String?
+  settings            Json                @default("{}")
+  currentVersionId    String?             @unique @map("current_version_id")
+  startsAt            DateTime?           @map("starts_at") @db.Timestamptz(3)
+  endsAt              DateTime?           @map("ends_at") @db.Timestamptz(3)
+  lateEntryMinutes    Int                 @default(0) @map("late_entry_minutes")
+  attemptLimit        Int                 @default(1) @map("attempt_limit")
+  meetRequired        Boolean             @default(true) @map("meet_required")
+  meetUrl             String?             @map("meet_url")
+  answerKeyReleasedAt DateTime?           @map("answer_key_released_at") @db.Timestamptz(3)
+  resultsReleasedAt   DateTime?           @map("results_released_at") @db.Timestamptz(3)
+  publishedAt         DateTime?           @map("published_at") @db.Timestamptz(3)
+  contentLockedAt     DateTime?           @map("content_locked_at") @db.Timestamptz(3)
+  createdById         String              @map("created_by_id")
+  createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  series              OdkExamSeries?      @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  createdBy           User                @relation("OdkExamCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  currentVersion      OdkExamVersion?     @relation("OdkCurrentExamVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions            OdkExamVersion[]    @relation("OdkExamVersions")
   packageLinks        OdkPackageExam[]
   attempts            OdkExamAttempt[]
+  assignments         OdkExamAssignment[]
+  importAudits        OdkImportAudit[]
 
   @@index([family, status, startsAt])
   @@index([seriesId, startsAt])
   @@index([status, startsAt, endsAt])
+  @@index([internalCode])
   @@map("odk_exams")
 }
 
 /// Yayına alınan sürüm kilitlenir; daha sonraki düzeltme yeni sürüm oluşturur.
 model OdkExamVersion {
-  id              String               @id @default(cuid())
-  examId          String               @map("exam_id")
-  versionNumber   Int                  @map("version_number")
-  status          OdkExamVersionStatus @default(DRAFT)
-  durationMinutes Int                  @map("duration_minutes")
+  id              String                 @id @default(cuid())
+  examId          String                 @map("exam_id")
+  versionNumber   Int                    @map("version_number")
+  status          OdkExamVersionStatus   @default(DRAFT)
+  durationMinutes Int                    @map("duration_minutes")
   instructions    String?
-  scoringPolicyId String               @map("scoring_policy_id")
-  createdById     String               @map("created_by_id")
-  lockedAt        DateTime?            @map("locked_at") @db.Timestamptz(3)
-  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt       DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-  exam            OdkExam              @relation("OdkExamVersions", fields: [examId], references: [id], onDelete: Cascade)
-  currentForExam  OdkExam?             @relation("OdkCurrentExamVersion")
-  scoringPolicy   OdkScoringPolicy     @relation(fields: [scoringPolicyId], references: [id], onDelete: Restrict)
-  createdBy       User                 @relation("OdkExamVersionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  autoSubmit      Boolean                @default(true) @map("auto_submit")
+  extraTimePolicy Json?                  @map("extra_time_policy")
+  settings        Json                   @default("{}")
+  scoringPolicyId String                 @map("scoring_policy_id")
+  createdById     String                 @map("created_by_id")
+  lockedAt        DateTime?              @map("locked_at") @db.Timestamptz(3)
+  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  exam            OdkExam                @relation("OdkExamVersions", fields: [examId], references: [id], onDelete: Cascade)
+  currentForExam  OdkExam?               @relation("OdkCurrentExamVersion")
+  scoringPolicy   OdkScoringPolicy       @relation(fields: [scoringPolicyId], references: [id], onDelete: Restrict)
+  createdBy       User                   @relation("OdkExamVersionCreator", fields: [createdById], references: [id], onDelete: Restrict)
   sections        OdkExamSection[]
   files           OdkExamFile[]
   attempts        OdkExamAttempt[]
+  answerKeyRevisions OdkAnswerKeyRevision[]
+  importAudits    OdkImportAudit[]
 
   @@unique([examId, versionNumber])
   @@index([examId, status])
@@ -3434,16 +3520,19 @@ model OdkScoringPolicy {
 }
 
 model OdkExamSection {
-  id            String            @id @default(cuid())
-  versionId     String            @map("version_id")
-  code          String
-  title         String
-  position      Int
-  questionCount Int               @map("question_count")
-  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
-  version       OdkExamVersion    @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  questions     OdkExamQuestion[]
+  id              String            @id @default(cuid())
+  versionId       String            @map("version_id")
+  code            String
+  title           String
+  position        Int
+  questionCount   Int               @map("question_count")
+  durationMinutes Int?              @map("duration_minutes")
+  questionStart   Int?              @map("question_start")
+  questionEnd     Int?              @map("question_end")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version         OdkExamVersion    @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  questions       OdkExamQuestion[]
 
   @@unique([versionId, code])
   @@unique([versionId, position])
@@ -3451,26 +3540,34 @@ model OdkExamSection {
   @@map("odk_exam_sections")
 }
 
-/// Soru metnini saklamaz; PDF içindeki numara, cevap ve akademik metadata'yı taşır.
+/// Soru metnini zorunlu tutmaz; PDF/image/URL veya gelecekte rich content referansı taşır.
 model OdkExamQuestion {
-  id             String                     @id @default(cuid())
-  sectionId      String                     @map("section_id")
-  questionNumber Int                        @map("question_number")
-  position       Int
-  correctOption  OdkAnswerOption?           @map("correct_option")
-  difficulty     OdkQuestionDifficulty      @default(MEDIUM)
-  bookletPage    Int?                       @map("booklet_page")
-  isActive       Boolean                    @default(true) @map("is_active")
-  createdAt      DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt      DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
-  section        OdkExamSection             @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  outcomes       OdkQuestionOutcome[]
-  attemptAnswers OdkAttemptAnswer[]
-  attemptResults OdkAttemptQuestionResult[]
+  id                    String                     @id @default(cuid())
+  sectionId             String                     @map("section_id")
+  questionNumber        Int                        @map("question_number")
+  position              Int
+  bookletCode           String                     @default("A") @map("booklet_code")
+  bookletQuestionNumber Int?                       @map("booklet_question_number")
+  canonicalQuestionNumber Int?                     @map("canonical_question_number")
+  contentType           OdkQuestionContentType     @default(BOOKLET_PDF) @map("content_type")
+  assetUrl              String?                    @map("asset_url")
+  correctOption         OdkAnswerOption?           @map("correct_option")
+  difficulty            OdkQuestionDifficulty      @default(MEDIUM)
+  bookletPage           Int?                       @map("booklet_page")
+  isActive              Boolean                    @default(true) @map("is_active")
+  createdAt             DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  section               OdkExamSection             @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  outcomes              OdkQuestionOutcome[]
+  attemptAnswers        OdkAttemptAnswer[]
+  attemptResults        OdkAttemptQuestionResult[]
+  events                OdkAttemptEvent[]
+  timings               OdkAttemptQuestionTiming[]
 
   @@unique([sectionId, questionNumber])
   @@unique([sectionId, position])
   @@index([sectionId, position])
+  @@index([sectionId, bookletCode, bookletQuestionNumber])
   @@map("odk_exam_questions")
 }
 
@@ -3521,42 +3618,55 @@ model OdkPackageExam {
 
 /// Öğrencinin kilitli sınav sürümüne bağlı, sunucu saatli çözüm oturumu.
 model OdkExamAttempt {
-  id                 String             @id @default(cuid())
-  examId             String             @map("exam_id")
-  versionId          String             @map("version_id")
-  studentUserId      String             @map("student_user_id")
-  attemptNumber      Int                @default(1) @map("attempt_number")
-  status             OdkAttemptStatus   @default(IN_PROGRESS)
-  meetAcknowledgedAt DateTime?          @map("meet_acknowledged_at") @db.Timestamptz(3)
-  startedAt          DateTime           @default(now()) @map("started_at") @db.Timestamptz(3)
-  deadlineAt         DateTime           @map("deadline_at") @db.Timestamptz(3)
-  submittedAt        DateTime?          @map("submitted_at") @db.Timestamptz(3)
-  lastActivityAt     DateTime           @default(now()) @map("last_activity_at") @db.Timestamptz(3)
-  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
-  exam               OdkExam            @relation(fields: [examId], references: [id], onDelete: Restrict)
-  version            OdkExamVersion     @relation(fields: [versionId], references: [id], onDelete: Restrict)
-  student            User               @relation("OdkExamAttemptStudent", fields: [studentUserId], references: [id], onDelete: Restrict)
+  id                 String                    @id @default(cuid())
+  examId             String                    @map("exam_id")
+  versionId          String                    @map("version_id")
+  studentUserId      String                    @map("student_user_id")
+  attemptNumber      Int                       @default(1) @map("attempt_number")
+  status             OdkAttemptStatus          @default(IN_PROGRESS)
+  bookletCode        String                    @default("A") @map("booklet_code")
+  meetAcknowledgedAt DateTime?                 @map("meet_acknowledged_at") @db.Timestamptz(3)
+  startedAt          DateTime                  @default(now()) @map("started_at") @db.Timestamptz(3)
+  deadlineAt         DateTime                  @map("deadline_at") @db.Timestamptz(3)
+  submittedAt        DateTime?                 @map("submitted_at") @db.Timestamptz(3)
+  lastActivityAt     DateTime                  @default(now()) @map("last_activity_at") @db.Timestamptz(3)
+  ipHash             String?                   @map("ip_hash")
+  clientMeta         Json?                     @map("client_meta")
+  sessionTokenHash   String?                   @map("session_token_hash")
+  integrityLevel     OdkIntegrityLevel         @default(NORMAL) @map("integrity_level")
+  integrityReasons   Json                      @default("[]") @map("integrity_reasons")
+  integrityReviewedAt DateTime?                @map("integrity_reviewed_at") @db.Timestamptz(3)
+  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  exam               OdkExam                   @relation(fields: [examId], references: [id], onDelete: Restrict)
+  version            OdkExamVersion            @relation(fields: [versionId], references: [id], onDelete: Restrict)
+  student            User                      @relation("OdkExamAttemptStudent", fields: [studentUserId], references: [id], onDelete: Restrict)
   answers            OdkAttemptAnswer[]
   score              OdkAttemptScore?
+  events             OdkAttemptEvent[]
+  timings            OdkAttemptQuestionTiming[]
 
   @@unique([examId, studentUserId, attemptNumber])
   @@index([studentUserId, status, deadlineAt])
   @@index([examId, status, startedAt])
+  @@index([examId, integrityLevel])
   @@map("odk_exam_attempts")
 }
 
 /// Cevaplar soru bazında ve artan revizyonla kaydedilir; istemci tekrarları güvenlidir.
 model OdkAttemptAnswer {
-  attemptId      String           @map("attempt_id")
-  questionId     String           @map("question_id")
-  selectedOption OdkAnswerOption? @map("selected_option")
-  isMarked       Boolean          @default(false) @map("is_marked")
-  revision       Int              @default(1)
-  answeredAt     DateTime?        @map("answered_at") @db.Timestamptz(3)
-  updatedAt      DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
-  attempt        OdkExamAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  question       OdkExamQuestion  @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  attemptId       String           @map("attempt_id")
+  questionId      String           @map("question_id")
+  selectedOption  OdkAnswerOption? @map("selected_option")
+  isMarked        Boolean          @default(false) @map("is_marked")
+  revision        Int              @default(1)
+  changedCount    Int              @default(0) @map("changed_count")
+  answeredAt      DateTime?        @map("answered_at") @db.Timestamptz(3)
+  firstAnsweredAt DateTime?        @map("first_answered_at") @db.Timestamptz(3)
+  lastChangedAt   DateTime?        @map("last_changed_at") @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  attempt         OdkExamAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question        OdkExamQuestion  @relation(fields: [questionId], references: [id], onDelete: Restrict)
 
   @@id([attemptId, questionId])
   @@index([questionId])
@@ -3565,21 +3675,25 @@ model OdkAttemptAnswer {
 
 /// Kilitli cevap anahtarıyla üretilen, tekrar üretilebilir toplam sonuç.
 model OdkAttemptScore {
-  attemptId       String                     @id @map("attempt_id")
-  correctCount    Int                        @map("correct_count")
-  wrongCount      Int                        @map("wrong_count")
-  blankCount      Int                        @map("blank_count")
-  totalNet        Decimal                    @map("total_net") @db.Decimal(7, 2)
-  scoringVersion  String                     @map("scoring_version")
-  answerKeyHash   String                     @map("answer_key_hash")
-  scoredById      String                     @map("scored_by_id")
-  scoredAt        DateTime                   @default(now()) @map("scored_at") @db.Timestamptz(3)
-  attempt         OdkExamAttempt             @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  scoredBy        User                       @relation("OdkAttemptScoreAdmin", fields: [scoredById], references: [id], onDelete: Restrict)
-  questionResults OdkAttemptQuestionResult[]
-  outcomeScores   OdkAttemptOutcomeScore[]
+  attemptId          String                     @id @map("attempt_id")
+  correctCount       Int                        @map("correct_count")
+  wrongCount         Int                        @map("wrong_count")
+  blankCount         Int                        @map("blank_count")
+  totalNet           Decimal                    @map("total_net") @db.Decimal(7, 2)
+  sectionBreakdown   Json?                      @map("section_breakdown")
+  scoringVersion     String                     @map("scoring_version")
+  answerKeyHash      String                     @map("answer_key_hash")
+  publicationStatus  OdkScorePublicationStatus  @default(HIDDEN) @map("publication_status")
+  activeDurationMs   Int?                       @map("active_duration_ms")
+  scoredById         String                     @map("scored_by_id")
+  scoredAt           DateTime                   @default(now()) @map("scored_at") @db.Timestamptz(3)
+  attempt            OdkExamAttempt             @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  scoredBy           User                       @relation("OdkAttemptScoreAdmin", fields: [scoredById], references: [id], onDelete: Restrict)
+  questionResults    OdkAttemptQuestionResult[]
+  outcomeScores      OdkAttemptOutcomeScore[]
 
   @@index([scoredById, scoredAt])
+  @@index([publicationStatus])
   @@map("odk_attempt_scores")
 }
 
@@ -3605,12 +3719,117 @@ model OdkAttemptOutcomeScore {
   wrongCount    Int             @map("wrong_count")
   blankCount    Int             @map("blank_count")
   accuracyRate  Decimal         @map("accuracy_rate") @db.Decimal(5, 2)
+  activeDurationMs Int?         @map("active_duration_ms")
   score         OdkAttemptScore @relation(fields: [attemptId], references: [attemptId], onDelete: Cascade)
   outcome       LearningOutcome @relation(fields: [outcomeId], references: [id], onDelete: Restrict)
 
   @@id([attemptId, outcomeId])
   @@index([outcomeId, accuracyRate])
   @@map("odk_attempt_outcome_scores")
+}
+
+/// Append-only sınav davranış / integrity event logu. High-value eventler tutulur.
+model OdkAttemptEvent {
+  id               String              @id @default(cuid())
+  attemptId        String              @map("attempt_id")
+  type             OdkAttemptEventType
+  sequence         Int
+  questionId       String?             @map("question_id")
+  clientOccurredAt DateTime?           @map("client_occurred_at") @db.Timestamptz(3)
+  serverOccurredAt DateTime            @default(now()) @map("server_occurred_at") @db.Timestamptz(3)
+  metadata         Json?
+  attempt          OdkExamAttempt      @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question         OdkExamQuestion?    @relation(fields: [questionId], references: [id], onDelete: SetNull)
+
+  @@unique([attemptId, sequence])
+  @@index([attemptId, type, serverOccurredAt])
+  @@index([type, serverOccurredAt])
+  @@map("odk_attempt_events")
+}
+
+/// Soru odak süreleri — visibilityAware activeDurationMs.
+model OdkAttemptQuestionTiming {
+  id               String          @id @default(cuid())
+  attemptId        String          @map("attempt_id")
+  questionId       String          @map("question_id")
+  visitCount       Int             @default(1) @map("visit_count")
+  activeDurationMs Int             @default(0) @map("active_duration_ms")
+  firstEnteredAt   DateTime        @map("first_entered_at") @db.Timestamptz(3)
+  lastLeftAt       DateTime?       @map("last_left_at") @db.Timestamptz(3)
+  updatedAt        DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  attempt          OdkExamAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question         OdkExamQuestion @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+  @@map("odk_attempt_question_timings")
+}
+
+/// Atama anındaki öğrenci/grup snapshot'ı — sonraki grup değişiminde kaybolmaz.
+model OdkExamAssignment {
+  id            String             @id @default(cuid())
+  examId        String             @map("exam_id")
+  studentUserId String             @map("student_user_id")
+  source        OdkAssignmentSource
+  sourceRefId   String?            @map("source_ref_id")
+  snapshot      Json               @default("{}")
+  isActive      Boolean            @default(true) @map("is_active")
+  assignedById  String             @map("assigned_by_id")
+  assignedAt    DateTime           @default(now()) @map("assigned_at") @db.Timestamptz(3)
+  revokedAt     DateTime?          @map("revoked_at") @db.Timestamptz(3)
+  exam          OdkExam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student       User               @relation("OdkExamAssignmentStudent", fields: [studentUserId], references: [id], onDelete: Restrict)
+  assignedBy    User               @relation("OdkExamAssignmentAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@unique([examId, studentUserId])
+  @@index([studentUserId, isActive])
+  @@index([examId, isActive, assignedAt])
+  @@index([source, sourceRefId])
+  @@map("odk_exam_assignments")
+}
+
+/// LIVE sonrası cevap anahtarı değişiklikleri audit + rescore tetikleyicisi.
+model OdkAnswerKeyRevision {
+  id                  String         @id @default(cuid())
+  versionId           String         @map("version_id")
+  revisionNumber      Int            @map("revision_number")
+  reason              String
+  previousAnswers     Json           @map("previous_answers")
+  nextAnswers         Json           @map("next_answers")
+  changedById         String         @map("changed_by_id")
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  rescoreRequestedAt  DateTime?      @map("rescore_requested_at") @db.Timestamptz(3)
+  rescoreCompletedAt  DateTime?      @map("rescore_completed_at") @db.Timestamptz(3)
+  version             OdkExamVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  changedBy           User           @relation("OdkAnswerKeyRevisionAuthor", fields: [changedById], references: [id], onDelete: Restrict)
+
+  @@unique([versionId, revisionNumber])
+  @@index([changedById, createdAt])
+  @@map("odk_answer_key_revisions")
+}
+
+/// JSON import preview/commit audit trail. Ham payload güvenli saklanır.
+model OdkImportAudit {
+  id             String          @id @default(cuid())
+  examId         String          @map("exam_id")
+  versionId      String          @map("version_id")
+  kind           OdkImportKind
+  schemaVersion  String          @map("schema_version")
+  status         OdkImportStatus @default(PREVIEW)
+  payloadHash    String          @map("payload_hash")
+  rawPayload     Json            @map("raw_payload")
+  previewSummary Json            @map("preview_summary")
+  errorCount     Int             @default(0) @map("error_count")
+  createdById    String          @map("created_by_id")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  committedAt    DateTime?       @map("committed_at") @db.Timestamptz(3)
+  exam           OdkExam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  version        OdkExamVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  createdBy      User            @relation("OdkImportAuditActor", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([examId, kind, createdAt])
+  @@index([versionId, status])
+  @@map("odk_import_audits")
 }
 
 model OdkOrder {
