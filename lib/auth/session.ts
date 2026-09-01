@@ -4,7 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import type { UserRole, UserStatus } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { withPrismaResilience } from "@/lib/prisma-resilience";
 import { SESSION_POLICIES, absoluteSessionExpiry, sessionExpiryReason } from "@/lib/auth/session-policy";
 import { parseBearerToken } from "@/lib/auth/bearer-token";
 
@@ -66,16 +66,18 @@ export async function createSession(
   const now = new Date();
   const expiresAt = new Date(now.getTime() + SESSION_POLICIES[role].absoluteTtlMs);
 
-  await prisma.session.create({
-    data: {
-      userId,
-      tokenHash: hashToken(token),
-      expiresAt,
-      ip: meta.ip ?? null,
-      userAgent: meta.userAgent?.slice(0, 500) ?? null,
-      ...(meta.mfaVerified ? { mfaVerifiedAt: now, stepUpAt: now } : {}),
-    },
-  });
+  await withPrismaResilience((db) =>
+    db.session.create({
+      data: {
+        userId,
+        tokenHash: hashToken(token),
+        expiresAt,
+        ip: meta.ip ?? null,
+        userAgent: meta.userAgent?.slice(0, 500) ?? null,
+        ...(meta.mfaVerified ? { mfaVerifiedAt: now, stepUpAt: now } : {}),
+      },
+    }),
+  );
 
   const store = await cookies();
   store.set(SESSION_COOKIE_NAME, token, {
@@ -104,10 +106,12 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
   const token = await resolveToken();
   if (!token) return null;
 
-  const session = await prisma.session.findUnique({
-    where: { tokenHash: hashToken(token) },
-    include: { user: true },
-  });
+  const session = await withPrismaResilience((db) =>
+    db.session.findUnique({
+      where: { tokenHash: hashToken(token) },
+      include: { user: true },
+    }),
+  );
 
   if (!session) return null;
   if (session.revokedAt) return null;
@@ -118,7 +122,9 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
   const role = session.user.role;
   const expiryReason = sessionExpiryReason({ role, createdAt: session.createdAt, expiresAt: session.expiresAt, lastSeenAt: session.lastSeenAt }, now);
   if (expiryReason) {
-    await prisma.session.updateMany({ where: { id: session.id, revokedAt: null }, data: { revokedAt: now } });
+    await withPrismaResilience((db) =>
+      db.session.updateMany({ where: { id: session.id, revokedAt: null }, data: { revokedAt: now } }),
+    );
     return null;
   }
 
@@ -126,17 +132,19 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
   // write in one DB operation. A stale concurrent request cannot resurrect a
   // session that crossed either boundary or whose user role/status changed.
   const policy = SESSION_POLICIES[role];
-  const touched = await prisma.session.updateMany({
-    where: {
-      id: session.id,
-      revokedAt: null,
-      expiresAt: { gt: now },
-      createdAt: { gt: new Date(now.getTime() - policy.absoluteTtlMs) },
-      lastSeenAt: { gt: new Date(now.getTime() - policy.idleTimeoutMs) },
-      user: { status: "ACTIVE", role },
-    },
-    data: { lastSeenAt: now },
-  });
+  const touched = await withPrismaResilience((db) =>
+    db.session.updateMany({
+      where: {
+        id: session.id,
+        revokedAt: null,
+        expiresAt: { gt: now },
+        createdAt: { gt: new Date(now.getTime() - policy.absoluteTtlMs) },
+        lastSeenAt: { gt: new Date(now.getTime() - policy.idleTimeoutMs) },
+        user: { status: "ACTIVE", role },
+      },
+      data: { lastSeenAt: now },
+    }),
+  );
   if (touched.count !== 1) return null;
 
   return {
@@ -154,10 +162,12 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
 
 /** Tek oturumu iptal eder (çıkış). */
 export async function revokeSession(sessionId: string): Promise<void> {
-  await prisma.session.updateMany({
-    where: { id: sessionId, revokedAt: null },
-    data: { revokedAt: new Date() },
-  });
+  await withPrismaResilience((db) =>
+    db.session.updateMany({
+      where: { id: sessionId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+  );
 }
 
 export type ActiveSession = {
@@ -170,11 +180,13 @@ export type ActiveSession = {
 };
 
 export async function listActiveUserSessions(userId: string, role: UserRole, now = new Date()): Promise<ActiveSession[]> {
-  const sessions = await prisma.session.findMany({
-    where: { userId, revokedAt: null, expiresAt: { gt: now } },
-    select: { id: true, createdAt: true, lastSeenAt: true, expiresAt: true, userAgent: true, ip: true },
-    orderBy: { lastSeenAt: "desc" },
-  });
+  const sessions = await withPrismaResilience((db) =>
+    db.session.findMany({
+      where: { userId, revokedAt: null, expiresAt: { gt: now } },
+      select: { id: true, createdAt: true, lastSeenAt: true, expiresAt: true, userAgent: true, ip: true },
+      orderBy: { lastSeenAt: "desc" },
+    }),
+  );
   return sessions
     .filter((session) => !sessionExpiryReason({ ...session, role }, now))
     .map((session) => ({ ...session, expiresAt: absoluteSessionExpiry(role, session.createdAt, session.expiresAt) }));
@@ -191,14 +203,16 @@ export async function revokeAllUserSessions(
   userId: string,
   exceptSessionId?: string,
 ): Promise<number> {
-  const result = await prisma.session.updateMany({
-    where: {
-      userId,
-      revokedAt: null,
-      ...(exceptSessionId ? { id: { not: exceptSessionId } } : {}),
-    },
-    data: { revokedAt: new Date() },
-  });
+  const result = await withPrismaResilience((db) =>
+    db.session.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+        ...(exceptSessionId ? { id: { not: exceptSessionId } } : {}),
+      },
+      data: { revokedAt: new Date() },
+    }),
+  );
   return result.count;
 }
 
