@@ -205,7 +205,7 @@ export function visibleStudent360Actions(input: {
       actions.push({
         id: "CREATE_INTERVENTION",
         label: "Müdahale oluştur",
-        href: `${adminBase}/mudahale`,
+        href: `${adminBase}/mudahale?ogrenci=${input.studentProfileId}`,
       });
     }
     if (input.canViewCommerce) {
@@ -244,7 +244,7 @@ export function visibleStudent360Actions(input: {
     actions.push({
       id: "CREATE_INTERVENTION",
       label: "Müdahale oluştur",
-      href: `${teacherBase}/mudahale`,
+      href: `${teacherBase}/mudahale?ogrenci=${input.studentProfileId}`,
     });
   }
   return actions;

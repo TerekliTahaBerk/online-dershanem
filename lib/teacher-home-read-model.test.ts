@@ -52,9 +52,9 @@ test("öğretmen ana sayfası ders snapshot'ı öğrenci risk hesabı üretmez",
   assert.equal(snapshot.todayLessons[0].hasPendingNote, true);
 });
 
-test("öğretmen ana sayfası dosyası snapshot read-model'ini kullanır", () => {
+test("öğretmen ana sayfası dosyası workspace read-model'ini kullanır", () => {
   const source = readFileSync("app/panel/ogretmen/page.tsx", "utf8");
-  assert.match(source, /getOrRefreshTeacherHomeSnapshot/);
+  assert.match(source, /getTeacherWorkspace/);
   assert.doesNotMatch(source, /attendance\.findMany/);
   assert.doesNotMatch(source, /assignmentProgress\.findMany/);
   assert.doesNotMatch(source, /group\.findMany/);

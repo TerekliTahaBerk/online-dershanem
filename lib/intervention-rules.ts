@@ -2,7 +2,7 @@ import { istanbulWeekStart } from "./istanbul-time";
 
 export const INTERVENTION_RULE_VERSION = "intervention-v1";
 
-export const interventionReasonCodes = ["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED", "RECENT_EXAM_DROP"] as const;
+export const interventionReasonCodes = ["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED", "RECENT_EXAM_DROP", "TEACHER_OBSERVED"] as const;
 export type InterventionReasonCode = (typeof interventionReasonCodes)[number];
 
 export type InterventionSignal = {

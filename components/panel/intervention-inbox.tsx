@@ -7,7 +7,7 @@ type Row = {
   id: string; studentName: string; reasonCode: string; explanation: string; suggestedAction: string; evidenceCount: number; dueAt: string; status: "OPEN" | "IN_PROGRESS" | "SNOOZED" | "RESOLVED" | "FALSE_POSITIVE"; ownerName: string | null; canAct: boolean; firstActionAt: string | null; snoozedUntil: string | null; outcomeCode: string | null; version: number; activities: { id: string; type: string; note: string | null; outcomeCode: string | null; falsePositiveReason: string | null; actorName: string; createdAt: string }[];
 };
 
-const reasonLabels = { ATTENDANCE_PATTERN: "Katılım örüntüsü", OVERDUE_WORK: "Teslimi geçen çalışmalar", REPEATED_REVIEW_DIFFICULTY: "Tekrarlayan çözüm güçlüğü", PLAN_STALLED: "Plan kapasitesi" } as const;
+const reasonLabels = { ATTENDANCE_PATTERN: "Katılım örüntüsü", OVERDUE_WORK: "Teslimi geçen çalışmalar", REPEATED_REVIEW_DIFFICULTY: "Tekrarlayan çözüm güçlüğü", PLAN_STALLED: "Plan kapasitesi", TEACHER_OBSERVED: "Öğretmen gözlemi" } as const;
 const statusLabels = { OPEN: "Yeni", IN_PROGRESS: "İnceleniyor", SNOOZED: "Bekletildi", RESOLVED: "Çözüldü", FALSE_POSITIVE: "Yanlış işaret" } as const;
 const outcomeLabels: Record<string, string> = { CHECK_IN_COMPLETED: "Öğrenciyle kısa görüşme yapıldı", SUPPORT_PLANNED: "Destek adımı planlandı", PRACTICE_ADJUSTED: "Çalışma yeniden düzenlendi", FAMILY_CONTACTED: "Aileyle iletişim kuruldu", NO_ACTION_NEEDED: "Ek işlem gerekmedi", OTHER: "Başka kontrollü sonuç" };
 const activityLabels: Record<string, string> = { GENERATED: "Kural sinyali oluşturdu", ASSIGNED: "Sahiplenildi", STARTED: "İnceleme başladı", ACTION_LOGGED: "İnsan aksiyonu kaydedildi", SNOOZED: "Bekletildi", RESOLVED: "Çözüldü", FALSE_POSITIVE: "Yanlış işaret olarak kapandı", REOPENED: "Yeniden açıldı" };

@@ -1,105 +1,57 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
-import { academicSupportLabels } from "@/lib/accessibility-preferences";
-import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { getAccessibleProducts } from "@/lib/auth/products";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
-  PanelHeading,
-  PanelTable,
-  PanelTableRow,
-  PanelTableCell,
   PanelEmpty,
+  PanelFilterLink,
+  PanelHeading,
+  PanelStatusBadge,
 } from "@/components/panel/ui";
+import { getTeacherRoster } from "@/lib/panel/teacher-roster-server";
+import {
+  TEACHER_ROSTER_FILTER_LABELS,
+  type TeacherRosterRiskLevel,
+} from "@/lib/panel/teacher-roster";
 
 export const dynamic = "force-dynamic";
 
+const DAY = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  timeZone: "Europe/Istanbul",
+});
+
+function riskTone(level: TeacherRosterRiskLevel): "neutral" | "success" | "warning" | "critical" {
+  if (level === "high") return "critical";
+  if (level === "medium") return "warning";
+  if (level === "low") return "warning";
+  return "success";
+}
+
+function riskLabel(level: TeacherRosterRiskLevel): string {
+  if (level === "none") return "Normal";
+  if (level === "low") return "Düşük";
+  if (level === "medium") return "Orta";
+  return "Yüksek";
+}
+
 /**
- * EĞİTMEN · ÖĞRENCİLERİN — onaylı tasarım (Panel.dc.html → eStudents).
+ * Öğretmen öğrenci listesi — aksiyon odaklı roster.
  *
- * Tasarımın işlev tanımı: "yalnızca sana atanmış öğrenciler" — tablo
- * kolonları Öğrenci / Kapsam / Grup / Katılım / Durum.
- *
- * YETKİ SINIRI: liste yalnız öğretmenin KENDİ aktif gruplarındaki
- * kayıtlardan çıkar (`group.teacherId = session.userId`). Başka öğretmenin
- * öğrencisi sorguya hiç girmez.
+ * YETKİ: yalnız öğretmenin kendi aktif gruplarındaki öğrenciler.
+ * Feature kapalıysa plan/deneme/yardım kolonları ve filtreleri düşer.
  */
-
-export default async function TeacherStudentsPage() {
+export default async function TeacherStudentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await requireRole("TEACHER");
-  const accessibilityEnabled = getPanelFeatureFlags().accessibilityProfile;
-
-  const groups = await prisma.group.findMany({
-    where: { teacherId: session.userId, isActive: true },
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      enrollments: {
-        where: { endedAt: null },
-        select: {
-          student: {
-            select: {
-              id: true,
-              userId: true,
-              user: { select: { fullName: true, email: true, role: true, accessibilityPreference: true } },
-            },
-          },
-        },
-      },
-    },
+  const query = await searchParams;
+  const roster = await getTeacherRoster({
+    teacherId: session.userId,
+    filterRaw: query.filtre,
   });
-
-  const rows = groups.flatMap((g) =>
-    g.enrollments.map((e) => ({
-      studentId: e.student.id,
-      userId: e.student.userId,
-      role: e.student.user.role,
-      name: e.student.user.fullName || e.student.user.email,
-      group: g.name,
-      /*
-       * İşlevsel destekler (ek süre, mola) öğretmene GÖRÜNMELİ: erişilebilirlik
-       * profilinin tek amacı bu. Tasarım geçişinde satırdan düşmüştü.
-       * `academicSupportLabels` yalnız işlevsel etiket üretir — tanı, sağlık
-       * raporu gibi hassas veri asla buraya taşınmaz.
-       */
-      supports:
-        accessibilityEnabled && e.student.user.accessibilityPreference
-          ? academicSupportLabels(e.student.user.accessibilityPreference)
-          : [],
-    })),
-  );
-
-  const studentIds = rows.map((r) => r.studentId);
-  const [attendance, progress, products] = await Promise.all([
-    studentIds.length
-      ? prisma.attendance.findMany({
-          where: { studentId: { in: studentIds } },
-          select: { studentId: true, status: true },
-        })
-      : Promise.resolve([]),
-    studentIds.length
-      ? prisma.assignmentProgress.findMany({
-          where: { studentId: { in: studentIds } },
-          select: { studentId: true, status: true },
-        })
-      : Promise.resolve([]),
-    Promise.all(
-      rows.map(async (r) => [r.studentId, await getAccessibleProducts(r.userId, r.role)] as const),
-    ),
-  ]);
-
-  const productMap = new Map(products);
-
-  const scopeLabel = (studentId: string) => {
-    const list = productMap.get(studentId) ?? [];
-    const parts = [
-      list.includes("OD") ? "Ders" : null,
-      list.includes("ODK") ? "Deneme" : null,
-    ].filter(Boolean);
-    return parts.length ? parts.join(" + ") : "Erişim yok";
-  };
 
   return (
     <PanelShell
@@ -108,69 +60,109 @@ export default async function TeacherStudentsPage() {
       email={session.email}
       pageTitle="Öğrenciler"
     >
-      <div className="max-w-[1040px]">
+      <div className="max-w-[1100px]">
         <PanelHeading
           title="Öğrencilerin"
-          description={`${rows.length} öğrenci · yalnızca sana atanmış öğrenciler`}
+          description={`${roster.totalCount} öğrenci · yalnız sana atanmış`}
         />
 
-        {rows.length === 0 ? (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {roster.filters.map((filter) => (
+            <PanelFilterLink
+              key={filter}
+              href={filter === "all" ? "/panel/ogretmen/gruplar" : `/panel/ogretmen/gruplar?filtre=${filter}`}
+              active={roster.filter === filter}
+            >
+              {TEACHER_ROSTER_FILTER_LABELS[filter]}
+            </PanelFilterLink>
+          ))}
+        </div>
+
+        {roster.rows.length === 0 ? (
           <PanelEmpty
-            title="Sana atanmış aktif öğrenci yok."
-            body="Gruplarına öğrenci eklendiğinde katılım ve çalışma durumu burada listelenir."
+            className="mt-5"
+            title={roster.totalCount === 0 ? "Sana atanmış aktif öğrenci yok." : "Bu filtrede öğrenci yok."}
+            body={
+              roster.totalCount === 0
+                ? "Gruplarına öğrenci eklendiğinde risk, plan ve ders özeti burada listelenir."
+                : "Filtreyi temizleyip tüm öğrencileri görebilirsin."
+            }
           />
         ) : (
-          <PanelTable
-            caption="Sana atanmış öğrenciler"
-            columns={["Öğrenci", "Kapsam", "Grup", "Katılım", "Durum"]}
-          >
-            {rows.map((row) => {
-              const att = attendance.filter((a) => a.studentId === row.studentId);
-              const attended = att.filter(
-                (a) => a.status === "PRESENT" || a.status === "LATE",
-              ).length;
-              const absent = att.filter((a) => a.status === "ABSENT").length;
-
-              const prog = progress.filter((p) => p.studentId === row.studentId);
-              const done = prog.filter((p) => p.status === "DONE").length;
-              const pct = prog.length ? Math.round((done / prog.length) * 100) : null;
-
-              const status =
-                absent >= 2
-                  ? { label: `${absent} ders katılmadı`, tone: "warn" as const }
-                  : pct !== null && pct < 50 && prog.length >= 2
-                    ? { label: `Çalışma oranı %${pct}`, tone: "warn" as const }
-                    : { label: "Normal", tone: "ok" as const };
-
-              return (
-                <PanelTableRow key={`${row.group}-${row.studentId}`}>
-                  <PanelTableCell>
-                    {/* Tasarımdaki "Öğrenciyi aç" — satır adı detay ekranına açılır. */}
+          <ul className="mt-5 space-y-3">
+            {roster.rows.map((row) => (
+              <li
+                key={row.studentId}
+                className="rounded-[14px] border border-dc-line-soft bg-white px-4 py-4 sm:px-5"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <Link
                       href={`/panel/ogretmen/ogrenci/${row.studentId}`}
-                      className="text-[14px] font-bold text-dc-ink underline-offset-2 hover:text-dc-brand-hover hover:underline"
+                      className="text-[15px] font-bold text-dc-ink underline-offset-2 hover:text-dc-brand-hover hover:underline"
                     >
                       {row.name}
                     </Link>
-                    {row.supports.length ? (
-                      <ul
-                        aria-label="İşlevsel destekler"
-                        className="mt-1 space-y-0.5 text-[11.5px] font-semibold text-dc-brand-strong"
-                      >
-                        {row.supports.map((support) => (
-                          <li key={support}>· {support}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </PanelTableCell>
-                  <PanelTableCell>{scopeLabel(row.studentId)}</PanelTableCell>
-                  <PanelTableCell>{row.group}</PanelTableCell>
-                  <PanelTableCell>{att.length ? `${attended} / ${att.length}` : "—"}</PanelTableCell>
-                  <PanelTableCell tone={status.tone}>{status.label}</PanelTableCell>
-                </PanelTableRow>
-              );
-            })}
-          </PanelTable>
+                    <p className="mt-1 text-[13px] text-dc-ink-muted">{row.groupName}</p>
+                  </div>
+                  <PanelStatusBadge label={riskLabel(row.riskLevel)} tone={riskTone(row.riskLevel)} />
+                </div>
+
+                <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
+                      Son ders
+                    </dt>
+                    <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
+                      {row.lastLessonAt
+                        ? `${DAY.format(new Date(row.lastLessonAt))}${row.lastLessonTitle ? ` · ${row.lastLessonTitle}` : ""}`
+                        : "—"}
+                    </dd>
+                  </div>
+                  {row.planLabel != null ? (
+                    <div>
+                      <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
+                        Plan
+                      </dt>
+                      <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">{row.planLabel}</dd>
+                    </div>
+                  ) : null}
+                  {row.examDeltaLabel != null ? (
+                    <div>
+                      <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
+                        Son deneme
+                      </dt>
+                      <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
+                        {row.examDeltaLabel} net
+                      </dd>
+                    </div>
+                  ) : null}
+                  <div>
+                    <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
+                      Neden
+                    </dt>
+                    <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
+                      {row.riskReason || "Aksiyon gerektiren sinyal yok"}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="mt-3.5 flex flex-wrap gap-2">
+                  <Link
+                    href={`/panel/ogretmen/ogrenci/${row.studentId}`}
+                    className="panel-quick-action inline-flex"
+                  >
+                    Öğrenci 360
+                  </Link>
+                  {roster.flags.studentCheckIn && row.tags.includes("help") ? (
+                    <Link href="/panel/ogretmen/yardim" className="panel-quick-action inline-flex">
+                      Yardım talebi
+                    </Link>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </PanelShell>

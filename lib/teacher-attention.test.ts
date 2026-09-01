@@ -286,7 +286,7 @@ test("attention listesi üstten 8 kayıtla sınırlanır", () => {
 
 test("öğretmen ana sayfası attention read-model'ini kullanır ve deneme iddiasını uydurmaz", () => {
   const source = readFileSync("app/panel/ogretmen/page.tsx", "utf8");
-  assert.match(source, /getTeacherAttentionInbox/);
+  assert.match(source, /getTeacherWorkspace/);
   assert.doesNotMatch(source, /Sıralama ödev, katılım ve deneme verisinden çıkar/);
   assert.doesNotMatch(source, /attendance\.findMany/);
 });

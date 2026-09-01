@@ -1335,6 +1335,8 @@ enum InterventionReason {
   OVERDUE_WORK
   REPEATED_REVIEW_DIFFICULTY
   PLAN_STALLED
+  /// Öğretmenin gözlemleyerek elle oluşturduğu kayıt.
+  TEACHER_OBSERVED
 }
 
 enum InterventionActivityType {

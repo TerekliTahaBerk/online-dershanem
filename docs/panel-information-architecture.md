@@ -57,6 +57,8 @@ bilinçli olarak ayrılabilir.
    [`docs/group-360-architecture.md`](./group-360-architecture.md).
 8. **Global search / command palette:** `/api/panel/admin-search` +
    `AdminCommandSearch` — bkz. [`docs/panel-global-search.md`](./panel-global-search.md).
+9. **Öğretmen günlük çalışma alanı:** `/panel/ogretmen` Bugün akışı — bkz.
+   [`docs/teacher-workspace.md`](./teacher-workspace.md).
 
 ## Testler
 

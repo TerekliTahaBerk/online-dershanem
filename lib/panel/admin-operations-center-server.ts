@@ -613,7 +613,7 @@ export async function getAdminOperationsCenterSnapshot(options?: {
       provisioningPending,
       todayExams,
       manualReview: manualReviewCount,
-      retryPending: retryPendingCount,
+      retryPending: retryPendingOrders.length,
       invitePending: invitePendingCount,
       studentsWithoutGroup: noGroupCount,
       groupsWithInactiveTeacher: inactiveTeacherGroupCount,
