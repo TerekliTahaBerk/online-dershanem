@@ -18,7 +18,14 @@ import { goalProgress, netScore, type GoalBand } from "@/lib/goals";
 
 export type GoalView = {
   id: string;
-  kind: "SUBJECT_NET" | "PLAN_COMPLETION";
+  kind:
+    | "SUBJECT_NET"
+    | "PLAN_COMPLETION"
+    | "EXAM_TARGET"
+    | "SCORE_TARGET"
+    | "SUBJECT_FOCUS"
+    | "WEEKLY_STUDY_MINUTES"
+    | "WEEKLY_QUESTION_COUNT";
   label: string;
   target: number;
   current: number | null;
@@ -41,7 +48,7 @@ async function planCompletionPercent(studentId: string): Promise<{ pct: number; 
   });
   const tasks = plans.flatMap((p) => p.tasks);
   if (tasks.length === 0) return null;
-  const done = tasks.filter((t) => t.status === "DONE").length;
+  const done = tasks.filter((t) => t.status === "DONE" || t.status === "PARTIAL").length;
   return {
     pct: Math.round((done / tasks.length) * 100),
     basis: `son ${plans.length} haftanın ${tasks.length} görevi`,
@@ -101,12 +108,32 @@ export async function getStudentGoals(studentProfileId: string): Promise<GoalVie
           ? `son deneme · ${section.mockExam.title}`
           : "son deneme";
       }
-    } else {
+    } else if (goal.kind === "PLAN_COMPLETION") {
       label = `Haftalık plan tamamlama %${NUM.format(goal.targetValue)}`;
       if (planCompletion) {
         current = planCompletion.pct;
         basis = planCompletion.basis;
       }
+    } else if (goal.kind === "EXAM_TARGET") {
+      label = goal.subjectName
+        ? `${goal.subjectName}`
+        : `Sınav hedefi ${NUM.format(goal.targetValue)}`;
+      current = goal.targetValue > 0 ? null : null;
+      basis = "hedef kaydı";
+    } else if (goal.kind === "SCORE_TARGET") {
+      label = `Puan hedefi ${NUM.format(goal.targetValue)}`;
+      basis = "hedef kaydı";
+    } else if (goal.kind === "SUBJECT_FOCUS") {
+      label = `${goal.subjectName} odağı`;
+      basis = "ders odağı";
+    } else if (goal.kind === "WEEKLY_STUDY_MINUTES") {
+      label = `Haftalık çalışma ${NUM.format(goal.targetValue)} dk`;
+      basis = "plan gerçekleşen süre";
+    } else if (goal.kind === "WEEKLY_QUESTION_COUNT") {
+      label = `Haftalık ${NUM.format(goal.targetValue)} soru`;
+      basis = "plan soru hedefi";
+    } else {
+      label = `Hedef ${NUM.format(goal.targetValue)}`;
     }
 
     const progress = current === null ? null : goalProgress(current, goal.targetValue);

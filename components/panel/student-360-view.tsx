@@ -595,6 +595,23 @@ function CoachingPanel({ data }: { data: NonNullable<Student360Bundle["coaching"
           )}
         </div>
       </PanelCard>
+
+      <PanelCard className="lg:col-span-2">
+        <PanelCardTitle>Zaman çizelgesi</PanelCardTitle>
+        <div className="mt-3 space-y-2">
+          {data.timeline?.length ? (
+            data.timeline.map((row) => (
+              <PanelTaskRow
+                key={row.id}
+                title={row.title}
+                meta={`${DAY.format(row.occurredAt)}${row.summary ? ` · ${row.summary}` : ""}`}
+              />
+            ))
+          ) : (
+            <EmptyLine text="Henüz zaman çizelgesi kaydı yok." />
+          )}
+        </div>
+      </PanelCard>
     </div>
   );
 }

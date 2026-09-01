@@ -174,7 +174,7 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   }),
   z.object({
     name: z.literal("plan_task_completed"),
-    properties: z.object({ sourceType: z.enum(["ASSIGNMENT", "REVIEW", "WEAK_OUTCOME", "EXAM_PREP", "RECOVERY"]), reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]) }).strict(),
+    properties: z.object({ sourceType: z.enum(["ASSIGNMENT", "REVIEW", "WEAK_OUTCOME", "EXAM_PREP", "RECOVERY", "MANUAL_COACH", "MOCK_EXAM", "SYSTEM_SUGGESTED", "TEMPLATE", "PERSONAL_GOAL"]), reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]) }).strict(),
   }),
   z.object({
     name: z.literal("student_next_action_viewed"),

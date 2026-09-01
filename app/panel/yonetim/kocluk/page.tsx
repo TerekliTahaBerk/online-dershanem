@@ -5,6 +5,7 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
 import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
 import { coachingOverdue } from "@/lib/coaching";
+import { getManagementKocumSignals } from "@/lib/kocum/server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelCard,
@@ -40,7 +41,7 @@ export default async function AdminCoachingPage() {
   const thisWeekStart = planningWeekStart();
   const thisWeekEnd = addIstanbulCalendarDays(thisWeekStart, 7);
 
-  const [assignments, coaches, unassigned, recentSessions, studentsWithoutPlan, studentsWithoutGoals] = await Promise.all([
+  const [assignments, coaches, unassigned, recentSessions, studentsWithoutPlan, studentsWithoutGoals, kocumSignals] = await Promise.all([
     prisma.coachAssignment.findMany({
       where: { endedAt: null },
       select: {
@@ -137,6 +138,7 @@ export default async function AdminCoachingPage() {
         coach: { select: { user: { select: { fullName: true, email: true } } } },
       },
     }),
+    getManagementKocumSignals(),
   ]);
 
   const rows = assignments.map((a) => {
@@ -209,6 +211,28 @@ export default async function AdminCoachingPage() {
           <PanelStatCard title="Görüşmesi geciken" value={String(overdueRows.length)} />
           <PanelStatCard title="Kapasitesi aşan koç" value={String(overCapacity.length)} />
         </div>
+
+        {kocumSignals.length ? (
+          <PanelCard className="mt-5">
+            <PanelCardTitle>Online Koçum operasyon sinyalleri</PanelCardTitle>
+            <p className="mt-1 text-[12.5px] text-dc-ink-muted">
+              Mikro görev listesi değil — plansız, koçsuz, yayınlanmamış veya düşük uyumlu öğrenciler.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {kocumSignals.slice(0, 20).map((signal) => (
+                <li key={`${signal.code}-${signal.studentId}`} className="flex flex-wrap items-baseline justify-between gap-2 text-[13.5px]">
+                  <span>
+                    <Link className="font-semibold text-dc-ink underline-offset-2 hover:underline" href={`/panel/yonetim/ogrenciler/${signal.studentId}?tab=kocluk`}>
+                      {signal.studentName}
+                    </Link>
+                    <span className="text-dc-ink-muted"> · {signal.detail}</span>
+                  </span>
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-dc-ink-faint">{signal.code}</span>
+                </li>
+              ))}
+            </ul>
+          </PanelCard>
+        ) : null}
 
         {!adaptivePlanEnabled ? (
           <PanelCard className="mt-5">
