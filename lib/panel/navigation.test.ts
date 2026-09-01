@@ -25,22 +25,24 @@ function labels(role: UserRole, products: ProductCode[], flags: PanelFeatureFlag
   );
 }
 
-test("admin üst alanları Öğrenci Başarısı modeline göre gruplanır", () => {
+test("admin üst alanları Bugün / Kişiler / Eğitim modeline göre gruplanır", () => {
   const titles = sectionTitles("ADMIN", [], ALL_FLAGS_ON);
   assert.deepEqual(
     titles.filter((title) => title !== "GENEL"),
-    ["BUGÜN", "EĞİTİM", "ÖĞRENCİ BAŞARISI", "DENEMELER", "TİCARET", "SİSTEM"],
+    ["BUGÜN", "KİŞİLER", "EĞİTİM", "DENEMELER", "SİSTEM"],
   );
-  assert.ok(!titles.includes("KOÇLUK"));
+  assert.ok(!titles.includes("ÖĞRENCİ BAŞARISI"));
+  assert.ok(!titles.includes("TİCARET"));
 });
 
 test("admin terminolojisi eğitmen/işler yerine canonical etiketleri kullanır", () => {
   const navLabels = labels("ADMIN", [], ALL_FLAGS_ON);
-  assert.ok(navLabels.includes(PANEL_DOMAIN.ogretmenler));
+  assert.ok(navLabels.includes(PANEL_DOMAIN.kisiler));
   assert.ok(navLabels.includes(PANEL_DOMAIN.provisioning));
   assert.ok(navLabels.includes(PANEL_DOMAIN.yonetimAnalitikleri));
   assert.ok(navLabels.includes("Özellikler"));
-  assert.ok(navLabels.includes(`${PANEL_DOMAIN.gruplar} ve ${PANEL_DOMAIN.dersler}`));
+  assert.ok(navLabels.includes(PANEL_DOMAIN.gruplar));
+  assert.ok(navLabels.includes(PANEL_DOMAIN.odev));
   assert.ok(!navLabels.includes("Eğitmenler"));
   assert.ok(!navLabels.includes("İşler / Provisioning"));
   assert.ok(!navLabels.includes("Özellikler / Sistem"));

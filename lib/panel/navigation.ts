@@ -9,10 +9,10 @@
  *   çalışmaya devam eder
  *
  * Rol zihinsel modelleri:
- * - ADMIN: Bugün · Eğitim · Öğrenci Başarısı · Denemeler · Ticaret · Sistem
+ * - ADMIN: Bugün · Kişiler · Eğitim · Denemeler · Sistem
  * - TEACHER: Bugün · Dersler · Öğrenciler · Koçluk · Ölçme · Kaynaklar
  * - STUDENT: Bugün · Çalışmalar · Dersler · Plan · Denemeler · Gelişim
- * - PARENT: sade Bugün · Dersler · Koçluk · Denemeler · Hesap
+ * - PARENT: sade Bugün · Dersler · Ödev · Öğretmenler · Koçluk · Denemeler · Hesap
  */
 
 import type { ProductCode, UserRole } from "@prisma/client";
@@ -119,11 +119,13 @@ function parentSections(
         ? [{ id: "weekly-digest", href: `${root}/haftalik`, label: "Haftalık özet" }]
         : []),
     ]),
-    ...section(
-      "dersler",
-      "DERSLER",
-      hasOD ? [{ id: "lessons", href: `${root}/takvim`, label: PANEL_DOMAIN.dersler }] : [],
-    ),
+    ...section("dersler", "DERSLER", [
+      ...(hasOD ? [{ id: "lessons", href: `${root}/takvim`, label: PANEL_DOMAIN.dersler }] : []),
+      ...(hasOD ? [{ id: "assignments", href: `${root}/odevler`, label: PANEL_DOMAIN.odev }] : []),
+      ...(hasOD
+        ? [{ id: "teachers", href: `${root}/ogretmenler`, label: PANEL_DOMAIN.ogretmenler }]
+        : []),
+    ]),
     ...section("kocluk", "KOÇLUK", [
       ...(hasOK ? [{ id: "coaching", href: `${root}/kocluk`, label: PANEL_DOMAIN.kocluk }] : []),
     ]),
@@ -211,34 +213,24 @@ function teacherSections(root: string, flags: PanelFeatureFlags): PanelNavSectio
 
 function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[] {
   const operationHref = flags.interventionInbox ? `${root}/mudahale` : `${root}/raporlar`;
-  const studentsHref = roleStudentsPath("ADMIN");
 
   return [
     ...section("bugun", "BUGÜN", [
       { id: "today", href: root, label: PANEL_DOMAIN.operasyonMerkezi },
       { id: "operations", href: operationHref, label: PANEL_DOMAIN.operasyon },
+      { id: "provisioning", href: `${root}/isler`, label: PANEL_DOMAIN.provisioning },
+    ]),
+    ...section("kisiler", "KİŞİLER", [
+      { id: "people", href: `${root}/kisiler`, label: PANEL_DOMAIN.kisiler },
     ]),
     ...section("egitim", "EĞİTİM", [
-      ...(studentsHref
-        ? [{ id: "students", href: studentsHref, label: PANEL_DOMAIN.ogrenciler }]
-        : []),
-      { id: "teachers", href: `${root}/egitmenler`, label: PANEL_DOMAIN.ogretmenler },
-      { id: "parents", href: `${root}/veliler`, label: PANEL_DOMAIN.veliler },
-      { id: "people", href: `${root}/kullanicilar`, label: PANEL_DOMAIN.kisiler },
-      {
-        id: "education",
-        href: `${root}/egitim`,
-        label: `${PANEL_DOMAIN.gruplar} ve ${PANEL_DOMAIN.dersler}`,
-      },
+      { id: "groups", href: `${root}/egitim`, label: PANEL_DOMAIN.gruplar },
+      { id: "lessons", href: `${root}/egitim#ders-planla`, label: PANEL_DOMAIN.dersler },
       { id: "calendar", href: `${root}/takvim`, label: PANEL_DOMAIN.takvim },
-    ]),
-    ...section("ogrenci-basarisi", "ÖĞRENCİ BAŞARISI", [
+      { id: "assignments", href: `${root}/egitim#odev-merkezi`, label: PANEL_DOMAIN.odev },
       { id: "coaching", href: `${root}/kocluk`, label: PANEL_DOMAIN.kocluk },
       ...(flags.learningOutcomes
         ? [{ id: "outcomes", href: `${root}/kazanimlar`, label: PANEL_DOMAIN.kazanımlar }]
-        : []),
-      ...(flags.cohortQuality
-        ? [{ id: "quality", href: `${root}/kalite`, label: "Kalite" }]
         : []),
     ]),
     ...section("denemeler", "DENEMELER", [
@@ -249,11 +241,8 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
         ? [{ id: "mock-analysis", href: `${root}/denemeler`, label: "Sonuç analizi" }]
         : []),
     ]),
-    ...section("ticaret", "TİCARET", [
-      { id: "orders", href: `${root}/siparisler`, label: PANEL_DOMAIN.siparisler },
-      { id: "provisioning", href: `${root}/isler`, label: PANEL_DOMAIN.provisioning },
-    ]),
     ...section("sistem", "SİSTEM", [
+      { id: "orders", href: `${root}/siparisler`, label: PANEL_DOMAIN.siparisler },
       { id: "analytics", href: `${root}/analitik`, label: PANEL_DOMAIN.yonetimAnalitikleri },
       { id: "features", href: `${root}/ozellikler`, label: "Özellikler" },
       { id: "audit", href: `${root}/kayitlar`, label: "İşlem geçmişi" },

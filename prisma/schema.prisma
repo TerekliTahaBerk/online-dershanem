@@ -325,6 +325,8 @@ model User {
   taughtGroups                  Group[]                    @relation("GroupTeacher")
   taughtLessonSeries            LessonSeries[]             @relation("LessonSeriesTeacher")
   taughtLessons                 Lesson[]                   @relation("LessonTeacher")
+  studentTeacherAssignments     StudentTeacherAssignment[] @relation("StudentTeacherTeacher")
+  assignedStudentTeachers       StudentTeacherAssignment[] @relation("StudentTeacherAssigner")
   createdAssignments            Assignment[]               @relation("AssignmentCreator")
   notifications                 Notification[]
   notificationPrefs             NotificationPreference?
@@ -1276,6 +1278,9 @@ model StudentProfile {
   classLevel            String?                @map("class_level")
   schoolName            String?                @map("school_name")
   targetGoal            String?                @map("target_goal")
+  /// LGS | TYT | AYT | TYT_AYT | OTHER — serbest etiket; UI sözlüğüyle hizalı.
+  examType              String?                @map("exam_type")
+  birthDate             DateTime?              @map("birth_date") @db.Date
 
   /// Tasarımdaki "hedef sıralama 30.000". Serbest metin `targetGoal` sınavı
   /// tutar (ör. "YKS"); sıralama ayrı ve sayısaldır ki karşılaştırılabilsin.
@@ -1302,6 +1307,7 @@ model StudentProfile {
   checkIns              StudentCheckIn[]
   helpRequests          StudentHelpRequest[]
   coachAssignments      CoachAssignment[]
+  teacherAssignments    StudentTeacherAssignment[]
   goals                 StudentGoal[]
   dinoAnswers           DinoAnswer[]
   parentRelationshipHistory ParentStudentHistory[] @relation("ParentRelationshipStudent")
@@ -1545,6 +1551,8 @@ model TeacherProfile {
   userId   String   @unique @map("user_id")
   subjects String[] @default([])
   bio      String?
+  /// Dahili çalışma notları — veli/öğrenci panellerine asla sızdırılmaz.
+  internalNotes String? @map("internal_notes") @db.Text
 
   /// Bu personel koçluk da yapıyor mu? Tasarımdaki "Öğretmen + koç" / "Koç"
   /// ayrımı budur — AYRI BİR UserRole DEĞİL. Yalnız koçluk yapan personel de
@@ -1555,6 +1563,9 @@ model TeacherProfile {
   /// değildir ve kapasite uyarısı üretilmez — uydurma bir sayı varsayılmaz.
   coachCapacity Int? @map("coach_capacity")
 
+  /// Ders öğretmenliği için opsiyonel öğrenci kapasitesi (grup + bireysel bağ).
+  maxStudentCapacity Int? @map("max_student_capacity")
+
   createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1562,6 +1573,31 @@ model TeacherProfile {
 
   @@index([isCoach])
   @@map("teacher_profiles")
+}
+
+/// ÖĞRENCİ ↔ ÖĞRETMEN (branş bazlı) — grup üyeliğinden bağımsız ilişki.
+/// Aynı (öğrenci, öğretmen, branş) çifti yinelenmez; pasifleştirme `endedAt` ile.
+model StudentTeacherAssignment {
+  id           String         @id @default(cuid())
+  studentId    String         @map("student_id")
+  teacherId    String         @map("teacher_id")
+  subject      String
+  startedAt    DateTime       @default(now()) @map("started_at") @db.Timestamptz(3)
+  endedAt      DateTime?      @map("ended_at") @db.Timestamptz(3)
+  active       Boolean        @default(true)
+  assignedById String?        @map("assigned_by_id")
+  notes        String?
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher      User           @relation("StudentTeacherTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  assignedBy   User?          @relation("StudentTeacherAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, teacherId, subject])
+  @@index([teacherId, active])
+  @@index([studentId, active])
+  @@index([assignedById])
+  @@map("student_teacher_assignments")
 }
 
 /// ONLINE KOÇUM — ÖĞRENCİ ↔ KOÇ ATAMASI.
@@ -1710,17 +1746,24 @@ model TeacherNoteTemplate {
 }
 
 model ParentStudent {
-  id           String         @id @default(cuid())
-  parentId     String         @map("parent_id")
-  studentId    String         @map("student_id")
-  relationship String?
-  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  parent       User           @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
-  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  history      ParentStudentHistory[]
+  id              String         @id @default(cuid())
+  parentId        String         @map("parent_id")
+  studentId       String         @map("student_id")
+  /// Anne / Baba / Vasi vb.
+  relationship    String?
+  primaryContact  Boolean        @default(false) @map("primary_contact")
+  canViewAcademic Boolean        @default(true) @map("can_view_academic")
+  canViewPayments Boolean        @default(false) @map("can_view_payments")
+  active          Boolean        @default(true)
+  endedAt         DateTime?      @map("ended_at") @db.Timestamptz(3)
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  parent          User           @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  history         ParentStudentHistory[]
 
   @@unique([parentId, studentId])
-  @@index([studentId])
+  @@index([studentId, active])
+  @@index([parentId, active])
   @@map("parent_students")
 }
 
@@ -1771,17 +1814,26 @@ model Group {
 }
 
 model LessonSeries {
-  id         String   @id @default(cuid())
-  groupId    String   @map("group_id")
-  teacherId  String   @map("teacher_id")
-  title      String
-  meetingUrl String?  @map("meeting_url")
-  isActive   Boolean  @default(true) @map("is_active")
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
-  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  teacher    User     @relation("LessonSeriesTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
-  lessons    Lesson[]
+  id               String    @id @default(cuid())
+  groupId          String    @map("group_id")
+  teacherId        String    @map("teacher_id")
+  title            String
+  meetingUrl       String?   @map("meeting_url")
+  isActive         Boolean   @default(true) @map("is_active")
+  /// ISO weekday 1=Pzt … 7=Paz. Boşsa yalnızca `startsAt` haftalık tekrarı.
+  weekdays         Int[]     @default([])
+  /// Yerel saat "HH:mm" (Europe/Istanbul).
+  startsAtTime     String?   @map("starts_at_time")
+  durationMinutes  Int       @default(60) @map("duration_minutes")
+  seriesStartsOn   DateTime? @map("series_starts_on") @db.Timestamptz(3)
+  seriesEndsOn     DateTime? @map("series_ends_on") @db.Timestamptz(3)
+  timezone         String    @default("Europe/Istanbul")
+  totalOccurrences Int?      @map("total_occurrences")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  group            Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teacher          User      @relation("LessonSeriesTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  lessons          Lesson[]
 
   @@index([groupId, isActive])
   @@index([teacherId, isActive])

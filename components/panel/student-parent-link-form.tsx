@@ -34,6 +34,9 @@ export function StudentParentLinkForm({
             parentId: data.get("parentId"),
             studentId: studentId || data.get("studentId"),
             relationship: data.get("relationship"),
+            primaryContact: data.get("primaryContact") === "on",
+            canViewAcademic: data.get("canViewAcademic") === "on",
+            canViewPayments: data.get("canViewPayments") === "on",
           }),
         });
         const result = await response.json().catch(() => ({}));
@@ -78,13 +81,25 @@ export function StudentParentLinkForm({
         <label className="sr-only" htmlFor="relationship">
           Yakınlık
         </label>
-        <input
-          id="relationship"
-          name="relationship"
-          className="panel-input py-2 text-xs"
-          placeholder="Yakınlık (anne, baba...)"
-        />
+        <select id="relationship" name="relationship" className="panel-input py-2 text-xs" defaultValue="Anne">
+          <option value="Anne">Anne</option>
+          <option value="Baba">Baba</option>
+          <option value="Vasi">Vasi</option>
+          <option value="Diğer">Diğer</option>
+        </select>
       </div>
+      <label className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line px-2.5 py-2 text-[11.5px] font-semibold text-dc-ink">
+        <input type="checkbox" name="primaryContact" />
+        Birincil iletişim
+      </label>
+      <label className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line px-2.5 py-2 text-[11.5px] font-semibold text-dc-ink">
+        <input type="checkbox" name="canViewAcademic" defaultChecked />
+        Akademik görünüm
+      </label>
+      <label className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line px-2.5 py-2 text-[11.5px] font-semibold text-dc-ink">
+        <input type="checkbox" name="canViewPayments" />
+        Ödeme görünümü
+      </label>
       <button
         type="submit"
         disabled={busy || parents.length === 0 || (!studentId && (students || []).length === 0)}

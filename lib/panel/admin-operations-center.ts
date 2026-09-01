@@ -15,6 +15,7 @@ export type OpsActionCode =
   | "PROVISIONING_RETRY"
   | "INVITE_PENDING"
   | "STUDENT_NO_GROUP"
+  | "STUDENT_NO_PARENT"
   | "GROUP_TEACHER_INACTIVE"
   | "LESSON_MISSING_PLAN"
   | "PAID_NO_ACCOUNT"
@@ -313,6 +314,7 @@ export type AdminOperationsCenterInput = {
     retryPending: number;
     invitePending: number;
     studentsWithoutGroup: number;
+    studentsWithoutParent: number;
     groupsWithInactiveTeacher: number;
     lessonsMissingPlan: number;
     openHelpRequests: number;
@@ -330,6 +332,7 @@ export type AdminOperationsCenterInput = {
     retryOrders: OpsOrderSample[];
     invites: OpsInviteSample[];
     studentsWithoutGroup: OpsStudentSample[];
+    studentsWithoutParent: OpsStudentSample[];
     groupsWithInactiveTeacher: OpsGroupSample[];
     lessonsMissingPlan: OpsLessonSample[];
     helpRequests: OpsHelpSample[];
@@ -490,6 +493,21 @@ function collectActions(input: AdminOperationsCenterInput): OpsActionItem[] {
       owner: null,
       href: `/panel/yonetim/ogrenciler/${student.profileId}`,
       ctaLabel: "Öğrenciyi Aç",
+      createdAt: student.since,
+    });
+  }
+
+  for (const student of samples.studentsWithoutParent) {
+    rows.push({
+      id: `no-parent-${student.profileId}`,
+      code: "STUDENT_NO_PARENT",
+      severity: "WATCH",
+      title: "Aktif öğrenciye veli bağlı değil",
+      subject: student.label,
+      ageLabel: formatOpsAge(student.since, now),
+      owner: null,
+      href: `/panel/yonetim/ogrenciler/${student.profileId}?sekme=veli`,
+      ctaLabel: "Veli Bağla",
       createdAt: student.since,
     });
   }

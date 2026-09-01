@@ -20,6 +20,16 @@ import {
 import type { Student360Bundle } from "@/lib/panel/student-360-server";
 import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
 import { StudentParentLinkForm } from "@/components/panel/student-parent-link-form";
+import {
+  StudentTeacherLinkForm,
+  StudentTeacherUnlinkButton,
+} from "@/components/panel/student-teacher-link-form";
+import {
+  ASSIGNMENT_DISPLAY_LABELS,
+  deriveAssignmentDisplayStatus,
+  type AssignmentDisplayStatus,
+} from "@/lib/panel/assignment-display";
+import type { AssignmentProgressStatus } from "@prisma/client";
 import { buildTeacherStudentRiskDeterministicReason } from "@/lib/panel/dino-explanations";
 
 const DATE = new Intl.DateTimeFormat("tr-TR", {
@@ -197,8 +207,20 @@ export function Student360View({
 
       <div className="mt-5 space-y-5">
         {tab === "genel" && bundle.overview ? <OverviewPanel data={bundle.overview} /> : null}
-        {tab === "akademik" && bundle.academic ? <AcademicPanel data={bundle.academic} /> : null}
+        {tab === "gelisim" && bundle.academic ? <AcademicPanel data={bundle.academic} /> : null}
         {tab === "dersler" && bundle.lessons ? <LessonsPanel data={bundle.lessons} /> : null}
+        {tab === "takvim" && bundle.lessons ? <CalendarPanel data={bundle.lessons} /> : null}
+        {tab === "odevler" && bundle.assignmentsTab ? (
+          <AssignmentsPanel data={bundle.assignmentsTab} />
+        ) : null}
+        {tab === "ogretmenler" && bundle.teachersTab ? (
+          <TeachersPanel
+            data={bundle.teachersTab}
+            studentId={bundle.access.studentProfileId}
+            teacherOptions={bundle.teacherOptions}
+            canManage={bundle.access.role === "ADMIN"}
+          />
+        ) : null}
         {tab === "kocluk" && bundle.coaching ? <CoachingPanel data={bundle.coaching} /> : null}
         {tab === "denemeler" && bundle.exams ? <ExamsPanel data={bundle.exams} /> : null}
         {tab === "risk" && bundle.riskTab ? <RiskPanel data={bundle.riskTab} /> : null}
@@ -319,6 +341,49 @@ function OverviewPanel({ data }: { data: NonNullable<Student360Bundle["overview"
         </PanelCard>
       </div>
     </div>
+  );
+}
+
+function CalendarPanel({ data }: { data: NonNullable<Student360Bundle["lessons"]> }) {
+  const items = [
+    ...data.upcoming.map((lesson) => ({ ...lesson, kind: "upcoming" as const })),
+    ...data.past.map((lesson) => ({
+      id: lesson.id,
+      title: lesson.title,
+      startsAt: lesson.startsAt,
+      groupName: lesson.attendance ?? "Tamamlandı",
+      kind: "past" as const,
+    })),
+  ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+
+  return (
+    <PanelCard>
+      <PanelCardTitle>Takvim</PanelCardTitle>
+      <div className="mt-3 space-y-2">
+        {items.length ? (
+          items.map((item) => (
+            <div
+              key={`${item.kind}-${item.id}`}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft px-3 py-2.5"
+            >
+              <div>
+                <p className="text-[13.5px] font-semibold text-dc-ink">{item.title}</p>
+                <p className="text-[12px] text-dc-ink-muted">
+                  {DATE.format(item.startsAt)}
+                  {item.groupName ? ` · ${item.groupName}` : ""}
+                </p>
+              </div>
+              <PanelStatusBadge
+                label={item.kind === "upcoming" ? "Planlı" : "Geçmiş"}
+                tone={item.kind === "upcoming" ? "info" : "neutral"}
+              />
+            </div>
+          ))
+        ) : (
+          <EmptyLine text="Takvimde ders yok." />
+        )}
+      </div>
+    </PanelCard>
   );
 }
 
@@ -668,6 +733,94 @@ function RiskPanel({ data }: { data: NonNullable<Student360Bundle["riskTab"]> })
             <EmptyLine text="Açık müdahale kaydı yok." />
           )}
         </div>
+      </PanelCard>
+    </div>
+  );
+}
+
+function AssignmentsPanel({
+  data,
+}: {
+  data: NonNullable<Student360Bundle["assignmentsTab"]>;
+}) {
+  return (
+    <PanelCard>
+      <PanelCardTitle>Ödevler</PanelCardTitle>
+      <div className="mt-3 space-y-2">
+        {data.items.length ? (
+          data.items.map((item) => {
+            const display = deriveAssignmentDisplayStatus({
+              progress: item.status as AssignmentProgressStatus,
+              dueAt: item.dueAt ?? new Date(0),
+            });
+            return (
+              <div
+                key={item.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft px-3 py-2.5"
+              >
+                <div>
+                  <p className="text-[13.5px] font-semibold text-dc-ink">{item.title}</p>
+                  <p className="text-[12px] text-dc-ink-muted">
+                    {item.groupName}
+                    {item.dueAt ? ` · ${DATE.format(item.dueAt)}` : ""}
+                  </p>
+                </div>
+                <PanelStatusBadge
+                  label={ASSIGNMENT_DISPLAY_LABELS[display as AssignmentDisplayStatus]}
+                  tone={display === "GEC" ? "critical" : "neutral"}
+                />
+              </div>
+            );
+          })
+        ) : (
+          <EmptyLine text="Ödev kaydı yok." />
+        )}
+      </div>
+    </PanelCard>
+  );
+}
+
+function TeachersPanel({
+  data,
+  studentId,
+  teacherOptions,
+  canManage,
+}: {
+  data: NonNullable<Student360Bundle["teachersTab"]>;
+  studentId: string;
+  teacherOptions: { id: string; label: string }[];
+  canManage: boolean;
+}) {
+  return (
+    <div className="space-y-5">
+      <PanelCard>
+        <PanelCardTitle>Branş öğretmenleri</PanelCardTitle>
+        <div className="mt-3 space-y-2">
+          {data.links.length ? (
+            data.links.map((link) => (
+              <div
+                key={link.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft px-3 py-2.5"
+              >
+                <div>
+                  <p className="text-[12.5px] font-semibold uppercase tracking-wide text-dc-ink-faint">
+                    {link.subject}
+                  </p>
+                  <p className="text-[14px] font-bold text-dc-ink">{link.teacherName}</p>
+                </div>
+                {canManage ? <StudentTeacherUnlinkButton linkId={link.id} /> : null}
+              </div>
+            ))
+          ) : (
+            <EmptyLine text="Henüz branş öğretmeni bağlı değil." />
+          )}
+        </div>
+        {canManage ? (
+          <StudentTeacherLinkForm
+            studentId={studentId}
+            teachers={teacherOptions.map((t) => ({ id: t.id, name: t.label }))}
+          />
+        ) : null}
       </PanelCard>
     </div>
   );

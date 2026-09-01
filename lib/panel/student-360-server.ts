@@ -29,7 +29,7 @@ import {
   type Student360ViewerRole,
 } from "@/lib/panel/student-360";
 
-export type Student360AccessMode = "admin" | "teacher_group" | "coach";
+export type Student360AccessMode = "admin" | "teacher_group" | "teacher_direct" | "coach";
 
 export type Student360Access = {
   role: Student360ViewerRole;
@@ -173,6 +173,26 @@ export type Student360CommerceTab = {
   packageStatus: Student360PackageStatus;
 };
 
+export type Student360TeachersTab = {
+  links: {
+    id: string;
+    subject: string;
+    teacherId: string;
+    teacherName: string;
+    startedAt: Date;
+  }[];
+};
+
+export type Student360AssignmentsTab = {
+  items: {
+    id: string;
+    title: string;
+    status: string;
+    dueAt: Date | null;
+    groupName: string;
+  }[];
+};
+
 export type Student360Bundle = {
   access: Student360Access;
   flags: PanelFeatureFlags;
@@ -184,6 +204,8 @@ export type Student360Bundle = {
   overview: Student360OverviewTab | null;
   academic: Student360AcademicTab | null;
   lessons: Student360LessonsTab | null;
+  assignmentsTab: Student360AssignmentsTab | null;
+  teachersTab: Student360TeachersTab | null;
   coaching: Student360CoachingTab | null;
   exams: Student360ExamsTab | null;
   riskTab: Student360RiskTab | null;
@@ -191,6 +213,7 @@ export type Student360Bundle = {
   commerce: Student360CommerceTab | null;
   coachOptions: { id: string; label: string }[];
   parentOptions: { id: string; label: string }[];
+  teacherOptions: { id: string; label: string }[];
   currentCoachId: string | null;
   currentCadenceDays: number | null;
 };
@@ -249,11 +272,25 @@ export async function resolveStudent360Access(
 
   const teacherGroups = profile.enrollments.filter((row) => row.group.teacherId === viewer.userId);
   const coachAssignment = await findCoachAssignmentForCoach(viewer.userId, profile.id);
+  const directLink = await prisma.studentTeacherAssignment.findFirst({
+    where: {
+      studentId: profile.id,
+      teacherId: viewer.userId,
+      active: true,
+      endedAt: null,
+    },
+    select: { id: true, subject: true },
+  });
 
-  if (!teacherGroups.length && !coachAssignment) notFound();
+  if (!teacherGroups.length && !coachAssignment && !directLink) notFound();
 
-  const mode: Student360AccessMode = teacherGroups.length ? "teacher_group" : "coach";
+  const mode: Student360AccessMode = teacherGroups.length
+    ? "teacher_group"
+    : directLink
+      ? "teacher_direct"
+      : "coach";
   const scopedGroups = teacherGroups.length ? teacherGroups : profile.enrollments;
+  const directSubjects = directLink ? [directLink.subject] : [];
 
   return {
     role: "TEACHER",
@@ -265,7 +302,9 @@ export async function resolveStudent360Access(
     groupIds: scopedGroups.map((row) => row.groupId),
     subjects: teacherGroups.length
       ? [...new Set(teacherGroups.map((row) => row.group.subject))]
-      : null,
+      : directSubjects.length
+        ? directSubjects
+        : null,
     viewerUserId: viewer.userId,
   };
 }
@@ -372,8 +411,10 @@ export async function loadStudent360Bundle(input: {
   const assignmentScope = groupIds.length ? { groupId: { in: groupIds } } : { id: "__none__" };
 
   const needsOverview = tab === "genel";
-  const needsAcademic = tab === "akademik";
-  const needsLessons = tab === "dersler";
+  const needsAcademic = tab === "gelisim";
+  const needsLessons = tab === "dersler" || tab === "takvim";
+  const needsAssignmentsTab = tab === "odevler";
+  const needsTeachersTab = tab === "ogretmenler" && access.role === "ADMIN";
   const needsCoaching = tab === "kocluk" && flags.adaptivePlan;
   const needsExams = tab === "denemeler" && flags.mockExamAnalysis;
   const needsRisk = tab === "risk";
@@ -381,7 +422,7 @@ export async function loadStudent360Bundle(input: {
   const needsCommerce = tab === "paket" && access.canViewCommerce;
   const needsAdminForms = access.role === "ADMIN";
   const needsExamSignals = needsExams || needsOverview || needsAcademic;
-  const needsAssignmentList = needsAcademic || needsOverview;
+  const needsAssignmentList = needsAcademic || needsOverview || needsAssignmentsTab;
 
   const lessonNoteWhere =
     access.mode === "teacher_group"
@@ -409,6 +450,8 @@ export async function loadStudent360Bundle(input: {
     recoveryOpenCount,
     coachOptions,
     parentOptions,
+    teacherLinksRaw,
+    teacherOptionsRaw,
   ] = await Promise.all([
     prisma.attendance.findMany({
       where: {
@@ -675,6 +718,23 @@ export async function loadStudent360Bundle(input: {
           },
           orderBy: { fullName: "asc" },
           take: 40,
+          select: { id: true, fullName: true, email: true },
+        })
+      : Promise.resolve([]),
+    needsTeachersTab || needsAdminForms
+      ? prisma.studentTeacherAssignment.findMany({
+          where: { studentId: student.id, active: true, endedAt: null },
+          orderBy: [{ subject: "asc" }],
+          include: {
+            teacher: { select: { id: true, fullName: true, email: true } },
+          },
+        })
+      : Promise.resolve([]),
+    needsTeachersTab
+      ? prisma.user.findMany({
+          where: { role: "TEACHER", status: "ACTIVE" },
+          orderBy: { fullName: "asc" },
+          take: 60,
           select: { id: true, fullName: true, email: true },
         })
       : Promise.resolve([]),
@@ -964,6 +1024,30 @@ export async function loadStudent360Bundle(input: {
       }
     : null;
 
+  const teachersTab: Student360TeachersTab | null = needsTeachersTab
+    ? {
+        links: teacherLinksRaw.map((link) => ({
+          id: link.id,
+          subject: link.subject,
+          teacherId: link.teacher.id,
+          teacherName: link.teacher.fullName || link.teacher.email,
+          startedAt: link.startedAt,
+        })),
+      }
+    : null;
+
+  const assignmentsTab: Student360AssignmentsTab | null = needsAssignmentsTab
+    ? {
+        items: assignmentProgress.map((row) => ({
+          id: row.assignment.id,
+          title: row.assignment.title,
+          status: row.status,
+          dueAt: row.assignment.dueAt,
+          groupName: row.assignment.group.name,
+        })),
+      }
+    : null;
+
   const commerceTab: Student360CommerceTab | null = needsCommerce
     ? {
         memberships: student.user.productMemberships.map((row) => ({
@@ -995,6 +1079,8 @@ export async function loadStudent360Bundle(input: {
     overview,
     academic,
     lessons,
+    assignmentsTab,
+    teachersTab,
     coaching: coachingTab,
     exams: examsTab,
     riskTab,
@@ -1007,6 +1093,10 @@ export async function loadStudent360Bundle(input: {
     parentOptions: parentOptions.map((parent) => ({
       id: parent.id,
       label: parent.fullName || parent.email,
+    })),
+    teacherOptions: teacherOptionsRaw.map((teacher) => ({
+      id: teacher.id,
+      label: teacher.fullName || teacher.email,
     })),
     currentCoachId: currentCoach?.coach.id ?? null,
     currentCadenceDays: currentCoach?.cadenceDays ?? null,

@@ -100,13 +100,17 @@ test("feature flag kombinasyonları sekmeleri gizler", () => {
     canViewCommerce: false,
     flags: allFlagsOff,
   });
-  assert.deepEqual(minimal, ["genel", "akademik", "dersler", "veli"]);
+  assert.deepEqual(minimal, ["genel", "dersler", "odevler", "veli", "takvim", "gelisim"]);
 
   const full = visibleStudent360Tabs({
     role: "ADMIN",
     canViewCommerce: true,
     flags: allFlagsOn,
   });
+  assert.ok(full.includes("odevler"));
+  assert.ok(full.includes("ogretmenler"));
+  assert.ok(full.includes("takvim"));
+  assert.ok(full.includes("gelisim"));
   assert.ok(full.includes("kocluk"));
   assert.ok(full.includes("denemeler"));
   assert.ok(full.includes("risk"));
@@ -114,8 +118,8 @@ test("feature flag kombinasyonları sekmeleri gizler", () => {
 });
 
 test("geçersiz sekme güvenli varsayılana düşer", () => {
-  assert.equal(parseStudent360Tab("paket", ["genel", "akademik"]), "genel");
-  assert.equal(parseStudent360Tab("akademik", ["genel", "akademik", "dersler"]), "akademik");
+  assert.equal(parseStudent360Tab("paket", ["genel", "dersler"]), "genel");
+  assert.equal(parseStudent360Tab("dersler", ["genel", "dersler", "odevler"]), "dersler");
   assert.equal(parseStudent360Tab(undefined, ["genel", "veli"]), "genel");
 });
 

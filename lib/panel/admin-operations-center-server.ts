@@ -414,6 +414,33 @@ export async function getAdminOperationsCenterSnapshot(options?: {
       prisma.user.count({ where: { role: "STUDENT", studentProfile: null } }),
       prisma.user.count({ where: { role: "TEACHER", teacherProfile: null } }),
     ]),
+    prisma.studentProfile.findMany({
+      where: {
+        parents: { none: { active: true } },
+        user: {
+          status: "ACTIVE",
+          role: "STUDENT",
+          productMemberships: { some: { product: "OD", revokedAt: null } },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+      take: SAMPLE,
+      select: {
+        id: true,
+        createdAt: true,
+        user: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.studentProfile.count({
+      where: {
+        parents: { none: { active: true } },
+        user: {
+          status: "ACTIVE",
+          role: "STUDENT",
+          productMemberships: { some: { product: "OD", revokedAt: null } },
+        },
+      },
+    }),
   ]);
 
   const partialData = optional.some((result) => result.status === "rejected");
@@ -497,6 +524,8 @@ export async function getAdminOperationsCenterSnapshot(options?: {
   const openHelpCount = settled(optional[21], 0);
   const profileMismatch = settled(optional[22], [0, 0] as [number, number]);
   const profileMismatchCount = profileMismatch[0] + profileMismatch[1];
+  const noParentSamples = settled(optional[23], [] as Array<{ id: string; createdAt: Date; user: { fullName: string | null; email: string } }>);
+  const noParentCount = settled(optional[24], 0);
 
   const actorIds = [...new Set(audits.map((row) => row.actorUserId).filter((id): id is string => Boolean(id)))];
   const actors =
@@ -675,6 +704,7 @@ export async function getAdminOperationsCenterSnapshot(options?: {
       retryPending: retryPendingOrders.length + odkRetryOrders.length,
       invitePending: invitePendingCount,
       studentsWithoutGroup: noGroupCount,
+      studentsWithoutParent: noParentCount,
       groupsWithInactiveTeacher: inactiveTeacherGroupCount,
       lessonsMissingPlan: missingPlanCount,
       openHelpRequests: openHelpCount,
@@ -719,6 +749,11 @@ export async function getAdminOperationsCenterSnapshot(options?: {
         createdAt: user.createdAt,
       })),
       studentsWithoutGroup: noGroupSamples.map((profile) => ({
+        profileId: profile.id,
+        label: profile.user.fullName || profile.user.email,
+        since: profile.createdAt,
+      })),
+      studentsWithoutParent: noParentSamples.map((profile) => ({
         profileId: profile.id,
         label: profile.user.fullName || profile.user.email,
         since: profile.createdAt,

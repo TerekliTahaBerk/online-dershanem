@@ -10,6 +10,7 @@ import { TeacherAssignmentManager } from "@/components/panel/teacher-assignment-
 import { AdminSetupWizard } from "@/components/panel/admin-setup-wizard";
 import { TeacherMaterialManager } from "@/components/panel/teacher-material-manager";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { summarizeGroupAssignment } from "@/lib/panel/assignment-display";
 import { PanelTable, PanelTableRow, PanelTableCell, PanelEmpty } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
@@ -95,7 +96,32 @@ export default async function EducationAdminPage() {
       groups={groupsRaw.map((group) => ({ id: group.id, name: group.name, subject: group.subject, level: group.level || "", teacherId: group.teacher.id, teacherName: name(group.teacher), isActive: group.isActive, capacity: group.capacity, studentCount: group.enrollments.length }))}
       lessons={lessons.map((lesson) => ({ id: lesson.id, title: lesson.title, startsAt: lesson.startsAt.toISOString(), status: lesson.status, groupName: lesson.group.name, teacherName: name(lesson.teacher) }))}
     />
-    <section className="mt-9"><div className="mb-4"><h2 className="text-lg font-extrabold text-[var(--site-ink)]">Ödev merkezi</h2><p className="mt-1 text-xs text-[var(--site-muted)]">Admin tarafından verilen ödevler öğretmen, öğrenci ve veli ekranlarına aynı anda yansır.</p></div><TeacherAssignmentManager groups={groupsRaw.filter((group) => group.isActive).map((group) => ({ id: group.id, name: group.name, subject: group.subject }))} lessons={lessons.map((lesson) => ({ id: lesson.id, groupId: lesson.groupId, title: lesson.title, startsAt: lesson.startsAt.toISOString() }))} assignments={assignments.map((assignment) => ({ id: assignment.id, groupId: assignment.groupId, groupName: assignment.group.name, title: assignment.title, description: assignment.description || "", dueAt: assignment.dueAt.toISOString(), isActive: assignment.isActive, done: assignment.progress.filter((item) => item.status === "DONE").length, total: assignment.progress.length, outcomes: assignment.outcomeLinks.map((link) => link.outcome.code), evidenceRequired: false, criteria: [], submissions: [] }))} learningOutcomesEnabled={featureFlags.learningOutcomes} outcomes={outcomes.map((outcome) => ({ id: outcome.id, code: outcome.code, title: outcome.title, subject: outcome.unit.subject.name, unit: outcome.unit.name, skills: outcome.skills.map((item) => item.skill.name), favorite: outcome.favorites.length > 0, recent: outcome.assignments.length > 0 }))} /></section>
+    <section id="odev-merkezi" className="mt-9 scroll-mt-28"><div className="mb-4"><h2 className="text-lg font-extrabold text-[var(--site-ink)]">Ödev merkezi</h2><p className="mt-1 text-xs text-[var(--site-muted)]">Admin tarafından verilen ödevler öğretmen, öğrenci ve veli ekranlarına aynı anda yansır.</p></div><TeacherAssignmentManager groups={groupsRaw.filter((group) => group.isActive).map((group) => ({ id: group.id, name: group.name, subject: group.subject }))} lessons={lessons.map((lesson) => ({ id: lesson.id, groupId: lesson.groupId, title: lesson.title, startsAt: lesson.startsAt.toISOString() }))} assignments={assignments.map((assignment) => {
+        const summary = summarizeGroupAssignment({
+          rows: assignment.progress.map((item) => ({
+            progress: item.status,
+            dueAt: assignment.dueAt,
+          })),
+        });
+        return {
+          id: assignment.id,
+          groupId: assignment.groupId,
+          groupName: assignment.group.name,
+          title: assignment.title,
+          description: assignment.description || "",
+          dueAt: assignment.dueAt.toISOString(),
+          isActive: assignment.isActive,
+          done: summary.submitted,
+          total: summary.total,
+          submitted: summary.submitted,
+          waiting: summary.waiting,
+          late: summary.late,
+          outcomes: assignment.outcomeLinks.map((link) => link.outcome.code),
+          evidenceRequired: false,
+          criteria: [],
+          submissions: [],
+        };
+      })} learningOutcomesEnabled={featureFlags.learningOutcomes} outcomes={outcomes.map((outcome) => ({ id: outcome.id, code: outcome.code, title: outcome.title, subject: outcome.unit.subject.name, unit: outcome.unit.name, skills: outcome.skills.map((item) => item.skill.name), favorite: outcome.favorites.length > 0, recent: outcome.assignments.length > 0 }))} /></section>
     <section className="mt-9"><div className="mb-4"><h2 className="text-lg font-extrabold text-[var(--site-ink)]">Materyal merkezi</h2><p className="mt-1 text-xs text-[var(--site-muted)]">Kaynaklar öğretmen ve öğrenci ekranlarıyla aynı veri üzerinden çalışır.</p></div><TeacherMaterialManager groups={groupsRaw.filter((group) => group.isActive).map((group) => ({ id: group.id, name: group.name, subject: group.subject }))} materials={materials.map((item) => ({ id: item.id, title: item.title, description: item.description || "", url: item.blobPathname ? `/api/panel/materials/${item.id}/file` : item.url, kind: item.kind, groupName: item.group.name, isActive: item.isActive }))} /></section>
   </PanelShell>;
 }

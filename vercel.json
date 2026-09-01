@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run validate:deploy-env && prisma migrate deploy && prisma generate && next build",
+  "buildCommand": "npm run validate:deploy-env && npm run prisma:deploy:ci && prisma generate && next build",
   "crons": [
     { "path": "/api/cron/email-retry", "schedule": "*/15 * * * *" },
     { "path": "/api/cron/panel-reminders", "schedule": "30 6 * * *" },
