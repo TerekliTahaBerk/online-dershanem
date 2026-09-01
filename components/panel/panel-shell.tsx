@@ -27,6 +27,7 @@ import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
 import { visibleGlobalSearchCommands } from "@/lib/panel/global-search";
+import type { PanelNavItem } from "@/lib/panel/navigation";
 
 /**
  * PANEL KABUĞU — onaylı tasarım (Panel.dc.html).
@@ -51,6 +52,7 @@ export async function PanelShell({
   pageTitle,
   topbarSlot,
   nav,
+  mobileQuickItems,
   children,
 }: {
   role: UserRole;
@@ -67,6 +69,8 @@ export async function PanelShell({
    * geçirir. Verilmezse rol × yetki menüsü (`PanelNav`) kullanılır.
    */
   nav?: React.ReactNode;
+  /** İşletme gibi özel menülü alanlarda mobil alt çubuk kısayolları. */
+  mobileQuickItems?: PanelNavItem[];
   children: React.ReactNode;
 }) {
   const isBusinessWorkspace = workspace === "BUSINESS";
@@ -292,27 +296,32 @@ export async function PanelShell({
             ) : null}
 
             {/* Topbar — handoff: 64px, beyaz, alt kenarlık */}
-            <header className="sticky top-0 z-40 flex h-16 flex-none items-center gap-4 border-b border-dc-line bg-white px-4 sm:px-7">
-              <PanelMobileNav role={effectiveRole} products={products} nav={nav} />
+            <header className="sticky top-0 z-40 flex h-16 flex-none items-center gap-2 border-b border-dc-line bg-white px-3 sm:gap-4 sm:px-7">
+              <PanelMobileNav
+                role={effectiveRole}
+                products={products}
+                nav={nav}
+                mobileQuickItems={mobileQuickItems}
+              />
 
-              {/*
-                Topbar başlığı BAŞLIK ÖĞESİ DEĞİLDİR. Eskiden `<h1>`di ve her
-                panel sayfasında iki `<h1>` oluşuyordu (biri burada, biri
-                `PanelHeading` içinde). Sayfanın tek `<h1>`i içerik başlığıdır;
-                buradaki yalnız bağlam etiketidir.
-              */}
               {pageTitle ? (
-                <p className="truncate text-[15px] font-bold text-dc-ink">{pageTitle}</p>
+                <p className="hidden min-w-0 max-w-[34%] truncate text-[14px] font-bold text-dc-ink sm:block sm:max-w-[12rem] sm:text-[15px] lg:max-w-xs xl:max-w-none">
+                  {pageTitle}
+                </p>
               ) : null}
 
-              {topbarSlot ? <div className="min-w-0 lg:ml-3">{topbarSlot}</div> : null}
+              {topbarSlot ? (
+                <div className="panel-topbar-slot min-w-0 flex-1 overflow-x-auto lg:ml-3 lg:flex-none lg:overflow-visible">
+                  {topbarSlot}
+                </div>
+              ) : null}
 
-              <div className="ml-auto flex items-center gap-3 sm:gap-[18px]">
+              <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-[18px]">
                 {!preview && !teacherMode.enabled && !isBusinessWorkspace && role === "ADMIN" ? (
-                  <>
+                  <div className="hidden md:flex md:items-center md:gap-2">
                     <AdminTeacherModeSwitchButton compact />
                     <AdminPreviewPicker compact />
-                  </>
+                  </div>
                 ) : null}
 
                 {!isBusinessWorkspace &&

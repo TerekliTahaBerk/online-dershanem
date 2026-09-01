@@ -108,3 +108,27 @@ export function visibleSections(
     return granted.has(SECTION_PERMISSIONS[slug]);
   });
 }
+
+/** Mobil alt çubuk için en fazla üç birincil işletme kısayolu. */
+export function businessMobilePrimaryNav(
+  allowed: readonly BusinessSectionSlug[],
+): Array<{ id: string; href: string; label: string }> {
+  const allowedSet = new Set(allowed);
+  const priority: BusinessSectionSlug[] = [
+    "genel-bakis",
+    "mesaj-kutusu",
+    "adaylar",
+    "satis-hunisi",
+    "reklamlar",
+    "gelirler",
+    "raporlar",
+  ];
+  return priority
+    .filter((slug) => allowedSet.has(slug))
+    .slice(0, 3)
+    .map((slug) => ({
+      id: slug,
+      href: `/panel/yonetim/isletme/${slug}`,
+      label: SECTION_LABELS[slug],
+    }));
+}

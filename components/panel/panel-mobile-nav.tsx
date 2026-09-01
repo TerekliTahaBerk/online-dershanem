@@ -9,6 +9,7 @@ import { rolePath } from "@/lib/auth/roles";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
 import { usePanelFeatureFlags } from "@/components/panel/panel-feature-provider";
 import { PanelNav, mobilePrimaryNav } from "@/components/panel/panel-nav";
+import type { PanelNavItem } from "@/lib/panel/navigation";
 
 /**
  * Panel mobil navigasyonu — masaüstü sidebar'ın küçültülmüş hâli DEĞİL,
@@ -19,11 +20,14 @@ export function PanelMobileNav({
   role,
   products,
   nav,
+  mobileQuickItems,
 }: {
   role: UserRole;
   products: ProductCode[];
   /** Kendi menüsü olan çalışma alanları için. */
   nav?: React.ReactNode;
+  /** Özel menülü alanlarda (İşletme vb.) alt çubuk kısayolları. */
+  mobileQuickItems?: PanelNavItem[];
 }) {
   const [open, setOpen] = useState(false);
   const flags = usePanelFeatureFlags();
@@ -34,7 +38,10 @@ export function PanelMobileNav({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const selectedStudentId = role === "PARENT" ? searchParams.get("studentId") : null;
-  const quickItems = nav ? [] : mobilePrimaryNav(role, products, flags, root);
+  const quickItems =
+    mobileQuickItems ??
+    (nav ? [] : mobilePrimaryNav(role, products, flags, root));
+  const bottomNavColumns = Math.min(4, Math.max(2, quickItems.length + 1));
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -84,7 +91,7 @@ export function PanelMobileNav({
       >
         <ul
           className="grid gap-1"
-          style={{ gridTemplateColumns: `repeat(${Math.min(3, quickItems.length + 1)}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${bottomNavColumns}, minmax(0, 1fr))` }}
         >
           {quickItems.map((item) => {
             const active =
@@ -101,7 +108,7 @@ export function PanelMobileNav({
                   href={href}
                   prefetch
                   aria-current={active ? "page" : undefined}
-                  className={`block min-h-11 rounded-[10px] px-2 py-2 text-center text-[12.5px] font-semibold leading-tight transition-colors ${
+                  className={`block min-h-11 rounded-[10px] px-1.5 py-2 text-center text-[11.5px] font-semibold leading-tight transition-colors sm:px-2 sm:text-[12.5px] ${
                     active
                       ? "bg-dc-brand-soft text-dc-brand-deep"
                       : "text-dc-ink-muted hover:bg-dc-surface-muted hover:text-dc-ink"
