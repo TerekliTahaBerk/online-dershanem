@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { BarChart3, Loader2, Send } from "lucide-react";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { integrityLevelPresentation } from "@/lib/odk/presentation";
+import {
+  ResponsiveDataTable,
+  ResponsiveDataTableBody,
+  ResponsiveDataTableCell,
+  ResponsiveDataTableHead,
+  ResponsiveDataTableRow,
+} from "@/components/panel/responsive-data-table";
 
 type Summary = {
   participation: number;
@@ -129,34 +136,70 @@ export function AdminResultsReviewPanel({
         </div>
       ) : null}
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[860px] text-xs">
-          <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
-              <th className="pb-2">Öğrenci</th>
-              <th>D</th><th>Y</th><th>B</th><th>Net</th><th>Süre</th><th>Integrity</th><th>Sonuç</th>
-            </tr>
-          </thead>
-          <tbody>
-            {summary.rows.map((row) => {
-              const integrity = integrityLevelPresentation[row.integrityLevel];
-              return (
-                <tr key={row.attemptId} className="border-t border-[var(--site-line)]">
-                  <td className="py-2 pr-3 font-bold">{row.studentName}</td>
-                  <td>{row.correctCount ?? "—"}</td>
-                  <td>{row.wrongCount ?? "—"}</td>
-                  <td>{row.blankCount ?? "—"}</td>
-                  <td>{row.totalNet == null ? "—" : row.totalNet.toFixed(2)}</td>
-                  <td>{row.durationSeconds == null ? "—" : `${Math.round(row.durationSeconds / 60)} dk`}</td>
-                  <td><OdkStatusBadge label={integrity.label} tone={integrity.tone} /></td>
-                  <td>{row.scoringError ? "Hata" : row.publicationStatus === "PUBLISHED" ? "Yayınlandı" : row.publicationStatus === "HIDDEN" ? "Gizli" : row.status}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {!summary.rows.length ? <p className="mt-3 text-xs text-[var(--site-muted)]">Henüz oturum yok.</p> : null}
-      </div>
+      <ResponsiveDataTable className="mt-4" minWidthClassName="lg:min-w-[860px]">
+        <ResponsiveDataTableHead>
+          <tr>
+            <ResponsiveDataTableCell header label="Öğrenci">
+              Öğrenci
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Doğru">
+              D
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Yanlış">
+              Y
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Boş">
+              B
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Net">
+              Net
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Süre">
+              Süre
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Integrity">
+              Integrity
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Sonuç">
+              Sonuç
+            </ResponsiveDataTableCell>
+          </tr>
+        </ResponsiveDataTableHead>
+        <ResponsiveDataTableBody>
+          {summary.rows.map((row) => {
+            const integrity = integrityLevelPresentation[row.integrityLevel];
+            return (
+              <ResponsiveDataTableRow key={row.attemptId}>
+                <ResponsiveDataTableCell label="Öğrenci">
+                  <span className="font-bold">{row.studentName}</span>
+                </ResponsiveDataTableCell>
+                <ResponsiveDataTableCell label="Doğru">{row.correctCount ?? "—"}</ResponsiveDataTableCell>
+                <ResponsiveDataTableCell label="Yanlış">{row.wrongCount ?? "—"}</ResponsiveDataTableCell>
+                <ResponsiveDataTableCell label="Boş">{row.blankCount ?? "—"}</ResponsiveDataTableCell>
+                <ResponsiveDataTableCell label="Net">
+                  {row.totalNet == null ? "—" : row.totalNet.toFixed(2)}
+                </ResponsiveDataTableCell>
+                <ResponsiveDataTableCell label="Süre">
+                  {row.durationSeconds == null ? "—" : `${Math.round(row.durationSeconds / 60)} dk`}
+                </ResponsiveDataTableCell>
+                <ResponsiveDataTableCell label="Integrity">
+                  <OdkStatusBadge label={integrity.label} tone={integrity.tone} />
+                </ResponsiveDataTableCell>
+                <ResponsiveDataTableCell label="Sonuç">
+                  {row.scoringError
+                    ? "Hata"
+                    : row.publicationStatus === "PUBLISHED"
+                      ? "Yayınlandı"
+                      : row.publicationStatus === "HIDDEN"
+                        ? "Gizli"
+                        : row.status}
+                </ResponsiveDataTableCell>
+              </ResponsiveDataTableRow>
+            );
+          })}
+        </ResponsiveDataTableBody>
+      </ResponsiveDataTable>
+      {!summary.rows.length ? <p className="mt-3 text-xs text-[var(--site-muted)]">Henüz oturum yok.</p> : null}
 
       {examStatus === "SCORED" ? (
         <div className="mt-4 flex flex-wrap items-center gap-3">

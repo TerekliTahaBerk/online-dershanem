@@ -37,7 +37,7 @@ export function PanelHeading({
       <div>
         {eyebrow ? <p className="text-[13px] text-dc-ink-faint">{eyebrow}</p> : null}
         <h1
-          className={`text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink ${
+          className={`text-[22px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink sm:text-[26px] ${
             eyebrow ? "mt-2" : ""
           }`}
         >
@@ -79,7 +79,7 @@ export function PanelPageHeader({
             {eyebrow}
           </p>
         ) : null}
-        <h1 className={cn("max-w-4xl font-semibold tracking-[-.04em] text-dc-ink", eyebrow ? "mt-2.5 text-3xl sm:text-4xl" : "text-[26px] sm:text-[28px]")}>
+        <h1 className={cn("max-w-4xl font-semibold tracking-[-.04em] text-dc-ink", eyebrow ? "mt-2.5 text-2xl sm:text-3xl lg:text-4xl" : "text-[22px] sm:text-[26px] lg:text-[28px]")}>
           {title}
         </h1>
         {description ? <p className="mt-2.5 max-w-3xl text-sm leading-7 text-dc-ink-body">{description}</p> : null}
@@ -160,7 +160,7 @@ export function PanelFilterLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={`rounded-lg px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
+      className={`rounded-lg px-3 py-2 text-[12.5px] font-semibold transition-colors sm:px-3.5 sm:py-2.5 sm:text-[13px] ${
         active
           ? "bg-dc-brand-strong text-white"
           : "border border-dc-line-soft bg-white text-dc-ink-muted hover:border-dc-brand"
@@ -340,63 +340,9 @@ export function PanelProgress({
   );
 }
 
-/* ── Tablo ────────────────────────────────────────────────────────────── */
+/* ── Tablo (mobilde kart görünümü — panel-table.tsx) ─────────────────── */
 
-/**
- * Izgara tablo. Tasarım `div` ızgarası kullanıyor; burada gerçek `<table>`
- * kullanılır (§38 — tablo semantiği). Dar ekranda yatay kaydırılır.
- */
-export function PanelTable({
-  columns,
-  children,
-  caption,
-}: {
-  columns: readonly string[];
-  children: ReactNode;
-  caption?: string;
-}) {
-  return (
-    <div className="mt-5 overflow-x-auto rounded-[14px] border border-dc-line bg-white">
-      <table className="w-full min-w-[720px] border-collapse text-left">
-        {caption ? <caption className="sr-only">{caption}</caption> : null}
-        <thead>
-          <tr className="border-b border-dc-line bg-dc-panel-head">
-            {columns.map((c) => (
-              <th
-                key={c}
-                scope="col"
-                className="px-4 py-3 text-[12.5px] font-bold text-dc-ink-muted first:pl-[18px]"
-              >
-                {c}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>{children}</tbody>
-      </table>
-    </div>
-  );
-}
-
-export function PanelTableRow({ children }: { children: ReactNode }) {
-  return (
-    <tr className="border-b border-dc-line-soft text-[13.5px] font-medium text-[var(--pd-ink-3)] last:border-0">
-      {children}
-    </tr>
-  );
-}
-
-export function PanelTableCell({
-  children,
-  tone,
-}: {
-  children: ReactNode;
-  tone?: "default" | "ok" | "warn";
-}) {
-  const color =
-    tone === "ok" ? "text-dc-brand-hover" : tone === "warn" ? "text-[var(--pd-pastel-yellow-ink)]" : "";
-  return <td className={`px-4 py-3.5 first:pl-[18px] ${color}`}>{children}</td>;
-}
+export { PanelTable, PanelTableRow, PanelTableCell } from "@/components/panel/panel-table";
 
 /* ── Onay kutulu görev satırı ─────────────────────────────────────────── */
 

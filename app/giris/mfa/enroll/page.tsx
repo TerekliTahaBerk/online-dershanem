@@ -9,5 +9,17 @@ export default async function AdminMfaEnrollPage() {
   if (session.role !== "ADMIN") notFound();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
   if ((await adminHasMfa(session.userId)) && !session.mfaVerifiedAt) redirect("/giris/mfa");
-  return <main className="mx-auto flex min-h-screen max-w-lg items-center px-5 py-12"><section className="w-full rounded-3xl border bg-white p-7 shadow-sm"><p className="text-sm font-bold uppercase tracking-wider text-emerald-700">Zorunlu kurulum</p><h1 className="mt-2 text-3xl font-bold">Yönetici MFA’sını kurun</h1><p className="mb-7 mt-3 text-sm leading-6 text-slate-600">Geçiş anahtarı tercih edilir. TOTP, desteklenmeyen cihazlar için güvenli bir yedektir.</p><AdminMfaEnrollment /></section></main>;
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-lg items-center px-4 py-8 sm:px-5 sm:py-12">
+      <section className="w-full rounded-3xl border bg-white p-5 shadow-sm sm:p-7">
+        <p className="text-sm font-bold uppercase tracking-wider text-emerald-700">Zorunlu kurulum</p>
+        <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Yönetici MFA’sını kurun</h1>
+        <p className="mb-7 mt-3 text-sm leading-6 text-slate-600">
+          Mobilde geçiş anahtarı (Face ID / parmak izi) en kolay yoldur. TOTP yedek yöntemdir; aynı
+          telefondan kurarken QR okutmanız gerekmez.
+        </p>
+        <AdminMfaEnrollment />
+      </section>
+    </main>
+  );
 }
