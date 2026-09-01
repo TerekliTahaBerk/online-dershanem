@@ -78,6 +78,19 @@ export function canUseAdminTeacherMode(actor: { role: UserRole }): boolean {
   return actor.role === "ADMIN";
 }
 
+/**
+ * Rol-bağımsız panel sayfalarında (bildirimler vb.) kabuğa verilecek rol.
+ * Öğretmen çalışma modu açıkken ADMIN oturumu TEACHER menüsü gösterir;
+ * yönetim sayfaları kendi guard'larıyla ADMIN geçmeye devam eder.
+ */
+export function panelShellRoleForContext(
+  sessionRole: UserRole,
+  teacherModeEnabled: boolean,
+): UserRole {
+  if (sessionRole === "ADMIN" && teacherModeEnabled) return "TEACHER";
+  return sessionRole;
+}
+
 /** Effective session: aynı userId, role=TEACHER. */
 export function toAdminTeacherModeSession<T extends {
   sessionId: string;

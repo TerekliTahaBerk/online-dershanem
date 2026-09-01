@@ -4,6 +4,7 @@ import {
   canUseAdminTeacherMode,
   decodeAdminTeacherModeCookie,
   encodeAdminTeacherModeCookie,
+  panelShellRoleForContext,
   toAdminTeacherModeSession,
 } from "./admin-teacher-mode-core";
 
@@ -45,6 +46,13 @@ test("expired teacher mode cookie is rejected", () => {
     exp: Date.now() - 10,
   });
   assert.equal(decodeAdminTeacherModeCookie(encoded), null);
+});
+
+test("panel shell role follows teacher workspace when enabled", () => {
+  assert.equal(panelShellRoleForContext("ADMIN", true), "TEACHER");
+  assert.equal(panelShellRoleForContext("ADMIN", false), "ADMIN");
+  assert.equal(panelShellRoleForContext("TEACHER", true), "TEACHER");
+  assert.equal(panelShellRoleForContext("STUDENT", true), "STUDENT");
 });
 
 test("effective teacher mode keeps same userId and flips role only", () => {
