@@ -6,7 +6,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { assertCoachOrTeacherAccess, loadPlanTaskForStaffMutation } from "@/lib/kocum/access-server";
 import { appendTimelineEvent, recordPlanRevision } from "@/lib/kocum/server";
-import { buildRevisionChangeSummary } from "@/lib/kocum";
+import { buildRevisionChangeSummary, isDateWithinPlanWeek } from "@/lib/kocum";
 import { istanbulDayStart } from "@/lib/istanbul-time";
 
 const bodySchema = z.object({
@@ -60,6 +60,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   const scheduledFor = istanbulDayStart(new Date(parsed.data.scheduledFor));
+  if (!isDateWithinPlanWeek(scheduledFor, task.plan.weekStart)) {
+    return NextResponse.json(
+      { error: "Görev tarihi plan haftası dışında olamaz." },
+      { status: 400 },
+    );
+  }
   const nextVersion = task.plan.version + 1;
 
   await prisma.$transaction(async (tx) => {

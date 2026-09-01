@@ -146,6 +146,8 @@ export function CoachWeekCalendar({
                       <input
                         type="date"
                         className="panel-input text-[11px]"
+                        min={formatIstanbulDateInput(weekStart)}
+                        max={formatIstanbulDateInput(addIstanbulCalendarDays(weekStart, 6))}
                         value={dateDraft[task.id] ?? key}
                         disabled={busyId === task.id}
                         onChange={(event) =>

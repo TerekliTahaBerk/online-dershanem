@@ -74,6 +74,30 @@ export default async function StudentPlanPage() {
    * render edilmiyordu.
    */
   const coaching = await getStudentCoaching(profile.id);
+  const [coachSummary, upcomingExams] = await Promise.all([
+    prisma.weeklyCoachSummary.findFirst({
+      where: { studentId: profile.id, status: "PUBLISHED" },
+      orderBy: { weekStart: "desc" },
+      select: {
+        studentVisibleText: true,
+        strengths: true,
+        focusAreas: true,
+        nextWeekFocus: true,
+      },
+    }),
+    prisma.odkExam.findMany({
+      where: {
+        status: { in: ["SCHEDULED", "LIVE"] },
+        startsAt: { gte: new Date(), lte: addIstanbulCalendarDays(new Date(), 14) },
+        assignments: {
+          some: { studentUserId: session.userId, isActive: true, revokedAt: null },
+        },
+      },
+      orderBy: { startsAt: "asc" },
+      take: 3,
+      select: { id: true, title: true, startsAt: true },
+    }),
+  ]);
   const start = plan ? istanbulWeekStart(plan.weekStart) : null;
   const end = start ? addIstanbulCalendarDays(start, 6) : null;
   const flags = getPanelFeatureFlags();
@@ -137,6 +161,7 @@ export default async function StudentPlanPage() {
                     title: task.title,
                     scheduledFor: task.scheduledFor.toISOString(),
                     durationMinutes: task.durationMinutes,
+                    taskKind: task.taskKind,
                     sourceType: task.sourceType,
                     reasonCode: task.reasonCode,
                     status: task.status,
@@ -160,6 +185,23 @@ export default async function StudentPlanPage() {
                 }
               : null
           }
+          initialCoachSummary={
+            coachSummary
+              ? {
+                  studentVisibleText: coachSummary.studentVisibleText,
+                  strengths: coachSummary.strengths,
+                  focusAreas: coachSummary.focusAreas,
+                  nextWeekFocus: coachSummary.nextWeekFocus,
+                }
+              : null
+          }
+          upcomingExams={upcomingExams
+            .filter((exam): exam is { id: string; title: string; startsAt: Date } => Boolean(exam.startsAt))
+            .map((exam) => ({
+              id: exam.id,
+              title: exam.title,
+              startsAt: exam.startsAt.toISOString(),
+            }))}
         />
       </div>
     </>,

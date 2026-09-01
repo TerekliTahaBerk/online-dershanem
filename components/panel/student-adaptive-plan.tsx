@@ -16,6 +16,12 @@ import {
   taskDateKey,
   taskStatusLabel,
 } from "@/lib/student-plan-view";
+import {
+  completionFieldsForKind,
+  type CompletionField,
+  type KocumTaskKind,
+} from "@/lib/kocum/plan-tasks";
+import { formatMinutesAsHours } from "@/lib/kocum/metrics";
 
 /**
  * ÖĞRENCİ · TEK DOMİNANT PLAN DENEYİMİ.
@@ -47,6 +53,7 @@ type Task = {
   title: string;
   scheduledFor: string;
   durationMinutes: number;
+  taskKind?: KocumTaskKind;
   sourceType:
     | "ASSIGNMENT"
     | "REVIEW"
@@ -65,6 +72,31 @@ type Task = {
   targetValue?: number | null;
   actualQuestions?: number | null;
   subject?: string | null;
+};
+
+type CompletionDraft = {
+  status: "DONE" | "PARTIAL" | "COULD_NOT";
+  actualQuestions: string;
+  actualCorrect: string;
+  actualIncorrect: string;
+  actualBlank: string;
+  actualMinutes: string;
+  studentNote: string;
+  difficultyFelt: string;
+  energyFelt: string;
+};
+
+type UpcomingExam = {
+  id: string;
+  title: string;
+  startsAt: string;
+};
+
+type CoachSummarySnippet = {
+  studentVisibleText: string | null;
+  strengths: string | null;
+  focusAreas: string | null;
+  nextWeekFocus: string | null;
 };
 
 type Plan = {
@@ -131,18 +163,71 @@ const dateTime = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
+function emptyDraft(status: CompletionDraft["status"], task: Task): CompletionDraft {
+  return {
+    status,
+    actualQuestions: task.targetType === "QUESTIONS" && task.targetValue ? String(task.targetValue) : "",
+    actualCorrect: "",
+    actualIncorrect: "",
+    actualBlank: "",
+    actualMinutes: task.durationMinutes > 0 ? String(task.durationMinutes) : "",
+    studentNote: "",
+    difficultyFelt: "",
+    energyFelt: "",
+  };
+}
+
+function fieldLabel(field: CompletionField): string {
+  return {
+    actualQuestions: "Çözülen soru",
+    actualCorrect: "Doğru",
+    actualIncorrect: "Yanlış",
+    actualBlank: "Boş",
+    actualMinutes: "Geçen süre (dk)",
+    studentNote: "Notun",
+    difficultyFelt: "Zorluk (1–5)",
+    energyFelt: "Çalışma hissi (1–5)",
+  }[field];
+}
+
 function TaskCard({
   task,
   canComplete,
   highlighted,
-  onComplete,
+  onStart,
+  onOpenComplete,
+  draft,
+  onDraftChange,
+  onSubmitComplete,
+  onCancelComplete,
+  busy,
 }: {
   task: Task;
   canComplete: boolean;
   highlighted: boolean;
-  onComplete: (task: Task, status?: "DONE" | "PARTIAL" | "IN_PROGRESS" | "COULD_NOT") => void;
+  onStart: (task: Task) => void;
+  onOpenComplete: (task: Task, status: CompletionDraft["status"]) => void;
+  draft: CompletionDraft | null;
+  onDraftChange: (next: CompletionDraft) => void;
+  onSubmitComplete: (task: Task) => void;
+  onCancelComplete: () => void;
+  busy: boolean;
 }) {
   const done = task.status === "DONE" || task.status === "PARTIAL";
+  const fields = completionFieldsForKind(task.taskKind || "CUSTOM");
+  const plannedVsActual =
+    task.actualMinutes != null || task.actualQuestions != null ? (
+      <p className="mt-1 text-xs text-[var(--site-muted)]">
+        Planlanan
+        {task.targetType === "QUESTIONS" && task.targetValue ? ` · ${task.targetValue} soru` : ""}
+        {task.durationMinutes > 0 ? ` · ${task.durationMinutes} dk` : ""}
+        {" · "}
+        Gerçekleşen
+        {task.actualQuestions != null ? ` · ${task.actualQuestions} soru` : ""}
+        {task.actualMinutes != null ? ` · ${task.actualMinutes} dk` : ""}
+      </p>
+    ) : null;
+
   return (
     <article
       className={`rounded-2xl border p-4 ${
@@ -166,29 +251,18 @@ function TaskCard({
             <span>· {taskStatusLabel(task.status)}</span>
           </p>
           <h3 className={`mt-1 font-extrabold ${highlighted ? "text-base" : "text-sm"}`}>{task.title}</h3>
-          {task.actualMinutes != null || task.actualQuestions != null ? (
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
-              Gerçekleşen
-              {task.actualQuestions != null ? ` · ${task.actualQuestions} soru` : ""}
-              {task.actualMinutes != null ? ` · ${task.actualMinutes} dk` : ""}
-            </p>
-          ) : null}
+          {plannedVsActual}
         </div>
-        {canComplete && task.status !== "DONE" && task.status !== "SKIPPED" ? (
+        {canComplete && task.status !== "DONE" && task.status !== "SKIPPED" && !draft ? (
           <div className="flex shrink-0 flex-wrap gap-2">
             {task.status === "PLANNED" ? (
-              <button
-                type="button"
-                onClick={() => onComplete(task, "IN_PROGRESS")}
-                className="panel-quick-action"
-                aria-label="Göreve başla"
-              >
+              <button type="button" onClick={() => onStart(task)} className="panel-quick-action" aria-label="Göreve başla">
                 Başladım
               </button>
             ) : null}
             <button
               type="button"
-              onClick={() => onComplete(task, "DONE")}
+              onClick={() => onOpenComplete(task, "DONE")}
               className={`panel-quick-action ${highlighted ? "panel-quick-action-primary" : ""}`}
               aria-label="Görevi tamamla"
             >
@@ -196,17 +270,77 @@ function TaskCard({
             </button>
             <button
               type="button"
-              onClick={() => onComplete(task, "PARTIAL")}
+              onClick={() => onOpenComplete(task, "PARTIAL")}
               className="panel-quick-action"
               aria-label="Kısmen tamamla"
             >
               Kısmen
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenComplete(task, "COULD_NOT")}
+              className="panel-quick-action"
+              aria-label="Yapamadım"
+            >
+              Yapamadım
             </button>
           </div>
         ) : done ? (
           <span className="shrink-0 text-xs font-bold text-emerald-800">Tamamlandı</span>
         ) : null}
       </div>
+
+      {draft ? (
+        <form
+          className="mt-4 space-y-3 rounded-xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmitComplete(task);
+          }}
+        >
+          <p className="text-xs font-extrabold">
+            {draft.status === "DONE"
+              ? "Tamamlama bilgisi"
+              : draft.status === "PARTIAL"
+                ? "Kısmi tamamlama"
+                : "Yapamadım — kısa not"}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {fields.map((field) =>
+              field === "studentNote" ? (
+                <label key={field} className="sm:col-span-2">
+                  <span className="panel-label">{fieldLabel(field)}</span>
+                  <textarea
+                    className="panel-input mt-1 min-h-[64px]"
+                    value={draft.studentNote}
+                    onChange={(e) => onDraftChange({ ...draft, studentNote: e.target.value })}
+                  />
+                </label>
+              ) : (
+                <label key={field}>
+                  <span className="panel-label">{fieldLabel(field)}</span>
+                  <input
+                    type="number"
+                    min={field === "difficultyFelt" || field === "energyFelt" ? 1 : 0}
+                    max={field === "difficultyFelt" || field === "energyFelt" ? 5 : 720}
+                    className="panel-input mt-1"
+                    value={draft[field]}
+                    onChange={(e) => onDraftChange({ ...draft, [field]: e.target.value })}
+                  />
+                </label>
+              ),
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" disabled={busy} className="panel-quick-action panel-quick-action-primary">
+              Kaydet
+            </button>
+            <button type="button" disabled={busy} onClick={onCancelComplete} className="panel-quick-action">
+              Vazgeç
+            </button>
+          </div>
+        </form>
+      ) : null}
     </article>
   );
 }
@@ -215,17 +349,23 @@ export function StudentAdaptivePlan({
   initialPreference,
   initialPlan,
   initialCoaching,
+  initialCoachSummary,
+  upcomingExams,
   today,
 }: {
   initialPreference: Preference;
   initialPlan: Plan | null;
   initialCoaching: CoachingSnapshot | null;
+  initialCoachSummary?: CoachSummarySnippet | null;
+  upcomingExams?: UpcomingExam[];
   today: string;
 }) {
   const [preference, setPreference] = useState(initialPreference);
   const [plan, setPlan] = useState(initialPlan);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [activeCompletionId, setActiveCompletionId] = useState<string | null>(null);
+  const [completionDraft, setCompletionDraft] = useState<CompletionDraft | null>(null);
   const [overloadActionOpen, setOverloadActionOpen] = useState(false);
   const [overloadOption, setOverloadOption] = useState<OverloadOption>("REDUCE_LIGHT");
   // Plan yokken tercihler ANA KONUDUR (varsayılan açık); plan kurulunca
@@ -268,7 +408,7 @@ export function StudentAdaptivePlan({
     window.location.reload();
   }
 
-  async function complete(task: Task, status: "DONE" | "PARTIAL" | "IN_PROGRESS" | "COULD_NOT" = "DONE") {
+  async function completeQuick(task: Task, status: "IN_PROGRESS") {
     sendPanelEvent({
       name: "plan_task_started",
       properties: {
@@ -286,7 +426,6 @@ export function StudentAdaptivePlan({
       body: JSON.stringify({ status }),
     });
     if (!response.ok) {
-      // Geriye dönük: eski uç hâlâ DONE işaretler.
       const legacy = await fetch(`/api/panel/adaptive-plan/tasks/${task.id}/complete`, { method: "POST" });
       if (!legacy.ok) return setMessage("Görev güncellenemedi.");
     }
@@ -298,14 +437,74 @@ export function StudentAdaptivePlan({
           }
         : current,
     );
+    setMessage("Göreve başladın.");
+  }
+
+  async function submitCompletion(task: Task) {
+    if (!completionDraft) return;
+    setBusy(true);
+    sendPanelEvent({
+      name: "plan_task_started",
+      properties: {
+        product: "OK",
+        actionKind: "COMPLETE_PLAN_TASK",
+        reasonCode: task.reasonCode,
+        ageBand: "NA",
+        evidenceBand: "NA",
+        role: "STUDENT",
+      },
+    });
+
+    const toInt = (value: string) => (value.trim() === "" ? null : Number(value));
+    const payload = {
+      status: completionDraft.status,
+      actualQuestions: toInt(completionDraft.actualQuestions),
+      actualCorrect: toInt(completionDraft.actualCorrect),
+      actualIncorrect: toInt(completionDraft.actualIncorrect),
+      actualBlank: toInt(completionDraft.actualBlank),
+      actualMinutes: toInt(completionDraft.actualMinutes),
+      studentNote: completionDraft.studentNote.trim() || null,
+      difficultyFelt: toInt(completionDraft.difficultyFelt),
+      energyFelt: toInt(completionDraft.energyFelt),
+    };
+
+    const response = await fetch(`/api/panel/kocum/tasks/${task.id}/complete`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const body = await response.json().catch(() => ({}));
+    setBusy(false);
+    if (!response.ok) {
+      setMessage(body.error || "Görev güncellenemedi.");
+      return;
+    }
+
+    setPlan((current) =>
+      current
+        ? {
+            ...current,
+            tasks: current.tasks.map((item) =>
+              item.id === task.id
+                ? {
+                    ...item,
+                    status: completionDraft.status,
+                    actualMinutes: payload.actualMinutes,
+                    actualQuestions: payload.actualQuestions,
+                  }
+                : item,
+            ),
+          }
+        : current,
+    );
+    setActiveCompletionId(null);
+    setCompletionDraft(null);
     setMessage(
-      status === "DONE"
+      completionDraft.status === "DONE"
         ? "Harika — görev tamamlandı."
-        : status === "PARTIAL"
+        : completionDraft.status === "PARTIAL"
           ? "Kısmi tamamlanma kaydedildi."
-          : status === "IN_PROGRESS"
-            ? "Göreve başladın."
-            : "Durum kaydedildi.",
+          : "Durum kaydedildi.",
     );
   }
 
@@ -341,7 +540,7 @@ export function StudentAdaptivePlan({
   const { todayPending, todayCompleted, remainingWeek, overdue } = splitPlanTasks(tasks, today);
   const firstOpenTodayTask = todayPending[0] ?? null;
   const canComplete = plan?.status === "APPROVED";
-  const weekProgress = buildWeeklyProgress(tasks);
+  const weekProgress = buildWeeklyProgress(tasks, today);
   const todayFocus = buildTodayFocus(todayPending);
   const weeklyGroups = remainingWeek.reduce(
     (map, task) => {
@@ -355,6 +554,30 @@ export function StudentAdaptivePlan({
   const weekKeys = Object.keys(weeklyGroups).sort();
   const upcomingDayKeys = weekKeys.filter((key) => key > today);
   const pastDayKeys = weekKeys.filter((key) => key < today);
+
+  function renderTaskCard(task: Task, highlighted: boolean) {
+    return (
+      <TaskCard
+        key={task.id}
+        task={task}
+        canComplete={canComplete}
+        highlighted={highlighted}
+        busy={busy}
+        draft={activeCompletionId === task.id ? completionDraft : null}
+        onStart={(item) => void completeQuick(item, "IN_PROGRESS")}
+        onOpenComplete={(item, status) => {
+          setActiveCompletionId(item.id);
+          setCompletionDraft(emptyDraft(status, item));
+        }}
+        onDraftChange={setCompletionDraft}
+        onSubmitComplete={(item) => void submitCompletion(item)}
+        onCancelComplete={() => {
+          setActiveCompletionId(null);
+          setCompletionDraft(null);
+        }}
+      />
+    );
+  }
 
   const preferenceFields = (
     <>
@@ -504,9 +727,7 @@ export function StudentAdaptivePlan({
           <h2 id="today-tasks-heading" className="text-sm font-extrabold text-[var(--site-ink)]">Bugünkü çalışmalar</h2>
           {todayPending.length ? (
             <div className="mt-5 space-y-3">
-              {todayPending.map((task) => (
-                <TaskCard key={task.id} task={task} canComplete={canComplete} highlighted={task.id === firstOpenTodayTask?.id} onComplete={complete} />
-              ))}
+              {todayPending.map((task) => renderTaskCard(task, task.id === firstOpenTodayTask?.id))}
             </div>
           ) : (
             <div className="mt-5 rounded-2xl border border-dashed border-[var(--site-line)] p-6 text-center">
@@ -520,9 +741,7 @@ export function StudentAdaptivePlan({
                 Tamamlananlar ({todayCompleted.length})
               </summary>
               <div className="mt-3 space-y-2">
-                {todayCompleted.map((task) => (
-                  <TaskCard key={task.id} task={task} canComplete={canComplete} highlighted={false} onComplete={complete} />
-                ))}
+                {todayCompleted.map((task) => renderTaskCard(task, false))}
               </div>
             </details>
           ) : null}
@@ -565,6 +784,41 @@ export function StudentAdaptivePlan({
               <div className="h-full rounded-full bg-dc-brand" style={{ width: `${weekProgress.percent}%` }} />
             </div>
           </div>
+
+          {weekProgress.subjectDistribution.length ? (
+            <div className="mt-5">
+              <h3 className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+                Ders dağılımı
+              </h3>
+              <ul className="mt-2 space-y-1.5 text-xs text-[var(--site-muted)]">
+                {weekProgress.subjectDistribution.map((row) => (
+                  <li key={row.subject} className="flex flex-wrap justify-between gap-2">
+                    <span className="font-bold text-[var(--site-ink)]">{row.subject}</span>
+                    <span>
+                      {formatMinutesAsHours(row.actualMinutes)} / {formatMinutesAsHours(row.plannedMinutes)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-[11px] leading-5 text-[var(--site-muted)]">
+                Akademik bağlantı: çalışma süresi ile deneme netleri birlikte izlenebilir; bu bir neden-sonuç iddiası değildir.
+              </p>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {upcomingExams && upcomingExams.length ? (
+        <section aria-labelledby="upcoming-exam-heading" className="panel-surface p-5 sm:p-6">
+          <h2 id="upcoming-exam-heading" className="text-sm font-extrabold">Yaklaşan deneme</h2>
+          <ul className="mt-3 space-y-2">
+            {upcomingExams.map((exam) => (
+              <li key={exam.id} className="rounded-xl border border-[var(--site-line)] px-3 py-2 text-sm">
+                <p className="font-bold">{exam.title}</p>
+                <p className="text-xs text-[var(--site-muted)]">{dateTime.format(new Date(exam.startsAt))}</p>
+              </li>
+            ))}
+          </ul>
         </section>
       ) : null}
 
@@ -579,6 +833,16 @@ export function StudentAdaptivePlan({
             ) : (
               <p className="mt-2 text-xs text-[var(--site-muted)]">Bu hafta için yeni bir koç notu yok.</p>
             )}
+            {initialCoachSummary?.studentVisibleText ? (
+              <p className="mt-3 rounded-xl bg-white/70 p-3 text-sm text-dc-ink-body">
+                {initialCoachSummary.studentVisibleText}
+              </p>
+            ) : null}
+            {initialCoachSummary?.nextWeekFocus ? (
+              <p className="mt-2 text-xs font-bold text-[var(--site-muted)]">
+                Gelecek hafta: {initialCoachSummary.nextWeekFocus}
+              </p>
+            ) : null}
             {initialCoaching.nextScheduledAt ? (
               <p className="mt-2 text-xs font-bold text-[var(--site-muted)]">Sonraki görüşme: {dateTime.format(new Date(initialCoaching.nextScheduledAt))}</p>
             ) : null}
@@ -613,9 +877,7 @@ export function StudentAdaptivePlan({
                     {dayHeading.format(new Date(`${dateKey}T00:00:00.000+03:00`))}
                   </h3>
                   <div className="mt-2 space-y-2">
-                    {weeklyGroups[dateKey].map((task) => (
-                      <TaskCard key={task.id} task={task} canComplete={canComplete} highlighted={false} onComplete={complete} />
-                    ))}
+                    {weeklyGroups[dateKey].map((task) => renderTaskCard(task, false))}
                   </div>
                 </div>
               ))}

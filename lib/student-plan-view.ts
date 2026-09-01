@@ -54,8 +54,10 @@ export function splitPlanTasks<T extends StudentPlanTask>(tasks: T[], today: str
   return { todayTasks, todayPending, todayCompleted, remainingWeek, overdue };
 }
 
-export function buildWeeklyProgress(tasks: StudentPlanTask[]) {
-  const metrics = buildWeeklyKocumMetrics(tasks, "2099-01-01", (d) => taskDateKey(d.toISOString()));
+export function buildWeeklyProgress(tasks: StudentPlanTask[], todayKey = "2099-01-01") {
+  const metrics = buildWeeklyKocumMetrics(tasks, todayKey, (d) =>
+    taskDateKey(d instanceof Date ? d.toISOString() : String(d)),
+  );
   return {
     completedCount: metrics.taskCompleted,
     totalCount: metrics.taskTotal,
@@ -67,6 +69,8 @@ export function buildWeeklyProgress(tasks: StudentPlanTask[]) {
     questionActual: metrics.questionActual,
     plannedLabel: formatMinutesAsHours(metrics.plannedMinutes),
     completedLabel: formatMinutesAsHours(metrics.completedMinutes),
+    subjectDistribution: metrics.subjectDistribution,
+    overdueCount: metrics.taskOverdue,
   };
 }
 

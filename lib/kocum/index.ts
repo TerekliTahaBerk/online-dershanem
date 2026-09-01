@@ -31,3 +31,4 @@ export * from "./metrics";
 export * from "./templates";
 export * from "./visibility";
 export * from "./adaptive-suggestions";
+export * from "./schedule";

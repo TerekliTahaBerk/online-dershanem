@@ -12,7 +12,9 @@ import {
   canViewerSeeTimelineEvent,
   completionFieldsForKind,
   formatMinutesAsHours,
+  isDateWithinPlanWeek,
   parseTemplateTaskDefs,
+  planWeekDateBounds,
   rankManagementSignals,
   separateWorkItems,
   shouldSyncAssignmentProgress,
@@ -218,6 +220,22 @@ test("management sinyalleri öncelik sırasına girer", () => {
     ranked.map((r) => r.code),
     ["NO_COACH", "NO_PLAN", "LOW_COMPLETION"],
   );
+});
+
+test("plan haftası dışında tarih reddedilir", () => {
+  const weekStart = new Date("2026-08-31T00:00:00.000+03:00");
+  assert.equal(isDateWithinPlanWeek(new Date("2026-09-02T12:00:00.000+03:00"), weekStart), true);
+  assert.equal(isDateWithinPlanWeek(new Date("2026-09-07T12:00:00.000+03:00"), weekStart), false);
+  const bounds = planWeekDateBounds(weekStart);
+  assert.equal(bounds.min, "2026-08-31");
+  assert.equal(bounds.max, "2026-09-06");
+});
+
+test("boş hafta metrikleri sıfırlanır", () => {
+  const metrics = buildWeeklyKocumMetrics([], "2026-09-01", (d) => d.toISOString().slice(0, 10));
+  assert.equal(metrics.taskTotal, 0);
+  assert.equal(metrics.planCompletionPct, 0);
+  assert.equal(metrics.subjectDistribution.length, 0);
 });
 
 test("Dershanem ödevi ile Koçum plan görevi domain olarak ayrılır", () => {
