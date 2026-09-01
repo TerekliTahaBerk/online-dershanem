@@ -51,4 +51,10 @@ Aynı event iki kez işlendiğinde duplicate task/notification oluşmaz.
 
 Cron: `/api/cron/cross-product-events` (2 dk).
 
-Observability: `getOutboxHealthMetrics()` — pending/failed count.
+## Notification orchestrator
+
+Consumer `notification-orchestrator`:
+
+- `COACHING_PLAN_PUBLISHED` → tek plan bildirimi (dedup)
+- `MOCK_EXAM_ASSIGNED` → yaklaşan deneme bildirimi
+- `ASSIGNMENT_CREATED` → kaynak mutation zaten bildirdiyse atlar

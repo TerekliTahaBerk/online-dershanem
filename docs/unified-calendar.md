@@ -45,7 +45,7 @@ LESSON | ASSIGNMENT_DUE | COACHING_TASK | MOCK_EXAM | COACHING_SESSION | OTHER
 
 ## iCal
 
-Mevcut `/api/panel/calendar/export` yalnız dersleri export eder. Plan task ve denemeler unified API'de; iCal genişletmesi roadmap.
+`/api/panel/calendar/export` — dersler + (öğrenci/veli için) plan görevleri, ödev deadline'ları ve denemeler birleşik export edilir. Ürün etiketi `[Dershanem]`, `[Koçum]`, `[Deneme]` prefix ile görünür.
 
 ## Görsel ayrım
 

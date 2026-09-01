@@ -132,5 +132,20 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     summary: `${created + updated} öğrenci denemeye atandı`,
     payload: { created, updated, source, sourceRefId, resolvedFrom: resolved.resolvedFrom },
   });
+
+  const examMeta = await prisma.odkExam.findUnique({ where: { id }, select: { startsAt: true } });
+  const { onMockExamAssigned } = await import("@/lib/student-success/server/emit-hooks");
+  for (const student of students) {
+    const profile = await prisma.studentProfile.findUnique({ where: { userId: student.id }, select: { id: true } });
+    if (!profile) continue;
+    void onMockExamAssigned({
+      examId: id,
+      studentId: profile.id,
+      actorUserId: auth.session.userId,
+      startsAt: examMeta?.startsAt ?? null,
+      assignmentId: null,
+    });
+  }
+
   return NextResponse.json({ created, updated, total: created + updated, source, sourceRefId }, { status: 201 });
 }

@@ -5,6 +5,7 @@ import { computeOutcomeMastery, evidenceToSignal } from "./mastery";
 import { buildTodayItems, sortCalendarEvents } from "./calendar";
 import { generateRecommendations, canTransitionRecommendation } from "./recommendations";
 import { presentForParent } from "./presenters";
+import { unifiedEventsToIcal } from "./ical-bridge";
 import type { UnifiedCalendarEvent } from "./types";
 
 describe("student-success events", () => {
@@ -192,5 +193,26 @@ describe("presenters", () => {
     });
     assert.match(parent.weekSummary.lessonAttendance, /100/);
     assert.ok(!("internalRiskScore" in parent));
+  });
+});
+
+describe("ical bridge", () => {
+  it("prefixes product label in ical title", () => {
+    const events = unifiedEventsToIcal([
+      {
+        id: "mock-exam:1",
+        type: "MOCK_EXAM",
+        product: "ODK",
+        productLabel: "Deneme Kulübü",
+        title: "TYT Genel",
+        description: null,
+        startsAt: new Date("2026-09-01T10:00:00Z"),
+        endsAt: new Date("2026-09-01T12:00:00Z"),
+        href: "/panel/odk/sinavlar/1",
+        sourceId: "1",
+        sourceType: "OdkExam",
+      },
+    ]);
+    assert.match(events[0]?.title ?? "", /Deneme/);
   });
 });

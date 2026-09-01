@@ -6,7 +6,6 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { appendTimelineEvent, recordPlanRevision } from "@/lib/kocum/server";
 import { buildRevisionChangeSummary } from "@/lib/kocum";
-import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 
 const schema = z.object({ expectedVersion: z.number().int().min(1) });
 
@@ -101,18 +100,20 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     visibility: "STUDENT",
   });
 
-  const notifyRows = [
-    {
-      userId: plan.student.userId,
-      type: "SYSTEM" as const,
-      title: "Plan yayınlandı",
-      body: "Bu haftanın çalışma planı koçun tarafından yayınlandı.",
-      href: "/panel/ogrenci/plan",
-    },
-  ];
-  const inApp = await filterNotificationRows(notifyRows, "weeklyDigest");
-  if (inApp.length) await prisma.notification.createMany({ data: inApp });
-  await queuePanelNotificationEmails(notifyRows, "weeklyDigest");
+  const approvedPlan = await prisma.weeklyPlan.findUnique({
+    where: { id: plan.id },
+    select: { weekStart: true, tasks: { where: { status: "PLANNED" }, select: { id: true } } },
+  });
+  if (approvedPlan) {
+    const { onCoachingPlanPublished } = await import("@/lib/student-success/server/emit-hooks");
+    void onCoachingPlanPublished({
+      planId: plan.id,
+      studentId: plan.studentId,
+      weekStart: approvedPlan.weekStart,
+      taskCount: approvedPlan.tasks.length,
+      actorUserId: auth.session.userId,
+    });
+  }
 
   return NextResponse.json({ approved: true });
 }

@@ -12,6 +12,7 @@ const TIMELINE_TITLES: Partial<Record<CrossProductEventOutbox["eventType"], stri
   COACHING_PLAN_PUBLISHED: "Haftalık plan yayınlandı",
   COACHING_TASK_COMPLETED: "Plan görevi tamamlandı",
   MOCK_EXAM_RESULT_PUBLISHED: "Deneme sonucu yayınlandı",
+  MOCK_EXAM_ASSIGNED: "Deneme atandı",
 };
 
 export async function consumeTimelineWriter(event: CrossProductEventOutbox): Promise<void> {

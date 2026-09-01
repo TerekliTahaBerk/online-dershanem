@@ -130,6 +130,28 @@ export async function onMockExamResultPublished(input: {
   }
 }
 
+export async function onMockExamAssigned(input: {
+  examId: string;
+  studentId: string;
+  actorUserId: string;
+  startsAt: Date | null;
+  assignmentId?: string | null;
+}): Promise<void> {
+  await emitCrossProductEvent({
+    eventType: "MOCK_EXAM_ASSIGNED",
+    actorUserId: input.actorUserId,
+    studentId: input.studentId,
+    entityType: "OdkExam",
+    entityId: input.examId,
+    payload: {
+      eventVersion: 1,
+      examId: input.examId,
+      assignmentId: input.assignmentId ?? null,
+      startsAt: input.startsAt?.toISOString() ?? null,
+    },
+  });
+}
+
 export async function onCoachingPlanPublished(input: {
   planId: string;
   studentId: string;

@@ -9,11 +9,21 @@ import {
   loadStudentHomeProductData,
   type StudentHomeProductData,
 } from "@/lib/panel/student-home-data";
+import { getStudentToday } from "@/lib/student-success/server/calendar-server";
+import {
+  buildSerializedUnifiedToday,
+  legacyTodayFromUnified,
+  type SerializedUnifiedTodayItem,
+} from "@/lib/student-success/unified-today-serializer";
 
 export type StudentHomeData = {
   products: Awaited<ReturnType<typeof getAccessibleProducts>>;
   profile: { id: string } | null;
   productData: StudentHomeProductData;
+  unifiedToday: {
+    items: SerializedUnifiedTodayItem[];
+    whatNext: SerializedUnifiedTodayItem | null;
+  } | null;
 };
 
 const emptyProductData: StudentHomeProductData = { OD: null, OK: null, ODK: null, SHARED: null };
@@ -25,13 +35,13 @@ export async function getStudentHomeData(input: {
 }): Promise<StudentHomeData> {
   const flags = getPanelFeatureFlags();
   const products = await getAccessibleProducts(input.userId, input.role);
-  if (products.length === 0) return { products, profile: null, productData: emptyProductData };
+  if (products.length === 0) return { products, profile: null, productData: emptyProductData, unifiedToday: null };
 
   const profile = await prisma.studentProfile.findUnique({
     where: { userId: input.userId },
     select: { id: true },
   });
-  if (!profile) return { products, profile: null, productData: emptyProductData };
+  if (!profile) return { products, profile: null, productData: emptyProductData, unifiedToday: null };
 
   const productData = await loadStudentHomeProductData({
     studentId: profile.id,
@@ -119,5 +129,22 @@ export async function getStudentHomeData(input: {
     },
   });
 
-  return { products, profile, productData };
+  let unifiedToday: StudentHomeData["unifiedToday"] = null;
+  try {
+    const { events, dayStart, dayEnd } = await getStudentToday({
+      studentId: profile.id,
+      studentUserId: input.userId,
+      now: input.now ?? new Date(),
+    });
+    unifiedToday = buildSerializedUnifiedToday({
+      events,
+      now: input.now ?? new Date(),
+      dayStart,
+      dayEnd,
+    });
+  } catch {
+    unifiedToday = null;
+  }
+
+  return { products, profile, productData, unifiedToday };
 }

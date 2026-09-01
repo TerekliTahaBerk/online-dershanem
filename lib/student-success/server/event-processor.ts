@@ -10,13 +10,17 @@ import { consumeMockExamCoachBridge } from "@/lib/student-success/server/consume
 import { consumeEvidenceRecorder } from "@/lib/student-success/server/consumers/evidence-recorder";
 import { consumeMasteryRescore } from "@/lib/student-success/server/consumers/mastery-rescore";
 import { consumeTimelineWriter } from "@/lib/student-success/server/consumers/timeline-writer";
+import { consumeNotificationOrchestrator } from "@/lib/student-success/server/consumers/notification-orchestrator";
 
 type ConsumerHandler = (event: CrossProductEventOutbox) => Promise<void>;
+
+const NOTIFICATION_ORCHESTRATOR = { "notification-orchestrator": consumeNotificationOrchestrator };
 
 const CONSUMER_MAP: Partial<Record<CrossProductEventType, Partial<Record<EventConsumerKey, ConsumerHandler>>>> = {
   ASSIGNMENT_CREATED: {
     "assignment-projection": consumeAssignmentProjection,
     "timeline-writer": consumeTimelineWriter,
+    ...NOTIFICATION_ORCHESTRATOR,
   },
   ASSIGNMENT_COMPLETED: {
     "evidence-recorder": consumeEvidenceRecorder,
@@ -45,6 +49,11 @@ const CONSUMER_MAP: Partial<Record<CrossProductEventType, Partial<Record<EventCo
   },
   COACHING_PLAN_PUBLISHED: {
     "timeline-writer": consumeTimelineWriter,
+    ...NOTIFICATION_ORCHESTRATOR,
+  },
+  MOCK_EXAM_ASSIGNED: {
+    "timeline-writer": consumeTimelineWriter,
+    ...NOTIFICATION_ORCHESTRATOR,
   },
 };
 
