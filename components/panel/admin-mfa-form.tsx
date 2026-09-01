@@ -4,13 +4,15 @@ import { useState } from "react";
 import { startAuthentication, startRegistration } from "@simplewebauthn/browser";
 import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
-import { MfaCodeInput, TotpEnrollmentSetup } from "@/components/panel/totp-enrollment-setup";
+import { mapWebAuthnClientError } from "@/lib/auth/passkey-capabilities";
+import { MfaCodeInput, TotpEnrollmentSetup, useCoarsePointer } from "@/components/panel/totp-enrollment-setup";
 
 type Purpose = "AUTHENTICATE" | "STEP_UP";
 
 async function json(response: Response) {
   return response.json() as Promise<{
     error?: string;
+    code?: string;
     redirect?: string;
     recoveryCodes?: string[];
     options?: PublicKeyCredentialCreationOptionsJSON | PublicKeyCredentialRequestOptionsJSON;
@@ -21,18 +23,25 @@ async function json(response: Response) {
 export function AdminMfaForm({
   purpose,
   passkeyCount,
+  hasPlatformPasskey,
   totpEnabled,
   allowRecovery = true,
 }: {
   purpose: Purpose;
   passkeyCount: number;
+  hasPlatformPasskey: boolean;
   totpEnabled: boolean;
   allowRecovery?: boolean;
 }) {
+  const isMobile = useCoarsePointer();
   const [code, setCode] = useState("");
   const [recovery, setRecovery] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const showPasskeyButton = passkeyCount > 0 && (!isMobile || hasPlatformPasskey);
+  const showRemotePasskeyHint = passkeyCount > 0 && isMobile && !hasPlatformPasskey;
+  const showRecovery = allowRecovery && purpose === "AUTHENTICATE" && (totpEnabled || passkeyCount > 0);
 
   async function passkey() {
     setPending(true);
@@ -41,7 +50,7 @@ export function AdminMfaForm({
       const optionsResponse = await fetch("/api/auth/mfa/passkey/options", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ purpose }),
+        body: JSON.stringify({ purpose, preferPlatform: isMobile }),
       });
       const optionsData = await json(optionsResponse);
       if (!optionsResponse.ok || !optionsData.options || !optionsData.challengeId) {
@@ -61,7 +70,7 @@ export function AdminMfaForm({
       }
       window.location.replace(purpose === "STEP_UP" ? "/panel/yonetim" : verified.redirect);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Geçiş anahtarı doğrulanamadı.");
+      setError(mapWebAuthnClientError(cause));
       setPending(false);
     }
   }
@@ -84,48 +93,87 @@ export function AdminMfaForm({
     window.location.replace(purpose === "STEP_UP" ? "/panel/yonetim" : data.redirect || "/panel");
   }
 
-  return (
-    <div className="space-y-5">
-      {passkeyCount > 0 ? (
+  const totpBlock = totpEnabled ? (
+    <>
+      <MfaCodeInput
+        id="mfa-code"
+        label={recovery ? "Kurtarma kodu" : "Doğrulama uygulaması kodu"}
+        recovery={recovery}
+        code={code}
+        pending={pending}
+        onCodeChange={setCode}
+        onSubmit={verifyCode}
+      />
+      {showRecovery ? (
         <button
           type="button"
-          onClick={() => void passkey()}
-          disabled={pending}
-          className="site-btn site-btn-primary site-btn-lg w-full min-h-12"
+          onClick={() => {
+            setRecovery(!recovery);
+            setCode("");
+          }}
+          className="w-full text-sm underline"
         >
-          {pending ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : <KeyRound size={18} aria-hidden="true" />}
-          Face ID / parmak izi ile doğrula
+          {recovery ? "Uygulama kodu kullan" : "Cihazımı kaybettim — kurtarma kodu kullan"}
         </button>
       ) : null}
+    </>
+  ) : showRecovery ? (
+    <>
+      <MfaCodeInput
+        id="mfa-recovery-code"
+        label="Kurtarma kodu"
+        recovery
+        code={code}
+        pending={pending}
+        onCodeChange={setCode}
+        onSubmit={verifyCode}
+      />
+      <p className="text-xs leading-5 text-slate-500">
+        Kurulum sırasında kaydettiğiniz tek kullanımlık kurtarma kodlarından birini girin.
+      </p>
+    </>
+  ) : null;
 
-      {totpEnabled ? (
+  const passkeyBlock = showPasskeyButton ? (
+    <button
+      type="button"
+      onClick={() => void passkey()}
+      disabled={pending}
+      className={`site-btn site-btn-primary site-btn-lg w-full min-h-12 ${isMobile && totpEnabled ? "site-btn-secondary" : ""}`}
+    >
+      {pending ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : <KeyRound size={18} aria-hidden="true" />}
+      Face ID / parmak izi ile doğrula
+    </button>
+  ) : null;
+
+  return (
+    <div className="space-y-5">
+      {showRemotePasskeyHint ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+          <p className="font-bold">Geçiş anahtarınız başka cihazda</p>
+          <p className="mt-1">
+            Kayıtlı geçiş anahtarı bilgisayarınızda veya QR ile eşleştirilmiş başka bir aygıtta.
+            Telefondan QR okutarak giriş yapmak yerine{" "}
+            {totpEnabled ? "aşağıdaki uygulama kodunu" : "kurtarma kodunuzu"} kullanın.
+          </p>
+        </div>
+      ) : null}
+
+      {isMobile && totpEnabled ? (
         <>
-          {passkeyCount > 0 ? (
+          {totpBlock}
+          {showPasskeyButton ? <p className="text-center text-xs text-slate-500">veya bu telefondaki geçiş anahtarı</p> : null}
+          {passkeyBlock}
+        </>
+      ) : (
+        <>
+          {passkeyBlock}
+          {showPasskeyButton && totpEnabled ? (
             <p className="text-center text-xs text-slate-500">veya doğrulama uygulaması kodu girin</p>
           ) : null}
-          <MfaCodeInput
-            id="mfa-code"
-            label={recovery ? "Kurtarma kodu" : "Doğrulama uygulaması kodu"}
-            recovery={recovery}
-            code={code}
-            pending={pending}
-            onCodeChange={setCode}
-            onSubmit={verifyCode}
-          />
-          {allowRecovery && purpose === "AUTHENTICATE" ? (
-            <button
-              type="button"
-              onClick={() => {
-                setRecovery(!recovery);
-                setCode("");
-              }}
-              className="w-full text-sm underline"
-            >
-              {recovery ? "Uygulama kodu kullan" : "Cihazımı kaybettim — kurtarma kodu kullan"}
-            </button>
-          ) : null}
+          {totpBlock}
         </>
-      ) : null}
+      )}
 
       {!passkeyCount && !totpEnabled ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
@@ -210,7 +258,7 @@ export function AdminMfaEnrollment() {
       setRecoveryCodes(verified.recoveryCodes);
       setPending(false);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Geçiş anahtarı kaydedilemedi.");
+      setError(mapWebAuthnClientError(cause));
       setPending(false);
     }
   }
