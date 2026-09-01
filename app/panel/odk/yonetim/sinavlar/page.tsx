@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { OdkExamFamily, OdkExamStatus, Prisma } from "@prisma/client";
-import { CalendarClock, ClipboardCheck, Plus, Search } from "lucide-react";
+import { ClipboardCheck, Plus, Search } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -23,11 +23,20 @@ export default async function OdkAdminExamsPage({ searchParams }: { searchParams
   const where: Prisma.OdkExamWhereInput = { ...(family ? { family } : {}), ...(status ? { status } : {}), ...(query ? { title: { contains: query, mode: "insensitive" } } : {}) };
   const [series, exams] = await Promise.all([
     prisma.odkExamSeries.findMany({ where: { isActive: true }, orderBy: [{ family: "asc" }, { title: "asc" }], select: { id: true, title: true, family: true } }),
-    prisma.odkExam.findMany({ where, orderBy: { createdAt: "desc" }, include: { currentVersion: { select: { versionNumber: true } }, series: { select: { title: true } } } }),
+    prisma.odkExam.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        currentVersion: { select: { versionNumber: true, durationMinutes: true } },
+        series: { select: { title: true } },
+        _count: { select: { attempts: true, assignments: true } },
+        attempts: { select: { status: true, submittedAt: true } },
+      },
+    }),
   ]);
 
   return <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
-    <PanelPageHeader eyebrow="Deneme planlama" title="Sınavı önce eksiksiz hazırlayın." description="Taslak, içerik kilidi, planlama, puanlama ve sonuç açıklama adımlarını kontrollü sırayla yönetin." icon={ClipboardCheck} action={<a href="#yeni-deneme" className="panel-quick-action panel-quick-action-primary"><Plus size={14} /> Yeni deneme</a>} />
+    <PanelPageHeader eyebrow="Denemeler" title="Sınav operasyon merkezini yönetin." description="Taslak → hazır → plan → canlı → kapandı → inceleme → yayın. Sonuçlar yönetim yayınlamadan öğrenciye açılmaz." icon={ClipboardCheck} action={<a href="#yeni-deneme" className="panel-quick-action panel-quick-action-primary"><Plus size={14} /> Yeni deneme</a>} />
 
     <section id="yeni-deneme" className="mt-7 scroll-mt-28"><AdminExamCreate series={series} /></section>
 
@@ -41,9 +50,44 @@ export default async function OdkAdminExamsPage({ searchParams }: { searchParams
         </form>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {exams.map((exam) => { const presentation = examStatusPresentation[exam.status]; return <Link key={exam.id} href={`/panel/odk/yonetim/sinavlar/${exam.id}`} className="panel-surface group p-5 transition hover:-translate-y-0.5 hover:border-[var(--brand-olive)] hover:shadow-md"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">{exam.family} · sürüm {exam.currentVersion?.versionNumber || "—"}</p><h3 className="mt-2 truncate text-sm font-bold text-[var(--site-ink)]">{exam.title}</h3><p className="mt-1 truncate text-[10.5px] text-[var(--site-muted)]">{exam.series?.title || "Serisiz"}</p></div><OdkStatusBadge label={presentation.label} tone={presentation.tone} pulse={exam.status === "LIVE"} /></div><div className="mt-4 flex items-center gap-2 border-t border-[var(--site-line)] pt-3 text-[11px] text-[var(--site-body)]"><CalendarClock size={13} className="text-[var(--brand-olive)]" />{exam.startsAt ? date.format(exam.startsAt) : "Tarih planlanmadı"}</div></Link>; })}
-        {!exams.length ? <div className="rounded-3xl border border-dashed border-[var(--site-line)] bg-white p-8 text-center md:col-span-2 xl:col-span-3"><ClipboardCheck size={22} className="mx-auto text-[var(--site-muted)]" /><h3 className="mt-3 text-sm font-extrabold">Filtreye uygun deneme bulunamadı.</h3><p className="mt-1 text-xs text-[var(--site-muted)]">Filtreleri temizleyin veya yeni bir taslak oluşturun.</p><Link href="/panel/odk/yonetim/sinavlar" className="panel-text-link mt-3">Filtreleri temizle</Link></div> : null}
+      <div className="mt-4 overflow-x-auto rounded-3xl border border-[var(--site-line)] bg-white">
+        <table className="w-full min-w-[960px] text-left text-xs">
+          <thead className="bg-[var(--site-bg-warm)] text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
+            <tr>
+              <th className="px-4 py-3">Deneme</th>
+              <th className="px-3 py-3">Tür</th>
+              <th className="px-3 py-3">Tarih</th>
+              <th className="px-3 py-3">Süre</th>
+              <th className="px-3 py-3">Öğrenci</th>
+              <th className="px-3 py-3">Başlayan</th>
+              <th className="px-3 py-3">Tamamlayan</th>
+              <th className="px-3 py-3">Durum</th>
+              <th className="px-3 py-3">Sonuç</th>
+            </tr>
+          </thead>
+          <tbody>
+            {exams.map((exam) => {
+              const presentation = examStatusPresentation[exam.status];
+              const started = exam.attempts.length;
+              const completed = exam.attempts.filter((attempt) => attempt.status === "SUBMITTED" || attempt.status === "AUTO_SUBMITTED" || attempt.status === "REVIEW_REQUIRED").length;
+              const resultLabel = exam.status === "RELEASED" ? "Yayınlandı" : exam.status === "SCORED" ? "Gizli / inceleme" : exam.status === "ENDED" ? "Puanlama bekliyor" : "—";
+              return (
+                <tr key={exam.id} className="border-t border-[var(--site-line)] hover:bg-[var(--site-bg-warm)]/60">
+                  <td className="px-4 py-3"><Link href={`/panel/odk/yonetim/sinavlar/${exam.id}`} className="font-bold text-[var(--site-ink)] hover:text-[var(--brand-olive)]">{exam.title}</Link><p className="mt-0.5 text-[10px] text-[var(--site-muted)]">{exam.series?.title || "Serisiz"}</p></td>
+                  <td className="px-3 py-3 font-extrabold text-[var(--brand-olive)]">{exam.family}</td>
+                  <td className="px-3 py-3">{exam.startsAt ? date.format(exam.startsAt) : "—"}</td>
+                  <td className="px-3 py-3">{exam.currentVersion?.durationMinutes ? `${exam.currentVersion.durationMinutes} dk` : "—"}</td>
+                  <td className="px-3 py-3">{exam._count.assignments || started}</td>
+                  <td className="px-3 py-3">{started}</td>
+                  <td className="px-3 py-3">{completed}</td>
+                  <td className="px-3 py-3"><OdkStatusBadge label={presentation.label} tone={presentation.tone} pulse={exam.status === "LIVE"} /></td>
+                  <td className="px-3 py-3 font-bold">{resultLabel}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {!exams.length ? <div className="p-8 text-center"><ClipboardCheck size={22} className="mx-auto text-[var(--site-muted)]" /><h3 className="mt-3 text-sm font-extrabold">Filtreye uygun deneme bulunamadı.</h3><p className="mt-1 text-xs text-[var(--site-muted)]">Filtreleri temizleyin veya yeni bir taslak oluşturun.</p><Link href="/panel/odk/yonetim/sinavlar" className="panel-text-link mt-3">Filtreleri temizle</Link></div> : null}
       </div>
     </section>
   </PanelShell>;

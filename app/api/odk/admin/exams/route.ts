@@ -4,6 +4,8 @@ import { logAudit } from "@/lib/audit";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { createExamSchema } from "@/lib/odk/admin-schemas";
+import { resolveTemplateForCreate, withSectionRanges } from "@/lib/odk/exam-templates";
+import { DEFAULT_EXAM_SETTINGS } from "@/lib/odk/exam-domain";
 
 export async function POST(request: Request) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
@@ -17,17 +19,88 @@ export async function POST(request: Request) {
     const series = await prisma.odkExamSeries.findFirst({ where: { id: input.seriesId, family: input.family, isActive: true }, select: { id: true } });
     if (!series) return NextResponse.json({ error: "Seçilen seri sınav türüyle eşleşmiyor." }, { status: 400 });
   }
-  const policyCode = input.family === "LGS" ? "LGS_MATH_V1" : "YKS_MATH_V1";
-  const policy = await prisma.odkScoringPolicy.findUnique({ where: { code: policyCode }, select: { id: true } });
+
+  let template;
+  try {
+    template = resolveTemplateForCreate({ family: input.family, structureMode: input.structureMode, templateCode: input.templateCode });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Şablon çözümlenemedi." }, { status: 400 });
+  }
+
+  // Geriye uyumluluk: MATH_ONLY + questionCount override
+  const sections = withSectionRanges(template).map((section) => {
+    if (template.structureMode === "MATH_ONLY" && input.questionCount && section.code === "MAT") {
+      return { ...section, questionCount: input.questionCount, questionEnd: input.questionCount };
+    }
+    return section;
+  });
+  const durationMinutes = input.durationMinutes || template.durationMinutes;
+  const policy = await prisma.odkScoringPolicy.findUnique({ where: { code: template.scoringPolicyCode }, select: { id: true } });
   if (!policy) return NextResponse.json({ error: "Puanlama politikası kurulmamış. Migration’ı kontrol edin." }, { status: 503 });
 
   const exam = await prisma.$transaction(async (tx) => {
-    const created = await tx.odkExam.create({ data: { title: input.title, slug: input.slug, family: input.family, seriesId: input.seriesId || null, createdById: auth.session.userId } });
-    const version = await tx.odkExamVersion.create({ data: { examId: created.id, versionNumber: 1, durationMinutes: input.durationMinutes, scoringPolicyId: policy.id, createdById: auth.session.userId } });
-    const section = await tx.odkExamSection.create({ data: { versionId: version.id, code: "MAT", title: `${input.family} Matematik`, position: 0, questionCount: input.questionCount } });
-    await tx.odkExamQuestion.createMany({ data: Array.from({ length: input.questionCount }, (_, index) => ({ sectionId: section.id, questionNumber: index + 1, position: index })) });
+    const created = await tx.odkExam.create({
+      data: {
+        title: input.title,
+        slug: input.slug,
+        family: input.family,
+        seriesId: input.seriesId || null,
+        structureMode: template.structureMode,
+        templateCode: template.code,
+        description: input.description || null,
+        internalCode: input.internalCode || null,
+        academicYear: input.academicYear || null,
+        publisher: input.publisher || null,
+        settings: DEFAULT_EXAM_SETTINGS,
+        createdById: auth.session.userId,
+      },
+    });
+    const version = await tx.odkExamVersion.create({
+      data: {
+        examId: created.id,
+        versionNumber: 1,
+        durationMinutes,
+        scoringPolicyId: policy.id,
+        createdById: auth.session.userId,
+        settings: DEFAULT_EXAM_SETTINGS,
+        autoSubmit: true,
+      },
+    });
+    for (const section of sections) {
+      const createdSection = await tx.odkExamSection.create({
+        data: {
+          versionId: version.id,
+          code: section.code,
+          title: section.title,
+          position: section.position,
+          questionCount: section.questionCount,
+          questionStart: section.questionStart,
+          questionEnd: section.questionEnd,
+          durationMinutes: section.durationMinutes ?? null,
+        },
+      });
+      await tx.odkExamQuestion.createMany({
+        data: Array.from({ length: section.questionCount }, (_, index) => ({
+          sectionId: createdSection.id,
+          questionNumber: index + 1,
+          position: index,
+          bookletCode: "A",
+          bookletQuestionNumber: index + 1,
+          canonicalQuestionNumber: section.questionStart + index,
+        })),
+      });
+    }
     return tx.odkExam.update({ where: { id: created.id }, data: { currentVersionId: version.id } });
   });
-  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExam", entityId: exam.id, action: "odk.exam_created", summary: `${exam.family} matematik denemesi taslağı oluşturuldu`, payload: { questionCount: input.questionCount, version: 1 } });
-  return NextResponse.json({ exam: { id: exam.id } }, { status: 201 });
+
+  const totalQuestions = sections.reduce((sum, section) => sum + section.questionCount, 0);
+  await logAudit({
+    actorUserId: auth.session.userId,
+    entityType: "OdkExam",
+    entityId: exam.id,
+    action: "odk.exam_created",
+    summary: `${exam.family} denemesi taslağı oluşturuldu (${template.code})`,
+    payload: { questionCount: totalQuestions, version: 1, templateCode: template.code, structureMode: template.structureMode },
+  });
+  return NextResponse.json({ exam: { id: exam.id, templateCode: template.code } }, { status: 201 });
 }

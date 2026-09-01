@@ -86,7 +86,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
       id: true, title: true, family: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
       currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, take: 1, select: { id: true } } } },
       attempts: {
-        where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { isNot: null } }, orderBy: { attemptNumber: "desc" }, take: 1,
+        where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { is: { publicationStatus: "PUBLISHED" } } }, orderBy: { attemptNumber: "desc" }, take: 1,
         select: {
           id: true, submittedAt: true,
           score: {
@@ -104,7 +104,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
   const attempt = exam?.attempts[0];
   if (!attempt?.score) return null;
   const attempts = await prisma.odkExamAttempt.findMany({
-    where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED" }, score: { isNot: null } },
+    where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED" }, score: { is: { publicationStatus: "PUBLISHED" } } },
     orderBy: [{ exam: { startsAt: "desc" } }, { submittedAt: "desc" }, { attemptNumber: "desc" }],
     take: 30,
     select: {
