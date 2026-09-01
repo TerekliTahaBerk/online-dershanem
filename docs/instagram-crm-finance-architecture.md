@@ -10,7 +10,7 @@
 - Webhook önce `InstagramWebhookEvent` ve `BackgroundJob` yazar, ardından 200 döner. Ağ çağrısı webhook içinde yapılmaz. Job anahtarları unique, retry/backoff kalıcıdır.
 - AI varsayılanı `SUGGESTION`; şikâyet, iade, ödeme veya insan talebi daima insan kuyruğuna geçer.
 - Arka arkaya gelen kısa mesajlar 8 saniyelik kalıcı debounce işiyle birleştirilir. AI bağlamı en fazla dört inbound mesaj, aktif ürün/paket fiyatları ve anahtar kelimeyle seçilmiş sekiz bilgi kaydıyla sınırlıdır.
-- Otomasyonlar serbest kod çalıştırmaz. Zod ile doğrulanan tetikleyici, koşul ve allowlist aksiyonları `AutomationExecution` ile süre/sonuç/hata kaydı üretir.
+- Otomasyonlar serbest kod çalıştırmaz. Zod ile doğrulanan tetikleyici, koşul ve allowlist aksiyonları `AutomationExecution` ile süre/sonuç/hata kaydı üretir. Part 12 genişlemesi (dry-run, recursion, idempotency, eğitim tetikleyicileri) için bkz. [automation-architecture.md](./automation-architecture.md).
 - Referral içindeki reklam/kampanya kimlikleri first-touch atfına dönüştürülür; kesin eşleşmeyen telefon/e-posta kayıtları otomatik birleşmez, panelde öneri oluşturur.
 - Saatlik bakım işleri finans mutabakatı ve cevapsız sıcak aday kontrolünü; günlük iş ise iş birimi saklama politikasına göre kapalı/spam konuşma anonimleştirmesini yürütür.
 - Satış operasyonu alanları (`nextFollowUpAt`, `priority`, `wonAt`/`lostAt`, `lostReasonCode`) ve günlük worklist için bkz. `docs/crm-sales-operations.md`.

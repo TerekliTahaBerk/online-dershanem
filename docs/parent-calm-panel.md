@@ -61,8 +61,11 @@ gösterilmez.
 
 ## Dino AI
 
-Bayrak açıksa ana özetin altında “Bu haftayı açıkla” ikincil katmanı vardır.
-Ana bilgi kaynağı deterministik özet kalır; Dino zorunlu değildir.
+Bayrak açıksa ana özetin altında contextual “Bu haftayı açıkla” katmanı vardır.
+Akademik bölümde destek alanı ve deneme değişimi için ek Dino aksiyonları
+açılabilir. Ana bilgi kaynağı deterministik özet kalır; Dino zorunlu değildir.
+
+Ayrıntılı mimari: `docs/dino-context-architecture.md`.
 
 ## Testler
 

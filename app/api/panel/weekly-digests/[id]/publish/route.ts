@@ -21,5 +21,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!published) return NextResponse.json({ error: "Özet başka bir sekmede değişti." }, { status: 409 });
   await queuePanelNotificationEmails(rawRows, "weeklyDigest"); const band = recipientIds.length === 1 ? "1" : recipientIds.length <= 3 ? "2-3" : "4+";
   await recordPanelProductEvent({ name: "weekly_digest_published", properties: { trendBand: digest.trendBand as "IMPROVING" | "STEADY" | "BUILDING" | "LIMITED_DATA", recipientBand: band } }, auth.session.role);
+  const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+  void emitEducationAutomation("weekly_digest_ready", {
+    entityType: "digest",
+    entityId: id,
+    studentId: digest.studentId,
+    severity: "low",
+    href: "/panel/veli/haftalik",
+  });
   return NextResponse.json({ published: true });
 }

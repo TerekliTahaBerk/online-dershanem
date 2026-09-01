@@ -44,6 +44,9 @@ test("dahili explanation soruları çip listesine çıkmaz ama allowlistte kalı
   assert.equal(studentChips.includes("student_odk_reason"), false);
   assert.ok(findDinoQuestion("student_nba_reason", "STUDENT"));
   assert.ok(findDinoQuestion("student_odk_reason", "STUDENT"));
+  assert.ok(findDinoQuestion("student_plan_why", "STUDENT"));
+  assert.ok(findDinoQuestion("parent_support", "PARENT"));
+  assert.ok(findDinoQuestion("teacher_today", "TEACHER"));
 });
 
 /* ── Çıktı doğrulama ───────────────────────────────────────────────── */

@@ -9,6 +9,7 @@ import {
   PanelStatusBadge,
   PanelTaskRow,
 } from "@/components/panel/ui";
+import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import {
   STUDENT_360_PACKAGE_STATUS_LABELS,
   STUDENT_360_RISK_LEVEL_LABELS,
@@ -19,6 +20,7 @@ import {
 import type { Student360Bundle } from "@/lib/panel/student-360-server";
 import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
 import { StudentParentLinkForm } from "@/components/panel/student-parent-link-form";
+import { buildTeacherStudentRiskDeterministicReason } from "@/lib/panel/dino-explanations";
 
 const DATE = new Intl.DateTimeFormat("tr-TR", {
   day: "numeric",
@@ -70,10 +72,13 @@ export function Student360View({
   bundle,
   listHref,
   adminActions,
+  dinoEnabled = false,
 }: {
   bundle: Student360Bundle;
   listHref: string;
   adminActions?: ReactNode;
+  /** Öğretmen contextual Dino; admin 360'da açılmaz. */
+  dinoEnabled?: boolean;
 }) {
   const { summary, tab, tabs, actions, basePath } = bundle;
   const packageLabel =
@@ -82,6 +87,8 @@ export function Student360View({
       : summary.productLabels.length
         ? summary.productLabels.join(" · ")
         : "Ürün erişimi yok";
+  const showTeacherDino = dinoEnabled && bundle.access.role === "TEACHER";
+  const riskReason = buildTeacherStudentRiskDeterministicReason(summary.risk.whyRisky);
 
   return (
     <div className="max-w-[1100px]">
@@ -147,6 +154,19 @@ export function Student360View({
           title="Bu öğrenci neden riskli?"
           body={summary.risk.whyRisky.join(" ")}
         />
+      ) : null}
+
+      {showTeacherDino ? (
+        <div className="mt-3 max-w-[720px]">
+          <DinoExplanationAction
+            deterministicReason={riskReason}
+            questionKey="teacher_student_risk"
+            audience="TEACHER"
+            studentId={bundle.access.studentProfileId}
+            openLabel="Bu öğrenciyi özetle"
+            prepareLabel="Dino ile öğrenciyi özetle"
+          />
+        </div>
       ) : null}
 
       {actions.length ? (

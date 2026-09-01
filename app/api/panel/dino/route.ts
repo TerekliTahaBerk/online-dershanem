@@ -5,7 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { requireApiAccountRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { DINO_PROMPT_VERSION, dinoAudienceSchema, findDinoQuestion } from "@/lib/dino";
+import {
+  DINO_PROMPT_VERSION,
+  dinoAudienceSchema,
+  dinoQuestionRequiresStudent,
+  findDinoQuestion,
+} from "@/lib/dino";
 import { prepareDinoSource } from "@/lib/panel/dino-source";
 import { generateDinoAnswer } from "@/lib/dino-gateway";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
@@ -15,15 +20,12 @@ import { istanbulDayStart } from "@/lib/istanbul-time";
 /**
  * DINO AI — yanıt üretimi.
  *
- * Kapı sırası `app/api/panel/ai-drafts/route.ts` ile AYNIDIR ve hiçbiri
- * atlanmaz: rol → özellik bayrağı → mutation guard (aynı köken + hız limiti) →
- * tekrar-güvenliği (`requestKey`) → KAPSAM DOĞRULAMA → günlük kota →
- * redaksiyon/injection → sağlayıcı → denetim kaydı.
+ * Kapı sırası: rol → özellik bayrağı → mutation guard → requestKey replay →
+ * KAPSAM DOĞRULAMA → günlük kota → redaksiyon/injection → sağlayıcı → denetim.
  *
- * KAPSAM DOĞRULAMA burada güvenliğin kalbidir: hangi öğrencinin verisi
- * toplanacağı istekten DEĞİL, çağıranın yetkisinden türetilir. Veli
- * `resolveParentScope` ile (bağlı olmayan öğrenci 404), eğitmen aktif grup
- * kaydıyla, öğrenci ise yalnız kendisiyle sınırlıdır.
+ * Hangi öğrencinin verisi toplanacağı istekten DEĞİL, çağıranın yetkisinden
+ * türetilir. Öğretmen roster soruları (bugün / grup özeti) öğrenci kimliği
+ * istemez; tek-öğrenci soruları aktif grup kaydı ister.
  */
 
 const schema = z
@@ -67,7 +69,6 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Soru seçimini kontrol edin." }, { status: 400 });
 
-  /* Rol ile hedef kitle uyuşmalı: öğrenci veli sorusu soramaz. */
   if (parsed.data.audience !== auth.session.role) {
     return NextResponse.json({ error: "Bu soru bu rol için tanımlı değil." }, { status: 403 });
   }
@@ -80,10 +81,10 @@ export async function POST(request: Request) {
   });
   if (replay) return NextResponse.json({ answer: replay, replayed: true });
 
-  /* ── KAPSAM: hangi öğrencinin verisi? ── */
   let studentProfileId: string | null = null;
   let knownNames: string[] = [];
   let teacherUserId: string | undefined;
+  const needsStudent = dinoQuestionRequiresStudent(question);
 
   if (auth.session.role === "STUDENT") {
     const profile = await prisma.studentProfile.findUnique({
@@ -97,27 +98,41 @@ export async function POST(request: Request) {
     studentProfileId = selected?.id ?? null;
     knownNames = selected ? [selected.name] : [];
   } else {
-    // Eğitmen: yalnız aktif grubundaki öğrenci.
-    if (!parsed.data.studentId) {
-      return NextResponse.json({ error: "Öğrenci seçilmedi." }, { status: 400 });
-    }
-    const enrollment = await prisma.enrollment.findFirst({
-      where: {
-        studentId: parsed.data.studentId,
-        endedAt: null,
-        group: { teacherId: auth.session.userId, isActive: true },
-      },
-      select: { student: { select: { id: true, user: { select: { fullName: true } } } } },
-    });
-    if (!enrollment) {
-      return NextResponse.json({ error: "Yetkili olduğunuz öğrenci bulunamadı." }, { status: 404 });
-    }
-    studentProfileId = enrollment.student.id;
-    knownNames = enrollment.student.user.fullName ? [enrollment.student.user.fullName] : [];
     teacherUserId = auth.session.userId;
+    if (needsStudent) {
+      if (!parsed.data.studentId) {
+        return NextResponse.json({ error: "Öğrenci seçilmedi." }, { status: 400 });
+      }
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          studentId: parsed.data.studentId,
+          endedAt: null,
+          group: { teacherId: auth.session.userId, isActive: true },
+        },
+        select: { student: { select: { id: true, user: { select: { fullName: true } } } } },
+      });
+      if (!enrollment) {
+        return NextResponse.json({ error: "Yetkili olduğunuz öğrenci bulunamadı." }, { status: 404 });
+      }
+      studentProfileId = enrollment.student.id;
+      knownNames = enrollment.student.user.fullName ? [enrollment.student.user.fullName] : [];
+    } else {
+      // Roster kapsamı: yalnız aktif grup öğrencilerinin adları redaksiyon sözlüğüne girer.
+      const roster = await prisma.enrollment.findMany({
+        where: {
+          endedAt: null,
+          group: { teacherId: auth.session.userId, isActive: true },
+        },
+        take: 80,
+        select: { student: { select: { user: { select: { fullName: true } } } } },
+      });
+      knownNames = roster
+        .map((row) => row.student.user.fullName)
+        .filter((name): name is string => Boolean(name));
+    }
   }
 
-  if (!studentProfileId) {
+  if (needsStudent && !studentProfileId) {
     return NextResponse.json({ error: "Öğrenci kaydı bulunamadı." }, { status: 404 });
   }
 
@@ -129,7 +144,6 @@ export async function POST(request: Request) {
     knownNames,
   });
 
-  /* ── Günlük kota ── */
   const since = istanbulDayStart(new Date());
   const [dailyCount, dailyCost] = await Promise.all([
     prisma.dinoAnswer.count({ where: { userId: auth.session.userId, createdAt: { gte: since } } }),

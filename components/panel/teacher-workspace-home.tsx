@@ -6,6 +6,7 @@ import {
   PanelEmpty,
   PanelStatusBadge,
 } from "@/components/panel/ui";
+import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import {
   lessonTypeLabel,
   pendingKindLabel,
@@ -16,6 +17,7 @@ import {
   type TeacherWorkspaceRiskStudent,
   type TeacherWorkspaceUpcomingItem,
 } from "@/lib/panel/teacher-workspace";
+import { buildTeacherAttentionDeterministicReason } from "@/lib/panel/dino-explanations";
 
 const TIME = new Intl.DateTimeFormat("tr-TR", {
   hour: "2-digit",
@@ -213,8 +215,21 @@ function UpcomingSection({ items }: { items: TeacherWorkspaceUpcomingItem[] }) {
   );
 }
 
-export function TeacherWorkspaceHome({ workspace }: { workspace: TeacherWorkspace }) {
+export function TeacherWorkspaceHome({
+  workspace,
+  dinoEnabled = false,
+}: {
+  workspace: TeacherWorkspace;
+  dinoEnabled?: boolean;
+}) {
   const helpFirst = workspace.pending.some((item) => item.kind === "HELP_REQUEST");
+  const attentionReason = buildTeacherAttentionDeterministicReason({
+    visibleCount: workspace.riskyStudents.length || workspace.pending.length,
+    topHeadlines: [
+      ...workspace.riskyStudents.slice(0, 2).map((item) => item.whyRisky),
+      ...workspace.pending.slice(0, 2).map((item) => item.title),
+    ],
+  });
 
   const lessonsSection = (
     <PanelCard className="mt-5" padded={false}>
@@ -240,6 +255,17 @@ export function TeacherWorkspaceHome({ workspace }: { workspace: TeacherWorkspac
 
   return (
     <div className="max-w-[1040px]">
+      {dinoEnabled ? (
+        <div className="mt-4 max-w-[720px]">
+          <DinoExplanationAction
+            deterministicReason={attentionReason}
+            questionKey="teacher_today"
+            audience="TEACHER"
+            openLabel="Bugün hangi öğrencilerle ilgilenmeliyim?"
+            prepareLabel="Dino ile bugünkü dikkat listesini açıkla"
+          />
+        </div>
+      ) : null}
       {helpFirst ? (
         <>
           <PendingSection items={workspace.pending} />

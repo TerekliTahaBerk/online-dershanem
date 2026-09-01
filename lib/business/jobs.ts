@@ -151,9 +151,26 @@ export async function processBackgroundJobs(limit = 10) {
       else if (candidate.type === "APPLY_BUSINESS_RETENTION") await applyBusinessRetention();
       else if (candidate.type === "SYNC_META_ADS") await getAdPlatformProvider().syncCampaigns();
       else if (candidate.type === "CHECK_UNANSWERED_HOT_LEADS") await runUnansweredHotLeadAutomations();
+      else if (candidate.type === "RUN_AUTOMATION_SCANS") {
+        const { runAutomationScans } = await import("@/lib/automation/scans");
+        await runAutomationScans();
+      }
       else if (candidate.type === "AUTOMATE_PAYMENT_COMPLETED") {
         const lead = await prisma.businessLead.findUnique({ where: { id: String(payload.leadId) } });
-        if (lead) await executeAutomations("PAYMENT_COMPLETED", { businessUnitId: lead.businessUnitId, entityType: "payment", entityId: String(payload.orderId), leadId: lead.id, temperature: lead.temperature });
+        if (lead) {
+          await executeAutomations("order_paid", {
+            businessUnitId: lead.businessUnitId,
+            entityType: "payment",
+            entityId: String(payload.orderId),
+            leadId: lead.id,
+            temperature: lead.temperature,
+            product: lead.productInterest === "ONLINE_DENEME_KULUBU" ? "ODK" : lead.productInterest === "ONLINE_DERSHANEM" ? "OD" : null,
+            source: lead.source,
+            stage: lead.stage,
+            ownerId: lead.assignedUserId,
+            eventId: `order_paid:payment:${payload.orderId}:once`,
+          });
+        }
       }
       else throw new Error("UNKNOWN_JOB_TYPE");
       await prisma.backgroundJob.update({ where: { id: candidate.id }, data: { status: "SUCCEEDED", completedAt: new Date(), lockedAt: null, lockedBy: null } });
@@ -176,6 +193,7 @@ export async function scheduleBusinessMaintenanceJobs(now = new Date()) {
   const jobs = [
     { type: "RECONCILE_FINANCE", key: `maintenance:reconcile:${hourly}`, enabled: true },
     { type: "CHECK_UNANSWERED_HOT_LEADS", key: `maintenance:unanswered:${hourly}`, enabled: true },
+    { type: "RUN_AUTOMATION_SCANS", key: `maintenance:automation-scans:${hourly}`, enabled: true },
     { type: "APPLY_BUSINESS_RETENTION", key: `maintenance:retention:${daily}`, enabled: true },
     { type: "SYNC_META_ADS", key: `maintenance:meta-ads:${hourly}`, enabled: process.env.META_ADS_INTEGRATION_ENABLED === "true" },
   ];

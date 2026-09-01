@@ -52,7 +52,7 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
     }];
   });
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const expired = await tx.interventionCase.findMany({
       where: {
         status: "SNOOZED",
@@ -111,4 +111,18 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
 
     return { created, reactivatedCount: expired.length, evaluatedStudentCount: students.length, episodesCreated: candidateEpisodes.length };
   });
+
+  if (result.created.length) {
+    const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+    for (const row of result.created) {
+      void emitEducationAutomation("student_risk_created", {
+        entityType: "intervention",
+        entityId: row.id,
+        severity: "high",
+        href: "/panel/yonetim/mudahale",
+      });
+    }
+  }
+
+  return result;
 }

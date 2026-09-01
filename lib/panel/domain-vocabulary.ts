@@ -53,6 +53,7 @@ export const PANEL_DOMAIN = {
   bugun: "Bugün",
   kisiler: "Kişiler",
   takvim: "Takvim",
+  yonetimAnalitikleri: "Yönetim analitikleri",
 } as const;
 
 export type PanelDomainTerm = (typeof PANEL_DOMAIN)[keyof typeof PANEL_DOMAIN];

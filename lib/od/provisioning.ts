@@ -351,6 +351,14 @@ export async function provisionOdOrder(
       data: { provisioningStatus: "RETRY_PENDING", provisioningError: message },
     });
     await prisma.auditLog.create({ data: { actorType: "SYSTEM", entityType: "OdOrder", entityId: orderId, action: "od.provisioning.retry_pending", summary: message, payload: { code: error instanceof OdProvisioningError ? error.code : "UNEXPECTED" } } });
+    const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+    void emitEducationAutomation("provisioning_failed", {
+      entityType: "order",
+      entityId: orderId,
+      product: "OD",
+      severity: "high",
+      href: "/panel/yonetim/operasyon",
+    });
     throw error;
   }
 }

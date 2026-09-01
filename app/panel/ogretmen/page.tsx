@@ -3,6 +3,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/ui";
 import { TeacherWorkspaceHome } from "@/components/panel/teacher-workspace-home";
 import { getTeacherWorkspace } from "@/lib/panel/teacher-workspace-server";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,10 @@ export default async function TeacherHomePage() {
           title="Bugün ne yapmam gerekiyor?"
           description={workspace.summary}
         />
-        <TeacherWorkspaceHome workspace={workspace} />
+        <TeacherWorkspaceHome
+          workspace={workspace}
+          dinoEnabled={getPanelFeatureFlags().dinoAi}
+        />
       </div>
     </PanelShell>
   );

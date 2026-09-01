@@ -142,14 +142,34 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       queuePanelNotificationEmails(rawAssignmentRows, "assignment"),
     ]);
     if (featureFlags.recoveryPackage) {
-      const absences = await prisma.attendance.findMany({ where: { lessonId: id, status: "ABSENT" }, select: { id: true } });
+      const absences = await prisma.attendance.findMany({ where: { lessonId: id, status: "ABSENT" }, select: { id: true, studentId: true } });
+      const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
       for (const attendance of absences) {
+        void emitEducationAutomation("lesson_missed", {
+          entityType: "lesson",
+          entityId: attendance.id,
+          studentId: attendance.studentId,
+          severity: "medium",
+          href: `/panel/ogretmen/dersler/${id}`,
+        });
         const generated = await generateRecoveryPackage(attendance.id, auth.session.userId);
         if (!generated) continue;
         const items = generated.package.items;
         await recordPanelProductEvent({ name: "recovery_package_generated", properties: { ruleVersion: "recovery-v1", itemCount: items.length, hasMaterial: items.some((item) => item.kind === "MATERIAL"), hasAssignment: items.some((item) => item.kind === "ASSIGNMENT"), reused: generated.reused } }, auth.session.role);
         const published = await publishRecoveryPackage({ packageId: generated.package.id, teacherId: auth.session.userId, rebalancePlan: featureFlags.adaptivePlan });
         if (published.kind === "PUBLISHED") await recordPanelProductEvent({ name: "recovery_package_published", properties: { publishDelayMs: published.publishDelayMs, itemCount: published.itemCount, planRebalanced: published.planRebalanced } }, auth.session.role);
+      }
+    } else if (firstCompletion) {
+      const absences = await prisma.attendance.findMany({ where: { lessonId: id, status: "ABSENT" }, select: { id: true, studentId: true } });
+      const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+      for (const attendance of absences) {
+        void emitEducationAutomation("lesson_missed", {
+          entityType: "lesson",
+          entityId: attendance.id,
+          studentId: attendance.studentId,
+          severity: "medium",
+          href: `/panel/ogretmen/dersler/${id}`,
+        });
       }
     }
   }

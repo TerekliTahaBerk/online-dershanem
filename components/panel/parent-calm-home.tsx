@@ -139,6 +139,30 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
             </div>
           </div>
         ) : null}
+        {home.dinoEnabled ? (
+          <DinoExplanationAction
+            deterministicReason={
+              home.academic.supportAreas[0] ||
+              home.academic.examTrendSentence ||
+              home.weekSummary
+            }
+            questionKey="parent_support"
+            audience="PARENT"
+            studentId={home.studentId}
+            openLabel="En çok desteğe nerede ihtiyacı var?"
+            prepareLabel="Dino ile destek alanını açıkla"
+          />
+        ) : null}
+        {home.dinoEnabled && home.academic.examTrendSentence ? (
+          <DinoExplanationAction
+            deterministicReason={home.academic.examTrendSentence}
+            questionKey="parent_exam"
+            audience="PARENT"
+            studentId={home.studentId}
+            openLabel="Son denemede ne değişti?"
+            prepareLabel="Dino ile deneme değişimini açıkla"
+          />
+        ) : null}
       </PanelCard>
 
       {home.coaching ? (

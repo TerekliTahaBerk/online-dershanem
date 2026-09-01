@@ -29,7 +29,7 @@ export default async function StudentDinoPage() {
       <div className="max-w-[880px]">
         <PanelHeading
           title="Dino AI"
-          description="Panelindeki kendi kayıtlarını sade bir dille özetler."
+          description="Panelindeki kendi kayıtlarını sade bir dille açıklar. Yeni bilgi üretmez; dayanakları gösterir."
         />
         <div className="mt-6">
           <DinoChat audience="STUDENT" questions={[...dinoQuestionsFor("STUDENT")]} />

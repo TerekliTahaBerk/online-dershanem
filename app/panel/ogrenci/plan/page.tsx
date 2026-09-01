@@ -4,8 +4,10 @@ import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
+import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import { PanelPageHeader, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
+import { buildPlanDeterministicReason } from "@/lib/panel/dino-explanations";
 import { addIstanbulCalendarDays, formatIstanbulDateInput, ISTANBUL_TIME_ZONE, istanbulWeekStart } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +76,22 @@ export default async function StudentPlanPage() {
   const coaching = await getStudentCoaching(profile.id);
   const start = plan ? istanbulWeekStart(plan.weekStart) : null;
   const end = start ? addIstanbulCalendarDays(start, 6) : null;
+  const flags = getPanelFeatureFlags();
+  const reasonCounts = new Map<string, number>();
+  for (const task of plan?.tasks || []) {
+    if (task.status === "SKIPPED") continue;
+    reasonCounts.set(task.reasonCode, (reasonCounts.get(task.reasonCode) || 0) + 1);
+  }
+  const topReasonCodes = [...reasonCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([code]) => code);
+  const planReason = buildPlanDeterministicReason({
+    taskCount: plan?.tasks.filter((task) => task.status !== "SKIPPED").length || 0,
+    topReasonCodes,
+    changeRequestCategory: plan?.changeRequestCategory || null,
+    version: plan?.version || 1,
+  });
 
   return shell(
     <>
@@ -81,6 +99,17 @@ export default async function StudentPlanPage() {
         title="Bu haftanın planı"
         description={start && end ? `${RANGE.format(start)} – ${RANGE.format(end)}` : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."}
       />
+
+      {flags.dinoAi && plan ? (
+        <div className="mt-3 max-w-[720px]">
+          <DinoExplanationAction
+            deterministicReason={planReason}
+            questionKey="student_plan_why"
+            openLabel="Bu plan neden böyle?"
+            prepareLabel="Dino ile plan gerekçesini açıkla"
+          />
+        </div>
+      ) : null}
 
       <div className="mt-6">
         <StudentAdaptivePlan

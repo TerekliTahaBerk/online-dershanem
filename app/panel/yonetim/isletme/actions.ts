@@ -11,7 +11,6 @@ import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { enforceMutation } from "@/lib/security/mutation-guard";
 import { generateAIReply } from "@/lib/business/jobs";
-import { automationActionSchema, automationConditionSchema } from "@/lib/business/automation";
 import { reconcileBusinessUnit } from "@/lib/business/reconciliation";
 import { getAdPlatformProvider } from "@/lib/business/providers";
 import { validateStageTransition } from "@/lib/business/leads";
@@ -182,6 +181,20 @@ async function applyLeadStageChange(input: {
     },
   });
 
+  const { emitAutomationEvent } = await import("@/lib/automation/engine");
+  void emitAutomationEvent("lead_stage_changed", {
+    businessUnitId: lead.businessUnitId,
+    entityType: "lead",
+    entityId: lead.id,
+    leadId: lead.id,
+    source: lead.source,
+    product: lead.productInterest === "ONLINE_DENEME_KULUBU" ? "ODK" : lead.productInterest === "ONLINE_DERSHANEM" ? "OD" : null,
+    stage: data.stage,
+    ownerId: lead.assignedUserId,
+    temperature: lead.temperature,
+    eventId: `lead_stage_changed:lead:${lead.id}:${lead.stage}->${data.stage}`,
+  });
+
   return {
     ok: true,
     lead: {
@@ -310,6 +323,18 @@ export async function createManualLead(formData: FormData) {
   const row = await prisma.businessLead.create({ data: { businessUnitId: unit.id, source: "MANUAL", firstName: parsed.firstName, phone: parsed.phone || null, normalizedPhone, email: parsed.email || null, normalizedEmail, productInterest: parsed.productInterest, matchSuggestion: possible ? { leadId: possible.id, name: possible.firstName, confidence: 0.78 } : undefined } });
   await prisma.leadActivity.create({ data: { leadId: row.id, type: "LEAD_CREATED", toValue: "NEW", actorUserId: access.session.userId } });
   void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: row.id, action: "LEAD_CREATED" });
+  const { emitAutomationEvent } = await import("@/lib/automation/engine");
+  void emitAutomationEvent("lead_created", {
+    businessUnitId: row.businessUnitId,
+    entityType: "lead",
+    entityId: row.id,
+    leadId: row.id,
+    source: row.source,
+    product: row.productInterest === "ONLINE_DENEME_KULUBU" ? "ODK" : row.productInterest === "ONLINE_DERSHANEM" ? "OD" : null,
+    stage: row.stage,
+    ownerId: row.assignedUserId,
+    temperature: row.temperature,
+  });
   revalidateBusiness();
   redirectToSection("adaylar");
 }
@@ -392,14 +417,141 @@ export async function createAdvertisement(formData: FormData) {
 export async function createAutomationRule(formData: FormData) {
   const access = await requireBusinessPage("automation:write");
   await guard("automation.create", access.session.userId);
-  const parsed = z.object({ name: z.string().trim().min(2).max(160), triggerType: z.enum(["NEW_MESSAGE", "HOT_LEAD", "PAYMENT_COMPLETED", "COMPLAINT", "UNANSWERED_HOT_LEAD"]), actionType: z.enum(["SUGGEST_AI_REPLY", "ASSIGN_SALES", "MARK_WON", "NOTIFY_ADMIN", "ADD_TAG", "STOP_AI", "MARK_SPAM", "CREATE_TASK"]), tag: z.string().trim().max(40).optional(), temperature: z.enum(["", "COLD", "WARM", "HOT"]).optional() }).parse(Object.fromEntries(formData));
-  const conditions = automationConditionSchema.parse(parsed.temperature ? { temperature: parsed.temperature } : {});
-  const actions = [automationActionSchema.parse(parsed.actionType === "ADD_TAG" ? { type: parsed.actionType, tag: parsed.tag || "otomasyon" } : { type: parsed.actionType })];
+  const {
+    automationTriggerSchema,
+    automationConditionSchema,
+    automationActionSchema,
+    automationActionsSchema,
+  } = await import("@/lib/automation/schemas");
+  const { APPROVED_EMAIL_TEMPLATES } = await import("@/lib/automation/definitions");
+
+  const raw = Object.fromEntries(formData);
+  const triggerType = automationTriggerSchema.parse(raw.triggerType);
+  const name = z.string().trim().min(2).max(160).parse(raw.name);
+  const isActive = raw.isActive === "true" || raw.isActive === "on";
+
+  const conditions = automationConditionSchema.parse({
+    ...(raw.source ? { source: String(raw.source) } : {}),
+    ...(raw.product ? { product: String(raw.product) } : {}),
+    ...(raw.severity ? { severity: String(raw.severity) } : {}),
+    ...(raw.ownerEmpty === "true" ? { ownerEmpty: true } : {}),
+    ...(raw.stage ? { stage: String(raw.stage) } : {}),
+    ...(raw.temperature ? { temperature: String(raw.temperature) } : {}),
+  });
+
+  const actionType = z.string().parse(raw.actionType);
+  const actionPayload =
+    actionType === "add_tag" || actionType === "ADD_TAG"
+      ? { type: actionType, tag: String(raw.tag || "otomasyon") }
+      : actionType === "create_task" || actionType === "CREATE_TASK"
+        ? { type: actionType, title: String(raw.taskTitle || "Otomasyon görevi") }
+        : actionType === "send_internal_notification"
+          ? {
+              type: actionType,
+              title: String(raw.notificationTitle || "Otomasyon bildirimi"),
+              body: String(raw.notificationBody || "Bir otomasyon kuralı tetiklendi."),
+            }
+          : actionType === "send_approved_template_email"
+            ? {
+                type: actionType,
+                templateKey: z.enum(APPROVED_EMAIL_TEMPLATES).parse(raw.templateKey || "automation_ops_alert"),
+              }
+            : actionType === "create_intervention"
+              ? {
+                  type: actionType,
+                  reasonCode: String(raw.reasonCode || "TEACHER_OBSERVED"),
+                  suggestedAction: String(raw.suggestedAction || "Otomasyon sinyali — inceleme gerekli."),
+                }
+              : actionType === "assign_owner"
+                ? { type: actionType, ...(raw.ownerUserId ? { userId: String(raw.ownerUserId) } : {}) }
+                : { type: actionType };
+
+  const actions = automationActionsSchema.parse([automationActionSchema.parse(actionPayload)]);
   const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
-  const row = await prisma.automationRule.create({ data: { businessUnitId: unit.id, name: parsed.name, triggerType: parsed.triggerType, conditions, actions } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "AutomationRule", entityId: row.id, action: "AUTOMATION_RULE_CREATED" });
+  const row = await prisma.automationRule.create({
+    data: {
+      businessUnitId: unit.id,
+      name,
+      triggerType,
+      conditions,
+      actions,
+      isActive,
+      createdByUserId: access.session.userId,
+    },
+  });
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "AutomationRule",
+    entityId: row.id,
+    action: "AUTOMATION_RULE_CREATED",
+    payload: { triggerType, isActive },
+  });
   revalidateBusiness();
   redirectToSection("otomasyon-kurallari");
+}
+
+export async function toggleAutomationRule(formData: FormData) {
+  const access = await requireBusinessPage("automation:write");
+  await guard("automation.toggle", access.session.userId);
+  const parsed = z.object({ id: z.string().cuid(), isActive: z.enum(["true", "false"]) }).parse(Object.fromEntries(formData));
+  const updated = await prisma.automationRule.updateMany({
+    where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } },
+    data: { isActive: parsed.isActive === "true" },
+  });
+  if (!updated.count) throw new Error("RULE_NOT_FOUND");
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "AutomationRule",
+    entityId: parsed.id,
+    action: parsed.isActive === "true" ? "AUTOMATION_RULE_ENABLED" : "AUTOMATION_RULE_DISABLED",
+  });
+  revalidateBusiness();
+  redirectToSection("otomasyon-kurallari");
+}
+
+export async function dryRunAutomationRuleAction(formData: FormData) {
+  const access = await requireBusinessPage("automation:write");
+  await guard("automation.dry-run", access.session.userId);
+  const { automationTriggerSchema } = await import("@/lib/automation/schemas");
+  const { dryRunAutomationRule } = await import("@/lib/automation/engine");
+  const parsed = z
+    .object({
+      id: z.string().cuid(),
+      triggerType: automationTriggerSchema,
+      entityType: z.string().min(2).max(40).default("lead"),
+      entityId: z.string().min(2).max(80).default("dry-run-sample"),
+      source: z.string().optional(),
+      product: z.string().optional(),
+      severity: z.string().optional(),
+      stage: z.string().optional(),
+      ownerEmpty: z.enum(["", "true", "false"]).optional(),
+    })
+    .parse(Object.fromEntries(formData));
+
+  const outcome = await dryRunAutomationRule({
+    ruleId: parsed.id,
+    businessUnitIds: scopedUnitIds(access),
+    trigger: parsed.triggerType,
+    context: {
+      entityType: parsed.entityType as "lead",
+      entityId: parsed.entityId,
+      source: parsed.source || null,
+      product: parsed.product || null,
+      severity: parsed.severity || null,
+      stage: parsed.stage || null,
+      ownerId: parsed.ownerEmpty === "true" ? null : parsed.ownerEmpty === "false" ? "sample-owner" : null,
+    },
+  });
+
+  void logAudit({
+    actorUserId: access.session.userId,
+    entityType: "AutomationRule",
+    entityId: parsed.id,
+    action: "AUTOMATION_RULE_DRY_RUN",
+    payload: { result: outcome.result, matched: outcome.matched, planned: outcome.planned },
+  });
+  revalidateBusiness();
+  redirect(`${basePath}/otomasyon-kurallari?dryRun=${outcome.result}&matched=${outcome.matched ? "1" : "0"}&rule=${parsed.id}`);
 }
 
 export async function requestAISuggestion(formData: FormData) {

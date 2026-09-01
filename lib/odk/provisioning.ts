@@ -167,6 +167,14 @@ export async function provisionOdkOrder(
       where: { odkOrderId: orderId, fulfillmentStatus: "RUNNING" },
       data: { fulfillmentStatus: "RETRY_PENDING", fulfillmentError: message },
     });
+    const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+    void emitEducationAutomation("provisioning_failed", {
+      entityType: "order",
+      entityId: orderId,
+      product: "ODK",
+      severity: "high",
+      href: "/panel/yonetim/operasyon",
+    });
     throw error;
   }
 }

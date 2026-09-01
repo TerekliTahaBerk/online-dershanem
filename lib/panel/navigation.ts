@@ -247,6 +247,7 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
       { id: "provisioning", href: `${root}/isler`, label: PANEL_DOMAIN.provisioning },
     ]),
     ...section("sistem", "SİSTEM", [
+      { id: "analytics", href: `${root}/analitik`, label: PANEL_DOMAIN.yonetimAnalitikleri },
       { id: "features", href: `${root}/ozellikler`, label: "Özellikler" },
       { id: "audit", href: `${root}/kayitlar`, label: "İşlem geçmişi" },
       { id: "reports", href: `${root}/raporlar`, label: "Operasyon raporları" },

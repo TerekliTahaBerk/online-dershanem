@@ -31,7 +31,7 @@ export function DinoExplanationAction({
 }: {
   deterministicReason: string;
   questionKey: string;
-  audience?: "STUDENT" | "PARENT";
+  audience?: "STUDENT" | "PARENT" | "TEACHER";
   studentId?: string;
   openLabel?: string;
   prepareLabel?: string;

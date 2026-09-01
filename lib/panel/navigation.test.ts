@@ -38,6 +38,7 @@ test("admin terminolojisi eğitmen/işler yerine canonical etiketleri kullanır"
   const navLabels = labels("ADMIN", [], ALL_FLAGS_ON);
   assert.ok(navLabels.includes(PANEL_DOMAIN.ogretmenler));
   assert.ok(navLabels.includes(PANEL_DOMAIN.provisioning));
+  assert.ok(navLabels.includes(PANEL_DOMAIN.yonetimAnalitikleri));
   assert.ok(navLabels.includes("Özellikler"));
   assert.ok(navLabels.includes(`${PANEL_DOMAIN.gruplar} ve ${PANEL_DOMAIN.dersler}`));
   assert.ok(!navLabels.includes("Eğitmenler"));

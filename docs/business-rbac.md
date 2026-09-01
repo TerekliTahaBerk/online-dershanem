@@ -49,7 +49,7 @@ kullanmıyordu; yani `requireBusinessPage("finance:reverse")` ile
 | `knowledge:read` | ✓ | ✓ | — | — | — | ✓ |
 | `knowledge:write` | ✓ | ✓ | — | — | — | — |
 | `automation:read` | ✓ | ✓ | — | — | — | ✓ |
-| `automation:write` | ✓ | ✓ | — | — | — | — |
+| `automation:write` (manage) | ✓ | ✓ | — | — | — | — |
 | `integration:read` | ✓ | ✓ | — | — | — | ✓ |
 | `integration:write` | ✓ | ✓ | — | — | — | — |
 | `settings:read` | ✓ | ✓ | — | — | — | ✓ |

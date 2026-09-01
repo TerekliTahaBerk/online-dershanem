@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { WeakOutcomeSignal } from "@/lib/odk/reporting";
-import { buildHomeDeterministicReason, buildOutcomeDeterministicReason } from "@/lib/panel/dino-explanations";
+import {
+  buildHomeDeterministicReason,
+  buildOutcomeDeterministicReason,
+  buildPlanDeterministicReason,
+} from "@/lib/panel/dino-explanations";
 
 test("home deterministic reason AI olmadan üretilir", () => {
   const now = new Date("2026-08-30T11:00:00.000Z");
@@ -42,3 +46,14 @@ test("odk deterministic reason sinyalden üretilir", () => {
   );
 });
 
+test("plan değişiklik talebi deterministik gerekçe üretir", () => {
+  assert.equal(
+    buildPlanDeterministicReason({
+      taskCount: 4,
+      topReasonCodes: ["DUE_SOON"],
+      changeRequestCategory: "TOO_MUCH",
+      version: 2,
+    }),
+    "Değişiklik talebin üzerine plan yeniden düzenlendi.",
+  );
+});

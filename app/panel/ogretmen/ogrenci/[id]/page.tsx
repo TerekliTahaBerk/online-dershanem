@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/auth/guards";
 import { loadStudent360Bundle } from "@/lib/panel/student-360-server";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { Student360View } from "@/components/panel/student-360-view";
 
@@ -35,7 +36,11 @@ export default async function TeacherStudent360Page({
       email={session.email}
       pageTitle="Öğrenci 360"
     >
-      <Student360View bundle={bundle} listHref="/panel/ogretmen/gruplar" />
+      <Student360View
+        bundle={bundle}
+        listHref="/panel/ogretmen/gruplar"
+        dinoEnabled={getPanelFeatureFlags().dinoAi}
+      />
     </PanelShell>
   );
 }
