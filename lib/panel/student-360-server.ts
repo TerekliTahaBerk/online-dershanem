@@ -83,6 +83,22 @@ export type Student360AcademicTab = {
   }[];
   reviewDueCount: number;
   evidenceCount: number;
+  unifiedOutcomes: {
+    outcomeId: string;
+    code: string;
+    title: string;
+    subjectName: string;
+    unitName: string;
+    status: string;
+    statusLabel: string;
+    evidence: {
+      lesson: string | null;
+      assignment: string | null;
+      mockExam: string | null;
+      coaching: string | null;
+    };
+    explanation: { source: string; detail: string }[];
+  }[];
 };
 
 export type Student360LessonsTab = {
@@ -904,6 +920,21 @@ export async function loadStudent360Bundle(input: {
         })),
         reviewDueCount,
         evidenceCount: outcomeHints.length,
+        unifiedOutcomes: await (async () => {
+          const { getStudentOutcomeProfile } = await import("@/lib/student-success/server/progress-server");
+          const rows = await getStudentOutcomeProfile(student.id);
+          return rows.slice(0, 20).map((row) => ({
+            outcomeId: row.outcomeId,
+            code: row.code,
+            title: row.title,
+            subjectName: row.subjectName,
+            unitName: row.unitName,
+            status: row.status,
+            statusLabel: row.statusLabel,
+            evidence: row.evidence,
+            explanation: row.explanation,
+          }));
+        })(),
       }
     : null;
 

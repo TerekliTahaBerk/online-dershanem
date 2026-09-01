@@ -7,6 +7,7 @@ export const CRITICAL_CRON_DEFINITIONS = [
   { name: "teacher-home-refresh", label: "Öğretmen ana sayfası yenileme", cadenceMinutes: 10, staleAfterMinutes: 20, alertCooldownMinutes: 30 },
   { name: "panel-session-retention", label: "Panel oturum saklama", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
   { name: "rate-limit-prune", label: "Rate limit temizliği", cadenceMinutes: 24 * 60, staleAfterMinutes: 2 * 24 * 60, alertCooldownMinutes: 12 * 60 },
+  { name: "cross-product-events", label: "Cross-product event outbox", cadenceMinutes: 2, staleAfterMinutes: 6, alertCooldownMinutes: 15 },
 ] as const;
 
 export type CriticalCronName = (typeof CRITICAL_CRON_DEFINITIONS)[number]["name"];

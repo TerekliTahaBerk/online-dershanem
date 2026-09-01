@@ -136,6 +136,19 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     throw error;
   }
   if (firstCompletion) {
+    const { onLessonCompleted, onLessonMissed } = await import("@/lib/student-success/server/emit-hooks");
+    const presentStudentIds = parsed.data.students
+      .filter((item) => item.attendance === "PRESENT" || item.attendance === "LATE")
+      .map((item) => item.studentId);
+    void onLessonCompleted({
+      lessonId: id,
+      groupId: lesson.groupId,
+      topic: parsed.data.topic || null,
+      outcomeIds: uniqueOutcomes.map((item) => item.outcomeId),
+      actorUserId: auth.session.userId,
+      presentStudentIds,
+    });
+
     await Promise.all([
       queuePanelNotificationEmails(rawSummaryRows, "lessonSummary"),
       queuePanelNotificationEmails(rawAbsenceRows, "absence"),
@@ -158,6 +171,13 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
         await recordPanelProductEvent({ name: "recovery_package_generated", properties: { ruleVersion: "recovery-v1", itemCount: items.length, hasMaterial: items.some((item) => item.kind === "MATERIAL"), hasAssignment: items.some((item) => item.kind === "ASSIGNMENT"), reused: generated.reused } }, auth.session.role);
         const published = await publishRecoveryPackage({ packageId: generated.package.id, teacherId: auth.session.userId, rebalancePlan: featureFlags.adaptivePlan });
         if (published.kind === "PUBLISHED") await recordPanelProductEvent({ name: "recovery_package_published", properties: { publishDelayMs: published.publishDelayMs, itemCount: published.itemCount, planRebalanced: published.planRebalanced } }, auth.session.role);
+        void onLessonMissed({
+          lessonId: id,
+          groupId: lesson.groupId,
+          studentId: attendance.studentId,
+          recoveryPackageId: generated.package.id,
+          actorUserId: auth.session.userId,
+        });
       }
     } else if (firstCompletion) {
       const absences = await prisma.attendance.findMany({ where: { lessonId: id, status: "ABSENT" }, select: { id: true, studentId: true } });
@@ -169,6 +189,12 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
           studentId: attendance.studentId,
           severity: "medium",
           href: `/panel/ogretmen/dersler/${id}`,
+        });
+        void onLessonMissed({
+          lessonId: id,
+          groupId: lesson.groupId,
+          studentId: attendance.studentId,
+          actorUserId: auth.session.userId,
         });
       }
     }

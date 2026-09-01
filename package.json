@@ -28,7 +28,7 @@
     "lint": "eslint .",
     "lint:hygiene": "node scripts/check-repo-hygiene.mjs",
     "typecheck": "tsc --noEmit",
-    "test:unit": "node --import tsx --test lib/*.test.ts lib/analytics/*.test.ts lib/automation/*.test.ts lib/auth/*.test.ts lib/business/*.test.ts lib/commerce/*.test.ts lib/health/*.test.ts lib/jobs/*.test.ts lib/kocum/*.test.ts lib/lifecycle/*.test.ts lib/od/*.test.ts lib/odk/*.test.ts lib/panel/*.test.ts lib/progress-insights/*.test.ts lib/security/*.test.ts lib/student-progress-trend.test.ts lib/teacher-attention.test.ts",
+    "test:unit": "node --import tsx --test lib/*.test.ts lib/analytics/*.test.ts lib/automation/*.test.ts lib/auth/*.test.ts lib/business/*.test.ts lib/commerce/*.test.ts lib/health/*.test.ts lib/jobs/*.test.ts lib/kocum/*.test.ts lib/lifecycle/*.test.ts lib/od/*.test.ts lib/odk/*.test.ts lib/panel/*.test.ts lib/progress-insights/*.test.ts lib/security/*.test.ts lib/student-success/*.test.ts lib/student-progress-trend.test.ts lib/teacher-attention.test.ts",
     "test:integration": "node --conditions react-server --import tsx --test tests/integration/*.integration.ts",
     "eval:teacher-ai": "node --import tsx scripts/eval-teacher-ai.ts",
     "prisma:generate": "prisma generate",

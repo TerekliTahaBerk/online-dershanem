@@ -148,6 +148,15 @@ export async function POST(request: Request) {
   if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
   await queuePanelNotificationEmails(rawNotificationRows, "assignment");
   await logAudit({ actorUserId: auth.session.userId, entityType: "Assignment", entityId: assignment.id, action: "assignment.created", summary: `${assignment.title} ödevi oluşturuldu`, payload: { groupId: group.id, dueAt: assignment.dueAt.toISOString() } });
+  const { onAssignmentCreated } = await import("@/lib/student-success/server/emit-hooks");
+  void onAssignmentCreated({
+    assignmentId: assignment.id,
+    groupId: group.id,
+    dueAt: assignment.dueAt,
+    outcomeIds,
+    actorUserId: auth.session.userId,
+    studentIds: group.enrollments.map((item) => item.student.id),
+  });
   if (flags.learningOutcomes) await recordPanelProductEvent({ name: "curriculum_link_saved", properties: { targetType: "ASSIGNMENT", outcomeCount: outcomeIds.length, needsReviewCount: 0, skipReason: parsed.data.outcomeSkipReason || "NONE" } }, auth.session.role);
   return NextResponse.json({ id: assignment.id });
 }

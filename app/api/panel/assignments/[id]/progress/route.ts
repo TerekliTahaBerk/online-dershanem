@@ -54,5 +54,20 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     throw error;
   }
   await recordFinished("success", parsed.data.status);
+  if (parsed.data.status === "DONE") {
+    const progress = await prisma.assignmentProgress.findUnique({
+      where: { assignmentId_studentId: { assignmentId: id, studentId: profile.id } },
+      select: { id: true },
+    });
+    if (progress) {
+      const { onAssignmentCompleted } = await import("@/lib/student-success/server/emit-hooks");
+      void onAssignmentCompleted({
+        assignmentId: id,
+        progressId: progress.id,
+        studentId: profile.id,
+        actorUserId: auth.session.userId,
+      });
+    }
+  }
   return NextResponse.json({ ok: true, version, replayed: false });
 }

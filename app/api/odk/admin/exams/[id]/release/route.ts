@@ -73,6 +73,25 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     coach = await createCoachSuggestionsFromReleasedExam(id, now);
   }
 
+  const publishedStudents = await prisma.odkExamAttempt.findMany({
+    where: { id: { in: publishAttemptIds } },
+    select: { student: { select: { studentProfile: { select: { id: true } } } } },
+  });
+  const studentIds = [...new Set(
+    publishedStudents
+      .map((row) => row.student.studentProfile?.id)
+      .filter((sid): sid is string => Boolean(sid)),
+  )];
+  if (studentIds.length) {
+    const { onMockExamResultPublished } = await import("@/lib/student-success/server/emit-hooks");
+    void onMockExamResultPublished({
+      examId: id,
+      actorUserId: auth.session.userId,
+      studentIds,
+      attemptCount: publishAttemptIds.length,
+    });
+  }
+
   await logAudit({
     actorUserId: auth.session.userId,
     entityType: "OdkExam",
