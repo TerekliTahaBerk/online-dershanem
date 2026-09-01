@@ -34,6 +34,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
+    "prisma:deploy:ci": "node scripts/prisma-migrate-deploy-ci.mjs",
     "release:migrate": "prisma migrate deploy",
     "inspect:odk-pilot": "node scripts/check-odk-pilot-config.mjs",
     "validate:deploy-env": "node --import tsx scripts/validate-deploy-env.ts",
