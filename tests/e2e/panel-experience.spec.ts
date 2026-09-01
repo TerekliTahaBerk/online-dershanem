@@ -742,4 +742,43 @@ test.describe("panel deneyimi", () => {
     expect(parentResults.ownText).not.toContain("https://example.com/e2e-class");
     expect(parentResults.foreignStatus).toBe(404);
   });
+
+  test("öğrenci birleşik bugün ve progress API'leri çalışır", async ({ page }) => {
+    await login(page, accounts.student);
+
+    const home = await page.evaluate(async () => {
+      const response = await fetch("/api/panel/student/home");
+      return { status: response.status, body: await response.json() };
+    });
+    expect(home.status).toBe(200);
+    expect(home.body.profile).toBeTruthy();
+    expect(Array.isArray(home.body.products)).toBe(true);
+    expect(home.body.unifiedToday === null || Array.isArray(home.body.unifiedToday?.items)).toBe(true);
+    expect(home.body.today).toBeTruthy();
+
+    const calendar = await page.evaluate(async () => {
+      const now = new Date();
+      const from = new Date(now.getTime() - 7 * 86400000).toISOString();
+      const to = new Date(now.getTime() + 14 * 86400000).toISOString();
+      const response = await fetch(`/api/panel/student-success/calendar?from=${from}&to=${to}`);
+      return { status: response.status, body: await response.json() };
+    });
+    expect(calendar.status).toBe(200);
+    expect(Array.isArray(calendar.body.events)).toBe(true);
+
+    const today = await page.evaluate(async () => {
+      const response = await fetch("/api/panel/student-success/calendar", { method: "POST" });
+      return { status: response.status, body: await response.json() };
+    });
+    expect(today.status).toBe(200);
+    expect(Array.isArray(today.body.items)).toBe(true);
+
+    const progress = await page.evaluate(async (studentId: string) => {
+      const response = await fetch(`/api/panel/student-success/progress/${studentId}?view=summary`);
+      return { status: response.status, body: await response.json() };
+    }, home.body.profile.id as string);
+    expect(progress.status).toBe(200);
+    expect(progress.body.summary).toBeTruthy();
+    expect(progress.body.computedAt).toBeTruthy();
+  });
 });

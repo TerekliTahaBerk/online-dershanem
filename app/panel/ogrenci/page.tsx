@@ -244,6 +244,38 @@ export default async function StudentHomePage() {
         </PanelCard>
       ) : null}
 
+      {data.unifiedToday?.items.length ? (
+        <PanelCard className="mt-5" padded={false}>
+          <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
+            <h2 className="text-sm font-bold text-dc-ink">Bugün — tüm ürünler</h2>
+            <p className="mt-0.5 text-[12.5px] text-dc-ink-faint">
+              Dersler, ödevler, plan görevleri ve denemeler tek listede.
+            </p>
+          </div>
+          {data.unifiedToday.items.slice(0, 8).map((item, index) => (
+            <PanelActionRow
+              key={item.id}
+              title={item.title}
+              description={item.subtitle ?? undefined}
+              status={
+                <span className="text-xs text-dc-ink-faint">
+                  {item.productLabel}
+                  {item.timeLabel ? ` · ${item.timeLabel}` : ""}
+                </span>
+              }
+              cta={
+                item.href ? (
+                  <Link href={item.href} className="panel-quick-action inline-flex">
+                    Aç
+                  </Link>
+                ) : undefined
+              }
+              last={index === Math.min(data.unifiedToday!.items.length, 8) - 1}
+            />
+          ))}
+        </PanelCard>
+      ) : null}
+
       <PanelCard className="mt-5" variant="subtle">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-dc-ink">

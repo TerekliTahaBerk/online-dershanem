@@ -444,6 +444,8 @@ model User {
   businessRoleAssignments       BusinessRoleAssignment[]
   createdAutomationRules        AutomationRule[]           @relation("AutomationRuleCreatedBy")
   teacherHomeSnapshot           TeacherHomeSnapshot?
+  crossProductEventsActed       CrossProductEventOutbox[]  @relation("CrossProductEventActor")
+  crossProductRecommendationsDecided CrossProductRecommendation[] @relation("CrossProductRecommendationDecider")
 
   @@index([role, status])
   @@index([createdById])
@@ -1389,6 +1391,10 @@ model StudentProfile {
   weeklyCoachSummaries  WeeklyCoachSummary[]
   planSuggestions       WeeklyPlanSuggestion[]
   timelineEvents        StudentTimelineEvent[]
+  crossProductEvents    CrossProductEventOutbox[]
+  progressEvidence      StudentProgressEvidence[]
+  outcomeMastery        StudentOutcomeMastery[]
+  crossProductRecommendations CrossProductRecommendation[]
 
   @@map("student_profiles")
 }
@@ -3205,6 +3211,8 @@ model LearningOutcome {
   reviewItems      ReviewItem[]
   odkQuestions     OdkQuestionOutcome[]
   odkAttemptScores OdkAttemptOutcomeScore[]
+  progressEvidence StudentProgressEvidence[]
+  outcomeMastery   StudentOutcomeMastery[]
 
   @@unique([unitId, code])
   @@index([isActive, updatedAt])
@@ -4071,4 +4079,177 @@ model CouponRedemption {
   @@index([customerKey])
   @@index([orderService, orderId])
   @@map("coupon_redemptions")
+}
+
+// ============================================================
+// STUDENT SUCCESS LAYER — üç ürün arası birleşik öğrenci başarı sistemi
+// ============================================================
+
+enum CrossProductEventType {
+  LESSON_COMPLETED
+  LESSON_MISSED
+  ASSIGNMENT_CREATED
+  ASSIGNMENT_COMPLETED
+  ASSIGNMENT_EVALUATED
+  COACHING_PLAN_PUBLISHED
+  COACHING_TASK_COMPLETED
+  MOCK_EXAM_ASSIGNED
+  MOCK_EXAM_COMPLETED
+  MOCK_EXAM_RESULT_PUBLISHED
+  OUTCOME_MASTERY_CHANGED
+  INTERVENTION_CREATED
+}
+
+enum CrossProductEventStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum ProgressEvidenceSource {
+  LESSON
+  ASSIGNMENT
+  COACHING_TASK
+  MOCK_EXAM
+  REVIEW
+  TEACHER_ASSESSMENT
+}
+
+enum OutcomeMasteryStatus {
+  NOT_STARTED
+  INTRODUCED
+  PRACTICING
+  DEVELOPING
+  MASTERED
+  NEEDS_REVIEW
+}
+
+enum CrossProductRecommendationStatus {
+  SUGGESTED
+  ACCEPTED
+  DISMISSED
+  APPLIED
+  EXPIRED
+}
+
+enum CrossProductRecommendationSource {
+  TEACHER
+  COACH
+  ASSIGNMENT
+  MOCK_EXAM
+  REVIEW_ENGINE
+  RECOVERY
+  MANUAL_ADMIN
+  LESSON_CLOSE
+}
+
+enum CrossProductRecommendationKind {
+  REVIEW_TASK
+  TOPIC_REPEAT
+  OUTCOME_REPEAT
+  QUESTION_SET
+  SPEED_PRACTICE
+  MINI_MOCK
+  RECOVERY_PACKAGE
+  COACH_REVIEW
+  LESSON_PREP
+}
+
+model CrossProductEventOutbox {
+  id               String                  @id @default(cuid())
+  eventType        CrossProductEventType   @map("event_type")
+  eventVersion     Int                     @default(1) @map("event_version")
+  deduplicationKey String                  @unique @map("deduplication_key")
+  actorUserId      String?                 @map("actor_user_id")
+  studentId        String                  @map("student_id")
+  entityType       String                  @map("entity_type")
+  entityId         String                  @map("entity_id")
+  payload          Json
+  status           CrossProductEventStatus @default(PENDING)
+  occurredAt       DateTime                @map("occurred_at") @db.Timestamptz(3)
+  processedAt      DateTime?               @map("processed_at") @db.Timestamptz(3)
+  lastError        String?                 @map("last_error")
+  attempts         Int                     @default(0)
+  createdAt        DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  student          StudentProfile          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  actor            User?                   @relation("CrossProductEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  consumers        CrossProductEventConsumer[]
+
+  @@index([status, occurredAt])
+  @@index([studentId, eventType, occurredAt])
+  @@map("cross_product_event_outbox")
+}
+
+model CrossProductEventConsumer {
+  id          String                  @id @default(cuid())
+  eventId     String                  @map("event_id")
+  consumerKey String                  @map("consumer_key")
+  processedAt DateTime                @default(now()) @map("processed_at") @db.Timestamptz(3)
+  event       CrossProductEventOutbox @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, consumerKey])
+  @@index([consumerKey, processedAt])
+  @@map("cross_product_event_consumers")
+}
+
+model StudentProgressEvidence {
+  id          String                 @id @default(cuid())
+  studentId   String                 @map("student_id")
+  outcomeId   String                 @map("outcome_id")
+  sourceType  ProgressEvidenceSource @map("source_type")
+  sourceId    String                 @map("source_id")
+  productCode ProductCode            @map("product_code")
+  summary     String
+  metrics     Json
+  occurredAt  DateTime               @map("occurred_at") @db.Timestamptz(3)
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  student     StudentProfile         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  outcome     LearningOutcome        @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, outcomeId, sourceType, sourceId])
+  @@index([studentId, outcomeId, occurredAt])
+  @@index([studentId, sourceType, occurredAt])
+  @@map("student_progress_evidence")
+}
+
+model StudentOutcomeMastery {
+  id            String               @id @default(cuid())
+  studentId     String               @map("student_id")
+  outcomeId     String               @map("outcome_id")
+  status        OutcomeMasteryStatus
+  explanation   Json
+  evidenceCount Int                  @default(0) @map("evidence_count")
+  computedAt    DateTime             @map("computed_at") @db.Timestamptz(3)
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student       StudentProfile       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  outcome       LearningOutcome      @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, outcomeId])
+  @@index([studentId, status])
+  @@map("student_outcome_mastery")
+}
+
+model CrossProductRecommendation {
+  id          String                           @id @default(cuid())
+  studentId   String                           @map("student_id")
+  status      CrossProductRecommendationStatus @default(SUGGESTED)
+  sourceType  CrossProductRecommendationSource @map("source_type")
+  sourceId    String                           @map("source_id")
+  kind        CrossProductRecommendationKind
+  title       String
+  rationale   String
+  payload     Json
+  expiresAt   DateTime?                        @map("expires_at") @db.Timestamptz(3)
+  decidedById String?                          @map("decided_by_id")
+  decidedAt   DateTime?                        @map("decided_at") @db.Timestamptz(3)
+  createdAt   DateTime                         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime                         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student     StudentProfile                   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  decidedBy   User?                            @relation("CrossProductRecommendationDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, status, createdAt])
+  @@index([sourceType, sourceId])
+  @@map("cross_product_recommendations")
 }
