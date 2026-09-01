@@ -183,11 +183,15 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
         </div>
       ) : null}
 
-      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <p className="text-[11.5px] font-semibold text-dc-ink-faint md:hidden" aria-hidden="true">
+        Aşamalar arasında kaydırarak gezinin; kartları taşımak için aşağıdaki aşama seçicisini kullanın.
+      </p>
+
+      <div className="panel-nav-scroll flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-3 md:overflow-visible md:pb-0 xl:grid-cols-5">
         {LEAD_STAGES.map((stage) => (
           <section
             key={stage}
-            className="panel-surface min-h-40 p-3"
+            className="panel-surface w-[min(88vw,320px)] shrink-0 snap-center p-3 md:min-h-40 md:w-auto md:shrink"
             onDragOver={(event) => {
               if (!canWrite) return;
               event.preventDefault();

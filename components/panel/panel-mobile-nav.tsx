@@ -4,12 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ProductCode, UserRole } from "@prisma/client";
-import { Menu, X } from "lucide-react";
+import { ArrowLeftRight, Bell, Menu, ShieldCheck, X } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
 import { usePanelFeatureFlags } from "@/components/panel/panel-feature-provider";
 import { PanelNav, mobilePrimaryNav } from "@/components/panel/panel-nav";
+import { LogoutButton } from "@/components/panel/logout-button";
 import type { PanelNavItem } from "@/lib/panel/navigation";
+
+export type PanelMobileDrawerAccount = {
+  displayName: string;
+  email: string;
+  initials: string;
+  roleLine: string;
+  workspaceSwitch?: { href: string; label: string } | null;
+  accountHref?: string | null;
+  showSessionsLink?: boolean;
+};
 
 /**
  * Panel mobil navigasyonu — masaüstü sidebar'ın küçültülmüş hâli DEĞİL,
@@ -21,6 +32,7 @@ export function PanelMobileNav({
   products,
   nav,
   mobileQuickItems,
+  drawerAccount,
 }: {
   role: UserRole;
   products: ProductCode[];
@@ -28,6 +40,8 @@ export function PanelMobileNav({
   nav?: React.ReactNode;
   /** Özel menülü alanlarda (İşletme vb.) alt çubuk kısayolları. */
   mobileQuickItems?: PanelNavItem[];
+  /** Drawer altında profil, çalışma alanı ve hesap kısayolları. */
+  drawerAccount?: PanelMobileDrawerAccount;
 }) {
   const [open, setOpen] = useState(false);
   const flags = usePanelFeatureFlags();
@@ -156,10 +170,84 @@ export function PanelMobileNav({
               <X size={18} strokeWidth={2} aria-hidden="true" />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 pb-24">
-            {nav ?? (
-              <PanelNav role={role} products={products} onNavigate={() => setOpen(false)} />
-            )}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex-1 overflow-y-auto p-4">
+              {nav ?? (
+                <PanelNav role={role} products={products} onNavigate={() => setOpen(false)} />
+              )}
+            </div>
+
+            {drawerAccount ? (
+              <footer className="shrink-0 border-t border-dc-line bg-dc-surface-muted/60 px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-dc-brand-soft text-[13px] font-bold text-dc-brand-hover"
+                  >
+                    {drawerAccount.initials || "?"}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-bold text-dc-ink">{drawerAccount.displayName}</p>
+                    <p className="truncate text-[12px] text-dc-ink-faint">{drawerAccount.email}</p>
+                    <p className="mt-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-dc-ink-ghost">
+                      {drawerAccount.roleLine}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <Link
+                    href="/panel/bildirimler"
+                    onClick={() => setOpen(false)}
+                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                  >
+                    <Bell size={14} aria-hidden="true" /> Bildirimler
+                  </Link>
+                  {drawerAccount.showSessionsLink ? (
+                    <Link
+                      href="/panel/oturumlar"
+                      onClick={() => setOpen(false)}
+                      className="flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                    >
+                      <ShieldCheck size={14} aria-hidden="true" /> Oturumlar
+                    </Link>
+                  ) : drawerAccount.accountHref ? (
+                    <Link
+                      href={drawerAccount.accountHref}
+                      onClick={() => setOpen(false)}
+                      className="flex min-h-11 items-center justify-center rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                    >
+                      Hesabım
+                    </Link>
+                  ) : null}
+                </div>
+
+                {drawerAccount.workspaceSwitch ? (
+                  <Link
+                    href={drawerAccount.workspaceSwitch.href}
+                    onClick={() => setOpen(false)}
+                    className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line-soft bg-white px-3 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:text-dc-ink"
+                  >
+                    <ArrowLeftRight size={13} aria-hidden="true" />
+                    {drawerAccount.workspaceSwitch.label}
+                  </Link>
+                ) : null}
+
+                {drawerAccount.accountHref && drawerAccount.showSessionsLink ? (
+                  <Link
+                    href={drawerAccount.accountHref}
+                    onClick={() => setOpen(false)}
+                    className="mt-2 flex min-h-11 items-center justify-center rounded-[10px] border border-dc-line-soft bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                  >
+                    Profil ve hesap
+                  </Link>
+                ) : null}
+
+                <div className="mt-3 border-t border-dc-line-soft pt-3">
+                  <LogoutButton compact />
+                </div>
+              </footer>
+            ) : null}
           </div>
         </div>
       ) : null}

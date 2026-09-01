@@ -302,6 +302,15 @@ export async function PanelShell({
                 products={products}
                 nav={nav}
                 mobileQuickItems={mobileQuickItems}
+                drawerAccount={{
+                  displayName,
+                  email: shellEmail,
+                  initials: initials || "?",
+                  roleLine: `${roleLabel(effectiveRole)}${preview ? " · önizleme" : teacherMode.enabled ? " · yönetici" : ""}`,
+                  workspaceSwitch,
+                  accountHref,
+                  showSessionsLink: !preview,
+                }}
               />
 
               {pageTitle ? (
@@ -357,14 +366,14 @@ export async function PanelShell({
                 ) : null}
 
                 {accountHref ? (
-                  <Link href={accountHref} aria-label="Profil ve hesap sayfanı aç">
+                  <Link href={accountHref} aria-label="Profil ve hesap sayfanı aç" className="hidden sm:block">
                     {avatar("sm")}
                   </Link>
                 ) : (
-                  avatar("sm")
+                  <span className="hidden sm:block">{avatar("sm")}</span>
                 )}
 
-                <div className="lg:hidden">
+                <div className="hidden sm:block lg:hidden">
                   <LogoutButton compact />
                 </div>
               </div>

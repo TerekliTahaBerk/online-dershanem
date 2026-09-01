@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, UserPlus, Users } from "lucide-react";
+import {
+  ResponsiveDataTable,
+  ResponsiveDataTableBody,
+  ResponsiveDataTableCell,
+  ResponsiveDataTableHead,
+  ResponsiveDataTableRow,
+} from "@/components/panel/responsive-data-table";
 
 type Assignment = {
   id: string;
@@ -154,30 +161,45 @@ export function AdminAssignmentPanel({ examId, canEdit }: { examId: string; canE
 
       {message ? <p role={message.error ? "alert" : "status"} className={`mt-3 rounded-xl p-3 text-xs font-bold ${message.error ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"}`}>{message.text}</p> : null}
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[640px] text-xs">
-          <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
-              <th className="pb-2">Öğrenci</th>
-              <th>Kaynak</th>
-              <th>Durum</th>
-              <th>Atama</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assignments.slice(0, 50).map((item) => (
-              <tr key={item.id} className="border-t border-[var(--site-line)]">
-                <td className="py-2 pr-3"><strong>{item.studentName || "Öğrenci"}</strong><p className="text-[10px] text-[var(--site-muted)]">{item.studentEmail}</p></td>
-                <td>{item.source}</td>
-                <td>{item.isActive ? "Aktif" : "Pasif"}</td>
-                <td>{new Date(item.assignedAt).toLocaleString("tr-TR")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!assignments.length ? <p className="mt-3 text-xs text-[var(--site-muted)]">Henüz atama yok.</p> : null}
-        {assignments.length > 50 ? <p className="mt-2 text-[10px] text-[var(--site-muted)]">İlk 50 kayıt gösteriliyor · toplam {assignments.length}</p> : null}
-      </div>
+      <ResponsiveDataTable className="mt-4" minWidthClassName="lg:min-w-[640px]">
+        <ResponsiveDataTableHead>
+          <tr>
+            <ResponsiveDataTableCell header label="Öğrenci">
+              Öğrenci
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Kaynak">
+              Kaynak
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Durum">
+              Durum
+            </ResponsiveDataTableCell>
+            <ResponsiveDataTableCell header label="Atama">
+              Atama
+            </ResponsiveDataTableCell>
+          </tr>
+        </ResponsiveDataTableHead>
+        <ResponsiveDataTableBody>
+          {assignments.slice(0, 50).map((item) => (
+            <ResponsiveDataTableRow key={item.id}>
+              <ResponsiveDataTableCell label="Öğrenci">
+                <strong>{item.studentName || "Öğrenci"}</strong>
+                <p className="text-[10px] text-[var(--site-muted)]">{item.studentEmail}</p>
+              </ResponsiveDataTableCell>
+              <ResponsiveDataTableCell label="Kaynak">{item.source}</ResponsiveDataTableCell>
+              <ResponsiveDataTableCell label="Durum">{item.isActive ? "Aktif" : "Pasif"}</ResponsiveDataTableCell>
+              <ResponsiveDataTableCell label="Atama">
+                {new Date(item.assignedAt).toLocaleString("tr-TR")}
+              </ResponsiveDataTableCell>
+            </ResponsiveDataTableRow>
+          ))}
+        </ResponsiveDataTableBody>
+      </ResponsiveDataTable>
+      {!assignments.length ? <p className="mt-3 text-xs text-[var(--site-muted)]">Henüz atama yok.</p> : null}
+      {assignments.length > 50 ? (
+        <p className="mt-2 text-[10px] text-[var(--site-muted)]">
+          İlk 50 kayıt gösteriliyor · toplam {assignments.length}
+        </p>
+      ) : null}
     </section>
   );
 }
