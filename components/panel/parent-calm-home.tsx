@@ -20,7 +20,7 @@ function statusTone(
 }
 
 export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
-  const progressHref = withParentStudentContext("/panel/veli/takip", home.studentId);
+  const progressHref = withParentStudentContext("/panel/veli/analiz", home.studentId);
 
   return (
     <>

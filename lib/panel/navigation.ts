@@ -88,7 +88,9 @@ function studentSections(
         : []),
     ]),
     ...section("gelisim", "GELİŞİM", [
-      { id: "progress", href: `${root}/gelisim`, label: PANEL_DOMAIN.gelisim },
+      ...(flags.progressInsights
+        ? [{ id: "analiz", href: `${root}/analiz`, label: PANEL_DOMAIN.analiz }]
+        : [{ id: "progress", href: `${root}/gelisim`, label: PANEL_DOMAIN.gelisim }]),
       ...(flags.studentCheckIn
         ? [{ id: "check-in", href: `${root}/check-in`, label: PANEL_DOMAIN.checkIn }]
         : []),
@@ -110,7 +112,9 @@ function parentSections(
   return [
     ...section("bugun", "BUGÜN", [
       { id: "today", href: root, label: PANEL_DOMAIN.bugun },
-      { id: "progress", href: `${root}/takip`, label: PANEL_DOMAIN.gelisim },
+      ...(flags.progressInsights
+        ? [{ id: "analiz", href: `${root}/analiz`, label: PANEL_DOMAIN.analiz }]
+        : [{ id: "progress", href: `${root}/takip`, label: PANEL_DOMAIN.gelisim }]),
       ...(flags.parentWeeklyDigest
         ? [{ id: "weekly-digest", href: `${root}/haftalik`, label: "Haftalık özet" }]
         : []),
@@ -179,6 +183,9 @@ function teacherSections(root: string, flags: PanelFeatureFlags): PanelNavSectio
         : []),
     ]),
     ...section("olcme", "ÖLÇME", [
+      ...(flags.progressInsights
+        ? [{ id: "analiz", href: `${root}/analiz`, label: PANEL_DOMAIN.analiz }]
+        : []),
       ...(flags.mockExamAnalysis
         ? [{ id: "mock-exams", href: `${root}/denemeler`, label: PANEL_DOMAIN.denemeler }]
         : []),
@@ -312,6 +319,8 @@ export function mobilePrimaryNav(
       primary.push({ id: "plan", href: `${root}/plan`, label: PANEL_DOMAIN.plan });
     } else if (hasOK) {
       primary.push({ id: "goals", href: `${root}/hedefler`, label: PANEL_DOMAIN.hedefler });
+    } else if (flags.progressInsights) {
+      primary.push({ id: "analiz", href: `${root}/analiz`, label: PANEL_DOMAIN.analiz });
     } else {
       primary.push({ id: "progress", href: `${root}/gelisim`, label: PANEL_DOMAIN.gelisim });
     }
@@ -353,7 +362,9 @@ export function mobilePrimaryNav(
   // PARENT
   const parentPrimary: PanelNavItem[] = [
     { id: "today", href: root, label: PANEL_DOMAIN.bugun },
-    { id: "progress", href: `${root}/takip`, label: PANEL_DOMAIN.gelisim },
+    flags.progressInsights
+      ? { id: "analiz", href: `${root}/analiz`, label: PANEL_DOMAIN.analiz }
+      : { id: "progress", href: `${root}/takip`, label: PANEL_DOMAIN.gelisim },
   ];
   if (hasOD) {
     parentPrimary.push({ id: "lessons", href: `${root}/takvim`, label: PANEL_DOMAIN.dersler });

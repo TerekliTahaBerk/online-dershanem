@@ -4,12 +4,10 @@ import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { netScore } from "@/lib/goals";
 
 /**
- * Öğrenci Gelişim verisi — JSON karşılığı.
+ * Öğrenci Gelişim / Analiz verisi — JSON karşılığı.
  *
- * `app/panel/ogrenci/gelisim/page.tsx` ile AYNI üç sorgu (denemeler, katılım,
- * çalışma tamamlama) ve ders-bazlı seri hesabı; net formülü `lib/goals.ts`
- * → `netScore`'dan (ikinci kez yazılmadı). Web sayfası bu turda bu route'a
- * geçirilmedi (riskten kaçınmak için).
+ * Web Analiz sayfası (`app/panel/ogrenci/analiz`) ve mobil istemciler için
+ * deneme / katılım / çalışma özeti. Net formülü `lib/goals.ts` → `netScore`.
  */
 
 const SERIES_COLORS = ["#14976B", "#E0A34A", "#5C7BA6", "#9C5340", "#6B7A73"];

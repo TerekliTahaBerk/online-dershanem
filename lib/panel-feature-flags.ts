@@ -15,6 +15,8 @@ export type PanelFeatureFlags = {
   cohortQuality: boolean;
   teacherAiDrafts: boolean;
   dinoAi: boolean;
+  /** Öğrenci / öğretmen / veli Analiz + yönetim Gidişat paneli. */
+  progressInsights: boolean;
 };
 
 export const panelFeatureDefaults: PanelFeatureFlags = {
@@ -34,6 +36,7 @@ export const panelFeatureDefaults: PanelFeatureFlags = {
   cohortQuality: false,
   teacherAiDrafts: false,
   dinoAi: false,
+  progressInsights: true,
 };
 
 export const panelFeatureEnvironmentKeys: Record<keyof PanelFeatureFlags, string> = {
@@ -53,6 +56,7 @@ export const panelFeatureEnvironmentKeys: Record<keyof PanelFeatureFlags, string
   cohortQuality: "PANEL_FEATURE_COHORT_QUALITY",
   teacherAiDrafts: "PANEL_FEATURE_TEACHER_AI_DRAFTS",
   dinoAi: "PANEL_FEATURE_DINO_AI",
+  progressInsights: "PANEL_FEATURE_PROGRESS_INSIGHTS",
 };
 
 /**

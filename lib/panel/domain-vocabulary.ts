@@ -50,6 +50,8 @@ export const PANEL_DOMAIN = {
   kocluk: "Koçluk",
   olcme: "Ölçme",
   gelisim: "Gelişim",
+  /** Akademik + davranışsal gidişat analizi (rol bazlı Analiz sayfaları). */
+  analiz: "Analiz",
   bugun: "Bugün",
   kisiler: "Kişiler",
   takvim: "Takvim",
