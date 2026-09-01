@@ -45,6 +45,13 @@ salt-okunur engellenir.
 
 Ayrıntılar: [`docs/admin-panel-preview.md`](admin-panel-preview.md).
 
+## Admin öğretmen çalışma modu
+
+Her yöneticinin bir `TeacherProfile`'ı vardır. Admin **kendi** öğretmen
+paneline geçip yazabilir; öğretmenlerin yönetici hesabı yoktur.
+
+Ayrıntılar: [`docs/admin-teacher-mode.md`](admin-teacher-mode.md).
+
 ## Content Security Policy
 
 Tanım: `next.config.ts`. Regresyon testi:

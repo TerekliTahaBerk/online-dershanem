@@ -94,7 +94,9 @@ export async function POST(request: Request) {
       inviteAcceptedAt: null,
       createdById: auth.session.userId,
       ...(parsed.data.role === "STUDENT" ? { studentProfile: { create: {} } } : {}),
-      ...(parsed.data.role === "TEACHER" ? { teacherProfile: { create: {} } } : {}),
+      ...(parsed.data.role === "TEACHER" || parsed.data.role === "ADMIN"
+        ? { teacherProfile: { create: {} } }
+        : {}),
       productMemberships: { create: products.map((product) => ({ product, source: parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER" ? "STAFF" as const : "MANUAL" as const, grantedById: auth.session.userId })) },
     },
     include: { studentProfile: { select: { id: true } } },

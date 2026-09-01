@@ -12,6 +12,10 @@ import {
   getResolvedAdminPreview,
   toEffectivePreviewSession,
 } from "@/lib/auth/admin-preview";
+import {
+  getResolvedAdminTeacherMode,
+  toAdminTeacherModeSession,
+} from "@/lib/auth/admin-teacher-mode";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
 
 /**
@@ -26,8 +30,8 @@ import { isPreviewableRole } from "@/lib/panel/preview-context";
  *   if (!auth.ok) return auth.response;
  *   // auth.session güvenle kullanılabilir
  *
- * Admin preview: okuma API'leri subject kimliği alır. Yazma işlemleri
- * `guardMutation` ile engellenir — actor her zaman gerçek ADMIN oturumudur.
+ * Admin öğretmen çalışma modu: TEACHER API'lerinde aynı userId ile yazılabilir.
+ * Admin preview: okuma API'leri subject kimliği alır; yazma `guardMutation` ile engellenir.
  */
 export type ApiAuth =
   | { ok: true; session: SessionUser }
@@ -74,6 +78,13 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireAdminMfa = tru
   }
 
   if (session.role === "ADMIN") {
+    if (roles.includes("TEACHER")) {
+      const teacherMode = await getResolvedAdminTeacherMode(session);
+      if (teacherMode.enabled) {
+        return { ok: true, session: toAdminTeacherModeSession(session) as SessionUser };
+      }
+    }
+
     const preview = await getResolvedAdminPreview(session);
     if (preview && roles.includes(preview.subject.role) && isPreviewableRole(preview.subject.role)) {
       return { ok: true, session: toEffectivePreviewSession(session, preview.subject) as SessionUser };

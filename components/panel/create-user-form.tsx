@@ -20,7 +20,7 @@ const ROLE_OPTIONS: { value: UserRole; label: string; hint: string }[] = [
   { value: "STUDENT", label: "Öğrenci", hint: "Dersini, çalışma yönünü ve ödevlerini görür." },
   { value: "PARENT", label: "Veli", hint: "Bağlı olduğu öğrencinin gelişim özetini görür." },
   { value: "TEACHER", label: "Öğretmen", hint: "Gruplarını yönetir, ders sonrası not yazar." },
-  { value: "ADMIN", label: "Yönetici", hint: "Hesap açar, grup ve ders planlar. Her şeyi görür." },
+  { value: "ADMIN", label: "Yönetici", hint: "Hesap açar, grup ve ders planlar. Aynı zamanda kendi öğretmen paneline geçebilir." },
 ];
 
 export function CreateUserForm() {

@@ -13,6 +13,10 @@ import {
   getResolvedAdminPreview,
   toEffectivePreviewSession,
 } from "@/lib/auth/admin-preview";
+import {
+  getResolvedAdminTeacherMode,
+  toAdminTeacherModeSession,
+} from "@/lib/auth/admin-teacher-mode";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
 
 /**
@@ -23,10 +27,11 @@ import { isPreviewableRole } from "@/lib/panel/preview-context";
  * RSC payload isteğiyle atlatılabilir. Bu yüzden her panel sayfası ve her
  * mutasyon, veriye dokunmadan ÖNCE buradaki bir guard'ı çağırmak zorundadır.
  *
- * Admin panel önizlemesi: gerçek oturum ADMIN kalır (`getSession`). Bu
- * guard'lar preview açıkken subject kimliğini döndürür ki sayfa sorguları
- * ADMIN scope'uyla değil subject scope'uyla çalışsın. Mutation'lar ayrı
- * olarak `guardMutation` / `assertAdminPreviewReadOnly` ile engellenir.
+ * Admin öğretmen çalışma modu: ADMIN oturumu kendi TeacherProfile'ı ile
+ * öğretmen panelinde YAZABİLİR (View As değildir).
+ *
+ * Admin panel önizlemesi: gerçek oturum ADMIN kalır; subject kimliği döner;
+ * mutation'lar engellenir.
  */
 
 /** Panel kapalıyken `/panel/*` hiç var olmamış gibi davranır. */
@@ -54,7 +59,10 @@ export async function requireSession(): Promise<SessionUser> {
  * Yanlış rolde 403 değil 404 döner: "burada bir sayfa var ama giremezsin"
  * bilgisi bile sızmasın.
  *
- * Preview: ADMIN + eşleşen previewRole → subject SessionUser döner.
+ * Overlay sırası:
+ * 1. Gerçek rol eşleşmesi (ADMIN sayfaları öğretmen modunda da açılır)
+ * 2. Admin öğretmen çalışma modu → TEACHER (aynı userId, yazılabilir)
+ * 3. Admin View As preview → subject kimliği (salt okunur)
  */
 async function requireAuthorizedRole(...roles: UserRole[]): Promise<SessionUser> {
   const session = await requireSession();
@@ -63,6 +71,13 @@ async function requireAuthorizedRole(...roles: UserRole[]): Promise<SessionUser>
   if (roles.includes(session.role)) return session;
 
   if (session.role === "ADMIN") {
+    if (roles.includes("TEACHER")) {
+      const teacherMode = await getResolvedAdminTeacherMode(session);
+      if (teacherMode.enabled) {
+        return toAdminTeacherModeSession(session) as SessionUser;
+      }
+    }
+
     const preview = await getResolvedAdminPreview(session);
     if (preview && roles.includes(preview.subject.role) && isPreviewableRole(preview.subject.role)) {
       return toEffectivePreviewSession(session, preview.subject) as SessionUser;

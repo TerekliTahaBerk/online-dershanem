@@ -14,6 +14,7 @@ import {
   toPreviewContext,
   type PreviewCookiePayload,
 } from "@/lib/auth/admin-preview-core";
+import { ADMIN_TEACHER_MODE_COOKIE } from "@/lib/auth/admin-teacher-mode-core";
 import type { PanelPreviewContext, PreviewableRole, PreviewSubject } from "@/lib/panel/preview-context";
 import { resolvePreviewSubject, type PreviewResolutionError } from "@/lib/panel/preview-resolution";
 import { logAudit } from "@/lib/audit";
@@ -94,6 +95,8 @@ export async function startAdminPreview(input: {
   };
 
   const store = await cookies();
+  // Öğretmen çalışma modu ile View As çakışmasın.
+  store.delete(ADMIN_TEACHER_MODE_COOKIE);
   store.set(ADMIN_PREVIEW_COOKIE, encodeAdminPreviewCookie(payload), {
     httpOnly: true,
     secure: SECURE_COOKIE,

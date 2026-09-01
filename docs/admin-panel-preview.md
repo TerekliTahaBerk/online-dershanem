@@ -122,6 +122,27 @@ Support eklendiğinde:
 3. Audit actor tipi / step-up kurallarını Support için gözden geçir.
 4. Mutation engeli aynı kalmalı (actor ≠ subject).
 
+## Admin öğretmen çalışma modu (ayrı özellik)
+
+View As **değildir**. Her ADMIN kullanıcısının bir `TeacherProfile`'ı vardır;
+yönetici **kendi** öğretmen paneline geçebilir ve **yazabilir**.
+
+| | View As (önizleme) | Öğretmen çalışma modu |
+|---|---|---|
+| Kimlik | Başka kullanıcı (subject) | Aynı admin userId |
+| Yazma | Hayır | Evet |
+| Amaç | "Ne görüyor?" | Operasyonel öğretmen işi |
+| Ters yön | — | Öğretmenin admin hesabı yok |
+
+- Cookie: `od_admin_teacher_mode`
+- API: `POST/DELETE /api/panel/admin-preview` değil → `/api/panel/admin-teacher-mode`
+- UI: **Öğretmen paneline geç** / **Yönetim paneline dön**
+- Yeni ADMIN hesabı açılırken `TeacherProfile` otomatik oluşturulur
+- Eksik profiller `ensureAdminTeacherProfile` / `backfillAdminTeacherProfiles` ile tamamlanır
+- View As ile karşılıklı dışlanır (biri açılınca diğeri cookie silinir)
+
+Detay: bu dosya + `lib/auth/admin-teacher-mode.ts`.
+
 ## Dosyalar
 
 | Dosya | Sorumluluk |

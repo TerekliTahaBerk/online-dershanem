@@ -7,11 +7,16 @@ import { productRolePath, roleLabel } from "@/lib/auth/roles";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { getSession } from "@/lib/auth/session";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
+import { getResolvedAdminTeacherMode } from "@/lib/auth/admin-teacher-mode";
 import { getBusinessAccess } from "@/lib/business/permissions";
 import { prisma } from "@/lib/prisma";
 import { AdminCommandSearch } from "@/components/panel/admin-command-search";
 import { AdminPreviewBanner } from "@/components/panel/admin-preview-banner";
 import { AdminPreviewPicker } from "@/components/panel/admin-preview-picker";
+import {
+  AdminTeacherModeBanner,
+  AdminTeacherModeSwitchButton,
+} from "@/components/panel/admin-teacher-mode-controls";
 import { LogoutButton } from "@/components/panel/logout-button";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { PanelMobileNav } from "@/components/panel/panel-mobile-nav";
@@ -67,18 +72,22 @@ export async function PanelShell({
   const isBusinessWorkspace = workspace === "BUSINESS";
   const session = await getSession();
   const preview = session?.role === "ADMIN" ? await getResolvedAdminPreview(session) : null;
-  if (preview) noStore();
+  const teacherMode =
+    session?.role === "ADMIN" && !preview ? await getResolvedAdminTeacherMode(session) : { enabled: false as const };
+  if (preview || teacherMode.enabled) noStore();
 
   const flags = getPanelFeatureFlags();
   const accessibilityEnabled = flags.accessibilityProfile;
-  const effectiveRole: UserRole = preview ? preview.subject.role : role;
+  const effectiveRole: UserRole = preview
+    ? preview.subject.role
+    : role;
   const effectiveUserId = preview ? preview.subject.userId : session?.userId;
   const shellFullName = preview ? preview.subject.fullName : fullName;
   const shellEmail = preview ? preview.subject.email : email;
 
   const [unread, storedPreference, networkPreference, products, businessUnits, leadUnits] = session
     ? await Promise.all([
-        // Bildirimler her zaman gerçek actor'a aittir; subject'e side-effect yok.
+        // Bildirimler her zaman gerçek actor'a aittir; View As'ta subject'e side-effect yok.
         preview
           ? Promise.resolve(0)
           : prisma.notification.count({ where: { userId: session.userId, readAt: null } }),
@@ -101,10 +110,9 @@ export async function PanelShell({
               select: { lowDataMode: true, offlineWritesEnabled: true },
             })
           : Promise.resolve(null),
-        // Preview'da menü subject ürünlerinden gelir (ADMIN ürünlerinden değil).
         getAccessibleProducts(
           effectiveUserId ?? session.userId,
-          preview ? preview.subject.role : session.role,
+          preview ? preview.subject.role : role === "TEACHER" && teacherMode.enabled ? "TEACHER" : session.role,
         ),
         !isBusinessWorkspace && !preview && process.env.CRM_PANEL_ENABLED !== "false"
           ? getBusinessAccess(session, "dashboard:read")
@@ -116,7 +124,10 @@ export async function PanelShell({
     : [0, null, null, [], [], []];
 
   const searchCommands =
-    session && !preview && (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") && !isBusinessWorkspace
+    session &&
+    !preview &&
+    (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") &&
+    !isBusinessWorkspace
       ? visibleGlobalSearchCommands({
           role: effectiveRole,
           flags,
@@ -252,7 +263,7 @@ export async function PanelShell({
 
               <p className="px-2.5 font-mono text-[10.5px] font-semibold uppercase text-dc-ink-ghost">
                 {roleLabel(effectiveRole)}
-                {preview ? " · önizleme" : ""}
+                {preview ? " · önizleme" : teacherMode.enabled ? " · yönetici" : ""}
               </p>
               <div className="flex items-center gap-2.5 px-2.5 pb-1 pt-3">
                 {avatar("md")}
@@ -276,6 +287,8 @@ export async function PanelShell({
                 subjectName={preview.subject.fullName || preview.subject.email}
                 notices={preview.subject.notices}
               />
+            ) : teacherMode.enabled ? (
+              <AdminTeacherModeBanner />
             ) : null}
 
             {/* Topbar — handoff: 64px, beyaz, alt kenarlık */}
@@ -295,11 +308,16 @@ export async function PanelShell({
               {topbarSlot ? <div className="min-w-0 lg:ml-3">{topbarSlot}</div> : null}
 
               <div className="ml-auto flex items-center gap-3 sm:gap-[18px]">
-                {!preview && !isBusinessWorkspace && role === "ADMIN" ? (
-                  <AdminPreviewPicker compact />
+                {!preview && !teacherMode.enabled && !isBusinessWorkspace && role === "ADMIN" ? (
+                  <>
+                    <AdminTeacherModeSwitchButton compact />
+                    <AdminPreviewPicker compact />
+                  </>
                 ) : null}
 
-                {!isBusinessWorkspace && !preview && (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") ? (
+                {!isBusinessWorkspace &&
+                !preview &&
+                (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") ? (
                   <AdminCommandSearch commands={searchCommands} />
                 ) : null}
 
