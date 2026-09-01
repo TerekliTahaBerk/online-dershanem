@@ -31,6 +31,15 @@ export const createExamSchema = z.object({
     ?? (value.templateCode?.endsWith("_MATH") ? "MATH_ONLY" as const : value.templateCode?.endsWith("_FULL") ? "FULL_TEMPLATE" as const : value.questionCount != null ? "MATH_ONLY" as const : "FULL_TEMPLATE" as const),
 }));
 
+export const examSecurityPolicySchema = z.object({
+  fullscreenMode: z.enum(["OFF", "SUGGESTED", "REQUIRED"]).optional(),
+  blockCopyPaste: z.boolean().optional(),
+  logCopyPaste: z.boolean().optional(),
+  trackVisibility: z.boolean().optional(),
+  allowExtraTimeMinutes: z.number().int().min(0).max(60).optional(),
+  autoSubmit: z.boolean().optional(),
+});
+
 export const updateExamScheduleSchema = z.object({
   title: z.string().trim().min(3).max(180),
   startsAt: z.string().datetime().nullable(),
@@ -40,6 +49,8 @@ export const updateExamScheduleSchema = z.object({
   meetUrl: z.string().trim().max(500).nullable(),
   description: z.string().trim().max(2000).optional().nullable(),
   internalCode: z.string().trim().max(64).optional().nullable(),
+  autoSubmit: z.boolean().optional(),
+  security: examSecurityPolicySchema.optional(),
 });
 
 const question = z.object({
@@ -64,12 +75,25 @@ export const jsonImportCommitSchema = z.object({
 
 export const assignmentCreateSchema = z.object({
   studentUserIds: z.array(z.string().min(1)).max(500).optional(),
+  studentEmails: z.array(z.string().trim().email().max(200)).max(500).optional(),
   groupId: z.string().min(1).optional(),
   classId: z.string().min(1).optional(),
+  classLevel: z.string().trim().min(1).max(40).optional(),
   cohortId: z.string().min(1).optional(),
+  packageId: z.string().min(1).optional(),
   source: z.enum(["STUDENT", "GROUP", "CLASS", "COHORT", "BULK"]).default("STUDENT"),
-}).refine((value) => Boolean(value.studentUserIds?.length || value.groupId || value.classId || value.cohortId), {
+}).refine((value) => Boolean(value.studentUserIds?.length || value.studentEmails?.length || value.groupId || value.classId || value.classLevel || value.cohortId || value.packageId), {
   message: "En az bir öğrenci, grup, sınıf veya cohort seçilmelidir.",
+});
+
+export const integrityReviewSchema = z.object({
+  action: z.enum(["MARK_REVIEWED", "REQUIRE_REVIEW", "CLEAR_REVIEW"]),
+  note: z.string().trim().max(500).optional(),
+});
+
+export const releaseCommitSchema = z.object({
+  excludeReviewRequired: z.boolean().optional(),
+  createCoachSuggestions: z.boolean().optional(),
 });
 
 export const examEventBatchSchema = z.object({

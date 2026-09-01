@@ -1,10 +1,13 @@
 # ODK Result Publication
 
-## Kural
+Scoring tamamlanması ile sonucu öğrenciye yayınlamak **aynı şey değildir**.
 
-> Sonuç yönetim yayınlamadan öğrenciye açılmaz.
+```text
+scoreStatus = CALCULATED   (DB: attempt score exists, exam SCORED)
+publicationStatus = HIDDEN | PUBLISHED
+```
 
-## Publish preview
+## Yayın önizleme
 
 ```text
 312 öğrencinin sonucu yayınlanacak.
@@ -12,32 +15,20 @@
 2 scoring hatası var.
 ```
 
-Seçenek: `excludeReviewRequired` ile inceleme bekleyenleri hariç tut.
+Admin isterse `excludeReviewRequired=true` ile review-required attempt’leri hariç tutabilir.
 
-## Öğrenci sonucu (yayın sonrası)
+## Yayın sonrası
 
-- Genel: D/Y/B/net/süre
-- Ders bazlı section nets
-- Soru analizi: kendi cevabı, doğru, süre, kazanımlar
-- Zaman analizi: hızlı yanlışlar, uzun yanlışlar, bölüm süreleri
-- Kazanım başarı % 
+1. Exam `RELEASED`
+2. Seçilen attempt score’ları `PUBLISHED`
+3. İsteğe bağlı Online Koçum `WeeklyPlanSuggestion` (PENDING) — **otomatik plan publish yok**
+4. Öğrenci / veli / öğretmen raporları görünür
 
-## Teacher report
+## Yönetim ekranı
 
-Kendi erişimindeki öğrenciler:
+Deneme detayında “Sonuç inceleme ve yayın”:
 
-- net, ders performansı, kazanım eksikleri, süre davranışı
-- integrity detayı yok → “Yönetim incelemesi mevcut”
-
-## Parent report
-
-Bağlı öğrenci yayınlanmış sonuç:
-
-- toplam + dersler + güçlü/zayıf alanlar + önceki denemeye göre değişim
-- raw integrity yok
-
-## Comparison / cohort
-
-Öğrenci geçmiş deneme trendi (net + ders).
-
-Admin cohort analizi: grup/öğretmen/sınıf/ürün/sınav türü — **leaderboard ana ürün davranışı değildir**; odak öğrenme açığıdır.
+- katılım / teslim / eksik
+- ortalama + medyan net
+- section averages
+- öğrenci satırları (D/Y/B/net/süre/integrity/result)

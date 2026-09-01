@@ -30,13 +30,14 @@ DRAFT → READY → SCHEDULED → LIVE → ENDED → SCORED → RELEASED → ARC
 
 1. Yönetim denemeyi oluşturur (şablon: LGS/TYT/AYT full veya matematik)
 2. Sorular / PDF / cevap anahtarı / kazanımlar
-3. Öğrenci ataması (snapshot)
-4. READY → SCHEDULED → LIVE
-5. Öğrenci çözer; event + timing loglanır
-6. Teslim / AUTO_SUBMIT
-7. Cron veya admin puanlar (`publicationStatus=HIDDEN`)
-8. Yönetim inceler (integrity sinyalleri)
-9. **Sonuçları Yayınla** → öğrenci/veli/öğretmen görür
+3. Öğrenci ataması (grup / sınıf / cohort / paket / toplu — snapshot)
+4. Güvenlik politikası + önizleme (attempt oluşturmaz)
+5. READY → SCHEDULED → LIVE
+6. Öğrenci çözer; event + timing loglanır
+7. Teslim / AUTO_SUBMIT
+8. Cron veya admin puanlar (`publicationStatus=HIDDEN`)
+9. Yönetim inceler (integrity konsolu)
+10. **Sonuçları Yayınla** → öğrenci/veli/öğretmen görür (+ Koçum öneri draft)
 
 ## Exam lock
 
@@ -54,3 +55,4 @@ Override yalnız answer-key revision + rescore ile.
 - LIVE/SCHEDULED → ENDED
 - expired attempts → AUTO_SUBMITTED
 - ENDED exams → otomatik score (yayınlamaz)
+- 180g+ purgeable integrity events temizliği

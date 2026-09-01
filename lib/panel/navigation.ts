@@ -237,7 +237,7 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
       { id: "odk-exams", href: "/panel/odk/yonetim/sinavlar", label: "Denemeler" },
       { id: "odk-exams-new", href: "/panel/odk/yonetim/sinavlar#yeni-deneme", label: "Yeni Deneme" },
       { id: "odk-ops", href: "/panel/odk/yonetim/operasyon", label: "Canlı Operasyon" },
-      { id: "odk-results", href: "/panel/odk/yonetim/raporlar", label: "Sonuçlar" },
+      { id: "odk-results", href: "/panel/odk/yonetim/sonuclar", label: "Sonuçlar" },
       { id: "odk-reports", href: "/panel/odk/yonetim/raporlar", label: "Raporlar" },
       ...(flags.mockExamAnalysis
         ? [{ id: "mock-analysis", href: `${root}/denemeler`, label: "Sonuç analizi" }]
