@@ -47,9 +47,24 @@ type Task = {
   title: string;
   scheduledFor: string;
   durationMinutes: number;
-  sourceType: "ASSIGNMENT" | "REVIEW" | "WEAK_OUTCOME" | "EXAM_PREP" | "RECOVERY";
+  sourceType:
+    | "ASSIGNMENT"
+    | "REVIEW"
+    | "WEAK_OUTCOME"
+    | "EXAM_PREP"
+    | "RECOVERY"
+    | "MANUAL_COACH"
+    | "MOCK_EXAM"
+    | "SYSTEM_SUGGESTED"
+    | "TEMPLATE"
+    | "PERSONAL_GOAL";
   reasonCode: "DUE_SOON" | "REVIEW_DUE" | "NEEDS_REVIEW" | "EXAM_APPROACHING" | "CAPACITY_BALANCE" | "MISSED_LESSON";
-  status: "PLANNED" | "DONE" | "SKIPPED";
+  status: "PLANNED" | "IN_PROGRESS" | "DONE" | "PARTIAL" | "COULD_NOT" | "SKIPPED";
+  actualMinutes?: number | null;
+  targetType?: "QUESTIONS" | "MINUTES" | "PAGES" | "VIDEOS" | "NONE" | null;
+  targetValue?: number | null;
+  actualQuestions?: number | null;
+  subject?: string | null;
 };
 
 type Plan = {
@@ -85,6 +100,11 @@ const sourceLabels: Record<Task["sourceType"], string> = {
   WEAK_OUTCOME: "Konu tekrarı",
   EXAM_PREP: "Sınav hazırlığı",
   RECOVERY: "Telafi",
+  MANUAL_COACH: "Koç görevi",
+  MOCK_EXAM: "Deneme",
+  SYSTEM_SUGGESTED: "Öneri",
+  TEMPLATE: "Şablon",
+  PERSONAL_GOAL: "Hedef",
 };
 
 const changeCategoryLabels: Record<string, string> = {
@@ -120,9 +140,9 @@ function TaskCard({
   task: Task;
   canComplete: boolean;
   highlighted: boolean;
-  onComplete: (task: Task) => void;
+  onComplete: (task: Task, status?: "DONE" | "PARTIAL" | "IN_PROGRESS" | "COULD_NOT") => void;
 }) {
-  const done = task.status === "DONE";
+  const done = task.status === "DONE" || task.status === "PARTIAL";
   return (
     <article
       className={`rounded-2xl border p-4 ${
@@ -139,21 +159,52 @@ function TaskCard({
             <CalendarDays size={13} />
             <span>{dayHeading.format(new Date(task.scheduledFor))}</span>
             {task.durationMinutes > 0 ? <span>· {task.durationMinutes} dk</span> : null}
+            {task.targetType === "QUESTIONS" && task.targetValue ? (
+              <span>· {task.targetValue} soru</span>
+            ) : null}
             <span>· {sourceLabels[task.sourceType]}</span>
             <span>· {taskStatusLabel(task.status)}</span>
           </p>
           <h3 className={`mt-1 font-extrabold ${highlighted ? "text-base" : "text-sm"}`}>{task.title}</h3>
+          {task.actualMinutes != null || task.actualQuestions != null ? (
+            <p className="mt-1 text-xs text-[var(--site-muted)]">
+              Gerçekleşen
+              {task.actualQuestions != null ? ` · ${task.actualQuestions} soru` : ""}
+              {task.actualMinutes != null ? ` · ${task.actualMinutes} dk` : ""}
+            </p>
+          ) : null}
         </div>
-        {canComplete ? (
-          <button
-            type="button"
-            disabled={done}
-            onClick={() => onComplete(task)}
-            className={`shrink-0 panel-quick-action ${highlighted ? "panel-quick-action-primary" : ""}`}
-            aria-label={done ? "Görev tamamlandı" : "Görevi tamamla"}
-          >
-            {done ? "Tamamlandı" : "Tamamla"}
-          </button>
+        {canComplete && task.status !== "DONE" && task.status !== "SKIPPED" ? (
+          <div className="flex shrink-0 flex-wrap gap-2">
+            {task.status === "PLANNED" ? (
+              <button
+                type="button"
+                onClick={() => onComplete(task, "IN_PROGRESS")}
+                className="panel-quick-action"
+                aria-label="Göreve başla"
+              >
+                Başladım
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => onComplete(task, "DONE")}
+              className={`panel-quick-action ${highlighted ? "panel-quick-action-primary" : ""}`}
+              aria-label="Görevi tamamla"
+            >
+              <Check size={14} /> Tamamla
+            </button>
+            <button
+              type="button"
+              onClick={() => onComplete(task, "PARTIAL")}
+              className="panel-quick-action"
+              aria-label="Kısmen tamamla"
+            >
+              Kısmen
+            </button>
+          </div>
+        ) : done ? (
+          <span className="shrink-0 text-xs font-bold text-emerald-800">Tamamlandı</span>
         ) : null}
       </div>
     </article>
@@ -217,7 +268,7 @@ export function StudentAdaptivePlan({
     window.location.reload();
   }
 
-  async function complete(task: Task) {
+  async function complete(task: Task, status: "DONE" | "PARTIAL" | "IN_PROGRESS" | "COULD_NOT" = "DONE") {
     sendPanelEvent({
       name: "plan_task_started",
       properties: {
@@ -229,10 +280,32 @@ export function StudentAdaptivePlan({
         role: "STUDENT",
       },
     });
-    const response = await fetch(`/api/panel/adaptive-plan/tasks/${task.id}/complete`, { method: "POST" });
-    if (!response.ok) return setMessage("Görev tamamlanamadı.");
+    const response = await fetch(`/api/panel/kocum/tasks/${task.id}/complete`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!response.ok) {
+      // Geriye dönük: eski uç hâlâ DONE işaretler.
+      const legacy = await fetch(`/api/panel/adaptive-plan/tasks/${task.id}/complete`, { method: "POST" });
+      if (!legacy.ok) return setMessage("Görev güncellenemedi.");
+    }
     setPlan((current) =>
-      current ? { ...current, tasks: current.tasks.map((item) => (item.id === task.id ? { ...item, status: "DONE" } : item)) } : current,
+      current
+        ? {
+            ...current,
+            tasks: current.tasks.map((item) => (item.id === task.id ? { ...item, status } : item)),
+          }
+        : current,
+    );
+    setMessage(
+      status === "DONE"
+        ? "Harika — görev tamamlandı."
+        : status === "PARTIAL"
+          ? "Kısmi tamamlanma kaydedildi."
+          : status === "IN_PROGRESS"
+            ? "Göreve başladın."
+            : "Durum kaydedildi.",
     );
   }
 
@@ -265,7 +338,7 @@ export function StudentAdaptivePlan({
   }
 
   const tasks = plan?.tasks ?? [];
-  const { todayPending, todayCompleted, remainingWeek } = splitPlanTasks(tasks, today);
+  const { todayPending, todayCompleted, remainingWeek, overdue } = splitPlanTasks(tasks, today);
   const firstOpenTodayTask = todayPending[0] ?? null;
   const canComplete = plan?.status === "APPROVED";
   const weekProgress = buildWeeklyProgress(tasks);
@@ -466,9 +539,20 @@ export function StudentAdaptivePlan({
         <section aria-labelledby="week-progress-heading" className="panel-surface p-5 sm:p-6">
           <h2 id="week-progress-heading" className="text-sm font-extrabold text-[var(--site-ink)]">Bu hafta</h2>
           <div className="mt-4">
-            <div className="flex items-center justify-between text-xs font-bold text-[var(--site-muted)]">
-              <span>{weekProgress.completedCount} / {weekProgress.totalCount} çalışma tamamlandı</span>
-              <span>{weekProgress.remainingCount} çalışma kaldı</span>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[var(--site-muted)]">
+              <span>{weekProgress.completedCount} / {weekProgress.totalCount} görev tamamlandı</span>
+              <span>Plan uyumu %{weekProgress.percent}</span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-[var(--site-muted)]">
+              <span>
+                {weekProgress.completedLabel} / {weekProgress.plannedLabel} plan
+              </span>
+              {weekProgress.questionTarget > 0 ? (
+                <span>
+                  {weekProgress.questionActual} / {weekProgress.questionTarget} soru
+                </span>
+              ) : null}
+              {overdue.length ? <span className="font-bold text-amber-800">{overdue.length} geciken</span> : null}
             </div>
             <div
               className="mt-2 h-2 overflow-hidden rounded-full bg-dc-line-soft"
@@ -476,7 +560,7 @@ export function StudentAdaptivePlan({
               aria-valuenow={weekProgress.percent}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label={`Bu hafta ${weekProgress.completedCount}/${weekProgress.totalCount} çalışma tamamlandı`}
+              aria-label={`Bu hafta ${weekProgress.completedCount}/${weekProgress.totalCount} görev tamamlandı`}
             >
               <div className="h-full rounded-full bg-dc-brand" style={{ width: `${weekProgress.percent}%` }} />
             </div>

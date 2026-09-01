@@ -1,13 +1,27 @@
 import { formatIstanbulDateInput } from "@/lib/istanbul-time";
+import {
+  buildTodaySummary,
+  buildWeeklyKocumMetrics,
+  formatMinutesAsHours,
+  isCompletedTaskStatus,
+  isOpenTaskStatus,
+  taskStatusLabel as kocumTaskStatusLabel,
+  type KocumTaskStatus,
+} from "@/lib/kocum";
 
 export type StudentPlanStatus = "DRAFT" | "APPROVED" | "CHANGE_REQUESTED" | "ARCHIVED";
-export type StudentPlanTaskStatus = "PLANNED" | "DONE" | "SKIPPED";
+export type StudentPlanTaskStatus = KocumTaskStatus;
 
 export type StudentPlanTask = {
   id: string;
   scheduledFor: string;
   durationMinutes: number;
   status: StudentPlanTaskStatus;
+  actualMinutes?: number | null;
+  targetType?: "QUESTIONS" | "MINUTES" | "PAGES" | "VIDEOS" | "NONE" | null;
+  targetValue?: number | null;
+  actualQuestions?: number | null;
+  subject?: string | null;
 };
 
 export function taskDateKey(scheduledFor: string): string {
@@ -24,37 +38,41 @@ export function planStatusLabel(status: StudentPlanStatus): string {
 }
 
 export function taskStatusLabel(status: StudentPlanTaskStatus): string {
-  return {
-    PLANNED: "Bekliyor",
-    DONE: "Tamamlandı",
-    SKIPPED: "Yeniden planlanacak",
-  }[status];
+  return kocumTaskStatusLabel(status);
 }
 
 export function splitPlanTasks<T extends StudentPlanTask>(tasks: T[], today: string) {
   const todayTasks = tasks.filter((task) => taskDateKey(task.scheduledFor) === today);
-  const todayPending = todayTasks.filter((task) => task.status === "PLANNED");
-  const todayCompleted = todayTasks.filter((task) => task.status === "DONE");
+  const todayPending = todayTasks.filter((task) => isOpenTaskStatus(task.status));
+  const todayCompleted = todayTasks.filter((task) => isCompletedTaskStatus(task.status));
   const remainingWeek = tasks.filter(
     (task) => taskDateKey(task.scheduledFor) !== today && task.status !== "SKIPPED",
   );
-  return { todayTasks, todayPending, todayCompleted, remainingWeek };
+  const overdue = tasks.filter(
+    (task) => isOpenTaskStatus(task.status) && taskDateKey(task.scheduledFor) < today,
+  );
+  return { todayTasks, todayPending, todayCompleted, remainingWeek, overdue };
 }
 
 export function buildWeeklyProgress(tasks: StudentPlanTask[]) {
-  const actionable = tasks.filter((task) => task.status !== "SKIPPED");
-  const completed = actionable.filter((task) => task.status === "DONE");
-  const remaining = actionable.filter((task) => task.status === "PLANNED");
+  const metrics = buildWeeklyKocumMetrics(tasks, "2099-01-01", (d) => taskDateKey(d.toISOString()));
   return {
-    completedCount: completed.length,
-    totalCount: actionable.length,
-    remainingCount: remaining.length,
-    percent: actionable.length ? Math.round((completed.length / actionable.length) * 100) : 0,
+    completedCount: metrics.taskCompleted,
+    totalCount: metrics.taskTotal,
+    remainingCount: metrics.taskOpen,
+    percent: metrics.planCompletionPct,
+    plannedMinutes: metrics.plannedMinutes,
+    completedMinutes: metrics.completedMinutes,
+    questionTarget: metrics.questionTarget,
+    questionActual: metrics.questionActual,
+    plannedLabel: formatMinutesAsHours(metrics.plannedMinutes),
+    completedLabel: formatMinutesAsHours(metrics.completedMinutes),
   };
 }
 
 export function buildTodayFocus(todayPending: StudentPlanTask[]) {
-  if (!todayPending.length) {
+  const summary = buildTodaySummary(todayPending, []);
+  if (!summary.totalTasks && !todayPending.length) {
     return {
       headline: "Bugün planında çalışma görünmüyor.",
       detail: null as string | null,
@@ -62,7 +80,7 @@ export function buildTodayFocus(todayPending: StudentPlanTask[]) {
   }
 
   const durations = todayPending.map((task) => task.durationMinutes).filter((minutes) => minutes > 0);
-  const hasCompleteDuration = durations.length === todayPending.length;
+  const hasCompleteDuration = durations.length === todayPending.length && todayPending.length > 0;
   const totalMinutes = durations.reduce((sum, minutes) => sum + minutes, 0);
 
   return {
@@ -70,3 +88,5 @@ export function buildTodayFocus(todayPending: StudentPlanTask[]) {
     detail: hasCompleteDuration ? `${totalMinutes} dk` : null,
   };
 }
+
+export { formatMinutesAsHours };

@@ -140,6 +140,11 @@ export default async function StudentPlanPage() {
                     sourceType: task.sourceType,
                     reasonCode: task.reasonCode,
                     status: task.status,
+                    actualMinutes: task.actualMinutes,
+                    targetType: task.targetType,
+                    targetValue: task.targetValue,
+                    actualQuestions: task.actualQuestions,
+                    subject: task.subject,
                   })),
                 }
               : null

@@ -112,6 +112,7 @@ export type Student360CoachingTab = {
     tasks: { id: string; title: string; status: string; scheduledFor: Date }[];
   } | null;
   feedbackCategory: string | null;
+  timeline: { id: string; occurredAt: Date; title: string; summary: string | null; kind: string }[];
 };
 
 export type Student360ExamsTab = {
@@ -925,6 +926,24 @@ export async function loadStudent360Bundle(input: {
       }
     : null;
 
+  const timelineEvents = needsCoaching
+    ? await prisma.studentTimelineEvent.findMany({
+        where: {
+          studentId: student.id,
+          visibility: { in: ["STAFF", "STUDENT", "PARENT"] },
+        },
+        orderBy: { occurredAt: "desc" },
+        take: 12,
+        select: {
+          id: true,
+          occurredAt: true,
+          title: true,
+          summary: true,
+          kind: true,
+        },
+      })
+    : [];
+
   const coachingTab: Student360CoachingTab | null = needsCoaching
     ? {
         coachName: coaching?.coachName ?? summary.coachName,
@@ -959,6 +978,13 @@ export async function loadStudent360Bundle(input: {
             }
           : null,
         feedbackCategory: plan?.changeRequestCategory ?? null,
+        timeline: timelineEvents.map((row) => ({
+          id: row.id,
+          occurredAt: row.occurredAt,
+          title: row.title,
+          summary: row.summary,
+          kind: row.kind,
+        })),
       }
     : null;
 

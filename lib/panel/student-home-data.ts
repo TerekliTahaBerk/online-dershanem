@@ -16,7 +16,7 @@ type PlanTaskRow = {
   durationMinutes: number;
   scheduledFor: Date;
   status: string;
-  sourceType?: "ASSIGNMENT" | "REVIEW" | "WEAK_OUTCOME" | "EXAM_PREP" | "RECOVERY";
+  sourceType?: "ASSIGNMENT" | "REVIEW" | "WEAK_OUTCOME" | "EXAM_PREP" | "RECOVERY" | "MANUAL_COACH" | "MOCK_EXAM" | "SYSTEM_SUGGESTED" | "TEMPLATE" | "PERSONAL_GOAL";
   sourceReferenceId?: string | null;
   reasonCode: "DUE_SOON" | "REVIEW_DUE" | "NEEDS_REVIEW" | "EXAM_APPROACHING" | "CAPACITY_BALANCE" | "MISSED_LESSON";
 };

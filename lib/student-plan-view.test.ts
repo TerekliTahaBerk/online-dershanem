@@ -59,7 +59,8 @@ test("bugünkü odak süreyi yalnız tüm görevlerde varsa gösterir", () => {
 
 test("öğrenciye görünen durum metinleri doğal Türkçedir", () => {
   assert.equal(planStatusLabel("APPROVED"), "Koçun tarafından onaylandı");
-  assert.equal(taskStatusLabel("PLANNED"), "Bekliyor");
-  assert.equal(taskStatusLabel("DONE"), "Tamamlandı");
+  assert.equal(taskStatusLabel("PLANNED"), "Başlamadım");
+  assert.equal(taskStatusLabel("DONE"), "Tamamladım");
   assert.equal(taskStatusLabel("SKIPPED"), "Yeniden planlanacak");
+  assert.equal(taskStatusLabel("PARTIAL"), "Kısmen tamamladım");
 });

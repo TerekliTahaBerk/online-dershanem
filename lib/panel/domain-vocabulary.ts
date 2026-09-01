@@ -29,8 +29,11 @@ export const PANEL_DOMAIN = {
   haftalikPlan: "Haftalık plan",
   /** Öğrenci zihinsel modelinde kısaltılmış menü etiketi. */
   plan: "Plan",
+  planGorevi: "Plan görevi",
   hedef: "Hedef",
   hedefler: "Hedefler",
+  haftalikOzet: "Haftalık özet",
+  tekrarOnerisi: "Tekrar önerisi",
   kazanim: "Kazanım",
   kazanımlar: "Kazanımlar",
   deneme: "Deneme",
