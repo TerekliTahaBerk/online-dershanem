@@ -4,16 +4,44 @@ import { logAudit } from "@/lib/audit";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { assignmentCreateSchema } from "@/lib/odk/admin-schemas";
+import { resolveAssignmentStudents } from "@/lib/odk/assignment-resolve";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
   const { id } = await context.params;
-  const assignments = await prisma.odkExamAssignment.findMany({
-    where: { examId: id },
-    orderBy: { assignedAt: "desc" },
-    include: { student: { select: { id: true, fullName: true, email: true } } },
-    take: 2000,
-  });
+  const [assignments, groups, classLevels, packages, pilotRuns] = await Promise.all([
+    prisma.odkExamAssignment.findMany({
+      where: { examId: id },
+      orderBy: { assignedAt: "desc" },
+      include: { student: { select: { id: true, fullName: true, email: true } } },
+      take: 2000,
+    }),
+    prisma.group.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, subject: true, _count: { select: { enrollments: { where: { endedAt: null } } } } },
+      take: 200,
+    }),
+    prisma.studentProfile.findMany({
+      where: { classLevel: { not: null }, user: { role: "STUDENT", status: "ACTIVE" } },
+      select: { classLevel: true },
+      distinct: ["classLevel"],
+      take: 100,
+    }),
+    prisma.odkPackage.findMany({
+      where: { isActive: true },
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+      take: 100,
+    }),
+    prisma.odkPilotRun.findMany({
+      where: { status: { in: ["ACTIVE", "DRAFT"] } },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, status: true },
+      take: 50,
+    }),
+  ]);
+
   return NextResponse.json({
     assignments: assignments.map((item) => ({
       id: item.id,
@@ -26,6 +54,12 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       isActive: item.isActive,
       assignedAt: item.assignedAt,
     })),
+    options: {
+      groups: groups.map((group) => ({ id: group.id, label: `${group.name} · ${group.subject}`, memberCount: group._count.enrollments })),
+      classLevels: classLevels.map((row) => row.classLevel).filter(Boolean),
+      packages,
+      cohorts: pilotRuns,
+    },
   });
 }
 
@@ -40,28 +74,34 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!exam) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
   if (["ARCHIVED"].includes(exam.status)) return NextResponse.json({ error: "Arşivlenmiş denemeye atama yapılamaz." }, { status: 409 });
 
-  let studentIds = [...new Set(parsed.data.studentUserIds || [])];
-  const source = parsed.data.source;
-  const sourceRefId = parsed.data.groupId || parsed.data.classId || parsed.data.cohortId || null;
-
+  const resolved = await resolveAssignmentStudents(parsed.data);
+  const studentIds = resolved.studentUserIds;
   if (!studentIds.length) {
-    return NextResponse.json({
-      error: "Atama için öğrenci listesi gerekli. Grup/sınıf/cohort kaynağı snapshot’ta saklanır; üye çözümlemesi öğrenci ID listesiyle yapılır.",
-    }, { status: 400 });
+    return NextResponse.json({ error: "Seçilen kaynakta aktif öğrenci bulunamadı." }, { status: 400 });
   }
+
+  const source = resolved.source;
+  const sourceRefId = resolved.sourceRefId;
 
   const students = await prisma.user.findMany({
     where: { id: { in: studentIds }, role: "STUDENT", status: "ACTIVE" },
     select: { id: true, fullName: true, email: true },
   });
-  if (students.length !== studentIds.length) return NextResponse.json({ error: "Bazı öğrenciler bulunamadı veya aktif değil." }, { status: 400 });
+  if (!students.length) return NextResponse.json({ error: "Aktif öğrenci bulunamadı." }, { status: 400 });
 
   let created = 0;
   let updated = 0;
   await prisma.$transaction(async (tx) => {
     for (const student of students) {
       const existing = await tx.odkExamAssignment.findUnique({ where: { examId_studentUserId: { examId: id, studentUserId: student.id } } });
-      const snapshot = { fullName: student.fullName, email: student.email, source, sourceRefId, assignedAt: new Date().toISOString() };
+      const snapshot = {
+        fullName: student.fullName,
+        email: student.email,
+        source,
+        sourceRefId,
+        resolvedFrom: resolved.resolvedFrom,
+        assignedAt: new Date().toISOString(),
+      };
       if (existing) {
         await tx.odkExamAssignment.update({
           where: { id: existing.id },
@@ -90,7 +130,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     entityId: id,
     action: "odk.exam_assigned",
     summary: `${created + updated} öğrenci denemeye atandı`,
-    payload: { created, updated, source, sourceRefId },
+    payload: { created, updated, source, sourceRefId, resolvedFrom: resolved.resolvedFrom },
   });
-  return NextResponse.json({ created, updated, total: created + updated }, { status: 201 });
+  return NextResponse.json({ created, updated, total: created + updated, source, sourceRefId }, { status: 201 });
 }

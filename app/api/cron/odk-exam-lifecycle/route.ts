@@ -39,8 +39,19 @@ export async function GET(request: Request) {
       ...endedExams.map((item) => ({ actorType: "SYSTEM" as const, entityType: "OdkExam", entityId: item.id, action: "odk.exam_ended", summary: "Deneme bitiş saatinde kapatıldı (CLOSED)" })),
       ...expiredAttempts.map((item) => ({ actorType: "SYSTEM" as const, entityType: "OdkExamAttempt", entityId: item.id, action: "odk.attempt_auto_submitted", summary: "Süresi dolan öğrenci oturumu otomatik teslim edildi" })),
     ]);
-    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length, autoScored };
+
+    // Ayrıntılı integrity event retention (answers/scores kalıcı).
+    const { integrityEventRetentionCutoff, purgeableIntegrityEventTypes } = await import("@/lib/odk/event-retention");
+    const cutoff = integrityEventRetentionCutoff(now);
+    const purgedEvents = await prisma.odkAttemptEvent.deleteMany({
+      where: {
+        serverOccurredAt: { lt: cutoff },
+        type: { in: purgeableIntegrityEventTypes() as Array<"TAB_HIDDEN" | "TAB_VISIBLE" | "WINDOW_BLUR" | "WINDOW_FOCUS" | "FULLSCREEN_ENTER" | "FULLSCREEN_EXIT" | "COPY_ATTEMPT" | "PASTE_ATTEMPT" | "CONTEXT_MENU" | "NETWORK_OFFLINE" | "NETWORK_ONLINE"> },
+      },
+    });
+
+    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length, autoScored, purgedIntegrityEvents: purgedEvents.count };
     log.info("odk.lifecycle.completed", result);
     return result;
-  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted + result.autoScored }) });
+  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted + result.autoScored + result.purgedIntegrityEvents }) });
 }

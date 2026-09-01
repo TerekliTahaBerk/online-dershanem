@@ -4,9 +4,14 @@ import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
+import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminExamEditor } from "@/components/odk/admin-exam-editor";
 import { AdminJsonImportPanel } from "@/components/odk/admin-json-import-panel";
+import { AdminAssignmentPanel } from "@/components/odk/admin-assignment-panel";
+import { AdminPreviewPanel } from "@/components/odk/admin-preview-panel";
+import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-review-panel";
+import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
 
 export const dynamic = "force-dynamic";
 function localInput(value: Date | null) { if (!value) return ""; return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(value).replace(" ", "T"); }
@@ -18,7 +23,17 @@ export default async function OdkAdminExamDetailPage({ params }: { params: Promi
     : { isActive: true as const, unit: { subject: { version: { exam: exam.family, status: "ACTIVE" as const } } } };
   const [outcomes, attempts] = await Promise.all([
     prisma.learningOutcome.findMany({ where: outcomeWhere, orderBy: [{ unit: { name: "asc" } }, { code: "asc" }], include: { unit: { select: { name: true } } }, take: 2000 }),
-    prisma.odkExamAttempt.findMany({ where: { examId: id, status: { not: "VOID" } }, select: { status: true, integrityLevel: true, score: { select: { attemptId: true } } } }),
+    prisma.odkExamAttempt.findMany({
+      where: { examId: id, status: { not: "VOID" } },
+      select: {
+        id: true,
+        status: true,
+        integrityLevel: true,
+        integrityReviewedAt: true,
+        student: { select: { fullName: true, email: true } },
+        score: { select: { attemptId: true } },
+      },
+    }),
   ]);
   const questions = exam.currentVersion.sections.flatMap((section) => section.questions.map((question) => ({
     id: question.id,
@@ -30,6 +45,7 @@ export default async function OdkAdminExamDetailPage({ params }: { params: Promi
     primaryOutcomeId: question.outcomes.find((outcome) => outcome.isPrimary)?.outcomeId || null,
   })));
   const reviewCount = attempts.filter((attempt) => attempt.integrityLevel !== "NORMAL").length;
+  const security = parseExamSecurityPolicy(exam.currentVersion.settings);
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
       <Link href="/panel/odk/yonetim/sinavlar" className="panel-text-link"><ArrowLeft size={13} /> Denemelere dön</Link>
@@ -39,7 +55,7 @@ export default async function OdkAdminExamDetailPage({ params }: { params: Promi
         <p className="mt-2 text-sm text-[var(--site-body)]">Sonuçlar yönetim yayınlamadan öğrenciye açılmaz. LIVE sonrası kritik alanlar kilitlenir.</p>
       </header>
       <div className="mt-7 space-y-6">
-        {exam.status === "DRAFT" || exam.currentVersion.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} /> : null}
+        <div id="adim-json">{exam.status === "DRAFT" || exam.currentVersion.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} /> : null}</div>
         <AdminExamEditor
           exam={{
             id: exam.id,
@@ -55,6 +71,7 @@ export default async function OdkAdminExamDetailPage({ params }: { params: Promi
             durationMinutes: exam.currentVersion.durationMinutes,
             files: exam.currentVersion.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName })),
             questions,
+            security: { ...security, autoSubmit: exam.currentVersion.autoSubmit },
           }}
           outcomes={outcomes.map((outcome) => ({ id: outcome.id, label: `${outcome.code} · ${outcome.unit.name} · ${outcome.title}` }))}
           issues={issues}
@@ -65,6 +82,19 @@ export default async function OdkAdminExamDetailPage({ params }: { params: Promi
             examEnded: Boolean(exam.endsAt && exam.endsAt <= new Date()),
             integrityReviewCount: reviewCount,
           }}
+        />
+        <AdminAssignmentPanel examId={exam.id} canEdit={exam.status !== "ARCHIVED"} />
+        <AdminPreviewPanel examId={exam.id} />
+        <AdminResultsReviewPanel examId={exam.id} examStatus={exam.status} />
+        <AdminIntegrityReviewPanel
+          examId={exam.id}
+          attempts={attempts.map((attempt) => ({
+            id: attempt.id,
+            studentName: attempt.student.fullName || attempt.student.email,
+            status: attempt.status,
+            integrityLevel: attempt.integrityLevel,
+            integrityReviewedAt: attempt.integrityReviewedAt?.toISOString() || null,
+          }))}
         />
       </div>
     </PanelShell>

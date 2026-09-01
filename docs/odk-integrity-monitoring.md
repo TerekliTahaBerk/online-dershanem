@@ -36,6 +36,15 @@ Her zaman nedenler gösterilir:
 • 1 kez fullscreen kapatıldı
 ```
 
+## Yönetim inceleme konsolu
+
+`/panel/odk/yonetim/sinavlar/[id]` → Integrity inceleme:
+
+- flagged attempt listesi
+- event timeline
+- `MARK_REVIEWED` / `REQUIRE_REVIEW`
+- yayın sırasında “inceleme bekleyenleri hariç tut”
+
 ## Rol görünürlüğü
 
 - **Admin:** full audit (timeline, events, session meta)
@@ -55,6 +64,6 @@ Her zaman nedenler gösterilir:
 |------|--------------|
 | Answers / scores / outcomes | uzun süreli |
 | Aggregate sonuçlar | kalıcı |
-| Detailed integrity events | 180 gün (opsiyonel purge job) |
+| Detailed integrity events (visibility/copy/focus) | **180 gün** — `odk-exam-lifecycle` cron purge |
 
 Fullscreen / copy-paste client-side engeller güvenlik garantisi değildir; UI’da güvenlik iddiası kurulmaz.
