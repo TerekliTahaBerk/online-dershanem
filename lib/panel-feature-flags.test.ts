@@ -5,6 +5,7 @@ import { getPanelFeatureFlags } from "./panel-feature-flags";
 test("gelecek panel özellikleri güvenli biçimde kapalı başlar", () => {
   const flags = getPanelFeatureFlags({});
   assert.equal(flags.baselineMetrics, true);
+  assert.equal(flags.progressInsights, true);
   assert.equal(flags.learningOutcomes, false);
   assert.equal(flags.quickLessonClose, false);
   assert.equal(flags.recoveryPackage, false);

@@ -11,6 +11,9 @@ import { parseAnalyticsFilters } from "@/lib/analytics/filters";
 import { loadManagementAnalyticsSnapshot } from "@/lib/analytics/server";
 import { formatIstanbulDateInput } from "@/lib/istanbul-time";
 import { MANAGEMENT_ANALYTICS_RULE_VERSION } from "@/lib/analytics/definitions";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { gidisatPanelFromAnalyticsSnapshot } from "@/lib/progress-insights/admin-from-analytics";
+import { NetTrendCard } from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +24,18 @@ function toneClass(tone: string) {
   return "text-[var(--site-ink)]";
 }
 
+function fmtPct(value: number | null) {
+  if (value === null) return "—";
+  return `%${value.toLocaleString("tr-TR", { maximumFractionDigits: 1 })}`;
+}
+
 export default async function ManagementAnalyticsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await requireRole("ADMIN");
+  const flags = getPanelFeatureFlags();
   const query = await searchParams;
   const filters = parseAnalyticsFilters({
     from: typeof query.from === "string" ? query.from : undefined,
@@ -40,6 +49,9 @@ export default async function ManagementAnalyticsPage({
 
   const snapshot = await loadManagementAnalyticsSnapshot(filters);
   const qs = filtersToQuery(filters);
+  const gidisat = flags.progressInsights
+    ? gidisatPanelFromAnalyticsSnapshot(snapshot)
+    : null;
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
@@ -99,6 +111,87 @@ export default async function ManagementAnalyticsPage({
         ))}
       </section>
 
+      {gidisat ? (
+        <section className="mt-6 panel-surface p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Gidişat</h2>
+              <p className="mt-1 text-xs text-[var(--site-muted)]">
+                Öğrenci / öğretmen / veli Analiz kataloğuyla aynı gidişat sinyalleri (kohort).
+              </p>
+            </div>
+            <Link
+              href={`/panel/yonetim/analitik/gidisat_median_net_delta?${qs}`}
+              className="text-xs font-bold text-[var(--brand-olive)]"
+            >
+              Medyan net detay →
+            </Link>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                Katılım
+              </p>
+              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+                {fmtPct(gidisat.attendancePercent)}
+              </p>
+            </article>
+            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                Çalışma
+              </p>
+              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+                {fmtPct(gidisat.assignmentPercent)}
+              </p>
+            </article>
+            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                Plan
+              </p>
+              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+                {fmtPct(gidisat.planPercent)}
+              </p>
+            </article>
+            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                Medyan net Δ
+              </p>
+              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+                {gidisat.suppressed || gidisat.medianNetDelta === null
+                  ? "—"
+                  : `${gidisat.medianNetDelta > 0 ? "+" : ""}${gidisat.medianNetDelta}`}
+              </p>
+              <p className="mt-1 text-[11px] text-[var(--site-muted)]">
+                {gidisat.suppressed
+                  ? `${gidisat.pairedStudents}/10 eşleşme`
+                  : `${gidisat.pairedStudents} eşleşme`}
+              </p>
+            </article>
+          </div>
+
+          {gidisat.sparkline.length >= 2 && !gidisat.suppressed ? (
+            <div className="mt-2 [&_.mt-5]:mt-3">
+              <NetTrendCard
+                points={gidisat.sparkline}
+                caption={
+                  gidisat.narrative.find((line) => line.includes("Medyan net")) ??
+                  "Kohort deneme türlerine göre medyan net değişim."
+                }
+              />
+            </div>
+          ) : null}
+
+          {gidisat.narrative.length ? (
+            <ul className="mt-4 space-y-1.5 text-xs text-[var(--site-body)]">
+              {gidisat.narrative.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
       <section className="mt-6 grid gap-4 xl:grid-cols-2">
         <article className="panel-surface p-5">
           <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Ticari özet</h2>
@@ -122,8 +215,8 @@ export default async function ManagementAnalyticsPage({
           <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Öğrenci risk & öğretmen işleri</h2>
           <ul className="mt-3 space-y-2 text-xs text-[var(--site-body)]">
             <li>
-              Risk: {snapshot.education.risk.critical} kritik · {snapshot.education.risk.watch} izleme ·{" "}
-              {snapshot.education.risk.normal} normal
+              Risk: {snapshot.education.risk.critical} kritik · {snapshot.education.risk.watch}{" "}
+              izleme · {snapshot.education.risk.normal} normal
             </li>
             <li>Aktif grup: {snapshot.education.activeGroups}</li>
             <li>Açık işler (toplam): {snapshot.teacherOps.openWorkItems}</li>

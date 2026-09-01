@@ -70,6 +70,18 @@ function valueForKey(snapshot: ManagementAnalyticsSnapshot, key: string): number
       return t.averageStudentLoad;
     case "cohort_outcome_progress":
       return snapshot.success.outcomeProgress.value;
+    case "gidisat_median_net_delta": {
+      const deltas = snapshot.success.mockExamTrends
+        .filter((row) => row.status === "READY" && row.medianChange !== null)
+        .map((row) => row.medianChange!);
+      if (!deltas.length) return null;
+      const sorted = [...deltas].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      if (sorted.length % 2 === 0) {
+        return Math.round(((sorted[mid - 1]! + sorted[mid]!) / 2) * 10) / 10;
+      }
+      return sorted[mid]!;
+    }
     default:
       return null;
   }
@@ -102,6 +114,11 @@ function sampleNote(snapshot: ManagementAnalyticsSnapshot, def: MetricDefinition
   if (def.key === "cohort_outcome_progress") {
     const row = snapshot.success.outcomeProgress;
     return `${row.status}:n=${row.sampleSize}`;
+  }
+  if (def.key === "gidisat_median_net_delta") {
+    const ready = snapshot.success.mockExamTrends.filter((row) => row.status === "READY");
+    const paired = ready.reduce((sum, row) => sum + row.pairedStudents, 0);
+    return `ready=${ready.length};pairedSum=${paired}`;
   }
   return "";
 }

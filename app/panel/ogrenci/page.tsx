@@ -186,8 +186,8 @@ export default async function StudentHomePage() {
                 </Link>
               ) : null}
               {data.products.includes("OD") ? (
-                <Link href="/panel/ogrenci/gelisim" className="panel-quick-action">
-                  Gelişimime Bak
+                <Link href="/panel/ogrenci/analiz" className="panel-quick-action">
+                  Gidişatıma Bak
                 </Link>
               ) : null}
               {data.products.includes("ODK") ? (

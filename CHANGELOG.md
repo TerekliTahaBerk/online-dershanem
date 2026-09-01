@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Role **Analiz** pages (student, teacher, parent) for combined academic and behavioral gidişat, plus a management analytics **Gidişat** panel sharing the same catalog (`PANEL_FEATURE_PROGRESS_INSIGHTS`, default on)
 - Public `/dino-ai` page positioning Dino AI as the shared layer across the three products, linked from the footer and sitemap
 - Registration-status notice on the Online Koçum product page while pricing and sign-up are not yet published
 - End-to-end coverage for public navigation, legacy redirects, and product-surface accessibility

@@ -327,6 +327,20 @@ export const METRIC_DEFINITIONS: readonly MetricDefinition[] = [
     primaryKpi: false,
     suppressBelow: MANAGEMENT_ANALYTICS_COHORT_MIN,
   },
+  {
+    key: "gidisat_median_net_delta",
+    domain: "success",
+    label: "Gidişat medyan net değişim",
+    definition:
+      "Kohort deneme trendlerindeki hazır (READY) medyan net değişimlerin medyanı. Öğrenci gidişat Analiz kataloğuyla aynı anlam. n < 10 bastırılır.",
+    querySource: "cohort_mock_exam_trend READY medianChange → median",
+    dateSemantics: "taken_in_range",
+    timezone: TZ,
+    denominator: "READY kohort satırı (≥10 eşleşmeli trend yoksa bastırılır).",
+    unit: "ratio",
+    primaryKpi: false,
+    suppressBelow: MANAGEMENT_ANALYTICS_COHORT_MIN,
+  },
 
   // —— Öğretmen operasyonu (sıralama yok) ——
   {

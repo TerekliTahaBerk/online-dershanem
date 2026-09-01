@@ -78,7 +78,7 @@ test("öğrenci zihinsel modeli ürün bayraklarıyla hizalanır", () => {
   const navLabels = labels("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON);
   assert.ok(navLabels.includes(PANEL_DOMAIN.calismalar));
   assert.ok(navLabels.includes(PANEL_DOMAIN.plan));
-  assert.ok(navLabels.includes(PANEL_DOMAIN.gelisim));
+  assert.ok(navLabels.includes(PANEL_DOMAIN.analiz));
   assert.ok(navLabels.includes(PANEL_DOMAIN.checkIn));
   assert.ok(!navLabels.includes("Ödevler"));
   assert.ok(!navLabels.includes("Gelişimim"));
@@ -102,7 +102,14 @@ test("kapalı feature flag menüde ölü link üretmez", () => {
     for (const href of closedHrefs) {
       // Kapalı bayrak setinde kalan her link, açık sette de geçerli bir
       // temel yüzey olmalı; bayrağa bağlı yollar kapalı sette olmamalı.
-      assert.ok(flaggedHrefs.has(href) || href.includes("/bildirimler"), href);
+      // Gelişim/Takip: progressInsights açıkken Analiz'e taşınır; kapalıyken
+      // yedek yüzey olarak kalır — bu bilinçli IA geçişi.
+      const legacyProgressFallback =
+        href.endsWith("/gelisim") || href.endsWith("/takip");
+      assert.ok(
+        flaggedHrefs.has(href) || href.includes("/bildirimler") || legacyProgressFallback,
+        href,
+      );
     }
 
     const closedLabels = labels(role, ALL_PRODUCTS, ALL_FLAGS_OFF);
@@ -118,6 +125,15 @@ test("kapalı feature flag menüde ölü link üretmez", () => {
   assert.ok(!teacherClosed.includes("/panel/ogretmen/tekrar"));
   assert.ok(!teacherClosed.includes("/panel/ogretmen/yardim"));
   assert.ok(!teacherClosed.includes("/panel/ogretmen/ai-yardimci"));
+  assert.ok(!teacherClosed.includes("/panel/ogretmen/analiz"));
+
+  const studentClosed = panelNavHrefs("STUDENT", ALL_PRODUCTS, ALL_FLAGS_OFF);
+  assert.ok(!studentClosed.includes("/panel/ogrenci/analiz"));
+  assert.ok(studentClosed.includes("/panel/ogrenci/gelisim"));
+
+  const parentClosed = panelNavHrefs("PARENT", ALL_PRODUCTS, ALL_FLAGS_OFF);
+  assert.ok(!parentClosed.includes("/panel/veli/analiz"));
+  assert.ok(parentClosed.includes("/panel/veli/takip"));
 
   const adminClosed = panelNavHrefs("ADMIN", [], ALL_FLAGS_OFF);
   assert.ok(!adminClosed.includes("/panel/yonetim/kazanimlar"));
