@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
+import { requireApiAccountRole } from "@/lib/auth/api-guards";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiRecentAdminStepUp();
+  const auth = await requireApiAccountRole("ADMIN");
   if (!auth.ok) return auth.response;
 
   const { id } = await context.params;

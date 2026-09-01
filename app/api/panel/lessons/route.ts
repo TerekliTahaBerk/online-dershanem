@@ -38,6 +38,8 @@ export async function POST(request: Request) {
   const startsAt = new Date(parsed.data.startsAt);
   const isSeries = parsed.data.mode === "SERIES" || parsed.data.repeatWeeks > 1;
   const lessonCount = isSeries ? parsed.data.repeatWeeks : 1;
+  const enrollments = group.enrollments;
+  const studentIds = enrollments.map((item) => item.student.id);
   const lessons = await prisma.$transaction(async (tx) => {
     const series = isSeries
       ? await tx.lessonSeries.create({
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
         groupId: group.id,
         startsAt: lessonStart,
         endsAt: lessonEnd,
+        studentIds,
       });
       const lesson = await tx.lesson.create({
         data: {

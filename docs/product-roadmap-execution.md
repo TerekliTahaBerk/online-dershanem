@@ -216,7 +216,7 @@ Bu belge [ürün araştırmasındaki](./product-research-roadmap-2026.md) fikirl
 - 500–5000 kayıt ölçeğinde operasyonlar için kişi ekranında filtre-temelli toplu işlem katmanı açılacak; ilk sürüm yalnız üç gerçek ihtiyaçla sınırlı kalacak: toplu davet yenileme, toplu öğrenci grup transferi, toplu öğretmen güvenli devir/offboard.
 - Toplu akış `preview -> execute` olarak çalışacak; kısmi başarı gizlenmeyecek, satır bazlı hata nedeni dönecek.
 - Toplu işlemler `BULK_LIMIT=500` üst sınırıyla çalışacak; daha geniş filtrelerde kullanıcıya cap bilgisi açıkça gösterilecek.
-- `AdminCommandSearch` statik komut listesinden command + entity aramaya genişletilecek; kişi, grup ve siparişe tek adım geçiş sağlanacak.
+- `AdminCommandSearch` mevcut `/api/panel/admin-search` üzerinden command + çoklu entity aramaya genişletildi; öğrenci/veli/öğretmen/grup/ders/sipariş/lead/deneme ve yetkili hızlı komutlar tek paletten açılır (bkz. `docs/panel-global-search.md`).
 
 ## Aşama 31 kararları
 

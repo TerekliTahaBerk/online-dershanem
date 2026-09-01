@@ -371,6 +371,8 @@ model User {
   @@index([role, status])
   @@index([createdById])
   @@index([archivedById])
+  @@index([fullName])
+  @@index([phone])
   @@map("users")
 }
 
@@ -1721,6 +1723,7 @@ model Group {
   lessonSeries LessonSeries[]
 
   @@index([teacherId, isActive])
+  @@index([name])
   @@map("groups")
 }
 
@@ -1912,6 +1915,7 @@ model Enrollment {
 
   @@unique([groupId, studentId])
   @@index([studentId, endedAt])
+  @@index([groupId, endedAt])
   @@map("enrollments")
 }
 
@@ -1947,6 +1951,9 @@ model Lesson {
   @@index([teacherId, startsAt])
   @@index([groupId, startsAt])
   @@index([seriesId, startsAt])
+  @@index([title])
+  @@index([status, startsAt])
+  @@index([groupId, status, startsAt])
   @@map("lessons")
 }
 

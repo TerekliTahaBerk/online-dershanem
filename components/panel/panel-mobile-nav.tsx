@@ -96,7 +96,7 @@ export function PanelMobileNav({
               ? withParentStudentContext(item.href, selectedStudentId)
               : item.href;
             return (
-              <li key={item.href}>
+              <li key={item.id}>
                 <Link
                   href={href}
                   prefetch

@@ -5,14 +5,20 @@ import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import {
+  GROUP_MUTATION_ISOLATION,
   GroupLifecycleError,
   addStudentToGroup,
   ensureActiveGroup,
   ensureActiveStudent,
+  previewStudentTransfer,
   removeStudentFromGroup,
-  transferStudentBetweenGroups,
+  transferStudentsBetweenGroups,
 } from "@/lib/panel/group-lifecycle";
 import { logAudit } from "@/lib/audit";
+import {
+  LessonLifecycleError,
+  assertLessonNoConflict,
+} from "@/lib/panel/lesson-lifecycle";
 
 const actionSchema = z.discriminatedUnion("action", [
   z.object({
@@ -38,9 +44,16 @@ const actionSchema = z.discriminatedUnion("action", [
     studentId: z.string().min(1),
   }),
   z.object({
+    action: z.literal("PREVIEW_TRANSFER"),
+    studentId: z.string().min(1),
+    targetGroupId: z.string().min(1),
+  }),
+  z.object({
     action: z.literal("TRANSFER_STUDENT"),
     studentId: z.string().min(1),
     targetGroupId: z.string().min(1),
+    /** Preview → confirm sonrası true olmalı; tek tık mutation engellenir. */
+    confirmed: z.literal(true),
   }),
 ]);
 
@@ -63,13 +76,30 @@ async function notifyGroupAudience(
 }
 
 function lifecycleError(error: unknown) {
-  if (!(error instanceof GroupLifecycleError)) return null;
-  if (error.code === "GROUP_NOT_FOUND") return NextResponse.json({ error: error.message }, { status: 404 });
-  if (error.code === "STUDENT_NOT_FOUND") return NextResponse.json({ error: error.message }, { status: 400 });
-  if (error.code === "GROUP_INACTIVE" || error.code === "GROUP_CAPACITY_FULL" || error.code === "ALREADY_ENROLLED" || error.code === "NOT_ENROLLED") {
-    return NextResponse.json({ error: error.message }, { status: 409 });
+  if (error instanceof LessonLifecycleError) {
+    if (error.code === "SCHEDULE_CONFLICT") {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: 409 });
+    }
+    return NextResponse.json({ error: error.message, code: error.code }, { status: 400 });
   }
-  return NextResponse.json({ error: "İşlem tamamlanamadı." }, { status: 400 });
+  if (!(error instanceof GroupLifecycleError)) return null;
+  if (error.code === "GROUP_NOT_FOUND") {
+    return NextResponse.json({ error: error.message, code: error.code }, { status: 404 });
+  }
+  if (error.code === "STUDENT_NOT_FOUND") {
+    return NextResponse.json({ error: error.message, code: error.code }, { status: 400 });
+  }
+  if (
+    error.code === "GROUP_INACTIVE" ||
+    error.code === "GROUP_CAPACITY_FULL" ||
+    error.code === "ALREADY_ENROLLED" ||
+    error.code === "NOT_ENROLLED" ||
+    error.code === "TRANSFER_BLOCKED" ||
+    error.code === "SCHEDULE_CONFLICT"
+  ) {
+    return NextResponse.json({ error: error.message, code: error.code }, { status: 409 });
+  }
+  return NextResponse.json({ error: "İşlem tamamlanamadı.", code: error.code }, { status: 400 });
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -139,17 +169,38 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       if (!group) return NextResponse.json({ error: "Grup bulunamadı." }, { status: 404 });
       if (!teacher) return NextResponse.json({ error: "Aktif öğretmen bulunamadı." }, { status: 400 });
       const previousTeacherId = group.teacherId;
-      await prisma.$transaction(async (tx) => {
-        await tx.group.update({ where: { id }, data: { teacherId: teacher.id } });
-        await tx.lessonSeries.updateMany({
-          where: { groupId: id, isActive: true },
-          data: { teacherId: teacher.id },
+      const studentIds = group.enrollments.map((item) => item.student.id);
+      try {
+        await prisma.$transaction(async (tx) => {
+          const upcoming = await tx.lesson.findMany({
+            where: { groupId: id, startsAt: { gte: new Date() }, status: "PLANNED" },
+            select: { id: true, startsAt: true, endsAt: true },
+          });
+          for (const lesson of upcoming) {
+            await assertLessonNoConflict(tx, {
+              lessonId: lesson.id,
+              teacherId: teacher.id,
+              groupId: id,
+              startsAt: lesson.startsAt,
+              endsAt: lesson.endsAt,
+              studentIds,
+            });
+          }
+          await tx.group.update({ where: { id }, data: { teacherId: teacher.id } });
+          await tx.lessonSeries.updateMany({
+            where: { groupId: id, isActive: true },
+            data: { teacherId: teacher.id },
+          });
+          await tx.lesson.updateMany({
+            where: { groupId: id, startsAt: { gte: new Date() }, status: "PLANNED" },
+            data: { teacherId: teacher.id },
+          });
         });
-        await tx.lesson.updateMany({
-          where: { groupId: id, startsAt: { gte: new Date() }, status: "PLANNED" },
-          data: { teacherId: teacher.id },
-        });
-      });
+      } catch (error) {
+        const mapped = lifecycleError(error);
+        if (mapped) return mapped;
+        throw error;
+      }
       await notifyGroupAudience([
         { userId: teacher.id, title: "Yeni grup ataması", body: `${group.name} grubu sana atandı.`, href: "/panel/ogretmen" },
         ...(previousTeacherId !== teacher.id ? [{ userId: previousTeacherId, title: "Grup ataması güncellendi", body: `${group.name} grubu üzerindeki sorumluluğun değişti.`, href: "/panel/ogretmen" }] : []),
@@ -184,15 +235,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     }
 
     if (action.action === "ADD_STUDENT") {
-      const audience = await prisma.$transaction(async (tx) => {
-        const group = await ensureActiveGroup(tx, id);
-        const student = await ensureActiveStudent(tx, action.studentId);
-        await addStudentToGroup(tx, group, action.studentId);
-        return {
-          group,
-          student,
-        };
-      });
+      const audience = await prisma.$transaction(
+        async (tx) => {
+          const group = await ensureActiveGroup(tx, id);
+          const student = await ensureActiveStudent(tx, action.studentId);
+          await addStudentToGroup(tx, group, action.studentId);
+          return {
+            group,
+            student,
+          };
+        },
+        { isolationLevel: GROUP_MUTATION_ISOLATION },
+      );
       await notifyGroupAudience([
         {
           userId: audience.student.userId,
@@ -225,12 +279,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     }
 
     if (action.action === "REMOVE_STUDENT") {
-      const audience = await prisma.$transaction(async (tx) => {
-        const group = await ensureActiveGroup(tx, id);
-        const student = await ensureActiveStudent(tx, action.studentId);
-        await removeStudentFromGroup(tx, id, action.studentId);
-        return { group, student };
-      });
+      const audience = await prisma.$transaction(
+        async (tx) => {
+          const group = await ensureActiveGroup(tx, id);
+          const student = await ensureActiveStudent(tx, action.studentId);
+          await removeStudentFromGroup(tx, id, action.studentId);
+          return { group, student };
+        },
+        { isolationLevel: GROUP_MUTATION_ISOLATION },
+      );
       await notifyGroupAudience([
         {
           userId: audience.student.userId,
@@ -256,21 +313,36 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       return NextResponse.json({ ok: true });
     }
 
+    if (action.action === "PREVIEW_TRANSFER") {
+      if (action.targetGroupId === id) {
+        return NextResponse.json({ error: "Hedef grup farklı olmalı." }, { status: 400 });
+      }
+      const preview = await prisma.$transaction((tx) =>
+        previewStudentTransfer(tx, {
+          sourceGroupId: id,
+          targetGroupId: action.targetGroupId,
+          studentIds: [action.studentId],
+        }),
+      );
+      return NextResponse.json({ ok: true, preview });
+    }
+
     const source = await prisma.group.findUnique({
       where: { id },
       select: { id: true, name: true, teacherId: true },
     });
     if (!source) return NextResponse.json({ error: "Grup bulunamadı." }, { status: 404 });
     if (action.targetGroupId === id) return NextResponse.json({ error: "Hedef grup farklı olmalı." }, { status: 400 });
-    const audience = await prisma.$transaction(async (tx) => {
-      const student = await ensureActiveStudent(tx, action.studentId);
-      const targetGroup = await ensureActiveGroup(tx, action.targetGroupId);
-      await transferStudentBetweenGroups(tx, id, targetGroup, action.studentId);
-      return {
-        student,
-        targetGroup,
-      };
-    });
+
+    const audience = await prisma.$transaction(
+      async (tx) => {
+        const student = await ensureActiveStudent(tx, action.studentId);
+        await transferStudentsBetweenGroups(tx, id, action.targetGroupId, [action.studentId]);
+        const targetGroup = await ensureActiveGroup(tx, action.targetGroupId);
+        return { student, targetGroup };
+      },
+      { isolationLevel: GROUP_MUTATION_ISOLATION },
+    );
     await notifyGroupAudience([
       {
         userId: audience.student.userId,
@@ -284,8 +356,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         body: `${audience.student.user.fullName || audience.student.user.email} öğrencisi ${source.name} grubundan ${audience.targetGroup.name} grubuna taşındı.`,
         href: `/panel/veli/takvim?studentId=${audience.student.id}`,
       })),
-      { userId: source.teacherId, title: "Öğrenci transferi", body: `${audience.student.user.fullName || audience.student.user.email} öğrencisi ${source.name} grubundan alındı.`, href: "/panel/ogretmen/ogrenci" },
-      { userId: audience.targetGroup.teacherId, title: "Öğrenci transferi", body: `${audience.student.user.fullName || audience.student.user.email} öğrencisi ${audience.targetGroup.name} grubuna taşındı.`, href: "/panel/ogretmen/ogrenci" },
+      {
+        userId: source.teacherId,
+        title: "Öğrenci transferi",
+        body: `${audience.student.user.fullName || audience.student.user.email} öğrencisi ${source.name} grubundan alındı.`,
+        href: "/panel/ogretmen/ogrenci",
+      },
+      {
+        userId: audience.targetGroup.teacherId,
+        title: "Öğrenci transferi",
+        body: `${audience.student.user.fullName || audience.student.user.email} öğrencisi ${audience.targetGroup.name} grubuna taşındı.`,
+        href: "/panel/ogretmen/ogrenci",
+      },
     ]);
     await logAudit({
       actorUserId: auth.session.userId,
@@ -293,7 +375,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       entityId: id,
       action: "group.membership_transferred",
       summary: "Öğrenci başka gruba taşındı",
-      payload: { studentId: action.studentId, sourceGroupId: id, targetGroupId: action.targetGroupId },
+      payload: {
+        studentId: action.studentId,
+        sourceGroupId: id,
+        targetGroupId: action.targetGroupId,
+        confirmed: true,
+      },
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

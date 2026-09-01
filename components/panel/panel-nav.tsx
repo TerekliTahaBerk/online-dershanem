@@ -3,251 +3,18 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ProductCode, UserRole } from "@prisma/client";
-import { rolePath, roleStudentsPath } from "@/lib/auth/roles";
+import { rolePath } from "@/lib/auth/roles";
 import { usePanelFeatureFlags } from "@/components/panel/panel-feature-provider";
-import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
+import {
+  mobilePrimaryNav,
+  panelNavSections,
+  type PanelNavItem,
+  type PanelNavSection,
+} from "@/lib/panel/navigation";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
 
-type NavItem = { href: string; label: string };
-type NavSection = { title: string; items: NavItem[] };
-
-function section(title: string, items: NavItem[]): NavSection[] {
-  return items.length ? [{ title, items }] : [];
-}
-
-function commonNav(flags: PanelFeatureFlags): NavItem[] {
-  return [
-    { href: "/panel/bildirimler", label: "Bildirimler" },
-    ...(flags.accessibilityProfile
-      ? [{ href: "/panel/erisilebilirlik", label: "Erişilebilirlik" }]
-      : []),
-    ...(flags.offlineMode ? [{ href: "/panel/veri-kullanimi", label: "Veri kullanımı" }] : []),
-  ];
-}
-
-function studentSections(root: string, products: ProductCode[], flags: PanelFeatureFlags): NavSection[] {
-  const hasOD = products.includes("OD");
-  const hasOK = products.includes("OK");
-  const hasODK = products.includes("ODK");
-
-  return [
-    ...section("BUGÜN", [
-      { href: root, label: "Bugün" },
-      { href: `${root}/odevler`, label: "Çalışmalar" },
-    ]),
-    ...section(
-      "DERSHANEM",
-      hasOD
-        ? [
-            { href: `${root}/takvim`, label: "Dersler" },
-            { href: `${root}/materyaller`, label: "Kaynaklar" },
-          ]
-        : [],
-    ),
-    ...section(
-      "KOÇUM",
-      hasOK
-        ? [
-            { href: `${root}/kocluk`, label: "Koçluk Merkezi" },
-            ...(flags.adaptivePlan ? [{ href: `${root}/plan`, label: "Haftalık Plan" }] : []),
-            { href: `${root}/hedefler`, label: "Hedefler" },
-          ]
-        : [],
-    ),
-    ...section(
-      "DENEME KULÜBÜ",
-      hasODK ? [{ href: "/panel/odk/ogrenci/denemeler", label: "Denemeler" }] : [],
-    ),
-    ...section("BEN", [
-      { href: `${root}/gelisim`, label: "Gelişimim" },
-      ...(flags.studentCheckIn ? [{ href: `${root}/check-in`, label: "Nasılım?" }] : []),
-      ...(flags.dinoAi ? [{ href: `${root}/dino`, label: "Dino AI" }] : []),
-    ]),
-    ...section("AYARLAR", commonNav(flags)),
-  ];
-}
-
-function parentSections(root: string, products: ProductCode[], flags: PanelFeatureFlags): NavSection[] {
-  const hasOD = products.includes("OD");
-  const hasOK = products.includes("OK");
-  const hasODK = products.includes("ODK");
-
-  return [
-    ...section("BUGÜN", [
-      { href: root, label: "Bugün" },
-      { href: `${root}/takip`, label: "Gelişim" },
-    ]),
-    ...section("DERSHANEM", hasOD ? [{ href: `${root}/takvim`, label: "Dersler" }] : []),
-    ...section(
-      "KOÇUM",
-      hasOK
-        ? [
-            { href: `${root}/kocluk`, label: "Koçluk" },
-            ...(flags.parentWeeklyDigest ? [{ href: `${root}/haftalik`, label: "Haftalık özet" }] : []),
-          ]
-        : [],
-    ),
-    ...section("DENEMELER", [
-      ...(hasOD && flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Denemeler" }] : []),
-      ...(hasODK ? [{ href: "/panel/odk/veli/raporlar", label: "Deneme raporları" }] : []),
-    ]),
-    ...section("BEN", [
-      ...(flags.dinoAi ? [{ href: `${root}/dino`, label: "Dino AI" }] : []),
-      { href: `${root}/hesap`, label: "Hesap ve paket" },
-      ...commonNav(flags),
-    ]),
-  ];
-}
-
-function teacherSections(root: string, flags: PanelFeatureFlags): NavSection[] {
-  const studentsHref = roleStudentsPath("TEACHER");
-  return [
-    ...section("BUGÜN", [
-      { href: root, label: "Bugün" },
-      { href: `${root}/takvim`, label: "Takvim" },
-    ]),
-    ...section("DERS", [
-      { href: `${root}/odevler`, label: "Dersler" },
-    ]),
-    ...section("KOÇLUK", [
-      ...(flags.adaptivePlan ? [{ href: `${root}/plan`, label: "Koçluk planı" }] : []),
-      ...(flags.reviewQueue ? [{ href: `${root}/tekrar`, label: "Tekrar kuyruğu" }] : []),
-    ]),
-    ...section("TAKİP", [
-      ...(flags.studentCheckIn ? [{ href: `${root}/yardim`, label: "Yardım İsteyenler" }] : []),
-      ...(flags.interventionInbox ? [{ href: `${root}/mudahale`, label: "Müdahale kutusu" }] : []),
-      ...(studentsHref ? [{ href: studentsHref, label: "Öğrenciler" }] : []),
-    ]),
-    ...section("ÖLÇME", [
-      ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Denemeler" }] : []),
-      ...(flags.mockExamAnalysis
-        ? [{ href: "/panel/odk/ogretmen/raporlar", label: "Deneme raporları" }]
-        : []),
-    ]),
-    ...section("KAYNAKLAR", [{ href: `${root}/materyaller`, label: "Kaynaklar" }]),
-    ...section("AYARLAR", commonNav(flags)),
-  ];
-}
-
-function adminSections(root: string, flags: PanelFeatureFlags): NavSection[] {
-  const operationHref = flags.interventionInbox ? `${root}/mudahale` : `${root}/raporlar`;
-  const studentsHref = roleStudentsPath("ADMIN");
-
-  return [
-    ...section("BUGÜN", [
-      { href: root, label: "Bugün" },
-      { href: operationHref, label: "Operasyon" },
-    ]),
-    ...section("EĞİTİM", [
-      ...(studentsHref ? [{ href: studentsHref, label: "Öğrenciler" }] : []),
-      { href: `${root}/egitmenler`, label: "Eğitmenler" },
-      { href: `${root}/veliler`, label: "Veliler" },
-      { href: `${root}/kullanicilar`, label: "Kişiler" },
-      { href: `${root}/egitim`, label: "Dersler & Gruplar" },
-      { href: `${root}/takvim`, label: "Takvim" },
-    ]),
-    ...section("KOÇLUK", [
-      { href: `${root}/kocluk`, label: "Koçluk" },
-    ]),
-    ...section("DENEMELER", [
-      { href: "/panel/odk/yonetim/sinavlar", label: "Deneme Planlama" },
-      { href: "/panel/odk/yonetim/operasyon", label: "Canlı Operasyon" },
-      { href: "/panel/odk/yonetim/raporlar", label: "Raporlar" },
-      ...(flags.mockExamAnalysis ? [{ href: `${root}/denemeler`, label: "Sonuç Analizi" }] : []),
-    ]),
-    ...section("TİCARET", [
-      { href: `${root}/siparisler`, label: "Siparişler" },
-      { href: `${root}/isler`, label: "İşler / Provisioning" },
-    ]),
-    ...section("SİSTEM", [
-      { href: `${root}/ozellikler`, label: "Özellikler / Sistem" },
-      { href: `${root}/kayitlar`, label: "İşlem geçmişi" },
-      { href: `${root}/raporlar`, label: "Operasyon raporları" },
-    ]),
-    ...section("GENEL", commonNav(flags)),
-  ];
-}
-
-export function panelNavSections(
-  role: UserRole,
-  products: ProductCode[],
-  flags: PanelFeatureFlags,
-  root: string,
-): NavSection[] {
-  return role === "STUDENT"
-    ? studentSections(root, products, flags)
-    : role === "PARENT"
-      ? parentSections(root, products, flags)
-      : role === "TEACHER"
-        ? teacherSections(root, flags)
-        : adminSections(root, flags);
-}
-
-export function mobilePrimaryNav(
-  role: UserRole,
-  products: ProductCode[],
-  flags: PanelFeatureFlags,
-  root: string,
-): NavItem[] {
-  const hasOD = products.includes("OD");
-  const hasOK = products.includes("OK");
-  const hasODK = products.includes("ODK");
-
-  if (role === "STUDENT") {
-    const primary = [
-      { href: root, label: "Bugün" },
-      { href: `${root}/odevler`, label: "Çalışmalar" },
-      ...(hasOD
-        ? [{ href: `${root}/takvim`, label: "Dersler" }]
-        : hasOK
-          ? [{ href: `${root}/kocluk`, label: "Koçluk" }]
-          : []),
-      ...(hasODK
-        ? [{ href: "/panel/odk/ogrenci/denemeler", label: "Denemeler" }]
-        : flags.adaptivePlan && hasOK
-            ? [{ href: `${root}/plan`, label: "Haftalık Plan" }]
-            : hasOK
-            ? [{ href: `${root}/hedefler`, label: "Hedefler" }]
-            : []),
-    ];
-    return primary.slice(0, 4);
-  }
-
-  if (role === "TEACHER") {
-    const fourth =
-      flags.studentCheckIn
-        ? { href: `${root}/yardim`, label: "Yardım" }
-        : flags.mockExamAnalysis
-          ? { href: `${root}/denemeler`, label: "Denemeler" }
-          : { href: `${root}/gruplar`, label: "Öğrenciler" };
-    return [
-      { href: root, label: "Bugün" },
-      { href: `${root}/odevler`, label: "Çalışmalar" },
-      { href: `${root}/takvim`, label: "Dersler" },
-      fourth,
-    ];
-  }
-
-  if (role === "ADMIN") {
-    return [
-      { href: root, label: "Bugün" },
-      { href: `${root}/isler`, label: "Operasyon" },
-      { href: `${root}/siparisler`, label: "Siparişler" },
-      { href: "/panel/odk/yonetim/operasyon", label: "Denemeler" },
-    ];
-  }
-
-  return [
-    { href: root, label: "Bugün" },
-    { href: `${root}/takip`, label: "Çalışmalar" },
-    ...(hasOD ? [{ href: `${root}/takvim`, label: "Dersler" }] : []),
-    ...(hasODK
-      ? [{ href: "/panel/odk/veli/raporlar", label: "Denemeler" }]
-      : hasOD && flags.mockExamAnalysis
-        ? [{ href: `${root}/denemeler`, label: "Denemeler" }]
-        : []),
-  ].slice(0, 4);
-}
+export type { PanelNavItem, PanelNavSection };
+export { mobilePrimaryNav, panelNavSections };
 
 export function PanelNav({
   role,
@@ -268,7 +35,7 @@ export function PanelNav({
   return (
     <nav aria-label="Panel menüsü" className="flex flex-col gap-3">
       {sections.map((navSection) => (
-        <section key={navSection.title} className="flex flex-col gap-0.5">
+        <section key={navSection.id} className="flex flex-col gap-0.5">
           <p className="px-3 pb-1 pt-0.5 text-[10.5px] font-extrabold uppercase tracking-[.08em] text-dc-ink-ghost">
             {navSection.title}
           </p>
@@ -284,7 +51,7 @@ export function PanelNav({
 
             return (
               <Link
-                key={item.href}
+                key={item.id}
                 href={href}
                 prefetch
                 onClick={onNavigate}

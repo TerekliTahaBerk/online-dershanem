@@ -127,6 +127,22 @@ const nextConfig: NextConfig = {
       { source: "/deneme-paketleri", destination: "/urunler/online-deneme-kulubum", permanent: true },
       { source: "/tyt-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
       { source: "/lgs-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      // Panel IA vocabulary aliases — canonical paths korunur.
+      {
+        source: "/panel/yonetim/ogretmenler",
+        destination: "/panel/yonetim/egitmenler",
+        permanent: false,
+      },
+      {
+        source: "/panel/ogrenci/calismalar",
+        destination: "/panel/ogrenci/odevler",
+        permanent: false,
+      },
+      {
+        source: "/panel/ogretmen/calismalar",
+        destination: "/panel/ogretmen/odevler",
+        permanent: false,
+      },
     ];
   },
 };

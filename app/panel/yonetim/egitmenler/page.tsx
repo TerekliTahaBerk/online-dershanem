@@ -59,12 +59,12 @@ export default async function AdminEducatorsPage() {
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Eğitmenler"
+      pageTitle="Öğretmenler"
     >
       <div className="max-w-[1080px]">
         <PanelHeading
-          title="Eğitmenler"
-          description={`${teachers.length} eğitmen${
+          title="Öğretmenler"
+          description={`${teachers.length} öğretmen${
             overCapacity ? ` · ${overCapacity} kapasite üstünde` : ""
           }`}
           actions={
@@ -72,21 +72,21 @@ export default async function AdminEducatorsPage() {
               href="/panel/yonetim/kullanicilar"
               className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
-              Eğitmen ekle
+              Öğretmen ekle
             </Link>
           }
         />
 
         {teachers.length === 0 ? (
           <PanelEmpty
-            title="Kayıtlı eğitmen yok."
-            body="Eğitmen hesabı açıldığında ders alanı, grupları ve doluluğu burada listelenir."
+            title="Kayıtlı öğretmen yok."
+            body="Öğretmen hesabı açıldığında ders alanı, grupları ve doluluğu burada listelenir."
           />
         ) : (
           <div className="mt-5">
             <PanelTable
-              caption="Eğitmenler ve grup doluluğu"
-              columns={["Eğitmen", "Durum", "Ders", "Sınav", "Doluluk", ""]}
+              caption="Öğretmenler ve grup doluluğu"
+              columns={["Öğretmen", "Durum", "Ders", "Sınav", "Doluluk", ""]}
             >
               {teachers.map((teacher) => {
                 const groups = teacher.taughtGroups;
@@ -124,7 +124,7 @@ export default async function AdminEducatorsPage() {
                         href={`/panel/yonetim/kullanicilar/${teacher.id}`}
                         className="text-[13px] font-semibold text-dc-brand hover:underline"
                       >
-                        Eğitmeni Gör
+                        Öğretmeni gör
                       </Link>
                     </PanelTableCell>
                   </PanelTableRow>

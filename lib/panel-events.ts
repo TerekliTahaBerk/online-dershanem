@@ -320,6 +320,42 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({ name: z.literal("ai_draft_generated"), properties: z.object({ taskType: z.enum(["ASSIGNMENT", "MINI_CHECK"]), provider: z.enum(["OPENAI", "GEMINI", "FALLBACK", "STUB"]), latencyBand: z.enum(["0-2S", "2-8S", "8S+"]), citationCount: z.number().int().min(1).max(6), fallbackReason: z.enum(["NONE", "PROVIDER_DISABLED", "EXTERNAL_TRANSFER_NOT_READY", "COST_CONFIG_MISSING", "PROMPT_INJECTION", "DAILY_QUOTA", "E2E_STUB", "PROVIDER_ERROR", "SAFETY_OR_PARSE"]), costBand: z.enum(["UNKNOWN", "0", "1-999", "1000+"]) }).strict() }),
   z.object({ name: z.literal("ai_draft_reviewed"), properties: z.object({ taskType: z.enum(["ASSIGNMENT", "MINI_CHECK"]), provider: z.enum(["OPENAI", "GEMINI", "FALLBACK", "STUB"]), action: z.enum(["ACCEPT", "EDIT", "REJECT", "FLAG"]), changedFieldCount: z.number().int().min(0).max(4), reviewAgeBand: z.enum(["0-5M", "6M-24H", "24H+"]) }).strict() }),
   z.object({ name: z.literal("pilot_cohort_changed"), properties: z.object({ action: z.enum(["CREATED", "ACTIVATE", "PAUSE", "RESUME", "COMPLETE", "ROLLBACK"]), memberBand: z.enum(["1-4", "5-12", "13+"]), fourRoleCoverage: z.boolean(), readiness: z.enum(["PASS", "WAIT", "BLOCK"]) }).strict() }),
+  z.object({
+    name: z.literal("admin_ops_center_viewed"),
+    properties: z.object({
+      openActionBand: z.enum(["0", "1-5", "6-20", "21+"]),
+      blockingBand: z.enum(["0", "1-5", "6-20", "21+"]),
+      partialData: z.boolean(),
+      interventionFlag: z.boolean(),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("admin_ops_center_action_clicked"),
+    properties: z.object({
+      actionCode: z.enum([
+        "PROVISIONING_FAILED",
+        "PROVISIONING_PENDING",
+        "PROVISIONING_RETRY",
+        "INVITE_PENDING",
+        "STUDENT_NO_GROUP",
+        "GROUP_TEACHER_INACTIVE",
+        "LESSON_MISSING_PLAN",
+        "PAID_NO_ACCOUNT",
+        "HELP_REQUEST_OPEN",
+        "HIGH_RISK_STUDENT",
+        "UNIFIED_OPS_OPEN",
+        "MOCK_EXAM_FAILED",
+        "SYSTEM_CRON",
+        "SYSTEM_PARTIAL_DATA",
+        "ACCOUNT_INTEGRITY",
+        "LESSON_CANCELLED",
+        "STALE_PLAN",
+        "UNNOTED_LESSON",
+        "SUMMARY_TILE",
+      ]),
+      severity: z.enum(["BLOCKING", "ACTION_REQUIRED", "WATCH", "NA"]),
+    }).strict(),
+  }),
 ]);
 
 export type PanelEventInput = z.infer<typeof panelEventSchema>;
@@ -341,6 +377,7 @@ const clientPanelEventNames = new Set<PanelEventInput["name"]>([
   "offline_write_queued",
   "offline_write_synced",
   "offline_write_conflicted",
+  "admin_ops_center_action_clicked",
 ]);
 
 export function isClientPanelEvent(event: PanelEventInput): boolean {

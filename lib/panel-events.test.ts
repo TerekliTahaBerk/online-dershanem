@@ -72,6 +72,33 @@ test("istemci sunucuya ait iş sonucu eventini taklit edemez", () => {
   assert.equal(isClientPanelEvent(parsed), false);
 });
 
+test("admin operasyon merkezi eventleri kimliksiz bant taşır", () => {
+  assert.equal(
+    panelEventSchema.safeParse({
+      name: "admin_ops_center_viewed",
+      properties: {
+        openActionBand: "1-5",
+        blockingBand: "0",
+        partialData: false,
+        interventionFlag: true,
+      },
+    }).success,
+    true,
+  );
+  const click = panelEventSchema.parse({
+    name: "admin_ops_center_action_clicked",
+    properties: { actionCode: "PROVISIONING_FAILED", severity: "BLOCKING" },
+  });
+  assert.equal(isClientPanelEvent(click), true);
+  assert.equal(
+    panelEventSchema.safeParse({
+      name: "admin_ops_center_action_clicked",
+      properties: { actionCode: "PROVISIONING_FAILED", severity: "BLOCKING", orderId: "secret" },
+    }).success,
+    false,
+  );
+});
+
 test("kazanım bağlantısı kimliksiz sayaç ve kontrollü gerekçe taşır", () => {
   const parsed = panelEventSchema.safeParse({ name: "curriculum_link_saved", properties: { targetType: "LESSON", outcomeCount: 2, needsReviewCount: 1, skipReason: "NONE" } });
   assert.equal(parsed.success, true);

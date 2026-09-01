@@ -45,7 +45,7 @@ export default async function StudentCoachingHubPage() {
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Koçluk merkezi"
+      pageTitle="Koçluk"
     >
       <div className="max-w-[920px]">{body}</div>
     </PanelShell>
@@ -54,7 +54,7 @@ export default async function StudentCoachingHubPage() {
   if (!profile) {
     return shell(
       <>
-        <PanelHeading title="Koçluk merkezi" />
+        <PanelHeading title="Koçluk" />
         <PanelEmpty
           title="Profilin hazırlanıyor."
           body="Öğrenci profilin tamamlandığında koçluk durumun burada görünecek."
@@ -93,7 +93,7 @@ export default async function StudentCoachingHubPage() {
   return shell(
     <>
       <PanelHeading
-        title="Koçluk merkezi"
+        title="Koçluk"
         description={
           adaptivePlanEnabled
             ? "Koçun, haftalık planın ve hedeflerin tek ekranda."

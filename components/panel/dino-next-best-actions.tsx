@@ -23,7 +23,7 @@ type NextBestAction = {
 function getActionLabel(action: NextBestAction["action"]): string {
   switch (action.type) {
     case "OPEN_PLAN":
-      return "Haftalık Planı Gör";
+      return "Haftalık planı gör";
     case "OPEN_REVIEW":
       return "Sonucunu Gör";
     case "OPEN_INTERVENTION":

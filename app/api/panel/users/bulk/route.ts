@@ -14,6 +14,7 @@ import {
 import { hashPassword } from "@/lib/auth/password";
 import { revokeAllUserSessions } from "@/lib/auth/session";
 import {
+  GROUP_MUTATION_ISOLATION,
   GroupLifecycleError,
   ensureActiveGroup,
   ensureActiveStudent,
@@ -262,11 +263,14 @@ export async function POST(request: Request) {
           errors.push({ id: user.id, email: user.email, reason: "Kaynak ve hedef grup aynı olamaz." });
           continue;
         }
-        await prisma.$transaction(async (tx) => {
-          const targetGroup = await ensureActiveGroup(tx, targetGroupId);
-          await ensureActiveStudent(tx, user.studentProfile!.id);
-          await transferStudentBetweenGroups(tx, sourceGroupId, targetGroup, user.studentProfile!.id);
-        });
+        await prisma.$transaction(
+          async (tx) => {
+            const targetGroup = await ensureActiveGroup(tx, targetGroupId);
+            await ensureActiveStudent(tx, user.studentProfile!.id);
+            await transferStudentBetweenGroups(tx, sourceGroupId, targetGroup, user.studentProfile!.id);
+          },
+          { isolationLevel: GROUP_MUTATION_ISOLATION },
+        );
         succeeded += 1;
         continue;
       }

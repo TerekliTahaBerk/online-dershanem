@@ -49,9 +49,13 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     const nav = page.getByRole("navigation", { name: "Panel menüsü" });
     await expect(nav.getByText("BUGÜN", { exact: true })).toBeVisible();
+    await expect(nav.getByText("GELİŞİM", { exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Çalışmalar", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Gelişim", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Ödevler", exact: true })).toHaveCount(0);
-    await expect(nav.getByText("BEN", { exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Gelişimim", exact: true })).toHaveCount(0);
+    await expect(nav.getByText("BEN", { exact: true })).toHaveCount(0);
+    await expect(nav.getByText("DERSHANEM", { exact: true })).toHaveCount(0);
   });
 
   test("öğrenci mobilde hızlı hedefler ve menü düğmesini görür", async ({ page }) => {
@@ -88,16 +92,19 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/yonetim");
     const nav = page.getByRole("navigation", { name: "Panel menüsü" });
 
-    for (const heading of ["BUGÜN", "EĞİTİM", "KOÇLUK", "DENEMELER", "TİCARET", "SİSTEM"]) {
+    for (const heading of ["BUGÜN", "EĞİTİM", "ÖĞRENCİ BAŞARISI", "DENEMELER", "TİCARET", "SİSTEM"]) {
       await expect(nav.getByText(heading, { exact: true })).toBeVisible();
     }
+    await expect(nav.getByText("KOÇLUK", { exact: true })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Bugün", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Operasyon", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Öğrenciler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Öğretmenler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Eğitmenler", exact: true })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Kişiler", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Siparişler", exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "İşler / Provisioning", exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Özellikler / Sistem", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Özellikler", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Ana Sayfa", exact: true })).toHaveCount(0);
 
     await page.setViewportSize({ width: 390, height: 844 });
@@ -105,7 +112,24 @@ test.describe("panel deneyimi", () => {
     const drawer = page.getByRole("dialog", { name: "Panel menüsü" });
     await expect(drawer.getByRole("navigation", { name: "Panel menüsü" })).toBeVisible();
     await expect(drawer.getByText("TİCARET", { exact: true })).toBeVisible();
-    await expect(drawer.getByRole("link", { name: "İşler / Provisioning", exact: true })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
+  });
+
+  test("öğretmen navigasyonu Dersler ve Çalışmalar ayrımını gösterir", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await login(page, accounts.teacher);
+    const nav = page.getByRole("navigation", { name: "Panel menüsü" });
+    for (const heading of ["BUGÜN", "DERSLER", "ÖĞRENCİLER", "KAYNAKLAR"]) {
+      await expect(nav.getByText(heading, { exact: true })).toBeVisible();
+    }
+    await expect(nav.getByRole("link", { name: "Dersler", exact: true })).toHaveAttribute(
+      "href",
+      "/panel/ogretmen/takvim",
+    );
+    await expect(nav.getByRole("link", { name: "Çalışmalar", exact: true })).toHaveAttribute(
+      "href",
+      "/panel/ogretmen/odevler",
+    );
   });
 
   test("admin kalite panosu küçük kohortu bastırır ve sıralama üretmez", async ({ page }) => {

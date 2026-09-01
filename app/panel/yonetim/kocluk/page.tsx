@@ -406,9 +406,9 @@ export default async function AdminCoachingPage() {
         </PanelCard>
 
         <p className="mt-5 text-[12.5px] text-dc-ink-faint">
-          Koçluk görüşmelerinin kendisi eğitmen panelinden kaydedilir.{" "}
+          Koçluk görüşmelerinin kendisi öğretmen panelinden kaydedilir.{" "}
           <Link href="/panel/yonetim/egitmenler" className="font-semibold text-dc-brand hover:underline">
-            Eğitmenleri aç
+            Öğretmenleri aç
           </Link>
         </p>
       </div>

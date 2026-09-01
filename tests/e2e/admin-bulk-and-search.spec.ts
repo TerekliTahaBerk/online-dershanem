@@ -43,13 +43,17 @@ test.describe("admin bulk operation and entity search", () => {
     await expect(page.getByText("Önizleme:", { exact: false })).toBeVisible();
 
     await page.getByRole("button", { name: "Panelde ara" }).click();
-    const searchInput = page.getByPlaceholder("Ne yapmak istiyorsunuz?");
-    await searchInput.fill("ada");
+    const searchInput = page.getByPlaceholder("Öğrenci, veli, sipariş veya komut ara…");
     const searchResponse = page.waitForResponse((response) => {
       const url = new URL(response.url());
       return response.request().method() === "GET" && url.pathname === "/api/panel/admin-search";
     });
+    await searchInput.fill("ada");
     expect((await searchResponse).status()).toBe(200);
+    await expect(page.getByRole("listbox", { name: "Arama sonuçları" })).toBeVisible();
+    await searchInput.press("ArrowDown");
+    await searchInput.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Panel arama ve komut paleti" })).toHaveCount(0);
   });
 });
 

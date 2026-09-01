@@ -17,6 +17,7 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
+import { visibleGlobalSearchCommands } from "@/lib/panel/global-search";
 
 /**
  * PANEL KABUĞU — onaylı tasarım (Panel.dc.html).
@@ -64,7 +65,7 @@ export async function PanelShell({
   const flags = getPanelFeatureFlags();
   const accessibilityEnabled = flags.accessibilityProfile;
 
-  const [unread, storedPreference, networkPreference, products, businessUnits] = session
+  const [unread, storedPreference, networkPreference, products, businessUnits, leadUnits] = session
     ? await Promise.all([
         prisma.notification.count({ where: { userId: session.userId, readAt: null } }),
         accessibilityEnabled
@@ -91,9 +92,25 @@ export async function PanelShell({
         !isBusinessWorkspace && process.env.CRM_PANEL_ENABLED !== "false"
           ? getBusinessAccess(session, "dashboard:read")
           : Promise.resolve([]),
+        !isBusinessWorkspace && (role === "ADMIN" || role === "TEACHER")
+          ? getBusinessAccess(session, "lead:read")
+          : Promise.resolve([]),
       ])
-    : [0, null, null, [], []];
+    : [0, null, null, [], [], []];
 
+  const searchCommands =
+    session && (role === "ADMIN" || role === "TEACHER") && !isBusinessWorkspace
+      ? visibleGlobalSearchCommands({
+          role,
+          flags,
+          businessPermissions: leadUnits.length ? (["lead:read"] as const) : [],
+        }).map((command) => ({
+          id: command.id,
+          label: command.label,
+          detail: command.detail,
+          href: command.href,
+        }))
+      : [];
   const accessibilityPreference = storedPreference || defaultAccessibilityViewPreference;
   const offlineScope = session ? offlineSessionScope(session.sessionId) : "";
 
@@ -249,7 +266,9 @@ export async function PanelShell({
               {topbarSlot ? <div className="min-w-0 lg:ml-3">{topbarSlot}</div> : null}
 
               <div className="ml-auto flex items-center gap-3 sm:gap-[18px]">
-                {role === "ADMIN" && !isBusinessWorkspace ? <AdminCommandSearch /> : null}
+                {!isBusinessWorkspace && (role === "ADMIN" || role === "TEACHER") ? (
+                  <AdminCommandSearch commands={searchCommands} />
+                ) : null}
 
                 <Link
                   href="/panel/oturumlar"
