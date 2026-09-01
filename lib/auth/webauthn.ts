@@ -5,6 +5,7 @@ import type { AuthenticatorTransportFuture } from "@simplewebauthn/server";
 import type { MfaChallengePurpose } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashMfaValue } from "@/lib/auth/mfa-crypto";
+import { credentialIsPlatformBound } from "@/lib/auth/passkey-capabilities";
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000;
 
@@ -33,23 +34,46 @@ export async function registrationOptions(input: { userId: string; sessionId: st
     userDisplayName: input.fullName || input.email,
     attestationType: "none",
     excludeCredentials: credentials.map((credential) => ({ id: credential.credentialId, transports: credential.transports as AuthenticatorTransportFuture[] })),
-    authenticatorSelection: { residentKey: "preferred", userVerification: "required" },
+    authenticatorSelection: {
+      authenticatorAttachment: "platform",
+      residentKey: "required",
+      userVerification: "required",
+    },
     supportedAlgorithmIDs: [-7, -257],
   });
   const challenge = await saveChallenge({ userId: input.userId, sessionId: input.sessionId, purpose: "PASSKEY_ENROLLMENT", challenge: options.challenge });
   return { options, challengeId: challenge.id };
 }
 
-export async function authenticationOptions(input: { userId: string; sessionId: string; purpose: "MFA_AUTHENTICATION" | "STEP_UP" }) {
+export async function authenticationOptions(input: {
+  userId: string;
+  sessionId: string;
+  purpose: "MFA_AUTHENTICATION" | "STEP_UP";
+  preferPlatform?: boolean;
+}) {
   const { rpID } = webAuthnConfig();
-  const credentials = await prisma.passkeyCredential.findMany({ where: { userId: input.userId, revokedAt: null } });
+  const stored = await prisma.passkeyCredential.findMany({ where: { userId: input.userId, revokedAt: null } });
+  const credentials = input.preferPlatform
+    ? stored.filter((credential) => credentialIsPlatformBound(credential))
+    : stored;
+  if (input.preferPlatform && stored.length > 0 && credentials.length === 0) {
+    return { options: null, challengeId: null, platformRequired: true as const };
+  }
   const options = await generateAuthenticationOptions({
     rpID,
     userVerification: "required",
-    allowCredentials: credentials.map((credential) => ({ id: credential.credentialId, transports: credential.transports as AuthenticatorTransportFuture[] })),
+    allowCredentials: credentials.map((credential) => ({
+      id: credential.credentialId,
+      transports: credential.transports as AuthenticatorTransportFuture[],
+    })),
   });
-  const challenge = await saveChallenge({ userId: input.userId, sessionId: input.sessionId, purpose: input.purpose, challenge: options.challenge });
-  return { options, challengeId: challenge.id };
+  const challenge = await saveChallenge({
+    userId: input.userId,
+    sessionId: input.sessionId,
+    purpose: input.purpose,
+    challenge: options.challenge,
+  });
+  return { options, challengeId: challenge.id, platformRequired: false as const };
 }
 
 export async function loadChallenge(input: { challengeId: string; userId: string; sessionId: string; purpose: MfaChallengePurpose }) {

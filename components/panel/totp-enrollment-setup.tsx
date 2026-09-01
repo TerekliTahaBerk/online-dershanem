@@ -10,7 +10,7 @@ function formatSecret(secret: string) {
   return secret.replace(/(.{4})/g, "$1 ").trim();
 }
 
-function useCoarsePointer() {
+export function useCoarsePointer() {
   const [coarse, setCoarse] = useState(false);
   useEffect(() => {
     const query = window.matchMedia("(pointer: coarse)");
