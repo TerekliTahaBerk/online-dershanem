@@ -195,7 +195,7 @@ export default async function StudentTasksPage() {
         <div className="mt-8">
           {group("Bugün", today)}
           {group("Bu hafta", thisWeek)}
-          {group("Sonraki", later)}
+          {group("Yaklaşan", later)}
           {group("Tamamlananlar", done, true)}
         </div>
       ) : null}

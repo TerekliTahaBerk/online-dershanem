@@ -3,17 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type TeacherOption = { id: string; name: string };
+type PersonOption = { id: string; name: string };
 
 export function StudentTeacherLinkForm({
   studentId,
+  teacherId,
   teachers,
+  students,
 }: {
-  studentId: string;
-  teachers: TeacherOption[];
+  studentId?: string;
+  teacherId?: string;
+  teachers?: PersonOption[];
+  students?: PersonOption[];
 }) {
   const router = useRouter();
-  const [teacherId, setTeacherId] = useState("");
+  const [selectedTeacherId, setSelectedTeacherId] = useState(teacherId ?? "");
+  const [selectedStudentId, setSelectedStudentId] = useState(studentId ?? "");
   const [subject, setSubject] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -26,7 +31,11 @@ export function StudentTeacherLinkForm({
       const response = await fetch("/api/panel/student-teachers", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ studentId, teacherId, subject }),
+        body: JSON.stringify({
+          studentId: studentId || selectedStudentId,
+          teacherId: teacherId || selectedTeacherId,
+          subject,
+        }),
       });
       const data = (await response.json().catch(() => ({}))) as { error?: string };
       if (!response.ok) {
@@ -34,7 +43,8 @@ export function StudentTeacherLinkForm({
         setPending(false);
         return;
       }
-      setTeacherId("");
+      if (!teacherId) setSelectedTeacherId("");
+      if (!studentId) setSelectedStudentId("");
       setSubject("");
       setPending(false);
       router.refresh();
@@ -46,20 +56,38 @@ export function StudentTeacherLinkForm({
 
   return (
     <form onSubmit={onSubmit} className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-      <select
-        required
-        value={teacherId}
-        onChange={(e) => setTeacherId(e.target.value)}
-        disabled={pending}
-        className="panel-input"
-      >
-        <option value="">Öğretmen seçin</option>
-        {teachers.map((teacher) => (
-          <option key={teacher.id} value={teacher.id}>
-            {teacher.name}
-          </option>
-        ))}
-      </select>
+      {!studentId ? (
+        <select
+          required
+          value={selectedStudentId}
+          onChange={(e) => setSelectedStudentId(e.target.value)}
+          disabled={pending}
+          className="panel-input"
+        >
+          <option value="">Öğrenci seçin</option>
+          {(students || []).map((student) => (
+            <option key={student.id} value={student.id}>
+              {student.name}
+            </option>
+          ))}
+        </select>
+      ) : null}
+      {!teacherId ? (
+        <select
+          required
+          value={selectedTeacherId}
+          onChange={(e) => setSelectedTeacherId(e.target.value)}
+          disabled={pending}
+          className="panel-input"
+        >
+          <option value="">Öğretmen seçin</option>
+          {(teachers || []).map((teacher) => (
+            <option key={teacher.id} value={teacher.id}>
+              {teacher.name}
+            </option>
+          ))}
+        </select>
+      ) : null}
       <input
         required
         value={subject}

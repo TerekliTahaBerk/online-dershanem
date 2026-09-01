@@ -411,8 +411,8 @@ export async function loadStudent360Bundle(input: {
   const assignmentScope = groupIds.length ? { groupId: { in: groupIds } } : { id: "__none__" };
 
   const needsOverview = tab === "genel";
-  const needsAcademic = tab === "akademik";
-  const needsLessons = tab === "dersler";
+  const needsAcademic = tab === "gelisim";
+  const needsLessons = tab === "dersler" || tab === "takvim";
   const needsAssignmentsTab = tab === "odevler";
   const needsTeachersTab = tab === "ogretmenler" && access.role === "ADMIN";
   const needsCoaching = tab === "kocluk" && flags.adaptivePlan;

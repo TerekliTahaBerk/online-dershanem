@@ -11,10 +11,14 @@ import {
   LessonSeriesScheduleError,
   type IsoWeekday,
 } from "@/lib/panel/lesson-series-schedule";
+import { resolveLessonTargetGroup } from "@/lib/panel/lesson-target";
 
 const schema = z
   .object({
-    groupId: z.string().min(1),
+    targetType: z.enum(["GROUP", "STUDENT"]).default("GROUP"),
+    groupId: z.string().min(1).optional(),
+    studentId: z.string().min(1).optional(),
+    teacherId: z.string().min(1).optional(),
     title: z.string().trim().min(2).max(120),
     startsAt: z.string().datetime(),
     endsAt: z.string().datetime().optional(),
@@ -31,6 +35,12 @@ const schema = z
     description: z.string().trim().max(2000).optional().or(z.literal("")),
   })
   .superRefine((value, ctx) => {
+    if (value.targetType === "GROUP" && !value.groupId) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Grup seçin.", path: ["groupId"] });
+    }
+    if (value.targetType === "STUDENT" && !value.studentId) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Öğrenci seçin.", path: ["studentId"] });
+    }
     if (value.mode === "SERIES" && !value.weekdays?.length && value.repeatWeeks < 2) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -57,28 +67,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ders bilgilerini kontrol edin." }, { status: 400 });
   }
 
-  const group = await prisma.group.findFirst({
-    where: {
-      id: parsed.data.groupId,
-      isActive: true,
-      ...(auth.session.role === "TEACHER" ? { teacherId: auth.session.userId } : {}),
-    },
-    include: {
-      enrollments: {
-        where: { endedAt: null },
-        include: {
-          student: {
-            select: {
-              id: true,
-              userId: true,
-              parents: { where: { active: true }, select: { parentId: true } },
-            },
-          },
-        },
-      },
-    },
+  const resolved = await resolveLessonTargetGroup({
+    targetType: parsed.data.targetType,
+    groupId: parsed.data.groupId,
+    studentId: parsed.data.studentId,
+    teacherId: parsed.data.teacherId,
+    actorRole: auth.session.role === "TEACHER" ? "TEACHER" : "ADMIN",
+    actorUserId: auth.session.userId,
   });
-  if (!group) return NextResponse.json({ error: "Aktif grup bulunamadı." }, { status: 404 });
+  if (resolved.error || !resolved.group) {
+    return NextResponse.json({ error: resolved.error || "Hedef çözülemedi." }, { status: 404 });
+  }
+  const group = resolved.group;
 
   const startsAt = new Date(parsed.data.startsAt);
   const durationMinutes =

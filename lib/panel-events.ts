@@ -345,6 +345,7 @@ export const panelEventSchema = z.discriminatedUnion("name", [
         "PROVISIONING_RETRY",
         "INVITE_PENDING",
         "STUDENT_NO_GROUP",
+        "STUDENT_NO_PARENT",
         "GROUP_TEACHER_INACTIVE",
         "LESSON_MISSING_PLAN",
         "PAID_NO_ACCOUNT",

@@ -37,29 +37,31 @@ export type Student360Issue = {
 
 export const STUDENT_360_TABS = [
   "genel",
-  "akademik",
   "dersler",
   "odevler",
   "ogretmenler",
-  "kocluk",
-  "denemeler",
-  "risk",
   "veli",
+  "takvim",
+  "gelisim",
+  "denemeler",
+  "kocluk",
+  "risk",
   "paket",
 ] as const;
 
 export type Student360Tab = (typeof STUDENT_360_TABS)[number];
 
 export const STUDENT_360_TAB_LABELS: Record<Student360Tab, string> = {
-  genel: "Genel bakış",
-  akademik: "Akademik",
+  genel: "Genel",
   dersler: "Dersler",
   odevler: "Ödevler",
   ogretmenler: "Öğretmenler",
-  kocluk: "Koçluk",
+  veli: "Veliler",
+  takvim: "Takvim",
+  gelisim: "Gelişim",
   denemeler: "Denemeler",
+  kocluk: "Koçluk",
   risk: "Risk & müdahale",
-  veli: "Veli & iletişim",
   paket: "Hesap & paket",
 };
 
@@ -145,12 +147,12 @@ export function visibleStudent360Tabs(input: {
     "adaptivePlan" | "mockExamAnalysis" | "interventionInbox" | "parentWeeklyDigest"
   >;
 }): Student360Tab[] {
-  const tabs: Student360Tab[] = ["genel", "akademik", "dersler", "odevler"];
+  const tabs: Student360Tab[] = ["genel", "dersler", "odevler"];
   if (input.role === "ADMIN") tabs.push("ogretmenler");
-  if (input.flags.adaptivePlan) tabs.push("kocluk");
+  tabs.push("veli", "takvim", "gelisim");
   if (input.flags.mockExamAnalysis) tabs.push("denemeler");
+  if (input.flags.adaptivePlan) tabs.push("kocluk");
   if (input.flags.interventionInbox) tabs.push("risk");
-  tabs.push("veli");
   if (input.canViewCommerce) tabs.push("paket");
   return tabs;
 }

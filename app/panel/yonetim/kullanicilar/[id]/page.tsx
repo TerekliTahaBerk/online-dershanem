@@ -15,6 +15,10 @@ import { UserRowActions } from "@/components/panel/user-row-actions";
 import { ArchiveUserAction } from "@/components/panel/archive-user-action";
 import { TeacherOffboardingForm } from "@/components/panel/teacher-offboarding-form";
 import { AdminPreviewLaunchButton } from "@/components/panel/admin-preview-launch-button";
+import {
+  StudentTeacherLinkForm,
+  StudentTeacherUnlinkButton,
+} from "@/components/panel/student-teacher-link-form";
 import { getTeacherLifecycleSummary } from "@/lib/panel/teacher-lifecycle-server";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
 
@@ -99,6 +103,18 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
         take: 12,
         include: { group: { select: { id: true, name: true } } },
       },
+      studentTeacherAssignments: {
+        where: { active: true, endedAt: null },
+        orderBy: { subject: "asc" },
+        include: {
+          student: {
+            select: {
+              id: true,
+              user: { select: { fullName: true, email: true } },
+            },
+          },
+        },
+      },
       odOrders: { orderBy: { createdAt: "desc" }, take: 10 },
       accessibilityPreference: true,
       productMemberships: {
@@ -115,6 +131,30 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const activeProducts = new Set(user.productMemberships.map((m) => m.product));
   const coach = student?.coachAssignments[0] ?? null;
   const teacherLifecycle = user.role === "TEACHER" ? await getTeacherLifecycleSummary(user.id) : null;
+  const teacherStudentLinks =
+    user.role === "TEACHER"
+      ? user.studentTeacherAssignments.map((link) => ({
+          id: link.id,
+          subject: link.subject,
+          studentId: link.student.id,
+          studentName: link.student.user.fullName || link.student.user.email,
+        }))
+      : [];
+  // Aynı öğrenci farklı branşlarla bağlanabilir; listeyi tüm aktif öğrencilerden tut.
+  const linkableStudents =
+    user.role === "TEACHER"
+      ? (
+          await prisma.studentProfile.findMany({
+            where: { user: { status: "ACTIVE", role: "STUDENT" } },
+            orderBy: { user: { fullName: "asc" } },
+            take: 80,
+            select: { id: true, user: { select: { fullName: true, email: true } } },
+          })
+        ).map((profile) => ({
+          id: profile.id,
+          name: profile.user.fullName || profile.user.email,
+        }))
+      : [];
 
   /* Tasarımın kırmızı uyarısı: ödendi ama erişim açılmadı. */
   const blockedOrders = user.odOrders.filter(
@@ -483,6 +523,38 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                     <p className="text-[13px] text-dc-ink-muted">Sorumlu grup yok.</p>
                   ) : null}
                 </div>
+              </PanelCard>
+
+              <PanelCard>
+                <PanelCardTitle>Branş öğrencileri</PanelCardTitle>
+                <div className="mt-3.5 space-y-2">
+                  {teacherStudentLinks.map((link) => (
+                    <div
+                      key={link.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line p-3"
+                    >
+                      <div>
+                        <p className="text-[12px] font-semibold uppercase tracking-wide text-dc-ink-faint">
+                          {link.subject}
+                        </p>
+                        <Link
+                          href={`/panel/yonetim/ogrenciler/${link.studentId}`}
+                          className="text-[13.5px] font-bold text-dc-ink hover:underline"
+                        >
+                          {link.studentName}
+                        </Link>
+                      </div>
+                      <StudentTeacherUnlinkButton linkId={link.id} />
+                    </div>
+                  ))}
+                  {!teacherStudentLinks.length ? (
+                    <p className="text-[13px] text-dc-ink-muted">Branş bağlantısı yok.</p>
+                  ) : null}
+                </div>
+                <StudentTeacherLinkForm
+                  teacherId={user.id}
+                  students={linkableStudents}
+                />
               </PanelCard>
 
               <PanelCard>

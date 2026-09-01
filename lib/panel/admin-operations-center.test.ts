@@ -36,6 +36,7 @@ function baseInput(overrides: Partial<AdminOperationsCenterInput> = {}): AdminOp
       retryPending: 0,
       invitePending: 0,
       studentsWithoutGroup: 0,
+      studentsWithoutParent: 0,
       groupsWithInactiveTeacher: 0,
       lessonsMissingPlan: 0,
       openHelpRequests: 0,
@@ -53,6 +54,7 @@ function baseInput(overrides: Partial<AdminOperationsCenterInput> = {}): AdminOp
       retryOrders: [],
       invites: [],
       studentsWithoutGroup: [],
+      studentsWithoutParent: [],
       groupsWithInactiveTeacher: [],
       lessonsMissingPlan: [],
       helpRequests: [],
@@ -79,6 +81,31 @@ function baseInput(overrides: Partial<AdminOperationsCenterInput> = {}): AdminOp
     ...overrides,
   };
 }
+
+test("velisiz öğrenci aksiyonu üretir", () => {
+  const snapshot = buildAdminOperationsCenter(
+    baseInput({
+      counts: {
+        ...baseInput().counts,
+        studentsWithoutParent: 1,
+      },
+      samples: {
+        ...baseInput().samples,
+        studentsWithoutParent: [
+          {
+            profileId: "sp1",
+            label: "Ayşe Yılmaz",
+            since: new Date("2026-08-20T09:00:00.000Z"),
+          },
+        ],
+      },
+    }),
+  );
+  const action = snapshot.actions.find((item) => item.code === "STUDENT_NO_PARENT");
+  assert.ok(action);
+  assert.equal(action?.severity, "WATCH");
+  assert.match(action?.href || "", /sekme=veli/);
+});
 
 test("boş sistem: aksiyon yok, özet kartları tıklanabilir hedef taşır", () => {
   const snapshot = buildAdminOperationsCenter(baseInput());
