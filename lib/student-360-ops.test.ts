@@ -100,13 +100,15 @@ test("feature flag kombinasyonları sekmeleri gizler", () => {
     canViewCommerce: false,
     flags: allFlagsOff,
   });
-  assert.deepEqual(minimal, ["genel", "akademik", "dersler", "veli"]);
+  assert.deepEqual(minimal, ["genel", "akademik", "dersler", "odevler", "veli"]);
 
   const full = visibleStudent360Tabs({
     role: "ADMIN",
     canViewCommerce: true,
     flags: allFlagsOn,
   });
+  assert.ok(full.includes("odevler"));
+  assert.ok(full.includes("ogretmenler"));
   assert.ok(full.includes("kocluk"));
   assert.ok(full.includes("denemeler"));
   assert.ok(full.includes("risk"));

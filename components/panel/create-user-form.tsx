@@ -30,6 +30,12 @@ export function CreateUserForm() {
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<UserRole>("STUDENT");
   const [products, setProducts] = useState<ProductCode[]>(["OD"]);
+  const [classLevel, setClassLevel] = useState("");
+  const [examType, setExamType] = useState("");
+  const [schoolName, setSchoolName] = useState("");
+  const [subjects, setSubjects] = useState("");
+  const [maxStudentCapacity, setMaxStudentCapacity] = useState("");
+  const [internalNotes, setInternalNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [created, setCreated] = useState<Created | null>(null);
@@ -43,7 +49,28 @@ export function CreateUserForm() {
       const response = await fetch("/api/panel/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, fullName, phone, role, products }),
+        body: JSON.stringify({
+          email,
+          fullName,
+          phone,
+          role,
+          products,
+          ...(role === "STUDENT"
+            ? { classLevel, examType, schoolName }
+            : {}),
+          ...(role === "TEACHER"
+            ? {
+                subjects: subjects
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+                maxStudentCapacity: maxStudentCapacity
+                  ? Number(maxStudentCapacity)
+                  : null,
+                internalNotes,
+              }
+            : {}),
+        }),
       });
       const data = (await response.json()) as {
         user?: { email: string; fullName: string | null };
@@ -95,7 +122,7 @@ export function CreateUserForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+    <form id="yeni-hesap" onSubmit={onSubmit} className="flex flex-col gap-4 scroll-mt-28" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="new-email" className="text-[12.5px] font-semibold text-[var(--site-ink)]">
@@ -166,6 +193,104 @@ export function CreateUserForm() {
           </p>
         </div>
       </div>
+
+      {role === "STUDENT" ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-class" className="text-[12.5px] font-semibold text-[var(--site-ink)]">
+              Sınıf
+            </label>
+            <input
+              id="new-class"
+              value={classLevel}
+              onChange={(e) => setClassLevel(e.target.value)}
+              disabled={pending}
+              className={field}
+              placeholder="Örn. 11"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-exam" className="text-[12.5px] font-semibold text-[var(--site-ink)]">
+              Sınav türü
+            </label>
+            <select
+              id="new-exam"
+              value={examType}
+              onChange={(e) => setExamType(e.target.value)}
+              disabled={pending}
+              className={field}
+            >
+              <option value="">Seçin (opsiyonel)</option>
+              <option value="LGS">LGS</option>
+              <option value="TYT">TYT</option>
+              <option value="AYT">AYT</option>
+              <option value="TYT_AYT">TYT + AYT</option>
+              <option value="OTHER">Diğer</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-school" className="text-[12.5px] font-semibold text-[var(--site-ink)]">
+              Okul
+            </label>
+            <input
+              id="new-school"
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              disabled={pending}
+              className={field}
+              placeholder="İsteğe bağlı"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {role === "TEACHER" ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-subjects" className="text-[12.5px] font-semibold text-[var(--site-ink)]">
+              Branşlar
+            </label>
+            <input
+              id="new-subjects"
+              value={subjects}
+              onChange={(e) => setSubjects(e.target.value)}
+              disabled={pending}
+              className={field}
+              placeholder="Matematik, Türkçe"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-cap" className="text-[12.5px] font-semibold text-[var(--site-ink)]">
+              Maks. öğrenci kapasitesi
+            </label>
+            <input
+              id="new-cap"
+              type="number"
+              min={1}
+              max={200}
+              value={maxStudentCapacity}
+              onChange={(e) => setMaxStudentCapacity(e.target.value)}
+              disabled={pending}
+              className={field}
+              placeholder="İsteğe bağlı"
+            />
+          </div>
+          <div className="sm:col-span-2 flex flex-col gap-1.5">
+            <label htmlFor="new-notes" className="text-[12.5px] font-semibold text-[var(--site-ink)]">
+              Dahili çalışma notları
+            </label>
+            <textarea
+              id="new-notes"
+              value={internalNotes}
+              onChange={(e) => setInternalNotes(e.target.value)}
+              disabled={pending}
+              className={field}
+              rows={2}
+              placeholder="Yalnız yönetim görür"
+            />
+          </div>
+        </div>
+      ) : null}
 
       <fieldset className="rounded-[14px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
         <legend className="px-1 text-[12.5px] font-semibold text-[var(--site-ink)]">Ürün erişimi</legend>

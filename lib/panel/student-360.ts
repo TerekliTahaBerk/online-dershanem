@@ -39,6 +39,8 @@ export const STUDENT_360_TABS = [
   "genel",
   "akademik",
   "dersler",
+  "odevler",
+  "ogretmenler",
   "kocluk",
   "denemeler",
   "risk",
@@ -52,11 +54,13 @@ export const STUDENT_360_TAB_LABELS: Record<Student360Tab, string> = {
   genel: "Genel bakış",
   akademik: "Akademik",
   dersler: "Dersler",
+  odevler: "Ödevler",
+  ogretmenler: "Öğretmenler",
   kocluk: "Koçluk",
   denemeler: "Denemeler",
   risk: "Risk & müdahale",
   veli: "Veli & iletişim",
-  paket: "Paket & ticari",
+  paket: "Hesap & paket",
 };
 
 export type Student360ViewerRole = "ADMIN" | "TEACHER";
@@ -65,10 +69,15 @@ export type Student360ActionId =
   | "SCHEDULE_LESSON"
   | "MANAGE_GROUP"
   | "CREATE_ASSIGNMENT"
+  | "LINK_TEACHER"
+  | "LINK_PARENT"
   | "ADD_COACHING_NOTE"
   | "VIEW_PARENT"
   | "CREATE_INTERVENTION"
-  | "MANAGE_ACCOUNT_PACKAGE";
+  | "MANAGE_ACCOUNT_PACKAGE"
+  | "EDIT_USER"
+  | "PREVIEW_PANEL"
+  | "ARCHIVE_USER";
 
 export type Student360Action = {
   id: Student360ActionId;
@@ -136,7 +145,8 @@ export function visibleStudent360Tabs(input: {
     "adaptivePlan" | "mockExamAnalysis" | "interventionInbox" | "parentWeeklyDigest"
   >;
 }): Student360Tab[] {
-  const tabs: Student360Tab[] = ["genel", "akademik", "dersler"];
+  const tabs: Student360Tab[] = ["genel", "akademik", "dersler", "odevler"];
+  if (input.role === "ADMIN") tabs.push("ogretmenler");
   if (input.flags.adaptivePlan) tabs.push("kocluk");
   if (input.flags.mockExamAnalysis) tabs.push("denemeler");
   if (input.flags.interventionInbox) tabs.push("risk");
@@ -176,18 +186,38 @@ export function visibleStudent360Actions(input: {
   if (input.role === "ADMIN") {
     actions.push({
       id: "SCHEDULE_LESSON",
-      label: "Ders planla",
-      href: `${adminBase}/takvim`,
-    });
-    actions.push({
-      id: "MANAGE_GROUP",
-      label: "Gruba ekle / değiştir",
-      href: `${adminBase}/egitim`,
+      label: "Ders tanımla",
+      href: `${adminBase}/egitim#ders-planla`,
     });
     actions.push({
       id: "CREATE_ASSIGNMENT",
-      label: "Ödev oluştur",
+      label: "Ödev tanımla",
+      href: `${adminBase}/egitim#odev-merkezi`,
+    });
+    actions.push({
+      id: "LINK_TEACHER",
+      label: "Öğretmen bağla",
+      href: student360TabHref(`${adminBase}/ogrenciler/${input.studentProfileId}`, "ogretmenler"),
+    });
+    actions.push({
+      id: "LINK_PARENT",
+      label: "Veli bağla",
+      href: student360TabHref(`${adminBase}/ogrenciler/${input.studentProfileId}`, "veli"),
+    });
+    actions.push({
+      id: "MANAGE_GROUP",
+      label: "Gruba ekle",
       href: `${adminBase}/egitim`,
+    });
+    actions.push({
+      id: "EDIT_USER",
+      label: "Kullanıcıyı düzenle",
+      href: `${adminBase}/kullanicilar/${input.studentUserId}`,
+    });
+    actions.push({
+      id: "PREVIEW_PANEL",
+      label: "Panelini görüntüle",
+      href: `${adminBase}/kullanicilar/${input.studentUserId}#preview`,
     });
     if (input.flags.adaptivePlan) {
       actions.push({
@@ -196,11 +226,6 @@ export function visibleStudent360Actions(input: {
         href: `${adminBase}/kocluk`,
       });
     }
-    actions.push({
-      id: "VIEW_PARENT",
-      label: "Veli bilgisine git",
-      href: student360TabHref(`${adminBase}/ogrenciler/${input.studentProfileId}`, "veli"),
-    });
     if (input.flags.interventionInbox) {
       actions.push({
         id: "CREATE_INTERVENTION",
@@ -211,10 +236,15 @@ export function visibleStudent360Actions(input: {
     if (input.canViewCommerce) {
       actions.push({
         id: "MANAGE_ACCOUNT_PACKAGE",
-        label: "Hesap / paket işlemleri",
+        label: "Hesap / paket",
         href: `${adminBase}/kullanicilar/${input.studentUserId}`,
       });
     }
+    actions.push({
+      id: "ARCHIVE_USER",
+      label: "Arşivle",
+      href: `${adminBase}/kullanicilar/${input.studentUserId}?arsiv=1`,
+    });
     return actions;
   }
 

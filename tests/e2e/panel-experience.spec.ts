@@ -92,16 +92,15 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/yonetim");
     const nav = page.getByRole("navigation", { name: "Panel menüsü" });
 
-    for (const heading of ["BUGÜN", "EĞİTİM", "ÖĞRENCİ BAŞARISI", "DENEMELER", "TİCARET", "SİSTEM"]) {
+    for (const heading of ["BUGÜN", "KİŞİLER", "EĞİTİM", "DENEMELER", "SİSTEM"]) {
       await expect(nav.getByText(heading, { exact: true })).toBeVisible();
     }
-    await expect(nav.getByText("KOÇLUK", { exact: true })).toHaveCount(0);
-    await expect(nav.getByRole("link", { name: "Bugün", exact: true })).toBeVisible();
+    await expect(nav.getByText("ÖĞRENCİ BAŞARISI", { exact: true })).toHaveCount(0);
+    await expect(nav.getByText("TİCARET", { exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Operasyon merkezi", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Operasyon", exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Öğrenciler", exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Öğretmenler", exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Eğitmenler", exact: true })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Kişiler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Öğrenciler", exact: true })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Siparişler", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Özellikler", exact: true })).toBeVisible();
@@ -111,7 +110,7 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: "Panel menüsünü aç" }).click();
     const drawer = page.getByRole("dialog", { name: "Panel menüsü" });
     await expect(drawer.getByRole("navigation", { name: "Panel menüsü" })).toBeVisible();
-    await expect(drawer.getByText("TİCARET", { exact: true })).toBeVisible();
+    await expect(drawer.getByText("KİŞİLER", { exact: true })).toBeVisible();
     await expect(drawer.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
   });
 

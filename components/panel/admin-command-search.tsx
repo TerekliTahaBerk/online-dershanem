@@ -228,12 +228,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
     }
   }
 
-  let sectionOffset = 0;
-  const sectionOffsets = sections.map((section) => {
-    const current = sectionOffset;
-    sectionOffset += section.items.length;
-    return current;
-  });
+  const sectionOffsets = sections.map((_, index) =>
+    sections.slice(0, index).reduce((sum, section) => sum + section.items.length, 0),
+  );
 
   return (
     <>

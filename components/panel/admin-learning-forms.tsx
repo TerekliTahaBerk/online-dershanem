@@ -34,9 +34,64 @@ export function AdminLearningForms({ teachers, students, parents, groups }: { te
         <button disabled={busy} className="site-btn site-btn-primary site-btn-sm mt-4 w-full">Grubu kur</button>
       </form>
 
-      <form id="ders-planla" className="panel-action-card scroll-mt-28" onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const local = String(data.get("startsAt")); void submit(() => post("/api/panel/lessons", { groupId: data.get("groupId"), title: data.get("title"), startsAt: new Date(local).toISOString(), meetingUrl: data.get("meetingUrl"), repeatWeeks: Number(data.get("repeatWeeks")) }), "Ders takvime eklendi."); }}>
-        <span className="panel-action-icon bg-[#ecf3fa] text-[#1e3a5f]"><CalendarPlus size={19} /></span><h2 className="panel-card-title">Ders planla</h2><p className="panel-card-copy">Saat seçin; bitiş otomatik 60 dakika olur.</p>
-        <select name="groupId" required className="panel-input mt-4"><option value="">Grup seçin</option>{groups.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.subject}</option>)}</select><input name="title" required className="panel-input mt-2" placeholder="Ders başlığı" /><input name="startsAt" required type="datetime-local" className="panel-input mt-2" /><input name="meetingUrl" type="url" className="panel-input mt-2" placeholder="Canlı ders bağlantısı (opsiyonel)" /><select name="repeatWeeks" defaultValue="1" className="panel-input mt-2"><option value="1">Yalnızca bu ders</option><option value="4">4 hafta tekrarla</option><option value="8">8 hafta tekrarla</option><option value="12">12 hafta tekrarla</option></select>
+      <form id="ders-planla" className="panel-action-card scroll-mt-28" onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const local = String(data.get("startsAt"));
+        const weekdays = data.getAll("weekdays").map((value) => Number(value)).filter((n) => n >= 1 && n <= 7);
+        const mode = weekdays.length || Number(data.get("repeatWeeks")) > 1 ? "SERIES" : "SINGLE";
+        const starts = new Date(local);
+        const time = `${String(starts.getHours()).padStart(2, "0")}:${String(starts.getMinutes()).padStart(2, "0")}`;
+        void submit(() => post("/api/panel/lessons", {
+          groupId: data.get("groupId"),
+          title: data.get("title"),
+          startsAt: starts.toISOString(),
+          meetingUrl: data.get("meetingUrl"),
+          mode,
+          repeatWeeks: Number(data.get("repeatWeeks")) || 1,
+          weekdays,
+          startsAtTime: time,
+          durationMinutes: 60,
+          totalOccurrences: weekdays.length
+            ? Number(data.get("totalOccurrences")) || 8
+            : Number(data.get("repeatWeeks")) || 1,
+        }), "Ders takvime eklendi.");
+      }}>
+        <span className="panel-action-icon bg-[#ecf3fa] text-[#1e3a5f]"><CalendarPlus size={19} /></span>
+        <h2 className="panel-card-title">Ders planla</h2>
+        <p className="panel-card-copy">Tek ders veya belirli günlerde tekrarlayan seri. Saat Europe/Istanbul.</p>
+        <select name="groupId" required className="panel-input mt-4"><option value="">Grup seçin</option>{groups.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.subject}</option>)}</select>
+        <input name="title" required className="panel-input mt-2" placeholder="Ders başlığı" />
+        <input name="startsAt" required type="datetime-local" className="panel-input mt-2" />
+        <input name="meetingUrl" type="url" className="panel-input mt-2" placeholder="Canlı ders bağlantısı (opsiyonel)" />
+        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+          {[
+            [1, "Pzt"],
+            [2, "Sal"],
+            [3, "Çar"],
+            [4, "Per"],
+            [5, "Cum"],
+            [6, "Cmt"],
+            [7, "Paz"],
+          ].map(([value, label]) => (
+            <label key={String(value)} className="inline-flex items-center gap-1 rounded-lg border border-[var(--site-line)] px-2 py-1">
+              <input type="checkbox" name="weekdays" value={String(value)} />
+              {label}
+            </label>
+          ))}
+        </div>
+        <select name="repeatWeeks" defaultValue="1" className="panel-input mt-2">
+          <option value="1">Yalnızca bu ders / seçili gün serisi</option>
+          <option value="4">4 hafta tekrarla</option>
+          <option value="8">8 hafta tekrarla</option>
+          <option value="12">12 hafta tekrarla</option>
+        </select>
+        <select name="totalOccurrences" defaultValue="8" className="panel-input mt-2">
+          <option value="4">4 oluşum</option>
+          <option value="8">8 oluşum</option>
+          <option value="12">12 oluşum</option>
+          <option value="16">16 oluşum</option>
+        </select>
         <button disabled={busy} className="site-btn site-btn-primary site-btn-sm mt-4 w-full">Dersi planla</button>
       </form>
 

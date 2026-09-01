@@ -12,6 +12,7 @@ import { AdminAccessibilityAccommodationForm } from "@/components/panel/admin-ac
 import { AdminProductAccessForm } from "@/components/panel/admin-product-access-form";
 import { RequestMfaResetForm } from "@/components/panel/mfa-reset-controls";
 import { UserRowActions } from "@/components/panel/user-row-actions";
+import { ArchiveUserAction } from "@/components/panel/archive-user-action";
 import { TeacherOffboardingForm } from "@/components/panel/teacher-offboarding-form";
 import { AdminPreviewLaunchButton } from "@/components/panel/admin-preview-launch-button";
 import { getTeacherLifecycleSummary } from "@/lib/panel/teacher-lifecycle-server";
@@ -220,7 +221,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-muted">
             Kalıcı silme geri alınamaz. Hesap önce arşivlenir; kritik kayıtlar varsa sistem silmeyi engeller.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 space-y-4">
             <UserRowActions
               userId={user.id}
               email={user.email}
@@ -230,6 +231,12 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
               inviteAcceptedAt={user.inviteAcceptedAt?.toISOString() ?? null}
               isSelf={user.id === session.userId}
             />
+            {user.status !== "ARCHIVED" && user.id !== session.userId ? (
+              <ArchiveUserAction
+                userId={user.id}
+                userName={user.fullName || user.email}
+              />
+            ) : null}
           </div>
         </PanelCard>
 

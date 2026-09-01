@@ -40,7 +40,7 @@ export async function resolveParentScope(
   requestedStudentId?: string,
 ): Promise<ParentScope> {
   const links = await prisma.parentStudent.findMany({
-    where: { parentId: parentUserId },
+    where: { parentId: parentUserId, active: true, endedAt: null },
     include: {
       student: {
         select: {

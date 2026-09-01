@@ -134,6 +134,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        source: "/panel/yonetim/kullanicilar",
+        destination: "/panel/yonetim/kisiler",
+        permanent: false,
+      },
+      {
         source: "/panel/ogrenci/calismalar",
         destination: "/panel/ogrenci/odevler",
         permanent: false,

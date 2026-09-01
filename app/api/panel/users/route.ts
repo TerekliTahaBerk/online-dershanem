@@ -27,6 +27,12 @@ const createUserSchema = z.object({
   phone: z.string().trim().max(32).optional().or(z.literal("")),
   role: z.enum(["ADMIN", "TEACHER", "STUDENT", "PARENT"]),
   products: z.array(z.enum(["OD", "OK", "ODK"])).max(3).optional(),
+  classLevel: z.string().trim().max(40).optional().or(z.literal("")),
+  examType: z.enum(["LGS", "TYT", "AYT", "TYT_AYT", "OTHER", ""]).optional(),
+  schoolName: z.string().trim().max(120).optional().or(z.literal("")),
+  subjects: z.array(z.string().trim().min(2).max(80)).max(12).optional(),
+  maxStudentCapacity: z.number().int().min(1).max(200).optional().nullable(),
+  internalNotes: z.string().trim().max(2000).optional().or(z.literal("")),
 });
 
 export async function POST(request: Request) {
@@ -93,9 +99,27 @@ export async function POST(request: Request) {
       inviteSentAt: new Date(),
       inviteAcceptedAt: null,
       createdById: auth.session.userId,
-      ...(parsed.data.role === "STUDENT" ? { studentProfile: { create: {} } } : {}),
+      ...(parsed.data.role === "STUDENT"
+        ? {
+            studentProfile: {
+              create: {
+                classLevel: parsed.data.classLevel?.trim() || null,
+                examType: parsed.data.examType || null,
+                schoolName: parsed.data.schoolName?.trim() || null,
+              },
+            },
+          }
+        : {}),
       ...(parsed.data.role === "TEACHER" || parsed.data.role === "ADMIN"
-        ? { teacherProfile: { create: {} } }
+        ? {
+            teacherProfile: {
+              create: {
+                subjects: parsed.data.subjects?.map((s) => s.trim()).filter(Boolean) ?? [],
+                maxStudentCapacity: parsed.data.maxStudentCapacity ?? null,
+                internalNotes: parsed.data.internalNotes?.trim() || null,
+              },
+            },
+          }
         : {}),
       productMemberships: { create: products.map((product) => ({ product, source: parsed.data.role === "ADMIN" || parsed.data.role === "TEACHER" ? "STAFF" as const : "MANUAL" as const, grantedById: auth.session.userId })) },
     },
