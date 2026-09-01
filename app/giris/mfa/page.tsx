@@ -13,5 +13,17 @@ export default async function AdminMfaPage() {
   if (!(await adminHasMfa(session.userId))) redirect("/giris/mfa/enroll");
   if (session.mfaVerifiedAt) redirect(await postAuthenticationPath(session));
   const [config, passkeyCount] = await Promise.all([prisma.adminMfa.findUnique({ where: { userId: session.userId }, select: { totpEnabledAt: true } }), prisma.passkeyCredential.count({ where: { userId: session.userId, revokedAt: null } })]);
-  return <main className="mx-auto flex min-h-screen max-w-md items-center px-5 py-12"><section className="w-full rounded-3xl border bg-white p-7 shadow-sm"><p className="text-sm font-bold uppercase tracking-wider text-emerald-700">Yönetici güvenliği</p><h1 className="mt-2 text-3xl font-bold">İkinci faktörü doğrulayın</h1><p className="mb-7 mt-3 text-sm leading-6 text-slate-600">Tam yetkili yönetici oturumu yalnızca bu doğrulamadan sonra açılır.</p><AdminMfaForm purpose="AUTHENTICATE" passkeyCount={passkeyCount} totpEnabled={Boolean(config?.totpEnabledAt)} /></section></main>;
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-md items-center px-4 py-8 sm:px-5 sm:py-12">
+      <section className="w-full rounded-3xl border bg-white p-5 shadow-sm sm:p-7">
+        <p className="text-sm font-bold uppercase tracking-wider text-emerald-700">Yönetici güvenliği</p>
+        <h1 className="mt-2 text-2xl font-bold sm:text-3xl">İkinci faktörü doğrulayın</h1>
+        <p className="mb-7 mt-3 text-sm leading-6 text-slate-600">
+          Tam yetkili yönetici oturumu yalnızca bu doğrulamadan sonra açılır. Telefondan giriyorsanız
+          Face ID / parmak izi veya uygulama kodunu kullanın.
+        </p>
+        <AdminMfaForm purpose="AUTHENTICATE" passkeyCount={passkeyCount} totpEnabled={Boolean(config?.totpEnabledAt)} />
+      </section>
+    </main>
+  );
 }
