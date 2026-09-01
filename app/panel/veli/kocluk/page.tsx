@@ -12,6 +12,7 @@ import {
   istanbulWeekStart,
 } from "@/lib/istanbul-time";
 import { buildParentKocumSummary, buildWeeklyKocumMetrics } from "@/lib/kocum";
+import { getStudentGoals } from "@/lib/panel/goals";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +81,7 @@ export default async function ParentCoachingPage({
     );
   }
 
-  const [plan, coaching, publishedSummary] = await Promise.all([
+  const [plan, coaching, publishedSummary, goals] = await Promise.all([
     prisma.weeklyPlan.findFirst({
       where: { studentId: selected.id },
       orderBy: { weekStart: "desc" },
@@ -98,6 +99,7 @@ export default async function ParentCoachingPage({
         parentVisibleText: true,
       },
     }),
+    getStudentGoals(selected.id),
   ]);
 
   const coachCard = coaching ? (
@@ -164,14 +166,16 @@ export default async function ParentCoachingPage({
     formatIstanbulDateInput,
   );
 
+  const primaryGoal = goals.find((goal) => goal.percent != null) ?? goals[0] ?? null;
+
   const parentSummary = buildParentKocumSummary({
     planCompletionPct: publishedSummary?.planCompletionPct ?? metrics.planCompletionPct,
     completedMinutes: metrics.completedMinutes,
     plannedMinutes: metrics.plannedMinutes,
     overdueCount: metrics.taskOverdue,
     previousOverdueCount: null,
-    goalLabel: null,
-    goalPercent: null,
+    goalLabel: primaryGoal?.label ?? null,
+    goalPercent: primaryGoal?.percent ?? null,
     publishedParentText: publishedSummary?.parentVisibleText ?? null,
     strengths: publishedSummary?.strengths ?? null,
     focusAreas: publishedSummary?.focusAreas ?? null,
@@ -194,6 +198,9 @@ export default async function ParentCoachingPage({
         </p>
         {parentSummary.studyRhythm ? (
           <p className="mt-2 text-[14px] text-dc-ink-muted">{parentSummary.studyRhythm}</p>
+        ) : null}
+        {parentSummary.goalProgressLine ? (
+          <p className="mt-2 text-[14px] text-dc-ink-muted">{parentSummary.goalProgressLine}</p>
         ) : null}
         {parentSummary.overdueTrend ? (
           <p className="mt-1 text-[13.5px] text-dc-ink-muted">{parentSummary.overdueTrend}</p>

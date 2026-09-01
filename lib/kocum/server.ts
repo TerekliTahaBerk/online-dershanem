@@ -339,3 +339,131 @@ export async function getManagementKocumSignals(now = new Date()): Promise<Manag
 
   return rankManagementSignals(signals);
 }
+
+/**
+ * Hafta sonu / periyodik sinyal taraması.
+ * Öneriler PENDING olarak yazılır; koç onayı olmadan göreve dönüşmez.
+ */
+export async function generateAdaptiveSuggestionsForActiveStudents(now = new Date()) {
+  const weekStart = istanbulWeekStart(now);
+  const nextWeekStart = addIstanbulCalendarDays(weekStart, 7);
+  const todayKey = formatIstanbulDateInput(now);
+  const lookback = addIstanbulCalendarDays(now, -14);
+
+  const plans = await prisma.weeklyPlan.findMany({
+    where: {
+      weekStart,
+      status: { in: ["APPROVED", "CHANGE_REQUESTED"] },
+      student: {
+        user: {
+          status: "ACTIVE",
+          productMemberships: {
+            some: {
+              product: "OK",
+              revokedAt: null,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+            },
+          },
+        },
+      },
+    },
+    select: {
+      studentId: true,
+      tasks: {
+        select: {
+          id: true,
+          status: true,
+          scheduledFor: true,
+          durationMinutes: true,
+          actualMinutes: true,
+          targetType: true,
+          targetValue: true,
+          actualQuestions: true,
+          subject: true,
+        },
+      },
+    },
+    take: 200,
+  });
+
+  let created = 0;
+  for (const plan of plans) {
+    const pendingExists = await prisma.weeklyPlanSuggestion.findFirst({
+      where: {
+        studentId: plan.studentId,
+        weekStart: nextWeekStart,
+        status: "PENDING",
+        createdBySystem: true,
+      },
+      select: { id: true },
+    });
+    if (pendingExists) continue;
+
+    const metrics = buildWeeklyKocumMetrics(
+      plan.tasks.map((t) => ({
+        id: t.id,
+        status: t.status,
+        scheduledFor: t.scheduledFor,
+        durationMinutes: t.durationMinutes,
+        actualMinutes: t.actualMinutes,
+        targetType: t.targetType,
+        targetValue: t.targetValue,
+        actualQuestions: t.actualQuestions,
+        subject: t.subject,
+      })),
+      todayKey,
+      formatIstanbulDateInput,
+    );
+
+    const [openReviewCount, openAssignmentCount, recentMock] = await Promise.all([
+      prisma.reviewItem.count({
+        where: { studentId: plan.studentId, status: "ACTIVE" },
+      }),
+      prisma.assignmentProgress.count({
+        where: {
+          studentId: plan.studentId,
+          status: { not: "DONE" },
+          assignment: { isActive: true },
+        },
+      }),
+      prisma.mockExam.findMany({
+        where: { studentId: plan.studentId, takenAt: { gte: lookback } },
+        orderBy: { takenAt: "desc" },
+        take: 2,
+        select: {
+          title: true,
+          exam: true,
+          sections: {
+            where: { incorrectCount: { gt: 0 } },
+            select: { subjectName: true, incorrectCount: true },
+            take: 3,
+          },
+        },
+      }),
+    ]);
+
+    const mockExamFollowups = recentMock.flatMap((exam) =>
+      exam.sections.map((section) => ({
+        title: `${exam.title || exam.exam} ${section.subjectName} yanlışlarını incele`,
+        subject: section.subjectName,
+      })),
+    );
+
+    const rows = await createAdaptiveSuggestionsForStudent({
+      studentId: plan.studentId,
+      weekStart: nextWeekStart,
+      signal: {
+        completionPct: metrics.planCompletionPct,
+        overdueCount: metrics.taskOverdue,
+        plannedMinutes: metrics.plannedMinutes,
+        actualMinutes: metrics.completedMinutes,
+        openReviewCount,
+        openAssignmentCount,
+        mockExamFollowups,
+      },
+    });
+    created += rows.length;
+  }
+
+  return { scanned: plans.length, created };
+}

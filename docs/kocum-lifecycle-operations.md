@@ -17,9 +17,11 @@ Hedefler → Haftalık plan → Günlük görevler → Uygulama → Gerçekleşe
 
 Kritik plan değişiklikleri sistem tarafından **öneri** (`WeeklyPlanSuggestion`) olarak üretilir; koç onayı olmadan öğrenciye publish edilmez.
 
+Cron: `GET /api/cron/kocum-suggestions` (Pazar 18:00 UTC) sinyallerden PENDING öneri üretir.
+
 ## Migration / bayrak
 
-- Migration: `0093_kocum_lifecycle`
+- Migration: `0094_kocum_lifecycle_enums` + `0095_kocum_lifecycle`
 - Plan CRUD / takvim / zengin tamamlama: `PANEL_FEATURE_ADAPTIVE_PLAN`
 - Koç notu ve haftalık özet: Online Koçum (`OK`) ürün yetkisi
 - Timezone: `Europe/Istanbul`
@@ -36,17 +38,27 @@ Tamamlarken task türüne göre isteğe bağlı alanlar: soru sayıları, süre,
 |---|---|---|
 | `POST /api/panel/kocum/tasks` | ADMIN/TEACHER | Manuel görev |
 | `POST /api/panel/kocum/tasks/:id/complete` | STUDENT | Zengin tamamlanma |
-| `POST /api/panel/kocum/tasks/:id/reschedule` | ADMIN/TEACHER | Tarihi değiştir (DnD alternatifi) |
+| `POST /api/panel/kocum/tasks/:id/reschedule` | ADMIN/TEACHER | Tarihi değiştir (hafta içi doğrulama) |
 | `POST /api/panel/kocum/templates/:id/apply` | ADMIN/TEACHER | Şablon → haftalık plan |
 | `POST /api/panel/kocum/plans/:id/copy` | ADMIN/TEACHER | Plan kopyala / eksik taşı |
 | `POST /api/panel/kocum/notes` | ADMIN/TEACHER | Visibility’li koç notu (default INTERNAL) |
 | `POST /api/panel/kocum/summaries` | ADMIN/TEACHER | Haftalık özet yayınla |
 | `POST /api/panel/kocum/suggestions/:id/review` | ADMIN/TEACHER | Öneri kabul/ret |
 
+## Hatırlatmalar
+
+`/api/cron/panel-reminders` plan görevleri için:
+
+- geciken görev
+- yaklaşan görev (bugün / yarın)
+- plan yayınlandı (approve yolu)
+
+Tercih anahtarı: `weeklyDigest` (mevcut preference şeması).
+
 ## Görünürlük
 
 - Parent: yalnız `PARENT_VISIBLE` notlar + yayınlanmış `parentVisibleText`
-- Student: `STUDENT_VISIBLE` / `PARENT_VISIBLE`
+- Student: `STUDENT_VISIBLE` / `PARENT_VISIBLE` + yayınlanmış öğrenci özeti
 - Internal notlar, ham check-in, risk metadata veliye gitmez
 - Yatay erişim: student kendi; parent bağlı çocuk; teacher/coach atanan; admin tümü — sunucu tarafında
 

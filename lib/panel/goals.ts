@@ -2,6 +2,8 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { goalProgress, netScore, type GoalBand } from "@/lib/goals";
+import { buildWeeklyKocumMetrics } from "@/lib/kocum/metrics";
+import { formatIstanbulDateInput, istanbulWeekStart } from "@/lib/istanbul-time";
 
 /**
  * ÖĞRENCİ HEDEFLERİ — okuma tarafı.
@@ -34,8 +36,11 @@ export type GoalView = {
   nearTermNote: string | null;
   /** Ölçümün dayandığı kaynak — ekranda dürüstlük için gösterilir. */
   basis: string | null;
+  status: "ACTIVE" | "ACHIEVED" | "PAUSED" | "ARCHIVED";
+  startsAt: string | null;
+  targetAt: string | null;
+  baselineValue: number | null;
 };
-
 const NUM = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 });
 
 /** Son N haftalık planın görev tamamlanma yüzdesi. */
@@ -65,6 +70,10 @@ export async function getStudentGoals(studentProfileId: string): Promise<GoalVie
       subjectName: true,
       targetValue: true,
       nearTermNote: true,
+      status: true,
+      startsAt: true,
+      targetAt: true,
+      baselineValue: true,
     },
   });
   if (goals.length === 0) return [];
@@ -90,9 +99,55 @@ export async function getStudentGoals(studentProfileId: string): Promise<GoalVie
     if (!latestBySubject.has(section.subjectName)) latestBySubject.set(section.subjectName, section);
   }
 
+  const needsPlanMetrics = goals.some(
+    (g) =>
+      g.kind === "PLAN_COMPLETION" ||
+      g.kind === "WEEKLY_STUDY_MINUTES" ||
+      g.kind === "WEEKLY_QUESTION_COUNT",
+  );
   const planCompletion = goals.some((g) => g.kind === "PLAN_COMPLETION")
     ? await planCompletionPercent(studentProfileId)
     : null;
+
+  let thisWeekMetrics: ReturnType<typeof buildWeeklyKocumMetrics> | null = null;
+  if (needsPlanMetrics) {
+    const weekStart = istanbulWeekStart(new Date());
+    const plan = await prisma.weeklyPlan.findUnique({
+      where: { studentId_weekStart: { studentId: studentProfileId, weekStart } },
+      select: {
+        tasks: {
+          select: {
+            id: true,
+            status: true,
+            scheduledFor: true,
+            durationMinutes: true,
+            actualMinutes: true,
+            targetType: true,
+            targetValue: true,
+            actualQuestions: true,
+            subject: true,
+          },
+        },
+      },
+    });
+    if (plan) {
+      thisWeekMetrics = buildWeeklyKocumMetrics(
+        plan.tasks.map((t) => ({
+          id: t.id,
+          status: t.status,
+          scheduledFor: t.scheduledFor,
+          durationMinutes: t.durationMinutes,
+          actualMinutes: t.actualMinutes,
+          targetType: t.targetType,
+          targetValue: t.targetValue,
+          actualQuestions: t.actualQuestions,
+          subject: t.subject,
+        })),
+        formatIstanbulDateInput(new Date()),
+        formatIstanbulDateInput,
+      );
+    }
+  }
 
   return goals.map((goal) => {
     let current: number | null = null;
@@ -128,10 +183,20 @@ export async function getStudentGoals(studentProfileId: string): Promise<GoalVie
       basis = "ders odağı";
     } else if (goal.kind === "WEEKLY_STUDY_MINUTES") {
       label = `Haftalık çalışma ${NUM.format(goal.targetValue)} dk`;
-      basis = "plan gerçekleşen süre";
+      if (thisWeekMetrics) {
+        current = thisWeekMetrics.completedMinutes;
+        basis = "bu haftanın gerçekleşen süresi";
+      } else {
+        basis = "bu hafta plan kaydı yok";
+      }
     } else if (goal.kind === "WEEKLY_QUESTION_COUNT") {
       label = `Haftalık ${NUM.format(goal.targetValue)} soru`;
-      basis = "plan soru hedefi";
+      if (thisWeekMetrics) {
+        current = thisWeekMetrics.questionActual;
+        basis = "bu haftanın çözülen soruları";
+      } else {
+        basis = "bu hafta plan kaydı yok";
+      }
     } else {
       label = `Hedef ${NUM.format(goal.targetValue)}`;
     }
@@ -148,6 +213,10 @@ export async function getStudentGoals(studentProfileId: string): Promise<GoalVie
       band: progress?.band ?? null,
       nearTermNote: goal.nearTermNote,
       basis,
+      status: goal.status,
+      startsAt: goal.startsAt?.toISOString() ?? null,
+      targetAt: goal.targetAt?.toISOString() ?? null,
+      baselineValue: goal.baselineValue,
     };
   });
 }

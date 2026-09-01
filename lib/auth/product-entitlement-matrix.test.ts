@@ -34,6 +34,9 @@ test("API guard names encode product scope and shared routes stay account-scoped
     "app/api/panel/kocum/tasks/[id]/complete/route.ts": 'requireApiProductRole("OK", "STUDENT")',
     "app/api/panel/kocum/tasks/[id]/reschedule/route.ts": 'requireApiProductRole("OK", "ADMIN", "TEACHER")',
     "app/api/panel/kocum/notes/route.ts": 'requireApiProductRole("OK", "ADMIN", "TEACHER")',
+    "app/api/panel/kocum/summaries/route.ts": 'requireApiProductRole("OK", "ADMIN", "TEACHER")',
+    "app/api/panel/kocum/tasks/route.ts": 'requireApiProductRole("OK", "ADMIN", "TEACHER")',
+    "app/api/cron/kocum-suggestions/route.ts": "kocum-suggestions",
     "app/api/panel/dino/route.ts": 'requireApiAccountRole("STUDENT", "PARENT", "TEACHER")',
     "app/api/panel/student/home/route.ts": 'requireApiAccountRole("STUDENT")',
     "app/api/panel/notifications/preferences/route.ts": 'requireApiAccountRole("PARENT", "STUDENT")',
@@ -43,4 +46,26 @@ test("API guard names encode product scope and shared routes stay account-scoped
   for (const [path, guardCall] of Object.entries(expectedGuards)) {
     assert.match(readFileSync(path, "utf8"), new RegExp(guardCall.replace(/[()[\]]/g, "\\$&")));
   }
+});
+
+test("kocum mutation routes enforce horizontal access helpers", () => {
+  const files = [
+    "app/api/panel/kocum/tasks/route.ts",
+    "app/api/panel/kocum/tasks/[id]/reschedule/route.ts",
+    "app/api/panel/kocum/notes/route.ts",
+    "app/api/panel/kocum/summaries/route.ts",
+    "app/api/panel/kocum/suggestions/[id]/review/route.ts",
+    "app/api/panel/kocum/plans/[id]/copy/route.ts",
+  ];
+  for (const path of files) {
+    assert.match(readFileSync(path, "utf8"), /assertCoachOrTeacherAccess/);
+  }
+  assert.match(
+    readFileSync("app/api/panel/kocum/tasks/[id]/complete/route.ts", "utf8"),
+    /loadPlanTaskForStudentMutation/,
+  );
+  assert.match(
+    readFileSync("app/api/panel/kocum/tasks/[id]/reschedule/route.ts", "utf8"),
+    /isDateWithinPlanWeek/,
+  );
 });
