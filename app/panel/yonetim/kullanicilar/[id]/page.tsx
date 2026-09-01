@@ -13,7 +13,9 @@ import { AdminProductAccessForm } from "@/components/panel/admin-product-access-
 import { RequestMfaResetForm } from "@/components/panel/mfa-reset-controls";
 import { UserRowActions } from "@/components/panel/user-row-actions";
 import { TeacherOffboardingForm } from "@/components/panel/teacher-offboarding-form";
+import { AdminPreviewLaunchButton } from "@/components/panel/admin-preview-launch-button";
 import { getTeacherLifecycleSummary } from "@/lib/panel/teacher-lifecycle-server";
+import { isPreviewableRole } from "@/lib/panel/preview-context";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +120,14 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
     (o) => o.status === "PAID" && o.provisioningStatus !== "SUCCEEDED",
   );
   const blocked = blockedOrders[0] ?? null;
+  const previewLabel =
+    user.role === "STUDENT"
+      ? "Öğrenci Panelini Gör"
+      : user.role === "PARENT"
+        ? "Veli Panelini Gör"
+        : user.role === "TEACHER"
+          ? "Öğretmen Panelini Gör"
+          : null;
 
   return (
     <PanelShell
@@ -146,14 +156,24 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
                   : " · hesap askıda"
             }`}
             actions={
-              blocked ? (
-                <Link
-                  href={`/panel/yonetim/siparisler/${blocked.id}`}
-                  className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
-                >
-                  Erişim sorununu çöz
-                </Link>
-              ) : null
+              <div className="flex flex-wrap gap-2">
+                {previewLabel && isPreviewableRole(user.role) ? (
+                  <AdminPreviewLaunchButton
+                    previewRole={user.role}
+                    previewUserId={user.id}
+                    label={previewLabel}
+                    returnPath={`/panel/yonetim/kullanicilar/${user.id}`}
+                  />
+                ) : null}
+                {blocked ? (
+                  <Link
+                    href={`/panel/yonetim/siparisler/${blocked.id}`}
+                    className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+                  >
+                    Erişim sorununu çöz
+                  </Link>
+                ) : null}
+              </div>
             }
           />
         </div>

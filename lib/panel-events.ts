@@ -78,6 +78,13 @@ export const panelEventSchema = z.discriminatedUnion("name", [
     }).strict(),
   }),
   z.object({
+    name: z.literal("admin_preview_page_viewed"),
+    properties: z.object({
+      previewRole: z.enum(["STUDENT", "PARENT", "TEACHER"]),
+      pathBand: z.string().min(1).max(40),
+    }).strict(),
+  }),
+  z.object({
     name: z.literal("student_assignment_progress_finished"),
     properties: z.object({
       durationMs: operationDuration,

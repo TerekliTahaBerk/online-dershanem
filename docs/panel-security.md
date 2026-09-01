@@ -36,6 +36,15 @@ Yetkisiz nesnede **404** döner (403 değil), böylece nesnenin varlığı sızm
 Menüde link gizlemek de güvenlik sınırı değildir; her sayfa ve her server
 action kendi guard'ını ayrıca çalıştırır.
 
+## Admin panel önizleme (View As)
+
+Yöneticiler oturumu değiştirmeden öğrenci/veli/öğretmen panelini
+görüntüleyebilir. Bu **impersonation değildir**: `getSession()` ADMIN kalır;
+preview yalnız sunum ve subject-scope veri katmanıdır; mutation'lar
+salt-okunur engellenir.
+
+Ayrıntılar: [`docs/admin-panel-preview.md`](admin-panel-preview.md).
+
 ## Content Security Policy
 
 Tanım: `next.config.ts`. Regresyon testi:

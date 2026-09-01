@@ -4,6 +4,7 @@ import { loadStudent360Bundle } from "@/lib/panel/student-360-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
 import { Student360View } from "@/components/panel/student-360-view";
+import { AdminPreviewLaunchButton } from "@/components/panel/admin-preview-launch-button";
 import { assignCoach } from "../../kocluk/actions";
 import { retryOrderProvisioning } from "../../siparisler/[id]/actions";
 
@@ -37,6 +38,12 @@ export default async function AdminStudent360Page({
           >
             Kişi detayını aç
           </Link>
+          <AdminPreviewLaunchButton
+            previewRole="STUDENT"
+            previewUserId={bundle.access.studentUserId}
+            label="Öğrenci Panelini Gör"
+            returnPath={`/panel/yonetim/ogrenciler/${id}`}
+          />
         </div>
 
         <form action={assignCoach} className="mt-4 rounded-[10px] border border-dc-line-soft bg-white p-3.5">
