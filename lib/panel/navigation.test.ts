@@ -35,14 +35,17 @@ test("admin üst alanları Bugün / Kişiler / Eğitim modeline göre gruplanır
   assert.ok(!titles.includes("TİCARET"));
 });
 
-test("admin terminolojisi eğitmen/işler yerine canonical etiketleri kullanır", () => {
+test("admin navigasyonu teknik yüzeyleri görev-temelli ve ayırt edilebilir adlandırır", () => {
   const navLabels = labels("ADMIN", [], ALL_FLAGS_ON);
   assert.ok(navLabels.includes(PANEL_DOMAIN.kisiler));
   assert.ok(navLabels.includes(PANEL_DOMAIN.provisioning));
-  assert.ok(navLabels.includes(PANEL_DOMAIN.yonetimAnalitikleri));
+  assert.ok(navLabels.includes("Ürün ve yönetim analitiği"));
   assert.ok(navLabels.includes("Özellikler"));
-  assert.ok(navLabels.includes(PANEL_DOMAIN.gruplar));
-  assert.ok(navLabels.includes(PANEL_DOMAIN.odev));
+  assert.ok(navLabels.includes("Ders, grup ve ödev yönetimi"));
+  assert.ok(navLabels.includes("Sonuç ve kulüp raporları"));
+  assert.ok(navLabels.includes("Operasyon ve denetim raporları"));
+  assert.ok(!navLabels.includes("Yeni Deneme"));
+  assert.ok(!panelNavHrefs("ADMIN", [], ALL_FLAGS_ON).some((href) => href.includes("#")));
   assert.ok(!navLabels.includes("Eğitmenler"));
   assert.ok(!navLabels.includes("İşler / Provisioning"));
   assert.ok(!navLabels.includes("Özellikler / Sistem"));

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Check, Copy, ExternalLink, Smartphone } from "lucide-react";
 
 const TOTP_ACCOUNT_NAME = "Online Dershanem";
@@ -40,12 +41,13 @@ function TotpQrCode({ uri }: { uri: string }) {
   if (!src) return <div className="mx-auto h-[208px] w-[208px] animate-pulse rounded-xl bg-slate-100" aria-hidden="true" />;
 
   return (
-    <img
+    <Image
       src={src}
       alt="Doğrulama uygulaması QR kodu — yalnızca başka bir cihazla okutun"
       className="mx-auto rounded-xl border border-slate-200 bg-white p-2"
       width={208}
       height={208}
+      unoptimized
     />
   );
 }

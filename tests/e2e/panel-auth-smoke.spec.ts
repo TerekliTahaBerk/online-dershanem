@@ -9,7 +9,7 @@ const authSmokeMatrix = [
   { key: "parent", account: panelE2EAccounts.parent, expectedPath: "/panel/veli", failureLabel: "PANEL PARENT" },
 ] as const;
 
-test.describe("panel auth smoke", () => {
+test.describe("panel auth smoke @panel-auth-smoke", () => {
   for (const item of authSmokeMatrix) {
     test(`${item.key} role can sign in via real login flow`, async ({ page }) => {
       await loginAs(page, {

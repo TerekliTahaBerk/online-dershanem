@@ -76,7 +76,7 @@ export async function GET(request: Request) {
 }
 
 /** Unified Today — öğrenci bugün ekranı. */
-export async function POST(request: Request) {
+export async function POST() {
   const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
 

@@ -103,7 +103,7 @@ jobs:
       - name: Prepare integration database
         run: |
           npm run prisma:generate
-          npx prisma db push --skip-generate
+          ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
           npm run db:seed
       - run: npm run test:integration
 

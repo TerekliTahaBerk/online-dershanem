@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, Loader2, Send } from "lucide-react";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
@@ -50,13 +50,13 @@ export function AdminResultsReviewPanel({
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
   const [excludeReview, setExcludeReview] = useState(true);
 
-  async function load() {
+  const load = useCallback(async () => {
     const response = await fetch(`/api/odk/admin/exams/${examId}/results`);
     const result = await response.json().catch(() => ({}));
     if (response.ok) setSummary(result.summary);
-  }
+  }, [examId]);
 
-  useEffect(() => { void load(); }, [examId]);
+  useEffect(() => { void load(); }, [load]);
 
   async function publish() {
     setBusy("publish"); setMessage(null);

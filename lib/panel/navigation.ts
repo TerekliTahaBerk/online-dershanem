@@ -84,7 +84,7 @@ function studentSections(
         ? [{ id: "mock-exams", href: `${root}/denemeler`, label: PANEL_DOMAIN.denemeler }]
         : []),
       ...(hasOD && flags.mockExamAnalysis && hasODK
-        ? [{ id: "mock-exams", href: `${root}/denemeler`, label: "Dış denemeler" }]
+        ? [{ id: "mock-exams", href: `${root}/denemeler`, label: "Okul ve kurum denemeleri" }]
         : []),
     ]),
     ...section("gelisim", "GELİŞİM", [
@@ -113,10 +113,10 @@ function parentSections(
     ...section("bugun", "BUGÜN", [
       { id: "today", href: root, label: PANEL_DOMAIN.bugun },
       ...(flags.progressInsights
-        ? [{ id: "analiz", href: `${root}/analiz`, label: PANEL_DOMAIN.analiz }]
+        ? [{ id: "analiz", href: `${root}/analiz`, label: "Akademik gelişim" }]
         : [{ id: "progress", href: `${root}/takip`, label: PANEL_DOMAIN.gelisim }]),
       ...(flags.parentWeeklyDigest
-        ? [{ id: "weekly-digest", href: `${root}/haftalik`, label: "Haftalık özet" }]
+        ? [{ id: "weekly-digest", href: `${root}/haftalik`, label: "Öğretmen haftalık özeti" }]
         : []),
     ]),
     ...section("dersler", "DERSLER", [
@@ -137,7 +137,7 @@ function parentSections(
         ? [{ id: "mock-exams", href: `${root}/denemeler`, label: PANEL_DOMAIN.denemeler }]
         : []),
       ...(hasOD && flags.mockExamAnalysis && hasODK
-        ? [{ id: "mock-exams", href: `${root}/denemeler`, label: "Dış denemeler" }]
+        ? [{ id: "mock-exams", href: `${root}/denemeler`, label: "Okul ve kurum denemeleri" }]
         : []),
     ]),
     ...section("hesap", "HESAP", [
@@ -169,19 +169,19 @@ function teacherSections(root: string, flags: PanelFeatureFlags): PanelNavSectio
         ? [{ id: "plan", href: `${root}/plan`, label: PANEL_DOMAIN.haftalikPlan }]
         : []),
       ...(flags.reviewQueue
-        ? [{ id: "review", href: `${root}/tekrar`, label: "Tekrar kuyruğu" }]
+        ? [{ id: "review", href: `${root}/tekrar`, label: "Tekrar gerekenler" }]
         : []),
       ...(flags.studentCheckIn
         ? [{ id: "help", href: `${root}/yardim`, label: "Yardım isteyenler" }]
         : []),
       ...(flags.interventionInbox
-        ? [{ id: "interventions", href: `${root}/mudahale`, label: PANEL_DOMAIN.mudahale }]
+        ? [{ id: "interventions", href: `${root}/mudahale`, label: "Müdahale gerekenler" }]
         : []),
       ...(flags.parentWeeklyDigest
         ? [{ id: "digests", href: `${root}/ozetler`, label: "Haftalık özet" }]
         : []),
       ...(flags.recoveryPackage
-        ? [{ id: "recovery", href: `${root}/telafi`, label: "Telafi" }]
+        ? [{ id: "recovery", href: `${root}/telafi`, label: "Kaçırılan ders telafisi" }]
         : []),
     ]),
     ...section("olcme", "ÖLÇME", [
@@ -196,7 +196,7 @@ function teacherSections(root: string, flags: PanelFeatureFlags): PanelNavSectio
             {
               id: "odk-reports",
               href: "/panel/odk/ogretmen/raporlar",
-              label: "Deneme raporları",
+              label: "Kulüp deneme raporları",
             },
           ]
         : []),
@@ -224,31 +224,27 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
       { id: "people", href: `${root}/kisiler`, label: PANEL_DOMAIN.kisiler },
     ]),
     ...section("egitim", "EĞİTİM", [
-      { id: "groups", href: `${root}/egitim`, label: PANEL_DOMAIN.gruplar },
-      { id: "lessons", href: `${root}/egitim#ders-planla`, label: PANEL_DOMAIN.dersler },
+      { id: "groups", href: `${root}/egitim`, label: "Ders, grup ve ödev yönetimi" },
       { id: "calendar", href: `${root}/takvim`, label: PANEL_DOMAIN.takvim },
-      { id: "assignments", href: `${root}/egitim#odev-merkezi`, label: PANEL_DOMAIN.odev },
       { id: "coaching", href: `${root}/kocluk`, label: PANEL_DOMAIN.kocluk },
       ...(flags.learningOutcomes
         ? [{ id: "outcomes", href: `${root}/kazanimlar`, label: PANEL_DOMAIN.kazanımlar }]
         : []),
     ]),
     ...section("denemeler", "DENEMELER", [
-      { id: "odk-exams", href: "/panel/odk/yonetim/sinavlar", label: "Denemeler" },
-      { id: "odk-exams-new", href: "/panel/odk/yonetim/sinavlar#yeni-deneme", label: "Yeni Deneme" },
+      { id: "odk-exams", href: "/panel/odk/yonetim/sinavlar", label: "Deneme yönetimi" },
       { id: "odk-ops", href: "/panel/odk/yonetim/operasyon", label: "Canlı Operasyon" },
-      { id: "odk-results", href: "/panel/odk/yonetim/sonuclar", label: "Sonuçlar" },
-      { id: "odk-reports", href: "/panel/odk/yonetim/raporlar", label: "Raporlar" },
+      { id: "odk-reports", href: "/panel/odk/yonetim/raporlar", label: "Sonuç ve kulüp raporları" },
       ...(flags.mockExamAnalysis
         ? [{ id: "mock-analysis", href: `${root}/denemeler`, label: "Sonuç analizi" }]
         : []),
     ]),
     ...section("sistem", "SİSTEM", [
       { id: "orders", href: `${root}/siparisler`, label: PANEL_DOMAIN.siparisler },
-      { id: "analytics", href: `${root}/analitik`, label: PANEL_DOMAIN.yonetimAnalitikleri },
+      { id: "analytics", href: `${root}/analitik`, label: "Ürün ve yönetim analitiği" },
       { id: "features", href: `${root}/ozellikler`, label: "Özellikler" },
       { id: "audit", href: `${root}/kayitlar`, label: "İşlem geçmişi" },
-      { id: "reports", href: `${root}/raporlar`, label: "Operasyon raporları" },
+      { id: "reports", href: `${root}/raporlar`, label: "Operasyon ve denetim raporları" },
     ]),
     ...section("genel", "GENEL", commonItems(flags)),
   ];

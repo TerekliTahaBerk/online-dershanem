@@ -12,7 +12,6 @@ import {
 import { getStudentToday } from "@/lib/student-success/server/calendar-server";
 import {
   buildSerializedUnifiedToday,
-  legacyTodayFromUnified,
   type SerializedUnifiedTodayItem,
 } from "@/lib/student-success/unified-today-serializer";
 

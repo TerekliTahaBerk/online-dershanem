@@ -361,11 +361,6 @@ export function buildTransferPreviewSummary(input: {
   const seatDemand = input.items.filter((item) => item.blockers.length === 0).length;
   const available = Math.max(0, input.capacity - input.activeCount);
   const capacityBlocksAll = seatDemand > available;
-  const canExecute =
-    input.items.length > 0 &&
-    input.items.every((item) => item.blockers.length === 0) &&
-    !capacityBlocksAll;
-
   const items = capacityBlocksAll
     ? input.items.map((item) =>
         item.blockers.some((blocker) => blocker.code === "TARGET_CAPACITY")

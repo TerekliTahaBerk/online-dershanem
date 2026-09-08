@@ -156,6 +156,7 @@ Eski migration geçmişi, ilk yıllarda şema `db push` ile yönetildiği için 
 ## Yayın sonrası
 
 1. Migration gerekiyorsa `npm run release:migrate` çalıştırın.
-2. Production deploy tamamlandıktan sonra `/api/health` içindeki commit'i doğrulayın.
+2. Production deploy tamamlandıktan sonra `/api/health` içinde `checks.databaseSchema.status` değerinin `ok` olduğunu doğrulayın. `DATABASE_SCHEMA_INCOMPATIBLE`, veritabanı erişilebilir olsa bile uygulama sürümünün beklediği kolonların eksik olduğunu ve deploy'un trafiğe açılmaması gerektiğini belirtir.
 3. Oturumsuz panel API isteğinin 401, yanlış rol isteğinin 403/404 verdiğini kontrol edin.
-4. `Production Health`, `Production Smoke` ve E2E GitHub Actions sonuçlarını inceleyin.
+4. Korumalı `/api/smoke` yanıtındaki `db_schema` kontrolünün geçtiğini doğrulayın.
+5. `Production Health`, `Production Smoke` ve E2E GitHub Actions sonuçlarını inceleyin. E2E kapısındaki dört-rol gerçek giriş smoke adımı bloklayıcıdır.

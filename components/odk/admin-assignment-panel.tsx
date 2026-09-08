@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, UserPlus, Users } from "lucide-react";
 import {
@@ -41,7 +41,7 @@ export function AdminAssignmentPanel({ examId, canEdit }: { examId: string; canE
   const [cohortId, setCohortId] = useState("");
   const [packageId, setPackageId] = useState("");
 
-  async function load() {
+  const load = useCallback(async () => {
     const response = await fetch(`/api/odk/admin/exams/${examId}/assignments`);
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -50,9 +50,9 @@ export function AdminAssignmentPanel({ examId, canEdit }: { examId: string; canE
     }
     setAssignments(result.assignments || []);
     setOptions(result.options || null);
-  }
+  }, [examId]);
 
-  useEffect(() => { void load(); }, [examId]);
+  useEffect(() => { void load(); }, [load]);
 
   async function assign(body: Record<string, unknown>) {
     setBusy(true); setMessage(null);

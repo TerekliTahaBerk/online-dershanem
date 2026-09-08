@@ -173,8 +173,8 @@ export async function PanelShell({
   /*
    * HESAP SAYFASI — tasarımda (Panel.dc.html → sProfile / pacc) profil ekranı
    * menüde değil, sağ üstteki avatar üzerinden açılıyor. Yalnız gerçekten var
-   * olan rotalar bağlanır; olmayan rol için avatar bağlantısız kalır ki
-   * kullanıcı 404'e gönderilmesin.
+   * olan rotalar bağlanır. Öğretmen ve yönetici avatarı güvenlik merkezine
+   * gider; MFA/oturum yönetimi bu roller için özellikle görünür kalır.
    */
   const accountHref: string | null = isBusinessWorkspace || preview
     ? null
@@ -182,7 +182,7 @@ export async function PanelShell({
       ? "/panel/ogrenci/profil"
       : effectiveRole === "PARENT"
         ? "/panel/veli/hesap"
-        : null;
+        : "/panel/guvenlik";
 
   const displayName = shellFullName || shellEmail;
   const initials = displayName
@@ -227,7 +227,7 @@ export async function PanelShell({
           </a>
 
           {/* Sidebar — handoff: 248px, beyaz, sağ kenarlık */}
-          <aside className="sticky top-0 hidden h-dvh w-[248px] flex-none flex-col border-r border-dc-line bg-white px-3.5 py-5 lg:flex">
+          <aside className="sticky top-0 hidden h-dvh w-[224px] flex-none flex-col border-r border-dc-line bg-white px-3.5 py-5 lg:flex xl:w-[248px]">
             {/*
               Erişilebilir ad çalışma alanına göre değişir: aynı marka
               bağlantısı işletme alanında başka bir yere gidiyor, ekran
@@ -366,7 +366,7 @@ export async function PanelShell({
                 ) : null}
 
                 {accountHref ? (
-                  <Link href={accountHref} aria-label="Profil ve hesap sayfanı aç" className="hidden sm:block">
+                  <Link href={accountHref} aria-label="Profil, hesap ve güvenlik sayfasını aç" className="hidden sm:block">
                     {avatar("sm")}
                   </Link>
                 ) : (

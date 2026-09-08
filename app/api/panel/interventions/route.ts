@@ -8,7 +8,7 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { parseIstanbulDateInput, istanbulDayEnd, istanbulDayStart } from "@/lib/istanbul-time";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
-export const TEACHER_MANUAL_INTERVENTION_VERSION = "teacher-manual-v1";
+const TEACHER_MANUAL_INTERVENTION_VERSION = "teacher-manual-v1";
 
 const MANUAL_REASON_CODES = [
   "ATTENDANCE_PATTERN",

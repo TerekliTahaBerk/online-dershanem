@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+const webServerUrl = new URL(baseURL);
 const crossBrowser = process.env.PLAYWRIGHT_CROSS_BROWSER === "true";
 const odkDeviceMatrix = process.env.PLAYWRIGHT_ODK_DEVICE_MATRIX === "true";
 process.env.PANEL_E2E_ADMIN_MFA_BYPASS ??= "true";
@@ -61,8 +62,14 @@ export default defineConfig({
     ? undefined
     : {
         command: "npm run start",
-        url: "http://localhost:3000",
-        env: { ...process.env, PANEL_E2E_ADMIN_MFA_BYPASS: process.env.PANEL_E2E_ADMIN_MFA_BYPASS },
+        url: baseURL,
+        env: {
+          ...process.env,
+          // A local Next server should remain unprivileged when BASE_URL omits
+          // a port; explicit ports (CI/parallel runs) are preserved.
+          PORT: webServerUrl.port || "3000",
+          PANEL_E2E_ADMIN_MFA_BYPASS: process.env.PANEL_E2E_ADMIN_MFA_BYPASS,
+        },
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
       },

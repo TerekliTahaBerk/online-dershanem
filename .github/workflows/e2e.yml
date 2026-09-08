@@ -125,7 +125,7 @@ jobs:
       - name: Prisma migrate
         run: |
           npx prisma generate
-          npx prisma db push --skip-generate --accept-data-loss
+          ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 
       - name: Seed E2E users
         run: npx tsx prisma/seed-e2e.ts
@@ -133,8 +133,12 @@ jobs:
       - name: Build Next.js
         run: npm run build:nomigrate
 
+      - name: Run blocking four-role auth smoke
+        if: ${{ matrix.shard == 1 }}
+        run: npm run e2e:auth-smoke
+
       - name: Run general Playwright tests
-        run: npm run e2e -- --shard=${{ matrix.shard }}/3 --grep-invert "integrated pilot rollout|@odk-critical"
+        run: npm run e2e -- --shard=${{ matrix.shard }}/3 --grep-invert "integrated pilot rollout|@odk-critical|@panel-auth-smoke"
 
       - name: Run pilot rollout tests
         if: ${{ matrix.shard == 1 }}
@@ -256,7 +260,7 @@ jobs:
       - name: Prepare database
         run: |
           npx prisma generate
-          npx prisma db push --skip-generate --accept-data-loss
+          ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
           npx tsx prisma/seed-e2e.ts
 
       - name: Build Next.js

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { loadParentCalmHome } from "@/lib/panel/parent-calm-server";
@@ -44,8 +45,16 @@ export default async function ParentHomePage({
         <PanelPageHeader title="Öğrenci bağlantınız hazırlanıyor." />
         <PanelEmpty
           title="Henüz bağlı öğrenci yok."
-          body="Yönetim ekibi hesabınızı öğrencinizle eşleştirdiğinde sakin özet burada açılır."
+          body="Yönetim ekibi hesabınızı öğrencinizle eşleştirdiğinde sakin özet burada açılır. Eşleştirme geciktiyse destek ekibine ulaşabilirsiniz."
         />
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link href="/panel/veli/hesap" className="site-btn site-btn-primary">
+            Hesap durumunu kontrol et
+          </Link>
+          <Link href="/iletisim" className="site-btn site-btn-secondary">
+            Eşleştirme desteği al
+          </Link>
+        </div>
       </>,
     );
   }

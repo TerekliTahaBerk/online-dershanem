@@ -10,6 +10,7 @@
  * Test edilen sistemler:
  *  - DB read (public order table)
  *  - DB write (RateLimitEntry — geçici kayıt, hemen siler)
+ *  - Application schema compatibility (auth-critical User columns)
  *  - Cache (read/write/delete)
  *  - Audit log (yazma)
  *  - Env validation
@@ -53,6 +54,12 @@ export async function GET(req: NextRequest) {
   // 1. DB read
   checks.push(await timed("db_read", async () => {
     await prisma.odOrder.findFirst({ select: { id: true } });
+  }));
+
+  // Uygulama kodu ile migration seviyesi gerçekten uyumlu mu? `SELECT 1`
+  // bunu yakalayamaz; giriş akışının kullandığı kolonları bilerek seçiyoruz.
+  checks.push(await timed("db_schema", async () => {
+    await prisma.user.findFirst({ select: { id: true, inviteTokenHash: true } });
   }));
 
   // 2. DB write (smoke marker — anında temizle)

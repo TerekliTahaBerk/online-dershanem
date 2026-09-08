@@ -10,20 +10,44 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const startedAt = Date.now();
   let dbOk = false;
+  let schemaOk = false;
   let dbLatencyMs: number | null = null;
   let heartbeats: Awaited<ReturnType<typeof prisma.cronHeartbeat.findMany>> = [];
   try {
     const dbStartedAt = Date.now();
     await prisma.$queryRaw`SELECT 1`;
-    heartbeats = await prisma.cronHeartbeat.findMany();
+    const [, heartbeatRows] = await Promise.all([
+      // Bu sorgu kimlik doğrulamanın kullandığı güncel User kolonlarını seçer.
+      // Veritabanı erişilebilir olsa bile migration gerideyse readiness kapanır.
+      prisma.user.findFirst({ select: { id: true, inviteTokenHash: true } }),
+      prisma.cronHeartbeat.findMany(),
+    ]);
+    heartbeats = heartbeatRows;
     dbLatencyMs = Date.now() - dbStartedAt;
     dbOk = true;
+    schemaOk = true;
   } catch {
-    dbOk = false;
+    // SELECT 1 başarılı, model sorgusu başarısızsa bağlantı var fakat uygulama
+    // şeması uyumsuzdur. Ayrı sinyal, operasyon ekibine doğru aksiyonu söyler.
+    if (dbLatencyMs === null) {
+      try {
+        const dbStartedAt = Date.now();
+        await prisma.$queryRaw`SELECT 1`;
+        dbLatencyMs = Date.now() - dbStartedAt;
+        dbOk = true;
+      } catch {
+        dbOk = false;
+      }
+    }
   }
 
   const cache = await cacheHealth();
-  const report = buildReadinessReport({ db: { ok: dbOk, latencyMs: dbLatencyMs }, heartbeats, cache });
+  const report = buildReadinessReport({
+    db: { ok: dbOk, latencyMs: dbLatencyMs },
+    schema: { ok: schemaOk },
+    heartbeats,
+    cache,
+  });
   if (dbOk) {
     const alerts: Array<Promise<void>> = [];
     for (const job of report.checks.cron.jobs) {

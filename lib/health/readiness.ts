@@ -33,6 +33,7 @@ function restoreCheck(env: NodeJS.ProcessEnv, now: Date, required: boolean) {
 
 export function buildReadinessReport(input: {
   db: { ok: boolean; latencyMs: number | null };
+  schema?: { ok: boolean };
   heartbeats: CronHeartbeatSnapshot[];
   now?: Date;
   env?: NodeJS.ProcessEnv;
@@ -63,6 +64,11 @@ export function buildReadinessReport(input: {
   };
   const checks = {
     database: { status: input.db.ok ? "ok" as const : "down" as const, required: true, latencyMs: input.db.latencyMs, code: input.db.ok ? null : "DATABASE_UNAVAILABLE" },
+    databaseSchema: {
+      status: input.schema?.ok === false ? "down" as const : "ok" as const,
+      required: true,
+      code: input.schema?.ok === false ? "DATABASE_SCHEMA_INCOMPATIBLE" : null,
+    },
     configuration: {
       status: configuration.blockers.length ? "down" as const : "ok" as const,
       required: true,

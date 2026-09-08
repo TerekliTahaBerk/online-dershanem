@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { deploymentEnvironment, evaluateConfiguration, type DeploymentEnvironment } from "../lib/env-contract";
 
 const targetArgument = process.argv.find((argument) => argument.startsWith("--target="));
