@@ -6,6 +6,7 @@
  *
  */
 import "server-only";
+import { after } from "next/server";
 import type { AuditActorType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { reportOperationalAlert } from "@/lib/error-capture";
@@ -80,6 +81,26 @@ export async function logAudit(input: LogAuditInput): Promise<AuditWriteResult> 
   } catch (err) {
     await observeAuditFailure(input, err, 1);
     return { ok: false, attempts: 1 };
+  }
+}
+
+/**
+ * Yanıtı bloklamadan audit yazar.
+ *
+ * `void logAudit(...)` yerine bunu kullan: sunucusuz çalışma zamanı yanıt
+ * döndükten sonra invocation'ı askıya alabildiği için çıplak `void` ile audit
+ * satırı hiç yazılmadan kaybolabiliyordu. `after()` işi çalışma zamanına
+ * bildirir. `logAudit` zaten non-throwing olduğundan iş akışını bozmaz.
+ *
+ * Ödeme/güvenlik callback'lerinde bunu DEĞİL, yanıt öncesi `logCriticalAudit`
+ * kullan — orada kanıtın yanıttan önce diskte olması gerekir.
+ */
+export function queueAudit(input: LogAuditInput): void {
+  try {
+    after(() => logAudit(input));
+  } catch {
+    // İstek kapsamı yok (cron, script): askıya alınma riski de yok.
+    void logAudit(input);
   }
 }
 

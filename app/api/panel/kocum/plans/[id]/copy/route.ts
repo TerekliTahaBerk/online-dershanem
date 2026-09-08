@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { assertCoachOrTeacherAccess } from "@/lib/kocum/access-server";
 import { recordPlanRevision } from "@/lib/kocum/server";
-import { buildRevisionChangeSummary, isOpenTaskStatus } from "@/lib/kocum";
+import { buildRevisionChangeSummary, selectTasksForPlanCopy } from "@/lib/kocum";
 import { addIstanbulCalendarDays, istanbulWeekStart } from "@/lib/istanbul-time";
 
 const bodySchema = z.object({
@@ -68,11 +69,21 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   const dayDelta = targetWeekStart.getTime() - source.weekStart.getTime();
-  const tasksToCopy = source.tasks.filter((task) => {
-    if (task.status === "SKIPPED") return false;
-    if (parsed.data.carryOverIncomplete) return isOpenTaskStatus(task.status) || task.status === "DONE";
-    return true;
+  /*
+   * ESKİ FİLTRE YANLIŞ İŞİ TAŞIYORDU. `carryOverIncomplete` açıkken
+   * TAMAMLANMIŞ (`DONE`) görevler kopyalanıyor, buna karşılık `COULD_NOT` ve
+   * `PARTIAL` — yani öğrencinin gerçekten bitiremediği iş — dışarıda
+   * kalıyordu. Devretmenin amacı tam tersidir (§9, §10).
+   */
+  const tasksToCopy = selectTasksForPlanCopy(source.tasks, {
+    carryOverIncomplete: parsed.data.carryOverIncomplete,
   });
+  if (!tasksToCopy.length) {
+    return NextResponse.json(
+      { error: "Taşınacak görev yok." },
+      { status: 400 },
+    );
+  }
 
   const plan = await prisma.$transaction(async (tx) => {
     const created = await tx.weeklyPlan.create({
@@ -103,8 +114,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           targetValue: task.targetValue,
           dueAt: task.dueAt ? new Date(task.dueAt.getTime() + dayDelta) : null,
           priority: task.priority,
-          // ASSIGNMENT referansı korunur — duplicate Assignment oluşturulmaz.
-          sourceType: task.sourceType === "ASSIGNMENT" ? "ASSIGNMENT" : task.sourceType === "TEMPLATE" ? "TEMPLATE" : "MANUAL_COACH",
+          // Kaynak ve gerekçe OLDUĞU GİBİ korunur (§10). Eskiden REVIEW,
+          // RECOVERY, MOCK_EXAM gibi kaynaklar `MANUAL_COACH`'a düzleniyordu:
+          // görev taşındıktan sonra neden var olduğu kayboluyor, "Tekrar
+          // kuyruğu" görevi "Koç görevi" gibi görünüyordu.
+          sourceType: task.sourceType,
           sourceReferenceId: task.sourceReferenceId,
           reasonCode: task.reasonCode,
           status: "PLANNED",
@@ -113,7 +127,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     }
 
     return created;
+  }).catch((error: unknown) => {
+    // Aynı anda iki kopyalama isteği (çift tıklama, iki koç) hedef haftada
+    // tek plan bırakır: benzersizlik ihlali 500 değil 409 döner.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return null;
+    }
+    throw error;
   });
+
+  if (!plan) {
+    return NextResponse.json({ error: "Hedef haftada plan zaten var." }, { status: 409 });
+  }
 
   await recordPlanRevision({
     planId: plan.id,

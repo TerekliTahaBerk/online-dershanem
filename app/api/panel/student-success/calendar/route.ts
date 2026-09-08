@@ -6,6 +6,7 @@ import { buildTodayItems, whatNextItem } from "@/lib/student-success/calendar";
 import { getStudentToday } from "@/lib/student-success/server/calendar-server";
 import { presentForStudent } from "@/lib/student-success/presenters";
 import { getStudentProgressSummary } from "@/lib/student-success/server/progress-server";
+import { resolveStudentScopeForViewer } from "@/lib/student-success/server/viewer-scope";
 
 const querySchema = z.object({
   from: z.string().datetime().optional(),
@@ -24,17 +25,33 @@ export async function GET(request: Request) {
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz parametreler." }, { status: 400 });
 
-  let studentId = url.searchParams.get("studentId");
-  let studentUserId = auth.session.userId;
+  const requestedStudentId = url.searchParams.get("studentId");
+  let studentId: string;
+  let studentUserId: string;
 
   if (auth.session.role === "STUDENT") {
     const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
     if (!profile) return NextResponse.json({ events: [] });
+    // Yabancı kimlik SESSİZCE kendi takvimine düşmemeli. `parent-scope` ile aynı
+    // karar: yanlış kimlik açıkça reddedilir, yoksa kullanıcı başkasının verisine
+    // baktığını sanabilir.
+    if (requestedStudentId && requestedStudentId !== profile.id) {
+      return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+    }
     studentId = profile.id;
-  } else if (studentId) {
-    const profile = await prisma.studentProfile.findUnique({ where: { id: studentId }, select: { id: true, userId: true } });
-    if (!profile) return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
-    studentUserId = profile.userId;
+    studentUserId = auth.session.userId;
+  } else if (requestedStudentId) {
+    // İstekten gelen kimlik DOĞRUDAN kullanılamaz. Bu satırın yokluğunda veli ve
+    // öğretmen rolündeki herkes query string'i değiştirip yabancı bir öğrencinin
+    // takvimini okuyabiliyordu.
+    const scoped = await resolveStudentScopeForViewer(
+      requestedStudentId,
+      auth.session.role,
+      auth.session.userId,
+    );
+    if (!scoped) return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+    studentId = scoped.id;
+    studentUserId = scoped.userId;
   } else {
     return NextResponse.json({ error: "studentId gerekli." }, { status: 400 });
   }
@@ -48,7 +65,7 @@ export async function GET(request: Request) {
 
   const { getStudentCalendar } = await import("@/lib/student-success/server/calendar-server");
   const events = await getStudentCalendar({
-    studentId: studentId!,
+    studentId,
     studentUserId,
     from,
     to,

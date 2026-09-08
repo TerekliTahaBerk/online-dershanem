@@ -425,10 +425,19 @@ export function StudentAdaptivePlan({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    if (!response.ok) {
-      const legacy = await fetch(`/api/panel/adaptive-plan/tasks/${task.id}/complete`, { method: "POST" });
-      if (!legacy.ok) return setMessage("Görev güncellenemedi.");
-    }
+    /*
+     * YEDEK ÇAĞRI KALDIRILDI — YANLIŞ İŞİ YAPIYORDU.
+     *
+     * Bu düğme "Başladım" demek. Yedek uç
+     * (`/api/panel/adaptive-plan/tasks/[id]/complete`) ise görevi koşulsuz
+     * `DONE` yazıyor VE ödev kaynaklıysa Dershanem `AssignmentProgress`
+     * kaydını da tamamlanmış işaretliyordu. Yani birincil çağrı herhangi bir
+     * nedenle düşerse (doğrulama, hız limiti, geçici hata) öğrenci "başladım"
+     * dediği görevi TAMAMLANMIŞ buluyor, ödevi de kapanıyordu — üstelik
+     * ekranda "Başladın" yazdığı için fark edilmiyordu.
+     */
+    if (!response.ok) return setMessage("Görev güncellenemedi.");
+
     setPlan((current) =>
       current
         ? {

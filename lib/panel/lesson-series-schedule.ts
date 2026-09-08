@@ -4,6 +4,8 @@
  * Saf fonksiyonlar; Prisma'ya dokunmaz.
  */
 
+import { z } from "zod";
+
 import { ISTANBUL_TIME_ZONE, ISTANBUL_UTC_OFFSET_MINUTES } from "@/lib/istanbul-time";
 
 export const LESSON_SERIES_TIMEZONE = ISTANBUL_TIME_ZONE;
@@ -187,3 +189,80 @@ export function formatOccurrenceLabel(date: Date): string {
     minute: "2-digit",
   }).format(date);
 }
+
+/**
+ * Önizleme ve oluşturma uçlarının ORTAK girdi çözümleyicisi.
+ *
+ * §6 — "önizleme ile gerçek oluşturma birebir aynı occurrence üretmeli."
+ * İki uç aynı `previewLessonSeries` fonksiyonunu çağırıyordu ama argümanları
+ * kendi içlerinde, birbirinden habersiz kurallarla türetiyorlardı: biri
+ * `seriesStartsOn`u ve `seriesEndsOn`u tanıyor, öteki tanımıyordu; varsayılan
+ * tekrar sayıları farklıydı. Aynı gövde iki farklı takvim üretebiliyordu.
+ * Türetme artık TEK yerde.
+ */
+export type LessonSeriesRequest = {
+  startsAt?: string | null;
+  seriesStartsOn?: string | null;
+  startsAtTime?: string | null;
+  seriesEndsOn?: string | null;
+  durationMinutes?: number | null;
+  weekdays?: number[] | null;
+  totalOccurrences?: number | null;
+  repeatWeeks?: number | null;
+  mode?: "SINGLE" | "SERIES" | null;
+};
+
+const istanbulClock = new Intl.DateTimeFormat("en-GB", {
+  timeZone: LESSON_SERIES_TIMEZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+export function resolveLessonSeriesInput(
+  request: LessonSeriesRequest,
+  fallbackNow: Date = new Date(),
+): LessonSeriesPreviewInput {
+  const seriesStartsOn = new Date(
+    request.seriesStartsOn || request.startsAt || fallbackNow.toISOString(),
+  );
+  const startsAtTime = request.startsAtTime || istanbulClock.format(seriesStartsOn);
+  const durationMinutes = request.durationMinutes || 60;
+  const weekdays = (request.weekdays || []).filter((day) => day >= 1 && day <= 7) as IsoWeekday[];
+  const totalOccurrences =
+    request.totalOccurrences ||
+    request.repeatWeeks ||
+    (request.mode === "SINGLE" ? 1 : 8);
+
+  return {
+    seriesStartsOn,
+    startsAtTime,
+    durationMinutes,
+    weekdays,
+    totalOccurrences,
+    seriesEndsOn: request.seriesEndsOn ? new Date(request.seriesEndsOn) : null,
+  };
+}
+
+/**
+ * Seri alanlarının ORTAK şeması.
+ *
+ * Alanların zod VARSAYILANLARI da parite kapsamında: önizleme şeması
+ * `totalOccurrences` için `.default(8)` veriyor, oluşturma şeması vermiyordu.
+ * `{ mode: "SERIES", repeatWeeks: 4 }` gövdesi önizlemede 8, oluşturmada 4 ders
+ * üretiyordu. Varsayılan tek yerde tanımlı olduğu için bu artık mümkün değil —
+ * boş bırakılan alanı `resolveLessonSeriesInput` yorumlar.
+ */
+export const lessonSeriesRequestSchema = z.object({
+  startsAtTime: z
+    .string()
+    .regex(/^([01]?\d|2[0-3]):([0-5]\d)$/)
+    .optional(),
+  seriesStartsOn: z.string().datetime().optional(),
+  seriesEndsOn: z.string().datetime().optional().nullable(),
+  durationMinutes: z.number().int().min(15).max(240).optional(),
+  weekdays: z.array(z.number().int().min(1).max(7)).max(7).optional(),
+  totalOccurrences: z.number().int().min(1).max(48).optional(),
+  repeatWeeks: z.number().int().min(1).max(12).optional(),
+  mode: z.enum(["SINGLE", "SERIES"]).optional(),
+});

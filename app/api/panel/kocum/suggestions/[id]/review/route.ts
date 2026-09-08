@@ -4,8 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { assertCoachOrTeacherAccess } from "@/lib/kocum/access-server";
-import { istanbulDayStart } from "@/lib/istanbul-time";
+import { recordPlanRevision } from "@/lib/kocum/server";
+import { buildRevisionChangeSummary, isDateWithinPlanWeek } from "@/lib/kocum";
+import { istanbulDayStart, istanbulWeekStart } from "@/lib/istanbul-time";
+
+/** Öneriden doğan görevin varsayılan süresi. */
+const SUGGESTION_TASK_MINUTES = 40;
 
 const bodySchema = z.object({
   decision: z.enum(["ACCEPTED", "REJECTED"]),
@@ -53,15 +59,34 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   });
   if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz yok." }, { status: 403 });
 
+  /*
+   * ÖNCE KARARI KAP, SONRA GÖREVİ ÜRET.
+   *
+   * Eskiden görev önce yaratılıyor, öneri statüsü sonra yazılıyordu. İki
+   * paralel onay (çift tıklama, iki koç aynı gelen kutusunda) `PENDING`
+   * kontrolünü ikisi de geçiyor ve AYNI öneriden İKİ görev doğuyordu (§11).
+   * Koşullu `updateMany` yalnız tek kazanan bırakır.
+   */
+  const claim = await prisma.weeklyPlanSuggestion.updateMany({
+    where: { id, status: "PENDING" },
+    data: {
+      status: parsed.data.decision,
+      reviewedAt: new Date(),
+      reviewedById: auth.session.userId,
+    },
+  });
+  if (claim.count !== 1) {
+    return NextResponse.json({ error: "Bu öneri zaten karara bağlanmış." }, { status: 409 });
+  }
+
   if (parsed.data.decision === "REJECTED") {
-    await prisma.weeklyPlanSuggestion.update({
-      where: { id },
-      data: {
-        status: "REJECTED",
-        reviewedAt: new Date(),
-        reviewedById: auth.session.userId,
+    await recordPanelProductEvent(
+      {
+        name: "kocum_suggestion_reviewed",
+        properties: { decision: "REJECTED", kind: suggestion.kind, taskCreated: false },
       },
-    });
+      auth.session.role,
+    );
     return NextResponse.json({ ok: true, status: "REJECTED" });
   }
 
@@ -70,62 +95,103 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (parsed.data.applyTasks) {
     const payload = suggestion.payload as Record<string, unknown>;
     if (suggestion.kind === "REVIEW_QUEUE" || suggestion.kind === "MOCK_EXAM_FOLLOWUP") {
-      let plan = await prisma.weeklyPlan.findUnique({
-        where: {
-          studentId_weekStart: {
-            studentId: suggestion.studentId,
-            weekStart: suggestion.weekStart,
-          },
-        },
-      });
-      if (!plan) {
-        plan = await prisma.weeklyPlan.create({
+      const weekStart = istanbulWeekStart(suggestion.weekStart);
+      /*
+       * Görev, ÖNERİNİN HAFTASINA düşmeli. Eskiden `scheduledFor` koşulsuz
+       * "bugün" idi: adaptif tarama önerileri GELECEK haftaya yazdığı için
+       * görev, ait olduğu planın haftası dışında doğuyordu. Böyle bir görev
+       * hafta görünümünde hiç listelenmiyor, buna karşılık takvimde önceki
+       * haftada beliriyordu — ve `reschedule` ucu aynı tarihi reddediyordu.
+       */
+      const today = istanbulDayStart(new Date());
+      const scheduledFor = isDateWithinPlanWeek(today, weekStart)
+        ? today
+        : weekStart;
+
+      const result = await prisma.$transaction(async (tx) => {
+        let plan = await tx.weeklyPlan.findUnique({
+          where: { studentId_weekStart: { studentId: suggestion.studentId, weekStart } },
+        });
+        if (!plan) {
+          plan = await tx.weeklyPlan.create({
+            data: {
+              studentId: suggestion.studentId,
+              weekStart,
+              status: "DRAFT",
+              capacityMinutes: SUGGESTION_TASK_MINUTES,
+              createdById: auth.session.userId,
+              ruleVersion: "kocum-suggestion-v1",
+            },
+          });
+        }
+
+        const last = await tx.weeklyPlanTask.findFirst({
+          where: { planId: plan.id, scheduledFor },
+          orderBy: { position: "desc" },
+          select: { position: true },
+        });
+
+        const task = await tx.weeklyPlanTask.create({
           data: {
-            studentId: suggestion.studentId,
-            weekStart: suggestion.weekStart,
-            status: "DRAFT",
-            capacityMinutes: 40,
-            createdById: auth.session.userId,
-            ruleVersion: "kocum-suggestion-v1",
+            planId: plan.id,
+            scheduledFor,
+            position: (last?.position || 0) + 1,
+            title: suggestion.title,
+            description: suggestion.rationale,
+            subject: typeof payload.subject === "string" ? payload.subject : null,
+            taskKind: suggestion.kind === "MOCK_EXAM_FOLLOWUP" ? "ERROR_ANALYSIS" : "REVIEW",
+            durationMinutes: SUGGESTION_TASK_MINUTES,
+            sourceType: "SYSTEM_SUGGESTED",
+            sourceReferenceId: suggestion.id,
+            reasonCode: suggestion.kind === "REVIEW_QUEUE" ? "REVIEW_DUE" : "NEEDS_REVIEW",
+            status: "PLANNED",
+            priority: "HIGH",
           },
         });
-      }
 
-      const scheduledFor = istanbulDayStart(new Date());
-      const last = await prisma.weeklyPlanTask.findFirst({
-        where: { planId: plan.id, scheduledFor },
-        orderBy: { position: "desc" },
-        select: { position: true },
-      });
+        // Yayınlanmış plana yapılan HER değişiklik sürüm artırır ve revizyon
+        // üretir (§28). Öneri kabulü buradan kaçıyordu: görev sessizce
+        // ekleniyor, plan sürümü sabit kalıyordu — açık iki sekmeden biri
+        // eski sürümle çakışma tespit edemiyordu.
+        const nextVersion = plan.version + 1;
+        await tx.weeklyPlan.update({
+          where: { id: plan.id },
+          data: {
+            version: nextVersion,
+            capacityMinutes: plan.capacityMinutes + SUGGESTION_TASK_MINUTES,
+          },
+        });
 
-      const task = await prisma.weeklyPlanTask.create({
-        data: {
+        await recordPlanRevision({
           planId: plan.id,
-          scheduledFor,
-          position: (last?.position || 0) + 1,
-          title: suggestion.title,
-          description: suggestion.rationale,
-          subject: typeof payload.subject === "string" ? payload.subject : null,
-          taskKind: suggestion.kind === "MOCK_EXAM_FOLLOWUP" ? "ERROR_ANALYSIS" : "REVIEW",
-          durationMinutes: 40,
-          sourceType: "SYSTEM_SUGGESTED",
-          reasonCode: suggestion.kind === "REVIEW_QUEUE" ? "REVIEW_DUE" : "NEEDS_REVIEW",
-          status: "PLANNED",
-          priority: "HIGH",
-        },
+          version: nextVersion,
+          changedById: auth.session.userId,
+          changeSummary: buildRevisionChangeSummary({
+            previousVersion: plan.version,
+            nextVersion,
+            actorLabel: `Öneri kabul: ${suggestion.title}`,
+          }),
+          tx,
+        });
+
+        return { taskId: task.id };
       });
-      createdTaskId = task.id;
+
+      createdTaskId = result.taskId;
     }
   }
 
-  await prisma.weeklyPlanSuggestion.update({
-    where: { id },
-    data: {
-      status: "ACCEPTED",
-      reviewedAt: new Date(),
-      reviewedById: auth.session.userId,
+  await recordPanelProductEvent(
+    {
+      name: "kocum_suggestion_reviewed",
+      properties: {
+        decision: "ACCEPTED",
+        kind: suggestion.kind,
+        taskCreated: createdTaskId !== null,
+      },
     },
-  });
+    auth.session.role,
+  );
 
   return NextResponse.json({ ok: true, status: "ACCEPTED", createdTaskId });
 }

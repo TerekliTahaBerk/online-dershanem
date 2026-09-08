@@ -82,10 +82,38 @@ export default async function ParentCoachingPage({
   }
 
   const [plan, coaching, publishedSummary, goals] = await Promise.all([
+    /*
+     * VELİYE YALNIZ YAYINLANMIŞ PLAN.
+     *
+     * Bu sorguda durum süzgeci YOKTU: koçun üzerinde çalıştığı `DRAFT` plan —
+     * ve `weekStart` süzgeci de olmadığı için AYLAR ÖNCESİNE ait bir plan —
+     * veliye "Bu hafta" başlığı altında tamamlanma yüzdesi olarak
+     * gösteriliyordu. Veli, koç daha yayınlamadan yarım bir taslağın %0
+     * tamamlandığını görüyordu.
+     *
+     * Alan seçimi de daraltıldı: `tasks: true` öğrencinin kendi notunu
+     * (`studentNote`) ve zorluk/enerji girdilerini de çekiyordu; veli
+     * ekranının bu alanlara hiç ihtiyacı yok (§17).
+     */
     prisma.weeklyPlan.findFirst({
-      where: { studentId: selected.id },
+      where: { studentId: selected.id, status: "APPROVED" },
       orderBy: { weekStart: "desc" },
-      include: { tasks: true },
+      select: {
+        weekStart: true,
+        tasks: {
+          select: {
+            id: true,
+            status: true,
+            scheduledFor: true,
+            durationMinutes: true,
+            actualMinutes: true,
+            targetType: true,
+            targetValue: true,
+            actualQuestions: true,
+            subject: true,
+          },
+        },
+      },
     }),
     getStudentCoaching(selected.id),
     prisma.weeklyCoachSummary.findFirst({

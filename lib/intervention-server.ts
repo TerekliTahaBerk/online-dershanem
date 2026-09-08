@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { detached } from "@/lib/after-response";
 import {
   buildInterventionEpisodeKey,
   buildInterventionSignals,
@@ -115,12 +116,16 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
   if (result.created.length) {
     const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
     for (const row of result.created) {
-      void emitEducationAutomation("student_risk_created", {
-        entityType: "intervention",
-        entityId: row.id,
-        severity: "high",
-        href: "/panel/yonetim/mudahale",
-      });
+      detached(
+        "intervention.automation_emit_failed",
+        emitEducationAutomation("student_risk_created", {
+          entityType: "intervention",
+          entityId: row.id,
+          severity: "high",
+          href: "/panel/yonetim/mudahale",
+        }),
+        { interventionId: row.id },
+      );
     }
   }
 

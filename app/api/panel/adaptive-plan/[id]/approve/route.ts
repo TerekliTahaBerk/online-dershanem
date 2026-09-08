@@ -6,6 +6,8 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { appendTimelineEvent, recordPlanRevision } from "@/lib/kocum/server";
 import { buildRevisionChangeSummary } from "@/lib/kocum";
+import { afterResponse } from "@/lib/after-response";
+import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 const schema = z.object({ expectedVersion: z.number().int().min(1) });
 
@@ -105,14 +107,26 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     select: { weekStart: true, tasks: { where: { status: "PLANNED" }, select: { id: true } } },
   });
   if (approvedPlan) {
+    const taskCount = approvedPlan.tasks.length;
+    await recordPanelProductEvent(
+      {
+        name: "kocum_plan_published",
+        properties: {
+          taskCountBand:
+            taskCount <= 5 ? "1-5" : taskCount <= 15 ? "6-15" : taskCount <= 30 ? "16-30" : "31+",
+        },
+      },
+      auth.session.role,
+    );
+
     const { onCoachingPlanPublished } = await import("@/lib/student-success/server/emit-hooks");
-    void onCoachingPlanPublished({
+    afterResponse("panel.coaching_plan.cross_product_emit_failed", () => onCoachingPlanPublished({
       planId: plan.id,
       studentId: plan.studentId,
       weekStart: approvedPlan.weekStart,
       taskCount: approvedPlan.tasks.length,
       actorUserId: auth.session.userId,
-    });
+    }), { planId: plan.id });
   }
 
   return NextResponse.json({ approved: true });

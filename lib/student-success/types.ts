@@ -33,6 +33,17 @@ export type UnifiedCalendarEvent = {
   href: string | null;
   sourceId: string;
   sourceType: string;
+  /**
+   * Koçum plan görevi bir Dershanem ödevine bağlıysa o ödevin kimliği.
+   * Birleşik takvim ve "Bugün" aynı işi iki kez göstermemek için bunu kullanır
+   * (§21): ödev hem ASSIGNMENT_DUE hem de projeksiyon görevi olarak geliyordu.
+   */
+  linkedAssignmentId?: string | null;
+  /**
+   * Esnek görev — öğrenci gün içinde istediği saatte yapar. `startsAt` yalnız
+   * GÜN taşır; saat üretmek sahte bir randevu gösterir (§22).
+   */
+  isFlexible?: boolean;
 };
 
 export type UnifiedTodayItem = {
@@ -47,6 +58,8 @@ export type UnifiedTodayItem = {
   priority: number;
   href: string | null;
   sourceExplanation: string | null;
+  /** Saat gösterilmez; yalnız gün. Bkz. `UnifiedCalendarEvent.isFlexible`. */
+  isFlexible: boolean;
 };
 
 export type ProgressEvidenceInput = {

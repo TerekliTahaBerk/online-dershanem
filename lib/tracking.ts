@@ -1,4 +1,24 @@
-import { randomUUID, createHash } from "node:crypto";
+/**
+ * Dönüşüm izleme — İSTEMCİ VE SUNUCUDA çalışır.
+ *
+ * `node:crypto`'dan HİÇBİR ŞEY İÇE AKTARMA. Bu modül `"use client"`
+ * bileşenlerinden (satın alma CTA'sı, sepet, paket kurgulayıcı) çağrılıyor;
+ * `node:crypto` tarayıcı paketine girdiğinde `randomUUID` tanımsız bir alana
+ * dönüşüyor ve olay yayınlarken `TypeError` fırlıyordu. O hata satın alma
+ * CTA'sının `onClick`'ini yarıda kesiyor, ürün sepete ekleniyor ama
+ * `router.push("/sepet")` HİÇ çalışmıyordu: ziyaretçi hiçbir geri bildirim
+ * almadan paket sayfasında kalıyordu. Sunucuya özgü kimlik üretimi için
+ * `lib/tracking-id.ts`.
+ */
+
+/** Tarayıcı ve Node 19+ ortak API'si; yoksa kriptografik olmayan yedek. */
+function newEventId(): string {
+  const webCrypto = globalThis.crypto;
+  if (webCrypto && typeof webCrypto.randomUUID === "function") {
+    return webCrypto.randomUUID();
+  }
+  return `evt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 export type TrackingProviderName = "console" | "noop";
 export type TrackingContext = {
@@ -66,18 +86,28 @@ type TrackingRecord = {
 
 const enabledProvider: TrackingProviderName = process.env.TRACKING_PROVIDER === "console" ? "console" : "noop";
 
-export function createAnonymousTrackingId(seed?: string): string {
-  const value = seed?.trim() || randomUUID();
-  return createHash("sha256").update(value).digest("hex").slice(0, 24);
+/**
+ * İzleme HİÇBİR KOŞULDA çağıranı bozmamalı.
+ *
+ * Bu fonksiyon bir satın alma CTA'sının `onClick`'i içinden çağrılıyor;
+ * buradan fırlayan her hata kullanıcının akışını (sepete git) kesiyor.
+ * Analitik en iyi çaba işidir, kritik yol değildir.
+ */
+function emitTrackingEvent(name: TrackingEventName, payload: TrackingEventPayload, context: TrackingContext): void {
+  try {
+    emitTrackingEventUnsafe(name, payload, context);
+  } catch {
+    // Sessizce yut: kullanıcı akışı analitikten önce gelir.
+  }
 }
 
-function emitTrackingEvent(name: TrackingEventName, payload: TrackingEventPayload, context: TrackingContext): void {
+function emitTrackingEventUnsafe(name: TrackingEventName, payload: TrackingEventPayload, context: TrackingContext): void {
   const record: TrackingRecord = {
     name,
     payload,
     context,
     provider: enabledProvider,
-    eventId: randomUUID(),
+    eventId: newEventId(),
     occurredAt: new Date().toISOString(),
   };
 

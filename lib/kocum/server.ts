@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   addIstanbulCalendarDays,
@@ -20,13 +21,25 @@ import {
   type ManagementKocumSignal,
 } from "@/lib/kocum/visibility";
 
+/**
+ * Yayınlanmış plandaki her değişiklik bir revizyon kaydı bırakır (§28).
+ *
+ * `tx` VERİLMELİDİR: revizyon, sürümü artıran yazmayla AYNI işlemde
+ * yazılmazsa, işlem başarılı olup revizyon yazımı düşünce plan sürümü
+ * ilerlemiş ama geçmişte karşılığı olmayan bir sürüm oluşuyordu — yani
+ * "kim, ne zaman, neyi değiştirdi" sorusu yanıtsız kalıyordu. `tx`
+ * verilmediğinde genel istemci kullanılır (plan kopyası gibi yeni plan
+ * üreten, sürüm çakışması taşımayan yollar).
+ */
 export async function recordPlanRevision(input: {
   planId: string;
   version: number;
   changedById: string | null;
   changeSummary: string;
+  tx?: Prisma.TransactionClient;
 }) {
-  const plan = await prisma.weeklyPlan.findUnique({
+  const client = input.tx ?? prisma;
+  const plan = await client.weeklyPlan.findUnique({
     where: { id: input.planId },
     include: {
       tasks: {
@@ -43,7 +56,7 @@ export async function recordPlanRevision(input: {
   });
   if (!plan) return null;
 
-  return prisma.weeklyPlanRevision.create({
+  return client.weeklyPlanRevision.create({
     data: {
       planId: plan.id,
       version: input.version,

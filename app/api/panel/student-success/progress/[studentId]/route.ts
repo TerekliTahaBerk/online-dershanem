@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { resolveStudentScopeForViewer } from "@/lib/student-success/server/viewer-scope";
 import {
   getStudentProgressSummary,
   getStudentOutcomeProfile,
@@ -16,46 +16,14 @@ import {
 } from "@/lib/student-success/presenters";
 import type { ViewerRole } from "@/lib/student-success/types";
 
-async function resolveStudentAccess(studentId: string, role: string, viewerUserId: string) {
-  const profile = await prisma.studentProfile.findUnique({
-    where: { id: studentId },
-    select: { id: true, userId: true },
-  });
-  if (!profile) return null;
-
-  if (role === "STUDENT" && profile.userId !== viewerUserId) return null;
-  if (role === "PARENT") {
-    const link = await prisma.parentStudent.findFirst({
-      where: { parentId: viewerUserId, studentId, endedAt: null },
-      select: { id: true },
-    });
-    if (!link) return null;
-  }
-  if (role === "TEACHER") {
-    const access = await prisma.enrollment.findFirst({
-      where: {
-        studentId,
-        endedAt: null,
-        group: { teacherId: viewerUserId, isActive: true },
-      },
-      select: { id: true },
-    });
-    const coach = await prisma.coachAssignment.findFirst({
-      where: { studentId, coach: { userId: viewerUserId }, endedAt: null },
-      select: { id: true },
-    });
-    if (!access && !coach) return null;
-  }
-
-  return profile;
-}
-
 export async function GET(request: Request, context: { params: Promise<{ studentId: string }> }) {
   const auth = await requireApiOdRole("STUDENT", "TEACHER", "ADMIN", "PARENT");
   if (!auth.ok) return auth.response;
 
   const { studentId } = await context.params;
-  const profile = await resolveStudentAccess(studentId, auth.session.role, auth.session.userId);
+  // Kapsam kararı `viewer-scope` ile ORTAK. Buradaki yerel kopya, kardeş takvim
+  // uç noktasıyla birlikte güncellenmiyordu.
+  const profile = await resolveStudentScopeForViewer(studentId, auth.session.role, auth.session.userId);
   if (!profile) return NextResponse.json({ error: "Erişim reddedildi." }, { status: 404 });
 
   const url = new URL(request.url);

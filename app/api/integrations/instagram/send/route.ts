@@ -4,7 +4,7 @@ import { authorizeBusinessRequest } from "@/lib/business/permissions";
 import { sendConversationMessage } from "@/lib/business/jobs";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getRateLimitKeyFromUser, rateLimitResponseHeaders } from "@/lib/security/rate-limit";
-import { logAudit } from "@/lib/audit";
+import { queueAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { businessFlags } from "@/lib/business/flags";
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   if (!conversation) return NextResponse.json({ error: "Konuşma bulunamadı." }, { status: 404 });
   try {
     const id = await sendConversationMessage({ ...parsed.data, senderType: "HUMAN" });
-    void logAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.data.conversationId, action: "INSTAGRAM_MESSAGE_SENT", payload: { messageId: id } });
+    queueAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.data.conversationId, action: "INSTAGRAM_MESSAGE_SENT", payload: { messageId: id } });
     return NextResponse.json({ id }, { status: 201 });
   } catch { return NextResponse.json({ error: "Mesaj gönderilemedi." }, { status: 502 }); }
 }

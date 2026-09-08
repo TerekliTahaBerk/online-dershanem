@@ -187,7 +187,10 @@ export async function getUnifiedActivityTimeline(
       where: { studentId },
       orderBy: { occurredAt: "desc" },
       take: limit,
-      select: { id: true, occurredAt: true, title: true, summary: true, kind: true, metadata: true },
+      // `metadata` BİLEREK seçilmiyor: zaman çizelgesi veliye de dönüyor ve
+      // metadata serbest biçimli iç bağlam taşıyor. Seçilip eşlenmemiş hâlde
+      // durması, ileride birinin yanlışlıkla yanıta eklemesini kolaylaştırıyordu.
+      select: { id: true, occurredAt: true, title: true, summary: true, kind: true },
     }),
     prisma.crossProductEventOutbox.findMany({
       where: { studentId, status: "PROCESSED" },

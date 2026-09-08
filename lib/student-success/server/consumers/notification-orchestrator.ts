@@ -77,7 +77,10 @@ export async function consumeNotificationOrchestrator(event: CrossProductEventOu
           type: "SYSTEM" as NotificationType,
           title: "Yaklaşan deneme",
           body: `${dedupKey} · ${exam?.title ?? "Deneme"} takvimine eklendi.`,
-          href: `/panel/odk/sinavlar/${payload.examId}`,
+          // Bu bildirim ÖĞRENCİYE gidiyor. Eski hedef bir yönetici sınav
+          // yolunu gösteriyordu ve o yol hiç var olmadı: öğrenci bildirime
+          // tıklayınca 404 görüyordu.
+          href: `/panel/odk/ogrenci/denemeler/${payload.examId}`,
         },
       ],
     );

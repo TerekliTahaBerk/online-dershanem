@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizeBusinessRequest } from "@/lib/business/permissions";
 import { prisma } from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { queueAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
 export async function GET() {
   const access = await authorizeBusinessRequest("integration:write");
@@ -19,6 +19,6 @@ export async function PATCH(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Geçersiz veri." }, { status: 400 });
   const updated = await prisma.instagramAccount.updateMany({ where: { id: parsed.data.accountId, businessUnitId: { in: access.units.map((unit) => unit.id) } }, data: { aiMode: parsed.data.aiMode, isActive: parsed.data.isActive } });
   if (!updated.count) return NextResponse.json({ error: "Hesap bulunamadı." }, { status: 404 });
-  void logAudit({ actorUserId: access.session.userId, entityType: "InstagramAccount", entityId: parsed.data.accountId, action: "INSTAGRAM_SETTINGS_UPDATED", payload: { aiMode: parsed.data.aiMode, isActive: parsed.data.isActive } });
+  queueAudit({ actorUserId: access.session.userId, entityType: "InstagramAccount", entityId: parsed.data.accountId, action: "INSTAGRAM_SETTINGS_UPDATED", payload: { aiMode: parsed.data.aiMode, isActive: parsed.data.isActive } });
   return NextResponse.json({ ok: true });
 }

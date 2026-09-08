@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { CrossProductEventOutbox } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { istanbulWeekStart } from "@/lib/istanbul-time";
 import { shouldCreateCoachingProjection } from "@/lib/student-success/entitlements";
@@ -46,20 +47,29 @@ export async function consumeAssignmentProjection(event: CrossProductEventOutbox
   if (existing) return;
 
   const maxPosition = plan.tasks.length;
-  await prisma.weeklyPlanTask.create({
-    data: {
-      planId: plan.id,
-      scheduledFor: assignment.dueAt,
-      position: maxPosition + 1,
-      title: assignment.title,
-      description: assignment.description,
-      durationMinutes: 30,
-      sourceType: "ASSIGNMENT",
-      sourceReferenceId: assignment.id,
-      reasonCode: "DUE_SOON",
-      taskKind: "CLASSIC_ASSIGNMENT",
-      scheduleMode: "FLEXIBLE",
-      dueAt: assignment.dueAt,
-    },
-  });
+  try {
+    await prisma.weeklyPlanTask.create({
+      data: {
+        planId: plan.id,
+        scheduledFor: assignment.dueAt,
+        position: maxPosition + 1,
+        title: assignment.title,
+        description: assignment.description,
+        durationMinutes: 30,
+        sourceType: "ASSIGNMENT",
+        sourceReferenceId: assignment.id,
+        reasonCode: "DUE_SOON",
+        taskKind: "CLASSIC_ASSIGNMENT",
+        scheduleMode: "FLEXIBLE",
+        dueAt: assignment.dueAt,
+      },
+    });
+  } catch (error) {
+    // Koşullu benzersiz indeks (migration 0100) paralel bir işleyicinin
+    // aynı ödevi ikinci kez yazmasını engeller. Bu bir HATA DEĞİL: iş zaten
+    // yapılmış demektir. Fırlatılırsa olay FAILED işaretlenir ve deneme
+    // sayacı boşuna tükenir.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return;
+    throw error;
+  }
 }

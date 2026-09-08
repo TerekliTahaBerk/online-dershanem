@@ -6,6 +6,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { afterResponse } from "@/lib/after-response";
 
 const schema = z.object({ expectedVersion: z.number().int().min(1) });
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -22,12 +23,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   await queuePanelNotificationEmails(rawRows, "weeklyDigest"); const band = recipientIds.length === 1 ? "1" : recipientIds.length <= 3 ? "2-3" : "4+";
   await recordPanelProductEvent({ name: "weekly_digest_published", properties: { trendBand: digest.trendBand as "IMPROVING" | "STEADY" | "BUILDING" | "LIMITED_DATA", recipientBand: band } }, auth.session.role);
   const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
-  void emitEducationAutomation("weekly_digest_ready", {
+  afterResponse("panel.weekly_digest.automation_emit_failed", () => emitEducationAutomation("weekly_digest_ready", {
     entityType: "digest",
     entityId: id,
     studentId: digest.studentId,
     severity: "low",
     href: "/panel/veli/haftalik",
-  });
+  }), { digestId: id });
   return NextResponse.json({ published: true });
 }

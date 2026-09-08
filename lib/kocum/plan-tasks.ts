@@ -228,3 +228,159 @@ export function assignmentProgressStatusFor(
   if (status === "PLANNED" || status === "COULD_NOT") return "TODO";
   return null;
 }
+
+/* ------------------------------------------------------------------ *
+ * Görev durum makinesi
+ *
+ * Uç noktalar eskiden gövdedeki durumu doğrudan yazıyordu. Bunun iki
+ * sonucu vardı: (1) tamamlanmış bir görev `IN_PROGRESS`'e geri
+ * döndürülebiliyor ve `completedAt` siliniyordu, (2) aynı `DONE` isteği
+ * iki kez gelince ikinci istek de zaman çizelgesi olayı ve ürün olayı
+ * üretiyordu — yani çift tamamlama sayımı. Geçişler artık burada,
+ * tek yerde tanımlı.
+ * ------------------------------------------------------------------ */
+
+const TASK_TRANSITIONS: Record<KocumTaskStatus, ReadonlySet<KocumTaskStatus>> = {
+  PLANNED: new Set(["IN_PROGRESS", "DONE", "PARTIAL", "COULD_NOT", "SKIPPED"]),
+  IN_PROGRESS: new Set(["DONE", "PARTIAL", "COULD_NOT", "SKIPPED"]),
+  // Terminal durumlar arası düzeltmeye izin verilir (öğrenci yanlış
+  // düğmeye bastıysa), ama açık duruma GERİ dönüş yok: geri dönüş
+  // tamamlanma kanıtını ve `completedAt`'i sessizce siliyordu.
+  DONE: new Set(["PARTIAL", "COULD_NOT"]),
+  PARTIAL: new Set(["DONE", "COULD_NOT"]),
+  COULD_NOT: new Set(["DONE", "PARTIAL"]),
+  // Yeniden planlanmayı bekleyen görev öğrenci tarafından kapatılamaz.
+  SKIPPED: new Set([]),
+};
+
+export type TaskTransitionOutcome =
+  /** Durum gerçekten değişti — yan etkiler (olay, bildirim) çalışmalı. */
+  | { kind: "APPLY" }
+  /** Aynı durum tekrar gönderildi — yazma yapılır, yan etki TEKRARLANMAZ. */
+  | { kind: "NOOP" }
+  | { kind: "REJECT"; reason: string };
+
+export function evaluateTaskTransition(
+  from: KocumTaskStatus,
+  to: KocumTaskStatus,
+): TaskTransitionOutcome {
+  if (from === to) return { kind: "NOOP" };
+  if (TASK_TRANSITIONS[from].has(to)) return { kind: "APPLY" };
+  if (from === "SKIPPED") {
+    return { kind: "REJECT", reason: "Bu görev yeniden planlanacak durumda." };
+  }
+  return {
+    kind: "REJECT",
+    reason: `Görev ${taskStatusLabel(from)} durumundan ${taskStatusLabel(to)} durumuna alınamaz.`,
+  };
+}
+
+/** Yan etki (kanıt, bildirim, ürün olayı) yalnız bu geçişte üretilir. */
+export function isCompletionTransition(
+  from: KocumTaskStatus,
+  to: KocumTaskStatus,
+): boolean {
+  return isCompletedTaskStatus(to) && !isCompletedTaskStatus(from);
+}
+
+/* ------------------------------------------------------------------ *
+ * Kısmi tamamlanma güncellemesi
+ *
+ * Gövde `?? null` ile yazılıyordu: türüne göre alan göstermeyen bir
+ * ekrandan (§6) gelen istek, daha önce kaydedilmiş gerçekleşen değerleri
+ * SİLİYORDU. Atlanan alan (`undefined`) korunur, açıkça `null` gönderilen
+ * alan temizlenir.
+ * ------------------------------------------------------------------ */
+
+export type TaskActuals = {
+  actualQuestions?: number | null;
+  actualCorrect?: number | null;
+  actualIncorrect?: number | null;
+  actualBlank?: number | null;
+  actualMinutes?: number | null;
+  studentNote?: string | null;
+  difficultyFelt?: number | null;
+  energyFelt?: number | null;
+};
+
+export function mergeTaskActuals(incoming: TaskActuals, kind: KocumTaskKind): TaskActuals {
+  const relevant = new Set<CompletionField>(completionFieldsForKind(kind));
+  const patch: TaskActuals = {};
+  for (const field of Object.keys(incoming) as CompletionField[]) {
+    const value = incoming[field];
+    if (value === undefined) continue;
+    // Türüne uymayan alanlar sessizce yok sayılır: VIDEO görevine doğru/yanlış
+    // sayısı yazılması planlanan/gerçekleşen ayrımını bozuyordu (§4, §6).
+    if (!relevant.has(field)) continue;
+    if (field === "studentNote") {
+      patch.studentNote = (value as string | null) ?? null;
+      continue;
+    }
+    patch[field] = (value as number | null) ?? null;
+  }
+  return patch;
+}
+
+/* ------------------------------------------------------------------ *
+ * Plan kopyalama / devretme seçimi (§9, §10)
+ *
+ * Eski filtre `carryOverIncomplete` açıkken TAMAMLANMIŞ görevleri
+ * kopyalıyor, buna karşılık `COULD_NOT` ve `PARTIAL` — yani gerçekten
+ * eksik kalan işi — DIŞARIDA bırakıyordu. Devretmenin tanımı budur.
+ * ------------------------------------------------------------------ */
+
+export type CopyCandidate = {
+  status: KocumTaskStatus;
+  sourceType: KocumTaskSource;
+  sourceReferenceId?: string | null;
+};
+
+export function selectTasksForPlanCopy<T extends CopyCandidate>(
+  tasks: readonly T[],
+  options: { carryOverIncomplete: boolean },
+): T[] {
+  const picked: T[] = [];
+  const seenAssignmentRefs = new Set<string>();
+
+  for (const task of tasks) {
+    // Yeniden planlanacak görev kopyalanmaz; kaynak haftada geçmişi kalır.
+    if (task.status === "SKIPPED") continue;
+    if (options.carryOverIncomplete && isCompletedTaskStatus(task.status)) continue;
+
+    // Aynı ödev hedef haftaya iki kez taşınmaz (§10).
+    if (task.sourceType === "ASSIGNMENT" && task.sourceReferenceId) {
+      if (seenAssignmentRefs.has(task.sourceReferenceId)) continue;
+      seenAssignmentRefs.add(task.sourceReferenceId);
+    }
+    picked.push(task);
+  }
+
+  return picked;
+}
+
+/**
+ * Plan yeniden üretilirken YENİDEN eklenmemesi gereken kaynaklar (§9, §10).
+ *
+ * Eskiden yalnız `DONE` görevlerin kaynağı dışlanıyordu. `PARTIAL`,
+ * `IN_PROGRESS` ve `COULD_NOT` görevler yeniden üretimde ayakta kaldığı için
+ * aynı ödev/tekrar İKİNCİ bir görev olarak da ekleniyordu: öğrenci yarım
+ * bıraktığı işi iki satır hâlinde görüyordu. `SKIPPED` görevler emekliye
+ * ayrılmış sayılır; kaynakları yeniden planlanabilir.
+ */
+export function activePlanSourceKeys(
+  tasks: readonly { status: KocumTaskStatus; sourceType: KocumTaskSource; sourceReferenceId?: string | null; title: string }[],
+): Set<string> {
+  return new Set(
+    tasks
+      .filter((task) => task.status !== "SKIPPED")
+      .map((task) => planSourceKey(task)),
+  );
+}
+
+export function planSourceKey(item: {
+  sourceType: KocumTaskSource;
+  sourceReferenceId?: string | null;
+  title: string;
+}): string {
+  return `${item.sourceType}:${item.sourceReferenceId || item.title}`;
+}

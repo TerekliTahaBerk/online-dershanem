@@ -13,6 +13,20 @@ UNION ALL SELECT 'odk_exam_questions', COUNT(*) FROM odk_exam_questions
 UNION ALL SELECT 'odk_exam_attempts', COUNT(*) FROM odk_exam_attempts
 UNION ALL SELECT 'odk_attempt_answers', COUNT(*) FROM odk_attempt_answers
 UNION ALL SELECT 'odk_attempt_scores', COUNT(*) FROM odk_attempt_scores
+-- OD eğitim çekirdeği. Geri yükleme tatbikatı ticari tabloları sayıyor ama
+-- öğrenci/ders/ödev tarafını hiç saymıyordu: yedeğin işletmeyi değil, ÖĞRETİMİ
+-- geri getirdiğini kanıtlayan satırlar bunlar.
+UNION ALL SELECT 'student_profiles', COUNT(*) FROM student_profiles
+UNION ALL SELECT 'parent_students', COUNT(*) FROM parent_students
+UNION ALL SELECT 'student_teacher_assignments', COUNT(*) FROM student_teacher_assignments
+UNION ALL SELECT 'groups', COUNT(*) FROM groups
+UNION ALL SELECT 'enrollments', COUNT(*) FROM enrollments
+UNION ALL SELECT 'lessons', COUNT(*) FROM lessons
+UNION ALL SELECT 'lesson_notes', COUNT(*) FROM lesson_notes
+UNION ALL SELECT 'attendances', COUNT(*) FROM attendances
+UNION ALL SELECT 'assignments', COUNT(*) FROM assignments
+UNION ALL SELECT 'assignment_progress', COUNT(*) FROM assignment_progress
+UNION ALL SELECT 'student_progress_evidence', COUNT(*) FROM student_progress_evidence
 ORDER BY relation;
 
 DO $restore_readiness$
@@ -115,6 +129,81 @@ BEGIN
   WHERE attempt.id IS NULL OR scorer.id IS NULL;
   IF violation_count <> 0 THEN
     RAISE EXCEPTION 'ODK score integrity violations: %', violation_count;
+  END IF;
+
+  -- OD ilişki bütünlüğü: öğrenci–veli, öğrenci–öğretmen, kayıt.
+  SELECT COUNT(*) INTO violation_count
+  FROM parent_students link
+  LEFT JOIN users parent ON parent.id = link.parent_id
+  LEFT JOIN student_profiles student ON student.id = link.student_id
+  WHERE parent.id IS NULL OR student.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'parent-student link integrity violations: %', violation_count;
+  END IF;
+
+  SELECT COUNT(*) INTO violation_count
+  FROM student_teacher_assignments link
+  LEFT JOIN users teacher ON teacher.id = link.teacher_id
+  LEFT JOIN student_profiles student ON student.id = link.student_id
+  WHERE teacher.id IS NULL OR student.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'student-teacher link integrity violations: %', violation_count;
+  END IF;
+
+  SELECT COUNT(*) INTO violation_count
+  FROM enrollments enrollment
+  LEFT JOIN groups grp ON grp.id = enrollment.group_id
+  LEFT JOIN student_profiles student ON student.id = enrollment.student_id
+  WHERE grp.id IS NULL OR student.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'enrollment integrity violations: %', violation_count;
+  END IF;
+
+  -- Ders ve ödev zinciri: kapanmış bir dersin yoklaması ve ödev ilerlemesi
+  -- yedekten sahipsiz dönerse geçmiş sessizce kaybolmuş demektir.
+  SELECT COUNT(*) INTO violation_count
+  FROM lessons lesson
+  LEFT JOIN groups grp ON grp.id = lesson.group_id
+  LEFT JOIN users teacher ON teacher.id = lesson.teacher_id
+  WHERE grp.id IS NULL OR teacher.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'lesson integrity violations: %', violation_count;
+  END IF;
+
+  SELECT COUNT(*) INTO violation_count
+  FROM attendances attendance
+  LEFT JOIN lessons lesson ON lesson.id = attendance.lesson_id
+  LEFT JOIN student_profiles student ON student.id = attendance.student_id
+  WHERE lesson.id IS NULL OR student.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'attendance integrity violations: %', violation_count;
+  END IF;
+
+  SELECT COUNT(*) INTO violation_count
+  FROM assignments assignment
+  LEFT JOIN groups grp ON grp.id = assignment.group_id
+  LEFT JOIN users creator ON creator.id = assignment.created_by_id
+  WHERE grp.id IS NULL OR creator.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'assignment integrity violations: %', violation_count;
+  END IF;
+
+  SELECT COUNT(*) INTO violation_count
+  FROM assignment_progress progress
+  LEFT JOIN assignments assignment ON assignment.id = progress.assignment_id
+  LEFT JOIN student_profiles student ON student.id = progress.student_id
+  WHERE assignment.id IS NULL OR student.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'assignment progress integrity violations: %', violation_count;
+  END IF;
+
+  SELECT COUNT(*) INTO violation_count
+  FROM student_progress_evidence evidence
+  LEFT JOIN student_profiles student ON student.id = evidence.student_id
+  LEFT JOIN learning_outcomes outcome ON outcome.id = evidence.outcome_id
+  WHERE student.id IS NULL OR outcome.id IS NULL;
+  IF violation_count <> 0 THEN
+    RAISE EXCEPTION 'progress evidence integrity violations: %', violation_count;
   END IF;
 END
 $restore_readiness$;

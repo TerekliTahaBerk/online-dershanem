@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
@@ -151,19 +152,34 @@ export async function POST(request: Request) {
       },
     });
 
+    // Revizyon AYNI işlemde yazılır (§28): sürüm artıp revizyon yazılmadan
+    // kalırsa plan geçmişinde delik oluşuyordu.
+    await recordPlanRevision({
+      planId: plan.id,
+      version: nextVersion,
+      changedById: auth.session.userId,
+      changeSummary: buildRevisionChangeSummary({
+        previousVersion: plan.version,
+        nextVersion,
+        actorLabel: auth.session.fullName || "Koç",
+      }),
+      tx,
+    });
+
     return { task, planId: plan.id, version: nextVersion, previousVersion: plan.version, status: plan.status, studentId: plan.studentId };
+  }).catch((error: unknown) => {
+    // Yukarıdaki `findFirst` kontrolü ile bu yazma arasında ikinci bir istek
+    // araya girebilir. Koşullu benzersiz indeks (migration 0100) yazmayı
+    // reddeder; kullanıcıya 500 değil anlaşılır bir çakışma dönülür.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return null;
+    }
+    throw error;
   });
 
-  await recordPlanRevision({
-    planId: result.planId,
-    version: result.version,
-    changedById: auth.session.userId,
-    changeSummary: buildRevisionChangeSummary({
-      previousVersion: result.previousVersion,
-      nextVersion: result.version,
-      actorLabel: auth.session.fullName || "Koç",
-    }),
-  });
+  if (!result) {
+    return NextResponse.json({ error: "Bu ödev zaten plana bağlı." }, { status: 409 });
+  }
 
   if (result.status === "APPROVED") {
     await appendTimelineEvent({

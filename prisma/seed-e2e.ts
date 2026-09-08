@@ -158,7 +158,16 @@ async function main() {
     });
   }
 
-  for (const userId of [ids.student, ids.parent]) {
+  /*
+   * Online Dershanem (OD) erişimi.
+   *
+   * `planForeignStudent` KASITLI olarak bu listede: yatay erişim testlerinin
+   * "kapsam dışı" öğrencisi o. Ürün erişimi olmayan bir öğrencinin takvimi
+   * zaten boş döner; sızıntı testi o hâlde bir şey KANITLAMAZ. Bu öğrencinin
+   * gerçek ders/ödev verisi görünür olmalı ki kapsam kontrolü kalktığında test
+   * kırmızı yansın.
+   */
+  for (const userId of [ids.student, ids.parent, ids.planForeignStudent]) {
     await prisma.productMembership.upsert({
       where: { userId_product: { userId, product: "OD" } },
       create: { userId, product: "OD", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) },

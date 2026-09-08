@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { activePlanSourceKeys, planSourceKey } from "@/lib/kocum";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
@@ -28,8 +29,12 @@ export async function POST(request: Request) {
     include: { tasks: true },
   });
   if (existing?.status === "APPROVED") return NextResponse.json({ error: "Onaylı plan kilitli. Önce değişiklik isteyin." }, { status: 409 });
-  const completedSources = new Set(existing?.tasks.filter((task) => task.status === "DONE").map((task) => `${task.sourceType}:${task.sourceReferenceId || task.title}`) || []);
-  const candidates = (await collectPlanCandidates(profile.id, preference)).filter((item) => !completedSources.has(`${item.sourceType}:${item.sourceReferenceId || item.title}`));
+  // Ayakta kalan HER görevin kaynağı dışlanır — yalnız tamamlananların değil.
+  // Bkz. `activePlanSourceKeys`: yarım kalan iş ikinci kez eklenmemeli.
+  const activeSources = existing ? activePlanSourceKeys(existing.tasks) : new Set<string>();
+  const candidates = (await collectPlanCandidates(profile.id, preference)).filter(
+    (item) => !activeSources.has(planSourceKey({ ...item, title: item.title })),
+  );
   const availableDays = Array.isArray(preference.availableDays) ? preference.availableDays.filter((day): day is number => typeof day === "number") : [];
   const tasks = buildAdaptiveWeek({ now: new Date(), availableDays, minutesPerDay: preference.minutesPerDay, maxTasksPerDay: Math.min(3, preference.maxTasksPerDay), candidates });
   const plan = await prisma.$transaction(async (tx) => {

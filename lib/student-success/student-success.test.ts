@@ -141,6 +141,65 @@ describe("unified calendar", () => {
     );
     assert.equal(items[0]?.kind, "MOCK_EXAM");
   });
+
+  it("aynı öncelik ve aynı zamandaki öğeler her çağrıda aynı sırada döner", () => {
+    // §17 — "sıradaki iş" deterministik olmalı. Öncelik ve zaman eşitken sıra
+    // eskiden sorguların dönüş sırasına kalıyordu; girdi sırası değişse bile
+    // çıktı DEĞİŞMEMELİ.
+    const dayStart = new Date("2026-09-01T00:00:00+03:00");
+    const dayEnd = new Date("2026-09-02T00:00:00+03:00");
+    const at = new Date("2026-09-01T10:00:00+03:00");
+    const event = (id: string): UnifiedCalendarEvent => ({
+      id,
+      type: "LESSON",
+      product: "OD",
+      productLabel: "Dershanem",
+      title: id,
+      description: null,
+      startsAt: at,
+      endsAt: null,
+      href: null,
+      sourceId: id,
+      sourceType: "Lesson",
+    });
+
+    const forward = buildTodayItems(
+      [event("lesson:a"), event("lesson:b"), event("lesson:c")],
+      new Date("2026-09-01T08:00:00+03:00"),
+      dayStart,
+      dayEnd,
+    ).map((item) => item.id);
+    const reversed = buildTodayItems(
+      [event("lesson:c"), event("lesson:b"), event("lesson:a")],
+      new Date("2026-09-01T08:00:00+03:00"),
+      dayStart,
+      dayEnd,
+    ).map((item) => item.id);
+
+    assert.deepEqual(forward, ["lesson:a", "lesson:b", "lesson:c"]);
+    assert.deepEqual(forward, reversed);
+  });
+
+  it("takvim sıralaması aynı ana düşen olaylarda da kararlıdır", () => {
+    const at = new Date("2026-09-01T10:00:00+03:00");
+    const event = (id: string): UnifiedCalendarEvent => ({
+      id,
+      type: "LESSON",
+      product: "OD",
+      productLabel: "Dershanem",
+      title: id,
+      description: null,
+      startsAt: at,
+      endsAt: null,
+      href: null,
+      sourceId: id,
+      sourceType: "Lesson",
+    });
+    assert.deepEqual(
+      sortCalendarEvents([event("z"), event("a"), event("m")]).map((e) => e.id),
+      ["a", "m", "z"],
+    );
+  });
 });
 
 describe("recommendations", () => {
@@ -208,7 +267,7 @@ describe("ical bridge", () => {
         description: null,
         startsAt: new Date("2026-09-01T10:00:00Z"),
         endsAt: new Date("2026-09-01T12:00:00Z"),
-        href: "/panel/odk/sinavlar/1",
+        href: "/panel/odk/ogrenci/denemeler/1",
         sourceId: "1",
         sourceType: "OdkExam",
       },

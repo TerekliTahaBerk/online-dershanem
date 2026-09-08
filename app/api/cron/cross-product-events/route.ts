@@ -17,7 +17,21 @@ export async function GET(request: Request) {
     },
     {
       secrets: [process.env.JOB_PROCESSOR_SECRET, process.env.CRON_SECRET],
-      metrics: (result) => ({ processedCount: result.processed, failedCount: result.failed }),
+      // Tek generic sayaca doldurma: ölü mektup, bayat kilit ve kapma çakışması
+      // birbirinden bağımsız arıza sinyalleri.
+      metrics: (result) => ({
+        processedCount: result.processed,
+        failedCount: result.failed,
+        details: {
+          crossProductEventFailures: result.failed,
+          deadLetterCount: result.health.deadLetterCount,
+          pendingCount: result.health.pendingCount,
+          processingCount: result.health.processingCount,
+          staleLocksRecovered: result.staleLocksRecovered,
+          claimConflicts: result.claimConflicts,
+          duplicateRejections: result.duplicateRejections,
+        },
+      }),
     },
   );
 }

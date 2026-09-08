@@ -14,10 +14,31 @@ const DATE = new Intl.DateTimeFormat("tr-TR", {
   timeZone: ISTANBUL_TIME_ZONE,
 });
 
+/** Gecikmiş plan görevi hatırlatmasının başlığı — soğuma süresi buna bakar. */
+const PLAN_OVERDUE_TITLE = "Geciken plan görevi";
+
+/**
+ * Bu kadar gün geciken görev için bildirim üretilmez. Süresi geçmiş bir
+ * görevi her gün hatırlatmak öğrenciyi bildirime karşı körleştirir; bu
+ * noktadan sonrası koçun yeniden planlama işidir.
+ */
+const PLAN_OVERDUE_GIVE_UP_DAYS = 14;
+
 export async function GET(request: Request) {
   return runJob("panel-reminders", request, async () => {
     const now = new Date();
     const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    /*
+     * PLAN GÖREVİ HATIRLATMASI İÇİN AYRI SOĞUMA SÜRESİ (§20).
+     *
+     * Tekilleştirme (userId + başlık + gövde) 24 saatlikti ve gövde sabit
+     * kaldığı için gecikmiş bir plan görevi HER GÜN yeni bildirim üretiyordu:
+     * iki hafta açık kalan tek bir görev öğrenciye 14 bildirim gönderiyordu.
+     * Gecikmiş görev hatırlatması 3 günde bir tekrarlar ve
+     * `PLAN_OVERDUE_GIVE_UP_DAYS` sonrasında tamamen susar — o noktada
+     * yapılacak iş bildirim değil, koçun görevi yeniden planlamasıdır.
+     */
+    const planOverdueSince = new Date(now.getTime() - 72 * 60 * 60 * 1000);
     const overdue = await prisma.assignmentProgress.findMany({
       where: { status: { not: "DONE" }, assignment: { isActive: true, dueAt: { lt: now } } },
       take: 250,
@@ -81,12 +102,16 @@ export async function GET(request: Request) {
         const key = formatIstanbulDateInput(task.scheduledFor);
         const student = task.plan.student;
         if (key < todayKey) {
+          const overdueDays = Math.floor(
+            (todayStart.getTime() - istanbulDayStart(task.scheduledFor).getTime()) / 86400000,
+          );
+          if (overdueDays > PLAN_OVERDUE_GIVE_UP_DAYS) continue;
           planOverdueCount += 1;
           const body = `${task.title} · planlanan ${DATE.format(task.scheduledFor)}`;
           rawRows.push({
             userId: student.userId,
             type: "SYSTEM",
-            title: "Geciken plan görevi",
+            title: PLAN_OVERDUE_TITLE,
             body,
             href: "/panel/ogrenci/plan",
           });
@@ -105,17 +130,30 @@ export async function GET(request: Request) {
     }
 
     const deduped = [...new Map(rawRows.map((row) => [`${row.userId}:${row.title}:${row.body}`, row])).values()];
+    // En uzun soğuma süresi kadar geriye bakılır; her satır kendi penceresine
+    // göre ayrıca süzülür.
+    const cooldownFor = (row: { title: string }) =>
+      row.title === PLAN_OVERDUE_TITLE ? planOverdueSince : since;
+    const lookbackFrom = planOverdueSince < since ? planOverdueSince : since;
     const recent = deduped.length
       ? await prisma.notification.findMany({
           where: {
-            createdAt: { gte: since },
+            createdAt: { gte: lookbackFrom },
             OR: deduped.map((row) => ({ userId: row.userId, title: row.title, body: row.body })),
           },
-          select: { userId: true, title: true, body: true },
+          select: { userId: true, title: true, body: true, createdAt: true },
         })
       : [];
-    const recentKeys = new Set(recent.map((row) => `${row.userId}:${row.title}:${row.body}`));
-    const freshRows = deduped.filter((row) => !recentKeys.has(`${row.userId}:${row.title}:${row.body}`));
+    const freshRows = deduped.filter((row) => {
+      const cutoff = cooldownFor(row);
+      return !recent.some(
+        (seen) =>
+          seen.userId === row.userId &&
+          seen.title === row.title &&
+          seen.body === row.body &&
+          seen.createdAt >= cutoff,
+      );
+    });
 
     const assignmentRows = freshRows.filter((row) => row.type === "ASSIGNMENT");
     const planRows = freshRows.filter((row) => row.type === "SYSTEM");

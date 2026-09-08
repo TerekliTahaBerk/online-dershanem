@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import {
+  lessonSeriesRequestSchema,
   previewLessonSeries,
+  resolveLessonSeriesInput,
   LessonSeriesScheduleError,
   formatOccurrenceLabel,
-  type IsoWeekday,
 } from "@/lib/panel/lesson-series-schedule";
 import { findLessonScheduleConflicts } from "@/lib/panel/lesson-lifecycle";
 import { resolveLessonTargetGroup } from "@/lib/panel/lesson-target";
@@ -15,24 +16,13 @@ const NO_GROUP_YET =
   "Bu öğrenci için henüz bireysel grup yok; oluşturma sırasında açılır." as const;
 
 /** Admin/öğretmen formlarıyla hizalı önizleme gövdesi. */
-const schema = z.object({
+const schema = lessonSeriesRequestSchema.extend({
   targetType: z.enum(["GROUP", "STUDENT"]).default("GROUP"),
   groupId: z.string().min(1).optional(),
   studentId: z.string().min(1).optional(),
   teacherId: z.string().min(1).optional(),
   title: z.string().trim().min(2).max(120).optional(),
   startsAt: z.string().datetime().optional(),
-  seriesStartsOn: z.string().datetime().optional(),
-  startsAtTime: z
-    .string()
-    .regex(/^([01]?\d|2[0-3]):([0-5]\d)$/)
-    .optional(),
-  durationMinutes: z.number().int().min(15).max(240).default(60),
-  weekdays: z.array(z.number().int().min(1).max(7)).max(7).default([]),
-  totalOccurrences: z.number().int().min(1).max(48).default(8),
-  repeatWeeks: z.number().int().min(1).max(12).optional(),
-  seriesEndsOn: z.string().datetime().optional().nullable(),
-  mode: z.enum(["SINGLE", "SERIES"]).optional(),
   meetingUrl: z.string().optional(),
 });
 
@@ -74,30 +64,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: resolved.error }, { status: 403 });
   }
 
-  const startsAt = new Date(
-    parsed.data.seriesStartsOn || parsed.data.startsAt || new Date().toISOString(),
-  );
-  const time =
-    parsed.data.startsAtTime ||
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Europe/Istanbul",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).format(startsAt);
-
   try {
-    const preview = previewLessonSeries({
-      seriesStartsOn: startsAt,
-      startsAtTime: time,
-      durationMinutes: parsed.data.durationMinutes,
-      weekdays: (parsed.data.weekdays || []) as IsoWeekday[],
-      totalOccurrences:
-        parsed.data.totalOccurrences ||
-        parsed.data.repeatWeeks ||
-        (parsed.data.mode === "SINGLE" ? 1 : 8),
-      seriesEndsOn: parsed.data.seriesEndsOn ? new Date(parsed.data.seriesEndsOn) : null,
-    });
+    // Oluşturma ucuyla AYNI çözümleyici — önizlemenin gösterdiği occurrence
+    // listesi ile kaydedilecek liste tanım gereği aynı.
+    const preview = previewLessonSeries(resolveLessonSeriesInput(parsed.data));
 
     const studentIds = group
       ? group.enrollments.map((row) => row.student.id)

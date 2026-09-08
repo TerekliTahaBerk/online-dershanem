@@ -3,7 +3,7 @@ import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { parseAnalyticsFilters } from "@/lib/analytics/filters";
 import { analyticsExportCsv } from "@/lib/analytics/export";
 import { loadManagementAnalyticsSnapshot } from "@/lib/analytics/server";
-import { logAudit } from "@/lib/audit";
+import { queueAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   const snapshot = await loadManagementAnalyticsSnapshot(filters);
   const csv = analyticsExportCsv(snapshot, filters);
 
-  void logAudit({
+  queueAudit({
     actorUserId: auth.session.userId,
     entityType: "ManagementAnalytics",
     entityId: "export",

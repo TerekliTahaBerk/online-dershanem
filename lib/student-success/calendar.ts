@@ -6,7 +6,57 @@ import type { UnifiedCalendarEvent, UnifiedCalendarEventType, UnifiedTodayItem }
 import { STUDENT_SUCCESS_PRODUCT_LABELS } from "./types";
 
 export function sortCalendarEvents(events: UnifiedCalendarEvent[]): UnifiedCalendarEvent[] {
-  return [...events].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  // Aynı dakikaya düşen iki olay (ör. aynı saatte başlayan ders ve koçluk
+  // görevi) sorgu dönüş sırasına bırakılmamalı; takvim her yüklemede aynı
+  // sırada çizilmeli.
+  return [...events].sort((a, b) => {
+    const delta = a.startsAt.getTime() - b.startsAt.getTime();
+    if (delta !== 0) return delta;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
+}
+
+/**
+ * Aynı işi iki kez göstermeyi engeller (§21).
+ *
+ * Bir Dershanem ödevi OK sahibi öğrencide İKİ olay üretiyordu: ödevin kendi
+ * son tarihi (`ASSIGNMENT_DUE`) ve `assignment-projection` tüketicisinin
+ * haftalık plana yazdığı `COACHING_TASK`. Öğrenci "Bugün" ekranında tek bir
+ * ödevi iki satır olarak görüyor, tamamlanma sayısı da iki iş gibi
+ * okunuyordu.
+ *
+ * Ödev kaydı KORUNUR: son tarih Dershanem tarafında tek gerçek kaynaktır
+ * (bkz. `WeeklyPlanTask` şema notu). Ona bağlı plan görevi düşürülür ve
+ * hayatta kalan kayıt planın parçası olduğunu söyler.
+ */
+export function dedupeLinkedWorkItems(events: UnifiedCalendarEvent[]): UnifiedCalendarEvent[] {
+  const assignmentIds = new Set(
+    events.filter((e) => e.type === "ASSIGNMENT_DUE").map((e) => e.sourceId),
+  );
+  if (!assignmentIds.size) return events;
+
+  const plannedAssignmentIds = new Set<string>();
+  for (const event of events) {
+    if (event.type !== "COACHING_TASK") continue;
+    const linked = event.linkedAssignmentId;
+    if (linked && assignmentIds.has(linked)) plannedAssignmentIds.add(linked);
+  }
+  if (!plannedAssignmentIds.size) return events;
+
+  return events
+    .filter(
+      (event) =>
+        !(
+          event.type === "COACHING_TASK" &&
+          event.linkedAssignmentId &&
+          plannedAssignmentIds.has(event.linkedAssignmentId)
+        ),
+    )
+    .map((event) =>
+      event.type === "ASSIGNMENT_DUE" && plannedAssignmentIds.has(event.sourceId)
+        ? { ...event, description: "Son tarih · haftalık planında" }
+        : event,
+    );
 }
 
 export function calendarEventTypeLabel(type: UnifiedCalendarEventType): string {
@@ -55,14 +105,22 @@ export function buildTodayItems(
       priority: TODAY_PRIORITY[event.type],
       href: event.href,
       sourceExplanation: null,
+      isFlexible: event.isFlexible === true,
     });
   }
 
+  // TAM SIRALAMA: öncelik → zaman → kimlik.
+  //
+  // Kimlik kırıcısı olmadan eşit öncelik ve eşit zamandaki iki öğe, kendilerini
+  // üreten sorguların dönüş sırasına kalıyordu. O sıra Postgres'in planına bağlı
+  // ve GARANTİ DEĞİL: aynı öğrenci sayfayı iki kez açtığında "sıradaki iş"
+  // değişebiliyordu. `id` benzersiz olduğu için sıralama artık deterministik.
   return items.sort((a, b) => {
     if (b.priority !== a.priority) return b.priority - a.priority;
     const aTime = (a.startsAt ?? a.dueAt)?.getTime() ?? 0;
     const bTime = (b.startsAt ?? b.dueAt)?.getTime() ?? 0;
-    return aTime - bTime;
+    if (aTime !== bTime) return aTime - bTime;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
   });
 }
 

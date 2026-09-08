@@ -8,12 +8,13 @@ import { revokeAllUserSessions } from "@/lib/auth/session";
 import { assertAccountingPeriodOpen, reverseLedgerTransaction } from "@/lib/business/finance";
 import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
 import { prisma } from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { queueAudit } from "@/lib/audit";
 import { enforceMutation } from "@/lib/security/mutation-guard";
 import { generateAIReply } from "@/lib/business/jobs";
 import { reconcileBusinessUnit } from "@/lib/business/reconciliation";
 import { getAdPlatformProvider } from "@/lib/business/providers";
 import { validateStageTransition } from "@/lib/business/leads";
+import { detached } from "@/lib/after-response";
 
 const basePath = "/panel/yonetim/isletme";
 const leadStageEnum = z.enum([
@@ -168,7 +169,7 @@ async function applyLeadStageChange(input: {
     return row;
   });
 
-  void logAudit({
+  queueAudit({
     actorUserId: input.actorUserId,
     entityType: "BusinessLead",
     entityId: lead.id,
@@ -182,7 +183,7 @@ async function applyLeadStageChange(input: {
   });
 
   const { emitAutomationEvent } = await import("@/lib/automation/engine");
-  void emitAutomationEvent("lead_stage_changed", {
+  detached("business.automation_emit_failed", emitAutomationEvent("lead_stage_changed", {
     businessUnitId: lead.businessUnitId,
     entityType: "lead",
     entityId: lead.id,
@@ -193,7 +194,7 @@ async function applyLeadStageChange(input: {
     ownerId: lead.assignedUserId,
     temperature: lead.temperature,
     eventId: `lead_stage_changed:lead:${lead.id}:${lead.stage}->${data.stage}`,
-  });
+  }), { event: "lead_stage_changed", leadId: lead.id });
 
   return {
     ok: true,
@@ -322,9 +323,9 @@ export async function createManualLead(formData: FormData) {
     : null;
   const row = await prisma.businessLead.create({ data: { businessUnitId: unit.id, source: "MANUAL", firstName: parsed.firstName, phone: parsed.phone || null, normalizedPhone, email: parsed.email || null, normalizedEmail, productInterest: parsed.productInterest, matchSuggestion: possible ? { leadId: possible.id, name: possible.firstName, confidence: 0.78 } : undefined } });
   await prisma.leadActivity.create({ data: { leadId: row.id, type: "LEAD_CREATED", toValue: "NEW", actorUserId: access.session.userId } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: row.id, action: "LEAD_CREATED" });
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: row.id, action: "LEAD_CREATED" });
   const { emitAutomationEvent } = await import("@/lib/automation/engine");
-  void emitAutomationEvent("lead_created", {
+  detached("business.automation_emit_failed", emitAutomationEvent("lead_created", {
     businessUnitId: row.businessUnitId,
     entityType: "lead",
     entityId: row.id,
@@ -334,7 +335,7 @@ export async function createManualLead(formData: FormData) {
     stage: row.stage,
     ownerId: row.assignedUserId,
     temperature: row.temperature,
-  });
+  }), { event: "lead_created", leadId: row.id });
   revalidateBusiness();
   redirectToSection("adaylar");
 }
@@ -347,7 +348,7 @@ export async function createFinancialTransaction(formData: FormData) {
   const transactionAt = parsed.transactionDate ? new Date(`${parsed.transactionDate}T00:00:00+03:00`) : at; await assertAccountingPeriodOpen(unit.id, transactionAt);
   const netCents = Math.round(parsed.amountTl * 100); const vatCents = Math.round(netCents * parsed.vatRate / (100 + parsed.vatRate)); const withholdingCents = Math.round((netCents-vatCents)*parsed.withholdingRate/100);
   const row = await prisma.financialTransaction.create({ data: { businessUnitId: unit.id, source: "MANUAL", idempotencyKey: `manual:${crypto.randomUUID()}`, kind: parsed.kind, status: "PAID", transactionAt, paidAt: transactionAt, description: parsed.description, category: parsed.category, grossCents: netCents, netCents, vatRate: parsed.vatRate, vatCents, withholdingRate: parsed.withholdingRate, withholdingCents, commissionCents: Math.round(parsed.commissionTl*100), createdById: access.session.userId } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "FinancialTransaction", entityId: row.id, action: "FINANCIAL_TRANSACTION_CREATED", payload: { kind: row.kind, netCents: row.netCents } });
+  queueAudit({ actorUserId: access.session.userId, entityType: "FinancialTransaction", entityId: row.id, action: "FINANCIAL_TRANSACTION_CREATED", payload: { kind: row.kind, netCents: row.netCents } });
   revalidateBusiness();
   redirectToSection(row.kind === "EXPENSE" ? "giderler" : "gelirler");
 }
@@ -359,7 +360,7 @@ export async function reverseFinancialTransaction(formData: FormData) {
   const original = await prisma.financialTransaction.findFirst({ where: { id, businessUnitId: { in: scopedUnitIds(access) }, cancelledAt: null } });
   if (!original) throw new Error("TRANSACTION_NOT_FOUND");
   await reverseLedgerTransaction(original.id, access.session.userId);
-  void logAudit({ actorUserId: access.session.userId, entityType: "FinancialTransaction", entityId: original.id, action: "FINANCIAL_TRANSACTION_REVERSED" });
+  queueAudit({ actorUserId: access.session.userId, entityType: "FinancialTransaction", entityId: original.id, action: "FINANCIAL_TRANSACTION_REVERSED" });
   revalidateBusiness();
   redirectToSection(original.kind === "EXPENSE" ? "giderler" : "gelirler");
 }
@@ -369,7 +370,7 @@ export async function setConversationControl(formData: FormData) {
   await guard("conversation.control", access.session.userId);
   const parsed = z.object({ id: z.string().cuid(), aiMode: z.enum(["OFF", "SUGGESTION", "AUTO_SAFE", "AUTO"]), status: z.enum(["OPEN", "WAITING_HUMAN", "CLOSED", "SPAM"]) }).parse(Object.fromEntries(formData));
   await prisma.businessConversation.updateMany({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } }, data: { aiMode: parsed.aiMode, status: parsed.status, assignedUserId: access.session.userId } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.id, action: "CONVERSATION_CONTROL_CHANGED", payload: { aiMode: parsed.aiMode, status: parsed.status } });
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.id, action: "CONVERSATION_CONTROL_CHANGED", payload: { aiMode: parsed.aiMode, status: parsed.status } });
   revalidateBusiness();
 }
 
@@ -379,7 +380,7 @@ export async function createKnowledgeEntry(formData: FormData) {
   const parsed = z.object({ title: z.string().trim().min(2).max(160), category: z.string().trim().min(2).max(80), content: z.string().trim().min(10).max(10_000), productInterest: z.enum(["ONLINE_DERSHANEM", "ONLINE_DENEME_KULUBU", "UNKNOWN"]), validFrom: z.string().optional(), validUntil: z.string().optional() }).parse(Object.fromEntries(formData));
   const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
   const row = await prisma.knowledgeBaseEntry.create({ data: { businessUnitId: unit.id, title: parsed.title, category: parsed.category, content: parsed.content, productInterest: parsed.productInterest, validFrom: parsed.validFrom ? new Date(parsed.validFrom) : null, validUntil: parsed.validUntil ? new Date(parsed.validUntil) : null, source: "Admin paneli", updatedById: access.session.userId } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "KnowledgeBaseEntry", entityId: row.id, action: "KNOWLEDGE_ENTRY_CREATED" });
+  queueAudit({ actorUserId: access.session.userId, entityType: "KnowledgeBaseEntry", entityId: row.id, action: "KNOWLEDGE_ENTRY_CREATED" });
   revalidateBusiness();
   redirectToSection("ai-bilgi-merkezi");
 }
@@ -389,7 +390,7 @@ export async function versionKnowledgeEntry(formData: FormData) {
   const parsed = z.object({ id: z.string().cuid(), content: z.string().trim().min(10).max(10_000), isActive: z.enum(["true", "false"]) }).parse(Object.fromEntries(formData));
   const current = await prisma.knowledgeBaseEntry.findFirst({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } } }); if (!current) throw new Error("KNOWLEDGE_NOT_FOUND");
   await prisma.knowledgeBaseEntry.update({ where: { id: current.id }, data: { content: parsed.content, isActive: parsed.isActive === "true", version: { increment: 1 }, updatedById: access.session.userId } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "KnowledgeBaseEntry", entityId: current.id, action: "KNOWLEDGE_ENTRY_VERSIONED", payload: { fromVersion: current.version, toVersion: current.version + 1 } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "KnowledgeBaseEntry", entityId: current.id, action: "KNOWLEDGE_ENTRY_VERSIONED", payload: { fromVersion: current.version, toVersion: current.version + 1 } }); revalidateBusiness();
   redirectToSection("ai-bilgi-merkezi");
 }
 
@@ -399,7 +400,7 @@ export async function createCampaign(formData: FormData) {
   const parsed = z.object({ name: z.string().trim().min(2).max(160), platform: z.string().trim().min(2).max(40), budgetTl: z.coerce.number().min(0).max(100_000_000), productInterest: z.enum(["ONLINE_DERSHANEM", "ONLINE_DENEME_KULUBU", "UNKNOWN"]) }).parse(Object.fromEntries(formData));
   const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
   const row = await prisma.businessCampaign.create({ data: { businessUnitId: unit.id, name: parsed.name, platform: parsed.platform, budgetCents: Math.round(parsed.budgetTl * 100), productInterest: parsed.productInterest } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessCampaign", entityId: row.id, action: "CAMPAIGN_CREATED" });
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessCampaign", entityId: row.id, action: "CAMPAIGN_CREATED" });
   revalidateBusiness();
   redirectToSection("kampanyalar");
 }
@@ -410,7 +411,7 @@ export async function createAdvertisement(formData: FormData) {
   const campaign = await prisma.businessCampaign.findFirst({ where: { id: parsed.campaignId, businessUnitId: { in: scopedUnitIds(access) } } }); if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
   const adSet = await prisma.businessAdSet.create({ data: { campaignId: campaign.id, name: parsed.adSetName } });
   const ad = await prisma.businessAdvertisement.create({ data: { adSetId: adSet.id, name: parsed.name, spentCents: Math.round(parsed.spentTl * 100), impressions: parsed.impressions, clicks: parsed.clicks, messageStarts: parsed.messageStarts, leadCount: parsed.leadCount, saleCount: parsed.saleCount, revenueCents: Math.round(parsed.revenueTl * 100) } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessAdvertisement", entityId: ad.id, action: "ADVERTISEMENT_CREATED" }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessAdvertisement", entityId: ad.id, action: "ADVERTISEMENT_CREATED" }); revalidateBusiness();
   redirectToSection("reklamlar");
 }
 
@@ -479,7 +480,7 @@ export async function createAutomationRule(formData: FormData) {
       createdByUserId: access.session.userId,
     },
   });
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "AutomationRule",
     entityId: row.id,
@@ -499,7 +500,7 @@ export async function toggleAutomationRule(formData: FormData) {
     data: { isActive: parsed.isActive === "true" },
   });
   if (!updated.count) throw new Error("RULE_NOT_FOUND");
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "AutomationRule",
     entityId: parsed.id,
@@ -543,7 +544,7 @@ export async function dryRunAutomationRuleAction(formData: FormData) {
     },
   });
 
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "AutomationRule",
     entityId: parsed.id,
@@ -560,7 +561,7 @@ export async function requestAISuggestion(formData: FormData) {
   const conversation = await prisma.businessConversation.findFirst({ where: { id, businessUnitId: { in: scopedUnitIds(access) } } });
   if (!conversation) throw new Error("CONVERSATION_NOT_FOUND");
   await generateAIReply(id);
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: id, action: "AI_SUGGESTION_REQUESTED" });
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: id, action: "AI_SUGGESTION_REQUESTED" });
   revalidateBusiness();
 }
 
@@ -568,7 +569,7 @@ export async function assignConversation(formData: FormData) {
   const access = await requireBusinessPage("conversation:reply"); await guard("conversation.assign", access.session.userId);
   const parsed = z.object({ id: z.string().cuid(), assignedUserId: z.string().cuid().or(z.literal("")) }).parse(Object.fromEntries(formData));
   await prisma.businessConversation.updateMany({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } }, data: { assignedUserId: parsed.assignedUserId || null } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.id, action: "CONVERSATION_ASSIGNED", payload: { assignedUserId: parsed.assignedUserId || null } });
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.id, action: "CONVERSATION_ASSIGNED", payload: { assignedUserId: parsed.assignedUserId || null } });
   revalidateBusiness();
 }
 
@@ -576,7 +577,7 @@ export async function addConversationTag(formData: FormData) {
   const access = await requireBusinessPage("conversation:reply"); await guard("conversation.tag", access.session.userId);
   const parsed = z.object({ id: z.string().cuid(), tag: z.string().trim().min(1).max(40) }).parse(Object.fromEntries(formData));
   await prisma.businessConversation.updateMany({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } }, data: { tags: { push: parsed.tag } } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.id, action: "CONVERSATION_TAG_ADDED", payload: { tag: parsed.tag } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.id, action: "CONVERSATION_TAG_ADDED", payload: { tag: parsed.tag } }); revalidateBusiness();
 }
 
 export async function addLeadNote(formData: FormData) {
@@ -587,7 +588,7 @@ export async function addLeadNote(formData: FormData) {
     prisma.leadActivity.create({ data: { leadId: lead.id, type: "NOTE", actorUserId: access.session.userId, metadata: { note: parsed.note } } }),
     prisma.businessLead.update({ where: { id: lead.id }, data: { lastContactAt: new Date() } }),
   ]);
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "LEAD_NOTE_ADDED" }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "LEAD_NOTE_ADDED" }); revalidateBusiness();
 }
 
 export async function createLeadTask(formData: FormData) {
@@ -623,7 +624,7 @@ export async function createLeadTask(formData: FormData) {
       },
     }),
   ]);
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "LEAD_TASK_CREATED", payload: { dueAt: dueAt?.toISOString() ?? null } });
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "LEAD_TASK_CREATED", payload: { dueAt: dueAt?.toISOString() ?? null } });
   revalidateBusiness();
 }
 
@@ -681,7 +682,7 @@ export async function scheduleLeadFollowUp(formData: FormData) {
       });
     }
   });
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "BusinessLead",
     entityId: lead.id,
@@ -719,7 +720,7 @@ export async function assignLeadOwner(formData: FormData) {
       },
     }),
   ]);
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "BusinessLead",
     entityId: lead.id,
@@ -738,7 +739,7 @@ export async function completeLeadTask(formData: FormData) {
   });
   if (!task) throw new Error("TASK_NOT_FOUND");
   await prisma.leadTask.update({ where: { id: task.id }, data: { completedAt: new Date() } });
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "LeadTask",
     entityId: task.id,
@@ -806,7 +807,7 @@ export async function linkLeadOrder(formData: FormData) {
       metadata: { product: parsed.product },
     },
   });
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "BusinessLead",
     entityId: lead.id,
@@ -840,7 +841,7 @@ export async function dismissLeadDuplicate(formData: FormData) {
     where: { id: leadId, businessUnitId: { in: scopedUnitIds(access) } },
     data: { matchSuggestion: Prisma.JsonNull },
   });
-  void logAudit({
+  queueAudit({
     actorUserId: access.session.userId,
     entityType: "BusinessLead",
     entityId: leadId,
@@ -860,7 +861,7 @@ export async function createPromptVersion(formData: FormData) {
   const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
   const latest = await prisma.aIPromptVersion.findFirst({ where: { businessUnitId: unit.id, name: parsed.name }, orderBy: { version: "desc" } });
   await prisma.$transaction(async (tx) => { await tx.aIPromptVersion.updateMany({ where: { businessUnitId: unit.id, name: parsed.name, isActive: true }, data: { isActive: false } }); await tx.aIPromptVersion.create({ data: { businessUnitId: unit.id, name: parsed.name, version: (latest?.version ?? 0) + 1, systemPrompt: parsed.systemPrompt, isActive: true } }); });
-  void logAudit({ actorUserId: access.session.userId, entityType: "AIPromptVersion", entityId: parsed.name, action: "AI_PROMPT_VERSION_CREATED" }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "AIPromptVersion", entityId: parsed.name, action: "AI_PROMPT_VERSION_CREATED" }); revalidateBusiness();
   redirectToSection("ai-bilgi-merkezi");
 }
 
@@ -870,14 +871,14 @@ export async function lockAccountingPeriod(formData: FormData) {
   const startsAt = new Date(`${parsed.startsAt}T00:00:00+03:00`); const endsAt = new Date(`${parsed.endsAt}T23:59:59.999+03:00`); if (endsAt < startsAt) throw new Error("INVALID_PERIOD");
   const overlap = await prisma.accountingPeriod.findFirst({ where: { businessUnitId: unit.id, NOT: { startsAt, endsAt }, startsAt: { lte: endsAt }, endsAt: { gte: startsAt } } }); if (overlap) throw new Error("ACCOUNTING_PERIOD_OVERLAP");
   const period = await prisma.accountingPeriod.upsert({ where: { businessUnitId_startsAt_endsAt: { businessUnitId: unit.id, startsAt, endsAt } }, update: { status: "LOCKED", lockedAt: new Date(), lockedById: access.session.userId }, create: { businessUnitId: unit.id, startsAt, endsAt, status: "LOCKED", lockedAt: new Date(), lockedById: access.session.userId } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "AccountingPeriod", entityId: period.id, action: "ACCOUNTING_PERIOD_LOCKED" }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "AccountingPeriod", entityId: period.id, action: "ACCOUNTING_PERIOD_LOCKED" }); revalidateBusiness();
   redirectToSection("vergiler");
 }
 
 export async function runReconciliation() {
   const access = await requireBusinessPage("finance:write"); await guard("reconciliation.run", access.session.userId);
   for (const unit of access.units) await reconcileBusinessUnit(unit.id);
-  void logAudit({ actorUserId: access.session.userId, entityType: "ReconciliationRecord", entityId: "batch", action: "RECONCILIATION_RUN" }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "ReconciliationRecord", entityId: "batch", action: "RECONCILIATION_RUN" }); revalidateBusiness();
   redirectToSection("mutabakat");
 }
 
@@ -885,13 +886,13 @@ export async function resolveReconciliation(formData: FormData) {
   const access = await requireBusinessPage("finance:write"); await guard("reconciliation.resolve", access.session.userId);
   const parsed = z.object({ id: z.string().cuid(), status: z.enum(["MANUALLY_MATCHED", "CORRECTED"]) }).parse(Object.fromEntries(formData));
   await prisma.reconciliationRecord.updateMany({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } }, data: { status: parsed.status, resolvedAt: new Date(), resolvedById: access.session.userId } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "ReconciliationRecord", entityId: parsed.id, action: "RECONCILIATION_RESOLVED", payload: { status: parsed.status } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "ReconciliationRecord", entityId: parsed.id, action: "RECONCILIATION_RESOLVED", payload: { status: parsed.status } }); revalidateBusiness();
   redirectToSection("mutabakat");
 }
 
 export async function syncMetaAds() {
   const access = await requireBusinessPage("integration:write"); await guard("meta-ads.sync", access.session.userId); const result = await getAdPlatformProvider().syncCampaigns();
-  void logAudit({ actorUserId: access.session.userId, entityType: "IntegrationConnection", entityId: "META_ADS", action: "META_ADS_SYNCED", payload: result }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "IntegrationConnection", entityId: "META_ADS", action: "META_ADS_SYNCED", payload: result }); revalidateBusiness();
 }
 
 export async function setManualAttribution(formData: FormData) {
@@ -901,14 +902,14 @@ export async function setManualAttribution(formData: FormData) {
   if (parsed.campaignId) { const valid = await prisma.businessCampaign.count({ where: { id: parsed.campaignId, businessUnitId: lead.businessUnitId } }); if (!valid) throw new Error("CAMPAIGN_NOT_FOUND"); }
   if (parsed.advertisementId) { const valid = await prisma.businessAdvertisement.count({ where: { id: parsed.advertisementId, adSet: { campaign: { businessUnitId: lead.businessUnitId } } } }); if (!valid) throw new Error("ADVERTISEMENT_NOT_FOUND"); }
   await prisma.attribution.create({ data: { leadId: lead.id, campaignId: parsed.campaignId || null, advertisementId: parsed.advertisementId || null, model: "MANUAL", confidence: 1, isManual: true } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "ATTRIBUTION_MANUALLY_SET", payload: { campaignId: parsed.campaignId || null, advertisementId: parsed.advertisementId || null } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "ATTRIBUTION_MANUALLY_SET", payload: { campaignId: parsed.campaignId || null, advertisementId: parsed.advertisementId || null } }); revalidateBusiness();
 }
 
 export async function updateRetentionSettings(formData: FormData) {
   const access = await requireBusinessPage("settings:write"); await guard("retention.update", access.session.userId);
   const days = z.coerce.number().int().min(30).max(3650).parse(formData.get("retentionDays"));
   await prisma.businessUnit.updateMany({ where: { id: { in: scopedUnitIds(access) } }, data: { retentionDays: days } });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessUnit", entityId: "all", action: "RETENTION_SETTINGS_UPDATED", payload: { retentionDays: days } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessUnit", entityId: "all", action: "RETENTION_SETTINGS_UPDATED", payload: { retentionDays: days } }); revalidateBusiness();
   redirectToSection("ayarlar");
 }
 
@@ -923,7 +924,7 @@ export async function mergeSuggestedLead(formData: FormData) {
     await tx.businessLead.update({ where: { id: source.id }, data: { stage: "SPAM", lostReason: `MERGED_INTO:${target.id}`, matchSuggestion: Prisma.JsonNull } });
     await tx.leadActivity.createMany({ data: [{ leadId: target.id, type: "LEAD_MERGED", fromValue: source.id, actorUserId: access.session.userId }, { leadId: source.id, type: "MERGED_INTO", toValue: target.id, actorUserId: access.session.userId }] });
   });
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: source.id, action: "LEAD_MERGED", payload: { targetId: target.id } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: source.id, action: "LEAD_MERGED", payload: { targetId: target.id } }); revalidateBusiness();
   redirectToSection("adaylar");
 }
 
@@ -936,7 +937,7 @@ export async function assignBusinessRole(formData: FormData) {
   const user = await prisma.user.findFirst({ where: { id: parsed.userId, status: "ACTIVE" }, select: { id: true } }); if (!user) throw new Error("USER_NOT_FOUND");
   const assignment = await prisma.businessRoleAssignment.upsert({ where: { userId_businessUnitId_role: parsed }, update: {}, create: parsed });
   await revokeAllUserSessions(parsed.userId);
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_ASSIGNED", payload: { userId: parsed.userId, businessUnitId: parsed.businessUnitId, role: parsed.role } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_ASSIGNED", payload: { userId: parsed.userId, businessUnitId: parsed.businessUnitId, role: parsed.role } }); revalidateBusiness();
   redirectToSection("ayarlar");
 }
 
@@ -955,6 +956,6 @@ export async function revokeBusinessRole(formData: FormData) {
   }
   await prisma.businessRoleAssignment.delete({ where: { id: assignment.id } });
   await revokeAllUserSessions(assignment.userId);
-  void logAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_REVOKED", payload: { userId: assignment.userId, businessUnitId: assignment.businessUnitId, role: assignment.role } }); revalidateBusiness();
+  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_REVOKED", payload: { userId: assignment.userId, businessUnitId: assignment.businessUnitId, role: assignment.role } }); revalidateBusiness();
   redirectToSection("ayarlar");
 }

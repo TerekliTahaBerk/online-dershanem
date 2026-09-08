@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requireApiOdRole } from "@/lib/auth/api-guards";
 
 function normalizeQuery(value: string | null) {
   return value?.trim().toLocaleLowerCase("tr-TR") || "";
 }
 
 export async function GET(request: Request) {
-  const session = await requireRole("TEACHER");
+  // Sayfa guard'ı (`requireRole`) bir API route'unda YANLIŞ: oturum yoksa
+  // `redirect(LOGIN_PATH)` atıyordu ve çağıran `fetch` JSON yerine 200 + giriş
+  // HTML'i alıyordu. `requireApiOdRole` aynı rol + OD ürün kapısını uygular,
+  // ama JSON 401/403 döner.
+  const auth = await requireApiOdRole("TEACHER");
+  if (!auth.ok) return auth.response;
+  const session = auth.session;
   const url = new URL(request.url);
   const lessonId = url.searchParams.get("lessonId");
   const groupId = url.searchParams.get("groupId");

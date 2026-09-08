@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef, type ReactNode } from "react";
+import { Children, createContext, useContext, type ReactNode } from "react";
 
 type PanelTableContextValue = {
   columns: readonly string[];
@@ -8,7 +8,14 @@ type PanelTableContextValue = {
 };
 
 const PanelTableContext = createContext<PanelTableContextValue | null>(null);
-const PanelTableRowIndexContext = createContext<{ current: number } | null>(null);
+/**
+ * Hücrenin satır içindeki sütun sırası. Sıra bir zamanlar render sırasında
+ * mutasyonla (`ref.current++`) sayılıyordu; StrictMode/eşzamanlı render
+ * bileşeni iki kez çağırdığında sayaç kayıyor ve mobil kart görünümündeki
+ * `data-label` etiketleri yanlış sütuna kayıyordu. Sıra artık render'dan
+ * bağımsız: `Children.map` konumundan geliyor.
+ */
+const PanelTableCellIndexContext = createContext<number | null>(null);
 
 function usePanelTable() {
   const ctx = useContext(PanelTableContext);
@@ -66,15 +73,12 @@ export function PanelTable({
 }
 
 export function PanelTableRow({ children }: { children: ReactNode }) {
-  const cellIndexRef = useRef({ current: 0 });
-  cellIndexRef.current.current = 0;
-
   return (
-    <PanelTableRowIndexContext.Provider value={cellIndexRef.current}>
-      <tr className="panel-table-row border-b border-dc-line-soft text-[13.5px] font-medium text-[var(--pd-ink-3)] last:border-0">
-        {children}
-      </tr>
-    </PanelTableRowIndexContext.Provider>
+    <tr className="panel-table-row border-b border-dc-line-soft text-[13.5px] font-medium text-[var(--pd-ink-3)] last:border-0">
+      {Children.map(children, (child, index) => (
+        <PanelTableCellIndexContext.Provider value={index}>{child}</PanelTableCellIndexContext.Provider>
+      ))}
+    </tr>
   );
 }
 
@@ -89,11 +93,10 @@ export function PanelTableCell({
   label?: string;
 }) {
   const { columns } = usePanelTable();
-  const cellIndex = useContext(PanelTableRowIndexContext);
-  if (!cellIndex) {
+  const index = useContext(PanelTableCellIndexContext);
+  if (index === null) {
     throw new Error("PanelTableCell yalnızca PanelTableRow içinde kullanılmalıdır.");
   }
-  const index = cellIndex.current++;
   const columnLabel = label ?? columns[index] ?? "";
   const color =
     tone === "ok" ? "text-dc-brand-hover" : tone === "warn" ? "text-[var(--pd-pastel-yellow-ink)]" : "";

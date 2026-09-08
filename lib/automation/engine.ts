@@ -3,7 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { queueAudit } from "@/lib/audit";
 import { DatabaseNotificationProvider } from "@/lib/business/providers";
 import { sendPanelNotificationEmail } from "@/lib/email";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -604,7 +604,7 @@ export async function emitAutomationEvent(
     });
 
   if (!recursion.ok) {
-    void logAudit({
+    queueAudit({
       actorType: "SYSTEM",
       entityType: "AutomationRule",
       entityId: context.entityId,

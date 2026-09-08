@@ -14,6 +14,9 @@ import { buildWeeklyKocumMetrics } from "@/lib/kocum";
 
 export const dynamic = "force-dynamic";
 
+/** Koç masasında tek seferde gösterilen plan sayısı. */
+const TEACHER_PLAN_DESK_LIMIT = 25;
+
 export default async function TeacherPlanPage() {
   const session = await requireRole("TEACHER");
   if (!getPanelFeatureFlags().adaptivePlan) notFound();
@@ -44,8 +47,21 @@ export default async function TeacherPlanPage() {
       ],
     },
     orderBy: { updatedAt: "desc" },
-    include: {
-      student: { include: { user: { select: { fullName: true, email: true } } } },
+    // 50 öğrencili bir öğretmende bu sorgu sınırsızdı: 50 planın TÜM görevleri
+    // ve `student` ilişkisinin tüm alanları tek istekte çekiliyordu (§33).
+    // Masa en son dokunulan planları gösterir; alan seçimi de daraltıldı.
+    take: TEACHER_PLAN_DESK_LIMIT,
+    select: {
+      id: true,
+      status: true,
+      version: true,
+      weekStart: true,
+      capacityMinutes: true,
+      changeRequestCategory: true,
+      studentId: true,
+      student: {
+        select: { id: true, user: { select: { fullName: true, email: true } } },
+      },
       tasks: {
         where: { status: { not: "SKIPPED" } },
         orderBy: [{ scheduledFor: "asc" }, { position: "asc" }],
@@ -55,6 +71,7 @@ export default async function TeacherPlanPage() {
 
   const templates = await prisma.weeklyPlanTemplate.findMany({
     orderBy: { title: "asc" },
+    take: 50,
     select: { id: true, title: true },
   });
 

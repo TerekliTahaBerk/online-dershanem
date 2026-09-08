@@ -8,6 +8,7 @@ import { dueAtForOdOnboardingState } from "@/lib/od/onboarding-state";
 import { prisma } from "@/lib/prisma";
 import { contractAccessWindow, parseOdkProductContract } from "@/lib/odk/product-contract";
 import { COMMERCE_TO_PRODUCT_CODE, MEMBERSHIP_BACKED_PRODUCTS } from "@/lib/commerce/product-mapping";
+import { log } from "@/lib/logger";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -352,13 +353,17 @@ export async function provisionOdOrder(
     });
     await prisma.auditLog.create({ data: { actorType: "SYSTEM", entityType: "OdOrder", entityId: orderId, action: "od.provisioning.retry_pending", summary: message, payload: { code: error instanceof OdProvisioningError ? error.code : "UNEXPECTED" } } });
     const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
-    void emitEducationAutomation("provisioning_failed", {
+    // Sağlama arızası alarmı: bu yol zaten hata yolu, beklemenin kullanıcıya
+    // maliyeti yok — ama `void` bırakılırsa alarm hiç gitmeden süreç sonlanabilir.
+    await emitEducationAutomation("provisioning_failed", {
       entityType: "order",
       entityId: orderId,
       product: "OD",
       severity: "high",
-      href: "/panel/yonetim/operasyon",
-    });
+      href: "/panel/yonetim/siparisler",
+    }).catch((emitError: unknown) =>
+      log.error("provisioning.automation_emit_failed", emitError, { orderId, product: "OD" }),
+    );
     throw error;
   }
 }

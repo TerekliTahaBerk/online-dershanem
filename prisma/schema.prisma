@@ -1713,6 +1713,13 @@ model WeeklyPlan {
 /// Online Koçum plan görevi — Dershanem Assignment'tan ayrı domain.
 /// ASSIGNMENT kaynaklı görevler tek source of truth olarak Assignment'a referans verir;
 /// duplicate AssignmentProgress satırı oluşturulmaz.
+///
+/// İDEMPOTENCY: bir plan içinde aynı ödeve (ya da aynı öneriye) İKİ görev
+/// bağlanamaz. Kural koşullu benzersiz indeksle veritabanında zorlanır
+/// (`weekly_plan_tasks_one_per_assignment_ref`,
+/// `weekly_plan_tasks_one_per_suggestion_ref`; migration 0100). Prisma şema
+/// dili koşullu unique tanımlayamadığı için burada YALNIZ belgelenir —
+/// `db push` bu indeksleri düşürür.
 model WeeklyPlanTask {
   id                String               @id @default(cuid())
   planId            String               @map("plan_id")
@@ -4168,6 +4175,10 @@ model CrossProductEventOutbox {
   payload          Json
   status           CrossProductEventStatus @default(PENDING)
   occurredAt       DateTime                @map("occurred_at") @db.Timestamptz(3)
+  /// PROCESSING'e geçiş anı. İşleyici (ör. fonksiyon zaman aşımı) yarıda
+  /// ölürse olay PROCESSING'te asılı kalıyordu ve bir daha hiç seçilmiyordu;
+  /// bayat kilit bu alan üzerinden geri alınır.
+  lockedAt         DateTime?               @map("locked_at") @db.Timestamptz(3)
   processedAt      DateTime?               @map("processed_at") @db.Timestamptz(3)
   lastError        String?                 @map("last_error")
   attempts         Int                     @default(0)
@@ -4178,6 +4189,7 @@ model CrossProductEventOutbox {
 
   @@index([status, occurredAt])
   @@index([studentId, eventType, occurredAt])
+  @@index([status, lockedAt])
   @@map("cross_product_event_outbox")
 }
 

@@ -16,11 +16,16 @@ export type SerializedUnifiedTodayItem = {
   dueAt: string | null;
   priority: number;
   href: string | null;
+  /** Esnek görevde `null` — saat gösterilmez (§22). */
   timeLabel: string | null;
+  isFlexible: boolean;
 };
 
 export function serializeUnifiedTodayItem(item: UnifiedTodayItem): SerializedUnifiedTodayItem {
-  const timeSource = item.startsAt ?? item.dueAt;
+  // Esnek plan görevi gün içinde herhangi bir saatte yapılır. `scheduledFor`
+  // gün başlangıcı olduğu için buradan saat üretmek öğrenciye "00:00'da
+  // yapılacak" diyen SAHTE bir randevu gösteriyordu.
+  const timeSource = item.isFlexible ? null : item.startsAt ?? item.dueAt;
   return {
     id: item.id,
     kind: item.kind,
@@ -32,6 +37,7 @@ export function serializeUnifiedTodayItem(item: UnifiedTodayItem): SerializedUni
     dueAt: item.dueAt?.toISOString() ?? null,
     priority: item.priority,
     href: item.href,
+    isFlexible: item.isFlexible,
     timeLabel: timeSource
       ? new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" }).format(timeSource)
       : null,

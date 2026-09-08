@@ -41,7 +41,7 @@ export async function runAutomationScans(now = new Date()) {
           entityId: user.id,
           product: unit.product,
           severity: "medium",
-          href: "/panel/yonetim/operasyon",
+          href: "/panel/yonetim/siparisler",
           eventId: buildEventId({
             trigger: "student_invite_pending",
             entityType: "user",

@@ -6,6 +6,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
 import { logCriticalAudit } from "@/lib/audit";
 import { getActiveOdkExamGrant, provisionedAccessWindow } from "@/lib/odk/product-contract-server";
+import { log } from "@/lib/logger";
 
 export type OdkProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -168,13 +169,17 @@ export async function provisionOdkOrder(
       data: { fulfillmentStatus: "RETRY_PENDING", fulfillmentError: message },
     });
     const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
-    void emitEducationAutomation("provisioning_failed", {
+    // Sağlama arızası alarmı: bu yol zaten hata yolu, beklemenin kullanıcıya
+    // maliyeti yok — ama `void` bırakılırsa alarm hiç gitmeden süreç sonlanabilir.
+    await emitEducationAutomation("provisioning_failed", {
       entityType: "order",
       entityId: orderId,
       product: "ODK",
       severity: "high",
-      href: "/panel/yonetim/operasyon",
-    });
+      href: "/panel/yonetim/siparisler",
+    }).catch((emitError: unknown) =>
+      log.error("provisioning.automation_emit_failed", emitError, { orderId, product: "ODK" }),
+    );
     throw error;
   }
 }

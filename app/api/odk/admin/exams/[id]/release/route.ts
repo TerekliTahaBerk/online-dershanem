@@ -8,6 +8,7 @@ import { previewResultPublication } from "@/lib/odk/result-publication";
 import { createCoachSuggestionsFromReleasedExam } from "@/lib/odk/coach-bridge";
 import { odkAttemptBand } from "@/lib/odk/telemetry";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { afterResponse } from "@/lib/after-response";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
@@ -84,12 +85,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   )];
   if (studentIds.length) {
     const { onMockExamResultPublished } = await import("@/lib/student-success/server/emit-hooks");
-    void onMockExamResultPublished({
+    afterResponse("odk.exam_release.cross_product_emit_failed", () => onMockExamResultPublished({
       examId: id,
       actorUserId: auth.session.userId,
       studentIds,
       attemptCount: publishAttemptIds.length,
-    });
+    }), { examId: id });
   }
 
   await logAudit({

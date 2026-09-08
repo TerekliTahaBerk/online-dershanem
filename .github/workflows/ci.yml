@@ -1,12 +1,17 @@
 name: CI
 
-# Geliştirme hızını düşürdüğü için otomatik tetikleyiciler kapatıldı.
-# Geri açmak için aşağıdaki bloğu yorumdan çıkar:
-#   push:
-#     branches: [main, test]
-#   pull_request:
-#     branches: [main, test]
+# Kapı `pull_request` üzerinde koşar; `push` bilerek kapalı tutuldu.
+#
+# Otomatik tetikleyiciler bir dönem tamamen kapatılmıştı ("geliştirme hızını
+# düşürüyor"). Sonuç: `main` üzerinde iki birim testi ve bir lint HATASI kimse
+# fark etmeden birikti — quality-gate işi tanımlıydı ama hiç çalışmıyordu.
+# Yayın kapısı yalnızca koştuğunda kapıdır.
+#
+# `push` yerine `pull_request`: dal üzerinde çalışırken her commit'te CI
+# beklenmiyor, ama `main`'e giren hiçbir değişiklik kapıyı atlayamıyor.
 on:
+  pull_request:
+    branches: [main, test]
   workflow_dispatch:
 
 concurrency:

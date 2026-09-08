@@ -2,18 +2,55 @@
 /**
  * Mevcut production verisini Student Success Layer'a backfill eder.
  *
+ * İDEMPOTENT: her yazım `upsert` + `update: {}` — aynı kaynak ikinci kez
+ * işlendiğinde kanıt ÇOĞALMAZ, mevcut satır da değişmez.
+ *
  * Kullanım:
  *   npx tsx scripts/backfill-student-success.ts --dry-run
- *   npx tsx scripts/backfill-student-success.ts
+ *   npx tsx scripts/backfill-student-success.ts --from=2026-01-01 --to=2026-06-30
  *   npx tsx scripts/backfill-student-success.ts --student-id=<cuid>
+ *   npx tsx scripts/backfill-student-success.ts --batch-size=50
+ *
+ * ÜRETİMDE ÖNCE `--dry-run` ile koş: hiçbir şey yazılmaz, sayımlar raporlanır.
  */
 
 import { PrismaClient } from "@prisma/client";
 import { computeOutcomeMastery, evidenceToSignal } from "../lib/student-success/mastery";
 
 const prisma = new PrismaClient();
+function flag(name: string): string | undefined {
+  return process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=");
+}
+
+function dateFlag(name: string): Date | undefined {
+  const raw = flag(name);
+  if (!raw) return undefined;
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`--${name} geçerli bir tarih değil: ${raw}`);
+  }
+  return parsed;
+}
+
 const dryRun = process.argv.includes("--dry-run");
-const studentIdArg = process.argv.find((a) => a.startsWith("--student-id="))?.split("=")[1];
+const studentIdArg = flag("student-id");
+
+/**
+ * Kaynak kaydın GERÇEKLEŞME anına göre pencere. Ders `startsAt`, ödev
+ * `completedAt`, deneme `submittedAt` üzerinden filtrelenir — kanıtın
+ * `occurredAt` alanıyla aynı alanlar, yani pencere raporlandığı gibi çalışır.
+ */
+const fromDate = dateFlag("from");
+const toDate = dateFlag("to");
+
+/** Öğrenci sayfa boyutu. Tek seferde 10.000 öğrenci çekmek sessizce kırpıyordu. */
+const BATCH_SIZE = Math.max(1, Math.min(1000, Number(flag("batch-size") ?? 100) || 100));
+
+/** `undefined` döner ki Prisma `where`'e boş bir aralık koymasın. */
+function dateRange(): { gte?: Date; lte?: Date } | undefined {
+  if (!fromDate && !toDate) return undefined;
+  return { ...(fromDate ? { gte: fromDate } : {}), ...(toDate ? { lte: toDate } : {}) };
+}
 
 type Stats = {
   lessonEvidence: number;
@@ -28,6 +65,7 @@ async function backfillLessonEvidence(studentId: string, stats: Stats): Promise<
     where: {
       lesson: {
         status: "COMPLETED",
+        ...(dateRange() ? { startsAt: dateRange() } : {}),
         group: { enrollments: { some: { studentId, endedAt: null } } },
       },
     },
@@ -74,7 +112,7 @@ async function backfillLessonEvidence(studentId: string, stats: Stats): Promise<
 
 async function backfillAssignmentEvidence(studentId: string, stats: Stats): Promise<void> {
   const progress = await prisma.assignmentProgress.findMany({
-    where: { studentId, status: "DONE" },
+    where: { studentId, status: "DONE", ...(dateRange() ? { completedAt: dateRange() } : {}) },
     select: {
       assignmentId: true,
       completedAt: true,
@@ -127,6 +165,7 @@ async function backfillMockExamEvidence(studentId: string, userId: string, stats
     where: {
       studentUserId: userId,
       status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] },
+      ...(dateRange() ? { submittedAt: dateRange() } : {}),
       score: { is: { publicationStatus: "PUBLISHED" } },
     },
     select: {
@@ -252,10 +291,6 @@ async function rescoreMastery(studentId: string, stats: Stats): Promise<void> {
 }
 
 async function main() {
-  const students = studentIdArg
-    ? await prisma.studentProfile.findMany({ where: { id: studentIdArg }, select: { id: true, userId: true } })
-    : await prisma.studentProfile.findMany({ select: { id: true, userId: true }, take: 10000 });
-
   const totals: Stats = {
     lessonEvidence: 0,
     assignmentEvidence: 0,
@@ -264,18 +299,46 @@ async function main() {
     errors: [],
   };
 
-  for (const student of students) {
-    await backfillLessonEvidence(student.id, totals);
-    await backfillAssignmentEvidence(student.id, totals);
-    await backfillMockExamEvidence(student.id, student.userId, totals);
-    await rescoreMastery(student.id, totals);
+  let studentCount = 0;
+  // Cursor sayfalama: eski hâl tek sorguda `take: 10000` yapıyordu ve daha fazla
+  // öğrenci varsa fazlası SESSİZCE atlanıyordu — backfill "başarılı" raporlarken
+  // bir kısım öğrencinin kanıtı hiç oluşmuyordu.
+  let cursor: string | undefined;
+  for (;;) {
+    const students = studentIdArg
+      ? await prisma.studentProfile.findMany({ where: { id: studentIdArg }, select: { id: true, userId: true } })
+      : await prisma.studentProfile.findMany({
+          select: { id: true, userId: true },
+          orderBy: { id: "asc" },
+          take: BATCH_SIZE,
+          ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+        });
+    if (!students.length) break;
+
+    for (const student of students) {
+      await backfillLessonEvidence(student.id, totals);
+      await backfillAssignmentEvidence(student.id, totals);
+      await backfillMockExamEvidence(student.id, student.userId, totals);
+      await rescoreMastery(student.id, totals);
+    }
+    studentCount += students.length;
+    console.error(
+      JSON.stringify({ event: "backfill.progress", studentCount, errorCount: totals.errors.length }),
+    );
+
+    if (studentIdArg) break;
+    cursor = students[students.length - 1].id;
+    if (students.length < BATCH_SIZE) break;
   }
 
   console.log(
     JSON.stringify(
       {
         dryRun,
-        studentCount: students.length,
+        from: fromDate?.toISOString() ?? null,
+        to: toDate?.toISOString() ?? null,
+        batchSize: BATCH_SIZE,
+        studentCount,
         ...totals,
         errorCount: totals.errors.length,
       },

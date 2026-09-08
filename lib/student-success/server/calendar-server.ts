@@ -3,7 +3,7 @@ import "server-only";
 import type { ProductCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { istanbulDayStart, istanbulNextDayStart } from "@/lib/istanbul-time";
-import { filterCalendarByInclude, sortCalendarEvents } from "@/lib/student-success/calendar";
+import { dedupeLinkedWorkItems, filterCalendarByInclude, sortCalendarEvents } from "@/lib/student-success/calendar";
 import type { UnifiedCalendarEvent } from "@/lib/student-success/types";
 import { STUDENT_SUCCESS_PRODUCT_LABELS } from "@/lib/student-success/types";
 import { getStudentProducts } from "@/lib/student-success/server/event-processor";
@@ -47,7 +47,9 @@ export async function getStudentCalendar(input: GetStudentCalendarInput): Promis
           description: lesson.group.subject,
           startsAt: lesson.startsAt,
           endsAt: lesson.endsAt,
-          href: `/panel/ogrenci/dersler/${lesson.id}`,
+          // Öğrenci tarafında ders başına sayfa YOK; birleşik takvimden gelen bağlantı
+          // 404'e düşüyordu. Takvim ekranı doğru hedef.
+          href: "/panel/ogrenci/takvim",
           sourceId: lesson.id,
           sourceType: "Lesson",
         });
@@ -94,13 +96,27 @@ export async function getStudentCalendar(input: GetStudentCalendarInput): Promis
       select: {
         tasks: {
           where: { scheduledFor: { gte: input.from, lt: input.to }, status: { not: "SKIPPED" } },
-          select: { id: true, title: true, scheduledFor: true, durationMinutes: true, sourceType: true, sourceReferenceId: true },
+          select: {
+            id: true,
+            title: true,
+            scheduledFor: true,
+            durationMinutes: true,
+            sourceType: true,
+            sourceReferenceId: true,
+            scheduleMode: true,
+          },
         },
       },
     });
     for (const plan of plans) {
       for (const task of plan.tasks) {
-        const end = new Date(task.scheduledFor.getTime() + task.durationMinutes * 60000);
+        // Esnek görevin `scheduledFor` alanı gün başlangıcıdır. Bitişi
+        // süreden türetmek 00:00–00:40 gibi UYDURMA bir randevu üretiyordu;
+        // esnek görev takvimde saatsiz temsil edilir (§22).
+        const isFlexible = task.scheduleMode === "FLEXIBLE";
+        const end = isFlexible
+          ? null
+          : new Date(task.scheduledFor.getTime() + task.durationMinutes * 60000);
         events.push({
           id: `coaching-task:${task.id}`,
           type: "COACHING_TASK",
@@ -113,6 +129,8 @@ export async function getStudentCalendar(input: GetStudentCalendarInput): Promis
           href: "/panel/ogrenci/plan",
           sourceId: task.id,
           sourceType: "WeeklyPlanTask",
+          linkedAssignmentId: task.sourceType === "ASSIGNMENT" ? task.sourceReferenceId : null,
+          isFlexible,
         });
       }
     }
@@ -140,7 +158,7 @@ export async function getStudentCalendar(input: GetStudentCalendarInput): Promis
         description: null,
         startsAt: exam.startsAt,
         endsAt: exam.endsAt,
-        href: `/panel/odk/sinavlar/${exam.id}`,
+        href: `/panel/odk/ogrenci/denemeler/${exam.id}`,
         sourceId: exam.id,
         sourceType: "OdkExam",
       });
@@ -148,7 +166,7 @@ export async function getStudentCalendar(input: GetStudentCalendarInput): Promis
   }
 
   const filtered = filterCalendarByInclude(events, include);
-  return sortCalendarEvents(filtered);
+  return sortCalendarEvents(dedupeLinkedWorkItems(filtered));
 }
 
 export async function getStudentToday(input: {

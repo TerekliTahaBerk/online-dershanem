@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { buildRecoveryDraft } from "@/lib/recovery-package";
 import { buildAdaptiveWeek } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
+import { activePlanSourceKeys, planSourceKey } from "@/lib/kocum";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 
 export async function generateRecoveryPackage(attendanceId: string, teacherId: string) {
@@ -100,8 +101,13 @@ export async function rebalanceApprovedPlanForRecovery(studentId: string, approv
   if (!preference?.planningEnabled) return false;
   const plan = await prisma.weeklyPlan.findFirst({ where: { studentId, status: "APPROVED" }, orderBy: { weekStart: "desc" }, include: { tasks: true } });
   if (!plan) return false;
-  const completedSources = new Set(plan.tasks.filter((task) => task.status === "DONE").map((task) => `${task.sourceType}:${task.sourceReferenceId || task.title}`));
-  const candidates = (await collectPlanCandidates(studentId, preference)).filter((item) => !completedSources.has(`${item.sourceType}:${item.sourceReferenceId || item.title}`));
+  // Telafi dengelemesi yalnız `PLANNED` görevleri emekliye ayırır; başlanmış
+  // veya kısmen bitmiş görevler ayakta kalır. Onların kaynağı da aday
+  // listesinden düşülmeli, yoksa aynı iş için ikinci bir görev doğuyordu.
+  const activeSources = activePlanSourceKeys(plan.tasks);
+  const candidates = (await collectPlanCandidates(studentId, preference)).filter(
+    (item) => !activeSources.has(planSourceKey({ ...item, title: item.title })),
+  );
   const availableDays = Array.isArray(preference.availableDays) ? preference.availableDays.filter((day): day is number => typeof day === "number") : [];
   const tasks = buildAdaptiveWeek({ now: new Date(), availableDays, minutesPerDay: preference.minutesPerDay, maxTasksPerDay: Math.min(3, preference.maxTasksPerDay), candidates });
   await prisma.$transaction(async (tx) => {

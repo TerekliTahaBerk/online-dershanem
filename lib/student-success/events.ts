@@ -138,3 +138,12 @@ export const EVENT_CONSUMER_KEYS = [
 ] as const;
 
 export type EventConsumerKey = (typeof EVENT_CONSUMER_KEYS)[number];
+
+/**
+ * Bir outbox olayının kaç kez denenebileceği. Aşan olay ölü mektuptur: artık
+ * kendiliğinden işlenmez, operasyon ekranında ayrı sayılır.
+ *
+ * Üretici (`outbox.ts`) ve işleyici (`event-processor.ts`) aynı sayıyı görmek
+ * zorunda; bu yüzden bağımlılığı olmayan bu modülde durur.
+ */
+export const MAX_OUTBOX_ATTEMPTS = 5;

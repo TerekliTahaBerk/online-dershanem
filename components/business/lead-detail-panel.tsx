@@ -81,7 +81,7 @@ export function LeadDetailPanel({ lead, owners, duplicates, canWrite, provisioni
       : null;
   const createSaleHref =
     lead.productInterest === "ONLINE_DENEME_KULUBU"
-      ? "/panel/yonetim/odk"
+      ? "/panel/odk/yonetim"
       : "/panel/yonetim/siparisler";
   const suggestion =
     lead.matchSuggestion &&

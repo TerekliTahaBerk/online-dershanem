@@ -25,7 +25,10 @@ export async function GET(request: Request) {
     where = profile ? { startsAt: range, group: { enrollments: { some: { studentId: profile.id, endedAt: null } } } } : { id: "__missing_student_profile__" };
   }
   if (auth.session.role === "PARENT") {
-    const links = await prisma.parentStudent.findMany({ where: { parentId: auth.session.userId }, orderBy: { createdAt: "asc" }, select: { studentId: true, student: { select: { userId: true } } } });
+    // Bağlantı kaldırıldıktan (`active:false` / `endedAt`) sonra takvim akışı
+    // çalışmaya devam ediyordu: abone olunan .ics adresi sessizce veri akıtmayı
+    // sürdürüyordu. Kapsam `parent-scope` ile aynı koşulu kullanmalı.
+    const links = await prisma.parentStudent.findMany({ where: { parentId: auth.session.userId, active: true, endedAt: null }, orderBy: { createdAt: "asc" }, select: { studentId: true, student: { select: { userId: true } } } });
     const requested = url.searchParams.get("studentId");
     const selected = requested ? links.find((item) => item.studentId === requested) : links[0];
     if (!selected) return NextResponse.json({ error: "Bağlı öğrenci bulunamadı." }, { status: 404 });

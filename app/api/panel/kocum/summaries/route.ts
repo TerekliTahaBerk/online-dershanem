@@ -50,6 +50,21 @@ export async function POST(request: Request) {
     parsed.data.weekStart ? new Date(parsed.data.weekStart) : new Date(),
   );
 
+  const existing = await prisma.weeklyCoachSummary.findUnique({
+    where: { studentId_weekStart: { studentId: parsed.data.studentId, weekStart } },
+    select: { id: true, status: true },
+  });
+  const alreadyPublished = existing?.status === "PUBLISHED";
+
+  /*
+   * Atlanan alan KORUNUR, açıkça `null` gönderilen alan temizlenir.
+   * Eskiden her alan `?? null` ile yazılıyordu: yalnız `nextWeekFocus`
+   * güncelleyen kısmi bir istek, veliye giden `parentVisibleText`'i
+   * sessizce siliyordu.
+   */
+  const keep = <T,>(value: T | undefined): T | null | undefined =>
+    value === undefined ? undefined : value ?? null;
+
   const summary = await prisma.weeklyCoachSummary.upsert({
     where: {
       studentId_weekStart: { studentId: parsed.data.studentId, weekStart },
@@ -68,13 +83,15 @@ export async function POST(request: Request) {
       publishedById: parsed.data.publish ? auth.session.userId : null,
     },
     update: {
-      planCompletionPct: parsed.data.planCompletionPct ?? null,
-      strengths: parsed.data.strengths ?? null,
-      focusAreas: parsed.data.focusAreas ?? null,
-      nextWeekFocus: parsed.data.nextWeekFocus ?? null,
-      studentVisibleText: parsed.data.studentVisibleText ?? null,
-      parentVisibleText: parsed.data.parentVisibleText ?? null,
-      ...(parsed.data.publish
+      planCompletionPct: keep(parsed.data.planCompletionPct),
+      strengths: keep(parsed.data.strengths),
+      focusAreas: keep(parsed.data.focusAreas),
+      nextWeekFocus: keep(parsed.data.nextWeekFocus),
+      studentVisibleText: keep(parsed.data.studentVisibleText),
+      parentVisibleText: keep(parsed.data.parentVisibleText),
+      // Yayın damgası bir kez atılır; yeniden yayın `publishedAt`'i
+      // ileri kaydırıp özeti "yeni" göstermez.
+      ...(parsed.data.publish && !alreadyPublished
         ? {
             status: "PUBLISHED" as const,
             publishedAt: new Date(),
@@ -84,7 +101,9 @@ export async function POST(request: Request) {
     },
   });
 
-  if (parsed.data.publish) {
+  // Zaman çizelgesi olayı YALNIZ ilk yayında (§19). Aynı özet iki kez
+  // yayınlandığında veli aynı bildirimi iki kez görüyordu.
+  if (parsed.data.publish && !alreadyPublished) {
     await appendTimelineEvent({
       studentId: parsed.data.studentId,
       kind: "COACH_SUMMARY",

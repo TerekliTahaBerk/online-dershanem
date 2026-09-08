@@ -7,6 +7,9 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import {
   assignmentProgressStatusFor,
+  evaluateTaskTransition,
+  isCompletionTransition,
+  mergeTaskActuals,
   shouldSyncAssignmentProgress,
   validateTaskCompletion,
   type KocumTaskStatus,
@@ -61,30 +64,50 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!task) {
     return NextResponse.json({ error: "Plan görevi bulunamadı." }, { status: 404 });
   }
-  if (task.status === "SKIPPED") {
-    return NextResponse.json({ error: "Bu görev yeniden planlanacak durumda." }, { status: 409 });
+
+  const previousStatus = task.status as KocumTaskStatus;
+  const nextStatus = parsed.data.status as KocumTaskStatus;
+
+  // Geçiş kararı tek yerde (§5). Geçersiz geçiş 409, tekrarlanan aynı istek
+  // NOOP: yazma yapılır ama zaman çizelgesi olayı ve ürün olayı TEKRAR
+  // ÜRETİLMEZ. Eskiden ikinci `DONE` isteği ikinci bir tamamlanma sayılıyordu.
+  const transition = evaluateTaskTransition(previousStatus, nextStatus);
+  if (transition.kind === "REJECT") {
+    return NextResponse.json({ error: transition.reason }, { status: 409 });
   }
 
-  const nextStatus = parsed.data.status as KocumTaskStatus;
   const now = new Date();
+  const actuals = mergeTaskActuals(
+    {
+      actualQuestions: parsed.data.actualQuestions,
+      actualCorrect: parsed.data.actualCorrect,
+      actualIncorrect: parsed.data.actualIncorrect,
+      actualBlank: parsed.data.actualBlank,
+      actualMinutes: parsed.data.actualMinutes,
+      studentNote: parsed.data.studentNote,
+      difficultyFelt: parsed.data.difficultyFelt,
+      energyFelt: parsed.data.energyFelt,
+    },
+    task.taskKind,
+  );
 
-  await prisma.$transaction(async (tx) => {
-    await tx.weeklyPlanTask.update({
-      where: { id: task.id },
+  // Atomik durum kapma: iki paralel istek (çift tıklama, mobil tekrar
+  // gönderim) aynı geçişi iki kez uygulamamalı. Koşullu `updateMany`
+  // yalnız beklenen durumdan geçişe izin verir.
+  const claimed = await prisma.$transaction(async (tx) => {
+    const applied = await tx.weeklyPlanTask.updateMany({
+      where: { id: task.id, status: previousStatus },
       data: {
         status: nextStatus,
-        startedAt: nextStatus === "IN_PROGRESS" || !task.status || task.status === "PLANNED" ? now : undefined,
-        completedAt: nextStatus === "DONE" || nextStatus === "PARTIAL" || nextStatus === "COULD_NOT" ? now : null,
-        actualQuestions: parsed.data.actualQuestions ?? null,
-        actualCorrect: parsed.data.actualCorrect ?? null,
-        actualIncorrect: parsed.data.actualIncorrect ?? null,
-        actualBlank: parsed.data.actualBlank ?? null,
-        actualMinutes: parsed.data.actualMinutes ?? null,
-        studentNote: parsed.data.studentNote ?? null,
-        difficultyFelt: parsed.data.difficultyFelt ?? null,
-        energyFelt: parsed.data.energyFelt ?? null,
+        startedAt: previousStatus === "PLANNED" ? now : undefined,
+        completedAt:
+          nextStatus === "DONE" || nextStatus === "PARTIAL" || nextStatus === "COULD_NOT"
+            ? now
+            : undefined,
+        ...actuals,
       },
     });
+    if (applied.count !== 1) return false;
 
     if (
       shouldSyncAssignmentProgress(task.sourceType, task.sourceReferenceId, nextStatus) &&
@@ -101,9 +124,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         });
       }
     }
+    return true;
   });
 
-  if (nextStatus === "DONE" || nextStatus === "PARTIAL") {
+  if (!claimed) {
+    return NextResponse.json(
+      { error: "Görev başka bir yerden güncellendi. Sayfayı yenileyin." },
+      { status: 409 },
+    );
+  }
+
+  // Yan etkiler YALNIZ açık durumdan tamamlanmaya ilk geçişte.
+  if (isCompletionTransition(previousStatus, nextStatus)) {
     await appendTimelineEvent({
       studentId: task.plan.studentId,
       kind: "PLAN_COMPLETION",
@@ -112,15 +144,15 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       metadata: { taskId: task.id, status: nextStatus },
       occurredAt: istanbulDayStart(now),
     });
+
+    await recordPanelProductEvent(
+      {
+        name: "plan_task_completed",
+        properties: { sourceType: task.sourceType, reasonCode: "CAPACITY_BALANCE" },
+      },
+      auth.session.role,
+    );
   }
 
-  await recordPanelProductEvent(
-    {
-      name: "plan_task_completed",
-      properties: { sourceType: task.sourceType, reasonCode: "CAPACITY_BALANCE" },
-    },
-    auth.session.role,
-  );
-
-  return NextResponse.json({ completed: true, status: nextStatus });
+  return NextResponse.json({ completed: true, status: nextStatus, repeated: transition.kind === "NOOP" });
 }

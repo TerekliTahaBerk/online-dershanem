@@ -4,7 +4,19 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { appendTimelineEvent } from "@/lib/kocum/server";
+import { istanbulDayStart } from "@/lib/istanbul-time";
 
+/**
+ * Tek adımlı tamamlama — yalnız `PLANNED` görevi `DONE` yapar.
+ *
+ * Zengin tamamlama (gerçekleşen soru/süre, kısmi tamamlama, düzeltme)
+ * `/api/panel/kocum/tasks/[id]/complete` ucundadır ve durum makinesini orada
+ * uygular. Buradaki `status: "PLANNED"` koşulu aynı makinenin daha dar bir
+ * dilimidir: tamamlanmış görev 404 döner, dolayısıyla çift tamamlama olmaz.
+ * Zaman çizelgesi kaydı İKİ uçta da yazılır — yoksa hangi ucun kullanıldığına
+ * göre öğrencinin geçmişi eksik kalıyordu.
+ */
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("OK", "STUDENT");
   if (!auth.ok) return auth.response;
@@ -17,6 +29,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   await prisma.$transaction(async (tx) => {
     await tx.weeklyPlanTask.update({ where: { id: task.id }, data: { status: "DONE", completedAt: new Date() } });
     if (task.sourceType === "ASSIGNMENT" && task.sourceReferenceId) await tx.assignmentProgress.updateMany({ where: { assignmentId: task.sourceReferenceId, studentId: task.plan.studentId }, data: { status: "DONE", completedAt: new Date() } });
+  });
+  await appendTimelineEvent({
+    studentId: task.plan.studentId,
+    kind: "PLAN_COMPLETION",
+    title: "Görev tamamlandı",
+    visibility: "STAFF",
+    metadata: { taskId: task.id, status: "DONE" },
+    occurredAt: istanbulDayStart(new Date()),
   });
   await recordPanelProductEvent({ name: "plan_task_completed", properties: { sourceType: task.sourceType, reasonCode: task.reasonCode } }, auth.session.role);
   await recordPanelProductEvent({

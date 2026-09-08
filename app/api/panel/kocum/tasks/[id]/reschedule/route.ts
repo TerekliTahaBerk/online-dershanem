@@ -68,27 +68,37 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
   const nextVersion = task.plan.version + 1;
 
-  await prisma.$transaction(async (tx) => {
+  const moved = await prisma.$transaction(async (tx) => {
+    // Sürüm koşullu artırılır: iki koç aynı planı aynı anda düzenlerse
+    // ikincisi sessizce üzerine yazmak yerine çakışma alır (§27).
+    const bumped = await tx.weeklyPlan.updateMany({
+      where: { id: task.planId, version: task.plan.version },
+      data: { version: nextVersion },
+    });
+    if (bumped.count !== 1) return false;
+
     await tx.weeklyPlanTask.update({
       where: { id: task.id },
       data: { scheduledFor },
     });
-    await tx.weeklyPlan.update({
-      where: { id: task.planId },
-      data: { version: nextVersion },
+
+    await recordPlanRevision({
+      planId: task.planId,
+      version: nextVersion,
+      changedById: auth.session.userId,
+      changeSummary: buildRevisionChangeSummary({
+        previousVersion: task.plan.version,
+        nextVersion,
+        actorLabel: auth.session.fullName || "Koç",
+      }),
+      tx,
     });
+    return true;
   });
 
-  await recordPlanRevision({
-    planId: task.planId,
-    version: nextVersion,
-    changedById: auth.session.userId,
-    changeSummary: buildRevisionChangeSummary({
-      previousVersion: task.plan.version,
-      nextVersion,
-      actorLabel: auth.session.fullName || "Koç",
-    }),
-  });
+  if (!moved) {
+    return NextResponse.json({ error: "Plan güncellenmiş. Sayfayı yenileyin." }, { status: 409 });
+  }
 
   if (task.plan.status === "APPROVED") {
     await appendTimelineEvent({

@@ -5,6 +5,7 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { assignmentCreateSchema } from "@/lib/odk/admin-schemas";
 import { resolveAssignmentStudents } from "@/lib/odk/assignment-resolve";
+import { afterResponse } from "@/lib/after-response";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
@@ -138,13 +139,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   for (const student of students) {
     const profile = await prisma.studentProfile.findUnique({ where: { userId: student.id }, select: { id: true } });
     if (!profile) continue;
-    void onMockExamAssigned({
+    afterResponse("odk.exam_assignment.cross_product_emit_failed", () => onMockExamAssigned({
       examId: id,
       studentId: profile.id,
       actorUserId: auth.session.userId,
       startsAt: examMeta?.startsAt ?? null,
       assignmentId: null,
-    });
+    }), { examId: id, studentId: profile.id });
   }
 
   return NextResponse.json({ created, updated, total: created + updated, source, sourceRefId }, { status: 201 });

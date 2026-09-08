@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { purchaseWebhookSchema } from "@/lib/validators";
-import { logAudit } from "@/lib/audit";
+import { queueAudit } from "@/lib/audit";
 import { log } from "@/lib/logger";
 
 /**
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
       eventType: parsed.data.eventType,
       provider: parsed.data.provider,
     });
-    void logAudit({
+    queueAudit({
       actorUserId: null,
       actorType: "SYSTEM",
       entityType: "PurchaseIntent",

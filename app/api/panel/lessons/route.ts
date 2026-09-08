@@ -7,14 +7,21 @@ import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { assertLessonNoConflict, LessonLifecycleError } from "@/lib/panel/lesson-lifecycle";
 import {
+  lessonSeriesRequestSchema,
   previewLessonSeries,
+  resolveLessonSeriesInput,
   LessonSeriesScheduleError,
-  type IsoWeekday,
 } from "@/lib/panel/lesson-series-schedule";
 import { resolveLessonTargetGroup } from "@/lib/panel/lesson-target";
 
-const schema = z
-  .object({
+/**
+ * Seri alanları önizleme ucuyla ORTAK şemadan gelir (`seriesEndsOn` dahil).
+ * Eskiden oluşturma `seriesEndsOn`u hiç tanımıyor ve `totalOccurrences`
+ * varsayılanı önizlemedekinden farklı davranıyordu; aynı gövde iki uçta farklı
+ * sayıda ders üretebiliyordu.
+ */
+const schema = lessonSeriesRequestSchema
+  .extend({
     targetType: z.enum(["GROUP", "STUDENT"]).default("GROUP"),
     groupId: z.string().min(1).optional(),
     studentId: z.string().min(1).optional(),
@@ -22,15 +29,6 @@ const schema = z
     title: z.string().trim().min(2).max(120),
     startsAt: z.string().datetime(),
     endsAt: z.string().datetime().optional(),
-    mode: z.enum(["SINGLE", "SERIES"]).default("SINGLE"),
-    repeatWeeks: z.number().int().min(1).max(12).default(1),
-    weekdays: z.array(z.number().int().min(1).max(7)).max(7).optional(),
-    startsAtTime: z
-      .string()
-      .regex(/^([01]?\d|2[0-3]):([0-5]\d)$/)
-      .optional(),
-    durationMinutes: z.number().int().min(15).max(240).optional(),
-    totalOccurrences: z.number().int().min(1).max(48).optional(),
     meetingUrl: z.string().url().max(500).optional().or(z.literal("")),
     description: z.string().trim().max(2000).optional().or(z.literal("")),
   })
@@ -41,7 +39,7 @@ const schema = z
     if (value.targetType === "STUDENT" && !value.studentId) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Öğrenci seçin.", path: ["studentId"] });
     }
-    if (value.mode === "SERIES" && !value.weekdays?.length && value.repeatWeeks < 2) {
+    if (value.mode === "SERIES" && !value.weekdays?.length && (value.repeatWeeks ?? 1) < 2 && !value.totalOccurrences) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Ders serisi için en az 2 hafta veya haftanın günlerini seçin.",
@@ -90,41 +88,26 @@ export async function POST(request: Request) {
         )
       : 60);
 
-  const useWeekdaySeries =
-    parsed.data.mode === "SERIES" &&
-    ((parsed.data.weekdays && parsed.data.weekdays.length > 0) ||
-      Boolean(parsed.data.totalOccurrences));
+  // Seri modunda HER ZAMAN ortak üreticiyi kullan. Eskiden `weekdays` ve
+  // `totalOccurrences` boşsa naif bir "+7 gün" döngüsüne düşülüyordu; o döngü
+  // ne bitiş tarihini ne de Istanbul takvim normalizasyonunu biliyordu, yani
+  // önizlemeyle aynı sonucu üretmesi tesadüfe kalıyordu.
+  const useWeekdaySeries = parsed.data.mode === "SERIES" || (parsed.data.repeatWeeks ?? 1) > 1;
 
   let occurrenceStarts: Date[] = [];
   let occurrenceEnds: Date[] = [];
 
   try {
     if (useWeekdaySeries) {
-      const time =
-        parsed.data.startsAtTime ||
-        new Intl.DateTimeFormat("en-GB", {
-          timeZone: "Europe/Istanbul",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }).format(startsAt);
-      const preview = previewLessonSeries({
-        seriesStartsOn: startsAt,
-        startsAtTime: time,
-        durationMinutes,
-        weekdays: (parsed.data.weekdays || []) as IsoWeekday[],
-        totalOccurrences: parsed.data.totalOccurrences || parsed.data.repeatWeeks || 8,
-      });
+      const preview = previewLessonSeries(
+        resolveLessonSeriesInput({ ...parsed.data, durationMinutes }),
+      );
       occurrenceStarts = preview.occurrences.map((o) => o.startsAt);
       occurrenceEnds = preview.occurrences.map((o) => o.endsAt);
     } else {
-      const isSeries = parsed.data.mode === "SERIES" || parsed.data.repeatWeeks > 1;
-      const lessonCount = isSeries ? parsed.data.repeatWeeks : 1;
-      for (let index = 0; index < lessonCount; index += 1) {
-        const lessonStart = new Date(startsAt.getTime() + index * 7 * 86400000);
-        occurrenceStarts.push(lessonStart);
-        occurrenceEnds.push(new Date(lessonStart.getTime() + durationMinutes * 60_000));
-      }
+      // Tek ders: verilen an aynen kullanılır, üretici devreye girmez.
+      occurrenceStarts.push(startsAt);
+      occurrenceEnds.push(new Date(startsAt.getTime() + durationMinutes * 60_000));
     }
   } catch (error) {
     if (error instanceof LessonSeriesScheduleError) {

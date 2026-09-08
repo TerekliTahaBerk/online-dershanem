@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createAnonymousTrackingId, trackContactClick, trackConversionEvent } from "./tracking";
+import { trackContactClick, trackConversionEvent } from "./tracking";
+import { createAnonymousTrackingId } from "./tracking-id";
 
 test("anonymous tracking ids are stable-length privacy-safe hashes", () => {
   const id = createAnonymousTrackingId("student-123");

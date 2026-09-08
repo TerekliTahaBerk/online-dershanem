@@ -172,6 +172,26 @@ export const panelEventSchema = z.discriminatedUnion("name", [
       option: z.enum(["REDUCE_LIGHT", "REDUCE_HEAVY", "CHANGE_DAYS", "UNSPECIFIED"]),
     }).strict(),
   }),
+  /*
+   * Online Koçum operasyon sayaçları (§37). Plan yayını ve öneri kararı,
+   * görev tamamlanmasından AYRI izlenir: eskiden yalnız `plan_task_completed`
+   * vardı ve "koçlar öneri kabul ediyor mu, plan yayınlanıyor mu" sorusu
+   * telemetriden hiç yanıtlanamıyordu.
+   */
+  z.object({
+    name: z.literal("kocum_plan_published"),
+    properties: z.object({
+      taskCountBand: z.enum(["1-5", "6-15", "16-30", "31+"]),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("kocum_suggestion_reviewed"),
+    properties: z.object({
+      decision: z.enum(["ACCEPTED", "REJECTED"]),
+      kind: z.enum(["ADAPTIVE_NEXT_WEEK", "REVIEW_QUEUE", "MOCK_EXAM_FOLLOWUP", "CARRY_OVER", "TEMPLATE"]),
+      taskCreated: z.boolean(),
+    }).strict(),
+  }),
   z.object({
     name: z.literal("plan_task_completed"),
     properties: z.object({ sourceType: z.enum(["ASSIGNMENT", "REVIEW", "WEAK_OUTCOME", "EXAM_PREP", "RECOVERY", "MANUAL_COACH", "MOCK_EXAM", "SYSTEM_SUGGESTED", "TEMPLATE", "PERSONAL_GOAL"]), reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]) }).strict(),

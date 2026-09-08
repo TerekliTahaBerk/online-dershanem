@@ -14,8 +14,10 @@ test("platform passkey detection prefers internal transport", () => {
 });
 
 test("webauthn client errors are translated for mobile users", () => {
-  assert.match(
-    mapWebAuthnClientError(new Error("The request is not allowed by the user agent or the platform in the current context")),
-    /uygulama kodunu/i,
+  const message = mapWebAuthnClientError(
+    new Error("The request is not allowed by the user agent or the platform in the current context"),
   );
+  // Mobilde geçiş anahtarı düşerse kullanıcı kilitlenmemeli: her iki yedek yöntem de yazılı olmalı.
+  assert.match(message, /uygulaması kodunu/i);
+  assert.match(message, /kurtarma kodunu/i);
 });
