@@ -1,21 +1,35 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { GeistSans } from "geist/font/sans";
-import { Manrope, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 // Onaylı tasarımın tipografisi: gövde ve başlık Manrope, etiket/eyebrow
 // JetBrains Mono. (Web.dc.html → Tasarım sistemi · Tipografi)
-const manrope = Manrope({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700", "800"],
+//
+// Fontlar repoda (OFL); build Google Fonts'a ağ isteği atmaz. Dosya başına
+// latin + latin-ext birleşik değişken WOFF2 — kaynak ve yeniden üretim:
+// app/fonts/README.md. Ağırlıklar aralık değil ayrık yüz olarak tanımlı:
+// eski `next/font/google` çağrısıyla aynı en-yakın-ağırlık eşleşmesi korunur
+// (ör. mono'da `font-medium` 500 değil 400 yüzüne düşer).
+// `next/font` seçenekleri derleme anında okunur; değerler literal olmalı.
+const manrope = localFont({
+  src: [
+    { path: "./fonts/manrope/manrope-latin-ext-wght.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/manrope/manrope-latin-ext-wght.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/manrope/manrope-latin-ext-wght.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/manrope/manrope-latin-ext-wght.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/manrope/manrope-latin-ext-wght.woff2", weight: "800", style: "normal" },
+  ],
   variable: "--font-manrope",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "600"],
+const jetbrainsMono = localFont({
+  src: [
+    { path: "./fonts/jetbrains-mono/jetbrains-mono-latin-ext-wght.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/jetbrains-mono/jetbrains-mono-latin-ext-wght.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-jetbrains-mono",
   display: "swap",
 });
