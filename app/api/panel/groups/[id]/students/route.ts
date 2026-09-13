@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiAccountRole } from "@/lib/auth/api-guards";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
+
+const querySchema = z.object({ q: z.string().trim().max(120).default("") });
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiAccountRole("ADMIN");
   if (!auth.ok) return auth.response;
 
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const url = new URL(request.url);
-  const query = url.searchParams.get("q")?.trim() || "";
+  const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!parsed.success) return invalidApiInput("Geçersiz öğrenci araması.");
+  const query = parsed.data.q;
   const limit = 20;
 
   const group = await prisma.group.findUnique({

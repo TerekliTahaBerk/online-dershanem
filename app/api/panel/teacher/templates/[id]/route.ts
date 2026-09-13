@@ -3,13 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiOdRole("TEACHER");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.teacher.templates.delete", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:teacher-template:${auth.session.userId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const removed = await prisma.teacherNoteTemplate.deleteMany({ where: { id, teacherId: auth.session.userId } });
   if (!removed.count) return NextResponse.json({ error: "Şablon bulunamadı." }, { status: 404 });
   await logAudit({ actorUserId: auth.session.userId, entityType: "TeacherNoteTemplate", entityId: id, action: "teacher.template_deleted", summary: "Kişisel şablon silindi" });

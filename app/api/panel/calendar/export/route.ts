@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
@@ -6,10 +7,14 @@ import { icalDocument } from "@/lib/ical";
 import { getStudentCalendar } from "@/lib/student-success/server/calendar-server";
 import { unifiedEventsToIcal, mergeIcalEvents } from "@/lib/student-success/ical-bridge";
 
+const querySchema = z.object({ studentId: z.string().trim().min(1).max(191).optional() });
+
 export async function GET(request: Request) {
   const auth = await requireApiOdRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
   if (!auth.ok) return auth.response;
   const url = new URL(request.url);
+  const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!parsed.success) return NextResponse.json({ error: "Geçersiz takvim filtresi." }, { status: 400 });
   const now = Date.now();
   const range = { gte: new Date(now - 30 * 86400000), lte: new Date(now + 180 * 86400000) };
   let where: Prisma.LessonWhereInput = { startsAt: range };
@@ -29,7 +34,7 @@ export async function GET(request: Request) {
     // çalışmaya devam ediyordu: abone olunan .ics adresi sessizce veri akıtmayı
     // sürdürüyordu. Kapsam `parent-scope` ile aynı koşulu kullanmalı.
     const links = await prisma.parentStudent.findMany({ where: { parentId: auth.session.userId, active: true, endedAt: null }, orderBy: { createdAt: "asc" }, select: { studentId: true, student: { select: { userId: true } } } });
-    const requested = url.searchParams.get("studentId");
+    const requested = parsed.data.studentId;
     const selected = requested ? links.find((item) => item.studentId === requested) : links[0];
     if (!selected) return NextResponse.json({ error: "Bağlı öğrenci bulunamadı." }, { status: 404 });
     studentProfileId = selected.studentId;

@@ -1,13 +1,15 @@
 import { createHash } from "node:crypto";
 import { del, put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import type { OdkExamFileType } from "@prisma/client";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 const MAX_PDF_SIZE = 30 * 1024 * 1024;
+const uploadSchema = z.object({ file: z.instanceof(File), type: z.enum(["BOOKLET_PDF", "ANSWER_KEY_PDF"]) });
 function cleanName(name: string) { return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 100) || "deneme.pdf"; }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -16,11 +18,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Private dosya deposu yapılandırılmamış." }, { status: 503 });
   const form = await request.formData().catch(() => null);
-  const file = form?.get("file");
-  const type = String(form?.get("type") || "") as OdkExamFileType;
-  if (!(file instanceof File) || file.type !== "application/pdf" || !["BOOKLET_PDF", "ANSWER_KEY_PDF"].includes(type)) return NextResponse.json({ error: "Geçerli bir PDF ve dosya türü seçin." }, { status: 400 });
+  const parsed = uploadSchema.safeParse({ file: form?.get("file"), type: form?.get("type") });
+  if (!parsed.success || parsed.data.file.type !== "application/pdf") return NextResponse.json({ error: "Geçerli bir PDF ve dosya türü seçin." }, { status: 400 });
+  const { file, type } = parsed.data;
   if (!file.size || file.size > MAX_PDF_SIZE) return NextResponse.json({ error: "PDF en fazla 30 MB olabilir." }, { status: 413 });
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const exam = await prisma.odkExam.findFirst({ where: { id, status: "DRAFT", currentVersion: { status: "DRAFT" } }, select: { currentVersionId: true } });
   if (!exam?.currentVersionId) return NextResponse.json({ error: "Yalnız taslak sürüme PDF yüklenebilir." }, { status: 409 });
   const bytes = Buffer.from(await file.arrayBuffer());

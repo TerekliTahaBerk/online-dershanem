@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { revokeAllUserSessions } from "@/lib/auth/session";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 const offboardingSchema = z.object({
   transferTeacherId: z.string().min(1),
@@ -129,7 +130,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     );
   }
 
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const snapshot = await loadOffboardingSnapshot(id, new Date());
   if (!snapshot) {
     return NextResponse.json({ error: "Öğretmen bulunamadı." }, { status: 404 });
@@ -224,7 +227,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: "Devretme bilgilerini kontrol edin." }, { status: 400 });
   }
 
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   if (id === parsed.data.transferTeacherId) {
     return NextResponse.json({ error: "Öğretmen kendi hesabına devredemez." }, { status: 400 });
   }

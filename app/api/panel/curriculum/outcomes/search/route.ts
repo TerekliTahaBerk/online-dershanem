@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
+
+const querySchema = z.object({
+  lessonId: z.string().trim().min(1).max(191).optional(),
+  groupId: z.string().trim().min(1).max(191).optional(),
+  subject: z.string().trim().max(100).optional(),
+  level: z.string().trim().max(40).optional(),
+  query: z.string().trim().max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(20).default(10),
+});
 
 function normalizeQuery(value: string | null) {
   return value?.trim().toLocaleLowerCase("tr-TR") || "";
@@ -15,12 +25,10 @@ export async function GET(request: Request) {
   if (!auth.ok) return auth.response;
   const session = auth.session;
   const url = new URL(request.url);
-  const lessonId = url.searchParams.get("lessonId");
-  const groupId = url.searchParams.get("groupId");
-  const subject = url.searchParams.get("subject");
-  const level = url.searchParams.get("level");
-  const query = normalizeQuery(url.searchParams.get("query"));
-  const limit = Math.min(Number(url.searchParams.get("limit") || 10) || 10, 20);
+  const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!parsed.success) return NextResponse.json({ error: "Geçersiz arama filtreleri." }, { status: 400 });
+  const { lessonId, groupId, subject, level, limit } = parsed.data;
+  const query = normalizeQuery(parsed.data.query ?? null);
 
   const lesson = lessonId
     ? await prisma.lesson.findFirst({

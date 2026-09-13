@@ -27,6 +27,7 @@
     "storybook:build": "storybook build",
     "lint": "eslint .",
     "lint:hygiene": "node scripts/check-repo-hygiene.mjs",
+    "lint:api-validation": "node scripts/check-api-input-validation.mjs",
     "typecheck": "tsc --noEmit",
     "test:unit": "node --import tsx --test \"lib/**/*.test.ts\"",
     "test:integration": "node --conditions react-server --import tsx --test tests/integration/*.integration.ts",

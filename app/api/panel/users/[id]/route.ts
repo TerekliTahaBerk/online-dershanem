@@ -7,6 +7,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { isPlausibleEmail, normalizeEmail } from "@/lib/auth/email";
 import { revokeAllUserSessions } from "@/lib/auth/session";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 const schema = z.object({
   email: z.string().min(3).max(254), fullName: z.string().trim().max(120).optional(), phone: z.string().trim().max(32).optional(),
@@ -71,7 +72,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const guard = await guardMutation({ action: "panel.users.delete.preview", requireSameOrigin: true, headers: { get: (name: string) => request.headers.get(name) }, rateLimitKey: `panel:users:delete-preview:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
 
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   if (id === auth.session.userId) {
     return NextResponse.json({ canDelete: false, blockers: [{ code: "self_account", label: "kendi hesabınızı silemezsiniz", count: 1 }], suggestedAction: "SUSPEND" as const });
   }
@@ -110,7 +113,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Profil alanlarını kontrol edin." }, { status: 400 });
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const target = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true, role: true } });
   if (!target) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
   const email = normalizeEmail(parsed.data.email);
@@ -150,7 +155,9 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     );
   }
 
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
 
   if (id === auth.session.userId) {
     return NextResponse.json({ error: "Kendi hesabınızı silemezsiniz." }, { status: 400 });

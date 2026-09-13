@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 const updateSchema = z.object({
   relationship: z.string().trim().max(30).optional(),
@@ -25,7 +26,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ error: "İlişki bilgisini kontrol edin." }, { status: 400 });
   }
 
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const relation = await prisma.parentStudent.findUnique({
     where: { id },
     select: { id: true, parentId: true, studentId: true, relationship: true },
@@ -77,7 +80,9 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.relationships.delete", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:relations:delete:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const relation = await prisma.parentStudent.findUnique({
     where: { id },
     select: { id: true, parentId: true, studentId: true, relationship: true },

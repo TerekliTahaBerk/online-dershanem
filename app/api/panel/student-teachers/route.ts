@@ -15,15 +15,17 @@ const createSchema = z.object({
   subject: z.string().trim().min(2).max(80),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
+const listQuerySchema = z.object({ studentId: z.string().trim().min(1).max(191) });
 
 export async function GET(request: Request) {
   const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   const url = new URL(request.url);
-  const studentId = url.searchParams.get("studentId");
-  if (!studentId) {
+  const query = listQuerySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!query.success) {
     return NextResponse.json({ error: "studentId gerekli." }, { status: 400 });
   }
+  const { studentId } = query.data;
   const links = await listActiveTeacherLinksForStudent(studentId);
   return NextResponse.json({
     links: links.map((link) => ({

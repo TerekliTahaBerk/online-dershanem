@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { normalizeMetaEvents, verifyMetaSignature } from "@/lib/business/instagram";
 import { persistInstagramEvent } from "@/lib/business/jobs";
@@ -9,6 +10,12 @@ import { businessFlags } from "@/lib/business/flags";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const verificationQuerySchema = z.object({
+  "hub.mode": z.literal("subscribe"),
+  "hub.verify_token": z.string().min(1).max(512),
+  "hub.challenge": z.string().max(4096).default(""),
+});
+
 function safeEqual(left: string, right: string) {
   const a = Buffer.from(left); const b = Buffer.from(right);
   return a.length === b.length && timingSafeEqual(a, b);
@@ -16,9 +23,11 @@ function safeEqual(left: string, right: string) {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const mode = url.searchParams.get("hub.mode") || "";
-  const token = url.searchParams.get("hub.verify_token") || "";
-  const challenge = url.searchParams.get("hub.challenge") || "";
+  const parsed = verificationQuerySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!parsed.success) return new NextResponse("Forbidden", { status: 403 });
+  const mode = parsed.data["hub.mode"];
+  const token = parsed.data["hub.verify_token"];
+  const challenge = parsed.data["hub.challenge"];
   const expected = process.env.META_VERIFY_TOKEN || "";
   if (mode !== "subscribe" || !expected || !safeEqual(token, expected)) return new NextResponse("Forbidden", { status: 403 });
   return new NextResponse(challenge, { status: 200, headers: { "content-type": "text/plain" } });

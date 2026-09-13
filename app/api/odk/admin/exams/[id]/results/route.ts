@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { buildExamResultsSummary } from "@/lib/odk/results-ops";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
-  const { id } = await context.params;
+  const params = idParamsSchema.safeParse(await context.params);
+  if (!params.success) return invalidApiInput();
+  const { id } = params.data;
   const exam = await prisma.odkExam.findUnique({
     where: { id },
     select: {

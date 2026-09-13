@@ -5,10 +5,13 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { integrityReviewSchema } from "@/lib/odk/admin-schemas";
 import { assessIntegrity } from "@/lib/odk/integrity";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const attempt = await prisma.odkExamAttempt.findUnique({
     where: { id },
     select: {
@@ -60,7 +63,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.attempt.integrity_review", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:integrity:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const parsed = integrityReviewSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "İnceleme işlemi geçersiz." }, { status: 400 });
 

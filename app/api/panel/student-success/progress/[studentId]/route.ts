@@ -15,19 +15,27 @@ import {
   presentOutcomeProfile,
 } from "@/lib/student-success/presenters";
 import type { ViewerRole } from "@/lib/student-success/types";
+import { z } from "zod";
+import { studentIdParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
+
+const querySchema = z.object({ view: z.enum(["summary", "outcomes", "timeline"]).default("summary") });
 
 export async function GET(request: Request, context: { params: Promise<{ studentId: string }> }) {
   const auth = await requireApiOdRole("STUDENT", "TEACHER", "ADMIN", "PARENT");
   if (!auth.ok) return auth.response;
 
-  const { studentId } = await context.params;
+  const routeParams = studentIdParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { studentId } = routeParams.data;
   // Kapsam kararı `viewer-scope` ile ORTAK. Buradaki yerel kopya, kardeş takvim
   // uç noktasıyla birlikte güncellenmiyordu.
   const profile = await resolveStudentScopeForViewer(studentId, auth.session.role, auth.session.userId);
   if (!profile) return NextResponse.json({ error: "Erişim reddedildi." }, { status: 404 });
 
   const url = new URL(request.url);
-  const view = url.searchParams.get("view") ?? "summary";
+  const query = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!query.success) return invalidApiInput("Geçersiz ilerleme görünümü.");
+  const view = query.data.view;
   const role = auth.session.role as ViewerRole;
   const now = new Date();
 

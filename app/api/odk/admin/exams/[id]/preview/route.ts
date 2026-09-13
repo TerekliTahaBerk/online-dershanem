@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { buildAdminPreview, type AdminPreviewKind } from "@/lib/odk/admin-preview";
 import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
-const kinds = new Set<AdminPreviewKind>(["STUDENT_EXAM", "TEACHER_REPORT", "PARENT_REPORT"]);
+const previewQuerySchema = z.object({ kind: z.enum(["STUDENT_EXAM", "TEACHER_REPORT", "PARENT_REPORT"]).default("STUDENT_EXAM") });
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
-  const { id } = await context.params;
-  const kindParam = new URL(request.url).searchParams.get("kind") || "STUDENT_EXAM";
-  if (!kinds.has(kindParam as AdminPreviewKind)) {
-    return NextResponse.json({ error: "Geçersiz önizleme türü." }, { status: 400 });
-  }
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  const query = previewQuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
+  if (!routeParams.success || !query.success) return invalidApiInput("Geçersiz önizleme parametreleri.");
+  const { id } = routeParams.data;
+  const kindParam: AdminPreviewKind = query.data.kind;
 
   const exam = await prisma.odkExam.findUnique({
     where: { id },
@@ -32,7 +34,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   if (!exam?.currentVersion) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
 
   const preview = buildAdminPreview({
-    kind: kindParam as AdminPreviewKind,
+    kind: kindParam,
     examId: exam.id,
     title: exam.title,
     family: exam.family,

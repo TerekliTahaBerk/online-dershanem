@@ -6,6 +6,7 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { appendTimelineEvent } from "@/lib/kocum/server";
 import { istanbulDayStart } from "@/lib/istanbul-time";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 /**
  * Tek adımlı tamamlama — yalnız `PLANNED` görevi `DONE` yapar.
@@ -23,7 +24,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.task_complete", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-task:${auth.session.userId}`, rateLimit: { max: 120, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const { id } = await context.params;
+  const params = idParamsSchema.safeParse(await context.params);
+  if (!params.success) return invalidApiInput();
+  const { id } = params.data;
   const task = await prisma.weeklyPlanTask.findFirst({ where: { id, status: "PLANNED", plan: { status: "APPROVED", student: { userId: auth.session.userId } } }, select: { id: true, sourceType: true, sourceReferenceId: true, reasonCode: true, plan: { select: { studentId: true } } } });
   if (!task) return NextResponse.json({ error: "Plan görevi bulunamadı." }, { status: 404 });
   await prisma.$transaction(async (tx) => {

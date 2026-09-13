@@ -6,10 +6,13 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { assignmentCreateSchema } from "@/lib/odk/admin-schemas";
 import { resolveAssignmentStudents } from "@/lib/odk/assignment-resolve";
 import { afterResponse } from "@/lib/after-response";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const [assignments, groups, classLevels, packages, pilotRuns] = await Promise.all([
     prisma.odkExamAssignment.findMany({
       where: { examId: id },
@@ -68,7 +71,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.assign", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:assign:${auth.session.userId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const parsed = assignmentCreateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Atama geçersiz." }, { status: 400 });
   const exam = await prisma.odkExam.findUnique({ where: { id }, select: { id: true, status: true } });

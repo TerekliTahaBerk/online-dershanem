@@ -2,13 +2,16 @@ import { NextResponse } from "next/server";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { prisma } from "@/lib/prisma";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.mfa_reset.approve", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa-reset-approve:${auth.session.userId}`, rateLimit: { max: 5, windowMs: 60 * 60_000 } });
   if (!guard.ok) return mutationGuardResponse(guard);
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const reset = await prisma.mfaResetRequest.findFirst({ where: { id, status: "PENDING", expiresAt: { gt: new Date() } } });
   if (!reset) return NextResponse.json({ error: "Sıfırlama isteği bulunamadı veya süresi doldu." }, { status: 404 });
   if (reset.requestedById === auth.session.userId || reset.targetUserId === auth.session.userId) return NextResponse.json({ error: "Onay, isteği açan ve hedef yöneticiden farklı bir yönetici tarafından verilmelidir." }, { status: 403 });

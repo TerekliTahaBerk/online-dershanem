@@ -4,13 +4,16 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
 import { getRateLimitKeyFromUser } from "@/lib/security/rate-limit";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "STUDENT"); if (!auth.ok) return auth.response;
   const policy = RATE_LIMIT_POLICIES.odkHeartbeat;
   const guard = await guardMutation({ action: policy.action, requireSameOrigin: true, headers: request.headers, rateLimitKey: getRateLimitKeyFromUser(auth.session.userId, policy.action), rateLimit: policy.limit });
   if (!guard.ok) return mutationGuardResponse(guard);
-  const { id } = await context.params; const now = new Date();
+  const params = idParamsSchema.safeParse(await context.params);
+  if (!params.success) return invalidApiInput();
+  const { id } = params.data; const now = new Date();
   const active = await prisma.odkExamAttempt.updateMany({ where: { id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { gt: now } }, data: { lastActivityAt: now } });
   if (!active.count) {
     await prisma.odkExamAttempt.updateMany({ where: { id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { lte: now } }, data: { status: "AUTO_SUBMITTED", submittedAt: now } });

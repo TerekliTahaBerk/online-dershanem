@@ -4,6 +4,7 @@ import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { recoveryItemParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
 function recoveryAgeBand(lessonEndedAt: Date): "0-24H" | "25H-7D" | "8D+" {
@@ -17,7 +18,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const auth = await requireApiOdRole("STUDENT"); if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().recoveryPackage) return NextResponse.json({ error: "Telafi paketi henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.recovery.item.complete", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:recovery-item:${auth.session.userId}`, rateLimit: { max: 100, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
-  const { id, itemId } = await context.params;
+  const routeParams = recoveryItemParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id, itemId } = routeParams.data;
   const target = await prisma.recoveryPackageItem.findFirst({ where: { id: itemId, packageId: id, package: { status: "PUBLISHED", student: { userId: auth.session.userId } } }, select: { id: true, kind: true, completedAt: true } }); if (!target) return NextResponse.json({ error: "Telafi adımı bulunamadı." }, { status: 404 });
   const result = await prisma.$transaction(async (tx) => {
     const completedBefore = await tx.recoveryPackageItem.count({ where: { packageId: id, completedAt: { not: null } } });

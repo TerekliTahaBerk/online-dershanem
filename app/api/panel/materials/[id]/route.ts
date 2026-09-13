@@ -3,11 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { learningMaterialAccessScope } from "@/lib/auth/resource-scopes";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiOdRole("ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.materials.archive", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:materials:archive:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
-  const { id } = await context.params; const material = await prisma.learningMaterial.findFirst({ where: { id, ...learningMaterialAccessScope(auth.session.role, auth.session.userId) }, select: { id: true } });
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data; const material = await prisma.learningMaterial.findFirst({ where: { id, ...learningMaterialAccessScope(auth.session.role, auth.session.userId) }, select: { id: true } });
   if (!material) return NextResponse.json({ error: "Materyal bulunamadı." }, { status: 404 });
   await prisma.$transaction([
     prisma.learningMaterial.update({ where: { id }, data: { isActive: false } }),

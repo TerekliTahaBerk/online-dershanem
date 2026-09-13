@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { formatIstanbulDateInput } from "@/lib/istanbul-time";
+
+const querySchema = z.object({ durum: z.enum(["yaklasan", "tamamlanan"]).default("yaklasan") });
 
 /**
  * Öğrenci Dersler verisi — JSON karşılığı.
@@ -15,7 +18,9 @@ export async function GET(request: Request) {
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
-  const filter = url.searchParams.get("durum") === "tamamlanan" ? "tamamlanan" : "yaklasan";
+  const query = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!query.success) return NextResponse.json({ error: "Geçersiz ders filtresi." }, { status: 400 });
+  const filter = query.data.durum;
 
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });
   if (!profile) {

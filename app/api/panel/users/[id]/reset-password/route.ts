@@ -12,6 +12,7 @@ import {
 } from "@/lib/auth/invitation";
 import { hashPassword } from "@/lib/auth/password";
 import { revokeAllUserSessions } from "@/lib/auth/session";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 /**
  * Admin davet yenileme.
@@ -40,7 +41,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     );
   }
 
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const target = await prisma.user.findUnique({ where: { id } });
   if (!target) {
     return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });

@@ -5,12 +5,15 @@ import { scoreOdkExam } from "@/lib/odk/scoring-service";
 import { odkAttemptBand } from "@/lib/odk/telemetry";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.score", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:score:${auth.session.userId}`, rateLimit: { max: 10, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const { id } = await context.params;
+  const params = idParamsSchema.safeParse(await context.params);
+  if (!params.success) return invalidApiInput();
+  const { id } = params.data;
   const result = await scoreOdkExam(id, auth.session.userId);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 409 });
   await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExam", entityId: id, action: "odk.exam_scored", summary: "Teslim edilen denemeler puanlandı", payload: { scoredCount: result.scoredCount, answerKeyHash: result.answerKeyHash } });

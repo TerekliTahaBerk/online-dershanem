@@ -36,6 +36,8 @@ jobs:
       - run: npm run lint
       - name: Repo hygiene
         run: npm run lint:hygiene
+      - name: API input validation
+        run: npm run lint:api-validation
 
   typecheck:
     name: TypeScript

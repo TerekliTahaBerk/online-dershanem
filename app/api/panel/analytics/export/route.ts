@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { parseAnalyticsFilters } from "@/lib/analytics/filters";
 import { analyticsExportCsv } from "@/lib/analytics/export";
@@ -7,20 +8,24 @@ import { queueAudit } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
+const querySchema = z.object({
+  from: z.string().max(32).optional(),
+  to: z.string().max(32).optional(),
+  examType: z.enum(["LGS", "TYT", "AYT", "YDT", "ALL"]).optional(),
+  classLevel: z.string().trim().max(40).optional(),
+  product: z.enum(["OD", "OK", "ODK", "ALL"]).optional(),
+  groupId: z.string().trim().max(191).optional(),
+  teacherId: z.string().trim().max(191).optional(),
+});
+
 export async function GET(request: Request) {
   const auth = await requireApiOdRole("ADMIN");
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
-  const filters = parseAnalyticsFilters({
-    from: url.searchParams.get("from") ?? undefined,
-    to: url.searchParams.get("to") ?? undefined,
-    examType: url.searchParams.get("examType") ?? undefined,
-    classLevel: url.searchParams.get("classLevel") ?? undefined,
-    product: url.searchParams.get("product") ?? undefined,
-    groupId: url.searchParams.get("groupId") ?? undefined,
-    teacherId: url.searchParams.get("teacherId") ?? undefined,
-  });
+  const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!parsed.success) return NextResponse.json({ error: "Geçersiz analiz filtreleri." }, { status: 400 });
+  const filters = parseAnalyticsFilters(parsed.data);
 
   const snapshot = await loadManagementAnalyticsSnapshot(filters);
   const csv = analyticsExportCsv(snapshot, filters);
