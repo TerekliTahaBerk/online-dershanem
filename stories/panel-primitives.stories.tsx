@@ -30,9 +30,24 @@ export const Overview: Story = {
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <PanelMetric label="Aktif öğrenci" value="12" tone="success" icon={Activity} />
-        <PanelMetric label="Bekleyen işlem" value="4" tone="warning" icon={Activity} />
-        <PanelMetric label="Toplam net" value="58.25" tone="info" icon={Activity} />
+        <PanelMetric
+          label="Aktif öğrenci"
+          value="12"
+          tone="success"
+          icon={Activity}
+        />
+        <PanelMetric
+          label="Bekleyen işlem"
+          value="4"
+          tone="warning"
+          icon={Activity}
+        />
+        <PanelMetric
+          label="Toplam net"
+          value="58.25"
+          tone="info"
+          icon={Activity}
+        />
       </div>
 
       <PanelCard>
@@ -56,8 +71,12 @@ export const Overview: Story = {
         <h2 className="text-sm font-bold text-dc-ink">Aksiyon standardı</h2>
         <PanelActionRow
           className="mt-3"
-          primaryAction={<button className="panel-primary-button">Birincil aksiyon</button>}
-          secondaryAction={<button className="panel-secondary-button">İkincil aksiyon</button>}
+          primaryAction={
+            <button className="panel-primary-button">Birincil aksiyon</button>
+          }
+          secondaryAction={
+            <button className="panel-secondary-button">İkincil aksiyon</button>
+          }
         />
       </PanelCard>
 
