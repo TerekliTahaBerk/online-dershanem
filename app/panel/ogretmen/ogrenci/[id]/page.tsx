@@ -1,5 +1,5 @@
 import { requireRole } from "@/lib/auth/guards";
-import { loadStudent360Bundle } from "@/lib/panel/student-360-server";
+import { loadStudent360Bundle } from "@/lib/panel/student-360/index";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { Student360View } from "@/components/panel/student-360-view";

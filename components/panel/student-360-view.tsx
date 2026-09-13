@@ -17,7 +17,7 @@ import {
   student360TabHref,
   type Student360RiskLevel,
 } from "@/lib/panel/student-360";
-import type { Student360Bundle } from "@/lib/panel/student-360-server";
+import type { Student360Bundle } from "@/lib/panel/student-360/index";
 import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
 import { StudentParentLinkForm } from "@/components/panel/student-parent-link-form";
 import {

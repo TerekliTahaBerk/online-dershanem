@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/auth/guards";
-import { loadStudent360Bundle } from "@/lib/panel/student-360-server";
+import { loadStudent360Bundle } from "@/lib/panel/student-360/index";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
 import { Student360View } from "@/components/panel/student-360-view";
