@@ -29,7 +29,10 @@ export default async function ParentDinoPage({
   if (!getPanelFeatureFlags().dinoAi) notFound();
 
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   return (
     <PanelShell

@@ -2,7 +2,12 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { productLabel, roleLabel } from "@/lib/auth/roles";
-import { buildUserWhere, parseUserListFilters, ROLE_FILTERS, STATUS_FILTERS } from "@/lib/panel/user-filters";
+import {
+  buildUserWhere,
+  parseUserListFilters,
+  ROLE_FILTERS,
+  STATUS_FILTERS,
+} from "@/lib/panel/user-filters";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelCard,
@@ -39,7 +44,11 @@ export const dynamic = "force-dynamic";
  * Korunan bölümler: yeni hesap formu ve MFA sıfırlama onay kuyruğu.
  */
 
-const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", year: "numeric" });
+const DATE = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
 const PAGE_SIZE = 25;
 
 function formatDate(value: Date | null): string {
@@ -47,15 +56,29 @@ function formatDate(value: Date | null): string {
 }
 
 /** Filtre çipi — seçili değeri koruyarak yeni sorgu dizesi kurar. */
-function chipHref(base: Record<string, string>, key: string, value: string): string {
+function chipHref(
+  base: Record<string, string>,
+  key: string,
+  value: string,
+): string {
   const next = { ...base, [key]: value };
   const qs = new URLSearchParams(
     Object.entries(next).filter(([, v]) => v) as [string, string][],
   ).toString();
-  return qs ? `/panel/yonetim/kullanicilar?${qs}` : "/panel/yonetim/kullanicilar";
+  return qs
+    ? `/panel/yonetim/kullanicilar?${qs}`
+    : "/panel/yonetim/kullanicilar";
 }
 
-function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+function Chip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -74,7 +97,13 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; rol?: string; urun?: string; durum?: string; sayfa?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    rol?: string;
+    urun?: string;
+    durum?: string;
+    sayfa?: string;
+  }>;
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
@@ -83,8 +112,15 @@ export default async function UsersPage({
   const base = { q, rol, urun, durum };
   const where = buildUserWhere({ q, rol, urun, durum });
 
-  const [total, users, pendingMfaResets, attentionCount, activeGroups, activeTeachers, interventionOwners] =
-    await Promise.all([
+  const [
+    total,
+    users,
+    pendingMfaResets,
+    attentionCount,
+    activeGroups,
+    activeTeachers,
+    interventionOwners,
+  ] = await Promise.all([
     prisma.user.count({ where }),
     prisma.user.findMany({
       where,
@@ -103,7 +139,10 @@ export default async function UsersPage({
         lastLoginAt: true,
         createdAt: true,
         productMemberships: {
-          where: { revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+          where: {
+            revokedAt: null,
+            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+          },
           select: { product: true },
         },
         odOrders: {
@@ -117,7 +156,12 @@ export default async function UsersPage({
             enrollments: {
               where: { endedAt: null },
               select: {
-                group: { select: { name: true, teacher: { select: { fullName: true, email: true } } } },
+                group: {
+                  select: {
+                    name: true,
+                    teacher: { select: { fullName: true, email: true } },
+                  },
+                },
               },
               take: 2,
             },
@@ -137,19 +181,33 @@ export default async function UsersPage({
       },
     }),
     prisma.user.count({
-      where: { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } },
+      where: {
+        odOrders: {
+          some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
+        },
+      },
     }),
     prisma.group.findMany({
       where: { isActive: true },
       orderBy: { name: "asc" },
       take: 200,
-      select: { id: true, name: true, subject: true, teacher: { select: { fullName: true, email: true } } },
+      select: {
+        id: true,
+        name: true,
+        subject: true,
+        teacher: { select: { fullName: true, email: true } },
+      },
     }),
     prisma.user.findMany({
       where: { role: "TEACHER", status: "ACTIVE" },
       orderBy: { fullName: "asc" },
       take: 200,
-      select: { id: true, fullName: true, email: true, teacherProfile: { select: { isCoach: true } } },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        teacherProfile: { select: { isCoach: true } },
+      },
     }),
     prisma.user.findMany({
       where: { role: { in: ["ADMIN", "TEACHER"] }, status: "ACTIVE" },
@@ -158,27 +216,33 @@ export default async function UsersPage({
       select: { id: true, fullName: true, email: true, role: true },
     }),
   ]);
-  const [studentsWithoutProfile, teachersWithoutProfile, studentsWithoutActiveProduct] =
-    await Promise.all([
-      prisma.user.count({ where: { role: "STUDENT", studentProfile: null } }),
-      prisma.user.count({ where: { role: "TEACHER", teacherProfile: null } }),
-      prisma.user.count({
-        where: {
-          role: "STUDENT",
-          NOT: {
-            productMemberships: {
-              some: {
-                revokedAt: null,
-                OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-              },
+  const [
+    studentsWithoutProfile,
+    teachersWithoutProfile,
+    studentsWithoutActiveProduct,
+  ] = await Promise.all([
+    prisma.user.count({ where: { role: "STUDENT", studentProfile: null } }),
+    prisma.user.count({ where: { role: "TEACHER", teacherProfile: null } }),
+    prisma.user.count({
+      where: {
+        role: "STUDENT",
+        NOT: {
+          productMemberships: {
+            some: {
+              revokedAt: null,
+              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
             },
           },
         },
-      }),
-    ]);
+      },
+    }),
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const integrityCount = studentsWithoutProfile + teachersWithoutProfile + studentsWithoutActiveProduct;
+  const integrityCount =
+    studentsWithoutProfile +
+    teachersWithoutProfile +
+    studentsWithoutActiveProduct;
 
   return (
     <PanelShell
@@ -207,23 +271,44 @@ export default async function UsersPage({
           <PanelCard className="mt-5 border-amber-200 bg-amber-50/50">
             <PanelCardTitle>Veri bütünlüğü sinyali</PanelCardTitle>
             <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-body">
-              Rol ve profil verileri tam eşleşmeyen hesaplar var. Bu kayıtlar operasyon akışında
-              sessiz hataya yol açabilir.
+              Rol ve profil verileri tam eşleşmeyen hesaplar var. Bu kayıtlar
+              operasyon akışında sessiz hataya yol açabilir.
             </p>
             <ul className="mt-3 space-y-1.5 text-[13px] text-dc-ink-body">
               {studentsWithoutProfile > 0 ? (
                 <li>
-                  • <Link href="/panel/yonetim/kullanicilar?durum=profil&rol=STUDENT" className="font-semibold text-dc-brand hover:underline">Profili olmayan öğrenci</Link>: {studentsWithoutProfile}
+                  •{" "}
+                  <Link
+                    href="/panel/yonetim/kullanicilar?durum=profil&rol=STUDENT"
+                    className="font-semibold text-dc-brand hover:underline"
+                  >
+                    Profili olmayan öğrenci
+                  </Link>
+                  : {studentsWithoutProfile}
                 </li>
               ) : null}
               {teachersWithoutProfile > 0 ? (
                 <li>
-                  • <Link href="/panel/yonetim/kullanicilar?durum=profil&rol=TEACHER" className="font-semibold text-dc-brand hover:underline">Profili olmayan öğretmen</Link>: {teachersWithoutProfile}
+                  •{" "}
+                  <Link
+                    href="/panel/yonetim/kullanicilar?durum=profil&rol=TEACHER"
+                    className="font-semibold text-dc-brand hover:underline"
+                  >
+                    Profili olmayan öğretmen
+                  </Link>
+                  : {teachersWithoutProfile}
                 </li>
               ) : null}
               {studentsWithoutActiveProduct > 0 ? (
                 <li>
-                  • <Link href="/panel/yonetim/kullanicilar?durum=erisim-yok" className="font-semibold text-dc-brand hover:underline">Aktif ürün erişimi olmayan öğrenci</Link>: {studentsWithoutActiveProduct}
+                  •{" "}
+                  <Link
+                    href="/panel/yonetim/kullanicilar?durum=erisim-yok"
+                    className="font-semibold text-dc-brand hover:underline"
+                  >
+                    Aktif ürün erişimi olmayan öğrenci
+                  </Link>
+                  : {studentsWithoutActiveProduct}
                 </li>
               ) : null}
             </ul>
@@ -231,7 +316,11 @@ export default async function UsersPage({
         ) : null}
 
         {/* ── Arama ve filtreler ── */}
-        <form method="get" role="search" className="mt-5 flex flex-wrap items-center gap-2.5">
+        <form
+          method="get"
+          role="search"
+          className="mt-5 flex flex-wrap items-center gap-2.5"
+        >
           <label className="sr-only" htmlFor="kisi-ara">
             Ad, e-posta veya telefon ara
           </label>
@@ -263,16 +352,24 @@ export default async function UsersPage({
         </form>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-[12.5px] font-semibold text-dc-ink-faint">Rol:</span>
+          <span className="text-[12.5px] font-semibold text-dc-ink-faint">
+            Rol:
+          </span>
           {ROLE_FILTERS.map((r) => (
-            <Chip key={r.value || "all"} href={chipHref(base, "rol", r.value)} active={rol === r.value}>
+            <Chip
+              key={r.value || "all"}
+              href={chipHref(base, "rol", r.value)}
+              active={rol === r.value}
+            >
               {r.label}
             </Chip>
           ))}
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-[12.5px] font-semibold text-dc-ink-faint">Durum:</span>
+          <span className="text-[12.5px] font-semibold text-dc-ink-faint">
+            Durum:
+          </span>
           {STATUS_FILTERS.map((s) => (
             <Chip
               key={s.value || "all"}
@@ -318,28 +415,41 @@ export default async function UsersPage({
           <div className="mt-5">
             <PanelTable
               caption="Kişi kayıtları"
-              columns={["Kişi", "Rol", "Sınav", "Ürünler", "Öğretmen / grup", "Durum", ""]}
+              columns={[
+                "Kişi",
+                "Rol",
+                "Sınav",
+                "Ürünler",
+                "Öğretmen / grup",
+                "Durum",
+                "",
+              ]}
             >
               {users.map((user) => {
-                const products = user.productMemberships.map((m) => productLabel(m.product));
+                const products = user.productMemberships.map((m) =>
+                  productLabel(m.product),
+                );
                 const enrollment = user.studentProfile?.enrollments[0];
                 const status = user.odOrders.length
                   ? { label: "Ödeme alındı, erişim yok", tone: "warn" as const }
                   : user.status === "ARCHIVED"
                     ? { label: "Arşivde", tone: "warn" as const }
-                  : user.status === "SUSPENDED"
-                    ? { label: "Askıda", tone: "warn" as const }
-                    : !user.inviteAcceptedAt
-                      ? { label: "Davet bekliyor", tone: "warn" as const }
-                    : user.mustChangePassword
-                      ? { label: "Parola bekliyor", tone: "warn" as const }
-                      : user.role === "STUDENT" && !user.studentProfile
-                        ? { label: "Profil eksik", tone: "warn" as const }
-                        : user.role === "TEACHER" && !user.teacherProfile
-                          ? { label: "Profil eksik", tone: "warn" as const }
-                          : user.role === "STUDENT" && products.length === 0
-                            ? { label: "Erişim eksik", tone: "warn" as const }
-                      : { label: "Aktif", tone: "ok" as const };
+                    : user.status === "SUSPENDED"
+                      ? { label: "Askıda", tone: "warn" as const }
+                      : !user.inviteAcceptedAt
+                        ? { label: "Davet bekliyor", tone: "warn" as const }
+                        : user.mustChangePassword
+                          ? { label: "Parola bekliyor", tone: "warn" as const }
+                          : user.role === "STUDENT" && !user.studentProfile
+                            ? { label: "Profil eksik", tone: "warn" as const }
+                            : user.role === "TEACHER" && !user.teacherProfile
+                              ? { label: "Profil eksik", tone: "warn" as const }
+                              : user.role === "STUDENT" && products.length === 0
+                                ? {
+                                    label: "Erişim eksik",
+                                    tone: "warn" as const,
+                                  }
+                                : { label: "Aktif", tone: "ok" as const };
 
                 return (
                   <PanelTableRow key={user.id}>
@@ -355,14 +465,20 @@ export default async function UsersPage({
                       </span>
                     </PanelTableCell>
                     <PanelTableCell>{roleLabel(user.role)}</PanelTableCell>
-                    <PanelTableCell>{user.studentProfile?.targetGoal || "—"}</PanelTableCell>
-                    <PanelTableCell>{products.length ? products.join(" · ") : "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      {user.studentProfile?.targetGoal || "—"}
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      {products.length ? products.join(" · ") : "—"}
+                    </PanelTableCell>
                     <PanelTableCell>
                       {enrollment
                         ? `${enrollment.group.teacher.fullName || enrollment.group.teacher.email} · ${enrollment.group.name}`
                         : "—"}
                     </PanelTableCell>
-                    <PanelTableCell tone={status.tone}>{status.label}</PanelTableCell>
+                    <PanelTableCell tone={status.tone}>
+                      {status.label}
+                    </PanelTableCell>
                     <PanelTableCell>
                       <UserRowActions
                         userId={user.id}
@@ -370,7 +486,9 @@ export default async function UsersPage({
                         fullName={user.fullName}
                         phone={user.phone}
                         status={user.status}
-                        inviteAcceptedAt={user.inviteAcceptedAt?.toISOString() ?? null}
+                        inviteAcceptedAt={
+                          user.inviteAcceptedAt?.toISOString() ?? null
+                        }
                         isSelf={user.id === session.userId}
                       />
                     </PanelTableCell>
@@ -381,7 +499,8 @@ export default async function UsersPage({
 
             <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-dc-ink-faint">
               <span>
-                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total}
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)}{" "}
+                / {total}
               </span>
               {pageCount > 1 ? (
                 <nav className="flex items-center gap-2" aria-label="Sayfalama">
@@ -417,13 +536,15 @@ export default async function UsersPage({
               Bekleyen MFA sıfırlama onayı ({pendingMfaResets.length})
             </h2>
             <p className="mt-1.5 text-[13px] leading-[1.6] text-dc-ink-muted">
-              Onayı, isteği açan ve hedef yöneticiden farklı bir yönetici vermelidir.
-              Onaylandığında hedefin tüm doğrulama yöntemleri silinir ve oturumları kapatılır.
+              Onayı, isteği açan ve hedef yöneticiden farklı bir yönetici
+              vermelidir. Onaylandığında hedefin tüm doğrulama yöntemleri
+              silinir ve oturumları kapatılır.
             </p>
             <ul className="mt-4 flex flex-col gap-2">
               {pendingMfaResets.map((reset) => {
                 const blocked =
-                  reset.targetUserId === session.userId || reset.requestedById === session.userId;
+                  reset.targetUserId === session.userId ||
+                  reset.requestedById === session.userId;
                 return (
                   <li
                     key={reset.id}
@@ -434,8 +555,9 @@ export default async function UsersPage({
                         {reset.target.fullName || reset.target.email}
                       </p>
                       <p className="mt-1 text-[12.5px] text-dc-ink-faint">
-                        İsteyen: {reset.requestedBy.fullName || reset.requestedBy.email} · son
-                        geçerlilik {formatDate(reset.expiresAt)}
+                        İsteyen:{" "}
+                        {reset.requestedBy.fullName || reset.requestedBy.email}{" "}
+                        · son geçerlilik {formatDate(reset.expiresAt)}
                       </p>
                       <p className="mt-1.5 text-[13px] leading-[1.6] text-dc-ink-body">
                         {reset.reason}
@@ -468,7 +590,8 @@ export default async function UsersPage({
           <PanelCardTitle>Veli ve ilişki operasyonları</PanelCardTitle>
           <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-dc-line p-4">
             <p className="text-[13px] text-dc-ink-muted">
-              Veli dizini, öğrenci bağlantıları ve ilişki geçmişi artık ayrı operasyon ekranında yönetilir.
+              Veli dizini, öğrenci bağlantıları ve ilişki geçmişi artık ayrı
+              operasyon ekranında yönetilir.
             </p>
             <Link
               href="/panel/yonetim/veliler"

@@ -8,7 +8,12 @@ import { DinoExplanationAction } from "@/components/panel/dino-explanation-actio
 import { PanelPageHeader, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { buildPlanDeterministicReason } from "@/lib/panel/dino-explanations";
-import { addIstanbulCalendarDays, formatIstanbulDateInput, ISTANBUL_TIME_ZONE, istanbulWeekStart } from "@/lib/istanbul-time";
+import {
+  addIstanbulCalendarDays,
+  formatIstanbulDateInput,
+  ISTANBUL_TIME_ZONE,
+  istanbulWeekStart,
+} from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +29,11 @@ export const dynamic = "force-dynamic";
  * en altta tercihler. Sunucu tarafı burada yalnız veriyi toplar.
  */
 
-const RANGE = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
+const RANGE = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+});
 
 export default async function StudentPlanPage() {
   const session = await requireProductRole("OK", "STUDENT");
@@ -61,7 +70,9 @@ export default async function StudentPlanPage() {
   const plan = await prisma.weeklyPlan.findFirst({
     where: { studentId: profile.id },
     orderBy: { weekStart: "desc" },
-    include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
+    include: {
+      tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] },
+    },
   });
 
   /*
@@ -88,9 +99,16 @@ export default async function StudentPlanPage() {
     prisma.odkExam.findMany({
       where: {
         status: { in: ["SCHEDULED", "LIVE"] },
-        startsAt: { gte: new Date(), lte: addIstanbulCalendarDays(new Date(), 14) },
+        startsAt: {
+          gte: new Date(),
+          lte: addIstanbulCalendarDays(new Date(), 14),
+        },
         assignments: {
-          some: { studentUserId: session.userId, isActive: true, revokedAt: null },
+          some: {
+            studentUserId: session.userId,
+            isActive: true,
+            revokedAt: null,
+          },
         },
       },
       orderBy: { startsAt: "asc" },
@@ -104,14 +122,18 @@ export default async function StudentPlanPage() {
   const reasonCounts = new Map<string, number>();
   for (const task of plan?.tasks || []) {
     if (task.status === "SKIPPED") continue;
-    reasonCounts.set(task.reasonCode, (reasonCounts.get(task.reasonCode) || 0) + 1);
+    reasonCounts.set(
+      task.reasonCode,
+      (reasonCounts.get(task.reasonCode) || 0) + 1,
+    );
   }
   const topReasonCodes = [...reasonCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 2)
     .map(([code]) => code);
   const planReason = buildPlanDeterministicReason({
-    taskCount: plan?.tasks.filter((task) => task.status !== "SKIPPED").length || 0,
+    taskCount:
+      plan?.tasks.filter((task) => task.status !== "SKIPPED").length || 0,
     topReasonCodes,
     changeRequestCategory: plan?.changeRequestCategory || null,
     version: plan?.version || 1,
@@ -121,7 +143,11 @@ export default async function StudentPlanPage() {
     <>
       <PanelPageHeader
         title="Bu haftanın planı"
-        description={start && end ? `${RANGE.format(start)} – ${RANGE.format(end)}` : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."}
+        description={
+          start && end
+            ? `${RANGE.format(start)} – ${RANGE.format(end)}`
+            : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."
+        }
       />
 
       {flags.dinoAi && plan ? (
@@ -140,10 +166,13 @@ export default async function StudentPlanPage() {
           today={formatIstanbulDateInput(new Date())}
           initialPreference={{
             availableDays: Array.isArray(profile.planPreference?.availableDays)
-              ? profile.planPreference.availableDays.filter((day): day is number => typeof day === "number")
+              ? profile.planPreference.availableDays.filter(
+                  (day): day is number => typeof day === "number",
+                )
               : [1, 3, 5],
             minutesPerDay: profile.planPreference?.minutesPerDay || 45,
-            nextExamAt: profile.planPreference?.nextExamAt?.toISOString() || null,
+            nextExamAt:
+              profile.planPreference?.nextExamAt?.toISOString() || null,
             examLabel: profile.planPreference?.examLabel || null,
             planningEnabled: profile.planPreference?.planningEnabled ?? true,
             overwhelmPulse: profile.planPreference?.overwhelmPulse || null,
@@ -178,7 +207,9 @@ export default async function StudentPlanPage() {
             coaching
               ? {
                   coachName: coaching.coachName,
-                  nextScheduledAt: coaching.nextScheduledAt ? coaching.nextScheduledAt.toISOString() : null,
+                  nextScheduledAt: coaching.nextScheduledAt
+                    ? coaching.nextScheduledAt.toISOString()
+                    : null,
                   sharedNote: coaching.sharedNote,
                   focus: coaching.focus,
                   overdue: coaching.overdue,
@@ -196,7 +227,10 @@ export default async function StudentPlanPage() {
               : null
           }
           upcomingExams={upcomingExams
-            .filter((exam): exam is { id: string; title: string; startsAt: Date } => Boolean(exam.startsAt))
+            .filter(
+              (exam): exam is { id: string; title: string; startsAt: Date } =>
+                Boolean(exam.startsAt),
+            )
             .map((exam) => ({
               id: exam.id,
               title: exam.title,

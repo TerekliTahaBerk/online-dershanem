@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     title: "Kariyer | Online Dershanem",
     description:
       "Online Dershanem ekibine katılmak ister misin? Açık pozisyonlara göz at.",
-    url: `${siteUrl}/kariyer`
-  }
+    url: `${siteUrl}/kariyer`,
+  },
 };
 
 type Role = {
@@ -32,14 +32,14 @@ const openRoles: Role[] = [
     location: "Yerinde · Üniversite kampüsleri",
     type: "Yarı zamanlı",
     summary:
-      "Üniversitende Online Dershanem'i temsil edecek; etkinlikler, birebir görüşmeler ve sosyal medya çalışmalarıyla topluluğu büyütecek öğrenci elçileri arıyoruz."
-  }
+      "Üniversitende Online Dershanem'i temsil edecek; etkinlikler, birebir görüşmeler ve sosyal medya çalışmalarıyla topluluğu büyütecek öğrenci elçileri arıyoruz.",
+  },
 ];
 
 export default function CareersPage() {
   const mailtoSubject = encodeURIComponent("Kariyer Başvurusu");
   const mailtoBody = encodeURIComponent(
-    "Merhaba,\n\nİlgilendiğim pozisyon: \n\nKısaca kendimden bahsetmem gerekirse...\n"
+    "Merhaba,\n\nİlgilendiğim pozisyon: \n\nKısaca kendimden bahsetmem gerekirse...\n",
   );
 
   return (
@@ -52,11 +52,13 @@ export default function CareersPage() {
             <Boxes size={27} strokeWidth={1.6} aria-hidden="true" />
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
-            Küçük bir ekipte, <span className="site-hl">öğrenciye dokunan</span> iş yap.
+            Küçük bir ekipte, <span className="site-hl">öğrenciye dokunan</span>{" "}
+            iş yap.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
-            Online Dershanem, öğrencinin kalabalıkta kaybolmadığı, öğretmeninin onu adıyla tanıdığı
-            küçük gruplarla çalışıyor. Bunu büyüten küçük ama etkili bir ekibiz.
+            Online Dershanem, öğrencinin kalabalıkta kaybolmadığı, öğretmeninin
+            onu adıyla tanıdığı küçük gruplarla çalışıyor. Bunu büyüten küçük
+            ama etkili bir ekibiz.
           </p>
         </section>
 
@@ -73,8 +75,8 @@ export default function CareersPage() {
                   Açık Pozisyonlar
                 </h2>
                 <p className="mt-4 max-w-xs text-[14px] leading-7 text-white/85">
-                  Küçük ve odaklı bir ekipte, yaptığın işin öğrenci deneyimine doğrudan dokunduğu
-                  bir yerde çalış.
+                  Küçük ve odaklı bir ekipte, yaptığın işin öğrenci deneyimine
+                  doğrudan dokunduğu bir yerde çalış.
                 </p>
                 <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-white">
                   {openRoles.length} açık pozisyon
@@ -116,16 +118,16 @@ export default function CareersPage() {
             {[
               {
                 title: "Küçük ekip, büyük etki",
-                body: "Kararlar hızlı alınır, yapılan iş doğrudan öğrencinin haftasına dokunur."
+                body: "Kararlar hızlı alınır, yapılan iş doğrudan öğrencinin haftasına dokunur.",
               },
               {
                 title: "Özenli standartlar",
-                body: "Öğretmenden yazılım altyapısına kadar her detayda tutarlı kalite arıyoruz."
+                body: "Öğretmenden yazılım altyapısına kadar her detayda tutarlı kalite arıyoruz.",
               },
               {
                 title: "Şeffaf süreç",
-                body: "Hedefler net, geri bildirim düzenli, gelişim alanları açık şekilde konuşulur."
-              }
+                body: "Hedefler net, geri bildirim düzenli, gelişim alanları açık şekilde konuşulur.",
+              },
             ].map((item) => (
               <article
                 key={item.title}
@@ -134,7 +136,9 @@ export default function CareersPage() {
                 <h3 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
                   {item.title}
                 </h3>
-                <p className="mt-3 text-[14.5px] leading-6 text-[var(--site-body)]">{item.body}</p>
+                <p className="mt-3 text-[14.5px] leading-6 text-[var(--site-body)]">
+                  {item.body}
+                </p>
               </article>
             ))}
           </div>
@@ -143,13 +147,15 @@ export default function CareersPage() {
           <div className="mt-4 overflow-hidden rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-12">
             <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
               <div>
-                <span className="site-eyebrow">Açık roller dışında bir alanda katkı sunmak istiyorsan</span>
+                <span className="site-eyebrow">
+                  Açık roller dışında bir alanda katkı sunmak istiyorsan
+                </span>
                 <h3 className="mt-3 font-display text-[28px] leading-tight tracking-[-0.02em] text-[var(--site-ink)] sm:text-[36px]">
                   Genel başvurunu da bekleriz.
                 </h3>
                 <p className="mt-3 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
-                  Online eğitime değer katacağına inanıyorsan, kısa bir mesaj ve özgeçmişini bize
-                  gönder. Doğru zaman geldiğinde geri dönelim.
+                  Online eğitime değer katacağına inanıyorsan, kısa bir mesaj ve
+                  özgeçmişini bize gönder. Doğru zaman geldiğinde geri dönelim.
                 </p>
               </div>
               <Link

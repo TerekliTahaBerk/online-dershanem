@@ -34,7 +34,9 @@ const DAY_TIME = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
-function prepTone(status: TeacherWorkspaceLesson["prepStatus"]): "neutral" | "info" | "success" | "warning" {
+function prepTone(
+  status: TeacherWorkspaceLesson["prepStatus"],
+): "neutral" | "info" | "success" | "warning" {
   if (status === "closed") return "success";
   if (status === "needs_close") return "warning";
   if (status === "ready") return "info";
@@ -42,7 +44,8 @@ function prepTone(status: TeacherWorkspaceLesson["prepStatus"]): "neutral" | "in
 }
 
 function primaryLessonHref(lesson: TeacherWorkspaceLesson): string {
-  if (lesson.prepStatus === "needs_close") return `/panel/ogretmen/ders/${lesson.id}`;
+  if (lesson.prepStatus === "needs_close")
+    return `/panel/ogretmen/ders/${lesson.id}`;
   if (lesson.meetingUrl) return lesson.meetingUrl;
   return `/panel/ogretmen/ders/${lesson.id}`;
 }
@@ -70,7 +73,10 @@ function LessonRow({ lesson }: { lesson: TeacherWorkspaceLesson }) {
             {` · ${lesson.studentCount} öğrenci`}
           </p>
           <div className="mt-2">
-            <PanelStatusBadge label={lesson.prepLabel} tone={prepTone(lesson.prepStatus)} />
+            <PanelStatusBadge
+              label={lesson.prepLabel}
+              tone={prepTone(lesson.prepStatus)}
+            />
           </div>
         </div>
       </div>
@@ -78,7 +84,9 @@ function LessonRow({ lesson }: { lesson: TeacherWorkspaceLesson }) {
         <Link
           href={primaryLessonHref(lesson)}
           className={`panel-quick-action inline-flex ${
-            lesson.prepStatus === "needs_close" ? "panel-quick-action-primary" : ""
+            lesson.prepStatus === "needs_close"
+              ? "panel-quick-action-primary"
+              : ""
           }`}
           {...(lesson.meetingUrl && lesson.prepStatus !== "needs_close"
             ? { target: "_blank", rel: "noreferrer" }
@@ -94,15 +102,24 @@ function LessonRow({ lesson }: { lesson: TeacherWorkspaceLesson }) {
             Öğrenciye git
           </Link>
         ) : (
-          <Link href="/panel/ogretmen/gruplar" className="panel-quick-action inline-flex">
+          <Link
+            href="/panel/ogretmen/gruplar"
+            className="panel-quick-action inline-flex"
+          >
             Öğrenciler
           </Link>
         )}
-        <Link href="/panel/ogretmen/materyaller" className="panel-quick-action inline-flex">
+        <Link
+          href="/panel/ogretmen/materyaller"
+          className="panel-quick-action inline-flex"
+        >
           Materyaller
         </Link>
         {lesson.prepStatus !== "closed" ? (
-          <Link href={`/panel/ogretmen/ders/${lesson.id}`} className="panel-quick-action inline-flex">
+          <Link
+            href={`/panel/ogretmen/ders/${lesson.id}`}
+            className="panel-quick-action inline-flex"
+          >
             Ders kapanışı
           </Link>
         ) : null}
@@ -122,9 +139,17 @@ function PendingSection({ items }: { items: TeacherWorkspacePendingItem[] }) {
               key={item.id}
               title={item.title}
               description={item.detail}
-              status={<PanelStatusBadge label={pendingKindLabel(item.kind)} tone="info" />}
+              status={
+                <PanelStatusBadge
+                  label={pendingKindLabel(item.kind)}
+                  tone="info"
+                />
+              }
               cta={
-                <Link href={item.href} className="panel-quick-action inline-flex">
+                <Link
+                  href={item.href}
+                  className="panel-quick-action inline-flex"
+                >
                   {item.ctaLabel}
                 </Link>
               }
@@ -170,7 +195,10 @@ function RiskSection({ items }: { items: TeacherWorkspaceRiskStudent[] }) {
                 </>
               }
               cta={
-                <Link href={item.href} className="panel-quick-action inline-flex">
+                <Link
+                  href={item.href}
+                  className="panel-quick-action inline-flex"
+                >
                   Öğrenci 360
                 </Link>
               }
@@ -201,7 +229,12 @@ function UpcomingSection({ items }: { items: TeacherWorkspaceUpcomingItem[] }) {
             title={item.title}
             description={item.detail}
             meta={DAY_TIME.format(new Date(item.at))}
-            status={<PanelStatusBadge label={upcomingKindLabel(item.kind)} tone="neutral" />}
+            status={
+              <PanelStatusBadge
+                label={upcomingKindLabel(item.kind)}
+                tone="neutral"
+              />
+            }
             cta={
               <Link href={item.href} className="panel-quick-action inline-flex">
                 Aç
@@ -222,7 +255,9 @@ export function TeacherWorkspaceHome({
   workspace: TeacherWorkspace;
   dinoEnabled?: boolean;
 }) {
-  const helpFirst = workspace.pending.some((item) => item.kind === "HELP_REQUEST");
+  const helpFirst = workspace.pending.some(
+    (item) => item.kind === "HELP_REQUEST",
+  );
   const attentionReason = buildTeacherAttentionDeterministicReason({
     visibleCount: workspace.riskyStudents.length || workspace.pending.length,
     topHeadlines: [
@@ -240,7 +275,8 @@ export function TeacherWorkspaceHome({
         <div className="px-4 py-[26px] sm:px-[22px]">
           <p className="text-[15px] font-bold text-dc-ink">Bugün dersin yok.</p>
           <p className="mt-1.5 text-[14px] text-dc-ink-muted">
-            Bekleyen işleri bitirebilir ya da yarının derslerine hazırlanabilirsin.
+            Bekleyen işleri bitirebilir ya da yarının derslerine
+            hazırlanabilirsin.
           </p>
         </div>
       ) : (

@@ -14,11 +14,14 @@ export function ClosingCta() {
             İhtiyacın olan desteği seç.
           </h2>
           <p className="mt-3.5 max-w-[520px] text-[16.5px] leading-[1.65] text-[#3F5C51]">
-            Canlı ders, koçluk ve denemeyi tek tek ya da birlikte seçebilir, sana uygun
-            paketi tek adımda oluşturabilirsin.
+            Canlı ders, koçluk ve denemeyi tek tek ya da birlikte seçebilir,
+            sana uygun paketi tek adımda oluşturabilirsin.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-5">
-            <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
+            <Link
+              href="/paketler"
+              className="site-btn site-btn-primary site-btn-lg"
+            >
               Paketini Oluştur →
             </Link>
             <Link

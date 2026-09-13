@@ -25,7 +25,9 @@ export function GidisatHero({
         {title}
       </h1>
       {lead ? (
-        <p className="mt-3 max-w-[54ch] text-[15px] leading-[1.55] text-dc-ink-body">{lead}</p>
+        <p className="mt-3 max-w-[54ch] text-[15px] leading-[1.55] text-dc-ink-body">
+          {lead}
+        </p>
       ) : null}
       {rest.length ? (
         <ul className="mt-3 max-w-[54ch] space-y-1.5 text-[14px] leading-[1.5] text-dc-ink-muted">
@@ -58,7 +60,9 @@ export function GidisatStrengthSupport({
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-[14px] text-dc-ink-muted">Henüz belirgin güçlü alan yok.</p>
+          <p className="mt-3 text-[14px] text-dc-ink-muted">
+            Henüz belirgin güçlü alan yok.
+          </p>
         )}
       </PanelCard>
       <PanelCard>
@@ -70,7 +74,9 @@ export function GidisatStrengthSupport({
             ))}
           </ul>
         ) : (
-          <p className="mt-3 text-[14px] text-dc-ink-muted">Şu an ek destek alanı görünmüyor.</p>
+          <p className="mt-3 text-[14px] text-dc-ink-muted">
+            Şu an ek destek alanı görünmüyor.
+          </p>
         )}
       </PanelCard>
     </div>

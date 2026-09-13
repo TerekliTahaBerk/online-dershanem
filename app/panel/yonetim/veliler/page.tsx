@@ -38,7 +38,11 @@ const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "parola", label: "Parola bekliyor" },
 ];
 
-function chipHref(base: Record<string, string>, key: string, value: string): string {
+function chipHref(
+  base: Record<string, string>,
+  key: string,
+  value: string,
+): string {
   const next = { ...base, [key]: value };
   const qs = new URLSearchParams(
     Object.entries(next).filter(([, v]) => v) as [string, string][],
@@ -46,7 +50,15 @@ function chipHref(base: Record<string, string>, key: string, value: string): str
   return qs ? `/panel/yonetim/veliler?${qs}` : "/panel/yonetim/veliler";
 }
 
-function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+function Chip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -71,7 +83,9 @@ export default async function ParentsPage({
   const sp = await searchParams;
 
   const q = (sp.q ?? "").trim();
-  const durum = STATUS_FILTERS.some((s) => s.value === sp.durum) ? (sp.durum ?? "") : "";
+  const durum = STATUS_FILTERS.some((s) => s.value === sp.durum)
+    ? (sp.durum ?? "")
+    : "";
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
   const base = { q, durum };
 
@@ -89,12 +103,21 @@ export default async function ParentsPage({
     ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
     ...(durum === "arsiv" ? { status: "ARCHIVED" as const } : {}),
     ...(durum === "davet" ? { inviteAcceptedAt: null } : {}),
-    ...(durum === "parola" ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } } : {}),
+    ...(durum === "parola"
+      ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } }
+      : {}),
     ...(durum === "baglantisiz" ? { parentStudents: { none: {} } } : {}),
   };
 
-  const [total, parents, withoutRelationshipCount, activeRelationships, relationshipHistory, studentOptions, parentOptions] =
-    await Promise.all([
+  const [
+    total,
+    parents,
+    withoutRelationshipCount,
+    activeRelationships,
+    relationshipHistory,
+    studentOptions,
+    parentOptions,
+  ] = await Promise.all([
     prisma.user.count({ where }),
     prisma.user.findMany({
       where,
@@ -112,50 +135,56 @@ export default async function ParentsPage({
         parentStudents: {
           select: {
             relationship: true,
-            student: { select: { user: { select: { fullName: true, email: true } } } },
+            student: {
+              select: { user: { select: { fullName: true, email: true } } },
+            },
           },
           take: 3,
         },
       },
     }),
-      prisma.user.count({
-        where: {
-          role: "PARENT",
-          parentStudents: { none: {} },
+    prisma.user.count({
+      where: {
+        role: "PARENT",
+        parentStudents: { none: {} },
+      },
+    }),
+    prisma.parentStudent.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 80,
+      include: {
+        parent: { select: { fullName: true, email: true } },
+        student: {
+          include: { user: { select: { fullName: true, email: true } } },
         },
-      }),
-      prisma.parentStudent.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 80,
-        include: {
-          parent: { select: { fullName: true, email: true } },
-          student: { include: { user: { select: { fullName: true, email: true } } } },
+      },
+    }),
+    prisma.parentStudentHistory.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 60,
+      include: {
+        parent: { select: { fullName: true, email: true } },
+        student: {
+          include: { user: { select: { fullName: true, email: true } } },
         },
-      }),
-      prisma.parentStudentHistory.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 60,
-        include: {
-          parent: { select: { fullName: true, email: true } },
-          student: { include: { user: { select: { fullName: true, email: true } } } },
-          actor: { select: { fullName: true, email: true } },
-        },
-      }),
-      prisma.studentProfile.findMany({
-        orderBy: { user: { fullName: "asc" } },
-        take: 300,
-        select: {
-          id: true,
-          user: { select: { fullName: true, email: true } },
-        },
-      }),
-      prisma.user.findMany({
-        where: { role: "PARENT", status: { in: ["ACTIVE", "SUSPENDED"] } },
-        orderBy: { fullName: "asc" },
-        take: 300,
-        select: { id: true, fullName: true, email: true },
-      }),
-    ]);
+        actor: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.studentProfile.findMany({
+      orderBy: { user: { fullName: "asc" } },
+      take: 300,
+      select: {
+        id: true,
+        user: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.user.findMany({
+      where: { role: "PARENT", status: { in: ["ACTIVE", "SUSPENDED"] } },
+      orderBy: { fullName: "asc" },
+      take: 300,
+      select: { id: true, fullName: true, email: true },
+    }),
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -170,7 +199,9 @@ export default async function ParentsPage({
         <PanelHeading
           title="Veliler"
           description={`${total} veli${
-            withoutRelationshipCount ? ` · ${withoutRelationshipCount} tanesi bağlantısız` : ""
+            withoutRelationshipCount
+              ? ` · ${withoutRelationshipCount} tanesi bağlantısız`
+              : ""
           }`}
           actions={
             <Link
@@ -182,7 +213,11 @@ export default async function ParentsPage({
           }
         />
 
-        <form method="get" role="search" className="mt-5 flex flex-wrap items-center gap-2.5">
+        <form
+          method="get"
+          role="search"
+          className="mt-5 flex flex-wrap items-center gap-2.5"
+        >
           <label className="sr-only" htmlFor="veli-ara">
             Ad, e-posta veya telefon ara
           </label>
@@ -212,7 +247,9 @@ export default async function ParentsPage({
         </form>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-[12.5px] font-semibold text-dc-ink-faint">Durum:</span>
+          <span className="text-[12.5px] font-semibold text-dc-ink-faint">
+            Durum:
+          </span>
           {STATUS_FILTERS.map((s) => (
             <Chip
               key={s.value || "all"}
@@ -233,24 +270,37 @@ export default async function ParentsPage({
           <div className="mt-5">
             <PanelTable
               caption="Veli kayıtları"
-              columns={["Veli", "Bağlı öğrenci", "Öğrenci listesi", "Durum", ""]}
+              columns={[
+                "Veli",
+                "Bağlı öğrenci",
+                "Öğrenci listesi",
+                "Durum",
+                "",
+              ]}
             >
               {parents.map((parent) => {
-                const status = parent.status === "SUSPENDED"
-                  ? { label: "Askıda", tone: "warn" as const }
-                  : parent.status === "ARCHIVED"
-                    ? { label: "Arşivde", tone: "warn" as const }
-                    : !parent.inviteAcceptedAt
-                      ? { label: "Davet bekliyor", tone: "warn" as const }
-                  : parent.mustChangePassword
-                    ? { label: "Parola bekliyor", tone: "warn" as const }
-                    : parent.parentStudents.length === 0
-                      ? { label: "Öğrenci bağlantısı yok", tone: "warn" as const }
-                      : { label: "Aktif", tone: "ok" as const };
+                const status =
+                  parent.status === "SUSPENDED"
+                    ? { label: "Askıda", tone: "warn" as const }
+                    : parent.status === "ARCHIVED"
+                      ? { label: "Arşivde", tone: "warn" as const }
+                      : !parent.inviteAcceptedAt
+                        ? { label: "Davet bekliyor", tone: "warn" as const }
+                        : parent.mustChangePassword
+                          ? { label: "Parola bekliyor", tone: "warn" as const }
+                          : parent.parentStudents.length === 0
+                            ? {
+                                label: "Öğrenci bağlantısı yok",
+                                tone: "warn" as const,
+                              }
+                            : { label: "Aktif", tone: "ok" as const };
 
                 const relatedStudents = parent.parentStudents.map((link) => {
-                  const studentName = link.student.user.fullName || link.student.user.email;
-                  return link.relationship ? `${studentName} (${link.relationship})` : studentName;
+                  const studentName =
+                    link.student.user.fullName || link.student.user.email;
+                  return link.relationship
+                    ? `${studentName} (${link.relationship})`
+                    : studentName;
                 });
 
                 return (
@@ -266,9 +316,17 @@ export default async function ParentsPage({
                         {parent.email}
                       </span>
                     </PanelTableCell>
-                    <PanelTableCell>{parent.parentStudents.length}</PanelTableCell>
-                    <PanelTableCell>{relatedStudents.length ? relatedStudents.join(" · ") : "—"}</PanelTableCell>
-                    <PanelTableCell tone={status.tone}>{status.label}</PanelTableCell>
+                    <PanelTableCell>
+                      {parent.parentStudents.length}
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      {relatedStudents.length
+                        ? relatedStudents.join(" · ")
+                        : "—"}
+                    </PanelTableCell>
+                    <PanelTableCell tone={status.tone}>
+                      {status.label}
+                    </PanelTableCell>
                     <PanelTableCell>
                       <UserRowActions
                         userId={parent.id}
@@ -276,7 +334,9 @@ export default async function ParentsPage({
                         fullName={parent.fullName}
                         phone={parent.phone}
                         status={parent.status}
-                        inviteAcceptedAt={parent.inviteAcceptedAt?.toISOString() ?? null}
+                        inviteAcceptedAt={
+                          parent.inviteAcceptedAt?.toISOString() ?? null
+                        }
                         isSelf={false}
                       />
                     </PanelTableCell>
@@ -287,7 +347,8 @@ export default async function ParentsPage({
 
             <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-dc-ink-faint">
               <span>
-                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total}
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)}{" "}
+                / {total}
               </span>
               {pageCount > 1 ? (
                 <nav className="flex items-center gap-2" aria-label="Sayfalama">
@@ -320,10 +381,14 @@ export default async function ParentsPage({
           <PanelCard>
             <PanelCardTitle>İlişki işlemleri</PanelCardTitle>
             <p className="mt-2 text-[12.5px] text-dc-ink-faint">
-              Veli–öğrenci bağlantısı ekleyin, yakınlık bilgisini güncelleyin veya bağlantıyı kaldırın.
+              Veli–öğrenci bağlantısı ekleyin, yakınlık bilgisini güncelleyin
+              veya bağlantıyı kaldırın.
             </p>
             <StudentParentLinkForm
-              parents={parentOptions.map((parent) => ({ id: parent.id, name: parent.fullName || parent.email }))}
+              parents={parentOptions.map((parent) => ({
+                id: parent.id,
+                name: parent.fullName || parent.email,
+              }))}
               students={studentOptions.map((student) => ({
                 id: student.id,
                 name: student.user.fullName || student.user.email,
@@ -337,21 +402,28 @@ export default async function ParentsPage({
                 >
                   <div className="min-w-[220px] flex-1">
                     <p className="text-[13px] font-bold text-dc-ink">
-                      {relationship.parent.fullName || relationship.parent.email}
+                      {relationship.parent.fullName ||
+                        relationship.parent.email}
                     </p>
                     <p className="mt-1 text-[12px] text-dc-ink-muted">
                       {relationship.relationship || "Veli"} →{" "}
-                      {relationship.student.user.fullName || relationship.student.user.email}
+                      {relationship.student.user.fullName ||
+                        relationship.student.user.email}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <RelationshipUpdateForm id={relationship.id} initialRelationship={relationship.relationship} />
+                    <RelationshipUpdateForm
+                      id={relationship.id}
+                      initialRelationship={relationship.relationship}
+                    />
                     <RelationshipRemoveButton id={relationship.id} />
                   </div>
                 </div>
               ))}
               {!activeRelationships.length ? (
-                <p className="text-[13px] text-dc-ink-muted">Aktif veli bağlantısı yok.</p>
+                <p className="text-[13px] text-dc-ink-muted">
+                  Aktif veli bağlantısı yok.
+                </p>
               ) : null}
             </div>
           </PanelCard>
@@ -360,7 +432,10 @@ export default async function ParentsPage({
             <PanelCardTitle>İlişki geçmişi</PanelCardTitle>
             <div className="mt-3.5 flex max-h-[420px] flex-col gap-2 overflow-auto pr-1">
               {relationshipHistory.map((item) => (
-                <div key={item.id} className="rounded-[10px] border border-dc-line p-3">
+                <div
+                  key={item.id}
+                  className="rounded-[10px] border border-dc-line p-3"
+                >
                   <p className="text-[12.5px] font-semibold text-dc-ink">
                     {item.parent.fullName || item.parent.email} ·{" "}
                     {item.student.user.fullName || item.student.user.email}
@@ -380,7 +455,9 @@ export default async function ParentsPage({
                 </div>
               ))}
               {!relationshipHistory.length ? (
-                <p className="text-[13px] text-dc-ink-muted">Henüz ilişki geçmişi kaydı yok.</p>
+                <p className="text-[13px] text-dc-ink-muted">
+                  Henüz ilişki geçmişi kaydı yok.
+                </p>
               ) : null}
             </div>
           </PanelCard>

@@ -31,7 +31,10 @@ export function ExamsPanel(props: ExamsPanelProps) {
         {data.recent.length ? (
           <div className="mt-3 space-y-4">
             {data.recent.map((exam) => (
-              <article key={exam.id} className="border-b border-dc-line-soft pb-3 last:border-0 last:pb-0">
+              <article
+                key={exam.id}
+                className="border-b border-dc-line-soft pb-3 last:border-0 last:pb-0"
+              >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-[14px] font-semibold text-dc-ink">
                     {exam.exam} · {DAY.format(exam.takenAt)}

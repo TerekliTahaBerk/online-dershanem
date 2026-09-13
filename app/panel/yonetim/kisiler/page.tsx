@@ -40,7 +40,14 @@ function parseTab(raw: string | undefined): PeopleTab {
 
 function tabHref(tab: PeopleTab, q: string) {
   const params = new URLSearchParams();
-  params.set("sekme", tab === "STUDENT" ? "ogrenciler" : tab === "TEACHER" ? "ogretmenler" : "veliler");
+  params.set(
+    "sekme",
+    tab === "STUDENT"
+      ? "ogrenciler"
+      : tab === "TEACHER"
+        ? "ogretmenler"
+        : "veliler",
+  );
   if (q) params.set("q", q);
   return `/panel/yonetim/kisiler?${params.toString()}`;
 }
@@ -122,7 +129,10 @@ export default async function PeopleHubPage({
         },
         taughtGroups: {
           where: { isActive: true },
-          select: { id: true, _count: { select: { enrollments: { where: { endedAt: null } } } } },
+          select: {
+            id: true,
+            _count: { select: { enrollments: { where: { endedAt: null } } } },
+          },
         },
         studentTeacherAssignments: {
           where: { active: true },
@@ -159,7 +169,12 @@ export default async function PeopleHubPage({
   ];
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle={PANEL_DOMAIN.kisiler}>
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle={PANEL_DOMAIN.kisiler}
+    >
       <PanelHeading
         title={PANEL_DOMAIN.kisiler}
         description="Öğrenci, öğretmen ve velileri tek ekrandan yönetin. Detay için satıra gidin."
@@ -184,21 +199,34 @@ export default async function PeopleHubPage({
             {item.label}
           </Link>
         ))}
-        <form className="ml-auto flex gap-2" action="/panel/yonetim/kisiler" method="get">
-          <input type="hidden" name="sekme" value={tabs.find((t) => t.id === tab)?.sekme ?? "ogrenciler"} />
+        <form
+          className="ml-auto flex gap-2"
+          action="/panel/yonetim/kisiler"
+          method="get"
+        >
+          <input
+            type="hidden"
+            name="sekme"
+            value={tabs.find((t) => t.id === tab)?.sekme ?? "ogrenciler"}
+          />
           <input
             name="q"
             defaultValue={q}
             placeholder="Hızlı ara…"
             className="rounded-[10px] border border-[#DDE4E0] px-3.5 py-2.5 text-[13.5px]"
           />
-          <button className="site-btn site-btn-secondary site-btn-sm">Ara</button>
+          <button className="site-btn site-btn-secondary site-btn-sm">
+            Ara
+          </button>
         </form>
       </div>
 
       <PanelCard className="mt-4 overflow-x-auto">
         {users.length === 0 ? (
-          <PanelEmpty title="Kayıt yok" body="Bu sekmede eşleşen kişi bulunamadı." />
+          <PanelEmpty
+            title="Kayıt yok"
+            body="Bu sekmede eşleşen kişi bulunamadı."
+          />
         ) : tab === "STUDENT" ? (
           <PanelTable
             caption="Öğrenciler"
@@ -222,25 +250,39 @@ export default async function PeopleHubPage({
               const group = profile?.enrollments[0]?.group;
               const teachers = [
                 ...(profile?.teacherAssignments.map(
-                  (link) => `${link.subject} → ${link.teacher.fullName || link.teacher.email}`,
+                  (link) =>
+                    `${link.subject} → ${link.teacher.fullName || link.teacher.email}`,
                 ) ?? []),
-                ...(group ? [`${group.name}: ${group.teacher.fullName || group.teacher.email}`] : []),
+                ...(group
+                  ? [
+                      `${group.name}: ${group.teacher.fullName || group.teacher.email}`,
+                    ]
+                  : []),
               ];
               return (
                 <PanelTableRow key={user.id}>
                   <PanelTableCell>
-                    <Link href={detailHref} className="font-semibold text-dc-ink hover:underline">
+                    <Link
+                      href={detailHref}
+                      className="font-semibold text-dc-ink hover:underline"
+                    >
                       {user.fullName || user.email}
                     </Link>
-                    <div className="text-[12px] text-dc-ink-muted">{user.email}</div>
+                    <div className="text-[12px] text-dc-ink-muted">
+                      {user.email}
+                    </div>
                   </PanelTableCell>
                   <PanelTableCell>{profile?.classLevel || "—"}</PanelTableCell>
                   <PanelTableCell>{profile?.examType || "—"}</PanelTableCell>
                   <PanelTableCell>
-                    {user.productMemberships.map((m) => productLabel(m.product)).join(", ") || "—"}
+                    {user.productMemberships
+                      .map((m) => productLabel(m.product))
+                      .join(", ") || "—"}
                   </PanelTableCell>
                   <PanelTableCell>{group?.name || "—"}</PanelTableCell>
-                  <PanelTableCell>{teachers.slice(0, 2).join(" · ") || "—"}</PanelTableCell>
+                  <PanelTableCell>
+                    {teachers.slice(0, 2).join(" · ") || "—"}
+                  </PanelTableCell>
                   <PanelTableCell>
                     {profile?.parents
                       .map((p) => p.parent.fullName || p.parent.email)
@@ -260,12 +302,21 @@ export default async function PeopleHubPage({
         ) : tab === "TEACHER" ? (
           <PanelTable
             caption="Öğretmenler"
-            columns={["Ad soyad", "Branş", "Öğrenci", "Grup", "Bugün ders", "Durum"]}
+            columns={[
+              "Ad soyad",
+              "Branş",
+              "Öğrenci",
+              "Grup",
+              "Bugün ders",
+              "Durum",
+            ]}
           >
             {users.map((user) => {
               const studentCount =
-                user.taughtGroups.reduce((sum, g) => sum + g._count.enrollments, 0) +
-                user.studentTeacherAssignments.length;
+                user.taughtGroups.reduce(
+                  (sum, g) => sum + g._count.enrollments,
+                  0,
+                ) + user.studentTeacherAssignments.length;
               return (
                 <PanelTableRow key={user.id}>
                   <PanelTableCell>
@@ -290,7 +341,13 @@ export default async function PeopleHubPage({
         ) : (
           <PanelTable
             caption="Veliler"
-            columns={["Ad soyad", "Bağlı öğrenciler", "İletişim", "Durum", "Son giriş"]}
+            columns={[
+              "Ad soyad",
+              "Bağlı öğrenciler",
+              "İletişim",
+              "Durum",
+              "Son giriş",
+            ]}
           >
             {users.map((user) => (
               <PanelTableRow key={user.id}>
@@ -304,7 +361,10 @@ export default async function PeopleHubPage({
                 </PanelTableCell>
                 <PanelTableCell>
                   {user.parentStudents
-                    .map((link) => link.student.user.fullName || link.student.user.email)
+                    .map(
+                      (link) =>
+                        link.student.user.fullName || link.student.user.email,
+                    )
                     .join(", ") || "—"}
                 </PanelTableCell>
                 <PanelTableCell>
@@ -327,7 +387,11 @@ export default async function PeopleHubPage({
             const params = new URLSearchParams();
             params.set(
               "sekme",
-              tab === "STUDENT" ? "ogrenciler" : tab === "TEACHER" ? "ogretmenler" : "veliler",
+              tab === "STUDENT"
+                ? "ogrenciler"
+                : tab === "TEACHER"
+                  ? "ogretmenler"
+                  : "veliler",
             );
             if (q) params.set("q", q);
             params.set("sayfa", String(n));
@@ -336,7 +400,9 @@ export default async function PeopleHubPage({
                 key={n}
                 href={`/panel/yonetim/kisiler?${params.toString()}`}
                 className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  n === page ? "border-dc-brand bg-dc-brand-soft" : "border-[#DDE4E0]"
+                  n === page
+                    ? "border-dc-brand bg-dc-brand-soft"
+                    : "border-[#DDE4E0]"
                 }`}
               >
                 {n}

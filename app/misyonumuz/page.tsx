@@ -35,10 +35,12 @@ const principles = [
 export default function MissionPage() {
   return (
     <div className="site-scope">
-      <SchemaJsonLd schema={breadcrumbJsonLd([
-        { name: "Ana Sayfa", url: "/" },
-        { name: "Misyonumuz", url: "/misyonumuz/" },
-      ])} />
+      <SchemaJsonLd
+        schema={breadcrumbJsonLd([
+          { name: "Ana Sayfa", url: "/" },
+          { name: "Misyonumuz", url: "/misyonumuz/" },
+        ])}
+      />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <PageHero
@@ -46,8 +48,8 @@ export default function MissionPage() {
           align="left"
           title={
             <>
-              Matematiği, bir çocuğun <span className="site-hl">korktuğu</span> ders olmaktan
-              çıkarmak istedik.
+              Matematiği, bir çocuğun <span className="site-hl">korktuğu</span>{" "}
+              ders olmaktan çıkarmak istedik.
             </>
           }
         />
@@ -56,22 +58,27 @@ export default function MissionPage() {
         <section className="site-container pt-4 sm:pt-6">
           <div className="mx-auto flex max-w-2xl flex-col gap-6 text-[18px] leading-8 text-[var(--site-body)]">
             <p>
-              Online Dershanem, kalabalık dershane sıralarında kaybolan ya da birebir
-              özel dersin maliyetine ulaşamayan öğrenciler için kuruldu. İkisinin
-              arasında, bilinçli bir yer aradık: yeterince küçük ki her öğrenci görünür
-              olsun, yeterince erişilebilir ki her aile sürdürebilsin.
+              Online Dershanem, kalabalık dershane sıralarında kaybolan ya da
+              birebir özel dersin maliyetine ulaşamayan öğrenciler için kuruldu.
+              İkisinin arasında, bilinçli bir yer aradık: yeterince küçük ki her
+              öğrenci görünür olsun, yeterince erişilebilir ki her aile
+              sürdürebilsin.
             </p>
             <p>
               Matematiğin bir yetenek meselesi değil, bir{" "}
-              <em className="font-display italic text-[var(--site-ink)]">düzen</em> meselesi
-              olduğuna inanıyoruz. Doğru büyüklükte bir grup, takip edilen bir plan ve dürüst
-              bir geri bildirim — çoğu öğrenci için gereken bu.
+              <em className="font-display italic text-[var(--site-ink)]">
+                düzen
+              </em>{" "}
+              meselesi olduğuna inanıyoruz. Doğru büyüklükte bir grup, takip
+              edilen bir plan ve dürüst bir geri bildirim — çoğu öğrenci için
+              gereken bu.
             </p>
             <p>
-              Abartılı vaatler vermiyoruz. &ldquo;Garantili puan&rdquo; veya &ldquo;bir ayda
-              zirve&rdquo; demiyoruz. Bunun yerine, her hafta çocuğunuzun nerede olduğunu kısa
-              bir notla anlatıyor, sürecin içine sizi de alıyoruz. Güven, gösterişle değil
-              şeffaflıkla kurulur.
+              Abartılı vaatler vermiyoruz. &ldquo;Garantili puan&rdquo; veya
+              &ldquo;bir ayda zirve&rdquo; demiyoruz. Bunun yerine, her hafta
+              çocuğunuzun nerede olduğunu kısa bir notla anlatıyor, sürecin
+              içine sizi de alıyoruz. Güven, gösterişle değil şeffaflıkla
+              kurulur.
             </p>
           </div>
         </section>
@@ -80,10 +87,13 @@ export default function MissionPage() {
         <section className="mt-14 border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
           <div className="site-container py-16 text-center sm:py-20">
             <p className="mx-auto max-w-3xl font-display text-[clamp(1.5rem,3.5vw,2.3rem)] font-normal italic leading-[1.35] tracking-[-0.01em] text-[var(--site-ink)]">
-              &ldquo;Çocuğun dersten eli boş kalkmasın. Ne çalışacağını bilsin, veli de süreci
-              görsün. Kurduğumuz her şey bu basit cümlenin etrafında.&rdquo;
+              &ldquo;Çocuğun dersten eli boş kalkmasın. Ne çalışacağını bilsin,
+              veli de süreci görsün. Kurduğumuz her şey bu basit cümlenin
+              etrafında.&rdquo;
             </p>
-            <p className="mt-6 text-[14px] text-[var(--site-muted)]">— Online Dershanem, kurucu ekip</p>
+            <p className="mt-6 text-[14px] text-[var(--site-muted)]">
+              — Online Dershanem, kurucu ekip
+            </p>
           </div>
         </section>
 
@@ -94,10 +104,19 @@ export default function MissionPage() {
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {principles.map((p) => (
-              <div key={p.n} className="rounded-[24px] border border-[var(--site-line)] bg-white p-7">
-                <div className="mb-5 font-display text-[30px] text-[var(--brand-orange-ink)]">{p.n}</div>
-                <h3 className="mb-2.5 text-[18px] font-semibold text-[var(--site-ink)]">{p.title}</h3>
-                <p className="text-[15px] leading-7 text-[var(--site-body)]">{p.body}</p>
+              <div
+                key={p.n}
+                className="rounded-[24px] border border-[var(--site-line)] bg-white p-7"
+              >
+                <div className="mb-5 font-display text-[30px] text-[var(--brand-orange-ink)]">
+                  {p.n}
+                </div>
+                <h3 className="mb-2.5 text-[18px] font-semibold text-[var(--site-ink)]">
+                  {p.title}
+                </h3>
+                <p className="text-[15px] leading-7 text-[var(--site-body)]">
+                  {p.body}
+                </p>
               </div>
             ))}
           </div>

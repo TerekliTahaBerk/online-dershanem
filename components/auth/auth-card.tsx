@@ -25,7 +25,11 @@ export function AuthCard({
   return (
     <div className="site-scope grid min-h-dvh place-items-center bg-dc-canvas px-6 py-12">
       <div className="w-full max-w-[380px]">
-        <Link href="/" aria-label="Online Dershanem ana sayfa" className="mx-auto block w-12">
+        <Link
+          href="/"
+          aria-label="Online Dershanem ana sayfa"
+          className="mx-auto block w-12"
+        >
           <Image
             src="/design/od-logo.png"
             alt="Online Dershanem"
@@ -47,7 +51,10 @@ export function AuthCard({
           aria-disabled="true"
           className="mt-7 flex w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-xl border border-[#DDE4E0] bg-white p-3.5 text-[15px] font-semibold text-dc-ink opacity-55"
         >
-          <span aria-hidden="true" className="text-[15px] font-bold text-[#4285F4]">
+          <span
+            aria-hidden="true"
+            className="text-[15px] font-bold text-[#4285F4]"
+          >
             G
           </span>
           {googleLabel}

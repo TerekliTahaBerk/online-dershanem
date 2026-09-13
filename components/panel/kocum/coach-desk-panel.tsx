@@ -45,15 +45,16 @@ export function CoachDeskPanel({
   const [busy, setBusy] = useState(false);
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
-  const [taskKind, setTaskKind] = useState<(typeof taskKinds)[number]["value"]>("QUESTION_PRACTICE");
+  const [taskKind, setTaskKind] =
+    useState<(typeof taskKinds)[number]["value"]>("QUESTION_PRACTICE");
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [targetValue, setTargetValue] = useState(40);
   const [scheduledFor, setScheduledFor] = useState(weekStartIso.slice(0, 10));
   const [templateId, setTemplateId] = useState(templates[0]?.id || "");
   const [noteBody, setNoteBody] = useState("");
-  const [noteVisibility, setNoteVisibility] = useState<"INTERNAL" | "STUDENT_VISIBLE" | "PARENT_VISIBLE">(
-    "INTERNAL",
-  );
+  const [noteVisibility, setNoteVisibility] = useState<
+    "INTERNAL" | "STUDENT_VISIBLE" | "PARENT_VISIBLE"
+  >("INTERNAL");
   const [summaryStrengths, setSummaryStrengths] = useState("");
   const [summaryFocus, setSummaryFocus] = useState("");
   const [summaryNext, setSummaryNext] = useState("");
@@ -87,9 +88,14 @@ export function CoachDeskPanel({
       taskKind,
       scheduledFor: new Date(`${scheduledFor}T12:00:00+03:00`).toISOString(),
       durationMinutes,
-      targetType: taskKind === "QUESTION_PRACTICE" || taskKind === "ERROR_ANALYSIS" ? "QUESTIONS" : "NONE",
+      targetType:
+        taskKind === "QUESTION_PRACTICE" || taskKind === "ERROR_ANALYSIS"
+          ? "QUESTIONS"
+          : "NONE",
       targetValue:
-        taskKind === "QUESTION_PRACTICE" || taskKind === "ERROR_ANALYSIS" ? targetValue : null,
+        taskKind === "QUESTION_PRACTICE" || taskKind === "ERROR_ANALYSIS"
+          ? targetValue
+          : null,
       sourceType: "MANUAL_COACH",
     });
     if (ok) {
@@ -101,10 +107,13 @@ export function CoachDeskPanel({
 
   async function applyTemplate() {
     if (!templateId) return setMessage("Şablon seçin.");
-    const ok = await postJson(`/api/panel/kocum/templates/${templateId}/apply`, {
-      studentId,
-      weekStart: weekStartIso,
-    });
+    const ok = await postJson(
+      `/api/panel/kocum/templates/${templateId}/apply`,
+      {
+        studentId,
+        weekStart: weekStartIso,
+      },
+    );
     if (ok) {
       setMessage("Şablon plana uygulandı (taslak).");
       window.location.reload();
@@ -131,7 +140,9 @@ export function CoachDeskPanel({
     });
     if (ok) {
       setNoteBody("");
-      setMessage(`Not kaydedildi (${noteVisibility === "INTERNAL" ? "iç not" : noteVisibility}).`);
+      setMessage(
+        `Not kaydedildi (${noteVisibility === "INTERNAL" ? "iç not" : noteVisibility}).`,
+      );
     }
   }
 
@@ -148,20 +159,31 @@ export function CoachDeskPanel({
       publish,
     });
     if (ok) {
-      setMessage(publish ? "Haftalık özet yayınlandı." : "Haftalık özet taslak kaydedildi.");
+      setMessage(
+        publish
+          ? "Haftalık özet yayınlandı."
+          : "Haftalık özet taslak kaydedildi.",
+      );
     }
   }
 
   return (
-    <section className="panel-surface p-5 sm:p-6" aria-labelledby={`coach-desk-${studentId}`}>
+    <section
+      className="panel-surface p-5 sm:p-6"
+      aria-labelledby={`coach-desk-${studentId}`}
+    >
       <p className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
         Koç masaüstü
       </p>
-      <h2 id={`coach-desk-${studentId}`} className="mt-1 text-lg font-extrabold">
+      <h2
+        id={`coach-desk-${studentId}`}
+        className="mt-1 text-lg font-extrabold"
+      >
         {studentName}
       </h2>
       <p className="mt-1 text-xs text-[var(--site-muted)]">
-        Plan sürümü v{planVersion}. Görev ekleyin, şablon uygulayın, özet yayınlayın.
+        Plan sürümü v{planVersion}. Görev ekleyin, şablon uygulayın, özet
+        yayınlayın.
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -171,12 +193,20 @@ export function CoachDeskPanel({
           </p>
           <label className="mt-2 block">
             <span className="panel-label">Başlık</span>
-            <input className="panel-input mt-1" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <input
+              className="panel-input mt-1"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </label>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <label>
               <span className="panel-label">Ders</span>
-              <input className="panel-input mt-1" value={subject} onChange={(e) => setSubject(e.target.value)} />
+              <input
+                className="panel-input mt-1"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
             </label>
             <label>
               <span className="panel-label">Tür</span>
@@ -226,7 +256,12 @@ export function CoachDeskPanel({
               />
             </label>
           </div>
-          <button type="button" disabled={busy} onClick={() => void addTask()} className="panel-quick-action panel-quick-action-primary mt-3">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void addTask()}
+            className="panel-quick-action panel-quick-action-primary mt-3"
+          >
             Görevi ekle
           </button>
         </div>
@@ -250,12 +285,19 @@ export function CoachDeskPanel({
                     </option>
                   ))}
                 </select>
-                <button type="button" disabled={busy} onClick={() => void applyTemplate()} className="panel-quick-action mt-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void applyTemplate()}
+                  className="panel-quick-action mt-2"
+                >
                   Şablonu plana uygula
                 </button>
               </>
             ) : (
-              <p className="mt-2 text-xs text-[var(--site-muted)]">Hazır şablon yok.</p>
+              <p className="mt-2 text-xs text-[var(--site-muted)]">
+                Hazır şablon yok.
+              </p>
             )}
           </div>
 
@@ -266,7 +308,12 @@ export function CoachDeskPanel({
             <p className="mt-1 text-[11px] text-[var(--site-muted)]">
               Sonraki haftaya kopyalar; tamamlanmayan görevleri taşır.
             </p>
-            <button type="button" disabled={busy || !planId} onClick={() => void copyPlan()} className="panel-quick-action mt-2">
+            <button
+              type="button"
+              disabled={busy || !planId}
+              onClick={() => void copyPlan()}
+              className="panel-quick-action mt-2"
+            >
               Kopyala ve eksikleri taşı
             </button>
           </div>
@@ -281,7 +328,9 @@ export function CoachDeskPanel({
             <select
               className="panel-input mt-1"
               value={noteVisibility}
-              onChange={(e) => setNoteVisibility(e.target.value as typeof noteVisibility)}
+              onChange={(e) =>
+                setNoteVisibility(e.target.value as typeof noteVisibility)
+              }
             >
               <option value="INTERNAL">İç not (yalnız personel)</option>
               <option value="STUDENT_VISIBLE">Öğrenci görebilir</option>
@@ -294,7 +343,12 @@ export function CoachDeskPanel({
             onChange={(e) => setNoteBody(e.target.value)}
             placeholder="Not"
           />
-          <button type="button" disabled={busy} onClick={() => void saveNote()} className="panel-quick-action mt-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void saveNote()}
+            className="panel-quick-action mt-2"
+          >
             Notu kaydet
           </button>
         </div>
@@ -303,36 +357,69 @@ export function CoachDeskPanel({
           <p className="text-xs font-extrabold">Haftalık özet</p>
           <label className="mt-2 block">
             <span className="panel-label">Güçlü</span>
-            <input className="panel-input mt-1" value={summaryStrengths} onChange={(e) => setSummaryStrengths(e.target.value)} />
+            <input
+              className="panel-input mt-1"
+              value={summaryStrengths}
+              onChange={(e) => setSummaryStrengths(e.target.value)}
+            />
           </label>
           <label className="mt-2 block">
             <span className="panel-label">Odak</span>
-            <input className="panel-input mt-1" value={summaryFocus} onChange={(e) => setSummaryFocus(e.target.value)} />
+            <input
+              className="panel-input mt-1"
+              value={summaryFocus}
+              onChange={(e) => setSummaryFocus(e.target.value)}
+            />
           </label>
           <label className="mt-2 block">
             <span className="panel-label">Gelecek hafta</span>
-            <input className="panel-input mt-1" value={summaryNext} onChange={(e) => setSummaryNext(e.target.value)} />
+            <input
+              className="panel-input mt-1"
+              value={summaryNext}
+              onChange={(e) => setSummaryNext(e.target.value)}
+            />
           </label>
           <label className="mt-2 block">
             <span className="panel-label">Öğrenci metni</span>
-            <textarea className="panel-input mt-1 min-h-[56px]" value={summaryStudent} onChange={(e) => setSummaryStudent(e.target.value)} />
+            <textarea
+              className="panel-input mt-1 min-h-[56px]"
+              value={summaryStudent}
+              onChange={(e) => setSummaryStudent(e.target.value)}
+            />
           </label>
           <label className="mt-2 block">
             <span className="panel-label">Veli metni</span>
-            <textarea className="panel-input mt-1 min-h-[56px]" value={summaryParent} onChange={(e) => setSummaryParent(e.target.value)} />
+            <textarea
+              className="panel-input mt-1 min-h-[56px]"
+              value={summaryParent}
+              onChange={(e) => setSummaryParent(e.target.value)}
+            />
           </label>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" disabled={busy} onClick={() => void publishSummary(false)} className="panel-quick-action">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void publishSummary(false)}
+              className="panel-quick-action"
+            >
               Taslak kaydet
             </button>
-            <button type="button" disabled={busy} onClick={() => void publishSummary(true)} className="panel-quick-action panel-quick-action-primary">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void publishSummary(true)}
+              className="panel-quick-action panel-quick-action-primary"
+            >
               Yayınla
             </button>
           </div>
         </div>
       </div>
 
-      <p aria-live="polite" className="mt-3 text-xs font-bold text-[var(--brand-olive)]">
+      <p
+        aria-live="polite"
+        className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+      >
         {message}
       </p>
     </section>

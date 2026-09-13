@@ -24,17 +24,23 @@ export function OverviewPanel(props: OverviewPanelProps) {
           <div className="flex justify-between gap-3">
             <dt>Plan gerçekleşme</dt>
             <dd className="font-semibold text-dc-ink">
-              {data.planCompletionPercent == null ? "Plan yok" : `%${data.planCompletionPercent}`}
+              {data.planCompletionPercent == null
+                ? "Plan yok"
+                : `%${data.planCompletionPercent}`}
             </dd>
           </div>
           <div className="flex justify-between gap-3">
             <dt>Açık yardım</dt>
-            <dd className="font-semibold text-dc-ink">{data.openHelpRequests}</dd>
+            <dd className="font-semibold text-dc-ink">
+              {data.openHelpRequests}
+            </dd>
           </div>
           {data.nearestOdkExamTitle ? (
             <div className="flex justify-between gap-3">
               <dt>Yaklaşan ODK</dt>
-              <dd className="font-semibold text-dc-ink">{data.nearestOdkExamTitle}</dd>
+              <dd className="font-semibold text-dc-ink">
+                {data.nearestOdkExamTitle}
+              </dd>
             </div>
           ) : null}
         </dl>
@@ -61,7 +67,10 @@ export function OverviewPanel(props: OverviewPanelProps) {
           <div className="mt-3 space-y-2">
             {data.recentExams.length ? (
               data.recentExams.map((exam) => (
-                <div key={exam.id} className="flex justify-between gap-3 text-[13.5px]">
+                <div
+                  key={exam.id}
+                  className="flex justify-between gap-3 text-[13.5px]"
+                >
                   <span className="text-dc-ink-body">
                     {exam.title} · {DAY.format(exam.takenAt)}
                   </span>
@@ -81,14 +90,24 @@ export function OverviewPanel(props: OverviewPanelProps) {
           <div className="mt-3 space-y-2">
             {data.openInterventions.length ? (
               data.openInterventions.map((item) => (
-                <div key={item.id} className="rounded-[10px] border border-dc-line-soft px-3 py-2.5">
-                  <p className="text-[13px] font-semibold text-dc-ink">{item.status}</p>
-                  <p className="mt-1 text-[12.5px] leading-5 text-dc-ink-muted">{item.reason}</p>
+                <div
+                  key={item.id}
+                  className="rounded-[10px] border border-dc-line-soft px-3 py-2.5"
+                >
+                  <p className="text-[13px] font-semibold text-dc-ink">
+                    {item.status}
+                  </p>
+                  <p className="mt-1 text-[12.5px] leading-5 text-dc-ink-muted">
+                    {item.reason}
+                  </p>
                 </div>
               ))
             ) : data.activeRiskReasons.length ? (
               data.activeRiskReasons.map((reason) => (
-                <p key={reason} className="text-[13px] leading-6 text-dc-ink-body">
+                <p
+                  key={reason}
+                  className="text-[13px] leading-6 text-dc-ink-body"
+                >
                   {reason}
                 </p>
               ))

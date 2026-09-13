@@ -13,7 +13,11 @@ export const metadata: Metadata = {
  * BURASI tek başına yeterli DEĞİL: her sayfa kendi rol kontrolünü de yapar
  * (layout, alt sayfaların RSC isteklerinde her zaman yeniden çalışmaz).
  */
-export default async function PanelLayout({ children }: { children: React.ReactNode }) {
+export default async function PanelLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   await requireSession();
   return <>{children}</>;
 }

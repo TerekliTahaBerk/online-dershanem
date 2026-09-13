@@ -1,10 +1,19 @@
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, ChevronRight, Download, SlidersHorizontal } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  SlidersHorizontal,
+} from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
-import { addIstanbulCalendarDays, istanbulWeekStart } from "@/lib/istanbul-time";
+import {
+  addIstanbulCalendarDays,
+  istanbulWeekStart,
+} from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -51,17 +60,13 @@ async function loadWeekLessons(
   });
 }
 
-function DayColumn({
-  day,
-  lessons,
-}: {
-  day: Date;
-  lessons: CalendarLesson[];
-}) {
+function DayColumn({ day, lessons }: { day: Date; lessons: CalendarLesson[] }) {
   const dayStart = day.getTime();
   const dayEnd = dayStart + 86400000;
   const items = lessons.filter(
-    (lesson) => lesson.startsAt.getTime() >= dayStart && lesson.startsAt.getTime() < dayEnd,
+    (lesson) =>
+      lesson.startsAt.getTime() >= dayStart &&
+      lesson.startsAt.getTime() < dayEnd,
   );
   const today = Date.now() >= dayStart && Date.now() < dayEnd;
 
@@ -73,10 +78,14 @@ function DayColumn({
     >
       <div
         className={`rounded-xl px-2.5 py-2 ${
-          today ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)] text-[var(--site-ink)]"
+          today
+            ? "bg-[var(--brand-olive)] text-white"
+            : "bg-[var(--site-bg-warm)] text-[var(--site-ink)]"
         }`}
       >
-        <p className="text-[11px] font-extrabold capitalize">{dayTitle.format(day)}</p>
+        <p className="text-[11px] font-extrabold capitalize">
+          {dayTitle.format(day)}
+        </p>
       </div>
       <div className="mt-2 space-y-2">
         {items.map((lesson) => (
@@ -103,7 +112,9 @@ function DayColumn({
                     : "Planlı"}
               </span>
             </div>
-            <p className="mt-2 text-[11.5px] font-bold leading-4 text-[var(--site-ink)]">{lesson.title}</p>
+            <p className="mt-2 text-[11.5px] font-bold leading-4 text-[var(--site-ink)]">
+              {lesson.title}
+            </p>
             <p className="mt-1 text-[9.5px] leading-4 text-[var(--site-muted)]">
               {lesson.group.name}
               <br />
@@ -112,7 +123,9 @@ function DayColumn({
           </Link>
         ))}
         {!items.length ? (
-          <p className="px-2 py-6 text-center text-[10.5px] text-[var(--site-muted)] lg:py-8">Ders yok</p>
+          <p className="px-2 py-6 text-center text-[10.5px] text-[var(--site-muted)] lg:py-8">
+            Ders yok
+          </p>
         ) : null}
       </div>
     </section>
@@ -141,7 +154,9 @@ export default async function CalendarPage({
       select: { id: true, name: true },
     }),
   ]);
-  const days = Array.from({ length: 7 }, (_, index) => addIstanbulCalendarDays(start, index));
+  const days = Array.from({ length: 7 }, (_, index) =>
+    addIstanbulCalendarDays(start, index),
+  );
   const query = (nextWeek: number) => {
     const qs = new URLSearchParams({ week: String(nextWeek) });
     if (params.teacher) qs.set("teacher", params.teacher);
@@ -150,7 +165,11 @@ export default async function CalendarPage({
   };
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+    >
       <AdminPageHeader
         eyebrow="Haftalık plan"
         title="Ders takvimi"
@@ -159,24 +178,41 @@ export default async function CalendarPage({
         meta={`${lessons.length} ders`}
       />
       <div className="mt-4 flex justify-end">
-        <a href="/api/panel/calendar/export" download className="panel-quick-action panel-quick-action-primary">
+        <a
+          href="/api/panel/calendar/export"
+          download
+          className="panel-quick-action panel-quick-action-primary"
+        >
           <Download size={14} /> Tüm programı indir (.ics)
         </a>
       </div>
       <div className="mt-6 flex flex-col gap-3 rounded-[14px] border border-[var(--site-line)] bg-white p-3 shadow-[var(--panel-card-shadow)] lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center justify-between gap-2">
-          <Link href={query(week - 1)} className="panel-quick-action" aria-label="Önceki hafta">
+          <Link
+            href={query(week - 1)}
+            className="panel-quick-action"
+            aria-label="Önceki hafta"
+          >
             <ChevronLeft size={16} />
           </Link>
           <div className="min-w-[190px] text-center">
             <p className="text-[12.5px] font-extrabold text-[var(--site-ink)]">
-              {rangeDate.format(start)} – {rangeDate.format(new Date(end.getTime() - 1))}
+              {rangeDate.format(start)} –{" "}
+              {rangeDate.format(new Date(end.getTime() - 1))}
             </p>
             <p className="mt-0.5 text-[10.5px] text-[var(--site-muted)]">
-              {week === 0 ? "Bu hafta" : week > 0 ? `${week} hafta sonrası` : `${Math.abs(week)} hafta önce`}
+              {week === 0
+                ? "Bu hafta"
+                : week > 0
+                  ? `${week} hafta sonrası`
+                  : `${Math.abs(week)} hafta önce`}
             </p>
           </div>
-          <Link href={query(week + 1)} className="panel-quick-action" aria-label="Sonraki hafta">
+          <Link
+            href={query(week + 1)}
+            className="panel-quick-action"
+            aria-label="Sonraki hafta"
+          >
             <ChevronRight size={16} />
           </Link>
           {week !== 0 ? (
@@ -185,7 +221,10 @@ export default async function CalendarPage({
             </Link>
           ) : null}
         </div>
-        <form className="flex flex-col gap-2 sm:flex-row" action="/panel/yonetim/takvim">
+        <form
+          className="flex flex-col gap-2 sm:flex-row"
+          action="/panel/yonetim/takvim"
+        >
           <input type="hidden" name="week" value={week} />
           <select
             name="teacher"

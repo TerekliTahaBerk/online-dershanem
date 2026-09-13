@@ -41,7 +41,9 @@ export function CoachingPanel(props: CoachingPanelProps) {
         <dl className="mt-3 space-y-2.5 text-[13.5px] text-dc-ink-body">
           <div className="flex justify-between gap-3">
             <dt>Koç</dt>
-            <dd className="font-semibold text-dc-ink">{data.coachName ?? "Atama yok"}</dd>
+            <dd className="font-semibold text-dc-ink">
+              {data.coachName ?? "Atama yok"}
+            </dd>
           </div>
           <div className="flex justify-between gap-3">
             <dt>Sıklık</dt>
@@ -59,10 +61,14 @@ export function CoachingPanel(props: CoachingPanelProps) {
             {data.sharedNote}
           </p>
         ) : (
-          <p className="mt-4 text-[13px] text-dc-ink-muted">Paylaşılan koçluk notu yok.</p>
+          <p className="mt-4 text-[13px] text-dc-ink-muted">
+            Paylaşılan koçluk notu yok.
+          </p>
         )}
         {data.focus ? (
-          <p className="mt-2 text-[12.5px] text-dc-ink-faint">Odak: {data.focus}</p>
+          <p className="mt-2 text-[12.5px] text-dc-ink-faint">
+            Odak: {data.focus}
+          </p>
         ) : null}
       </PanelCard>
 
@@ -71,7 +77,10 @@ export function CoachingPanel(props: CoachingPanelProps) {
         <div className="mt-3 space-y-2">
           {data.goals.length ? (
             data.goals.map((goal) => (
-              <div key={goal.id} className="flex justify-between gap-3 text-[13.5px]">
+              <div
+                key={goal.id}
+                className="flex justify-between gap-3 text-[13.5px]"
+              >
                 <span>{goal.label}</span>
                 <span className="font-semibold text-dc-ink">
                   {goal.current == null ? "—" : goal.current} / {goal.target}

@@ -4,7 +4,11 @@
  */
 
 const steps = [
-  { n: "01", title: "Hedefini söyle", body: "LGS mi YKS mi, hangi alan ve hangi dönem." },
+  {
+    n: "01",
+    title: "Hedefini söyle",
+    body: "LGS mi YKS mi, hangi alan ve hangi dönem.",
+  },
   {
     n: "02",
     title: "Nerede zorlandığını konuşalım",
@@ -35,18 +39,26 @@ export function HowItWorks() {
             <li
               key={n}
               className={`pt-[18px] ${
-                i === 0 ? "border-t-2 border-dc-brand" : "border-t-2 border-[#DDE4E0]"
+                i === 0
+                  ? "border-t-2 border-dc-brand"
+                  : "border-t-2 border-[#DDE4E0]"
               }`}
             >
               <span
                 className={`font-mono text-[11px] font-semibold ${
-                  i === 0 ? "text-dc-brand-strong" : "text-[var(--dc-ink-faint)]"
+                  i === 0
+                    ? "text-dc-brand-strong"
+                    : "text-[var(--dc-ink-faint)]"
                 }`}
               >
                 {n}
               </span>
-              <h3 className="mt-2.5 font-display text-[19px] text-dc-ink">{title}</h3>
-              <p className="mt-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">{body}</p>
+              <h3 className="mt-2.5 font-display text-[19px] text-dc-ink">
+                {title}
+              </h3>
+              <p className="mt-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">
+                {body}
+              </p>
             </li>
           ))}
         </ol>

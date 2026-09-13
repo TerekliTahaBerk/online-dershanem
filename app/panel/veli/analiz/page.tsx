@@ -5,8 +5,15 @@ import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { PanelEmpty } from "@/components/panel/ui";
-import { AcademicBlock, BehavioralBlock, GidisatHero } from "@/components/panel/analiz";
-import { loadStudentProgressInsight, formatPeriodRangeLabel } from "@/lib/progress-insights/server";
+import {
+  AcademicBlock,
+  BehavioralBlock,
+  GidisatHero,
+} from "@/components/panel/analiz";
+import {
+  loadStudentProgressInsight,
+  formatPeriodRangeLabel,
+} from "@/lib/progress-insights/server";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +32,10 @@ export default async function ParentAnalizPage({
   if (!flags.progressInsights) notFound();
 
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -51,7 +61,9 @@ export default async function ParentAnalizPage({
         <GidisatHero
           title="Analiz"
           periodLabel="Gidişat"
-          sentences={["Hesabınız öğrencinizle eşleştirildiğinde gidişat özeti burada açılır."]}
+          sentences={[
+            "Hesabınız öğrencinizle eşleştirildiğinde gidişat özeti burada açılır.",
+          ]}
         />
         <PanelEmpty
           title="Henüz bağlı öğrenci yok."
@@ -93,7 +105,8 @@ export default async function ParentAnalizPage({
             Deneme eğilimi için deneme kaydı gerekir
           </h2>
           <p className="mt-2 text-[14px] leading-[1.6] text-dc-ink-muted">
-            Bu hesapta deneme ürünü yok. Aşağıda ders katılımı ve çalışma tamamlama görünüyor.
+            Bu hesapta deneme ürünü yok. Aşağıda ders katılımı ve çalışma
+            tamamlama görünüyor.
           </p>
         </div>
       ) : null}

@@ -22,7 +22,12 @@ export default async function Group360Page({
   });
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Grup 360">
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Grup 360"
+    >
       <Group360View bundle={bundle} />
     </PanelShell>
   );

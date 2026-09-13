@@ -50,10 +50,12 @@ export function LegalPageTemplate({
 
   return (
     <div className="site-scope">
-      <SchemaJsonLd schema={breadcrumbJsonLd([
-        { name: "Ana Sayfa", url: "/" },
-        { name: pageTitle, url: canonicalPath },
-      ])} />
+      <SchemaJsonLd
+        schema={breadcrumbJsonLd([
+          { name: "Ana Sayfa", url: "/" },
+          { name: pageTitle, url: canonicalPath },
+        ])}
+      />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <PageHero
@@ -63,9 +65,15 @@ export function LegalPageTemplate({
           subtitle={intro}
           actions={
             <p className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--site-line)] bg-white px-4 py-2 text-[13px] text-[var(--site-muted)]">
-              <ShieldCheck size={15} className="text-[var(--brand-olive)]" aria-hidden="true" />
+              <ShieldCheck
+                size={15}
+                className="text-[var(--brand-olive)]"
+                aria-hidden="true"
+              />
               Yürürlük tarihi:
-              <strong className="font-semibold text-[var(--site-ink)]">{effectiveDate}</strong>
+              <strong className="font-semibold text-[var(--site-ink)]">
+                {effectiveDate}
+              </strong>
             </p>
           }
         />
@@ -74,22 +82,36 @@ export function LegalPageTemplate({
           <div className="grid gap-10 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-16">
             <aside className="lg:sticky lg:top-28 lg:self-start">
               <p className="site-kicker">Bu metinde</p>
-              <nav aria-label={`${pageTitle} bölüm başlıkları`} className="mt-4 border-y border-[var(--site-line)]">
+              <nav
+                aria-label={`${pageTitle} bölüm başlıkları`}
+                className="mt-4 border-y border-[var(--site-line)]"
+              >
                 {sections.map((section, index) => (
                   <Link
                     key={section.title}
                     href={`#${sectionId(section.title)}`}
                     className="flex min-h-12 items-center gap-3 border-b border-[var(--site-line)] py-3 text-[13.5px] leading-5 text-[var(--site-body)] last:border-b-0 hover:text-[var(--brand-olive)]"
                   >
-                    <span className="text-[11px] font-bold text-[var(--site-muted)]">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="text-[11px] font-bold text-[var(--site-muted)]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
                     {section.title.replace(/^\d+\.\s*/, "")}
                   </Link>
                 ))}
               </nav>
               <div className="mt-5 rounded-[18px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-                <Mail size={17} className="text-[var(--brand-olive)]" aria-hidden="true" />
-                <p className="mt-3 text-[12.5px] leading-6 text-[var(--site-body)]">Bu metinle ilgili bir sorunuz varsa ekibimize yazabilirsiniz.</p>
-                <Link href="/iletisim" className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--brand-olive)] hover:underline">
+                <Mail
+                  size={17}
+                  className="text-[var(--brand-olive)]"
+                  aria-hidden="true"
+                />
+                <p className="mt-3 text-[12.5px] leading-6 text-[var(--site-body)]">
+                  Bu metinle ilgili bir sorunuz varsa ekibimize yazabilirsiniz.
+                </p>
+                <Link
+                  href="/iletisim"
+                  className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--brand-olive)] hover:underline"
+                >
                   İletişime geç <ArrowRight size={14} aria-hidden="true" />
                 </Link>
               </div>

@@ -26,7 +26,11 @@ const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "parola", label: "Parola bekliyor" },
 ];
 
-function chipHref(base: Record<string, string>, key: string, value: string): string {
+function chipHref(
+  base: Record<string, string>,
+  key: string,
+  value: string,
+): string {
   const next = { ...base, [key]: value };
   const qs = new URLSearchParams(
     Object.entries(next).filter(([, v]) => v) as [string, string][],
@@ -34,7 +38,15 @@ function chipHref(base: Record<string, string>, key: string, value: string): str
   return qs ? `/panel/yonetim/ogrenciler?${qs}` : "/panel/yonetim/ogrenciler";
 }
 
-function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+function Chip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -53,14 +65,23 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
 export default async function StudentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; urun?: string; durum?: string; sayfa?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    urun?: string;
+    durum?: string;
+    sayfa?: string;
+  }>;
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
 
   const q = (sp.q ?? "").trim();
-  const urun = ["OD", "OK", "ODK"].includes(sp.urun ?? "") ? (sp.urun ?? "") : "";
-  const durum = STATUS_FILTERS.some((s) => s.value === sp.durum) ? (sp.durum ?? "") : "";
+  const urun = ["OD", "OK", "ODK"].includes(sp.urun ?? "")
+    ? (sp.urun ?? "")
+    : "";
+  const durum = STATUS_FILTERS.some((s) => s.value === sp.durum)
+    ? (sp.durum ?? "")
+    : "";
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
   const base = { q, urun, durum };
 
@@ -89,9 +110,15 @@ export default async function StudentsPage({
     ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
     ...(durum === "arsiv" ? { status: "ARCHIVED" as const } : {}),
     ...(durum === "davet" ? { inviteAcceptedAt: null } : {}),
-    ...(durum === "parola" ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } } : {}),
+    ...(durum === "parola"
+      ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } }
+      : {}),
     ...(durum === "dikkat"
-      ? { odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } } }
+      ? {
+          odOrders: {
+            some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
+          },
+        }
       : {}),
   };
 
@@ -111,7 +138,10 @@ export default async function StudentsPage({
         inviteAcceptedAt: true,
         mustChangePassword: true,
         productMemberships: {
-          where: { revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+          where: {
+            revokedAt: null,
+            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+          },
           select: { product: true },
         },
         odOrders: {
@@ -141,7 +171,9 @@ export default async function StudentsPage({
     prisma.user.count({
       where: {
         role: "STUDENT",
-        odOrders: { some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } } },
+        odOrders: {
+          some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
+        },
       },
     }),
   ]);
@@ -171,7 +203,11 @@ export default async function StudentsPage({
           }
         />
 
-        <form method="get" role="search" className="mt-5 flex flex-wrap items-center gap-2.5">
+        <form
+          method="get"
+          role="search"
+          className="mt-5 flex flex-wrap items-center gap-2.5"
+        >
           <label className="sr-only" htmlFor="ogrenci-ara">
             Ad, e-posta veya telefon ara
           </label>
@@ -202,7 +238,9 @@ export default async function StudentsPage({
         </form>
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-[12.5px] font-semibold text-dc-ink-faint">Durum:</span>
+          <span className="text-[12.5px] font-semibold text-dc-ink-faint">
+            Durum:
+          </span>
           {STATUS_FILTERS.map((s) => (
             <Chip
               key={s.value || "all"}
@@ -226,19 +264,21 @@ export default async function StudentsPage({
               columns={["Öğrenci", "Hedef", "Ürünler", "Grup", "Durum", ""]}
             >
               {students.map((student) => {
-                const products = student.productMemberships.map((m) => productLabel(m.product));
+                const products = student.productMemberships.map((m) =>
+                  productLabel(m.product),
+                );
                 const enrollment = student.studentProfile?.enrollments[0];
                 const status = student.odOrders.length
                   ? { label: "Ödeme alındı, erişim yok", tone: "warn" as const }
                   : student.status === "ARCHIVED"
                     ? { label: "Arşivde", tone: "warn" as const }
                     : student.status === "SUSPENDED"
-                    ? { label: "Askıda", tone: "warn" as const }
-                    : !student.inviteAcceptedAt
-                      ? { label: "Davet bekliyor", tone: "warn" as const }
-                    : student.mustChangePassword
-                      ? { label: "Parola bekliyor", tone: "warn" as const }
-                      : { label: "Aktif", tone: "ok" as const };
+                      ? { label: "Askıda", tone: "warn" as const }
+                      : !student.inviteAcceptedAt
+                        ? { label: "Davet bekliyor", tone: "warn" as const }
+                        : student.mustChangePassword
+                          ? { label: "Parola bekliyor", tone: "warn" as const }
+                          : { label: "Aktif", tone: "ok" as const };
 
                 return (
                   <PanelTableRow key={student.id}>
@@ -257,12 +297,18 @@ export default async function StudentsPage({
                         {student.email}
                       </span>
                     </PanelTableCell>
-                    <PanelTableCell>{student.studentProfile?.targetGoal || "—"}</PanelTableCell>
-                    <PanelTableCell>{products.length ? products.join(" · ") : "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      {student.studentProfile?.targetGoal || "—"}
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      {products.length ? products.join(" · ") : "—"}
+                    </PanelTableCell>
                     <PanelTableCell>
                       {enrollment ? enrollment.group.name : "—"}
                     </PanelTableCell>
-                    <PanelTableCell tone={status.tone}>{status.label}</PanelTableCell>
+                    <PanelTableCell tone={status.tone}>
+                      {status.label}
+                    </PanelTableCell>
                     <PanelTableCell>
                       <UserRowActions
                         userId={student.id}
@@ -270,7 +316,9 @@ export default async function StudentsPage({
                         fullName={student.fullName}
                         phone={student.phone}
                         status={student.status}
-                        inviteAcceptedAt={student.inviteAcceptedAt?.toISOString() ?? null}
+                        inviteAcceptedAt={
+                          student.inviteAcceptedAt?.toISOString() ?? null
+                        }
                         isSelf={false}
                       />
                     </PanelTableCell>
@@ -281,7 +329,8 @@ export default async function StudentsPage({
 
             <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-dc-ink-faint">
               <span>
-                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total}
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)}{" "}
+                / {total}
               </span>
               {pageCount > 1 ? (
                 <nav className="flex items-center gap-2" aria-label="Sayfalama">

@@ -11,18 +11,27 @@ import { Fragment } from "react";
  * başlıklarına göre açılır listeye dönüşür").
  */
 
-const products = ["Online Dershanem", "Online Koçum", "Deneme Kulübüm"] as const;
+const products = [
+  "Online Dershanem",
+  "Online Koçum",
+  "Deneme Kulübüm",
+] as const;
 
-type Row = { label: string; on: readonly [boolean, boolean, boolean] } | {
-  label: string;
-  values: readonly [string, string, string];
-};
+type Row =
+  | { label: string; on: readonly [boolean, boolean, boolean] }
+  | {
+      label: string;
+      values: readonly [string, string, string];
+    };
 
 const groups: { title: string; rows: Row[] }[] = [
   {
     title: "Ders ve içerik",
     rows: [
-      { label: "Canlı ders (birebir ya da en fazla 4 kişi)", on: [true, false, false] },
+      {
+        label: "Canlı ders (birebir ya da en fazla 4 kişi)",
+        on: [true, false, false],
+      },
       { label: "Paket fiyatına dahil bir ders", on: [true, false, false] },
       { label: "Ek ders ekleme", on: [true, false, false] },
       { label: "Ders sonrası öğretmen notu", on: [true, false, false] },
@@ -33,7 +42,10 @@ const groups: { title: string; rows: Row[] }[] = [
     rows: [
       { label: "Haftalık çalışma planı", on: [false, true, false] },
       { label: "Birebir koç görüşmesi", on: [false, true, false] },
-      { label: "Planın ne kadarının yapıldığı takibi", on: [false, true, false] },
+      {
+        label: "Planın ne kadarının yapıldığı takibi",
+        on: [false, true, false],
+      },
       { label: "Tüm dersleri kapsayan planlama", on: [false, true, false] },
     ],
   },
@@ -42,7 +54,10 @@ const groups: { title: string; rows: Row[] }[] = [
     rows: [
       { label: "LGS denemeleri", on: [false, false, true] },
       { label: "TYT ve AYT denemeleri", on: [false, false, true] },
-      { label: "Konu ve soru tipine göre kayıp analizi", on: [false, false, true] },
+      {
+        label: "Konu ve soru tipine göre kayıp analizi",
+        on: [false, false, true],
+      },
       { label: "Denemeler arası gelişim takibi", on: [false, false, true] },
     ],
   },
@@ -69,7 +84,10 @@ const groups: { title: string; rows: Row[] }[] = [
   {
     title: "Erişim ve kullanım",
     rows: [
-      { label: "Web üzerinden kullanım (mobil tarayıcı dahil)", on: [true, true, true] },
+      {
+        label: "Web üzerinden kullanım (mobil tarayıcı dahil)",
+        on: [true, true, true],
+      },
       { label: "Faturalama dönemi", values: ["aylık", "aylık", "dönemsel"] },
     ],
   },
@@ -78,7 +96,10 @@ const groups: { title: string; rows: Row[] }[] = [
 function Mark({ on }: { on: boolean }) {
   return on ? (
     <>
-      <span aria-hidden="true" className="text-[15px] font-bold text-dc-brand-strong">
+      <span
+        aria-hidden="true"
+        className="text-[15px] font-bold text-dc-brand-strong"
+      >
         ✓
       </span>
       <span className="sr-only">var</span>
@@ -203,8 +224,8 @@ export function CoverageTable() {
       </div>
 
       <p className="mt-4 text-[12.5px] text-dc-ink-ghost">
-        Ders saatleri ve grup günleri öğrencinin yerleştiği gruba göre değişir; ön
-        görüşmede netleşir.
+        Ders saatleri ve grup günleri öğrencinin yerleştiği gruba göre değişir;
+        ön görüşmede netleşir.
       </p>
     </>
   );

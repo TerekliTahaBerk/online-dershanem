@@ -72,7 +72,9 @@ export function HomeFaq() {
                   +
                 </span>
               </summary>
-              <p className="mt-3 text-[15px] leading-[1.65] text-dc-ink-muted">{a}</p>
+              <p className="mt-3 text-[15px] leading-[1.65] text-dc-ink-muted">
+                {a}
+              </p>
             </details>
           ))}
         </div>

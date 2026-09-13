@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
-import { CheckCircle2, HeartHandshake, MessageCircleQuestion, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  HeartHandshake,
+  MessageCircleQuestion,
+  Sparkles,
+} from "lucide-react";
 import { sendPanelEvent } from "@/lib/panel-event-client";
 
 type Digest = {
@@ -21,11 +26,17 @@ export function CalmDigestCard({
   digest: Digest;
   viewerRole: "STUDENT" | "PARENT";
 }) {
-  const [helpful, setHelpful] = useState<boolean | null>(digest.feedback?.helpful ?? null);
-  const [anxietyPulse, setAnxietyPulse] = useState<number | null>(digest.feedback?.anxietyPulse ?? null);
+  const [helpful, setHelpful] = useState<boolean | null>(
+    digest.feedback?.helpful ?? null,
+  );
+  const [anxietyPulse, setAnxietyPulse] = useState<number | null>(
+    digest.feedback?.anxietyPulse ?? null,
+  );
   const [message, setMessage] = useState("");
 
-  function trackParentAction(reasonCode: "HELPFUL" | "NOT_HELPFUL" | "ANXIETY_PULSE") {
+  function trackParentAction(
+    reasonCode: "HELPFUL" | "NOT_HELPFUL" | "ANXIETY_PULSE",
+  ) {
     if (viewerRole !== "PARENT") return;
     sendPanelEvent({
       name: "parent_action_clicked",
@@ -41,19 +52,33 @@ export function CalmDigestCard({
   }
 
   async function save(nextHelpful = helpful, nextPulse = anxietyPulse) {
-    const response = await fetch(`/api/panel/weekly-digests/${digest.id}/feedback`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ helpful: nextHelpful, anxietyPulse: nextPulse }),
-    });
-    setMessage(response.ok ? "Geri bildirimin kaydedildi." : "Geri bildirim kaydedilemedi.");
+    const response = await fetch(
+      `/api/panel/weekly-digests/${digest.id}/feedback`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ helpful: nextHelpful, anxietyPulse: nextPulse }),
+      },
+    );
+    setMessage(
+      response.ok
+        ? "Geri bildirimin kaydedildi."
+        : "Geri bildirim kaydedilemedi.",
+    );
   }
 
-  const goodTitle = viewerRole === "PARENT" ? "Neler iyi gidiyor?" : "İyi giden noktalar";
+  const goodTitle =
+    viewerRole === "PARENT" ? "Neler iyi gidiyor?" : "İyi giden noktalar";
   const supportTitle =
-    viewerRole === "PARENT" ? "Nerede destek gerekiyor?" : "Destek gereken tek küçük alan";
+    viewerRole === "PARENT"
+      ? "Nerede destek gerekiyor?"
+      : "Destek gereken tek küçük alan";
   const nextTitle =
-    viewerRole === "PARENT" ? "Önümüzdeki hafta ne var?" : viewerRole === "STUDENT" ? "Ailenle paylaşabileceğin soru" : "Evde sorulabilecek bir soru";
+    viewerRole === "PARENT"
+      ? "Önümüzdeki hafta ne var?"
+      : viewerRole === "STUDENT"
+        ? "Ailenle paylaşabileceğin soru"
+        : "Evde sorulabilecek bir soru";
 
   return (
     <section className="panel-surface overflow-hidden">
@@ -68,9 +93,10 @@ export function CalmDigestCard({
         </h2>
         <p className="mt-2 text-xs text-[var(--site-muted)]">
           Veriler{" "}
-          {new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(
-            new Date(digest.dataThrough),
-          )}{" "}
+          {new Intl.DateTimeFormat("tr-TR", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(new Date(digest.dataThrough))}{" "}
           tarihine kadar güncel. Tek bir gün üzerinden kesin yargı kurulmaz.
         </p>
       </div>
@@ -90,14 +116,18 @@ export function CalmDigestCard({
           <p className="mt-3 text-xs font-extrabold uppercase tracking-[.06em] text-amber-800">
             {supportTitle}
           </p>
-          <p className="mt-2 text-sm leading-6 text-amber-950">{digest.supportArea}</p>
+          <p className="mt-2 text-sm leading-6 text-amber-950">
+            {digest.supportArea}
+          </p>
         </article>
         <article className="rounded-2xl border border-violet-200 bg-violet-50/60 p-5 md:col-span-2">
           <MessageCircleQuestion size={18} className="text-violet-700" />
           <p className="mt-2 text-xs font-extrabold uppercase tracking-[.06em] text-violet-800">
             {nextTitle}
           </p>
-          <p className="mt-2 text-sm leading-6 text-violet-950">{digest.homeQuestion}</p>
+          <p className="mt-2 text-sm leading-6 text-violet-950">
+            {digest.homeQuestion}
+          </p>
         </article>
       </div>
       <div className="border-t border-[var(--site-line)] p-5 sm:p-7">
@@ -131,7 +161,9 @@ export function CalmDigestCard({
             aria-label="Özet kaygı düzeyi"
             value={anxietyPulse || ""}
             onChange={(event) => {
-              const value = event.target.value ? Number(event.target.value) : null;
+              const value = event.target.value
+                ? Number(event.target.value)
+                : null;
               setAnxietyPulse(value);
               if (value) {
                 trackParentAction("ANXIETY_PULSE");
@@ -148,7 +180,10 @@ export function CalmDigestCard({
             <option value="5">Kaygı yarattı</option>
           </select>
         </div>
-        <p aria-live="polite" className="mt-2 text-xs font-bold text-[var(--brand-olive)]">
+        <p
+          aria-live="polite"
+          className="mt-2 text-xs font-bold text-[var(--brand-olive)]"
+        >
           {message}
         </p>
       </div>

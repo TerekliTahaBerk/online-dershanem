@@ -25,7 +25,9 @@ const steps = [
   },
 ];
 
-export function Ecosystem({ showDinoLayer = true }: { showDinoLayer?: boolean } = {}) {
+export function Ecosystem({
+  showDinoLayer = true,
+}: { showDinoLayer?: boolean } = {}) {
   return (
     <section className="site-container py-[var(--dc-section)]">
       <div className="max-w-[640px]">
@@ -45,7 +47,9 @@ export function Ecosystem({ showDinoLayer = true }: { showDinoLayer?: boolean } 
             </span>
             <span className="my-4 block h-px bg-[#DDE4E0]" />
             <h3 className="text-[20px] font-bold text-dc-ink">{product}</h3>
-            <p className="mt-2 text-[15px] leading-[1.65] text-dc-ink-muted">{body}</p>
+            <p className="mt-2 text-[15px] leading-[1.65] text-dc-ink-muted">
+              {body}
+            </p>
           </li>
         ))}
       </ol>
@@ -62,11 +66,14 @@ export function Ecosystem({ showDinoLayer = true }: { showDinoLayer?: boolean } 
             className="w-[72px] flex-none sm:w-24"
           />
           <div className="max-w-[760px]">
-            <h3 className="text-[20px] font-bold text-dc-ink">Dino AI bu akışı nasıl destekler?</h3>
+            <h3 className="text-[20px] font-bold text-dc-ink">
+              Dino AI bu akışı nasıl destekler?
+            </h3>
             <p className="mt-2 text-[15.5px] leading-[1.65] text-dc-ink-muted">
               Dino, ders, plan ve deneme verilerinin ne söylediğini sade biçimde
-              açıklamaya yardımcı olur. Koçun ve öğretmenin kararını destekleyen ortak
-              bir açıklama katmanıdır; ayrı satılan dördüncü bir ürün değildir.
+              açıklamaya yardımcı olur. Koçun ve öğretmenin kararını destekleyen
+              ortak bir açıklama katmanıdır; ayrı satılan dördüncü bir ürün
+              değildir.
             </p>
             <Link
               href="/dino-ai"

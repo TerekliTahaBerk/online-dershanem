@@ -19,7 +19,13 @@ export type TodayRow = {
   action?: { label: string; href: string; primary?: boolean };
 };
 
-export function TodayCard({ rows, dateLabel }: { rows: TodayRow[]; dateLabel: string }) {
+export function TodayCard({
+  rows,
+  dateLabel,
+}: {
+  rows: TodayRow[];
+  dateLabel: string;
+}) {
   return (
     <PanelCard className="mt-7" padded={false}>
       <div className="flex items-center justify-between gap-3 border-b border-dc-line-soft px-[22px] py-[18px]">
@@ -29,9 +35,12 @@ export function TodayCard({ rows, dateLabel }: { rows: TodayRow[]; dateLabel: st
 
       {rows.length === 0 ? (
         <div className="px-[22px] py-[26px]">
-          <p className="text-[15px] font-bold text-dc-ink">Bugün planlanmış bir şey yok.</p>
+          <p className="text-[15px] font-bold text-dc-ink">
+            Bugün planlanmış bir şey yok.
+          </p>
           <p className="mt-1.5 text-[14px] text-dc-ink-muted">
-            Yarının programına bakabilir ya da geçmiş ders notlarını gözden geçirebilirsin.
+            Yarının programına bakabilir ya da geçmiş ders notlarını gözden
+            geçirebilirsin.
           </p>
         </div>
       ) : (
@@ -43,10 +52,16 @@ export function TodayCard({ rows, dateLabel }: { rows: TodayRow[]; dateLabel: st
                 i < rows.length - 1 ? "border-b border-dc-line-soft" : ""
               }`}
             >
-              <span className="w-16 flex-none text-[14px] font-bold text-dc-ink">{row.when}</span>
+              <span className="w-16 flex-none text-[14px] font-bold text-dc-ink">
+                {row.when}
+              </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-bold text-dc-ink">{row.title}</span>
-                <span className="mt-0.5 block text-[13.5px] text-dc-ink-muted">{row.meta}</span>
+                <span className="block text-[15px] font-bold text-dc-ink">
+                  {row.title}
+                </span>
+                <span className="mt-0.5 block text-[13.5px] text-dc-ink-muted">
+                  {row.meta}
+                </span>
               </span>
               {row.action ? (
                 <Link

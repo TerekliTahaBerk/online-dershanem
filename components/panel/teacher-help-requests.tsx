@@ -30,11 +30,14 @@ export function TeacherHelpRequests({ rows }: { rows: Row[] }) {
     setBusy(row.id);
     setMessage("");
 
-    const response = await fetch(`/api/panel/student-help-requests/${row.id}/respond`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ expectedVersion: row.version, action }),
-    });
+    const response = await fetch(
+      `/api/panel/student-help-requests/${row.id}/respond`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ expectedVersion: row.version, action }),
+      },
+    );
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       setBusy(null);
@@ -69,66 +72,80 @@ export function TeacherHelpRequests({ rows }: { rows: Row[] }) {
       {items.length ? (
         <div className="rounded-[12px] border border-dc-line-soft bg-white">
           {items.map((row, index) => {
-          const overdue = row.status === "OPEN" && new Date(row.dueAt) < new Date();
-          return (
-            <article
-              key={row.id}
-              id={`yardim-${row.id}`}
-              className={`px-4 py-4 ${index < items.length - 1 ? "border-b border-dc-line-soft" : ""}`}
-            >
-              <PanelActionRow
-                className="!border-0 !px-0 !py-0"
-                title={row.studentName}
-                description={`${checkInLabels.energy[row.energy]} · ${checkInLabels.confidence[row.confidence]}`}
-                meta={`${row.groupName} · Engel: ${checkInLabels.barrier[row.barrier]}`}
-                status={
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <PanelStatusBadge label="Öğrenci talebi" tone="info" />
-                    <PanelStatusBadge
-                      label={
-                        row.status === "OPEN"
-                          ? overdue
-                            ? "Süresi geçti"
-                            : "Yanıt bekliyor"
-                          : row.helpful === false
-                            ? "Yeni adım bekliyor"
-                            : "Yanıtlandı"
-                      }
-                      tone={row.status === "OPEN" ? (overdue ? "warning" : "info") : "success"}
-                    />
-                  </div>
-                }
-              />
+            const overdue =
+              row.status === "OPEN" && new Date(row.dueAt) < new Date();
+            return (
+              <article
+                key={row.id}
+                id={`yardim-${row.id}`}
+                className={`px-4 py-4 ${index < items.length - 1 ? "border-b border-dc-line-soft" : ""}`}
+              >
+                <PanelActionRow
+                  className="!border-0 !px-0 !py-0"
+                  title={row.studentName}
+                  description={`${checkInLabels.energy[row.energy]} · ${checkInLabels.confidence[row.confidence]}`}
+                  meta={`${row.groupName} · Engel: ${checkInLabels.barrier[row.barrier]}`}
+                  status={
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <PanelStatusBadge label="Öğrenci talebi" tone="info" />
+                      <PanelStatusBadge
+                        label={
+                          row.status === "OPEN"
+                            ? overdue
+                              ? "Süresi geçti"
+                              : "Yanıt bekliyor"
+                            : row.helpful === false
+                              ? "Yeni adım bekliyor"
+                              : "Yanıtlandı"
+                        }
+                        tone={
+                          row.status === "OPEN"
+                            ? overdue
+                              ? "warning"
+                              : "info"
+                            : "success"
+                        }
+                      />
+                    </div>
+                  }
+                />
 
-              {row.responseAction ? (
-                <p className="mt-3 rounded-xl bg-dc-surface-soft p-3 text-sm text-dc-ink-body">
-                  Son adım: {checkInLabels.action[row.responseAction]}
-                </p>
-              ) : null}
-
-              {row.status === "OPEN" ? (
-                <div className="mt-4">
-                  <p className="mb-2 text-xs font-extrabold text-dc-ink-muted">
-                    Taahhüt edebileceğiniz küçük destek adımı
+                {row.responseAction ? (
+                  <p className="mt-3 rounded-xl bg-dc-surface-soft p-3 text-sm text-dc-ink-body">
+                    Son adım: {checkInLabels.action[row.responseAction]}
                   </p>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {Object.entries(checkInLabels.action).map(([action, label]) => (
-                      <button
-                        type="button"
-                        disabled={busy === row.id}
-                        onClick={() => respond(row, action as keyof typeof checkInLabels.action)}
-                        key={action}
-                        className="panel-secondary-button min-h-10 text-left text-xs"
-                      >
-                        {label}
-                      </button>
-                    ))}
+                ) : null}
+
+                {row.status === "OPEN" ? (
+                  <div className="mt-4">
+                    <p className="mb-2 text-xs font-extrabold text-dc-ink-muted">
+                      Taahhüt edebileceğiniz küçük destek adımı
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {Object.entries(checkInLabels.action).map(
+                        ([action, label]) => (
+                          <button
+                            type="button"
+                            disabled={busy === row.id}
+                            onClick={() =>
+                              respond(
+                                row,
+                                action as keyof typeof checkInLabels.action,
+                              )
+                            }
+                            key={action}
+                            className="panel-secondary-button min-h-10 text-left text-xs"
+                          >
+                            {label}
+                          </button>
+                        ),
+                      )}
+                    </div>
                   </div>
-                </div>
-              ) : null}
-            </article>
-          );
-        })}
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-[14px] border border-dc-line border-dashed bg-white p-6 text-sm text-dc-ink-muted">

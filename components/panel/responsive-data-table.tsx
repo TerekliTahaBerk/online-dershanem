@@ -52,7 +52,12 @@ export function ResponsiveDataTableRow({
   className?: string;
 }) {
   return (
-    <tr className={cn("panel-table-row border-t border-[var(--site-line)]", className)}>
+    <tr
+      className={cn(
+        "panel-table-row border-t border-[var(--site-line)]",
+        className,
+      )}
+    >
       {children}
     </tr>
   );
@@ -76,7 +81,9 @@ export function ResponsiveDataTableCell({
       scope={header ? "col" : undefined}
       className={cn(
         "panel-table-cell py-2 pr-3",
-        header ? "pb-2 text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]" : "",
+        header
+          ? "pb-2 text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]"
+          : "",
         className,
       )}
     >

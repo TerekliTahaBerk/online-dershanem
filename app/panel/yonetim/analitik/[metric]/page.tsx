@@ -100,10 +100,12 @@ export default async function ManagementAnalyticsMetricPage({
     from: typeof query.from === "string" ? query.from : undefined,
     to: typeof query.to === "string" ? query.to : undefined,
     examType: typeof query.examType === "string" ? query.examType : undefined,
-    classLevel: typeof query.classLevel === "string" ? query.classLevel : undefined,
+    classLevel:
+      typeof query.classLevel === "string" ? query.classLevel : undefined,
     product: typeof query.product === "string" ? query.product : undefined,
     groupId: typeof query.groupId === "string" ? query.groupId : undefined,
-    teacherId: typeof query.teacherId === "string" ? query.teacherId : undefined,
+    teacherId:
+      typeof query.teacherId === "string" ? query.teacherId : undefined,
   });
 
   const snapshot = await loadManagementAnalyticsSnapshot(filters);
@@ -111,7 +113,11 @@ export default async function ManagementAnalyticsMetricPage({
   const value = metricValue(metricKey, snapshot);
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+    >
       <Link
         href={`/panel/yonetim/analitik?${qs}`}
         className="mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--brand-olive)]"
@@ -127,7 +133,10 @@ export default async function ManagementAnalyticsMetricPage({
       />
 
       <div className="mt-4">
-        <AnalyticsFilterForm filters={filters} action={`/panel/yonetim/analitik/${metricKey}`} />
+        <AnalyticsFilterForm
+          filters={filters}
+          action={`/panel/yonetim/analitik/${metricKey}`}
+        />
       </div>
       {filters.notice ? (
         <p
@@ -143,11 +152,17 @@ export default async function ManagementAnalyticsMetricPage({
           <h2 className="text-sm font-extrabold">Tanım sözleşmesi</h2>
           <dl className="mt-3 space-y-3 text-xs text-[var(--site-body)]">
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">Query source</dt>
-              <dd className="mt-0.5 font-mono text-[11px]">{def.querySource}</dd>
+              <dt className="font-bold text-[var(--site-muted)]">
+                Query source
+              </dt>
+              <dd className="mt-0.5 font-mono text-[11px]">
+                {def.querySource}
+              </dd>
             </div>
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">Date semantics</dt>
+              <dt className="font-bold text-[var(--site-muted)]">
+                Date semantics
+              </dt>
               <dd className="mt-0.5">{def.dateSemantics}</dd>
             </div>
             <div>
@@ -155,13 +170,16 @@ export default async function ManagementAnalyticsMetricPage({
               <dd className="mt-0.5">{def.timezone}</dd>
             </div>
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">Denominator</dt>
+              <dt className="font-bold text-[var(--site-muted)]">
+                Denominator
+              </dt>
               <dd className="mt-0.5">{def.denominator}</dd>
             </div>
             <div>
               <dt className="font-bold text-[var(--site-muted)]">Aralık</dt>
               <dd className="mt-0.5">
-                {formatIstanbulDateInput(filters.from)} – {formatIstanbulDateInput(filters.to)}
+                {formatIstanbulDateInput(filters.from)} –{" "}
+                {formatIstanbulDateInput(filters.to)}
               </dd>
             </div>
           </dl>
@@ -176,15 +194,21 @@ export default async function ManagementAnalyticsMetricPage({
           {metricKey === "sales_by_product" ? (
             <ul className="mt-4 divide-y divide-[var(--site-line)] text-xs">
               {snapshot.commercial.salesByProduct.length === 0 ? (
-                <li className="py-3 text-[var(--site-muted)]">Bu aralıkta satış yok.</li>
+                <li className="py-3 text-[var(--site-muted)]">
+                  Bu aralıkta satış yok.
+                </li>
               ) : (
                 snapshot.commercial.salesByProduct.map((row) => (
-                  <li key={`${row.product}-${row.packageName}`} className="flex justify-between gap-3 py-2">
+                  <li
+                    key={`${row.product}-${row.packageName}`}
+                    className="flex justify-between gap-3 py-2"
+                  >
                     <span>
                       {row.product} · {row.packageName}
                     </span>
                     <span className="font-bold">
-                      {row.orderCount} · {(row.totalCents / 100).toLocaleString("tr-TR")} ₺
+                      {row.orderCount} ·{" "}
+                      {(row.totalCents / 100).toLocaleString("tr-TR")} ₺
                     </span>
                   </li>
                 ))
@@ -201,7 +225,8 @@ export default async function ManagementAnalyticsMetricPage({
             </ul>
           ) : null}
 
-          {metricKey.startsWith("cohort_") || metricKey === "plan_alignment_vs_outcome" ? (
+          {metricKey.startsWith("cohort_") ||
+          metricKey === "plan_alignment_vs_outcome" ? (
             <div className="mt-4 space-y-3 text-xs text-[var(--site-body)]">
               {snapshot.success.mockExamTrends.map((row) => (
                 <p key={row.exam}>
@@ -219,7 +244,8 @@ export default async function ManagementAnalyticsMetricPage({
                   : ""}
               </p>
               <p>
-                Plan vs deneme: {snapshot.success.planAlignmentVsOutcome.status} · n=
+                Plan vs deneme: {snapshot.success.planAlignmentVsOutcome.status}{" "}
+                · n=
                 {snapshot.success.planAlignmentVsOutcome.sampleSize}
               </p>
             </div>
@@ -227,8 +253,8 @@ export default async function ManagementAnalyticsMetricPage({
 
           {def.domain === "teacher_ops" ? (
             <p className="mt-4 text-[11px] text-[var(--site-muted)]">
-              Bu görünüm öğretmen sıralaması veya performans değerlendirmesi üretmez; yalnız operasyon
-              yükünü gösterir.
+              Bu görünüm öğretmen sıralaması veya performans değerlendirmesi
+              üretmez; yalnız operasyon yükünü gösterir.
             </p>
           ) : null}
         </article>

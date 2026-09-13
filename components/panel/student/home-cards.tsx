@@ -1,6 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { PanelCard, PanelCardTitle, PanelProgress } from "@/components/panel/ui";
+import {
+  PanelCard,
+  PanelCardTitle,
+  PanelProgress,
+} from "@/components/panel/ui";
 
 /**
  * ÖĞRENCİ ANA SAYFA KARTLARI — onaylı tasarım (Panel.dc.html → scStudentHome).
@@ -9,7 +13,12 @@ import { PanelCard, PanelCardTitle, PanelProgress } from "@/components/panel/ui"
 
 /* ── Bu haftaki planın ────────────────────────────────────────────────── */
 
-export type PlanTaskRow = { id: string; title: string; meta: string; done: boolean };
+export type PlanTaskRow = {
+  id: string;
+  title: string;
+  meta: string;
+  done: boolean;
+};
 
 export function WeeklyPlanCard({
   done,
@@ -34,7 +43,11 @@ export function WeeklyPlanCard({
         </span>
       </div>
 
-      <PanelProgress label="Haftalık plan ilerlemesi" value={pct} className="mt-3.5" />
+      <PanelProgress
+        label="Haftalık plan ilerlemesi"
+        value={pct}
+        className="mt-3.5"
+      />
       <p className="mt-2 text-[13px] text-dc-ink-muted">
         {remaining > 0
           ? `Hafta sonuna kadar ${remaining} görev kaldı.`
@@ -59,7 +72,11 @@ export function WeeklyPlanCard({
             >
               {task.done ? "✓" : ""}
             </span>
-            <span className={`min-w-0 flex-1 ${task.done ? "line-through" : ""}`}>{task.title}</span>
+            <span
+              className={`min-w-0 flex-1 ${task.done ? "line-through" : ""}`}
+            >
+              {task.title}
+            </span>
             <span className="w-full pl-[26px] text-[12.5px] text-dc-ink-faint sm:w-auto sm:pl-0">
               {task.meta}
             </span>
@@ -79,7 +96,12 @@ export function WeeklyPlanCard({
 
 /* ── Son deneme ───────────────────────────────────────────────────────── */
 
-export type ExamSubjectRow = { name: string; correct: number; incorrect: number; net: number };
+export type ExamSubjectRow = {
+  name: string;
+  correct: number;
+  incorrect: number;
+  net: number;
+};
 
 export function LatestExamCard({
   net,
@@ -97,7 +119,10 @@ export function LatestExamCard({
   href: string;
 }) {
   const fmt = (value: number) =>
-    value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    value.toLocaleString("tr-TR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   return (
     <PanelCard>
@@ -110,7 +135,9 @@ export function LatestExamCard({
         {delta !== null ? (
           <span
             className={`text-[13.5px] font-bold ${
-              delta >= 0 ? "text-dc-brand-hover" : "text-[var(--pd-pastel-yellow-ink)]"
+              delta >= 0
+                ? "text-dc-brand-hover"
+                : "text-[var(--pd-pastel-yellow-ink)]"
             }`}
           >
             {delta >= 0 ? "+" : ""}
@@ -153,7 +180,13 @@ export type TrendPoint = { label: string; net: number };
  * §32 gereği grafik TEK BAŞINA bilgi taşımaz: aynı değerler altındaki
  * etiketlerde ve ekran okuyucuya açık bir tabloda da bulunur.
  */
-export function NetTrendCard({ points, caption }: { points: TrendPoint[]; caption: string }) {
+export function NetTrendCard({
+  points,
+  caption,
+}: {
+  points: TrendPoint[];
+  caption: string;
+}) {
   if (points.length < 2) return null;
 
   const W = 640;
@@ -183,7 +216,15 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
         aria-label={`Toplam net gelişimi: ${points.map((p) => `${p.label} ${p.net}`).join(", ")}`}
       >
         {[20, 70, 120].map((y) => (
-          <line key={y} x1="0" y1={y} x2={W} y2={y} stroke="var(--dc-line-soft)" strokeWidth="1" />
+          <line
+            key={y}
+            x1="0"
+            y1={y}
+            x2={W}
+            y2={y}
+            stroke="var(--dc-line-soft)"
+            strokeWidth="1"
+          />
         ))}
         <polyline
           points={coords.map((c) => `${c.x},${c.y}`).join(" ")}
@@ -198,7 +239,11 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
             cx={c.x}
             cy={c.y}
             r={i === coords.length - 1 ? 5 : 4}
-            fill={i === coords.length - 1 ? "var(--dc-brand-deep)" : "var(--dc-brand)"}
+            fill={
+              i === coords.length - 1
+                ? "var(--dc-brand-deep)"
+                : "var(--dc-brand)"
+            }
           />
         ))}
       </svg>
@@ -245,8 +290,14 @@ export function DinoInsightCard({
       />
       <div className="min-w-0 flex-1">
         <h2 className="text-[16px] font-bold text-dc-ink">Dino açıklaması</h2>
-        <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{insight}</p>
-        {basis ? <p className="mt-2 text-[12.5px] text-dc-ink-faint">Dayanak: {basis}</p> : null}
+        <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+          {insight}
+        </p>
+        {basis ? (
+          <p className="mt-2 text-[12.5px] text-dc-ink-faint">
+            Dayanak: {basis}
+          </p>
+        ) : null}
       </div>
     </PanelCard>
   );

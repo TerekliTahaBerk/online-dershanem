@@ -1,5 +1,8 @@
 import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
-import { StudentTeacherLinkForm, StudentTeacherUnlinkButton } from "@/components/panel/student-teacher-link-form";
+import {
+  StudentTeacherLinkForm,
+  StudentTeacherUnlinkButton,
+} from "@/components/panel/student-teacher-link-form";
 import { EmptyLine } from "./shared";
 import type { TeachersPanelProps } from "./types";
 
@@ -20,9 +23,13 @@ export function TeachersPanel(props: TeachersPanelProps) {
                   <p className="text-[12.5px] font-semibold uppercase tracking-wide text-dc-ink-faint">
                     {link.subject}
                   </p>
-                  <p className="text-[14px] font-bold text-dc-ink">{link.teacherName}</p>
+                  <p className="text-[14px] font-bold text-dc-ink">
+                    {link.teacherName}
+                  </p>
                 </div>
-                {canManage ? <StudentTeacherUnlinkButton linkId={link.id} /> : null}
+                {canManage ? (
+                  <StudentTeacherUnlinkButton linkId={link.id} />
+                ) : null}
               </div>
             ))
           ) : (

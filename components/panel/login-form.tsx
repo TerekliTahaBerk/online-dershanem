@@ -40,7 +40,10 @@ export function LoginForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = (await response.json()) as { redirect?: string; error?: string };
+      const data = (await response.json()) as {
+        redirect?: string;
+        error?: string;
+      };
 
       if (!response.ok || !data.redirect) {
         setError(data.error ?? "Giriş yapılamadı. Lütfen tekrar deneyin.");
@@ -53,7 +56,9 @@ export function LoginForm({
       // anda replace + refresh kaynaklı çift RSC render'ı oluşmaz.
       window.location.replace(data.redirect);
     } catch {
-      setError("Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.");
+      setError(
+        "Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.",
+      );
       setPending(false);
     }
   }
@@ -131,7 +136,11 @@ export function LoginForm({
       >
         {pending ? (
           <span className="inline-flex items-center justify-center gap-2">
-            <Loader2 size={17} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            <Loader2
+              size={17}
+              className="animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
             Giriş yapılıyor
           </span>
         ) : (

@@ -3,7 +3,12 @@ import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { listParentVisibleTeachers } from "@/lib/panel/student-teacher-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
-import { PanelCard, PanelCardTitle, PanelEmpty, PanelPageHeader } from "@/components/panel/ui";
+import {
+  PanelCard,
+  PanelCardTitle,
+  PanelEmpty,
+  PanelPageHeader,
+} from "@/components/panel/ui";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +23,10 @@ export default async function ParentTeachersPage({
 }) {
   const session = await requirePanelRole("PARENT");
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -69,7 +77,9 @@ export default async function ParentTeachersPage({
               </p>
               <PanelCardTitle>{teacher.teacherName}</PanelCardTitle>
               {teacher.bio ? (
-                <p className="mt-2 text-[13.5px] text-dc-ink-muted">{teacher.bio}</p>
+                <p className="mt-2 text-[13.5px] text-dc-ink-muted">
+                  {teacher.bio}
+                </p>
               ) : (
                 <p className="mt-2 text-[13px] text-dc-ink-faint">
                   İletişim özelliği yakında eklenecek.

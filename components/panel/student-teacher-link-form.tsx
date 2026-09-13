@@ -37,7 +37,9 @@ export function StudentTeacherLinkForm({
           subject,
         }),
       });
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      const data = (await response.json().catch(() => ({}))) as {
+        error?: string;
+      };
       if (!response.ok) {
         setError(data.error ?? "Bağlantı kurulamadı.");
         setPending(false);
@@ -55,7 +57,10 @@ export function StudentTeacherLinkForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+    <form
+      onSubmit={onSubmit}
+      className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+    >
       {!studentId ? (
         <select
           required
@@ -96,11 +101,17 @@ export function StudentTeacherLinkForm({
         className="panel-input"
         placeholder="Branş (ör. Matematik)"
       />
-      <button disabled={pending} className="site-btn site-btn-primary site-btn-sm">
+      <button
+        disabled={pending}
+        className="site-btn site-btn-primary site-btn-sm"
+      >
         Bağla
       </button>
       {error ? (
-        <p className="sm:col-span-3 text-sm font-semibold text-[var(--brand-danger,#b42318)]" role="alert">
+        <p
+          className="sm:col-span-3 text-sm font-semibold text-[var(--brand-danger,#b42318)]"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}

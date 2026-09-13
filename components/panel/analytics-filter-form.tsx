@@ -9,7 +9,11 @@ export function AnalyticsFilterForm({
   action?: string;
 }) {
   return (
-    <form method="get" action={action} className="panel-surface flex flex-wrap gap-3 p-4">
+    <form
+      method="get"
+      action={action}
+      className="panel-surface flex flex-wrap gap-3 p-4"
+    >
       <label className="text-xs font-bold text-[var(--site-muted)]">
         Başlangıç
         <input

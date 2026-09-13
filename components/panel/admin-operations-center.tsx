@@ -25,7 +25,9 @@ const ACTIVITY_WHEN = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
-function healthTone(status: OpsHealthStatus): "success" | "warning" | "critical" | "neutral" {
+function healthTone(
+  status: OpsHealthStatus,
+): "success" | "warning" | "critical" | "neutral" {
   if (status === "ok") return "success";
   if (status === "degraded") return "warning";
   if (status === "down") return "critical";
@@ -35,11 +37,15 @@ function healthTone(status: OpsHealthStatus): "success" | "warning" | "critical"
 function SummaryTileCard({ tile }: { tile: OpsSummaryTile }) {
   const content = (
     <>
-      <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">{tile.label}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
+        {tile.label}
+      </p>
       <p className="mt-2 text-[28px] font-black leading-none tracking-[-0.03em] text-dc-ink">
         {tile.available ? tile.value : "—"}
       </p>
-      <p className="mt-2 text-[12.5px] leading-5 text-dc-ink-muted">{tile.hint}</p>
+      <p className="mt-2 text-[12.5px] leading-5 text-dc-ink-muted">
+        {tile.hint}
+      </p>
     </>
   );
 
@@ -65,15 +71,21 @@ function SummaryTileCard({ tile }: { tile: OpsSummaryTile }) {
   );
 }
 
-function ActionQueue({ snapshot }: { snapshot: AdminOperationsCenterSnapshot }) {
+function ActionQueue({
+  snapshot,
+}: {
+  snapshot: AdminOperationsCenterSnapshot;
+}) {
   if (snapshot.actions.length === 0) {
     return (
       <PanelCard>
         <PanelCardTitle>Bugün müdahale gerekenler</PanelCardTitle>
-        <p className="mt-3 text-[15px] font-bold text-dc-ink">Kritik bir aksiyon yok.</p>
+        <p className="mt-3 text-[15px] font-bold text-dc-ink">
+          Kritik bir aksiyon yok.
+        </p>
         <p className="mt-1.5 text-[14px] leading-[1.6] text-dc-ink-muted">
-          Provisioning, davet, grup ve sistem sinyalleri şu anda temiz. Operasyon detayına inerek
-          günlük akışı doğrulayabilirsiniz.
+          Provisioning, davet, grup ve sistem sinyalleri şu anda temiz.
+          Operasyon detayına inerek günlük akışı doğrulayabilirsiniz.
         </p>
         <Link
           href="/panel/yonetim/isler"
@@ -91,7 +103,8 @@ function ActionQueue({ snapshot }: { snapshot: AdminOperationsCenterSnapshot }) 
         <div>
           <PanelCardTitle>Bugün müdahale gerekenler</PanelCardTitle>
           <p className="mt-1 text-[13px] text-dc-ink-muted">
-            {snapshot.blockingCount} kritik · {snapshot.openActionCount} aksiyon satırı
+            {snapshot.blockingCount} kritik · {snapshot.openActionCount} aksiyon
+            satırı
           </p>
         </div>
       </div>
@@ -109,7 +122,12 @@ function ActionQueue({ snapshot }: { snapshot: AdminOperationsCenterSnapshot }) 
                   {item.owner ? ` · sorumlu: ${item.owner}` : ""}
                 </>
               }
-              status={<PanelStatusBadge label={presentation.label} tone={presentation.tone} />}
+              status={
+                <PanelStatusBadge
+                  label={presentation.label}
+                  tone={presentation.tone}
+                />
+              }
               cta={
                 <TrackedPanelLink
                   href={item.href}
@@ -180,8 +198,8 @@ export function AdminOperationsCenterView({
       {snapshot.partialData ? (
         <PanelCard variant="subtle" className="mt-4">
           <p className="text-[13.5px] text-dc-ink-muted">
-            Bir veya daha fazla operasyon kaynağı okunamadı. Mevcut sinyaller gösteriliyor; eksik
-            bölümler “—” olarak işaretlendi.
+            Bir veya daha fazla operasyon kaynağı okunamadı. Mevcut sinyaller
+            gösteriliyor; eksik bölümler “—” olarak işaretlendi.
           </p>
         </PanelCard>
       ) : null}
@@ -191,7 +209,10 @@ export function AdminOperationsCenterView({
       </div>
 
       <section className="mt-5" aria-labelledby="ops-summary-heading">
-        <h2 id="ops-summary-heading" className="text-[16px] font-bold text-dc-ink">
+        <h2
+          id="ops-summary-heading"
+          className="text-[16px] font-bold text-dc-ink"
+        >
           Günlük operasyon özeti
         </h2>
         <div className="mt-3 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
@@ -206,17 +227,20 @@ export function AdminOperationsCenterView({
           <PanelCardTitle>Son aktiviteler</PanelCardTitle>
           {snapshot.activities.length === 0 ? (
             <p className="mt-3 text-[14px] text-dc-ink-muted">
-              Henüz okunabilir bir aktivite yok. Yeni yönetim işlemleri burada cümle olarak
-              görünecek.
+              Henüz okunabilir bir aktivite yok. Yeni yönetim işlemleri burada
+              cümle olarak görünecek.
             </p>
           ) : (
             <ul className="mt-3.5 divide-y divide-dc-line-soft rounded-[10px] border border-dc-line-soft">
               {snapshot.activities.map((item) => {
                 const body = (
                   <>
-                    <p className="text-[14px] font-medium leading-6 text-dc-ink">{item.text}</p>
+                    <p className="text-[14px] font-medium leading-6 text-dc-ink">
+                      {item.text}
+                    </p>
                     <p className="mt-1 text-[12px] text-dc-ink-faint">
-                      {item.actorLabel} · {ACTIVITY_WHEN.format(item.occurredAt)}
+                      {item.actorLabel} ·{" "}
+                      {ACTIVITY_WHEN.format(item.occurredAt)}
                     </p>
                   </>
                 );
@@ -246,7 +270,8 @@ export function AdminOperationsCenterView({
           <PanelCard>
             <PanelCardTitle>Risk dağılımı</PanelCardTitle>
             <p className="mt-1 text-[13px] text-dc-ink-muted">
-              Mevcut müdahale, yardım, provisioning ve grup sinyallerinden türetilir.
+              Mevcut müdahale, yardım, provisioning ve grup sinyallerinden
+              türetilir.
             </p>
             <ul className="mt-4 flex flex-col gap-3.5">
               {riskSegments.map((segment) => {
@@ -254,20 +279,28 @@ export function AdminOperationsCenterView({
                 return (
                   <li key={segment.key}>
                     <div className="flex items-center justify-between gap-3 text-[13.5px]">
-                      <Link href={segment.href} className="font-semibold text-dc-ink hover:underline">
+                      <Link
+                        href={segment.href}
+                        className="font-semibold text-dc-ink hover:underline"
+                      >
                         {segment.label}
                       </Link>
                       <span className="text-dc-ink-muted">{segment.count}</span>
                     </div>
                     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-dc-line-soft">
-                      <div className={`h-full rounded-full ${segment.barClass}`} style={{ width: `${pct}%` }} />
+                      <div
+                        className={`h-full rounded-full ${segment.barClass}`}
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </li>
                 );
               })}
             </ul>
             {snapshot.risk.total === 0 ? (
-              <p className="mt-3 text-[13px] text-dc-ink-muted">Aktif öğrenci yok — risk dağılımı boş.</p>
+              <p className="mt-3 text-[13px] text-dc-ink-muted">
+                Aktif öğrenci yok — risk dağılımı boş.
+              </p>
             ) : null}
           </PanelCard>
 
@@ -281,7 +314,9 @@ export function AdminOperationsCenterView({
                     className="block rounded-[10px] border border-dc-line-soft bg-white px-3 py-2.5 hover:border-dc-brand"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[12px] font-bold text-dc-ink">{check.label}</span>
+                      <span className="text-[12px] font-bold text-dc-ink">
+                        {check.label}
+                      </span>
                       <PanelStatusBadge
                         label={OPS_HEALTH_LABEL[check.status]}
                         tone={healthTone(check.status)}

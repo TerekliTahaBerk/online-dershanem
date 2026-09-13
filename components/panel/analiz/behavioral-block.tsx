@@ -20,7 +20,10 @@ export function BehavioralBlock({
     note: string;
   }> = [];
 
-  if (behavioral.attendance.denominator > 0 && behavioral.attendance.percent !== null) {
+  if (
+    behavioral.attendance.denominator > 0 &&
+    behavioral.attendance.percent !== null
+  ) {
     cards.push({
       key: "attendance",
       title: "Ders katılımı",
@@ -31,7 +34,10 @@ export function BehavioralBlock({
     });
   }
 
-  if (behavioral.assignments.denominator > 0 && behavioral.assignments.percent !== null) {
+  if (
+    behavioral.assignments.denominator > 0 &&
+    behavioral.assignments.percent !== null
+  ) {
     cards.push({
       key: "assignments",
       title: "Çalışma tamamlama",
@@ -55,7 +61,10 @@ export function BehavioralBlock({
 
   return (
     <section className="mt-6" aria-labelledby="analiz-davranis-baslik">
-      <h2 id="analiz-davranis-baslik" className="text-[15px] font-extrabold text-dc-ink">
+      <h2
+        id="analiz-davranis-baslik"
+        className="text-[15px] font-extrabold text-dc-ink"
+      >
         Davranışsal gidişat
       </h2>
       <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

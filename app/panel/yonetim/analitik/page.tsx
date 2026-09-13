@@ -41,10 +41,12 @@ export default async function ManagementAnalyticsPage({
     from: typeof query.from === "string" ? query.from : undefined,
     to: typeof query.to === "string" ? query.to : undefined,
     examType: typeof query.examType === "string" ? query.examType : undefined,
-    classLevel: typeof query.classLevel === "string" ? query.classLevel : undefined,
+    classLevel:
+      typeof query.classLevel === "string" ? query.classLevel : undefined,
     product: typeof query.product === "string" ? query.product : undefined,
     groupId: typeof query.groupId === "string" ? query.groupId : undefined,
-    teacherId: typeof query.teacherId === "string" ? query.teacherId : undefined,
+    teacherId:
+      typeof query.teacherId === "string" ? query.teacherId : undefined,
   });
 
   const snapshot = await loadManagementAnalyticsSnapshot(filters);
@@ -54,7 +56,11 @@ export default async function ManagementAnalyticsPage({
     : null;
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+    >
       <AdminPageHeader
         eyebrow="Yönetim analitikleri"
         title="Karar destek metrikleri."
@@ -65,8 +71,8 @@ export default async function ManagementAnalyticsPage({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-[var(--site-muted)]">
-          {formatIstanbulDateInput(filters.from)} – {formatIstanbulDateInput(filters.to)} · ürün{" "}
-          {filters.product}
+          {formatIstanbulDateInput(filters.from)} –{" "}
+          {formatIstanbulDateInput(filters.to)} · ürün {filters.product}
         </p>
         <a
           href={`/api/panel/analytics/export?${qs}`}
@@ -96,13 +102,21 @@ export default async function ManagementAnalyticsPage({
             href={`${kpi.href}?${qs}`}
             className="panel-metric-card transition hover:border-[var(--brand-olive)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-olive)]"
           >
-            <p className={`mt-1 text-3xl font-extrabold tracking-[-0.03em] ${toneClass(kpi.tone)}`}>
+            <p
+              className={`mt-1 text-3xl font-extrabold tracking-[-0.03em] ${toneClass(kpi.tone)}`}
+            >
               {kpi.display}
             </p>
-            <p className="mt-2 text-xs font-bold text-[var(--site-body)]">{kpi.label}</p>
-            <p className="mt-1 text-[11px] text-[var(--site-muted)]">{kpi.hint}</p>
+            <p className="mt-2 text-xs font-bold text-[var(--site-body)]">
+              {kpi.label}
+            </p>
+            <p className="mt-1 text-[11px] text-[var(--site-muted)]">
+              {kpi.hint}
+            </p>
             {kpi.sampleNote ? (
-              <p className="mt-2 text-[10px] text-[var(--site-muted)]">{kpi.sampleNote}</p>
+              <p className="mt-2 text-[10px] text-[var(--site-muted)]">
+                {kpi.sampleNote}
+              </p>
             ) : null}
             <p className="mt-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--brand-olive)]">
               Detay →
@@ -115,9 +129,12 @@ export default async function ManagementAnalyticsPage({
         <section className="mt-6 panel-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Gidişat</h2>
+              <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+                Gidişat
+              </h2>
               <p className="mt-1 text-xs text-[var(--site-muted)]">
-                Öğrenci / öğretmen / veli Analiz kataloğuyla aynı gidişat sinyalleri (kohort).
+                Öğrenci / öğretmen / veli Analiz kataloğuyla aynı gidişat
+                sinyalleri (kohort).
               </p>
             </div>
             <Link
@@ -175,8 +192,9 @@ export default async function ManagementAnalyticsPage({
               <NetTrendCard
                 points={gidisat.sparkline}
                 caption={
-                  gidisat.narrative.find((line) => line.includes("Medyan net")) ??
-                  "Kohort deneme türlerine göre medyan net değişim."
+                  gidisat.narrative.find((line) =>
+                    line.includes("Medyan net"),
+                  ) ?? "Kohort deneme türlerine göre medyan net değişim."
                 }
               />
             </div>
@@ -194,15 +212,25 @@ export default async function ManagementAnalyticsPage({
 
       <section className="mt-6 grid gap-4 xl:grid-cols-2">
         <article className="panel-surface p-5">
-          <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Ticari özet</h2>
+          <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            Ticari özet
+          </h2>
           <ul className="mt-3 space-y-2 text-xs text-[var(--site-body)]">
             <li>Won → Paid: {snapshot.commercial.wonToPaidPercent ?? "—"}%</li>
-            <li>Ort. satış süresi: {snapshot.commercial.avgSalesCycleDays ?? "—"} gün</li>
+            <li>
+              Ort. satış süresi: {snapshot.commercial.avgSalesCycleDays ?? "—"}{" "}
+              gün
+            </li>
             <li>
               İade: {snapshot.commercial.refundedOrderCount} sipariş ·{" "}
-              {(snapshot.commercial.refundedCents / 100).toLocaleString("tr-TR")} ₺
+              {(snapshot.commercial.refundedCents / 100).toLocaleString(
+                "tr-TR",
+              )}{" "}
+              ₺
             </li>
-            <li>Yenileme yaklaşan: {snapshot.commercial.packageRenewalsUpcoming}</li>
+            <li>
+              Yenileme yaklaşan: {snapshot.commercial.packageRenewalsUpcoming}
+            </li>
           </ul>
           <Link
             href={`/panel/yonetim/analitik/sales_by_product?${qs}`}
@@ -212,16 +240,20 @@ export default async function ManagementAnalyticsPage({
           </Link>
         </article>
         <article className="panel-surface p-5">
-          <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Öğrenci risk & öğretmen işleri</h2>
+          <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            Öğrenci risk & öğretmen işleri
+          </h2>
           <ul className="mt-3 space-y-2 text-xs text-[var(--site-body)]">
             <li>
-              Risk: {snapshot.education.risk.critical} kritik · {snapshot.education.risk.watch}{" "}
-              izleme · {snapshot.education.risk.normal} normal
+              Risk: {snapshot.education.risk.critical} kritik ·{" "}
+              {snapshot.education.risk.watch} izleme ·{" "}
+              {snapshot.education.risk.normal} normal
             </li>
             <li>Aktif grup: {snapshot.education.activeGroups}</li>
             <li>Açık işler (toplam): {snapshot.teacherOps.openWorkItems}</li>
             <li>
-              Ort. öğrenci yükü: {snapshot.teacherOps.averageStudentLoad ?? "—"} (sıralama yok)
+              Ort. öğrenci yükü: {snapshot.teacherOps.averageStudentLoad ?? "—"}{" "}
+              (sıralama yok)
             </li>
           </ul>
           <p className="mt-3 text-[11px] text-[var(--site-muted)]">
@@ -231,7 +263,9 @@ export default async function ManagementAnalyticsPage({
       </section>
 
       <section className="mt-6 panel-surface p-5">
-        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Kohort başarı (gizlilik eşikli)</h2>
+        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+          Kohort başarı (gizlilik eşikli)
+        </h2>
         <p className="mt-1 text-xs text-[var(--site-muted)]">
           n &lt; 10 örneklemde değerler bastırılır. Nedensellik iddiası yoktur.
         </p>

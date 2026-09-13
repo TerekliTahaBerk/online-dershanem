@@ -54,7 +54,13 @@ export function StudentParentLinkForm({
           <label className="sr-only" htmlFor="studentId">
             Öğrenci hesabı
           </label>
-          <select id="studentId" name="studentId" required defaultValue="" className="panel-input py-2 text-xs">
+          <select
+            id="studentId"
+            name="studentId"
+            required
+            defaultValue=""
+            className="panel-input py-2 text-xs"
+          >
             <option value="">Öğrenci seçin</option>
             {(students || []).map((student) => (
               <option key={student.id} value={student.id}>
@@ -68,7 +74,13 @@ export function StudentParentLinkForm({
         <label className="sr-only" htmlFor="parentId">
           Veli hesabı
         </label>
-        <select id="parentId" name="parentId" required defaultValue="" className="panel-input py-2 text-xs">
+        <select
+          id="parentId"
+          name="parentId"
+          required
+          defaultValue=""
+          className="panel-input py-2 text-xs"
+        >
           <option value="">Veli seçin</option>
           {parents.map((parent) => (
             <option key={parent.id} value={parent.id}>
@@ -81,7 +93,12 @@ export function StudentParentLinkForm({
         <label className="sr-only" htmlFor="relationship">
           Yakınlık
         </label>
-        <select id="relationship" name="relationship" className="panel-input py-2 text-xs" defaultValue="Anne">
+        <select
+          id="relationship"
+          name="relationship"
+          className="panel-input py-2 text-xs"
+          defaultValue="Anne"
+        >
           <option value="Anne">Anne</option>
           <option value="Baba">Baba</option>
           <option value="Vasi">Vasi</option>
@@ -102,12 +119,18 @@ export function StudentParentLinkForm({
       </label>
       <button
         type="submit"
-        disabled={busy || parents.length === 0 || (!studentId && (students || []).length === 0)}
+        disabled={
+          busy ||
+          parents.length === 0 ||
+          (!studentId && (students || []).length === 0)
+        }
         className="rounded-[10px] bg-dc-brand px-3.5 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {busy ? "Bağlanıyor..." : "Veli bağla"}
       </button>
-      {error ? <p className="w-full text-[12px] text-[#C2493D]">{error}</p> : null}
+      {error ? (
+        <p className="w-full text-[12px] text-[#C2493D]">{error}</p>
+      ) : null}
     </form>
   );
 }

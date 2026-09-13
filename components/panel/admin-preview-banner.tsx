@@ -2,7 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { previewBannerCopy, previewNoticeMessage, type PreviewableRole, type PreviewSubjectNotice } from "@/lib/panel/preview-context";
+import {
+  previewBannerCopy,
+  previewNoticeMessage,
+  type PreviewableRole,
+  type PreviewSubjectNotice,
+} from "@/lib/panel/preview-context";
 
 export function AdminPreviewBanner({
   previewRole,
@@ -25,7 +30,10 @@ export function AdminPreviewBanner({
         method: "DELETE",
         credentials: "same-origin",
       });
-      const body = (await response.json().catch(() => null)) as { returnPath?: string; error?: string } | null;
+      const body = (await response.json().catch(() => null)) as {
+        returnPath?: string;
+        error?: string;
+      } | null;
       if (!response.ok) {
         setError(body?.error || "Önizlemeden çıkılamadı.");
         return;
@@ -43,8 +51,12 @@ export function AdminPreviewBanner({
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-amber-800">{copy.title}</p>
-          <p className="mt-0.5 text-[13.5px] font-semibold leading-5 text-amber-950">{copy.body}</p>
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-amber-800">
+            {copy.title}
+          </p>
+          <p className="mt-0.5 text-[13.5px] font-semibold leading-5 text-amber-950">
+            {copy.body}
+          </p>
           {notices.length ? (
             <ul className="mt-1 space-y-0.5 text-[12px] text-amber-900/90">
               {notices.map((notice) => (
@@ -52,8 +64,14 @@ export function AdminPreviewBanner({
               ))}
             </ul>
           ) : null}
-          <p className="mt-1 text-[12px] text-amber-900/80">Yönetici önizlemesinde işlem yapılamaz.</p>
-          {error ? <p className="mt-1 text-[12px] font-semibold text-red-700">{error}</p> : null}
+          <p className="mt-1 text-[12px] text-amber-900/80">
+            Yönetici önizlemesinde işlem yapılamaz.
+          </p>
+          {error ? (
+            <p className="mt-1 text-[12px] font-semibold text-red-700">
+              {error}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <a

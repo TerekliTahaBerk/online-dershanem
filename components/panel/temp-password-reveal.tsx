@@ -45,15 +45,18 @@ export function InviteLinkReveal({
         Davet hazır
       </p>
       <p className="mt-2 text-[14px] leading-6 text-[var(--site-body)]">
-        <strong className="text-[var(--site-ink)]">{fullName || email}</strong> için tek kullanımlık davet
-        bağlantısı üretildi. Bu bağlantı <strong>{formattedExpiry}</strong> tarihine kadar geçerlidir.
+        <strong className="text-[var(--site-ink)]">{fullName || email}</strong>{" "}
+        için tek kullanımlık davet bağlantısı üretildi. Bu bağlantı{" "}
+        <strong>{formattedExpiry}</strong> tarihine kadar geçerlidir.
       </p>
 
       <div className="mt-4 rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3">
         <p className="text-[11px] font-semibold uppercase tracking-[.06em] text-[var(--site-muted)]">
           Davet bağlantısı
         </p>
-        <p className="mt-1 break-all font-mono text-[12.5px] font-bold text-[var(--site-ink)]">{inviteUrl}</p>
+        <p className="mt-1 break-all font-mono text-[12.5px] font-bold text-[var(--site-ink)]">
+          {inviteUrl}
+        </p>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -71,7 +74,11 @@ export function InviteLinkReveal({
           onClick={() => void copy(inviteMessage, "message")}
           className="site-btn site-btn-secondary site-btn-sm"
         >
-          {copied === "message" ? <Check size={15} aria-hidden="true" /> : <Copy size={15} aria-hidden="true" />}
+          {copied === "message" ? (
+            <Check size={15} aria-hidden="true" />
+          ) : (
+            <Copy size={15} aria-hidden="true" />
+          )}
           {copied === "message" ? "Mesaj kopyalandı" : "Mesajı kopyala"}
         </button>
         <button
@@ -79,7 +86,11 @@ export function InviteLinkReveal({
           onClick={() => void copy(inviteUrl, "link")}
           className="site-btn site-btn-secondary site-btn-sm"
         >
-          {copied === "link" ? <Check size={15} aria-hidden="true" /> : <LinkIcon size={15} aria-hidden="true" />}
+          {copied === "link" ? (
+            <Check size={15} aria-hidden="true" />
+          ) : (
+            <LinkIcon size={15} aria-hidden="true" />
+          )}
           {copied === "link" ? "Bağlantı kopyalandı" : "Bağlantıyı kopyala"}
         </button>
         <button
@@ -92,7 +103,11 @@ export function InviteLinkReveal({
       </div>
 
       <p aria-live="polite" className="sr-only">
-        {copied === "none" ? "" : copied === "message" ? "Mesaj panoya kopyalandı" : "Bağlantı panoya kopyalandı"}
+        {copied === "none"
+          ? ""
+          : copied === "message"
+            ? "Mesaj panoya kopyalandı"
+            : "Bağlantı panoya kopyalandı"}
       </p>
     </div>
   );

@@ -33,8 +33,13 @@ export function LessonsPanel(props: LessonsPanelProps) {
         <div className="mt-3 space-y-3">
           {data.past.length ? (
             data.past.map((lesson) => (
-              <article key={lesson.id} className="border-b border-dc-line-soft pb-3 last:border-0 last:pb-0">
-                <p className="text-[13.5px] font-semibold text-dc-ink">{lesson.title}</p>
+              <article
+                key={lesson.id}
+                className="border-b border-dc-line-soft pb-3 last:border-0 last:pb-0"
+              >
+                <p className="text-[13.5px] font-semibold text-dc-ink">
+                  {lesson.title}
+                </p>
                 <p className="mt-1 text-[12.5px] text-dc-ink-muted">
                   {DAY.format(lesson.startsAt)}
                   {lesson.attendance
@@ -42,7 +47,9 @@ export function LessonsPanel(props: LessonsPanelProps) {
                     : ""}
                 </p>
                 {lesson.note ? (
-                  <p className="mt-1.5 text-[13px] leading-5 text-dc-ink-body">{lesson.note}</p>
+                  <p className="mt-1.5 text-[13px] leading-5 text-dc-ink-body">
+                    {lesson.note}
+                  </p>
                 ) : null}
               </article>
             ))

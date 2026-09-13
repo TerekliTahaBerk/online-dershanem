@@ -6,7 +6,12 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
 import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
 import { netScore } from "@/lib/goals";
-import { PanelPageHeader, PanelCard, PanelEmpty, PanelFilterLink } from "@/components/panel/ui";
+import {
+  PanelPageHeader,
+  PanelCard,
+  PanelEmpty,
+  PanelFilterLink,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +26,16 @@ export const dynamic = "force-dynamic";
  * denemelerinle yapılır" diyor — başka öğrenciyle/kohortla kıyas YOK.
  */
 
-const FULL = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+const FULL = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 const fmt = (v: number) =>
-  v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  v.toLocaleString("tr-TR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 const net = (s: { correctCount: number; incorrectCount: number }) =>
   netScore(s.correctCount, s.incorrectCount);
@@ -36,7 +48,9 @@ export default async function StudentExamResultPage({
   const session = await requireRole("STUDENT");
   if (!getPanelFeatureFlags().mockExamAnalysis) notFound();
 
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+  const profile = await prisma.studentProfile.findUnique({
+    where: { userId: session.userId },
+  });
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -114,7 +128,9 @@ export default async function StudentExamResultPage({
 
   // Kendi geçmişi — eskiden yeniye
   const history = [...exams].reverse();
-  const historyNets = history.map((e) => e.sections.reduce((sum, s) => sum + net(s), 0));
+  const historyNets = history.map((e) =>
+    e.sections.reduce((sum, s) => sum + net(s), 0),
+  );
 
   return shell(
     <>
@@ -130,9 +146,10 @@ export default async function StudentExamResultPage({
                   href={`/panel/ogrenci/denemeler?deneme=${e.id}`}
                   active={e.id === current.id}
                 >
-                  {new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short" }).format(
-                    e.takenAt,
-                  )}
+                  {new Intl.DateTimeFormat("tr-TR", {
+                    day: "numeric",
+                    month: "short",
+                  }).format(e.takenAt)}
                 </PanelFilterLink>
               ))}
             </div>
@@ -149,7 +166,9 @@ export default async function StudentExamResultPage({
         </div>
         {delta !== null ? (
           <div>
-            <p className="text-[13px] text-dc-ink-faint">Önceki denemeye göre</p>
+            <p className="text-[13px] text-dc-ink-faint">
+              Önceki denemeye göre
+            </p>
             <p
               className={`text-[24px] font-extrabold ${
                 delta >= 0 ? "text-dc-brand-hover" : "text-[#8A5F37]"
@@ -162,12 +181,16 @@ export default async function StudentExamResultPage({
         ) : null}
         <div>
           <p className="text-[13px] text-dc-ink-faint">Tarih</p>
-          <p className="text-[18px] font-bold text-dc-ink">{FULL.format(current.takenAt)}</p>
+          <p className="text-[18px] font-bold text-dc-ink">
+            {FULL.format(current.takenAt)}
+          </p>
         </div>
         {current.durationMinutes ? (
           <div>
             <p className="text-[13px] text-dc-ink-faint">Süre</p>
-            <p className="text-[18px] font-bold text-dc-ink">{current.durationMinutes} dk</p>
+            <p className="text-[18px] font-bold text-dc-ink">
+              {current.durationMinutes} dk
+            </p>
           </div>
         ) : null}
       </div>
@@ -183,7 +206,9 @@ export default async function StudentExamResultPage({
                 <li
                   key={s.id}
                   className={`flex flex-wrap items-center gap-3.5 py-3 ${
-                    i < current.sections.length - 1 ? "border-b border-dc-line-soft" : ""
+                    i < current.sections.length - 1
+                      ? "border-b border-dc-line-soft"
+                      : ""
                   }`}
                 >
                   <span className="w-24 shrink-0 text-[14px] font-semibold text-dc-ink">
@@ -218,14 +243,23 @@ export default async function StudentExamResultPage({
                 aria-label={`Toplam net gelişimi: ${historyNets.map((n) => fmt(n)).join(", ")}`}
               >
                 {[20, 70, 118].map((y) => (
-                  <line key={y} x1="0" y1={y} x2="520" y2={y} stroke="var(--dc-line-soft)" />
+                  <line
+                    key={y}
+                    x1="0"
+                    y1={y}
+                    x2="520"
+                    y2={y}
+                    stroke="var(--dc-line-soft)"
+                  />
                 ))}
                 <polyline
                   points={historyNets
                     .map((n, i) => {
                       const min = Math.min(...historyNets);
                       const span = Math.max(...historyNets) - min || 1;
-                      const x = Math.round((i * 520) / (historyNets.length - 1));
+                      const x = Math.round(
+                        (i * 520) / (historyNets.length - 1),
+                      );
                       const y = Math.round(118 - ((n - min) / span) * 90);
                       return `${x},${y}`;
                     })
@@ -245,7 +279,9 @@ export default async function StudentExamResultPage({
 
       {current.nextAction ? (
         <PanelCard className="mt-6">
-          <h2 className="text-[15px] font-bold text-dc-ink">Bir sonraki denemeye kadar</h2>
+          <h2 className="text-[15px] font-bold text-dc-ink">
+            Bir sonraki denemeye kadar
+          </h2>
           <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
             {current.nextAction}
           </p>

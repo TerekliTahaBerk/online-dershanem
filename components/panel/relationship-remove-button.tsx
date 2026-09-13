@@ -12,9 +12,16 @@ export function RelationshipRemoveButton({ id }: { id: string }) {
       type="button"
       disabled={busy}
       onClick={async () => {
-        if (!window.confirm("Bu veli–öğrenci bağlantısı kaldırılsın mı? İşlem geçmişte saklanır.")) return;
+        if (
+          !window.confirm(
+            "Bu veli–öğrenci bağlantısı kaldırılsın mı? İşlem geçmişte saklanır.",
+          )
+        )
+          return;
         setBusy(true);
-        const response = await fetch(`/api/panel/relationships/${id}`, { method: "DELETE" });
+        const response = await fetch(`/api/panel/relationships/${id}`, {
+          method: "DELETE",
+        });
         if (response.ok) router.refresh();
         else setBusy(false);
       }}

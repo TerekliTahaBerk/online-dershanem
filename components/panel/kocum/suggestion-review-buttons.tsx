@@ -1,6 +1,10 @@
 "use client";
 
-export function SuggestionReviewButtons({ suggestionId }: { suggestionId: string }) {
+export function SuggestionReviewButtons({
+  suggestionId,
+}: {
+  suggestionId: string;
+}) {
   async function review(decision: "ACCEPTED" | "REJECTED") {
     await fetch(`/api/panel/kocum/suggestions/${suggestionId}/review`, {
       method: "POST",
@@ -19,7 +23,11 @@ export function SuggestionReviewButtons({ suggestionId }: { suggestionId: string
       >
         Onayla ve ekle
       </button>
-      <button type="button" className="panel-quick-action" onClick={() => void review("REJECTED")}>
+      <button
+        type="button"
+        className="panel-quick-action"
+        onClick={() => void review("REJECTED")}
+      >
         Reddet
       </button>
     </div>

@@ -7,7 +7,12 @@ import { useRouter } from "next/navigation";
 
 type Filters = { q: string; rol: string; urun: string; durum: string };
 type GroupOption = { id: string; name: string; teacherName: string };
-type TeacherOption = { id: string; name: string; email: string; isCoach: boolean };
+type TeacherOption = {
+  id: string;
+  name: string;
+  email: string;
+  isCoach: boolean;
+};
 type OwnerOption = { id: string; role: UserRole; name: string; email: string };
 
 type BulkPreview = {
@@ -25,7 +30,13 @@ type BulkExecute = {
   succeeded: number;
   failed: number;
   capped: boolean;
-  invites?: Array<{ id: string; email: string; url: string; message: string; expiresAt: string }>;
+  invites?: Array<{
+    id: string;
+    email: string;
+    url: string;
+    message: string;
+    expiresAt: string;
+  }>;
   errors: Array<{ id: string; email: string; reason: string }>;
 };
 
@@ -43,19 +54,23 @@ export function UserBulkOperations({
   interventionOwners: OwnerOption[];
 }) {
   const router = useRouter();
-  const [action, setAction] = useState<"RESEND_INVITE" | "TRANSFER_STUDENTS_TO_GROUP" | "OFFBOARD_TEACHERS">(
-    "RESEND_INVITE",
-  );
+  const [action, setAction] = useState<
+    "RESEND_INVITE" | "TRANSFER_STUDENTS_TO_GROUP" | "OFFBOARD_TEACHERS"
+  >("RESEND_INVITE");
   const [targetGroupId, setTargetGroupId] = useState("");
   const [transferTeacherId, setTransferTeacherId] = useState("");
   const [transferCoachTeacherId, setTransferCoachTeacherId] = useState("");
-  const [transferInterventionOwnerId, setTransferInterventionOwnerId] = useState("");
+  const [transferInterventionOwnerId, setTransferInterventionOwnerId] =
+    useState("");
   const [busy, setBusy] = useState<"preview" | "execute" | null>(null);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState<BulkPreview | null>(null);
   const [result, setResult] = useState<BulkExecute | null>(null);
 
-  const coachTeachers = useMemo(() => teachers.filter((teacher) => teacher.isCoach), [teachers]);
+  const coachTeachers = useMemo(
+    () => teachers.filter((teacher) => teacher.isCoach),
+    [teachers],
+  );
 
   async function call(mode: "PREVIEW" | "EXECUTE") {
     if (mode === "EXECUTE") {
@@ -92,7 +107,10 @@ export function UserBulkOperations({
     setBusy(null);
 
     if (!response.ok || !payload) {
-      setError((payload as { error?: string } | null)?.error || "Toplu işlem tamamlanamadı.");
+      setError(
+        (payload as { error?: string } | null)?.error ||
+          "Toplu işlem tamamlanamadı.",
+      );
       return;
     }
 
@@ -107,7 +125,8 @@ export function UserBulkOperations({
   const needsGroup = action === "TRANSFER_STUDENTS_TO_GROUP";
   const needsTeacher = action === "OFFBOARD_TEACHERS";
   const canPreview =
-    (needsGroup ? Boolean(targetGroupId) : true) && (needsTeacher ? Boolean(transferTeacherId) : true);
+    (needsGroup ? Boolean(targetGroupId) : true) &&
+    (needsTeacher ? Boolean(transferTeacherId) : true);
 
   return (
     <section className="rounded-[14px] border border-[#DDE4E0] bg-white p-4">
@@ -118,7 +137,8 @@ export function UserBulkOperations({
         </span>
       </div>
       <p className="mt-1 text-[12px] text-dc-ink-muted">
-        Tek tek işlem yerine, filtrelenmiş kayıtlar üzerinde güvenli toplu aksiyon çalıştırın.
+        Tek tek işlem yerine, filtrelenmiş kayıtlar üzerinde güvenli toplu
+        aksiyon çalıştırın.
       </p>
 
       <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -135,8 +155,12 @@ export function UserBulkOperations({
             className="panel-input mt-1 py-2 text-xs"
           >
             <option value="RESEND_INVITE">Davetleri tekrar gönder</option>
-            <option value="TRANSFER_STUDENTS_TO_GROUP">Öğrencileri başka gruba taşı</option>
-            <option value="OFFBOARD_TEACHERS">Öğretmenleri güvenli devirle askıya al</option>
+            <option value="TRANSFER_STUDENTS_TO_GROUP">
+              Öğrencileri başka gruba taşı
+            </option>
+            <option value="OFFBOARD_TEACHERS">
+              Öğretmenleri güvenli devirle askıya al
+            </option>
           </select>
         </label>
 
@@ -168,7 +192,8 @@ export function UserBulkOperations({
                   const next = event.target.value;
                   setTransferTeacherId(next);
                   if (!transferCoachTeacherId) setTransferCoachTeacherId(next);
-                  if (!transferInterventionOwnerId) setTransferInterventionOwnerId(next);
+                  if (!transferInterventionOwnerId)
+                    setTransferInterventionOwnerId(next);
                 }}
                 className="panel-input mt-1 py-2 text-xs"
               >
@@ -184,7 +209,9 @@ export function UserBulkOperations({
               Koç devri (opsiyonel)
               <select
                 value={transferCoachTeacherId}
-                onChange={(event) => setTransferCoachTeacherId(event.target.value)}
+                onChange={(event) =>
+                  setTransferCoachTeacherId(event.target.value)
+                }
                 className="panel-input mt-1 py-2 text-xs"
               >
                 <option value="">Aynı öğretmen kullanılacak</option>
@@ -199,13 +226,16 @@ export function UserBulkOperations({
               Müdahale sorumluluğu (opsiyonel)
               <select
                 value={transferInterventionOwnerId}
-                onChange={(event) => setTransferInterventionOwnerId(event.target.value)}
+                onChange={(event) =>
+                  setTransferInterventionOwnerId(event.target.value)
+                }
                 className="panel-input mt-1 py-2 text-xs"
               >
                 <option value="">Aynı öğretmen kullanılacak</option>
                 {interventionOwners.map((owner) => (
                   <option key={owner.id} value={owner.id}>
-                    {owner.name} ({owner.role === "ADMIN" ? "Yönetici" : "Eğitmen"})
+                    {owner.name} (
+                    {owner.role === "ADMIN" ? "Yönetici" : "Eğitmen"})
                   </option>
                 ))}
               </select>
@@ -223,7 +253,11 @@ export function UserBulkOperations({
         >
           {busy === "preview" ? (
             <span className="inline-flex items-center gap-1.5">
-              <Loader2 size={13} className="animate-spin motion-reduce:animate-none" /> Önizleniyor
+              <Loader2
+                size={13}
+                className="animate-spin motion-reduce:animate-none"
+              />{" "}
+              Önizleniyor
             </span>
           ) : (
             "Önizleme al"
@@ -237,7 +271,11 @@ export function UserBulkOperations({
         >
           {busy === "execute" ? (
             <span className="inline-flex items-center gap-1.5">
-              <Loader2 size={13} className="animate-spin motion-reduce:animate-none" /> Çalışıyor
+              <Loader2
+                size={13}
+                className="animate-spin motion-reduce:animate-none"
+              />{" "}
+              Çalışıyor
             </span>
           ) : (
             "Toplu işlemi çalıştır"
@@ -245,16 +283,22 @@ export function UserBulkOperations({
         </button>
       </div>
 
-      {error ? <p className="mt-2 text-[12px] font-semibold text-[#C2493D]">{error}</p> : null}
+      {error ? (
+        <p className="mt-2 text-[12px] font-semibold text-[#C2493D]">{error}</p>
+      ) : null}
 
       {preview ? (
         <div className="mt-3 rounded-[10px] border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
           <p className="font-semibold">
-            Önizleme: {preview.matched} kayıt eşleşti{preview.capped ? " (ilk 500 kayıtla sınırlı)" : ""}.
+            Önizleme: {preview.matched} kayıt eşleşti
+            {preview.capped ? " (ilk 500 kayıtla sınırlı)" : ""}.
           </p>
           {preview.sample.length ? (
             <p className="mt-1">
-              Örnek: {preview.sample.map((row) => `${row.name} (${row.email})`).join(" · ")}
+              Örnek:{" "}
+              {preview.sample
+                .map((row) => `${row.name} (${row.email})`)
+                .join(" · ")}
             </p>
           ) : null}
         </div>
@@ -268,16 +312,25 @@ export function UserBulkOperations({
           </p>
           {result.errors.length ? (
             <p className="mt-1 text-[#C2493D]">
-              Hata örnekleri: {result.errors.slice(0, 5).map((item) => `${item.email}: ${item.reason}`).join(" · ")}
+              Hata örnekleri:{" "}
+              {result.errors
+                .slice(0, 5)
+                .map((item) => `${item.email}: ${item.reason}`)
+                .join(" · ")}
             </p>
           ) : null}
           {result.invites?.length ? (
             <details className="mt-2">
-              <summary className="cursor-pointer font-semibold">Üretilen davet bağlantıları ({result.invites.length})</summary>
+              <summary className="cursor-pointer font-semibold">
+                Üretilen davet bağlantıları ({result.invites.length})
+              </summary>
               <textarea
                 readOnly
                 value={result.invites
-                  .map((invite) => `${invite.email}\n${invite.url}\n${invite.message}`)
+                  .map(
+                    (invite) =>
+                      `${invite.email}\n${invite.url}\n${invite.message}`,
+                  )
                   .join("\n\n---\n\n")}
                 className="mt-2 min-h-[160px] w-full rounded-lg border border-[#DDE4E0] bg-white p-2 font-mono text-[11px]"
               />

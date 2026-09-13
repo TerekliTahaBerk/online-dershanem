@@ -32,7 +32,10 @@ export default async function StudentDinoPage() {
           description="Panelindeki kendi kayıtlarını sade bir dille açıklar. Yeni bilgi üretmez; dayanakları gösterir."
         />
         <div className="mt-6">
-          <DinoChat audience="STUDENT" questions={[...dinoQuestionsFor("STUDENT")]} />
+          <DinoChat
+            audience="STUDENT"
+            questions={[...dinoQuestionsFor("STUDENT")]}
+          />
         </div>
       </div>
     </PanelShell>

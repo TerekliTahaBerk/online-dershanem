@@ -36,16 +36,25 @@ type Props = {
   canWrite: boolean;
 };
 
-export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props) {
+export function SalesFunnelBoard({
+  initialLeads,
+  stageCounts,
+  canWrite,
+}: Props) {
   const router = useRouter();
   const [leads, setLeads] = useState(initialLeads);
   const [optimisticLeads, addOptimistic] = useOptimistic(
     leads,
     (current, update: { id: string; stage: LeadStage }) =>
-      current.map((lead) => (lead.id === update.id ? { ...lead, stage: update.stage } : lead)),
+      current.map((lead) =>
+        lead.id === update.id ? { ...lead, stage: update.stage } : lead,
+      ),
   );
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [lostPrompt, setLostPrompt] = useState<{ id: string; from: LeadStage } | null>(null);
+  const [lostPrompt, setLostPrompt] = useState<{
+    id: string;
+    from: LeadStage;
+  } | null>(null);
   const [lostCode, setLostCode] = useState<LeadLostReasonCode>("PRICE");
   const [lostDetail, setLostDetail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +66,9 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
 
   const counts = LEAD_STAGES.reduce(
     (acc, stage) => {
-      acc[stage] = optimisticLeads.filter((lead) => lead.stage === stage).length;
+      acc[stage] = optimisticLeads.filter(
+        (lead) => lead.stage === stage,
+      ).length;
       return acc;
     },
     { ...stageCounts } as Record<string, number>,
@@ -99,7 +110,9 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
     // Mutation response is authoritative.
     setLeads((current) =>
       current.map((lead) =>
-        lead.id === result.lead.id ? { ...lead, stage: result.lead.stage } : lead,
+        lead.id === result.lead.id
+          ? { ...lead, stage: result.lead.stage }
+          : lead,
       ),
     );
     router.refresh();
@@ -119,7 +132,10 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
   return (
     <div className="space-y-3">
       {error ? (
-        <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900">
+        <p
+          role="alert"
+          className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900"
+        >
           {error}
         </p>
       ) : null}
@@ -142,7 +158,9 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
             <select
               className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
               value={lostCode}
-              onChange={(event) => setLostCode(event.target.value as LeadLostReasonCode)}
+              onChange={(event) =>
+                setLostCode(event.target.value as LeadLostReasonCode)
+              }
             >
               {LEAD_LOST_REASON_CODES.map((code) => (
                 <option key={code} value={code}>
@@ -174,7 +192,10 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
               onClick={() => {
                 const id = lostPrompt.id;
                 setLostPrompt(null);
-                void commitStage(id, "LOST", { code: lostCode, detail: lostDetail });
+                void commitStage(id, "LOST", {
+                  code: lostCode,
+                  detail: lostDetail,
+                });
               }}
             >
               Kaybedildi olarak işaretle
@@ -183,8 +204,12 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
         </div>
       ) : null}
 
-      <p className="text-[11.5px] font-semibold text-dc-ink-faint md:hidden" aria-hidden="true">
-        Aşamalar arasında kaydırarak gezinin; kartları taşımak için aşağıdaki aşama seçicisini kullanın.
+      <p
+        className="text-[11.5px] font-semibold text-dc-ink-faint md:hidden"
+        aria-hidden="true"
+      >
+        Aşamalar arasında kaydırarak gezinin; kartları taşımak için aşağıdaki
+        aşama seçicisini kullanın.
       </p>
 
       <div className="panel-nav-scroll flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-3 md:overflow-visible md:pb-0 xl:grid-cols-5">
@@ -199,7 +224,8 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
             onDrop={(event) => {
               if (!canWrite) return;
               event.preventDefault();
-              const id = event.dataTransfer.getData("text/lead-id") || draggingId;
+              const id =
+                event.dataTransfer.getData("text/lead-id") || draggingId;
               if (id) requestStageChange(id, stage);
               setDraggingId(null);
             }}
@@ -228,7 +254,9 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
                       className={`rounded-xl border bg-white p-3 ${overdue ? "border-rose-300 ring-1 ring-rose-200" : ""} ${pendingId === lead.id ? "opacity-60" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className="truncate text-xs font-bold">{leadDisplayName(lead)}</p>
+                        <p className="truncate text-xs font-bold">
+                          {leadDisplayName(lead)}
+                        </p>
                         {overdue ? (
                           <span className="shrink-0 text-[9px] font-extrabold uppercase text-rose-700">
                             Gecikmiş
@@ -256,7 +284,10 @@ export function SalesFunnelBoard({ initialLeads, stageCounts, canWrite }: Props)
                             value={lead.stage}
                             disabled={pendingId === lead.id}
                             onChange={(event) =>
-                              requestStageChange(lead.id, event.target.value as LeadStage)
+                              requestStageChange(
+                                lead.id,
+                                event.target.value as LeadStage,
+                              )
                             }
                           >
                             {LEAD_STAGES.map((option) => (

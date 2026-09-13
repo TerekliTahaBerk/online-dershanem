@@ -5,8 +5,19 @@ import { useRouter } from "next/navigation";
 
 type Teacher = { id: string; name: string };
 type Member = { id: string; name: string; email: string };
-type GroupOption = { id: string; name: string; subject: string; filled: number; capacity: number };
-type Candidate = { id: string; name: string; email: string; activeGroups: Array<{ id: string; name: string }> };
+type GroupOption = {
+  id: string;
+  name: string;
+  subject: string;
+  filled: number;
+  capacity: number;
+};
+type Candidate = {
+  id: string;
+  name: string;
+  email: string;
+  activeGroups: Array<{ id: string; name: string }>;
+};
 
 type GroupPayload = {
   id: string;
@@ -46,12 +57,23 @@ export function GroupManagementDetail({
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState("");
-  const [transferTarget, setTransferTarget] = useState<Record<string, string>>({});
+  const [transferTarget, setTransferTarget] = useState<Record<string, string>>(
+    {},
+  );
 
   const seatLabel = `${group.activeStudentCount}/${group.capacity}`;
-  const selectedTeacher = useMemo(() => teachers.find((item) => item.id === group.teacherId)?.id || group.teacherId, [group.teacherId, teachers]);
+  const selectedTeacher = useMemo(
+    () =>
+      teachers.find((item) => item.id === group.teacherId)?.id ||
+      group.teacherId,
+    [group.teacherId, teachers],
+  );
 
-  async function run(key: string, action: () => Promise<void>, success: string) {
+  async function run(
+    key: string,
+    action: () => Promise<void>,
+    success: string,
+  ) {
     setBusy(key);
     setMessage("");
     try {
@@ -59,7 +81,9 @@ export function GroupManagementDetail({
       setMessage(success);
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "İşlem tamamlanamadı.");
+      setMessage(
+        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+      );
     } finally {
       setBusy(null);
     }
@@ -68,7 +92,9 @@ export function GroupManagementDetail({
   async function searchStudents(nextQuery: string) {
     const params = new URLSearchParams();
     if (nextQuery.trim()) params.set("q", nextQuery.trim());
-    const response = await fetch(`/api/panel/groups/${group.id}/students?${params.toString()}`);
+    const response = await fetch(
+      `/api/panel/groups/${group.id}/students?${params.toString()}`,
+    );
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || "Öğrenciler getirilemedi.");
     setCandidates(Array.isArray(body.students) ? body.students : []);
@@ -77,7 +103,9 @@ export function GroupManagementDetail({
   return (
     <div className="space-y-5">
       <section className="panel-surface p-5">
-        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Grup ayarları</h2>
+        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+          Grup ayarları
+        </h2>
         <form
           className="mt-4 grid gap-2 sm:grid-cols-2"
           onSubmit={(event) => {
@@ -96,10 +124,31 @@ export function GroupManagementDetail({
             );
           }}
         >
-          <input name="name" required defaultValue={group.name} className="panel-input" aria-label="Grup adı" />
-          <input name="subject" required defaultValue={group.subject} className="panel-input" aria-label="Ders" />
-          <input name="level" defaultValue={group.level} className="panel-input" aria-label="Seviye" placeholder="Seviye" />
-          <button disabled={busy === "meta"} className="panel-quick-action panel-quick-action-primary justify-center sm:justify-start">
+          <input
+            name="name"
+            required
+            defaultValue={group.name}
+            className="panel-input"
+            aria-label="Grup adı"
+          />
+          <input
+            name="subject"
+            required
+            defaultValue={group.subject}
+            className="panel-input"
+            aria-label="Ders"
+          />
+          <input
+            name="level"
+            defaultValue={group.level}
+            className="panel-input"
+            aria-label="Seviye"
+            placeholder="Seviye"
+          />
+          <button
+            disabled={busy === "meta"}
+            className="panel-quick-action panel-quick-action-primary justify-center sm:justify-start"
+          >
             {busy === "meta" ? "Kaydediliyor" : "Grubu güncelle"}
           </button>
         </form>
@@ -120,14 +169,22 @@ export function GroupManagementDetail({
             );
           }}
         >
-          <select name="teacherId" defaultValue={selectedTeacher} className="panel-input min-w-[220px]" aria-label="Öğretmen">
+          <select
+            name="teacherId"
+            defaultValue={selectedTeacher}
+            className="panel-input min-w-[220px]"
+            aria-label="Öğretmen"
+          >
             {teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
                 {teacher.name}
               </option>
             ))}
           </select>
-          <button disabled={busy === "teacher"} className="panel-quick-action panel-quick-action-primary">
+          <button
+            disabled={busy === "teacher"}
+            className="panel-quick-action panel-quick-action-primary"
+          >
             {busy === "teacher" ? "Kaydediliyor" : "Öğretmeni değiştir"}
           </button>
         </form>
@@ -150,7 +207,11 @@ export function GroupManagementDetail({
           }}
         >
           <button disabled={busy === "active"} className="panel-quick-action">
-            {busy === "active" ? "İşleniyor" : group.isActive ? "Grubu kapat" : "Grubu tekrar aç"}
+            {busy === "active"
+              ? "İşleniyor"
+              : group.isActive
+                ? "Grubu kapat"
+                : "Grubu tekrar aç"}
           </button>
         </form>
       </section>
@@ -158,8 +219,12 @@ export function GroupManagementDetail({
       <section className="panel-surface p-5">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">Öğrenci yönetimi</h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">Doluluk: {seatLabel}</p>
+            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+              Öğrenci yönetimi
+            </h2>
+            <p className="mt-1 text-xs text-[var(--site-muted)]">
+              Doluluk: {seatLabel}
+            </p>
           </div>
           <div className="flex gap-2">
             <input
@@ -172,7 +237,13 @@ export function GroupManagementDetail({
             <button
               type="button"
               className="panel-quick-action"
-              onClick={() => void run("search", () => searchStudents(query), "Arama güncellendi.")}
+              onClick={() =>
+                void run(
+                  "search",
+                  () => searchStudents(query),
+                  "Arama güncellendi.",
+                )
+              }
               disabled={busy === "search"}
             >
               {busy === "search" ? "Aranıyor" : "Ara"}
@@ -183,10 +254,22 @@ export function GroupManagementDetail({
         {candidates.length ? (
           <div className="mt-3 space-y-2">
             {candidates.map((student) => (
-              <div key={student.id} className="rounded-xl border border-[var(--site-line)] p-3">
-                <p className="text-xs font-bold text-[var(--site-ink)]">{student.name}</p>
-                <p className="text-[11px] text-[var(--site-muted)]">{student.email}</p>
-                {student.activeGroups.length ? <p className="mt-1 text-[10.5px] text-[var(--site-muted)]">Aktif gruplar: {student.activeGroups.map((item) => item.name).join(", ")}</p> : null}
+              <div
+                key={student.id}
+                className="rounded-xl border border-[var(--site-line)] p-3"
+              >
+                <p className="text-xs font-bold text-[var(--site-ink)]">
+                  {student.name}
+                </p>
+                <p className="text-[11px] text-[var(--site-muted)]">
+                  {student.email}
+                </p>
+                {student.activeGroups.length ? (
+                  <p className="mt-1 text-[10.5px] text-[var(--site-muted)]">
+                    Aktif gruplar:{" "}
+                    {student.activeGroups.map((item) => item.name).join(", ")}
+                  </p>
+                ) : null}
                 <button
                   type="button"
                   className="panel-quick-action mt-2"
@@ -212,9 +295,16 @@ export function GroupManagementDetail({
 
         <div className="mt-4 space-y-2">
           {members.map((member) => (
-            <div key={member.id} className="rounded-xl border border-[var(--site-line)] p-3">
-              <p className="text-xs font-bold text-[var(--site-ink)]">{member.name}</p>
-              <p className="text-[11px] text-[var(--site-muted)]">{member.email}</p>
+            <div
+              key={member.id}
+              className="rounded-xl border border-[var(--site-line)] p-3"
+            >
+              <p className="text-xs font-bold text-[var(--site-ink)]">
+                {member.name}
+              </p>
+              <p className="text-[11px] text-[var(--site-muted)]">
+                {member.email}
+              </p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
@@ -232,11 +322,18 @@ export function GroupManagementDetail({
                   }
                   disabled={busy === `remove-${member.id}`}
                 >
-                  {busy === `remove-${member.id}` ? "Çıkarılıyor" : "Gruptan çıkar"}
+                  {busy === `remove-${member.id}`
+                    ? "Çıkarılıyor"
+                    : "Gruptan çıkar"}
                 </button>
                 <select
                   value={transferTarget[member.id] || ""}
-                  onChange={(event) => setTransferTarget((current) => ({ ...current, [member.id]: event.target.value }))}
+                  onChange={(event) =>
+                    setTransferTarget((current) => ({
+                      ...current,
+                      [member.id]: event.target.value,
+                    }))
+                  }
                   className="panel-input min-w-[220px]"
                 >
                   <option value="">Hedef grup seç</option>
@@ -251,7 +348,8 @@ export function GroupManagementDetail({
                   className="panel-quick-action panel-quick-action-primary"
                   onClick={() => {
                     const targetGroupId = transferTarget[member.id];
-                    if (!targetGroupId) return setMessage("Önce hedef grup seçin.");
+                    if (!targetGroupId)
+                      return setMessage("Önce hedef grup seçin.");
                     void run(
                       `transfer-${member.id}`,
                       () =>
@@ -265,16 +363,26 @@ export function GroupManagementDetail({
                   }}
                   disabled={busy === `transfer-${member.id}`}
                 >
-                  {busy === `transfer-${member.id}` ? "Taşınıyor" : "Başka gruba taşı"}
+                  {busy === `transfer-${member.id}`
+                    ? "Taşınıyor"
+                    : "Başka gruba taşı"}
                 </button>
               </div>
             </div>
           ))}
-          {!members.length ? <p className="text-xs text-[var(--site-muted)]">Aktif öğrenci yok.</p> : null}
+          {!members.length ? (
+            <p className="text-xs text-[var(--site-muted)]">
+              Aktif öğrenci yok.
+            </p>
+          ) : null}
         </div>
       </section>
 
-      {message ? <p className="rounded-xl bg-[var(--brand-olive-soft)] px-3 py-2 text-xs font-bold text-[var(--brand-olive)]">{message}</p> : null}
+      {message ? (
+        <p className="rounded-xl bg-[var(--brand-olive-soft)] px-3 py-2 text-xs font-bold text-[var(--brand-olive)]">
+          {message}
+        </p>
+      ) : null}
     </div>
   );
 }

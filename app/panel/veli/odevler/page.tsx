@@ -7,7 +7,12 @@ import {
 } from "@/lib/panel/assignment-display";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
-import { PanelCard, PanelEmpty, PanelPageHeader, PanelStatusBadge } from "@/components/panel/ui";
+import {
+  PanelCard,
+  PanelEmpty,
+  PanelPageHeader,
+  PanelStatusBadge,
+} from "@/components/panel/ui";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +35,10 @@ export default async function ParentAssignmentsPage({
 }) {
   const session = await requirePanelRole("PARENT");
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -52,7 +60,10 @@ export default async function ParentAssignmentsPage({
 
   if (!selected) {
     return shell(
-      <PanelEmpty title="Bağlı öğrenci yok" body="Ödev özeti öğrenci eşleşince açılır." />,
+      <PanelEmpty
+        title="Bağlı öğrenci yok"
+        body="Ödev özeti öğrenci eşleşince açılır."
+      />,
     );
   }
 
@@ -111,21 +122,29 @@ export default async function ParentAssignmentsPage({
         description={`${selected.name} · aktif ${active.length} · geciken ${late.length}`}
       />
       {rows.length === 0 ? (
-        <PanelEmpty title="Aktif ödev yok" body="Öğretmenden ödev geldiğinde burada görünür." />
+        <PanelEmpty
+          title="Aktif ödev yok"
+          body="Öğretmenden ödev geldiğinde burada görünür."
+        />
       ) : (
         <div className="mt-5 space-y-3">
           {rows.map(({ assignment, status }) => (
             <PanelCard key={assignment.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-[15px] font-bold text-dc-ink">{assignment.title}</h2>
+                  <h2 className="text-[15px] font-bold text-dc-ink">
+                    {assignment.title}
+                  </h2>
                   <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-                    {assignment.createdBy.fullName || assignment.createdBy.email}
+                    {assignment.createdBy.fullName ||
+                      assignment.createdBy.email}
                     {" · Son tarih "}
                     {DATE.format(assignment.dueAt)}
                   </p>
                   {assignment.description ? (
-                    <p className="mt-2 text-[13.5px] text-dc-ink-body">{assignment.description}</p>
+                    <p className="mt-2 text-[13.5px] text-dc-ink-body">
+                      {assignment.description}
+                    </p>
                   ) : null}
                 </div>
                 <PanelStatusBadge

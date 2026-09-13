@@ -23,8 +23,15 @@ export const dynamic = "force-dynamic";
  * gereksiz — gerçek sipariş tutarları mevcut, o yüzden tutar gösterilir.
  */
 
-const MONTH = new Intl.DateTimeFormat("tr-TR", { month: "long", year: "numeric" });
-const LIRA = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
+const MONTH = new Intl.DateTimeFormat("tr-TR", {
+  month: "long",
+  year: "numeric",
+});
+const LIRA = new Intl.NumberFormat("tr-TR", {
+  style: "currency",
+  currency: "TRY",
+  maximumFractionDigits: 0,
+});
 
 /* Enum ile yazıldı: şemaya yeni bir durum eklenirse burası derleme hatası verir. */
 const ORDER_STATUS: Record<OdkOrderStatus, { label: string; tone: string }> = {
@@ -71,7 +78,8 @@ export default async function ParentAccountPage({
             role="status"
             className="mt-4 rounded-[10px] border border-dc-brand-soft-line bg-dc-brand-soft px-4 py-3 text-[13.5px] font-semibold text-dc-brand-hover"
           >
-            Görüşme talebin alındı. Eğitim koordinatörü seninle iletişime geçecek.
+            Görüşme talebin alındı. Eğitim koordinatörü seninle iletişime
+            geçecek.
           </p>
         ) : null}
 
@@ -137,7 +145,10 @@ export default async function ParentAccountPage({
               görüşme talebi oluşturabilirsin. Paket fiyatı, ürünleri ayrı
               almaktan daha düşük olur.
             </p>
-            <form action={requestPackageMeeting} className="mt-3.5 flex flex-wrap items-end gap-2.5">
+            <form
+              action={requestPackageMeeting}
+              className="mt-3.5 flex flex-wrap items-end gap-2.5"
+            >
               <label className="flex flex-col gap-1.5">
                 <span className="text-[12.5px] text-dc-ink-faint">Öğrenci</span>
                 <select

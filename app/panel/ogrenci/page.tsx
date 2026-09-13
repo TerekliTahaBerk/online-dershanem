@@ -37,7 +37,11 @@ const TR_DATE = new Intl.DateTimeFormat("tr-TR", {
   day: "numeric",
   month: "long",
 });
-const TR_SHORT = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
+const TR_SHORT = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+});
 
 function greeting(now: Date): string {
   const hour = Number(
@@ -72,7 +76,8 @@ export default async function StudentHomePage() {
     </PanelShell>
   );
 
-  if (data.products.length === 0) return shell(<NoProductAccess role="STUDENT" />);
+  if (data.products.length === 0)
+    return shell(<NoProductAccess role="STUDENT" />);
   if (!data.profile) {
     return shell(
       <PanelEmpty
@@ -118,8 +123,12 @@ export default async function StudentHomePage() {
     actionPlan.allActions.length
       ? `bugün ${Math.min(3, actionPlan.allActions.length)} öncelikli adımın hazır`
       : "bugün için bekleyen bir çalışma görünmüyor",
-    plan?.total ? `planında ${Math.max(0, plan.total - plan.done)} görev kaldı` : null,
-    od?.todayLessons.length ? `${od.todayLessons.length} canlı ders görünümü var` : null,
+    plan?.total
+      ? `planında ${Math.max(0, plan.total - plan.done)} görev kaldı`
+      : null,
+    od?.todayLessons.length
+      ? `${od.todayLessons.length} canlı ders görünümü var`
+      : null,
   ].filter(Boolean);
 
   if (primaryAction) {
@@ -143,7 +152,9 @@ export default async function StudentHomePage() {
     <div className="max-w-[1040px]">
       <PanelPageHeader
         title={`${greeting(now)}, ${session.fullName?.split(" ")[0] || "hoş geldin"}.`}
-        description={summaryParts.length ? `${summaryParts.join(" · ")}.` : undefined}
+        description={
+          summaryParts.length ? `${summaryParts.join(" · ")}.` : undefined
+        }
       />
 
       {primaryAction ? (
@@ -186,12 +197,18 @@ export default async function StudentHomePage() {
                 </Link>
               ) : null}
               {data.products.includes("OD") ? (
-                <Link href="/panel/ogrenci/analiz" className="panel-quick-action">
+                <Link
+                  href="/panel/ogrenci/analiz"
+                  className="panel-quick-action"
+                >
                   Gidişatıma Bak
                 </Link>
               ) : null}
               {data.products.includes("ODK") ? (
-                <Link href="/panel/odk/ogrenci/denemeler" className="panel-quick-action">
+                <Link
+                  href="/panel/odk/ogrenci/denemeler"
+                  className="panel-quick-action"
+                >
                   Denemelerime Bak
                 </Link>
               ) : null}
@@ -218,7 +235,11 @@ export default async function StudentHomePage() {
               key={action.id}
               title={action.title}
               description={action.reason}
-              status={<span className="text-xs text-dc-ink-faint">{action.product}</span>}
+              status={
+                <span className="text-xs text-dc-ink-faint">
+                  {action.product}
+                </span>
+              }
               cta={
                 <TrackedPanelLink
                   href={action.href}
@@ -247,7 +268,9 @@ export default async function StudentHomePage() {
       {data.unifiedToday?.items.length ? (
         <PanelCard className="mt-5" padded={false}>
           <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
-            <h2 className="text-sm font-bold text-dc-ink">Bugün — tüm ürünler</h2>
+            <h2 className="text-sm font-bold text-dc-ink">
+              Bugün — tüm ürünler
+            </h2>
             <p className="mt-0.5 text-[12.5px] text-dc-ink-faint">
               Dersler, ödevler, plan görevleri ve denemeler tek listede.
             </p>
@@ -265,7 +288,10 @@ export default async function StudentHomePage() {
               }
               cta={
                 item.href ? (
-                  <Link href={item.href} className="panel-quick-action inline-flex">
+                  <Link
+                    href={item.href}
+                    className="panel-quick-action inline-flex"
+                  >
                     Aç
                   </Link>
                 ) : undefined
@@ -278,19 +304,30 @@ export default async function StudentHomePage() {
 
       <PanelCard className="mt-5" variant="subtle">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-dc-ink">
-            Bu hafta
-          </h2>
-          <span className="text-[12.5px] text-dc-ink-faint">{TR_DATE.format(now)}</span>
+          <h2 className="text-sm font-bold text-dc-ink">Bu hafta</h2>
+          <span className="text-[12.5px] text-dc-ink-faint">
+            {TR_DATE.format(now)}
+          </span>
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <PanelMetric label="Plan tamamlanan" value={plan ? `${plan.done}/${plan.total}` : "—"} tone="info" />
+          <PanelMetric
+            label="Plan tamamlanan"
+            value={plan ? `${plan.done}/${plan.total}` : "—"}
+            tone="info"
+          />
           <PanelMetric
             label="Yaklaşan ders"
-            value={(od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now).length}
+            value={
+              (od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now)
+                .length
+            }
             tone="neutral"
           />
-          <PanelMetric label="Yaklaşan deneme" value={odk?.upcomingExam ? 1 : 0} tone="warning" />
+          <PanelMetric
+            label="Yaklaşan deneme"
+            value={odk?.upcomingExam ? 1 : 0}
+            tone="warning"
+          />
         </div>
       </PanelCard>
 
@@ -316,11 +353,14 @@ export default async function StudentHomePage() {
         ) : null}
       </div>
 
-      {trend.length >= 2 ? <NetTrendCard points={trend} caption={trendCaption} /> : null}
+      {trend.length >= 2 ? (
+        <NetTrendCard points={trend} caption={trendCaption} />
+      ) : null}
 
       {odk && !latest ? (
         <p className="mt-5 text-[14px] text-dc-ink-muted">
-          Deneme Kulübü sonuçların girildiğinde net gelişimin ve analiz burada açılır.
+          Deneme Kulübü sonuçların girildiğinde net gelişimin ve analiz burada
+          açılır.
         </p>
       ) : null}
     </div>,

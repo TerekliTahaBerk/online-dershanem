@@ -47,10 +47,14 @@ export function LeadLifecyclePanel({
     <section className="panel-surface grid gap-4 p-4 lg:grid-cols-[1fr_1.2fr]">
       <div className="space-y-3">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-wide text-[var(--site-muted)]">Lifecycle</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-wide text-[var(--site-muted)]">
+            Lifecycle
+          </p>
           <h2 className="mt-1 text-lg font-extrabold">
             {LIFECYCLE_LEAD_LABELS[detail.lifecycleLeadStage]}
-            <span className="ml-2 text-xs font-bold text-[var(--site-muted)]">({detail.stage})</span>
+            <span className="ml-2 text-xs font-bold text-[var(--site-muted)]">
+              ({detail.stage})
+            </span>
           </h2>
         </div>
 
@@ -58,7 +62,9 @@ export function LeadLifecyclePanel({
           <p className="font-extrabold">{detail.handoff.label}</p>
           <p className="mt-1 text-xs opacity-90">{detail.handoff.nextAction}</p>
           {!detail.wonLinksComplete ? (
-            <p className="mt-2 text-xs font-bold">WON kaydında sipariş veya öğrenci bağı eksik.</p>
+            <p className="mt-2 text-xs font-bold">
+              WON kaydında sipariş veya öğrenci bağı eksik.
+            </p>
           ) : null}
         </div>
 
@@ -68,7 +74,10 @@ export function LeadLifecyclePanel({
             <li>
               OD sipariş:{" "}
               {detail.links.odOrderId ? (
-                <Link className="font-bold underline text-[var(--brand-olive)]" href={`/panel/yonetim/siparisler/${detail.links.odOrderId}`}>
+                <Link
+                  className="font-bold underline text-[var(--brand-olive)]"
+                  href={`/panel/yonetim/siparisler/${detail.links.odOrderId}`}
+                >
                   {detail.links.odOrderId}
                 </Link>
               ) : (
@@ -78,7 +87,10 @@ export function LeadLifecyclePanel({
             <li>
               ODK sipariş:{" "}
               {detail.links.odkOrderId ? (
-                <Link className="font-bold underline text-[var(--brand-olive)]" href={`/panel/yonetim/siparisler/${detail.links.odkOrderId}`}>
+                <Link
+                  className="font-bold underline text-[var(--brand-olive)]"
+                  href={`/panel/yonetim/siparisler/${detail.links.odkOrderId}`}
+                >
                   {detail.links.odkOrderId}
                 </Link>
               ) : (
@@ -101,7 +113,10 @@ export function LeadLifecyclePanel({
             <li>
               Öğrenci profili:{" "}
               {detail.links.studentProfileId ? (
-                <Link className="font-bold underline text-[var(--brand-olive)]" href={`/panel/yonetim/ogrenciler/${detail.links.studentProfileId}`}>
+                <Link
+                  className="font-bold underline text-[var(--brand-olive)]"
+                  href={`/panel/yonetim/ogrenciler/${detail.links.studentProfileId}`}
+                >
                   {detail.links.studentProfileId}
                 </Link>
               ) : (
@@ -114,18 +129,31 @@ export function LeadLifecyclePanel({
         {detail.orderSummary ? (
           <div className="rounded-2xl border p-3 text-xs">
             <p className="font-extrabold">
-              {detail.orderSummary.product} sipariş · {LIFECYCLE_ORDER_LABELS[detail.orderSummary.status]}
+              {detail.orderSummary.product} sipariş ·{" "}
+              {LIFECYCLE_ORDER_LABELS[detail.orderSummary.status]}
             </p>
             {detail.orderSummary.provisioning ? (
               <p className="mt-1">
-                Provisioning: {LIFECYCLE_PROVISIONING_LABELS[detail.orderSummary.provisioning]}
-                <span className="text-[var(--site-muted)]"> ({detail.orderSummary.rawProvisioning})</span>
+                Provisioning:{" "}
+                {
+                  LIFECYCLE_PROVISIONING_LABELS[
+                    detail.orderSummary.provisioning
+                  ]
+                }
+                <span className="text-[var(--site-muted)]">
+                  {" "}
+                  ({detail.orderSummary.rawProvisioning})
+                </span>
               </p>
             ) : null}
-            {detail.orderSummary.provisioningGuidance && detail.orderSummary.provisioning !== "COMPLETED" ? (
-              <p className="mt-2 rounded-xl bg-rose-50 p-2 text-rose-900">{detail.orderSummary.provisioningGuidance}</p>
+            {detail.orderSummary.provisioningGuidance &&
+            detail.orderSummary.provisioning !== "COMPLETED" ? (
+              <p className="mt-2 rounded-xl bg-rose-50 p-2 text-rose-900">
+                {detail.orderSummary.provisioningGuidance}
+              </p>
             ) : null}
-            {detail.orderSummary.provisioning === "FAILED" || detail.orderSummary.provisioning === "NEEDS_REVIEW" ? (
+            {detail.orderSummary.provisioning === "FAILED" ||
+            detail.orderSummary.provisioning === "NEEDS_REVIEW" ? (
               <div className="mt-2 flex flex-wrap gap-2">
                 <Link
                   href={`/panel/yonetim/siparisler/${detail.orderSummary.id}`}
@@ -146,7 +174,8 @@ export function LeadLifecyclePanel({
 
         {detail.studentStatus ? (
           <p className="text-xs">
-            Öğrenci onboarding: <strong>{LIFECYCLE_STUDENT_LABELS[detail.studentStatus]}</strong>
+            Öğrenci onboarding:{" "}
+            <strong>{LIFECYCLE_STUDENT_LABELS[detail.studentStatus]}</strong>
           </p>
         ) : null}
 
@@ -155,31 +184,58 @@ export function LeadLifecyclePanel({
           <p className="mt-1">{detail.identityMatch.message}</p>
           {detail.identityMatch.candidate ? (
             <p className="mt-1 text-[var(--site-muted)]">
-              Aday: {detail.identityMatch.candidate.fullName || detail.identityMatch.candidate.email} ·{" "}
-              {detail.identityMatch.reasons.join(", ")} · %{Math.round(detail.identityMatch.confidence * 100)}
+              Aday:{" "}
+              {detail.identityMatch.candidate.fullName ||
+                detail.identityMatch.candidate.email}{" "}
+              · {detail.identityMatch.reasons.join(", ")} · %
+              {Math.round(detail.identityMatch.confidence * 100)}
             </p>
           ) : null}
-          {linkAction && (detail.identityMatch.decision === "SUGGEST" || detail.identityMatch.decision === "LINK") && detail.identityMatch.candidate ? (
+          {linkAction &&
+          (detail.identityMatch.decision === "SUGGEST" ||
+            detail.identityMatch.decision === "LINK") &&
+          detail.identityMatch.candidate ? (
             <form action={linkAction} className="mt-2 flex flex-wrap gap-2">
               <input type="hidden" name="leadId" value={detail.leadId} />
-              <input type="hidden" name="userId" value={detail.identityMatch.candidate.userId} />
-              <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-1.5 font-bold text-white">Mevcut hesaba bağla</button>
+              <input
+                type="hidden"
+                name="userId"
+                value={detail.identityMatch.candidate.userId}
+              />
+              <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-1.5 font-bold text-white">
+                Mevcut hesaba bağla
+              </button>
             </form>
           ) : null}
           {linkAction && detail.stage === "WON" && !detail.wonLinksComplete ? (
-            <form action={linkAction} className="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+            <form
+              action={linkAction}
+              className="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+            >
               <input type="hidden" name="leadId" value={detail.leadId} />
               <input type="hidden" name="force" value="1" />
-              <input name="odOrderId" placeholder="OD sipariş id" className="rounded-xl border px-2 py-1.5" />
-              <input name="userId" placeholder="Öğrenci user id" className="rounded-xl border px-2 py-1.5" />
-              <button className="rounded-xl border px-3 py-1.5 font-bold">Manuel bağla</button>
+              <input
+                name="odOrderId"
+                placeholder="OD sipariş id"
+                className="rounded-xl border px-2 py-1.5"
+              />
+              <input
+                name="userId"
+                placeholder="Öğrenci user id"
+                className="rounded-xl border px-2 py-1.5"
+              />
+              <button className="rounded-xl border px-3 py-1.5 font-bold">
+                Manuel bağla
+              </button>
             </form>
           ) : null}
         </div>
       </div>
 
       <div>
-        <p className="text-[10px] font-extrabold uppercase tracking-wide text-[var(--site-muted)]">Timeline</p>
+        <p className="text-[10px] font-extrabold uppercase tracking-wide text-[var(--site-muted)]">
+          Timeline
+        </p>
         <ol className="relative mt-3 space-y-0 border-l border-[var(--site-line)] pl-4">
           {detail.timeline.map((event) => (
             <li key={event.id} className="relative pb-4">
@@ -188,10 +244,19 @@ export function LeadLifecyclePanel({
                 aria-hidden
               />
               <p className="text-sm font-bold">{event.label}</p>
-              {event.detail ? <p className="mt-0.5 text-[11px] text-[var(--site-muted)]">{event.detail}</p> : null}
-              <p className="mt-0.5 text-[10px] text-[var(--site-muted)]">{dt.format(event.occurredAt)}</p>
+              {event.detail ? (
+                <p className="mt-0.5 text-[11px] text-[var(--site-muted)]">
+                  {event.detail}
+                </p>
+              ) : null}
+              <p className="mt-0.5 text-[10px] text-[var(--site-muted)]">
+                {dt.format(event.occurredAt)}
+              </p>
               {event.href ? (
-                <Link href={event.href} className="mt-1 inline-block text-[11px] font-bold underline text-[var(--brand-olive)]">
+                <Link
+                  href={event.href}
+                  className="mt-1 inline-block text-[11px] font-bold underline text-[var(--brand-olive)]"
+                >
                   Aç
                 </Link>
               ) : null}

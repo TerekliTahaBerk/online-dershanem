@@ -20,7 +20,11 @@ export const dynamic = "force-dynamic";
  * OD şartı koşar, burada yanlış olurdu).
  */
 
-const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+const DATE = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
@@ -41,7 +45,10 @@ export default async function StudentProfilePage() {
         classLevel: true,
         targetGoal: true,
         parents: {
-          select: { relationship: true, parent: { select: { fullName: true, email: true } } },
+          select: {
+            relationship: true,
+            parent: { select: { fullName: true, email: true } },
+          },
         },
       },
     }),
@@ -71,8 +78,14 @@ export default async function StudentProfilePage() {
           <dl className="mt-3.5 grid gap-4 sm:grid-cols-2">
             <Field label="Ad soyad" value={session.fullName || "—"} />
             <Field label="E-posta" value={session.email} />
-            <Field label="Hedef sınav" value={profile?.targetGoal || "Henüz belirlenmedi"} />
-            <Field label="Sınıf" value={profile?.classLevel || "Henüz belirlenmedi"} />
+            <Field
+              label="Hedef sınav"
+              value={profile?.targetGoal || "Henüz belirlenmedi"}
+            />
+            <Field
+              label="Sınıf"
+              value={profile?.classLevel || "Henüz belirlenmedi"}
+            />
             <Field
               label="Bağlı veli"
               value={
@@ -90,8 +103,8 @@ export default async function StudentProfilePage() {
           <PanelCardTitle>Paketin</PanelCardTitle>
           {active.length === 0 ? (
             <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-muted">
-              Şu anda aktif bir ürün paketin görünmüyor. Paket bilgin güncellenmediyse
-              eğitim koordinatörünle görüşebilirsin.
+              Şu anda aktif bir ürün paketin görünmüyor. Paket bilgin
+              güncellenmediyse eğitim koordinatörünle görüşebilirsin.
             </p>
           ) : (
             <ul className="mt-3 flex flex-col gap-2.5">
@@ -103,7 +116,9 @@ export default async function StudentProfilePage() {
                   <span>{productLabel(m.product)}</span>
                   <span className="text-dc-brand-hover">
                     Aktif
-                    {m.expiresAt ? ` · dönem sonu ${DATE.format(m.expiresAt)}` : ""}
+                    {m.expiresAt
+                      ? ` · dönem sonu ${DATE.format(m.expiresAt)}`
+                      : ""}
                   </span>
                 </li>
               ))}

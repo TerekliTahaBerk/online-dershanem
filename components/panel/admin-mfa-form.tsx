@@ -1,11 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { startAuthentication, startRegistration } from "@simplewebauthn/browser";
-import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
+import {
+  startAuthentication,
+  startRegistration,
+} from "@simplewebauthn/browser";
+import type {
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+} from "@simplewebauthn/browser";
 import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import { mapWebAuthnClientError } from "@/lib/auth/passkey-capabilities";
-import { MfaCodeInput, TotpEnrollmentSetup, useCoarsePointer } from "@/components/panel/totp-enrollment-setup";
+import {
+  MfaCodeInput,
+  TotpEnrollmentSetup,
+  useCoarsePointer,
+} from "@/components/panel/totp-enrollment-setup";
 
 type Purpose = "AUTHENTICATE" | "STEP_UP";
 
@@ -15,7 +25,9 @@ async function json(response: Response) {
     code?: string;
     redirect?: string;
     recoveryCodes?: string[];
-    options?: PublicKeyCredentialCreationOptionsJSON | PublicKeyCredentialRequestOptionsJSON;
+    options?:
+      | PublicKeyCredentialCreationOptionsJSON
+      | PublicKeyCredentialRequestOptionsJSON;
     challengeId?: string;
   }>;
 }
@@ -39,9 +51,14 @@ export function AdminMfaForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const showPasskeyButton = passkeyCount > 0 && (!isMobile || hasPlatformPasskey);
-  const showRemotePasskeyHint = passkeyCount > 0 && isMobile && !hasPlatformPasskey;
-  const showRecovery = allowRecovery && purpose === "AUTHENTICATE" && (totpEnabled || passkeyCount > 0);
+  const showPasskeyButton =
+    passkeyCount > 0 && (!isMobile || hasPlatformPasskey);
+  const showRemotePasskeyHint =
+    passkeyCount > 0 && isMobile && !hasPlatformPasskey;
+  const showRecovery =
+    allowRecovery &&
+    purpose === "AUTHENTICATE" &&
+    (totpEnabled || passkeyCount > 0);
 
   async function passkey() {
     setPending(true);
@@ -53,22 +70,33 @@ export function AdminMfaForm({
         body: JSON.stringify({ purpose, preferPlatform: isMobile }),
       });
       const optionsData = await json(optionsResponse);
-      if (!optionsResponse.ok || !optionsData.options || !optionsData.challengeId) {
+      if (
+        !optionsResponse.ok ||
+        !optionsData.options ||
+        !optionsData.challengeId
+      ) {
         throw new Error(optionsData.error || "Geçiş anahtarı başlatılamadı.");
       }
       const response = await startAuthentication({
-        optionsJSON: optionsData.options as PublicKeyCredentialRequestOptionsJSON,
+        optionsJSON:
+          optionsData.options as PublicKeyCredentialRequestOptionsJSON,
       });
       const verifyResponse = await fetch("/api/auth/mfa/passkey/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ purpose, challengeId: optionsData.challengeId, response }),
+        body: JSON.stringify({
+          purpose,
+          challengeId: optionsData.challengeId,
+          response,
+        }),
       });
       const verified = await json(verifyResponse);
       if (!verifyResponse.ok || !verified.redirect) {
         throw new Error(verified.error || "Geçiş anahtarı doğrulanamadı.");
       }
-      window.location.replace(purpose === "STEP_UP" ? "/panel/yonetim" : verified.redirect);
+      window.location.replace(
+        purpose === "STEP_UP" ? "/panel/yonetim" : verified.redirect,
+      );
     } catch (cause) {
       setError(mapWebAuthnClientError(cause));
       setPending(false);
@@ -82,7 +110,11 @@ export function AdminMfaForm({
     const response = await fetch("/api/auth/mfa/code/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ purpose, code, method: recovery ? "RECOVERY" : "TOTP" }),
+      body: JSON.stringify({
+        purpose,
+        code,
+        method: recovery ? "RECOVERY" : "TOTP",
+      }),
     });
     const data = await json(response);
     if (!response.ok) {
@@ -90,7 +122,9 @@ export function AdminMfaForm({
       setPending(false);
       return;
     }
-    window.location.replace(purpose === "STEP_UP" ? "/panel/yonetim" : data.redirect || "/panel");
+    window.location.replace(
+      purpose === "STEP_UP" ? "/panel/yonetim" : data.redirect || "/panel",
+    );
   }
 
   const totpBlock = totpEnabled ? (
@@ -113,7 +147,9 @@ export function AdminMfaForm({
           }}
           className="w-full text-sm underline"
         >
-          {recovery ? "Uygulama kodu kullan" : "Cihazımı kaybettim — kurtarma kodu kullan"}
+          {recovery
+            ? "Uygulama kodu kullan"
+            : "Cihazımı kaybettim — kurtarma kodu kullan"}
         </button>
       ) : null}
     </>
@@ -129,7 +165,8 @@ export function AdminMfaForm({
         onSubmit={verifyCode}
       />
       <p className="text-xs leading-5 text-slate-500">
-        Kurulum sırasında kaydettiğiniz tek kullanımlık kurtarma kodlarından birini girin.
+        Kurulum sırasında kaydettiğiniz tek kullanımlık kurtarma kodlarından
+        birini girin.
       </p>
     </>
   ) : null;
@@ -141,7 +178,11 @@ export function AdminMfaForm({
       disabled={pending}
       className={`site-btn site-btn-primary site-btn-lg w-full min-h-12 ${isMobile && totpEnabled ? "site-btn-secondary" : ""}`}
     >
-      {pending ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : <KeyRound size={18} aria-hidden="true" />}
+      {pending ? (
+        <Loader2 className="animate-spin" size={18} aria-hidden="true" />
+      ) : (
+        <KeyRound size={18} aria-hidden="true" />
+      )}
       Face ID / parmak izi ile doğrula
     </button>
   ) : null;
@@ -152,9 +193,10 @@ export function AdminMfaForm({
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
           <p className="font-bold">Geçiş anahtarınız başka cihazda</p>
           <p className="mt-1">
-            Kayıtlı geçiş anahtarı bilgisayarınızda veya QR ile eşleştirilmiş başka bir aygıtta.
-            Telefondan QR okutarak giriş yapmak yerine{" "}
-            {totpEnabled ? "aşağıdaki uygulama kodunu" : "kurtarma kodunuzu"} kullanın.
+            Kayıtlı geçiş anahtarı bilgisayarınızda veya QR ile eşleştirilmiş
+            başka bir aygıtta. Telefondan QR okutarak giriş yapmak yerine{" "}
+            {totpEnabled ? "aşağıdaki uygulama kodunu" : "kurtarma kodunuzu"}{" "}
+            kullanın.
           </p>
         </div>
       ) : null}
@@ -162,14 +204,20 @@ export function AdminMfaForm({
       {isMobile && totpEnabled ? (
         <>
           {totpBlock}
-          {showPasskeyButton ? <p className="text-center text-xs text-slate-500">veya bu telefondaki geçiş anahtarı</p> : null}
+          {showPasskeyButton ? (
+            <p className="text-center text-xs text-slate-500">
+              veya bu telefondaki geçiş anahtarı
+            </p>
+          ) : null}
           {passkeyBlock}
         </>
       ) : (
         <>
           {passkeyBlock}
           {showPasskeyButton && totpEnabled ? (
-            <p className="text-center text-xs text-slate-500">veya doğrulama uygulaması kodu girin</p>
+            <p className="text-center text-xs text-slate-500">
+              veya doğrulama uygulaması kodu girin
+            </p>
           ) : null}
           {totpBlock}
         </>
@@ -177,12 +225,16 @@ export function AdminMfaForm({
 
       {!passkeyCount && !totpEnabled ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          Kayıtlı doğrulama yöntemi bulunamadı. Destek ekibinden MFA sıfırlama isteyin.
+          Kayıtlı doğrulama yöntemi bulunamadı. Destek ekibinden MFA sıfırlama
+          isteyin.
         </p>
       ) : null}
 
       {error ? (
-        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        <p
+          role="alert"
+          className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"
+        >
           {error}
         </p>
       ) : null}
@@ -208,14 +260,25 @@ function RecoveryCodesPanel({ recoveryCodes }: { recoveryCodes: string[] }) {
       <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
         <h2 className="font-bold">Kurtarma kodlarını şimdi kaydedin</h2>
         <p className="mt-1 text-sm">
-          Bu kodlar yalnızca bir kez gösterilir ve her biri bir kez kullanılabilir.
+          Bu kodlar yalnızca bir kez gösterilir ve her biri bir kez
+          kullanılabilir.
         </p>
-        <pre className="mt-4 grid gap-2 whitespace-pre-wrap font-mono text-sm">{recoveryCodes.join("\n")}</pre>
-        <button type="button" onClick={() => void copyAll()} className="site-btn site-btn-secondary mt-3 w-full">
+        <pre className="mt-4 grid gap-2 whitespace-pre-wrap font-mono text-sm">
+          {recoveryCodes.join("\n")}
+        </pre>
+        <button
+          type="button"
+          onClick={() => void copyAll()}
+          className="site-btn site-btn-secondary mt-3 w-full"
+        >
           {copied ? "Kopyalandı" : "Tüm kodları kopyala"}
         </button>
       </div>
-      <button type="button" onClick={() => window.location.replace("/panel")} className="site-btn site-btn-primary w-full min-h-12">
+      <button
+        type="button"
+        onClick={() => window.location.replace("/panel")}
+        className="site-btn site-btn-primary w-full min-h-12"
+      >
         Güvenli alana devam et
       </button>
     </div>
@@ -240,16 +303,25 @@ export function AdminMfaEnrollment() {
         body: JSON.stringify({ purpose: "ENROLL" }),
       });
       const optionData = await json(optionResponse);
-      if (!optionResponse.ok || !optionData.options || !optionData.challengeId) {
+      if (
+        !optionResponse.ok ||
+        !optionData.options ||
+        !optionData.challengeId
+      ) {
         throw new Error(optionData.error || "Kurulum başlatılamadı.");
       }
       const response = await startRegistration({
-        optionsJSON: optionData.options as PublicKeyCredentialCreationOptionsJSON,
+        optionsJSON:
+          optionData.options as PublicKeyCredentialCreationOptionsJSON,
       });
       const verifyResponse = await fetch("/api/auth/mfa/passkey/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ purpose: "ENROLL", challengeId: optionData.challengeId, response }),
+        body: JSON.stringify({
+          purpose: "ENROLL",
+          challengeId: optionData.challengeId,
+          response,
+        }),
       });
       const verified = await json(verifyResponse);
       if (!verifyResponse.ok || !verified.recoveryCodes) {
@@ -266,8 +338,14 @@ export function AdminMfaEnrollment() {
   async function beginTotp() {
     setPending(true);
     setError(null);
-    const response = await fetch("/api/auth/mfa/totp/enroll", { method: "PUT" });
-    const data = (await response.json()) as { secret?: string; otpauthUri?: string; error?: string };
+    const response = await fetch("/api/auth/mfa/totp/enroll", {
+      method: "PUT",
+    });
+    const data = (await response.json()) as {
+      secret?: string;
+      otpauthUri?: string;
+      error?: string;
+    };
     if (!response.ok || !data.secret || !data.otpauthUri) {
       setError(data.error || "TOTP kurulumu başlatılamadı.");
     } else {
@@ -296,15 +374,19 @@ export function AdminMfaEnrollment() {
     setPending(false);
   }
 
-  if (recoveryCodes) return <RecoveryCodesPanel recoveryCodes={recoveryCodes} />;
+  if (recoveryCodes)
+    return <RecoveryCodesPanel recoveryCodes={recoveryCodes} />;
 
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-        <p className="text-sm font-bold text-emerald-900">Mobilde önerilen yöntem</p>
+        <p className="text-sm font-bold text-emerald-900">
+          Mobilde önerilen yöntem
+        </p>
         <p className="mt-1 text-sm leading-6 text-emerald-950">
-          Bu telefonun Face ID, parmak izi veya ekran kilidi ile geçiş anahtarı kaydedin. QR kod
-          gerekmez; sonraki girişlerde tek dokunuş yeterli olur.
+          Bu telefonun Face ID, parmak izi veya ekran kilidi ile geçiş anahtarı
+          kaydedin. QR kod gerekmez; sonraki girişlerde tek dokunuş yeterli
+          olur.
         </p>
         <button
           type="button"
@@ -312,16 +394,23 @@ export function AdminMfaEnrollment() {
           disabled={pending}
           className="site-btn site-btn-primary site-btn-lg mt-4 w-full min-h-12"
         >
-          {pending ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : <KeyRound size={18} aria-hidden="true" />}
+          {pending ? (
+            <Loader2 className="animate-spin" size={18} aria-hidden="true" />
+          ) : (
+            <KeyRound size={18} aria-hidden="true" />
+          )}
           Bu cihazda geçiş anahtarı kaydet
         </button>
       </div>
 
       <div className="border-t pt-5">
-        <p className="mb-1 text-sm font-semibold text-slate-800">Yedek: doğrulama uygulaması (TOTP)</p>
+        <p className="mb-1 text-sm font-semibold text-slate-800">
+          Yedek: doğrulama uygulaması (TOTP)
+        </p>
         <p className="mb-3 text-sm leading-6 text-slate-600">
-          Geçiş anahtarı desteklenmiyorsa Google Authenticator gibi bir uygulama kullanın. Aynı
-          telefondan kuruyorsanız QR okutmayın — anahtarı manuel girin.
+          Geçiş anahtarı desteklenmiyorsa Google Authenticator gibi bir uygulama
+          kullanın. Aynı telefondan kuruyorsanız QR okutmayın — anahtarı manuel
+          girin.
         </p>
         {!secret || !otpauthUri ? (
           <button
@@ -330,7 +419,11 @@ export function AdminMfaEnrollment() {
             disabled={pending}
             className="site-btn site-btn-secondary w-full min-h-11"
           >
-            {pending ? <Loader2 className="animate-spin" size={16} aria-hidden="true" /> : <ShieldCheck size={16} aria-hidden="true" />}
+            {pending ? (
+              <Loader2 className="animate-spin" size={16} aria-hidden="true" />
+            ) : (
+              <ShieldCheck size={16} aria-hidden="true" />
+            )}
             Doğrulama uygulaması kur
           </button>
         ) : (
@@ -346,7 +439,10 @@ export function AdminMfaEnrollment() {
       </div>
 
       {error ? (
-        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+        <p
+          role="alert"
+          className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"
+        >
           {error}
         </p>
       ) : null}

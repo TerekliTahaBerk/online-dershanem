@@ -24,7 +24,9 @@ export function ProductsMenu({ isActive }: ProductsMenuProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
 
-  const anyProductActive = productsMenu.items.some((item) => isActive(item.href));
+  const anyProductActive = productsMenu.items.some((item) =>
+    isActive(item.href),
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -90,7 +92,10 @@ export function ProductsMenu({ isActive }: ProductsMenuProps) {
           */}
           <ul className="flex flex-col">
             {productsMenu.items.map((item) => (
-              <li key={item.href} className="rounded-[10px] px-3 py-2.5 hover:bg-[var(--dc-surface-muted)]">
+              <li
+                key={item.href}
+                className="rounded-[10px] px-3 py-2.5 hover:bg-[var(--dc-surface-muted)]"
+              >
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}

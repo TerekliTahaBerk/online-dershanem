@@ -20,7 +20,8 @@ export function AcademicBlock({
   showStrengthSupport?: boolean;
 }) {
   const hasTrend = academic.netTrend.length >= 2;
-  const hasSubjects = academic.subjectSeries.length > 0 && academic.labels.length >= 2;
+  const hasSubjects =
+    academic.subjectSeries.length > 0 && academic.labels.length >= 2;
 
   if (!hasTrend && !hasSubjects && academic.examCount === 0) {
     return (
@@ -37,7 +38,10 @@ export function AcademicBlock({
 
   return (
     <section className="mt-6" aria-labelledby="analiz-akademik-baslik">
-      <h2 id="analiz-akademik-baslik" className="text-[15px] font-extrabold text-dc-ink">
+      <h2
+        id="analiz-akademik-baslik"
+        className="text-[15px] font-extrabold text-dc-ink"
+      >
         Akademik gidişat
       </h2>
 

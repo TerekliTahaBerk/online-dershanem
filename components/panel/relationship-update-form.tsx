@@ -49,7 +49,9 @@ export function RelationshipUpdateForm({
       >
         {busy ? "Kaydediliyor" : "Kaydet"}
       </button>
-      {error ? <p className="w-full text-right text-[11px] text-[#C2493D]">{error}</p> : null}
+      {error ? (
+        <p className="w-full text-right text-[11px] text-[#C2493D]">{error}</p>
+      ) : null}
     </div>
   );
 }

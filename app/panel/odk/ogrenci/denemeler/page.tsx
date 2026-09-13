@@ -27,7 +27,8 @@ function getBucket(exam: ExamItem): ExamBucket {
 
 function examMeta(exam: ExamItem): string {
   const parts: string[] = [];
-  if (exam.startsAt) parts.push(`Açılış: ${dateFormatter.format(exam.startsAt)}`);
+  if (exam.startsAt)
+    parts.push(`Açılış: ${dateFormatter.format(exam.startsAt)}`);
   if (exam.endsAt) parts.push(`Kapanış: ${dateFormatter.format(exam.endsAt)}`);
   if (exam.currentVersion?.durationMinutes) {
     parts.push(`Süre: ${exam.currentVersion.durationMinutes} dakika`);
@@ -97,13 +98,7 @@ function statusInfo(exam: ExamItem): {
   };
 }
 
-function ExamSection({
-  title,
-  exams,
-}: {
-  title: string;
-  exams: ExamItem[];
-}) {
+function ExamSection({ title, exams }: { title: string; exams: ExamItem[] }) {
   if (!exams.length) return null;
   return (
     <section className="mt-8">
@@ -128,19 +123,27 @@ function ExamSection({
                 </span>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="break-words font-extrabold text-[var(--site-ink)]">{exam.title}</h3>
+                    <h3 className="break-words font-extrabold text-[var(--site-ink)]">
+                      {exam.title}
+                    </h3>
                     <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-600">
                       {exam.family}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-[var(--site-body)]">{examMeta(exam)}</p>
+                  <p className="mt-1 text-sm leading-6 text-[var(--site-body)]">
+                    {examMeta(exam)}
+                  </p>
                 </div>
               </div>
               <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-end">
-                <span className={`w-fit rounded-full px-3 py-1.5 text-xs font-extrabold ${info.tone}`}>
+                <span
+                  className={`w-fit rounded-full px-3 py-1.5 text-xs font-extrabold ${info.tone}`}
+                >
                   {info.label}
                 </span>
-                <span className="text-xs font-bold text-[var(--brand-olive)]">{info.actionLabel}</span>
+                <span className="text-xs font-bold text-[var(--brand-olive)]">
+                  {info.actionLabel}
+                </span>
               </div>
             </Link>
           );
@@ -154,12 +157,21 @@ export default async function OdkStudentExamsPage() {
   const session = await requireProductRole("ODK", "STUDENT");
   const exams = await listStudentExams(session.userId);
   const activeExams = exams.filter((exam) => getBucket(exam) === "ACTIVE");
-  const availableExams = exams.filter((exam) => getBucket(exam) === "AVAILABLE");
+  const availableExams = exams.filter(
+    (exam) => getBucket(exam) === "AVAILABLE",
+  );
   const upcomingExams = exams.filter((exam) => getBucket(exam) === "UPCOMING");
-  const resultExams = exams.filter((exam) => ["RESULT", "CLOSED"].includes(getBucket(exam)));
+  const resultExams = exams.filter((exam) =>
+    ["RESULT", "CLOSED"].includes(getBucket(exam)),
+  );
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      product="ODK"
+    >
       <header>
         <p className="text-xs font-extrabold uppercase tracking-[.1em] text-[var(--brand-olive)]">
           Online Deneme Kulübüm
@@ -168,8 +180,8 @@ export default async function OdkStudentExamsPage() {
           Denemeler
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--site-body)]">
-          Devam eden denemeni, başlayabileceğin denemeleri, yaklaşan sınavlarını ve açıklanan
-          sonuçlarını buradan yönetebilirsin.
+          Devam eden denemeni, başlayabileceğin denemeleri, yaklaşan sınavlarını
+          ve açıklanan sonuçlarını buradan yönetebilirsin.
         </p>
       </header>
 
@@ -180,7 +192,10 @@ export default async function OdkStudentExamsPage() {
       ) : (
         <>
           <ExamSection title="Devam eden" exams={activeExams} />
-          <ExamSection title="Başlayabileceğin denemeler" exams={availableExams} />
+          <ExamSection
+            title="Başlayabileceğin denemeler"
+            exams={availableExams}
+          />
           <ExamSection title="Yaklaşan denemeler" exams={upcomingExams} />
           <ExamSection title="Sonuçlar" exams={resultExams} />
         </>

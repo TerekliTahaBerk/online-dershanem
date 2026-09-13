@@ -24,7 +24,9 @@ export const dynamic = "force-dynamic";
 export default async function StudentTasksPage() {
   const session = await requireRole("STUDENT");
   const evidenceEnabled = getPanelFeatureFlags().assignmentEvidence;
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+  const profile = await prisma.studentProfile.findUnique({
+    where: { userId: session.userId },
+  });
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -62,9 +64,19 @@ export default async function StudentTasksPage() {
           orderBy: { dueAt: "asc" },
           include: {
             progress: { where: { studentId: profile.id }, take: 1 },
-            group: { select: { name: true, subject: true, teacher: { select: { fullName: true } } } },
+            group: {
+              select: {
+                name: true,
+                subject: true,
+                teacher: { select: { fullName: true } },
+              },
+            },
             rubricCriteria: { orderBy: { position: "asc" } },
-            submissions: { where: { studentId: profile.id }, orderBy: { attemptNumber: "desc" }, include: { scores: true } },
+            submissions: {
+              where: { studentId: profile.id },
+              orderBy: { attemptNumber: "desc" },
+              include: { scores: true },
+            },
           },
         })
       : Promise.resolve([]),
@@ -101,14 +113,20 @@ export default async function StudentTasksPage() {
                 status: item.progress[0]?.status || "TODO",
                 version: item.progress[0]?.version || 0,
                 evidenceRequired: item.evidenceRequired,
-                criteria: item.rubricCriteria.map((criterion) => ({ id: criterion.id, label: criterion.label })),
+                criteria: item.rubricCriteria.map((criterion) => ({
+                  id: criterion.id,
+                  label: criterion.label,
+                })),
                 submissions: item.submissions.map((submission) => ({
                   id: submission.id,
                   attemptNumber: submission.attemptNumber,
                   status: submission.status,
                   textEvidence: submission.textEvidence,
                   feedback: submission.feedback,
-                  scores: submission.scores.map((score) => ({ criterionId: score.criterionId, level: score.level })),
+                  scores: submission.scores.map((score) => ({
+                    criterionId: score.criterionId,
+                    level: score.level,
+                  })),
                 })),
               }))}
             />

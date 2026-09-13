@@ -9,7 +9,10 @@ import { TeacherPlanReview } from "@/components/panel/teacher-plan-review";
 import { CoachWeekCalendar } from "@/components/panel/kocum/coach-week-calendar";
 import { CoachDeskPanel } from "@/components/panel/kocum/coach-desk-panel";
 import { SuggestionReviewButtons } from "@/components/panel/kocum/suggestion-review-buttons";
-import { addIstanbulCalendarDays, formatIstanbulDateInput } from "@/lib/istanbul-time";
+import {
+  addIstanbulCalendarDays,
+  formatIstanbulDateInput,
+} from "@/lib/istanbul-time";
 import { buildWeeklyKocumMetrics } from "@/lib/kocum";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +36,10 @@ export default async function TeacherPlanPage() {
         {
           student: {
             enrollments: {
-              some: { endedAt: null, group: { isActive: true, teacherId: session.userId } },
+              some: {
+                endedAt: null,
+                group: { isActive: true, teacherId: session.userId },
+              },
             },
           },
         },
@@ -87,12 +93,18 @@ export default async function TeacherPlanPage() {
       title: true,
       rationale: true,
       kind: true,
-      student: { select: { user: { select: { fullName: true, email: true } } } },
+      student: {
+        select: { user: { select: { fullName: true, email: true } } },
+      },
     },
   });
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+    >
       <header>
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
           <ListChecks size={15} /> Online Koçum planı
@@ -101,8 +113,9 @@ export default async function TeacherPlanPage() {
           Haftayı görün, düzenleyin, kilitleyin.
         </h1>
         <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
-          Sistem önerir; kritik değişiklikler sizin onayınız olmadan öğrenciye gitmez. Görevleri
-          sürükleyebilir veya Tarihi Değiştir ile taşıyabilirsiniz.
+          Sistem önerir; kritik değişiklikler sizin onayınız olmadan öğrenciye
+          gitmez. Görevleri sürükleyebilir veya Tarihi Değiştir ile
+          taşıyabilirsiniz.
         </p>
       </header>
 
@@ -110,18 +123,25 @@ export default async function TeacherPlanPage() {
         <section className="mt-6 panel-surface p-5">
           <h2 className="text-sm font-extrabold">Bekleyen öneriler</h2>
           <p className="mt-1 text-xs text-[var(--site-muted)]">
-            Tekrar kuyruğu, deneme sonrası ve adaptif öneriler — otomatik yayınlanmaz.
+            Tekrar kuyruğu, deneme sonrası ve adaptif öneriler — otomatik
+            yayınlanmaz.
           </p>
           <ul className="mt-3 space-y-2">
             {suggestions.map((item) => (
-              <li key={item.id} className="rounded-xl border border-[var(--site-line)] p-3 text-sm">
+              <li
+                key={item.id}
+                className="rounded-xl border border-[var(--site-line)] p-3 text-sm"
+              >
                 <p className="font-bold">
-                  {item.student.user.fullName || item.student.user.email} · {item.title}
+                  {item.student.user.fullName || item.student.user.email} ·{" "}
+                  {item.title}
                 </p>
                 <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-[var(--site-muted)]">
                   {item.kind}
                 </p>
-                <p className="mt-1 text-xs text-[var(--site-muted)]">{item.rationale}</p>
+                <p className="mt-1 text-xs text-[var(--site-muted)]">
+                  {item.rationale}
+                </p>
                 <SuggestionReviewButtons suggestionId={item.id} />
               </li>
             ))}
@@ -146,7 +166,8 @@ export default async function TeacherPlanPage() {
             todayKey,
             formatIstanbulDateInput,
           );
-          const studentName = plan.student.user.fullName || plan.student.user.email;
+          const studentName =
+            plan.student.user.fullName || plan.student.user.email;
           return (
             <div key={plan.id} className="space-y-4">
               <CoachWeekCalendar
@@ -184,7 +205,8 @@ export default async function TeacherPlanPage() {
           <ListChecks className="mx-auto text-[var(--site-muted)]" />
           <h2 className="mt-3 font-extrabold">Bu hafta için plan yok.</h2>
           <p className="mt-1 text-sm text-[var(--site-muted)]">
-            Öğrenci plan oluşturduğunda veya siz şablon uyguladığınızda burada görünür.
+            Öğrenci plan oluşturduğunda veya siz şablon uyguladığınızda burada
+            görünür.
           </p>
         </div>
       ) : null}

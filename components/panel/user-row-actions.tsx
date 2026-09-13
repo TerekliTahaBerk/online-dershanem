@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, KeyRound, Loader2, Pause, Play, RotateCcw, Trash2 } from "lucide-react";
+import {
+  Archive,
+  KeyRound,
+  Loader2,
+  Pause,
+  Play,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import type { UserStatus } from "@prisma/client";
 import { InviteLinkReveal } from "@/components/panel/temp-password-reveal";
 
@@ -30,20 +38,35 @@ export function UserRowActions({
   isSelf: boolean;
 }) {
   const router = useRouter();
-  const [pending, setPending] = useState<"invite" | "status" | "delete" | null>(null);
+  const [pending, setPending] = useState<"invite" | "status" | "delete" | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
-  const [invite, setInvite] = useState<{ url: string; message: string; expiresAt: string } | null>(null);
+  const [invite, setInvite] = useState<{
+    url: string;
+    message: string;
+    expiresAt: string;
+  } | null>(null);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [deletePreview, setDeletePreview] = useState<DeletePreview | null>(null);
+  const [deletePreview, setDeletePreview] = useState<DeletePreview | null>(
+    null,
+  );
   const [loadingDeletePreview, setLoadingDeletePreview] = useState(false);
 
   async function refreshInvite() {
-    if (!confirm(`${email} için davet bağlantısı yenilenecek ve açık oturumlar kapanacak. Devam edilsin mi?`)) return;
+    if (
+      !confirm(
+        `${email} için davet bağlantısı yenilenecek ve açık oturumlar kapanacak. Devam edilsin mi?`,
+      )
+    )
+      return;
     setError(null);
     setPending("invite");
     try {
-      const r = await fetch(`/api/panel/users/${userId}/reset-password`, { method: "POST" });
+      const r = await fetch(`/api/panel/users/${userId}/reset-password`, {
+        method: "POST",
+      });
       const d = (await r.json()) as {
         invite?: { url: string; message: string; expiresAt: string };
         error?: string;
@@ -61,8 +84,20 @@ export function UserRowActions({
   }
 
   async function setStatus(next: UserStatus) {
-    if (next === "SUSPENDED" && !confirm(`${email} askıya alınacak ve anında çıkış yapacak. Devam edilsin mi?`)) return;
-    if (next === "ARCHIVED" && !confirm(`${email} arşivlenecek ve panele erişimi kapanacak. Devam edilsin mi?`)) return;
+    if (
+      next === "SUSPENDED" &&
+      !confirm(
+        `${email} askıya alınacak ve anında çıkış yapacak. Devam edilsin mi?`,
+      )
+    )
+      return;
+    if (
+      next === "ARCHIVED" &&
+      !confirm(
+        `${email} arşivlenecek ve panele erişimi kapanacak. Devam edilsin mi?`,
+      )
+    )
+      return;
     setError(null);
     setPending("status");
     try {
@@ -73,7 +108,10 @@ export function UserRowActions({
       });
       const d = (await r.json()) as { error?: string };
       if (!r.ok) setError(d.error ?? "Durum değiştirilemedi.");
-      else { setCurrentStatus(next); router.refresh(); }
+      else {
+        setCurrentStatus(next);
+        router.refresh();
+      }
     } catch {
       setError("Bağlantı kurulamadı.");
     }
@@ -103,7 +141,10 @@ export function UserRowActions({
     setLoadingDeletePreview(true);
     try {
       const r = await fetch(`/api/panel/users/${userId}`);
-      const d = (await r.json().catch(() => null)) as DeletePreview | { error?: string } | null;
+      const d = (await r.json().catch(() => null)) as
+        | DeletePreview
+        | { error?: string }
+        | null;
       if (!r.ok || !d || !("canDelete" in d)) {
         setError((d && "error" in d && d.error) || "Silme etkisi okunamadı.");
         setDeletePreview(null);
@@ -144,102 +185,131 @@ export function UserRowActions({
     <>
       <div className="flex flex-col items-start gap-1.5 sm:items-end">
         <div className="flex flex-wrap gap-1.5">
-        <button type="button" onClick={refreshInvite} disabled={pending !== null} className={btn}>
-          {pending === "invite" ? (
-            <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-          ) : (
-            <KeyRound size={12} aria-hidden="true" />
+          <button
+            type="button"
+            onClick={refreshInvite}
+            disabled={pending !== null}
+            className={btn}
+          >
+            {pending === "invite" ? (
+              <Loader2
+                size={12}
+                className="animate-spin motion-reduce:animate-none"
+                aria-hidden="true"
+              />
+            ) : (
+              <KeyRound size={12} aria-hidden="true" />
+            )}
+            {inviteButtonText}
+          </button>
+
+          {/* Kendini askıya alma butonu hiç gösterilmez — sunucu da reddeder. */}
+          {isSelf ? null : (
+            <>
+              {canSuspend ? (
+                <button
+                  type="button"
+                  onClick={() => void setStatus("SUSPENDED")}
+                  disabled={pending !== null}
+                  className={btn}
+                >
+                  {pending === "status" ? (
+                    <Loader2
+                      size={12}
+                      className="animate-spin motion-reduce:animate-none"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Pause size={12} aria-hidden="true" />
+                  )}
+                  Askıya al
+                </button>
+              ) : null}
+
+              {canActivate ? (
+                <button
+                  type="button"
+                  onClick={() => void setStatus("ACTIVE")}
+                  disabled={pending !== null}
+                  className={btn}
+                >
+                  {pending === "status" ? (
+                    <Loader2
+                      size={12}
+                      className="animate-spin motion-reduce:animate-none"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Play size={12} aria-hidden="true" />
+                  )}
+                  Aktifleştir
+                </button>
+              ) : null}
+
+              {currentStatus === "ARCHIVED" ? (
+                <button
+                  type="button"
+                  onClick={() => void setStatus("ACTIVE")}
+                  disabled={pending !== null}
+                  className={btn}
+                >
+                  {pending === "status" ? (
+                    <Loader2
+                      size={12}
+                      className="animate-spin motion-reduce:animate-none"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <RotateCcw size={12} aria-hidden="true" />
+                  )}
+                  Arşivden çıkar
+                </button>
+              ) : null}
+
+              {canArchive ? (
+                <button
+                  type="button"
+                  onClick={() => void setStatus("ARCHIVED")}
+                  disabled={pending !== null}
+                  className={btn}
+                >
+                  {pending === "status" ? (
+                    <Loader2
+                      size={12}
+                      className="animate-spin motion-reduce:animate-none"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <Archive size={12} aria-hidden="true" />
+                  )}
+                  Arşivle
+                </button>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setDeletePreview(null);
+                  setDeleteConfirmOpen(true);
+                  void loadDeletePreview();
+                }}
+                disabled={pending !== null}
+                className={`${btn} border-rose-200 text-rose-700 hover:border-rose-300 hover:text-rose-800`}
+              >
+                {pending === "delete" ? (
+                  <Loader2
+                    size={12}
+                    className="animate-spin motion-reduce:animate-none"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Trash2 size={12} aria-hidden="true" />
+                )}
+                Hesabı sil
+              </button>
+            </>
           )}
-          {inviteButtonText}
-        </button>
-
-        {/* Kendini askıya alma butonu hiç gösterilmez — sunucu da reddeder. */}
-        {isSelf ? null : (
-          <>
-            {canSuspend ? (
-              <button
-                type="button"
-                onClick={() => void setStatus("SUSPENDED")}
-                disabled={pending !== null}
-                className={btn}
-              >
-                {pending === "status" ? (
-                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                ) : (
-                  <Pause size={12} aria-hidden="true" />
-                )}
-                Askıya al
-              </button>
-            ) : null}
-
-            {canActivate ? (
-              <button
-                type="button"
-                onClick={() => void setStatus("ACTIVE")}
-                disabled={pending !== null}
-                className={btn}
-              >
-                {pending === "status" ? (
-                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                ) : (
-                  <Play size={12} aria-hidden="true" />
-                )}
-                Aktifleştir
-              </button>
-            ) : null}
-
-            {currentStatus === "ARCHIVED" ? (
-              <button
-                type="button"
-                onClick={() => void setStatus("ACTIVE")}
-                disabled={pending !== null}
-                className={btn}
-              >
-                {pending === "status" ? (
-                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                ) : (
-                  <RotateCcw size={12} aria-hidden="true" />
-                )}
-                Arşivden çıkar
-              </button>
-            ) : null}
-
-            {canArchive ? (
-              <button
-                type="button"
-                onClick={() => void setStatus("ARCHIVED")}
-                disabled={pending !== null}
-                className={btn}
-              >
-                {pending === "status" ? (
-                  <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                ) : (
-                  <Archive size={12} aria-hidden="true" />
-                )}
-                Arşivle
-              </button>
-            ) : null}
-
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setDeletePreview(null);
-                setDeleteConfirmOpen(true);
-                void loadDeletePreview();
-              }}
-              disabled={pending !== null}
-              className={`${btn} border-rose-200 text-rose-700 hover:border-rose-300 hover:text-rose-800`}
-            >
-              {pending === "delete" ? (
-                <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
-              ) : (
-                <Trash2 size={12} aria-hidden="true" />
-              )}
-              Hesabı sil
-            </button>
-          </>
-        )}
         </div>
 
         {error ? (
@@ -254,7 +324,8 @@ export function UserRowActions({
           className="fixed inset-0 z-[280] flex items-center justify-center bg-[#10150d]/35 px-4 backdrop-blur-[2px]"
           role="presentation"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget && pending !== "delete") setDeleteConfirmOpen(false);
+            if (event.target === event.currentTarget && pending !== "delete")
+              setDeleteConfirmOpen(false);
           }}
         >
           <div
@@ -263,13 +334,18 @@ export function UserRowActions({
             aria-label="Hesap silme onayı"
             className="w-full max-w-[460px] rounded-[14px] border border-white/60 bg-white p-5 shadow-[0_30px_90px_-30px_rgba(20,20,15,.55)]"
           >
-            <h3 className="text-[15px] font-bold text-[var(--site-ink)]">Hesabı kalıcı olarak sil</h3>
+            <h3 className="text-[15px] font-bold text-[var(--site-ink)]">
+              Hesabı kalıcı olarak sil
+            </h3>
             <p className="mt-2 text-[13px] leading-6 text-[var(--site-body)]">
-              <span className="font-semibold">{fullName || email}</span> hesabı geri alınamaz şekilde silinecek.
-              Bağlı kritik kayıtlar varsa işlem reddedilir.
+              <span className="font-semibold">{fullName || email}</span> hesabı
+              geri alınamaz şekilde silinecek. Bağlı kritik kayıtlar varsa işlem
+              reddedilir.
             </p>
             {loadingDeletePreview ? (
-              <p className="mt-3 text-[12.5px] text-[var(--site-muted)]">Silme etkisi hesaplanıyor…</p>
+              <p className="mt-3 text-[12.5px] text-[var(--site-muted)]">
+                Silme etkisi hesaplanıyor…
+              </p>
             ) : deletePreview ? (
               deletePreview.canDelete ? (
                 <p className="mt-3 text-[12.5px] font-semibold text-emerald-700">
@@ -278,7 +354,8 @@ export function UserRowActions({
               ) : (
                 <div className="mt-3 rounded-[10px] border border-amber-200 bg-amber-50 p-3">
                   <p className="text-[12.5px] font-semibold text-amber-800">
-                    Bu hesap silinemez; önce arşivleyin veya güvenli aksiyon askıya alma.
+                    Bu hesap silinemez; önce arşivleyin veya güvenli aksiyon
+                    askıya alma.
                   </p>
                   <ul className="mt-1.5 space-y-1 text-[12.5px] text-amber-900">
                     {deletePreview.blockers.map((blocker) => (
@@ -304,12 +381,18 @@ export function UserRowActions({
                 type="button"
                 onClick={() => void deleteAccount()}
                 disabled={
-                  pending === "delete" || loadingDeletePreview || (deletePreview !== null && !deletePreview.canDelete)
+                  pending === "delete" ||
+                  loadingDeletePreview ||
+                  (deletePreview !== null && !deletePreview.canDelete)
                 }
                 className="inline-flex items-center gap-1.5 rounded-[10px] bg-rose-600 px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
               >
                 {pending === "delete" ? (
-                  <Loader2 size={13} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                  <Loader2
+                    size={13}
+                    className="animate-spin motion-reduce:animate-none"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <Trash2 size={13} aria-hidden="true" />
                 )}

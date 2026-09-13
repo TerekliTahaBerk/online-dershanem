@@ -73,14 +73,19 @@ export default function OnlineDershanemPage() {
                   body: "Ders sonrası özet; katılım ve konu ilerlemesi kayıtlı.",
                 },
               ].map((c) => (
-                <div key={c.title} className="rounded-[18px] border border-dc-line p-6">
+                <div
+                  key={c.title}
+                  className="rounded-[18px] border border-dc-line p-6"
+                >
                   <span
                     aria-hidden="true"
                     className="grid h-[42px] w-[42px] place-items-center rounded-xl bg-dc-brand-soft text-[17px]"
                   >
                     {c.glyph}
                   </span>
-                  <h3 className="mt-4 text-[19px] font-bold text-dc-ink">{c.title}</h3>
+                  <h3 className="mt-4 text-[19px] font-bold text-dc-ink">
+                    {c.title}
+                  </h3>
                   <p className="mt-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">
                     {c.body}
                   </p>
@@ -90,16 +95,21 @@ export default function OnlineDershanemPage() {
 
             <div className="mt-5 grid gap-5 lg:grid-cols-2">
               <div className="rounded-[18px] border border-dc-line p-5">
-                <h3 className="text-[17px] font-bold text-dc-ink">Öğrenci ne görüyor?</h3>
+                <h3 className="text-[17px] font-bold text-dc-ink">
+                  Öğrenci ne görüyor?
+                </h3>
                 <p className="mt-1.5 text-[14.5px] leading-[1.6] text-dc-ink-muted">
-                  Sıradaki dersi, o hafta ne çalışacağını ve açık ödevlerini tek ekranda.
+                  Sıradaki dersi, o hafta ne çalışacağını ve açık ödevlerini tek
+                  ekranda.
                 </p>
                 <div className="mt-4">
                   <StudentScheduleVisual />
                 </div>
               </div>
               <div className="rounded-[18px] border border-dc-line p-5">
-                <h3 className="text-[17px] font-bold text-dc-ink">Veli ne görüyor?</h3>
+                <h3 className="text-[17px] font-bold text-dc-ink">
+                  Veli ne görüyor?
+                </h3>
                 <p className="mt-1.5 text-[14.5px] leading-[1.6] text-dc-ink-muted">
                   Derse katılım ve konu ilerlemesi. Not değil, süreç.
                 </p>
@@ -143,11 +153,17 @@ export default function OnlineDershanemPage() {
                   label: "Birebir özel ders · aylık paket",
                   price: formatCents(oneToOne.campaignCents),
                   listPrice:
-                    oneToOne.listCents === null ? null : formatCents(oneToOne.listCents),
+                    oneToOne.listCents === null
+                      ? null
+                      : formatCents(oneToOne.listCents),
                   suffix: "/ ay",
                 }
           }
-          features={["Canlı dersler", "Ders takibi ve veli özeti", "Dino AI ders analizi"]}
+          features={[
+            "Canlı dersler",
+            "Ders takibi ve veli özeti",
+            "Dino AI ders analizi",
+          ]}
           priceFootnote="Koçluk da eklediğinde toplamda daha avantajlı."
         />
 
@@ -171,7 +187,10 @@ export default function OnlineDershanemPage() {
         <ProductClosingCta
           title="Canlı derse başla."
           body="İstersen yalnız ders, istersen koçluk ve denemeyle birlikte."
-          secondaryCta={{ href: "/ders-paketleri", label: "Ders Paketlerini Gör" }}
+          secondaryCta={{
+            href: "/ders-paketleri",
+            label: "Ders Paketlerini Gör",
+          }}
         />
       </main>
       <SiteFooter />

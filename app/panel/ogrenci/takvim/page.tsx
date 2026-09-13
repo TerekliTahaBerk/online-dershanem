@@ -24,8 +24,14 @@ export const dynamic = "force-dynamic";
  * OD ürün kapsamındadır → `requireRole` (OD erişimi şart).
  */
 
-const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
-const TIME = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
+const DATE = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+});
+const TIME = new Intl.DateTimeFormat("tr-TR", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 type Filter = "yaklasan" | "tamamlanan";
 
@@ -35,9 +41,12 @@ export default async function StudentLessonsPage({
   searchParams: Promise<{ durum?: string }>;
 }) {
   const session = await requireRole("STUDENT");
-  const filter: Filter = (await searchParams).durum === "tamamlanan" ? "tamamlanan" : "yaklasan";
+  const filter: Filter =
+    (await searchParams).durum === "tamamlanan" ? "tamamlanan" : "yaklasan";
 
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+  const profile = await prisma.studentProfile.findUnique({
+    where: { userId: session.userId },
+  });
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -82,12 +91,17 @@ export default async function StudentLessonsPage({
         include: {
           group: { select: { name: true } },
           teacher: { select: { fullName: true } },
-          attendances: { where: { studentId: profile.id }, select: { status: true } },
+          attendances: {
+            where: { studentId: profile.id },
+            select: { status: true },
+          },
         },
       })
     : [];
 
-  const groupNames = [...new Set(enrollments.map((e) => e.group.name))].join(" · ");
+  const groupNames = [...new Set(enrollments.map((e) => e.group.name))].join(
+    " · ",
+  );
 
   return shell(
     <>
@@ -96,7 +110,10 @@ export default async function StudentLessonsPage({
         description={groupNames || undefined}
         actions={
           <>
-            <PanelFilterLink href="/panel/ogrenci/takvim" active={filter === "yaklasan"}>
+            <PanelFilterLink
+              href="/panel/ogrenci/takvim"
+              active={filter === "yaklasan"}
+            >
               Yaklaşan
             </PanelFilterLink>
             <PanelFilterLink
@@ -111,7 +128,11 @@ export default async function StudentLessonsPage({
 
       {lessons.length === 0 ? (
         <PanelEmpty
-          title={filter === "yaklasan" ? "Yaklaşan ders yok." : "Tamamlanmış ders yok."}
+          title={
+            filter === "yaklasan"
+              ? "Yaklaşan ders yok."
+              : "Tamamlanmış ders yok."
+          }
           body={
             filter === "yaklasan"
               ? "Yeni dersin planlandığında burada görünecek."
@@ -127,7 +148,8 @@ export default async function StudentLessonsPage({
             const attendance = lesson.attendances[0]?.status;
             const missed = attendance === "ABSENT";
             const isToday =
-              formatIstanbulDateInput(lesson.startsAt) === formatIstanbulDateInput(now);
+              formatIstanbulDateInput(lesson.startsAt) ===
+              formatIstanbulDateInput(now);
             const completed = lesson.status === "COMPLETED";
 
             const statusLabel = missed
@@ -147,7 +169,9 @@ export default async function StudentLessonsPage({
                 : isToday
                   ? "Derse katıl"
                   : "Detay";
-            const actionHref = missed ? `/panel/ogrenci/telafi?lessonId=${lesson.id}` : `/panel/ogrenci/takvim/${lesson.id}`;
+            const actionHref = missed
+              ? `/panel/ogrenci/telafi?lessonId=${lesson.id}`
+              : `/panel/ogrenci/takvim/${lesson.id}`;
 
             return (
               <PanelTableRow key={lesson.id}>
@@ -163,8 +187,14 @@ export default async function StudentLessonsPage({
                   {lesson.title}
                   {lesson.group.name ? ` · ${lesson.group.name}` : ""}
                 </PanelTableCell>
-                <PanelTableCell>{lesson.teacher.fullName || "—"}</PanelTableCell>
-                <PanelTableCell tone={missed ? "warn" : isToday && !completed ? "ok" : "default"}>
+                <PanelTableCell>
+                  {lesson.teacher.fullName || "—"}
+                </PanelTableCell>
+                <PanelTableCell
+                  tone={
+                    missed ? "warn" : isToday && !completed ? "ok" : "default"
+                  }
+                >
                   {statusLabel}
                 </PanelTableCell>
                 <PanelTableCell>

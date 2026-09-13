@@ -33,7 +33,10 @@ export const dynamic = "force-dynamic";
  * tekil indeks bir öğrenciye iki aktif koç bağlanmasını zaten reddeder.
  */
 
-const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
+const DATE = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+});
 
 export default async function AdminCoachingPage() {
   const session = await requireRole("ADMIN");
@@ -41,13 +44,26 @@ export default async function AdminCoachingPage() {
   const thisWeekStart = planningWeekStart();
   const thisWeekEnd = addIstanbulCalendarDays(thisWeekStart, 7);
 
-  const [assignments, coaches, unassigned, recentSessions, studentsWithoutPlan, studentsWithoutGoals, kocumSignals] = await Promise.all([
+  const [
+    assignments,
+    coaches,
+    unassigned,
+    recentSessions,
+    studentsWithoutPlan,
+    studentsWithoutGoals,
+    kocumSignals,
+  ] = await Promise.all([
     prisma.coachAssignment.findMany({
       where: { endedAt: null },
       select: {
         id: true,
         cadenceDays: true,
-        student: { select: { id: true, user: { select: { fullName: true, email: true } } } },
+        student: {
+          select: {
+            id: true,
+            user: { select: { fullName: true, email: true } },
+          },
+        },
         coach: {
           select: {
             id: true,
@@ -99,8 +115,15 @@ export default async function AdminCoachingPage() {
         focus: true,
         assignment: {
           select: {
-            student: { select: { id: true, user: { select: { fullName: true, email: true } } } },
-            coach: { select: { user: { select: { fullName: true, email: true } } } },
+            student: {
+              select: {
+                id: true,
+                user: { select: { fullName: true, email: true } },
+              },
+            },
+            coach: {
+              select: { user: { select: { fullName: true, email: true } } },
+            },
           },
         },
       },
@@ -121,8 +144,15 @@ export default async function AdminCoachingPage() {
       take: 12,
       select: {
         id: true,
-        student: { select: { id: true, user: { select: { fullName: true, email: true } } } },
-        coach: { select: { user: { select: { fullName: true, email: true } } } },
+        student: {
+          select: {
+            id: true,
+            user: { select: { fullName: true, email: true } },
+          },
+        },
+        coach: {
+          select: { user: { select: { fullName: true, email: true } } },
+        },
       },
     }),
     prisma.coachAssignment.findMany({
@@ -134,8 +164,15 @@ export default async function AdminCoachingPage() {
       take: 12,
       select: {
         id: true,
-        student: { select: { id: true, user: { select: { fullName: true, email: true } } } },
-        coach: { select: { user: { select: { fullName: true, email: true } } } },
+        student: {
+          select: {
+            id: true,
+            user: { select: { fullName: true, email: true } },
+          },
+        },
+        coach: {
+          select: { user: { select: { fullName: true, email: true } } },
+        },
       },
     }),
     getManagementKocumSignals(),
@@ -143,13 +180,18 @@ export default async function AdminCoachingPage() {
 
   const rows = assignments.map((a) => {
     const lastCompleted =
-      a.sessions.filter((s) => s.status === "COMPLETED")[0]?.completedAt ?? null;
+      a.sessions.filter((s) => s.status === "COMPLETED")[0]?.completedAt ??
+      null;
     const next =
       a.sessions
         .filter((s) => s.status === "PLANNED")
-        .sort((x, y) => x.scheduledAt.getTime() - y.scheduledAt.getTime())[0]?.scheduledAt ??
-      null;
-    const { overdue, overdueDays } = coachingOverdue(lastCompleted, next, a.cadenceDays);
+        .sort((x, y) => x.scheduledAt.getTime() - y.scheduledAt.getTime())[0]
+        ?.scheduledAt ?? null;
+    const { overdue, overdueDays } = coachingOverdue(
+      lastCompleted,
+      next,
+      a.cadenceDays,
+    );
     return {
       id: a.id,
       studentId: a.student.id,
@@ -163,7 +205,8 @@ export default async function AdminCoachingPage() {
   });
 
   const overCapacity = coaches.filter(
-    (c) => c.coachCapacity !== null && c._count.coachAssignments > c.coachCapacity,
+    (c) =>
+      c.coachCapacity !== null && c._count.coachAssignments > c.coachCapacity,
   );
   const overdueRows = rows.filter((r) => r.overdue);
   const coachOptions = coaches.map((c) => ({
@@ -188,7 +231,10 @@ export default async function AdminCoachingPage() {
       studentName: r.studentName,
       coachName: r.coachName,
       when: r.next ?? r.lastCompleted,
-      issue: r.overdueDays !== null ? `Görüşme ${r.overdueDays} gün gecikti` : "Görüşme gecikti",
+      issue:
+        r.overdueDays !== null
+          ? `Görüşme ${r.overdueDays} gün gecikti`
+          : "Görüşme gecikti",
       tone: "warn" as const,
     })),
   ];
@@ -207,27 +253,48 @@ export default async function AdminCoachingPage() {
         />
 
         <div className="mt-[22px] grid gap-5 sm:grid-cols-3">
-          <PanelStatCard title="Koç atanmayan öğrenci" value={String(unassigned.length)} />
-          <PanelStatCard title="Görüşmesi geciken" value={String(overdueRows.length)} />
-          <PanelStatCard title="Kapasitesi aşan koç" value={String(overCapacity.length)} />
+          <PanelStatCard
+            title="Koç atanmayan öğrenci"
+            value={String(unassigned.length)}
+          />
+          <PanelStatCard
+            title="Görüşmesi geciken"
+            value={String(overdueRows.length)}
+          />
+          <PanelStatCard
+            title="Kapasitesi aşan koç"
+            value={String(overCapacity.length)}
+          />
         </div>
 
         {kocumSignals.length ? (
           <PanelCard className="mt-5">
             <PanelCardTitle>Online Koçum operasyon sinyalleri</PanelCardTitle>
             <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-              Mikro görev listesi değil — plansız, koçsuz, yayınlanmamış veya düşük uyumlu öğrenciler.
+              Mikro görev listesi değil — plansız, koçsuz, yayınlanmamış veya
+              düşük uyumlu öğrenciler.
             </p>
             <ul className="mt-3 space-y-2">
               {kocumSignals.slice(0, 20).map((signal) => (
-                <li key={`${signal.code}-${signal.studentId}`} className="flex flex-wrap items-baseline justify-between gap-2 text-[13.5px]">
+                <li
+                  key={`${signal.code}-${signal.studentId}`}
+                  className="flex flex-wrap items-baseline justify-between gap-2 text-[13.5px]"
+                >
                   <span>
-                    <Link className="font-semibold text-dc-ink underline-offset-2 hover:underline" href={`/panel/yonetim/ogrenciler/${signal.studentId}?tab=kocluk`}>
+                    <Link
+                      className="font-semibold text-dc-ink underline-offset-2 hover:underline"
+                      href={`/panel/yonetim/ogrenciler/${signal.studentId}?tab=kocluk`}
+                    >
                       {signal.studentName}
                     </Link>
-                    <span className="text-dc-ink-muted"> · {signal.detail}</span>
+                    <span className="text-dc-ink-muted">
+                      {" "}
+                      · {signal.detail}
+                    </span>
                   </span>
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-dc-ink-faint">{signal.code}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-dc-ink-faint">
+                    {signal.code}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -238,7 +305,9 @@ export default async function AdminCoachingPage() {
           <PanelCard className="mt-5">
             <PanelCardTitle>Uyarlanabilir plan şu anda kapalı</PanelCardTitle>
             <p className="mt-2 text-[13.5px] leading-[1.7] text-dc-ink-muted">
-              Koç atama, görüşme takibi ve hedef operasyonu aktif kalır. Haftalık plan üretme/onaylama ekranları pilot yeniden açıldığında otomatik genişler.
+              Koç atama, görüşme takibi ve hedef operasyonu aktif kalır.
+              Haftalık plan üretme/onaylama ekranları pilot yeniden açıldığında
+              otomatik genişler.
             </p>
           </PanelCard>
         ) : null}
@@ -255,24 +324,43 @@ export default async function AdminCoachingPage() {
           ) : (
             <PanelTable
               caption="Koçluk müdahale listesi"
-              columns={["Öğrenci", "Koç", "Son / sonraki görüşme", "Sorun", "Aksiyon"]}
+              columns={[
+                "Öğrenci",
+                "Koç",
+                "Son / sonraki görüşme",
+                "Sorun",
+                "Aksiyon",
+              ]}
             >
               {interventions.map((row) => (
                 <PanelTableRow key={row.key}>
                   <PanelTableCell>
-                    <span className="text-[14px] font-bold text-dc-ink">{row.studentName}</span>
+                    <span className="text-[14px] font-bold text-dc-ink">
+                      {row.studentName}
+                    </span>
                   </PanelTableCell>
                   <PanelTableCell tone={row.coachName ? undefined : "warn"}>
                     {row.coachName ?? "Atanmadı"}
                   </PanelTableCell>
-                  <PanelTableCell>{row.when ? DATE.format(row.when) : "—"}</PanelTableCell>
+                  <PanelTableCell>
+                    {row.when ? DATE.format(row.when) : "—"}
+                  </PanelTableCell>
                   <PanelTableCell tone={row.tone}>{row.issue}</PanelTableCell>
                   <PanelTableCell>
                     {coachOptions.length === 0 ? (
-                      <span className="text-[12.5px] text-dc-ink-faint">Koç yok</span>
+                      <span className="text-[12.5px] text-dc-ink-faint">
+                        Koç yok
+                      </span>
                     ) : (
-                      <form action={assignCoach} className="flex flex-wrap items-center gap-1.5">
-                        <input type="hidden" name="studentId" value={row.studentId} />
+                      <form
+                        action={assignCoach}
+                        className="flex flex-wrap items-center gap-1.5"
+                      >
+                        <input
+                          type="hidden"
+                          name="studentId"
+                          value={row.studentId}
+                        />
                         <label className="sr-only" htmlFor={`coach-${row.key}`}>
                           {row.studentName} için koç
                         </label>
@@ -288,7 +376,10 @@ export default async function AdminCoachingPage() {
                             </option>
                           ))}
                         </select>
-                        <label className="sr-only" htmlFor={`cadence-${row.key}`}>
+                        <label
+                          className="sr-only"
+                          htmlFor={`cadence-${row.key}`}
+                        >
                           Görüşme sıklığı (gün)
                         </label>
                         <input
@@ -333,9 +424,13 @@ export default async function AdminCoachingPage() {
                     className="flex flex-wrap items-baseline justify-between gap-2 text-[14px] font-medium text-dc-ink-body"
                   >
                     <span>{c.user.fullName || c.user.email}</span>
-                    <span className={over ? "text-[#C2493D]" : "text-dc-ink-muted"}>
+                    <span
+                      className={over ? "text-[#C2493D]" : "text-dc-ink-muted"}
+                    >
                       {load}
-                      {c.coachCapacity !== null ? ` / ${c.coachCapacity} öğrenci` : " öğrenci"}
+                      {c.coachCapacity !== null
+                        ? ` / ${c.coachCapacity} öğrenci`
+                        : " öğrenci"}
                       {over ? " · aşıldı" : ""}
                     </span>
                   </li>
@@ -355,15 +450,23 @@ export default async function AdminCoachingPage() {
             <ul className="mt-3 flex flex-col gap-2.5 text-[13.5px] leading-[1.7] text-dc-ink-body">
               {recentSessions.map((row) => {
                 const studentName =
-                  row.assignment.student.user.fullName || row.assignment.student.user.email;
-                const coachName = row.assignment.coach.user.fullName || row.assignment.coach.user.email;
+                  row.assignment.student.user.fullName ||
+                  row.assignment.student.user.email;
+                const coachName =
+                  row.assignment.coach.user.fullName ||
+                  row.assignment.coach.user.email;
                 return (
-                  <li key={row.id} className="rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3">
+                  <li
+                    key={row.id}
+                    className="rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3"
+                  >
                     <p className="font-semibold text-dc-ink">
                       {studentName} · {coachName}
                     </p>
                     <p className="mt-1 text-dc-ink-muted">
-                      {row.completedAt ? DATE.format(row.completedAt) : "Tarih yok"}
+                      {row.completedAt
+                        ? DATE.format(row.completedAt)
+                        : "Tarih yok"}
                       {row.focus ? ` · odak: ${row.focus}` : ""}
                     </p>
                   </li>
@@ -374,7 +477,9 @@ export default async function AdminCoachingPage() {
         </PanelCard>
 
         <PanelCard className="mt-5">
-          <PanelCardTitle>Bu hafta planı olmayan koçluk öğrencileri</PanelCardTitle>
+          <PanelCardTitle>
+            Bu hafta planı olmayan koçluk öğrencileri
+          </PanelCardTitle>
           {!adaptivePlanEnabled ? (
             <p className="mt-3 text-[13.5px] text-dc-ink-muted">
               Plan pilotu kapalı olduğu için bu kontrol şu an beklemede.
@@ -386,10 +491,15 @@ export default async function AdminCoachingPage() {
           ) : (
             <ul className="mt-3 flex flex-col gap-2 text-[13.5px] text-dc-ink-body">
               {studentsWithoutPlan.map((row) => (
-                <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3">
+                <li
+                  key={row.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3"
+                >
                   <span>
-                    <strong>{row.student.user.fullName || row.student.user.email}</strong> ·{" "}
-                    {row.coach.user.fullName || row.coach.user.email}
+                    <strong>
+                      {row.student.user.fullName || row.student.user.email}
+                    </strong>{" "}
+                    · {row.coach.user.fullName || row.coach.user.email}
                   </span>
                   <Link
                     href={`/panel/yonetim/ogrenciler/${row.student.id}`}
@@ -412,10 +522,15 @@ export default async function AdminCoachingPage() {
           ) : (
             <ul className="mt-3 flex flex-col gap-2 text-[13.5px] text-dc-ink-body">
               {studentsWithoutGoals.map((row) => (
-                <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3">
+                <li
+                  key={row.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3"
+                >
                   <span>
-                    <strong>{row.student.user.fullName || row.student.user.email}</strong> ·{" "}
-                    {row.coach.user.fullName || row.coach.user.email}
+                    <strong>
+                      {row.student.user.fullName || row.student.user.email}
+                    </strong>{" "}
+                    · {row.coach.user.fullName || row.coach.user.email}
                   </span>
                   <Link
                     href={`/panel/yonetim/ogrenciler/${row.student.id}`}
@@ -431,7 +546,10 @@ export default async function AdminCoachingPage() {
 
         <p className="mt-5 text-[12.5px] text-dc-ink-faint">
           Koçluk görüşmelerinin kendisi öğretmen panelinden kaydedilir.{" "}
-          <Link href="/panel/yonetim/egitmenler" className="font-semibold text-dc-brand hover:underline">
+          <Link
+            href="/panel/yonetim/egitmenler"
+            className="font-semibold text-dc-brand hover:underline"
+          >
             Öğretmenleri aç
           </Link>
         </p>

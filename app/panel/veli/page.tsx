@@ -23,7 +23,10 @@ export default async function ParentHomePage({
 }) {
   const session = await requirePanelRole("PARENT");
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -32,7 +35,11 @@ export default async function ParentHomePage({
       email={session.email}
       pageTitle="Bugün"
       topbarSlot={
-        <ChildSwitcher options={children} selectedId={selected?.id ?? null} basePath="/panel/veli" />
+        <ChildSwitcher
+          options={children}
+          selectedId={selected?.id ?? null}
+          basePath="/panel/veli"
+        />
       }
     >
       <div className="max-w-[760px]">{body}</div>

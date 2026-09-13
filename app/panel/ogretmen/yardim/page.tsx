@@ -24,15 +24,26 @@ export default async function TeacherHelpPage() {
       group: { teacherId: session.userId, isActive: true },
       checkIn: { shareWithTeacher: true },
       student: {
-        enrollments: { some: { endedAt: null, group: { teacherId: session.userId, isActive: true } } },
+        enrollments: {
+          some: {
+            endedAt: null,
+            group: { teacherId: session.userId, isActive: true },
+          },
+        },
       },
     },
     orderBy: [{ status: "asc" }, { dueAt: "asc" }, { id: "asc" }],
     include: {
       group: { select: { name: true } },
-      student: { include: { user: { select: { fullName: true, email: true } } } },
+      student: {
+        include: { user: { select: { fullName: true, email: true } } },
+      },
       checkIn: true,
-      responses: { orderBy: { createdAt: "desc" }, take: 1, select: { action: true } },
+      responses: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { action: true },
+      },
     },
   });
 
@@ -41,26 +52,32 @@ export default async function TeacherHelpPage() {
       item,
       active: Boolean(
         await prisma.enrollment.findFirst({
-          where: { studentId: item.studentId, groupId: item.groupId, endedAt: null },
+          where: {
+            studentId: item.studentId,
+            groupId: item.groupId,
+            endedAt: null,
+          },
           select: { id: true },
         }),
       ),
     })),
   );
 
-  const rows = visible.filter((entry) => entry.active).map(({ item }) => ({
-    id: item.id,
-    studentName: item.student.user.fullName || item.student.user.email,
-    groupName: item.group.name,
-    energy: item.checkIn.energy,
-    confidence: item.checkIn.confidence,
-    barrier: item.checkIn.barrier,
-    status: item.status as "OPEN" | "RESPONDED",
-    dueAt: item.dueAt.toISOString(),
-    version: item.version,
-    helpful: item.helpful,
-    responseAction: item.responses[0]?.action || null,
-  }));
+  const rows = visible
+    .filter((entry) => entry.active)
+    .map(({ item }) => ({
+      id: item.id,
+      studentName: item.student.user.fullName || item.student.user.email,
+      groupName: item.group.name,
+      energy: item.checkIn.energy,
+      confidence: item.checkIn.confidence,
+      barrier: item.checkIn.barrier,
+      status: item.status as "OPEN" | "RESPONDED",
+      dueAt: item.dueAt.toISOString(),
+      version: item.version,
+      helpful: item.helpful,
+      responseAction: item.responses[0]?.action || null,
+    }));
 
   const open = rows.filter((item) => item.status === "OPEN");
   await recordPanelProductEvent(
@@ -68,14 +85,21 @@ export default async function TeacherHelpPage() {
       name: "student_help_inbox_viewed",
       properties: {
         openCountBand: countBand(open.length),
-        overdueCountBand: countBand(open.filter((item) => new Date(item.dueAt) < now).length),
+        overdueCountBand: countBand(
+          open.filter((item) => new Date(item.dueAt) < now).length,
+        ),
       },
     },
     session.role,
   );
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Yardım İsteyenler">
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      pageTitle="Yardım İsteyenler"
+    >
       <div className="max-w-[1040px]">
         <PanelPageHeader
           title="Yardım İsteyenler"

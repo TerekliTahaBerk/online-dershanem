@@ -4,7 +4,10 @@
 import type { PreferenceFieldsProps } from "./types";
 import { days } from "./constants";
 
-export function PreferenceFields({ preference, setPreference }: PreferenceFieldsProps) {
+export function PreferenceFields({
+  preference,
+  setPreference,
+}: PreferenceFieldsProps) {
   return (
     <>
       <div>
@@ -24,7 +27,9 @@ export function PreferenceFields({ preference, setPreference }: PreferenceFields
                 }))
               }
               className={`rounded-xl px-2 py-2 text-xs font-bold ${
-                preference.availableDays.includes(day.id) ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)]"
+                preference.availableDays.includes(day.id)
+                  ? "bg-[var(--brand-olive)] text-white"
+                  : "bg-[var(--site-bg-warm)]"
               }`}
             >
               {day.label}
@@ -37,7 +42,12 @@ export function PreferenceFields({ preference, setPreference }: PreferenceFields
         <select
           className="panel-input mt-2"
           value={preference.minutesPerDay}
-          onChange={(event) => setPreference({ ...preference, minutesPerDay: Number(event.target.value) })}
+          onChange={(event) =>
+            setPreference({
+              ...preference,
+              minutesPerDay: Number(event.target.value),
+            })
+          }
         >
           {[20, 30, 45, 60, 90].map((value) => (
             <option key={value} value={value}>
@@ -52,7 +62,12 @@ export function PreferenceFields({ preference, setPreference }: PreferenceFields
           <select
             className="panel-input mt-2"
             value={preference.examLabel || ""}
-            onChange={(event) => setPreference({ ...preference, examLabel: event.target.value || null })}
+            onChange={(event) =>
+              setPreference({
+                ...preference,
+                examLabel: event.target.value || null,
+              })
+            }
           >
             <option value="">Yok</option>
             {["LGS", "TYT", "AYT", "YDT", "OKUL SINAVI"].map((value) => (
@@ -67,16 +82,30 @@ export function PreferenceFields({ preference, setPreference }: PreferenceFields
             className="panel-input mt-2"
             disabled={!preference.examLabel}
             value={preference.nextExamAt?.slice(0, 10) || ""}
-            onChange={(event) => setPreference({ ...preference, nextExamAt: event.target.value || null })}
+            onChange={(event) =>
+              setPreference({
+                ...preference,
+                nextExamAt: event.target.value || null,
+              })
+            }
           />
         </label>
       </div>
       <label className="mt-4 block">
-        <span className="panel-label">Bu planın yoğunluğu bana nasıl geliyor?</span>
+        <span className="panel-label">
+          Bu planın yoğunluğu bana nasıl geliyor?
+        </span>
         <select
           className="panel-input mt-2"
           value={preference.overwhelmPulse || ""}
-          onChange={(event) => setPreference({ ...preference, overwhelmPulse: event.target.value ? Number(event.target.value) : null })}
+          onChange={(event) =>
+            setPreference({
+              ...preference,
+              overwhelmPulse: event.target.value
+                ? Number(event.target.value)
+                : null,
+            })
+          }
         >
           <option value="">Yanıtlamak istemiyorum</option>
           <option value="1">Çok rahat</option>
@@ -90,11 +119,18 @@ export function PreferenceFields({ preference, setPreference }: PreferenceFields
         <input
           type="checkbox"
           checked={preference.planningEnabled}
-          onChange={(event) => setPreference({ ...preference, planningEnabled: event.target.checked })}
+          onChange={(event) =>
+            setPreference({
+              ...preference,
+              planningEnabled: event.target.checked,
+            })
+          }
         />
         <span>
           <strong className="block">Haftalık plan önerisi açık</strong>
-          <span className="mt-1 block text-[var(--site-muted)]">İstediğin zaman kapatabilirsin; mevcut akademik kayıtların silinmez.</span>
+          <span className="mt-1 block text-[var(--site-muted)]">
+            İstediğin zaman kapatabilirsin; mevcut akademik kayıtların silinmez.
+          </span>
         </span>
       </label>
     </>

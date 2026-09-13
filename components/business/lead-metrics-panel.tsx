@@ -1,7 +1,14 @@
 import type { LeadAnalytics } from "@/lib/business/lead-metrics";
-import { LEAD_LOST_REASON_LABELS, LEAD_SOURCE_LABELS, LEAD_STAGE_LABELS } from "@/lib/business/leads";
+import {
+  LEAD_LOST_REASON_LABELS,
+  LEAD_SOURCE_LABELS,
+  LEAD_STAGE_LABELS,
+} from "@/lib/business/leads";
 
-const pct = new Intl.NumberFormat("tr-TR", { style: "percent", maximumFractionDigits: 1 });
+const pct = new Intl.NumberFormat("tr-TR", {
+  style: "percent",
+  maximumFractionDigits: 1,
+});
 
 function formatDuration(ms: number): string {
   if (ms < 60_000) return `${Math.round(ms / 1000)} sn`;
@@ -27,8 +34,12 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           ["Geciken takip", analytics.followUpOverdueCount],
         ].map(([label, value]) => (
           <article key={String(label)} className="panel-metric-card">
-            <p className="mt-2 text-2xl font-semibold text-[var(--site-ink)]">{value}</p>
-            <p className="mt-1 text-xs font-bold text-[var(--site-muted)]">{label}</p>
+            <p className="mt-2 text-2xl font-semibold text-[var(--site-ink)]">
+              {value}
+            </p>
+            <p className="mt-1 text-xs font-bold text-[var(--site-muted)]">
+              {label}
+            </p>
           </article>
         ))}
       </div>
@@ -41,7 +52,10 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
               <li className="text-[var(--site-muted)]">Veri yok</li>
             ) : (
               analytics.sourceConversion.map((row) => (
-                <li key={row.source} className="flex justify-between gap-3 border-t pt-2">
+                <li
+                  key={row.source}
+                  className="flex justify-between gap-3 border-t pt-2"
+                >
                   <span>{LEAD_SOURCE_LABELS[row.source]}</span>
                   <strong>
                     {row.won}/{row.total} · {pct.format(row.rate)}
@@ -56,7 +70,10 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           <h3 className="text-xs font-extrabold">Aşama dağılımı</h3>
           <ul className="mt-3 space-y-2 text-xs">
             {analytics.stageConversion.map((row) => (
-              <li key={row.stage} className="flex justify-between gap-3 border-t pt-2">
+              <li
+                key={row.stage}
+                className="flex justify-between gap-3 border-t pt-2"
+              >
                 <span>{LEAD_STAGE_LABELS[row.stage]}</span>
                 <strong>{row.count}</strong>
               </li>
@@ -68,10 +85,15 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           <h3 className="text-xs font-extrabold">Ortalama aşama süresi</h3>
           <ul className="mt-3 space-y-2 text-xs">
             {analytics.averageMsInStage.length === 0 ? (
-              <li className="text-[var(--site-muted)]">Yeterli STAGE_CHANGED örneği yok</li>
+              <li className="text-[var(--site-muted)]">
+                Yeterli STAGE_CHANGED örneği yok
+              </li>
             ) : (
               analytics.averageMsInStage.map((row) => (
-                <li key={row.stage} className="flex justify-between gap-3 border-t pt-2">
+                <li
+                  key={row.stage}
+                  className="flex justify-between gap-3 border-t pt-2"
+                >
                   <span>{LEAD_STAGE_LABELS[row.stage]}</span>
                   <strong>
                     {formatDuration(row.averageMs)} · n={row.samples}
@@ -89,7 +111,10 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
               <li className="text-[var(--site-muted)]">Kayıp kayıt yok</li>
             ) : (
               analytics.lostReasons.map((row) => (
-                <li key={row.code} className="flex justify-between gap-3 border-t pt-2">
+                <li
+                  key={row.code}
+                  className="flex justify-between gap-3 border-t pt-2"
+                >
                   <span>
                     {row.code === "UNKNOWN"
                       ? "Belirtilmemiş"
@@ -113,9 +138,14 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
                   key={row.ownerId ?? "unassigned"}
                   className="flex flex-wrap justify-between gap-3 border-t pt-2"
                 >
-                  <span>{row.ownerId ? ownerNames[row.ownerId] || row.ownerId : "Atanmamış"}</span>
+                  <span>
+                    {row.ownerId
+                      ? ownerNames[row.ownerId] || row.ownerId
+                      : "Atanmamış"}
+                  </span>
                   <strong>
-                    {row.won} kazanım / {row.total} aday · {row.overdue} gecikme · {row.lost} kayıp
+                    {row.won} kazanım / {row.total} aday · {row.overdue} gecikme
+                    · {row.lost} kayıp
                   </strong>
                 </li>
               ))

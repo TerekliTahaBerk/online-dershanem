@@ -20,7 +20,9 @@ function Frame({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`flex flex-col gap-2.5 rounded-xl bg-dc-surface-muted p-3.5 ${height}`}>
+    <div
+      className={`flex flex-col gap-2.5 rounded-xl bg-dc-surface-muted p-3.5 ${height}`}
+    >
       <p className="font-mono text-[10px] font-semibold tracking-[0.06em] text-[var(--dc-ink-faint)]">
         {label}
       </p>
@@ -32,7 +34,11 @@ function Frame({
 }
 
 /** Canlı ders: paylaşılan tahta + en fazla dört katılımcı şeridi. */
-export function LessonBoardVisual({ height = "h-[260px] sm:h-[330px]" }: { height?: string }) {
+export function LessonBoardVisual({
+  height = "h-[260px] sm:h-[330px]",
+}: {
+  height?: string;
+}) {
   return (
     <Frame label="CANLI DERS" height={height}>
       <div className="flex flex-1 flex-col justify-center gap-2 rounded-md bg-[#F2F7F4] px-4">
@@ -52,7 +58,11 @@ export function LessonBoardVisual({ height = "h-[260px] sm:h-[330px]" }: { heigh
 }
 
 /** Öğrenci arayüzü: sıradaki ders + ödev satırları. */
-export function StudentScheduleVisual({ height = "h-[200px]" }: { height?: string }) {
+export function StudentScheduleVisual({
+  height = "h-[200px]",
+}: {
+  height?: string;
+}) {
   return (
     <Frame label="ÖĞRENCİ EKRANI" height={height}>
       <div className="flex items-center gap-2.5 rounded-md bg-dc-brand-soft px-3 py-2.5">
@@ -63,13 +73,19 @@ export function StudentScheduleVisual({ height = "h-[200px]" }: { height?: strin
         </span>
       </div>
       {[82, 64, 48].map((w, i) => (
-        <div key={w} className="flex items-center gap-2.5 border-t border-dc-line-soft pt-2">
+        <div
+          key={w}
+          className="flex items-center gap-2.5 border-t border-dc-line-soft pt-2"
+        >
           <span
             className={`h-3.5 w-3.5 flex-none rounded-[4px] ${
               i === 0 ? "bg-dc-brand" : "border border-[#D6E2DC] bg-white"
             }`}
           />
-          <span className="h-2 rounded-full bg-[#E1E8E4]" style={{ width: `${w}px` }} />
+          <span
+            className="h-2 rounded-full bg-[#E1E8E4]"
+            style={{ width: `${w}px` }}
+          />
         </div>
       ))}
     </Frame>
@@ -77,7 +93,11 @@ export function StudentScheduleVisual({ height = "h-[200px]" }: { height?: strin
 }
 
 /** Veli özeti: katılım şeridi + ilerleme çubukları. */
-export function ParentSummaryVisual({ height = "h-[200px]" }: { height?: string }) {
+export function ParentSummaryVisual({
+  height = "h-[200px]",
+}: {
+  height?: string;
+}) {
   return (
     <Frame label="VELİ ÖZETİ" height={height}>
       <div className="flex gap-1.5">
@@ -85,7 +105,9 @@ export function ParentSummaryVisual({ height = "h-[200px]" }: { height?: string 
           <span
             key={i}
             className={`h-6 flex-1 rounded-[5px] ${
-              present ? "bg-dc-brand-soft" : "border border-dashed border-[#D6E2DC] bg-white"
+              present
+                ? "bg-dc-brand-soft"
+                : "border border-dashed border-[#D6E2DC] bg-white"
             }`}
           />
         ))}
@@ -104,7 +126,11 @@ export function ParentSummaryVisual({ height = "h-[200px]" }: { height?: string 
 }
 
 /** Koçluk: görüşme notu + haftanın tamamlanma oranı. */
-export function CoachSessionVisual({ height = "h-[260px] sm:h-[330px]" }: { height?: string }) {
+export function CoachSessionVisual({
+  height = "h-[260px] sm:h-[330px]",
+}: {
+  height?: string;
+}) {
   return (
     <Frame label="KOÇLUK EKRANI" height={height}>
       <div className="flex flex-col gap-1.5 rounded-md bg-[#F2F7F4] p-3">
@@ -121,7 +147,9 @@ export function CoachSessionVisual({ height = "h-[260px] sm:h-[330px]" }: { heig
           <span
             key={i}
             className={`h-[26px] rounded-[5px] ${
-              done ? "bg-dc-brand" : "border border-dashed border-[#D6E2DC] bg-white"
+              done
+                ? "bg-dc-brand"
+                : "border border-dashed border-[#D6E2DC] bg-white"
             }`}
             style={done ? { opacity: i === 3 ? 0.65 : 1 } : undefined}
           />

@@ -33,11 +33,18 @@ export default async function InvitePage({
   const token = params.token?.trim();
   if (!token) {
     return (
-      <AuthCard title="Davet bağlantısı eksik" googleLabel="Google ile giriş yap">
+      <AuthCard
+        title="Davet bağlantısı eksik"
+        googleLabel="Google ile giriş yap"
+      >
         <p className="text-center text-[13px] text-dc-ink-muted">
-          Geçerli bir davet bağlantısı açın veya yöneticinizden yeni davet isteyin.
+          Geçerli bir davet bağlantısı açın veya yöneticinizden yeni davet
+          isteyin.
         </p>
-        <Link href="/giris" className="mt-4 block text-center text-[13px] font-semibold text-dc-brand hover:underline">
+        <Link
+          href="/giris"
+          className="mt-4 block text-center text-[13px] font-semibold text-dc-brand hover:underline"
+        >
           Giriş sayfasına dön
         </Link>
       </AuthCard>
@@ -45,7 +52,10 @@ export default async function InvitePage({
   }
 
   return (
-    <AuthCard title="Hesabınızı etkinleştirin" googleLabel="Google ile giriş yap">
+    <AuthCard
+      title="Hesabınızı etkinleştirin"
+      googleLabel="Google ile giriş yap"
+    >
       <p className="mb-4 text-center text-[13px] text-dc-ink-muted">
         Daveti tamamlamak için kendi parolanızı belirleyin.
       </p>

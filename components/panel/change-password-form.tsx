@@ -30,7 +30,10 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = (await response.json()) as { redirect?: string; error?: string };
+      const data = (await response.json()) as {
+        redirect?: string;
+        error?: string;
+      };
 
       if (!response.ok || !data.redirect) {
         setError(data.error ?? "Parola değiştirilemedi.");
@@ -52,7 +55,10 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
   return (
     <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-4" noValidate>
       <div className="flex flex-col gap-2">
-        <label htmlFor="currentPassword" className="text-[13px] font-semibold text-[var(--site-ink)]">
+        <label
+          htmlFor="currentPassword"
+          className="text-[13px] font-semibold text-[var(--site-ink)]"
+        >
           {forced ? "Mevcut parola" : "Mevcut parolanız"}
         </label>
         <input
@@ -68,7 +74,10 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="newPassword" className="text-[13px] font-semibold text-[var(--site-ink)]">
+        <label
+          htmlFor="newPassword"
+          className="text-[13px] font-semibold text-[var(--site-ink)]"
+        >
           Yeni parola
         </label>
         <input
@@ -82,14 +91,20 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
           aria-describedby="password-hint"
           className={field}
         />
-        <p id="password-hint" className="text-[12.5px] leading-5 text-[var(--site-muted)]">
-          En az {PASSWORD_MIN_LENGTH} karakter. Büyük harf veya sembol zorunlu değil — uzun ve
-          hatırlayabileceğiniz bir cümle en iyisidir.
+        <p
+          id="password-hint"
+          className="text-[12.5px] leading-5 text-[var(--site-muted)]"
+        >
+          En az {PASSWORD_MIN_LENGTH} karakter. Büyük harf veya sembol zorunlu
+          değil — uzun ve hatırlayabileceğiniz bir cümle en iyisidir.
         </p>
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="repeat" className="text-[13px] font-semibold text-[var(--site-ink)]">
+        <label
+          htmlFor="repeat"
+          className="text-[13px] font-semibold text-[var(--site-ink)]"
+        >
           Yeni parola (tekrar)
         </label>
         <input
@@ -114,10 +129,18 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
         </p>
       ) : null}
 
-      <button type="submit" disabled={pending} className="site-btn site-btn-primary site-btn-lg mt-2 w-full disabled:opacity-70">
+      <button
+        type="submit"
+        disabled={pending}
+        className="site-btn site-btn-primary site-btn-lg mt-2 w-full disabled:opacity-70"
+      >
         {pending ? (
           <>
-            <Loader2 size={17} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            <Loader2
+              size={17}
+              className="animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
             Kaydediliyor
           </>
         ) : (

@@ -31,8 +31,12 @@ type ExamSalesLandingData = {
 export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
   const packageGroup = subjectPackageGroups[0];
   const examCategory = data.examKey;
-  const matchingPackages = packageGroup.packages.filter((pkg) => pkg.category === examCategory);
-  const packages = matchingPackages.length ? matchingPackages : packageGroup.packages;
+  const matchingPackages = packageGroup.packages.filter(
+    (pkg) => pkg.category === examCategory,
+  );
+  const packages = matchingPackages.length
+    ? matchingPackages
+    : packageGroup.packages;
   const key = data.examKey.toLowerCase();
 
   return (
@@ -47,7 +51,9 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
               <h1 className="mt-4 font-display text-[clamp(2.3rem,5vw,3.6rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
                 {data.heroTitle}
               </h1>
-              <p className="mt-5 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">{data.heroText}</p>
+              <p className="mt-5 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
+                {data.heroText}
+              </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <LeadFunnelTrigger
                   source={`${key}_landing_hero_primary`}
@@ -56,7 +62,10 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                 >
                   Ücretsiz ön görüşme
                 </LeadFunnelTrigger>
-                <a href="#paketler" className="site-btn site-btn-secondary site-btn-lg">
+                <a
+                  href="#paketler"
+                  className="site-btn site-btn-secondary site-btn-lg"
+                >
                   Fiyatı gör
                 </a>
               </div>
@@ -68,7 +77,10 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
               </h2>
               <ul className="mt-5 space-y-3.5">
                 {data.highlights.map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-[15px] leading-6 text-[var(--site-body)]">
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-[15px] leading-6 text-[var(--site-body)]"
+                  >
                     <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
                       <Check size={13} strokeWidth={2.5} aria-hidden="true" />
                     </span>
@@ -88,9 +100,16 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
             </h2>
             <div className="mt-9 grid gap-4 md:grid-cols-3">
               {data.approach.items.map((item) => (
-                <div key={item.title} className="rounded-[22px] border border-[var(--site-line)] bg-white p-6">
-                  <h3 className="font-display text-[19px] text-[var(--site-ink)]">{item.title}</h3>
-                  <p className="mt-2.5 text-[14.5px] leading-6 text-[var(--site-body)]">{item.body}</p>
+                <div
+                  key={item.title}
+                  className="rounded-[22px] border border-[var(--site-line)] bg-white p-6"
+                >
+                  <h3 className="font-display text-[19px] text-[var(--site-ink)]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2.5 text-[14.5px] leading-6 text-[var(--site-body)]">
+                    {item.body}
+                  </p>
                 </div>
               ))}
             </div>
@@ -105,7 +124,9 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                 {data.plan.heading}
               </h2>
               {data.plan.note ? (
-                <p className="mt-4 max-w-2xl text-[16px] leading-7 text-[var(--site-body)]">{data.plan.note}</p>
+                <p className="mt-4 max-w-2xl text-[16px] leading-7 text-[var(--site-body)]">
+                  {data.plan.note}
+                </p>
               ) : null}
               <ol className="mt-9 grid gap-4 sm:grid-cols-2">
                 {data.plan.steps.map((step, i) => (
@@ -117,8 +138,12 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span>
-                      <span className="block text-[15.5px] font-semibold text-[var(--site-ink)]">{step.label}</span>
-                      <span className="mt-1 block text-[14px] leading-6 text-[var(--site-body)]">{step.text}</span>
+                      <span className="block text-[15.5px] font-semibold text-[var(--site-ink)]">
+                        {step.label}
+                      </span>
+                      <span className="mt-1 block text-[14px] leading-6 text-[var(--site-body)]">
+                        {step.text}
+                      </span>
                     </span>
                   </li>
                 ))}
@@ -136,24 +161,32 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                   Veliye giden kısa gelişim özeti.
                 </h2>
                 <p className="mt-4 max-w-md text-[16px] leading-7 text-[var(--site-body)]">
-                  Veli, sadece sonuç sayısını değil; öğrencinin matematikte nerede zorlandığını anlatan kısa bir özet alır.
-                  Aşağıdaki örnek temsilîdir.
+                  Veli, sadece sonuç sayısını değil; öğrencinin matematikte
+                  nerede zorlandığını anlatan kısa bir özet alır. Aşağıdaki
+                  örnek temsilîdir.
                 </p>
               </div>
               <figure className="rounded-[24px] border border-[var(--site-line)] bg-white p-7 shadow-[0_40px_80px_-50px_rgba(20,20,15,0.3)]">
                 <figcaption className="flex items-center justify-between border-b border-[var(--site-line)] pb-4">
-                  <span className="text-[15px] font-semibold text-[var(--site-ink)]">{data.sampleSummary.heading}</span>
+                  <span className="text-[15px] font-semibold text-[var(--site-ink)]">
+                    {data.sampleSummary.heading}
+                  </span>
                   <span className="rounded-full bg-[var(--brand-orange-soft)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--brand-orange-ink)]">
                     Örnek
                   </span>
                 </figcaption>
                 <dl className="mt-5 grid gap-3 sm:grid-cols-2">
                   {data.sampleSummary.rows.map((row) => (
-                    <div key={row.label} className="rounded-[16px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+                    <div
+                      key={row.label}
+                      className="rounded-[16px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+                    >
                       <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
                         {row.label}
                       </dt>
-                      <dd className="mt-1 text-[13.5px] leading-6 text-[var(--site-ink)]">{row.value}</dd>
+                      <dd className="mt-1 text-[13.5px] leading-6 text-[var(--site-ink)]">
+                        {row.value}
+                      </dd>
                     </div>
                   ))}
                 </dl>
@@ -172,7 +205,8 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                     Çalışma planını doğru içerikle destekleyin.
                   </h2>
                   <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">
-                    Sınav hedefinize göre hazırlanmış program, soru çözümü ve deneme analizi rehberlerine geçin.
+                    Sınav hedefinize göre hazırlanmış program, soru çözümü ve
+                    deneme analizi rehberlerine geçin.
                   </p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -183,7 +217,11 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                       className="group flex min-h-16 items-center justify-between gap-4 rounded-[18px] border border-[var(--site-line)] bg-white p-4 text-[14.5px] font-semibold leading-6 text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
                     >
                       {resource.label}
-                      <ArrowUpRight size={16} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                      <ArrowUpRight
+                        size={16}
+                        className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                        aria-hidden="true"
+                      />
                     </Link>
                   ))}
                 </div>
@@ -193,17 +231,24 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
         ) : null}
 
         {/* PAKETLER */}
-        <section id="paketler" className="scroll-mt-24 border-t border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+        <section
+          id="paketler"
+          className="scroll-mt-24 border-t border-[var(--site-line)] bg-[var(--site-bg-warm)]"
+        >
           <div className="site-container py-16 sm:py-20">
             <div className="mx-auto max-w-2xl text-center">
               <span className="site-eyebrow">Paket fiyatı</span>
               <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,2.7rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
                 {packageGroup.title}
               </h2>
-              <p className="mt-4 text-[16px] leading-7 text-[var(--site-body)]">{packageGroup.subtitle}</p>
+              <p className="mt-4 text-[16px] leading-7 text-[var(--site-body)]">
+                {packageGroup.subtitle}
+              </p>
             </div>
 
-            <div className={`mt-10 grid gap-5 ${packages.length > 1 ? "sm:grid-cols-2" : "mx-auto max-w-md"}`}>
+            <div
+              className={`mt-10 grid gap-5 ${packages.length > 1 ? "sm:grid-cols-2" : "mx-auto max-w-md"}`}
+            >
               {packages.map((pkg) => (
                 <article
                   key={`${packageGroup.key}-${pkg.subject}`}
@@ -214,7 +259,9 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                       <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
                         {pkg.category}
                       </p>
-                      <h3 className="mt-1 font-display text-[24px] text-[var(--site-ink)]">{pkg.name}</h3>
+                      <h3 className="mt-1 font-display text-[24px] text-[var(--site-ink)]">
+                        {pkg.name}
+                      </h3>
                     </div>
                     {pkg.badge ? (
                       <span className="shrink-0 rounded-full bg-[var(--brand-orange-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--brand-orange-ink)]">
@@ -222,25 +269,40 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-2 text-[14.5px] leading-6 text-[var(--site-body)]">{pkg.tagline}</p>
+                  <p className="mt-2 text-[14.5px] leading-6 text-[var(--site-body)]">
+                    {pkg.tagline}
+                  </p>
 
                   <div className="mt-5 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
                     <p className="inline-flex rounded-full border border-[var(--site-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--brand-orange-ink)]">
                       {pkg.quota}
                     </p>
                     {pkg.oldPrice ? (
-                      <p className="mt-2 text-[14px] font-medium text-[var(--site-muted)] line-through">{pkg.oldPrice}</p>
+                      <p className="mt-2 text-[14px] font-medium text-[var(--site-muted)] line-through">
+                        {pkg.oldPrice}
+                      </p>
                     ) : null}
-                    <p className="mt-1 font-display text-[30px] leading-none text-[var(--site-ink)]">{pkg.discountedPrice}</p>
+                    <p className="mt-1 font-display text-[30px] leading-none text-[var(--site-ink)]">
+                      {pkg.discountedPrice}
+                    </p>
                     {pkg.perLessonPrice ? (
-                      <p className="mt-2 text-[12px] font-semibold text-[var(--site-muted)]">{pkg.perLessonPrice}</p>
+                      <p className="mt-2 text-[12px] font-semibold text-[var(--site-muted)]">
+                        {pkg.perLessonPrice}
+                      </p>
                     ) : null}
                   </div>
 
                   <ul className="mt-5 space-y-2.5">
                     {[...pkg.examFocus, ...pkg.features].map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5 text-[14.5px] leading-6 text-[var(--site-body)]">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-orange-ink)]" strokeWidth={2.4} aria-hidden="true" />
+                      <li
+                        key={feature}
+                        className="flex items-start gap-2.5 text-[14.5px] leading-6 text-[var(--site-body)]"
+                      >
+                        <Check
+                          className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-orange-ink)]"
+                          strokeWidth={2.4}
+                          aria-hidden="true"
+                        />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -252,7 +314,9 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                     category={pkg.category}
                     subject={pkg.subject}
                     priceLabel={pkg.discountedPrice}
-                    paymentLink={getPackagePaymentLink(pkg.category, pkg.subject) ?? ""}
+                    paymentLink={
+                      getPackagePaymentLink(pkg.category, pkg.subject) ?? ""
+                    }
                     className="site-btn site-btn-primary mt-7 w-full"
                     analyticsId={`${key}_${pkg.subject}_package_cta`}
                   >
@@ -278,7 +342,9 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                     <Plus size={20} strokeWidth={1.8} aria-hidden="true" />
                   </span>
                 </summary>
-                <p className="pb-5 pr-8 text-[15px] leading-7 text-[var(--site-body)]">{item.a}</p>
+                <p className="pb-5 pr-8 text-[15px] leading-7 text-[var(--site-body)]">
+                  {item.a}
+                </p>
               </details>
             ))}
           </div>
@@ -298,7 +364,8 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
               Doğru gruba birlikte karar verelim.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-[16.5px] leading-7 text-white">
-              Kısa bir ön görüşmeyle seviyeyi, hedefi ve ders temposunu konuşalım.
+              Kısa bir ön görüşmeyle seviyeyi, hedefi ve ders temposunu
+              konuşalım.
             </p>
             <div className="mt-8 flex justify-center">
               <LeadFunnelTrigger

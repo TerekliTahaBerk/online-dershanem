@@ -6,10 +6,19 @@ import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
-import { PanelCard, PanelCardTitle, PanelEmpty, PanelHeading } from "@/components/panel/ui";
+import {
+  PanelCard,
+  PanelCardTitle,
+  PanelEmpty,
+  PanelHeading,
+} from "@/components/panel/ui";
 import { CalmDigestCard } from "@/components/panel/calm-digest-card";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
-import { ISTANBUL_TIME_ZONE, addIstanbulCalendarDays, istanbulWeekStart } from "@/lib/istanbul-time";
+import {
+  ISTANBUL_TIME_ZONE,
+  addIstanbulCalendarDays,
+  istanbulWeekStart,
+} from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +45,10 @@ export default async function ParentWeeklyDigestPage({
   if (!getPanelFeatureFlags().parentWeeklyDigest) notFound();
 
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -90,27 +102,36 @@ export default async function ParentWeeklyDigestPage({
           select: { title: true, startsAt: true },
         })
       : Promise.resolve([]),
-    selected.products.includes("OK") ? getStudentCoaching(selected.id) : Promise.resolve(null),
+    selected.products.includes("OK")
+      ? getStudentCoaching(selected.id)
+      : Promise.resolve(null),
   ]);
 
   const systemUpcoming: string[] = nextLessons.map(
     (lesson) => `${lesson.title} · ${TR_DATE.format(lesson.startsAt)}`,
   );
   if (coaching?.nextScheduledAt) {
-    systemUpcoming.push(`Koçluk görüşmesi · ${TR_DATE.format(coaching.nextScheduledAt)}`);
+    systemUpcoming.push(
+      `Koçluk görüşmesi · ${TR_DATE.format(coaching.nextScheduledAt)}`,
+    );
   }
 
   if (!digest) {
     return shell(
       <>
-        <PanelHeading title={selected.name} description="Haftada bir sakin bakış" />
+        <PanelHeading
+          title={selected.name}
+          description="Haftada bir sakin bakış"
+        />
         <PanelEmpty
           title="Haftalık özet henüz yayınlanmadı."
           body="Öğretmen önizlemeyi tamamladığında öğrenciyle aynı anda burada açılır."
         />
         {systemUpcoming.length ? (
           <PanelCard className="mt-5">
-            <PanelCardTitle>Sistemden görünenler · önümüzdeki günler</PanelCardTitle>
+            <PanelCardTitle>
+              Sistemden görünenler · önümüzdeki günler
+            </PanelCardTitle>
             <p className="mt-1 text-[12.5px] text-dc-ink-faint">
               Bu liste otomatik kayıtlardan gelir; öğretmen özeti değildir.
             </p>
@@ -133,7 +154,11 @@ export default async function ParentWeeklyDigestPage({
       name: "weekly_digest_viewed",
       properties: {
         actorRole: "PARENT",
-        trendBand: digest.trendBand as "IMPROVING" | "STEADY" | "BUILDING" | "LIMITED_DATA",
+        trendBand: digest.trendBand as
+          | "IMPROVING"
+          | "STEADY"
+          | "BUILDING"
+          | "LIMITED_DATA",
         ageBand: ageDays <= 2 ? "0-2D" : ageDays <= 7 ? "3-7D" : "8D+",
       },
     },
@@ -144,7 +169,10 @@ export default async function ParentWeeklyDigestPage({
 
   return shell(
     <>
-      <PanelHeading title={selected.name} description="Haftada bir sakin bakış" />
+      <PanelHeading
+        title={selected.name}
+        description="Haftada bir sakin bakış"
+      />
       <div className="mt-7">
         <CalmDigestCard
           viewerRole="PARENT"
@@ -157,15 +185,21 @@ export default async function ParentWeeklyDigestPage({
             dataThrough: digest.dataThrough.toISOString(),
             trendBand: digest.trendBand,
             feedback: feedback
-              ? { helpful: feedback.helpful, anxietyPulse: feedback.anxietyPulse }
+              ? {
+                  helpful: feedback.helpful,
+                  anxietyPulse: feedback.anxietyPulse,
+                }
               : null,
           }}
         />
       </div>
       <PanelCard className="mt-5">
-        <PanelCardTitle>Sistemden görünenler · önümüzdeki günler</PanelCardTitle>
+        <PanelCardTitle>
+          Sistemden görünenler · önümüzdeki günler
+        </PanelCardTitle>
         <p className="mt-1 text-[12.5px] text-dc-ink-faint">
-          Otomatik takvim ve koçluk kayıtlarıdır; öğretmen/koç özetinden ayrı tutulur.
+          Otomatik takvim ve koçluk kayıtlarıdır; öğretmen/koç özetinden ayrı
+          tutulur.
         </p>
         {systemUpcoming.length ? (
           <ul className="mt-3 space-y-2 text-[14px] text-dc-ink-body">

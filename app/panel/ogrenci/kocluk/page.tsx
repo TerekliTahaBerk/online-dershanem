@@ -4,7 +4,10 @@ import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { getStudentGoals } from "@/lib/panel/goals";
-import { formatIstanbulDateInput, ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
+import {
+  formatIstanbulDateInput,
+  ISTANBUL_TIME_ZONE,
+} from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelCard,
@@ -88,7 +91,9 @@ export default async function StudentCoachingHubPage() {
   const upcomingPending = pending
     .filter((task) => formatIstanbulDateInput(task.scheduledFor) > todayKey)
     .slice(0, 6);
-  const planPct = allTasks.length ? Math.round((done.length / allTasks.length) * 100) : 0;
+  const planPct = allTasks.length
+    ? Math.round((done.length / allTasks.length) * 100)
+    : 0;
 
   return shell(
     <>
@@ -111,7 +116,9 @@ export default async function StudentCoachingHubPage() {
             </div>
             <div>
               <dt className="text-dc-ink-faint">Sonraki görüşme</dt>
-              <dd className={`mt-0.5 font-semibold ${coaching.overdue ? "text-[#C2493D]" : ""}`}>
+              <dd
+                className={`mt-0.5 font-semibold ${coaching.overdue ? "text-[#C2493D]" : ""}`}
+              >
                 {coaching.nextScheduledAt
                   ? DATE_TIME.format(coaching.nextScheduledAt)
                   : "Planlanmadı"}
@@ -123,7 +130,8 @@ export default async function StudentCoachingHubPage() {
           </dl>
           {coaching.focus ? (
             <p className="mt-3 text-[13.5px] text-dc-ink-body">
-              <span className="font-semibold">Bu haftanın odağı:</span> {coaching.focus}
+              <span className="font-semibold">Bu haftanın odağı:</span>{" "}
+              {coaching.focus}
             </p>
           ) : null}
           {coaching.sharedNote ? (
@@ -131,7 +139,9 @@ export default async function StudentCoachingHubPage() {
               {coaching.sharedNote}
             </p>
           ) : (
-            <p className="mt-3 text-[13px] text-dc-ink-muted">Bu hafta için yeni koç notu yok.</p>
+            <p className="mt-3 text-[13px] text-dc-ink-muted">
+              Bu hafta için yeni koç notu yok.
+            </p>
           )}
         </PanelCard>
       ) : (
@@ -145,11 +155,13 @@ export default async function StudentCoachingHubPage() {
         <PanelCardTitle>Yapılacaklar</PanelCardTitle>
         {!adaptivePlanEnabled ? (
           <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-            Uyarlanabilir haftalık plan kapalı olduğu için koçluk görev listesi şu an üretilmiyor.
+            Uyarlanabilir haftalık plan kapalı olduğu için koçluk görev listesi
+            şu an üretilmiyor.
           </p>
         ) : !plan ? (
           <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-            Bu hafta için plan henüz hazırlanmadı. Koçun planı hazırladığında görevlerin burada görünecek.
+            Bu hafta için plan henüz hazırlanmadı. Koçun planı hazırladığında
+            görevlerin burada görünecek.
           </p>
         ) : (
           <>
@@ -206,12 +218,16 @@ export default async function StudentCoachingHubPage() {
         <PanelCardTitle>Hedef özeti</PanelCardTitle>
         {goals.length === 0 ? (
           <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-            Henüz hedef belirlenmedi. Görüşmede koçunla birlikte net ve plan hedeflerini tanımlayabilirsin.
+            Henüz hedef belirlenmedi. Görüşmede koçunla birlikte net ve plan
+            hedeflerini tanımlayabilirsin.
           </p>
         ) : (
           <ul className="mt-3 flex flex-col gap-2.5 text-[14px] text-dc-ink-body">
             {goals.slice(0, 5).map((goal) => (
-              <li key={goal.id} className="flex flex-wrap items-center justify-between gap-2">
+              <li
+                key={goal.id}
+                className="flex flex-wrap items-center justify-between gap-2"
+              >
                 <span className="font-medium">{goal.label}</span>
                 <span className="text-dc-ink-muted">
                   {goal.current === null
@@ -230,7 +246,10 @@ export default async function StudentCoachingHubPage() {
         <PanelCardTitle>Hızlı erişim</PanelCardTitle>
         <div className="mt-3 flex flex-wrap gap-2.5">
           {adaptivePlanEnabled ? (
-            <Link href="/panel/ogrenci/plan" className="panel-quick-action panel-quick-action-primary">
+            <Link
+              href="/panel/ogrenci/plan"
+              className="panel-quick-action panel-quick-action-primary"
+            >
               Haftalık planı aç
             </Link>
           ) : null}

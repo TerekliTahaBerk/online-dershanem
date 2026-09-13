@@ -40,7 +40,10 @@ export default async function ParentMockExamsPage({
   if (!getPanelFeatureFlags().mockExamAnalysis) notFound();
 
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell

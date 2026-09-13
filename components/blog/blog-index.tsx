@@ -46,7 +46,8 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
   );
   const [active, setActive] = useState(ALL);
 
-  const visible = active === ALL ? posts : posts.filter((p) => p.category === active);
+  const visible =
+    active === ALL ? posts : posts.filter((p) => p.category === active);
   const featured = visible.find((p) => p.featured) ?? visible[0];
   const rest = visible.filter((p) => p.slug !== featured?.slug);
 
@@ -58,10 +59,15 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
           Sınav hazırlığında işe yarayan yazılar
         </h1>
         <p className="mt-3.5 max-w-[600px] text-[16.5px] leading-[1.65] text-dc-ink-body sm:text-[17.5px]">
-          Çalışma yöntemi, plan kurma, deneme analizi ve veli rehberliği üzerine yazılar.
+          Çalışma yöntemi, plan kurma, deneme analizi ve veli rehberliği üzerine
+          yazılar.
         </p>
 
-        <div role="group" aria-label="Kategori filtresi" className="mt-6 flex flex-wrap gap-2.5">
+        <div
+          role="group"
+          aria-label="Kategori filtresi"
+          className="mt-6 flex flex-wrap gap-2.5"
+        >
           {categories.map((c) => (
             <button
               key={c}
@@ -89,7 +95,10 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
                 {featured.category}
               </span>
               <h2 className="mt-4 font-display text-[24px] leading-[1.2] tracking-[-0.02em] text-dc-ink sm:text-[30px]">
-                <Link href={`/blog/${featured.slug}/`} className="hover:text-dc-brand-hover">
+                <Link
+                  href={`/blog/${featured.slug}/`}
+                  className="hover:text-dc-brand-hover"
+                >
                   {featured.title}
                 </Link>
               </h2>
@@ -118,7 +127,10 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
                   {post.category}
                 </span>
                 <h3 className="mt-3 text-[19px] font-bold leading-[1.3] text-dc-ink">
-                  <Link href={`/blog/${post.slug}/`} className="hover:text-dc-brand-hover">
+                  <Link
+                    href={`/blog/${post.slug}/`}
+                    className="hover:text-dc-brand-hover"
+                  >
                     {post.title}
                   </Link>
                 </h3>

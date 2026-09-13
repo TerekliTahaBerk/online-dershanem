@@ -30,7 +30,8 @@ export function PanelNav({
   const searchParams = useSearchParams();
   const root = rolePath(role);
   const sections = panelNavSections(role, products, flags, root);
-  const selectedStudentId = role === "PARENT" ? searchParams.get("studentId") : null;
+  const selectedStudentId =
+    role === "PARENT" ? searchParams.get("studentId") : null;
 
   return (
     <nav aria-label="Panel menüsü" className="flex flex-col gap-3">
@@ -41,10 +42,12 @@ export function PanelNav({
           </p>
           {navSection.items.map((item) => {
             const active =
-              pathname === item.href || (item.href !== root && pathname.startsWith(`${item.href}/`));
+              pathname === item.href ||
+              (item.href !== root && pathname.startsWith(`${item.href}/`));
             const shouldPreserveParentContext =
               Boolean(selectedStudentId) &&
-              (item.href.startsWith(root) || item.href.startsWith("/panel/odk/veli"));
+              (item.href.startsWith(root) ||
+                item.href.startsWith("/panel/odk/veli"));
             const href = shouldPreserveParentContext
               ? withParentStudentContext(item.href, selectedStudentId)
               : item.href;

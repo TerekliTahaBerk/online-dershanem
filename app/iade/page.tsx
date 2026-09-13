@@ -3,7 +3,8 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
   title: "İade Politikası",
-  description: "Online Dershanem ders paketleri için ödeme, iptal ve iade koşulları.",
+  description:
+    "Online Dershanem ders paketleri için ödeme, iptal ve iade koşulları.",
   canonical: "/iade",
   imageAlt: "Online Dershanem İade Politikası",
 });
@@ -18,9 +19,9 @@ export default function RefundPolicyPage() {
         {
           title: "1. Genel Prensipler",
           paragraphs: [
-            'Platform, ders bazlı Grup Özel Ders modelinde şeffaflık, süreklilik ve ölçülülük ilkeleriyle hareket eder.',
-            "Bu politika; iptal, iade ve telafi süreçlerinde hem öğrenci/veli haklarını hem de eğitim operasyonunun sürdürülebilirliğini korumayı amaçlar."
-          ]
+            "Platform, ders bazlı Grup Özel Ders modelinde şeffaflık, süreklilik ve ölçülülük ilkeleriyle hareket eder.",
+            "Bu politika; iptal, iade ve telafi süreçlerinde hem öğrenci/veli haklarını hem de eğitim operasyonunun sürdürülebilirliğini korumayı amaçlar.",
+          ],
         },
         {
           title: "2. Satın Alım ve Hizmet Başlangıcı",
@@ -32,39 +33,39 @@ export default function RefundPolicyPage() {
             // tahmindir; belirli bir grup veya saat ödeme ile garanti edilmez"
             // diyor. Metin gerçek akışa ve checkout taahhüdüne göre yazıldı.
             "Satın alım sırasında paket kapsamı, ders süresi, grup büyüklüğü ve güncel fiyat açıkça gösterilir. Gösterilen kapasite, uygun saatler ve başlangıç tarihi tahminidir; belirli bir grup, eğitmen veya saat ödeme ile garanti edilmez.",
-            "Ödeme onayının ardından ekibimiz 24 saat içinde iletişime geçer ve 48 saat içinde grubu, alternatifi, bekleme listesini veya talep hâlinde iade sürecini netleştirir. Hizmet, grup ve ders saati kesinleştikten sonra fiilen başlar."
-          ]
+            "Ödeme onayının ardından ekibimiz 24 saat içinde iletişime geçer ve 48 saat içinde grubu, alternatifi, bekleme listesini veya talep hâlinde iade sürecini netleştirir. Hizmet, grup ve ders saati kesinleştikten sonra fiilen başlar.",
+          ],
         },
         {
           title: "3. İptal ve İade Koşulları",
           paragraphs: [
             "Cayma Hakkı: Mesafeli Sözleşmeler Yönetmeliği uyarınca, eğitimin henüz başlamadığı durumlarda satın alım tarihinden itibaren 14 gün içinde cayma hakkı kullanılabilir.",
             "Eğitim Sürecinde İptal: Eğitimi devam eden paketlerde iptal talebi halinde; o tarihe kadar işlenen derslerin ücreti ve varsa paket indirim oranları mahsup edilerek kalan tutar iade edilir.",
-            "Talebin İletilmesi: Tüm iptal ve iade talepleri, karışıklığı önlemek adına yazılı olarak iletisim@onlinedershanem.com adresine iletilmelidir."
-          ]
+            "Talebin İletilmesi: Tüm iptal ve iade talepleri, karışıklığı önlemek adına yazılı olarak iletisim@onlinedershanem.com adresine iletilmelidir.",
+          ],
         },
         {
           title: "4. İade Süreci ve Geri Ödemeler",
           paragraphs: [
             "Onaylanan iade tutarları, inceleme tamamlandıktan sonra en geç 10 iş günü içerisinde, ödemenin yapıldığı kredi kartına veya banka hesabına aktarılır.",
-            "Banka süreçlerinden kaynaklı gecikmeler Platform sorumluluğunda değildir."
-          ]
+            "Banka süreçlerinden kaynaklı gecikmeler Platform sorumluluğunda değildir.",
+          ],
         },
         {
           title: "5. Telafi ve Teknik Aksaklıklar",
           paragraphs: [
             "Platformdan kaynaklı teknik aksaklıklar veya eğitmen bazlı zorunlu iptallerde, ders saati öğrenciye uygun başka bir tarihe kaydırılır veya ek ders tanımlanır.",
-            "Öğrencinin önceden mazeret bildirmeksizin katılmadığı derslerin iadesi veya telafisi yapılmaz."
-          ]
+            "Öğrencinin önceden mazeret bildirmeksizin katılmadığı derslerin iadesi veya telafisi yapılmaz.",
+          ],
         },
         {
           title: "6. İletişim ve Destek",
           paragraphs: [
             "Ödeme ve iade süreçlerine dair tüm soru ve talepleriniz için bize aşağıdaki kanallardan ulaşabilirsiniz:",
             "E-posta: iletisim@onlinedershanem.com",
-            "Müşteri Hattı: +90 537 795 44 34"
-          ]
-        }
+            "Müşteri Hattı: +90 537 795 44 34",
+          ],
+        },
       ]}
     />
   );

@@ -2,7 +2,10 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PackageBuilder } from "@/components/pricing/package-builder";
 import { CoverageTable } from "@/components/pricing/coverage-table";
-import { ProductFaq, ProductClosingCta } from "@/components/product/product-sections";
+import {
+  ProductFaq,
+  ProductClosingCta,
+} from "@/components/product/product-sections";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
@@ -25,8 +28,9 @@ export default function PackagesPage() {
             Birlikte kullan.
           </h1>
           <p className="mx-auto mt-4 max-w-[640px] text-[18px] leading-[1.65] text-dc-ink-body">
-            Satın alınabilir ders paketinin fiyatını doğrudan görürsün. Koçluk, deneme,
-            birebir ve birleşik seçimlerin net tutarı ön görüşmede paylaşılır.
+            Satın alınabilir ders paketinin fiyatını doğrudan görürsün. Koçluk,
+            deneme, birebir ve birleşik seçimlerin net tutarı ön görüşmede
+            paylaşılır.
           </p>
         </section>
 
@@ -34,15 +38,18 @@ export default function PackagesPage() {
           <PackageBuilder />
         </section>
 
-        <section id="kapsam" className="site-container scroll-mt-6 pb-[var(--dc-section)] pt-[88px]">
+        <section
+          id="kapsam"
+          className="site-container scroll-mt-6 pb-[var(--dc-section)] pt-[88px]"
+        >
           <div className="flex flex-wrap items-end justify-between gap-6 border-b border-dc-ink pb-[18px]">
             <div>
               <h2 className="font-display text-[34px] leading-[1.1] tracking-[-0.02em] text-dc-ink">
                 Paketlerin tüm kapsamı
               </h2>
               <p className="mt-2.5 max-w-[620px] text-[15.5px] leading-[1.6] text-dc-ink-muted">
-                Karar vermek için üstteki üç ürün ve fiyat yeterli. Ayrıntıyı görmek
-                istersen tüm kapsam burada, konu başlıklarına göre.
+                Karar vermek için üstteki üç ürün ve fiyat yeterli. Ayrıntıyı
+                görmek istersen tüm kapsam burada, konu başlıklarına göre.
               </p>
             </div>
           </div>

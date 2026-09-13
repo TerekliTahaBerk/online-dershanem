@@ -5,8 +5,15 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentWeeklyGoal } from "@/components/panel/student-weekly-goal";
 import { PanelEmpty } from "@/components/panel/ui";
-import { AcademicBlock, BehavioralBlock, GidisatHero } from "@/components/panel/analiz";
-import { loadStudentProgressInsight, formatPeriodRangeLabel } from "@/lib/progress-insights/server";
+import {
+  AcademicBlock,
+  BehavioralBlock,
+  GidisatHero,
+} from "@/components/panel/analiz";
+import {
+  loadStudentProgressInsight,
+  formatPeriodRangeLabel,
+} from "@/lib/progress-insights/server";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 import { prisma } from "@/lib/prisma";
 
@@ -43,7 +50,9 @@ export default async function StudentAnalizPage() {
         <GidisatHero
           title="Gidişatın"
           periodLabel="Analiz"
-          sentences={["Profilin hazırlanıyor. Tamamlandığında gidişat özetin burada açılır."]}
+          sentences={[
+            "Profilin hazırlanıyor. Tamamlandığında gidişat özetin burada açılır.",
+          ]}
         />
         <PanelEmpty
           title="Profilin hazırlanıyor."
@@ -78,7 +87,10 @@ export default async function StudentAnalizPage() {
 
       <div className="mt-6">
         <StudentWeeklyGoal
-          initial={profile.weeklyGoal || "Bu hafta en az üç odaklı çalışma tamamlayacağım."}
+          initial={
+            profile.weeklyGoal ||
+            "Bu hafta en az üç odaklı çalışma tamamlayacağım."
+          }
         />
       </div>
 
@@ -102,9 +114,13 @@ export default async function StudentAnalizPage() {
         <div className="mt-5 rounded-2xl border border-dc-line-soft bg-white p-4">
           <h2 className="text-sm font-bold text-dc-ink">Dış Deneme Sonucu</h2>
           <p className="mt-1 text-xs leading-6 text-dc-ink-muted">
-            Okulda, kursta veya başka bir platformda çözdüğün deneme sonucunu buraya ekleyebilirsin.
+            Okulda, kursta veya başka bir platformda çözdüğün deneme sonucunu
+            buraya ekleyebilirsin.
           </p>
-          <Link href="/panel/ogrenci/denemeler" className="panel-quick-action mt-3 inline-flex">
+          <Link
+            href="/panel/ogrenci/denemeler"
+            className="panel-quick-action mt-3 inline-flex"
+          >
             Dış Deneme Ekle
           </Link>
         </div>

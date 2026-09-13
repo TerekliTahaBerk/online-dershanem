@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { CheckCircle2, AlertTriangle, Clock, GraduationCap, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  GraduationCap,
+  ShieldCheck,
+} from "lucide-react";
 
 export type CheckoutResultStatus = "success" | "failed" | "pending";
 
@@ -46,7 +52,8 @@ const STATUS_CONFIG = {
     iconBg: "bg-amber-50 text-amber-700",
     borderClass: "border-amber-200",
     defaultTitle: "Bilgileriniz alındı",
-    defaultDescription: "Talebiniz kayıt altına alındı. Ödemenin tamamlanması için sizinle iletişime geçilecek.",
+    defaultDescription:
+      "Talebiniz kayıt altına alındı. Ödemenin tamamlanması için sizinle iletişime geçilecek.",
   },
 } as const;
 

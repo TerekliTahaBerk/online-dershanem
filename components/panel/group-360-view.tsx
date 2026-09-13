@@ -42,7 +42,9 @@ const DAY = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
-function opsTone(status: Group360OpsStatus): "neutral" | "success" | "warning" | "critical" {
+function opsTone(
+  status: Group360OpsStatus,
+): "neutral" | "success" | "warning" | "critical" {
   if (status === "critical") return "critical";
   if (status === "attention") return "warning";
   if (status === "archived") return "neutral";
@@ -58,8 +60,12 @@ function riskTone(level: Group360MemberRisk): "default" | "ok" | "warn" {
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">{label}</p>
-      <p className="mt-1 truncate text-[13.5px] font-semibold text-dc-ink">{value}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
+        {label}
+      </p>
+      <p className="mt-1 truncate text-[13.5px] font-semibold text-dc-ink">
+        {value}
+      </p>
     </div>
   );
 }
@@ -92,7 +98,10 @@ export function Group360View({ bundle }: { bundle: Group360Bundle }) {
   return (
     <div className="max-w-[1100px]">
       <p className="text-[13px] text-dc-ink-faint">
-        <Link href="/panel/yonetim/egitim" className="hover:text-dc-brand-hover hover:underline">
+        <Link
+          href="/panel/yonetim/egitim"
+          className="hover:text-dc-brand-hover hover:underline"
+        >
           Gruplar ve dersler
         </Link>
       </p>
@@ -119,7 +128,10 @@ export function Group360View({ bundle }: { bundle: Group360Bundle }) {
           value={`${summary.activeStudentCount}/${summary.capacity}`}
         />
         <MetaItem label="Ana öğretmen" value={summary.teacher.name} />
-        <MetaItem label="Haftalık ders" value={String(summary.weeklyLessonCount)} />
+        <MetaItem
+          label="Haftalık ders"
+          value={String(summary.weeklyLessonCount)}
+        />
         <MetaItem
           label="Bir sonraki ders"
           value={
@@ -161,16 +173,25 @@ export function Group360View({ bundle }: { bundle: Group360Bundle }) {
         </div>
       ) : null}
 
-      <nav className="mt-6 flex flex-wrap gap-2" aria-label="Grup 360 sekmeleri">
+      <nav
+        className="mt-6 flex flex-wrap gap-2"
+        aria-label="Grup 360 sekmeleri"
+      >
         {tabs.map((item) => (
-          <PanelFilterLink key={item} href={group360TabHref(basePath, item)} active={tab === item}>
+          <PanelFilterLink
+            key={item}
+            href={group360TabHref(basePath, item)}
+            active={tab === item}
+          >
             {GROUP_360_TAB_LABELS[item]}
           </PanelFilterLink>
         ))}
       </nav>
 
       <div className="mt-5 space-y-5">
-        {tab === "genel" && bundle.overview ? <OverviewPanel data={bundle.overview} /> : null}
+        {tab === "genel" && bundle.overview ? (
+          <OverviewPanel data={bundle.overview} />
+        ) : null}
         {tab === "ogrenciler" && bundle.students ? (
           <StudentsPanel
             groupId={summary.id}
@@ -179,8 +200,12 @@ export function Group360View({ bundle }: { bundle: Group360Bundle }) {
             targetGroups={bundle.targetGroups}
           />
         ) : null}
-        {tab === "program" && bundle.program ? <ProgramPanel data={bundle.program} /> : null}
-        {tab === "gecmis" && bundle.history ? <HistoryPanel data={bundle.history} /> : null}
+        {tab === "program" && bundle.program ? (
+          <ProgramPanel data={bundle.program} />
+        ) : null}
+        {tab === "gecmis" && bundle.history ? (
+          <HistoryPanel data={bundle.history} />
+        ) : null}
         {tab === "operasyon" && bundle.opsTab ? (
           <OpsPanel groupId={summary.id} data={bundle.opsTab} />
         ) : null}
@@ -189,14 +214,24 @@ export function Group360View({ bundle }: { bundle: Group360Bundle }) {
   );
 }
 
-function OverviewPanel({ data }: { data: NonNullable<Group360Bundle["overview"]> }) {
+function OverviewPanel({
+  data,
+}: {
+  data: NonNullable<Group360Bundle["overview"]>;
+}) {
   return (
     <>
       <PanelCard>
         <PanelCardTitle>Hızlı özet</PanelCardTitle>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <MetaItem label="Boş koltuk" value={String(data.capacity.available)} />
-          <MetaItem label="Aktif ders serisi" value={String(data.seriesCount)} />
+          <MetaItem
+            label="Boş koltuk"
+            value={String(data.capacity.available)}
+          />
+          <MetaItem
+            label="Aktif ders serisi"
+            value={String(data.seriesCount)}
+          />
           <MetaItem label="Ödev sayısı" value={String(data.assignmentCount)} />
         </div>
       </PanelCard>
@@ -214,7 +249,9 @@ function OverviewPanel({ data }: { data: NonNullable<Group360Bundle["overview"]>
             />
           ))}
           {!data.upcomingLessons.length ? (
-            <p className="text-[13.5px] text-dc-ink-muted">Yaklaşan planlı ders yok.</p>
+            <p className="text-[13.5px] text-dc-ink-muted">
+              Yaklaşan planlı ders yok.
+            </p>
           ) : null}
         </div>
       </PanelCard>
@@ -224,9 +261,16 @@ function OverviewPanel({ data }: { data: NonNullable<Group360Bundle["overview"]>
           <PanelCardTitle>Operasyon sorunları</PanelCardTitle>
           <div className="mt-3 space-y-2">
             {data.issues.map((issue) => (
-              <div key={issue.code} className="rounded-[10px] border border-dc-line-soft p-3">
-                <p className="text-[13px] font-bold text-dc-ink">{issue.title}</p>
-                <p className="mt-1 text-[12.5px] text-dc-ink-muted">{issue.description}</p>
+              <div
+                key={issue.code}
+                className="rounded-[10px] border border-dc-line-soft p-3"
+              >
+                <p className="text-[13px] font-bold text-dc-ink">
+                  {issue.title}
+                </p>
+                <p className="mt-1 text-[12.5px] text-dc-ink-muted">
+                  {issue.description}
+                </p>
               </div>
             ))}
           </div>
@@ -251,16 +295,27 @@ function StudentsPanel({
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState<
-    Array<{ id: string; name: string; email: string; activeGroups: Array<{ id: string; name: string }> }>
+    Array<{
+      id: string;
+      name: string;
+      email: string;
+      activeGroups: Array<{ id: string; name: string }>;
+    }>
   >([]);
-  const [bulkAction, setBulkAction] = useState<"TRANSFER" | "REMOVE" | "NOTIFY">("TRANSFER");
+  const [bulkAction, setBulkAction] = useState<
+    "TRANSFER" | "REMOVE" | "NOTIFY"
+  >("TRANSFER");
   const [targetGroupId, setTargetGroupId] = useState("");
   const [notifyTitle, setNotifyTitle] = useState("");
   const [notifyBody, setNotifyBody] = useState("");
   const [preview, setPreview] = useState<TransferPreviewSummary | null>(null);
   const [removePreview, setRemovePreview] = useState<{
     canExecute: boolean;
-    items: Array<{ studentId: string; studentName: string; blockers: string[] }>;
+    items: Array<{
+      studentId: string;
+      studentName: string;
+      blockers: string[];
+    }>;
   } | null>(null);
   const [notifyPreview, setNotifyPreview] = useState<{
     canExecute: boolean;
@@ -274,7 +329,11 @@ function StudentsPanel({
 
   const allSelected = members.length > 0 && selected.length === members.length;
 
-  async function run(key: string, action: () => Promise<void>, success: string) {
+  async function run(
+    key: string,
+    action: () => Promise<void>,
+    success: string,
+  ) {
     setBusy(key);
     setMessage("");
     try {
@@ -282,7 +341,9 @@ function StudentsPanel({
       setMessage(success);
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "İşlem tamamlanamadı.");
+      setMessage(
+        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+      );
     } finally {
       setBusy(null);
     }
@@ -291,7 +352,9 @@ function StudentsPanel({
   async function searchStudents() {
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
-    const response = await fetch(`/api/panel/groups/${groupId}/students?${params.toString()}`);
+    const response = await fetch(
+      `/api/panel/groups/${groupId}/students?${params.toString()}`,
+    );
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || "Öğrenciler getirilemedi.");
     setCandidates(Array.isArray(body.students) ? body.students : []);
@@ -326,7 +389,11 @@ function StudentsPanel({
           mode: "PREVIEW",
           studentIds: selected,
         });
-        setRemovePreview(result as typeof removePreview extends infer T ? NonNullable<T> : never);
+        setRemovePreview(
+          result as typeof removePreview extends infer T
+            ? NonNullable<T>
+            : never,
+        );
       } else {
         const result = await postMembers(groupId, {
           action: "NOTIFY",
@@ -335,10 +402,16 @@ function StudentsPanel({
           title: notifyTitle || undefined,
           body: notifyBody || undefined,
         });
-        setNotifyPreview(result as typeof notifyPreview extends infer T ? NonNullable<T> : never);
+        setNotifyPreview(
+          result as typeof notifyPreview extends infer T
+            ? NonNullable<T>
+            : never,
+        );
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Önizleme alınamadı.");
+      setMessage(
+        error instanceof Error ? error.message : "Önizleme alınamadı.",
+      );
     } finally {
       setBusy(null);
     }
@@ -405,7 +478,9 @@ function StudentsPanel({
               type="button"
               className="panel-quick-action"
               disabled={busy === "search"}
-              onClick={() => void run("search", () => searchStudents(), "Arama güncellendi.")}
+              onClick={() =>
+                void run("search", () => searchStudents(), "Arama güncellendi.")
+              }
             >
               {busy === "search" ? "Aranıyor" : "Ara"}
             </button>
@@ -413,9 +488,16 @@ function StudentsPanel({
           {candidates.length ? (
             <div className="mt-3 space-y-2">
               {candidates.map((student) => (
-                <div key={student.id} className="rounded-[10px] border border-dc-line-soft p-3">
-                  <p className="text-[13px] font-bold text-dc-ink">{student.name}</p>
-                  <p className="text-[12px] text-dc-ink-muted">{student.email}</p>
+                <div
+                  key={student.id}
+                  className="rounded-[10px] border border-dc-line-soft p-3"
+                >
+                  <p className="text-[13px] font-bold text-dc-ink">
+                    {student.name}
+                  </p>
+                  <p className="text-[12px] text-dc-ink-muted">
+                    {student.email}
+                  </p>
                   <button
                     type="button"
                     className="panel-quick-action mt-2"
@@ -449,7 +531,11 @@ function StudentsPanel({
               type="checkbox"
               checked={allSelected}
               onChange={(event) =>
-                setSelected(event.target.checked ? members.map((item) => item.studentId) : [])
+                setSelected(
+                  event.target.checked
+                    ? members.map((item) => item.studentId)
+                    : [],
+                )
               }
             />
             Tümünü seç
@@ -457,7 +543,15 @@ function StudentsPanel({
         </div>
 
         <PanelTable
-          columns={["", "Öğrenci", "Paket", "Katılım", "Risk", "Son aktivite", "Eklenme"]}
+          columns={[
+            "",
+            "Öğrenci",
+            "Paket",
+            "Katılım",
+            "Risk",
+            "Son aktivite",
+            "Eklenme",
+          ]}
           caption="Grup öğrencileri"
         >
           {members.map((member) => {
@@ -485,19 +579,25 @@ function StudentsPanel({
                   >
                     {member.name}
                   </Link>
-                  <p className="text-[11px] text-dc-ink-muted">{member.email}</p>
+                  <p className="text-[11px] text-dc-ink-muted">
+                    {member.email}
+                  </p>
                 </PanelTableCell>
                 <PanelTableCell>
                   {member.packages.length ? member.packages.join(" · ") : "—"}
                 </PanelTableCell>
                 <PanelTableCell>
-                  {member.attendanceRate != null ? `%${member.attendanceRate}` : "—"}
+                  {member.attendanceRate != null
+                    ? `%${member.attendanceRate}`
+                    : "—"}
                 </PanelTableCell>
                 <PanelTableCell tone={riskTone(member.risk)}>
                   {GROUP_360_MEMBER_RISK_LABELS[member.risk]}
                 </PanelTableCell>
                 <PanelTableCell>
-                  {member.lastActivityAt ? DAY.format(member.lastActivityAt) : "Kayıt yok"}
+                  {member.lastActivityAt
+                    ? DAY.format(member.lastActivityAt)
+                    : "Kayıt yok"}
                 </PanelTableCell>
                 <PanelTableCell>{DAY.format(member.enrolledAt)}</PanelTableCell>
               </PanelTableRow>
@@ -505,7 +605,9 @@ function StudentsPanel({
           })}
         </PanelTable>
         {!members.length ? (
-          <p className="mt-3 text-[13.5px] text-dc-ink-muted">Aktif öğrenci yok.</p>
+          <p className="mt-3 text-[13.5px] text-dc-ink-muted">
+            Aktif öğrenci yok.
+          </p>
         ) : null}
       </PanelCard>
 
@@ -608,7 +710,10 @@ function StudentsPanel({
                       Hedef dersler:{" "}
                       {item.affectedTargetLessons
                         .slice(0, 3)
-                        .map((lesson) => `${lesson.title} (${DAY.format(new Date(lesson.startsAt))})`)
+                        .map(
+                          (lesson) =>
+                            `${lesson.title} (${DAY.format(new Date(lesson.startsAt))})`,
+                        )
                         .join(", ")}
                     </span>
                   ) : null}
@@ -625,7 +730,9 @@ function StudentsPanel({
               {removePreview.items.map((item) => (
                 <li key={item.studentId}>
                   {item.studentName}
-                  {item.blockers.length ? ` — ${item.blockers.join("; ")}` : " — hazır"}
+                  {item.blockers.length
+                    ? ` — ${item.blockers.join("; ")}`
+                    : " — hazır"}
                 </li>
               ))}
             </ul>
@@ -635,8 +742,8 @@ function StudentsPanel({
         {notifyPreview ? (
           <div className="mt-4 rounded-[10px] border border-dc-line-soft p-3 text-[12.5px]">
             <p className="font-bold text-dc-ink">
-              Bildirim · {notifyPreview.matchedStudents} öğrenci · {notifyPreview.recipientCount}{" "}
-              alıcı
+              Bildirim · {notifyPreview.matchedStudents} öğrenci ·{" "}
+              {notifyPreview.recipientCount} alıcı
             </p>
             <p className="mt-1">{notifyPreview.title}</p>
             <p className="text-dc-ink-muted">{notifyPreview.body}</p>
@@ -653,7 +760,11 @@ function StudentsPanel({
   );
 }
 
-function ProgramPanel({ data }: { data: NonNullable<Group360Bundle["program"]> }) {
+function ProgramPanel({
+  data,
+}: {
+  data: NonNullable<Group360Bundle["program"]>;
+}) {
   return (
     <>
       <PanelCard>
@@ -679,11 +790,14 @@ function ProgramPanel({ data }: { data: NonNullable<Group360Bundle["program"]> }
         <PanelCardTitle>Ders serileri</PanelCardTitle>
         <div className="mt-3 space-y-2">
           {data.series.map((item) => (
-            <div key={item.id} className="rounded-[10px] border border-dc-line-soft p-3">
+            <div
+              key={item.id}
+              className="rounded-[10px] border border-dc-line-soft p-3"
+            >
               <p className="text-[13px] font-bold text-dc-ink">{item.title}</p>
               <p className="mt-1 text-[12px] text-dc-ink-muted">
-                {item.teacherName} · {item.isActive ? "Aktif" : "Pasif"} · {item.upcomingCount}{" "}
-                yaklaşan
+                {item.teacherName} · {item.isActive ? "Aktif" : "Pasif"} ·{" "}
+                {item.upcomingCount} yaklaşan
               </p>
             </div>
           ))}
@@ -705,8 +819,8 @@ function ProgramPanel({ data }: { data: NonNullable<Group360Bundle["program"]> }
                 {SCHEDULE_CONFLICT_KIND_LABELS[conflict.kind]}
               </p>
               <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-                {conflict.lessonTitle || "Ders"} ↔ {conflict.otherLessonTitle} ·{" "}
-                {DATE.format(conflict.startsAt)}
+                {conflict.lessonTitle || "Ders"} ↔ {conflict.otherLessonTitle}{" "}
+                · {DATE.format(conflict.startsAt)}
                 {conflict.studentName ? ` · ${conflict.studentName}` : ""}
               </p>
             </div>
@@ -720,7 +834,11 @@ function ProgramPanel({ data }: { data: NonNullable<Group360Bundle["program"]> }
   );
 }
 
-function HistoryPanel({ data }: { data: NonNullable<Group360Bundle["history"]> }) {
+function HistoryPanel({
+  data,
+}: {
+  data: NonNullable<Group360Bundle["history"]>;
+}) {
   return (
     <>
       <PanelCard>
@@ -747,7 +865,9 @@ function HistoryPanel({ data }: { data: NonNullable<Group360Bundle["history"]> }
             />
           ))}
           {!data.completed.length ? (
-            <p className="text-[13.5px] text-dc-ink-muted">Tamamlanan ders yok.</p>
+            <p className="text-[13.5px] text-dc-ink-muted">
+              Tamamlanan ders yok.
+            </p>
           ) : null}
         </div>
       </PanelCard>
@@ -783,7 +903,11 @@ function OpsPanel({
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  async function run(key: string, action: () => Promise<void>, success: string) {
+  async function run(
+    key: string,
+    action: () => Promise<void>,
+    success: string,
+  ) {
     setBusy(key);
     setMessage("");
     try {
@@ -791,7 +915,9 @@ function OpsPanel({
       setMessage(success);
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "İşlem tamamlanamadı.");
+      setMessage(
+        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+      );
     } finally {
       setBusy(null);
     }
@@ -803,9 +929,14 @@ function OpsPanel({
         <PanelCardTitle>Operasyon sorunları</PanelCardTitle>
         <div className="mt-3 space-y-2">
           {data.issues.map((issue) => (
-            <div key={issue.code} className="rounded-[10px] border border-dc-line-soft p-3">
+            <div
+              key={issue.code}
+              className="rounded-[10px] border border-dc-line-soft p-3"
+            >
               <p className="text-[13px] font-bold text-dc-ink">{issue.title}</p>
-              <p className="mt-1 text-[12.5px] text-dc-ink-muted">{issue.description}</p>
+              <p className="mt-1 text-[12.5px] text-dc-ink-muted">
+                {issue.description}
+              </p>
             </div>
           ))}
           {!data.issues.length ? (
@@ -823,7 +954,8 @@ function OpsPanel({
                 key={`${conflict.otherLessonId}-${index}`}
                 className="text-[12.5px] text-dc-ink-muted"
               >
-                {SCHEDULE_CONFLICT_KIND_LABELS[conflict.kind]} · {conflict.otherLessonTitle}
+                {SCHEDULE_CONFLICT_KIND_LABELS[conflict.kind]} ·{" "}
+                {conflict.otherLessonTitle}
               </p>
             ))}
           </div>
@@ -920,7 +1052,8 @@ function OpsPanel({
           onSubmit={(event) => {
             event.preventDefault();
             const nextState = !data.meta.isActive;
-            if (!nextState && !window.confirm("Bu grup arşivlensin mi?")) return;
+            if (!nextState && !window.confirm("Bu grup arşivlensin mi?"))
+              return;
             void run(
               "active",
               () =>

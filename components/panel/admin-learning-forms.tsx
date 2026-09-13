@@ -52,7 +52,9 @@ export function AdminLearningForms({
       setPreview(null);
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "İşlem tamamlanamadı.");
+      setMessage(
+        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+      );
     } finally {
       setBusy(false);
     }
@@ -64,7 +66,10 @@ export function AdminLearningForms({
       .getAll("weekdays")
       .map((value) => Number(value))
       .filter((n) => n >= 1 && n <= 7);
-    const mode = weekdays.length || Number(data.get("repeatWeeks")) > 1 ? "SERIES" : "SINGLE";
+    const mode =
+      weekdays.length || Number(data.get("repeatWeeks")) > 1
+        ? "SERIES"
+        : "SINGLE";
     const starts = new Date(local);
     const time = `${String(starts.getHours()).padStart(2, "0")}:${String(starts.getMinutes()).padStart(2, "0")}`;
     return {
@@ -112,10 +117,22 @@ export function AdminLearningForms({
           <UsersRound size={19} />
         </span>
         <h2 className="panel-card-title">Yeni grup</h2>
-        <p className="panel-card-copy">En fazla dört öğrenciyi aynı öğretmenle eşleştirin.</p>
-        <input name="name" required className="panel-input mt-4" placeholder="Grup adı" />
+        <p className="panel-card-copy">
+          En fazla dört öğrenciyi aynı öğretmenle eşleştirin.
+        </p>
+        <input
+          name="name"
+          required
+          className="panel-input mt-4"
+          placeholder="Grup adı"
+        />
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <input name="subject" required className="panel-input" placeholder="Ders" />
+          <input
+            name="subject"
+            required
+            className="panel-input"
+            placeholder="Ders"
+          />
           <input name="level" className="panel-input" placeholder="Seviye" />
         </div>
         <select name="teacherId" required className="panel-input mt-2">
@@ -137,7 +154,10 @@ export function AdminLearningForms({
             </label>
           ))}
         </div>
-        <button disabled={busy} className="site-btn site-btn-primary site-btn-sm mt-4 w-full">
+        <button
+          disabled={busy}
+          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+        >
           Grubu kur
         </button>
       </form>
@@ -148,14 +168,19 @@ export function AdminLearningForms({
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
-          void submit(() => post("/api/panel/lessons", buildLessonPayload(data)), "Ders takvime eklendi.");
+          void submit(
+            () => post("/api/panel/lessons", buildLessonPayload(data)),
+            "Ders takvime eklendi.",
+          );
         }}
       >
         <span className="panel-action-icon bg-[#ecf3fa] text-[#1e3a5f]">
           <CalendarPlus size={19} />
         </span>
         <h2 className="panel-card-title">Ders planla</h2>
-        <p className="panel-card-copy">Grup veya bireysel öğrenci. Seri için önizleme alın.</p>
+        <p className="panel-card-copy">
+          Grup veya bireysel öğrenci. Seri için önizleme alın.
+        </p>
         <div className="mt-4 flex gap-2 text-xs font-semibold">
           <button
             type="button"
@@ -207,8 +232,18 @@ export function AdminLearningForms({
             </select>
           </>
         )}
-        <input name="title" required className="panel-input mt-2" placeholder="Ders başlığı" />
-        <input name="startsAt" required type="datetime-local" className="panel-input mt-2" />
+        <input
+          name="title"
+          required
+          className="panel-input mt-2"
+          placeholder="Ders başlığı"
+        />
+        <input
+          name="startsAt"
+          required
+          type="datetime-local"
+          className="panel-input mt-2"
+        />
         <input
           name="meetingUrl"
           type="url"
@@ -234,13 +269,21 @@ export function AdminLearningForms({
             </label>
           ))}
         </div>
-        <select name="repeatWeeks" defaultValue="1" className="panel-input mt-2">
+        <select
+          name="repeatWeeks"
+          defaultValue="1"
+          className="panel-input mt-2"
+        >
           <option value="1">Yalnızca bu ders / seçili gün serisi</option>
           <option value="4">4 hafta tekrarla</option>
           <option value="8">8 hafta tekrarla</option>
           <option value="12">12 hafta tekrarla</option>
         </select>
-        <select name="totalOccurrences" defaultValue="8" className="panel-input mt-2">
+        <select
+          name="totalOccurrences"
+          defaultValue="8"
+          className="panel-input mt-2"
+        >
           <option value="4">4 oluşum</option>
           <option value="8">8 oluşum</option>
           <option value="12">12 oluşum</option>
@@ -256,10 +299,17 @@ export function AdminLearningForms({
             const data = new FormData(form);
             setBusy(true);
             setMessage("");
-            void post("/api/panel/lessons/preview-series", buildLessonPayload(data))
+            void post(
+              "/api/panel/lessons/preview-series",
+              buildLessonPayload(data),
+            )
               .then((result) => setPreview(result as SeriesPreview))
               .catch((error) =>
-                setMessage(error instanceof Error ? error.message : "Önizleme alınamadı."),
+                setMessage(
+                  error instanceof Error
+                    ? error.message
+                    : "Önizleme alınamadı.",
+                ),
               )
               .finally(() => setBusy(false));
           }}
@@ -284,7 +334,10 @@ export function AdminLearningForms({
             ) : null}
           </div>
         ) : null}
-        <button disabled={busy} className="site-btn site-btn-primary site-btn-sm mt-4 w-full">
+        <button
+          disabled={busy}
+          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+        >
           Dersi planla
         </button>
       </form>
@@ -312,7 +365,9 @@ export function AdminLearningForms({
           <Link2 size={19} />
         </span>
         <h2 className="panel-card-title">Veli bağla</h2>
-        <p className="panel-card-copy">Anne ve baba aynı öğrenciye ayrı ayrı bağlanabilir.</p>
+        <p className="panel-card-copy">
+          Anne ve baba aynı öğrenciye ayrı ayrı bağlanabilir.
+        </p>
         <select name="parentId" required className="panel-input mt-4">
           <option value="">Veli seçin</option>
           {parents.map((item) => (
@@ -329,7 +384,11 @@ export function AdminLearningForms({
             </option>
           ))}
         </select>
-        <select name="relationship" className="panel-input mt-2" defaultValue="Anne">
+        <select
+          name="relationship"
+          className="panel-input mt-2"
+          defaultValue="Anne"
+        >
           <option value="Anne">Anne</option>
           <option value="Baba">Baba</option>
           <option value="Vasi">Vasi</option>
@@ -339,12 +398,16 @@ export function AdminLearningForms({
           <input type="checkbox" name="primaryContact" /> Birincil iletişim
         </label>
         <label className="mt-1 flex items-center gap-2 text-xs font-semibold">
-          <input type="checkbox" name="canViewAcademic" defaultChecked /> Akademik görünüm
+          <input type="checkbox" name="canViewAcademic" defaultChecked />{" "}
+          Akademik görünüm
         </label>
         <label className="mt-1 flex items-center gap-2 text-xs font-semibold">
           <input type="checkbox" name="canViewPayments" /> Ödeme görünümü
         </label>
-        <button disabled={busy} className="site-btn site-btn-primary site-btn-sm mt-4 w-full">
+        <button
+          disabled={busy}
+          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+        >
           Bağlantıyı kur
         </button>
       </form>

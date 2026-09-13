@@ -3,9 +3,17 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelEmpty, PanelStatCard, PanelCard, PanelCardTitle } from "@/components/panel/ui";
+import {
+  PanelEmpty,
+  PanelStatCard,
+  PanelCard,
+  PanelCardTitle,
+} from "@/components/panel/ui";
 import { GidisatHero } from "@/components/panel/analiz";
-import { loadTeacherGidisatOverview, formatPeriodRangeLabel } from "@/lib/progress-insights/server";
+import {
+  loadTeacherGidisatOverview,
+  formatPeriodRangeLabel,
+} from "@/lib/progress-insights/server";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 
 export const dynamic = "force-dynamic";
@@ -75,11 +83,15 @@ export default async function TeacherAnalizPage() {
             </section>
 
             <section className="mt-8" aria-labelledby="dusen-gidisat">
-              <h2 id="dusen-gidisat" className="text-[15px] font-extrabold text-dc-ink">
+              <h2
+                id="dusen-gidisat"
+                className="text-[15px] font-extrabold text-dc-ink"
+              >
                 Düşen gidişat
               </h2>
               <p className="mt-1 text-[13px] text-dc-ink-muted">
-                Net gerileme veya düşük katılım / çalışma / plan sinyali olan öğrenciler.
+                Net gerileme veya düşük katılım / çalışma / plan sinyali olan
+                öğrenciler.
               </p>
 
               {overview.declining.length === 0 ? (
@@ -111,7 +123,9 @@ export default async function TeacherAnalizPage() {
                                 .join(" · ")}
                             </p>
                             {row.riskHint ? (
-                              <p className="mt-1 text-[12px] text-amber-800">{row.riskHint}</p>
+                              <p className="mt-1 text-[12px] text-amber-800">
+                                {row.riskHint}
+                              </p>
                             ) : null}
                           </div>
                           <Link
@@ -129,7 +143,10 @@ export default async function TeacherAnalizPage() {
             </section>
 
             <section className="mt-8" aria-labelledby="tum-ogrenciler">
-              <h2 id="tum-ogrenciler" className="text-[15px] font-extrabold text-dc-ink">
+              <h2
+                id="tum-ogrenciler"
+                className="text-[15px] font-extrabold text-dc-ink"
+              >
                 Tüm öğrenciler
               </h2>
               <div className="mt-4 overflow-x-auto rounded-[14px] border border-dc-line-soft bg-white">
@@ -146,7 +163,10 @@ export default async function TeacherAnalizPage() {
                   </thead>
                   <tbody>
                     {overview.rows.map((row) => (
-                      <tr key={row.studentId} className="border-b border-dc-line-soft last:border-0">
+                      <tr
+                        key={row.studentId}
+                        className="border-b border-dc-line-soft last:border-0"
+                      >
                         <td className="px-4 py-3 font-medium text-dc-ink">
                           {row.studentName}
                           {row.declining ? (
@@ -161,8 +181,12 @@ export default async function TeacherAnalizPage() {
                         <td className="px-4 py-3 text-dc-ink-body">
                           {fmtPct(row.assignmentPercent)}
                         </td>
-                        <td className="px-4 py-3 text-dc-ink-body">{fmtPct(row.planPercent)}</td>
-                        <td className="px-4 py-3 text-dc-ink-body">{fmtDelta(row.netDelta)}</td>
+                        <td className="px-4 py-3 text-dc-ink-body">
+                          {fmtPct(row.planPercent)}
+                        </td>
+                        <td className="px-4 py-3 text-dc-ink-body">
+                          {fmtDelta(row.netDelta)}
+                        </td>
                         <td className="px-4 py-3 text-right">
                           <Link
                             href={row.href}

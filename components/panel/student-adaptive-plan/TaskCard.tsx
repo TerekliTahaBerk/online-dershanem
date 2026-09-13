@@ -8,14 +8,27 @@ import { dayHeading, fieldLabel, sourceLabels } from "./constants";
 import type { TaskCardProps } from "./types";
 
 export function TaskCard(props: TaskCardProps) {
-  const { task, canComplete, highlighted, onStart, onOpenComplete, draft, onDraftChange, onSubmitComplete, onCancelComplete, busy } = props;
+  const {
+    task,
+    canComplete,
+    highlighted,
+    onStart,
+    onOpenComplete,
+    draft,
+    onDraftChange,
+    onSubmitComplete,
+    onCancelComplete,
+    busy,
+  } = props;
   const done = task.status === "DONE" || task.status === "PARTIAL";
   const fields = completionFieldsForKind(task.taskKind || "CUSTOM");
   const plannedVsActual =
     task.actualMinutes != null || task.actualQuestions != null ? (
       <p className="mt-1 text-xs text-[var(--site-muted)]">
         Planlanan
-        {task.targetType === "QUESTIONS" && task.targetValue ? ` · ${task.targetValue} soru` : ""}
+        {task.targetType === "QUESTIONS" && task.targetValue
+          ? ` · ${task.targetValue} soru`
+          : ""}
         {task.durationMinutes > 0 ? ` · ${task.durationMinutes} dk` : ""}
         {" · "}
         Gerçekleşen
@@ -39,20 +52,34 @@ export function TaskCard(props: TaskCardProps) {
           <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--site-muted)]">
             <CalendarDays size={13} />
             <span>{dayHeading.format(new Date(task.scheduledFor))}</span>
-            {task.durationMinutes > 0 ? <span>· {task.durationMinutes} dk</span> : null}
+            {task.durationMinutes > 0 ? (
+              <span>· {task.durationMinutes} dk</span>
+            ) : null}
             {task.targetType === "QUESTIONS" && task.targetValue ? (
               <span>· {task.targetValue} soru</span>
             ) : null}
             <span>· {sourceLabels[task.sourceType]}</span>
             <span>· {taskStatusLabel(task.status)}</span>
           </p>
-          <h3 className={`mt-1 font-extrabold ${highlighted ? "text-base" : "text-sm"}`}>{task.title}</h3>
+          <h3
+            className={`mt-1 font-extrabold ${highlighted ? "text-base" : "text-sm"}`}
+          >
+            {task.title}
+          </h3>
           {plannedVsActual}
         </div>
-        {canComplete && task.status !== "DONE" && task.status !== "SKIPPED" && !draft ? (
+        {canComplete &&
+        task.status !== "DONE" &&
+        task.status !== "SKIPPED" &&
+        !draft ? (
           <div className="flex shrink-0 flex-wrap gap-2">
             {task.status === "PLANNED" ? (
-              <button type="button" onClick={() => onStart(task)} className="panel-quick-action" aria-label="Göreve başla">
+              <button
+                type="button"
+                onClick={() => onStart(task)}
+                className="panel-quick-action"
+                aria-label="Göreve başla"
+              >
                 Başladım
               </button>
             ) : null}
@@ -82,7 +109,9 @@ export function TaskCard(props: TaskCardProps) {
             </button>
           </div>
         ) : done ? (
-          <span className="shrink-0 text-xs font-bold text-emerald-800">Tamamlandı</span>
+          <span className="shrink-0 text-xs font-bold text-emerald-800">
+            Tamamlandı
+          </span>
         ) : null}
       </div>
 
@@ -109,7 +138,9 @@ export function TaskCard(props: TaskCardProps) {
                   <textarea
                     className="panel-input mt-1 min-h-[64px]"
                     value={draft.studentNote}
-                    onChange={(e) => onDraftChange({ ...draft, studentNote: e.target.value })}
+                    onChange={(e) =>
+                      onDraftChange({ ...draft, studentNote: e.target.value })
+                    }
                   />
                 </label>
               ) : (
@@ -117,21 +148,40 @@ export function TaskCard(props: TaskCardProps) {
                   <span className="panel-label">{fieldLabel(field)}</span>
                   <input
                     type="number"
-                    min={field === "difficultyFelt" || field === "energyFelt" ? 1 : 0}
-                    max={field === "difficultyFelt" || field === "energyFelt" ? 5 : 720}
+                    min={
+                      field === "difficultyFelt" || field === "energyFelt"
+                        ? 1
+                        : 0
+                    }
+                    max={
+                      field === "difficultyFelt" || field === "energyFelt"
+                        ? 5
+                        : 720
+                    }
                     className="panel-input mt-1"
                     value={draft[field]}
-                    onChange={(e) => onDraftChange({ ...draft, [field]: e.target.value })}
+                    onChange={(e) =>
+                      onDraftChange({ ...draft, [field]: e.target.value })
+                    }
                   />
                 </label>
               ),
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={busy} className="panel-quick-action panel-quick-action-primary">
+            <button
+              type="submit"
+              disabled={busy}
+              className="panel-quick-action panel-quick-action-primary"
+            >
               Kaydet
             </button>
-            <button type="button" disabled={busy} onClick={onCancelComplete} className="panel-quick-action">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={onCancelComplete}
+              className="panel-quick-action"
+            >
               Vazgeç
             </button>
           </div>

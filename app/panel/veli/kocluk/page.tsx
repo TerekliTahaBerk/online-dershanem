@@ -4,7 +4,12 @@ import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
-import { PanelHeading, PanelCard, PanelCardTitle, PanelEmpty } from "@/components/panel/ui";
+import {
+  PanelHeading,
+  PanelCard,
+  PanelCardTitle,
+  PanelEmpty,
+} from "@/components/panel/ui";
 import {
   addIstanbulCalendarDays,
   formatIstanbulDateInput,
@@ -37,7 +42,10 @@ export default async function ParentCoachingPage({
 }) {
   const session = await requirePanelRole("PARENT");
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -140,8 +148,14 @@ export default async function ParentCoachingPage({
         </div>
         <div className="flex justify-between gap-3">
           <dt>Sonraki görüşme</dt>
-          <dd className={coaching.overdue ? "text-[#C2493D]" : "text-dc-ink-muted"}>
-            {coaching.nextScheduledAt ? RANGE.format(coaching.nextScheduledAt) : "Planlanmadı"}
+          <dd
+            className={
+              coaching.overdue ? "text-[#C2493D]" : "text-dc-ink-muted"
+            }
+          >
+            {coaching.nextScheduledAt
+              ? RANGE.format(coaching.nextScheduledAt)
+              : "Planlanmadı"}
             {coaching.overdue && coaching.overdueDays !== null
               ? ` · ${coaching.overdueDays} gün gecikti`
               : ""}
@@ -194,10 +208,12 @@ export default async function ParentCoachingPage({
     formatIstanbulDateInput,
   );
 
-  const primaryGoal = goals.find((goal) => goal.percent != null) ?? goals[0] ?? null;
+  const primaryGoal =
+    goals.find((goal) => goal.percent != null) ?? goals[0] ?? null;
 
   const parentSummary = buildParentKocumSummary({
-    planCompletionPct: publishedSummary?.planCompletionPct ?? metrics.planCompletionPct,
+    planCompletionPct:
+      publishedSummary?.planCompletionPct ?? metrics.planCompletionPct,
     completedMinutes: metrics.completedMinutes,
     plannedMinutes: metrics.plannedMinutes,
     overdueCount: metrics.taskOverdue,
@@ -225,21 +241,31 @@ export default async function ParentCoachingPage({
           Planın %{parentSummary.planCompletionPct ?? 0}&apos;ü tamamlandı.
         </p>
         {parentSummary.studyRhythm ? (
-          <p className="mt-2 text-[14px] text-dc-ink-muted">{parentSummary.studyRhythm}</p>
+          <p className="mt-2 text-[14px] text-dc-ink-muted">
+            {parentSummary.studyRhythm}
+          </p>
         ) : null}
         {parentSummary.goalProgressLine ? (
-          <p className="mt-2 text-[14px] text-dc-ink-muted">{parentSummary.goalProgressLine}</p>
+          <p className="mt-2 text-[14px] text-dc-ink-muted">
+            {parentSummary.goalProgressLine}
+          </p>
         ) : null}
         {parentSummary.overdueTrend ? (
-          <p className="mt-1 text-[13.5px] text-dc-ink-muted">{parentSummary.overdueTrend}</p>
+          <p className="mt-1 text-[13.5px] text-dc-ink-muted">
+            {parentSummary.overdueTrend}
+          </p>
         ) : null}
       </PanelCard>
 
-      {(parentSummary.strengths || parentSummary.focusAreas || parentSummary.nextWeekFocus) && (
+      {(parentSummary.strengths ||
+        parentSummary.focusAreas ||
+        parentSummary.nextWeekFocus) && (
         <PanelCard className="mt-5">
           <PanelCardTitle>Koç özeti</PanelCardTitle>
           {parentSummary.coachSummary ? (
-            <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-body">{parentSummary.coachSummary}</p>
+            <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-body">
+              {parentSummary.coachSummary}
+            </p>
           ) : null}
           {parentSummary.strengths ? (
             <p className="mt-3 text-[14px]">
@@ -263,8 +289,8 @@ export default async function ParentCoachingPage({
       )}
 
       <p className="mt-5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
-        Bu ekran sakin bir özet sunar. İç koç notları, ham check-in ayrıntıları ve diğer
-        öğrencilerin verisi paylaşılmaz.
+        Bu ekran sakin bir özet sunar. İç koç notları, ham check-in ayrıntıları
+        ve diğer öğrencilerin verisi paylaşılmaz.
       </p>
     </>,
   );

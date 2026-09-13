@@ -39,7 +39,9 @@ export default async function OdkPaymentPage({
       status: true,
       totalCents: true,
       buyerInfo: true,
-      package: { select: { id: true, slug: true, title: true, isActive: true } },
+      package: {
+        select: { id: true, slug: true, title: true, isActive: true },
+      },
     },
   });
 
@@ -48,7 +50,9 @@ export default async function OdkPaymentPage({
   }
 
   if (order.package.slug !== slug) {
-    redirect(`/odk-paketleri/${order.package.slug}/satin-al/odeme?orderId=${orderId}`);
+    redirect(
+      `/odk-paketleri/${order.package.slug}/satin-al/odeme?orderId=${orderId}`,
+    );
   }
 
   // If already paid, jump to result success
@@ -74,8 +78,9 @@ export default async function OdkPaymentPage({
         userName: buyer.fullName || "Müşteri",
         userPhone: buyer.phone || "+905555555555",
         userAddress:
-          [buyer.address, buyer.district, buyer.city].filter(Boolean).join(", ") ||
-          "Türkiye",
+          [buyer.address, buyer.district, buyer.city]
+            .filter(Boolean)
+            .join(", ") || "Türkiye",
         userIp,
         origin,
       })
@@ -84,7 +89,11 @@ export default async function OdkPaymentPage({
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14"
+      >
         <PaytrIframeShell
           breadcrumb={[
             { label: "ODK Paketleri", href: "/deneme-kulubu" },

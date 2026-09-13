@@ -48,7 +48,13 @@ export default async function LoginPage({
 }
 
 /** Onaylı tasarım (Web.dc.html → isLogin, "GİRİŞ"). */
-function LoginScreen({ resetSuccess, registered }: { resetSuccess: boolean; registered: boolean }) {
+function LoginScreen({
+  resetSuccess,
+  registered,
+}: {
+  resetSuccess: boolean;
+  registered: boolean;
+}) {
   return (
     <AuthCard title="Tekrar hoş geldin" googleLabel="Google ile giriş yap">
       <LoginForm resetSuccess={resetSuccess} registered={registered} />
@@ -57,7 +63,10 @@ function LoginScreen({ resetSuccess, registered }: { resetSuccess: boolean; regi
       {PUBLIC_REGISTER_ENABLED ? (
         <p className="mt-5 text-center text-[13px] text-dc-ink-muted">
           Hesabın yok mu?{" "}
-          <Link href="/kayit" className="font-semibold text-dc-brand-strong hover:text-dc-brand-hover">
+          <Link
+            href="/kayit"
+            className="font-semibold text-dc-brand-strong hover:text-dc-brand-hover"
+          >
             Kayıt ol
           </Link>
         </p>
@@ -90,8 +99,11 @@ function RenewingNotice() {
         />
         <h1 className="sr-only">Panelimizi yeniliyoruz</h1>
         <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
-          Panelimizi yeniliyoruz, çok yakında buradayız. {" "}
-          <Link href="/" className="font-semibold text-[var(--brand-olive)] underline underline-offset-4">
+          Panelimizi yeniliyoruz, çok yakında buradayız.{" "}
+          <Link
+            href="/"
+            className="font-semibold text-[var(--brand-olive)] underline underline-offset-4"
+          >
             Ana sayfaya dön
           </Link>
         </p>

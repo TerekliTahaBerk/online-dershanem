@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { CalendarDays, GripVertical } from "lucide-react";
-import { addIstanbulCalendarDays, formatIstanbulDateInput, istanbulWeekStart } from "@/lib/istanbul-time";
+import {
+  addIstanbulCalendarDays,
+  formatIstanbulDateInput,
+  istanbulWeekStart,
+} from "@/lib/istanbul-time";
 
 type CoachTask = {
   id: string;
@@ -47,22 +51,31 @@ export function CoachWeekCalendar({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [dateDraft, setDateDraft] = useState<Record<string, string>>({});
 
-  const weekStart = useMemo(() => istanbulWeekStart(new Date(weekStartIso)), [weekStartIso]);
+  const weekStart = useMemo(
+    () => istanbulWeekStart(new Date(weekStartIso)),
+    [weekStartIso],
+  );
   const days = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => addIstanbulCalendarDays(weekStart, i)),
+    () =>
+      Array.from({ length: 7 }, (_, i) =>
+        addIstanbulCalendarDays(weekStart, i),
+      ),
     [weekStart],
   );
 
   async function reschedule(taskId: string, scheduledFor: Date) {
     setBusyId(taskId);
-    const response = await fetch(`/api/panel/kocum/tasks/${taskId}/reschedule`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        scheduledFor: scheduledFor.toISOString(),
-        expectedPlanVersion: version,
-      }),
-    });
+    const response = await fetch(
+      `/api/panel/kocum/tasks/${taskId}/reschedule`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          scheduledFor: scheduledFor.toISOString(),
+          expectedPlanVersion: version,
+        }),
+      },
+    );
     const body = await response.json().catch(() => ({}));
     setBusyId(null);
     if (!response.ok) {
@@ -72,7 +85,12 @@ export function CoachWeekCalendar({
     setVersion(body.version ?? version + 1);
     setTasks((current) =>
       current.map((task) =>
-        task.id === taskId ? { ...task, scheduledFor: body.scheduledFor || scheduledFor.toISOString() } : task,
+        task.id === taskId
+          ? {
+              ...task,
+              scheduledFor: body.scheduledFor || scheduledFor.toISOString(),
+            }
+          : task,
       ),
     );
     setMessage("Görev tarihi güncellendi.");
@@ -83,13 +101,19 @@ export function CoachWeekCalendar({
   }
 
   return (
-    <section className="panel-surface p-5 sm:p-6" aria-labelledby={`coach-cal-${planId}`}>
+    <section
+      className="panel-surface p-5 sm:p-6"
+      aria-labelledby={`coach-cal-${planId}`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
             Koç takvimi
           </p>
-          <h2 id={`coach-cal-${planId}`} className="mt-1 text-lg font-extrabold">
+          <h2
+            id={`coach-cal-${planId}`}
+            className="mt-1 text-lg font-extrabold"
+          >
             {studentName}
           </h2>
           <p className="mt-1 text-xs text-[var(--site-muted)]">
@@ -107,7 +131,10 @@ export function CoachWeekCalendar({
       <div className="mt-4 grid gap-3 lg:grid-cols-7">
         {days.map((day) => {
           const key = formatIstanbulDateInput(day);
-          const dayTasks = tasks.filter((task) => formatIstanbulDateInput(new Date(task.scheduledFor)) === key);
+          const dayTasks = tasks.filter(
+            (task) =>
+              formatIstanbulDateInput(new Date(task.scheduledFor)) === key,
+          );
           return (
             <div
               key={key}
@@ -135,7 +162,11 @@ export function CoachWeekCalendar({
                     className="rounded-lg border border-[var(--site-line)] bg-white p-2 text-xs shadow-sm"
                   >
                     <p className="flex items-start gap-1 font-extrabold">
-                      <GripVertical size={12} className="mt-0.5 shrink-0 text-[var(--site-muted)]" aria-hidden />
+                      <GripVertical
+                        size={12}
+                        className="mt-0.5 shrink-0 text-[var(--site-muted)]"
+                        aria-hidden
+                      />
                       <span>{task.title}</span>
                     </p>
                     <p className="mt-1 text-[10px] text-[var(--site-muted)]">
@@ -147,11 +178,16 @@ export function CoachWeekCalendar({
                         type="date"
                         className="panel-input text-[11px]"
                         min={formatIstanbulDateInput(weekStart)}
-                        max={formatIstanbulDateInput(addIstanbulCalendarDays(weekStart, 6))}
+                        max={formatIstanbulDateInput(
+                          addIstanbulCalendarDays(weekStart, 6),
+                        )}
                         value={dateDraft[task.id] ?? key}
                         disabled={busyId === task.id}
                         onChange={(event) =>
-                          setDateDraft((current) => ({ ...current, [task.id]: event.target.value }))
+                          setDateDraft((current) => ({
+                            ...current,
+                            [task.id]: event.target.value,
+                          }))
                         }
                       />
                     </label>
@@ -161,7 +197,10 @@ export function CoachWeekCalendar({
                       disabled={busyId === task.id}
                       onClick={() => {
                         const value = dateDraft[task.id] ?? key;
-                        void reschedule(task.id, new Date(`${value}T12:00:00+03:00`));
+                        void reschedule(
+                          task.id,
+                          new Date(`${value}T12:00:00+03:00`),
+                        );
                       }}
                     >
                       Tarihi Değiştir
@@ -173,7 +212,10 @@ export function CoachWeekCalendar({
           );
         })}
       </div>
-      <p aria-live="polite" className="mt-3 text-xs font-bold text-[var(--brand-olive)]">
+      <p
+        aria-live="polite"
+        className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+      >
         {message}
       </p>
     </section>

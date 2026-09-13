@@ -37,8 +37,11 @@ export function InterventionCreateForm({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(Boolean(initialStudentId));
-  const [studentId, setStudentId] = useState(initialStudentId || students[0]?.id || "");
-  const [reasonCode, setReasonCode] = useState<(typeof REASON_OPTIONS)[number]["value"]>("TEACHER_OBSERVED");
+  const [studentId, setStudentId] = useState(
+    initialStudentId || students[0]?.id || "",
+  );
+  const [reasonCode, setReasonCode] =
+    useState<(typeof REASON_OPTIONS)[number]["value"]>("TEACHER_OBSERVED");
   const [explanation, setExplanation] = useState("");
   const [suggestedAction, setSuggestedAction] = useState("");
   const [followUpDate, setFollowUpDate] = useState(defaultFollowUpDate);
@@ -46,7 +49,13 @@ export function InterventionCreateForm({
   const [message, setMessage] = useState("");
 
   const canSubmit = useMemo(
-    () => Boolean(studentId && explanation.trim().length >= 8 && suggestedAction.trim().length >= 4 && followUpDate),
+    () =>
+      Boolean(
+        studentId &&
+          explanation.trim().length >= 8 &&
+          suggestedAction.trim().length >= 4 &&
+          followUpDate,
+      ),
     [studentId, explanation, suggestedAction, followUpDate],
   );
 
@@ -94,7 +103,9 @@ export function InterventionCreateForm({
           <p className="text-xs font-extrabold uppercase tracking-[.06em] text-[var(--brand-olive)]">
             Elle kayıt
           </p>
-          <h2 className="mt-1 text-lg font-extrabold text-[var(--site-ink)]">Müdahale oluştur</h2>
+          <h2 className="mt-1 text-lg font-extrabold text-[var(--site-ink)]">
+            Müdahale oluştur
+          </h2>
           <p className="mt-1 text-sm text-[var(--site-muted)]">
             Sorun tipi, kısa açıklama, aksiyon ve takip tarihi — tanı koymaz.
           </p>
@@ -128,7 +139,9 @@ export function InterventionCreateForm({
             Sorun tipi
             <select
               value={reasonCode}
-              onChange={(event) => setReasonCode(event.target.value as typeof reasonCode)}
+              onChange={(event) =>
+                setReasonCode(event.target.value as typeof reasonCode)
+              }
               className="mt-2 w-full rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-sm"
             >
               {REASON_OPTIONS.map((option) => (
@@ -178,7 +191,10 @@ export function InterventionCreateForm({
               Kaydı oluştur
             </button>
             {message ? (
-              <p role="status" className="text-sm font-bold text-[var(--brand-olive)]">
+              <p
+                role="status"
+                className="text-sm font-bold text-[var(--brand-olive)]"
+              >
                 {message}
               </p>
             ) : null}

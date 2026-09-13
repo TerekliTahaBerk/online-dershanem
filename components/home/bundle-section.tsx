@@ -17,8 +17,9 @@ export function BundleSection() {
             Paketini ihtiyacına göre oluştur
           </h2>
           <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
-            Tek üründen başlayabilir, iki ürünü birlikte tamamlayabilir veya üç ürünü
-            aynı pakette birleştirebilirsin. Seçimin ve teklifin tek bir akışta görünür.
+            Tek üründen başlayabilir, iki ürünü birlikte tamamlayabilir veya üç
+            ürünü aynı pakette birleştirebilirsin. Seçimin ve teklifin tek bir
+            akışta görünür.
           </p>
         </div>
       </div>

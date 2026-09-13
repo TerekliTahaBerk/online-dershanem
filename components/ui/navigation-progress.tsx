@@ -19,10 +19,15 @@ export function NavigationProgress() {
 
       const href = anchor.getAttribute("href");
       if (!href || !href.startsWith("/") || href.startsWith("/#")) return;
-      if (anchor.target === "_blank" || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      if (anchor.target === "_blank" || e.metaKey || e.ctrlKey || e.shiftKey)
+        return;
 
       const url = new URL(anchor.href, window.location.href);
-      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+      if (
+        url.pathname === window.location.pathname &&
+        url.search === window.location.search
+      )
+        return;
 
       setVisible(true);
       setProgress(10);

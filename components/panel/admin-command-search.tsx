@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -50,14 +57,24 @@ const KIND_ICON: Record<GlobalSearchKind, LucideIcon> = {
 
 function iconFor(item: GlobalSearchResult): LucideIcon {
   if (item.kind !== "COMMAND") return KIND_ICON[item.kind];
-  if (item.label.includes("Yeni") || item.label.includes("planla") || item.label.includes("oluştur")) {
+  if (
+    item.label.includes("Yeni") ||
+    item.label.includes("planla") ||
+    item.label.includes("oluştur")
+  ) {
     return Plus;
   }
-  if (item.href.includes("siparis") || item.href.includes("isler")) return CreditCard;
-  if (item.href.includes("takvim") || item.href.includes("deneme") || item.href.includes("sinav")) {
+  if (item.href.includes("siparis") || item.href.includes("isler"))
+    return CreditCard;
+  if (
+    item.href.includes("takvim") ||
+    item.href.includes("deneme") ||
+    item.href.includes("sinav")
+  ) {
     return CalendarDays;
   }
-  if (item.href.includes("egitim") || item.href.includes("kocluk")) return BookOpenCheck;
+  if (item.href.includes("egitim") || item.href.includes("kocluk"))
+    return BookOpenCheck;
   if (item.href.includes("kayitlar")) return History;
   return LayoutDashboard;
 }
@@ -102,7 +119,10 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
     return groupGlobalSearchResults([...commandResults, ...entities]);
   }, [commandResults, entities, query, recent]);
 
-  const flatResults = useMemo(() => flattenSearchSections(sections), [sections]);
+  const flatResults = useMemo(
+    () => flattenSearchSections(sections),
+    [sections],
+  );
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -123,7 +143,11 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
       setActiveIndex(0);
       return;
     }
-    setRecent(readRecentSearches(typeof window !== "undefined" ? window.localStorage : null));
+    setRecent(
+      readRecentSearches(
+        typeof window !== "undefined" ? window.localStorage : null,
+      ),
+    );
     const focusTimer = window.setTimeout(() => inputRef.current?.focus(), 30);
     return () => window.clearTimeout(focusTimer);
   }, [open]);
@@ -139,9 +163,12 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
     const timeout = window.setTimeout(async () => {
       setLoadingEntities(true);
       try {
-        const response = await fetch(`/api/panel/admin-search?q=${encodeURIComponent(needle)}`, {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          `/api/panel/admin-search?q=${encodeURIComponent(needle)}`,
+          {
+            signal: controller.signal,
+          },
+        );
         const payload = (await response.json().catch(() => null)) as {
           results?: GlobalSearchResult[];
         } | null;
@@ -169,7 +196,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
 
   useEffect(() => {
     if (!open) return;
-    const active = listRef.current?.querySelector<HTMLElement>(`[data-search-index="${activeIndex}"]`);
+    const active = listRef.current?.querySelector<HTMLElement>(
+      `[data-search-index="${activeIndex}"]`,
+    );
     active?.scrollIntoView({ block: "nearest" });
   }, [activeIndex, open]);
 
@@ -198,7 +227,10 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
       setQuery(recentQuery);
       return;
     }
-    writeRecentSearch(typeof window !== "undefined" ? window.localStorage : null, query);
+    writeRecentSearch(
+      typeof window !== "undefined" ? window.localStorage : null,
+      query,
+    );
     setOpen(false);
     router.push(item.href);
   }
@@ -218,7 +250,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
     if (event.key === "ArrowUp") {
       event.preventDefault();
       if (!flatResults.length) return;
-      setActiveIndex((index) => (index - 1 + flatResults.length) % flatResults.length);
+      setActiveIndex(
+        (index) => (index - 1 + flatResults.length) % flatResults.length,
+      );
       return;
     }
     if (event.key === "Enter") {
@@ -229,7 +263,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
   }
 
   const sectionOffsets = sections.map((_, index) =>
-    sections.slice(0, index).reduce((sum, section) => sum + section.items.length, 0),
+    sections
+      .slice(0, index)
+      .reduce((sum, section) => sum + section.items.length, 0),
   );
 
   return (
@@ -244,7 +280,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
       >
         <span className="flex items-center gap-2">
           <Search size={16} aria-hidden="true" />
-          <span className="hidden text-[12.5px] sm:inline">Öğrenci, sipariş, komut…</span>
+          <span className="hidden text-[12.5px] sm:inline">
+            Öğrenci, sipariş, komut…
+          </span>
         </span>
         <kbd className="hidden rounded-md border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--site-muted)] sm:inline">
           ⌘K
@@ -267,7 +305,11 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
             className="flex max-h-[min(80vh,640px)] w-full max-w-[640px] flex-col overflow-hidden rounded-[14px] border border-white/60 bg-white shadow-[0_35px_100px_-25px_rgba(20,20,15,.55)]"
           >
             <div className="flex items-center gap-3 border-b border-[var(--site-line)] px-4 py-3">
-              <Search size={18} className="text-[var(--brand-olive)]" aria-hidden="true" />
+              <Search
+                size={18}
+                className="text-[var(--brand-olive)]"
+                aria-hidden="true"
+              />
               <div className="min-w-0 flex-1">
                 <p id={titleId} className="sr-only">
                   Panel arama ve komut paleti
@@ -282,7 +324,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
                   aria-controls={listboxId}
                   aria-autocomplete="list"
                   aria-activedescendant={
-                    flatResults[activeIndex] ? `${listboxId}-option-${activeIndex}` : undefined
+                    flatResults[activeIndex]
+                      ? `${listboxId}-option-${activeIndex}`
+                      : undefined
                   }
                   className="min-w-0 w-full bg-transparent py-2 text-[15px] text-[var(--site-ink)] outline-none placeholder:text-[var(--site-muted)]"
                   placeholder="Öğrenci, veli, sipariş veya komut ara…"
@@ -309,7 +353,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
             >
               {!query.trim() && !commandResults.length ? (
                 <div className="px-4 py-10 text-center">
-                  <p className="text-sm font-bold text-[var(--site-ink)]">Komut yok</p>
+                  <p className="text-sm font-bold text-[var(--site-ink)]">
+                    Komut yok
+                  </p>
                   <p className="mt-1 text-xs text-[var(--site-muted)]">
                     Bu hesap için hızlı aksiyon tanımlı değil.
                   </p>
@@ -322,7 +368,8 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
                     {section.title}
                   </p>
                   {section.items.map((item, itemIndex) => {
-                    const index = (sectionOffsets[sectionIndex] ?? 0) + itemIndex;
+                    const index =
+                      (sectionOffsets[sectionIndex] ?? 0) + itemIndex;
                     const Icon = iconFor(item);
                     const active = index === activeIndex;
                     return (
@@ -336,7 +383,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
                         onMouseEnter={() => setActiveIndex(index)}
                         onClick={() => go(item)}
                         className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left ${
-                          active ? "bg-[var(--site-bg-warm)]" : "hover:bg-[var(--site-bg-warm)]"
+                          active
+                            ? "bg-[var(--site-bg-warm)]"
+                            : "hover:bg-[var(--site-bg-warm)]"
                         }`}
                       >
                         <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
@@ -353,7 +402,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
                         <ArrowRight
                           size={15}
                           className={`text-[var(--site-muted)] transition ${
-                            active ? "translate-x-0.5 opacity-100" : "opacity-0 group-hover:opacity-100"
+                            active
+                              ? "translate-x-0.5 opacity-100"
+                              : "opacity-0 group-hover:opacity-100"
                           }`}
                           aria-hidden="true"
                         />
@@ -364,7 +415,10 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
               ))}
 
               {loadingEntities ? (
-                <p className="px-4 py-2 text-[11px] text-[var(--site-muted)]" role="status">
+                <p
+                  className="px-4 py-2 text-[11px] text-[var(--site-muted)]"
+                  role="status"
+                >
                   Kayıtlarda aranıyor…
                 </p>
               ) : null}
@@ -373,9 +427,12 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
               query.trim().length < GLOBAL_SEARCH_MIN_CHARS &&
               !commandResults.length ? (
                 <div className="px-4 py-10 text-center">
-                  <p className="text-sm font-bold text-[var(--site-ink)]">Biraz daha yazın</p>
+                  <p className="text-sm font-bold text-[var(--site-ink)]">
+                    Biraz daha yazın
+                  </p>
                   <p className="mt-1 text-xs text-[var(--site-muted)]">
-                    Kayıt araması için en az {GLOBAL_SEARCH_MIN_CHARS} karakter gerekir.
+                    Kayıt araması için en az {GLOBAL_SEARCH_MIN_CHARS} karakter
+                    gerekir.
                   </p>
                 </div>
               ) : null}
@@ -384,7 +441,9 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
               !loadingEntities &&
               !flatResults.length ? (
                 <div className="px-4 py-10 text-center">
-                  <p className="text-sm font-bold text-[var(--site-ink)]">Sonuç bulunamadı</p>
+                  <p className="text-sm font-bold text-[var(--site-ink)]">
+                    Sonuç bulunamadı
+                  </p>
                   <p className="mt-1 text-xs text-[var(--site-muted)]">
                     Ad, e-posta, telefon, sipariş no veya komut deneyin.
                   </p>

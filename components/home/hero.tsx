@@ -16,16 +16,22 @@ export function HomeHero() {
             Canlı derste öğren. Haftanı planla. Denemeyle ölç.
           </h1>
           <p className="mt-5 max-w-[480px] text-[17px] leading-[1.65] text-dc-ink-body [text-wrap:pretty] sm:text-[18.5px]">
-            LGS ve YKS için canlı ders, eğitim koçluğu ve online deneme. İhtiyacın
-            olan ürünü tek başına veya birlikte kullan.
+            LGS ve YKS için canlı ders, eğitim koçluğu ve online deneme.
+            İhtiyacın olan ürünü tek başına veya birlikte kullan.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3.5">
-            <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
+            <Link
+              href="/paketler"
+              className="site-btn site-btn-primary site-btn-lg"
+            >
               Paketini Oluştur
               <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
             </Link>
-            <Link href="/urunler" className="site-btn site-btn-secondary site-btn-lg">
+            <Link
+              href="/urunler"
+              className="site-btn site-btn-secondary site-btn-lg"
+            >
               Ürünleri Karşılaştır
             </Link>
           </div>
@@ -33,12 +39,20 @@ export function HomeHero() {
           {/* Doğrulanmış, somut bilgi — rakam/başarı oranı iddiası yok */}
           <dl className="mt-11 flex flex-wrap gap-9 border-t border-dc-line pt-6">
             <div>
-              <dt className="text-[16.5px] font-bold text-dc-ink">Maks. 4 kişilik canlı grup</dt>
-              <dd className="mt-0.5 text-[13.5px] text-dc-ink-faint">ya da birebir özel ders</dd>
+              <dt className="text-[16.5px] font-bold text-dc-ink">
+                Maks. 4 kişilik canlı grup
+              </dt>
+              <dd className="mt-0.5 text-[13.5px] text-dc-ink-faint">
+                ya da birebir özel ders
+              </dd>
             </div>
             <div>
-              <dt className="text-[16.5px] font-bold text-dc-ink">LGS ve YKS</dt>
-              <dd className="mt-0.5 text-[13.5px] text-dc-ink-faint">denemede LGS, TYT, AYT</dd>
+              <dt className="text-[16.5px] font-bold text-dc-ink">
+                LGS ve YKS
+              </dt>
+              <dd className="mt-0.5 text-[13.5px] text-dc-ink-faint">
+                denemede LGS, TYT, AYT
+              </dd>
             </div>
           </dl>
         </div>
@@ -58,12 +72,12 @@ export function HomeHero() {
           <div className="absolute bottom-16 right-0 w-[230px] rounded-dc-card-sm border border-dc-line bg-white p-4 shadow-dc-raised sm:bottom-24 sm:w-[250px] sm:px-[18px]">
             <p className="text-[12.5px] text-dc-ink-faint">Bugünün akışı</p>
             <p className="mt-1.5 text-[15px] font-bold leading-[1.4] text-dc-ink">
-              Derse gir, haftalık planını gör, deneme sonucundan sıradaki odağını seç.
+              Derse gir, haftalık planını gör, deneme sonucundan sıradaki
+              odağını seç.
             </p>
           </div>
         </div>
       </div>
-
     </section>
   );
 }

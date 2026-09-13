@@ -26,7 +26,10 @@ export function InviteAcceptForm({ token }: { token: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword }),
       });
-      const data = (await response.json()) as { redirect?: string; error?: string };
+      const data = (await response.json()) as {
+        redirect?: string;
+        error?: string;
+      };
       if (!response.ok || !data.redirect) {
         setError(data.error ?? "Davet doğrulanamadı.");
         setPending(false);
@@ -72,7 +75,8 @@ export function InviteAcceptForm({ token }: { token: string }) {
       />
 
       <p className="text-[12.5px] leading-5 text-dc-ink-muted">
-        En az {PASSWORD_MIN_LENGTH} karakter. Bu parola hesabınıza ilk giriş için kaydedilir.
+        En az {PASSWORD_MIN_LENGTH} karakter. Bu parola hesabınıza ilk giriş
+        için kaydedilir.
       </p>
 
       {error ? (
@@ -88,7 +92,11 @@ export function InviteAcceptForm({ token }: { token: string }) {
       <button type="submit" disabled={pending} className={authSubmitClass}>
         {pending ? (
           <span className="inline-flex items-center justify-center gap-2">
-            <Loader2 size={17} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            <Loader2
+              size={17}
+              className="animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
             Hesap hazırlanıyor
           </span>
         ) : (

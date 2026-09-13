@@ -29,7 +29,8 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
   const [error, setError] = useState("");
   const [transferTeacherId, setTransferTeacherId] = useState("");
   const [transferCoachTeacherId, setTransferCoachTeacherId] = useState("");
-  const [transferInterventionOwnerId, setTransferInterventionOwnerId] = useState("");
+  const [transferInterventionOwnerId, setTransferInterventionOwnerId] =
+    useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -48,8 +49,12 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
       setPreview(result);
       const defaultTeacher = result.options.teacherTransfers[0]?.id || "";
       setTransferTeacherId(defaultTeacher);
-      setTransferCoachTeacherId(result.options.coachTransfers[0]?.id || defaultTeacher);
-      setTransferInterventionOwnerId(result.options.interventionOwners[0]?.id || defaultTeacher);
+      setTransferCoachTeacherId(
+        result.options.coachTransfers[0]?.id || defaultTeacher,
+      );
+      setTransferInterventionOwnerId(
+        result.options.interventionOwners[0]?.id || defaultTeacher,
+      );
       setLoading(false);
     })();
     return () => {
@@ -59,7 +64,10 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
 
   async function execute() {
     if (!transferTeacherId) return;
-    if (!window.confirm("Öğretmen devredilip askıya alınacak. Devam edilsin mi?")) return;
+    if (
+      !window.confirm("Öğretmen devredilip askıya alınacak. Devam edilsin mi?")
+    )
+      return;
     setBusy(true);
     setError("");
     const response = await fetch(`/api/panel/users/${teacherId}/offboarding`, {
@@ -81,8 +89,18 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
     router.refresh();
   }
 
-  if (loading) return <p className="text-[12.5px] text-dc-ink-faint">Offboarding özeti hazırlanıyor…</p>;
-  if (!preview) return <p className="text-[12.5px] text-[#C2493D]">{error || "Offboarding verisi bulunamadı."}</p>;
+  if (loading)
+    return (
+      <p className="text-[12.5px] text-dc-ink-faint">
+        Offboarding özeti hazırlanıyor…
+      </p>
+    );
+  if (!preview)
+    return (
+      <p className="text-[12.5px] text-[#C2493D]">
+        {error || "Offboarding verisi bulunamadı."}
+      </p>
+    );
 
   return (
     <div className="space-y-3">
@@ -117,7 +135,9 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
             Koç atamaları devri
             <select
               value={transferCoachTeacherId}
-              onChange={(event) => setTransferCoachTeacherId(event.target.value)}
+              onChange={(event) =>
+                setTransferCoachTeacherId(event.target.value)
+              }
               className="panel-input mt-1 py-2 text-xs"
             >
               <option value="">Koç öğretmen seçin</option>
@@ -134,7 +154,9 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
             Müdahale sorumluluğu devri
             <select
               value={transferInterventionOwnerId}
-              onChange={(event) => setTransferInterventionOwnerId(event.target.value)}
+              onChange={(event) =>
+                setTransferInterventionOwnerId(event.target.value)
+              }
               className="panel-input mt-1 py-2 text-xs"
             >
               <option value="">Sorumlu seçin</option>

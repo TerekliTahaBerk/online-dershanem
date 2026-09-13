@@ -16,7 +16,10 @@ export function AdminTeacherModeBanner() {
         method: "DELETE",
         credentials: "same-origin",
       });
-      const body = (await response.json().catch(() => null)) as { returnPath?: string; error?: string } | null;
+      const body = (await response.json().catch(() => null)) as {
+        returnPath?: string;
+        error?: string;
+      } | null;
       if (!response.ok) {
         setError(body?.error || "Yönetim paneline dönülemedi.");
         return;
@@ -38,9 +41,14 @@ export function AdminTeacherModeBanner() {
             Öğretmen çalışma modu
           </p>
           <p className="mt-0.5 text-[13.5px] font-semibold leading-5">
-            Kendi öğretmen panelinizdesiniz. İşlemler sizin adınıza kaydedilir; oturumunuz yönetici olarak kalır.
+            Kendi öğretmen panelinizdesiniz. İşlemler sizin adınıza kaydedilir;
+            oturumunuz yönetici olarak kalır.
           </p>
-          {error ? <p className="mt-1 text-[12px] font-semibold text-red-700">{error}</p> : null}
+          {error ? (
+            <p className="mt-1 text-[12px] font-semibold text-red-700">
+              {error}
+            </p>
+          ) : null}
         </div>
         <button
           type="button"
@@ -55,7 +63,11 @@ export function AdminTeacherModeBanner() {
   );
 }
 
-export function AdminTeacherModeSwitchButton({ compact = false }: { compact?: boolean }) {
+export function AdminTeacherModeSwitchButton({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +79,10 @@ export function AdminTeacherModeSwitchButton({ compact = false }: { compact?: bo
         method: "POST",
         credentials: "same-origin",
       });
-      const body = (await response.json().catch(() => null)) as { homePath?: string; error?: string } | null;
+      const body = (await response.json().catch(() => null)) as {
+        homePath?: string;
+        error?: string;
+      } | null;
       if (!response.ok) {
         setError(body?.error || "Öğretmen paneline geçilemedi.");
         return;
@@ -93,7 +108,11 @@ export function AdminTeacherModeSwitchButton({ compact = false }: { compact?: bo
         <GraduationCap size={14} aria-hidden="true" />
         {pending ? "Açılıyor…" : "Öğretmen paneline geç"}
       </button>
-      {error ? <span className="max-w-[180px] text-right text-[11px] font-semibold text-red-700">{error}</span> : null}
+      {error ? (
+        <span className="max-w-[180px] text-right text-[11px] font-semibold text-red-700">
+          {error}
+        </span>
+      ) : null}
     </span>
   );
 }

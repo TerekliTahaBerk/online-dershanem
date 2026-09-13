@@ -16,9 +16,9 @@ export function ParentVisibility() {
           Süreci takip et, öğrencinin alanını koru.
         </h2>
         <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
-          Veli görünümünde derse katılım, plan ilerlemesi ve gelişim özeti görünür.
-          Öğrencinin ekranı birebir paylaşılmaz; veliye uygun takip bilgileri ayrı
-          bir özet olarak sunulur.
+          Veli görünümünde derse katılım, plan ilerlemesi ve gelişim özeti
+          görünür. Öğrencinin ekranı birebir paylaşılmaz; veliye uygun takip
+          bilgileri ayrı bir özet olarak sunulur.
         </p>
       </div>
     </section>

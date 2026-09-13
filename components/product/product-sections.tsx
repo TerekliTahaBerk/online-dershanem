@@ -40,7 +40,10 @@ export function ProductHero({
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/paketler" className="site-btn site-btn-primary site-btn-lg">
+            <Link
+              href="/paketler"
+              className="site-btn site-btn-primary site-btn-lg"
+            >
               Paketini Oluştur
             </Link>
             <Link
@@ -60,7 +63,9 @@ export function ProductHero({
                 {t}
               </span>
             ))}
-            {note ? <span className="text-[14px] text-dc-ink-muted">{note}</span> : null}
+            {note ? (
+              <span className="text-[14px] text-dc-ink-muted">{note}</span>
+            ) : null}
           </div>
         </div>
 
@@ -108,7 +113,9 @@ export function StepCards({
             <h3 className="mt-2.5 text-[17px] font-bold text-dc-ink sm:text-[18px]">
               {s.title}
             </h3>
-            <p className="mt-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">{s.body}</p>
+            <p className="mt-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">
+              {s.body}
+            </p>
           </li>
         ))}
       </ol>
@@ -139,7 +146,9 @@ export function ProductDinoBand({
         <h2 className="mt-3.5 font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
           {title}
         </h2>
-        <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">{body}</p>
+        <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
+          {body}
+        </p>
       </div>
 
       <div className="flex items-center gap-4 rounded-[20px] border border-dc-brand-soft-line bg-dc-brand-soft p-5 sm:gap-[18px] sm:p-6">
@@ -154,7 +163,9 @@ export function ProductDinoBand({
         />
         <div>
           <p className="text-[17px] font-bold text-dc-brand-deep">{quote}</p>
-          <p className="mt-2 text-[14.5px] leading-[1.6] text-[#3F5C51]">{quoteBody}</p>
+          <p className="mt-2 text-[14.5px] leading-[1.6] text-[#3F5C51]">
+            {quoteBody}
+          </p>
           <p className="mt-2.5 text-[12px] font-medium text-[var(--dc-ink-muted)]">
             Örnek metin — gerçek çıktı öğrencinin kendi verisinden üretilir.
           </p>
@@ -220,8 +231,12 @@ export function CrossSellWithPrice({
               <p className="font-mono text-[11px] font-semibold uppercase text-dc-brand-strong">
                 {c.eyebrow}
               </p>
-              <h3 className="mt-2.5 text-[19px] font-bold text-dc-ink">{c.title}</h3>
-              <p className="mt-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">{c.body}</p>
+              <h3 className="mt-2.5 text-[19px] font-bold text-dc-ink">
+                {c.title}
+              </h3>
+              <p className="mt-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">
+                {c.body}
+              </p>
             </div>
           ))}
         </div>
@@ -248,13 +263,17 @@ export function CrossSellWithPrice({
               </p>
             ) : null}
             {priceLabel ? (
-              <p className="mt-2 text-[13px] font-semibold text-dc-ink-muted">{priceLabel}</p>
+              <p className="mt-2 text-[13px] font-semibold text-dc-ink-muted">
+                {priceLabel}
+              </p>
             ) : null}
             <p className="mt-1.5 flex items-baseline gap-2">
               <span className="font-display text-[40px] tracking-[-0.02em] text-dc-ink">
                 {price.price}
               </span>
-              <span className="text-[14px] font-medium text-dc-ink-faint">{priceSuffix}</span>
+              <span className="text-[14px] font-medium text-dc-ink-faint">
+                {priceSuffix}
+              </span>
             </p>
           </>
         ) : (
@@ -292,7 +311,10 @@ export function CrossSellWithPrice({
           ))}
         </ul>
 
-        <Link href="/paketler" className="site-btn site-btn-primary mt-5 w-full">
+        <Link
+          href="/paketler"
+          className="site-btn site-btn-primary mt-5 w-full"
+        >
           Paketini Oluştur
         </Link>
         <p className="mt-2.5 text-center text-[12.5px] font-medium text-dc-ink-faint">
@@ -330,7 +352,9 @@ export function ProductFaq({
                 +
               </span>
             </summary>
-            <p className="mt-3 text-[15px] leading-[1.65] text-dc-ink-muted">{a}</p>
+            <p className="mt-3 text-[15px] leading-[1.65] text-dc-ink-muted">
+              {a}
+            </p>
           </details>
         ))}
       </div>
@@ -362,7 +386,9 @@ export function ProductClosingCta({
     <section className="site-container pb-[var(--dc-section-tight)] pt-[var(--dc-section-tight)]">
       <div
         className={`flex flex-col items-start gap-8 rounded-dc-banner px-8 py-12 sm:px-14 lg:flex-row lg:items-center ${
-          deep ? "bg-dc-brand-deep" : "border border-dc-brand-soft-line bg-dc-brand-soft"
+          deep
+            ? "bg-dc-brand-deep"
+            : "border border-dc-brand-soft-line bg-dc-brand-soft"
         }`}
       >
         <div className="flex-1">

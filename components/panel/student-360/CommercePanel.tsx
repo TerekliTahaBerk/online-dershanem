@@ -15,7 +15,10 @@ export function CommercePanel(props: CommercePanelProps) {
         </p>
         <dl className="mt-4 space-y-2 text-[13.5px] text-dc-ink-body">
           {data.memberships.map((membership) => (
-            <div key={membership.product} className="flex justify-between gap-3">
+            <div
+              key={membership.product}
+              className="flex justify-between gap-3"
+            >
               <dt>{membership.label}</dt>
               <dd>
                 {membership.expiresAt
@@ -24,7 +27,9 @@ export function CommercePanel(props: CommercePanelProps) {
               </dd>
             </div>
           ))}
-          {!data.memberships.length ? <EmptyLine text="Aktif ürün üyeliği yok." /> : null}
+          {!data.memberships.length ? (
+            <EmptyLine text="Aktif ürün üyeliği yok." />
+          ) : null}
         </dl>
       </PanelCard>
 
@@ -32,12 +37,18 @@ export function CommercePanel(props: CommercePanelProps) {
         <PanelCardTitle>Siparişler ve provisioning</PanelCardTitle>
         <div className="mt-3 space-y-3">
           {data.orders.map((order) => (
-            <article key={order.id} className="rounded-[10px] border border-dc-line-soft p-3">
+            <article
+              key={order.id}
+              className="rounded-[10px] border border-dc-line-soft p-3"
+            >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="text-[13.5px] font-bold text-dc-ink">{order.packageName}</p>
+                  <p className="text-[13.5px] font-bold text-dc-ink">
+                    {order.packageName}
+                  </p>
                   <p className="mt-1 text-[12px] text-dc-ink-faint">
-                    {DATE.format(order.createdAt)} · {(order.totalCents / 100).toLocaleString("tr-TR")} ₺
+                    {DATE.format(order.createdAt)} ·{" "}
+                    {(order.totalCents / 100).toLocaleString("tr-TR")} ₺
                   </p>
                 </div>
                 <Link
@@ -51,7 +62,9 @@ export function CommercePanel(props: CommercePanelProps) {
                 Ödeme: {order.status} · Erişim: {order.provisioningStatus}
               </p>
               {order.provisioningError ? (
-                <p className="mt-2 text-[12px] text-[#C2493D]">{order.provisioningError}</p>
+                <p className="mt-2 text-[12px] text-[#C2493D]">
+                  {order.provisioningError}
+                </p>
               ) : null}
             </article>
           ))}

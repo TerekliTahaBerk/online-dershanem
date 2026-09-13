@@ -1,5 +1,10 @@
 function Pulse({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded-xl bg-dc-line-soft/70 ${className}`} aria-hidden="true" />;
+  return (
+    <div
+      className={`animate-pulse rounded-xl bg-dc-line-soft/70 ${className}`}
+      aria-hidden="true"
+    />
+  );
 }
 
 export default function PanelLoading() {

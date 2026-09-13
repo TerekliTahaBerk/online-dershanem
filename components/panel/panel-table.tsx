@@ -19,7 +19,10 @@ const PanelTableCellIndexContext = createContext<number | null>(null);
 
 function usePanelTable() {
   const ctx = useContext(PanelTableContext);
-  if (!ctx) throw new Error("PanelTable bileşenleri PanelTable içinde kullanılmalıdır.");
+  if (!ctx)
+    throw new Error(
+      "PanelTable bileşenleri PanelTable içinde kullanılmalıdır.",
+    );
   return ctx;
 }
 
@@ -76,7 +79,9 @@ export function PanelTableRow({ children }: { children: ReactNode }) {
   return (
     <tr className="panel-table-row border-b border-dc-line-soft text-[13.5px] font-medium text-[var(--pd-ink-3)] last:border-0">
       {Children.map(children, (child, index) => (
-        <PanelTableCellIndexContext.Provider value={index}>{child}</PanelTableCellIndexContext.Provider>
+        <PanelTableCellIndexContext.Provider value={index}>
+          {child}
+        </PanelTableCellIndexContext.Provider>
       ))}
     </tr>
   );
@@ -95,14 +100,23 @@ export function PanelTableCell({
   const { columns } = usePanelTable();
   const index = useContext(PanelTableCellIndexContext);
   if (index === null) {
-    throw new Error("PanelTableCell yalnızca PanelTableRow içinde kullanılmalıdır.");
+    throw new Error(
+      "PanelTableCell yalnızca PanelTableRow içinde kullanılmalıdır.",
+    );
   }
   const columnLabel = label ?? columns[index] ?? "";
   const color =
-    tone === "ok" ? "text-dc-brand-hover" : tone === "warn" ? "text-[var(--pd-pastel-yellow-ink)]" : "";
+    tone === "ok"
+      ? "text-dc-brand-hover"
+      : tone === "warn"
+        ? "text-[var(--pd-pastel-yellow-ink)]"
+        : "";
 
   return (
-    <td data-label={columnLabel} className={`panel-table-cell px-4 py-3.5 first:pl-[18px] ${color}`}>
+    <td
+      data-label={columnLabel}
+      className={`panel-table-cell px-4 py-3.5 first:pl-[18px] ${color}`}
+    >
       {children}
     </td>
   );

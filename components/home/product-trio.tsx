@@ -32,14 +32,32 @@ function LivePreview() {
   );
 }
 
-const planRow1 = ["#DFEBE5", "#14976B", "#EDF4F0", "#DFEBE5", "#14976B", "#EDF4F0", ""];
-const planRow2 = ["#EDF4F0", "#DFEBE5", "#14976B", "#EDF4F0", "#DFEBE5", "#EDF4F0", ""];
+const planRow1 = [
+  "#DFEBE5",
+  "#14976B",
+  "#EDF4F0",
+  "#DFEBE5",
+  "#14976B",
+  "#EDF4F0",
+  "",
+];
+const planRow2 = [
+  "#EDF4F0",
+  "#DFEBE5",
+  "#14976B",
+  "#EDF4F0",
+  "#DFEBE5",
+  "#EDF4F0",
+  "",
+];
 
 function PlanPreview() {
   return (
     <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
       <div className="flex h-full flex-col gap-2 rounded-xl border border-dc-line bg-white p-3">
-        <div className="font-mono text-[10px] font-semibold text-[var(--dc-ink-faint)]">haftalık plan</div>
+        <div className="font-mono text-[10px] font-semibold text-[var(--dc-ink-faint)]">
+          haftalık plan
+        </div>
         <div className="grid grid-cols-7 gap-[5px] text-center text-[9px] font-semibold text-[var(--dc-ink-faint)]">
           {["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"].map((d) => (
             <span key={d}>{d}</span>
@@ -51,9 +69,23 @@ function PlanPreview() {
               <span
                 key={j}
                 className={`h-[22px] rounded-[5px] ${
-                  c ? "" : "border border-dashed border-[#D6E2DC] bg-dc-surface-muted"
+                  c
+                    ? ""
+                    : "border border-dashed border-[#D6E2DC] bg-dc-surface-muted"
                 }`}
-                style={c ? { background: c, opacity: i === 0 && j === 4 ? 0.7 : i === 1 && j === 2 ? 0.55 : 1 } : undefined}
+                style={
+                  c
+                    ? {
+                        background: c,
+                        opacity:
+                          i === 0 && j === 4
+                            ? 0.7
+                            : i === 1 && j === 2
+                              ? 0.55
+                              : 1,
+                      }
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -91,8 +123,7 @@ const products = [
   {
     eyebrow: "ONLINE DERSHANEM",
     title: "Öğrenme eksiğini canlı derste kapat.",
-    body:
-      "Takıldığın konuyu öğretmenle anında çözersin. Ders sonrası neyi tekrar edeceğin netleşir.",
+    body: "Takıldığın konuyu öğretmenle anında çözersin. Ders sonrası neyi tekrar edeceğin netleşir.",
     tracks: ["LGS", "YKS"],
     cta: "Online Dershanem'i İncele",
     href: "/urunler/online-dershanem",
@@ -101,8 +132,7 @@ const products = [
   {
     eyebrow: "ONLINE KOÇUM",
     title: "Haftanı plansız bırakma.",
-    body:
-      "Koçun haftalık planını kurar ve görüşmelerde uygulama durumunu takip eder.",
+    body: "Koçun haftalık planını kurar ve görüşmelerde uygulama durumunu takip eder.",
     tracks: ["LGS", "YKS"],
     cta: "Online Koçum'u İncele",
     href: "/urunler/online-kocum",
@@ -111,8 +141,7 @@ const products = [
   {
     eyebrow: "ONLINE DENEME KULÜBÜM",
     title: "Sadece nete değil, eksiğin nedenine bak.",
-    body:
-      "LGS, TYT ve AYT denemelerinde hangi konu ve soru tipinde puan kaybettiğini görürsün.",
+    body: "LGS, TYT ve AYT denemelerinde hangi konu ve soru tipinde puan kaybettiğini görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
     cta: "Deneme Kulübüm'ü İncele",
     href: "/urunler/online-deneme-kulubum",
@@ -134,43 +163,49 @@ export function ProductTrio({
           <h2 className="font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
             {title}
           </h2>
-          <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">{lede}</p>
+          <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
+            {lede}
+          </p>
         </div>
 
         <div className="mt-11 grid gap-[22px] md:grid-cols-2 lg:grid-cols-3">
-          {products.map(({ eyebrow, title, body, tracks, cta, href, Preview }) => (
-            <article
-              key={eyebrow}
-              className="flex flex-col overflow-hidden rounded-dc-card border border-dc-line bg-white transition-colors hover:border-dc-brand"
-            >
-              <Preview />
-              <div className="flex flex-1 flex-col gap-3 p-6">
-                <p className="text-[12px] font-bold tracking-[0.08em] text-dc-brand-strong">
-                  {eyebrow}
-                </p>
-                <h3 className="font-display text-[25px] leading-[1.25] tracking-[-0.02em] text-dc-ink">
-                  {title}
-                </h3>
-                <p className="text-[15px] leading-[1.6] text-dc-ink-muted">{body}</p>
-                <div className="mt-0.5 flex flex-wrap gap-2">
-                  {tracks.map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-full bg-dc-brand-soft px-[11px] py-[5px] text-[12px] font-semibold text-dc-brand-hover"
-                    >
-                      {t}
-                    </span>
-                  ))}
+          {products.map(
+            ({ eyebrow, title, body, tracks, cta, href, Preview }) => (
+              <article
+                key={eyebrow}
+                className="flex flex-col overflow-hidden rounded-dc-card border border-dc-line bg-white transition-colors hover:border-dc-brand"
+              >
+                <Preview />
+                <div className="flex flex-1 flex-col gap-3 p-6">
+                  <p className="text-[12px] font-bold tracking-[0.08em] text-dc-brand-strong">
+                    {eyebrow}
+                  </p>
+                  <h3 className="font-display text-[25px] leading-[1.25] tracking-[-0.02em] text-dc-ink">
+                    {title}
+                  </h3>
+                  <p className="text-[15px] leading-[1.6] text-dc-ink-muted">
+                    {body}
+                  </p>
+                  <div className="mt-0.5 flex flex-wrap gap-2">
+                    {tracks.map((t) => (
+                      <span
+                        key={t}
+                        className="rounded-full bg-dc-brand-soft px-[11px] py-[5px] text-[12px] font-semibold text-dc-brand-hover"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <Link
+                    href={href}
+                    className="mt-auto self-start pt-2 text-[14.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
+                  >
+                    {cta} →
+                  </Link>
                 </div>
-                <Link
-                  href={href}
-                  className="mt-auto self-start pt-2 text-[14.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
-                >
-                  {cta} →
-                </Link>
-              </div>
-            </article>
-          ))}
+              </article>
+            ),
+          )}
         </div>
       </div>
     </section>

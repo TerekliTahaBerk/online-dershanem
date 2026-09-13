@@ -21,7 +21,14 @@ type StickyCheckoutBarProps = {
  * Referanstaki sticky bottom pricing bar. Aşağı kaydırınca belirir; seçili
  * paket özeti + "Satın al" CTA. Mobilde ekranı boğmayacak kompakt yükseklik.
  */
-export function StickyCheckoutBar({ name, category, subject, priceLabel, packages, note }: StickyCheckoutBarProps) {
+export function StickyCheckoutBar({
+  name,
+  category,
+  subject,
+  priceLabel,
+  packages,
+  note,
+}: StickyCheckoutBarProps) {
   const [visible, setVisible] = useState(false);
   const items =
     packages && packages.length > 0
@@ -34,15 +41,19 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, package
     let footerVisible = false;
     const onScroll = () => {
       const doc = document.documentElement;
-      const nearBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 160;
+      const nearBottom =
+        window.innerHeight + window.scrollY >= doc.scrollHeight - 160;
       setVisible(window.scrollY > 520 && !nearBottom && !footerVisible);
     };
     const footer = document.getElementById("site-footer");
     const observer = footer
-      ? new IntersectionObserver(([entry]) => {
-          footerVisible = entry.isIntersecting;
-          onScroll();
-        }, { rootMargin: "120px 0px" })
+      ? new IntersectionObserver(
+          ([entry]) => {
+            footerVisible = entry.isIntersecting;
+            onScroll();
+          },
+          { rootMargin: "120px 0px" },
+        )
       : null;
     if (footer && observer) observer.observe(footer);
     onScroll();
@@ -61,7 +72,11 @@ export function StickyCheckoutBar({ name, category, subject, priceLabel, package
   const hasMultiple = items.length > 1;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40" role="region" aria-label="Hızlı paket satın alma">
+    <div
+      className="fixed inset-x-0 bottom-0 z-40"
+      role="region"
+      aria-label="Hızlı paket satın alma"
+    >
       <div className="border-t border-[var(--site-line)] bg-white/95 shadow-[0_-12px_35px_-28px_rgba(20,20,15,.4)] backdrop-blur-md">
         <div className="site-container flex flex-col gap-3 py-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:gap-5 sm:py-4">
           <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[15px] font-bold text-[var(--brand-orange-ink)] sm:flex">

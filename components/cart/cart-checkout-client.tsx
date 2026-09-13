@@ -3,9 +3,18 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
-import { BuyerInfoForm, type BuyerInfoFormDefaults } from "@/components/checkout/buyer-info-form";
-import { OrderSummaryCard, CheckoutPageHeader } from "@/components/checkout/order-summary-card";
-import { parseCheckoutCartSnapshot, sanitizeCartItems } from "@/lib/od/cart-storage";
+import {
+  BuyerInfoForm,
+  type BuyerInfoFormDefaults,
+} from "@/components/checkout/buyer-info-form";
+import {
+  OrderSummaryCard,
+  CheckoutPageHeader,
+} from "@/components/checkout/order-summary-card";
+import {
+  parseCheckoutCartSnapshot,
+  sanitizeCartItems,
+} from "@/lib/od/cart-storage";
 import type { OdPlacementExpectation } from "@/lib/od/placement";
 
 type CartSnapshot = {
@@ -30,9 +39,16 @@ function tryFormat(cents: number): string {
   }).format(cents / 100);
 }
 
-export function CartCheckoutClient({ defaults, placementExpectation }: { defaults: BuyerInfoFormDefaults; placementExpectation: OdPlacementExpectation }) {
+export function CartCheckoutClient({
+  defaults,
+  placementExpectation,
+}: {
+  defaults: BuyerInfoFormDefaults;
+  placementExpectation: OdPlacementExpectation;
+}) {
   const [snapshot, setSnapshot] = useState<CartSnapshot | null>(null);
-  const [currentExpectation, setCurrentExpectation] = useState(placementExpectation);
+  const [currentExpectation, setCurrentExpectation] =
+    useState(placementExpectation);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -67,7 +83,9 @@ export function CartCheckoutClient({ defaults, placementExpectation }: { default
         localStorage.setItem("od_checkout_cart", JSON.stringify(restored));
         setSnapshot(restored);
       }
-    } catch {/* ignore */}
+    } catch {
+      /* ignore */
+    }
     setLoaded(true);
   }, []);
 
@@ -75,27 +93,43 @@ export function CartCheckoutClient({ defaults, placementExpectation }: { default
     const category = snapshot?.items[0]?.category;
     if (!category) return;
     const controller = new AbortController();
-    fetch(`/api/od/placement-expectation?category=${encodeURIComponent(category)}`, { signal: controller.signal })
-      .then((response) => response.ok ? response.json() as Promise<OdPlacementExpectation> : null)
-      .then((result) => { if (result) setCurrentExpectation(result); })
+    fetch(
+      `/api/od/placement-expectation?category=${encodeURIComponent(category)}`,
+      { signal: controller.signal },
+    )
+      .then((response) =>
+        response.ok
+          ? (response.json() as Promise<OdPlacementExpectation>)
+          : null,
+      )
+      .then((result) => {
+        if (result) setCurrentExpectation(result);
+      })
       .catch(() => undefined);
     return () => controller.abort();
   }, [snapshot]);
 
   const totalCents = useMemo(
-    () => (snapshot?.items || []).reduce((acc, i) => acc + i.priceCents * i.qty, 0),
+    () =>
+      (snapshot?.items || []).reduce((acc, i) => acc + i.priceCents * i.qty, 0),
     [snapshot],
   );
 
   if (!loaded) {
-    return <div className="h-40 animate-pulse rounded-[24px] bg-[var(--site-bg-warm)]" />;
+    return (
+      <div className="h-40 animate-pulse rounded-[24px] bg-[var(--site-bg-warm)]" />
+    );
   }
 
   if (!snapshot || snapshot.items.length === 0) {
     return (
       <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-10 text-center">
         <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-[16px] bg-[var(--brand-orange-soft)]">
-          <ShoppingBag size={28} className="text-[var(--brand-orange-ink)]" strokeWidth={1.6} />
+          <ShoppingBag
+            size={28}
+            className="text-[var(--brand-orange-ink)]"
+            strokeWidth={1.6}
+          />
         </div>
         <h1 className="mt-5 font-display text-[26px] text-[var(--site-ink)]">
           Sepet bilgisi bulunamadı.
@@ -114,9 +148,10 @@ export function CartCheckoutClient({ defaults, placementExpectation }: { default
   }
 
   const first = snapshot.items[0];
-  const packageLabel = snapshot.items.length === 1
-    ? `${first.category} ${first.subject}`
-    : `${snapshot.items.length} farklı paket`;
+  const packageLabel =
+    snapshot.items.length === 1
+      ? `${first.category} ${first.subject}`
+      : `${snapshot.items.length} farklı paket`;
   const priceLabel = tryFormat(totalCents);
 
   return (

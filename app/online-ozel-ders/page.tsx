@@ -31,13 +31,17 @@ export default function OnlineOzelDersPage() {
           align="left"
           title={
             <>
-              Özel derse yakın <span className="site-hl">ilgi</span>, küçük grubun temposuyla.
+              Özel derse yakın <span className="site-hl">ilgi</span>, küçük
+              grubun temposuyla.
             </>
           }
           subtitle="Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik grupta daha çok soru-cevap alanı bulur ve ders sonunda ne çalışacağını bilir."
           actions={
             <>
-              <Link href="/ders-paketleri" className="site-btn site-btn-primary site-btn-lg">
+              <Link
+                href="/ders-paketleri"
+                className="site-btn site-btn-primary site-btn-lg"
+              >
                 Paketleri incele
               </Link>
               <LeadFunnelTrigger
@@ -80,8 +84,15 @@ export default function OnlineOzelDersPage() {
                 "Soru çözüm ve yanlış analizi desteğini artırmak isteyenler",
                 "Ders sonunda belirli bir çalışma yönüyle devam etmek isteyen öğrenciler",
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[15.5px] leading-7 text-[var(--site-body)]">
-                  <Check className="mt-1 h-4 w-4 shrink-0 text-[var(--brand-orange-ink)]" strokeWidth={2.4} aria-hidden="true" />
+                <li
+                  key={item}
+                  className="flex items-start gap-3 text-[15.5px] leading-7 text-[var(--site-body)]"
+                >
+                  <Check
+                    className="mt-1 h-4 w-4 shrink-0 text-[var(--brand-orange-ink)]"
+                    strokeWidth={2.4}
+                    aria-hidden="true"
+                  />
                   <span>{item}</span>
                 </li>
               ))}
@@ -98,21 +109,33 @@ export default function OnlineOzelDersPage() {
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
               >
                 Online matematik dersi rehberi
-                <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </Link>
               <Link
                 href="/blog/online-ozel-ders-mi-dershane-mi"
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
               >
                 Online özel ders mi dershane mi?
-                <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </Link>
               <Link
                 href="/blog/yks-online-ders-calisma-plani"
                 className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
               >
                 YKS online ders çalışma planı
-                <ArrowRight size={17} className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                <ArrowRight
+                  size={17}
+                  className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </Link>
             </div>
           </div>

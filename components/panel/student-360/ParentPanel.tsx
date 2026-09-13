@@ -17,19 +17,28 @@ export function ParentPanel(props: ParentPanelProps) {
               className="flex items-center justify-between gap-3 rounded-[10px] border border-dc-line p-3"
             >
               <div className="min-w-0">
-                <p className="truncate text-[13.5px] font-bold text-dc-ink">{parent.fullName}</p>
+                <p className="truncate text-[13.5px] font-bold text-dc-ink">
+                  {parent.fullName}
+                </p>
                 <p className="mt-1 truncate text-[12px] text-dc-ink-muted">
                   {parent.email}
                   {parent.relationship ? ` · ${parent.relationship}` : ""}
                 </p>
               </div>
-              {canManage ? <RelationshipRemoveButton id={parent.linkId} /> : null}
+              {canManage ? (
+                <RelationshipRemoveButton id={parent.linkId} />
+              ) : null}
             </div>
           ))}
-          {!data.parents.length ? <EmptyLine text="Aktif veli bağlantısı yok." /> : null}
+          {!data.parents.length ? (
+            <EmptyLine text="Aktif veli bağlantısı yok." />
+          ) : null}
         </div>
         {canManage ? (
-          <StudentParentLinkForm studentId={studentId} parents={parentOptions.map((p) => ({ id: p.id, name: p.label }))} />
+          <StudentParentLinkForm
+            studentId={studentId}
+            parents={parentOptions.map((p) => ({ id: p.id, name: p.label }))}
+          />
         ) : null}
       </PanelCard>
 
@@ -42,7 +51,9 @@ export function ParentPanel(props: ParentPanelProps) {
                 key={digest.id}
                 title={`${digest.trendBand} · ${digest.supportArea}`}
                 meta={`${DAY.format(digest.weekStart)} · ${digest.status}${
-                  digest.publishedAt ? ` · yayın ${DAY.format(digest.publishedAt)}` : ""
+                  digest.publishedAt
+                    ? ` · yayın ${DAY.format(digest.publishedAt)}`
+                    : ""
                 }`}
               />
             ))

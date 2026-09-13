@@ -91,10 +91,17 @@ export default async function AdminEducatorsPage() {
               {teachers.map((teacher) => {
                 const groups = teacher.taughtGroups;
                 const seats = groups.reduce((sum, g) => sum + g.capacity, 0);
-                const filled = groups.reduce((sum, g) => sum + g._count.enrollments, 0);
+                const filled = groups.reduce(
+                  (sum, g) => sum + g._count.enrollments,
+                  0,
+                );
                 const pct = seats ? Math.round((filled / seats) * 100) : null;
-                const over = groups.some((g) => g._count.enrollments > g.capacity);
-                const levels = [...new Set(groups.map((g) => g.level).filter(Boolean))];
+                const over = groups.some(
+                  (g) => g._count.enrollments > g.capacity,
+                );
+                const levels = [
+                  ...new Set(groups.map((g) => g.level).filter(Boolean)),
+                ];
                 const subjects = teacher.teacherProfile?.subjects ?? [];
 
                 return (
@@ -107,11 +114,17 @@ export default async function AdminEducatorsPage() {
                         {teacher.fullName || teacher.email}
                       </Link>
                     </PanelTableCell>
-                    <PanelTableCell tone={teacher.status === "ACTIVE" ? undefined : "warn"}>
+                    <PanelTableCell
+                      tone={teacher.status === "ACTIVE" ? undefined : "warn"}
+                    >
                       {teacher.status === "ACTIVE" ? "Aktif" : "Askıda"}
                     </PanelTableCell>
-                    <PanelTableCell>{subjects.length ? subjects.join(", ") : "—"}</PanelTableCell>
-                    <PanelTableCell>{levels.length ? levels.join(" · ") : "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      {subjects.length ? subjects.join(", ") : "—"}
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      {levels.length ? levels.join(" · ") : "—"}
+                    </PanelTableCell>
                     <PanelTableCell tone={over ? "warn" : undefined}>
                       {groups.length === 0
                         ? "Aktif grup yok"

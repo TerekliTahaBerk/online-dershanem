@@ -11,7 +11,10 @@ export function AcademicPanel(props: AcademicPanelProps) {
         <div className="mt-3 space-y-2">
           {data.subjectPerformance.length ? (
             data.subjectPerformance.map((row) => (
-              <div key={row.subject} className="flex justify-between gap-3 text-[13.5px]">
+              <div
+                key={row.subject}
+                className="flex justify-between gap-3 text-[13.5px]"
+              >
                 <span>{row.subject}</span>
                 <span className="font-semibold text-dc-ink">
                   {row.avgNet == null
@@ -25,7 +28,8 @@ export function AcademicPanel(props: AcademicPanelProps) {
           )}
         </div>
         <p className="mt-4 text-[12.5px] text-dc-ink-faint">
-          Tekrar kuyruğu: {data.reviewDueCount} · kazanım sinyali: {data.evidenceCount}
+          Tekrar kuyruğu: {data.reviewDueCount} · kazanım sinyali:{" "}
+          {data.evidenceCount}
         </p>
       </PanelCard>
 
@@ -67,10 +71,15 @@ export function AcademicPanel(props: AcademicPanelProps) {
           </p>
           <div className="mt-4 space-y-4">
             {data.unifiedOutcomes.map((row) => (
-              <div key={row.outcomeId} className="rounded-xl border border-dc-border/60 p-4">
+              <div
+                key={row.outcomeId}
+                className="rounded-xl border border-dc-border/60 p-4"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="text-[13px] font-semibold text-dc-ink">{row.title}</p>
+                    <p className="text-[13px] font-semibold text-dc-ink">
+                      {row.title}
+                    </p>
                     <p className="text-[12px] text-dc-ink-faint">
                       {row.subjectName} · {row.unitName} · {row.code}
                     </p>

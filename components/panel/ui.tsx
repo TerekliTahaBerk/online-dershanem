@@ -3,7 +3,13 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-type PanelTone = "neutral" | "info" | "success" | "warning" | "critical" | "danger";
+type PanelTone =
+  | "neutral"
+  | "info"
+  | "success"
+  | "warning"
+  | "critical"
+  | "danger";
 type PanelCardVariant = "default" | "subtle" | "emphasis" | "critical";
 
 function normalizeTone(tone: PanelTone): Exclude<PanelTone, "danger"> {
@@ -35,7 +41,9 @@ export function PanelHeading({
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        {eyebrow ? <p className="text-[13px] text-dc-ink-faint">{eyebrow}</p> : null}
+        {eyebrow ? (
+          <p className="text-[13px] text-dc-ink-faint">{eyebrow}</p>
+        ) : null}
         <h1
           className={`text-[22px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink sm:text-[26px] ${
             eyebrow ? "mt-2" : ""
@@ -44,7 +52,9 @@ export function PanelHeading({
           {title}
         </h1>
         {description ? (
-          <p className="mt-1.5 text-[14.5px] text-dc-ink-muted">{description}</p>
+          <p className="mt-1.5 text-[14.5px] text-dc-ink-muted">
+            {description}
+          </p>
         ) : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
@@ -79,11 +89,24 @@ export function PanelPageHeader({
             {eyebrow}
           </p>
         ) : null}
-        <h1 className={cn("max-w-4xl font-semibold tracking-[-.04em] text-dc-ink", eyebrow ? "mt-2.5 text-2xl sm:text-3xl lg:text-4xl" : "text-[22px] sm:text-[26px] lg:text-[28px]")}>
+        <h1
+          className={cn(
+            "max-w-4xl font-semibold tracking-[-.04em] text-dc-ink",
+            eyebrow
+              ? "mt-2.5 text-2xl sm:text-3xl lg:text-4xl"
+              : "text-[22px] sm:text-[26px] lg:text-[28px]",
+          )}
+        >
           {title}
         </h1>
-        {description ? <p className="mt-2.5 max-w-3xl text-sm leading-7 text-dc-ink-body">{description}</p> : null}
-        {metadata ? <div className="mt-2.5 text-xs text-dc-ink-muted">{metadata}</div> : null}
+        {description ? (
+          <p className="mt-2.5 max-w-3xl text-sm leading-7 text-dc-ink-body">
+            {description}
+          </p>
+        ) : null}
+        {metadata ? (
+          <div className="mt-2.5 text-xs text-dc-ink-muted">{metadata}</div>
+        ) : null}
       </div>
       {actionNode ? <div className="shrink-0">{actionNode}</div> : null}
     </header>
@@ -114,7 +137,12 @@ export function PanelCard({
   return (
     <section
       id={id}
-      className={cn("rounded-[14px] border", variantClasses[variant], padded ? "p-4 sm:p-5 lg:p-[22px]" : "", className)}
+      className={cn(
+        "rounded-[14px] border",
+        variantClasses[variant],
+        padded ? "p-4 sm:p-5 lg:p-[22px]" : "",
+        className,
+      )}
     >
       {children}
     </section>
@@ -192,20 +220,39 @@ export function PanelMetric({
     neutral: "bg-dc-surface-soft text-dc-ink-muted",
     info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
     success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
-    warning: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
-    critical: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+    warning:
+      "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
+    critical:
+      "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
   };
   const semanticTone = normalizeTone(tone);
   return (
     <PanelCard className="p-4 sm:p-[18px]">
-    {Icon ? (
-      <span className={cn("grid h-9 w-9 place-items-center rounded-[10px]", toneClasses[semanticTone])}>
-        <Icon size={18} aria-hidden="true" />
-      </span>
-    ) : null}
-    <p className={cn(Icon ? "mt-3" : "", "text-2xl font-black text-dc-ink", valueClassName)}>{value}</p>
-    <p className="mt-1 text-xs text-dc-ink-muted">{label}</p>
-    {supportingText || description ? <p className="mt-1.5 text-xs text-dc-ink-faint">{supportingText ?? description}</p> : null}
+      {Icon ? (
+        <span
+          className={cn(
+            "grid h-9 w-9 place-items-center rounded-[10px]",
+            toneClasses[semanticTone],
+          )}
+        >
+          <Icon size={18} aria-hidden="true" />
+        </span>
+      ) : null}
+      <p
+        className={cn(
+          Icon ? "mt-3" : "",
+          "text-2xl font-black text-dc-ink",
+          valueClassName,
+        )}
+      >
+        {value}
+      </p>
+      <p className="mt-1 text-xs text-dc-ink-muted">{label}</p>
+      {supportingText || description ? (
+        <p className="mt-1.5 text-xs text-dc-ink-faint">
+          {supportingText ?? description}
+        </p>
+      ) : null}
     </PanelCard>
   );
 }
@@ -222,15 +269,27 @@ export function PanelStatusBadge({
   const toneClasses: Record<Exclude<PanelTone, "danger">, string> = {
     neutral: "bg-slate-100 text-slate-700",
     info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
-    warning: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
+    warning:
+      "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
     success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
-    critical: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+    critical:
+      "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
   };
   const semanticTone = normalizeTone(tone);
   return (
-    <span className={cn("inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold", toneClasses[semanticTone])}>
-    {pulse ? <span className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse" aria-hidden="true" /> : null}
-    {label}
+    <span
+      className={cn(
+        "inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold",
+        toneClasses[semanticTone],
+      )}
+    >
+      {pulse ? (
+        <span
+          className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse"
+          aria-hidden="true"
+        />
+      ) : null}
+      {label}
     </span>
   );
 }
@@ -250,15 +309,23 @@ export function PanelAttentionCard({
 }) {
   const toneClasses: Record<"info" | "warning" | "critical", string> = {
     info: "border-[var(--pd-pastel-sky-ink)]/20 bg-[var(--pd-pastel-sky-soft)]",
-    warning: "border-[var(--pd-pastel-yellow-ink)]/20 bg-[var(--pd-pastel-yellow-soft)]",
-    critical: "border-[var(--pd-pastel-blush-ink)]/25 bg-[var(--pd-pastel-blush-soft)]",
+    warning:
+      "border-[var(--pd-pastel-yellow-ink)]/20 bg-[var(--pd-pastel-yellow-soft)]",
+    critical:
+      "border-[var(--pd-pastel-blush-ink)]/25 bg-[var(--pd-pastel-blush-soft)]",
   };
   const semanticTone = tone === "danger" ? "critical" : tone;
   return (
-    <PanelCard className={cn("border-dc-line-soft p-4 sm:p-5", toneClasses[semanticTone], className)}>
-    <h3 className="text-[15px] font-bold text-dc-ink">{title}</h3>
-    <p className="mt-1.5 text-sm leading-6 text-dc-ink-body">{body}</p>
-    {action ? <div className="mt-3">{action}</div> : null}
+    <PanelCard
+      className={cn(
+        "border-dc-line-soft p-4 sm:p-5",
+        toneClasses[semanticTone],
+        className,
+      )}
+    >
+      <h3 className="text-[15px] font-bold text-dc-ink">{title}</h3>
+      <p className="mt-1.5 text-sm leading-6 text-dc-ink-body">{body}</p>
+      {action ? <div className="mt-3">{action}</div> : null}
     </PanelCard>
   );
 }
@@ -286,24 +353,45 @@ export function PanelActionRow({
 }) {
   if (title) {
     return (
-      <div className={cn("flex flex-wrap items-start gap-3 px-4 py-3 sm:px-5", !last ? "border-b border-dc-line-soft" : "", className)}>
+      <div
+        className={cn(
+          "flex flex-wrap items-start gap-3 px-4 py-3 sm:px-5",
+          !last ? "border-b border-dc-line-soft" : "",
+          className,
+        )}
+      >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-[14.5px] font-semibold text-dc-ink">{title}</p>
             {status ? <div>{status}</div> : null}
           </div>
-          {description ? <p className="mt-1 text-[13.5px] text-dc-ink-muted">{description}</p> : null}
-          {meta ? <p className="mt-1 text-[12.5px] text-dc-ink-faint">{meta}</p> : null}
+          {description ? (
+            <p className="mt-1 text-[13.5px] text-dc-ink-muted">
+              {description}
+            </p>
+          ) : null}
+          {meta ? (
+            <p className="mt-1 text-[12.5px] text-dc-ink-faint">{meta}</p>
+          ) : null}
         </div>
-        {cta ? <div className="w-full sm:w-auto sm:shrink-0 [&>*]:w-full sm:[&>*]:w-auto">{cta}</div> : null}
+        {cta ? (
+          <div className="w-full sm:w-auto sm:shrink-0 [&>*]:w-full sm:[&>*]:w-auto">
+            {cta}
+          </div>
+        ) : null}
       </div>
     );
   }
   if (!primaryAction && !secondaryAction) return null;
   return (
-    <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:items-center", className)}>
-    {secondaryAction ? <div>{secondaryAction}</div> : null}
-    {primaryAction ? <div>{primaryAction}</div> : null}
+    <div
+      className={cn(
+        "flex flex-col-reverse gap-2 sm:flex-row sm:items-center",
+        className,
+      )}
+    >
+      {secondaryAction ? <div>{secondaryAction}</div> : null}
+      {primaryAction ? <div>{primaryAction}</div> : null}
     </div>
   );
 }
@@ -322,7 +410,10 @@ export function PanelProgress({
   className?: string;
 }) {
   const safeMax = Math.max(1, max);
-  const normalized = Math.max(0, Math.min(100, Math.round((value / safeMax) * 100)));
+  const normalized = Math.max(
+    0,
+    Math.min(100, Math.round((value / safeMax) * 100)),
+  );
   return (
     <div className={className}>
       <div
@@ -333,7 +424,10 @@ export function PanelProgress({
         aria-valuemax={safeMax}
         aria-label={label}
       >
-        <div className="h-full rounded-full bg-dc-brand" style={{ width: `${normalized}%` }} />
+        <div
+          className="h-full rounded-full bg-dc-brand"
+          style={{ width: `${normalized}%` }}
+        />
       </div>
       {text ? <p className="mt-1.5 text-xs text-dc-ink-muted">{text}</p> : null}
     </div>
@@ -342,7 +436,11 @@ export function PanelProgress({
 
 /* ── Tablo (mobilde kart görünümü — panel-table.tsx) ─────────────────── */
 
-export { PanelTable, PanelTableRow, PanelTableCell } from "@/components/panel/panel-table";
+export {
+  PanelTable,
+  PanelTableRow,
+  PanelTableCell,
+} from "@/components/panel/panel-table";
 
 /* ── Onay kutulu görev satırı ─────────────────────────────────────────── */
 
@@ -385,12 +483,16 @@ export function PanelTaskRow({
         >
           {title}
         </span>
-        {meta ? <span className="block text-[12.5px] text-dc-ink-faint">{meta}</span> : null}
+        {meta ? (
+          <span className="block text-[12.5px] text-dc-ink-faint">{meta}</span>
+        ) : null}
       </span>
       {right ? (
         <span
           className={`shrink-0 text-[13px] ${
-            rightTone === "warn" ? "text-[var(--pd-pastel-yellow-ink)]" : "text-dc-ink-muted"
+            rightTone === "warn"
+              ? "text-[var(--pd-pastel-yellow-ink)]"
+              : "text-dc-ink-muted"
           }`}
         >
           {right}
@@ -426,10 +528,15 @@ export function PanelStatCard({
           aria-valuemax={100}
           aria-label={title}
         >
-          <div className="h-full rounded-full bg-dc-brand" style={{ width: `${progressPct}%` }} />
+          <div
+            className="h-full rounded-full bg-dc-brand"
+            style={{ width: `${progressPct}%` }}
+          />
         </div>
       ) : null}
-      {note ? <p className="mt-2 text-[13.5px] text-dc-ink-muted">{note}</p> : null}
+      {note ? (
+        <p className="mt-2 text-[13.5px] text-dc-ink-muted">{note}</p>
+      ) : null}
     </PanelCard>
   );
 }
@@ -449,7 +556,9 @@ export function PanelEmpty({
   return (
     <PanelCard className={cn("mt-5", className)}>
       <p className="text-[15px] font-bold text-dc-ink">{title}</p>
-      <p className="mt-1.5 text-[14px] leading-[1.6] text-dc-ink-muted">{body}</p>
+      <p className="mt-1.5 text-[14px] leading-[1.6] text-dc-ink-muted">
+        {body}
+      </p>
       {action ? <div className="mt-4">{action}</div> : null}
     </PanelCard>
   );

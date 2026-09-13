@@ -39,7 +39,9 @@ export default async function TeacherAssignmentsPage() {
         submissions: {
           orderBy: { submittedAt: "asc" },
           include: {
-            student: { include: { user: { select: { fullName: true, email: true } } } },
+            student: {
+              include: { user: { select: { fullName: true, email: true } } },
+            },
             scores: true,
           },
         },
@@ -47,7 +49,10 @@ export default async function TeacherAssignmentsPage() {
     }),
     featureFlags.learningOutcomes
       ? prisma.learningOutcome.findMany({
-          where: { isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } },
+          where: {
+            isActive: true,
+            unit: { subject: { version: { status: "ACTIVE" } } },
+          },
           orderBy: [
             { favorites: { _count: "desc" } },
             { assignments: { _count: "desc" } },
@@ -66,7 +71,11 @@ export default async function TeacherAssignmentsPage() {
   ]);
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+    >
       <header className="mb-7">
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
           <ClipboardCheck size={15} /> Çalışma döngüsü
@@ -75,15 +84,22 @@ export default async function TeacherAssignmentsPage() {
           Ödevleri ver, ilerlemeyi gör.
         </h1>
         <p className="mt-2 text-sm text-[var(--site-body)]">
-          Ödev öğrenciye ulaşır; tamamlanma durumu veli paneline aynı anda yansır.
+          Ödev öğrenciye ulaşır; tamamlanma durumu veli paneline aynı anda
+          yansır.
         </p>
       </header>
       <TeacherAssignmentManager
         groups={groups}
-        lessons={lessons.map((item) => ({ ...item, startsAt: item.startsAt.toISOString() }))}
+        lessons={lessons.map((item) => ({
+          ...item,
+          startsAt: item.startsAt.toISOString(),
+        }))}
         assignments={assignments.map((item) => {
           const latestByStudent = new Map(
-            item.submissions.map((submission) => [submission.studentId, submission.status] as const),
+            item.submissions.map(
+              (submission) =>
+                [submission.studentId, submission.status] as const,
+            ),
           );
           const summary = summarizeGroupAssignment({
             rows: item.progress.map((row) => ({
@@ -113,7 +129,9 @@ export default async function TeacherAssignmentsPage() {
             })),
             submissions: item.submissions.map((submission) => ({
               id: submission.id,
-              studentName: submission.student.user.fullName || submission.student.user.email,
+              studentName:
+                submission.student.user.fullName ||
+                submission.student.user.email,
               attemptNumber: submission.attemptNumber,
               status: submission.status,
               textEvidence: submission.textEvidence,

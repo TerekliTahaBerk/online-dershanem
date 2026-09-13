@@ -28,10 +28,14 @@ export function PageHero({
   return (
     <section
       className={
-        warm ? "border-b border-[var(--site-line)] bg-[var(--site-bg-warm)]" : "bg-[var(--site-bg)]"
+        warm
+          ? "border-b border-[var(--site-line)] bg-[var(--site-bg-warm)]"
+          : "bg-[var(--site-bg)]"
       }
     >
-      <div className={`site-container py-16 sm:py-24 ${centered ? "text-center" : ""}`}>
+      <div
+        className={`site-container py-16 sm:py-24 ${centered ? "text-center" : ""}`}
+      >
         {eyebrow ? <span className="site-eyebrow">{eyebrow}</span> : null}
         <h1
           className={`${eyebrow ? "mt-4" : ""} font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.04] text-[var(--site-ink)] ${
@@ -50,7 +54,9 @@ export function PageHero({
           </p>
         ) : null}
         {actions ? (
-          <div className={`mt-8 flex flex-wrap gap-3 ${centered ? "justify-center" : ""}`}>
+          <div
+            className={`mt-8 flex flex-wrap gap-3 ${centered ? "justify-center" : ""}`}
+          >
             {actions}
           </div>
         ) : null}

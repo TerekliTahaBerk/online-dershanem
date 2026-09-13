@@ -29,7 +29,10 @@ export function AdminPreviewLaunchButton({
             returnPath: returnPath || window.location.pathname,
           }),
         });
-        const body = (await response.json().catch(() => null)) as { homePath?: string; error?: string } | null;
+        const body = (await response.json().catch(() => null)) as {
+          homePath?: string;
+          error?: string;
+        } | null;
         if (!response.ok) {
           window.alert(body?.error || "Önizleme başlatılamadı.");
           return;
@@ -54,5 +57,11 @@ export function AdminPreviewPickerTrigger({
   initialRole?: PreviewableRole;
   returnPath?: string;
 }) {
-  return <AdminPreviewPicker compact initialRole={initialRole} returnPath={returnPath} />;
+  return (
+    <AdminPreviewPicker
+      compact
+      initialRole={initialRole}
+      returnPath={returnPath}
+    />
+  );
 }

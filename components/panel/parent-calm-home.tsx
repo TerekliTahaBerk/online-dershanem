@@ -20,7 +20,10 @@ function statusTone(
 }
 
 export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
-  const progressHref = withParentStudentContext("/panel/veli/analiz", home.studentId);
+  const progressHref = withParentStudentContext(
+    "/panel/veli/analiz",
+    home.studentId,
+  );
 
   return (
     <>
@@ -35,12 +38,19 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
         tone={home.statusCode === "NEEDS_SUPPORT" ? "warning" : "info"}
         title={`Genel durum · ${home.statusLabel}`}
         body={home.statusSentence}
-        action={<PanelStatusBadge label={home.statusLabel} tone={statusTone(home.statusCode)} />}
+        action={
+          <PanelStatusBadge
+            label={home.statusLabel}
+            tone={statusTone(home.statusCode)}
+          />
+        }
       />
 
       <PanelCard className="mt-4 max-w-[720px] py-5">
         <PanelCardTitle>Bu haftanın özeti</PanelCardTitle>
-        <p className="mt-2 text-[15px] leading-[1.7] text-dc-ink-body">{home.weekSummary}</p>
+        <p className="mt-2 text-[15px] leading-[1.7] text-dc-ink-body">
+          {home.weekSummary}
+        </p>
         {home.dinoEnabled ? (
           <DinoExplanationAction
             deterministicReason={home.weekSummary}
@@ -57,12 +67,18 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
         <PanelCardTitle>Bu hafta</PanelCardTitle>
         <ul className="mt-3 space-y-2.5 text-[14px] leading-[1.6] text-dc-ink-body">
           {home.thisWeek.planLabel ? <li>{home.thisWeek.planLabel}</li> : null}
-          {home.thisWeek.attendanceLabel ? <li>{home.thisWeek.attendanceLabel}</li> : null}
-          {home.thisWeek.assignmentsLabel ? <li>{home.thisWeek.assignmentsLabel}</li> : null}
+          {home.thisWeek.attendanceLabel ? (
+            <li>{home.thisWeek.attendanceLabel}</li>
+          ) : null}
+          {home.thisWeek.assignmentsLabel ? (
+            <li>{home.thisWeek.assignmentsLabel}</li>
+          ) : null}
           {!home.thisWeek.planLabel &&
           !home.thisWeek.attendanceLabel &&
           !home.thisWeek.assignmentsLabel ? (
-            <li className="text-dc-ink-muted">Bu hafta için henüz kayıt oluşmadı.</li>
+            <li className="text-dc-ink-muted">
+              Bu hafta için henüz kayıt oluşmadı.
+            </li>
           ) : null}
         </ul>
         {home.thisWeek.upcoming.length ? (
@@ -73,7 +89,10 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
                 title={item.title}
                 description={item.detail}
                 cta={
-                  <Link href={item.href} className="panel-quick-action inline-flex">
+                  <Link
+                    href={item.href}
+                    className="panel-quick-action inline-flex"
+                  >
                     Aç
                   </Link>
                 }
@@ -119,9 +138,13 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
               </p>
               <ul className="mt-2 space-y-1.5 text-[13.5px] text-dc-ink-body">
                 {home.academic.strengths.length ? (
-                  home.academic.strengths.map((item) => <li key={item}>{item}</li>)
+                  home.academic.strengths.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))
                 ) : (
-                  <li className="text-dc-ink-muted">Henüz belirgin güçlü alan yok.</li>
+                  <li className="text-dc-ink-muted">
+                    Henüz belirgin güçlü alan yok.
+                  </li>
                 )}
               </ul>
             </div>
@@ -131,9 +154,13 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
               </p>
               <ul className="mt-2 space-y-1.5 text-[13.5px] text-dc-ink-body">
                 {home.academic.supportAreas.length ? (
-                  home.academic.supportAreas.map((item) => <li key={item}>{item}</li>)
+                  home.academic.supportAreas.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))
                 ) : (
-                  <li className="text-dc-ink-muted">Şu an ek destek alanı görünmüyor.</li>
+                  <li className="text-dc-ink-muted">
+                    Şu an ek destek alanı görünmüyor.
+                  </li>
                 )}
               </ul>
             </div>
@@ -169,7 +196,10 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
         <PanelCard className="mt-5 max-w-[720px] py-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <PanelCardTitle>Koçluk</PanelCardTitle>
-            <Link href={home.coaching.href} className="panel-quick-action inline-flex">
+            <Link
+              href={home.coaching.href}
+              className="panel-quick-action inline-flex"
+            >
               Koçluğu aç
             </Link>
           </div>
@@ -180,9 +210,13 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
                 {home.coaching.weeklyGoal}
               </li>
             ) : (
-              <li className="text-dc-ink-muted">Haftalık hedef henüz paylaşılmadı.</li>
+              <li className="text-dc-ink-muted">
+                Haftalık hedef henüz paylaşılmadı.
+              </li>
             )}
-            {home.coaching.planRealization ? <li>{home.coaching.planRealization}</li> : null}
+            {home.coaching.planRealization ? (
+              <li>{home.coaching.planRealization}</li>
+            ) : null}
             {home.coaching.coachName ? (
               <li>
                 <span className="text-dc-ink-muted">Koç · </span>
@@ -196,7 +230,8 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
             </p>
           ) : (
             <p className="mt-3 text-[13px] text-dc-ink-muted">
-              Koçun paylaştığı bir özet yok. Birebir görüşme notları veliye açılmaz.
+              Koçun paylaştığı bir özet yok. Birebir görüşme notları veliye
+              açılmaz.
             </p>
           )}
         </PanelCard>
@@ -212,7 +247,10 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
                 title={action.title}
                 description={action.body}
                 cta={
-                  <Link href={action.href} className="panel-quick-action panel-quick-action-primary inline-flex">
+                  <Link
+                    href={action.href}
+                    className="panel-quick-action panel-quick-action-primary inline-flex"
+                  >
                     {action.ctaLabel}
                   </Link>
                 }
@@ -225,7 +263,8 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
         <PanelCard className="mt-5 max-w-[720px] py-5" variant="subtle">
           <PanelCardTitle>Gereken aksiyon</PanelCardTitle>
           <p className="mt-2 text-[14px] leading-[1.65] text-dc-ink-muted">
-            Şu an sizden beklenen bir işlem yok. Düzenli takibe devam etmeniz yeterli.
+            Şu an sizden beklenen bir işlem yok. Düzenli takibe devam etmeniz
+            yeterli.
           </p>
         </PanelCard>
       )}
@@ -235,7 +274,10 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
           {home.digest.published && home.digest.preview
             ? `Öğretmenin yayınladığı özet: ${home.digest.preview.slice(0, 120)}${home.digest.preview.length > 120 ? "…" : ""}`
             : "Öğretmen haftalık özeti yayınladığında ayrıntılı bakış burada açılır."}{" "}
-          <Link href={home.digest.href} className="font-semibold text-dc-brand-strong underline-offset-2 hover:underline">
+          <Link
+            href={home.digest.href}
+            className="font-semibold text-dc-brand-strong underline-offset-2 hover:underline"
+          >
             Haftalık özeti gör
           </Link>
         </p>

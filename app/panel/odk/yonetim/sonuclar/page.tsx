@@ -22,16 +22,28 @@ export default async function OdkAdminResultsHubPage() {
       status: true,
       endsAt: true,
       resultsReleasedAt: true,
-      _count: { select: { attempts: true, assignments: { where: { isActive: true } } } },
+      _count: {
+        select: { attempts: true, assignments: { where: { isActive: true } } },
+      },
       attempts: {
-        where: { status: { in: ["SUBMITTED", "AUTO_SUBMITTED", "REVIEW_REQUIRED"] } },
-        select: { integrityLevel: true, score: { select: { publicationStatus: true } } },
+        where: {
+          status: { in: ["SUBMITTED", "AUTO_SUBMITTED", "REVIEW_REQUIRED"] },
+        },
+        select: {
+          integrityLevel: true,
+          score: { select: { publicationStatus: true } },
+        },
       },
     },
   });
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK">
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+      product="ODK"
+    >
       <PanelPageHeader
         eyebrow="Sonuçlar"
         title="Deneme sonuçlarını inceleyin ve yayınlayın."
@@ -53,18 +65,46 @@ export default async function OdkAdminResultsHubPage() {
           <tbody>
             {exams.map((exam) => {
               const presentation = examStatusPresentation[exam.status];
-              const reviewCount = exam.attempts.filter((attempt) => attempt.integrityLevel !== "NORMAL").length;
-              const published = exam.attempts.filter((attempt) => attempt.score?.publicationStatus === "PUBLISHED").length;
+              const reviewCount = exam.attempts.filter(
+                (attempt) => attempt.integrityLevel !== "NORMAL",
+              ).length;
+              const published = exam.attempts.filter(
+                (attempt) => attempt.score?.publicationStatus === "PUBLISHED",
+              ).length;
               return (
-                <tr key={exam.id} className="border-t border-[var(--site-line)] hover:bg-[var(--site-bg-warm)]/60">
+                <tr
+                  key={exam.id}
+                  className="border-t border-[var(--site-line)] hover:bg-[var(--site-bg-warm)]/60"
+                >
                   <td className="px-4 py-3">
-                    <Link href={`/panel/odk/yonetim/sinavlar/${exam.id}#adim-sonuc`} className="font-bold text-[var(--site-ink)] hover:text-[var(--brand-olive)]">{exam.title}</Link>
+                    <Link
+                      href={`/panel/odk/yonetim/sinavlar/${exam.id}#adim-sonuc`}
+                      className="font-bold text-[var(--site-ink)] hover:text-[var(--brand-olive)]"
+                    >
+                      {exam.title}
+                    </Link>
                   </td>
-                  <td className="px-3 py-3 font-extrabold text-[var(--brand-olive)]">{exam.family}</td>
-                  <td className="px-3 py-3">{exam.attempts.length}/{exam._count.assignments || exam._count.attempts}</td>
+                  <td className="px-3 py-3 font-extrabold text-[var(--brand-olive)]">
+                    {exam.family}
+                  </td>
+                  <td className="px-3 py-3">
+                    {exam.attempts.length}/
+                    {exam._count.assignments || exam._count.attempts}
+                  </td>
                   <td className="px-3 py-3">{reviewCount}</td>
-                  <td className="px-3 py-3"><OdkStatusBadge label={presentation.label} tone={presentation.tone} /></td>
-                  <td className="px-3 py-3 font-bold">{exam.status === "RELEASED" ? `Yayınlandı (${published})` : exam.status === "SCORED" ? "Gizli / inceleme" : "Puanlama bekliyor"}</td>
+                  <td className="px-3 py-3">
+                    <OdkStatusBadge
+                      label={presentation.label}
+                      tone={presentation.tone}
+                    />
+                  </td>
+                  <td className="px-3 py-3 font-bold">
+                    {exam.status === "RELEASED"
+                      ? `Yayınlandı (${published})`
+                      : exam.status === "SCORED"
+                        ? "Gizli / inceleme"
+                        : "Puanlama bekliyor"}
+                  </td>
                 </tr>
               );
             })}
@@ -72,9 +112,19 @@ export default async function OdkAdminResultsHubPage() {
         </table>
         {!exams.length ? (
           <div className="p-8 text-center">
-            <ClipboardCheck size={22} className="mx-auto text-[var(--site-muted)]" />
-            <h3 className="mt-3 text-sm font-extrabold">Henüz kapanmış deneme yok.</h3>
-            <Link href="/panel/odk/yonetim/sinavlar" className="panel-text-link mt-3">Denemelere git</Link>
+            <ClipboardCheck
+              size={22}
+              className="mx-auto text-[var(--site-muted)]"
+            />
+            <h3 className="mt-3 text-sm font-extrabold">
+              Henüz kapanmış deneme yok.
+            </h3>
+            <Link
+              href="/panel/odk/yonetim/sinavlar"
+              className="panel-text-link mt-3"
+            >
+              Denemelere git
+            </Link>
           </div>
         ) : null}
       </div>

@@ -21,7 +21,9 @@ const DAY = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
-function riskTone(level: TeacherRosterRiskLevel): "neutral" | "success" | "warning" | "critical" {
+function riskTone(
+  level: TeacherRosterRiskLevel,
+): "neutral" | "success" | "warning" | "critical" {
   if (level === "high") return "critical";
   if (level === "medium") return "warning";
   if (level === "low") return "warning";
@@ -70,7 +72,11 @@ export default async function TeacherStudentsPage({
           {roster.filters.map((filter) => (
             <PanelFilterLink
               key={filter}
-              href={filter === "all" ? "/panel/ogretmen/gruplar" : `/panel/ogretmen/gruplar?filtre=${filter}`}
+              href={
+                filter === "all"
+                  ? "/panel/ogretmen/gruplar"
+                  : `/panel/ogretmen/gruplar?filtre=${filter}`
+              }
               active={roster.filter === filter}
             >
               {TEACHER_ROSTER_FILTER_LABELS[filter]}
@@ -81,7 +87,11 @@ export default async function TeacherStudentsPage({
         {roster.rows.length === 0 ? (
           <PanelEmpty
             className="mt-5"
-            title={roster.totalCount === 0 ? "Sana atanmış aktif öğrenci yok." : "Bu filtrede öğrenci yok."}
+            title={
+              roster.totalCount === 0
+                ? "Sana atanmış aktif öğrenci yok."
+                : "Bu filtrede öğrenci yok."
+            }
             body={
               roster.totalCount === 0
                 ? "Gruplarına öğrenci eklendiğinde risk, plan ve ders özeti burada listelenir."
@@ -103,9 +113,14 @@ export default async function TeacherStudentsPage({
                     >
                       {row.name}
                     </Link>
-                    <p className="mt-1 text-[13px] text-dc-ink-muted">{row.groupName}</p>
+                    <p className="mt-1 text-[13px] text-dc-ink-muted">
+                      {row.groupName}
+                    </p>
                   </div>
-                  <PanelStatusBadge label={riskLabel(row.riskLevel)} tone={riskTone(row.riskLevel)} />
+                  <PanelStatusBadge
+                    label={riskLabel(row.riskLevel)}
+                    tone={riskTone(row.riskLevel)}
+                  />
                 </div>
 
                 <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -124,7 +139,9 @@ export default async function TeacherStudentsPage({
                       <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
                         Plan
                       </dt>
-                      <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">{row.planLabel}</dd>
+                      <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
+                        {row.planLabel}
+                      </dd>
                     </div>
                   ) : null}
                   {row.examDeltaLabel != null ? (
@@ -155,7 +172,10 @@ export default async function TeacherStudentsPage({
                     Öğrenci 360
                   </Link>
                   {roster.flags.studentCheckIn && row.tags.includes("help") ? (
-                    <Link href="/panel/ogretmen/yardim" className="panel-quick-action inline-flex">
+                    <Link
+                      href="/panel/ogretmen/yardim"
+                      className="panel-quick-action inline-flex"
+                    >
                       Yardım talebi
                     </Link>
                   ) : null}

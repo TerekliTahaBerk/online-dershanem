@@ -51,7 +51,8 @@ export function PanelMobileNav({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const selectedStudentId = role === "PARENT" ? searchParams.get("studentId") : null;
+  const selectedStudentId =
+    role === "PARENT" ? searchParams.get("studentId") : null;
   const quickItems =
     mobileQuickItems ??
     (nav ? [] : mobilePrimaryNav(role, products, flags, root));
@@ -105,14 +106,18 @@ export function PanelMobileNav({
       >
         <ul
           className="grid gap-1"
-          style={{ gridTemplateColumns: `repeat(${bottomNavColumns}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `repeat(${bottomNavColumns}, minmax(0, 1fr))`,
+          }}
         >
           {quickItems.map((item) => {
             const active =
-              pathname === item.href || (item.href !== root && pathname.startsWith(`${item.href}/`));
+              pathname === item.href ||
+              (item.href !== root && pathname.startsWith(`${item.href}/`));
             const shouldPreserveParentContext =
               Boolean(selectedStudentId) &&
-              (item.href.startsWith(root) || item.href.startsWith("/panel/odk/veli"));
+              (item.href.startsWith(root) ||
+                item.href.startsWith("/panel/odk/veli"));
             const href = shouldPreserveParentContext
               ? withParentStudentContext(item.href, selectedStudentId)
               : item.href;
@@ -173,7 +178,11 @@ export function PanelMobileNav({
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex-1 overflow-y-auto p-4">
               {nav ?? (
-                <PanelNav role={role} products={products} onNavigate={() => setOpen(false)} />
+                <PanelNav
+                  role={role}
+                  products={products}
+                  onNavigate={() => setOpen(false)}
+                />
               )}
             </div>
 
@@ -187,8 +196,12 @@ export function PanelMobileNav({
                     {drawerAccount.initials || "?"}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] font-bold text-dc-ink">{drawerAccount.displayName}</p>
-                    <p className="truncate text-[12px] text-dc-ink-faint">{drawerAccount.email}</p>
+                    <p className="truncate text-[14px] font-bold text-dc-ink">
+                      {drawerAccount.displayName}
+                    </p>
+                    <p className="truncate text-[12px] text-dc-ink-faint">
+                      {drawerAccount.email}
+                    </p>
                     <p className="mt-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-dc-ink-ghost">
                       {drawerAccount.roleLine}
                     </p>

@@ -38,7 +38,13 @@ function TotpQrCode({ uri }: { uri: string }) {
     };
   }, [uri]);
 
-  if (!src) return <div className="mx-auto h-[208px] w-[208px] animate-pulse rounded-xl bg-slate-100" aria-hidden="true" />;
+  if (!src)
+    return (
+      <div
+        className="mx-auto h-[208px] w-[208px] animate-pulse rounded-xl bg-slate-100"
+        aria-hidden="true"
+      />
+    );
 
   return (
     <Image
@@ -85,26 +91,41 @@ export function TotpEnrollmentSetup({
       {coarsePointer ? (
         <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">
           <p className="flex items-start gap-2 font-bold">
-            <Smartphone size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+            <Smartphone
+              size={16}
+              className="mt-0.5 shrink-0"
+              aria-hidden="true"
+            />
             Aynı telefondan kuruyorsunuz
           </p>
           <p className="mt-2">
-            QR kod okutamazsınız — doğrulama uygulamasında <strong>“Anahtarı gir”</strong> /
+            QR kod okutamazsınız — doğrulama uygulamasında{" "}
+            <strong>“Anahtarı gir”</strong> /
             <strong> “Enter a setup key”</strong> seçeneğini kullanın.
           </p>
           <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-[13px]">
-            <li>Google Authenticator veya Microsoft Authenticator uygulamasını açın.</li>
+            <li>
+              Google Authenticator veya Microsoft Authenticator uygulamasını
+              açın.
+            </li>
             <li>“+” → “Anahtarı gir” seçeneğine dokunun (QR okutmayın).</li>
-            <li>Hesap: <strong>{TOTP_ACCOUNT_NAME}</strong> · Sağlayıcı: <strong>{TOTP_ISSUER}</strong></li>
-            <li>Aşağıdaki anahtarı kopyalayıp yapıştırın; tür olarak “Zamana dayalı” seçin.</li>
+            <li>
+              Hesap: <strong>{TOTP_ACCOUNT_NAME}</strong> · Sağlayıcı:{" "}
+              <strong>{TOTP_ISSUER}</strong>
+            </li>
+            <li>
+              Aşağıdaki anahtarı kopyalayıp yapıştırın; tür olarak “Zamana
+              dayalı” seçin.
+            </li>
             <li>Uygulamadaki 6 haneli kodu bu sayfaya girin.</li>
           </ol>
         </div>
       ) : (
         <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-sm text-slate-700">
-            Telefonunuzdaki doğrulama uygulamasıyla <strong>QR kodu okutun</strong>. Aynı cihazdaysanız
-            aşağıdaki anahtarı manuel girin.
+            Telefonunuzdaki doğrulama uygulamasıyla{" "}
+            <strong>QR kodu okutun</strong>. Aynı cihazdaysanız aşağıdaki
+            anahtarı manuel girin.
           </p>
           <div className="hidden md:block">
             <TotpQrCode uri={otpauthUri} />
@@ -113,7 +134,9 @@ export function TotpEnrollmentSetup({
       )}
 
       <div>
-        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Kurulum anahtarı</p>
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+          Kurulum anahtarı
+        </p>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
           <p className="flex-1 break-all rounded-xl border border-slate-200 bg-white p-3 font-mono text-sm leading-6">
             {formatSecret(secret)}
@@ -123,29 +146,36 @@ export function TotpEnrollmentSetup({
             onClick={() => void copySecret()}
             className="site-btn site-btn-secondary min-h-11 shrink-0 px-4"
           >
-            {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
+            {copied ? (
+              <Check size={16} aria-hidden="true" />
+            ) : (
+              <Copy size={16} aria-hidden="true" />
+            )}
             {copied ? "Kopyalandı" : "Anahtarı kopyala"}
           </button>
         </div>
       </div>
 
       {coarsePointer && otpauthUri ? (
-        <a
-          href={otpauthUri}
-          className="site-btn site-btn-secondary w-full"
-        >
-          <ExternalLink size={16} aria-hidden="true" /> Doğrulama uygulamasında aç
+        <a href={otpauthUri} className="site-btn site-btn-secondary w-full">
+          <ExternalLink size={16} aria-hidden="true" /> Doğrulama uygulamasında
+          aç
         </a>
       ) : null}
 
       <div>
-        <label htmlFor="totp-enroll-code" className="block text-sm font-semibold">
+        <label
+          htmlFor="totp-enroll-code"
+          className="block text-sm font-semibold"
+        >
           Uygulamadaki 6 haneli kod
         </label>
         <input
           id="totp-enroll-code"
           value={code}
-          onChange={(event) => onCodeChange(event.target.value.replace(/\D/g, "").slice(0, 6))}
+          onChange={(event) =>
+            onCodeChange(event.target.value.replace(/\D/g, "").slice(0, 6))
+          }
           inputMode="numeric"
           autoComplete="one-time-code"
           pattern="\d{6}"
@@ -156,7 +186,11 @@ export function TotpEnrollmentSetup({
         />
       </div>
 
-      <button type="submit" disabled={pending || code.length !== 6} className="site-btn site-btn-primary w-full min-h-12">
+      <button
+        type="submit"
+        disabled={pending || code.length !== 6}
+        className="site-btn site-btn-primary w-full min-h-12"
+      >
         Kurulumu doğrula
       </button>
     </form>
@@ -203,7 +237,11 @@ export function MfaCodeInput({
         className="w-full rounded-xl border px-4 py-3.5 text-center text-lg tracking-[0.2em]"
         placeholder={recovery ? "XXXX-XXXX-XXXX-XXXX" : "000000"}
       />
-      <button type="submit" disabled={pending} className="site-btn site-btn-secondary w-full min-h-12">
+      <button
+        type="submit"
+        disabled={pending}
+        className="site-btn site-btn-secondary w-full min-h-12"
+      >
         {pending ? "Doğrulanıyor..." : "Kodu doğrula"}
       </button>
     </form>

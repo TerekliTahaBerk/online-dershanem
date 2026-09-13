@@ -28,7 +28,8 @@ export function PlatformPreview() {
           </h2>
           <p className="mt-4 max-w-[420px] text-[16.5px] leading-[1.65] text-[#B6CEC4]">
             Öğrenci panelini bugün telefondan veya bilgisayardan tarayıcıda
-            kullanabilirsin. Mobil uygulama yayına açıldığında ayrıca duyurulacak.
+            kullanabilirsin. Mobil uygulama yayına açıldığında ayrıca
+            duyurulacak.
           </p>
 
           <ul className="mt-6 max-w-[460px] border-t border-[rgba(255,255,255,.14)] pt-5 text-[15px] font-medium leading-[1.9] text-[#CFE3DA]">

@@ -55,7 +55,8 @@ export function AdminPreviewPicker({
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (initialRole && PREVIEWABLE_ROLES.includes(initialRole)) setRole(initialRole);
+    if (initialRole && PREVIEWABLE_ROLES.includes(initialRole))
+      setRole(initialRole);
   }, [initialRole]);
 
   useEffect(() => {
@@ -69,9 +70,14 @@ export function AdminPreviewPicker({
     setLoading(true);
     setError(null);
     const params = new URLSearchParams({ role, q: debounced });
-    fetch(`/api/panel/admin-preview/candidates?${params}`, { credentials: "same-origin" })
+    fetch(`/api/panel/admin-preview/candidates?${params}`, {
+      credentials: "same-origin",
+    })
       .then(async (response) => {
-        const body = (await response.json().catch(() => null)) as { candidates?: Candidate[]; error?: string } | null;
+        const body = (await response.json().catch(() => null)) as {
+          candidates?: Candidate[];
+          error?: string;
+        } | null;
         if (!response.ok) throw new Error(body?.error || "Arama başarısız.");
         if (!cancelled) {
           setCandidates(body?.candidates ?? []);
@@ -79,7 +85,8 @@ export function AdminPreviewPicker({
         }
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Arama başarısız.");
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : "Arama başarısız.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -112,7 +119,10 @@ export function AdminPreviewPicker({
           returnPath: returnPath || window.location.pathname,
         }),
       });
-      const body = (await response.json().catch(() => null)) as { homePath?: string; error?: string } | null;
+      const body = (await response.json().catch(() => null)) as {
+        homePath?: string;
+        error?: string;
+      } | null;
       if (!response.ok) {
         setError(body?.error || "Önizleme başlatılamadı.");
         return;
@@ -150,7 +160,10 @@ export function AdminPreviewPicker({
           >
             <div className="flex items-start justify-between gap-3 border-b border-dc-line-soft px-4 py-3.5">
               <div>
-                <h2 id={titleId} className="text-[16px] font-extrabold text-dc-ink">
+                <h2
+                  id={titleId}
+                  className="text-[16px] font-extrabold text-dc-ink"
+                >
                   Paneli görüntüle
                 </h2>
                 <p className="mt-1 text-[13px] text-dc-ink-muted">
@@ -218,9 +231,13 @@ export function AdminPreviewPicker({
 
               <div className="max-h-64 overflow-y-auto rounded-[12px] border border-dc-line-soft">
                 {loading ? (
-                  <p className="px-3 py-4 text-[13px] text-dc-ink-muted">Aranıyor…</p>
+                  <p className="px-3 py-4 text-[13px] text-dc-ink-muted">
+                    Aranıyor…
+                  </p>
                 ) : candidates.length === 0 ? (
-                  <p className="px-3 py-4 text-[13px] text-dc-ink-muted">Sonuç bulunamadı.</p>
+                  <p className="px-3 py-4 text-[13px] text-dc-ink-muted">
+                    Sonuç bulunamadı.
+                  </p>
                 ) : (
                   <ul className="divide-y divide-dc-line-soft">
                     {candidates.map((item) => {
@@ -231,15 +248,21 @@ export function AdminPreviewPicker({
                             type="button"
                             onClick={() => setSelectedId(item.userId)}
                             className={`flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left transition-colors ${
-                              active ? "bg-dc-brand-soft" : "hover:bg-dc-surface-muted"
+                              active
+                                ? "bg-dc-brand-soft"
+                                : "hover:bg-dc-surface-muted"
                             }`}
                           >
                             <span className="text-[13.5px] font-bold text-dc-ink">
                               {item.fullName || item.email}
                             </span>
-                            <span className="text-[12px] text-dc-ink-muted">{item.email}</span>
+                            <span className="text-[12px] text-dc-ink-muted">
+                              {item.email}
+                            </span>
                             {item.detail ? (
-                              <span className="text-[11.5px] text-dc-ink-faint">{item.detail}</span>
+                              <span className="text-[11.5px] text-dc-ink-faint">
+                                {item.detail}
+                              </span>
                             ) : null}
                           </button>
                         </li>
@@ -249,7 +272,11 @@ export function AdminPreviewPicker({
                 )}
               </div>
 
-              {error ? <p className="text-[12.5px] font-semibold text-red-700">{error}</p> : null}
+              {error ? (
+                <p className="text-[12.5px] font-semibold text-red-700">
+                  {error}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap justify-end gap-2 border-t border-dc-line-soft px-4 py-3">
