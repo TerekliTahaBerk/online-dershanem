@@ -4,14 +4,15 @@ import { authorizeBusinessRequest } from "@/lib/business/permissions";
 import { prisma } from "@/lib/prisma";
 import { queueAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { BUSINESS_INTEGRATION_API_PERMISSIONS } from "@/lib/business/permission-matrix";
 export async function GET() {
-  const access = await authorizeBusinessRequest("integration:write");
+  const access = await authorizeBusinessRequest(BUSINESS_INTEGRATION_API_PERMISSIONS.instagramStatus);
   if (!access) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   const accounts = await prisma.instagramAccount.findMany({ where: { businessUnitId: { in: access.units.map((unit) => unit.id) } }, select: { id: true, externalId: true, username: true, aiMode: true, isActive: true, tokenExpiresAt: true, connection: { select: { status: true, lastHealthAt: true, lastErrorCode: true } } } });
   return NextResponse.json({ accounts, secrets: { tokenConfigured: Boolean(process.env.META_INSTAGRAM_ACCESS_TOKEN), appSecretConfigured: Boolean(process.env.META_APP_SECRET), openAIConfigured: Boolean(process.env.OPENAI_API_KEY) } });
 }
 export async function PATCH(request: Request) {
-  const access = await authorizeBusinessRequest("integration:write");
+  const access = await authorizeBusinessRequest(BUSINESS_INTEGRATION_API_PERMISSIONS.instagramSettings);
   if (!access) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
   const guard = await guardMutation({ action: "business.instagram.settings", userId: access.session.userId, headers: request.headers, requireSameOrigin: true, rateLimit: { max: 30, windowMs: 60_000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "ORIGIN" ? 403 : 429 });

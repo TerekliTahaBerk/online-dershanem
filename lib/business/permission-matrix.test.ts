@@ -3,10 +3,18 @@ import { test } from "node:test";
 import {
   ALL_BUSINESS_PERMISSIONS,
   BUSINESS_ROLE_PERMISSIONS,
+  BUSINESS_INTEGRATION_API_PERMISSIONS,
   BUSINESS_WRITE_PERMISSIONS,
   roleHasPermission,
   type BusinessRoleName,
 } from "./permission-matrix";
+
+test("Instagram durumu read, ayar değişikliği write izni ister", () => {
+  assert.equal(BUSINESS_INTEGRATION_API_PERMISSIONS.instagramStatus, "integration:read");
+  assert.equal(BUSINESS_INTEGRATION_API_PERMISSIONS.instagramSettings, "integration:write");
+  assert.equal(roleHasPermission("VIEWER", BUSINESS_INTEGRATION_API_PERMISSIONS.instagramStatus), true);
+  assert.equal(roleHasPermission("VIEWER", BUSINESS_INTEGRATION_API_PERMISSIONS.instagramSettings), false);
+});
 
 const ROLES: BusinessRoleName[] = [
   "SUPER_ADMIN",
