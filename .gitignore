@@ -26,5 +26,8 @@ tsconfig.tsbuildinfo
 /blob-report/
 /playwright/.cache/
 
+# Unit test coverage (lcov)
+/coverage/
+
 # Lighthouse CI artifacts
 /.lighthouseci/

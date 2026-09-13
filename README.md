@@ -46,9 +46,8 @@ Requirements: Node.js 22+, npm 10+, and PostgreSQL.
 ```bash
 git clone https://github.com/TerekliTahaBerk/online-dershanem.git
 cd online-dershanem
-npm ci
+npm ci   # also generates the Prisma Client (postinstall)
 cp .env.example .env.local
-npm run prisma:generate
 npm run prisma:deploy
 npm run db:seed
 npm run dev
@@ -68,7 +67,29 @@ npm run build
 npm run e2e
 ```
 
-Integration tests require `DATABASE_URL`; the relevant tests are skipped when it is not set. To run the Chromium, Firefox, and WebKit acceptance suite:
+Integration tests require `DATABASE_URL`; the relevant tests are skipped when it is not set.
+
+`npm run test:unit:coverage` runs the unit suite with coverage for `lib/` and writes `coverage/lcov.info`. CI runs this variant and fails when line, branch, or function coverage drops below the thresholds in `package.json`.
+
+### E2E credentials
+
+Panel E2E specs log in with seeded test accounts read from environment variables. The full list lives in [`tests/e2e/env-requirements.ts`](tests/e2e/env-requirements.ts). Locally, specs whose variables are missing are **skipped**, so a green run without them does not exercise the panel. In CI, `scripts/check-e2e-env.ts` runs before Playwright and fails the job if any are missing.
+
+To run them locally, seed the E2E database (`npx tsx prisma/seed-e2e.ts`) and export the values used by `.github/workflows/e2e.yml`:
+
+```bash
+export PANEL_E2E_ADMIN_EMAIL=admin.e2e@example.com PANEL_E2E_ADMIN_PASSWORD=testpass123
+export PANEL_E2E_TEACHER_EMAIL=teacher.e2e@example.com PANEL_E2E_TEACHER_PASSWORD=testpass123
+export PANEL_E2E_STUDENT_EMAIL=student.e2e@example.com PANEL_E2E_STUDENT_PASSWORD=testpass123
+export PANEL_E2E_PARENT_EMAIL=parent.e2e@example.com PANEL_E2E_PARENT_PASSWORD=testpass123
+export PANEL_E2E_ODK_STUDENT_EMAIL=odk.student.e2e@example.com PANEL_E2E_ODK_STUDENT_PASSWORD=testpass123
+export PANEL_E2E_FOREIGN_STUDENT_ID=e2e-student-profile-foreign PANEL_E2E_FOREIGN_LESSON_ID=e2e-lesson-foreign
+node --import tsx scripts/check-e2e-env.ts   # confirms nothing will be skipped
+```
+
+The server also needs the rest of that workflow's `env:` block (for example `PANEL_ENABLED` and the `PANEL_FEATURE_*` flags), otherwise panel specs fail rather than skip.
+
+To run the Chromium, Firefox, and WebKit acceptance suite:
 
 ```bash
 npx playwright install chromium firefox webkit

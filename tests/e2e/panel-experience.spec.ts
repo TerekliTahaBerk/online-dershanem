@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { hasE2EEnv, panelAccountGroups } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD;
@@ -27,7 +28,7 @@ async function login(page: Page, account: { email?: string; password?: string })
 }
 
 test.describe("panel deneyimi", () => {
-  test.skip(!Object.values(accounts).every((account) => account.email && account.password), "Panel E2E hesapları tanımlı değil.");
+  test.skip(!hasE2EEnv(...panelAccountGroups),"Panel E2E hesapları tanımlı değil.");
 
   for (const [role, account] of Object.entries(accounts)) {
     test(`${role} paneli mobilde taşmıyor ve WCAG A/AA ihlali üretmiyor`, async ({ page }) => {

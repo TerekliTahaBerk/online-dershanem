@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { hasE2EEnv, panelAccountGroups } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 /**
@@ -147,7 +148,7 @@ async function loginAs(page: Page, role: Role): Promise<void> {
   await page.waitForURL(/\/panel\//, { timeout: 20_000 });
 }
 
-const credentialsReady = Object.values(CREDENTIALS).every((item) => item.email && item.password);
+const credentialsReady = hasE2EEnv(...panelAccountGroups);
 
 test.describe("yetki matrisi", () => {
   test.skip(!credentialsReady, "Panel E2E hesapları tanımlı değil.");

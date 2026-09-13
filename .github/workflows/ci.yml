@@ -51,13 +51,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # Prisma Client `npm ci` içindeki `postinstall` ile üretilir.
       - run: npm ci
-      - name: Generate Prisma client
-        run: npm run prisma:generate
       - run: npm run typecheck
 
   unit:
-    name: Unit tests
+    name: Unit tests + coverage gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -69,9 +68,19 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Generate Prisma client
-        run: npm run prisma:generate
-      - run: npm run test:unit
+      # Birim testleri tek sefer koşar; coverage `lib/` ile sınırlı ve eşikler
+      # (satır 90 / branch 74 / fonksiyon 70) `package.json` içinde. Eşiğin
+      # altına düşmek bu işi, dolayısıyla quality-gate'i kırar.
+      - run: npm run test:unit:coverage
+      - name: Upload unit coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-coverage
+          path: coverage/lcov.info
+          retention-days: 30
+          if-no-files-found: warn
+          overwrite: true
 
   integration:
     name: Integration tests
@@ -104,7 +113,6 @@ jobs:
       - run: npm ci
       - name: Prepare integration database
         run: |
-          npm run prisma:generate
           ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
           npm run db:seed
       - run: npm run test:integration

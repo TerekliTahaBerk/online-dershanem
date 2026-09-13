@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const accounts = {
@@ -23,7 +24,7 @@ async function login(page: Page, account: { email?: string; password?: string })
 }
 
 test.describe("panel rol ve yatay erişim sınırları", () => {
-  test.skip(!Object.values(accounts).every((item) => item.email && item.password), "Panel E2E hesapları tanımlı değil.");
+  test.skip(!hasE2EEnv("teacherAccount", "studentAccount", "parentAccount"),"Panel E2E hesapları tanımlı değil.");
 
   test("öğretmen yönetim ve öğrenci panelini açamaz", async ({ page }) => {
     await login(page, accounts.teacher);
@@ -52,7 +53,7 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
   });
 
   test("veli URL ile başka öğrenciyi açamaz", async ({ page }) => {
-    test.skip(!process.env.PANEL_E2E_FOREIGN_STUDENT_ID, "Yabancı öğrenci kimliği tanımlı değil.");
+    test.skip(!hasE2EEnv("foreignStudent"),"Yabancı öğrenci kimliği tanımlı değil.");
     await login(page, accounts.parent);
     await page.goto(`/panel/veli?studentId=${process.env.PANEL_E2E_FOREIGN_STUDENT_ID}`);
     // App Router, streaming başladıktan sonra notFound() çalışırsa HTTP yanıtı
@@ -65,7 +66,7 @@ test.describe("panel rol ve yatay erişim sınırları", () => {
   });
 
   test("öğretmen başka grubun ders notunu değiştiremez", async ({ page }) => {
-    test.skip(!process.env.PANEL_E2E_FOREIGN_LESSON_ID, "Yabancı ders kimliği tanımlı değil.");
+    test.skip(!hasE2EEnv("foreignLesson"),"Yabancı ders kimliği tanımlı değil.");
     await login(page, accounts.teacher);
     const status = await page.evaluate(async (lessonId) => {
       const response = await fetch(`/api/panel/lessons/${lessonId}/notes`, {
