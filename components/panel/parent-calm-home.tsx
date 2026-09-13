@@ -46,6 +46,16 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
         }
       />
 
+      {/* Dikkat kartı yalnız öğretmenin bu hafta yayınladığı özetten beslenir. */}
+      {home.digest.supportArea ? (
+        <PanelAttentionCard
+          className="mt-4 max-w-[720px]"
+          tone="warning"
+          title="Dikkat edilmesi gereken"
+          body={home.digest.supportArea}
+        />
+      ) : null}
+
       <PanelCard className="mt-4 max-w-[720px] py-5">
         <PanelCardTitle>Bu haftanın özeti</PanelCardTitle>
         <p className="mt-2 text-[15px] leading-[1.7] text-dc-ink-body">
