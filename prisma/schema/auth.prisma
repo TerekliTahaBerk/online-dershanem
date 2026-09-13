@@ -1,0 +1,297 @@
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum MfaChallengePurpose {
+  PASSKEY_ENROLLMENT
+  MFA_AUTHENTICATION
+  STEP_UP
+}
+
+enum MfaResetStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  EXPIRED
+}
+
+/**
+ * Ürün erişimi (yetki) kodları — üç ticari ürün.
+ * DİKKAT: bu enum YALNIZCA yetki tarafındadır (`ProductMembership`,
+ * `BusinessUnit`). Sipariş/ödeme tarafı ayrı `CommerceProduct` enum'unu
+ * kullanır; oraya OK eklenmedi çünkü Koçum'un henüz satış/provisioning akışı
+ * yok. İkisini birleştirme — finans kodundaki `product === "OD" ? ... : ...`
+ * ikili dalları CommerceProduct'a bakar ve üçüncü değer görürse Koçum'u
+ * sessizce ODK sayardı.
+ */
+model User {
+  id String @id @default(cuid())
+
+  /// DAİMA locale'siz küçük harf. `toLocaleLowerCase("tr")` KULLANMA:
+  /// Türkçe locale'de "I" → "ı" olur ve e-postayı kalıcı olarak bozar.
+  email String @unique
+
+  /// scrypt — biçim: `scrypt$N$r$p$salt_b64$hash_b64` (bkz. lib/auth/password.ts)
+  passwordHash String @map("password_hash")
+
+  /// Davet bağlantısı tamamlanana kadar girişe izin verilmez.
+  mustChangePassword   Boolean   @default(true) @map("must_change_password")
+  inviteTokenHash      String?   @unique @map("invite_token_hash")
+  inviteTokenExpiresAt DateTime? @map("invite_token_expires_at") @db.Timestamptz(3)
+  inviteSentAt         DateTime? @map("invite_sent_at") @db.Timestamptz(3)
+  inviteAcceptedAt     DateTime? @map("invite_accepted_at") @db.Timestamptz(3)
+  passwordChangedAt    DateTime? @map("password_changed_at") @db.Timestamptz(3)
+
+  role   UserRole
+  status UserStatus @default(ACTIVE)
+
+  fullName String? @map("full_name")
+  /// Davet bağlantısı bu numaradan iletilebilir — panelde kritik alan.
+  phone    String?
+
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until") @db.Timestamptz(3)
+  lastLoginAt    DateTime? @map("last_login_at") @db.Timestamptz(3)
+
+  /// Hangi admin açtı. Admin silinse bile kullanıcı kaydı ayakta kalsın.
+  createdById   String?   @map("created_by_id")
+  createdBy     User?     @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers  User[]    @relation("UserCreatedBy")
+  archivedAt    DateTime? @map("archived_at") @db.Timestamptz(3)
+  archivedById  String?   @map("archived_by_id")
+  archivedBy    User?     @relation("UserArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
+  archivedUsers User[]    @relation("UserArchivedBy")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sessions                           Session[]
+  passwordResetTokens                PasswordResetToken[]
+  adminMfa                           AdminMfa?
+  passkeyCredentials                 PasskeyCredential[]
+  mfaRecoveryCodes                   MfaRecoveryCode[]
+  mfaChallenges                      MfaChallenge[]
+  assignedCoachings                  CoachAssignment[]            @relation("CoachAssignmentAssigner")
+  authoredStudentGoals               StudentGoal[]                @relation("StudentGoalAuthor")
+  authoredPlanTemplates              WeeklyPlanTemplate[]         @relation("WeeklyPlanTemplateAuthor")
+  planRevisions                      WeeklyPlanRevision[]         @relation("WeeklyPlanRevisionAuthor")
+  authoredCoachNotes                 CoachNote[]                  @relation("CoachNoteAuthor")
+  publishedCoachSummaries            WeeklyCoachSummary[]         @relation("WeeklyCoachSummaryPublisher")
+  reviewedPlanSuggestions            WeeklyPlanSuggestion[]       @relation("WeeklyPlanSuggestionReviewer")
+  dinoAnswers                        DinoAnswer[]                 @relation("DinoAnswerUser")
+  requestedMfaResets                 MfaResetRequest[]            @relation("MfaResetRequester")
+  targetMfaResets                    MfaResetRequest[]            @relation("MfaResetTarget")
+  approvedMfaResets                  MfaResetRequest[]            @relation("MfaResetApprover")
+  studentProfile                     StudentProfile?
+  teacherProfile                     TeacherProfile?
+  parentStudents                     ParentStudent[]              @relation("ParentLinks")
+  parentRelationshipHistory          ParentStudentHistory[]       @relation("ParentRelationshipParent")
+  parentRelationshipChanges          ParentStudentHistory[]       @relation("ParentRelationshipActor")
+  taughtGroups                       Group[]                      @relation("GroupTeacher")
+  taughtLessonSeries                 LessonSeries[]               @relation("LessonSeriesTeacher")
+  taughtLessons                      Lesson[]                     @relation("LessonTeacher")
+  studentTeacherAssignments          StudentTeacherAssignment[]   @relation("StudentTeacherTeacher")
+  assignedStudentTeachers            StudentTeacherAssignment[]   @relation("StudentTeacherAssigner")
+  createdAssignments                 Assignment[]                 @relation("AssignmentCreator")
+  notifications                      Notification[]
+  notificationPrefs                  NotificationPreference?
+  createdMaterials                   LearningMaterial[]           @relation("MaterialCreator")
+  noteTemplates                      TeacherNoteTemplate[]        @relation("TeacherNoteTemplateOwner")
+  createdCurriculums                 CurriculumVersion[]          @relation("CurriculumCreator")
+  linkedLessonOutcomes               LessonOutcome[]              @relation("LessonOutcomeLinker")
+  linkedAssignmentOutcomes           AssignmentOutcome[]          @relation("AssignmentOutcomeLinker")
+  outcomeFavorites                   OutcomeFavorite[]
+  createdMockExams                   MockExam[]                   @relation("MockExamCreator")
+  reviewedMockExams                  MockExam[]                   @relation("MockExamReviewer")
+  revisedMockExamReasons             MockExamSectionError[]       @relation("MockExamErrorReviser")
+  createdReviewItems                 ReviewItem[]                 @relation("ReviewItemCreator")
+  ownedInterventionCases             InterventionCase[]           @relation("InterventionCaseOwner")
+  interventionActivities             InterventionCaseActivity[]
+  generatedRecoveryPackages          RecoveryPackage[]            @relation("RecoveryPackageGenerator")
+  publishedRecoveryPackages          RecoveryPackage[]            @relation("RecoveryPackagePublisher")
+  reviewedAssignmentSubmissions      AssignmentSubmission[]       @relation("AssignmentSubmissionReviewer")
+  studentHelpResponses               StudentHelpResponse[]        @relation("StudentHelpResponder")
+  accessibilityPreference            AccessibilityPreference?     @relation("AccessibilityPreferenceOwner")
+  updatedAccessibilityProfiles       AccessibilityPreference[]    @relation("AccessibilityPreferenceUpdater")
+  networkPreference                  NetworkPreference?
+  teacherAiDrafts                    TeacherAiDraft[]             @relation("TeacherAiDraftOwner")
+  createdPilotCohorts                PilotCohort[]                @relation("PilotCohortCreator")
+  pilotMemberships                   PilotCohortMember[]
+  createdOdkPilotRuns                OdkPilotRun[]                @relation("OdkPilotRunCreator")
+  odkPilotMemberships                OdkPilotMember[]
+  odOrders                           OdOrder[]
+  ownedOdOnboardings                 OdOnboarding[]               @relation("OdOnboardingOwner")
+  odOnboardingTransitions            OdOnboardingTransition[]     @relation("OdOnboardingTransitionActor")
+  productMemberships                 ProductMembership[]          @relation("ProductMembershipOwner")
+  grantedProductMemberships          ProductMembership[]          @relation("ProductMembershipGranter")
+  odkOrders                          OdkOrder[]                   @relation("OdkOrderStudent")
+  odkEntitlements                    OdkEntitlement[]
+  createdOdkExamSeries               OdkExamSeries[]              @relation("OdkExamSeriesCreator")
+  createdOdkExams                    OdkExam[]                    @relation("OdkExamCreator")
+  createdOdkExamVersions             OdkExamVersion[]             @relation("OdkExamVersionCreator")
+  uploadedOdkExamFiles               OdkExamFile[]                @relation("OdkExamFileUploader")
+  odkExamAttempts                    OdkExamAttempt[]             @relation("OdkExamAttemptStudent")
+  scoredOdkExamAttempts              OdkAttemptScore[]            @relation("OdkAttemptScoreAdmin")
+  odkExamAssignments                 OdkExamAssignment[]          @relation("OdkExamAssignmentStudent")
+  assignedOdkExams                   OdkExamAssignment[]          @relation("OdkExamAssignmentAssigner")
+  odkAnswerKeyRevisions              OdkAnswerKeyRevision[]       @relation("OdkAnswerKeyRevisionAuthor")
+  odkImportAudits                    OdkImportAudit[]             @relation("OdkImportAuditActor")
+  businessRoleAssignments            BusinessRoleAssignment[]
+  createdAutomationRules             AutomationRule[]             @relation("AutomationRuleCreatedBy")
+  teacherHomeSnapshot                TeacherHomeSnapshot?
+  crossProductEventsActed            CrossProductEventOutbox[]    @relation("CrossProductEventActor")
+  crossProductRecommendationsDecided CrossProductRecommendation[] @relation("CrossProductRecommendationDecider")
+
+  @@index([role, status])
+  @@index([createdById])
+  @@index([archivedById])
+  @@index([fullName])
+  @@index([phone])
+  @@map("users")
+}
+
+// ============================================================
+// İŞLETME MERKEZİ — Instagram CRM, reklam ve değişmez finans defteri
+// Eğitim rolleriyle bilinçli olarak ayrıdır; yetki iş birimi kapsamında verilir.
+// ============================================================
+
+model Session {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  /// Çerezdeki opak token'ın sha256'sı. Düz token ASLA saklanmaz —
+  /// DB sızarsa oturumlar ele geçirilemesin.
+  tokenHash String @unique @map("token_hash")
+
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+
+  /// Password authentication establishes the session; ADMIN privilege is
+  /// withheld until `mfaVerifiedAt` is set by a fresh second-factor ceremony.
+  primaryAuthenticatedAt DateTime  @default(now()) @map("primary_authenticated_at") @db.Timestamptz(3)
+  mfaVerifiedAt          DateTime? @map("mfa_verified_at") @db.Timestamptz(3)
+  stepUpAt               DateTime? @map("step_up_at") @db.Timestamptz(3)
+
+  userAgent String? @map("user_agent")
+  ip        String?
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  /// Public lookup id. It is not sufficient to reset a password; the link also
+  /// carries an HMAC proof. Only a scrypt verifier of the complete token is kept.
+  id        String @id
+  userId    String @map("user_id")
+  tokenHash String @unique @map("token_hash")
+
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model AdminMfa {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+
+  /// AES-256-GCM envelope (version.iv.tag.ciphertext). Never plaintext.
+  totpSecretEncrypted        String?   @map("totp_secret_encrypted")
+  totpEnabledAt              DateTime? @map("totp_enabled_at") @db.Timestamptz(3)
+  totpLastCounter            BigInt?   @map("totp_last_counter")
+  pendingTotpSecretEncrypted String?   @map("pending_totp_secret_encrypted")
+  pendingTotpExpiresAt       DateTime? @map("pending_totp_expires_at") @db.Timestamptz(3)
+  recoveryGeneratedAt        DateTime? @map("recovery_generated_at") @db.Timestamptz(3)
+  enrolledAt                 DateTime? @map("enrolled_at") @db.Timestamptz(3)
+  createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_mfa")
+}
+
+model PasskeyCredential {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  credentialId String    @unique @map("credential_id")
+  publicKey    Bytes     @map("public_key")
+  counter      BigInt    @default(0)
+  transports   String[]  @default([])
+  deviceType   String    @map("device_type")
+  backedUp     Boolean   @default(false) @map("backed_up")
+  name         String?
+  lastUsedAt   DateTime? @map("last_used_at") @db.Timestamptz(3)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@map("passkey_credentials")
+}
+
+model MfaRecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  codeHash  String    @unique @map("code_hash")
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+  @@map("mfa_recovery_codes")
+}
+
+model MfaChallenge {
+  id            String              @id @default(cuid())
+  userId        String              @map("user_id")
+  sessionId     String              @map("session_id")
+  purpose       MfaChallengePurpose
+  challengeHash String              @map("challenge_hash")
+  expiresAt     DateTime            @map("expires_at") @db.Timestamptz(3)
+  consumedAt    DateTime?           @map("consumed_at") @db.Timestamptz(3)
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionId, purpose, expiresAt])
+  @@map("mfa_challenges")
+}
+
+model MfaResetRequest {
+  id            String         @id @default(cuid())
+  targetUserId  String         @map("target_user_id")
+  requestedById String         @map("requested_by_id")
+  approvedById  String?        @map("approved_by_id")
+  status        MfaResetStatus @default(PENDING)
+  reason        String
+  expiresAt     DateTime       @map("expires_at") @db.Timestamptz(3)
+  approvedAt    DateTime?      @map("approved_at") @db.Timestamptz(3)
+  completedAt   DateTime?      @map("completed_at") @db.Timestamptz(3)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  target      User  @relation("MfaResetTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  requestedBy User  @relation("MfaResetRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy  User? @relation("MfaResetApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+
+  @@index([targetUserId, status])
+  @@index([status, expiresAt])
+  @@map("mfa_reset_requests")
+}

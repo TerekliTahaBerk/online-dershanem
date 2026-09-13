@@ -143,7 +143,7 @@ Canlı veritabanına doğrulama amacıyla restore yapılmaz.
 
 ## Yeni ve mevcut veritabanı kurulumu
 
-Eski migration geçmişi, ilk yıllarda şema `db push` ile yönetildiği için boş bir veritabanına doğrudan `prisma migrate deploy` ile uygulanamaz. Yeni ve tamamen boş bir ortam yalnızca korumalı `ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh` komutuyla hazırlanır; komut önce güncel şemayı kurar, ardından migration geçmişini uygulanmış olarak kaydeder ve boş olmayan veritabanında çalışmayı reddeder. Mevcut production/preview veritabanlarında normal `npm run release:migrate` kullanılmaya devam edilir.
+Eski `db push` dönemi, boş veritabanını kuran koşullu baseline migration'larıyla migration zincirine alınmıştır. Yeni ve tamamen boş bir ortam yalnızca korumalı `ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh` komutuyla hazırlanır; komut tüm migration SQL'ini sırayla gerçekten uygular. Böylece Prisma şema dilinin ifade edemediği partial index ve CHECK constraint'ler de kurulur. Komut, Prisma migration geçmişi olmayan boş olmayan bir veritabanını reddeder; daha önce bootstrap ettiği veritabanında yeniden çalıştırılabilir ve yalnız bekleyen migration'ları uygular. Ardından `npm run db:verify:fresh` çalıştırılmalıdır. Mevcut production/preview veritabanlarında normal `npm run release:migrate` kullanılmaya devam edilir.
 
 ## Dört rol canlı kabul listesi
 

@@ -89,7 +89,7 @@ Bootstrap a completely empty database safely with:
 ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 ```
 
-The bootstrap command refuses to run against a non-empty database. See the [panel operations guide](docs/panel-operations.md) and [deployment checklist](docs/deployment-checklist.md) for environment variables, email policy, backup restoration, and production acceptance.
+The bootstrap command applies every versioned migration as SQL, including partial indexes and CHECK constraints that Prisma's schema language cannot represent. It refuses non-empty databases without Prisma migration history and is idempotent for a database it already bootstrapped. Run `npm run db:verify:fresh` after bootstrap to verify the critical projection indexes. The Prisma data model is split by domain under `prisma/schema/`; see the [data-model ownership guide](docs/data-model-ownership.md). See the [panel operations guide](docs/panel-operations.md) and [deployment checklist](docs/deployment-checklist.md) for environment variables, email policy, backup restoration, and production acceptance.
 
 Releases use `v*.*.*` tags. A tag push runs the release quality gate, publishes a GitHub Release, and builds a versioned container. Notable changes are maintained in [CHANGELOG.md](CHANGELOG.md).
 

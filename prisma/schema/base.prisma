@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// PANEL — kimlik çekirdeği
+//
+// Public self-register YOKTUR: hesabı yalnızca ADMIN açar ve geçici parolayı
+// elden (WhatsApp/telefon) iletir. Bu yüzden e-posta gönderimine bağlı hiçbir
+// akış yok — parola sıfırlama da admin eliyle yapılır.
+// ============================================================
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum ProductCode {
+  OD
+  /**
+   * Online Koçum
+   */
+  OK
+  ODK
+}
+
+enum CurriculumExam {
+  LGS
+  TYT
+  AYT
+  YDT
+}
+
+enum AiDraftProvider {
+  OPENAI
+  GEMINI
+  FALLBACK
+  STUB
+}
+
+enum AuditActorType {
+  SYSTEM
+  USER
+}

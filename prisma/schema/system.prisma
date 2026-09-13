@@ -1,0 +1,323 @@
+enum AccessibilityTextScale {
+  DEFAULT
+  LARGE
+}
+
+model AccessibilityPreference {
+  userId                 String                 @id @map("user_id")
+  reducedMotion          Boolean                @default(false) @map("reduced_motion")
+  highContrast           Boolean                @default(false) @map("high_contrast")
+  textScale              AccessibilityTextScale @default(DEFAULT) @map("text_scale")
+  comfortableSpacing     Boolean                @default(false) @map("comfortable_spacing")
+  captionsPreferred      Boolean                @default(false) @map("captions_preferred")
+  transcriptPreferred    Boolean                @default(false) @map("transcript_preferred")
+  assessmentExtraPercent Int                    @default(0) @map("assessment_extra_percent")
+  breaksAllowed          Boolean                @default(false) @map("breaks_allowed")
+  academicUpdatedById    String?                @map("academic_updated_by_id")
+  academicUpdatedAt      DateTime?              @map("academic_updated_at") @db.Timestamptz(3)
+  version                Int                    @default(1)
+  createdAt              DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                   User                   @relation("AccessibilityPreferenceOwner", fields: [userId], references: [id], onDelete: Cascade)
+  academicUpdatedBy      User?                  @relation("AccessibilityPreferenceUpdater", fields: [academicUpdatedById], references: [id], onDelete: SetNull)
+
+  @@index([academicUpdatedById, academicUpdatedAt])
+  @@map("accessibility_preferences")
+}
+
+model NetworkPreference {
+  userId               String   @id @map("user_id")
+  lowDataMode          Boolean  @default(false) @map("low_data_mode")
+  offlineWritesEnabled Boolean  @default(false) @map("offline_writes_enabled")
+  version              Int      @default(1)
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("network_preferences")
+}
+
+enum NotificationType {
+  LESSON_SUMMARY
+  ABSENCE
+  ASSIGNMENT
+  PAYMENT
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?        @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  userId          String   @id @map("user_id")
+  inAppEnabled    Boolean  @default(true) @map("in_app_enabled")
+  emailEnabled    Boolean  @default(false) @map("email_enabled")
+  whatsappEnabled Boolean  @default(false) @map("whatsapp_enabled")
+  lessonSummary   Boolean  @default(true) @map("lesson_summary")
+  weeklyDigest    Boolean  @default(true) @map("weekly_digest")
+  absence         Boolean  @default(true)
+  assignment      Boolean  @default(true)
+  payment         Boolean  @default(true)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}
+
+enum EmailOutboxStatus {
+  PENDING
+  SENT
+  FAILED
+  ABANDONED
+}
+
+model EmailOutbox {
+  id          String            @id @default(cuid())
+  recipients  String
+  subject     String
+  html        String
+  status      EmailOutboxStatus @default(PENDING)
+  attempts    Int               @default(0)
+  lastError   String?           @map("last_error")
+  sentAt      DateTime?         @map("sent_at") @db.Timestamptz(3)
+  nextRetryAt DateTime?         @map("next_retry_at") @db.Timestamptz(3)
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([status, nextRetryAt])
+  @@map("email_outbox")
+}
+
+model RateLimitEntry {
+  id        String   @id @default(cuid())
+  key       String
+  /**
+   * MUTLAKA `timestamptz`.
+   * Bu tabloya iki farklı yazar dokunuyor: limiter'ın ham SQL'i
+   * (`statement_timestamp()`) ve Prisma (`now()` → UTC). Kolon
+   * `timestamp without time zone` olduğunda bu ikisi, oturumun saat dilimi
+   * UTC değilse birbirinden offset kadar kayıyordu (Europe/Istanbul'da 3 saat)
+   * ve pencere sorgusu Prisma'nın yazdığı satırları hiç görmüyordu.
+   * `timestamptz` ile iki yazar da mutlak ana yazar; karşılaştırma her
+   * oturum saat diliminde doğru çalışır.
+   */
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([key, createdAt])
+}
+
+model AuditLog {
+  id             String         @id @default(cuid())
+  actorUserId    String?
+  actorType      AuditActorType @default(SYSTEM)
+  entityType     String
+  entityId       String
+  action         String
+  summary        String?
+  payload        Json?
+  idempotencyKey String?        @unique @map("idempotency_key")
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+}
+
+/// Kimlik ve serbest metin içermeyen, kısa ömürlü ürün telemetrisi.
+model ProductEvent {
+  id            String   @id @default(cuid())
+  name          String
+  role          UserRole
+  properties    Json
+  schemaVersion Int      @default(1) @map("schema_version")
+  occurredAt    DateTime @default(now()) @map("occurred_at") @db.Timestamptz(3)
+
+  @@index([name, occurredAt])
+  @@index([role, occurredAt])
+  @@map("product_events")
+}
+
+enum CrossProductEventType {
+  LESSON_COMPLETED
+  LESSON_MISSED
+  ASSIGNMENT_CREATED
+  ASSIGNMENT_COMPLETED
+  ASSIGNMENT_EVALUATED
+  COACHING_PLAN_PUBLISHED
+  COACHING_TASK_COMPLETED
+  MOCK_EXAM_ASSIGNED
+  MOCK_EXAM_COMPLETED
+  MOCK_EXAM_RESULT_PUBLISHED
+  OUTCOME_MASTERY_CHANGED
+  INTERVENTION_CREATED
+}
+
+enum CrossProductEventStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum ProgressEvidenceSource {
+  LESSON
+  ASSIGNMENT
+  COACHING_TASK
+  MOCK_EXAM
+  REVIEW
+  TEACHER_ASSESSMENT
+}
+
+enum OutcomeMasteryStatus {
+  NOT_STARTED
+  INTRODUCED
+  PRACTICING
+  DEVELOPING
+  MASTERED
+  NEEDS_REVIEW
+}
+
+enum CrossProductRecommendationStatus {
+  SUGGESTED
+  ACCEPTED
+  DISMISSED
+  APPLIED
+  EXPIRED
+}
+
+enum CrossProductRecommendationSource {
+  TEACHER
+  COACH
+  ASSIGNMENT
+  MOCK_EXAM
+  REVIEW_ENGINE
+  RECOVERY
+  MANUAL_ADMIN
+  LESSON_CLOSE
+}
+
+enum CrossProductRecommendationKind {
+  REVIEW_TASK
+  TOPIC_REPEAT
+  OUTCOME_REPEAT
+  QUESTION_SET
+  SPEED_PRACTICE
+  MINI_MOCK
+  RECOVERY_PACKAGE
+  COACH_REVIEW
+  LESSON_PREP
+}
+
+model CrossProductEventOutbox {
+  id               String                      @id @default(cuid())
+  eventType        CrossProductEventType       @map("event_type")
+  eventVersion     Int                         @default(1) @map("event_version")
+  deduplicationKey String                      @unique @map("deduplication_key")
+  actorUserId      String?                     @map("actor_user_id")
+  studentId        String                      @map("student_id")
+  entityType       String                      @map("entity_type")
+  entityId         String                      @map("entity_id")
+  payload          Json
+  status           CrossProductEventStatus     @default(PENDING)
+  occurredAt       DateTime                    @map("occurred_at") @db.Timestamptz(3)
+  /// PROCESSING'e geçiş anı. İşleyici (ör. fonksiyon zaman aşımı) yarıda
+  /// ölürse olay PROCESSING'te asılı kalıyordu ve bir daha hiç seçilmiyordu;
+  /// bayat kilit bu alan üzerinden geri alınır.
+  lockedAt         DateTime?                   @map("locked_at") @db.Timestamptz(3)
+  processedAt      DateTime?                   @map("processed_at") @db.Timestamptz(3)
+  lastError        String?                     @map("last_error")
+  attempts         Int                         @default(0)
+  createdAt        DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  student          StudentProfile              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  actor            User?                       @relation("CrossProductEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  consumers        CrossProductEventConsumer[]
+
+  @@index([status, occurredAt])
+  @@index([studentId, eventType, occurredAt])
+  @@index([status, lockedAt])
+  @@map("cross_product_event_outbox")
+}
+
+model CrossProductEventConsumer {
+  id          String                  @id @default(cuid())
+  eventId     String                  @map("event_id")
+  consumerKey String                  @map("consumer_key")
+  processedAt DateTime                @default(now()) @map("processed_at") @db.Timestamptz(3)
+  event       CrossProductEventOutbox @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, consumerKey])
+  @@index([consumerKey, processedAt])
+  @@map("cross_product_event_consumers")
+}
+
+model StudentProgressEvidence {
+  id          String                 @id @default(cuid())
+  studentId   String                 @map("student_id")
+  outcomeId   String                 @map("outcome_id")
+  sourceType  ProgressEvidenceSource @map("source_type")
+  sourceId    String                 @map("source_id")
+  productCode ProductCode            @map("product_code")
+  summary     String
+  metrics     Json
+  occurredAt  DateTime               @map("occurred_at") @db.Timestamptz(3)
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  student     StudentProfile         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  outcome     LearningOutcome        @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, outcomeId, sourceType, sourceId])
+  @@index([studentId, outcomeId, occurredAt])
+  @@index([studentId, sourceType, occurredAt])
+  @@map("student_progress_evidence")
+}
+
+model StudentOutcomeMastery {
+  id            String               @id @default(cuid())
+  studentId     String               @map("student_id")
+  outcomeId     String               @map("outcome_id")
+  status        OutcomeMasteryStatus
+  explanation   Json
+  evidenceCount Int                  @default(0) @map("evidence_count")
+  computedAt    DateTime             @map("computed_at") @db.Timestamptz(3)
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student       StudentProfile       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  outcome       LearningOutcome      @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, outcomeId])
+  @@index([studentId, status])
+  @@map("student_outcome_mastery")
+}
+
+model CrossProductRecommendation {
+  id          String                           @id @default(cuid())
+  studentId   String                           @map("student_id")
+  status      CrossProductRecommendationStatus @default(SUGGESTED)
+  sourceType  CrossProductRecommendationSource @map("source_type")
+  sourceId    String                           @map("source_id")
+  kind        CrossProductRecommendationKind
+  title       String
+  rationale   String
+  payload     Json
+  expiresAt   DateTime?                        @map("expires_at") @db.Timestamptz(3)
+  decidedById String?                          @map("decided_by_id")
+  decidedAt   DateTime?                        @map("decided_at") @db.Timestamptz(3)
+  createdAt   DateTime                         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime                         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student     StudentProfile                   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  decidedBy   User?                            @relation("CrossProductRecommendationDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, status, createdAt])
+  @@index([sourceType, sourceId])
+  @@map("cross_product_recommendations")
+}

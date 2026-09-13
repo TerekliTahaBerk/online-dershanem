@@ -1,0 +1,829 @@
+enum ProductAccessSource {
+  MANUAL
+  PURCHASE
+  STAFF
+  PROMOTION
+  LEGACY_BACKFILL
+}
+
+enum BusinessRole {
+  SUPER_ADMIN
+  ADMIN
+  SALES
+  SUPPORT
+  ACCOUNTING
+  VIEWER
+}
+
+enum IntegrationProvider {
+  INSTAGRAM
+  META_ADS
+  OPENAI
+  ACCOUNTING
+  EMAIL
+}
+
+enum IntegrationStatus {
+  DISCONNECTED
+  CONNECTED
+  DEGRADED
+  ERROR
+}
+
+enum AiMode {
+  OFF
+  SUGGESTION
+  AUTO_SAFE
+  AUTO
+}
+
+enum ConversationStatus {
+  OPEN
+  WAITING_HUMAN
+  CLOSED
+  SPAM
+}
+
+enum LeadTemperature {
+  COLD
+  WARM
+  HOT
+}
+
+enum LeadPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+/// Structured lost-reason catalog for reporting. Free-text detail stays on `lostReason`.
+enum LeadLostReasonCode {
+  PRICE
+  UNREACHABLE
+  COMPETITOR
+  DECISION_POSTPONED
+  PRODUCT_MISMATCH
+  WRONG_LEAD
+  OTHER
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageSenderType {
+  CUSTOMER
+  AI
+  HUMAN
+  SYSTEM
+}
+
+enum MessageStatus {
+  RECEIVED
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum LeadStage {
+  NEW
+  CONTACTED
+  QUALIFIED
+  MEETING_PLANNED
+  TRIAL_PLANNED
+  OFFER_SENT
+  PAYMENT_PENDING
+  WON
+  LOST
+  SPAM
+}
+
+enum LeadSource {
+  INSTAGRAM_ORGANIC
+  INSTAGRAM_AD
+  OD_WEB_FORM
+  ODK_WEB_FORM
+  PURCHASE_STARTED
+  PURCHASE_COMPLETED
+  MANUAL
+  OTHER
+}
+
+enum ProductInterest {
+  ONLINE_DERSHANEM
+  ONLINE_DENEME_KULUBU
+  UNKNOWN
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum FinancialSource {
+  ONLINE_DERSHANEM
+  ONLINE_DENEME_KULUBU
+  MANUAL
+  OTHER
+}
+
+enum FinancialKind {
+  SALE
+  RENEWAL
+  ADDITIONAL_PAYMENT
+  MANUAL_INCOME
+  ADJUSTMENT
+  REFUND_REVERSAL
+  EXPENSE
+  REVERSAL
+}
+
+enum FinancialStatus {
+  DRAFT
+  PENDING
+  PAID
+  PARTIALLY_REFUNDED
+  REFUNDED
+  CANCELLED
+  FAILED
+}
+
+enum AccountingPeriodStatus {
+  OPEN
+  LOCKED
+}
+
+enum ReconciliationStatus {
+  MATCHED
+  UNMATCHED
+  MANUALLY_MATCHED
+  REVIEW_REQUIRED
+  CORRECTED
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  DEAD
+}
+
+model BusinessUnit {
+  id                    String                   @id @default(cuid())
+  code                  String                   @unique
+  name                  String
+  product               ProductCode              @unique
+  isActive              Boolean                  @default(true) @map("is_active")
+  retentionDays         Int                      @default(730) @map("retention_days")
+  settings              Json?
+  createdAt             DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  roles                 BusinessRoleAssignment[]
+  integrations          IntegrationConnection[]
+  instagramAccounts     InstagramAccount[]
+  conversations         BusinessConversation[]
+  leads                 BusinessLead[]
+  campaigns             BusinessCampaign[]
+  knowledgeEntries      KnowledgeBaseEntry[]
+  automationRules       AutomationRule[]
+  financialTransactions FinancialTransaction[]
+  expenseCategories     ExpenseCategory[]
+  taxProfiles           TaxProfile[]
+  accountingPeriods     AccountingPeriod[]
+  reconciliationRecords ReconciliationRecord[]
+  backgroundJobs        BackgroundJob[]
+  aiPromptVersions      AIPromptVersion[]
+
+  @@map("business_units")
+}
+
+model BusinessRoleAssignment {
+  id             String       @id @default(cuid())
+  userId         String       @map("user_id")
+  businessUnitId String       @map("business_unit_id")
+  role           BusinessRole
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessUnit   BusinessUnit @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, businessUnitId, role])
+  @@index([businessUnitId, role])
+  @@map("business_role_assignments")
+}
+
+model IntegrationConnection {
+  id                   String              @id @default(cuid())
+  businessUnitId       String              @map("business_unit_id")
+  provider             IntegrationProvider
+  status               IntegrationStatus   @default(DISCONNECTED)
+  displayName          String              @map("display_name")
+  config               Json?
+  encryptedCredentials String?             @map("encrypted_credentials")
+  lastHealthAt         DateTime?           @map("last_health_at") @db.Timestamptz(3)
+  lastErrorCode        String?             @map("last_error_code")
+  createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit         BusinessUnit        @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  instagramAccounts    InstagramAccount[]
+
+  @@unique([businessUnitId, provider, displayName])
+  @@index([provider, status])
+  @@map("integration_connections")
+}
+
+model InstagramAccount {
+  id             String                  @id @default(cuid())
+  businessUnitId String                  @map("business_unit_id")
+  connectionId   String                  @map("connection_id")
+  externalId     String                  @unique @map("external_id")
+  username       String?
+  aiMode         AiMode                  @default(SUGGESTION) @map("ai_mode")
+  isActive       Boolean                 @default(true) @map("is_active")
+  tokenExpiresAt DateTime?               @map("token_expires_at") @db.Timestamptz(3)
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit   BusinessUnit            @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  connection     IntegrationConnection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  webhookEvents  InstagramWebhookEvent[]
+  conversations  BusinessConversation[]
+
+  @@index([businessUnitId, isActive])
+  @@map("instagram_accounts")
+}
+
+model InstagramWebhookEvent {
+  id                 String            @id @default(cuid())
+  instagramAccountId String?           @map("instagram_account_id")
+  providerEventId    String            @unique @map("provider_event_id")
+  idempotencyKey     String            @unique @map("idempotency_key")
+  eventType          String            @map("event_type")
+  occurredAt         DateTime          @map("occurred_at") @db.Timestamptz(3)
+  payload            Json
+  processedAt        DateTime?         @map("processed_at") @db.Timestamptz(3)
+  errorCode          String?           @map("error_code")
+  retryCount         Int               @default(0) @map("retry_count")
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  instagramAccount   InstagramAccount? @relation(fields: [instagramAccountId], references: [id], onDelete: SetNull)
+
+  @@index([processedAt, createdAt])
+  @@map("instagram_webhook_events")
+}
+
+model BusinessConversation {
+  id                       String             @id @default(cuid())
+  businessUnitId           String             @map("business_unit_id")
+  instagramAccountId       String             @map("instagram_account_id")
+  instagramScopedUserId    String             @map("instagram_scoped_user_id")
+  username                 String?
+  displayName              String?            @map("display_name")
+  profilePictureUrl        String?            @map("profile_picture_url")
+  status                   ConversationStatus @default(OPEN)
+  temperature              LeadTemperature    @default(COLD)
+  aiMode                   AiMode             @default(SUGGESTION) @map("ai_mode")
+  assignedUserId           String?            @map("assigned_user_id")
+  tags                     String[]
+  productInterest          ProductInterest    @default(UNKNOWN) @map("product_interest")
+  unreadCount              Int                @default(0) @map("unread_count")
+  lastMessageAt            DateTime           @default(now()) @map("last_message_at") @db.Timestamptz(3)
+  lastReplyBy              MessageSenderType? @map("last_reply_by")
+  summary                  String?
+  sourceCampaignExternalId String?            @map("source_campaign_external_id")
+  sourceAdExternalId       String?            @map("source_ad_external_id")
+  anonymizedAt             DateTime?          @map("anonymized_at") @db.Timestamptz(3)
+  createdAt                DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit             BusinessUnit       @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  instagramAccount         InstagramAccount   @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
+  messages                 BusinessMessage[]
+  lead                     BusinessLead?
+  aiExecutions             AIExecution[]
+
+  @@unique([instagramAccountId, instagramScopedUserId])
+  @@index([businessUnitId, status, lastMessageAt])
+  @@index([assignedUserId, status])
+  @@map("business_conversations")
+}
+
+model BusinessMessage {
+  id               String               @id @default(cuid())
+  conversationId   String               @map("conversation_id")
+  externalId       String?              @unique @map("external_id")
+  direction        MessageDirection
+  senderType       MessageSenderType    @map("sender_type")
+  type             String               @default("TEXT")
+  body             String?
+  mediaMetadata    Json?                @map("media_metadata")
+  providerMetadata Json?                @map("provider_metadata")
+  status           MessageStatus
+  failureCode      String?              @map("failure_code")
+  idempotencyKey   String               @unique @map("idempotency_key")
+  occurredAt       DateTime             @map("occurred_at") @db.Timestamptz(3)
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  conversation     BusinessConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  deliveries       MessageDelivery[]
+
+  @@index([conversationId, occurredAt])
+  @@index([status, createdAt])
+  @@map("business_messages")
+}
+
+model MessageDelivery {
+  id               String          @id @default(cuid())
+  messageId        String          @map("message_id")
+  status           MessageStatus
+  providerResponse Json?           @map("provider_response")
+  attemptedAt      DateTime        @default(now()) @map("attempted_at") @db.Timestamptz(3)
+  message          BusinessMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId, attemptedAt])
+  @@map("message_deliveries")
+}
+
+model BusinessLead {
+  id                    String                 @id @default(cuid())
+  businessUnitId        String                 @map("business_unit_id")
+  conversationId        String?                @unique @map("conversation_id")
+  campaignId            String?                @map("campaign_id")
+  firstName             String?                @map("first_name")
+  lastName              String?                @map("last_name")
+  instagramScopedId     String?                @map("instagram_scoped_id")
+  phone                 String?
+  normalizedPhone       String?                @map("normalized_phone")
+  email                 String?
+  normalizedEmail       String?                @map("normalized_email")
+  studentName           String?                @map("student_name")
+  parentName            String?                @map("parent_name")
+  grade                 String?
+  examType              String?                @map("exam_type")
+  city                  String?
+  productInterest       ProductInterest        @default(UNKNOWN) @map("product_interest")
+  source                LeadSource
+  stage                 LeadStage              @default(NEW)
+  temperature           LeadTemperature        @default(COLD)
+  priority              LeadPriority           @default(NORMAL)
+  assignedUserId        String?                @map("assigned_user_id")
+  estimatedValueCents   Int?                   @map("estimated_value_cents")
+  tags                  String[]
+  consentMetadata       Json?                  @map("consent_metadata")
+  lostReasonCode        LeadLostReasonCode?    @map("lost_reason_code")
+  lostReason            String?                @map("lost_reason")
+  relatedOdUserId       String?                @map("related_od_user_id")
+  relatedOdkUserId      String?                @map("related_odk_user_id")
+  relatedOdOrderId      String?                @map("related_od_order_id")
+  relatedOdkOrderId     String?                @map("related_odk_order_id")
+  matchSuggestion       Json?                  @map("match_suggestion")
+  anonymizedAt          DateTime?              @map("anonymized_at") @db.Timestamptz(3)
+  firstContactAt        DateTime               @default(now()) @map("first_contact_at") @db.Timestamptz(3)
+  lastContactAt         DateTime               @default(now()) @map("last_contact_at") @db.Timestamptz(3)
+  nextFollowUpAt        DateTime?              @map("next_follow_up_at") @db.Timestamptz(3)
+  wonAt                 DateTime?              @map("won_at") @db.Timestamptz(3)
+  lostAt                DateTime?              @map("lost_at") @db.Timestamptz(3)
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit          BusinessUnit           @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  conversation          BusinessConversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  campaign              BusinessCampaign?      @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  activities            LeadActivity[]
+  tasks                 LeadTask[]
+  attributions          Attribution[]
+  financialTransactions FinancialTransaction[]
+
+  @@index([businessUnitId, stage, updatedAt])
+  @@index([businessUnitId, nextFollowUpAt])
+  @@index([businessUnitId, assignedUserId, stage])
+  @@index([campaignId])
+  @@index([normalizedPhone])
+  @@index([normalizedEmail])
+  @@index([instagramScopedId])
+  @@map("business_leads")
+}
+
+model LeadActivity {
+  id          String       @id @default(cuid())
+  leadId      String       @map("lead_id")
+  type        String
+  fromValue   String?      @map("from_value")
+  toValue     String?      @map("to_value")
+  actorUserId String?      @map("actor_user_id")
+  metadata    Json?
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  lead        BusinessLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt])
+  @@map("lead_activities")
+}
+
+model LeadTask {
+  id             String       @id @default(cuid())
+  leadId         String       @map("lead_id")
+  title          String
+  note           String?
+  dueAt          DateTime?    @map("due_at") @db.Timestamptz(3)
+  assignedUserId String?      @map("assigned_user_id")
+  completedAt    DateTime?    @map("completed_at") @db.Timestamptz(3)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  lead           BusinessLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([assignedUserId, completedAt, dueAt])
+  @@index([leadId, dueAt])
+  @@map("lead_tasks")
+}
+
+model BusinessCampaign {
+  id                    String                 @id @default(cuid())
+  businessUnitId        String                 @map("business_unit_id")
+  externalId            String?                @map("external_id")
+  name                  String
+  platform              String                 @default("INSTAGRAM")
+  objective             String?
+  productInterest       ProductInterest        @default(UNKNOWN) @map("product_interest")
+  startsAt              DateTime?              @map("starts_at") @db.Timestamptz(3)
+  endsAt                DateTime?              @map("ends_at") @db.Timestamptz(3)
+  budgetCents           Int                    @default(0) @map("budget_cents")
+  spentCents            Int                    @default(0) @map("spent_cents")
+  status                CampaignStatus         @default(DRAFT)
+  utm                   Json?
+  description           String?
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit          BusinessUnit           @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  adSets                BusinessAdSet[]
+  attributions          Attribution[]
+  financialTransactions FinancialTransaction[]
+  leads                 BusinessLead[]
+
+  @@unique([businessUnitId, platform, externalId])
+  @@index([businessUnitId, status, startsAt])
+  @@map("business_campaigns")
+}
+
+model BusinessAdSet {
+  id                  String                  @id @default(cuid())
+  campaignId          String                  @map("campaign_id")
+  externalId          String?                 @map("external_id")
+  name                String
+  audienceDescription String?                 @map("audience_description")
+  budgetCents         Int                     @default(0) @map("budget_cents")
+  status              CampaignStatus          @default(DRAFT)
+  campaign            BusinessCampaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  advertisements      BusinessAdvertisement[]
+
+  @@unique([campaignId, externalId])
+  @@map("business_ad_sets")
+}
+
+model BusinessAdvertisement {
+  id             String        @id @default(cuid())
+  adSetId        String        @map("ad_set_id")
+  externalId     String?       @map("external_id")
+  name           String
+  creativeName   String?       @map("creative_name")
+  openingMessage String?       @map("opening_message")
+  spentCents     Int           @default(0) @map("spent_cents")
+  impressions    Int           @default(0)
+  reach          Int           @default(0)
+  clicks         Int           @default(0)
+  messageStarts  Int           @default(0) @map("message_starts")
+  leadCount      Int           @default(0) @map("lead_count")
+  saleCount      Int           @default(0) @map("sale_count")
+  revenueCents   Int           @default(0) @map("revenue_cents")
+  adSet          BusinessAdSet @relation(fields: [adSetId], references: [id], onDelete: Cascade)
+  attributions   Attribution[]
+
+  @@unique([adSetId, externalId])
+  @@map("business_advertisements")
+}
+
+model Attribution {
+  id              String                 @id @default(cuid())
+  leadId          String                 @map("lead_id")
+  campaignId      String?                @map("campaign_id")
+  advertisementId String?                @map("advertisement_id")
+  model           String
+  confidence      Decimal                @db.Decimal(5, 4)
+  isManual        Boolean                @default(false) @map("is_manual")
+  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  lead            BusinessLead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  campaign        BusinessCampaign?      @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  advertisement   BusinessAdvertisement? @relation(fields: [advertisementId], references: [id], onDelete: SetNull)
+
+  @@index([leadId, createdAt])
+  @@map("attributions")
+}
+
+model KnowledgeBaseEntry {
+  id              String          @id @default(cuid())
+  businessUnitId  String          @map("business_unit_id")
+  title           String
+  content         String
+  category        String
+  productInterest ProductInterest @default(UNKNOWN) @map("product_interest")
+  isActive        Boolean         @default(true) @map("is_active")
+  validFrom       DateTime?       @map("valid_from") @db.Timestamptz(3)
+  validUntil      DateTime?       @map("valid_until") @db.Timestamptz(3)
+  version         Int             @default(1)
+  source          String?
+  updatedById     String?         @map("updated_by_id")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit    BusinessUnit    @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+
+  @@index([businessUnitId, isActive, category])
+  @@map("knowledge_base_entries")
+}
+
+model AIPromptVersion {
+  id             String        @id @default(cuid())
+  businessUnitId String?       @map("business_unit_id")
+  name           String
+  version        Int
+  systemPrompt   String        @map("system_prompt")
+  schemaVersion  Int           @default(1) @map("schema_version")
+  isActive       Boolean       @default(false) @map("is_active")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  businessUnit   BusinessUnit? @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([name, version])
+  @@index([businessUnitId, isActive])
+  @@map("ai_prompt_versions")
+}
+
+model AIExecution {
+  id              String               @id @default(cuid())
+  conversationId  String               @map("conversation_id")
+  inputMessageId  String?              @map("input_message_id")
+  promptVersionId String?              @map("prompt_version_id")
+  provider        String
+  model           String
+  decision        Json?
+  confidence      Decimal?             @db.Decimal(5, 4)
+  status          String
+  latencyMs       Int?                 @map("latency_ms")
+  errorCode       String?              @map("error_code")
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  conversation    BusinessConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("ai_executions")
+}
+
+model AutomationRule {
+  id              String                @id @default(cuid())
+  businessUnitId  String                @map("business_unit_id")
+  name            String
+  triggerType     String                @map("trigger_type")
+  conditions      Json
+  actions         Json
+  isActive        Boolean               @default(true) @map("is_active")
+  createdByUserId String?               @map("created_by_user_id")
+  lastRunAt       DateTime?             @map("last_run_at") @db.Timestamptz(3)
+  runCount        Int                   @default(0) @map("run_count")
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit    BusinessUnit          @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  createdBy       User?                 @relation("AutomationRuleCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  executions      AutomationExecution[]
+
+  @@index([businessUnitId, triggerType, isActive])
+  @@map("automation_rules")
+}
+
+model AutomationExecution {
+  id         String         @id @default(cuid())
+  ruleId     String         @map("rule_id")
+  eventId    String?        @map("event_id")
+  entityType String         @map("entity_type")
+  entityId   String         @map("entity_id")
+  matched    Boolean        @default(true)
+  dryRun     Boolean        @default(false) @map("dry_run")
+  result     String
+  errorCode  String?        @map("error_code")
+  durationMs Int            @map("duration_ms")
+  details    Json?
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  rule       AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, eventId])
+  @@index([ruleId, createdAt])
+  @@index([eventId])
+  @@map("automation_executions")
+}
+
+model FinancialTransaction {
+  id                 String                     @id @default(cuid())
+  businessUnitId     String                     @map("business_unit_id")
+  source             FinancialSource
+  externalSourceId   String?                    @map("external_source_id")
+  idempotencyKey     String                     @unique @map("idempotency_key")
+  kind               FinancialKind
+  status             FinancialStatus            @default(DRAFT)
+  transactionAt      DateTime                   @map("transaction_at") @db.Timestamptz(3)
+  accrualAt          DateTime?                  @map("accrual_at") @db.Timestamptz(3)
+  paidAt             DateTime?                  @map("paid_at") @db.Timestamptz(3)
+  description        String
+  category           String
+  grossCents         Int                        @map("gross_cents")
+  discountCents      Int                        @default(0) @map("discount_cents")
+  netCents           Int                        @map("net_cents")
+  vatRate            Decimal                    @default(0) @map("vat_rate") @db.Decimal(7, 4)
+  vatCents           Int                        @default(0) @map("vat_cents")
+  withholdingRate    Decimal                    @default(0) @map("withholding_rate") @db.Decimal(7, 4)
+  withholdingCents   Int                        @default(0) @map("withholding_cents")
+  otherTaxCents      Int                        @default(0) @map("other_tax_cents")
+  commissionCents    Int                        @default(0) @map("commission_cents")
+  currency           String                     @default("TRY")
+  paymentMethod      String?                    @map("payment_method")
+  documentNumber     String?                    @map("document_number")
+  invoiceNumber      String?                    @map("invoice_number")
+  attachmentMetadata Json?                      @map("attachment_metadata")
+  notes              String?
+  odOrderId          String?                    @map("od_order_id")
+  odkOrderId         String?                    @map("odk_order_id")
+  leadId             String?                    @map("lead_id")
+  campaignId         String?                    @map("campaign_id")
+  reversalOfId       String?                    @map("reversal_of_id")
+  createdById        String?                    @map("created_by_id")
+  cancelledAt        DateTime?                  @map("cancelled_at") @db.Timestamptz(3)
+  createdAt          DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit       BusinessUnit               @relation(fields: [businessUnitId], references: [id], onDelete: Restrict)
+  lead               BusinessLead?              @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  campaign           BusinessCampaign?          @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  lines              FinancialTransactionLine[]
+  reconciliations    ReconciliationRecord[]
+
+  @@unique([source, externalSourceId, kind])
+  @@index([businessUnitId, transactionAt, status])
+  @@index([odOrderId])
+  @@index([odkOrderId])
+  @@map("financial_transactions")
+}
+
+model FinancialTransactionLine {
+  id            String               @id @default(cuid())
+  transactionId String               @map("transaction_id")
+  accountCode   String               @map("account_code")
+  description   String
+  debitCents    Int                  @default(0) @map("debit_cents")
+  creditCents   Int                  @default(0) @map("credit_cents")
+  transaction   FinancialTransaction @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+
+  @@index([transactionId])
+  @@map("financial_transaction_lines")
+}
+
+model ExpenseCategory {
+  id             String       @id @default(cuid())
+  businessUnitId String       @map("business_unit_id")
+  code           String
+  name           String
+  isActive       Boolean      @default(true) @map("is_active")
+  businessUnit   BusinessUnit @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([businessUnitId, code])
+  @@map("expense_categories")
+}
+
+model TaxProfile {
+  id              String       @id @default(cuid())
+  businessUnitId  String       @map("business_unit_id")
+  name            String
+  vatRate         Decimal      @map("vat_rate") @db.Decimal(7, 4)
+  withholdingRate Decimal      @default(0) @map("withholding_rate") @db.Decimal(7, 4)
+  isDefault       Boolean      @default(false) @map("is_default")
+  isActive        Boolean      @default(true) @map("is_active")
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit    BusinessUnit @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([businessUnitId, name])
+  @@index([businessUnitId, isDefault, isActive])
+  @@map("tax_profiles")
+}
+
+model AccountingPeriod {
+  id             String                 @id @default(cuid())
+  businessUnitId String                 @map("business_unit_id")
+  startsAt       DateTime               @map("starts_at") @db.Timestamptz(3)
+  endsAt         DateTime               @map("ends_at") @db.Timestamptz(3)
+  status         AccountingPeriodStatus @default(OPEN)
+  lockedAt       DateTime?              @map("locked_at") @db.Timestamptz(3)
+  lockedById     String?                @map("locked_by_id")
+  businessUnit   BusinessUnit           @relation(fields: [businessUnitId], references: [id], onDelete: Restrict)
+
+  @@unique([businessUnitId, startsAt, endsAt])
+  @@index([businessUnitId, status, startsAt])
+  @@map("accounting_periods")
+}
+
+model ReconciliationRecord {
+  id                     String                @id @default(cuid())
+  businessUnitId         String                @map("business_unit_id")
+  financialTransactionId String?               @map("financial_transaction_id")
+  provider               String
+  externalId             String?               @map("external_id")
+  expectedCents          Int?                  @map("expected_cents")
+  actualCents            Int?                  @map("actual_cents")
+  status                 ReconciliationStatus  @default(REVIEW_REQUIRED)
+  details                Json?
+  resolvedAt             DateTime?             @map("resolved_at") @db.Timestamptz(3)
+  resolvedById           String?               @map("resolved_by_id")
+  createdAt              DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  businessUnit           BusinessUnit          @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  financialTransaction   FinancialTransaction? @relation(fields: [financialTransactionId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, externalId])
+  @@index([businessUnitId, status, createdAt])
+  @@map("reconciliation_records")
+}
+
+model BackgroundJob {
+  id             String        @id @default(cuid())
+  businessUnitId String?       @map("business_unit_id")
+  type           String
+  idempotencyKey String        @unique @map("idempotency_key")
+  payload        Json
+  status         JobStatus     @default(PENDING)
+  priority       Int           @default(100)
+  attempts       Int           @default(0)
+  maxAttempts    Int           @default(5) @map("max_attempts")
+  runAfter       DateTime      @default(now()) @map("run_after") @db.Timestamptz(3)
+  lockedAt       DateTime?     @map("locked_at") @db.Timestamptz(3)
+  lockedBy       String?       @map("locked_by")
+  lastErrorCode  String?       @map("last_error_code")
+  completedAt    DateTime?     @map("completed_at") @db.Timestamptz(3)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  businessUnit   BusinessUnit? @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+
+  @@index([status, runAfter, priority])
+  @@map("background_jobs")
+}
+
+/// Vercel cron tetikleyicisinden bağımsız, kalıcı çalışma kanıtı.
+/// Tek satır/job tasarımı health ve operasyon ekranının ucuz ve deterministik
+/// sorgulanmasını sağlar; lastRunId çakışan invocation'ların eski sonucu
+/// yenisinin üzerine yazmasını engeller.
+model CronHeartbeat {
+  name            String    @id
+  lastRunId       String?   @map("last_run_id")
+  lastStartedAt   DateTime? @map("last_started_at") @db.Timestamptz(3)
+  lastSucceededAt DateTime? @map("last_succeeded_at") @db.Timestamptz(3)
+  lastFailedAt    DateTime? @map("last_failed_at") @db.Timestamptz(3)
+  lastDurationMs  Int?      @map("last_duration_ms")
+  processedCount  Int       @default(0) @map("processed_count")
+  failedCount     Int       @default(0) @map("failed_count")
+  lastErrorCode   String?   @map("last_error_code")
+  lastAlertedAt   DateTime? @map("last_alerted_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([lastSucceededAt])
+  @@map("cron_heartbeats")
+}
+
+model TeacherHomeSnapshot {
+  teacherId   String   @id @map("teacher_id")
+  generatedAt DateTime @map("generated_at") @db.Timestamptz(3)
+  snapshot    Json
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("teacher_home_snapshots")
+}
+
+/// Bir kullanıcının hangi alt ürüne erişebildiğini rolünden bağımsız tutar.
+/// ADMIN ve TEACHER hesapları uygulama kuralı olarak iki ürüne de erişir;
+/// satırlar ayrıca erişimin kaynağını ve audit bağlamını korur.
+model ProductMembership {
+  id              String              @id @default(cuid())
+  userId          String              @map("user_id")
+  product         ProductCode
+  source          ProductAccessSource @default(MANUAL)
+  grantedById     String?             @map("granted_by_id")
+  sourceOdOrderId String?             @map("source_od_order_id")
+  startsAt        DateTime            @default(now()) @map("starts_at") @db.Timestamptz(3)
+  expiresAt       DateTime?           @map("expires_at") @db.Timestamptz(3)
+  revokedAt       DateTime?           @map("revoked_at") @db.Timestamptz(3)
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user            User                @relation("ProductMembershipOwner", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy       User?               @relation("ProductMembershipGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+  sourceOdOrder   OdOrder?            @relation(fields: [sourceOdOrderId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, product])
+  @@index([product, revokedAt, expiresAt])
+  @@index([grantedById, createdAt])
+  @@index([sourceOdOrderId])
+  @@map("product_memberships")
+}

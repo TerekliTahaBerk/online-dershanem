@@ -1,10 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AcademicPanel } from "@/components/panel/student-360/AcademicPanel";
 import { AssignmentsPanel } from "@/components/panel/student-360/AssignmentsPanel";
+import { CalendarPanel } from "@/components/panel/student-360/CalendarPanel";
 import { CoachingPanel } from "@/components/panel/student-360/CoachingPanel";
+import { CommercePanel } from "@/components/panel/student-360/CommercePanel";
+import { ExamsPanel } from "@/components/panel/student-360/ExamsPanel";
 import { LessonsPanel } from "@/components/panel/student-360/LessonsPanel";
 import { OverviewPanel } from "@/components/panel/student-360/OverviewPanel";
+import { ParentPanel } from "@/components/panel/student-360/ParentPanel";
 import { RiskPanel } from "@/components/panel/student-360/RiskPanel";
+import { TeachersPanel } from "@/components/panel/student-360/TeachersPanel";
 
 const NOW = new Date("2026-09-13T09:00:00.000Z");
 
@@ -84,6 +89,22 @@ function Student360Panels({ mode }: { mode: "default" | "empty" | "warning" }) {
           recoveryOpenCount: warning ? 1 : 0,
         }}
       />
+      <CalendarPanel
+        data={{
+          upcoming: empty
+            ? []
+            : [
+                {
+                  id: "lesson-1",
+                  title: "Matematik",
+                  startsAt: NOW,
+                  groupName: "LGS-A",
+                },
+              ],
+          past: [],
+          recoveryOpenCount: warning ? 1 : 0,
+        }}
+      />
       <AssignmentsPanel
         data={{
           items: empty
@@ -122,6 +143,74 @@ function Student360Panels({ mode }: { mode: "default" | "empty" | "warning" }) {
             items: [],
           },
           cases: [],
+        }}
+      />
+      <ExamsPanel
+        data={{
+          recent: empty
+            ? []
+            : [
+                {
+                  id: "exam-1",
+                  exam: "TYT Prova",
+                  takenAt: NOW,
+                  totalNet: 61.25,
+                  sections: [],
+                },
+              ],
+          netDelta: warning ? 4.5 : null,
+          subjectDeltas: warning ? [{ subject: "Matematik", delta: 4.5 }] : [],
+          recurringGaps: warning ? ["Matematik: 4,5 net düşüş"] : [],
+        }}
+      />
+      <TeachersPanel
+        data={{
+          links: empty
+            ? []
+            : [
+                {
+                  id: "link-1",
+                  subject: "Matematik",
+                  teacherId: "teacher-1",
+                  teacherName: "Ayşe Öğretmen",
+                  startedAt: NOW,
+                },
+              ],
+        }}
+        studentId="student-1"
+        teacherOptions={[]}
+        canManage={false}
+      />
+      <ParentPanel
+        data={{
+          parents: empty
+            ? []
+            : [
+                {
+                  linkId: "parent-link-1",
+                  id: "parent-1",
+                  fullName: "Deniz Veli",
+                  email: "veli@example.com",
+                  relationship: "Anne",
+                },
+              ],
+          digests: [],
+        }}
+        studentId="student-1"
+        parentOptions={[]}
+        canManage={false}
+      />
+      <CommercePanel
+        data={{
+          memberships: empty
+            ? []
+            : [{ product: "OD", label: "Online Dershanem", expiresAt: NOW }],
+          orders: [],
+          packageStatus: warning
+            ? "provisioning_blocked"
+            : empty
+              ? "none"
+              : "active",
         }}
       />
     </div>
