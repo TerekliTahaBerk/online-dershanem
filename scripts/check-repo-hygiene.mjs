@@ -158,7 +158,37 @@ if (linkOffenders.length > 0) {
   process.exit(1);
 }
 
+/**
+ * ESLint istisnaları sessiz kalmamalı. Aynı satırdaki `-- gerekçe` veya
+ * doğrudan üstündeki açıklayıcı yorum, istisnanın neden güvenli olduğunu
+ * gelecek değişiklikler ve incelemeler için kayda geçirir.
+ */
+const SOURCE_FILE = /\.(?:[cm]?js|jsx|mjs|ts|tsx)$/;
+const COMMENT_LINE = /^\s*(?:\/\/|\/\*|\*|\{\/\*)\s*\S/;
+const eslintDisableOffenders = [];
+
+for (const file of files) {
+  if (!SOURCE_FILE.test(file) || file === "scripts/check-repo-hygiene.mjs") continue;
+  const lines = readFileSync(file, "utf8").split(/\r?\n/);
+  lines.forEach((line, index) => {
+    const directiveAt = line.indexOf("eslint-disable");
+    if (directiveAt < 0) return;
+    const prefix = line.slice(0, directiveAt);
+    if (!prefix.includes("//") && !prefix.includes("{/*")) return;
+    const inlineReason = /eslint-disable(?:-next-line|-line)?\b[^\n]*--\s*\S.{7,}/.test(line);
+    const previousReason = index > 0 && COMMENT_LINE.test(lines[index - 1]) && !lines[index - 1].includes("eslint-disable");
+    if (!inlineReason && !previousReason) eslintDisableOffenders.push(`${file}:${index + 1}`);
+  });
+}
+
+if (eslintDisableOffenders.length > 0) {
+  cliLog.error("Gerekçesiz eslint-disable kullanımı bulundu:\n");
+  for (const offender of eslintDisableOffenders) cliLog.error(`  ${offender}`);
+  cliLog.error("\nAynı satıra `-- gerekçe` ekleyin veya doğrudan üst satırda nedenini açıklayın.");
+  process.exit(1);
+}
+
 cliLog.info(
   `Repo hygiene: temiz (${files.length} takip edilen dosya, ${clientFiles.length} istemci bileşeni, ` +
-    `panel bağlantıları kontrol edildi).`,
+    `${files.filter((file) => SOURCE_FILE.test(file)).length} kaynak dosyada ESLint istisnaları ve panel bağlantıları kontrol edildi).`,
 );

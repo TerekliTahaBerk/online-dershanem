@@ -134,7 +134,8 @@ export function MockExamWorkspace({
         examCountBand: countBand(visibleExams.length),
       },
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // İlk görünüm telemetrisi bileşen ömründe yalnız bir kez gönderilmelidir; liste değişimleri yeni görünüm değildir.
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only analytics event
   function markStarted() {
     if (started.current) return;
     started.current = true;

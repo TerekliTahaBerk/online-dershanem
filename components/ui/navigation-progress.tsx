@@ -53,7 +53,8 @@ export function NavigationProgress() {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // İlerleme yalnız URL değişiminde sıfırlanır; progress/visible bağımlılıkları efekt döngüsü oluşturur.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- route-change-only reset
   }, [pathname, searchParams]);
 
   if (!visible && progress === 0) return null;
