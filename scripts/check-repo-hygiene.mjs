@@ -7,6 +7,7 @@
 //
 // Kullanım: node scripts/check-repo-hygiene.mjs
 
+import { cliLog } from "./lib/cli-logger.mjs";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -29,9 +30,9 @@ const offenders = files.filter(
 );
 
 if (offenders.length > 0) {
-  console.error("Yinelenen dosya kopyaları bulundu (Finder/iCloud \" 2\" eki):\n");
-  for (const file of offenders) console.error(`  ${file}`);
-  console.error(
+  cliLog.error("Yinelenen dosya kopyaları bulundu (Finder/iCloud \" 2\" eki):\n");
+  for (const file of offenders) cliLog.error(`  ${file}`);
+  cliLog.error(
     "\nBu kopyalar asıl dosyadan sessizce ayrışır. Silin ve yalnız asıl dosyayı commit'leyin.",
   );
   process.exit(1);
@@ -54,9 +55,9 @@ const guardOffenders = files
   .filter((file) => PAGE_GUARD_IMPORT.test(readFileSync(file, "utf8")));
 
 if (guardOffenders.length > 0) {
-  console.error("API route'unda sayfa guard'ı (@/lib/auth/guards) kullanılıyor:\n");
-  for (const file of guardOffenders) console.error(`  ${file}`);
-  console.error(
+  cliLog.error("API route'unda sayfa guard'ı (@/lib/auth/guards) kullanılıyor:\n");
+  for (const file of guardOffenders) cliLog.error(`  ${file}`);
+  cliLog.error(
     "\nBunlar redirect()/notFound() atar; fetch JSON yerine HTML alır." +
       "\n@/lib/auth/api-guards içindeki requireApi* kapılarını kullanın.",
   );
@@ -108,9 +109,9 @@ for (const clientFile of clientFiles) {
 }
 
 if (nodeImportOffenders.length > 0) {
-  console.error("İstemci bileşeni `node:` içe aktaran bir modüle bağlı:\n");
-  for (const pair of [...new Set(nodeImportOffenders)]) console.error(`  ${pair}`);
-  console.error(
+  cliLog.error("İstemci bileşeni `node:` içe aktaran bir modüle bağlı:\n");
+  for (const pair of [...new Set(nodeImportOffenders)]) cliLog.error(`  ${pair}`);
+  cliLog.error(
     "\nTarayıcı paketinde `node:` modülleri şimlenir; alanlar sessizce eksilir." +
       "\nSunucuya özgü kısmı ayrı bir modüle taşıyın.",
   );
@@ -151,13 +152,13 @@ for (const file of files) {
 }
 
 if (linkOffenders.length > 0) {
-  console.error("Var olmayan panel rotasına bağlantı:\n");
-  for (const offender of [...new Set(linkOffenders)]) console.error(`  ${offender}`);
-  console.error("\nBildirim/uyarı href'leri 404'e gidiyor. Rota adını doğrulayın.");
+  cliLog.error("Var olmayan panel rotasına bağlantı:\n");
+  for (const offender of [...new Set(linkOffenders)]) cliLog.error(`  ${offender}`);
+  cliLog.error("\nBildirim/uyarı href'leri 404'e gidiyor. Rota adını doğrulayın.");
   process.exit(1);
 }
 
-console.log(
+cliLog.info(
   `Repo hygiene: temiz (${files.length} takip edilen dosya, ${clientFiles.length} istemci bileşeni, ` +
     `panel bağlantıları kontrol edildi).`,
 );

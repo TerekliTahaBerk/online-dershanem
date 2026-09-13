@@ -1,3 +1,4 @@
+import { cliLog } from "./lib/cli-logger.mjs";
 import { execFileSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
@@ -26,4 +27,4 @@ await bootstrapPrisma.businessUnit.upsert({
   create: { id: "cbusinessunitodk00000000001", code: "ODK", name: "OnlineDenemeKulübü", product: "ODK" },
 });
 await bootstrapPrisma.$disconnect();
-console.log(`Fresh database hazırlandı; ${migrations.length} migration işaretlendi.`);
+cliLog.info(`Fresh database hazırlandı; ${migrations.length} migration işaretlendi.`);

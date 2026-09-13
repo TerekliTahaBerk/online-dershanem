@@ -4,6 +4,7 @@
  * Shared preview databases can be left in P3009 by another feature branch's
  * failed migration (e.g. concurrent 0093_*). Production never auto-recovers.
  */
+import { cliLog } from "./lib/cli-logger.mjs";
 import { execFileSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -70,13 +71,13 @@ async function main() {
 
   const foreignFailed = await listForeignFailedMigrations();
   if (!foreignFailed.length) {
-    console.error(
+    cliLog.error(
       "prisma migrate deploy failed; no foreign failed migrations available for preview recovery.",
     );
     process.exit(1);
   }
 
-  console.warn(
+  cliLog.warn(
     JSON.stringify({
       event: "prisma.preview_migrate_recovery",
       action: "resolve_rolled_back",
@@ -93,6 +94,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error);
+  cliLog.error(error);
   process.exit(1);
 });

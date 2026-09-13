@@ -1,3 +1,4 @@
+import { cliLog } from "./lib/cli-logger.mjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -41,7 +42,7 @@ async function main() {
   for (const ex of existing) {
     if (ex.slug !== "lgs-paketi") {
       // remove duplicate auto-generated slug variants so the canonical slug below succeeds
-      console.log(`Deleting legacy LGS package with slug ${ex.slug}`);
+      cliLog.info(`Deleting legacy LGS package with slug ${ex.slug}`);
       await prisma.odkPackage.delete({ where: { id: ex.id } });
     }
   }
@@ -65,13 +66,13 @@ async function main() {
         isActive: true,
       },
     });
-    console.log(`✔ ${result.title} → ${result.priceCents / 100} TL (eski ${result.originalPriceCents / 100} TL)`);
+    cliLog.info(`✔ ${result.title} → ${result.priceCents / 100} TL (eski ${result.originalPriceCents / 100} TL)`);
   }
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    cliLog.error(e);
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());

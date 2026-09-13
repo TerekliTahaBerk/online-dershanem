@@ -14,6 +14,7 @@
  * ÜRETİMDE ÖNCE `--dry-run` ile koş: hiçbir şey yazılmaz, sayımlar raporlanır.
  */
 
+import { cliLog } from "./lib/cli-logger.mjs";
 import { PrismaClient } from "@prisma/client";
 import { computeOutcomeMastery, evidenceToSignal } from "../lib/student-success/mastery";
 
@@ -322,7 +323,7 @@ async function main() {
       await rescoreMastery(student.id, totals);
     }
     studentCount += students.length;
-    console.error(
+    cliLog.error(
       JSON.stringify({ event: "backfill.progress", studentCount, errorCount: totals.errors.length }),
     );
 
@@ -331,7 +332,7 @@ async function main() {
     if (students.length < BATCH_SIZE) break;
   }
 
-  console.log(
+  cliLog.info(
     JSON.stringify(
       {
         dryRun,

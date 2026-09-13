@@ -1,3 +1,4 @@
+import { cliLog } from "./lib/cli-logger.mjs";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -42,10 +43,10 @@ add("ODK yaşam döngüsü cron'u", lifecycleCron, lifecycleCron ? "vercel.json 
 add("0063 migration", existsSync(resolve(root, "prisma/migrations/0063_odk_pilot_rollout/migration.sql")), "Pilot yaşam döngüsü migration dosyası.");
 add("Yaşam döngüsü endpoint'i", existsSync(resolve(root, "app/api/cron/odk-exam-lifecycle/route.ts")), "Cron endpoint dosyası.");
 
-console.log("ODK pilot yapılandırma ön kontrolü\n");
-for (const check of checks) console.log(`${check.status === "PASS" ? "HAZIR" : check.status === "WAIT" ? "BEKLİYOR" : "BLOKE"}  ${check.label} — ${check.detail}`);
+cliLog.info("ODK pilot yapılandırma ön kontrolü\n");
+for (const check of checks) cliLog.info(`${check.status === "PASS" ? "HAZIR" : check.status === "WAIT" ? "BEKLİYOR" : "BLOKE"}  ${check.label} — ${check.detail}`);
 const blockers = checks.filter((check) => check.status === "BLOCK");
 const waiting = checks.filter((check) => check.status === "WAIT");
-console.log(`\n${checks.length - blockers.length - waiting.length}/${checks.length} kontrol hazır. ${waiting.length} bekleyen, ${blockers.length} bloke kontrol.`);
-console.log("Bu komut veritabanına bağlanmaz; admin Pilot yayını ekranındaki canlı veri kapıları ayrıca doğrulanmalıdır.");
+cliLog.info(`\n${checks.length - blockers.length - waiting.length}/${checks.length} kontrol hazır. ${waiting.length} bekleyen, ${blockers.length} bloke kontrol.`);
+cliLog.info("Bu komut veritabanına bağlanmaz; admin Pilot yayını ekranındaki canlı veri kapıları ayrıca doğrulanmalıdır.");
 if (blockers.length) process.exitCode = 1;
