@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
+import { getActiveOutcomeOptions } from "@/lib/curriculum/catalog-cache";
 import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
 import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -38,37 +39,8 @@ export default async function OdkAdminExamDetailPage({
   const { id } = await params;
   const { exam, issues } = await getOdkExamReadiness(id);
   if (!exam?.currentVersion) notFound();
-  const outcomeWhere =
-    exam.structureMode === "MATH_ONLY"
-      ? {
-          isActive: true as const,
-          unit: {
-            subject: {
-              version: { exam: exam.family, status: "ACTIVE" as const },
-              OR: [
-                { code: { contains: "MAT", mode: "insensitive" as const } },
-                {
-                  name: { contains: "Matematik", mode: "insensitive" as const },
-                },
-              ],
-            },
-          },
-        }
-      : {
-          isActive: true as const,
-          unit: {
-            subject: {
-              version: { exam: exam.family, status: "ACTIVE" as const },
-            },
-          },
-        };
   const [outcomes, attempts] = await Promise.all([
-    prisma.learningOutcome.findMany({
-      where: outcomeWhere,
-      orderBy: [{ unit: { name: "asc" } }, { code: "asc" }],
-      include: { unit: { select: { name: true } } },
-      take: 2000,
-    }),
+    getActiveOutcomeOptions(exam.family, exam.structureMode === "MATH_ONLY"),
     prisma.odkExamAttempt.findMany({
       where: { examId: id, status: { not: "VOID" } },
       select: {
@@ -152,10 +124,7 @@ export default async function OdkAdminExamDetailPage({
               autoSubmit: exam.currentVersion.autoSubmit,
             },
           }}
-          outcomes={outcomes.map((outcome) => ({
-            id: outcome.id,
-            label: `${outcome.code} · ${outcome.unit.name} · ${outcome.title}`,
-          }))}
+          outcomes={outcomes}
           issues={issues}
           resultStats={{
             attemptCount: attempts.length,
