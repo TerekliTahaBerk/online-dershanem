@@ -4,7 +4,7 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { getRateLimitKeyFromUser } from "@/lib/security/rate-limit";
 import { questionTimingBatchSchema } from "@/lib/odk/admin-schemas";
-import { mergeVisitDuration } from "@/lib/odk/time-analysis";
+import { recordAttemptQuestionTimings } from "@/lib/odk/attempt-timings";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "STUDENT"); if (!auth.ok) return auth.response;
@@ -32,36 +32,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (attempt.status !== "IN_PROGRESS") return NextResponse.json({ accepted: 0 });
 
   const allowed = new Set(attempt.version.sections.flatMap((section) => section.questions.map((question) => question.id)));
-  let accepted = 0;
-  for (const timing of parsed.data.timings) {
-    if (!allowed.has(timing.questionId)) continue;
-    const existing = await prisma.odkAttemptQuestionTiming.findUnique({
-      where: { attemptId_questionId: { attemptId: id, questionId: timing.questionId } },
-    });
-    const enteredAt = timing.enteredAt ? new Date(timing.enteredAt) : new Date();
-    const leftAt = timing.leftAt ? new Date(timing.leftAt) : null;
-    if (!existing) {
-      await prisma.odkAttemptQuestionTiming.create({
-        data: {
-          attemptId: id,
-          questionId: timing.questionId,
-          activeDurationMs: Math.max(0, timing.activeDurationMs),
-          firstEnteredAt: enteredAt,
-          lastLeftAt: leftAt,
-          visitCount: 1,
-        },
-      });
-    } else {
-      await prisma.odkAttemptQuestionTiming.update({
-        where: { id: existing.id },
-        data: {
-          activeDurationMs: mergeVisitDuration(existing.activeDurationMs, timing.activeDurationMs),
-          visitCount: existing.visitCount + 1,
-          lastLeftAt: leftAt || existing.lastLeftAt,
-        },
-      });
-    }
-    accepted += 1;
-  }
+  const accepted = await recordAttemptQuestionTimings(prisma, id, parsed.data.timings, allowed);
   return NextResponse.json({ accepted });
 }

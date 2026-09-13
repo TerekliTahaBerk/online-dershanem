@@ -1,6 +1,7 @@
 import { BookOpenCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { getCurriculumVersionSummaries } from "@/lib/curriculum/catalog-cache";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { CurriculumManager } from "@/components/panel/curriculum-manager";
@@ -17,16 +18,7 @@ export default async function CurriculumAdminPage() {
     assignments,
     taggedAssignments,
   ] = await Promise.all([
-    prisma.curriculumVersion.findMany({
-      orderBy: [{ academicYear: "desc" }, { createdAt: "desc" }],
-      include: {
-        subjects: {
-          include: {
-            units: { include: { _count: { select: { outcomes: true } } } },
-          },
-        },
-      },
-    }),
+    getCurriculumVersionSummaries(),
     prisma.lesson.count({
       where: { status: "COMPLETED", startsAt: { gte: since } },
     }),
@@ -76,26 +68,7 @@ export default async function CurriculumAdminPage() {
           </p>
         </article>
       </section>
-      <CurriculumManager
-        versions={versions.map((version) => ({
-          id: version.id,
-          code: version.code,
-          title: version.title,
-          exam: version.exam,
-          academicYear: version.academicYear,
-          status: version.status,
-          subjectCount: version.subjects.length,
-          outcomeCount: version.subjects.reduce(
-            (sum, subject) =>
-              sum +
-              subject.units.reduce(
-                (unitSum, unit) => unitSum + unit._count.outcomes,
-                0,
-              ),
-            0,
-          ),
-        }))}
-      />
+      <CurriculumManager versions={versions} />
     </PanelShell>
   );
 }

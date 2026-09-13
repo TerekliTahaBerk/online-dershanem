@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { revalidateCurriculumCatalog } from "@/lib/curriculum/catalog-cache";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
 const schema = z.object({ status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]) });
@@ -20,5 +21,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     prisma.curriculumVersion.update({ where: { id }, data: { status: parsed.data.status } }),
     prisma.auditLog.create({ data: { actorUserId: auth.session.userId, actorType: "USER", entityType: "CurriculumVersion", entityId: id, action: "curriculum.version_status_changed", summary: `${version.code} sürümü ${parsed.data.status} durumuna alındı`, payload: { status: parsed.data.status } } }),
   ]);
+  revalidateCurriculumCatalog();
   return NextResponse.json({ ok: true });
 }
