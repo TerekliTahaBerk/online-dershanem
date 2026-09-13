@@ -563,7 +563,12 @@ export function MockExamWorkspace({
           <p className="mt-1 text-xs text-[var(--site-muted)]">
             Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.
           </p>
-          <div className="mt-4 overflow-x-auto">
+          <div
+            className="mt-4 overflow-x-auto"
+            tabIndex={0}
+            role="region"
+            aria-label="Kişisel hata eğilimi tablosu"
+          >
             <table className="min-w-[620px] w-full text-xs">
               <thead>
                 <tr>

@@ -141,7 +141,12 @@ export function AdminSetupWizard({
             form.reset();
           }}
         >
-          <select name="role" className="panel-input" defaultValue="STUDENT">
+          <select
+            name="role"
+            aria-label="Hesap rolü"
+            className="panel-input"
+            defaultValue="STUDENT"
+          >
             <option value="STUDENT">Öğrenci</option>
             <option value="PARENT">Veli</option>
             <option value="TEACHER">Öğretmen</option>

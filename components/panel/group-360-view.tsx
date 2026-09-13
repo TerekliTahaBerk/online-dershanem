@@ -239,15 +239,17 @@ function OverviewPanel({
       <PanelCard>
         <PanelCardTitle>Yaklaşan dersler</PanelCardTitle>
         <div className="mt-3">
-          {data.upcomingLessons.map((lesson, index) => (
-            <PanelTaskRow
-              key={lesson.id}
-              title={lesson.title}
-              meta={`${DATE.format(lesson.startsAt)} · ${lesson.teacherName}`}
-              right={lesson.status}
-              last={index === data.upcomingLessons.length - 1}
-            />
-          ))}
+          <ul>
+            {data.upcomingLessons.map((lesson, index) => (
+              <PanelTaskRow
+                key={lesson.id}
+                title={lesson.title}
+                meta={`${DATE.format(lesson.startsAt)} · ${lesson.teacherName}`}
+                right={lesson.status}
+                last={index === data.upcomingLessons.length - 1}
+              />
+            ))}
+          </ul>
           {!data.upcomingLessons.length ? (
             <p className="text-[13.5px] text-dc-ink-muted">
               Yaklaşan planlı ders yok.
@@ -770,16 +772,18 @@ function ProgramPanel({
       <PanelCard>
         <PanelCardTitle>Haftalık / yaklaşan program</PanelCardTitle>
         <div className="mt-3">
-          {data.weekly.map((lesson, index) => (
-            <PanelTaskRow
-              key={lesson.id}
-              title={lesson.title}
-              meta={`${DATE.format(lesson.startsAt)} · ${lesson.teacherName} · ${lesson.durationMinutes} dk${
-                lesson.seriesId ? " · seri" : ""
-              }`}
-              last={index === data.weekly.length - 1}
-            />
-          ))}
+          <ul>
+            {data.weekly.map((lesson, index) => (
+              <PanelTaskRow
+                key={lesson.id}
+                title={lesson.title}
+                meta={`${DATE.format(lesson.startsAt)} · ${lesson.teacherName} · ${lesson.durationMinutes} dk${
+                  lesson.seriesId ? " · seri" : ""
+                }`}
+                last={index === data.weekly.length - 1}
+              />
+            ))}
+          </ul>
           {!data.weekly.length ? (
             <p className="text-[13.5px] text-dc-ink-muted">Planlı ders yok.</p>
           ) : null}
@@ -850,20 +854,22 @@ function HistoryPanel({
       <PanelCard>
         <PanelCardTitle>Tamamlanan dersler</PanelCardTitle>
         <div className="mt-3">
-          {data.completed.map((lesson, index) => (
-            <PanelTaskRow
-              key={lesson.id}
-              title={lesson.title}
-              meta={DATE.format(lesson.startsAt)}
-              right={
-                lesson.attendanceTotal
-                  ? `${lesson.attendancePresent}/${lesson.attendanceTotal}`
-                  : "yoklama yok"
-              }
-              done
-              last={index === data.completed.length - 1}
-            />
-          ))}
+          <ul>
+            {data.completed.map((lesson, index) => (
+              <PanelTaskRow
+                key={lesson.id}
+                title={lesson.title}
+                meta={DATE.format(lesson.startsAt)}
+                right={
+                  lesson.attendanceTotal
+                    ? `${lesson.attendancePresent}/${lesson.attendanceTotal}`
+                    : "yoklama yok"
+                }
+                done
+                last={index === data.completed.length - 1}
+              />
+            ))}
+          </ul>
           {!data.completed.length ? (
             <p className="text-[13.5px] text-dc-ink-muted">
               Tamamlanan ders yok.
@@ -874,15 +880,17 @@ function HistoryPanel({
       <PanelCard>
         <PanelCardTitle>İptaller</PanelCardTitle>
         <div className="mt-3">
-          {data.cancelled.map((lesson, index) => (
-            <PanelTaskRow
-              key={lesson.id}
-              title={lesson.title}
-              meta={DATE.format(lesson.startsAt)}
-              right="İptal"
-              last={index === data.cancelled.length - 1}
-            />
-          ))}
+          <ul>
+            {data.cancelled.map((lesson, index) => (
+              <PanelTaskRow
+                key={lesson.id}
+                title={lesson.title}
+                meta={DATE.format(lesson.startsAt)}
+                right="İptal"
+                last={index === data.cancelled.length - 1}
+              />
+            ))}
+          </ul>
           {!data.cancelled.length ? (
             <p className="text-[13.5px] text-dc-ink-muted">İptal kaydı yok.</p>
           ) : null}

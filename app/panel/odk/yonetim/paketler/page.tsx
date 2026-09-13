@@ -174,7 +174,12 @@ export default async function OdkAdminPackagesPage() {
                     <h3 className="text-xs font-extrabold text-[var(--site-ink)]">
                       Paket → hak → deneme eşlemesi
                     </h3>
-                    <div className="mt-3 overflow-x-auto">
+                    <div
+                      className="mt-3 overflow-x-auto"
+                      tabIndex={0}
+                      role="region"
+                      aria-label="Paket, hak ve deneme eşlemesi"
+                    >
                       <table className="w-full min-w-[760px] text-left text-xs">
                         <thead className="text-[10px] uppercase text-[var(--site-muted)]">
                           <tr>
