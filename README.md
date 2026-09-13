@@ -75,6 +75,10 @@ npx playwright install chromium firefox webkit
 npm run e2e:cross-browser
 ```
 
+### Bundle budget
+
+Next 16 no longer prints per-route JS sizes in the build summary. `npm run build:analyze` builds and prints the ten heaviest routes by first-load JS (raw and gzip), read from `.next/diagnostics/route-bundle-stats.json`. Add `--max-gzip-kb <n>` to `scripts/report-route-bundles.mjs` to fail when a route exceeds a budget. For an interactive module treemap with import chains, use `npm run analyze:bundle` (Turbopack; `@next/bundle-analyzer` only supports Webpack).
+
 ## Database and releases
 
 Apply only versioned migrations to an existing or production database:
