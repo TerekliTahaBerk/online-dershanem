@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/auth/guards";
 import { loadStudent360Bundle } from "@/lib/panel/student-360/index";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
-import { Student360View } from "@/components/panel/student-360-view";
+import { Student360View } from "@/components/panel/student-360/index";
 import { AdminPreviewLaunchButton } from "@/components/panel/admin-preview-launch-button";
 import { assignCoach } from "../../kocluk/actions";
 import { retryOrderProvisioning } from "../../siparisler/[id]/actions";
