@@ -1,5 +1,5 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { accessibilityScan } from "./helpers/axe";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD || "testpass123";
@@ -37,7 +37,7 @@ test.describe.serial("integrated pilot rollout", () => {
     await page.goto("/panel/yonetim/pilot");
     await expect(page.getByRole("heading", { name: "Önce küçük kohort, sonra kanıtlı genişleme." })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-    expect((await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze()).violations).toEqual([]);
+    expect((await accessibilityScan(page).analyze()).violations).toEqual([]);
     let cohort = page.getByRole("article").filter({ hasText: "E2E LGS Grubu" }).first();
     if (!(await cohort.count())) {
       await page.getByLabel("Pilot grubu").selectOption("e2e-group");

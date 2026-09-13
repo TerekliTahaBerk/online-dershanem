@@ -1,5 +1,5 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { accessibilityScan } from "./helpers/axe";
 import { panelE2EAccounts } from "../../lib/e2e/panel-accounts";
 import { loginAs } from "./helpers/panel-login";
 
@@ -89,8 +89,7 @@ for (const viewport of [
         );
         expect(horizontalOverflow, `${route} yatay taşma`).toBeLessThanOrEqual(1);
 
-        const results = await new AxeBuilder({ page })
-          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        const results = await accessibilityScan(page)
           .analyze();
         const blocking = results.violations.filter((violation) => ["critical", "serious"].includes(violation.impact || ""));
         expect(blocking, `${route} erişilebilirlik ihlalleri`).toEqual([]);

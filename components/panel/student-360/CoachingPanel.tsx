@@ -16,7 +16,7 @@ export function CoachingPanel(props: CoachingPanelProps) {
                 ? ` · %${data.plan.completionPercent} tamamlandı`
                 : ""}
             </p>
-            <div className="mt-3 space-y-1">
+            <ul className="mt-3 space-y-1">
               {data.plan.tasks.slice(0, 8).map((task) => (
                 <PanelTaskRow
                   key={task.id}
@@ -24,7 +24,7 @@ export function CoachingPanel(props: CoachingPanelProps) {
                   meta={`${task.status} · ${DAY.format(task.scheduledFor)}`}
                 />
               ))}
-            </div>
+            </ul>
             {data.feedbackCategory ? (
               <p className="mt-3 text-[12.5px] text-dc-ink-faint">
                 Plan geri bildirimi: {data.feedbackCategory}
@@ -97,13 +97,15 @@ export function CoachingPanel(props: CoachingPanelProps) {
         <PanelCardTitle>Check-in geçmişi</PanelCardTitle>
         <div className="mt-3 space-y-2">
           {data.checkIns.length ? (
-            data.checkIns.map((row) => (
-              <PanelTaskRow
-                key={row.id}
-                title={`${row.energy} · ${row.barrier}`}
-                meta={`${DAY.format(row.createdAt)}${row.shared ? " · öğretmenle paylaşıldı" : ""}`}
-              />
-            ))
+            <ul className="space-y-2">
+              {data.checkIns.map((row) => (
+                <PanelTaskRow
+                  key={row.id}
+                  title={`${row.energy} · ${row.barrier}`}
+                  meta={`${DAY.format(row.createdAt)}${row.shared ? " · öğretmenle paylaşıldı" : ""}`}
+                />
+              ))}
+            </ul>
           ) : (
             <EmptyLine text="Check-in kaydı yok." />
           )}
@@ -114,13 +116,15 @@ export function CoachingPanel(props: CoachingPanelProps) {
         <PanelCardTitle>Zaman çizelgesi</PanelCardTitle>
         <div className="mt-3 space-y-2">
           {data.timeline?.length ? (
-            data.timeline.map((row) => (
-              <PanelTaskRow
-                key={row.id}
-                title={row.title}
-                meta={`${DAY.format(row.occurredAt)}${row.summary ? ` · ${row.summary}` : ""}`}
-              />
-            ))
+            <ul className="space-y-2">
+              {data.timeline.map((row) => (
+                <PanelTaskRow
+                  key={row.id}
+                  title={row.title}
+                  meta={`${DAY.format(row.occurredAt)}${row.summary ? ` · ${row.summary}` : ""}`}
+                />
+              ))}
+            </ul>
           ) : (
             <EmptyLine text="Henüz zaman çizelgesi kaydı yok." />
           )}

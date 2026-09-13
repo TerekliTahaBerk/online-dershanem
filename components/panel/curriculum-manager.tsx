@@ -91,7 +91,7 @@ export function CurriculumManager({ versions }: { versions: Version[] }) {
             placeholder="Sürüm adı"
           />
           <div className="mt-2 grid grid-cols-2 gap-2">
-            <select name="exam" className="panel-input">
+            <select name="exam" aria-label="Sınav" className="panel-input">
               <option>LGS</option>
               <option>TYT</option>
               <option>AYT</option>
@@ -222,6 +222,7 @@ export function CurriculumManager({ versions }: { versions: Version[] }) {
           <select
             name="versionId"
             required
+            aria-label="Müfredat sürümü"
             value={versionId}
             onChange={(event) => setVersionId(event.target.value)}
             className="panel-input"

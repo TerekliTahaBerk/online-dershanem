@@ -176,7 +176,7 @@ export default async function PanelFeatureInventoryPage() {
                     {statusLabel[feature.status]}
                   </span>
                   <span
-                    className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${feature.enabled ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-700"}`}
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${feature.enabled ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-700"}`}
                   >
                     {feature.enabled ? "Açık" : "Kapalı"}
                   </span>

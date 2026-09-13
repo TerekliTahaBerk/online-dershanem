@@ -119,7 +119,12 @@ export function TeacherMaterialManager({
             <Upload size={13} className="mr-1 inline" /> Dosya yükle
           </button>
         </div>
-        <select name="groupId" required className="panel-input mt-4">
+        <select
+          name="groupId"
+          required
+          aria-label="Grup"
+          className="panel-input mt-4"
+        >
           <option value="">Grup seçin</option>
           {groups.map((group) => (
             <option key={group.id} value={group.id}>
@@ -128,7 +133,12 @@ export function TeacherMaterialManager({
           ))}
         </select>
         {source === "LINK" ? (
-          <select name="kind" defaultValue="LINK" className="panel-input mt-2">
+          <select
+            name="kind"
+            defaultValue="LINK"
+            aria-label="Materyal türü"
+            className="panel-input mt-2"
+          >
             <option value="LINK">Bağlantı</option>
             <option value="PDF">PDF bağlantısı</option>
             <option value="VIDEO">Video bağlantısı</option>

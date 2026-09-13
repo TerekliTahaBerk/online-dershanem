@@ -1,5 +1,5 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { accessibilityScan } from "./helpers/axe";
 
 const routes = [
   "/",
@@ -24,8 +24,7 @@ for (const route of routes) {
   test(`WCAG A/AA: ${route}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(route, { waitUntil: "domcontentloaded" });
-    const result = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    const result = await accessibilityScan(page)
       .analyze();
     expect(result.violations).toEqual([]);
   });
