@@ -6,13 +6,15 @@ type Json = Record<string, unknown>;
  * basar. Şema verisi `lib/seo/jsonld.ts` builder'larıyla üretilir
  * (breadcrumbJsonLd, productJsonLd, courseJsonLd, articleJsonLd).
  */
-export function SchemaJsonLd({ schema }: { schema: Json | Json[] }) {
+export async function SchemaJsonLd({ schema }: { schema: Json | Json[] }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const list = Array.isArray(schema) ? schema : [schema];
   return (
     <>
       {list.map((item, i) => (
         <script
           key={i}
+          nonce={nonce}
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
         />
@@ -20,3 +22,4 @@ export function SchemaJsonLd({ schema }: { schema: Json | Json[] }) {
     </>
   );
 }
+import { headers } from "next/headers";

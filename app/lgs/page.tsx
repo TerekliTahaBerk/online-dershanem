@@ -1,4 +1,5 @@
 import { ExamSalesLanding } from "@/components/sections/exam-sales-landing";
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
@@ -47,18 +48,7 @@ export default function LGSLandingPage() {
   ]);
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(lgsFaq)) }}
-      />
+      <SchemaJsonLd schema={[courseLd, breadcrumbLd, faqJsonLd(lgsFaq)]} />
       <ExamSalesLanding
         data={{
           examKey: "LGS",

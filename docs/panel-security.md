@@ -54,7 +54,7 @@ Ayrıntılar: [`docs/admin-teacher-mode.md`](admin-teacher-mode.md).
 
 ## Content Security Policy
 
-Tanım: `next.config.ts`. Regresyon testi:
+Tanım: `proxy.ts`. Regresyon testi:
 `tests/e2e/security-headers.spec.ts`.
 
 ### 2026-08-04'te yapılan sıkılaştırma
@@ -66,21 +66,29 @@ Tanım: `next.config.ts`. Regresyon testi:
 | `img-src` | `https: http:` | `https:` | Düz `http:` kaldırıldı. HTTPS sayfada zaten mixed-content olarak engellenir. |
 | `connect-src` | pixel uçları yok | `analytics.tiktok.com`, `www.facebook.com` eklendi | Pixel'lerin olay göndermesi için gerekli. |
 
-### Hâlâ gevşek kalan yer
+### 2026-09-13 nonce geçişi
 
-`script-src 'unsafe-inline'` **korunuyor**. Next.js önyükleme script'leri ve
-`next/script` inline blokları (GA/Meta/TikTok pixel kodları) bunu gerektiriyor.
-Kaldırmak nonce tabanlı CSP'ye geçmeyi gerektirir: her istekte nonce üretip
-proxy katmanından geçirmek ve `next/script` çağrılarına iletmek. Ayrı bir
-çalışma paketidir ve **yapılmamıştır**.
+Proxy her HTML isteği için kriptografik olarak rastgele bir nonce üretir; CSP'yi
+hem request hem response header'ına yazar. Next.js framework script'leri nonce'u
+request CSP'sinden alır. Tema başlangıç script'i, JSON-LD blokları ve GA/Meta/
+TikTok `next/script` bileşenleri de aynı nonce'u açıkça taşır.
 
-Not: Bir CSP'de hem `'unsafe-inline'` hem nonce/hash bulunursa modern
-tarayıcılar `'unsafe-inline'`'ı yok sayar — yani nonce'a geçiş kademeli
-yapılabilir.
+`script-src` artık `'unsafe-inline'` içermez; `'nonce-<istek-değeri>'` ve
+`'strict-dynamic'` kullanır. Development React hata ayıklaması için
+`'unsafe-eval'` yalnız development ortamında eklenir.
 
-`img-src https:` de geniş bırakıldı: reklam ve analitik pikselleri çok sayıda,
-değişken alan adı kullanıyor; daraltmak ölçüm kaybına yol açardı. Bu bilinçli
-bir üründür, ihmal değil.
+React bileşenlerinde dinamik progress/ölçü değerleri için çok sayıda güvenli
+`style` prop'u bulunduğundan style attribute'ları `style-src-attr
+'unsafe-inline'` ile sınırlı biçimde korunur. Inline `<style>` etiketleri ise
+`style-src-elem` üzerinden nonce gerektirir.
+
+`img-src https:` kaldırılmıştır. İzinli uzak görsel/beacon kaynakları yalnız
+Google Analytics alt alanları, `www.facebook.com`, `analytics.tiktok.com` ve
+TikTok alt alanlarıdır. Uygulama görselleri ve özel Blob dosyaları aynı-origin
+URL/API route'ları üzerinden sunulur.
+
+Nonce tüm sayfaları dinamik render'a geçirir; statik HTML/CDN cache'i yerine her
+istekte yeni nonce üretilmesi güvenlik gereğidir.
 
 ### CSP ihlal raporlama
 

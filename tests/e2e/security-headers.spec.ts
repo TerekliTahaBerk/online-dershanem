@@ -3,11 +3,8 @@ import { expect, test } from "@playwright/test";
 /**
  * Güvenlik header'ları ve CSP regresyon testi.
  *
- * Bu testin varlık sebebi: CSP daha önce production'da `'unsafe-eval'`
- * taşıyordu (gerekçe olarak framer-motion gösteriliyordu ama o paket bu
- * projede bağımlılık değil) ve `img-src` düz `http:` kabul ediyordu. Ayrıca
- * `components/analytics/pixels.tsx` içindeki Meta ve TikTok pixel script'leri
- * `script-src` listesinde OLMADIĞI için sessizce bloklanıyordu.
+ * Bu test nonce tabanlı script politikasını, dar görsel allowlist'ini ve
+ * analitik/ödeme entegrasyonlarının gerekli origin'lerini korur.
  */
 
 const ROUTES = ["/", "/yks", "/sss", "/iletisim", "/giris", "/sepet"];
@@ -27,14 +24,20 @@ test.describe("güvenlik header'ları", () => {
     }
   });
 
-  test("CSP production'da unsafe-eval ve düz http: içermez", async ({ request }) => {
+  test("CSP production'da nonce kullanır ve geniş script/görsel izni vermez", async ({ request }) => {
     const csp = (await request.get("/")).headers()["content-security-policy"];
+    const directives = csp.split(";").map((part) => part.trim());
+    const scriptSrc = directives.find((part) => part.startsWith("script-src"));
+    const imgSrc = directives.find((part) => part.startsWith("img-src"));
 
-    // Gerileme koruması: bu ikisi geri gelirse test kırılmalı.
-    expect(csp).not.toContain("'unsafe-eval'");
-    const imgSrc = csp.split(";").map((part) => part.trim()).find((part) => part.startsWith("img-src"));
+    expect(scriptSrc).toBeTruthy();
+    expect(scriptSrc).toMatch(/'nonce-[A-Za-z0-9+/=]+'/);
+    expect(scriptSrc).toContain("'strict-dynamic'");
+    expect(scriptSrc).not.toContain("'unsafe-inline'");
+    expect(scriptSrc).not.toContain("'unsafe-eval'");
     expect(imgSrc).toBeTruthy();
     expect(imgSrc).not.toMatch(/\bhttp:/);
+    expect(imgSrc?.split(/\s+/)).not.toContain("https:");
 
     // Sıkılaştırma entegrasyonları bozmamalı.
     expect(csp).toContain("https://www.paytr.com");
@@ -42,6 +45,27 @@ test.describe("güvenlik header'ları", () => {
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("frame-ancestors 'self'");
     expect(csp).toContain("base-uri 'self'");
+  });
+
+  test("nonce her istekte yenilenir ve inline script'lere uygulanır", async ({ page, request }) => {
+    const first = (await request.get("/")).headers()["content-security-policy"];
+    const second = (await request.get("/")).headers()["content-security-policy"];
+    const firstNonce = first.match(/'nonce-([^']+)'/)?.[1];
+    const secondNonce = second.match(/'nonce-([^']+)'/)?.[1];
+
+    expect(firstNonce).toBeTruthy();
+    expect(secondNonce).toBeTruthy();
+    expect(firstNonce).not.toBe(secondNonce);
+
+    const response = await page.goto("/yks", { waitUntil: "networkidle" });
+    const responseNonce = response?.headers()["content-security-policy"]?.match(/'nonce-([^']+)'/)?.[1];
+    const inlineNonces = await page.locator("script:not([src])").evaluateAll((scripts) =>
+      scripts.map((script) => (script as HTMLScriptElement).nonce),
+    );
+
+    expect(responseNonce).toBeTruthy();
+    expect(inlineNonces.length).toBeGreaterThan(0);
+    expect(inlineNonces.every((nonce) => nonce === responseNonce)).toBe(true);
   });
 
   test("analitik pixel origin'leri script-src içinde tanımlıdır", async ({ request }) => {

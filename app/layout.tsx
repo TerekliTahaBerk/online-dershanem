@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { GeistSans } from "geist/font/sans";
 import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -100,11 +101,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <html
       lang="tr"
@@ -114,7 +117,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="shortcut icon" href="/favicon.ico" />
@@ -127,7 +130,7 @@ export default function RootLayout({
               <Suspense fallback={null}>
                 <NavigationProgress />
               </Suspense>
-              <Pixels />
+              <Pixels nonce={nonce} />
               {children}
               {vercelTelemetryEnabled ? <Analytics /> : null}
               {vercelTelemetryEnabled ? <SpeedInsights /> : null}
