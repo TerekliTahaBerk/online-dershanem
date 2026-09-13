@@ -18,6 +18,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- Updated Next.js and its ESLint configuration to 16.3.5+ to address critical remote-code-execution advisories
 - Dino AI marketing copy now describes planned rather than live capability
 - Admin and panel headings now use the design's typography scale instead of marketing type
 - The admin "Siparişler" entry now opens a dedicated order list; the wider operations queue moved to its own entry
