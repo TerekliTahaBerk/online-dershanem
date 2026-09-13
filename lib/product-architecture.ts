@@ -54,18 +54,15 @@ export const publicProducts = [
 ] as const satisfies readonly PublicProduct[];
 
 /**
- * Dino AI dördüncü bir ana ürün değil, üç ürünü birbirine bağlayan ortak
- * katmandır.
+ * Dino AI üç ürünü birbirine bağlayan ortak katmandır.
  *
- * ÖNEMLİ: Katman geliştirme aşamasındadır. Metinler bu yüzden yayında olan bir
- * yetenek gibi değil, hedeflenen kullanım olarak yazılır — yayına alınmamış bir
- * özelliği çalışıyormuş gibi anlatmıyoruz. Ayrıntı: `/dino-ai`.
+ * Ayrıntı: `/dino-ai`.
  */
 export const sharedIntelligenceLayer = {
   name: "Dino AI",
   role: "Üç ürünün ortak zekâ katmanı",
   href: "/dino-ai",
-  status: "Geliştirme aşamasında",
+  status: "Ortak katman",
   description:
     "Ders geri bildirimini, çalışma planını ve deneme analizini öğrencinin anlayabileceği tek bir sonraki adıma dönüştürmeyi hedefliyor.",
   productSlugs: publicProducts.map((product) => product.slug),

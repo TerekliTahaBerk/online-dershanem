@@ -22,7 +22,10 @@ import {
   type ProductKey,
 } from "@/lib/commerce/package-builder-pricing";
 
-const billingCopy: Record<BillingPeriod, { label: string; savingsLabel: string }> = {
+const billingCopy: Record<
+  BillingPeriod,
+  { label: string; savingsLabel: string }
+> = {
   monthly: { label: "Aylık", savingsLabel: "Aylık avantajın" },
   period: { label: "Dönemlik", savingsLabel: "Dönemlik avantajın" },
   oneTime: { label: "Tek seferlik", savingsLabel: "Tek seferlik avantajın" },
@@ -48,37 +51,29 @@ const productCopy = {
   dershanem: {
     glyph: "▶",
     title: "Online Dershanem",
-    summary: "LGS ve YKS için canlı online dersler.",
+    summary: "Canlı derste öğrenme eksiğini kapatırsın.",
     tracks: ["LGS", "YKS"],
     points: [
       "Birebir ya da en fazla 4 kişilik canlı ders",
-      "Ders sonrası öğretmen notu ve çalışma yönü",
-      "Derse katılım ve ilerlemede veli görünümü",
-      "Dino AI ders analizi",
+      "Ders sonrası tekrar odağı",
     ],
   },
   kocum: {
     glyph: "▦",
     title: "Online Koçum",
-    summary: "Haftalık plan, birebir takip ve eğitim koçluğu. Tüm dersleri kapsar.",
+    summary: "Haftalık planı kurar ve düzeni korursun.",
     tracks: ["LGS", "YKS"],
-    points: [
-      "Haftalık çalışma planı",
-      "Birebir koç görüşmeleri",
-      "Planın ne kadarının yapıldığının takibi",
-      "Dino AI'ın koça verdiği haftalık odak önerisi",
-    ],
+    points: ["Haftalık çalışma planı", "Koç görüşmeleriyle uygulama takibi"],
   },
   denemeKulubum: {
     glyph: "◔",
     title: "Online Deneme Kulübüm",
-    summary: "LGS, TYT ve AYT denemeleri ve sonuç analizi.",
+    summary: "Denemeyle seviyeni ölçer, eksiği görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
     points: [
       "Gerçek sınav formatında denemeler",
       "Konu ve soru tipine göre kayıp analizi",
       "Denemeler arası gelişim karşılaştırması",
-      "Dino AI deneme yorumu",
     ],
   },
 } as const satisfies Record<
@@ -93,29 +88,37 @@ const productCopy = {
 >;
 
 /** Tasarımdaki cross-sell metinleri — seçim sayısına ve eksik ürüne göre. */
-function crossSellText(selection: BuilderSelection, count: number): string | null {
+function crossSellText(
+  selection: BuilderSelection,
+  count: number,
+): string | null {
   if (count === 1) {
     if (selection.dershanem)
-      return "Koçluğu da eklersen haftalık plan ve düzenli takip aynı çözüm içinde kurgulanır.";
+      return "Koçluğu da eklersen haftalık plan ve düzenli takip aynı akışta birleşir.";
     if (selection.kocum)
       return "Canlı dersi de eklersen planda eksik kalan konuyu öğretmenle çalışırsın.";
     return "Canlı dersi de eklersen denemede çıkan eksik konuyu öğretmenle kapatırsın.";
   }
   if (count === 2) {
     if (!selection.denemeKulubum)
-      return "Deneme Kulübü'nü eklediğinde ölçme ve analiz de aynı çözüm kapsamına girer.";
+      return "Deneme Kulübü'nü eklediğinde ölçme ve analiz de aynı pakete eklenir.";
     if (!selection.kocum)
-      return "Koçluğu eklediğinde haftalık plan da aynı çözüm kapsamına girer.";
-    return "Canlı dersi eklediğinde konu anlatımı da aynı çözüm kapsamına girer.";
+      return "Koçluğu eklediğinde haftalık plan da aynı pakete eklenir.";
+    return "Canlı dersi eklediğinde konu anlatımı da aynı pakete eklenir.";
   }
   return null;
 }
 
-function hintText(count: number): string {
+function hintText(count: number, hasDirectCheckout: boolean): string {
   if (count === 0) return "Nereden başlamak istiyorsun?";
-  if (count === 1) return "Seçimini online satın alabilir veya ön görüşmede netleştirebilirsin.";
-  if (count === 2) return "Birlikte seçilen ürünlerin kesin teklifi ön görüşmede oluşturulur.";
-  return "Üç ürünün kesin teklifi ve ödeme planı ön görüşmede oluşturulur.";
+  if (count === 1) {
+    return hasDirectCheckout
+      ? "Seçimini doğrudan online satın alabilir veya ön görüşmede netleştirebilirsin."
+      : "Bu seçim için net fiyat ve başlangıç planı ön görüşmede paylaşılır.";
+  }
+  if (count === 2)
+    return "Birlikte seçtiğin ürünlerin net tutarını ön görüşmede yazılı alırsın.";
+  return "Üç ürünü birlikte seçtiğinde net tutar ve ödeme planı ön görüşmede paylaşılır.";
 }
 
 export function PackageBuilder() {
@@ -131,16 +134,21 @@ export function PackageBuilder() {
 
   const quote = useMemo(() => resolvePackageQuote(selection), [selection]);
   const count = quote.selectedCount;
-  const activeTotals = [quote.monthlyTotal, quote.periodTotal, quote.oneTimeTotal].filter(
-    (total) => total.selectedLineCount > 0,
-  );
+  const activeTotals = [
+    quote.monthlyTotal,
+    quote.periodTotal,
+    quote.oneTimeTotal,
+  ].filter((total) => total.selectedLineCount > 0);
   const subjects = selection.exam ? lessonSubjects[selection.exam] : [];
 
   // Seçim gerçekten satın alınabiliyorsa CTA sepete gider; aksi halde seçimi
   // taşıyarak ön görüşmeye. Sınır `resolveBuilderCheckout` içinde tanımlıdır.
   const router = useRouter();
   const { add } = useCart();
-  const checkoutItem = useMemo(() => resolveBuilderCheckout(selection), [selection]);
+  const checkoutItem = useMemo(
+    () => resolveBuilderCheckout(selection),
+    [selection],
+  );
 
   const startCheckout = () => {
     if (!checkoutItem) return;
@@ -170,7 +178,8 @@ export function PackageBuilder() {
   const toggleProduct = (key: ProductKey) =>
     setSelection((s) => ({ ...s, [key]: !s[key] }));
 
-  const setFormat = (format: LessonFormat) => setSelection((s) => ({ ...s, format }));
+  const setFormat = (format: LessonFormat) =>
+    setSelection((s) => ({ ...s, format }));
 
   const toggleExtra = (subject: string) =>
     setSelection((s) => ({
@@ -194,17 +203,25 @@ export function PackageBuilder() {
             </p>
           </div>
           <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-dc-ink-faint">
-            {selection.exam ? `${selection.exam} hedefine göre kurgulanıyor` : "Önce hedef sınavını seç"}
+            {selection.exam
+              ? `${selection.exam} hedefine göre uyarlanıyor`
+              : "Önce hedef sınavını seç"}
           </span>
         </div>
 
         <div className="mt-4 grid gap-3.5 sm:grid-cols-2">
-          {(
-            [
-              { exam: "LGS" as const, title: "LGS sınavına gireceğim", note: "8. sınıf · LGS hazırlığı" },
-              { exam: "YKS" as const, title: "YKS sınavına gireceğim", note: "TYT ve AYT hazırlığı" },
-            ]
-          ).map(({ exam, title, note }) => {
+          {[
+            {
+              exam: "LGS" as const,
+              title: "LGS sınavına gireceğim",
+              note: "8. sınıf · LGS hazırlığı",
+            },
+            {
+              exam: "YKS" as const,
+              title: "YKS sınavına gireceğim",
+              note: "TYT ve AYT hazırlığı",
+            },
+          ].map(({ exam, title, note }) => {
             const active = selection.exam === exam;
             return (
               <button
@@ -229,7 +246,9 @@ export function PackageBuilder() {
                   <Check size={12} strokeWidth={3} />
                 </span>
                 <span>
-                  <span className="block text-[17px] font-bold text-dc-ink">{title}</span>
+                  <span className="block text-[17px] font-bold text-dc-ink">
+                    {title}
+                  </span>
                   <span className="mt-0.5 block text-[13.5px] font-medium text-dc-ink-muted">
                     {note}
                   </span>
@@ -242,7 +261,9 @@ export function PackageBuilder() {
 
       {/* 2 — Ürün seçimi */}
       <div className="mt-8 flex flex-wrap items-baseline justify-between gap-4">
-        <h2 className="text-[20px] font-extrabold text-dc-ink">2. Ürünlerini seç</h2>
+        <h2 className="text-[20px] font-extrabold text-dc-ink">
+          2. Ürünlerini seç
+        </h2>
         <a
           href="#kapsam"
           className="text-[14.5px] font-semibold text-dc-brand-strong hover:text-dc-brand-hover"
@@ -257,7 +278,10 @@ export function PackageBuilder() {
             const copy = productCopy[key];
             const line = quote.lines.find((l) => l.product === key)!;
             const active = selection[key];
-            const productCheckout = resolveBuilderProductCheckout(selection, key);
+            const productCheckout = resolveBuilderProductCheckout(
+              selection,
+              key,
+            );
 
             return (
               <div
@@ -313,13 +337,15 @@ export function PackageBuilder() {
                         <>
                           {/* Kampanya öncesi liste fiyatı — yalnızca gerçekten
                               yüksekse basılır. */}
-                          {line.listCents !== null && line.listCents > line.cents ? (
+                          {line.listCents !== null &&
+                          line.listCents > line.cents ? (
                             <span className="mb-0.5 flex items-baseline gap-1.5 sm:justify-end">
                               <span className="text-[13px] font-semibold text-dc-ink-faint line-through">
                                 {formatCents(line.listCents)}
                               </span>
                               <span className="rounded-full bg-dc-brand-soft px-2 py-0.5 text-[10.5px] font-bold text-dc-brand-hover">
-                                %{discountPercent(line.listCents, line.cents)} indirim
+                                %{discountPercent(line.listCents, line.cents)}{" "}
+                                indirim
                               </span>
                             </span>
                           ) : null}
@@ -360,12 +386,18 @@ export function PackageBuilder() {
                         Ders formatını seç
                       </legend>
                       <div className="mt-2.5 grid gap-3 sm:grid-cols-2">
-                        {(
-                          [
-                            { value: "grup" as const, title: "Maks. 4 kişilik grup", note: "Küçük grupta canlı ders" },
-                            { value: "birebir" as const, title: "Birebir özel ders", note: "Öğretmenle bire bir" },
-                          ]
-                        ).map(({ value, title, note }) => (
+                        {[
+                          {
+                            value: "grup" as const,
+                            title: "Maks. 4 kişilik grup",
+                            note: "Küçük grupta canlı ders",
+                          },
+                          {
+                            value: "birebir" as const,
+                            title: "Birebir özel ders",
+                            note: "Öğretmenle bire bir",
+                          },
+                        ].map(({ value, title, note }) => (
                           <button
                             key={value}
                             type="button"
@@ -377,7 +409,9 @@ export function PackageBuilder() {
                                 : "border-dc-line hover:border-dc-brand-soft-line"
                             }`}
                           >
-                            <span className="block text-[15.5px] font-bold text-dc-ink">{title}</span>
+                            <span className="block text-[15.5px] font-bold text-dc-ink">
+                              {title}
+                            </span>
                             <span className="mt-0.5 block text-[13px] font-medium text-dc-ink-muted">
                               {note}
                             </span>
@@ -400,7 +434,12 @@ export function PackageBuilder() {
                               <button
                                 key={s}
                                 type="button"
-                                onClick={() => setSelection((prev) => ({ ...prev, subject: s }))}
+                                onClick={() =>
+                                  setSelection((prev) => ({
+                                    ...prev,
+                                    subject: s,
+                                  }))
+                                }
                                 aria-pressed={selection.subject === s}
                                 className={`rounded-full border px-3.5 py-2 text-[13.5px] font-semibold transition-colors ${
                                   selection.subject === s
@@ -421,7 +460,8 @@ export function PackageBuilder() {
                               · opsiyonel, her ek ders pakete eklenir
                             </span>
                           </legend>
-                          {subjects.filter((s) => s !== selection.subject).length ? (
+                          {subjects.filter((s) => s !== selection.subject)
+                            .length ? (
                             <div className="mt-2.5 flex flex-wrap gap-2">
                               {subjects
                                 .filter((s) => s !== selection.subject)
@@ -430,7 +470,9 @@ export function PackageBuilder() {
                                     key={s}
                                     type="button"
                                     onClick={() => toggleExtra(s)}
-                                    aria-pressed={selection.extraSubjects.includes(s)}
+                                    aria-pressed={selection.extraSubjects.includes(
+                                      s,
+                                    )}
                                     className={`rounded-full border px-3.5 py-2 text-[13.5px] font-semibold transition-colors ${
                                       selection.extraSubjects.includes(s)
                                         ? "border-dc-brand bg-dc-brand-strong text-white"
@@ -462,16 +504,18 @@ export function PackageBuilder() {
           {/* Seçim kapsamı — fiyat vaadi değil, ürün sayısını gösterir. */}
           <div className="grid gap-5 px-1 pt-1 sm:grid-cols-3 sm:gap-6">
             {[
-              { tier: 1, label: "1 ürün — odaklı çözüm" },
-              { tier: 2, label: "2 ürün — birlikte planlama" },
-              { tier: 3, label: "3 ürün — tam kapsam" },
+              { tier: 1, label: "1 ürün — Tek ihtiyaca odaklan" },
+              { tier: 2, label: "2 ürün — Birbirini tamamlayan iki ürün" },
+              { tier: 3, label: "3 ürün — Ders + plan + deneme" },
             ].map(({ tier, label }) => (
               <div key={tier}>
                 <div
                   aria-hidden="true"
                   className={`h-1.5 rounded-full ${count >= tier ? "bg-dc-brand" : "bg-dc-line"}`}
                 />
-                <p className="mt-2.5 text-[13px] font-medium text-dc-ink-muted">{label}</p>
+                <p className="mt-2.5 text-[13px] font-medium text-dc-ink-muted">
+                  {label}
+                </p>
               </div>
             ))}
           </div>
@@ -488,7 +532,9 @@ export function PackageBuilder() {
                 Paketin
               </div>
               <div className="mt-1 text-[13px] font-bold text-dc-brand-hover">
-                {selection.exam ? `${selection.exam} hedefi` : "Sınav seçilmedi"}
+                {selection.exam
+                  ? `${selection.exam} hedefi`
+                  : "Sınav seçilmedi"}
               </div>
             </div>
             {count === 3 ? (
@@ -531,7 +577,9 @@ export function PackageBuilder() {
                 {line.product === "dershanem" && line.selected ? (
                   <>
                     <p className="ml-[30px] mt-1 text-[12.5px] leading-[1.5] text-dc-ink-faint">
-                      {selection.format === "birebir" ? "Birebir özel ders" : "Maks. 4 kişilik grup"}
+                      {selection.format === "birebir"
+                        ? "Birebir özel ders"
+                        : "Maks. 4 kişilik grup"}
                       {" · "}
                       {selection.subject ?? "ders seçilmedi"}
                     </p>
@@ -555,15 +603,21 @@ export function PackageBuilder() {
 
           <div className="my-5 h-px bg-dc-line-soft" />
 
-          <div className="text-[13.5px] font-medium text-dc-ink-muted">Ödeme özeti</div>
+          <div className="text-[13.5px] font-medium text-dc-ink-muted">
+            Ödeme özeti
+          </div>
 
           {checkoutItem && quote.priceResolved ? (
             <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-dc-ink">
               {activeTotals.map((total, index) => (
                 <span key={total.billing} className="contents">
-                  {index > 0 ? <span className="text-[24px] font-semibold">+</span> : null}
-                  <span className="whitespace-nowrap">
-                    <span className="text-[15px] font-bold">{billingCopy[total.billing].label}</span>{" "}
+                  {index > 0 ? (
+                    <span className="text-[24px] font-semibold">+</span>
+                  ) : null}
+                  <span className="inline-flex flex-wrap items-baseline gap-x-1">
+                    <span className="text-[15px] font-bold">
+                      {billingCopy[total.billing].label}
+                    </span>{" "}
                     <span className="text-[30px] font-extrabold tracking-[-0.025em]">
                       {formatCents(total.payableCents ?? 0)}
                     </span>
@@ -573,51 +627,78 @@ export function PackageBuilder() {
             </div>
           ) : (
             <div className="mt-1 text-[15px] font-semibold leading-[1.5] text-dc-ink">
-              {count === 0 ? "Henüz ürün seçilmedi" : "Fiyat ön görüşmede netleşir"}
+              {count === 0
+                ? "Henüz ürün seçilmedi"
+                : "Fiyat ön görüşmede netleşir"}
             </div>
           )}
 
           <p className="mt-1.5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
             {checkoutItem
-              ? "Bu tutar ödeme-kritik katalogdaki satın alınabilir ürünle aynıdır."
+              ? "Bu tutar ödeme sayfasında çıkacak güncel fiyatla aynıdır."
               : count > 0
-                ? "Bu seçim henüz online satın alınamıyor; kesin fiyat ve ödeme planı ön görüşmede oluşturulur."
+                ? "Bu seçim için online satış açık değil; net fiyat ve ödeme planı ön görüşmede paylaşılır."
                 : "Satın almak veya ön görüşmeye geçmek için ürün seç."}
           </p>
 
           {/* Her dönem kendi liste, indirim ve ödenecek tutarıyla uzlaşır. */}
           {checkoutItem && quote.priceResolved
             ? activeTotals.map((total) => (
-                <div key={total.billing} className="mt-3.5 rounded-dc-card-sm border border-dc-line-soft px-3.5 py-3">
+                <div
+                  key={total.billing}
+                  className="mt-3.5 rounded-dc-card-sm border border-dc-line-soft px-3.5 py-3"
+                >
                   <div className="text-[12px] font-bold uppercase tracking-[0.06em] text-dc-ink-muted">
                     {billingCopy[total.billing].label}
                   </div>
                   <dl className="mt-2 flex flex-col gap-1.5">
                     <div className="flex items-baseline justify-between gap-3">
-                      <dt className="text-[13px] text-dc-ink-faint">Liste fiyatı</dt>
-                      <dd className="text-[14px] text-dc-ink-faint line-through">{formatCents(total.listCents ?? 0)}</dd>
+                      <dt className="text-[13px] text-dc-ink-faint">
+                        Liste fiyatı
+                      </dt>
+                      <dd className="text-[14px] text-dc-ink-faint line-through">
+                        {formatCents(total.listCents ?? 0)}
+                      </dd>
                     </div>
-                    {total.campaignSavingsCents !== null && total.campaignSavingsCents > 0 ? (
+                    {total.campaignSavingsCents !== null &&
+                    total.campaignSavingsCents > 0 ? (
                       <div className="flex items-baseline justify-between gap-3">
-                        <dt className="text-[13px] text-dc-ink-muted">Kampanya indirimi</dt>
-                        <dd className="text-[14px] font-semibold text-dc-brand-hover">−{formatCents(total.campaignSavingsCents)}</dd>
+                        <dt className="text-[13px] text-dc-ink-muted">
+                          Kampanya indirimi
+                        </dt>
+                        <dd className="text-[14px] font-semibold text-dc-brand-hover">
+                          −{formatCents(total.campaignSavingsCents)}
+                        </dd>
                       </div>
                     ) : null}
-                    {total.bundleDiscountCents !== null && total.bundleDiscountCents > 0 ? (
+                    {total.bundleDiscountCents !== null &&
+                    total.bundleDiscountCents > 0 ? (
                       <div className="flex items-baseline justify-between gap-3">
-                        <dt className="text-[13px] text-dc-ink-muted">Paket indirimi</dt>
-                        <dd className="text-[14px] font-semibold text-dc-brand-hover">−{formatCents(total.bundleDiscountCents)}</dd>
+                        <dt className="text-[13px] text-dc-ink-muted">
+                          Paket indirimi
+                        </dt>
+                        <dd className="text-[14px] font-semibold text-dc-brand-hover">
+                          −{formatCents(total.bundleDiscountCents)}
+                        </dd>
                       </div>
                     ) : null}
                     <div className="flex items-baseline justify-between gap-3 border-t border-dc-line-soft pt-1.5">
-                      <dt className="text-[13px] font-semibold text-dc-ink">Ödenecek</dt>
-                      <dd className="text-[14px] font-extrabold text-dc-ink">{formatCents(total.payableCents ?? 0)}</dd>
+                      <dt className="text-[13px] font-semibold text-dc-ink">
+                        Ödenecek
+                      </dt>
+                      <dd className="text-[14px] font-extrabold text-dc-ink">
+                        {formatCents(total.payableCents ?? 0)}
+                      </dd>
                     </div>
                   </dl>
                   {total.savingsCents !== null && total.savingsCents > 0 ? (
                     <div className="mt-2 flex items-center justify-between rounded-lg bg-dc-brand-soft px-2.5 py-2">
-                      <span className="text-[12.5px] font-semibold text-dc-brand-hover">{billingCopy[total.billing].savingsLabel}</span>
-                      <span className="text-[14px] font-extrabold text-dc-brand-hover">{formatCents(total.savingsCents)}</span>
+                      <span className="text-[12.5px] font-semibold text-dc-brand-hover">
+                        {billingCopy[total.billing].savingsLabel}
+                      </span>
+                      <span className="text-[14px] font-extrabold text-dc-brand-hover">
+                        {formatCents(total.savingsCents)}
+                      </span>
                     </div>
                   ) : null}
                 </div>
@@ -634,7 +715,11 @@ export function PackageBuilder() {
               Bu Paketle Başla
             </span>
           ) : checkoutItem ? (
-            <button type="button" onClick={startCheckout} className="site-btn site-btn-primary mt-5 w-full">
+            <button
+              type="button"
+              onClick={startCheckout}
+              className="site-btn site-btn-primary mt-5 w-full"
+            >
               Bu Paketle Başla
             </button>
           ) : (
@@ -650,12 +735,13 @@ export function PackageBuilder() {
               CTA'nın neden değiştiğini görebilsin. */}
           {count > 0 && !checkoutItem ? (
             <p className="mt-2.5 text-center text-[12px] leading-[1.5] text-dc-ink-faint">
-              Gösterilen seçim kapsamdır; kesin teklif satış ekibinin oluşturduğu yazılı fiyatla korunur.
+              Gösterilen seçim kapsamdır; kesin teklif satış ekibinin
+              oluşturduğu yazılı fiyatla korunur.
             </p>
           ) : null}
 
           <p className="mt-3 text-center text-[12.5px] font-medium leading-[1.5] text-dc-ink-faint">
-            {hintText(count)}
+            {hintText(count, Boolean(checkoutItem))}
           </p>
 
           {crossSellText(selection, count) ? (

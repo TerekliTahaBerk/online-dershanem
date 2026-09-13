@@ -6,7 +6,10 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
 import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
 import { resolveTeacherStudent } from "@/lib/panel/teacher-scope";
-import { findCoachAssignmentForCoach, getStudentCoaching } from "@/lib/panel/coaching";
+import {
+  findCoachAssignmentForCoach,
+  getStudentCoaching,
+} from "@/lib/panel/coaching";
 import { getStudentExamSubjects, getStudentGoals } from "@/lib/panel/goals";
 import { recordCoachingSession, setStudentGoal } from "./actions";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -35,7 +38,11 @@ export const dynamic = "force-dynamic";
 
 const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
 
-export default async function CoachPrepPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CoachPrepPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const session = await requireRole("TEACHER");
   if (!getPanelFeatureFlags().adaptivePlan) notFound();
 
@@ -47,10 +54,20 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
   const thisWeek = planningWeekStart();
   const lastWeek = new Date(thisWeek.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const [lastPlan, currentPlan, notes, attendances, examSections, coaching, assignment] =
-    await Promise.all([
+  const [
+    lastPlan,
+    currentPlan,
+    notes,
+    attendances,
+    examSections,
+    coaching,
+    assignment,
+  ] = await Promise.all([
     prisma.weeklyPlan.findFirst({
-      where: { studentId: student.id, weekStart: { gte: lastWeek, lt: thisWeek } },
+      where: {
+        studentId: student.id,
+        weekStart: { gte: lastWeek, lt: thisWeek },
+      },
       orderBy: { weekStart: "asc" },
       select: {
         tasks: {
@@ -97,13 +114,18 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
 
   /* Hedefler yalnız atanmış koç için anlamlı; kapsam dışıysa hiç sorgulanmaz. */
   const [goals, examSubjects] = assignment
-    ? await Promise.all([getStudentGoals(student.id), getStudentExamSubjects(student.id)])
+    ? await Promise.all([
+        getStudentGoals(student.id),
+        getStudentExamSubjects(student.id),
+      ])
     : [[], []];
 
   const tasks = lastPlan?.tasks ?? [];
   const done = tasks.filter((t) => t.status === "DONE");
   const pending = tasks.filter((t) => t.status !== "DONE");
-  const pct = tasks.length ? Math.round((done.length / tasks.length) * 100) : null;
+  const pct = tasks.length
+    ? Math.round((done.length / tasks.length) * 100)
+    : null;
   const attended = attendances.filter(
     (a) => a.status === "PRESENT" || a.status === "LATE",
   ).length;
@@ -116,7 +138,10 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
       pageTitle="Koç görüşme hazırlığı"
     >
       <div className="max-w-[900px]">
-        <PanelHeading eyebrow="Koçluk · görüşme hazırlığı" title={student.name} />
+        <PanelHeading
+          eyebrow="Koçluk · görüşme hazırlığı"
+          title={student.name}
+        />
 
         <div className="mt-[22px] grid gap-5 md:grid-cols-2">
           <PanelCard>
@@ -135,7 +160,10 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
                   aria-label="Geçen hafta plan tamamlama"
                   className="mt-3 h-2 overflow-hidden rounded-full bg-dc-line-soft"
                 >
-                  <div className="h-full rounded-full bg-dc-brand" style={{ width: `${pct}%` }} />
+                  <div
+                    className="h-full rounded-full bg-dc-brand"
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
                 <p className="mt-2 text-[13px] text-dc-ink-muted">
                   {done.length} / {tasks.length} görev tamamlandı
@@ -157,7 +185,9 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
           <PanelCard>
             <PanelCardTitle>Ders ve deneme sinyalleri</PanelCardTitle>
             <div className="mt-3 flex flex-col gap-1.5 text-[13.5px] leading-[1.8] text-dc-ink-body">
-              {notes.length === 0 && examSections.length === 0 && attendances.length === 0 ? (
+              {notes.length === 0 &&
+              examSections.length === 0 &&
+              attendances.length === 0 ? (
                 <p className="text-dc-ink-muted">
                   Bu öğrenci için henüz ders veya deneme sinyali birikmedi.
                 </p>
@@ -178,7 +208,10 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
                     .slice(0, 2)
                     .map(
                       (s) =>
-                        `${s.subjectName} ${(s.correctCount - s.incorrectCount / 4)
+                        `${s.subjectName} ${(
+                          s.correctCount -
+                          s.incorrectCount / 4
+                        )
                           .toFixed(2)
                           .replace(".", ",")} net`,
                     )
@@ -188,7 +221,8 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
 
               {attendances.length ? (
                 <p>
-                  Katılım: son {attendances.length} dersin {attended} tanesine katıldı.
+                  Katılım: son {attendances.length} dersin {attended} tanesine
+                  katıldı.
                 </p>
               ) : null}
             </div>
@@ -203,11 +237,16 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
                 ? `Planlanan görüşme: ${DAY.format(coaching.nextScheduledAt)}`
                 : "Planlanmış görüşme yok; kayıt bugünün görüşmesi olarak eklenir."}
             </p>
-            <form action={recordCoachingSession} className="mt-4 flex flex-col gap-3.5">
+            <form
+              action={recordCoachingSession}
+              className="mt-4 flex flex-col gap-3.5"
+            >
               <input type="hidden" name="studentId" value={student.id} />
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-[12.5px] text-dc-ink-faint">Haftanın odağı</span>
+                <span className="text-[12.5px] text-dc-ink-faint">
+                  Haftanın odağı
+                </span>
                 <input
                   name="focus"
                   maxLength={300}
@@ -242,7 +281,10 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
 
               <label className="flex flex-col gap-1.5">
                 <span className="text-[12.5px] text-dc-ink-faint">
-                  Sonraki görüşme{assignment.cadenceDays ? " (boş bırakılırsa sıklıktan hesaplanır)" : ""}
+                  Sonraki görüşme
+                  {assignment.cadenceDays
+                    ? " (boş bırakılırsa sıklıktan hesaplanır)"
+                    : ""}
                 </span>
                 <input
                   type="datetime-local"
@@ -271,7 +313,10 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
             ) : (
               <ul className="mt-3 flex flex-col gap-2 text-[14px] text-dc-ink-body">
                 {goals.map((g) => (
-                  <li key={g.id} className="flex flex-wrap justify-between gap-2">
+                  <li
+                    key={g.id}
+                    className="flex flex-wrap justify-between gap-2"
+                  >
                     <span className="font-medium">{g.label}</span>
                     <span className="text-dc-ink-muted">
                       {g.current === null
@@ -285,10 +330,15 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
               </ul>
             )}
 
-            <form action={setStudentGoal} className="mt-4 flex flex-wrap items-end gap-2.5">
+            <form
+              action={setStudentGoal}
+              className="mt-4 flex flex-wrap items-end gap-2.5"
+            >
               <input type="hidden" name="studentId" value={student.id} />
               <label className="flex flex-col gap-1.5">
-                <span className="text-[12.5px] text-dc-ink-faint">Hedef türü</span>
+                <span className="text-[12.5px] text-dc-ink-faint">
+                  Hedef türü
+                </span>
                 <select
                   name="kind"
                   className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
@@ -314,7 +364,9 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
               </label>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-[12.5px] text-dc-ink-faint">Hedef değer</span>
+                <span className="text-[12.5px] text-dc-ink-faint">
+                  Hedef değer
+                </span>
                 <input
                   name="targetValue"
                   required
@@ -324,7 +376,9 @@ export default async function CoachPrepPage({ params }: { params: Promise<{ id: 
               </label>
 
               <label className="flex flex-1 flex-col gap-1.5">
-                <span className="text-[12.5px] text-dc-ink-faint">Yakın hedef notu</span>
+                <span className="text-[12.5px] text-dc-ink-faint">
+                  Yakın hedef notu
+                </span>
                 <input
                   name="nearTermNote"
                   maxLength={300}

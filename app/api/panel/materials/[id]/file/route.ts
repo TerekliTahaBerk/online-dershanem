@@ -4,11 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { learningMaterialAccessScope } from "@/lib/auth/resource-scopes";
 import { logPrivateMaterialAccessed, logResourceAccessDenied } from "@/lib/security/resource-access-log";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiOdRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
   if (!auth.ok) return auth.response;
-  const { id } = await context.params;
+  const routeParams = idParamsSchema.safeParse(await context.params);
+  if (!routeParams.success) return invalidApiInput();
+  const { id } = routeParams.data;
   const roleScope = learningMaterialAccessScope(auth.session.role, auth.session.userId);
   const material = await prisma.learningMaterial.findFirst({ where: { id, isActive: true, ...roleScope }, select: { blobPathname: true, fileName: true, mimeType: true } });
   if (!material?.blobPathname) {

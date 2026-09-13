@@ -50,8 +50,8 @@ test.describe.serial("self-service password reset", () => {
   test.beforeAll(async () => {
     await prisma.user.upsert({
       where: { email },
-      create: { email, passwordHash: await hashPassword(oldPassword), mustChangePassword: false, role: "STUDENT", status: "ACTIVE", fullName: "Password Reset E2E" },
-      update: { passwordHash: await hashPassword(oldPassword), mustChangePassword: false, status: "ACTIVE", failedAttempts: 0, lockedUntil: null },
+      create: { email, passwordHash: await hashPassword(oldPassword), mustChangePassword: false, inviteAcceptedAt: new Date(), role: "STUDENT", status: "ACTIVE", fullName: "Password Reset E2E" },
+      update: { passwordHash: await hashPassword(oldPassword), mustChangePassword: false, inviteAcceptedAt: new Date(), status: "ACTIVE", failedAttempts: 0, lockedUntil: null },
     });
     const user = await prisma.user.findUniqueOrThrow({ where: { email } });
     await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });

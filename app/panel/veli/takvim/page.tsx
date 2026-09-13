@@ -33,7 +33,10 @@ export default async function ParentLessonsPage({
 }) {
   const session = await requirePanelRole("PARENT");
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -92,7 +95,10 @@ export default async function ParentLessonsPage({
           teacher: { select: { fullName: true } },
           // Yalnız ortak not — öğrenciye özel not okunmaz.
           notes: { where: { studentId: null }, take: 1 },
-          attendances: { where: { studentId: selected.id }, select: { status: true } },
+          attendances: {
+            where: { studentId: selected.id },
+            select: { status: true },
+          },
         },
       })
     : [];
@@ -131,9 +137,13 @@ export default async function ParentLessonsPage({
                   <PanelTableCell>{DAY.format(lesson.startsAt)}</PanelTableCell>
                   <PanelTableCell>
                     {lesson.title}
-                    {lesson.notes[0]?.topic ? ` · ${lesson.notes[0].topic}` : ""}
+                    {lesson.notes[0]?.topic
+                      ? ` · ${lesson.notes[0].topic}`
+                      : ""}
                   </PanelTableCell>
-                  <PanelTableCell>{lesson.teacher.fullName || "—"}</PanelTableCell>
+                  <PanelTableCell>
+                    {lesson.teacher.fullName || "—"}
+                  </PanelTableCell>
                   <PanelTableCell tone={status === "ABSENT" ? "warn" : "ok"}>
                     {label}
                   </PanelTableCell>
@@ -143,7 +153,9 @@ export default async function ParentLessonsPage({
           </PanelTable>
 
           <PanelCard className="mt-5 max-w-[760px]">
-            <h2 className="text-[15px] font-bold text-dc-ink">Son dersin özeti</h2>
+            <h2 className="text-[15px] font-bold text-dc-ink">
+              Son dersin özeti
+            </h2>
             <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
               {lastWithSummary?.notes[0]?.topic ||
                 "Öğretmen henüz ders özeti eklemedi. Eklendiğinde burada görünecek."}

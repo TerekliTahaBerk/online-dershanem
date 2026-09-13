@@ -9,13 +9,13 @@ import { revokeAllUserSessions } from "@/lib/auth/session";
 /**
  * Hesabı askıya alma / yeniden açma.
  *
- * SİLME YOK — bilerek. Bir kullanıcıyı silmek ders notlarını, yoklamayı ve
- * ödeme bağını da götürür. Askıya alma geri alınabilir; silme alınamaz.
+ * Varsayılan güvenli aksiyon ASKIDA tutmaktır. Kalıcı silme ayrı endpointte
+ * bağımlılık kontrollerinden geçer; riskli geçmiş varsa yine askıya alma önerilir.
  *
  * İki kilitlenme tuzağı burada kapatılıyor (aşağıdaki kontroller).
  */
 
-const schema = z.object({ status: z.enum(["ACTIVE", "SUSPENDED"]) });
+const schema = z.object({ status: z.enum(["ACTIVE", "SUSPENDED", "ARCHIVED"]) });
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentAdminStepUp();
@@ -49,11 +49,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const { id } = await context.params;
 
-  // TUZAK 1: Admin kendini askıya alırsa oturumu anında geçersizleşir ve
+  // TUZAK 1: Admin kendini askıya/arşive alırsa oturumu anında geçersizleşir ve
   // kendini dışarı kilitler. Geri almak için başka bir admin gerekir.
-  if (id === auth.session.userId) {
+  if (id === auth.session.userId && parsed.data.status !== "ACTIVE") {
     return NextResponse.json(
-      { error: "Kendi hesabınızı askıya alamazsınız." },
+      { error: "Kendi hesabınızı askıya alamaz veya arşivleyemezsiniz." },
       { status: 400 },
     );
   }
@@ -63,9 +63,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
   }
 
-  // TUZAK 2: Son aktif admin askıya alınırsa panele bir daha KİMSE giremez —
+  const currentStatus = target.status;
+  const nextStatus = parsed.data.status;
+
+  const statusChanged = currentStatus !== nextStatus;
+
+  // TUZAK 2: Son aktif admin askıya/arsive alınırsa panele bir daha KİMSE giremez —
   // hesabı yalnızca admin açabildiği için kurtarma yolu da kalmaz.
-  if (target.role === "ADMIN" && parsed.data.status === "SUSPENDED") {
+  if (
+    statusChanged &&
+    target.role === "ADMIN" &&
+    currentStatus === "ACTIVE" &&
+    (nextStatus === "SUSPENDED" || nextStatus === "ARCHIVED")
+  ) {
     const activeAdmins = await prisma.user.count({
       where: { role: "ADMIN", status: "ACTIVE" },
     });
@@ -77,27 +87,85 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     }
   }
 
+  if (
+    statusChanged &&
+    target.role === "TEACHER" &&
+    currentStatus === "ACTIVE" &&
+    (nextStatus === "SUSPENDED" || nextStatus === "ARCHIVED")
+  ) {
+    const teacherProfile = await prisma.teacherProfile.findUnique({
+      where: { userId: target.id },
+      select: { id: true, isCoach: true },
+    });
+    const now = new Date();
+    const [activeGroups, upcomingLessons, activeCoachAssignments, openInterventions] = await Promise.all([
+      prisma.group.count({ where: { teacherId: target.id, isActive: true } }),
+      prisma.lesson.count({ where: { teacherId: target.id, status: "PLANNED", startsAt: { gte: now } } }),
+      teacherProfile?.isCoach
+        ? prisma.coachAssignment.count({ where: { coachId: teacherProfile.id, endedAt: null } })
+        : Promise.resolve(0),
+      prisma.interventionCase.count({
+        where: { ownerId: target.id, status: { in: ["OPEN", "IN_PROGRESS", "SNOOZED"] } },
+      }),
+    ]);
+    if (activeGroups > 0 || upcomingLessons > 0 || activeCoachAssignments > 0 || openInterventions > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Öğretmen askıya alınmadan önce grup, gelecek ders ve aktif sorumluluk devri tamamlanmalı. Kişi detayındaki güvenli offboarding akışını kullanın.",
+        },
+        { status: 409 },
+      );
+    }
+  }
+
+  const allowedTransitions: Record<"ACTIVE" | "SUSPENDED" | "ARCHIVED", Array<"ACTIVE" | "SUSPENDED" | "ARCHIVED">> = {
+    ACTIVE: ["SUSPENDED", "ARCHIVED"],
+    SUSPENDED: ["ACTIVE", "ARCHIVED"],
+    ARCHIVED: ["ACTIVE"],
+  };
+
+  if (statusChanged && !allowedTransitions[currentStatus].includes(nextStatus)) {
+    return NextResponse.json(
+      { error: `${currentStatus} durumundan ${nextStatus} durumuna geçilemez.` },
+      { status: 400 },
+    );
+  }
+
   await prisma.user.update({
     where: { id: target.id },
-    data: { status: parsed.data.status },
+    data: {
+      status: nextStatus,
+      archivedAt: nextStatus === "ARCHIVED" ? target.archivedAt ?? new Date() : null,
+      archivedById: nextStatus === "ARCHIVED" ? target.archivedById ?? auth.session.userId : null,
+    },
   });
 
-  // Askıya alınan kullanıcı ANINDA dışarı atılır; açık oturumu kalmamalı.
+  // Askıya alınan/arşivlenen kullanıcı ANINDA dışarı atılır; açık oturumu kalmamalı.
   let revoked = 0;
-  if (parsed.data.status === "SUSPENDED") {
+  if (statusChanged && (nextStatus === "SUSPENDED" || nextStatus === "ARCHIVED")) {
     revoked = await revokeAllUserSessions(target.id);
   }
 
-  await logAudit({
-    actorUserId: auth.session.userId,
-    entityType: "User",
-    entityId: target.id,
-    action: parsed.data.status === "SUSPENDED" ? "panel.user_suspended" : "panel.user_activated",
-    summary:
-      parsed.data.status === "SUSPENDED"
-        ? `${target.email} askıya alındı; ${revoked} oturum kapatıldı`
-        : `${target.email} yeniden aktifleştirildi`,
-  });
+  if (statusChanged) {
+    await logAudit({
+      actorUserId: auth.session.userId,
+      entityType: "User",
+      entityId: target.id,
+      action:
+        nextStatus === "SUSPENDED"
+          ? "panel.user_suspended"
+          : nextStatus === "ARCHIVED"
+            ? "panel.user_archived"
+            : "panel.user_activated",
+      summary:
+        nextStatus === "SUSPENDED"
+          ? `${target.email} askıya alındı; ${revoked} oturum kapatıldı`
+          : nextStatus === "ARCHIVED"
+            ? `${target.email} arşivlendi; ${revoked} oturum kapatıldı`
+            : `${target.email} yeniden aktifleştirildi`,
+    });
+  }
 
-  return NextResponse.json({ status: parsed.data.status });
+  return NextResponse.json({ status: nextStatus });
 }

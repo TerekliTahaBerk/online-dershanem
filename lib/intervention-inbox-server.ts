@@ -22,21 +22,30 @@ export async function getInterventionInbox(input: { role: Extract<UserRole, "ADM
   const active = cases.filter((row) => !["RESOLVED", "FALSE_POSITIVE"].includes(row.status));
   const overdue = active.filter((row) => row.status !== "SNOOZED" && row.dueAt < now);
   await recordPanelProductEvent({ name: "case_opened", properties: { actorRole: input.role, openCountBand: countBand(active.length), overdueCountBand: countBand(overdue.length) } }, input.role);
-  return cases.map((row) => ({
-    id: row.id,
-    studentName: row.student.user.fullName || row.student.user.email,
-    reasonCode: row.reasonCode,
-    explanation: row.explanation,
-    suggestedAction: row.suggestedAction,
-    evidenceCount: row.evidenceCount,
-    dueAt: row.dueAt.toISOString(),
-    status: row.status,
-    ownerName: row.owner ? row.owner.fullName || row.owner.email : null,
-    canAct: input.role === "ADMIN" || !row.ownerId || row.ownerId === input.userId,
-    firstActionAt: row.firstActionAt?.toISOString() || null,
-    snoozedUntil: row.snoozedUntil?.toISOString() || null,
-    outcomeCode: row.outcomeCode,
-    version: row.version,
-    activities: row.activities.map((activity) => ({ id: activity.id, type: activity.type, note: activity.note, outcomeCode: activity.outcomeCode, falsePositiveReason: activity.falsePositiveReason, actorName: activity.actor ? activity.actor.fullName || activity.actor.email : "Sistem", createdAt: activity.createdAt.toISOString() })),
-  }));
+  const grouped = new Map<string, typeof cases>();
+  for (const row of cases) {
+    const bucket = grouped.get(row.studentId) || [];
+    bucket.push(row);
+    grouped.set(row.studentId, bucket);
+  }
+  return Array.from(grouped.values()).map((rows) => {
+    const head = rows[0];
+    return {
+      id: `${head.studentId}:${head.reasonCode}`,
+      studentName: head.student.user.fullName || head.student.user.email,
+      reasonCode: head.reasonCode,
+      explanation: rows.map((row) => row.explanation).join(" · "),
+      suggestedAction: rows.map((row) => row.suggestedAction).join(" · "),
+      evidenceCount: rows.reduce((sum, row) => sum + row.evidenceCount, 0),
+      dueAt: rows.reduce((latest, row) => (row.dueAt > latest ? row.dueAt : latest), rows[0].dueAt).toISOString(),
+      status: rows[0].status,
+      ownerName: head.owner ? head.owner.fullName || head.owner.email : null,
+      canAct: input.role === "ADMIN" || !head.ownerId || head.ownerId === input.userId,
+      firstActionAt: head.firstActionAt?.toISOString() || null,
+      snoozedUntil: head.snoozedUntil?.toISOString() || null,
+      outcomeCode: head.outcomeCode,
+      version: Math.max(...rows.map((row) => row.version)),
+      activities: rows.flatMap((row) => row.activities).map((activity) => ({ id: activity.id, type: activity.type, note: activity.note, outcomeCode: activity.outcomeCode, falsePositiveReason: activity.falsePositiveReason, actorName: activity.actor ? activity.actor.fullName || activity.actor.email : "Sistem", createdAt: activity.createdAt.toISOString() })),
+    };
+  });
 }

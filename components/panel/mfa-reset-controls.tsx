@@ -33,12 +33,19 @@ function useSubmit() {
         headers: { "Content-Type": "application/json" },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
-      const json = (await res.json().catch(() => null)) as { error?: string; status?: string } | null;
+      const json = (await res.json().catch(() => null)) as {
+        error?: string;
+        status?: string;
+      } | null;
       if (!res.ok) {
         setError(json?.error ?? "İşlem tamamlanamadı.");
         return false;
       }
-      setDone(json?.status === "COMPLETED" ? "MFA sıfırlandı; yönetici yeniden kayıt yapacak." : "İstek oluşturuldu; ikinci yönetici onayı bekleniyor.");
+      setDone(
+        json?.status === "COMPLETED"
+          ? "MFA sıfırlandı; yönetici yeniden kayıt yapacak."
+          : "İstek oluşturuldu; ikinci yönetici onayı bekleniyor.",
+      );
       router.refresh();
       return true;
     } catch {
@@ -65,7 +72,10 @@ export function RequestMfaResetForm({ userId }: { userId: string }) {
         Yalnız cihaz kaybı gibi durumlarda kullanın. Talebi ikinci bir yönetici
         onaylamadan hiçbir doğrulama yöntemi silinmez.
       </p>
-      <label htmlFor={`mfa-reason-${userId}`} className="mt-3 block text-[12px] font-semibold text-amber-950">
+      <label
+        htmlFor={`mfa-reason-${userId}`}
+        className="mt-3 block text-[12px] font-semibold text-amber-950"
+      >
         Operasyon gerekçesi (en az 10 karakter)
       </label>
       <textarea
@@ -80,14 +90,26 @@ export function RequestMfaResetForm({ userId }: { userId: string }) {
       <button
         type="button"
         disabled={pending || reason.trim().length < 10}
-        onClick={() => void run(`/api/panel/users/${userId}/mfa-reset`, { reason: reason.trim() })}
+        onClick={() =>
+          void run(`/api/panel/users/${userId}/mfa-reset`, {
+            reason: reason.trim(),
+          })
+        }
         className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-amber-400 bg-white px-3.5 py-2 text-[12.5px] font-bold text-amber-900 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <KeyRound size={14} aria-hidden="true" />
         {pending ? "Gönderiliyor..." : "Sıfırlama talebi aç"}
       </button>
-      {error ? <p role="alert" className="mt-2 text-[12.5px] text-rose-700">{error}</p> : null}
-      {done ? <p role="status" className="mt-2 text-[12.5px] text-emerald-800">{done}</p> : null}
+      {error ? (
+        <p role="alert" className="mt-2 text-[12.5px] text-rose-700">
+          {error}
+        </p>
+      ) : null}
+      {done ? (
+        <p role="status" className="mt-2 text-[12.5px] text-emerald-800">
+          {done}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -105,8 +127,16 @@ export function ApproveMfaResetButton({ requestId }: { requestId: string }) {
       >
         {pending ? "Onaylanıyor..." : "Onayla ve sıfırla"}
       </button>
-      {error ? <p role="alert" className="text-[12px] text-rose-700">{error}</p> : null}
-      {done ? <p role="status" className="text-[12px] text-emerald-800">{done}</p> : null}
+      {error ? (
+        <p role="alert" className="text-[12px] text-rose-700">
+          {error}
+        </p>
+      ) : null}
+      {done ? (
+        <p role="status" className="text-[12px] text-emerald-800">
+          {done}
+        </p>
+      ) : null}
     </div>
   );
 }

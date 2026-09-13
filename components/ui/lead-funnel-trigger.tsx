@@ -8,7 +8,12 @@ type LeadFunnelTriggerProps = {
   children: ReactNode;
   source: string;
   className?: string;
-  eventName?: "hero_cta_click" | "trial_cta_click" | "pricing_cta_click" | "sticky_cta_click" | "landing_cta_click";
+  eventName?:
+    | "hero_cta_click"
+    | "trial_cta_click"
+    | "pricing_cta_click"
+    | "sticky_cta_click"
+    | "landing_cta_click";
   analyticsId?: string;
   href?: string;
 };
@@ -23,7 +28,7 @@ export function LeadFunnelTrigger({
   className = "",
   eventName = "trial_cta_click",
   analyticsId,
-  href = "/iletisim"
+  href = "/iletisim",
 }: LeadFunnelTriggerProps) {
   const handleClick = () => {
     trackConversionEvent(eventName, { source });

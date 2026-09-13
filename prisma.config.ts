@@ -5,8 +5,9 @@ import { normalizePrismaEnv } from "./lib/prisma-env";
 normalizePrismaEnv();
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: "prisma/schema",
   migrations: {
+    path: "prisma/migrations",
     seed: "node prisma/seed.mjs",
   },
 });

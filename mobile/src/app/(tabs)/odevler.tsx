@@ -305,7 +305,7 @@ export default function OdevlerScreen() {
           }>
           <PanelHeading
             title="Çalışmalar"
-            description="Öğretmenin verdiği çalışmalar ve koçunun plan görevleri aynı listede."
+            description="Dershanem ödevleri ile Koçum plan görevleri ayrı bölümlerde."
           />
 
           {error ? (
@@ -322,7 +322,7 @@ export default function OdevlerScreen() {
             <>
               {data.assignments.length ? (
                 <View style={styles.section}>
-                  <SectionLabel>Ders çalışmaların</SectionLabel>
+                  <SectionLabel>Dershanem ödevleri</SectionLabel>
                   <View style={styles.assignmentList}>
                     {data.assignments.map((assignment) => (
                       <AssignmentCard
@@ -337,10 +337,15 @@ export default function OdevlerScreen() {
                 </View>
               ) : null}
 
-              <TaskList label="Bugün" tasks={todayTasks} />
-              <TaskList label="Bu hafta" tasks={weekTasks} />
-              <TaskList label="Sonraki" tasks={laterTasks} />
-              <TaskList label="Tamamlananlar" tasks={doneTasks} />
+              {openTasks.length || doneTasks.length ? (
+                <View style={styles.section}>
+                  <SectionLabel>Koçum plan görevleri</SectionLabel>
+                  <TaskList label="Bugün" tasks={todayTasks} />
+                  <TaskList label="Bu hafta" tasks={weekTasks} />
+                  <TaskList label="Sonraki" tasks={laterTasks} />
+                  <TaskList label="Tamamlananlar" tasks={doneTasks} />
+                </View>
+              ) : null}
             </>
           )}
         </ScrollView>

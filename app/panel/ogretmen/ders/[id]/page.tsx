@@ -6,11 +6,19 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherLessonWorkspace } from "@/components/panel/teacher-lesson-workspace";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { academicSupportLabels } from "@/lib/accessibility-preferences";
+import type { OutcomeSearchItem } from "@/lib/outcome-search";
 
 export const dynamic = "force-dynamic";
 
-const day = new Intl.DateTimeFormat("tr-TR", { weekday: "short", day: "numeric", month: "short" });
-const time = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit" });
+const day = new Intl.DateTimeFormat("tr-TR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+});
+const time = new Intl.DateTimeFormat("tr-TR", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 /**
  * EĞİTMEN · DERS KAPANIŞI — panelin kalbi.
@@ -46,7 +54,13 @@ export default async function TeacherLessonClosePage({
             include: {
               student: {
                 include: {
-                  user: { select: { fullName: true, email: true, accessibilityPreference: true } },
+                  user: {
+                    select: {
+                      fullName: true,
+                      email: true,
+                      accessibilityPreference: true,
+                    },
+                  },
                 },
               },
             },
@@ -62,7 +76,11 @@ export default async function TeacherLessonClosePage({
 
   const [previous, noteTemplates, outcomes] = await Promise.all([
     prisma.lesson.findFirst({
-      where: { groupId: lesson.groupId, startsAt: { lt: lesson.startsAt }, status: "COMPLETED" },
+      where: {
+        groupId: lesson.groupId,
+        startsAt: { lt: lesson.startsAt },
+        status: "COMPLETED",
+      },
       orderBy: { startsAt: "desc" },
       include: { notes: { where: { studentId: null }, take: 1 } },
     }),
@@ -70,18 +88,39 @@ export default async function TeacherLessonClosePage({
       where: { teacherId: session.userId },
       orderBy: { updatedAt: "desc" },
       take: 20,
-      select: { id: true, title: true, note: true, nextGoal: true, homework: true },
+      select: {
+        id: true,
+        title: true,
+        note: true,
+        nextGoal: true,
+        homework: true,
+      },
     }),
     featureFlags.learningOutcomes
       ? prisma.learningOutcome.findMany({
-          where: { isActive: true, unit: { subject: { version: { status: "ACTIVE" } } } },
-          orderBy: { code: "asc" },
-          take: 300,
+          where: {
+            isActive: true,
+            unit: { subject: { version: { status: "ACTIVE" } } },
+          },
+          orderBy: [
+            { favorites: { _count: "desc" } },
+            { lessons: { _count: "desc" } },
+            { updatedAt: "desc" },
+            { code: "asc" },
+          ],
+          take: 15,
           include: {
-            unit: { include: { subject: { include: { version: { select: { code: true } } } } } },
+            unit: { include: { subject: true } },
             skills: { include: { skill: { select: { name: true } } } },
-            favorites: { where: { userId: session.userId }, select: { userId: true } },
-            lessons: { where: { linkedById: session.userId }, take: 1, select: { lessonId: true } },
+            favorites: {
+              where: { userId: session.userId },
+              select: { userId: true },
+            },
+            lessons: {
+              where: { linkedById: session.userId },
+              take: 1,
+              select: { lessonId: true },
+            },
           },
         })
       : Promise.resolve([]),
@@ -89,7 +128,11 @@ export default async function TeacherLessonClosePage({
 
   const previousNote = previous?.notes[0] ?? null;
   const previousContext = previousNote
-    ? { topic: previousNote.topic, nextGoal: previousNote.nextGoal, homework: previousNote.homework }
+    ? {
+        topic: previousNote.topic,
+        nextGoal: previousNote.nextGoal,
+        homework: previousNote.homework,
+      }
     : null;
   const common = lesson.notes.find((note) => note.studentId === null);
 
@@ -126,13 +169,19 @@ export default async function TeacherLessonClosePage({
     students: lesson.group.enrollments.map((enrollment) => ({
       id: enrollment.student.id,
       name: enrollment.student.user.fullName || enrollment.student.user.email,
-      note: lesson.notes.find((note) => note.studentId === enrollment.student.id)?.note || "",
+      note:
+        lesson.notes.find((note) => note.studentId === enrollment.student.id)
+          ?.note || "",
       attendance:
-        lesson.attendances.find((item) => item.studentId === enrollment.student.id)?.status ||
-        ("PRESENT" as const),
+        lesson.attendances.find(
+          (item) => item.studentId === enrollment.student.id,
+        )?.status || ("PRESENT" as const),
       supportLabels:
-        featureFlags.accessibilityProfile && enrollment.student.user.accessibilityPreference
-          ? academicSupportLabels(enrollment.student.user.accessibilityPreference)
+        featureFlags.accessibilityProfile &&
+        enrollment.student.user.accessibilityPreference
+          ? academicSupportLabels(
+              enrollment.student.user.accessibilityPreference,
+            )
           : [],
     })),
   };
@@ -165,16 +214,27 @@ export default async function TeacherLessonClosePage({
             baselineMetricsEnabled={featureFlags.baselineMetrics}
             learningOutcomesEnabled={featureFlags.learningOutcomes}
             quickLessonCloseEnabled={featureFlags.quickLessonClose}
-            outcomes={outcomes.map((outcome) => ({
-              id: outcome.id,
-              code: outcome.code,
-              title: outcome.title,
-              subject: outcome.unit.subject.name,
-              unit: outcome.unit.name,
-              skills: outcome.skills.map((item) => item.skill.name),
-              favorite: outcome.favorites.length > 0,
-              recent: outcome.lessons.length > 0,
-            }))}
+            outcomes={
+              (
+                outcomes as Array<
+                  (typeof outcomes)[number] & {
+                    unit: { name: string; subject: { name: string } };
+                    skills: Array<{ skill: { name: string } }>;
+                    favorites: Array<unknown>;
+                    lessons: Array<unknown>;
+                  }
+                >
+              ).map((outcome) => ({
+                id: outcome.id,
+                code: outcome.code,
+                title: outcome.title,
+                subject: outcome.unit.subject.name,
+                unit: outcome.unit.name,
+                skills: outcome.skills.map((item) => item.skill.name),
+                favorite: outcome.favorites.length > 0,
+                recent: outcome.lessons.length > 0,
+              })) as OutcomeSearchItem[]
+            }
           />
         </div>
       </div>

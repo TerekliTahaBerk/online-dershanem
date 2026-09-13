@@ -18,7 +18,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params;
   const user = await prisma.user.findUnique({ where: { id }, select: { id: true, role: true, productMemberships: { where: { revokedAt: null }, select: { product: true } } } });
   if (!user) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
-  if (user.role === "ADMIN" || user.role === "TEACHER") return NextResponse.json({ error: "Yönetici ve öğretmenler iki ürüne de erişir." }, { status: 400 });
+  if (user.role === "ADMIN" || user.role === "TEACHER") return NextResponse.json({ error: "Yönetici ve öğretmenler üç ürüne de erişir." }, { status: 400 });
 
   const next = new Set(parsed.data.products);
   const before = user.productMemberships.map((membership) => membership.product).sort();

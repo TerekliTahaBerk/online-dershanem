@@ -33,8 +33,8 @@ export default function ProductsPage() {
             Üç ayrı ürün. Hangisine ihtiyacın varsa onu al.
           </h1>
           <p className="mx-auto mt-4 max-w-[620px] text-[18px] leading-[1.65] text-dc-ink-body">
-            Biri konuyu öğretir, biri haftanı düzenler, biri nerede durduğunu ölçer.
-            Tek başlarına da çalışırlar, birlikte de.
+            Biri konuyu öğretir, biri haftanı düzenler, biri nerede durduğunu
+            ölçer. Tek başlarına da çalışırlar, birlikte de.
           </p>
         </section>
 
@@ -42,7 +42,7 @@ export default function ProductsPage() {
           title="Üç ürün, üç ayrı iş"
           lede="Aşağıda her birinin ne yaptığı ve kimin için olduğu yazıyor."
         />
-        <Ecosystem />
+        <Ecosystem showDinoLayer={false} />
         <DinoLayer />
         <ClosingCta />
       </main>

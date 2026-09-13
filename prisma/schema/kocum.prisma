@@ -1,0 +1,694 @@
+enum WeeklyPlanStatus {
+  DRAFT
+  APPROVED
+  CHANGE_REQUESTED
+  ARCHIVED
+}
+
+enum InterventionCaseStatus {
+  OPEN
+  IN_PROGRESS
+  SNOOZED
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+enum InterventionReason {
+  ATTENDANCE_PATTERN
+  OVERDUE_WORK
+  REPEATED_REVIEW_DIFFICULTY
+  PLAN_STALLED
+  /// Öğretmenin gözlemleyerek elle oluşturduğu kayıt.
+  TEACHER_OBSERVED
+}
+
+enum InterventionActivityType {
+  GENERATED
+  ASSIGNED
+  STARTED
+  ACTION_LOGGED
+  SNOOZED
+  RESOLVED
+  FALSE_POSITIVE
+  REOPENED
+}
+
+enum InterventionOutcome {
+  CHECK_IN_COMPLETED
+  SUPPORT_PLANNED
+  PRACTICE_ADJUSTED
+  FAMILY_CONTACTED
+  NO_ACTION_NEEDED
+  OTHER
+}
+
+enum InterventionFalsePositiveReason {
+  CONTEXT_MISSING
+  DATA_OUTDATED
+  THRESHOLD_TOO_SENSITIVE
+  DUPLICATE
+  OTHER
+}
+
+model InterventionCase {
+  id              String                     @id @default(cuid())
+  studentId       String                     @map("student_id")
+  ruleVersion     String                     @default("intervention-v1") @map("rule_version")
+  reasonCode      InterventionReason         @map("reason_code")
+  fingerprint     String                     @unique
+  explanation     String
+  suggestedAction String                     @map("suggested_action")
+  evidenceCount   Int                        @map("evidence_count")
+  windowStart     DateTime                   @map("window_start") @db.Timestamptz(3)
+  windowEnd       DateTime                   @map("window_end") @db.Timestamptz(3)
+  dueAt           DateTime                   @map("due_at") @db.Timestamptz(3)
+  status          InterventionCaseStatus     @default(OPEN)
+  ownerId         String?                    @map("owner_id")
+  firstActionAt   DateTime?                  @map("first_action_at") @db.Timestamptz(3)
+  snoozedUntil    DateTime?                  @map("snoozed_until") @db.Timestamptz(3)
+  resolvedAt      DateTime?                  @map("resolved_at") @db.Timestamptz(3)
+  outcomeCode     InterventionOutcome?       @map("outcome_code")
+  version         Int                        @default(1)
+  createdAt       DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student         StudentProfile             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  owner           User?                      @relation("InterventionCaseOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  activities      InterventionCaseActivity[]
+
+  @@index([status, dueAt])
+  @@index([studentId, status, createdAt])
+  @@index([ownerId, status, dueAt])
+  @@map("intervention_cases")
+}
+
+model InterventionCaseActivity {
+  id                  String                           @id @default(cuid())
+  caseId              String                           @map("case_id")
+  actorId             String?                          @map("actor_id")
+  type                InterventionActivityType
+  outcomeCode         InterventionOutcome?             @map("outcome_code")
+  falsePositiveReason InterventionFalsePositiveReason? @map("false_positive_reason")
+  note                String?
+  createdAt           DateTime                         @default(now()) @map("created_at") @db.Timestamptz(3)
+  case                InterventionCase                 @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  actor               User?                            @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("intervention_case_activities")
+}
+
+enum WeeklyPlanTaskStatus {
+  PLANNED
+  IN_PROGRESS
+  DONE
+  PARTIAL
+  COULD_NOT
+  SKIPPED
+}
+
+enum WeeklyPlanTaskSource {
+  ASSIGNMENT
+  REVIEW
+  WEAK_OUTCOME
+  EXAM_PREP
+  RECOVERY
+  MANUAL_COACH
+  MOCK_EXAM
+  SYSTEM_SUGGESTED
+  TEMPLATE
+  PERSONAL_GOAL
+}
+
+enum WeeklyPlanReason {
+  DUE_SOON
+  REVIEW_DUE
+  NEEDS_REVIEW
+  EXAM_APPROACHING
+  CAPACITY_BALANCE
+  MISSED_LESSON
+}
+
+/// Online Koçum plan görevi türü — Dershanem Assignment ile karışmaz.
+enum PlanTaskKind {
+  TOPIC_STUDY
+  QUESTION_PRACTICE
+  REVIEW
+  VIDEO
+  MATERIAL_READ
+  CLASSIC_ASSIGNMENT
+  MOCK_EXAM
+  ERROR_ANALYSIS
+  PERSONAL_GOAL
+  CUSTOM
+}
+
+enum PlanTaskScheduleMode {
+  SCHEDULED
+  FLEXIBLE
+}
+
+enum PlanTaskTargetType {
+  QUESTIONS
+  MINUTES
+  PAGES
+  VIDEOS
+  NONE
+}
+
+enum PlanTaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum StudentGoalStatus {
+  ACTIVE
+  ACHIEVED
+  PAUSED
+  ARCHIVED
+}
+
+enum CoachNoteVisibility {
+  INTERNAL
+  STUDENT_VISIBLE
+  PARENT_VISIBLE
+}
+
+enum WeeklyCoachSummaryStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum WeeklyPlanSuggestionKind {
+  ADAPTIVE_NEXT_WEEK
+  REVIEW_QUEUE
+  MOCK_EXAM_FOLLOWUP
+  CARRY_OVER
+  TEMPLATE
+}
+
+enum WeeklyPlanSuggestionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum StudentTimelineVisibility {
+  INTERNAL
+  STAFF
+  STUDENT
+  PARENT
+}
+
+enum StudentTimelineKind {
+  PLAN_PUBLISHED
+  PLAN_REVISED
+  PLAN_COMPLETION
+  TASK_OVERDUE
+  MOCK_EXAM_RESULT
+  GOAL_UPDATED
+  COACH_SUMMARY
+  CHECK_IN
+  OTHER
+}
+
+enum StudentCheckInPlanLoad {
+  EASY
+  FIT
+  HARD
+}
+
+model StudentPlanPreference {
+  id              String         @id @default(cuid())
+  studentId       String         @unique @map("student_id")
+  availableDays   Json           @map("available_days")
+  minutesPerDay   Int            @default(45) @map("minutes_per_day")
+  maxTasksPerDay  Int            @default(3) @map("max_tasks_per_day")
+  nextExamAt      DateTime?      @map("next_exam_at") @db.Timestamptz(3)
+  examLabel       String?        @map("exam_label")
+  planningEnabled Boolean        @default(true) @map("planning_enabled")
+  overwhelmPulse  Int?           @map("overwhelm_pulse")
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student         StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("student_plan_preferences")
+}
+
+model WeeklyPlan {
+  id                    String               @id @default(cuid())
+  studentId             String               @map("student_id")
+  weekStart             DateTime             @map("week_start") @db.Timestamptz(3)
+  status                WeeklyPlanStatus     @default(DRAFT)
+  ruleVersion           String               @default("adaptive-v1") @map("rule_version")
+  capacityMinutes       Int                  @map("capacity_minutes")
+  createdById           String               @map("created_by_id")
+  approvedById          String?              @map("approved_by_id")
+  approvedAt            DateTime?            @map("approved_at") @db.Timestamptz(3)
+  changeRequestCategory String?              @map("change_request_category")
+  version               Int                  @default(1)
+  generatedAt           DateTime             @default(now()) @map("generated_at") @db.Timestamptz(3)
+  createdAt             DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student               StudentProfile       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tasks                 WeeklyPlanTask[]
+  revisions             WeeklyPlanRevision[]
+
+  @@unique([studentId, weekStart])
+  @@index([status, weekStart])
+  @@map("weekly_plans")
+}
+
+/// Online Koçum plan görevi — Dershanem Assignment'tan ayrı domain.
+/// ASSIGNMENT kaynaklı görevler tek source of truth olarak Assignment'a referans verir;
+/// duplicate AssignmentProgress satırı oluşturulmaz.
+///
+/// İDEMPOTENCY: bir plan içinde aynı ödeve (ya da aynı öneriye) İKİ görev
+/// bağlanamaz. Kural koşullu benzersiz indeksle veritabanında zorlanır
+/// (`weekly_plan_tasks_one_per_assignment_ref`,
+/// `weekly_plan_tasks_one_per_suggestion_ref`; migration 0100). Prisma şema
+/// dili koşullu unique tanımlayamadığı için burada YALNIZ belgelenir —
+/// `db push` bu indeksleri düşürür.
+model WeeklyPlanTask {
+  id                String               @id @default(cuid())
+  planId            String               @map("plan_id")
+  scheduledFor      DateTime             @map("scheduled_for") @db.Timestamptz(3)
+  position          Int
+  title             String
+  description       String?
+  subject           String?
+  topic             String?
+  taskKind          PlanTaskKind         @default(CUSTOM) @map("task_kind")
+  scheduleMode      PlanTaskScheduleMode @default(FLEXIBLE) @map("schedule_mode")
+  durationMinutes   Int                  @map("duration_minutes")
+  targetType        PlanTaskTargetType   @default(NONE) @map("target_type")
+  targetValue       Float?               @map("target_value")
+  dueAt             DateTime?            @map("due_at") @db.Timestamptz(3)
+  priority          PlanTaskPriority     @default(NORMAL)
+  sourceType        WeeklyPlanTaskSource @map("source_type")
+  sourceReferenceId String?              @map("source_reference_id")
+  reasonCode        WeeklyPlanReason     @map("reason_code")
+  status            WeeklyPlanTaskStatus @default(PLANNED)
+  startedAt         DateTime?            @map("started_at") @db.Timestamptz(3)
+  completedAt       DateTime?            @map("completed_at") @db.Timestamptz(3)
+
+  /// Gerçekleşen çalışma — planlanan alanlardan ayrı tutulur.
+  actualQuestions Int?    @map("actual_questions")
+  actualCorrect   Int?    @map("actual_correct")
+  actualIncorrect Int?    @map("actual_incorrect")
+  actualBlank     Int?    @map("actual_blank")
+  actualMinutes   Int?    @map("actual_minutes")
+  studentNote     String? @map("student_note")
+  difficultyFelt  Int?    @map("difficulty_felt")
+  energyFelt      Int?    @map("energy_felt")
+
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  plan      WeeklyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId, scheduledFor, position])
+  @@index([planId, status, scheduledFor])
+  @@index([sourceType, sourceReferenceId])
+  @@map("weekly_plan_tasks")
+}
+
+model WeeklyPlanTemplate {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  title       String
+  description String?
+  examTrack   String?  @map("exam_track")
+  /// Template task set — uygulandığında WeeklyPlanTask kayıtlarına dönüşür.
+  taskDefs    Json     @map("task_defs")
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy   User?    @relation("WeeklyPlanTemplateAuthor", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([examTrack])
+  @@map("weekly_plan_templates")
+}
+
+model WeeklyPlanRevision {
+  id            String     @id @default(cuid())
+  planId        String     @map("plan_id")
+  version       Int
+  snapshot      Json
+  changedById   String?    @map("changed_by_id")
+  changeSummary String?    @map("change_summary")
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  plan          WeeklyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  changedBy     User?      @relation("WeeklyPlanRevisionAuthor", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@unique([planId, version])
+  @@index([planId, createdAt])
+  @@map("weekly_plan_revisions")
+}
+
+model CoachNote {
+  id         String              @id @default(cuid())
+  studentId  String              @map("student_id")
+  authorId   String              @map("author_id")
+  body       String
+  visibility CoachNoteVisibility @default(INTERNAL)
+  createdAt  DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student    StudentProfile      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  author     User                @relation("CoachNoteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, visibility, createdAt])
+  @@index([authorId, createdAt])
+  @@map("coach_notes")
+}
+
+model WeeklyCoachSummary {
+  id                 String                   @id @default(cuid())
+  studentId          String                   @map("student_id")
+  weekStart          DateTime                 @map("week_start") @db.Timestamptz(3)
+  status             WeeklyCoachSummaryStatus @default(DRAFT)
+  planCompletionPct  Int?                     @map("plan_completion_pct")
+  strengths          String?
+  focusAreas         String?                  @map("focus_areas")
+  nextWeekFocus      String?                  @map("next_week_focus")
+  studentVisibleText String?                  @map("student_visible_text")
+  parentVisibleText  String?                  @map("parent_visible_text")
+  publishedAt        DateTime?                @map("published_at") @db.Timestamptz(3)
+  publishedById      String?                  @map("published_by_id")
+  createdAt          DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student            StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  publishedBy        User?                    @relation("WeeklyCoachSummaryPublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, weekStart])
+  @@index([status, weekStart])
+  @@map("weekly_coach_summaries")
+}
+
+/// Sistem önerisi — koç onayı olmadan öğrenci planına publish edilmez.
+model WeeklyPlanSuggestion {
+  id              String                     @id @default(cuid())
+  studentId       String                     @map("student_id")
+  weekStart       DateTime                   @map("week_start") @db.Timestamptz(3)
+  kind            WeeklyPlanSuggestionKind
+  status          WeeklyPlanSuggestionStatus @default(PENDING)
+  title           String
+  rationale       String
+  payload         Json
+  createdBySystem Boolean                    @default(true) @map("created_by_system")
+  reviewedById    String?                    @map("reviewed_by_id")
+  reviewedAt      DateTime?                  @map("reviewed_at") @db.Timestamptz(3)
+  createdAt       DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student         StudentProfile             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reviewedBy      User?                      @relation("WeeklyPlanSuggestionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, status, weekStart])
+  @@index([kind, status])
+  @@map("weekly_plan_suggestions")
+}
+
+model StudentTimelineEvent {
+  id         String                    @id @default(cuid())
+  studentId  String                    @map("student_id")
+  occurredAt DateTime                  @map("occurred_at") @db.Timestamptz(3)
+  kind       StudentTimelineKind
+  title      String
+  summary    String?
+  visibility StudentTimelineVisibility @default(STAFF)
+  metadata   Json?
+  createdAt  DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  student    StudentProfile            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, occurredAt])
+  @@index([studentId, visibility, occurredAt])
+  @@map("student_timeline_events")
+}
+
+model StudentTeacherAssignment {
+  id           String         @id @default(cuid())
+  studentId    String         @map("student_id")
+  teacherId    String         @map("teacher_id")
+  subject      String
+  startedAt    DateTime       @default(now()) @map("started_at") @db.Timestamptz(3)
+  endedAt      DateTime?      @map("ended_at") @db.Timestamptz(3)
+  active       Boolean        @default(true)
+  assignedById String?        @map("assigned_by_id")
+  notes        String?
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher      User           @relation("StudentTeacherTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  assignedBy   User?          @relation("StudentTeacherAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, teacherId, subject])
+  @@index([teacherId, active])
+  @@index([studentId, active])
+  @@index([assignedById])
+  @@map("student_teacher_assignments")
+}
+
+/// ONLINE KOÇUM — ÖĞRENCİ ↔ KOÇ ATAMASI.
+///
+/// Ürün sayfasının sözü: "Planı koç kurar", "birebir koç görüşmesi ve düzenli
+/// takip". Bu tablo o ilişkinin kaydıdır; koçluk buraya kadar yalnız
+/// `WeeklyPlan` onayı olarak yaşıyordu ve atanmış bir koç kavramı yoktu.
+///
+/// Bir öğrencinin aynı anda TEK aktif koçu olur (`endedAt = null` olanlar
+/// arasında). Kısmi tekil indeks migration'da elle eklenir; Prisma şema dili
+/// koşullu unique tanımlayamıyor.
+model CoachAssignment {
+  id        String @id @default(cuid())
+  studentId String @map("student_id")
+  coachId   String @map("coach_id")
+
+  /// Görüşme sıklığı GÜN cinsinden. Ürün sayfası: "Görüşme sıklığı öğrencinin
+  /// programına göre ön görüşmede belirlenir" — yani pakete değil öğrenciye
+  /// bağlıdır. Boşsa gecikme hesaplanmaz.
+  cadenceDays Int? @map("cadence_days")
+
+  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz(3)
+  endedAt   DateTime? @map("ended_at") @db.Timestamptz(3)
+
+  /// Atamayı yapan yönetici — denetim izi.
+  assignedById String? @map("assigned_by_id")
+
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  student    StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  coach      TeacherProfile    @relation(fields: [coachId], references: [id], onDelete: Restrict)
+  assignedBy User?             @relation("CoachAssignmentAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+  sessions   CoachingSession[]
+
+  @@index([studentId, endedAt])
+  @@index([coachId, endedAt])
+  @@map("coach_assignments")
+}
+
+enum StudentGoalKind {
+  /// Bir dersin deneme neti hedefi (ör. "Matematik 25 net").
+  SUBJECT_NET
+  /// Haftalık plan tamamlama yüzdesi hedefi (ör. %90).
+  PLAN_COMPLETION
+  /// Sınav hedefi (ör. YKS 2027).
+  EXAM_TARGET
+  /// Puan / sıralama hedefi.
+  SCORE_TARGET
+  /// Ders odağı (niteliksel; subjectName zorunlu).
+  SUBJECT_FOCUS
+  /// Haftalık çalışma süresi (dakika).
+  WEEKLY_STUDY_MINUTES
+  /// Haftalık soru hedefi.
+  WEEKLY_QUESTION_COUNT
+}
+
+/// ÖĞRENCİ HEDEFİ — onaylı tasarım (Panel.dc.html → sGoals).
+///
+/// Tasarımın satırı iki parçadır: "Matematik neti 25" (HEDEF) ve "şimdi 19,00"
+/// (ŞU ANKİ DEĞER). Burada YALNIZ HEDEF saklanır.
+///
+/// Şu anki değer BİLEREK saklanmaz; her görüntülemede gerçek veriden
+/// hesaplanır (`MockExamSection` netleri, `WeeklyPlanTask` tamamlanması).
+/// Saklansaydı yeni bir deneme girildiği anda bayatlar ve öğrenciye yanlış
+/// ilerleme gösterirdi.
+///
+/// `subjectName` öğrencinin GERÇEK deneme bölümlerinden seçilir; serbest
+/// yazılmaz. Aksi hâlde "Matematik" ile "matematik" eşleşmez ve hedefin
+/// karşılığı hiç bulunamaz.
+model StudentGoal {
+  id        String          @id @default(cuid())
+  studentId String          @map("student_id")
+  kind      StudentGoalKind
+
+  /// Serbest başlık (ör. "YKS 2027"). kind EXAM_TARGET için önerilir.
+  title String?
+
+  /// Yalnız `SUBJECT_NET` / `SUBJECT_FOCUS` için doludur; `MockExamSection.subjectName` ile birebir eşleşir.
+  subjectName String? @map("subject_name")
+
+  /// Hedef değer: net hedefi (ör. 25) ya da tamamlama yüzdesi (ör. 90).
+  targetValue Float @map("target_value")
+
+  /// Hedef konurken kaydedilen mevcut değer (snapshot). Canlı ilerleme ayrıca hesaplanır.
+  baselineValue Float? @map("baseline_value")
+
+  startsAt DateTime?         @map("starts_at") @db.Timestamptz(3)
+  targetAt DateTime?         @map("target_at") @db.Timestamptz(3)
+  status   StudentGoalStatus @default(ACTIVE)
+
+  /// Tasarımdaki "Yakın hedef: bir sonraki denemede 21 net." satırı.
+  nearTermNote String? @map("near_term_note")
+
+  /// Hedefi koyan koç/yönetici — hedefler koçla birlikte belirlenir.
+  setById String? @map("set_by_id")
+
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  setBy   User?          @relation("StudentGoalAuthor", fields: [setById], references: [id], onDelete: SetNull)
+
+  @@index([studentId, archivedAt])
+  @@index([studentId, status])
+  @@map("student_goals")
+}
+
+enum CoachingSessionStatus {
+  PLANNED
+  COMPLETED
+  MISSED
+  CANCELLED
+}
+
+model CoachingSession {
+  id           String                @id @default(cuid())
+  assignmentId String                @map("assignment_id")
+  scheduledAt  DateTime              @map("scheduled_at") @db.Timestamptz(3)
+  status       CoachingSessionStatus @default(PLANNED)
+  completedAt  DateTime?             @map("completed_at") @db.Timestamptz(3)
+
+  /// Görüşmede belirlenen haftanın odağı — öğrenciye görünür.
+  focus String?
+
+  sharedNote  String? @map("shared_note")
+  privateNote String? @map("private_note")
+
+  createdAt  DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  assignment CoachAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@map("coaching_sessions")
+}
+
+model TeacherNoteTemplate {
+  id        String   @id @default(cuid())
+  teacherId String   @map("teacher_id")
+  title     String
+  note      String?
+  nextGoal  String?  @map("next_goal")
+  homework  String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  teacher   User     @relation("TeacherNoteTemplateOwner", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, updatedAt])
+  @@map("teacher_note_templates")
+}
+
+enum StudentCheckInEnergy {
+  LOW
+  STEADY
+  GOOD
+}
+
+enum StudentCheckInConfidence {
+  NEED_GUIDANCE
+  BUILDING
+  CONFIDENT
+}
+
+enum StudentCheckInBarrier {
+  NONE
+  NOT_UNDERSTANDING
+  TIME_LOAD
+  ACCESS_TECH
+  NEED_EXAMPLE
+  OTHER
+}
+
+enum StudentHelpRequestStatus {
+  OPEN
+  RESPONDED
+  CLOSED
+}
+
+enum StudentHelpResponseAction {
+  NEXT_LESSON
+  EXTRA_EXAMPLE
+  PLAN_ADJUSTED
+  SHORT_CHECKIN
+  RESOURCE_SHARED
+  NO_ACTION_NEEDED
+}
+
+model StudentCheckIn {
+  id               String                   @id @default(cuid())
+  studentId        String                   @map("student_id")
+  groupId          String                   @map("group_id")
+  energy           StudentCheckInEnergy
+  confidence       StudentCheckInConfidence
+  barrier          StudentCheckInBarrier
+  /// Akademik plan yükü hissi — medikal/psikolojik teşhis değildir.
+  planLoad         StudentCheckInPlanLoad?  @map("plan_load")
+  shareWithTeacher Boolean                  @default(false) @map("share_with_teacher")
+  createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  student          StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group            Group                    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  helpRequest      StudentHelpRequest?
+
+  @@index([studentId, createdAt])
+  @@index([groupId, shareWithTeacher, createdAt])
+  @@map("student_check_ins")
+}
+
+model StudentHelpRequest {
+  id              String                   @id @default(cuid())
+  checkInId       String                   @unique @map("check_in_id")
+  studentId       String                   @map("student_id")
+  groupId         String                   @map("group_id")
+  status          StudentHelpRequestStatus @default(OPEN)
+  dueAt           DateTime                 @map("due_at") @db.Timestamptz(3)
+  firstResponseAt DateTime?                @map("first_response_at") @db.Timestamptz(3)
+  helpful         Boolean?
+  version         Int                      @default(1)
+  createdAt       DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  checkIn         StudentCheckIn           @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  student         StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group           Group                    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  responses       StudentHelpResponse[]
+
+  @@index([groupId, status, dueAt])
+  @@index([studentId, status, createdAt])
+  @@map("student_help_requests")
+}
+
+model StudentHelpResponse {
+  id            String                    @id @default(cuid())
+  requestId     String                    @map("request_id")
+  respondedById String                    @map("responded_by_id")
+  action        StudentHelpResponseAction
+  createdAt     DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  request       StudentHelpRequest        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  respondedBy   User                      @relation("StudentHelpResponder", fields: [respondedById], references: [id], onDelete: Restrict)
+
+  @@index([requestId, createdAt])
+  @@index([respondedById, createdAt])
+  @@map("student_help_responses")
+}

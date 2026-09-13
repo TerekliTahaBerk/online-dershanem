@@ -49,14 +49,13 @@ export default function HakkimizdaPage() {
                   ve arama sonucunda "yalnızbırakmayan" olarak okunuyordu.
                   Satır kırığı korunur, kelime arası boşluk açıkça yazılır. */}
               <h1 className="mt-4 font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
-                Öğrenciyi yalnız{" "}
-                <br />
+                Öğrenciyi yalnız <br />
                 bırakmayan bir sistem.
               </h1>
               <p className="mt-4 max-w-[520px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
-                Online Dershanem canlı dersle başladı. Bugün ders, koçluk ve deneme
-                analizi aynı çatı altında: öğrenci ne öğreneceğini, ne zaman
-                çalışacağını ve nerede durduğunu aynı yerde görüyor.
+                Online Dershanem canlı dersle başladı. Bugün ders, koçluk ve
+                deneme analizi aynı çatı altında: öğrenci ne öğreneceğini, ne
+                zaman çalışacağını ve nerede durduğunu aynı yerde görüyor.
               </p>
               <Link
                 href="/misyonumuz"
@@ -95,8 +94,13 @@ export default function HakkimizdaPage() {
             </h2>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {principles.map((p) => (
-                <div key={p.title} className="rounded-[20px] border border-dc-line p-6">
-                  <h3 className="text-[20px] font-bold text-dc-ink">{p.title}</h3>
+                <div
+                  key={p.title}
+                  className="rounded-[20px] border border-dc-line p-6"
+                >
+                  <h3 className="text-[20px] font-bold text-dc-ink">
+                    {p.title}
+                  </h3>
                   <p className="mt-2.5 text-[15px] leading-[1.6] text-dc-ink-muted">
                     {p.body}
                   </p>
@@ -112,9 +116,9 @@ export default function HakkimizdaPage() {
               Ekip
             </h2>
             <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
-              Dersleri alanında deneyimli öğretmenler veriyor, planı insan koçlar
-              kuruyor. Öğretmen adlarını ve fotoğraflarını, her biri kendi izniyle
-              onaylamadan yayınlamıyoruz.
+              Dersleri alanında deneyimli öğretmenler veriyor, planı insan
+              koçlar kuruyor. Öğretmen adlarını ve fotoğraflarını, her biri
+              kendi izniyle onaylamadan yayınlamıyoruz.
             </p>
           </div>
         </section>

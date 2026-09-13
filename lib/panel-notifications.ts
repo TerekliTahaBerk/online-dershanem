@@ -7,9 +7,23 @@ import { sendPanelNotificationEmail } from "@/lib/email";
 export type NotificationRow = { userId: string; type: NotificationType; title: string; body: string; href?: string | null };
 export type NotificationPreferenceKey = "lessonSummary" | "weeklyDigest" | "absence" | "assignment" | "payment";
 
-/** Kullanıcının panel ve kategori tercihlerini tüm bildirim üreticilerinde uygular. */
+/** Aynı kullanıcıya aynı içerik: tek satır. */
+function dedupeNotificationRows(rows: NotificationRow[]): NotificationRow[] {
+  return [...new Map(rows.map((row) => [`${row.userId}:${row.type}:${row.title}:${row.body}`, row])).values()];
+}
+
+/**
+ * Kullanıcının panel ve kategori tercihlerini tüm bildirim üreticilerinde uygular.
+ *
+ * Tekilleştirme de burada: çağıran taraflar satırları alıcı listelerini
+ * birleştirerek üretiyor ve aynı kişi birden çok yoldan listeye girebiliyor
+ * (aynı gruptaki iki çocuğun velisi, hem öğretmen hem vekil öğretmen olan
+ * kullanıcı). E-posta yolu zaten tekilleştiriyordu; uygulama içi bildirim
+ * tekilleştirmiyordu ve kullanıcı aynı bildirimi iki kez görüyordu.
+ */
 export async function filterNotificationRows(rows: NotificationRow[], preferenceKey?: NotificationPreferenceKey): Promise<NotificationRow[]> {
   if (!rows.length) return [];
+  rows = dedupeNotificationRows(rows);
   const userIds = [...new Set(rows.map((row) => row.userId))];
   const preferences = await prisma.notificationPreference.findMany({ where: { userId: { in: userIds } } });
   const byUser = new Map(preferences.map((item) => [item.userId, item]));
@@ -24,7 +38,7 @@ export async function filterNotificationRows(rows: NotificationRow[], preference
 /** E-posta izni açık kullanıcılar için panel bildirimini güvenli outbox'a yazar. */
 export async function queuePanelNotificationEmails(rows: NotificationRow[], preferenceKey?: NotificationPreferenceKey): Promise<void> {
   if (!rows.length) return;
-  const deduped = [...new Map(rows.map((row) => [`${row.userId}:${row.type}:${row.title}:${row.body}`, row])).values()];
+  const deduped = dedupeNotificationRows(rows);
   const userIds = [...new Set(deduped.map((row) => row.userId))];
   const users = await prisma.user.findMany({
     where: { id: { in: userIds }, status: "ACTIVE" },

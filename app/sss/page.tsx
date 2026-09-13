@@ -58,11 +58,17 @@ export default function SssPage() {
           subtitle={
             <>
               Aradığınızı bulamazsanız{" "}
-              <a href={waHref} className="font-semibold text-[var(--brand-orange-ink)] hover:underline">
+              <a
+                href={waHref}
+                className="font-semibold text-[var(--brand-orange-ink)] hover:underline"
+              >
                 WhatsApp&apos;tan yazabilirsiniz
               </a>{" "}
               veya{" "}
-              <a href={telHref} className="font-semibold text-[var(--brand-orange-ink)] hover:underline">
+              <a
+                href={telHref}
+                className="font-semibold text-[var(--brand-orange-ink)] hover:underline"
+              >
                 bizi arayabilirsiniz
               </a>
               .
@@ -83,10 +89,16 @@ export default function SssPage() {
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16px] font-semibold text-[var(--site-ink)] [&::-webkit-details-marker]:hidden">
                         {item.q}
                         <span className="shrink-0 text-[var(--brand-orange-ink)] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
-                          <Plus size={20} strokeWidth={1.7} aria-hidden="true" />
+                          <Plus
+                            size={20}
+                            strokeWidth={1.7}
+                            aria-hidden="true"
+                          />
                         </span>
                       </summary>
-                      <p className="pb-5 pr-8 text-[15px] leading-7 text-[var(--site-body)]">{item.a}</p>
+                      <p className="pb-5 pr-8 text-[15px] leading-7 text-[var(--site-body)]">
+                        {item.a}
+                      </p>
                     </details>
                   ))}
                 </div>

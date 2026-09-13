@@ -18,9 +18,23 @@ type HomeData = {
   products: string[];
   profile: { id: string } | null;
   fullName: string | null;
+  unifiedToday?: {
+    items: Array<{
+      id: string;
+      kind: string;
+      productLabel: string;
+      title: string;
+      subtitle: string | null;
+      timeLabel: string | null;
+      href: string | null;
+    }>;
+    whatNext: { title: string; productLabel: string; href: string | null } | null;
+  } | null;
   today: {
     lessons: { id: string; startsAt: string; title: string; teacherName: string | null; groupName: string }[];
     tasks: { id: string; title: string; durationMinutes: number; scheduledFor: string }[];
+    assignments?: { id: string; title: string; dueAt: string }[];
+    mockExams?: { id: string; title: string; startsAt: string }[];
   };
   weeklyPlan: { done: number; total: number; tasks: { id: string; title: string; durationMinutes: number; done: boolean }[] } | null;
   latestExam: {
@@ -159,9 +173,50 @@ export default function AnaSayfaScreen() {
     );
   }
 
-  const { today, weeklyPlan, latestExam, trend } = data;
+  const { today, weeklyPlan, latestExam, trend, unifiedToday } = data;
   const now = new Date();
   const maxSectionNet = latestExam ? Math.max(0.01, ...latestExam.sections.map((s) => s.net)) : 1;
+  const todayItems = unifiedToday?.items?.length
+    ? unifiedToday.items
+    : [
+        ...today.lessons.map((lesson) => ({
+          id: lesson.id,
+          kind: 'LESSON',
+          productLabel: 'Dershanem',
+          title: lesson.title,
+          subtitle: [lesson.teacherName, lesson.groupName].filter(Boolean).join(' · ') || 'Canlı ders',
+          timeLabel: TR_TIME.format(new Date(lesson.startsAt)),
+          href: null as string | null,
+        })),
+        ...today.tasks.map((task) => ({
+          id: task.id,
+          kind: 'COACHING_TASK',
+          productLabel: 'Koçum',
+          title: task.title,
+          subtitle: `${task.durationMinutes} dk · Plan görevi`,
+          timeLabel: TR_TIME.format(new Date(task.scheduledFor)),
+          href: null as string | null,
+        })),
+        ...(today.assignments ?? []).map((item) => ({
+          id: item.id,
+          kind: 'ASSIGNMENT_DUE',
+          productLabel: 'Dershanem',
+          title: item.title,
+          subtitle: 'Ödev son tarihi',
+          timeLabel: TR_TIME.format(new Date(item.dueAt)),
+          href: null as string | null,
+        })),
+        ...(today.mockExams ?? []).map((item) => ({
+          id: item.id,
+          kind: 'MOCK_EXAM',
+          productLabel: 'Deneme Kulübü',
+          title: item.title,
+          subtitle: 'Online deneme',
+          timeLabel: TR_TIME.format(new Date(item.startsAt)),
+          href: null as string | null,
+        })),
+      ];
+  const todayEmpty = todayItems.length === 0;
 
   return (
     <ThemedView style={styles.flex}>
@@ -189,38 +244,22 @@ export default function AnaSayfaScreen() {
 
           <Card>
             <SectionLabel>Bugün</SectionLabel>
-            {today.lessons.length === 0 && today.tasks.length === 0 ? (
+            {todayEmpty ? (
               <ThemedText type="small" themeColor="textSecondary">
                 Bugün için planlanmış bir şey yok.
               </ThemedText>
             ) : (
               <View style={styles.rowGroup}>
-                {today.lessons.map((lesson, i) => (
-                  <View key={lesson.id} style={[styles.row, i > 0 && styles.rowDivider]}>
+                {todayItems.map((item, i) => (
+                  <View key={item.id} style={[styles.row, i > 0 && styles.rowDivider]}>
                     <View style={styles.rowTime}>
-                      <ThemedText type="smallBold">{TR_TIME.format(new Date(lesson.startsAt))}</ThemedText>
+                      <ThemedText type="smallBold">{item.timeLabel ?? '—'}</ThemedText>
                     </View>
                     <View style={styles.rowBody}>
-                      <ThemedText type="default">{lesson.title} · Canlı ders</ThemedText>
-                      {lesson.teacherName || lesson.groupName ? (
-                        <ThemedText type="small" themeColor="textSecondary">
-                          {[lesson.teacherName, lesson.groupName].filter(Boolean).join(' · ')}
-                        </ThemedText>
-                      ) : null}
-                    </View>
-                  </View>
-                ))}
-                {today.tasks.map((task, i) => (
-                  <View key={task.id} style={[styles.row, (i > 0 || today.lessons.length > 0) && styles.rowDivider]}>
-                    <View style={styles.rowTime}>
-                      <ThemedText type="smallBold">{TR_TIME.format(new Date(task.scheduledFor))}</ThemedText>
-                    </View>
-                    <View style={styles.rowBody}>
-                      <ThemedText type="default">
-                        {task.title} · {task.durationMinutes} dk
-                      </ThemedText>
+                      <ThemedText type="default">{item.title}</ThemedText>
                       <ThemedText type="small" themeColor="textSecondary">
-                        Haftalık plan görevi
+                        {item.productLabel}
+                        {item.subtitle ? ` · ${item.subtitle}` : ''}
                       </ThemedText>
                     </View>
                   </View>

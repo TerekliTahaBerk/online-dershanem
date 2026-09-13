@@ -90,5 +90,18 @@ export async function GET(req: Request) {
     }
 
     return { candidates: candidates.length, sent, failed, abandoned };
-  }, { metrics: (result) => ({ processedCount: result.candidates, failedCount: result.failed + result.abandoned }) });
+  }, {
+    // "abandoned" ile "failed" aynı sayaca girince, kalıcı olarak vazgeçilen
+    // e-posta (kullanıcı davetini HİÇ almadı) geçici bir hatadan ayırt
+    // edilemiyordu. Ayrı sinyaller.
+    metrics: (result) => ({
+      processedCount: result.candidates,
+      failedCount: result.failed + result.abandoned,
+      details: {
+        emailSent: result.sent,
+        emailRetryFailures: result.failed,
+        emailAbandoned: result.abandoned,
+      },
+    }),
+  });
 }

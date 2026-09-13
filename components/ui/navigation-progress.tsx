@@ -19,10 +19,15 @@ export function NavigationProgress() {
 
       const href = anchor.getAttribute("href");
       if (!href || !href.startsWith("/") || href.startsWith("/#")) return;
-      if (anchor.target === "_blank" || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      if (anchor.target === "_blank" || e.metaKey || e.ctrlKey || e.shiftKey)
+        return;
 
       const url = new URL(anchor.href, window.location.href);
-      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+      if (
+        url.pathname === window.location.pathname &&
+        url.search === window.location.search
+      )
+        return;
 
       setVisible(true);
       setProgress(10);
@@ -48,7 +53,8 @@ export function NavigationProgress() {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // İlerleme yalnız URL değişiminde sıfırlanır; progress/visible bağımlılıkları efekt döngüsü oluşturur.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- route-change-only reset
   }, [pathname, searchParams]);
 
   if (!visible && progress === 0) return null;

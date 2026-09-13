@@ -2,11 +2,14 @@ import { get } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { fileIdParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(request: Request, context: { params: Promise<{ fileId: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposu kullanılamıyor." }, { status: 503 });
-  const { fileId } = await context.params;
+  const params = fileIdParamsSchema.safeParse(await context.params);
+  if (!params.success) return invalidApiInput();
+  const { fileId } = params.data;
   const file = await prisma.odkExamFile.findUnique({ where: { id: fileId }, select: { blobPathname: true, fileName: true, mimeType: true } });
   if (!file) return NextResponse.json({ error: "Dosya bulunamadı." }, { status: 404 });
   const result = await get(file.blobPathname, { access: "private", ifNoneMatch: request.headers.get("if-none-match") || undefined });

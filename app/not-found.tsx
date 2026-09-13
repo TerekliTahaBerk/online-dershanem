@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { Home, ArrowLeft, Search } from "lucide-react";
 
 const POPULAR_LINKS = [
-  { href: "/ders-paketleri", label: "Matematik Ders Paketi" },
-  { href: "/yks", label: "YKS Matematik" },
-  { href: "/lgs", label: "LGS Matematik" },
+  { href: "/ders-paketleri", label: "Canlı Ders Seçenekleri" },
+  { href: "/yks", label: "YKS Matematik Canlı Ders" },
+  { href: "/lgs", label: "LGS Matematik Canlı Ders" },
   { href: "/misyonumuz", label: "Misyonumuz" },
   { href: "/iletisim", label: "İletişim" },
   { href: "/sss", label: "Sıkça Sorulan Sorular" },
@@ -19,8 +19,15 @@ export default function NotFound() {
   return (
     <main className="site-scope flex min-h-screen items-center justify-center bg-[var(--site-bg-warm)] px-5 py-16">
       <div className="text-center max-w-2xl">
-        <p className="select-none font-display text-7xl font-medium text-[var(--site-muted)]" aria-hidden="true">404</p>
-        <h1 className="mt-4 font-display text-[34px] text-[var(--site-ink)]">Sayfa bulunamadı</h1>
+        <p
+          className="select-none font-display text-7xl font-medium text-[var(--site-muted)]"
+          aria-hidden="true"
+        >
+          404
+        </p>
+        <h1 className="mt-4 font-display text-[34px] text-[var(--site-ink)]">
+          Sayfa bulunamadı
+        </h1>
         <p className="mt-3 text-sm leading-relaxed text-[var(--site-body)]">
           Aradığın sayfa taşınmış, silinmiş ya da hiç var olmamış olabilir.
         </p>
@@ -47,7 +54,9 @@ export default function NotFound() {
         <div className="mt-12 rounded-[24px] border border-[var(--site-line)] bg-white p-6 text-left shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
           <div className="flex items-center gap-2 mb-4">
             <Search className="h-4 w-4 text-[var(--brand-orange-ink)]" />
-            <h2 className="font-display text-[20px] text-[var(--site-ink)]">Popüler Sayfalar</h2>
+            <h2 className="font-display text-[20px] text-[var(--site-ink)]">
+              Popüler Sayfalar
+            </h2>
           </div>
           <ul className="grid sm:grid-cols-2 gap-2">
             {POPULAR_LINKS.map((link) => (

@@ -18,7 +18,15 @@ export const metadata = buildMarketingMetadata({
 });
 
 const planDays = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
-const planCells = ["#DFEBE5", "#14976B", "#EDF4F0", "#DFEBE5", "#14976B", "#EDF4F0", ""];
+const planCells = [
+  "#DFEBE5",
+  "#14976B",
+  "#EDF4F0",
+  "#DFEBE5",
+  "#14976B",
+  "#EDF4F0",
+  "",
+];
 
 /** ÜRÜN · ONLINE KOÇUM — onaylı tasarım (Web.dc.html → isOK). */
 export default function OnlineKocumPage() {
@@ -50,16 +58,25 @@ export default function OnlineKocumPage() {
                   <span
                     key={i}
                     className={`h-16 rounded-lg ${
-                      c ? "" : "border border-dashed border-[#D6E2DC] bg-dc-surface-muted"
+                      c
+                        ? ""
+                        : "border border-dashed border-[#D6E2DC] bg-dc-surface-muted"
                     }`}
-                    style={c ? { background: c, opacity: i === 4 ? 0.7 : 1 } : undefined}
+                    style={
+                      c
+                        ? { background: c, opacity: i === 4 ? 0.7 : 1 }
+                        : undefined
+                    }
                   />
                 ))}
               </div>
               <div className="mt-4 border-t border-dc-line-soft pt-4">
-                <p className="text-[14px] font-bold text-dc-ink">Bu haftanın durumu</p>
+                <p className="text-[14px] font-bold text-dc-ink">
+                  Bu haftanın durumu
+                </p>
                 <p className="mt-1 text-[13.5px] leading-[1.55] text-dc-ink-muted">
-                  Planın ne kadarının yapıldığı koç görüşmesinde birlikte işaretlenir.
+                  Planın ne kadarının yapıldığı koç görüşmesinde birlikte
+                  işaretlenir.
                 </p>
                 <span className="mt-3 block h-1.5 overflow-hidden rounded-full bg-[#E4EBE7]">
                   <span
@@ -103,8 +120,8 @@ export default function OnlineKocumPage() {
                 Koçun kararı, Dino AI&apos;ın bağlamı.
               </h2>
               <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
-                Dino AI ders ve deneme verisinden bu haftanın odak konularını önerir.
-                Planı kuran ve öğrenciyi tanıyan yine koçtur.
+                Dino AI ders ve deneme verisinden bu haftanın odak konularını
+                önerir. Planı kuran ve öğrenciyi tanıyan yine koçtur.
               </p>
             </div>
 
@@ -154,7 +171,11 @@ export default function OnlineKocumPage() {
           advantageNote="Online Dershanem ile birlikte daha avantajlı."
           price={singleProductPriceLabel("kocum")}
           priceSuffix="/ ay"
-          features={["Haftalık plan", "Birebir koç görüşmesi", "Dino AI plan önerileri"]}
+          features={[
+            "Haftalık plan",
+            "Birebir koç görüşmesi",
+            "Dino AI plan önerileri",
+          ]}
           priceFootnote="Üç ürünü birleştirdiğinde en avantajlı toplam."
         />
 
@@ -162,9 +183,9 @@ export default function OnlineKocumPage() {
             Durum açıkça yazılır; sayfa satın alınabilirmiş gibi davranmaz. */}
         <section className="site-container pt-6">
           <p className="rounded-dc-card-sm border border-dc-line bg-white px-5 py-4 text-[14.5px] leading-[1.6] text-dc-ink-muted">
-            Online Koçum için kayıtlar hazırlanıyor. Koçluk kontenjanı ve başlangıç
-            tarihi ön görüşmede netleşir; online kayıt akışı yayına alınmadan ödeme
-            almıyoruz.
+            Online Koçum için kayıtlar hazırlanıyor. Koçluk kontenjanı ve
+            başlangıç tarihi ön görüşmede netleşir; online kayıt akışı yayına
+            alınmadan ödeme almıyoruz.
           </p>
         </section>
 
@@ -180,7 +201,7 @@ export default function OnlineKocumPage() {
             },
             {
               q: "Ders almadan koçluk alabilir miyim?",
-              a: "Evet, Online Koçum tek başına satın alınabilir.",
+              a: "Evet, Online Koçum tek başına planlanabilir. Koçluk kontenjanı ve başlangıç tarihi ön görüşmede netleşir; online kayıt akışı açılmadan ödeme alınmaz.",
             },
           ]}
         />

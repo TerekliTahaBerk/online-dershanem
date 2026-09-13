@@ -52,7 +52,10 @@ export function PaytrIframeShell({
           {breadcrumb.map((item, idx) => {
             const isLast = idx === breadcrumb.length - 1;
             return (
-              <li key={`${item.label}-${idx}`} className="flex items-center gap-2">
+              <li
+                key={`${item.label}-${idx}`}
+                className="flex items-center gap-2"
+              >
                 {item.href && !isLast ? (
                   <Link
                     href={item.href}
@@ -105,7 +108,10 @@ export function PaytrIframeShell({
           role="alert"
           className="mb-6 flex gap-4 rounded-[16px] border border-amber-200 bg-amber-50/70 p-6"
         >
-          <Wrench className="size-5 text-amber-700 flex-shrink-0 mt-0.5" aria-hidden />
+          <Wrench
+            className="size-5 text-amber-700 flex-shrink-0 mt-0.5"
+            aria-hidden
+          />
           <div>
             <h2 className="font-display text-lg text-amber-950 mb-1">
               Ödeme sistemi şu anda yapılandırılıyor
@@ -126,7 +132,10 @@ export function PaytrIframeShell({
           role="alert"
           className="mb-6 flex gap-4 rounded-[16px] border border-rose-200 bg-rose-50/70 p-6"
         >
-          <AlertTriangle className="size-5 text-rose-700 flex-shrink-0 mt-0.5" aria-hidden />
+          <AlertTriangle
+            className="size-5 text-rose-700 flex-shrink-0 mt-0.5"
+            aria-hidden
+          />
           <div>
             <h2 className="font-display text-lg text-rose-950 mb-1">
               Ödeme başlatılamadı

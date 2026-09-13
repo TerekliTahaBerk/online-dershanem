@@ -8,6 +8,7 @@ import { dueAtForOdOnboardingState } from "@/lib/od/onboarding-state";
 import { prisma } from "@/lib/prisma";
 import { contractAccessWindow, parseOdkProductContract } from "@/lib/odk/product-contract";
 import { COMMERCE_TO_PRODUCT_CODE, MEMBERSHIP_BACKED_PRODUCTS } from "@/lib/commerce/product-mapping";
+import { log } from "@/lib/logger";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -28,7 +29,7 @@ export class OdProvisioningError extends Error {
 
 type DbClient = Prisma.TransactionClient;
 type Buyer = Record<string, unknown>;
-type IdentityUser = { id: string; role: UserRole; status: "ACTIVE" | "SUSPENDED" };
+type IdentityUser = { id: string; role: UserRole; status: "ACTIVE" | "SUSPENDED" | "ARCHIVED" };
 
 function textField(source: Buyer, key: string): string | null {
   const value = source[key];
@@ -316,6 +317,10 @@ export async function provisionOdOrder(
         where: { id: orderId },
         data: { userId: student.id, provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
       });
+      await tx.businessLead.updateMany({
+        where: { relatedOdOrderId: orderId },
+        data: { relatedOdUserId: student.id },
+      });
       await tx.commerceOrderLine.updateMany({
         where: { odOrderId: orderId, product: "OD", fulfillmentOwnerKey: email, fulfillmentStatus: { in: ["PENDING", "RUNNING", "RETRY_PENDING"] } },
         data: { fulfillmentOwnerUserId: student.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() },
@@ -347,6 +352,18 @@ export async function provisionOdOrder(
       data: { provisioningStatus: "RETRY_PENDING", provisioningError: message },
     });
     await prisma.auditLog.create({ data: { actorType: "SYSTEM", entityType: "OdOrder", entityId: orderId, action: "od.provisioning.retry_pending", summary: message, payload: { code: error instanceof OdProvisioningError ? error.code : "UNEXPECTED" } } });
+    const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+    // Sağlama arızası alarmı: bu yol zaten hata yolu, beklemenin kullanıcıya
+    // maliyeti yok — ama `void` bırakılırsa alarm hiç gitmeden süreç sonlanabilir.
+    await emitEducationAutomation("provisioning_failed", {
+      entityType: "order",
+      entityId: orderId,
+      product: "OD",
+      severity: "high",
+      href: "/panel/yonetim/siparisler",
+    }).catch((emitError: unknown) =>
+      log.error("provisioning.automation_emit_failed", emitError, { orderId, product: "OD" }),
+    );
     throw error;
   }
 }

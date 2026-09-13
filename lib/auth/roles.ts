@@ -40,6 +40,17 @@ export function rolePath(role: UserRole): string {
   return ROLE_HOME[role];
 }
 
+const ROLE_STUDENTS_PAGE: Record<UserRole, string | null> = {
+  ADMIN: "/panel/yonetim/ogrenciler",
+  TEACHER: "/panel/ogretmen/gruplar",
+  STUDENT: null,
+  PARENT: null,
+};
+
+export function roleStudentsPath(role: UserRole): string | null {
+  return ROLE_STUDENTS_PAGE[role];
+}
+
 const ODK_ROLE_HOME: Record<UserRole, string> = {
   ADMIN: "/panel/odk/yonetim",
   TEACHER: "/panel/odk/ogretmen",

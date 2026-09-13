@@ -29,7 +29,10 @@ export default async function ParentDinoPage({
   if (!getPanelFeatureFlags().dinoAi) notFound();
 
   const { studentId } = await searchParams;
-  const { children, selected } = await resolveParentScope(session.userId, studentId);
+  const { children, selected } = await resolveParentScope(
+    session.userId,
+    studentId,
+  );
 
   return (
     <PanelShell
@@ -49,7 +52,7 @@ export default async function ParentDinoPage({
         <PanelHeading
           eyebrow={selected?.name}
           title="Dino AI"
-          description="Çocuğunun panel kayıtlarını sade bir dille özetler."
+          description="Çocuğunun panelde gördüğün kayıtlarını açıklar. Öğretmen notları ve özel görüşme notları aktarılmaz."
         />
         {selected ? (
           <div className="mt-6">

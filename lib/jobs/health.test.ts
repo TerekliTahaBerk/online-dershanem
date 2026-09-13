@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { evaluateCronHeartbeats } from "./health";
+import { CRITICAL_CRON_DEFINITIONS, evaluateCronHeartbeats } from "./health";
 
 const now = new Date("2026-08-11T12:00:00.000Z");
 const row = (name: string, succeededMinutesAgo: number) => ({
@@ -28,6 +28,7 @@ test("son başarının ardından gelen hata sağlıklı heartbeat'i geçersiz k�
 
 test("eksik kritik işler ayrı ayrı missing raporlanır", () => {
   const report = evaluateCronHeartbeats([], now);
-  assert.equal(report.jobs.length, 6);
+  // Sabit sayı yazmak, yeni kritik cron eklendiğinde testi bayatlatıyordu.
+  assert.equal(report.jobs.length, CRITICAL_CRON_DEFINITIONS.length);
   assert.equal(report.jobs.every((job) => job.status === "missing"), true);
 });

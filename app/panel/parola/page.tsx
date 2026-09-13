@@ -14,7 +14,11 @@ export default async function ChangePasswordPage() {
   const forced = session.mustChangePassword;
 
   return (
-    <PanelShell role={session.role} fullName={session.fullName} email={session.email}>
+    <PanelShell
+      role={session.role}
+      fullName={session.fullName}
+      email={session.email}
+    >
       <div className="mx-auto max-w-[460px] py-6">
         <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
           <KeyRound size={19} aria-hidden="true" />
@@ -26,7 +30,7 @@ export default async function ChangePasswordPage() {
 
         <p className="mt-3 text-[14.5px] leading-7 text-[var(--site-body)]">
           {forced
-            ? "Hesabınızı ekibimiz açtı ve size geçici bir parola iletti. Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
+            ? "Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
             : "Yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapanır."}
         </p>
 
@@ -35,7 +39,8 @@ export default async function ChangePasswordPage() {
         </div>
 
         <p className="mt-5 text-[12.5px] leading-6 text-[var(--site-muted)]">
-          Parolanızı kaydettiğinizde bu hesaba açık olan diğer oturumlar güvenlik için kapatılır.
+          Parolanızı kaydettiğinizde bu hesaba açık olan diğer oturumlar
+          güvenlik için kapatılır.
         </p>
       </div>
     </PanelShell>

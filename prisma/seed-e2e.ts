@@ -3,6 +3,7 @@ import { hashPassword } from "../lib/auth/password";
 import { planningWeekStart } from "../lib/adaptive-plan";
 import { digestWeekStart } from "../lib/calm-weekly-digest";
 import { interventionWindowStart } from "../lib/intervention-rules";
+import { panelE2EAccounts } from "../lib/e2e/panel-accounts";
 
 const prisma = new PrismaClient();
 const odkContractPolicy = {
@@ -86,19 +87,26 @@ async function main() {
     throw new Error("E2E seed production ortamında çalıştırılamaz.");
   }
 
-  const password = process.env.E2E_PASSWORD || "testpass123";
-  const passwordHash = await hashPassword(password);
+  const fallbackPassword = process.env.E2E_PASSWORD ?? "testpass123";
+  const hashCache = new Map<string, string>();
+  const hashFor = async (password: string) => {
+    const cached = hashCache.get(password);
+    if (cached) return cached;
+    const next = await hashPassword(password);
+    hashCache.set(password, next);
+    return next;
+  };
   const users = [
-    { id: ids.admin, email: "admin.e2e@example.com", fullName: "E2E Yönetici", role: "ADMIN" as const },
-    { id: ids.teacher, email: "teacher.e2e@example.com", fullName: "E2E Öğretmen", role: "TEACHER" as const },
+    { id: ids.admin, email: panelE2EAccounts.admin.email, password: panelE2EAccounts.admin.password, fullName: "E2E Yönetici", role: "ADMIN" as const },
+    { id: ids.teacher, email: panelE2EAccounts.teacher.email, password: panelE2EAccounts.teacher.password, fullName: "E2E Öğretmen", role: "TEACHER" as const },
     { id: ids.otherTeacher, email: "other.teacher.e2e@example.com", fullName: "Başka Öğretmen", role: "TEACHER" as const },
-    { id: ids.student, email: "student.e2e@example.com", fullName: "Ada Öğrenci", role: "STUDENT" as const },
+    { id: ids.student, email: panelE2EAccounts.student.email, password: panelE2EAccounts.student.password, fullName: "Ada Öğrenci", role: "STUDENT" as const },
     { id: ids.foreignStudent, email: "foreign.student.e2e@example.com", fullName: "Bora Yabancı", role: "STUDENT" as const },
     { id: ids.student3, email: "student3.e2e@example.com", fullName: "Cem Öğrenci", role: "STUDENT" as const },
     { id: ids.student4, email: "student4.e2e@example.com", fullName: "Duru Öğrenci", role: "STUDENT" as const },
-    { id: ids.odkStudent, email: "odk.student.e2e@example.com", fullName: "Ece ODK Öğrenci", role: "STUDENT" as const },
+    { id: ids.odkStudent, email: panelE2EAccounts.odkStudent.email, password: panelE2EAccounts.odkStudent.password, fullName: "Ece ODK Öğrenci", role: "STUDENT" as const },
     { id: ids.planForeignStudent, email: "plan.foreign.student.e2e@example.com", fullName: "Yalnız Yabancı Öğrenci", role: "STUDENT" as const },
-    { id: ids.parent, email: "parent.e2e@example.com", fullName: "E2E Veli", role: "PARENT" as const },
+    { id: ids.parent, email: panelE2EAccounts.parent.email, password: panelE2EAccounts.parent.password, fullName: "E2E Veli", role: "PARENT" as const },
     // İşletme RBAC fixture'ları. Hepsi platformda ADMIN'dir; aralarındaki tek
     // fark BusinessRoleAssignment satırlarıdır. Böylece testler gerçekten
     // işletme rolünü ölçer, platform rolünü değil.
@@ -110,15 +118,56 @@ async function main() {
     { id: ids.businessNoAccess, email: "business.noaccess.e2e@example.com", fullName: "E2E Atamasız", role: "ADMIN" as const },
   ];
 
+  const requiredFixtureEmails = [
+    panelE2EAccounts.admin.email,
+    panelE2EAccounts.teacher.email,
+    panelE2EAccounts.student.email,
+    panelE2EAccounts.parent.email,
+    panelE2EAccounts.odkStudent.email,
+  ];
+  if (new Set(requiredFixtureEmails).size !== requiredFixtureEmails.length) {
+    throw new Error("PANEL_E2E fixture email values must be distinct for admin/teacher/student/parent/odkStudent.");
+  }
+
   for (const user of users) {
+    const passwordHash = await hashFor(user.password ?? fallbackPassword);
     await prisma.user.upsert({
       where: { email: user.email },
-      create: { ...user, passwordHash, mustChangePassword: false, status: "ACTIVE" },
-      update: { passwordHash, fullName: user.fullName, role: user.role, status: "ACTIVE", mustChangePassword: false, failedAttempts: 0, lockedUntil: null },
+      create: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        passwordHash,
+        mustChangePassword: false,
+        inviteAcceptedAt: new Date(),
+        passwordChangedAt: new Date(),
+        status: "ACTIVE",
+      },
+      update: {
+        passwordHash,
+        fullName: user.fullName,
+        role: user.role,
+        status: "ACTIVE",
+        mustChangePassword: false,
+        inviteAcceptedAt: new Date(),
+        passwordChangedAt: new Date(),
+        failedAttempts: 0,
+        lockedUntil: null,
+      },
     });
   }
 
-  for (const userId of [ids.student, ids.parent]) {
+  /*
+   * Online Dershanem (OD) erişimi.
+   *
+   * `planForeignStudent` KASITLI olarak bu listede: yatay erişim testlerinin
+   * "kapsam dışı" öğrencisi o. Ürün erişimi olmayan bir öğrencinin takvimi
+   * zaten boş döner; sızıntı testi o hâlde bir şey KANITLAMAZ. Bu öğrencinin
+   * gerçek ders/ödev verisi görünür olmalı ki kapsam kontrolü kalktığında test
+   * kırmızı yansın.
+   */
+  for (const userId of [ids.student, ids.parent, ids.planForeignStudent]) {
     await prisma.productMembership.upsert({
       where: { userId_product: { userId, product: "OD" } },
       create: { userId, product: "OD", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) },
@@ -244,7 +293,10 @@ async function main() {
   const odkStartsAt = new Date(Date.now() - 2 * 60 * 1000);
   const odkEndsAt = new Date(Date.now() + 60 * 60 * 1000);
   await prisma.odkScoringPolicy.upsert({ where: { code: "LGS_MATH_V1" }, create: { id: "e2e-odk-policy-lgs", code: "LGS_MATH_V1", title: "LGS Matematik · E2E", wrongPenalty: 3 }, update: { wrongPenalty: 3 } });
-  await prisma.odkExam.upsert({ where: { id: ids.odkExam }, create: { id: ids.odkExam, title: "E2E Canlı Matematik Denemesi", slug: "e2e-canli-matematik-denemesi", family: "LGS", status: "SCHEDULED", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), createdById: ids.admin }, update: { status: "SCHEDULED", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), resultsReleasedAt: null, answerKeyReleasedAt: null } });
+  await prisma.odkScoringPolicy.upsert({ where: { code: "LGS_FULL_V1" }, create: { id: "e2e-odk-policy-lgs-full", code: "LGS_FULL_V1", title: "LGS Tam · E2E", wrongPenalty: 3 }, update: { wrongPenalty: 3 } });
+  await prisma.odkScoringPolicy.upsert({ where: { code: "TYT_FULL_V1" }, create: { id: "e2e-odk-policy-tyt-full", code: "TYT_FULL_V1", title: "TYT Tam · E2E", wrongPenalty: 4 }, update: { wrongPenalty: 4 } });
+  await prisma.odkScoringPolicy.upsert({ where: { code: "AYT_FULL_V1" }, create: { id: "e2e-odk-policy-ayt-full", code: "AYT_FULL_V1", title: "AYT Tam · E2E", wrongPenalty: 4 }, update: { wrongPenalty: 4 } });
+  await prisma.odkExam.upsert({ where: { id: ids.odkExam }, create: { id: ids.odkExam, title: "E2E Canlı Matematik Denemesi", slug: "e2e-canli-matematik-denemesi", family: "LGS", status: "SCHEDULED", structureMode: "MATH_ONLY", templateCode: "LGS_MATH", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), createdById: ids.admin }, update: { status: "SCHEDULED", structureMode: "MATH_ONLY", templateCode: "LGS_MATH", startsAt: odkStartsAt, endsAt: odkEndsAt, lateEntryMinutes: 10, meetRequired: false, publishedAt: new Date(), resultsReleasedAt: null, answerKeyReleasedAt: null } });
   const policy = await prisma.odkScoringPolicy.findUniqueOrThrow({ where: { code: "LGS_MATH_V1" } });
   await prisma.odkExamVersion.upsert({ where: { id: ids.odkVersion }, create: { id: ids.odkVersion, examId: ids.odkExam, versionNumber: 1, status: "LOCKED", durationMinutes: 60, scoringPolicyId: policy.id, createdById: ids.admin, lockedAt: new Date() }, update: { status: "LOCKED", durationMinutes: 60, scoringPolicyId: policy.id, lockedAt: new Date() } });
   await prisma.odkExamSection.upsert({ where: { id: ids.odkSection }, create: { id: ids.odkSection, versionId: ids.odkVersion, code: "MAT", title: "Matematik", position: 0, questionCount: 2 }, update: { questionCount: 2 } });

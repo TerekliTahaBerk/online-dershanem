@@ -38,6 +38,17 @@ test("her rolün en az bir sorusu var ve katalogda çakışan anahtar yok", () =
   assert.equal(new Set(keys).size, keys.length);
 });
 
+test("dahili explanation soruları çip listesine çıkmaz ama allowlistte kalır", () => {
+  const studentChips = dinoQuestionsFor("STUDENT").map((item) => item.key);
+  assert.equal(studentChips.includes("student_nba_reason"), false);
+  assert.equal(studentChips.includes("student_odk_reason"), false);
+  assert.ok(findDinoQuestion("student_nba_reason", "STUDENT"));
+  assert.ok(findDinoQuestion("student_odk_reason", "STUDENT"));
+  assert.ok(findDinoQuestion("student_plan_why", "STUDENT"));
+  assert.ok(findDinoQuestion("parent_support", "PARENT"));
+  assert.ok(findDinoQuestion("teacher_today", "TEACHER"));
+});
+
 /* ── Çıktı doğrulama ───────────────────────────────────────────────── */
 
 test("geçerli yanıt kabul edilir", () => {
@@ -104,7 +115,7 @@ test("yedek yanıt yorum uydurmaz, kaynakları olduğu gibi listeler", () => {
     sources,
   };
   const fallback = dinoFallbackAnswer(safe);
-  assert.match(fallback.text, /yorum üretilemiyor/i);
+  assert.match(fallback.text, /açıklamayı şu anda hazırlayamadı/i);
   assert.ok(fallback.text.includes("6 dersin 5 tanesine katıldı."));
   assert.deepEqual(fallback.citations, ["ATTENDANCE", "PLAN_TASKS"]);
 });
@@ -116,5 +127,5 @@ test("kaynak yokken yedek yanıt veri olmadığını söyler", () => {
     questionLabel: "Çocuğum bu hafta nasıl gitti?",
     sources: [],
   });
-  assert.match(fallback.text, /kayıtlı veri bulunamadı/i);
+  assert.match(fallback.text, /yeterli dayanak yok/i);
 });

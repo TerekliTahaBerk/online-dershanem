@@ -5,7 +5,18 @@ import { reportOperationalAlert } from "@/lib/error-capture";
 import { log } from "@/lib/logger";
 import { CRITICAL_CRON_DEFINITIONS, safeErrorCode, type CriticalCronName } from "./health";
 
-export type CronRunMetrics = { processedCount?: number; failedCount?: number };
+/**
+ * `processedCount`/`failedCount` heartbeat tablosunda tutulan iki genel sayaç.
+ * `details` ise işe ÖZGÜ sayaçlar: tek generic sayaca doldurulunca hangi
+ * arızanın büyüdüğü görünmüyordu (ölü mektup mu, bayat kilit mi, e-posta
+ * sağlayıcı hatası mı?). Bunlar şemayı büyütmeden yapılandırılmış log satırına
+ * yazılır ve log toplayıcıda ayrı metrik olarak çıkarılabilir.
+ */
+export type CronRunMetrics = {
+  processedCount?: number;
+  failedCount?: number;
+  details?: Record<string, number>;
+};
 
 export async function startCronRun(name: CriticalCronName) {
   const runId = randomUUID();
@@ -29,6 +40,13 @@ export async function succeedCronRun(name: CriticalCronName, runId: string, star
       failedCount: Math.max(0, metrics.failedCount ?? 0),
       lastErrorCode: null,
     },
+  });
+  log.info("cron.run.succeeded", {
+    job: name,
+    durationMs: Math.max(0, completedAt.getTime() - startedAt.getTime()),
+    processedCount: Math.max(0, metrics.processedCount ?? 0),
+    failedCount: Math.max(0, metrics.failedCount ?? 0),
+    ...(metrics.details ?? {}),
   });
 }
 

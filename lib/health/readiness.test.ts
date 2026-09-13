@@ -48,10 +48,24 @@ const productionEnv = {
 } as NodeJS.ProcessEnv;
 
 test("readiness DB ve bütün kritik heartbeat'ler sağlıklıysa hazırdır", () => {
-  const report = buildReadinessReport({ db: { ok: true, latencyMs: 4 }, heartbeats, now, env });
+  const report = buildReadinessReport({ db: { ok: true, latencyMs: 4 }, schema: { ok: true }, heartbeats, now, env });
   assert.equal(report.ready, true);
   assert.equal(report.checks.database.status, "ok");
-  assert.equal(report.checks.cron.jobs.length, 6);
+  assert.equal(report.checks.cron.jobs.length, CRITICAL_CRON_DEFINITIONS.length);
+});
+
+test("erişilebilir fakat geride kalmış veritabanı şeması readiness'i kapatır", () => {
+  const report = buildReadinessReport({
+    db: { ok: true, latencyMs: 4 },
+    schema: { ok: false },
+    heartbeats,
+    now,
+    env,
+  });
+  assert.equal(report.ready, false);
+  assert.equal(report.checks.database.status, "ok");
+  assert.equal(report.checks.databaseSchema.status, "down");
+  assert.equal(report.checks.databaseSchema.code, "DATABASE_SCHEMA_INCOMPATIBLE");
 });
 
 test("stale cron readiness'i düşürürken secret değerleri çıktıya girmez", () => {
@@ -80,6 +94,7 @@ test("production readiness etkin Upstash backend'ini açıkça raporlar", () => 
   assert.equal(report.ready, true);
   assert.equal(report.checks.cache.status, "ok");
   assert.equal(report.checks.cache.backend, "upstash");
+  assert.deepEqual(report.checks.alerts.requiredEnv, ["ERROR_ALERT_WEBHOOK_URL"]);
 });
 
 test("production readiness Redis outage'ında kapanır ve degradation sebebini gösterir", () => {

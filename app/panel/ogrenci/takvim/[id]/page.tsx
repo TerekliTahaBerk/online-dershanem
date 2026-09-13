@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelHeading, PanelCard } from "@/components/panel/ui";
-import { DinoInsightCard } from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +34,9 @@ export default async function StudentLessonDetailPage({
   const session = await requireRole("STUDENT");
   const { id } = await params;
 
-  const profile = await prisma.studentProfile.findUnique({ where: { userId: session.userId } });
+  const profile = await prisma.studentProfile.findUnique({
+    where: { userId: session.userId },
+  });
   if (!profile) notFound();
 
   // Öğrencinin kayıtlı olduğu grupların dersleri dışına çıkılamaz.
@@ -50,8 +51,13 @@ export default async function StudentLessonDetailPage({
     include: {
       group: { select: { name: true } },
       teacher: { select: { fullName: true } },
-      notes: { where: { OR: [{ studentId: null }, { studentId: profile.id }] } },
-      attendances: { where: { studentId: profile.id }, select: { status: true } },
+      notes: {
+        where: { OR: [{ studentId: null }, { studentId: profile.id }] },
+      },
+      attendances: {
+        where: { studentId: profile.id },
+        select: { status: true },
+      },
     },
   });
   if (!lesson) notFound();
@@ -64,7 +70,9 @@ export default async function StudentLessonDetailPage({
     where: { groupId: lesson.groupId, isActive: true },
     orderBy: { dueAt: "desc" },
     take: 3,
-    include: { progress: { where: { studentId: profile.id }, select: { status: true } } },
+    include: {
+      progress: { where: { studentId: profile.id }, select: { status: true } },
+    },
   });
 
   const attendanceLabel =
@@ -94,13 +102,19 @@ export default async function StudentLessonDetailPage({
         <div className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-b border-dc-line pb-5 text-[14px] font-medium text-[var(--pd-ink-3)]">
           <span>Öğretmen: {lesson.teacher.fullName || "—"}</span>
           <span>Grup: {lesson.group.name}</span>
-          <span className={attendance === "ABSENT" ? "text-[#8A5F37]" : "text-dc-brand-hover"}>
+          <span
+            className={
+              attendance === "ABSENT" ? "text-[#8A5F37]" : "text-dc-brand-hover"
+            }
+          >
             {attendanceLabel}
           </span>
         </div>
 
         <section className="mt-6">
-          <h2 className="text-[16px] font-bold text-dc-ink">Derste ne işlendi?</h2>
+          <h2 className="text-[16px] font-bold text-dc-ink">
+            Derste ne işlendi?
+          </h2>
           <p className="mt-2 text-[14.5px] leading-[1.7] text-[var(--pd-ink-3)]">
             {shared?.topic ||
               "Öğretmen bu dersin özetini henüz eklemedi. Eklendiğinde burada görünecek."}
@@ -131,7 +145,10 @@ export default async function StudentLessonDetailPage({
               {assignments.map((a) => {
                 const done = a.progress[0]?.status === "DONE";
                 return (
-                  <PanelCard key={a.id} className="flex flex-wrap items-center gap-4">
+                  <PanelCard
+                    key={a.id}
+                    className="flex flex-wrap items-center gap-4"
+                  >
                     <span className="min-w-0 flex-1">
                       <span className="block text-[14.5px] font-semibold text-dc-ink">
                         {a.title}
@@ -168,8 +185,6 @@ export default async function StudentLessonDetailPage({
             </p>
           </section>
         ) : null}
-
-        <DinoInsightCard insight={null} basis={null} />
 
         <p className="mt-4 text-[12.5px] leading-[1.6] text-dc-ink-faint">
           Bu dersin veliye açık özeti: işlenen konu, katılım ve verilen çalışma.

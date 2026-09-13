@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { revalidateCurriculumCatalog } from "@/lib/curriculum/catalog-cache";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
 const code = z.string().trim().min(1).max(50).regex(/^[A-Za-z0-9._-]+$/);
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
       await tx.auditLog.create({ data: { actorUserId: auth.session.userId, actorType: "USER", entityType: "LearningOutcome", entityId: created.id, action: "curriculum.outcome_created", summary: `${created.code} kazanımı oluşturuldu`, payload: { versionId: version.id, subjectCode: subject.code, unitCode: unit.code, skillCount: parsed.data.skills.length } } });
       return created;
     });
+    revalidateCurriculumCatalog();
     return NextResponse.json({ id: outcome.id });
   } catch (error) {
     if (typeof error === "object" && error && "code" in error && error.code === "P2002") return NextResponse.json({ error: "Bu ünitede aynı kazanım kodu zaten var." }, { status: 409 });

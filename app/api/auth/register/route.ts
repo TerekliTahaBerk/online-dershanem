@@ -99,6 +99,8 @@ export async function POST(request: Request) {
         status: "ACTIVE",
         // Kullanıcı parolayı kendisi belirledi; zorunlu değiştirme yok.
         mustChangePassword: false,
+        inviteAcceptedAt: new Date(),
+        passwordChangedAt: new Date(),
       },
       select: { id: true },
     });

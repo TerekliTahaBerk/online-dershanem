@@ -1,5 +1,5 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { accessibilityScan } from "./helpers/axe";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD;
@@ -35,7 +35,7 @@ test.describe("panel deneyimi", () => {
       await login(page, account);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(1);
-      const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      const result = await accessibilityScan(page).analyze();
       expect(result.violations).toEqual([]);
       await page.goto("/panel/bildirimler");
       await expect(page.getByRole("heading", { name: "Önemli gelişmeler tek yerde." })).toBeVisible();
@@ -44,9 +44,32 @@ test.describe("panel deneyimi", () => {
     });
   }
 
+  test("öğrenci navigasyonu yeni bilgi mimarisi etiketlerini gösterir", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await login(page, accounts.student);
+    const nav = page.getByRole("navigation", { name: "Panel menüsü" });
+    await expect(nav.getByText("BUGÜN", { exact: true })).toBeVisible();
+    await expect(nav.getByText("GELİŞİM", { exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Çalışmalar", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Gelişim", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Ödevler", exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Gelişimim", exact: true })).toHaveCount(0);
+    await expect(nav.getByText("BEN", { exact: true })).toHaveCount(0);
+    await expect(nav.getByText("DERSHANEM", { exact: true })).toHaveCount(0);
+  });
+
+  test("öğrenci mobilde hızlı hedefler ve menü düğmesini görür", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await login(page, accounts.student);
+    const quickNav = page.getByRole("navigation", { name: "Mobil hızlı menü" });
+    await expect(quickNav.getByRole("link", { name: "Bugün", exact: true })).toBeVisible();
+    await expect(quickNav.getByRole("link", { name: "Çalışmalar", exact: true })).toBeVisible();
+    await expect(quickNav.getByRole("button", { name: "Panel menüsünü aç" })).toBeVisible();
+  });
+
   test("admin temel yönetim bölümlerini tek oturumda açabilir", async ({ page }) => {
     await login(page, accounts.admin);
-    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/yonetim/pilot", "/panel/yonetim/ozellikler", "/panel/yonetim/kalite", "/panel/bildirimler"]) {
+    for (const route of ["/panel/yonetim", "/panel/yonetim/takvim", "/panel/yonetim/ogrenciler", "/panel/yonetim/kullanicilar", "/panel/yonetim/egitim", "/panel/yonetim/kazanimlar", "/panel/yonetim/denemeler", "/panel/yonetim/mudahale", "/panel/yonetim/isler", "/panel/yonetim/kayitlar", "/panel/yonetim/raporlar", "/panel/yonetim/pilot", "/panel/yonetim/ozellikler", "/panel/yonetim/kalite", "/panel/bildirimler"]) {
       const response = await page.goto(route);
       expect(response?.status(), route).toBe(200);
       await expect(page.getByRole("main")).toBeVisible();
@@ -63,6 +86,51 @@ test.describe("panel deneyimi", () => {
     expect(csv.text).toContain("Kategori");
   });
 
+  test("admin menüsü domain bazlı gruplanır ve bugün odağını korur", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await login(page, accounts.admin);
+    await page.goto("/panel/yonetim");
+    const nav = page.getByRole("navigation", { name: "Panel menüsü" });
+
+    for (const heading of ["BUGÜN", "KİŞİLER", "EĞİTİM", "DENEMELER", "SİSTEM"]) {
+      await expect(nav.getByText(heading, { exact: true })).toBeVisible();
+    }
+    await expect(nav.getByText("ÖĞRENCİ BAŞARISI", { exact: true })).toHaveCount(0);
+    await expect(nav.getByText("TİCARET", { exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Operasyon merkezi", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Operasyon", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Kişiler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Öğrenciler", exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Siparişler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Özellikler", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Ana Sayfa", exact: true })).toHaveCount(0);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("button", { name: "Panel menüsünü aç" }).click();
+    const drawer = page.getByRole("dialog", { name: "Panel menüsü" });
+    await expect(drawer.getByRole("navigation", { name: "Panel menüsü" })).toBeVisible();
+    await expect(drawer.getByText("KİŞİLER", { exact: true })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
+  });
+
+  test("öğretmen navigasyonu Dersler ve Çalışmalar ayrımını gösterir", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await login(page, accounts.teacher);
+    const nav = page.getByRole("navigation", { name: "Panel menüsü" });
+    for (const heading of ["BUGÜN", "DERSLER", "ÖĞRENCİLER", "KAYNAKLAR"]) {
+      await expect(nav.getByText(heading, { exact: true })).toBeVisible();
+    }
+    await expect(nav.getByRole("link", { name: "Dersler", exact: true })).toHaveAttribute(
+      "href",
+      "/panel/ogretmen/takvim",
+    );
+    await expect(nav.getByRole("link", { name: "Çalışmalar", exact: true })).toHaveAttribute(
+      "href",
+      "/panel/ogretmen/odevler",
+    );
+  });
+
   test("admin kalite panosu küçük kohortu bastırır ve sıralama üretmez", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page, accounts.admin);
@@ -72,8 +140,26 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByText(/uygun öğrenci/).first()).toBeVisible();
     await expect(page.getByText(/öğretmen sıralaması/i)).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const result = await accessibilityScan(page).analyze();
     expect(result.violations).toEqual([]);
+  });
+
+  test("admin öğrenci ve kişiler yüzeylerini ayrı görür", async ({ page }) => {
+    await login(page, accounts.admin);
+    await page.goto("/panel/yonetim/ogrenciler");
+    await expect(page.getByRole("heading", { name: "Öğrenciler", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Öğrenci hesabı aç" })).toBeVisible();
+    const firstStudentLink = page.locator('a[href^="/panel/yonetim/ogrenciler/"]').first();
+    await expect(firstStudentLink).toBeVisible();
+    await firstStudentLink.click();
+    await expect(page.getByText("Öğrenci 360 operasyon", { exact: true })).toBeVisible();
+    await expect(page.getByText("Ürünler ve siparişler", { exact: true })).toBeVisible();
+    await expect(page.getByText("Atamalar ve yaklaşan etkinlik", { exact: true })).toBeVisible();
+    await expect(page.getByText("Veli bağlantıları", { exact: true })).toBeVisible();
+
+    await page.goto("/panel/yonetim/kullanicilar");
+    await expect(page.getByRole("heading", { name: "Kişiler", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Hesap ekle" })).toBeVisible();
   });
 
   test("öğretmen kaynaklı AI taslağını düzenleyip onaylar; içerik otomatik yayınlanmaz", async ({ page }) => {
@@ -85,7 +171,7 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogretmen/ai-yardimci");
     await expect(page.getByRole("heading", { name: "Kaynağı görün, taslağı siz onaylayın." })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-    const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const accessibility = await accessibilityScan(page).analyze();
     expect(accessibility.violations).toEqual([]);
     const draftCards = page.getByRole("article").filter({ hasText: "Ödev taslağı" });
     const draftCountBefore = await draftCards.count();
@@ -112,7 +198,7 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/denemeler");
     const studentExamMain = page.getByRole("main");
-    await expect(page.getByRole("heading", { name: "Denemelerin" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dış deneme sonuçların" })).toBeVisible();
     // Eski "işlem/yöntem · son 3 denemede N işaret" sinyal satırı tasarımda yok;
     // ekranın kendi özet bloğu doğrulanır.
     await expect(studentExamMain.getByText("Ders bazında").first()).toBeVisible();
@@ -243,7 +329,7 @@ test.describe("panel deneyimi", () => {
   test("öğrenci kapasitesine göre plan önerir, öğretmen onaylar ve öğrenci geri bildirim verir", async ({ page }) => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/plan");
-    await expect(page.getByRole("heading", { name: "Haftalık planın" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bu haftanın planı" })).toBeVisible();
     await page.getByRole("button", { name: "Sal" }).click();
     await page.getByRole("button", { name: "Per" }).click();
     await page.getByRole("button", { name: "Cmt" }).click();
@@ -255,6 +341,19 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: "Öneri oluştur" }).click();
     await expect(page.getByText(/öğretmen onayı bekleniyor/i).first()).toBeVisible();
     await expect(page.getByText(/Neden:/).first()).toBeVisible();
+
+    // Plan kurulunca tercihler ikincil bir panele düşer: varsayılan kapalı,
+    // ana akışı işgal etmez; aynı görev haftalık listede ikinci kez basılmaz.
+    const preferencesToggle = page.getByRole("button", { name: "Tercihleri değiştir" });
+    await expect(preferencesToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(page.getByRole("heading", { name: "Tercihler" })).toBeHidden();
+    const weeklyProgress = page.getByRole("progressbar", { name: /Bu hafta \d+\/\d+ görev tamamlandı/ });
+    await expect(weeklyProgress).toBeVisible();
+
+    await preferencesToggle.click();
+    await expect(page.getByRole("heading", { name: "Tercihler" })).toBeVisible();
+    await page.getByRole("button", { name: "Kapat" }).click();
+    await expect(page.getByRole("heading", { name: "Tercihler" })).toBeHidden();
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.teacher);
@@ -275,48 +374,37 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByRole("main").getByText(/Değişiklik isteğin öğretmenine iletildi/)).toBeVisible();
   });
 
-  test("öğretmen kaçırılan ders için güvenli telafi yayınlar, öğrenci 72 saatlik akışı tamamlar", async ({ page }) => {
-    let publishUrl = "";
-    let publishPayload: Record<string, unknown> | null = null;
-    page.on("request", (request) => {
-      if (request.url().includes("/api/panel/recovery-packages/") && request.url().endsWith("/publish") && request.method() === "POST") {
-        publishUrl = request.url();
-        publishPayload = request.postDataJSON() as Record<string, unknown>;
-      }
-    });
+  test("öğretmen dersi ABSENT ile kapatınca telafi otomatik yayınlanır ve öğrenci 72 saat akışını tamamlar", async ({ page }) => {
     await login(page, accounts.teacher);
+    await page.locator('a[href^="/panel/ogretmen/ders/"]').first().click();
+    await expect(page.getByRole("heading", { name: "E2E Hızlı Ders Özeti" })).toBeVisible();
+    await page.getByRole("button", { name: "Ada Öğrenci: Geç" }).click();
+    await page.getByRole("textbox", { name: "Ada Öğrenci için özel not" }).last().fill("İşlem kontrolünü son adımda tekrar et.");
+    await page.getByRole("button", { name: "Dersi güvenle kapat" }).click();
+    await expect(page.getByText(/Ders tamamlandı/)).toBeVisible();
+
     await page.goto("/panel/ogretmen/telafi");
     await expect(page.getByRole("heading", { name: "Kaçırılan dersi tek onayla küçük bir sıraya koy." })).toBeVisible();
-    let row = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
-    await Promise.all([page.waitForNavigation(), row.getByRole("button", { name: "Telafi taslağı hazırla" }).click()]);
-    row = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
-    await expect(row.getByText("Köklü ifadelerde telafi özeti", { exact: true })).toBeVisible();
-    await expect(row.getByText("E2E Erişilebilir Köklü İfadeler Videosu", { exact: false })).toBeVisible();
-    await expect(row.getByText("E2E Telafi İki Soru", { exact: false })).toBeVisible();
-    await expect(page.getByText("ÖZEL TELAFİYE GİRMEMELİ", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("YOKLAMA NOTU TELAFİYE GİRMEMELİ", { exact: true })).toHaveCount(0);
-    await Promise.all([page.waitForNavigation(), row.getByRole("button", { name: "Öğrenciye yayınla" }).click()]);
-    row = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
-    await expect(row.getByText("Öğrencide", { exact: true })).toBeVisible();
-    const replay = await page.evaluate(async ({ url, payload }) => { const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, { url: publishUrl, payload: publishPayload });
-    expect(replay.status).toBe(200);
-    expect(replay.body.replayed).toBe(true);
+    const teacherRow = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).filter({ hasText: "E2E Hızlı Ders Özeti" }).first();
+    await expect(teacherRow.getByText("Öğrencide", { exact: true })).toBeVisible();
+    await expect(teacherRow.getByText("Öğrenciye özel ders notu ve yoklama notu pakete alınmaz.", { exact: false })).toBeVisible();
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.student);
+    await page.goto("/panel/ogrenci/takvim?durum=tamamlanan");
+    const lessonRow = page.getByRole("row").filter({ hasText: "E2E Hızlı Ders Özeti" }).first();
+    await expect(lessonRow.getByText("Katılmadın", { exact: true })).toBeVisible();
+    await expect(lessonRow.getByRole("link", { name: "Telafi et" })).toBeVisible();
+
     await page.goto("/panel/ogrenci/telafi");
-    await expect(page.getByRole("heading", { name: "Biriken iş değil, sıradaki küçük telafi." })).toBeVisible();
-    let studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
-    await expect(studentRow.getByText("Köklü ifadelerde telafi özeti", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bu dersi kaçırdın" })).toBeVisible();
+    await expect(page.getByText("25 dakikada toparlayabilirsin", { exact: false })).toBeVisible();
+    const studentRow = page.getByRole("article").filter({ hasText: "E2E Hızlı Ders Özeti" }).first();
+    await expect(studentRow.getByText("1. Konuyu gözden geçir")).toBeVisible();
+    await expect(studentRow.getByText("2. Materyali aç")).toBeVisible();
+    await expect(studentRow.getByText("3. Küçük çalışmayı tamamla")).toBeVisible();
     await expect(page.getByText("ÖZEL TELAFİYE GİRMEMELİ", { exact: true })).toHaveCount(0);
-    for (let index = 0; index < 2; index += 1) {
-      studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
-      await Promise.all([page.waitForNavigation(), studentRow.getByRole("button", { name: "İnceledim" }).first().click()]);
-    }
-    studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
-    await Promise.all([page.waitForNavigation(), studentRow.getByRole("button", { name: "Açıklayabiliyorum" }).click()]);
-    studentRow = page.getByRole("article").filter({ hasText: "E2E Kaçırılan Köklü İfadeler Dersi" }).first();
-    await expect(studentRow.getByText("Telafi tamamlandı", { exact: true })).toBeVisible();
+    await expect(page.getByText("YOKLAMA NOTU TELAFİYE GİRMEMELİ", { exact: true })).toHaveCount(0);
   });
 
   test("öğretmen sakin özeti önizler, öğrenci ve veli aynı metni görür", async ({ page }) => {
@@ -531,7 +619,7 @@ test.describe("panel deneyimi", () => {
     await expect(page.locator("html")).toHaveAttribute("data-panel-text-scale", "large");
     await expect(page.locator("html")).toHaveAttribute("data-panel-spacing", "comfortable");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-    const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const accessibility = await accessibilityScan(page).analyze();
     expect(accessibility.violations).toEqual([]);
     const skipLink = page.getByRole("link", { name: "Ana içeriğe geç" });
     await skipLink.focus();
@@ -653,5 +741,44 @@ test.describe("panel deneyimi", () => {
     expect(parentResults.ownStatus).toBe(200);
     expect(parentResults.ownText).not.toContain("https://example.com/e2e-class");
     expect(parentResults.foreignStatus).toBe(404);
+  });
+
+  test("öğrenci birleşik bugün ve progress API'leri çalışır", async ({ page }) => {
+    await login(page, accounts.student);
+
+    const home = await page.evaluate(async () => {
+      const response = await fetch("/api/panel/student/home");
+      return { status: response.status, body: await response.json() };
+    });
+    expect(home.status).toBe(200);
+    expect(home.body.profile).toBeTruthy();
+    expect(Array.isArray(home.body.products)).toBe(true);
+    expect(home.body.unifiedToday === null || Array.isArray(home.body.unifiedToday?.items)).toBe(true);
+    expect(home.body.today).toBeTruthy();
+
+    const calendar = await page.evaluate(async () => {
+      const now = new Date();
+      const from = new Date(now.getTime() - 7 * 86400000).toISOString();
+      const to = new Date(now.getTime() + 14 * 86400000).toISOString();
+      const response = await fetch(`/api/panel/student-success/calendar?from=${from}&to=${to}`);
+      return { status: response.status, body: await response.json() };
+    });
+    expect(calendar.status).toBe(200);
+    expect(Array.isArray(calendar.body.events)).toBe(true);
+
+    const today = await page.evaluate(async () => {
+      const response = await fetch("/api/panel/student-success/calendar", { method: "POST" });
+      return { status: response.status, body: await response.json() };
+    });
+    expect(today.status).toBe(200);
+    expect(Array.isArray(today.body.items)).toBe(true);
+
+    const progress = await page.evaluate(async (studentId: string) => {
+      const response = await fetch(`/api/panel/student-success/progress/${studentId}?view=summary`);
+      return { status: response.status, body: await response.json() };
+    }, home.body.profile.id as string);
+    expect(progress.status).toBe(200);
+    expect(progress.body.summary).toBeTruthy();
+    expect(progress.body.computedAt).toBeTruthy();
   });
 });

@@ -34,7 +34,9 @@ export function CartPageClient() {
         "od_checkout_cart",
         JSON.stringify({ items, coupon: null, ts: Date.now() }),
       );
-    } catch {/* ignore */}
+    } catch {
+      /* ignore */
+    }
     trackConversionEvent("cart_checkout_open", { count, totalCents });
     // Aynı sekmede aç — kullanıcı geri tuşu ile sepete dönebilir
     router.push("/sepet/satin-al?fromCart=1");
@@ -71,13 +73,8 @@ export function CartPageClient() {
         {/* LEFT: cart items + suggestions */}
         <div className="space-y-3">
           {items.map((it) => (
-            <CartItemRow
-              key={it.id}
-              item={it}
-              onRemove={() => remove(it.id)}
-            />
+            <CartItemRow key={it.id} item={it} onRemove={() => remove(it.id)} />
           ))}
-
         </div>
 
         {/* RIGHT: summary */}
@@ -90,10 +87,14 @@ export function CartPageClient() {
             <div className="mt-5 space-y-2.5 text-[13.5px]">
               <div className="flex items-center justify-between">
                 <span className="text-[var(--site-body)]">Ara Toplam</span>
-                <span className="font-medium text-[var(--site-ink)]">{tryFormat(totalCents)}</span>
+                <span className="font-medium text-[var(--site-ink)]">
+                  {tryFormat(totalCents)}
+                </span>
               </div>
               <div className="border-t border-dashed border-[var(--site-line)] pt-3 flex items-baseline justify-between">
-                <span className="text-[15px] font-semibold text-[var(--site-ink)]">Toplam</span>
+                <span className="text-[15px] font-semibold text-[var(--site-ink)]">
+                  Toplam
+                </span>
                 <span className="font-display text-[28px] leading-none text-[var(--site-ink)]">
                   {tryFormat(finalCents)}
                 </span>
@@ -117,17 +118,24 @@ export function CartPageClient() {
             {/* Checkout trust box */}
             <div className="mt-4 rounded-[16px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
               <div className="flex items-center gap-2 text-[13px] font-semibold text-[var(--site-ink)]">
-                <ShieldCheck size={16} className="text-[var(--brand-orange-ink)]" aria-hidden="true" />
+                <ShieldCheck
+                  size={16}
+                  className="text-[var(--brand-orange-ink)]"
+                  aria-hidden="true"
+                />
                 Güvenli ödeme
               </div>
               <p className="mt-2 text-[12px] leading-relaxed text-[var(--site-body)]">
                 Ödeme PayTR altyapısı ile alınır. Kart bilgileriniz Online
-                Dershanem tarafından saklanmaz. Hesap açmadan ödeme yapabilirsiniz;
-                sonrasında ekibimiz sizinle iletişime geçer.
+                Dershanem tarafından saklanmaz. Hesap açmadan ödeme
+                yapabilirsiniz; sonrasında ekibimiz sizinle iletişime geçer.
               </p>
               <ul className="mt-3 space-y-1.5 text-[11.5px] text-[var(--site-body)]">
                 <li>· 256-bit SSL korumalı ödeme</li>
-                <li>· Taksit seçenekleri kartınıza ve bankanıza göre ödeme ekranında gösterilir</li>
+                <li>
+                  · Taksit seçenekleri kartınıza ve bankanıza göre ödeme
+                  ekranında gösterilir
+                </li>
                 <li>· Ödeme PayTR tarafından işlenir</li>
               </ul>
             </div>
@@ -144,15 +152,28 @@ export function CartPageClient() {
             </a>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--site-line)] pt-3 text-[11.5px] text-[var(--site-muted)]">
-              <Link href="/iade" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
+              <Link
+                href="/iade"
+                className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline"
+              >
                 İade Politikası
               </Link>
-              <span aria-hidden="true" className="text-[var(--site-line)]">·</span>
-              <Link href="/kvkk" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
+              <span aria-hidden="true" className="text-[var(--site-line)]">
+                ·
+              </span>
+              <Link
+                href="/kvkk"
+                className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline"
+              >
                 KVKK
               </Link>
-              <span aria-hidden="true" className="text-[var(--site-line)]">·</span>
-              <Link href="/gizlilik" className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline">
+              <span aria-hidden="true" className="text-[var(--site-line)]">
+                ·
+              </span>
+              <Link
+                href="/gizlilik"
+                className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline"
+              >
                 Gizlilik
               </Link>
             </div>
@@ -182,7 +203,8 @@ function CartItemRow({
           {item.name}
         </div>
         <div className="mt-0.5 text-[12.5px] text-[var(--site-body)]">
-          {item.priceLabel}{item.qty > 1 ? ` · ${item.qty} adet` : ""}
+          {item.priceLabel}
+          {item.qty > 1 ? ` · ${item.qty} adet` : ""}
         </div>
       </div>
 

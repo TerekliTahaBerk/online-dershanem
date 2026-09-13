@@ -152,7 +152,7 @@ export const blogPosts = [
           "Çoğu durumda en işlevsel yol, dershane düzenine ihtiyaç olduğunda ders bazlı özel destekle birleşmiş bir yaklaşım oluyor."
         ],
         links: [
-          { label: "Online özel ders modeli nasıl çalışıyor?", href: "/online-ozel-ders" },
+          { label: "Canlı ders modeli nasıl işliyor?", href: "/online-ozel-ders" },
           { label: "Ders bazlı küçük grup sistemini incele", href: "/online-dershane" }
         ]
       }
@@ -167,7 +167,7 @@ export const blogPosts = [
   },
   {
     slug: "online-ozel-ders-mi-dershane-mi",
-    category: "Online Özel Ders",
+    category: "Online Ders",
     title: "Online Dershane mi Özel Ders mi? Hangisi Sana Uygun?",
     seoTitle: "Online Dershane mi Özel Ders mi? Karşılaştırma Rehberi",
     metaDescription:
@@ -206,7 +206,7 @@ export const blogPosts = [
     cta: {
       title: "Küçük grup yaklaşımını yakından incele",
       text: "Öğrencinin seviyesine göre en uygun grubu birlikte seçelim.",
-      buttonLabel: "Online Dershaneyi İncele",
+      buttonLabel: "Online Dershanem'i İncele",
       href: "/online-dershane"
     },
     relatedSlugs: ["online-dershane-nedir", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
@@ -259,14 +259,14 @@ export const blogPosts = [
         paragraphs: [
           "Öğrencilerin çoğu plan yapmayı biliyor ama planı uygulamakta zorlanıyor. Düzenli takip olmadığında program kısa sürede dağılıyor."
         ],
-        links: [{ label: "Online özel ders sistemimizi incele", href: "/online-ozel-ders" }]
+        links: [{ label: "Canlı ders modelini incele", href: "/online-ozel-ders" }]
       }
     ],
     cta: {
       title: "TYT + AYT dengesini konuşalım",
       text: "Tek başına denge kurmakta zorlanıyorsan haftalık planı küçük grup dersinde birlikte hazırlayalım.",
-      buttonLabel: "Online Özel Dersi İncele",
-      href: "/online-ozel-ders"
+      buttonLabel: "Online Dershanem'i İncele",
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -329,7 +329,7 @@ export const blogPosts = [
         ],
         links: [
           { label: "Online dershane sistemini incele", href: "/online-dershane" },
-          { label: "Online özel ders modelini incele", href: "/online-ozel-ders" }
+          { label: "Canlı ders yaklaşımını incele", href: "/online-ozel-ders" }
         ]
       }
     ],
@@ -453,7 +453,7 @@ export const blogPosts = [
       {
         h2: "Programı sürdürmek için takip şart",
         paragraphs: ["Programı yazmak kadar uygulamayı izlemek de önemlidir. Öğretmen geri bildirimi, tamamlanmayan hedefin nedenini görüp planı yeniden düzenlemeye yardımcı olabilir."],
-        links: [{ label: "Online özel ders desteğiyle planını gözden geçir", href: "/online-ozel-ders" }]
+        links: [{ label: "Canlı ders desteğiyle planını gözden geçir", href: "/online-ozel-ders" }]
       }
     ],
     cta: {
@@ -466,7 +466,7 @@ export const blogPosts = [
   },
   {
     slug: "ozel-ders-mi-kucuk-grup-mu",
-    category: "Online Özel Ders",
+    category: "Online Ders",
     title: "Özel Ders mi Küçük Grup mu? Hangi Seçim Daha Mantıklı?",
     seoTitle: "Özel Ders mi Küçük Grup mu? Karar Rehberi",
     metaDescription:
@@ -523,7 +523,7 @@ export const blogPosts = [
       {
         h2: "Süre yönetimi nasıl geliştirilir?",
         paragraphs: ["Soru başına bir takılma eşiği belirlemek, öğrencinin deneme sırasında geçme ve geri dönme kararını daha bilinçli vermesine yardımcı olur."],
-        links: [{ label: "YKS için online özel ders desteğini incele", href: "/online-ozel-ders" }]
+        links: [{ label: "YKS için canlı ders desteğini incele", href: "/online-ozel-ders" }]
       }
     ],
     cta: {
@@ -714,8 +714,8 @@ export const faq = [
 ];
 
 // Kategori bazlı SSS — /sss sayfası ve FAQPage JSON-LD bu listeyi kullanır.
-// Operasyonel cevaplar (ders süresi 90 dk, haftada 1 ders, telafi yerine ders
-// kaydı paylaşımı) ekip tarafından onaylanan rakamlarla yazılmıştır.
+// Operasyonel cevaplar (ders süresi 90 dk, haftada 1 ders, kaçırılan ders için
+// telafi paketi) ekip tarafından onaylanan rakamlarla yazılmıştır.
 export const faqCategories = [
   {
     category: "Ders modeli",
@@ -805,7 +805,7 @@ export const faqCategories = [
       },
       {
         q: "Telafi dersi var mı?",
-        a: "Ayrı bir telafi dersi yapılmaz. Bunun yerine, öğrenci bir derse katılamadığında o dersin kaydını ve ders sonu özetini paylaşırız; öğrenci işlenen konuyu ve verilen ödevi bu şekilde takip eder. Düzenli devamsızlık durumunda ekibimiz sizinle iletişime geçer.",
+        a: "Ayrı bir telafi dersi yapılmaz. Bunun yerine, kaçırılan ders için panelde ortak konu özeti, aktif materyal ve küçük çalışma adımı içeren telafi paketi paylaşılır. Düzenli devamsızlık durumunda ekibimiz sizinle iletişime geçer.",
       },
     ],
   },

@@ -68,7 +68,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY) return;
       try {
-        const next = e.newValue ? sanitizeCartItems(JSON.parse(e.newValue)) : [];
+        const next = e.newValue
+          ? sanitizeCartItems(JSON.parse(e.newValue))
+          : [];
         if (next) setItems(next);
       } catch {
         /* ignore */
@@ -82,9 +84,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((current) => {
       const existing = current.find((candidate) => candidate.id === item.id);
       if (!existing) return [...current, { ...item, qty: 1 }].slice(0, 20);
-      return current.map((candidate) => candidate.id === item.id
-        ? { ...candidate, qty: Math.min(99, candidate.qty + 1) }
-        : candidate);
+      return current.map((candidate) =>
+        candidate.id === item.id
+          ? { ...candidate, qty: Math.min(99, candidate.qty + 1) }
+          : candidate,
+      );
     });
   }, []);
 

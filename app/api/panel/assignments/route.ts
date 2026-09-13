@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
+import { afterResponse } from "@/lib/after-response";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
@@ -148,6 +149,15 @@ export async function POST(request: Request) {
   if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
   await queuePanelNotificationEmails(rawNotificationRows, "assignment");
   await logAudit({ actorUserId: auth.session.userId, entityType: "Assignment", entityId: assignment.id, action: "assignment.created", summary: `${assignment.title} ödevi oluşturuldu`, payload: { groupId: group.id, dueAt: assignment.dueAt.toISOString() } });
+  const { onAssignmentCreated } = await import("@/lib/student-success/server/emit-hooks");
+  afterResponse("panel.assignment.cross_product_emit_failed", () => onAssignmentCreated({
+    assignmentId: assignment.id,
+    groupId: group.id,
+    dueAt: assignment.dueAt,
+    outcomeIds,
+    actorUserId: auth.session.userId,
+    studentIds: group.enrollments.map((item) => item.student.id),
+  }), { assignmentId: assignment.id });
   if (flags.learningOutcomes) await recordPanelProductEvent({ name: "curriculum_link_saved", properties: { targetType: "ASSIGNMENT", outcomeCount: outcomeIds.length, needsReviewCount: 0, skipReason: parsed.data.outcomeSkipReason || "NONE" } }, auth.session.role);
   return NextResponse.json({ id: assignment.id });
 }

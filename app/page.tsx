@@ -3,11 +3,8 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { HomeHero } from "@/components/home/hero";
 import { ProductTrio } from "@/components/home/product-trio";
 import { Ecosystem } from "@/components/home/ecosystem";
-import { CourseDiscovery } from "@/components/home/course-discovery";
-import { DinoLayer } from "@/components/home/dino-layer";
 import { BundleSection } from "@/components/home/bundle-section";
 import { PlatformPreview } from "@/components/home/platform-preview";
-import { HowItWorks } from "@/components/home/how-it-works";
 import { ParentVisibility } from "@/components/home/parent-visibility";
 import { HomeFaq } from "@/components/home/home-faq";
 import { ClosingCta } from "@/components/home/closing-cta";
@@ -23,15 +20,7 @@ export const metadata = buildMarketingMetadata({
   canonical: "/",
 });
 
-/**
- * ANA SAYFA — onaylı tasarımın bölüm haritası (Web.dc.html → handoff):
- * 01 Navbar · 02 Hero · 03 Gerçek bilgi · 04 Üç ürün · 05 Ekosistem ·
- * 06 Ders keşfi · 07 Dino AI · 08 Paket kurucu · 09 Platform · 10 Nasıl başlar ·
- * 11 Veli görünürlüğü · 13 SSS · 14 Kapanış · 15 Footer.
- *
- * 12 (yorumlar) doğrulanmış veri olmadığı için yayına alınmadı —
- * bkz. `parent-visibility.tsx`.
- */
+/** ANA SAYFA — sadeleştirilmiş karar akışı: Hero → Üç ürün → Akış → Platform → Paket → Veli → SSS → Kapanış. */
 export default function HomePage() {
   return (
     <div className="site-scope">
@@ -41,11 +30,8 @@ export default function HomePage() {
         <HomeHero />
         <ProductTrio />
         <Ecosystem />
-        <CourseDiscovery />
-        <DinoLayer />
-        <BundleSection />
         <PlatformPreview />
-        <HowItWorks />
+        <BundleSection />
         <ParentVisibility />
         <HomeFaq />
         <ClosingCta />

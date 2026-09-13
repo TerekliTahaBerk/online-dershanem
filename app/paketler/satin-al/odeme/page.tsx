@@ -47,7 +47,9 @@ export default async function OdPaymentPage({
   }
 
   if (order.status === "PAID") {
-    redirect(`/paketler/satin-al/sonuc?orderId=${encodeURIComponent(order.id)}&status=success`);
+    redirect(
+      `/paketler/satin-al/sonuc?orderId=${encodeURIComponent(order.id)}&status=success`,
+    );
   }
 
   const hdrs = await headers();
@@ -80,7 +82,11 @@ export default async function OdPaymentPage({
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14"
+      >
         <PaytrIframeShell
           breadcrumb={[
             { label: "Ders Paketleri", href: "/ders-paketleri" },

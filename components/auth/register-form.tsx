@@ -38,7 +38,10 @@ export function RegisterForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, email, password }),
       });
-      const data = (await response.json()) as { redirect?: string; error?: string };
+      const data = (await response.json()) as {
+        redirect?: string;
+        error?: string;
+      };
 
       if (!response.ok || !data.redirect) {
         setError(data.error ?? "Kayıt tamamlanamadı. Lütfen tekrar deneyin.");
@@ -49,7 +52,9 @@ export function RegisterForm() {
       // Oturum çerezi ilk panel isteğinde kesin ulaşsın diye tam sayfa geçişi.
       window.location.replace(data.redirect);
     } catch {
-      setError("Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.");
+      setError(
+        "Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.",
+      );
       setPending(false);
     }
   }
@@ -128,7 +133,11 @@ export function RegisterForm() {
       >
         {pending ? (
           <span className="inline-flex items-center justify-center gap-2">
-            <Loader2 size={17} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            <Loader2
+              size={17}
+              className="animate-spin motion-reduce:animate-none"
+              aria-hidden="true"
+            />
             Kayıt yapılıyor
           </span>
         ) : (

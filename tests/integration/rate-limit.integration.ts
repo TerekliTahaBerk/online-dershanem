@@ -4,34 +4,24 @@ import { PrismaClient } from "@prisma/client";
 
 import { checkRateLimitWithStore } from "../../lib/rate-limit";
 import { RATE_LIMIT_POLICIES } from "../../lib/security/rate-limit-policies";
-
-const enabled = process.env.RATE_LIMIT_INTEGRATION_TEST === "true";
-const integration = (name: string, fn: () => Promise<void>) =>
-  test(name, { skip: !enabled }, fn);
+import { createIntegrationPrismaClient, integration } from "./integration-utils";
+import { assertIntegrationSchemaReady } from "./integration-utils";
 const clients: PrismaClient[] = [];
 
 function client(): PrismaClient {
-  const configuredUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
-  let datasourceUrl = configuredUrl;
-  if (configuredUrl?.startsWith("postgres")) {
-    const parsed = new URL(configuredUrl);
-    parsed.searchParams.set("connection_limit", "1");
-    datasourceUrl = parsed.toString();
-  }
-  const instance = new PrismaClient({
-    ...(datasourceUrl ? { datasourceUrl } : {}),
-  });
+  const instance = createIntegrationPrismaClient();
   clients.push(instance);
   return instance;
 }
 
-const admin = enabled ? client() : null;
-const instances = enabled ? [client(), client()] : [];
+const admin = process.env.DATABASE_URL ? client() : null;
+const instances = process.env.DATABASE_URL ? [client(), client()] : [];
 
 for (const [path, policy] of Object.entries(RATE_LIMIT_POLICIES)) {
   integration(`${path}: paralel sunucular kalan kotadan fazla token alamaz`, async () => {
+    await assertIntegrationSchemaReady(admin!);
     const key = `integration:y-67:${path}:${crypto.randomUUID()}`;
-    const seeded = policy.limit.max - 3;
+    const seeded = Math.max(policy.limit.max - 3, 0);
     try {
       await admin!.rateLimitEntry.createMany({
         data: Array.from({ length: seeded }, () => ({ key })),
@@ -47,8 +37,8 @@ for (const [path, policy] of Object.entries(RATE_LIMIT_POLICIES)) {
         ),
       );
 
-      assert.equal(decisions.filter((decision) => decision.allowed).length, 3);
-      assert.equal(decisions.filter((decision) => !decision.allowed).length, 13);
+      assert.equal(decisions.filter((decision) => decision.allowed).length, Math.min(3, policy.limit.max));
+      assert.equal(decisions.filter((decision) => !decision.allowed).length, 16 - Math.min(3, policy.limit.max));
       assert.equal(
         await admin!.rateLimitEntry.count({ where: { key } }),
         policy.limit.max,
@@ -64,6 +54,7 @@ for (const [path, policy] of Object.entries(RATE_LIMIT_POLICIES)) {
 }
 
 integration("exact sliding window süresi dolan tokenı dışlar ve reddi pencereyi uzatmaz", async () => {
+  await assertIntegrationSchemaReady(admin!);
   const key = `integration:y-67:window:${crypto.randomUUID()}`;
   const windowMs = 60_000;
   try {

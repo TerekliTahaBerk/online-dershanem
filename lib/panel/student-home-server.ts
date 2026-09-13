@@ -3,35 +3,48 @@ import "server-only";
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAccessibleProducts } from "@/lib/auth/products";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { listStudentExams } from "@/lib/odk/student-exam-server";
 import {
   loadStudentHomeProductData,
   type StudentHomeProductData,
 } from "@/lib/panel/student-home-data";
+import { getStudentToday } from "@/lib/student-success/server/calendar-server";
+import {
+  buildSerializedUnifiedToday,
+  type SerializedUnifiedTodayItem,
+} from "@/lib/student-success/unified-today-serializer";
 
 export type StudentHomeData = {
   products: Awaited<ReturnType<typeof getAccessibleProducts>>;
   profile: { id: string } | null;
   productData: StudentHomeProductData;
+  unifiedToday: {
+    items: SerializedUnifiedTodayItem[];
+    whatNext: SerializedUnifiedTodayItem | null;
+  } | null;
 };
 
-const emptyProductData: StudentHomeProductData = { OD: null, OK: null, ODK: null };
+const emptyProductData: StudentHomeProductData = { OD: null, OK: null, ODK: null, SHARED: null };
 
 export async function getStudentHomeData(input: {
   userId: string;
   role: UserRole;
   now?: Date;
 }): Promise<StudentHomeData> {
+  const flags = getPanelFeatureFlags();
   const products = await getAccessibleProducts(input.userId, input.role);
-  if (products.length === 0) return { products, profile: null, productData: emptyProductData };
+  if (products.length === 0) return { products, profile: null, productData: emptyProductData, unifiedToday: null };
 
   const profile = await prisma.studentProfile.findUnique({
     where: { userId: input.userId },
     select: { id: true },
   });
-  if (!profile) return { products, profile: null, productData: emptyProductData };
+  if (!profile) return { products, profile: null, productData: emptyProductData, unifiedToday: null };
 
   const productData = await loadStudentHomeProductData({
     studentId: profile.id,
+    studentUserId: input.userId,
     products,
     now: input.now ?? new Date(),
     queries: {
@@ -60,6 +73,16 @@ export async function getStudentHomeData(input: {
           groupName: row.group.name,
         }));
       },
+      async getNextRecoveryPackage(studentId) {
+        if (!flags.recoveryPackage) return null;
+        const row = await prisma.recoveryPackage.findFirst({
+          where: { studentId, status: "PUBLISHED" },
+          orderBy: { dueAt: "asc" },
+          select: { id: true, lessonId: true, dueAt: true, lesson: { select: { title: true } } },
+        });
+        if (!row) return null;
+        return { id: row.id, lessonId: row.lessonId, lessonTitle: row.lesson.title, dueAt: row.dueAt };
+      },
       getWeeklyPlan(studentId) {
         return prisma.weeklyPlan.findFirst({
           where: { studentId },
@@ -77,8 +100,50 @@ export async function getStudentHomeData(input: {
           include: { sections: { orderBy: { position: "asc" } } },
         });
       },
+      async listOdkExamSignals(studentUserId) {
+        const exams = await listStudentExams(studentUserId);
+        return exams
+          .map((exam) => ({
+            id: exam.id,
+            title: exam.title,
+            status: exam.status,
+            startsAt: exam.startsAt,
+            endsAt: exam.endsAt,
+            hasActiveAttempt: exam.attempts[0]?.status === "IN_PROGRESS",
+          }))
+          .sort(
+            (left, right) =>
+              (left.startsAt?.getTime() ?? Number.MAX_SAFE_INTEGER) -
+              (right.startsAt?.getTime() ?? Number.MAX_SAFE_INTEGER),
+          );
+      },
+      async getDueReview(studentId, now) {
+        if (!flags.reviewQueue) return null;
+        return prisma.reviewItem.findFirst({
+          where: { studentId, status: "ACTIVE", dueAt: { lte: now } },
+          orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
+          select: { id: true, title: true, dueAt: true },
+        });
+      },
     },
   });
 
-  return { products, profile, productData };
+  let unifiedToday: StudentHomeData["unifiedToday"] = null;
+  try {
+    const { events, dayStart, dayEnd } = await getStudentToday({
+      studentId: profile.id,
+      studentUserId: input.userId,
+      now: input.now ?? new Date(),
+    });
+    unifiedToday = buildSerializedUnifiedToday({
+      events,
+      now: input.now ?? new Date(),
+      dayStart,
+      dayEnd,
+    });
+  } catch {
+    unifiedToday = null;
+  }
+
+  return { products, profile, productData, unifiedToday };
 }

@@ -34,8 +34,8 @@ export function CourseDiscovery() {
               Hangi dersi alacağını sen seçiyorsun
             </h3>
             <p className="mt-2.5 max-w-[520px] text-[15.5px] leading-[1.6] text-dc-ink-muted">
-              Paket fiyatına bir ders dahil; istersen ek ders eklersin. Hangi dersi
-              seçersen seç fiyat aynı.
+              Paket fiyatına bir ders dahil; istersen ek ders eklersin. Hangi
+              dersi seçersen seç fiyat aynı.
             </p>
           </div>
 

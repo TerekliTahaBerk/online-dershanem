@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { Phone, Mail, MapPin, MessageCircle, ArrowRight, ArrowUpRight } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  MessageCircle,
+  ArrowRight,
+  ArrowUpRight,
+} from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PageHero } from "@/components/site/page-hero";
@@ -53,13 +60,26 @@ export default function ContactPage() {
                 className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-[var(--brand-orange-soft)] px-6 py-5 transition-colors hover:border-[var(--brand-orange)]"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--brand-orange-ink)]">
-                  <MessageCircle size={18} strokeWidth={1.8} aria-hidden="true" />
+                  <MessageCircle
+                    size={18}
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
                 </span>
                 <div>
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">WhatsApp</div>
-                  <div className="text-[14px] text-[var(--site-body)]">En hızlısı — buradan yazabilirsiniz</div>
+                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                    WhatsApp
+                  </div>
+                  <div className="text-[14px] text-[var(--site-body)]">
+                    En hızlısı — buradan yazabilirsiniz
+                  </div>
                 </div>
-                <ArrowRight size={18} strokeWidth={1.8} className="ml-auto text-[var(--brand-orange-ink)]" aria-hidden="true" />
+                <ArrowRight
+                  size={18}
+                  strokeWidth={1.8}
+                  className="ml-auto text-[var(--brand-orange-ink)]"
+                  aria-hidden="true"
+                />
               </a>
 
               <a
@@ -70,10 +90,19 @@ export default function ContactPage() {
                   <Phone size={18} strokeWidth={1.8} aria-hidden="true" />
                 </span>
                 <div>
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">Telefon</div>
-                  <div className="text-[14px] text-[var(--site-body)]">{contact.phone}</div>
+                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                    Telefon
+                  </div>
+                  <div className="text-[14px] text-[var(--site-body)]">
+                    {contact.phone}
+                  </div>
                 </div>
-                <ArrowRight size={18} strokeWidth={1.8} className="ml-auto text-[var(--site-muted)]" aria-hidden="true" />
+                <ArrowRight
+                  size={18}
+                  strokeWidth={1.8}
+                  className="ml-auto text-[var(--site-muted)]"
+                  aria-hidden="true"
+                />
               </a>
 
               <a
@@ -84,10 +113,19 @@ export default function ContactPage() {
                   <Mail size={18} strokeWidth={1.8} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">E-posta</div>
-                  <div className="truncate text-[14px] text-[var(--site-body)]">{contact.email}</div>
+                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                    E-posta
+                  </div>
+                  <div className="truncate text-[14px] text-[var(--site-body)]">
+                    {contact.email}
+                  </div>
                 </div>
-                <ArrowRight size={18} strokeWidth={1.8} className="ml-auto shrink-0 text-[var(--site-muted)]" aria-hidden="true" />
+                <ArrowRight
+                  size={18}
+                  strokeWidth={1.8}
+                  className="ml-auto shrink-0 text-[var(--site-muted)]"
+                  aria-hidden="true"
+                />
               </a>
 
               <div className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-white px-6 py-5">
@@ -95,8 +133,12 @@ export default function ContactPage() {
                   <MapPin size={18} strokeWidth={1.8} aria-hidden="true" />
                 </span>
                 <div>
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">Konum</div>
-                  <div className="text-[14px] text-[var(--site-body)]">{contact.address}</div>
+                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                    Konum
+                  </div>
+                  <div className="text-[14px] text-[var(--site-body)]">
+                    {contact.address}
+                  </div>
                 </div>
               </div>
 
@@ -106,7 +148,8 @@ export default function ContactPage() {
                   Önce paketi incelemek ister misiniz?
                 </div>
                 <p className="mb-4 text-[14.5px] leading-6 text-[var(--site-body)]">
-                  Fiyatı, derslerin kapsamını ve ödeme sonrası süreci tek sayfada görebilirsiniz.
+                  Fiyatı, derslerin kapsamını ve ödeme sonrası süreci tek
+                  sayfada görebilirsiniz.
                 </p>
                 <Link
                   href="/ders-paketleri"

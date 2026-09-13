@@ -14,7 +14,11 @@ export function EmptyCart() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8">
       <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[20px] border border-[var(--site-line)] bg-white">
-        <ShoppingBag size={36} className="text-[var(--brand-orange-ink)]" strokeWidth={1.6} />
+        <ShoppingBag
+          size={36}
+          className="text-[var(--brand-orange-ink)]"
+          strokeWidth={1.6}
+        />
       </div>
       <h1 className="mt-6 font-display text-[clamp(2rem,4vw,2.4rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
         Sepetiniz boş.
@@ -23,8 +27,11 @@ export function EmptyCart() {
         Matematik Ders Paketini inceleyerek başlayabilirsiniz.
       </p>
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <Link href="/ders-paketleri" className="site-btn site-btn-primary site-btn-lg">
-          Paketi İncele
+        <Link
+          href="/ders-paketleri"
+          className="site-btn site-btn-primary site-btn-lg"
+        >
+          Paketleri İncele
           <ArrowRight size={16} />
         </Link>
         <a

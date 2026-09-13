@@ -20,17 +20,20 @@ type Turn = {
   question: string;
   text: string;
   sources: string[];
-  fromModel: boolean;
   note: string | null;
 };
 
 const FALLBACK_NOTE: Record<string, string> = {
-  PROVIDER_DISABLED: "Dino şu anda kapalı; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  EXTERNAL_TRANSFER_NOT_READY: "Dino henüz yapılandırılmadı; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  COST_CONFIG_MISSING: "Dino yapılandırması eksik; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  DAILY_QUOTA: "Bugünkü Dino hakkın doldu; aşağıdaki kayıtlar olduğu gibi listelendi.",
-  NO_SOURCE_DATA: "Bu soru için henüz kayıtlı veri yok.",
-  PROMPT_INJECTION: "Kayıtlarda beklenmedik bir içerik bulundu; güvenlik için yorum üretilmedi.",
+  PROVIDER_DISABLED:
+    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+  EXTERNAL_TRANSFER_NOT_READY:
+    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+  COST_CONFIG_MISSING:
+    "Dino açıklama yapılandırması eksik. Dayanakları yine de görebilirsin.",
+  DAILY_QUOTA: "Bugünkü Dino açıklama hakkını kullandın.",
+  NO_SOURCE_DATA: "Bu konuda açıklama yapmak için yeterli dayanak yok.",
+  PROMPT_INJECTION:
+    "Kayıtlarda beklenmedik bir içerik bulundu; güvenlik için yorum üretilmedi.",
 };
 
 export function DinoChat({
@@ -62,12 +65,13 @@ export function DinoChat({
           requestKey: crypto.randomUUID(),
         }),
       });
-      const payload = (await response.json().catch(() => null)) as
-        | { answer?: Record<string, unknown>; error?: string }
-        | null;
+      const payload = (await response.json().catch(() => null)) as {
+        answer?: Record<string, unknown>;
+        error?: string;
+      } | null;
 
       if (!response.ok || !payload?.answer) {
-        setError(payload?.error || "Dino şu anda yanıt veremedi.");
+        setError(payload?.error || "Dino açıklamayı şu anda hazırlayamadı.");
         return;
       }
 
@@ -76,20 +80,23 @@ export function DinoChat({
       const refs = Array.isArray(answer.sourceRefs)
         ? (answer.sourceRefs as Array<{ label?: string }>)
         : [];
-      const reason = typeof answer.fallbackReason === "string" ? answer.fallbackReason : null;
-
+      const reason =
+        typeof answer.fallbackReason === "string"
+          ? answer.fallbackReason
+          : null;
       setTurns((current) => [
         ...current,
         {
           question: question.label,
           text: content?.text || "",
           sources: refs.map((ref) => ref.label || "").filter(Boolean),
-          fromModel: answer.provider === "GEMINI" || answer.provider === "OPENAI",
-          note: reason ? (FALLBACK_NOTE[reason] ?? "Bu yanıt model tarafından üretilmedi.") : null,
+          note: reason
+            ? (FALLBACK_NOTE[reason] ?? "Bu yanıt model tarafından üretilmedi.")
+            : null,
         },
       ]);
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Dino açıklamayı şu anda hazırlayamadı.");
     } finally {
       setBusy(null);
     }
@@ -112,16 +119,26 @@ export function DinoChat({
       </div>
 
       {error ? (
-        <p role="alert" className="mt-4 text-[13.5px] font-semibold text-[#C2493D]">
+        <p
+          role="alert"
+          className="mt-4 text-[13.5px] font-semibold text-[#C2493D]"
+        >
           {error}
         </p>
       ) : null}
 
       <div aria-live="polite" className="mt-5 flex flex-col gap-4">
         {turns.map((turn, index) => (
-          <article key={index} className="rounded-[14px] border border-dc-line bg-white p-[22px]">
-            <p className="text-[12.5px] font-semibold text-dc-ink-faint">{turn.question}</p>
-            <p className="mt-2 text-[14.5px] leading-[1.7] text-dc-ink-body">{turn.text}</p>
+          <article
+            key={index}
+            className="rounded-[14px] border border-dc-line bg-white p-[22px]"
+          >
+            <p className="text-[12.5px] font-semibold text-dc-ink-faint">
+              {turn.question}
+            </p>
+            <p className="mt-2 text-[14.5px] leading-[1.7] text-dc-ink-body">
+              {turn.text}
+            </p>
 
             {turn.note ? (
               <p className="mt-3 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-2.5 text-[12.5px] text-dc-ink-muted">
@@ -131,8 +148,7 @@ export function DinoChat({
 
             {turn.sources.length ? (
               <p className="mt-3 text-[12.5px] text-dc-ink-faint">
-                Kaynak: {turn.sources.join(" · ")}
-                {turn.fromModel ? "" : " · model yorumu değil"}
+                Dayanaklar: {turn.sources.join(" · ")}
               </p>
             ) : null}
           </article>
@@ -140,8 +156,9 @@ export function DinoChat({
 
         {turns.length === 0 ? (
           <p className="text-[13.5px] text-dc-ink-muted">
-            Yukarıdaki sorulardan birini seçtiğinde Dino, panelindeki kendi kayıtlarını
-            özetler. Yalnız bu sorular sorulabilir; Dino serbest sohbet yapmaz.
+            Yukarıdaki sorulardan birini seçtiğinde Dino, panelindeki kendi
+            kayıtlarını özetler. Yalnız bu sorular sorulabilir; Dino serbest
+            sohbet yapmaz.
           </p>
         ) : null}
       </div>

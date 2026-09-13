@@ -6,6 +6,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
 import { logCriticalAudit } from "@/lib/audit";
 import { getActiveOdkExamGrant, provisionedAccessWindow } from "@/lib/odk/product-contract-server";
+import { log } from "@/lib/logger";
 
 export type OdkProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -128,6 +129,10 @@ export async function provisionOdkOrder(
         where: { id: orderId },
         data: { provisioningStatus: "SUCCEEDED", provisioningError: null, provisionedAt: new Date() },
       });
+      await tx.businessLead.updateMany({
+        where: { relatedOdkOrderId: orderId },
+        data: { relatedOdkUserId: user.id },
+      });
       await tx.commerceOrderLine.updateMany({
         where: { odkOrderId: orderId, product: "ODK" },
         data: { fulfillmentOwnerUserId: user.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() },
@@ -163,6 +168,18 @@ export async function provisionOdkOrder(
       where: { odkOrderId: orderId, fulfillmentStatus: "RUNNING" },
       data: { fulfillmentStatus: "RETRY_PENDING", fulfillmentError: message },
     });
+    const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+    // Sağlama arızası alarmı: bu yol zaten hata yolu, beklemenin kullanıcıya
+    // maliyeti yok — ama `void` bırakılırsa alarm hiç gitmeden süreç sonlanabilir.
+    await emitEducationAutomation("provisioning_failed", {
+      entityType: "order",
+      entityId: orderId,
+      product: "ODK",
+      severity: "high",
+      href: "/panel/yonetim/siparisler",
+    }).catch((emitError: unknown) =>
+      log.error("provisioning.automation_emit_failed", emitError, { orderId, product: "ODK" }),
+    );
     throw error;
   }
 }

@@ -56,9 +56,33 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       const active = await tx.odkExamAttempt.updateMany({ where: { id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { gt: now } }, data: { lastActivityAt: now } });
       if (!active.count) throw new AttemptClosedError();
       if (!existing) {
-        return tx.odkAttemptAnswer.create({ data: { attemptId: id, questionId: parsed.data.questionId, selectedOption: parsed.data.selectedOption, isMarked: parsed.data.isMarked, revision: 1, answeredAt: parsed.data.selectedOption ? now : null } });
+        return tx.odkAttemptAnswer.create({
+          data: {
+            attemptId: id,
+            questionId: parsed.data.questionId,
+            selectedOption: parsed.data.selectedOption,
+            isMarked: parsed.data.isMarked,
+            revision: 1,
+            changedCount: parsed.data.selectedOption ? 1 : 0,
+            answeredAt: parsed.data.selectedOption ? now : null,
+            firstAnsweredAt: parsed.data.selectedOption ? now : null,
+            lastChangedAt: parsed.data.selectedOption ? now : null,
+          },
+        });
       }
-      const changed = await tx.odkAttemptAnswer.updateMany({ where: { attemptId: id, questionId: parsed.data.questionId, revision: existing.revision }, data: { selectedOption: parsed.data.selectedOption, isMarked: parsed.data.isMarked, revision: parsed.data.revision, answeredAt: parsed.data.selectedOption ? now : null } });
+      const optionChanged = existing.selectedOption !== parsed.data.selectedOption;
+      const changed = await tx.odkAttemptAnswer.updateMany({
+        where: { attemptId: id, questionId: parsed.data.questionId, revision: existing.revision },
+        data: {
+          selectedOption: parsed.data.selectedOption,
+          isMarked: parsed.data.isMarked,
+          revision: parsed.data.revision,
+          answeredAt: parsed.data.selectedOption ? now : existing.answeredAt,
+          firstAnsweredAt: existing.firstAnsweredAt || (parsed.data.selectedOption ? now : null),
+          lastChangedAt: optionChanged ? now : existing.lastChangedAt,
+          changedCount: optionChanged ? existing.changedCount + 1 : existing.changedCount,
+        },
+      });
       if (!changed.count) throw new RevisionConflictError();
       return tx.odkAttemptAnswer.findUniqueOrThrow({ where: { attemptId_questionId: { attemptId: id, questionId: parsed.data.questionId } } });
     });

@@ -3,6 +3,7 @@ import { requireApiActiveUser } from "@/lib/auth/api-guards";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiActiveUser();
@@ -16,7 +17,9 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   });
   if (!guard.ok) return mutationGuardResponse(guard);
 
-  const { id } = await context.params;
+  const params = idParamsSchema.safeParse(await context.params);
+  if (!params.success) return invalidApiInput();
+  const { id } = params.data;
   if (id === auth.session.sessionId) {
     return NextResponse.json({ error: "Bu cihazdaki oturumu çıkış düğmesiyle kapatın." }, { status: 400 });
   }

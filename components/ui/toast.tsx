@@ -37,10 +37,22 @@ export type Toast = {
 type ToastContextValue = {
   push: (t: Omit<Toast, "id">) => string;
   dismiss: (id: string) => void;
-  success: (message: string, opts?: { title?: string; durationMs?: number }) => string;
-  error: (message: string, opts?: { title?: string; durationMs?: number }) => string;
-  info: (message: string, opts?: { title?: string; durationMs?: number }) => string;
-  warn: (message: string, opts?: { title?: string; durationMs?: number }) => string;
+  success: (
+    message: string,
+    opts?: { title?: string; durationMs?: number },
+  ) => string;
+  error: (
+    message: string,
+    opts?: { title?: string; durationMs?: number },
+  ) => string;
+  info: (
+    message: string,
+    opts?: { title?: string; durationMs?: number },
+  ) => string;
+  warn: (
+    message: string,
+    opts?: { title?: string; durationMs?: number },
+  ) => string;
 };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -53,7 +65,9 @@ function genId(): string {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  );
 
   const dismiss = useCallback((id: string) => {
     const t = timersRef.current.get(id);
@@ -91,9 +105,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       push,
       dismiss,
       success: (message, opts) => push({ tone: "success", message, ...opts }),
-      error: (message, opts) => push({ tone: "error", message, durationMs: 6000, ...opts }),
+      error: (message, opts) =>
+        push({ tone: "error", message, durationMs: 6000, ...opts }),
       info: (message, opts) => push({ tone: "info", message, ...opts }),
-      warn: (message, opts) => push({ tone: "warn", message, durationMs: 5000, ...opts }),
+      warn: (message, opts) =>
+        push({ tone: "warn", message, durationMs: 5000, ...opts }),
     }),
     [push, dismiss],
   );
@@ -116,7 +132,13 @@ export function useToast(): ToastContextValue {
 
 // ─── UI ──────────────────────────────────────────────────────────────────────
 
-function ToastViewport({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
+function ToastViewport({
+  toasts,
+  onDismiss,
+}: {
+  toasts: Toast[];
+  onDismiss: (id: string) => void;
+}) {
   if (toasts.length === 0) return null;
   return (
     <div
@@ -141,14 +163,23 @@ function ToastViewport({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id:
   );
 }
 
-const TONE_STYLES: Record<ToastTone, { bg: string; border: string; fg: string; icon: string }> = {
+const TONE_STYLES: Record<
+  ToastTone,
+  { bg: string; border: string; fg: string; icon: string }
+> = {
   success: { bg: "#ecfdf5", border: "#a7f3d0", fg: "#065f46", icon: "✓" },
-  error:   { bg: "#fef2f2", border: "#fecaca", fg: "#991b1b", icon: "✕" },
-  info:    { bg: "#eff6ff", border: "#bfdbfe", fg: "#1e40af", icon: "ℹ" },
-  warn:    { bg: "#fff7ed", border: "#fed7aa", fg: "#9a3412", icon: "⚠" },
+  error: { bg: "#fef2f2", border: "#fecaca", fg: "#991b1b", icon: "✕" },
+  info: { bg: "#eff6ff", border: "#bfdbfe", fg: "#1e40af", icon: "ℹ" },
+  warn: { bg: "#fff7ed", border: "#fed7aa", fg: "#9a3412", icon: "⚠" },
 };
 
-function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+function ToastItem({
+  toast,
+  onDismiss,
+}: {
+  toast: Toast;
+  onDismiss: () => void;
+}) {
   const s = TONE_STYLES[toast.tone];
   return (
     <div
@@ -169,7 +200,12 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         animation: "od-toast-in 180ms ease-out",
       }}
     >
-      <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1, marginTop: 1 }}>{s.icon}</span>
+      <span
+        aria-hidden="true"
+        style={{ fontSize: 16, lineHeight: 1, marginTop: 1 }}
+      >
+        {s.icon}
+      </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         {toast.title ? (
           <div style={{ fontWeight: 700, marginBottom: 2 }}>{toast.title}</div>

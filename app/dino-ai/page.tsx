@@ -48,8 +48,8 @@ export default function DinoAiPage() {
               </h1>
               <p className="mt-4 max-w-[500px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
                 Derste zorlandığın konu, planda yapamadığın oturum ve denemede
-                kaybettiğin puan aynı yerde birleşir. Dino AI bunlardan bir sonraki adımı
-                çıkarır; kararı öğretmen ve koç verir.
+                kaybettiğin puan aynı yerde birleşir. Dino AI bunları sade bir
+                dille açıklar; kararı öğretmen ve koç verir.
               </p>
 
               <div className="mt-6 max-w-[520px] rounded-2xl border border-dc-line bg-white px-5 py-4">
@@ -57,16 +57,18 @@ export default function DinoAiPage() {
                   Dino AI ayrı satılan bir ürün değildir.
                 </p>
                 <p className="mt-1.5 text-[14.5px] leading-[1.6] text-dc-ink-muted">
-                  Aldığın her ürünün içinde çalışır; öğretmenin ve koçun kararını
-                  destekler, yerine geçmez.
+                  Aldığın her ürünün içinde çalışır; öğretmenin ve koçun
+                  kararını destekler, yerine geçmez.
                 </p>
                 {/* DOĞRULUK (§55): Dino AI yüzeyleri hazır, üretim çıktısı henüz
                     yayında değil. Sayfa çalışıyormuş gibi anlatmaz. */}
                 <p className="mt-3 border-t border-dc-line-soft pt-3 text-[13.5px] leading-[1.6] text-dc-ink-muted">
-                  <span className="font-semibold text-dc-ink">Geliştirme aşamasında.</span>{" "}
-                  Aşağıdaki örnekler Dino AI&apos;ın ne yapacağını anlatıyor. Kendi
-                  verinden üretilen gerçek çıktılar henüz yayında değil; hazır
-                  olduğunda panelinde görünecek.
+                  <span className="font-semibold text-dc-ink">
+                    Geliştirme aşamasında.
+                  </span>{" "}
+                  Aşağıdaki örnekler Dino AI&apos;ın ne yapacağını anlatıyor.
+                  Kendi verinden üretilen gerçek çıktılar henüz yayında değil;
+                  hazır olduğunda panelinde görünecek.
                 </p>
               </div>
             </div>
@@ -103,7 +105,9 @@ export default function DinoAiPage() {
             <div className="mt-8 grid gap-10 lg:grid-cols-3">
               {surfaces.map((s) => (
                 <div key={s.where}>
-                  <p className="text-[13px] font-semibold text-dc-brand-strong">{s.where}</p>
+                  <p className="text-[13px] font-semibold text-dc-brand-strong">
+                    {s.where}
+                  </p>
                   <span className="my-3.5 block h-px bg-[#DDE4E0]" />
                   <p className="text-[19px] font-bold leading-[1.45] text-dc-ink">
                     &ldquo;{s.quote}&rdquo;

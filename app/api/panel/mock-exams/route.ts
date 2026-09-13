@@ -12,6 +12,7 @@ import { initialReviewDueAt } from "@/lib/review-scheduler";
 import { netScore } from "@/lib/goals";
 
 const category = z.enum(["KNOWLEDGE", "PROCESS", "ATTENTION", "TIME", "BLANK"]);
+const listQuerySchema = z.object({ deneme: z.string().trim().min(1).max(191).optional() });
 const schema = z.object({
   studentId: z.string().min(1).optional(),
   exam: z.enum(["LGS", "TYT", "AYT", "YDT"]),
@@ -54,7 +55,9 @@ export async function GET(request: Request) {
   });
 
   const url = new URL(request.url);
-  const requested = url.searchParams.get("deneme");
+  const query = listQuerySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!query.success) return NextResponse.json({ error: "Geçersiz deneme filtresi." }, { status: 400 });
+  const requested = query.data.deneme;
   const currentIndex = requested ? exams.findIndex((e) => e.id === requested) : 0;
   const current = exams[currentIndex >= 0 ? currentIndex : 0] ?? null;
   const previous = current ? exams[(currentIndex >= 0 ? currentIndex : 0) + 1] : undefined;

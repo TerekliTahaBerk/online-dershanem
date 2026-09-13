@@ -72,6 +72,33 @@ test("istemci sunucuya ait iş sonucu eventini taklit edemez", () => {
   assert.equal(isClientPanelEvent(parsed), false);
 });
 
+test("admin operasyon merkezi eventleri kimliksiz bant taşır", () => {
+  assert.equal(
+    panelEventSchema.safeParse({
+      name: "admin_ops_center_viewed",
+      properties: {
+        openActionBand: "1-5",
+        blockingBand: "0",
+        partialData: false,
+        interventionFlag: true,
+      },
+    }).success,
+    true,
+  );
+  const click = panelEventSchema.parse({
+    name: "admin_ops_center_action_clicked",
+    properties: { actionCode: "PROVISIONING_FAILED", severity: "BLOCKING" },
+  });
+  assert.equal(isClientPanelEvent(click), true);
+  assert.equal(
+    panelEventSchema.safeParse({
+      name: "admin_ops_center_action_clicked",
+      properties: { actionCode: "PROVISIONING_FAILED", severity: "BLOCKING", orderId: "secret" },
+    }).success,
+    false,
+  );
+});
+
 test("kazanım bağlantısı kimliksiz sayaç ve kontrollü gerekçe taşır", () => {
   const parsed = panelEventSchema.safeParse({ name: "curriculum_link_saved", properties: { targetType: "LESSON", outcomeCount: 2, needsReviewCount: 1, skipReason: "NONE" } });
   assert.equal(parsed.success, true);
@@ -129,6 +156,18 @@ test("plan eventleri kimlik ve görev başlığı taşımadan ölçülür", () =
   assert.equal(panelEventSchema.safeParse({ ...generated, properties: { ...generated.properties, studentId: "secret", taskTitle: "özel içerik" } }).success, false);
   const review = panelEventSchema.parse({ name: "plan_review_completed", properties: { durationMs: 42_000, taskCount: 6, approved: true } });
   assert.equal(isClientPanelEvent(review), true);
+  assert.equal(panelEventSchema.safeParse({
+    name: "plan_overload_reported",
+    properties: { category: "TOO_MUCH", overwhelmPulse: 4, option: "REDUCE_LIGHT" },
+  }).success, true);
+  assert.equal(panelEventSchema.safeParse({
+    name: "plan_change_requested",
+    properties: { category: "WRONG_DAYS", option: "CHANGE_DAYS" },
+  }).success, true);
+  assert.equal(panelEventSchema.safeParse({
+    name: "plan_overload_reported",
+    properties: { category: "TOO_MUCH", overwhelmPulse: 4, option: "REDUCE_LIGHT", note: "free text" },
+  }).success, false);
 });
 
 test("sakin özet eventleri içerik veya öğrenci kimliği taşımaz", () => {
@@ -173,4 +212,48 @@ test("offline eventleri yalnız işlem ve toplu kuyruk bantları taşır", () =>
   assert.equal(panelEventSchema.safeParse({ name: "offline_write_synced", properties: { operation: "ASSIGNMENT_PROGRESS", queueAgeBand: "2-15M", attemptBand: "2-3" } }).success, true);
   assert.equal(panelEventSchema.safeParse({ name: "offline_write_conflicted", properties: { operation: "LESSON_CLOSE", conflictType: "VERSION", lessonId: "secret" } }).success, false);
   assert.equal(panelEventSchema.safeParse({ name: "network_preferences_updated", properties: { lowDataMode: true, offlineWritesEnabled: true, userId: "secret" } }).success, false);
+});
+
+test("yeni funnel eventleri bounded alanlar dışında veri taşımaz", () => {
+  const viewed = panelEventSchema.safeParse({
+    name: "student_next_action_viewed",
+    properties: { product: "OD", actionKind: "OPEN_RECOVERY", reasonCode: "MISSED_LESSON", ageBand: "25H-7D", evidenceBand: "NA", role: "STUDENT" },
+  });
+  assert.equal(viewed.success, true);
+  assert.equal(panelEventSchema.safeParse({
+    name: "student_next_action_clicked",
+    properties: { product: "OD", actionKind: "OPEN_RECOVERY", reasonCode: "MISSED_LESSON", ageBand: "25H-7D", evidenceBand: "NA", role: "STUDENT", studentId: "secret" },
+  }).success, false);
+  const odk = panelEventSchema.safeParse({
+    name: "odk_recovery_action_started",
+    properties: { product: "ODK", actionKind: "OPEN_PLAN", reasonCode: "NEEDS_REVIEW", ageBand: "0-2D", evidenceBand: "MEDIUM", role: "STUDENT" },
+  });
+  assert.equal(odk.success, true);
+  const studentOdkClick = panelEventSchema.safeParse({
+    name: "student_next_action_clicked",
+    properties: { product: "ODK", actionKind: "RESUME_ODK_ATTEMPT", reasonCode: "ODK_ACTIVE_ATTEMPT", ageBand: "0-24H", evidenceBand: "NA", role: "STUDENT" },
+  });
+  assert.equal(studentOdkClick.success, true);
+  assert.equal(panelEventSchema.safeParse({
+    name: "parent_action_clicked",
+    properties: { product: "PARENT", actionKind: "DIGEST_FEEDBACK", reasonCode: "HELPFUL", ageBand: "NA", evidenceBand: "NA", role: "PARENT", email: "secret@example.com" },
+  }).success, false);
+});
+
+test("istemci funnel eventleri yalnız izinli listede yer alır", () => {
+  const clicked = panelEventSchema.parse({
+    name: "student_next_action_clicked",
+    properties: { product: "OK", actionKind: "OPEN_PLAN", reasonCode: "DUE_SOON", ageBand: "0-24H", evidenceBand: "NA", role: "STUDENT" },
+  });
+  const started = panelEventSchema.parse({
+    name: "plan_task_started",
+    properties: { product: "OK", actionKind: "COMPLETE_PLAN_TASK", reasonCode: "DUE_SOON", ageBand: "NA", evidenceBand: "NA", role: "STUDENT" },
+  });
+  const serverOnly = panelEventSchema.parse({
+    name: "student_next_action_completed",
+    properties: { product: "OK", actionKind: "COMPLETE_PLAN_TASK", reasonCode: "DUE_SOON", ageBand: "NA", evidenceBand: "NA", role: "STUDENT" },
+  });
+  assert.equal(isClientPanelEvent(clicked), true);
+  assert.equal(isClientPanelEvent(started), true);
+  assert.equal(isClientPanelEvent(serverOnly), false);
 });

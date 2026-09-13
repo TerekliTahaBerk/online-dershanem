@@ -1,6 +1,10 @@
 import { Check, Lock } from "lucide-react";
 import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
-import { PricingValueBlock, PublicBadge, PublicCard } from "@/components/public/primitives";
+import {
+  PricingValueBlock,
+  PublicBadge,
+  PublicCard,
+} from "@/components/public/primitives";
 
 export type PricingCardData = {
   name: string;
@@ -17,33 +21,67 @@ export type PricingCardData = {
   ctaLabel?: string;
 };
 
-export function PricingCard({ data, source }: { data: PricingCardData; source: string }) {
+export function PricingCard({
+  data,
+  source,
+}: {
+  data: PricingCardData;
+  source: string;
+}) {
   const [price, per] = splitPrice(data.priceLabel);
   return (
     <PublicCard className="flex h-full flex-col sm:p-9">
       <div className="flex items-center justify-between gap-4">
-        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">{data.category} paketi</span>
-        {data.discountLabel ? <PublicBadge tone="olive" className="min-h-0 text-[10px]">{data.discountLabel}</PublicBadge> : null}
+        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+          {data.category} paketi
+        </span>
+        {data.discountLabel ? (
+          <PublicBadge tone="olive" className="min-h-0 text-[10px]">
+            {data.discountLabel}
+          </PublicBadge>
+        ) : null}
       </div>
-      <h3 className="mt-5 max-w-[16ch] text-[clamp(1.7rem,3vw,2.25rem)] font-semibold leading-[1.04] tracking-[-.035em] text-[var(--site-ink)]">{data.name}</h3>
-      {data.tagline ? <p className="mt-3 text-[14px] leading-6 text-[var(--site-body)]">{data.tagline}</p> : null}
+      <h3 className="mt-5 max-w-[16ch] text-[clamp(1.7rem,3vw,2.25rem)] font-semibold leading-[1.04] tracking-[-.035em] text-[var(--site-ink)]">
+        {data.name}
+      </h3>
+      {data.tagline ? (
+        <p className="mt-3 text-[14px] leading-6 text-[var(--site-body)]">
+          {data.tagline}
+        </p>
+      ) : null}
       <PricingValueBlock
         className="mt-7"
-        before={data.oldPriceLabel ? <><span className="line-through">{data.oldPriceLabel}</span> yerine</> : undefined}
+        before={
+          data.oldPriceLabel ? (
+            <>
+              <span className="line-through">{data.oldPriceLabel}</span> yerine
+            </>
+          ) : undefined
+        }
         value={price}
         suffix={per ? `/ ${per}` : undefined}
         note="Aylık ödeme · taahhüt yok"
       />
       <div className="mt-8 flex-1 border-t border-[var(--site-line)] pt-7">
         {data.highlightsTitle ? (
-          <p className="mb-4 text-[11px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">{data.highlightsTitle}</p>
+          <p className="mb-4 text-[11px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+            {data.highlightsTitle}
+          </p>
         ) : null}
         <ul className="space-y-3">
-        {data.highlights.map((item) => (
-          <li key={item} className="flex items-start gap-3 text-[14px] leading-6 text-[var(--site-body)]">
-            <Check size={16} className="mt-1 shrink-0 text-[var(--brand-olive)]" aria-hidden="true" />{item}
-          </li>
-        ))}
+          {data.highlights.map((item) => (
+            <li
+              key={item}
+              className="flex items-start gap-3 text-[14px] leading-6 text-[var(--site-body)]"
+            >
+              <Check
+                size={16}
+                className="mt-1 shrink-0 text-[var(--brand-olive)]"
+                aria-hidden="true"
+              />
+              {item}
+            </li>
+          ))}
         </ul>
       </div>
       <PurchaseFunnelTrigger
@@ -57,12 +95,17 @@ export function PricingCard({ data, source }: { data: PricingCardData; source: s
       >
         {data.ctaLabel ?? `${data.category} Paketini Satın Al`}
       </PurchaseFunnelTrigger>
-      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11.5px] text-[var(--site-muted)]"><Lock size={12} aria-hidden="true" />{data.note ?? "PayTR güvenli ödeme · Hesap gerekmez"}</p>
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11.5px] text-[var(--site-muted)]">
+        <Lock size={12} aria-hidden="true" />
+        {data.note ?? "PayTR güvenli ödeme · Hesap gerekmez"}
+      </p>
     </PublicCard>
   );
 }
 
 function splitPrice(label: string): [string, string | null] {
   const idx = label.indexOf("/");
-  return idx === -1 ? [label.trim(), null] : [label.slice(0, idx).trim(), label.slice(idx + 1).trim()];
+  return idx === -1
+    ? [label.trim(), null]
+    : [label.slice(0, idx).trim(), label.slice(idx + 1).trim()];
 }

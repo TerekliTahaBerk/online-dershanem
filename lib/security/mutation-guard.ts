@@ -1,11 +1,16 @@
 /**
  * Phase 2 / Session 17 — Mutation guard.
  *
- * Composable wrapper combining same-origin + rate-limit checks for high-risk
- * server actions / API routes. Authentication and role enforcement remain the
- * caller's responsibility — note that the site currently has NO auth layer
- * (panel is being rebuilt from scratch), so this guard is origin + rate-limit
- * only. Do not assume a caller is authenticated because it passed this guard.
+ * Composable wrapper combining same-origin + rate-limit + admin-preview
+ * read-only checks for high-risk server actions / API routes.
+ *
+ * KİMLİK VE ROL BU GUARD'IN İŞİ DEĞİLDİR. Çağıran ÖNCE `lib/auth/api-guards`
+ * (API) veya `lib/auth/guards` (sayfa) kapılarından geçmek zorundadır; buradan
+ * `ok: true` dönmesi çağıranın kimliklendirildiği anlamına GELMEZ.
+ *
+ * (Bu blok bir zamanlar "sitede henüz auth katmanı YOK" diyordu; panel yeniden
+ * yazıldığından beri doğru değil ve guard'ları isteğe bağlı sandıracak kadar
+ * yanıltıcıydı.)
  *
  * Two ergonomic surfaces:
  *
@@ -32,6 +37,9 @@ import {
   rateLimitResponseHeaders,
   type RateLimitOpts,
 } from "@/lib/security/rate-limit";
+import { getSession } from "@/lib/auth/session";
+import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
+import { logAudit } from "@/lib/audit";
 
 export type MutationGuardOpts = {
   /** Stable action identifier, e.g. `homework.submit`. */
@@ -46,13 +54,18 @@ export type MutationGuardOpts = {
   requireSameOrigin?: boolean;
   /** Pre-fetched headers (e.g. from `NextRequest.headers`); falls back to `next/headers`. */
   headers?: { get(name: string): string | null };
+  /**
+   * Admin panel önizlemesinde yazmayı serbest bırak (yalnız açık "Yönetici işlemi"
+   * akışları için). Varsayılan false — preview read-only.
+   */
+  allowAdminPreviewWrite?: boolean;
 };
 
 export type GuardResult =
   | { ok: true }
   | {
       ok: false;
-      code: "ORIGIN" | "RATE_LIMIT";
+      code: "ORIGIN" | "RATE_LIMIT" | "ADMIN_PREVIEW_READONLY";
       message: string;
       retryAfterMs?: number;
     };
@@ -70,6 +83,32 @@ async function resolveHeaders(
 export async function guardMutation(
   opts: MutationGuardOpts,
 ): Promise<GuardResult> {
+  if (!opts.allowAdminPreviewWrite) {
+    const actor = await getSession();
+    if (actor?.role === "ADMIN") {
+      const preview = await getResolvedAdminPreview(actor);
+      if (preview) {
+        await logAudit({
+          actorUserId: actor.userId,
+          entityType: "AdminPreview",
+          entityId: preview.context.previewUserId,
+          action: "ADMIN_PREVIEW_MUTATION_BLOCKED",
+          summary: "Yönetici önizlemesinde mutation engellendi",
+          payload: {
+            action: opts.action,
+            previewRole: preview.context.previewRole,
+            subjectUserId: preview.context.previewUserId,
+          },
+        });
+        return {
+          ok: false,
+          code: "ADMIN_PREVIEW_READONLY",
+          message: "Yönetici önizlemesinde işlem yapılamaz.",
+        };
+      }
+    }
+  }
+
   if (opts.requireSameOrigin) {
     const h = await resolveHeaders(opts.headers);
     const check: SameOriginCheck = assertSameOrigin(h);
@@ -126,10 +165,25 @@ export function mutationGuardResponse(
       },
     );
   }
+  if (result.code === "ADMIN_PREVIEW_READONLY") {
+    return NextResponse.json(
+      { error: result.message, code: "ADMIN_PREVIEW_READONLY" },
+      { status: 403, headers: { "Cache-Control": "no-store" } },
+    );
+  }
   return NextResponse.json(
     { error: result.message, code: "ORIGIN" },
     { status: 403, headers: { "Cache-Control": "no-store" } },
   );
+}
+
+/** Server action'lar için: preview açıksa Türkçe Error fırlatır. */
+export async function assertAdminPreviewReadOnly(): Promise<void> {
+  const actor = await getSession();
+  if (actor?.role !== "ADMIN") return;
+  const preview = await getResolvedAdminPreview(actor);
+  if (!preview) return;
+  throw new Error("Yönetici önizlemesinde işlem yapılamaz.");
 }
 
 /** Throwing guard — bubbles a Turkish `Error` on failure. */

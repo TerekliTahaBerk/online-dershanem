@@ -17,12 +17,13 @@ Bu faz, tamamlanmış bir derse katılmayan veya mazeretli sayılan öğrencinin
 
 ## Yaşam döngüsü
 
-1. Tamamlanmış dersin `ABSENT` veya `EXCUSED` yoklaması öğretmen ekranına düşer.
-2. Öğretmen taslağı üretir veya yayımlanmamış taslağı güncel ortak veriyle yeniler.
-3. Öğretmen konu, küçük adım, öğe sırası, mini kontrol ve tam 72 saat hedefini önizler.
-4. Sürüm eşleşiyorsa paket bir kez yayınlanır ve öğrenciye uygulama içi bildirim gider.
-5. Öğrenci her öğeyi inceler ve kontrollü mini kontrol yanıtını verir. Tüm öğeler ile yanıt tamamlanınca paket `COMPLETED` olur.
-6. Öğrencinin aktif, öğretmen onaylı haftalık planı varsa aynı gün/dakika/en fazla üç iş sınırlarıyla yeniden dengelenir. Eski açık görevler geçmiş izi olarak `SKIPPED` kalır.
+1. Öğretmen dersi kapatırken `ABSENT` yoklama set edilirse ilgili öğrenci için taslak üretilir.
+2. Taslak aynı kapanış akışında otomatik olarak yayınlanır ve öğrenciye uygulama içi bildirim gider.
+3. Öğretmen telafi ekranı aynı paketi önizleme/izleme için kullanır; aynı ders+öğrenci için ikinci paket açılmaz.
+4. Öğrenci konu özeti, bağlı kazanımlar, materyal ve küçük çalışma adımını sırayla tamamlar; mini kontrol yanıtı verir.
+5. Öğrenci “Takıldım / Yardım iste” ile mevcut kontrollü check-in yardım akışına gider.
+6. Tüm öğeler ve mini kontrol tamamlanınca paket `COMPLETED` olur.
+7. Öğrencinin aktif, öğretmen onaylı haftalık planı varsa aynı gün/dakika/en fazla üç iş sınırlarıyla yeniden dengelenir. Eski açık görevler geçmiş izi olarak `SKIPPED` kalır.
 
 ## Yetki ve yatay erişim
 

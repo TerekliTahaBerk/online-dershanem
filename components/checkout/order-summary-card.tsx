@@ -146,9 +146,10 @@ export function OrderSummaryCard({
             className="mt-0.5 flex-shrink-0 text-[var(--brand-orange-ink)]"
           />
           <span>
-            <strong className="text-[var(--site-ink)]">PayTR</strong> ile 256-bit
-            SSL güvenli ödeme. Kart bilgileriniz sitemizde saklanmaz; kullanılabilir
-            taksit seçenekleri kartınıza ve bankanıza göre ödeme ekranında gösterilir.
+            <strong className="text-[var(--site-ink)]">PayTR</strong> ile
+            256-bit SSL güvenli ödeme. Kart bilgileriniz sitemizde saklanmaz;
+            kullanılabilir taksit seçenekleri kartınıza ve bankanıza göre ödeme
+            ekranında gösterilir.
           </span>
         </div>
 

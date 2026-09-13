@@ -1,0 +1,18 @@
+# Prisma data model ownership
+
+Prisma 6.19.3 loads all `.prisma` files in `prisma/schema/` as one data model. The generator and datasource live only in `base.prisma`; domain files own models and enums. Cross-file relations are expected and do not imply shared ownership.
+
+The grouping was checked against Prisma delegate usage in `app/`, `lib/`, `scripts/`, and `tests/`. For example, auth models are concentrated in `lib/auth` and auth routes; ODK models in `lib/odk` and ODK routes; Koçum models in `lib/kocum`, adaptive-plan, and student-success code; business models in CRM/automation/accounting code; commerce models in checkout/provisioning/reconciliation code.
+
+| File | Models | Ownership |
+| --- | ---: | --- |
+| `base.prisma` | 0 | Generator, datasource, and enums shared by multiple domains |
+| `auth.prisma` | 8 | User, Session, PasswordResetToken, AdminMfa, PasskeyCredential, MfaRecoveryCode, MfaChallenge, MfaResetRequest |
+| `education.prisma` | 30 | StudentProfile, WeeklyDigest, WeeklyDigestFeedback, TeacherProfile, ParentStudent, ParentStudentHistory, Group, LessonSeries, Enrollment, Lesson, TeacherAiDraft, LessonNote, Attendance, Assignment, AssignmentProgress, AssignmentRubricCriterion, AssignmentSubmission, AssignmentRubricScore, LearningMaterial, RecoveryPackage, RecoveryPackageItem, CurriculumVersion, CurriculumSubject, CurriculumUnit, CurriculumSkill, LearningOutcome, OutcomeSkill, LessonOutcome, AssignmentOutcome, OutcomeFavorite |
+| `odk.prisma` | 30 | DinoAnswer, PilotCohort, PilotCohortMember, OdkPilotRun, OdkPilotMember, MockExam, MockExamSection, MockExamSectionError, ReviewItem, ReviewAttempt, OdkPackage, OdkExamSeries, OdkExam, OdkExamVersion, OdkScoringPolicy, OdkExamSection, OdkExamQuestion, OdkQuestionOutcome, OdkExamFile, OdkPackageExam, OdkExamAttempt, OdkAttemptAnswer, OdkAttemptScore, OdkAttemptQuestionResult, OdkAttemptOutcomeScore, OdkAttemptEvent, OdkAttemptQuestionTiming, OdkExamAssignment, OdkAnswerKeyRevision, OdkImportAudit |
+| `kocum.prisma` | 19 | InterventionCase, InterventionCaseActivity, StudentPlanPreference, WeeklyPlan, WeeklyPlanTask, WeeklyPlanTemplate, WeeklyPlanRevision, CoachNote, WeeklyCoachSummary, WeeklyPlanSuggestion, StudentTimelineEvent, StudentTeacherAssignment, CoachAssignment, StudentGoal, CoachingSession, TeacherNoteTemplate, StudentCheckIn, StudentHelpRequest, StudentHelpResponse |
+| `business.prisma` | 30 | BusinessUnit, BusinessRoleAssignment, IntegrationConnection, InstagramAccount, InstagramWebhookEvent, BusinessConversation, BusinessMessage, MessageDelivery, BusinessLead, LeadActivity, LeadTask, BusinessCampaign, BusinessAdSet, BusinessAdvertisement, Attribution, KnowledgeBaseEntry, AIPromptVersion, AIExecution, AutomationRule, AutomationExecution, FinancialTransaction, FinancialTransactionLine, ExpenseCategory, TaxProfile, AccountingPeriod, ReconciliationRecord, BackgroundJob, CronHeartbeat, TeacherHomeSnapshot, ProductMembership |
+| `commerce.prisma` | 14 | LeadSubmission, PurchaseIntent, PurchaseEvent, Package, OdkOrder, OdkEntitlement, OdkPayment, OdOrder, CommerceOrderLine, OdOnboarding, OdOnboardingTransition, OdPayment, Coupon, CouponRedemption |
+| `system.prisma` | 13 | AccessibilityPreference, NetworkPreference, Notification, NotificationPreference, EmailOutbox, RateLimitEntry, AuditLog, ProductEvent, CrossProductEventOutbox, CrossProductEventConsumer, StudentProgressEvidence, StudentOutcomeMastery, CrossProductRecommendation |
+
+Use `npm run db:audit:enums` for the complete enum/value/model inventory and overlap report. A schema-file move must always be verified with `prisma validate` and a datamodel-to-datamodel `prisma migrate diff`; file organization alone must produce no SQL difference.

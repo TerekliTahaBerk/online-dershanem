@@ -6,6 +6,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { afterResponse } from "@/lib/after-response";
 
 const schema = z.object({ expectedVersion: z.number().int().min(1) });
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -15,11 +16,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Özet sürümü geçersiz." }, { status: 400 }); const { id } = await context.params;
   const digest = await prisma.weeklyDigest.findFirst({ where: { id, status: "DRAFT", student: { enrollments: { some: { endedAt: null, group: { isActive: true, teacherId: auth.session.userId } } } } }, include: { student: { include: { user: { select: { id: true } }, parents: { select: { parentId: true } } } } } }); if (!digest) return NextResponse.json({ error: "Özet bulunamadı." }, { status: 404 });
   const recipientIds = [...new Set([digest.student.user.id, ...digest.student.parents.map((link) => link.parentId)])];
-  const rawRows = recipientIds.map((userId) => ({ userId, type: "LESSON_SUMMARY" as const, title: "Haftalık sakin özet hazır", body: "İki iyi giden nokta ve bir küçük destek önerisi hazır.", href: userId === digest.student.user.id ? "/panel/ogrenci/haftalik" : `/panel/veli/haftalik?studentId=${digest.studentId}` }));
+  const rawRows = recipientIds.map((userId) => ({ userId, type: "LESSON_SUMMARY" as const, title: "Haftalık özet hazır", body: "İki iyi giden nokta ve bir küçük destek önerisi hazır.", href: userId === digest.student.user.id ? "/panel/ogrenci/haftalik" : `/panel/veli/haftalik?studentId=${digest.studentId}` }));
   const rows = await filterNotificationRows(rawRows, "weeklyDigest");
   const published = await prisma.$transaction(async (tx) => { const updated = await tx.weeklyDigest.updateMany({ where: { id, status: "DRAFT", version: parsed.data.expectedVersion }, data: { status: "PUBLISHED", publishedById: auth.session.userId, publishedAt: new Date(), version: { increment: 1 } } }); if (updated.count !== 1) throw new Error("DIGEST_VERSION_CONFLICT"); if (rows.length) await tx.notification.createMany({ data: rows }); return true; }).catch((error) => error instanceof Error && error.message === "DIGEST_VERSION_CONFLICT" ? false : Promise.reject(error));
   if (!published) return NextResponse.json({ error: "Özet başka bir sekmede değişti." }, { status: 409 });
   await queuePanelNotificationEmails(rawRows, "weeklyDigest"); const band = recipientIds.length === 1 ? "1" : recipientIds.length <= 3 ? "2-3" : "4+";
   await recordPanelProductEvent({ name: "weekly_digest_published", properties: { trendBand: digest.trendBand as "IMPROVING" | "STEADY" | "BUILDING" | "LIMITED_DATA", recipientBand: band } }, auth.session.role);
+  const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+  afterResponse("panel.weekly_digest.automation_emit_failed", () => emitEducationAutomation("weekly_digest_ready", {
+    entityType: "digest",
+    entityId: id,
+    studentId: digest.studentId,
+    severity: "low",
+    href: "/panel/veli/haftalik",
+  }), { digestId: id });
   return NextResponse.json({ published: true });
 }

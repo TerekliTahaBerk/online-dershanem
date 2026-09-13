@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { interventionReasonCodes } from "@/lib/intervention-rules";
 
 const smallCount = z.number().int().min(0).max(100);
 const duration = z.number().int().min(0).max(8 * 60 * 60 * 1000);
 const operationDuration = z.number().int().min(0).max(5 * 60 * 1000);
 const operationOutcome = z.enum(["success", "validation", "rejected", "system_error"]);
+const boundedAgeBand = z.enum(["NA", "0-24H", "25H-7D", "8D+", "0-2D", "3-7D"]);
+const boundedEvidenceBand = z.enum(["NA", "LOW", "MEDIUM", "HIGH"]);
 
 export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({
@@ -72,6 +75,13 @@ export const panelEventSchema = z.discriminatedUnion("name", [
       studentCount: z.number().int().min(0).max(4),
       parentLinkCount: z.number().int().min(0).max(8),
       lessonCount: z.number().int().min(0).max(12),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("admin_preview_page_viewed"),
+    properties: z.object({
+      previewRole: z.enum(["STUDENT", "PARENT", "TEACHER"]),
+      pathBand: z.string().min(1).max(40),
     }).strict(),
   }),
   z.object({
@@ -148,29 +158,172 @@ export const panelEventSchema = z.discriminatedUnion("name", [
     properties: z.object({ durationMs: z.number().int().min(0).max(30 * 60 * 1000), taskCount: z.number().int().min(0).max(21), approved: z.boolean() }).strict(),
   }),
   z.object({
+    name: z.literal("plan_overload_reported"),
+    properties: z.object({
+      category: z.enum(["TOO_MUCH", "WRONG_DAYS", "PRIORITY", "OTHER"]),
+      overwhelmPulse: z.number().int().min(1).max(5).nullable(),
+      option: z.enum(["REDUCE_LIGHT", "REDUCE_HEAVY", "CHANGE_DAYS", "UNSPECIFIED"]),
+    }).strict(),
+  }),
+  z.object({
     name: z.literal("plan_change_requested"),
-    properties: z.object({ category: z.enum(["TOO_MUCH", "WRONG_DAYS", "PRIORITY", "OTHER"]) }).strict(),
+    properties: z.object({
+      category: z.enum(["TOO_MUCH", "WRONG_DAYS", "PRIORITY", "OTHER"]),
+      option: z.enum(["REDUCE_LIGHT", "REDUCE_HEAVY", "CHANGE_DAYS", "UNSPECIFIED"]),
+    }).strict(),
+  }),
+  /*
+   * Online Koçum operasyon sayaçları (§37). Plan yayını ve öneri kararı,
+   * görev tamamlanmasından AYRI izlenir: eskiden yalnız `plan_task_completed`
+   * vardı ve "koçlar öneri kabul ediyor mu, plan yayınlanıyor mu" sorusu
+   * telemetriden hiç yanıtlanamıyordu.
+   */
+  z.object({
+    name: z.literal("kocum_plan_published"),
+    properties: z.object({
+      taskCountBand: z.enum(["1-5", "6-15", "16-30", "31+"]),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("kocum_suggestion_reviewed"),
+    properties: z.object({
+      decision: z.enum(["ACCEPTED", "REJECTED"]),
+      kind: z.enum(["ADAPTIVE_NEXT_WEEK", "REVIEW_QUEUE", "MOCK_EXAM_FOLLOWUP", "CARRY_OVER", "TEMPLATE"]),
+      taskCreated: z.boolean(),
+    }).strict(),
   }),
   z.object({
     name: z.literal("plan_task_completed"),
-    properties: z.object({ sourceType: z.enum(["ASSIGNMENT", "REVIEW", "WEAK_OUTCOME", "EXAM_PREP", "RECOVERY"]), reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]) }).strict(),
+    properties: z.object({ sourceType: z.enum(["ASSIGNMENT", "REVIEW", "WEAK_OUTCOME", "EXAM_PREP", "RECOVERY", "MANUAL_COACH", "MOCK_EXAM", "SYSTEM_SUGGESTED", "TEMPLATE", "PERSONAL_GOAL"]), reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]) }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_next_action_viewed"),
+    properties: z.object({
+      product: z.enum(["OD", "OK", "ODK", "SHARED"]),
+      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN", "OPEN_ODK_EXAM", "RESUME_ODK_ATTEMPT", "OPEN_REVIEW"]),
+      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "PLAN_OVERDUE", "ODK_ACTIVE_ATTEMPT", "ODK_EXAM_WINDOW"]),
+      ageBand: boundedAgeBand,
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_next_action_clicked"),
+    properties: z.object({
+      product: z.enum(["OD", "OK", "ODK", "SHARED"]),
+      actionKind: z.enum(["OPEN_LESSON", "OPEN_RECOVERY", "OPEN_PLAN", "OPEN_ODK_EXAM", "RESUME_ODK_ATTEMPT", "OPEN_REVIEW"]),
+      reasonCode: z.enum(["LIVE_LESSON", "MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "PLAN_OVERDUE", "ODK_ACTIVE_ATTEMPT", "ODK_EXAM_WINDOW"]),
+      ageBand: boundedAgeBand,
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_next_action_completed"),
+    properties: z.object({
+      product: z.enum(["OD", "OK"]),
+      actionKind: z.enum(["COMPLETE_PLAN_TASK", "COMPLETE_RECOVERY"]),
+      reasonCode: z.enum(["MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE"]),
+      ageBand: boundedAgeBand,
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("plan_task_started"),
+    properties: z.object({
+      product: z.literal("OK"),
+      actionKind: z.literal("COMPLETE_PLAN_TASK"),
+      reasonCode: z.enum(["DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE", "MISSED_LESSON"]),
+      ageBand: z.literal("NA"),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("missed_lesson_recovery_started"),
+    properties: z.object({
+      product: z.literal("OD"),
+      actionKind: z.literal("COMPLETE_RECOVERY"),
+      reasonCode: z.literal("MISSED_LESSON"),
+      ageBand: z.enum(["0-24H", "25H-7D", "8D+", "NA"]),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("student_help_requested"),
+    properties: z.object({
+      product: z.literal("HELP"),
+      actionKind: z.literal("REQUEST_HELP"),
+      reasonCode: z.enum(["NONE", "NOT_UNDERSTANDING", "TIME_LOAD", "ACCESS_TECH", "NEED_EXAMPLE", "OTHER"]),
+      ageBand: z.literal("NA"),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("odk_result_viewed"),
+    properties: z.object({
+      product: z.literal("ODK"),
+      actionKind: z.literal("VIEW_RESULT"),
+      reasonCode: z.enum(["NEEDS_REVIEW", "NO_SIGNAL"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: boundedEvidenceBand,
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("odk_recovery_action_viewed"),
+    properties: z.object({
+      product: z.literal("ODK"),
+      actionKind: z.enum(["OPEN_ANSWER_KEY", "OPEN_PLAN", "OPEN_REVIEW", "OPEN_OD_RECOVERY"]),
+      reasonCode: z.enum(["NEEDS_REVIEW", "NO_SIGNAL"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: boundedEvidenceBand,
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("odk_recovery_action_started"),
+    properties: z.object({
+      product: z.literal("ODK"),
+      actionKind: z.enum(["OPEN_ANSWER_KEY", "OPEN_PLAN", "OPEN_REVIEW", "OPEN_OD_RECOVERY"]),
+      reasonCode: z.enum(["NEEDS_REVIEW", "NO_SIGNAL"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: boundedEvidenceBand,
+      role: z.literal("STUDENT"),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("parent_action_clicked"),
+    properties: z.object({
+      product: z.literal("PARENT"),
+      actionKind: z.literal("DIGEST_FEEDBACK"),
+      reasonCode: z.enum(["HELPFUL", "NOT_HELPFUL", "ANXIETY_PULSE"]),
+      ageBand: z.enum(["0-2D", "3-7D", "8D+", "NA"]),
+      evidenceBand: z.literal("NA"),
+      role: z.literal("PARENT"),
+    }).strict(),
   }),
   z.object({
     name: z.literal("plan_preference_updated"),
     properties: z.object({ availableDayCount: z.number().int().min(1).max(7), minutesPerDay: z.number().int().min(15).max(180), planningEnabled: z.boolean(), overwhelmPulse: z.number().int().min(1).max(5).nullable() }).strict(),
   }),
-  z.object({ name: z.literal("weekly_digest_generated"), properties: z.object({ ruleVersion: z.literal("calm-digest-v1"), trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), reused: z.boolean() }).strict() }),
+  z.object({ name: z.literal("weekly_digest_generated"), properties: z.object({ ruleVersion: z.literal("calm-digest-v1"), trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), reused: z.boolean(), processedCount: z.number().int().min(0).max(1000).optional(), failedCount: z.number().int().min(0).max(1000).optional() }).strict() }),
+  z.object({ name: z.literal("weekly_digest_batch_failed"), properties: z.object({ jobId: z.string().min(1), teacherId: z.string().min(1), processedCount: z.number().int().min(0).max(1000), failedCount: z.number().int().min(1).max(1000) }).strict() }),
+  z.object({ name: z.literal("weekly_digest.batch_item_failed"), properties: z.object({ jobId: z.string().min(1), teacherId: z.string().min(1), studentId: z.string().min(1), errorCode: z.string().min(1) }).strict() }),
   z.object({ name: z.literal("weekly_digest_published"), properties: z.object({ trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), recipientBand: z.enum(["1", "2-3", "4+"])}).strict() }),
   z.object({ name: z.literal("weekly_digest_viewed"), properties: z.object({ actorRole: z.enum(["STUDENT", "PARENT"]), trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), ageBand: z.enum(["0-2D", "3-7D", "8D+"])}).strict() }),
   z.object({ name: z.literal("weekly_digest_feedback"), properties: z.object({ actorRole: z.enum(["STUDENT", "PARENT"]), helpful: z.boolean().nullable(), anxietyPulse: z.number().int().min(1).max(5).nullable() }).strict() }),
   z.object({ name: z.literal("weekly_digest_preference_updated"), properties: z.object({ actorRole: z.enum(["STUDENT", "PARENT"]), enabled: z.boolean(), emailEnabled: z.boolean() }).strict() }),
-  z.object({ name: z.literal("case_rule_triggered"), properties: z.object({ ruleVersion: z.literal("intervention-v1"), reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]) }).strict() }),
+  z.object({ name: z.literal("case_rule_triggered"), properties: z.object({ ruleVersion: z.literal("intervention-v1"), reasonCode: z.enum(interventionReasonCodes) }).strict() }),
   z.object({ name: z.literal("case_opened"), properties: z.object({ actorRole: z.enum(["ADMIN", "TEACHER"]), openCountBand: z.enum(["0", "1-5", "6-20", "21+"]), overdueCountBand: z.enum(["0", "1-5", "6-20", "21+"]) }).strict() }),
-  z.object({ name: z.literal("case_assigned"), properties: z.object({ ownerRole: z.enum(["ADMIN", "TEACHER"]), reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]) }).strict() }),
-  z.object({ name: z.literal("intervention_logged"), properties: z.object({ action: z.enum(["START", "LOG_ACTION", "SNOOZE", "RESOLVE", "FALSE_POSITIVE", "REOPEN"]), reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), timeToActionMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000).nullable(), withinSla: z.boolean().nullable(), noteProvided: z.boolean() }).strict() }),
-  z.object({ name: z.literal("case_snoozed"), properties: z.object({ reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), days: z.union([z.literal(1), z.literal(3), z.literal(7)]) }).strict() }),
-  z.object({ name: z.literal("case_closed"), properties: z.object({ reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), outcomeCode: z.enum(["CHECK_IN_COMPLETED", "SUPPORT_PLANNED", "PRACTICE_ADJUSTED", "FAMILY_CONTACTED", "NO_ACTION_NEEDED", "OTHER"]) }).strict() }),
-  z.object({ name: z.literal("case_false_positive"), properties: z.object({ reasonCode: z.enum(["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED"]), falsePositiveReason: z.enum(["CONTEXT_MISSING", "DATA_OUTDATED", "THRESHOLD_TOO_SENSITIVE", "DUPLICATE", "OTHER"]) }).strict() }),
+  z.object({ name: z.literal("case_assigned"), properties: z.object({ ownerRole: z.enum(["ADMIN", "TEACHER"]), reasonCode: z.enum(interventionReasonCodes) }).strict() }),
+  z.object({ name: z.literal("intervention_logged"), properties: z.object({ action: z.enum(["START", "LOG_ACTION", "SNOOZE", "RESOLVE", "FALSE_POSITIVE", "REOPEN", "CREATE_MANUAL"]), reasonCode: z.enum(interventionReasonCodes), timeToActionMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000).nullable(), withinSla: z.boolean().nullable(), noteProvided: z.boolean() }).strict() }),
+  z.object({ name: z.literal("case_snoozed"), properties: z.object({ reasonCode: z.enum(interventionReasonCodes), days: z.union([z.literal(1), z.literal(3), z.literal(7)]) }).strict() }),
+  z.object({ name: z.literal("case_closed"), properties: z.object({ reasonCode: z.enum(interventionReasonCodes), outcomeCode: z.enum(["CHECK_IN_COMPLETED", "SUPPORT_PLANNED", "PRACTICE_ADJUSTED", "FAMILY_CONTACTED", "NO_ACTION_NEEDED", "OTHER"]) }).strict() }),
+  z.object({ name: z.literal("case_false_positive"), properties: z.object({ reasonCode: z.enum(interventionReasonCodes), falsePositiveReason: z.enum(["CONTEXT_MISSING", "DATA_OUTDATED", "THRESHOLD_TOO_SENSITIVE", "DUPLICATE", "OTHER"]) }).strict() }),
   z.object({ name: z.literal("recovery_package_generated"), properties: z.object({ ruleVersion: z.literal("recovery-v1"), itemCount: z.number().int().min(0).max(5), hasMaterial: z.boolean(), hasAssignment: z.boolean(), reused: z.boolean() }).strict() }),
   z.object({ name: z.literal("recovery_package_published"), properties: z.object({ publishDelayMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), itemCount: z.number().int().min(0).max(5), planRebalanced: z.boolean() }).strict() }),
   z.object({ name: z.literal("recovery_package_viewed"), properties: z.object({ ageMs: z.number().int().min(0).max(365 * 24 * 60 * 60 * 1000), itemCount: z.number().int().min(0).max(5) }).strict() }),
@@ -194,6 +347,43 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({ name: z.literal("ai_draft_generated"), properties: z.object({ taskType: z.enum(["ASSIGNMENT", "MINI_CHECK"]), provider: z.enum(["OPENAI", "GEMINI", "FALLBACK", "STUB"]), latencyBand: z.enum(["0-2S", "2-8S", "8S+"]), citationCount: z.number().int().min(1).max(6), fallbackReason: z.enum(["NONE", "PROVIDER_DISABLED", "EXTERNAL_TRANSFER_NOT_READY", "COST_CONFIG_MISSING", "PROMPT_INJECTION", "DAILY_QUOTA", "E2E_STUB", "PROVIDER_ERROR", "SAFETY_OR_PARSE"]), costBand: z.enum(["UNKNOWN", "0", "1-999", "1000+"]) }).strict() }),
   z.object({ name: z.literal("ai_draft_reviewed"), properties: z.object({ taskType: z.enum(["ASSIGNMENT", "MINI_CHECK"]), provider: z.enum(["OPENAI", "GEMINI", "FALLBACK", "STUB"]), action: z.enum(["ACCEPT", "EDIT", "REJECT", "FLAG"]), changedFieldCount: z.number().int().min(0).max(4), reviewAgeBand: z.enum(["0-5M", "6M-24H", "24H+"]) }).strict() }),
   z.object({ name: z.literal("pilot_cohort_changed"), properties: z.object({ action: z.enum(["CREATED", "ACTIVATE", "PAUSE", "RESUME", "COMPLETE", "ROLLBACK"]), memberBand: z.enum(["1-4", "5-12", "13+"]), fourRoleCoverage: z.boolean(), readiness: z.enum(["PASS", "WAIT", "BLOCK"]) }).strict() }),
+  z.object({
+    name: z.literal("admin_ops_center_viewed"),
+    properties: z.object({
+      openActionBand: z.enum(["0", "1-5", "6-20", "21+"]),
+      blockingBand: z.enum(["0", "1-5", "6-20", "21+"]),
+      partialData: z.boolean(),
+      interventionFlag: z.boolean(),
+    }).strict(),
+  }),
+  z.object({
+    name: z.literal("admin_ops_center_action_clicked"),
+    properties: z.object({
+      actionCode: z.enum([
+        "PROVISIONING_FAILED",
+        "PROVISIONING_PENDING",
+        "PROVISIONING_RETRY",
+        "INVITE_PENDING",
+        "STUDENT_NO_GROUP",
+        "STUDENT_NO_PARENT",
+        "GROUP_TEACHER_INACTIVE",
+        "LESSON_MISSING_PLAN",
+        "PAID_NO_ACCOUNT",
+        "HELP_REQUEST_OPEN",
+        "HIGH_RISK_STUDENT",
+        "UNIFIED_OPS_OPEN",
+        "MOCK_EXAM_FAILED",
+        "SYSTEM_CRON",
+        "SYSTEM_PARTIAL_DATA",
+        "ACCOUNT_INTEGRITY",
+        "LESSON_CANCELLED",
+        "STALE_PLAN",
+        "UNNOTED_LESSON",
+        "SUMMARY_TILE",
+      ]),
+      severity: z.enum(["BLOCKING", "ACTION_REQUIRED", "WATCH", "NA"]),
+    }).strict(),
+  }),
 ]);
 
 export type PanelEventInput = z.infer<typeof panelEventSchema>;
@@ -208,9 +398,14 @@ const clientPanelEventNames = new Set<PanelEventInput["name"]>([
   "mock_heatmap_viewed",
   "review_queue_viewed",
   "plan_review_completed",
+  "student_next_action_clicked",
+  "plan_task_started",
+  "odk_recovery_action_started",
+  "parent_action_clicked",
   "offline_write_queued",
   "offline_write_synced",
   "offline_write_conflicted",
+  "admin_ops_center_action_clicked",
 ]);
 
 export function isClientPanelEvent(event: PanelEventInput): boolean {

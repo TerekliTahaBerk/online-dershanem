@@ -8,7 +8,7 @@ import { hasProductEntitlement } from "@/lib/auth/product-entitlements";
 const STAFF_PRODUCTS: ProductCode[] = ["OD", "OK", "ODK"];
 
 export async function getAccessibleProducts(userId: string, role: UserRole, now = new Date()): Promise<ProductCode[]> {
-  // Personel görev gereği iki üründe de çalışır. DB satırları kaynak/audit için
+  // Personel görev gereği üç üründe de çalışır. DB satırları kaynak/audit için
   // tutulur; yanlışlıkla silinmeleri personelin operasyon erişimini kesmez.
   if (role === "ADMIN" || role === "TEACHER") return STAFF_PRODUCTS;
 
@@ -36,7 +36,7 @@ export async function hasProductAccess(userId: string, role: UserRole, product: 
  * Ürün seçme adımı YOKTUR — satın alınan ürünler panelin İÇİNDE bölüm olarak
  * açılır ve menü yetkiye göre daralır (bkz. `PanelNav`).
  *
- * Eskiden burada `PRODUCT_SELECTOR_PATH` vardı ve iki ürünü olan kullanıcı
+ * Eskiden burada `PRODUCT_SELECTOR_PATH` vardı ve birden çok ürünü olan kullanıcı
  * her girişte "hangi panele gireceksin?" sorusuyla karşılaşıyordu; ürün
  * mimarisi tek panele geçtiği için bu adım kaldırıldı.
  */

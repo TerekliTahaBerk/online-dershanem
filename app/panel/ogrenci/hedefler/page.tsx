@@ -21,7 +21,10 @@ export const dynamic = "force-dynamic";
  * ÜRÜN KAPSAMI: Online Koçum (OK) — hedefler koçla birlikte belirlenir.
  */
 
-const NUM = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const NUM = new Intl.NumberFormat("tr-TR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 const RANK = new Intl.NumberFormat("tr-TR");
 
 /* Tasarımın bant renkleri: hedefe uzakken kehribar, yakınken/ulaşınca yeşil. */
@@ -87,7 +90,9 @@ export default async function StudentGoalsPage() {
           <p className="text-[13px] text-dc-ink-faint">Sınav hedefi</p>
           <p className="mt-1 text-[22px] font-extrabold text-dc-ink">
             {examLine || "Sınav belirlenmedi"}
-            {profile.targetRank ? ` · hedef sıralama ${RANK.format(profile.targetRank)}` : ""}
+            {profile.targetRank
+              ? ` · hedef sıralama ${RANK.format(profile.targetRank)}`
+              : ""}
           </p>
           <p className="mt-1.5 text-[13.5px] leading-[1.6] text-dc-ink-muted">
             Hedef sıralama için gereken net aralığını koçun belirler.

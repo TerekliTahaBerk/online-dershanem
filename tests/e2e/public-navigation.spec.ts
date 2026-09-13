@@ -57,6 +57,14 @@ test.describe("masaüstü navigasyon", () => {
   test("giriş ve birincil CTA masaüstünde erişilebilir", async ({ page }) => {
     await gotoHydrated(page, "/");
     const header = page.locator("header");
+    const nav = page.getByRole("navigation", { name: "Ana menü" });
+
+    await expect(nav.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "Ders Paketleri", exact: true })).toHaveCount(0);
+
     await expect(header.getByRole("link", { name: "Giriş Yap" })).toBeVisible();
     const cta = header.getByRole("link", { name: "Paketini Oluştur" });
     await expect(cta).toBeVisible();
@@ -77,11 +85,25 @@ test.describe("mobil navigasyon", () => {
     for (const product of PRODUCTS) {
       await expect(menu.getByRole("link", { name: product.name, exact: true })).toBeVisible();
     }
+    await expect(menu.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
+    await expect(menu.getByRole("link", { name: "Ders Paketleri", exact: true })).toHaveCount(0);
     await expect(dialog.getByRole("link", { name: "Giriş Yap", exact: true })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Paketini Oluştur", exact: true })).toBeVisible();
 
     await menu.getByRole("link", { name: "Online Deneme Kulübüm", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-deneme-kulubum\/?$/);
     await expect(page.getByRole("dialog", { name: "Mobil menü" })).toHaveCount(0);
+  });
+
+  test("hero ikincil CTA keşif sayfasına gider", async ({ page }) => {
+    await gotoHydrated(page, "/");
+    const heroSecondaryCta = page.getByRole("link", { name: "Ürünleri Karşılaştır", exact: true });
+    await expect(heroSecondaryCta).toBeVisible();
+    await heroSecondaryCta.click();
+    await expect(page).toHaveURL(/\/urunler\/?$/);
   });
 
   test("ürün sayfaları 390px'te yatay taşma yapmaz", async ({ page }) => {

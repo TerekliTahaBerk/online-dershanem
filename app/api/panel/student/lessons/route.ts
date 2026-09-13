@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { formatIstanbulDateInput } from "@/lib/istanbul-time";
+
+const querySchema = z.object({ durum: z.enum(["yaklasan", "tamamlanan"]).default("yaklasan") });
 
 /**
  * Öğrenci Dersler verisi — JSON karşılığı.
@@ -15,7 +18,9 @@ export async function GET(request: Request) {
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
-  const filter = url.searchParams.get("durum") === "tamamlanan" ? "tamamlanan" : "yaklasan";
+  const query = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!query.success) return NextResponse.json({ error: "Geçersiz ders filtresi." }, { status: 400 });
+  const filter = query.data.durum;
 
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });
   if (!profile) {
@@ -67,7 +72,8 @@ export async function GET(request: Request) {
 
     const statusTone: "default" | "ok" | "warn" = missed ? "warn" : isToday && !completed ? "ok" : "default";
 
-    const actionLabel = missed ? "Telafi" : completed ? "Notları gör" : isToday ? "Derse katıl" : "Detay";
+    const actionLabel = missed ? "Telafi et" : completed ? "Notları gör" : isToday ? "Derse katıl" : "Detay";
+    const actionHref = missed ? `/panel/ogrenci/telafi?lessonId=${lesson.id}` : `/panel/ogrenci/takvim/${lesson.id}`;
 
     return {
       id: lesson.id,
@@ -78,6 +84,7 @@ export async function GET(request: Request) {
       statusLabel,
       statusTone,
       actionLabel,
+      actionHref,
     };
   });
 

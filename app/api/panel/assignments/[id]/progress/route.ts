@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { afterResponse } from "@/lib/after-response";
+import { rejectAssignmentProgressTransition } from "@/lib/panel/assignment-progress-policy";
 
 const schema = z.object({ status: z.enum(["TODO", "IN_PROGRESS", "DONE"]), expectedVersion: z.number().int().min(0).optional(), mutationKey: z.string().uuid().optional() }).strict().superRefine((value, context) => {
   if ((value.expectedVersion === undefined) !== (value.mutationKey === undefined)) context.addIssue({ code: "custom", message: "Çevrimdışı sürüm bilgisi eksik." });
@@ -25,7 +27,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (!profile) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 }); }
   const assignment = await prisma.assignment.findFirst({ where: { id, isActive: true, group: { enrollments: { some: { studentId: profile.id, endedAt: null } } } }, select: { id: true, evidenceRequired: true } });
   if (!assignment) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Ödev bulunamadı." }, { status: 404 }); }
-  if (assignment.evidenceRequired && parsed.data.status === "DONE") { await recordFinished("validation", parsed.data.status); return NextResponse.json({ error: "Bu çalışma öğretmen onayından sonra tamamlanır; önce kanıtını gönder." }, { status: 409 }); }
+  const latestSubmission = assignment.evidenceRequired
+    ? await prisma.assignmentSubmission.findFirst({ where: { assignmentId: id, studentId: profile.id }, orderBy: { attemptNumber: "desc" }, select: { status: true } })
+    : null;
+  const rejection = rejectAssignmentProgressTransition({ evidenceRequired: assignment.evidenceRequired, nextStatus: parsed.data.status, latestSubmissionStatus: latestSubmission?.status ?? null });
+  if (rejection) { await recordFinished("validation", parsed.data.status); return NextResponse.json({ error: rejection.message, code: rejection.code }, { status: 409 }); }
   const existing = await prisma.assignmentProgress.findUnique({ where: { assignmentId_studentId: { assignmentId: id, studentId: profile.id } }, select: { version: true, lastMutationKey: true, status: true } });
   if (parsed.data.mutationKey && existing?.lastMutationKey === parsed.data.mutationKey) {
     await recordFinished("success", existing.status);
@@ -54,5 +60,20 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     throw error;
   }
   await recordFinished("success", parsed.data.status);
+  if (parsed.data.status === "DONE") {
+    const progress = await prisma.assignmentProgress.findUnique({
+      where: { assignmentId_studentId: { assignmentId: id, studentId: profile.id } },
+      select: { id: true },
+    });
+    if (progress) {
+      const { onAssignmentCompleted } = await import("@/lib/student-success/server/emit-hooks");
+      afterResponse("panel.assignment_progress.cross_product_emit_failed", () => onAssignmentCompleted({
+        assignmentId: id,
+        progressId: progress.id,
+        studentId: profile.id,
+        actorUserId: auth.session.userId,
+      }), { assignmentId: id, progressId: progress.id });
+    }
+  }
   return NextResponse.json({ ok: true, version, replayed: false });
 }

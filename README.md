@@ -75,6 +75,10 @@ npx playwright install chromium firefox webkit
 npm run e2e:cross-browser
 ```
 
+### Bundle budget
+
+Next 16 no longer prints per-route JS sizes in the build summary. `npm run build:analyze` builds and prints the ten heaviest routes by first-load JS (raw and gzip), read from `.next/diagnostics/route-bundle-stats.json`. Add `--max-gzip-kb <n>` to `scripts/report-route-bundles.mjs` to fail when a route exceeds a budget. For an interactive module treemap with import chains, use `npm run analyze:bundle` (Turbopack; `@next/bundle-analyzer` only supports Webpack).
+
 ## Database and releases
 
 Apply only versioned migrations to an existing or production database:
@@ -89,7 +93,7 @@ Bootstrap a completely empty database safely with:
 ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 ```
 
-The bootstrap command refuses to run against a non-empty database. See the [panel operations guide](docs/panel-operations.md) and [deployment checklist](docs/deployment-checklist.md) for environment variables, email policy, backup restoration, and production acceptance.
+The bootstrap command applies every versioned migration as SQL, including partial indexes and CHECK constraints that Prisma's schema language cannot represent. It refuses non-empty databases without Prisma migration history and is idempotent for a database it already bootstrapped. Run `npm run db:verify:fresh` after bootstrap to verify the critical projection indexes. The Prisma data model is split by domain under `prisma/schema/`; see the [data-model ownership guide](docs/data-model-ownership.md). See the [panel operations guide](docs/panel-operations.md) and [deployment checklist](docs/deployment-checklist.md) for environment variables, email policy, backup restoration, and production acceptance.
 
 Releases use `v*.*.*` tags. A tag push runs the release quality gate, publishes a GitHub Release, and builds a versioned container. Notable changes are maintained in [CHANGELOG.md](CHANGELOG.md).
 

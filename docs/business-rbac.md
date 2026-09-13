@@ -49,7 +49,7 @@ kullanmıyordu; yani `requireBusinessPage("finance:reverse")` ile
 | `knowledge:read` | ✓ | ✓ | — | — | — | ✓ |
 | `knowledge:write` | ✓ | ✓ | — | — | — | — |
 | `automation:read` | ✓ | ✓ | — | — | — | ✓ |
-| `automation:write` | ✓ | ✓ | — | — | — | — |
+| `automation:write` (manage) | ✓ | ✓ | — | — | — | — |
 | `integration:read` | ✓ | ✓ | — | — | — | ✓ |
 | `integration:write` | ✓ | ✓ | — | — | — | — |
 | `settings:read` | ✓ | ✓ | — | — | — | ✓ |
@@ -68,6 +68,10 @@ Tasarım kararları:
   müşteri mesajlarını okumaya ihtiyacı yoktur (veri minimizasyonu).
 - **VIEWER hiçbir mutation iznine sahip değildir.** `permission-matrix.test.ts`
   bunu bütün yazma izinleri üzerinde otomatik doğrular.
+- **Instagram entegrasyon durumu salt okunurdur.** `GET
+  /api/admin/integrations/instagram` için `integration:read`; ayar değiştiren
+  `PATCH` için `integration:write` gerekir. Böylece VIEWER bağlantı sağlığını
+  görebilir ancak entegrasyonu değiştiremez.
 
 ## Sayfa görünürlüğü ve mutation yetkisi ayrıdır
 

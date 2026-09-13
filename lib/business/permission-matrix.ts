@@ -147,3 +147,9 @@ export const BUSINESS_WRITE_PERMISSIONS: readonly BusinessPermission[] = [
   "settings:write",
   "role:write",
 ];
+
+/** Entegrasyon API'sinde okuma ile mutasyon kapılarını birbirine karıştırmayın. */
+export const BUSINESS_INTEGRATION_API_PERMISSIONS = {
+  instagramStatus: "integration:read",
+  instagramSettings: "integration:write",
+} as const satisfies Record<string, BusinessPermission>;

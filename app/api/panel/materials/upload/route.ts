@@ -1,5 +1,6 @@
 import { del, put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
@@ -11,6 +12,14 @@ const ALLOWED_TYPES = new Map([
   ["application/pdf", "PDF" as const],
   ["video/mp4", "VIDEO" as const],
 ]);
+const uploadSchema = z.object({
+  file: z.instanceof(File),
+  groupId: z.string().trim().min(1).max(191),
+  title: z.string().trim().min(2).max(140),
+  description: z.string().trim().max(1000),
+  captionsAvailable: z.boolean(),
+  transcript: z.string().trim().max(8000),
+});
 
 function cleanFileName(value: string) {
   const normalized = value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
@@ -25,13 +34,16 @@ export async function POST(request: Request) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposu henüz yapılandırılmadı. Yöneticiye bildirin." }, { status: 503 });
 
   const form = await request.formData().catch(() => null);
-  const file = form?.get("file");
-  const groupId = String(form?.get("groupId") || "");
-  const title = String(form?.get("title") || "").trim();
-  const description = String(form?.get("description") || "").trim();
-  const captionsAvailable = form?.get("captionsAvailable") === "on";
-  const transcript = String(form?.get("transcript") || "").trim();
-  if (!(file instanceof File) || !groupId || title.length < 2 || title.length > 140 || description.length > 1000 || transcript.length > 8000) return NextResponse.json({ error: "Dosya ve materyal alanlarını kontrol edin." }, { status: 400 });
+  const parsed = uploadSchema.safeParse({
+    file: form?.get("file"),
+    groupId: form?.get("groupId"),
+    title: form?.get("title"),
+    description: form?.get("description") ?? "",
+    captionsAvailable: form?.get("captionsAvailable") === "on",
+    transcript: form?.get("transcript") ?? "",
+  });
+  if (!parsed.success) return NextResponse.json({ error: "Dosya ve materyal alanlarını kontrol edin." }, { status: 400 });
+  const { file, groupId, title, description, captionsAvailable, transcript } = parsed.data;
   const kind = ALLOWED_TYPES.get(file.type);
   if (!kind) return NextResponse.json({ error: "Yalnızca PDF veya MP4 dosyası yükleyebilirsiniz." }, { status: 415 });
   if (!file.size || file.size > MAX_FILE_SIZE) return NextResponse.json({ error: "Dosya boyutu en fazla 4 MB olabilir." }, { status: 413 });

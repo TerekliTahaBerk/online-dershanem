@@ -22,7 +22,7 @@ export function ChildSwitcher({
   return (
     <div className="flex min-w-0 items-center gap-2">
       <span className="shrink-0 text-[13px] text-dc-ink-faint">Öğrenci:</span>
-      <div className="flex min-w-0 flex-wrap gap-1.5">
+      <div className="flex min-w-0 gap-1.5 overflow-x-auto pb-0.5 pr-1">
         {options.map((child) => {
           const active = child.id === selectedId;
           return (
@@ -30,7 +30,7 @@ export function ChildSwitcher({
               key={child.id}
               href={`${basePath}?studentId=${encodeURIComponent(child.id)}`}
               aria-current={active ? "page" : undefined}
-              className={`truncate rounded-lg px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+              className={`inline-flex min-h-9 max-w-[18rem] shrink-0 items-center rounded-lg px-3 py-1.5 text-left text-[13px] font-semibold leading-tight transition-colors ${
                 active
                   ? "bg-dc-brand-soft text-dc-brand-deep"
                   : "text-dc-ink-muted hover:bg-dc-surface-muted"

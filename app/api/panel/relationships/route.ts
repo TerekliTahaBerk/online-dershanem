@@ -4,7 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
-const schema = z.object({ parentId: z.string().min(1), studentId: z.string().min(1), relationship: z.string().trim().max(30).optional() });
+const schema = z.object({
+  parentId: z.string().min(1),
+  studentId: z.string().min(1),
+  relationship: z.string().trim().max(30).optional(),
+  primaryContact: z.boolean().optional(),
+  canViewAcademic: z.boolean().optional(),
+  canViewPayments: z.boolean().optional(),
+});
 
 export async function POST(request: Request) {
   const auth = await requireApiRecentAdminStepUp();
@@ -20,13 +27,40 @@ export async function POST(request: Request) {
   if (!parent || !student) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
   const existing = await prisma.parentStudent.findUnique({
     where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
-    select: { id: true },
+    select: { id: true, relationship: true },
   });
   await prisma.$transaction(async (tx) => {
     const relation = await tx.parentStudent.upsert({
       where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
-      create: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null },
-      update: { relationship: parsed.data.relationship || null },
+      create: {
+        parentId: parent.id,
+        studentId: student.id,
+        relationship: parsed.data.relationship || null,
+        primaryContact: parsed.data.primaryContact ?? false,
+        canViewAcademic: parsed.data.canViewAcademic ?? true,
+        canViewPayments: parsed.data.canViewPayments ?? false,
+        active: true,
+        endedAt: null,
+      },
+      update: {
+        relationship: parsed.data.relationship || null,
+        primaryContact: parsed.data.primaryContact ?? undefined,
+        canViewAcademic: parsed.data.canViewAcademic ?? undefined,
+        canViewPayments: parsed.data.canViewPayments ?? undefined,
+        active: true,
+        endedAt: null,
+      },
+    });
+    await tx.parentStudentHistory.create({
+      data: {
+        parentStudentId: relation.id,
+        parentId: parent.id,
+        studentId: student.id,
+        action: existing ? "UPDATED" : "LINKED",
+        relationship: parsed.data.relationship || null,
+        previousValue: existing?.relationship || null,
+        actorUserId: auth.session.userId,
+      },
     });
     await tx.auditLog.create({
       data: {
@@ -36,7 +70,12 @@ export async function POST(request: Request) {
         entityId: relation.id,
         action: existing ? "relationship.metadata_updated" : "relationship.access_granted",
         summary: existing ? "Veli–öğrenci bağlantısı güncellendi" : "Veli–öğrenci erişimi verildi",
-        payload: { parentId: parent.id, studentId: student.id, relationship: parsed.data.relationship || null },
+        payload: {
+          parentId: parent.id,
+          studentId: student.id,
+          relationship: parsed.data.relationship || null,
+          primaryContact: parsed.data.primaryContact ?? false,
+        },
       },
     });
   });

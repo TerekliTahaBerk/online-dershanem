@@ -4,13 +4,17 @@ const gaId = process.env.NEXT_PUBLIC_GA_ID;
 const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 const tiktokPixelId = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID;
 
-export function Pixels() {
+export function Pixels({ nonce }: { nonce?: string }) {
   return (
     <>
       {gaId ? (
         <>
-          <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
-          <Script id="ga4-init" strategy="afterInteractive">
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            strategy="afterInteractive"
+            nonce={nonce}
+          />
+          <Script id="ga4-init" strategy="afterInteractive" nonce={nonce}>
             {`window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);} 
             window.gtag = gtag;
@@ -21,7 +25,7 @@ export function Pixels() {
       ) : null}
 
       {metaPixelId ? (
-        <Script id="meta-pixel" strategy="afterInteractive">
+        <Script id="meta-pixel" strategy="afterInteractive" nonce={nonce}>
           {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
           n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
           n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
@@ -33,7 +37,7 @@ export function Pixels() {
       ) : null}
 
       {tiktokPixelId ? (
-        <Script id="tiktok-pixel" strategy="afterInteractive">
+        <Script id="tiktok-pixel" strategy="afterInteractive" nonce={nonce}>
           {`!function (w, d, t) {
             w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];
             ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"];

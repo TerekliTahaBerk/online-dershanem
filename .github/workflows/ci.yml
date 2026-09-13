@@ -1,12 +1,17 @@
 name: CI
 
-# Geliştirme hızını düşürdüğü için otomatik tetikleyiciler kapatıldı.
-# Geri açmak için aşağıdaki bloğu yorumdan çıkar:
-#   push:
-#     branches: [main, test]
-#   pull_request:
-#     branches: [main, test]
+# Kapı `pull_request` üzerinde koşar; `push` bilerek kapalı tutuldu.
+#
+# Otomatik tetikleyiciler bir dönem tamamen kapatılmıştı ("geliştirme hızını
+# düşürüyor"). Sonuç: `main` üzerinde iki birim testi ve bir lint HATASI kimse
+# fark etmeden birikti — quality-gate işi tanımlıydı ama hiç çalışmıyordu.
+# Yayın kapısı yalnızca koştuğunda kapıdır.
+#
+# `push` yerine `pull_request`: dal üzerinde çalışırken her commit'te CI
+# beklenmiyor, ama `main`'e giren hiçbir değişiklik kapıyı atlayamıyor.
 on:
+  pull_request:
+    branches: [main, test]
   workflow_dispatch:
 
 concurrency:
@@ -31,6 +36,8 @@ jobs:
       - run: npm run lint
       - name: Repo hygiene
         run: npm run lint:hygiene
+      - name: API input validation
+        run: npm run lint:api-validation
 
   typecheck:
     name: TypeScript
@@ -98,7 +105,7 @@ jobs:
       - name: Prepare integration database
         run: |
           npm run prisma:generate
-          npx prisma db push --skip-generate
+          ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
           npm run db:seed
       - run: npm run test:integration
 
@@ -167,17 +174,40 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Bootstrap schema and resolve legacy chain
+      - name: Bootstrap schema from migration SQL
         run: npm run db:bootstrap:fresh
       - name: Verify schema and migration state
         run: |
           npx prisma migrate status
           test "$(psql "$PSQL_URL" -Atc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('users','groups','lessons','assignments','notifications');")" = "5"
           test "$(psql "$PSQL_URL" -Atc "SELECT COUNT(*) FROM business_units WHERE product IN ('OD', 'ODK') AND is_active = true;")" = "2"
+          npm run db:verify:fresh
+      - name: Verify bootstrap idempotency
+        run: npm run db:bootstrap:fresh
 
   playwright:
     name: Playwright
     uses: ./.github/workflows/e2e.yml
+
+  # Storybook hikâyelerini derler ve her hikâyeyi E2E ile aynı WCAG etiket
+  # setiyle axe'tan geçirir (tests/storybook/a11y.spec.ts).
+  storybook-a11y:
+    name: Storybook a11y
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build Storybook
+        run: npm run storybook:build
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Axe scan all stories
+        run: npm run storybook:a11y
 
   quality-gate:
     name: Quality Gate
@@ -190,6 +220,7 @@ jobs:
       - production-build
       - fresh-database
       - playwright
+      - storybook-a11y
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -202,7 +233,8 @@ jobs:
           BUILD_RESULT: ${{ needs.production-build.result }}
           DATABASE_RESULT: ${{ needs.fresh-database.result }}
           PLAYWRIGHT_RESULT: ${{ needs.playwright.result }}
+          STORYBOOK_A11Y_RESULT: ${{ needs.storybook-a11y.result }}
         run: |
-          for result in "$LINT_RESULT" "$TYPECHECK_RESULT" "$UNIT_RESULT" "$INTEGRATION_RESULT" "$BUILD_RESULT" "$DATABASE_RESULT" "$PLAYWRIGHT_RESULT"; do
+          for result in "$LINT_RESULT" "$TYPECHECK_RESULT" "$UNIT_RESULT" "$INTEGRATION_RESULT" "$BUILD_RESULT" "$DATABASE_RESULT" "$PLAYWRIGHT_RESULT" "$STORYBOOK_A11Y_RESULT"; do
             test "$result" = "success"
           done

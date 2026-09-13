@@ -4,7 +4,14 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Phone, MessageCircle } from "lucide-react";
-import { primaryNav, productsMenu, navCta, navLogin, waHref, telHref } from "@/lib/site-content";
+import {
+  primaryNav,
+  productsMenu,
+  navCta,
+  navLogin,
+  waHref,
+  telHref,
+} from "@/lib/site-content";
 import { contact } from "@/lib/content";
 
 type MobileMenuProps = {
@@ -18,7 +25,12 @@ type MobileMenuProps = {
  * Tam ekran mobil menü — erişilebilir dialog (focus-trap + Escape + body-lock).
  * Referans tasarımın sade mobil menüsü: büyük link listesi + giriş + CTA + iletişim.
  */
-export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuProps) {
+export function MobileMenu({
+  open,
+  onClose,
+  isActive,
+  triggerRef,
+}: MobileMenuProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -27,7 +39,10 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
     const trigger = triggerRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+    const focusTimer = window.setTimeout(
+      () => closeButtonRef.current?.focus(),
+      0,
+    );
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -69,10 +84,14 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
       role="dialog"
       aria-modal="true"
       aria-label="Mobil menü"
-      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] xl:hidden"
+      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] lg:hidden"
     >
       <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--site-line)] px-[clamp(20px,6vw,28px)]">
-        <Link href="/" onClick={onClose} aria-label="Online Dershanem ana sayfa">
+        <Link
+          href="/"
+          onClick={onClose}
+          aria-label="Online Dershanem ana sayfa"
+        >
           <Image
             src="/design/od-logo.png"
             alt="Online Dershanem"
@@ -93,7 +112,10 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
         </button>
       </div>
 
-      <nav aria-label="Mobil menü" className="flex-1 overflow-y-auto px-[clamp(20px,6vw,28px)] py-2">
+      <nav
+        aria-label="Mobil menü"
+        className="flex-1 overflow-y-auto px-[clamp(20px,6vw,28px)] py-2"
+      >
         {/* Ürünler — masaüstündeki açılır menünün mobil karşılığı */}
         <div className="border-b border-[var(--site-line)] py-5">
           <h2 className="dc-eyebrow">{productsMenu.label}</h2>
@@ -104,8 +126,10 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
                   href={item.href}
                   onClick={onClose}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`block font-display text-[23px] ${
-                    isActive(item.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
+                  className={`block break-words font-display text-[clamp(1.2rem,5vw,1.45rem)] leading-tight ${
+                    isActive(item.href)
+                      ? "text-[var(--brand-orange-ink)]"
+                      : "text-[var(--site-ink)]"
                   }`}
                 >
                   {item.label}
@@ -124,8 +148,10 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
             aria-label={link.accessibleLabel}
             onClick={onClose}
             aria-current={isActive(link.href) ? "page" : undefined}
-            className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] ${
-              isActive(link.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
+            className={`block break-words border-b border-[var(--site-line)] py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
+              isActive(link.href)
+                ? "text-[var(--brand-orange-ink)]"
+                : "text-[var(--site-ink)]"
             }`}
           >
             {link.label}
@@ -135,8 +161,10 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
           href={navLogin.href}
           onClick={onClose}
           aria-current={isActive(navLogin.href) ? "page" : undefined}
-          className={`block border-b border-[var(--site-line)] py-5 font-display text-[27px] ${
-            isActive(navLogin.href) ? "text-[var(--brand-orange-ink)]" : "text-[var(--site-ink)]"
+          className={`block break-words border-b border-[var(--site-line)] py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
+            isActive(navLogin.href)
+              ? "text-[var(--brand-orange-ink)]"
+              : "text-[var(--site-ink)]"
           }`}
         >
           {navLogin.label}
@@ -169,7 +197,9 @@ export function MobileMenu({ open, onClose, isActive, triggerRef }: MobileMenuPr
             WhatsApp
           </a>
         </div>
-        <p className="pt-1 text-center text-[12.5px] text-[var(--site-muted)]">{contact.phone}</p>
+        <p className="pt-1 text-center text-[12.5px] text-[var(--site-muted)]">
+          {contact.phone}
+        </p>
       </div>
     </div>
   );

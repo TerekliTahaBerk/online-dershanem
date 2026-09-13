@@ -3,8 +3,18 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CalendarClock, CircleAlert, Clock3, ShoppingBag, UsersRound } from "lucide-react";
-import { OD_NO_SLOT_OPTIONS, OD_TIME_RANGE_OPTIONS, type OdPlacementExpectation } from "@/lib/od/placement";
+import {
+  CalendarClock,
+  CircleAlert,
+  Clock3,
+  ShoppingBag,
+  UsersRound,
+} from "lucide-react";
+import {
+  OD_NO_SLOT_OPTIONS,
+  OD_TIME_RANGE_OPTIONS,
+  type OdPlacementExpectation,
+} from "@/lib/od/placement";
 
 export type BuyerInfoFormDefaults = {
   fullName?: string;
@@ -106,7 +116,9 @@ export function BuyerInfoForm({
   const [couponCode, setCouponCode] = useState("");
   const [couponState, setCouponState] = useState<"idle" | "checking">("idle");
   const [couponError, setCouponError] = useState<string | null>(null);
-  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(
+    null,
+  );
   const formElementRef = useRef<HTMLFormElement>(null);
 
   /**
@@ -144,7 +156,12 @@ export function BuyerInfoForm({
         discountCents?: number;
         kindLabel?: string;
       };
-      if (!res.ok || !json.ok || !json.code || typeof json.discountCents !== "number") {
+      if (
+        !res.ok ||
+        !json.ok ||
+        !json.code ||
+        typeof json.discountCents !== "number"
+      ) {
         setAppliedCoupon(null);
         setCouponError(json.error || "İndirim kodu doğrulanamadı.");
         return;
@@ -171,7 +188,9 @@ export function BuyerInfoForm({
     fd.forEach((value, key) => {
       payload[key] = typeof value === "string" ? value.trim() : value;
     });
-    payload.availabilityTimeRanges = fd.getAll("availabilityTimeRanges").map(String);
+    payload.availabilityTimeRanges = fd
+      .getAll("availabilityTimeRanges")
+      .map(String);
     // Yalnız doğrulanmış kod gönderilir; sunucu yine de yeniden doğrular.
     payload.couponCode = appliedCoupon?.code ?? null;
     // Merge extraPayload (cart items, etc.) — overrides any flat duplicates.
@@ -183,24 +202,52 @@ export function BuyerInfoForm({
 
     // Client-side validation
     const nextFieldErrors: Record<string, string> = {};
-    const required = ["fullName", "email", "phone", "city", "district", "address", "schoolName", "classLevel", "examType"];
+    const required = [
+      "fullName",
+      "email",
+      "phone",
+      "city",
+      "district",
+      "address",
+      "schoolName",
+      "classLevel",
+      "examType",
+    ];
     for (const key of required) {
       if (!payload[key]) nextFieldErrors[key] = "Bu alan gerekli.";
     }
-    if (!payload.kvkkConsent) nextFieldErrors.kvkkConsent = "Devam etmek için onaylayın.";
-    if (!payload.paymentConsent) nextFieldErrors.paymentConsent = "Devam etmek için onaylayın.";
-    if (service === "OD" && !(payload.availabilityTimeRanges as unknown[]).length) nextFieldErrors.availabilityTimeRanges = "En az bir uygun zaman aralığı seçin.";
-    if (service === "OD" && !payload.noSlotPreference) nextFieldErrors.noSlotPreference = "Bir tercih seçin.";
-    if (service === "OD" && !payload.placementConsent) nextFieldErrors.placementConsent = "Tahmini yerleştirme koşullarını onaylayın.";
+    if (!payload.kvkkConsent)
+      nextFieldErrors.kvkkConsent = "Devam etmek için onaylayın.";
+    if (!payload.paymentConsent)
+      nextFieldErrors.paymentConsent = "Devam etmek için onaylayın.";
+    if (
+      service === "OD" &&
+      !(payload.availabilityTimeRanges as unknown[]).length
+    )
+      nextFieldErrors.availabilityTimeRanges =
+        "En az bir uygun zaman aralığı seçin.";
+    if (service === "OD" && !payload.noSlotPreference)
+      nextFieldErrors.noSlotPreference = "Bir tercih seçin.";
+    if (service === "OD" && !payload.placementConsent)
+      nextFieldErrors.placementConsent =
+        "Tahmini yerleştirme koşullarını onaylayın.";
     if (!String(payload.email).includes("@")) {
-      nextFieldErrors.email = payload.email ? "Geçerli bir e-posta adresi girin." : "Bu alan gerekli.";
+      nextFieldErrors.email = payload.email
+        ? "Geçerli bir e-posta adresi girin."
+        : "Bu alan gerekli.";
     }
     const phoneDigits = String(payload.phone).replace(/\D/g, "");
     if (phoneDigits.length < 10) {
-      nextFieldErrors.phone = payload.phone ? "Geçerli bir telefon numarası girin (en az 10 hane)." : "Bu alan gerekli.";
+      nextFieldErrors.phone = payload.phone
+        ? "Geçerli bir telefon numarası girin (en az 10 hane)."
+        : "Bu alan gerekli.";
     }
-    if (payload.tcKimlik && String(payload.tcKimlik).replace(/\D/g, "").length !== 11) {
-      nextFieldErrors.tcKimlik = "T.C. Kimlik No 11 hane olmalı veya boş bırakılmalı.";
+    if (
+      payload.tcKimlik &&
+      String(payload.tcKimlik).replace(/\D/g, "").length !== 11
+    ) {
+      nextFieldErrors.tcKimlik =
+        "T.C. Kimlik No 11 hane olmalı veya boş bırakılmalı.";
     }
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
@@ -278,7 +325,9 @@ export function BuyerInfoForm({
         router.push(json.redirectUrl);
         return;
       }
-      setError("Sunucudan yönlendirme adresi alınamadı. Lütfen tekrar deneyin.");
+      setError(
+        "Sunucudan yönlendirme adresi alınamadı. Lütfen tekrar deneyin.",
+      );
     } catch (err) {
       logCheckoutError({
         endpoint: action,
@@ -306,7 +355,14 @@ export function BuyerInfoForm({
       onSubmit={onSubmit}
       onChange={(event) => {
         const target = event.target;
-        if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) return;
+        if (
+          !(
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLSelectElement ||
+            target instanceof HTMLTextAreaElement
+          )
+        )
+          return;
         if (!target.name || !fieldErrors[target.name]) return;
         setFieldErrors((current) => {
           const next = { ...current };
@@ -329,7 +385,9 @@ export function BuyerInfoForm({
           <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-orange-ink)] font-semibold mb-1">
             Sepetiniz
           </div>
-          <div className="text-[var(--site-ink)] font-display text-[22px] leading-tight">{packageLabel}</div>
+          <div className="text-[var(--site-ink)] font-display text-[22px] leading-tight">
+            {packageLabel}
+          </div>
           <div className="text-[var(--brand-orange-ink)] text-[20px] font-bold mt-1">
             {priceLabel}
           </div>
@@ -490,23 +548,83 @@ export function BuyerInfoForm({
 
       {service === "OD" ? (
         <section className="rounded-[24px] border border-[var(--brand-orange-soft)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
-          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">Ders zamanı ve yerleştirme</h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">Bu bilgiler uygun grubu bulmak için doğrudan operasyon ekibine aktarılır; yeniden girmeniz gerekmez.</p>
-          {placementExpectation ? <PlacementExpectationCard expectation={placementExpectation} /> : null}
+          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">
+            Ders zamanı ve yerleştirme
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+            Bu bilgiler uygun grubu bulmak için doğrudan operasyon ekibine
+            aktarılır; yeniden girmeniz gerekmez.
+          </p>
+          {placementExpectation ? (
+            <PlacementExpectationCard expectation={placementExpectation} />
+          ) : null}
           <fieldset className="mt-5">
-            <legend className="text-[12.5px] font-medium uppercase tracking-wide text-[var(--site-body)]">Uygun olduğunuz saatler <RequiredMark /></legend>
-            <div className="mt-2 grid gap-2 sm:grid-cols-2">{OD_TIME_RANGE_OPTIONS.map((option) => <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-3 py-3 text-sm"><input type="checkbox" name="availabilityTimeRanges" value={option.value} className="h-4 w-4 accent-[var(--brand-orange)]" />{option.label}</label>)}</div>
-            {fieldErrors.availabilityTimeRanges ? <FieldError id="availabilityTimeRanges-error">{fieldErrors.availabilityTimeRanges}</FieldError> : null}
+            <legend className="text-[12.5px] font-medium uppercase tracking-wide text-[var(--site-body)]">
+              Uygun olduğunuz saatler <RequiredMark />
+            </legend>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {OD_TIME_RANGE_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-3 py-3 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    name="availabilityTimeRanges"
+                    value={option.value}
+                    className="h-4 w-4 accent-[var(--brand-orange)]"
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+            {fieldErrors.availabilityTimeRanges ? (
+              <FieldError id="availabilityTimeRanges-error">
+                {fieldErrors.availabilityTimeRanges}
+              </FieldError>
+            ) : null}
           </fieldset>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field name="earliestStartDate" label="En erken başlayabileceğiniz tarih" type="date" autoComplete="off" />
-            <SelectField name="noSlotPreference" label="Uygun grup yoksa" required error={fieldErrors.noSlotPreference} options={[{ v: "", l: "Tercih seçin" }, ...OD_NO_SLOT_OPTIONS.map((option) => ({ v: option.value, l: option.label }))]} />
+            <Field
+              name="earliestStartDate"
+              label="En erken başlayabileceğiniz tarih"
+              type="date"
+              autoComplete="off"
+            />
+            <SelectField
+              name="noSlotPreference"
+              label="Uygun grup yoksa"
+              required
+              error={fieldErrors.noSlotPreference}
+              options={[
+                { v: "", l: "Tercih seçin" },
+                ...OD_NO_SLOT_OPTIONS.map((option) => ({
+                  v: option.value,
+                  l: option.label,
+                })),
+              ]}
+            />
           </div>
           <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl bg-amber-50 px-4 py-3">
-            <input type="checkbox" name="placementConsent" value="1" className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-orange)]" />
-            <span className="text-sm leading-6 text-amber-950"><strong>Anladım:</strong> Gösterilen kapasite, saatler ve başlangıç tarihi tahmindir; belirli bir grup veya saat ödeme ile garanti edilmez. Ekip 24 saat içinde iletişim kurar ve 48 saat içinde grup, alternatif, bekleme listesi veya talebim doğrultusunda iade yolunu netleştirir. <RequiredMark /></span>
+            <input
+              type="checkbox"
+              name="placementConsent"
+              value="1"
+              className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-orange)]"
+            />
+            <span className="text-sm leading-6 text-amber-950">
+              <strong>Anladım:</strong> Gösterilen kapasite, saatler ve
+              başlangıç tarihi tahmindir; belirli bir grup veya saat ödeme ile
+              garanti edilmez. Ekip 24 saat içinde iletişim kurar ve 48 saat
+              içinde grup, alternatif, bekleme listesi veya talebim
+              doğrultusunda iade yolunu netleştirir. <RequiredMark />
+            </span>
           </label>
-          {fieldErrors.placementConsent ? <FieldError id="placementConsent-error">{fieldErrors.placementConsent}</FieldError> : null}
+          {fieldErrors.placementConsent ? (
+            <FieldError id="placementConsent-error">
+              {fieldErrors.placementConsent}
+            </FieldError>
+          ) : null}
         </section>
       ) : null}
 
@@ -576,7 +694,10 @@ export function BuyerInfoForm({
             <FieldError id="couponCode-error">{couponError}</FieldError>
           ) : null}
           {appliedCoupon ? (
-            <p role="status" className="mt-3 rounded-[14px] bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-900">
+            <p
+              role="status"
+              className="mt-3 rounded-[14px] bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-900"
+            >
               <strong>{appliedCoupon.code}</strong> uygulandı ·{" "}
               {(appliedCoupon.discountCents / 100).toLocaleString("tr-TR", {
                 style: "currency",
@@ -596,7 +717,9 @@ export function BuyerInfoForm({
             value="1"
             required
             aria-invalid={!!fieldErrors.kvkkConsent}
-            aria-describedby={fieldErrors.kvkkConsent ? "kvkkConsent-error" : undefined}
+            aria-describedby={
+              fieldErrors.kvkkConsent ? "kvkkConsent-error" : undefined
+            }
             className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand-orange)] ${fieldErrors.kvkkConsent ? "outline outline-2 outline-rose-400" : "border-[var(--site-line)]"}`}
           />
           <span className="text-sm text-[var(--site-body)]">
@@ -607,12 +730,13 @@ export function BuyerInfoForm({
             >
               KVKK Aydınlatma Metni
             </Link>
-            'ni okudum ve onaylıyorum.{" "}
-            <RequiredMark />
+            'ni okudum ve onaylıyorum. <RequiredMark />
           </span>
         </label>
         {fieldErrors.kvkkConsent ? (
-          <FieldError id="kvkkConsent-error">{fieldErrors.kvkkConsent}</FieldError>
+          <FieldError id="kvkkConsent-error">
+            {fieldErrors.kvkkConsent}
+          </FieldError>
         ) : null}
         <label className="flex items-start gap-3 cursor-pointer">
           <input
@@ -633,24 +757,36 @@ export function BuyerInfoForm({
             value="1"
             required
             aria-invalid={!!fieldErrors.paymentConsent}
-            aria-describedby={fieldErrors.paymentConsent ? "paymentConsent-error" : undefined}
+            aria-describedby={
+              fieldErrors.paymentConsent ? "paymentConsent-error" : undefined
+            }
             className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand-orange)] ${fieldErrors.paymentConsent ? "outline outline-2 outline-rose-400" : "border-[var(--site-line)]"}`}
           />
           <span className="text-sm text-[var(--site-body)]">
-            <Link href="/iade" target="_blank" className="text-[var(--brand-orange-ink)] underline font-medium">
+            <Link
+              href="/iade"
+              target="_blank"
+              className="text-[var(--brand-orange-ink)] underline font-medium"
+            >
               Ön bilgilendirme ve mesafeli satış sözleşmesini
             </Link>{" "}
-            okudum, kabul ediyorum. Hizmet hocalarımız tarafından planlandıktan sonra
-            başlatılacaktır. <RequiredMark />
+            okudum, kabul ediyorum. Hizmet hocalarımız tarafından planlandıktan
+            sonra başlatılacaktır. <RequiredMark />
           </span>
         </label>
         {fieldErrors.paymentConsent ? (
-          <FieldError id="paymentConsent-error">{fieldErrors.paymentConsent}</FieldError>
+          <FieldError id="paymentConsent-error">
+            {fieldErrors.paymentConsent}
+          </FieldError>
         ) : null}
       </div>
 
       {error && (
-        <div role="alert" aria-live="assertive" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"
+        >
           {error}
         </div>
       )}
@@ -672,14 +808,50 @@ export function BuyerInfoForm({
   );
 }
 
-function PlacementExpectationCard({ expectation }: { expectation: OdPlacementExpectation }) {
-  const signalTone = expectation.capacitySignal === "OPEN_SEATS" ? "bg-emerald-50 text-emerald-900" : expectation.capacitySignal === "LIMITED" ? "bg-amber-50 text-amber-950" : "bg-slate-100 text-slate-800";
-  return <div className="mt-4 grid gap-2 text-[12.5px] sm:grid-cols-2">
-    <div className={`rounded-2xl px-4 py-3 ${signalTone}`}><p className="flex items-center gap-2 font-bold"><UsersRound size={15} />Kapasite sinyali</p><p className="mt-1 leading-5">{expectation.capacityLabel}</p></div>
-    <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3"><p className="flex items-center gap-2 font-bold"><CalendarClock size={15} />Beklenen başlangıç</p><p className="mt-1 leading-5">{expectation.expectedStartLabel}</p></div>
-    <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3"><p className="flex items-center gap-2 font-bold"><Clock3 size={15} />Gözlenen ders saatleri</p><p className="mt-1 leading-5">{expectation.observedTimeRanges.length ? expectation.observedTimeRanges.join(" · ") : "Saat uyumu görüşmede belirlenecek"}</p></div>
-    <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3"><p className="font-bold">Yerleştirme SLA'sı</p><p className="mt-1 leading-5">{expectation.placementSlaLabel}</p></div>
-  </div>;
+function PlacementExpectationCard({
+  expectation,
+}: {
+  expectation: OdPlacementExpectation;
+}) {
+  const signalTone =
+    expectation.capacitySignal === "OPEN_SEATS"
+      ? "bg-emerald-50 text-emerald-900"
+      : expectation.capacitySignal === "LIMITED"
+        ? "bg-amber-50 text-amber-950"
+        : "bg-slate-100 text-slate-800";
+  return (
+    <div className="mt-4 grid gap-2 text-[12.5px] sm:grid-cols-2">
+      <div className={`rounded-2xl px-4 py-3 ${signalTone}`}>
+        <p className="flex items-center gap-2 font-bold">
+          <UsersRound size={15} />
+          Kapasite sinyali
+        </p>
+        <p className="mt-1 leading-5">{expectation.capacityLabel}</p>
+      </div>
+      <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3">
+        <p className="flex items-center gap-2 font-bold">
+          <CalendarClock size={15} />
+          Beklenen başlangıç
+        </p>
+        <p className="mt-1 leading-5">{expectation.expectedStartLabel}</p>
+      </div>
+      <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3">
+        <p className="flex items-center gap-2 font-bold">
+          <Clock3 size={15} />
+          Gözlenen ders saatleri
+        </p>
+        <p className="mt-1 leading-5">
+          {expectation.observedTimeRanges.length
+            ? expectation.observedTimeRanges.join(" · ")
+            : "Saat uyumu görüşmede belirlenecek"}
+        </p>
+      </div>
+      <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3">
+        <p className="font-bold">Yerleştirme SLA'sı</p>
+        <p className="mt-1 leading-5">{expectation.placementSlaLabel}</p>
+      </div>
+    </div>
+  );
 }
 
 function Section({
@@ -691,7 +863,9 @@ function Section({
 }) {
   return (
     <section className="rounded-[24px] border border-[var(--site-line)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
-      <h2 className="mb-4 text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">{title}</h2>
+      <h2 className="mb-4 text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">
+        {title}
+      </h2>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </section>
   );
@@ -728,9 +902,10 @@ function Field({
   maxLength,
   error,
 }: FieldProps) {
-  const describedBy = [help ? `${name}-help` : null, error ? `${name}-error` : null]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  const describedBy =
+    [help ? `${name}-help` : null, error ? `${name}-error` : null]
+      .filter(Boolean)
+      .join(" ") || undefined;
   const fieldClass = `min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:text-[var(--site-muted)] ${
     error
       ? "border-rose-400 bg-rose-50 focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
@@ -776,7 +951,14 @@ function Field({
           className={fieldClass}
         />
       )}
-      {help && <span id={`${name}-help`} className="block text-[11.5px] text-[var(--site-body)] mt-1">{help}</span>}
+      {help && (
+        <span
+          id={`${name}-help`}
+          className="block text-[11.5px] text-[var(--site-body)] mt-1"
+        >
+          {help}
+        </span>
+      )}
       {error ? <FieldError id={`${name}-error`}>{error}</FieldError> : null}
     </label>
   );
@@ -829,15 +1011,27 @@ function SelectField({
 function RequiredMark() {
   return (
     <>
-      <span aria-hidden="true" className="ml-0.5 text-rose-600">★</span>
+      <span aria-hidden="true" className="ml-0.5 text-rose-600">
+        ★
+      </span>
       <span className="sr-only"> (zorunlu)</span>
     </>
   );
 }
 
-function FieldError({ id, children }: { id: string; children: React.ReactNode }) {
+function FieldError({
+  id,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+}) {
   return (
-    <span id={id} role="alert" className="mt-[7px] flex items-center gap-1.5 text-[12px] text-rose-600">
+    <span
+      id={id}
+      role="alert"
+      className="mt-[7px] flex items-center gap-1.5 text-[12px] text-rose-600"
+    >
       <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
       {children}
     </span>

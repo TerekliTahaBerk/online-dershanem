@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import type { NotificationType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireApiActiveUser } from "@/lib/auth/api-guards";
 
 const PAGE_SIZE = 20;
 const TYPES = ["LESSON_SUMMARY", "ABSENCE", "ASSIGNMENT", "PAYMENT", "SYSTEM"] as const;
+const querySchema = z.object({
+  type: z.enum(TYPES).optional(),
+  status: z.enum(["all", "unread"]).default("all"),
+  page: z.coerce.number().int().min(1).max(1000).default(1),
+});
 
 /**
  * Bildirim listesi — JSON karşılığı.
@@ -20,10 +26,11 @@ export async function GET(request: Request) {
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
-  const typeParam = url.searchParams.get("type");
-  const selectedType = TYPES.includes(typeParam as (typeof TYPES)[number]) ? (typeParam as NotificationType) : null;
-  const selectedStatus = url.searchParams.get("status") === "unread" ? "unread" : "all";
-  const page = Math.max(1, Math.min(1000, Number(url.searchParams.get("page")) || 1));
+  const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
+  if (!parsed.success) return NextResponse.json({ error: "Geçersiz bildirim filtreleri." }, { status: 400 });
+  const selectedType: NotificationType | null = parsed.data.type ?? null;
+  const selectedStatus = parsed.data.status;
+  const page = parsed.data.page;
 
   const where: Prisma.NotificationWhereInput = {
     userId: auth.session.userId,

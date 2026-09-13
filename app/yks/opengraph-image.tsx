@@ -11,9 +11,9 @@ export default async function Image() {
   return new ImageResponse(
     (
       <OgTemplate
-        title="YKS Hazırlık"
-        subtitle="TYT + AYT bütünlüğünde uzun soluklu hazırlık; küçük grup, kişisel takip, planlı çalışma."
-        badge="YKS"
+        title="YKS Matematik Canlı Ders"
+        subtitle="TYT + AYT bütünlüğünde küçük grup canlı ders, ders sonrası yönlendirme ve düzenli takip."
+        badge="YKS Matematik"
       />
     ),
     { ...size },

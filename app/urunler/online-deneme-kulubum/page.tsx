@@ -91,9 +91,18 @@ export default function OnlineDenemeKulubumPage() {
           steps={[
             { title: "Denemeye gir", body: "Gerçek sınav formatında deneme." },
             { title: "Sonucunu gör", body: "Net, puan ve ders bazlı dağılım." },
-            { title: "Alanlarını anla", body: "Güçlü ve zayıf konular ayrışır." },
-            { title: "Sıradaki adımı öğren", body: "Ne çalışacağın somut hale gelir." },
-            { title: "Gelişimini takip et", body: "Denemeler arası ilerleme grafiği." },
+            {
+              title: "Alanlarını anla",
+              body: "Güçlü ve zayıf konular ayrışır.",
+            },
+            {
+              title: "Sıradaki adımı öğren",
+              body: "Ne çalışacağın somut hale gelir.",
+            },
+            {
+              title: "Gelişimini takip et",
+              body: "Denemeler arası ilerleme grafiği.",
+            },
           ]}
         />
 

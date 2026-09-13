@@ -24,7 +24,8 @@ export default async function OdCheckoutThankYouPage({
 }) {
   const { status, orderId: rawOrderId } = await searchParams;
   const orderId = rawOrderId?.trim() || null;
-  const providerStatus = status === "success" || status === "failed" ? status : null;
+  const providerStatus =
+    status === "success" || status === "failed" ? status : null;
   const order = orderId
     ? await prisma.odOrder
         .findUnique({
@@ -59,14 +60,22 @@ export default async function OdCheckoutThankYouPage({
   return (
     <div className="site-scope">
       <SiteHeader />
-      <main id="main-content" tabIndex={-1} className="min-h-screen bg-[var(--site-bg-warm)] py-16">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="min-h-screen bg-[var(--site-bg-warm)] py-16"
+      >
         <div className="px-4">
           {!order && (
             <CheckoutResultCard
               status="failed"
               title="Sipariş doğrulanamadı"
               description="Ödeme sonucunu doğrulayabilmek için geçerli bir sipariş bilgisi gerekir. Sepetinize dönüp işlemi yeniden başlatabilir veya destek ekibimizle iletişime geçebilirsiniz."
-              primaryAction={{ href: "/sepet", label: "Sepete Dön", variant: "primary" }}
+              primaryAction={{
+                href: "/sepet",
+                label: "Sepete Dön",
+                variant: "primary",
+              }}
               secondaryAction={{ href: "/iletisim", label: "Destek" }}
             />
           )}
@@ -88,7 +97,11 @@ export default async function OdCheckoutThankYouPage({
                     üzerinden yapılacaktır.
                   </>
                 }
-                primaryAction={{ href: "/", label: "Ana Sayfa", variant: "primary" }}
+                primaryAction={{
+                  href: "/",
+                  label: "Ana Sayfa",
+                  variant: "primary",
+                }}
                 secondaryAction={{ href: "/iletisim", label: "İletişim" }}
               />
             </>
@@ -100,7 +113,11 @@ export default async function OdCheckoutThankYouPage({
               eyebrow="Online Matematik Dershanesi"
               title="Ödeme onayı bekleniyor"
               description="Bankanızdan gelen ödeme onayı kontrol ediliyor. Başarı ekranı yalnızca siparişiniz PayTR bildirimiyle doğrulandıktan sonra gösterilir."
-              primaryAction={{ href: refreshHref, label: "Durumu Yenile", variant: "primary" }}
+              primaryAction={{
+                href: refreshHref,
+                label: "Durumu Yenile",
+                variant: "primary",
+              }}
               secondaryAction={{ href: "/iletisim", label: "İletişim" }}
             />
           )}

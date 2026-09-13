@@ -8,36 +8,48 @@ import { lessonPackages } from "@/lib/pricing-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Matematik Ders Paketleri ve Fiyatları",
-  description: "LGS ve YKS online matematik ders paketleri: ayda 4 × 90 dakika canlı ders, en fazla 4 öğrenci, ₺3.000/ay ve taahhütsüz ödeme.",
+  title: "LGS ve YKS Matematik Ders Paketleri | Online Dershanem",
+  description:
+    "LGS ve YKS online matematik ders paketleri: ayda 4 × 90 dakika canlı ders, en fazla 4 öğrenci, ₺3.000/ay ve taahhütsüz ödeme.",
   canonical: "/ders-paketleri",
 });
 
 export default function LessonPackagesPage() {
   return (
     <div className="site-scope">
-      <SchemaJsonLd schema={[
-        breadcrumbJsonLd([
-          { name: "Ana Sayfa", url: "/" },
-          { name: "Ders Paketleri", url: "/ders-paketleri/" },
-        ]),
-        ...lessonPackages.map((pkg) =>
-          productJsonLd({
-            name: pkg.name,
-            description: "En fazla 4 öğrencilik canlı matematik dersi, ders sonrası çalışma yönü ve öğretmen notu.",
-            url: "/ders-paketleri/",
-            image: "/logo.png",
-            priceCents: pkg.priceCents,
-            originalPriceCents: pkg.oldPriceLabel ? parsePriceToCents(pkg.oldPriceLabel) : null,
-            sku: `${pkg.category.toLowerCase()}-matematik-ders-paketi`,
-          }),
-        ),
-      ]} />
+      <SchemaJsonLd
+        schema={[
+          breadcrumbJsonLd([
+            { name: "Ana Sayfa", url: "/" },
+            { name: "Online Dershanem", url: "/urunler/online-dershanem/" },
+            { name: "Ders Seçenekleri", url: "/ders-paketleri/" },
+          ]),
+          ...lessonPackages.map((pkg) =>
+            productJsonLd({
+              name: pkg.name,
+              description:
+                "En fazla 4 öğrencilik canlı matematik dersi, ders sonrası çalışma yönü ve öğretmen notu.",
+              url: "/ders-paketleri/",
+              image: "/logo.png",
+              priceCents: pkg.priceCents,
+              originalPriceCents: pkg.oldPriceLabel
+                ? parsePriceToCents(pkg.oldPriceLabel)
+                : null,
+              sku: `${pkg.category.toLowerCase()}-matematik-ders-paketi`,
+            }),
+          ),
+        ]}
+      />
       <SiteHeader />
       <PackagesExperience
         primarySource="lesson_packages_page_primary"
-        title={<>İki paket, <span className="site-hl">tek net çalışma düzeni.</span></>}
-        subtitle="LGS ve YKS için en fazla 4 kişilik canlı matematik dersi, ders sonrası yönlendirme ve güvenli ödeme."
+        title={
+          <>
+            Canlı ders seçenekleri,{" "}
+            <span className="site-hl">Online Dershanem kapsamında.</span>
+          </>
+        }
+        subtitle="Bu sayfa Online Dershanem içindeki doğrudan satın alınabilir LGS ve YKS matematik ders seçeneklerini gösterir."
       />
       <SiteFooter />
     </div>

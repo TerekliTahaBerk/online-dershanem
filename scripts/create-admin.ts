@@ -16,6 +16,7 @@
  *   DATABASE_URL="<DIRECT_URL>" npx tsx scripts/create-admin.ts --email=...
  *   rm .env.production.local
  */
+import { cliLog } from "./lib/cli-logger.mjs";
 import { PrismaClient } from "@prisma/client";
 import { generateTemporaryPassword, hashPassword } from "../lib/auth/password";
 import { isPlausibleEmail, normalizeEmail } from "../lib/auth/email";
@@ -30,13 +31,13 @@ async function main() {
   const name = arg("name") ?? null;
 
   if (!rawEmail) {
-    console.error("Hata: --email zorunlu.\n  npx tsx scripts/create-admin.ts --email=ad@ornek.com --name=\"Ad Soyad\"");
+    cliLog.error("Hata: --email zorunlu.\n  npx tsx scripts/create-admin.ts --email=ad@ornek.com --name=\"Ad Soyad\"");
     process.exit(1);
   }
 
   const email = normalizeEmail(rawEmail);
   if (!isPlausibleEmail(email)) {
-    console.error(`Hata: e-posta geçersiz görünüyor: ${email}`);
+    cliLog.error(`Hata: e-posta geçersiz görünüyor: ${email}`);
     process.exit(1);
   }
 
@@ -49,14 +50,14 @@ async function main() {
   } catch {
     /* biçimi tanınmadı; yine de devam */
   }
-  console.log(`Veritabanı : ${where}`);
+  cliLog.info(`Veritabanı : ${where}`);
 
   const prisma = new PrismaClient();
   try {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      console.log(`\nBu e-posta zaten kayıtlı: ${email} (rol: ${existing.role})`);
-      console.log("Hiçbir şey değiştirilmedi. Parola sıfırlamak için panelden yapın.");
+      cliLog.info(`\nBu e-posta zaten kayıtlı: ${email} (rol: ${existing.role})`);
+      cliLog.info("Hiçbir şey değiştirilmedi. Parola sıfırlamak için panelden yapın.");
       return;
     }
 
@@ -72,26 +73,27 @@ async function main() {
         role: "ADMIN",
         passwordHash: await hashPassword(tempPassword),
         mustChangePassword: true,
+        inviteAcceptedAt: new Date(),
       },
     });
 
-    console.log(`\n✓ Admin oluşturuldu: ${user.email}`);
+    cliLog.info(`\n✓ Admin oluşturuldu: ${user.email}`);
     if (suppliedPassword) {
-      console.log("\n  Ortamdan verilen ilk giriş parolası kaydedildi.\n");
+      cliLog.info("\n  Ortamdan verilen ilk giriş parolası kaydedildi.\n");
     } else {
-      console.log("\n  ┌──────────────────────────────────────────────┐");
-      console.log(`  │  Geçici parola:  ${tempPassword.padEnd(26)}│`);
-      console.log("  └──────────────────────────────────────────────┘\n");
-      console.log("  Bu parola BİR KEZ gösterilir; hiçbir yerde saklanmıyor.");
+      cliLog.info("\n  ┌──────────────────────────────────────────────┐");
+      cliLog.info(`  │  Geçici parola:  ${tempPassword.padEnd(26)}│`);
+      cliLog.info("  └──────────────────────────────────────────────┘\n");
+      cliLog.info("  Bu parola BİR KEZ gösterilir; hiçbir yerde saklanmıyor.");
     }
-    console.log("  İlk girişte değiştirmek zorunludur.");
-    console.log("  Panel kapalıysa giriş için: PANEL_ENABLED=true\n");
+    cliLog.info("  İlk girişte değiştirmek zorunludur.");
+    cliLog.info("  Panel kapalıysa giriş için: PANEL_ENABLED=true\n");
   } finally {
     await prisma.$disconnect();
   }
 }
 
 main().catch((error) => {
-  console.error("Beklenmeyen hata:", error);
+  cliLog.error("Beklenmeyen hata:", error);
   process.exit(1);
 });

@@ -140,6 +140,17 @@ test.describe("İşletme Paneli RBAC", () => {
 
     // audit:read yoktur → sistem kayıtları kapalı.
     await expectSectionBlocked(page, "sistem-kayitlari");
+
+    // integration:read durum görünümünü açar; integration:write gerektiren
+    // ayar mutasyonu aynı hesap için kapalı kalır.
+    expect((await page.request.get("/api/admin/integrations/instagram")).status()).toBe(200);
+    expect(
+      (
+        await page.request.patch("/api/admin/integrations/instagram", {
+          data: { accountId: "cm0000000000000000000000", aiMode: "OFF", isActive: false },
+        })
+      ).status(),
+    ).toBe(401);
   });
 
   test("iş birimi izolasyonu: ODK birimi kullanıcısı OD verisini göremez", async ({ page }) => {

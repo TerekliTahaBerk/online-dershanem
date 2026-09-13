@@ -80,7 +80,9 @@ function buildNotes(f: FormState): string {
 export function ContactLeadForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<Errors>({});
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const formRef = useRef<HTMLFormElement>(null);
 
   /**
@@ -110,7 +112,8 @@ export function ContactLeadForm() {
 
   const validate = (): Errors => {
     const e: Errors = {};
-    if (!form.parentName.trim()) e.parentName = "Adınızı paylaşmanız gerekiyor.";
+    if (!form.parentName.trim())
+      e.parentName = "Adınızı paylaşmanız gerekiyor.";
     if (!form.phone.trim()) {
       e.phone = "Telefon numaranızı paylaşmanız gerekiyor.";
     } else if (form.phone.replace(/[^\d]/g, "").length < 10) {
@@ -121,7 +124,8 @@ export function ContactLeadForm() {
     }
     if (!form.grade) e.grade = "Öğrencinin sınıf bilgisi eksik.";
     if (!form.goal) e.goal = "Hedef bilgisi eksik.";
-    if (!form.kvkk) e.kvkk = "İletişim talebini iletebilmemiz için KVKK onayı gerekiyor.";
+    if (!form.kvkk)
+      e.kvkk = "İletişim talebini iletebilmemiz için KVKK onayı gerekiyor.";
     return e;
   };
 
@@ -133,13 +137,18 @@ export function ContactLeadForm() {
       setStatus("idle");
       // İlk hatalı alana odaklan
       const firstKey = Object.keys(e)[0];
-      const el = formRef.current?.querySelector<HTMLElement>(`[name="${firstKey}"]`);
+      const el = formRef.current?.querySelector<HTMLElement>(
+        `[name="${firstKey}"]`,
+      );
       el?.focus();
       return;
     }
 
     setStatus("loading");
-    trackConversionEvent("trial_cta_click", { source: "contact_lead_form", goal: form.goal });
+    trackConversionEvent("trial_cta_click", {
+      source: "contact_lead_form",
+      goal: form.goal,
+    });
 
     // Önce gerçek /api/leads ucuna kaydet; başarısız olursa WhatsApp/mailto
     // fallback'i success ekranındaki butonlarla devreye girer.
@@ -177,7 +186,11 @@ export function ContactLeadForm() {
   if (status === "success") {
     const message = buildMessage(form);
     return (
-      <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-8 sm:p-10" role="status" aria-live="polite">
+      <div
+        className="rounded-[24px] border border-[var(--site-line)] bg-white p-8 sm:p-10"
+        role="status"
+        aria-live="polite"
+      >
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
           <Check size={24} strokeWidth={2.2} aria-hidden="true" />
         </span>
@@ -185,7 +198,8 @@ export function ContactLeadForm() {
           Talebiniz bize ulaştı.
         </h2>
         <p className="mt-2 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
-          Talebinizi aldık. Ekibimiz tercih ettiğiniz kanaldan size dönecek; isterseniz aşağıdan doğrudan da yazabilirsiniz.
+          Talebinizi aldık. Ekibimiz tercih ettiğiniz kanaldan size dönecek;
+          isterseniz aşağıdan doğrudan da yazabilirsiniz.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <a
@@ -230,12 +244,17 @@ export function ContactLeadForm() {
         Kısa ön görüşme talebi
       </h2>
       <p className="mt-2 text-[14px] leading-7 text-[var(--site-body)]">
-        Bilgilerinizi paylaşırsanız tercih ettiğiniz kanaldan size döneriz. Bu form bir
-        ödeme adımı değildir.
+        Bilgilerinizi paylaşırsanız tercih ettiğiniz kanaldan size döneriz. Bu
+        form bir ödeme adımı değildir.
       </p>
 
       <div className="mt-7 grid gap-5 sm:grid-cols-2">
-        <Field id="parentName" label="Ad soyad" required error={errors.parentName}>
+        <Field
+          id="parentName"
+          label="Ad soyad"
+          required
+          error={errors.parentName}
+        >
           <input
             id="parentName"
             name="parentName"
@@ -245,7 +264,9 @@ export function ContactLeadForm() {
             onChange={(e) => update("parentName", e.target.value)}
             aria-required="true"
             aria-invalid={!!errors.parentName}
-            aria-describedby={errors.parentName ? "parentName-error" : undefined}
+            aria-describedby={
+              errors.parentName ? "parentName-error" : undefined
+            }
             className={inputClass(!!errors.parentName)}
           />
         </Field>
@@ -368,7 +389,10 @@ export function ContactLeadForm() {
       </div>
 
       <div className="mt-6">
-        <label htmlFor="kvkk" className="flex items-start gap-3 text-[13.5px] leading-6 text-[var(--site-body)]">
+        <label
+          htmlFor="kvkk"
+          className="flex items-start gap-3 text-[13.5px] leading-6 text-[var(--site-body)]"
+        >
           <input
             id="kvkk"
             name="kvkk"
@@ -381,14 +405,21 @@ export function ContactLeadForm() {
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-[var(--site-line)] accent-[var(--brand-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)]"
           />
           <span>
-            <Link href="/kvkk" className="font-medium text-[var(--brand-orange-ink)] underline-offset-2 hover:underline">
+            <Link
+              href="/kvkk"
+              className="font-medium text-[var(--brand-orange-ink)] underline-offset-2 hover:underline"
+            >
               KVKK Aydınlatma Metni
-            </Link>
-            {" "}kapsamında bilgilerimin iletişim amacıyla işlenmesini onaylıyorum.
+            </Link>{" "}
+            kapsamında bilgilerimin iletişim amacıyla işlenmesini onaylıyorum.
           </span>
         </label>
         {errors.kvkk ? (
-          <p id="kvkk-error" className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-rose-600" role="alert">
+          <p
+            id="kvkk-error"
+            className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-rose-600"
+            role="alert"
+          >
             <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
             {errors.kvkk}
           </p>
@@ -396,10 +427,13 @@ export function ContactLeadForm() {
       </div>
 
       {status === "error" ? (
-        <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13.5px] text-rose-900" role="alert">
+        <div
+          className="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13.5px] text-rose-900"
+          role="alert"
+        >
           <p className="font-semibold">Formu şu anda iletemedik.</p>
           <p className="mt-1 leading-6">
-            Bilgileriniz kaydedilmedi. Dilerseniz {" "}
+            Bilgileriniz kaydedilmedi. Dilerseniz{" "}
             <a
               href={`https://wa.me/${whatsappDigits}`}
               target="_blank"
@@ -439,13 +473,20 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-[13px] font-medium text-[var(--site-ink)]">
+      <label
+        htmlFor={id}
+        className="block text-[13px] font-medium text-[var(--site-ink)]"
+      >
         {label}
         {required ? <span className="text-rose-600"> *</span> : null}
       </label>
       <div className="mt-1.5">{children}</div>
       {error ? (
-        <p id={`${id}-error`} className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-rose-600" role="alert">
+        <p
+          id={`${id}-error`}
+          className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-rose-600"
+          role="alert"
+        >
           <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
           {error}
         </p>
@@ -456,6 +497,8 @@ function Field({
 
 function inputClass(hasError: boolean): string {
   return `w-full rounded-2xl border px-4 py-2.5 text-[14.5px] text-[var(--site-ink)] transition-[border-color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)] focus-visible:ring-offset-1 ${
-    hasError ? "border-rose-400 bg-rose-50 focus-visible:ring-rose-400/20" : "border-[var(--site-line)] bg-[var(--site-bg-warm)] hover:border-[var(--brand-orange)]/40"
+    hasError
+      ? "border-rose-400 bg-rose-50 focus-visible:ring-rose-400/20"
+      : "border-[var(--site-line)] bg-[var(--site-bg-warm)] hover:border-[var(--brand-orange)]/40"
   }`;
 }

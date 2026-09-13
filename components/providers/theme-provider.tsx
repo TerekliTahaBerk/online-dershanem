@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export type ThemeMode = "light" | "dark";
 
@@ -69,7 +75,7 @@ export function useTheme(): ThemeContextValue {
     return {
       theme: "light",
       setTheme: () => {},
-      toggleTheme: () => {}
+      toggleTheme: () => {},
     };
   }
   return ctx;

@@ -7,13 +7,16 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
 import { getRateLimitKeyFromUser } from "@/lib/security/rate-limit";
+import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "STUDENT"); if (!auth.ok) return auth.response;
   const policy = RATE_LIMIT_POLICIES.odkSubmit;
   const guard = await guardMutation({ action: policy.action, requireSameOrigin: true, headers: request.headers, rateLimitKey: getRateLimitKeyFromUser(auth.session.userId, policy.action), rateLimit: policy.limit });
   if (!guard.ok) return mutationGuardResponse(guard);
-  const { id } = await context.params;
+  const params = idParamsSchema.safeParse(await context.params);
+  if (!params.success) return invalidApiInput();
+  const { id } = params.data;
   const attempt = await prisma.odkExamAttempt.findFirst({ where: { id, studentUserId: auth.session.userId }, select: { id: true, status: true, deadlineAt: true, startedAt: true, exam: { select: { family: true } }, _count: { select: { answers: { where: { selectedOption: { not: null } } } } } } });
   if (!attempt) return NextResponse.json({ error: "Sınav oturumu bulunamadı." }, { status: 404 });
   if (attempt.status !== "IN_PROGRESS") return NextResponse.json({ ok: true, status: attempt.status, idempotent: true });

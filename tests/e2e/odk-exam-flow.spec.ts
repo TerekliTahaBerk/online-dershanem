@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { expect, test, type Page } from "@playwright/test";
+import { panelE2EAccounts } from "../../lib/e2e/panel-accounts";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const prisma = new PrismaClient();
@@ -8,10 +9,7 @@ const attemptId = "e2e-odk-attempt-live";
 const foreignAttemptId = "e2e-odk-attempt-foreign";
 const question1 = "e2e-odk-question-live-1";
 const question2 = "e2e-odk-question-live-2";
-const account = {
-  email: process.env.PANEL_E2E_ODK_STUDENT_EMAIL || "odk.student.e2e@example.com",
-  password: process.env.PANEL_E2E_ODK_STUDENT_PASSWORD || process.env.PANEL_E2E_STUDENT_PASSWORD || process.env.E2E_PASSWORD,
-};
+const account = panelE2EAccounts.odkStudent;
 
 async function resetAttempt(deadline = new Date(Date.now() + 60 * 60_000)) {
   await prisma.rateLimitEntry.deleteMany({
@@ -68,13 +66,13 @@ async function apiLogin(page: Page, email: string) {
 }
 
 async function openRunnerFromPanel(page: Page) {
-  const examsLink = page.getByRole("link", { name: "Denemelerim" });
+  const examsLink = page.getByRole("link", { name: "Denemeler", exact: true });
   await examsLink.focus();
   await expect(examsLink).toBeFocused();
   await page.keyboard.press("Enter");
   await page.waitForURL(/\/panel\/odk\/ogrenci\/denemeler$/);
   await page.getByRole("link", { name: /E2E Canlı Matematik Denemesi/ }).click();
-  await page.getByRole("button", { name: "Denemeye devam et" }).click();
+  await page.getByRole("button", { name: "Denemeye Devam Et" }).click();
   await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}/coz$`));
   if (await page.getByRole("button", { name: /Cevaplar/ }).isVisible()) {
     await page.getByRole("button", { name: /Cevaplar/ }).click();
@@ -174,7 +172,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`));
-    await expect(page.getByText("Denemen teslim edildi.")).toBeVisible();
+    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
     expect((await page.request.get(`/api/odk/student/exams/${examId}/answer-key`)).status()).toBe(404);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/sonuc`);
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
@@ -190,7 +188,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
 
     await apiLogin(page, account.email);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/sonuc`);
-    await expect(page.getByRole("heading", { name: "E2E Canlı Matematik Denemesi" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Deneme Sonucun" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Soru cevap dökümü" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Cevap anahtarı PDF" })).toHaveCount(0);
   });
@@ -205,7 +203,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await login(page);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`), { timeout: 20_000 });
-    await expect(page.getByText("Denemen teslim edildi.")).toBeVisible();
+    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
     const attempt = await prisma.odkExamAttempt.findUniqueOrThrow({ where: { id: attemptId } });
     expect(attempt.status).toBe("AUTO_SUBMITTED");
   });

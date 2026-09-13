@@ -49,6 +49,7 @@ jobs:
       - run: npm run prisma:generate
       - run: npm run lint
       - run: npm run lint:hygiene
+      - run: npm run lint:api-validation
       - run: npm run typecheck
       - run: npm run test:unit
       - name: Configure production readiness fixture

@@ -2,15 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { getPanelFeatureFlags } from "./panel-feature-flags";
 
-test("gelecek panel özellikleri güvenli biçimde kapalı başlar", () => {
+test("olgun temel özellikler açık, deneysel özellikler kapalı başlar", () => {
   const flags = getPanelFeatureFlags({});
   assert.equal(flags.baselineMetrics, true);
+  assert.equal(flags.progressInsights, true);
   assert.equal(flags.learningOutcomes, false);
   assert.equal(flags.quickLessonClose, false);
   assert.equal(flags.recoveryPackage, false);
   assert.equal(flags.assignmentEvidence, false);
   assert.equal(flags.studentCheckIn, false);
-  assert.equal(flags.accessibilityProfile, false);
+  assert.equal(flags.parentWeeklyDigest, true);
+  assert.equal(flags.accessibilityProfile, true);
   assert.equal(flags.offlineMode, false);
   assert.equal(flags.cohortQuality, false);
   assert.equal(flags.teacherAiDrafts, false);

@@ -62,6 +62,8 @@ Admin “Raporlar” ekranındaki kritik yolculuk kartlarını günlük kontrol 
 
 `0049_adaptive_weekly_plan` migration'ından sonra `PANEL_FEATURE_ADAPTIVE_PLAN=true` açılır. İlk dört hafta kabul, görev tamamlama, öğretmen inceleme süresi ve bunaltı pulse'u baz çizgi olarak izlenir. Kural sırası, kapasite sınırı ve geri alma adımları [uyarlanabilir plan standardında](./adaptive-weekly-plan-operations.md) tanımlıdır.
 
+Koçluk merkez ekranları (`/panel/ogrenci/kocluk`, `/panel/yonetim/kocluk`) bu bayrak kapalıyken de görünür kalır; plan üretme/onaylama alt akışları ve plan görev üretimi kapalı olduğunda ekranlar sade özet + yönlendirici boş durumla çalışır.
+
 ### Sakin haftalık özet rollout'u
 
 `0050_calm_weekly_digest` migration'ından sonra `PANEL_FEATURE_PARENT_WEEKLY_DIGEST=true` açılır. İlk pilotta yayın, öğrenci/veli görüntüleme, kaygı pulse'u ve opt-out oranı izlenir; özel öğretmen notlarının özet içeriğine girmediği örneklemle doğrulanır. İçerik ve geri alma kuralları [sakin haftalık özet standardında](./calm-weekly-digest-operations.md) tanımlıdır.
@@ -108,12 +110,23 @@ Panel materyal yüklemeleri private Vercel Blob deposunda tutulur. `BLOB_READ_WR
 
 Öğrenci ve veli Bildirim Merkezi'nde e-posta kanalı açılırsa ders özeti, devamsızlık, ödev ve ödeme bildirimleri güvenli `EmailOutbox` üzerinden gönderilir. Geciken ödev işi her gün çalışır ve aynı kullanıcıya aynı kayıt için 24 saat içinde tekrar bildirim üretmez. WhatsApp tercihi hazırdır; gerçek teslimat için ayrıca kurumsal WhatsApp sağlayıcısı ve onaylı mesaj şablonları gerekir.
 
+### Öğretmen offboarding ve veli ilişki operasyonları
+
+`0087_teacher_staff_parent_relationship_lifecycle` migration'ı sonrası iki kritik operasyon canlıdır:
+
+- Öğretmen güvenli offboarding: kişi detayında “Devret ve askıya al” akışı aktif grupları, gelecekteki `PLANNED` dersleri ve açık sorumlulukları devretmeden askıya alma yapmaz. Doğrudan kullanıcı durumunu askıya/arşive çekme denemesi de aynı devir kurallarına takılır.
+- Veli ilişki geçmişi: veli–öğrenci bağlantısı ekleme/güncelleme/kaldırma işlemleri `parent_student_history` tablosuna actor ve zaman bilgisiyle yazılır. İlişki kaldırma hard-delete olsa da geçmiş kaydı korunur.
+
+Operasyon sırası: önce migration deploy edilir, sonra `Yönetim > Veliler` ekranından ilişki işlemleri ve geçmiş doğrulanır, öğretmen ayrılışında yalnız kişi detayındaki güvenli offboarding adımı kullanılır.
+
 ## Günlük kontroller
 
 1. `/api/health/ready` yanıtında `status=ready`, `ready=true` ve bütün zorunlu kontrollerin `status=ok` olduğunu doğrulayın.
 2. Yönetim panelindeki “İlginizi bekleyenler” ve “E-posta kuyruğu” bölümlerini kontrol edin.
-3. Başarısız makbuzu “Yeniden dene” ile kuyruğa alın; cron en geç 15 dakika içinde yeniden dener.
-4. Eşleşmemiş ödenmiş siparişleri doğru öğrenci hesabına bağlayın.
+3. `Yönetim > Eğitim > Öğrenciler` ekranında öğrenci kapsamını; `Yönetim > Eğitim > Kişiler` ekranında rol/profil bütünlüğü sinyallerini kontrol edin.
+4. Kalıcı silme öncesi kişi detayındaki “Hesap yaşam döngüsü” bölümünde silme etkisini doğrulayın; blocker varsa silmeyin, hesabı arşivde tutun veya gerektiğinde askıya alın.
+5. Başarısız makbuzu “Yeniden dene” ile kuyruğa alın; cron en geç 15 dakika içinde yeniden dener.
+6. Eşleşmemiş ödenmiş siparişleri doğru öğrenci hesabına bağlayın.
 
 ## Yedek ve geri yükleme tatbikatı
 
@@ -130,7 +143,7 @@ Canlı veritabanına doğrulama amacıyla restore yapılmaz.
 
 ## Yeni ve mevcut veritabanı kurulumu
 
-Eski migration geçmişi, ilk yıllarda şema `db push` ile yönetildiği için boş bir veritabanına doğrudan `prisma migrate deploy` ile uygulanamaz. Yeni ve tamamen boş bir ortam yalnızca korumalı `ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh` komutuyla hazırlanır; komut önce güncel şemayı kurar, ardından migration geçmişini uygulanmış olarak kaydeder ve boş olmayan veritabanında çalışmayı reddeder. Mevcut production/preview veritabanlarında normal `npm run release:migrate` kullanılmaya devam edilir.
+Eski `db push` dönemi, boş veritabanını kuran koşullu baseline migration'larıyla migration zincirine alınmıştır. Yeni ve tamamen boş bir ortam yalnızca korumalı `ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh` komutuyla hazırlanır; komut tüm migration SQL'ini sırayla gerçekten uygular. Böylece Prisma şema dilinin ifade edemediği partial index ve CHECK constraint'ler de kurulur. Komut, Prisma migration geçmişi olmayan boş olmayan bir veritabanını reddeder; daha önce bootstrap ettiği veritabanında yeniden çalıştırılabilir ve yalnız bekleyen migration'ları uygular. Ardından `npm run db:verify:fresh` çalıştırılmalıdır. Mevcut production/preview veritabanlarında normal `npm run release:migrate` kullanılmaya devam edilir.
 
 ## Dört rol canlı kabul listesi
 
@@ -143,6 +156,7 @@ Eski migration geçmişi, ilk yıllarda şema `db push` ile yönetildiği için 
 ## Yayın sonrası
 
 1. Migration gerekiyorsa `npm run release:migrate` çalıştırın.
-2. Production deploy tamamlandıktan sonra `/api/health` içindeki commit'i doğrulayın.
+2. Production deploy tamamlandıktan sonra `/api/health` içinde `checks.databaseSchema.status` değerinin `ok` olduğunu doğrulayın. `DATABASE_SCHEMA_INCOMPATIBLE`, veritabanı erişilebilir olsa bile uygulama sürümünün beklediği kolonların eksik olduğunu ve deploy'un trafiğe açılmaması gerektiğini belirtir.
 3. Oturumsuz panel API isteğinin 401, yanlış rol isteğinin 403/404 verdiğini kontrol edin.
-4. `Production Health`, `Production Smoke` ve E2E GitHub Actions sonuçlarını inceleyin.
+4. Korumalı `/api/smoke` yanıtındaki `db_schema` kontrolünün geçtiğini doğrulayın.
+5. `Production Health`, `Production Smoke` ve E2E GitHub Actions sonuçlarını inceleyin. E2E kapısındaki dört-rol gerçek giriş smoke adımı bloklayıcıdır.

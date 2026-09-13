@@ -1,5 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  PanelCard,
+  PanelCardTitle,
+  PanelProgress,
+} from "@/components/panel/ui";
 
 /**
  * ÖĞRENCİ ANA SAYFA KARTLARI — onaylı tasarım (Panel.dc.html → scStudentHome).
@@ -8,7 +13,12 @@ import Link from "next/link";
 
 /* ── Bu haftaki planın ────────────────────────────────────────────────── */
 
-export type PlanTaskRow = { id: string; title: string; meta: string; done: boolean };
+export type PlanTaskRow = {
+  id: string;
+  title: string;
+  meta: string;
+  done: boolean;
+};
 
 export function WeeklyPlanCard({
   done,
@@ -25,24 +35,19 @@ export function WeeklyPlanCard({
   const remaining = Math.max(0, total - done);
 
   return (
-    <section className="rounded-[14px] border border-dc-line bg-white p-[22px]">
+    <PanelCard>
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[16px] font-bold text-dc-ink">Bu haftaki planın</h2>
+        <PanelCardTitle>Bu haftaki planın</PanelCardTitle>
         <span className="text-[13px] text-dc-ink-faint">
           {done} / {total} görev
         </span>
       </div>
 
-      <div
-        className="mt-3.5 h-2 overflow-hidden rounded-full bg-dc-line-soft"
-        role="progressbar"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="Haftalık plan ilerlemesi"
-      >
-        <div className="h-full rounded-full bg-dc-brand" style={{ width: `${pct}%` }} />
-      </div>
+      <PanelProgress
+        label="Haftalık plan ilerlemesi"
+        value={pct}
+        className="mt-3.5"
+      />
       <p className="mt-2 text-[13px] text-dc-ink-muted">
         {remaining > 0
           ? `Hafta sonuna kadar ${remaining} görev kaldı.`
@@ -53,7 +58,7 @@ export function WeeklyPlanCard({
         {tasks.map((task) => (
           <li
             key={task.id}
-            className={`flex items-center gap-2.5 text-[14px] font-medium ${
+            className={`flex flex-wrap items-start gap-2.5 text-[14px] font-medium ${
               task.done ? "text-dc-ink-ghost" : "text-[var(--pd-ink-3)]"
             }`}
           >
@@ -62,13 +67,19 @@ export function WeeklyPlanCard({
               className={`grid h-4 w-4 flex-none place-items-center rounded ${
                 task.done
                   ? "bg-dc-brand-strong text-[9px] font-bold text-white"
-                  : "border border-[#DDE4E0]"
+                  : "border border-dc-line-soft"
               }`}
             >
               {task.done ? "✓" : ""}
             </span>
-            <span className={task.done ? "line-through" : ""}>{task.title}</span>
-            <span className="ml-auto shrink-0 text-[12.5px] text-dc-ink-faint">{task.meta}</span>
+            <span
+              className={`min-w-0 flex-1 ${task.done ? "line-through" : ""}`}
+            >
+              {task.title}
+            </span>
+            <span className="w-full pl-[26px] text-[12.5px] text-dc-ink-faint sm:w-auto sm:pl-0">
+              {task.meta}
+            </span>
           </li>
         ))}
       </ul>
@@ -79,13 +90,18 @@ export function WeeklyPlanCard({
       >
         Planın tamamını gör →
       </Link>
-    </section>
+    </PanelCard>
   );
 }
 
 /* ── Son deneme ───────────────────────────────────────────────────────── */
 
-export type ExamSubjectRow = { name: string; correct: number; incorrect: number; net: number };
+export type ExamSubjectRow = {
+  name: string;
+  correct: number;
+  incorrect: number;
+  net: number;
+};
 
 export function LatestExamCard({
   net,
@@ -103,11 +119,14 @@ export function LatestExamCard({
   href: string;
 }) {
   const fmt = (value: number) =>
-    value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    value.toLocaleString("tr-TR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
   return (
-    <section className="rounded-[14px] border border-dc-line bg-white p-[22px]">
-      <h2 className="text-[16px] font-bold text-dc-ink">Son deneme</h2>
+    <PanelCard>
+      <PanelCardTitle>Son deneme</PanelCardTitle>
 
       <p className="mt-3 flex items-baseline gap-2.5">
         <span className="text-[30px] font-extrabold tracking-[-0.02em] text-dc-ink">
@@ -116,7 +135,9 @@ export function LatestExamCard({
         {delta !== null ? (
           <span
             className={`text-[13.5px] font-bold ${
-              delta >= 0 ? "text-dc-brand-hover" : "text-[#8A5F37]"
+              delta >= 0
+                ? "text-dc-brand-hover"
+                : "text-[var(--pd-pastel-yellow-ink)]"
             }`}
           >
             {delta >= 0 ? "+" : ""}
@@ -130,9 +151,9 @@ export function LatestExamCard({
 
       <ul className="mt-4 flex flex-col gap-2.5 text-[13.5px] font-medium text-[var(--pd-ink-3)]">
         {subjects.map((s) => (
-          <li key={s.name} className="flex gap-3">
-            <span className="flex-1">{s.name}</span>
-            <span className="text-dc-ink-faint">
+          <li key={s.name} className="flex flex-wrap gap-1.5 sm:gap-3">
+            <span className="min-w-0 flex-1">{s.name}</span>
+            <span className="w-full text-dc-ink-faint sm:w-auto">
               {s.correct}D / {s.incorrect}Y · {fmt(s.net)}
             </span>
           </li>
@@ -145,7 +166,7 @@ export function LatestExamCard({
       >
         Sonucu ve analizi aç →
       </Link>
-    </section>
+    </PanelCard>
   );
 }
 
@@ -159,7 +180,13 @@ export type TrendPoint = { label: string; net: number };
  * §32 gereği grafik TEK BAŞINA bilgi taşımaz: aynı değerler altındaki
  * etiketlerde ve ekran okuyucuya açık bir tabloda da bulunur.
  */
-export function NetTrendCard({ points, caption }: { points: TrendPoint[]; caption: string }) {
+export function NetTrendCard({
+  points,
+  caption,
+}: {
+  points: TrendPoint[];
+  caption: string;
+}) {
   if (points.length < 2) return null;
 
   const W = 640;
@@ -177,11 +204,9 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
   }));
 
   return (
-    <section className="mt-5 rounded-[14px] border border-dc-line bg-white p-[22px]">
+    <PanelCard className="mt-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-[16px] font-bold text-dc-ink">
-          Son {points.length} deneme · toplam net
-        </h2>
+        <PanelCardTitle>Son {points.length} deneme · toplam net</PanelCardTitle>
       </div>
 
       <svg
@@ -191,12 +216,20 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
         aria-label={`Toplam net gelişimi: ${points.map((p) => `${p.label} ${p.net}`).join(", ")}`}
       >
         {[20, 70, 120].map((y) => (
-          <line key={y} x1="0" y1={y} x2={W} y2={y} stroke="#EDF0EE" strokeWidth="1" />
+          <line
+            key={y}
+            x1="0"
+            y1={y}
+            x2={W}
+            y2={y}
+            stroke="var(--dc-line-soft)"
+            strokeWidth="1"
+          />
         ))}
         <polyline
           points={coords.map((c) => `${c.x},${c.y}`).join(" ")}
           fill="none"
-          stroke="#14976B"
+          stroke="var(--dc-brand)"
           strokeWidth="2.5"
           strokeLinejoin="round"
         />
@@ -206,7 +239,11 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
             cx={c.x}
             cy={c.y}
             r={i === coords.length - 1 ? 5 : 4}
-            fill={i === coords.length - 1 ? "#0C4A38" : "#14976B"}
+            fill={
+              i === coords.length - 1
+                ? "var(--dc-brand-deep)"
+                : "var(--dc-brand)"
+            }
           />
         ))}
       </svg>
@@ -220,7 +257,7 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
       <p className="mt-4 max-w-[720px] text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
         {caption}
       </p>
-    </section>
+    </PanelCard>
   );
 }
 
@@ -229,9 +266,7 @@ export function NetTrendCard({ points, caption }: { points: TrendPoint[]; captio
 /**
  * Dino AI özeti.
  *
- * §22: canlı bir Dino AI arka ucu HENÜZ YOK. Bu yüzden burada uydurma bir
- * "AI çıktısı" üretilmez — `insight` verilmediğinde bileşen, özetin neye
- * dayanacağını ve ne zaman görüneceğini söyleyen dürüst bir durum gösterir.
+ * Contextual yüzeylerde gerçek açıklama yoksa kart render edilmez.
  */
 export function DinoInsightCard({
   insight,
@@ -240,8 +275,10 @@ export function DinoInsightCard({
   insight: string | null;
   basis: string | null;
 }) {
+  if (!insight) return null;
+
   return (
-    <section className="mt-5 flex items-start gap-5 rounded-[14px] border border-dc-line bg-white p-[22px]">
+    <PanelCard className="mt-5 flex items-start gap-5">
       <Image
         src="/design/dino-mascot.png"
         alt=""
@@ -252,21 +289,16 @@ export function DinoInsightCard({
         className="w-12 flex-none sm:w-16"
       />
       <div className="min-w-0 flex-1">
-        <h2 className="text-[16px] font-bold text-dc-ink">Dino bu hafta ne görüyor?</h2>
-
-        {insight ? (
-          <>
-            <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">{insight}</p>
-            {basis ? <p className="mt-2 text-[12.5px] text-dc-ink-faint">{basis}</p> : null}
-          </>
-        ) : (
-          <p className="mt-2 text-[14.5px] leading-[1.65] text-dc-ink-muted">
-            Haftalık Dino özeti, yeterli ders ve deneme verisi biriktiğinde burada
-            görünecek. Özet yalnızca senin ders notların, plan görevlerin ve deneme
-            sonuçlarına dayanır.
+        <h2 className="text-[16px] font-bold text-dc-ink">Dino açıklaması</h2>
+        <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+          {insight}
+        </p>
+        {basis ? (
+          <p className="mt-2 text-[12.5px] text-dc-ink-faint">
+            Dayanak: {basis}
           </p>
-        )}
+        ) : null}
       </div>
-    </section>
+    </PanelCard>
   );
 }

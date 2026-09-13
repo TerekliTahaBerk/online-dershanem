@@ -26,5 +26,8 @@ tsconfig.tsbuildinfo
 /blob-report/
 /playwright/.cache/
 
+# Storybook static build
+/storybook-static/
+
 # Lighthouse CI artifacts
 /.lighthouseci/

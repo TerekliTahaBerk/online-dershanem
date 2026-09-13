@@ -6,9 +6,11 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { log } from "@/lib/logger";
+import { afterResponse } from "@/lib/after-response";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { initialReviewDueAt } from "@/lib/review-scheduler";
 import { lessonCloseRequestHash } from "@/lib/lesson-close";
+import { generateRecoveryPackage, publishRecoveryPackage } from "@/lib/recovery-package-server";
 
 const attendance = z.enum(["PRESENT", "ABSENT", "LATE", "EXCUSED"]);
 const outcomeEvidence = z.enum(["TAUGHT", "OBSERVED", "INDEPENDENT", "NEEDS_REVIEW"]);
@@ -135,11 +137,68 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     throw error;
   }
   if (firstCompletion) {
+    const { onLessonCompleted, onLessonMissed } = await import("@/lib/student-success/server/emit-hooks");
+    const presentStudentIds = parsed.data.students
+      .filter((item) => item.attendance === "PRESENT" || item.attendance === "LATE")
+      .map((item) => item.studentId);
+    afterResponse("panel.lesson_close.cross_product_emit_failed", () => onLessonCompleted({
+      lessonId: id,
+      groupId: lesson.groupId,
+      topic: parsed.data.topic || null,
+      outcomeIds: uniqueOutcomes.map((item) => item.outcomeId),
+      actorUserId: auth.session.userId,
+      presentStudentIds,
+    }), { lessonId: id });
+
     await Promise.all([
       queuePanelNotificationEmails(rawSummaryRows, "lessonSummary"),
       queuePanelNotificationEmails(rawAbsenceRows, "absence"),
       queuePanelNotificationEmails(rawAssignmentRows, "assignment"),
     ]);
+    if (featureFlags.recoveryPackage) {
+      const absences = await prisma.attendance.findMany({ where: { lessonId: id, status: "ABSENT" }, select: { id: true, studentId: true } });
+      const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+      for (const attendance of absences) {
+        afterResponse("panel.lesson_missed.automation_emit_failed", () => emitEducationAutomation("lesson_missed", {
+          entityType: "lesson",
+          entityId: attendance.id,
+          studentId: attendance.studentId,
+          severity: "medium",
+          href: `/panel/ogretmen/ders/${id}`,
+        }), { lessonId: id, studentId: attendance.studentId });
+        const generated = await generateRecoveryPackage(attendance.id, auth.session.userId);
+        if (!generated) continue;
+        const items = generated.package.items;
+        await recordPanelProductEvent({ name: "recovery_package_generated", properties: { ruleVersion: "recovery-v1", itemCount: items.length, hasMaterial: items.some((item) => item.kind === "MATERIAL"), hasAssignment: items.some((item) => item.kind === "ASSIGNMENT"), reused: generated.reused } }, auth.session.role);
+        const published = await publishRecoveryPackage({ packageId: generated.package.id, teacherId: auth.session.userId, rebalancePlan: featureFlags.adaptivePlan });
+        if (published.kind === "PUBLISHED") await recordPanelProductEvent({ name: "recovery_package_published", properties: { publishDelayMs: published.publishDelayMs, itemCount: published.itemCount, planRebalanced: published.planRebalanced } }, auth.session.role);
+        afterResponse("panel.lesson_missed.cross_product_emit_failed", () => onLessonMissed({
+          lessonId: id,
+          groupId: lesson.groupId,
+          studentId: attendance.studentId,
+          recoveryPackageId: generated.package.id,
+          actorUserId: auth.session.userId,
+        }), { lessonId: id, studentId: attendance.studentId });
+      }
+    } else if (firstCompletion) {
+      const absences = await prisma.attendance.findMany({ where: { lessonId: id, status: "ABSENT" }, select: { id: true, studentId: true } });
+      const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+      for (const attendance of absences) {
+        afterResponse("panel.lesson_missed.automation_emit_failed", () => emitEducationAutomation("lesson_missed", {
+          entityType: "lesson",
+          entityId: attendance.id,
+          studentId: attendance.studentId,
+          severity: "medium",
+          href: `/panel/ogretmen/ders/${id}`,
+        }), { lessonId: id, studentId: attendance.studentId });
+        afterResponse("panel.lesson_missed.cross_product_emit_failed", () => onLessonMissed({
+          lessonId: id,
+          groupId: lesson.groupId,
+          studentId: attendance.studentId,
+          actorUserId: auth.session.userId,
+        }), { lessonId: id, studentId: attendance.studentId });
+      }
+    }
   }
   if (featureFlags.baselineMetrics) {
     log.info("panel.lesson_notes.saved", {

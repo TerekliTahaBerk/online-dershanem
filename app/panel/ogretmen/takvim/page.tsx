@@ -24,7 +24,11 @@ export const dynamic = "force-dynamic";
  */
 
 const DAY_LABEL = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-const RANGE = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
+const RANGE = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+});
 const HHMM = new Intl.DateTimeFormat("tr-TR", {
   timeZone: ISTANBUL_TIME_ZONE,
   hour: "2-digit",
@@ -52,22 +56,30 @@ export default async function TeacherCalendarPage({
     orderBy: { startsAt: "asc" },
     include: {
       group: {
-        select: { name: true, enrollments: { where: { endedAt: null }, select: { id: true } } },
+        select: {
+          name: true,
+          enrollments: { where: { endedAt: null }, select: { id: true } },
+        },
       },
     },
   });
 
   // Haftalık yük — planlanan ders süreleri toplamı
   const totalMinutes = lessons.reduce(
-    (sum, l) => sum + Math.max(0, (l.endsAt.getTime() - l.startsAt.getTime()) / 60000),
+    (sum, l) =>
+      sum + Math.max(0, (l.endsAt.getTime() - l.startsAt.getTime()) / 60000),
     0,
   );
   const loadHours = Math.round((totalMinutes / 60) * 10) / 10;
 
   // Yalnız dolu saat dilimleri satır olur
-  const slots = [...new Set(lessons.map((l) => HHMM.format(l.startsAt)))].sort();
+  const slots = [
+    ...new Set(lessons.map((l) => HHMM.format(l.startsAt))),
+  ].sort();
 
-  const days = Array.from({ length: 7 }, (_, i) => addIstanbulCalendarDays(start, i));
+  const days = Array.from({ length: 7 }, (_, i) =>
+    addIstanbulCalendarDays(start, i),
+  );
 
   const endLabel = addIstanbulCalendarDays(end, -1);
 
@@ -111,7 +123,10 @@ export default async function TeacherCalendarPage({
               <caption className="sr-only">Haftalık ders takvimi</caption>
               <thead>
                 <tr className="border-b border-dc-line bg-dc-panel-head">
-                  <th scope="col" className="w-[70px] px-2.5 py-3 text-[12.5px] font-bold text-dc-ink-muted">
+                  <th
+                    scope="col"
+                    className="w-[70px] px-2.5 py-3 text-[12.5px] font-bold text-dc-ink-muted"
+                  >
                     Saat
                   </th>
                   {days.map((d, i) => (
@@ -127,7 +142,10 @@ export default async function TeacherCalendarPage({
               </thead>
               <tbody>
                 {slots.map((slot) => (
-                  <tr key={slot} className="border-b border-dc-line-soft last:border-0">
+                  <tr
+                    key={slot}
+                    className="border-b border-dc-line-soft last:border-0"
+                  >
                     <th
                       scope="row"
                       className="px-2.5 py-3 align-top text-[12.5px] font-normal text-dc-ink-ghost"
@@ -138,7 +156,8 @@ export default async function TeacherCalendarPage({
                       const cell = lessons.filter(
                         (l) =>
                           HHMM.format(l.startsAt) === slot &&
-                          formatIstanbulDateInput(l.startsAt) === formatIstanbulDateInput(day),
+                          formatIstanbulDateInput(l.startsAt) ===
+                            formatIstanbulDateInput(day),
                       );
                       return (
                         <td key={day.toISOString()} className="p-2 align-top">

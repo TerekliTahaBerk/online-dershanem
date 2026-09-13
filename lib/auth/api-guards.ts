@@ -8,6 +8,15 @@ import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
 import { hasProductAccess } from "@/lib/auth/products";
 import { hasFreshStepUp } from "@/lib/auth/mfa-policy";
+import {
+  getResolvedAdminPreview,
+  toEffectivePreviewSession,
+} from "@/lib/auth/admin-preview";
+import {
+  getResolvedAdminTeacherMode,
+  toAdminTeacherModeSession,
+} from "@/lib/auth/admin-teacher-mode";
+import { isPreviewableRole } from "@/lib/panel/preview-context";
 
 /**
  * API route'ları için yetki kapısı.
@@ -20,6 +29,9 @@ import { hasFreshStepUp } from "@/lib/auth/mfa-policy";
  *   const auth = await requireApiProductRole("OD", "ADMIN");
  *   if (!auth.ok) return auth.response;
  *   // auth.session güvenle kullanılabilir
+ *
+ * Admin öğretmen çalışma modu: TEACHER API'lerinde aynı userId ile yazılabilir.
+ * Admin preview: okuma API'leri subject kimliği alır; yazma `guardMutation` ile engellenir.
  */
 export type ApiAuth =
   | { ok: true; session: SessionUser }
@@ -57,19 +69,53 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireAdminMfa = tru
     };
   }
 
-  if (!roles.includes(session.role)) {
-    // Sayfalarda 404 veriyoruz; API'de 403 yeterli — burada rota keşfi diye bir şey yok.
+  if (requireAdminMfa && session.role === "ADMIN" && !session.mfaVerifiedAt) {
+    return { ok: false, response: NextResponse.json({ error: "Yönetici erişimi için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
+  }
+
+  if (roles.includes(session.role)) {
+    return { ok: true, session };
+  }
+
+  if (session.role === "ADMIN") {
+    if (roles.includes("TEACHER")) {
+      const teacherMode = await getResolvedAdminTeacherMode(session);
+      if (teacherMode.enabled) {
+        return { ok: true, session: toAdminTeacherModeSession(session) as SessionUser };
+      }
+    }
+
+    const preview = await getResolvedAdminPreview(session);
+    if (preview && roles.includes(preview.subject.role) && isPreviewableRole(preview.subject.role)) {
+      return { ok: true, session: toEffectivePreviewSession(session, preview.subject) as SessionUser };
+    }
+  }
+
+  // Sayfalarda 404 veriyoruz; API'de 403 yeterli — burada rota keşfi diye bir şey yok.
+  return {
+    ok: false,
+    response: NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 }),
+  };
+}
+
+/** Mutation API'lerinde gerçek ADMIN oturumunu (preview overlay'siz) almak için. */
+export async function requireApiActorSession(...roles: UserRole[]): Promise<ApiAuth> {
+  const auth = await requireApiAuthorizedRole(roles);
+  if (!auth.ok) return auth;
+  const actor = await getSession();
+  if (!actor) {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: "Oturumunuz sona ermiş. Tekrar giriş yapın." }, { status: 401 }),
+    };
+  }
+  if (!roles.includes(actor.role)) {
     return {
       ok: false,
       response: NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 }),
     };
   }
-
-  if (requireAdminMfa && session.role === "ADMIN" && !session.mfaVerifiedAt) {
-    return { ok: false, response: NextResponse.json({ error: "Yönetici erişimi için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
-  }
-
-  return { ok: true, session };
+  return { ok: true, session: actor };
 }
 
 export async function requireApiRecentAdminStepUp(): Promise<ApiAuth> {
@@ -87,7 +133,7 @@ async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, 
   return { ok: false, response: NextResponse.json({ error: pilot.reason === "KILL_SWITCH" ? "Pilot geçici olarak durduruldu." : "Bu pilot erişimi etkin değil." }, { status: pilot.reason === "KILL_SWITCH" ? 503 : 404 }) };
 }
 
-/** Bildirim ve görünüm tercihi gibi iki üründe ortak hesap işlemleri. */
+/** Bildirim ve görünüm tercihi gibi ürünler arasında ortak hesap işlemleri. */
 export async function requireApiActiveUser(): Promise<ApiAuth> {
   return requireApiAuthorizedRole(["ADMIN", "TEACHER", "STUDENT", "PARENT"]);
 }

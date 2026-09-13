@@ -7,6 +7,13 @@ export function digestWeekStart(now = new Date()): Date {
   return istanbulWeekStart(now);
 }
 
+export function digestWeekWindow(now = new Date()) {
+  const weekStart = digestWeekStart(now);
+  const previousWeekStart = new Date(weekStart.getTime() - 7 * 86_400_000);
+  const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
+  return { weekStart, previousWeekStart, weekEnd };
+}
+
 export function buildCalmWeeklyDigest(input: {
   currentAttendance: { attended: number; total: number };
   previousAttendance: { attended: number; total: number };
@@ -14,6 +21,7 @@ export function buildCalmWeeklyDigest(input: {
   evidenceTitles: string[];
   reviewTitle?: string | null;
   dataThrough: Date;
+  upcomingHint?: string | null;
 }) {
   const currentRate = input.currentAttendance.total ? input.currentAttendance.attended / input.currentAttendance.total : null;
   const previousRate = input.previousAttendance.total ? input.previousAttendance.attended / input.previousAttendance.total : null;
@@ -22,6 +30,10 @@ export function buildCalmWeeklyDigest(input: {
   const uniqueEvidence = [...new Set(input.evidenceTitles)].slice(0, 2);
   const goodThingTwo = input.completedTaskCount > 0 ? `Planındaki ${input.completedTaskCount} küçük adımı tamamladı.` : uniqueEvidence.length ? `${uniqueEvidence.join(" ve ")} üzerinde çalıştı.` : "Yeni hafta için küçük ve uygulanabilir adımlar hazırlanıyor.";
   const supportArea = input.reviewTitle ? `${input.reviewTitle} için kısa bir tekrar, önümüzdeki haftanın yararlı küçük adımı olabilir.` : "Önümüzdeki hafta düzenli ve kısa çalışma aralıklarını korumak yeterli bir sonraki adım olabilir.";
-  const homeQuestion = input.reviewTitle ? `“${input.reviewTitle} konusunda sana en çok hangi örnek yardımcı olur?” diye sorabilirsiniz.` : "“Bu hafta en rahat ilerlediğin küçük adım hangisiydi?” diye sorabilirsiniz.";
+  const homeQuestion = input.upcomingHint?.trim()
+    ? input.upcomingHint.trim()
+    : input.reviewTitle
+      ? `“${input.reviewTitle} konusunda sana en çok hangi örnek yardımcı olur?” diye sorabilirsiniz.`
+      : "“Bu hafta en rahat ilerlediğin küçük adım hangisiydi?” diye sorabilirsiniz.";
   return { trendBand, goodThingOne, goodThingTwo, supportArea, homeQuestion, dataThrough: input.dataThrough };
 }

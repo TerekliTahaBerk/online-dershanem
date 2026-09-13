@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { attemptHasExpired, decideAttemptStart } from "@/lib/odk/attempt-domain";
 import { getActiveOdkExamGrant, listActiveOdkContracts } from "@/lib/odk/product-contract-server";
 import { contractAnswerKeyAvailable, contractExamSchedule, contractResultAvailable } from "@/lib/odk/product-contract";
+import { buildOutcomeTrends, buildWeakOutcomeSignals } from "@/lib/odk/reporting";
 
 export const studentExamInclude = {
   currentVersion: {
@@ -27,14 +28,29 @@ export async function listStudentExams(studentUserId: string) {
     orderBy: [{ startsAt: "desc" }],
     take: 50,
     select: {
-      id: true, title: true, family: true, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true,
+      id: true, title: true, family: true, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true, resultsReleasedAt: true,
       currentVersion: { select: { durationMinutes: true } },
       attempts: { where: { studentUserId }, orderBy: { attemptNumber: "desc" }, take: 1, select: { id: true, status: true, deadlineAt: true, submittedAt: true } },
     },
   }).then((exams) => exams.map((exam) => {
     const grant = grants.get(exam.id);
     const schedule = grant ? contractExamSchedule(grant.exam) : null;
-    return { ...exam, ...(schedule || {}), meetRequired: Boolean(grant?.exam.liveServiceRequired && grant.liveService), serverNow: now };
+    const startDecision = schedule && exam.currentVersion
+      ? decideAttemptStart({
+          status: exam.status,
+          ...schedule,
+          durationMinutes: exam.currentVersion.durationMinutes,
+        }, now)
+      : { ok: false as const, code: "NOT_SCHEDULED" as const };
+    const resultAvailable = grant ? contractResultAvailable(grant.exam, exam) : false;
+    return {
+      ...exam,
+      ...(schedule || {}),
+      meetRequired: Boolean(grant?.exam.liveServiceRequired && grant.liveService),
+      serverNow: now,
+      startDecision,
+      resultAvailable,
+    };
   }));
 }
 
@@ -70,14 +86,28 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
       id: true, title: true, family: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
       currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, take: 1, select: { id: true } } } },
       attempts: {
-        where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { isNot: null } }, orderBy: { attemptNumber: "desc" }, take: 1,
+        where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { is: { publicationStatus: "PUBLISHED" } } }, orderBy: { attemptNumber: "desc" }, take: 1,
         select: {
-          id: true, submittedAt: true,
+          id: true, submittedAt: true, startedAt: true,
+          timings: { select: { questionId: true, activeDurationMs: true } },
           score: {
             select: {
-              correctCount: true, wrongCount: true, blankCount: true, totalNet: true,
-              questionResults: { orderBy: { question: { position: "asc" } }, select: { selectedOption: true, correctOption: true, result: true, question: { select: { questionNumber: true } } } },
-              outcomeScores: { orderBy: [{ accuracyRate: "asc" }, { outcome: { code: "asc" } }], select: { questionCount: true, correctCount: true, wrongCount: true, blankCount: true, accuracyRate: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } },
+              correctCount: true, wrongCount: true, blankCount: true, totalNet: true, activeDurationMs: true, sectionBreakdown: true,
+              questionResults: {
+                orderBy: { question: { position: "asc" } },
+                select: {
+                  selectedOption: true, correctOption: true, result: true,
+                  questionId: true,
+                  question: {
+                    select: {
+                      questionNumber: true,
+                      section: { select: { code: true, title: true } },
+                      outcomes: { select: { isPrimary: true, outcome: { select: { code: true, title: true } } } },
+                    },
+                  },
+                },
+              },
+              outcomeScores: { orderBy: [{ accuracyRate: "asc" }, { outcome: { code: "asc" } }], select: { outcomeId: true, questionCount: true, correctCount: true, wrongCount: true, blankCount: true, accuracyRate: true, activeDurationMs: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } },
             },
           },
         },
@@ -86,5 +116,89 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
   });
   if (!exam || !contractResultAvailable(grant.exam, exam)) return null;
   const attempt = exam?.attempts[0];
-  return attempt?.score ? { exam, attempt, score: attempt.score, answerKeyAvailable: contractAnswerKeyAvailable(grant.exam, exam) } : null;
+  if (!attempt?.score) return null;
+  const attempts = await prisma.odkExamAttempt.findMany({
+    where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED", family: exam.family }, score: { is: { publicationStatus: "PUBLISHED" } } },
+    orderBy: [{ exam: { startsAt: "desc" } }, { submittedAt: "desc" }, { attemptNumber: "desc" }],
+    take: 30,
+    select: {
+      examId: true,
+      submittedAt: true,
+      exam: { select: { id: true, title: true, startsAt: true, family: true } },
+      score: {
+        select: {
+          totalNet: true,
+          outcomeScores: { select: { outcomeId: true, questionCount: true, accuracyRate: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } },
+        },
+      },
+    },
+  });
+  const latestByExam = new Map<string, (typeof attempts)[number]>();
+  for (const row of attempts) if (!latestByExam.has(row.examId)) latestByExam.set(row.examId, row);
+  const outcomeEvidence = [...latestByExam.values()].flatMap((row) => row.score ? row.score.outcomeScores.map((outcome) => ({
+    examId: row.examId,
+    takenAt: row.exam.startsAt || row.submittedAt || new Date(0),
+    outcomeId: outcome.outcomeId,
+    code: outcome.outcome.code,
+    title: outcome.outcome.title,
+    unitName: outcome.outcome.unit.name,
+    questionCount: outcome.questionCount,
+    accuracyRate: Number(outcome.accuracyRate),
+  })) : []);
+  const outcomeTrends = buildOutcomeTrends(outcomeEvidence);
+  const weakOutcomeSignals = buildWeakOutcomeSignals({
+    latestScores: attempt.score.outcomeScores.map((item) => ({
+      outcomeId: item.outcomeId,
+      code: item.outcome.code,
+      title: item.outcome.title,
+      unitName: item.outcome.unit.name,
+      questionCount: item.questionCount,
+      accuracyRate: Number(item.accuracyRate),
+    })),
+    trends: outcomeTrends,
+  });
+  const timingByQuestion = new Map(attempt.timings.map((row) => [row.questionId, row.activeDurationMs]));
+  const { aggregateQuestionTimings } = await import("@/lib/odk/time-analysis");
+  const timeAnalysis = aggregateQuestionTimings(
+    attempt.score.questionResults.map((item) => ({
+      questionId: item.questionId,
+      sectionCode: item.question.section.code,
+      sectionTitle: item.question.section.title,
+      result: item.result,
+      activeDurationMs: timingByQuestion.get(item.questionId) || 0,
+    })),
+  );
+  const comparison = [...latestByExam.values()]
+    .filter((row) => row.score)
+    .map((row) => ({
+      examId: row.examId,
+      title: row.exam.title,
+      family: row.exam.family,
+      takenAt: row.exam.startsAt || row.submittedAt || new Date(0),
+      totalNet: Number(row.score!.totalNet),
+    }))
+    .sort((a, b) => a.takenAt.getTime() - b.takenAt.getTime());
+  const coachSuggestions = (await import("@/lib/odk/coach-suggestions")).buildCoachSuggestions(
+    attempt.score.outcomeScores.map((item) => ({
+      code: item.outcome.code,
+      title: item.outcome.title,
+      unitName: item.outcome.unit.name,
+      questionCount: item.questionCount,
+      correctCount: item.correctCount,
+      accuracyRate: Number(item.accuracyRate),
+    })),
+    3,
+  );
+  return {
+    exam,
+    attempt,
+    score: attempt.score,
+    answerKeyAvailable: contractAnswerKeyAvailable(grant.exam, exam),
+    outcomeTrends,
+    weakOutcomeSignals,
+    timeAnalysis,
+    comparison,
+    coachSuggestions,
+    sectionBreakdown: Array.isArray(attempt.score.sectionBreakdown) ? attempt.score.sectionBreakdown : [],
+  };
 }

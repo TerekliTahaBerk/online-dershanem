@@ -64,15 +64,47 @@ export async function resolveTeacherStudent(
     },
   });
 
-  const first = enrollments[0];
-  if (!first) notFound();
+  if (enrollments[0]) {
+    const first = enrollments[0];
+    return {
+      id: first.student.id,
+      userId: first.student.userId,
+      name: first.student.user.fullName || first.student.user.email,
+      classLevel: first.student.classLevel,
+      targetGoal: first.student.targetGoal,
+      groups: enrollments.map((e) => e.group),
+    };
+  }
+
+  const direct = await prisma.studentTeacherAssignment.findFirst({
+    where: {
+      studentId: studentProfileId,
+      teacherId: teacherUserId,
+      active: true,
+      endedAt: null,
+      student: { user: { status: { in: ["ACTIVE", "SUSPENDED"] } } },
+    },
+    select: {
+      subject: true,
+      student: {
+        select: {
+          id: true,
+          userId: true,
+          classLevel: true,
+          targetGoal: true,
+          user: { select: { fullName: true, email: true } },
+        },
+      },
+    },
+  });
+  if (!direct) notFound();
 
   return {
-    id: first.student.id,
-    userId: first.student.userId,
-    name: first.student.user.fullName || first.student.user.email,
-    classLevel: first.student.classLevel,
-    targetGoal: first.student.targetGoal,
-    groups: enrollments.map((e) => e.group),
+    id: direct.student.id,
+    userId: direct.student.userId,
+    name: direct.student.user.fullName || direct.student.user.email,
+    classLevel: direct.student.classLevel,
+    targetGoal: direct.student.targetGoal,
+    groups: [{ id: `direct:${direct.subject}`, name: "Bireysel", subject: direct.subject }],
   };
 }

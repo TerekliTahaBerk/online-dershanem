@@ -13,7 +13,10 @@ import { postAuthenticationPath } from "@/lib/auth/products";
  */
 export async function generateMetadata(): Promise<Metadata> {
   if (!PUBLIC_REGISTER_ENABLED) {
-    return { title: "Sayfa bulunamadı", robots: { index: false, follow: false } };
+    return {
+      title: "Sayfa bulunamadı",
+      robots: { index: false, follow: false },
+    };
   }
   return {
     title: "Kayıt Ol",
@@ -44,7 +47,10 @@ export default async function RegisterPage() {
 
       <p className="mt-5 text-center text-[13px] text-dc-ink-muted">
         Hesabın var mı?{" "}
-        <Link href="/giris" className="font-semibold text-dc-brand-strong hover:text-dc-brand-hover">
+        <Link
+          href="/giris"
+          className="font-semibold text-dc-brand-strong hover:text-dc-brand-hover"
+        >
           Giriş yap
         </Link>
       </p>

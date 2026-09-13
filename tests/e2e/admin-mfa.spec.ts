@@ -42,8 +42,8 @@ test.describe.serial("admin MFA, recovery, replay and step-up", () => {
     const passwordHash = await hashPassword(password);
     await prisma.user.upsert({
       where: { email },
-      create: { email, passwordHash, mustChangePassword: false, role: "ADMIN", status: "ACTIVE", fullName: "MFA E2E Admin" },
-      update: { passwordHash, mustChangePassword: false, role: "ADMIN", status: "ACTIVE", failedAttempts: 0, lockedUntil: null },
+      create: { email, passwordHash, mustChangePassword: false, inviteAcceptedAt: new Date(), role: "ADMIN", status: "ACTIVE", fullName: "MFA E2E Admin" },
+      update: { passwordHash, mustChangePassword: false, inviteAcceptedAt: new Date(), role: "ADMIN", status: "ACTIVE", failedAttempts: 0, lockedUntil: null },
     });
     await resetMfaState();
   });

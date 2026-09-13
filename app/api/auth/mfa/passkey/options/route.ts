@@ -5,7 +5,10 @@ import { adminHasMfa } from "@/lib/auth/mfa";
 import { authenticationOptions, registrationOptions } from "@/lib/auth/webauthn";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 
-const schema = z.object({ purpose: z.enum(["ENROLL", "AUTHENTICATE", "STEP_UP"]) });
+const schema = z.object({
+  purpose: z.enum(["ENROLL", "AUTHENTICATE", "STEP_UP"]),
+  preferPlatform: z.boolean().optional(),
+});
 
 export async function POST(request: Request) {
   const auth = await requireApiPrimaryAdmin();
@@ -20,5 +23,17 @@ export async function POST(request: Request) {
   }
   const enrolled = await adminHasMfa(auth.session.userId);
   if (!enrolled) return NextResponse.json({ error: "Önce ikinci faktör kaydedin.", redirect: "/giris/mfa/enroll" }, { status: 409 });
-  return NextResponse.json(await authenticationOptions({ userId: auth.session.userId, sessionId: auth.session.sessionId, purpose: parsed.data.purpose === "STEP_UP" ? "STEP_UP" : "MFA_AUTHENTICATION" }));
+  const result = await authenticationOptions({
+    userId: auth.session.userId,
+    sessionId: auth.session.sessionId,
+    purpose: parsed.data.purpose === "STEP_UP" ? "STEP_UP" : "MFA_AUTHENTICATION",
+    preferPlatform: parsed.data.preferPlatform,
+  });
+  if (result.platformRequired) {
+    return NextResponse.json({
+      error: "Bu telefonda kayıtlı geçiş anahtarı yok. Uygulama kodunu veya kurtarma kodunu kullanın.",
+      code: "NO_PLATFORM_PASSKEY",
+    }, { status: 409 });
+  }
+  return NextResponse.json(result);
 }

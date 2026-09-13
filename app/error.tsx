@@ -17,13 +17,20 @@ export default function ErrorPage({
           Sayfayı birlikte geri getirelim.
         </h1>
         <p className="mx-auto mt-5 max-w-md text-[15px] leading-7 text-[var(--site-body)]">
-          İşleminiz tamamlanamadı. Yeniden deneyebilir veya güvenle ana sayfaya dönebilirsiniz.
+          İşleminiz tamamlanamadı. Yeniden deneyebilir veya güvenle ana sayfaya
+          dönebilirsiniz.
         </p>
         {error.digest ? (
-          <p className="mt-3 text-[12px] text-[var(--site-muted)]">Hata kodu: {error.digest}</p>
+          <p className="mt-3 text-[12px] text-[var(--site-muted)]">
+            Hata kodu: {error.digest}
+          </p>
         ) : null}
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <button type="button" onClick={reset} className="site-btn site-btn-primary site-btn-lg">
+          <button
+            type="button"
+            onClick={reset}
+            className="site-btn site-btn-primary site-btn-lg"
+          >
             Yeniden dene
           </button>
           <Link href="/" className="site-btn site-btn-secondary site-btn-lg">

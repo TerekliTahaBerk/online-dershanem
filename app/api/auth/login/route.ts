@@ -106,6 +106,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 
+  if (!user.inviteAcceptedAt) {
+    await logAudit({
+      actorUserId: user.id,
+      entityType: "User",
+      entityId: user.id,
+      action: "auth.login_invite_pending",
+      summary: "Davet tamamlanmadan giriş denemesi",
+      payload: { ip },
+    });
+    return NextResponse.json(
+      { error: "Bu hesap için davet tamamlanmamış. Size gelen bağlantıyla parolanızı belirleyin." },
+      { status: 403 },
+    );
+  }
+
   /*
    * Askıya alınmış hesap kontrolü BİLEREK parola doğrulamasından SONRA.
    * Önce yapılsaydı, saldırgan parolayı bilmeden "bu hesap askıda" bilgisini

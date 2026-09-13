@@ -12,8 +12,8 @@ import { postAuthenticationPath } from "@/lib/auth/products";
 /**
  * Parola değiştirme.
  *
- * Admin geçici parola verdiği için ilk giriş buradan geçer (`mustChangePassword`).
- * Kullanıcı sonradan da kendi isteğiyle değiştirebilir.
+ * Kullanıcı giriş yaptıktan sonra kendi isteğiyle parolasını değiştirebilir.
+ * (İlk aktivasyon artık davet bağlantısındaki ayrı akıştan yapılır.)
  *
  * Başarılı değişimde kullanıcının DİĞER tüm oturumları iptal edilir: geçici
  * parola WhatsApp/telefon üzerinden gittiği için başkasının eline geçmiş
@@ -101,6 +101,7 @@ export async function POST(request: Request) {
       mustChangePassword: false,
       failedAttempts: 0,
       lockedUntil: null,
+      passwordChangedAt: new Date(),
     },
   });
 

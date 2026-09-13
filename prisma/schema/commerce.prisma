@@ -1,0 +1,469 @@
+enum PurchaseStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum IntakeStatus {
+  NEW
+  REVIEWING
+  CONTACTED
+  ENROLLED
+  ARCHIVED
+}
+
+enum PurchaseEventType {
+  FORM_SUBMITTED
+  PAYMENT_LINK_OPENED
+  CALLBACK_RECEIVED
+  PAYMENT_CONFIRMED
+  PAYMENT_FAILED
+}
+
+enum PackageType {
+  COURSE
+  EXAM
+}
+
+enum OdkOrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum OdOnboardingState {
+  PAID
+  CONTACT_PENDING
+  CONTACTED
+  ACCOUNT_READY
+  PARENT_LINKED
+  PLACEMENT_PENDING
+  ALTERNATE_SLOT_OFFERED
+  ALTERNATE_SLOT_ACCEPTED
+  WAITLISTED
+  NO_SLOT_REFUND_PENDING
+  GROUP_ASSIGNED
+  FIRST_LESSON_SCHEDULED
+  ACTIVE
+  MANUAL_REVIEW
+  BLOCKED
+  REFUND_PENDING
+  CANCELED
+}
+
+enum OdOnboardingFlowType {
+  NEW_STUDENT
+  EXISTING_STUDENT
+}
+
+enum OdkPaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum OdkPaymentProvider {
+  MANUAL
+  IYZICO
+  BANK_TRANSFER
+  PAYTR
+}
+
+enum OdkProvisioningStatus {
+  PENDING
+  RUNNING
+  RETRY_PENDING
+  SUCCEEDED
+}
+
+enum OdProvisioningStatus {
+  PENDING
+  RUNNING
+  RETRY_PENDING
+  SUCCEEDED
+  MANUAL_REVIEW
+}
+
+/**
+ * Sipariş satırındaki ticari ürün.
+ * OK (Online Koçum) siparişleri `OdOrder` üzerinden yürür — aylık faturalama
+ * ve aynı PayTR prefix'i. Eşleme `lib/commerce/product-mapping.ts` içindedir;
+ * bu enum'a yeni değer eklenirse orası derleme hatası verir.
+ */
+enum CommerceProduct {
+  OD
+  OK
+  ODK
+}
+
+enum OrderLineFulfillmentStatus {
+  PENDING
+  RUNNING
+  RETRY_PENDING
+  SUCCEEDED
+  MANUAL_REVIEW
+  REVOKED
+}
+
+enum OrderLineRefundStatus {
+  NONE
+  PARTIAL
+  FULL
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+enum CouponService {
+  OD
+  ODK
+  ALL
+}
+
+model LeadSubmission {
+  id           String       @id @default(cuid())
+  fullName     String
+  phone        String
+  classLevel   String
+  examType     String
+  targetGoal   String
+  currentNet   String
+  parentPhone  String?
+  kvkkConsent  Boolean
+  source       String
+  intakeStatus IntakeStatus @default(NEW)
+  adminNotes   String?
+  taskLabel    String?
+  nextActionAt DateTime?    @db.Timestamptz(3)
+  submittedAt  DateTime     @db.Timestamptz(3)
+  createdAt    DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime     @updatedAt @db.Timestamptz(3)
+
+  @@index([intakeStatus, submittedAt])
+}
+
+model PurchaseIntent {
+  id               String          @id @default(cuid())
+  source           String
+  packageName      String
+  paymentLink      String?
+  studentFullName  String
+  studentPhone     String
+  studentEmail     String
+  schoolName       String
+  city             String
+  district         String
+  classLevel       String
+  department       String?
+  examType         String
+  targetSchool     String?
+  targetRanking    String
+  currentLevel     String
+  currentNet       String
+  weakLessons      String
+  strongLessons    String?
+  needType         String
+  studyStatus      String
+  weeklyStudyHours String
+  parentFullName   String?
+  parentPhone      String?
+  parentEmail      String?
+  notes            String?
+  kvkkConsent      Boolean
+  paymentConsent   Boolean
+  status           PurchaseStatus  @default(PENDING)
+  intakeStatus     IntakeStatus    @default(NEW)
+  adminNotes       String?
+  taskLabel        String?
+  nextActionAt     DateTime?       @db.Timestamptz(3)
+  submittedAt      DateTime        @db.Timestamptz(3)
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(3)
+  events           PurchaseEvent[]
+
+  @@index([intakeStatus, submittedAt])
+}
+
+model PurchaseEvent {
+  id                String            @id @default(cuid())
+  purchaseIntentId  String
+  eventType         PurchaseEventType
+  status            PurchaseStatus
+  source            String
+  packageName       String
+  paymentLink       String?
+  provider          String?
+  providerReference String?
+  payload           Json?
+  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
+  purchaseIntent    PurchaseIntent    @relation(fields: [purchaseIntentId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseIntentId, createdAt])
+}
+
+model Package {
+  id          String      @id @default(cuid())
+  name        String
+  type        PackageType @default(COURSE)
+  description String?
+  price       Int
+  paytrLink   String?
+  lessonCount Int
+  subjects    String
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
+  odOrders    OdOrder[]
+
+  @@index([isActive])
+  @@index([type, isActive])
+}
+
+model OdkOrder {
+  id                   String                @id @default(cuid())
+  packageId            String                @map("package_id")
+  status               OdkOrderStatus        @default(PENDING)
+  subtotalCents        Int                   @map("subtotal_cents")
+  discountCents        Int                   @default(0) @map("discount_cents")
+  totalCents           Int                   @map("total_cents")
+  buyerInfo            Json?                 @map("buyer_info")
+  contractSnapshot     Json                  @default("{}") @map("contract_snapshot")
+  studentUserId        String?               @map("student_user_id")
+  provisioningStatus   OdkProvisioningStatus @default(PENDING) @map("provisioning_status")
+  provisioningAttempts Int                   @default(0) @map("provisioning_attempts")
+  provisioningError    String?               @map("provisioning_error")
+  provisionedAt        DateTime?             @map("provisioned_at") @db.Timestamptz(3)
+  createdAt            DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime              @updatedAt @map("updated_at") @db.Timestamptz(3)
+  package              OdkPackage            @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  payments             OdkPayment[]
+  student              User?                 @relation("OdkOrderStudent", fields: [studentUserId], references: [id], onDelete: SetNull)
+  entitlement          OdkEntitlement?
+  lines                CommerceOrderLine[]
+
+  @@index([status, createdAt])
+  @@index([provisioningStatus, updatedAt])
+  @@index([studentUserId, createdAt])
+  @@map("odk_orders")
+}
+
+model OdkEntitlement {
+  id               String             @id @default(cuid())
+  orderId          String?            @unique @map("order_id")
+  orderLineId      String?            @unique @map("order_line_id")
+  userId           String             @map("user_id")
+  packageId        String             @map("package_id")
+  startsAt         DateTime           @default(now()) @map("starts_at") @db.Timestamptz(3)
+  expiresAt        DateTime?          @map("expires_at") @db.Timestamptz(3)
+  revokedAt        DateTime?          @map("revoked_at") @db.Timestamptz(3)
+  contractSnapshot Json               @default("{}") @map("contract_snapshot")
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  order            OdkOrder?          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderLine        CommerceOrderLine? @relation(fields: [orderLineId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package          OdkPackage         @relation(fields: [packageId], references: [id], onDelete: Restrict)
+
+  @@index([userId, revokedAt, expiresAt])
+  @@index([packageId])
+  @@map("odk_entitlements")
+}
+
+model OdkPayment {
+  id            String             @id @default(cuid())
+  orderId       String             @map("order_id")
+  provider      OdkPaymentProvider @default(MANUAL)
+  providerRef   String?            @map("provider_ref")
+  status        OdkPaymentStatus   @default(PENDING)
+  amountCents   Int                @map("amount_cents")
+  paidAt        DateTime?          @map("paid_at") @db.Timestamptz(3)
+  failureReason String?            @map("failure_reason")
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  order         OdkOrder           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@map("odk_payments")
+}
+
+model OdOrder {
+  id                   String               @id @default(cuid())
+  packageId            String?              @map("package_id")
+  packageName          String               @map("package_name")
+  category             String?
+  subject              String?
+  status               OdkOrderStatus       @default(PENDING)
+  subtotalCents        Int                  @map("subtotal_cents")
+  discountCents        Int                  @default(0) @map("discount_cents")
+  totalCents           Int                  @map("total_cents")
+  buyerInfo            Json?                @map("buyer_info")
+  intentId             String?              @map("intent_id")
+  userId               String?              @map("user_id")
+  provisioningStatus   OdProvisioningStatus @default(PENDING) @map("provisioning_status")
+  provisioningAttempts Int                  @default(0) @map("provisioning_attempts")
+  provisioningError    String?              @map("provisioning_error")
+  provisionedAt        DateTime?            @map("provisioned_at") @db.Timestamptz(3)
+  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  package              Package?             @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  payments             OdPayment[]
+  user                 User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  onboarding           OdOnboarding?
+  sourcedMemberships   ProductMembership[]
+  lines                CommerceOrderLine[]
+
+  @@index([status, createdAt])
+  @@index([intentId])
+  @@index([userId, createdAt])
+  @@index([provisioningStatus, updatedAt])
+  @@map("od_orders")
+}
+
+/// Immutable commercial facts captured when checkout is created. Operational
+/// fulfillment/refund columns may advance, but snapshot and money columns are
+/// protected from mutation by database triggers.
+model CommerceOrderLine {
+  id                       String                     @id @default(cuid())
+  odOrderId                String?                    @map("od_order_id")
+  odkOrderId               String?                    @map("odk_order_id")
+  position                 Int
+  product                  CommerceProduct
+  productId                String?                    @map("product_id")
+  sku                      String
+  productName              String                     @map("product_name")
+  productSnapshot          Json                       @map("product_snapshot")
+  quantity                 Int
+  unitPriceCents           Int                        @map("unit_price_cents")
+  subtotalCents            Int                        @map("subtotal_cents")
+  discountCents            Int                        @default(0) @map("discount_cents")
+  taxCents                 Int                        @default(0) @map("tax_cents")
+  totalCents               Int                        @map("total_cents")
+  fulfillmentOwnerKey      String                     @map("fulfillment_owner_key")
+  fulfillmentOwnerSnapshot Json                       @map("fulfillment_owner_snapshot")
+  fulfillmentOwnerUserId   String?                    @map("fulfillment_owner_user_id")
+  fulfillmentStatus        OrderLineFulfillmentStatus @default(PENDING) @map("fulfillment_status")
+  fulfillmentAttempts      Int                        @default(0) @map("fulfillment_attempts")
+  fulfillmentError         String?                    @map("fulfillment_error")
+  fulfilledAt              DateTime?                  @map("fulfilled_at") @db.Timestamptz(3)
+  refundedQuantity         Int                        @default(0) @map("refunded_quantity")
+  refundedCents            Int                        @default(0) @map("refunded_cents")
+  refundStatus             OrderLineRefundStatus      @default(NONE) @map("refund_status")
+  createdAt                DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  odOrder                  OdOrder?                   @relation(fields: [odOrderId], references: [id], onDelete: Cascade)
+  odkOrder                 OdkOrder?                  @relation(fields: [odkOrderId], references: [id], onDelete: Cascade)
+  odkEntitlement           OdkEntitlement?
+
+  @@unique([odOrderId, position])
+  @@unique([odkOrderId, position])
+  @@index([fulfillmentStatus, updatedAt])
+  @@index([fulfillmentOwnerKey, product])
+  @@map("commerce_order_lines")
+}
+
+model OdOnboarding {
+  id               String                   @id @default(cuid())
+  orderId          String                   @unique @map("order_id")
+  state            OdOnboardingState        @default(PAID)
+  flowType         OdOnboardingFlowType     @default(NEW_STUDENT) @map("flow_type")
+  ownerId          String?                  @map("owner_id")
+  dueAt            DateTime?                @map("due_at") @db.Timestamptz(3)
+  blockerReason    String?                  @map("blocker_reason")
+  blockedFromState OdOnboardingState?       @map("blocked_from_state")
+  stateEnteredAt   DateTime                 @default(now()) @map("state_entered_at") @db.Timestamptz(3)
+  activatedAt      DateTime?                @map("activated_at") @db.Timestamptz(3)
+  canceledAt       DateTime?                @map("canceled_at") @db.Timestamptz(3)
+  version          Int                      @default(1)
+  createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+  order            OdOrder                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  owner            User?                    @relation("OdOnboardingOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  transitions      OdOnboardingTransition[]
+
+  @@index([state, dueAt])
+  @@index([ownerId, state, dueAt])
+  @@map("od_onboardings")
+}
+
+model OdOnboardingTransition {
+  id           String             @id @default(cuid())
+  onboardingId String             @map("onboarding_id")
+  fromState    OdOnboardingState? @map("from_state")
+  toState      OdOnboardingState  @map("to_state")
+  actorUserId  String?            @map("actor_user_id")
+  actorType    AuditActorType     @default(SYSTEM) @map("actor_type")
+  note         String?
+  metadata     Json?
+  occurredAt   DateTime           @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  onboarding   OdOnboarding       @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+  actor        User?              @relation("OdOnboardingTransitionActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([onboardingId, occurredAt])
+  @@index([actorUserId, occurredAt])
+  @@map("od_onboarding_transitions")
+}
+
+model OdPayment {
+  id            String             @id @default(cuid())
+  orderId       String             @map("order_id")
+  provider      OdkPaymentProvider @default(PAYTR)
+  providerRef   String?            @map("provider_ref")
+  status        OdkPaymentStatus   @default(PENDING)
+  amountCents   Int                @map("amount_cents")
+  paidAt        DateTime?          @map("paid_at") @db.Timestamptz(3)
+  failureReason String?            @map("failure_reason")
+  createdAt     DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  order         OdOrder            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@map("od_payments")
+}
+
+model Coupon {
+  id               String             @id @default(cuid())
+  code             String             @unique
+  description      String?
+  type             CouponType         @default(PERCENT)
+  service          CouponService      @default(ALL)
+  value            Int
+  minOrderCents    Int                @default(0) @map("min_order_cents")
+  maxDiscountCents Int                @default(0) @map("max_discount_cents")
+  usageLimit       Int                @default(0) @map("usage_limit")
+  perUserLimit     Int                @default(1) @map("per_user_limit")
+  startsAt         DateTime?          @map("starts_at") @db.Timestamptz(3)
+  expiresAt        DateTime?          @map("expires_at") @db.Timestamptz(3)
+  isActive         Boolean            @default(true) @map("is_active")
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  redemptions      CouponRedemption[]
+
+  @@index([isActive, expiresAt])
+  @@map("coupons")
+}
+
+model CouponRedemption {
+  id            String   @id @default(cuid())
+  couponId      String   @map("coupon_id")
+  customerKey   String   @map("customer_key")
+  orderService  String   @map("order_service")
+  orderId       String   @map("order_id")
+  discountCents Int      @map("discount_cents")
+  redeemedAt    DateTime @default(now()) @map("redeemed_at") @db.Timestamptz(3)
+  coupon        Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([customerKey])
+  @@index([orderService, orderId])
+  @@map("coupon_redemptions")
+}
+
+// ============================================================
+// STUDENT SUCCESS LAYER — üç ürün arası birleşik öğrenci başarı sistemi
+// ============================================================

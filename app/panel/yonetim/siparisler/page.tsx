@@ -26,8 +26,15 @@ export const dynamic = "force-dynamic";
  * kuyruğu; burası tasarımın sipariş listesi ve sipariş detayına açılan yol.
  */
 
-const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" });
-const LIRA = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
+const DATE = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "long",
+});
+const LIRA = new Intl.NumberFormat("tr-TR", {
+  style: "currency",
+  currency: "TRY",
+  maximumFractionDigits: 0,
+});
 const PAGE_SIZE = 30;
 
 const PAYMENT_LABEL = {
@@ -52,7 +59,9 @@ export default async function AdminOrdersPage({
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
-  const filtre = ["sorun", "ay"].includes(sp.filtre ?? "") ? (sp.filtre ?? "") : "";
+  const filtre = ["sorun", "ay"].includes(sp.filtre ?? "")
+    ? (sp.filtre ?? "")
+    : "";
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
 
   const monthStart = istanbulMonthStart(new Date());
@@ -91,7 +100,11 @@ export default async function AdminOrdersPage({
   const chip = (value: string, label: string) => (
     <Link
       key={value || "all"}
-      href={value ? `/panel/yonetim/siparisler?filtre=${value}` : "/panel/yonetim/siparisler"}
+      href={
+        value
+          ? `/panel/yonetim/siparisler?filtre=${value}`
+          : "/panel/yonetim/siparisler"
+      }
       aria-current={filtre === value ? "true" : undefined}
       className={`rounded-lg border px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
         filtre === value
@@ -124,7 +137,11 @@ export default async function AdminOrdersPage({
 
         {orders.length === 0 ? (
           <PanelEmpty
-            title={filtre === "sorun" ? "Erişim sorunu olan sipariş yok." : "Sipariş yok."}
+            title={
+              filtre === "sorun"
+                ? "Erişim sorunu olan sipariş yok."
+                : "Sipariş yok."
+            }
             body={
               filtre === "sorun"
                 ? "Ödenmiş bütün siparişlerin ürün erişimi açılmış görünüyor."
@@ -135,11 +152,20 @@ export default async function AdminOrdersPage({
           <div className="mt-4">
             <PanelTable
               caption="Siparişler · ödeme ve erişim durumu"
-              columns={["Sipariş", "Öğrenci", "Ürünler", "Ödeme", "Erişim açma", "Tarih", ""]}
+              columns={[
+                "Sipariş",
+                "Öğrenci",
+                "Ürünler",
+                "Ödeme",
+                "Erişim açma",
+                "Tarih",
+                "",
+              ]}
             >
               {orders.map((order) => {
                 const payment = PAYMENT_LABEL[order.status];
-                const provisioning = PROVISIONING_LABEL[order.provisioningStatus];
+                const provisioning =
+                  PROVISIONING_LABEL[order.provisioningStatus];
                 return (
                   <PanelTableRow key={order.id}>
                     <PanelTableCell>
@@ -154,22 +180,30 @@ export default async function AdminOrdersPage({
                       </span>
                     </PanelTableCell>
                     <PanelTableCell>
-                      {order.user?.fullName || order.user?.email || "Bağlanmadı"}
+                      {order.user?.fullName ||
+                        order.user?.email ||
+                        "Bağlanmadı"}
                     </PanelTableCell>
                     <PanelTableCell>
                       {order.lines.length
                         ? order.lines.map((l) => l.productName).join(" + ")
                         : "—"}
                     </PanelTableCell>
-                    <PanelTableCell tone={payment.tone}>{payment.label}</PanelTableCell>
-                    <PanelTableCell tone={provisioning.tone}>{provisioning.label}</PanelTableCell>
-                    <PanelTableCell>{DATE.format(order.createdAt)}</PanelTableCell>
+                    <PanelTableCell tone={payment.tone}>
+                      {payment.label}
+                    </PanelTableCell>
+                    <PanelTableCell tone={provisioning.tone}>
+                      {provisioning.label}
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      {DATE.format(order.createdAt)}
+                    </PanelTableCell>
                     <PanelTableCell>
                       <Link
                         href={`/panel/yonetim/siparisler/${order.id}`}
                         className="text-[13px] font-semibold text-dc-brand hover:underline"
                       >
-                        Aç
+                        Siparişi Aç
                       </Link>
                     </PanelTableCell>
                   </PanelTableRow>
@@ -179,7 +213,8 @@ export default async function AdminOrdersPage({
 
             <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-dc-ink-faint">
               <span>
-                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total}
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)}{" "}
+                / {total}
               </span>
               {pageCount > 1 ? (
                 <nav className="flex items-center gap-2" aria-label="Sayfalama">
@@ -210,8 +245,11 @@ export default async function AdminOrdersPage({
 
         <p className="mt-5 text-[12.5px] text-dc-ink-faint">
           Onboarding SLA'sı, cron sağlığı, talepler ve e-posta kuyruğu için{" "}
-          <Link href="/panel/yonetim/isler" className="font-semibold text-dc-brand hover:underline">
-            operasyon kuyruğuna
+          <Link
+            href="/panel/yonetim/isler"
+            className="font-semibold text-dc-brand hover:underline"
+          >
+            işler / provisioning ekranına
           </Link>{" "}
           bak.
         </p>

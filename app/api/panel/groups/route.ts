@@ -4,13 +4,14 @@ import { prisma } from "@/lib/prisma";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
+import { DEFAULT_GROUP_CAPACITY } from "@/lib/panel-group-capacity";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
   subject: z.string().trim().min(2).max(80),
   level: z.string().trim().max(40).optional(),
   teacherId: z.string().min(1),
-  studentIds: z.array(z.string().min(1)).max(4).default([]),
+  studentIds: z.array(z.string().min(1)).max(DEFAULT_GROUP_CAPACITY).default([]),
 });
 
 export async function POST(request: Request) {
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
       subject: parsed.data.subject,
       level: parsed.data.level || null,
       teacherId: teacher.id,
-      capacity: 4,
+      capacity: DEFAULT_GROUP_CAPACITY,
       enrollments: { create: studentIds.map((studentId) => ({ studentId })) },
     },
   });

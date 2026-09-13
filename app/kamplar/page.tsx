@@ -29,11 +29,31 @@ export const metadata = buildMarketingMetadata({
 });
 
 const howItWorks = [
-  { icon: Target, title: "Seviye analizi", body: "Kampın konusunda öğrencinin nerede olduğunu belirleriz." },
-  { icon: ClipboardList, title: "Kişisel plan", body: "Kalan eksiklere göre kısa, hedefli bir çalışma planı çıkar." },
-  { icon: Calendar, title: "Günlük takip", body: "Çalışma ritmi gün gün takip edilir ve düzeni korumaya yardımcı olunur." },
-  { icon: MessageSquare, title: "Öğretmen görüşmesi", body: "Canlı derslerde soru-cevap ve birlikte çözüm." },
-  { icon: LineChart, title: "Raporlama", body: "Kamp sonunda ne toparlandığı özetlenir." },
+  {
+    icon: Target,
+    title: "Seviye analizi",
+    body: "Kampın konusunda öğrencinin nerede olduğunu belirleriz.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Kişisel plan",
+    body: "Kalan eksiklere göre kısa, hedefli bir çalışma planı çıkar.",
+  },
+  {
+    icon: Calendar,
+    title: "Günlük takip",
+    body: "Çalışma ritmi gün gün takip edilir ve düzeni korumaya yardımcı olunur.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Öğretmen görüşmesi",
+    body: "Canlı derslerde soru-cevap ve birlikte çözüm.",
+  },
+  {
+    icon: LineChart,
+    title: "Raporlama",
+    body: "Kamp sonunda ne toparlandığı özetlenir.",
+  },
 ];
 
 const campFaqs = [
@@ -78,7 +98,8 @@ export default function CampsPage() {
               Kısa sürede matematik düzeni kurmak isteyenler için kamplar.
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">
-              LGS ve YKS matematiğinde belirli hedefe odaklanan kısa süreli çalışma dönemleri.
+              LGS ve YKS matematiğinde belirli hedefe odaklanan kısa süreli
+              çalışma dönemleri.
             </p>
             <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4 text-left">
               <Clock3
@@ -87,16 +108,25 @@ export default function CampsPage() {
                 aria-hidden="true"
               />
               <p className="text-[13.5px] leading-6 text-[var(--site-body)]">
-                Kamplar şu anda ön kayıt aşamasında. Kesin başlangıç tarihi ve ücret bilgisi
-                program netleştiğinde paylaşılacak; bu aşamada ödeme alınmıyor.
+                Kamplar şu anda ön kayıt aşamasında. Kesin başlangıç tarihi ve
+                ücret bilgisi program netleştiğinde paylaşılacak; bu aşamada
+                ödeme alınmıyor.
               </p>
             </div>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/iletisim" className="site-btn site-btn-primary site-btn-lg">
+              <Link
+                href="/iletisim"
+                className="site-btn site-btn-primary site-btn-lg"
+              >
                 Ön kayıt bilgisi al
                 <ArrowRight size={17} aria-hidden="true" />
               </Link>
-              <a href={waHref} target="_blank" rel="noopener noreferrer" className="site-btn site-btn-secondary site-btn-lg">
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="site-btn site-btn-secondary site-btn-lg"
+              >
                 WhatsApp&apos;tan sor
               </a>
             </div>
@@ -129,25 +159,43 @@ export default function CampsPage() {
                   <h2 className="mt-4 font-display text-[22px] leading-[1.15] tracking-[-0.01em] text-[var(--site-ink)]">
                     {camp.name}
                   </h2>
-                  <p className="mt-3 flex-1 text-[14.5px] leading-6 text-[var(--site-body)]">{camp.goal}</p>
+                  <p className="mt-3 flex-1 text-[14.5px] leading-6 text-[var(--site-body)]">
+                    {camp.goal}
+                  </p>
                   <dl className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-[var(--site-line)] pt-4 text-[13px] text-[var(--site-body)]">
                     <div className="flex items-center gap-1.5">
-                      <Calendar size={14} className="text-[var(--brand-orange)]" aria-hidden="true" />
+                      <Calendar
+                        size={14}
+                        className="text-[var(--brand-orange)]"
+                        aria-hidden="true"
+                      />
                       <dt className="sr-only">Süre</dt>
                       <dd>{camp.durationLabel}</dd>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Video size={14} className="text-[var(--brand-orange)]" aria-hidden="true" />
+                      <Video
+                        size={14}
+                        className="text-[var(--brand-orange)]"
+                        aria-hidden="true"
+                      />
                       <dt className="sr-only">Ders</dt>
                       <dd>{camp.lessonsLabel}</dd>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <GraduationCap size={14} className="text-[var(--brand-orange)]" aria-hidden="true" />
+                      <GraduationCap
+                        size={14}
+                        className="text-[var(--brand-orange)]"
+                        aria-hidden="true"
+                      />
                       <dt className="sr-only">Seviye</dt>
                       <dd>{camp.levelLabel}</dd>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Users size={14} className="text-[var(--brand-orange)]" aria-hidden="true" />
+                      <Users
+                        size={14}
+                        className="text-[var(--brand-orange)]"
+                        aria-hidden="true"
+                      />
                       <dt className="sr-only">Kontenjan</dt>
                       <dd>En fazla {CAMP_MAX_STUDENTS} kişi</dd>
                     </div>
@@ -175,15 +223,18 @@ export default function CampsPage() {
                     href="/iletisim"
                     className="mt-6 inline-flex items-center gap-2 text-[14.5px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
                   >
-                    {camp.featured ? "Ön kayıt bilgisi al" : "Duyurulunca haber ver"}
+                    {camp.featured
+                      ? "Ön kayıt bilgisi al"
+                      : "Duyurulunca haber ver"}
                     <ArrowRight size={15} aria-hidden="true" />
                   </Link>
                 </article>
               ))}
             </div>
             <p className="mt-8 text-center text-[13.5px] text-[var(--site-muted)]">
-              Kamplar henüz satışta değildir. Tarih, ücret ve kesin program açıklandıktan sonra
-              ön kayıt talebi bırakanlarla iletişime geçilir.
+              Kamplar henüz satışta değildir. Tarih, ücret ve kesin program
+              açıklandıktan sonra ön kayıt talebi bırakanlarla iletişime
+              geçilir.
             </p>
           </div>
         </section>
@@ -198,12 +249,19 @@ export default function CampsPage() {
               {howItWorks.map((s) => {
                 const Icon = s.icon;
                 return (
-                  <div key={s.title} className="rounded-[22px] border border-[var(--site-line)] bg-white p-6">
+                  <div
+                    key={s.title}
+                    className="rounded-[22px] border border-[var(--site-line)] bg-white p-6"
+                  >
                     <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
                       <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
                     </span>
-                    <h3 className="mt-4 text-[15.5px] font-bold text-[var(--site-ink)]">{s.title}</h3>
-                    <p className="mt-2 text-[13.5px] leading-6 text-[var(--site-body)]">{s.body}</p>
+                    <h3 className="mt-4 text-[15.5px] font-bold text-[var(--site-ink)]">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2 text-[13.5px] leading-6 text-[var(--site-body)]">
+                      {s.body}
+                    </p>
                   </div>
                 );
               })}

@@ -1,15 +1,25 @@
+import Link from "next/link";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { getStudentHomeData } from "@/lib/panel/student-home-server";
 import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
+import { buildStudentHomeActionPlan } from "@/lib/panel/student-home-actions";
+import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelEmptyState } from "@/components/panel/empty-state";
 import { NoProductAccess } from "@/components/panel/no-product-access";
-import { TodayCard, type TodayRow } from "@/components/panel/student/today-card";
+import {
+  PanelPageHeader,
+  PanelEmpty,
+  PanelCard,
+  PanelAttentionCard,
+  PanelActionRow,
+  PanelMetric,
+} from "@/components/panel/ui";
+import { TrackedPanelLink } from "@/components/panel/tracked-panel-link";
+import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import {
   WeeklyPlanCard,
   LatestExamCard,
   NetTrendCard,
-  DinoInsightCard,
   type PlanTaskRow,
   type TrendPoint,
 } from "@/components/panel/student/home-cards";
@@ -27,8 +37,11 @@ const TR_DATE = new Intl.DateTimeFormat("tr-TR", {
   day: "numeric",
   month: "long",
 });
-const TR_TIME = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, hour: "2-digit", minute: "2-digit" });
-const TR_SHORT = new Intl.DateTimeFormat("tr-TR", { timeZone: ISTANBUL_TIME_ZONE, day: "numeric", month: "long" });
+const TR_SHORT = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+});
 
 function greeting(now: Date): string {
   const hour = Number(
@@ -57,18 +70,20 @@ export default async function StudentHomePage() {
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Ana Sayfa"
+      pageTitle="Bugün"
     >
       {children}
     </PanelShell>
   );
 
-  if (data.products.length === 0) return shell(<NoProductAccess role="STUDENT" />);
+  if (data.products.length === 0)
+    return shell(<NoProductAccess role="STUDENT" />);
   if (!data.profile) {
     return shell(
-      <PanelEmptyState
+      <PanelEmpty
         title="Profiliniz hazırlanıyor."
         body="Yönetim ekibi öğrenci profilinizi tamamladığında dersleriniz burada görünecek."
+        className="mt-0 border-dashed px-6 py-14 text-center"
       />,
     );
   }
@@ -78,23 +93,13 @@ export default async function StudentHomePage() {
   const odk = data.productData.ODK;
   const latest = odk?.latestExam ?? null;
   const plan = ok?.weeklyPlan ?? null;
-
-  const rows: TodayRow[] = [
-    ...(od?.todayLessons ?? []).map((lesson) => ({
-      id: `lesson-${lesson.id}`,
-      when: TR_TIME.format(lesson.startsAt),
-      title: `${lesson.title} · Canlı ders`,
-      meta: [lesson.teacherName, lesson.groupName].filter(Boolean).join(" · "),
-      action: { label: "Derse katıl", href: "/panel/ogrenci/takvim", primary: true },
-    })),
-    ...(ok?.todayTasks ?? []).map((task) => ({
-      id: `task-${task.id}`,
-      when: TR_TIME.format(task.scheduledFor),
-      title: `${task.title} · ${task.durationMinutes} dk`,
-      meta: "Haftalık plan görevi",
-      action: { label: "Görevi aç", href: "/panel/ogrenci/plan" },
-    })),
-  ];
+  const actionPlan = buildStudentHomeActionPlan({
+    now,
+    productData: data.productData,
+    products: data.products,
+  });
+  const primaryAction = actionPlan.nowAction;
+  const nextActions = actionPlan.nextActions;
 
   const planTasks: PlanTaskRow[] = (plan?.tasks ?? []).map((task) => ({
     id: task.id,
@@ -115,23 +120,216 @@ export default async function StudentHomePage() {
       : "";
 
   const summaryParts = [
-    od?.todayLessons.length ? `bugün ${od.todayLessons.length} dersin var` : null,
-    plan?.total ? `haftalık planında ${plan.total - plan.done} görev kaldı` : null,
-    latest ? `son denemen ${TR_SHORT.format(latest.takenAt)}` : null,
+    actionPlan.allActions.length
+      ? `bugün ${Math.min(3, actionPlan.allActions.length)} öncelikli adımın hazır`
+      : "bugün için bekleyen bir çalışma görünmüyor",
+    plan?.total
+      ? `planında ${Math.max(0, plan.total - plan.done)} görev kaldı`
+      : null,
+    od?.todayLessons.length
+      ? `${od.todayLessons.length} canlı ders görünümü var`
+      : null,
   ].filter(Boolean);
+
+  if (primaryAction) {
+    await recordPanelProductEvent(
+      {
+        name: "student_next_action_viewed",
+        properties: {
+          product: primaryAction.product,
+          actionKind: primaryAction.actionKind,
+          reasonCode: primaryAction.reasonCode,
+          ageBand: primaryAction.ageBand,
+          evidenceBand: "NA",
+          role: "STUDENT",
+        },
+      },
+      session.role,
+    );
+  }
 
   return shell(
     <div className="max-w-[1040px]">
-      <h1 className="text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink sm:text-[28px]">
-        {greeting(now)}, {session.fullName?.split(" ")[0] || "hoş geldin"}.
-      </h1>
-      {summaryParts.length ? (
-        <p className="mt-2 text-[15.5px] leading-[1.6] text-dc-ink-muted">
-          {summaryParts.join(" · ")}.
-        </p>
+      <PanelPageHeader
+        title={`${greeting(now)}, ${session.fullName?.split(" ")[0] || "hoş geldin"}.`}
+        description={
+          summaryParts.length ? `${summaryParts.join(" · ")}.` : undefined
+        }
+      />
+
+      {primaryAction ? (
+        <PanelAttentionCard
+          className="mt-6"
+          tone="warning"
+          title={`Şimdi · ${primaryAction.title}`}
+          body={`${primaryAction.description ? `${primaryAction.description} ` : ""}${primaryAction.reason}`}
+          action={
+            <TrackedPanelLink
+              href={primaryAction.href}
+              className="panel-quick-action panel-quick-action-primary inline-flex"
+              event={{
+                name: "student_next_action_clicked",
+                properties: {
+                  product: primaryAction.product,
+                  actionKind: primaryAction.actionKind,
+                  reasonCode: primaryAction.reasonCode,
+                  ageBand: primaryAction.ageBand,
+                  evidenceBand: "NA",
+                  role: "STUDENT",
+                },
+              }}
+            >
+              {primaryAction.ctaLabel}
+            </TrackedPanelLink>
+          }
+        />
+      ) : (
+        <PanelAttentionCard
+          className="mt-6"
+          tone="info"
+          title="Şimdi · Bekleyen bir çalışma görünmüyor"
+          body="Haftana göz atabilir veya gelişimini inceleyebilirsin."
+          action={
+            <div className="flex flex-wrap gap-2">
+              {data.products.includes("OK") ? (
+                <Link href="/panel/ogrenci/plan" className="panel-quick-action">
+                  Haftayı Gör
+                </Link>
+              ) : null}
+              {data.products.includes("OD") ? (
+                <Link
+                  href="/panel/ogrenci/analiz"
+                  className="panel-quick-action"
+                >
+                  Gidişatıma Bak
+                </Link>
+              ) : null}
+              {data.products.includes("ODK") ? (
+                <Link
+                  href="/panel/odk/ogrenci/denemeler"
+                  className="panel-quick-action"
+                >
+                  Denemelerime Bak
+                </Link>
+              ) : null}
+            </div>
+          }
+        />
+      )}
+      {primaryAction ? (
+        <div className="mt-3">
+          <DinoExplanationAction
+            deterministicReason={primaryAction.reason}
+            questionKey="student_nba_reason"
+          />
+        </div>
       ) : null}
 
-      <TodayCard rows={rows} dateLabel={TR_DATE.format(now)} />
+      {nextActions.length ? (
+        <PanelCard className="mt-5" padded={false}>
+          <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
+            <h2 className="text-sm font-bold text-dc-ink">Sonra</h2>
+          </div>
+          {nextActions.map((action, index) => (
+            <PanelActionRow
+              key={action.id}
+              title={action.title}
+              description={action.reason}
+              status={
+                <span className="text-xs text-dc-ink-faint">
+                  {action.product}
+                </span>
+              }
+              cta={
+                <TrackedPanelLink
+                  href={action.href}
+                  className="panel-quick-action inline-flex"
+                  event={{
+                    name: "student_next_action_clicked",
+                    properties: {
+                      product: action.product,
+                      actionKind: action.actionKind,
+                      reasonCode: action.reasonCode,
+                      ageBand: action.ageBand,
+                      evidenceBand: "NA",
+                      role: "STUDENT",
+                    },
+                  }}
+                >
+                  {action.ctaLabel}
+                </TrackedPanelLink>
+              }
+              last={index === nextActions.length - 1}
+            />
+          ))}
+        </PanelCard>
+      ) : null}
+
+      {data.unifiedToday?.items.length ? (
+        <PanelCard className="mt-5" padded={false}>
+          <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
+            <h2 className="text-sm font-bold text-dc-ink">
+              Bugün — tüm ürünler
+            </h2>
+            <p className="mt-0.5 text-[12.5px] text-dc-ink-faint">
+              Dersler, ödevler, plan görevleri ve denemeler tek listede.
+            </p>
+          </div>
+          {data.unifiedToday.items.slice(0, 8).map((item, index) => (
+            <PanelActionRow
+              key={item.id}
+              title={item.title}
+              description={item.subtitle ?? undefined}
+              status={
+                <span className="text-xs text-dc-ink-faint">
+                  {item.productLabel}
+                  {item.timeLabel ? ` · ${item.timeLabel}` : ""}
+                </span>
+              }
+              cta={
+                item.href ? (
+                  <Link
+                    href={item.href}
+                    className="panel-quick-action inline-flex"
+                  >
+                    Aç
+                  </Link>
+                ) : undefined
+              }
+              last={index === Math.min(data.unifiedToday!.items.length, 8) - 1}
+            />
+          ))}
+        </PanelCard>
+      ) : null}
+
+      <PanelCard className="mt-5" variant="subtle">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-dc-ink">Bu hafta</h2>
+          <span className="text-[12.5px] text-dc-ink-faint">
+            {TR_DATE.format(now)}
+          </span>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <PanelMetric
+            label="Plan tamamlanan"
+            value={plan ? `${plan.done}/${plan.total}` : "—"}
+            tone="info"
+          />
+          <PanelMetric
+            label="Yaklaşan ders"
+            value={
+              (od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now)
+                .length
+            }
+            tone="neutral"
+          />
+          <PanelMetric
+            label="Yaklaşan deneme"
+            value={odk?.upcomingExam ? 1 : 0}
+            tone="warning"
+          />
+        </div>
+      </PanelCard>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         {plan ? (
@@ -150,18 +348,19 @@ export default async function StudentHomePage() {
             title={latest.title}
             dateLabel={TR_SHORT.format(latest.takenAt)}
             subjects={latest.sections}
-            href="/panel/ogrenci/denemeler"
+            href="/panel/odk/ogrenci/denemeler"
           />
         ) : null}
       </div>
 
-      {trend.length >= 2 ? <NetTrendCard points={trend} caption={trendCaption} /> : null}
-
-      <DinoInsightCard insight={null} basis={null} />
+      {trend.length >= 2 ? (
+        <NetTrendCard points={trend} caption={trendCaption} />
+      ) : null}
 
       {odk && !latest ? (
         <p className="mt-5 text-[14px] text-dc-ink-muted">
-          Deneme Kulübü sonuçların girildiğinde net gelişimin ve analiz burada açılır.
+          Deneme Kulübü sonuçların girildiğinde net gelişimin ve analiz burada
+          açılır.
         </p>
       ) : null}
     </div>,
