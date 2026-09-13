@@ -27,10 +27,11 @@ export function CommercePanel(props: CommercePanelProps) {
               </dd>
             </div>
           ))}
-          {!data.memberships.length ? (
-            <EmptyLine text="Aktif ürün üyeliği yok." />
-          ) : null}
         </dl>
+        {/* <dl> yalnız dt/dd grupları içerebilir; boş durum metni dışarıda. */}
+        {!data.memberships.length ? (
+          <EmptyLine text="Aktif ürün üyeliği yok." />
+        ) : null}
       </PanelCard>
 
       <PanelCard>

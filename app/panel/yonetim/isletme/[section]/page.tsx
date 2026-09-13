@@ -1181,6 +1181,7 @@ export default async function BusinessSectionPage({
                   className="rounded-xl border px-3 py-2 text-sm"
                 />
                 <select
+                  aria-label="Ürün"
                   name="productInterest"
                   className="rounded-xl border px-3 py-2 text-sm"
                 >

@@ -343,6 +343,7 @@ export function TeacherAssignmentManager({
           value={groupId}
           onChange={(event) => setGroupId(event.target.value)}
           required
+          aria-label="Grup"
           className="panel-input mt-4"
         >
           <option value="">Grup seçin</option>
@@ -352,7 +353,11 @@ export function TeacherAssignmentManager({
             </option>
           ))}
         </select>
-        <select name="lessonId" className="panel-input mt-2">
+        <select
+          name="lessonId"
+          aria-label="Bağlı ders"
+          className="panel-input mt-2"
+        >
           <option value="">Belirli bir derse bağlı değil</option>
           {groupLessons.map((lesson) => (
             <option key={lesson.id} value={lesson.id}>

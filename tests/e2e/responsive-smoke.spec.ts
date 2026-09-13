@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { hasE2EEnv, panelAccountGroups } from "./env-requirements";
 import { loginAs } from "./helpers/panel-login";
 import { expectNoHorizontalOverflow } from "./helpers/responsive";
 
@@ -71,10 +72,7 @@ const panelEntryRoutes = {
 } as const;
 
 test.describe("panel responsive smoke", () => {
-  test.skip(
-    !Object.values(accounts).every((account) => account.email && account.password),
-    "Panel E2E hesapları tanımlı değil.",
-  );
+  test.skip(!hasE2EEnv(...panelAccountGroups), "Panel E2E hesapları tanımlı değil.");
 
   for (const [role, fixture] of Object.entries(accounts) as Array<
     [keyof typeof accounts, (typeof accounts)[keyof typeof accounts]]

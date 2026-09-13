@@ -62,6 +62,8 @@ export type ParentCalmHome = {
     href: string;
     preview: string | null;
     published: boolean;
+    /** Bu haftanın yayınlanmış özetindeki destek alanı; yoksa null. */
+    supportArea: string | null;
   };
   dinoEnabled: boolean;
 };

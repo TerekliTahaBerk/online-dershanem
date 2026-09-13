@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { accessibilityScan } from "./helpers/axe";
 import { createHmac } from "node:crypto";
+import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 const admin = { email: process.env.PANEL_E2E_ADMIN_EMAIL, password: process.env.PANEL_E2E_ADMIN_PASSWORD };
 const teacher = { email: process.env.PANEL_E2E_TEACHER_EMAIL, password: process.env.PANEL_E2E_TEACHER_PASSWORD };
@@ -13,7 +14,7 @@ async function login(page: Page, account: { email?: string; password?: string })
 }
 test.describe("Instagram CRM ve finans merkezi", () => {
   test.describe.configure({ timeout: 120_000 });
-  test.skip(!admin.email || !admin.password || !teacher.email || !teacher.password, "Panel E2E hesapları tanımlı değil.");
+  test.skip(!hasE2EEnv("adminAccount", "teacherAccount"),"Panel E2E hesapları tanımlı değil.");
   test("admin dashboard, inbox, huni, finans, vergi ve entegrasyon alanlarını açar", async ({ page }) => {
     if (process.env.PANEL_E2E_META_SECRET && process.env.PANEL_E2E_JOB_SECRET) {
       const mid = `e2e-webhook-${Date.now()}`; const raw = JSON.stringify({ object: "instagram", entry: [{ id: "e2e-instagram-account", messaging: [{ sender: { id: "e2e-webhook-user" }, recipient: { id: "e2e-instagram-account" }, timestamp: Date.now(), message: { mid, text: "E2E webhook mesajı" } }] }] });
@@ -74,7 +75,7 @@ test.describe("Instagram CRM ve finans merkezi", () => {
     }
     await page.goto("/panel/yonetim/isletme/vergiler"); await expect(page.getByText("Hesaplanan KDV").first()).toBeVisible();
     await page.goto("/panel/yonetim/isletme/genel-bakis?product=OD"); await expect(page.getByText("Operasyon özeti").first()).toBeVisible();
-    const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const accessibility = await accessibilityScan(page).analyze();
     expect(accessibility.violations).toEqual([]);
     const csv = await page.request.get("/api/admin/business/reports.csv"); expect(csv.status()).toBe(200); expect(csv.headers()["content-type"]).toContain("text/csv");
   });

@@ -228,6 +228,7 @@ export default async function CalendarPage({
           <input type="hidden" name="week" value={week} />
           <select
             name="teacher"
+            aria-label="Öğretmene göre filtrele"
             defaultValue={params.teacher || ""}
             className="panel-input min-w-0 py-2 text-xs sm:min-w-[170px]"
           >
@@ -240,6 +241,7 @@ export default async function CalendarPage({
           </select>
           <select
             name="group"
+            aria-label="Gruba göre filtrele"
             defaultValue={params.group || ""}
             className="panel-input min-w-0 py-2 text-xs sm:min-w-[150px]"
           >

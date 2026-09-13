@@ -37,13 +37,15 @@ export function AcademicPanel(props: AcademicPanelProps) {
         <PanelCardTitle>Ödev geçmişi</PanelCardTitle>
         <div className="mt-3 space-y-2">
           {data.assignmentHistory.length ? (
-            data.assignmentHistory.map((row) => (
-              <PanelTaskRow
-                key={row.id}
-                title={row.title}
-                meta={`${row.groupName} · ${row.status}${row.dueAt ? ` · ${DAY.format(row.dueAt)}` : ""}`}
-              />
-            ))
+            <ul className="space-y-2">
+              {data.assignmentHistory.map((row) => (
+                <PanelTaskRow
+                  key={row.id}
+                  title={row.title}
+                  meta={`${row.groupName} · ${row.status}${row.dueAt ? ` · ${DAY.format(row.dueAt)}` : ""}`}
+                />
+              ))}
+            </ul>
           ) : (
             <EmptyLine text="Ödev kaydı yok." />
           )}

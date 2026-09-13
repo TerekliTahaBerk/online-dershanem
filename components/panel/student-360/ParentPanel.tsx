@@ -46,17 +46,19 @@ export function ParentPanel(props: ParentPanelProps) {
         <PanelCardTitle>Haftalık özetler</PanelCardTitle>
         <div className="mt-3 space-y-2">
           {data.digests.length ? (
-            data.digests.map((digest) => (
-              <PanelTaskRow
-                key={digest.id}
-                title={`${digest.trendBand} · ${digest.supportArea}`}
-                meta={`${DAY.format(digest.weekStart)} · ${digest.status}${
-                  digest.publishedAt
-                    ? ` · yayın ${DAY.format(digest.publishedAt)}`
-                    : ""
-                }`}
-              />
-            ))
+            <ul className="space-y-2">
+              {data.digests.map((digest) => (
+                <PanelTaskRow
+                  key={digest.id}
+                  title={`${digest.trendBand} · ${digest.supportArea}`}
+                  meta={`${DAY.format(digest.weekStart)} · ${digest.status}${
+                    digest.publishedAt
+                      ? ` · yayın ${DAY.format(digest.publishedAt)}`
+                      : ""
+                  }`}
+                />
+              ))}
+            </ul>
           ) : (
             <EmptyLine text="Yayınlanmış veya taslak haftalık özet yok." />
           )}

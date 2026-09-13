@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { hasE2EEnv, panelAccountGroups } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const accounts = [
@@ -23,7 +24,7 @@ async function login(page: Page, email: string, password: string) {
 }
 
 test.describe("çapraz tarayıcı panel kabulü", () => {
-  test.skip(!accounts.every((account) => account.email && account.password), "Panel E2E hesapları tanımlı değil.");
+  test.skip(!hasE2EEnv(...panelAccountGroups),"Panel E2E hesapları tanımlı değil.");
   for (const account of accounts) test(`${account.role} paneli açılır ve yatay taşmaz`, async ({ page }) => {
     await login(page, account.email!, account.password!);
     await page.waitForURL(new RegExp(`${account.path}$`));

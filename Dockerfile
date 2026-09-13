@@ -7,6 +7,10 @@ WORKDIR /app
 
 FROM base AS dependencies
 COPY package.json package-lock.json ./
+# `postinstall` Prisma Client'ı üretir; şema ve config'i `npm ci`'dan önce kopyala.
+COPY prisma.config.ts ./
+COPY lib/prisma-env.ts ./lib/prisma-env.ts
+COPY prisma/schema ./prisma/schema
 RUN npm ci
 
 FROM base AS builder

@@ -20,6 +20,7 @@ export default defineConfig([
     "build/**",
     "coverage/**",
     "playwright-report/**",
+    "storybook-static/**",
     "test-results/**",
     "mobile/**",
     "mobile-app/**",

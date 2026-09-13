@@ -125,6 +125,7 @@ export async function loadParentCalmHome(input: {
             goodThingOne: true,
             goodThingTwo: true,
             supportArea: true,
+            weekStart: true,
             publishedAt: true,
             feedback: {
               where: { userId: input.parentUserId },
@@ -375,6 +376,10 @@ export async function loadParentCalmHome(input: {
         ? `${digest.goodThingOne} ${digest.goodThingTwo}`.trim()
         : null,
       published: Boolean(digest),
+      supportArea:
+        digest && digest.weekStart >= weekStart && digest.weekStart < weekEnd
+          ? digest.supportArea?.trim() || null
+          : null,
     },
     dinoEnabled: flags.dinoAi,
   };

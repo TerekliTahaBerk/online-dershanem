@@ -135,7 +135,12 @@ export function AdminLearningForms({
           />
           <input name="level" className="panel-input" placeholder="Seviye" />
         </div>
-        <select name="teacherId" required className="panel-input mt-2">
+        <select
+          name="teacherId"
+          required
+          aria-label="Öğretmen"
+          className="panel-input mt-2"
+        >
           <option value="">Öğretmen seçin</option>
           {teachers.map((item) => (
             <option key={item.id} value={item.id}>
@@ -204,7 +209,12 @@ export function AdminLearningForms({
           </button>
         </div>
         {targetType === "GROUP" ? (
-          <select name="groupId" required className="panel-input mt-2">
+          <select
+            name="groupId"
+            required
+            aria-label="Grup"
+            className="panel-input mt-2"
+          >
             <option value="">Grup seçin</option>
             {groups.map((item) => (
               <option key={item.id} value={item.id}>
@@ -214,7 +224,12 @@ export function AdminLearningForms({
           </select>
         ) : (
           <>
-            <select name="studentId" required className="panel-input mt-2">
+            <select
+              name="studentId"
+              required
+              aria-label="Öğrenci"
+              className="panel-input mt-2"
+            >
               <option value="">Öğrenci seçin</option>
               {students.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -222,7 +237,12 @@ export function AdminLearningForms({
                 </option>
               ))}
             </select>
-            <select name="teacherId" required className="panel-input mt-2">
+            <select
+              name="teacherId"
+              required
+              aria-label="Öğretmen"
+              className="panel-input mt-2"
+            >
               <option value="">Öğretmen seçin</option>
               {teachers.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -242,6 +262,7 @@ export function AdminLearningForms({
           name="startsAt"
           required
           type="datetime-local"
+          aria-label="Ders başlangıç zamanı"
           className="panel-input mt-2"
         />
         <input
@@ -272,6 +293,7 @@ export function AdminLearningForms({
         <select
           name="repeatWeeks"
           defaultValue="1"
+          aria-label="Tekrar"
           className="panel-input mt-2"
         >
           <option value="1">Yalnızca bu ders / seçili gün serisi</option>
@@ -282,6 +304,7 @@ export function AdminLearningForms({
         <select
           name="totalOccurrences"
           defaultValue="8"
+          aria-label="Toplam ders sayısı"
           className="panel-input mt-2"
         >
           <option value="4">4 oluşum</option>
@@ -368,7 +391,12 @@ export function AdminLearningForms({
         <p className="panel-card-copy">
           Anne ve baba aynı öğrenciye ayrı ayrı bağlanabilir.
         </p>
-        <select name="parentId" required className="panel-input mt-4">
+        <select
+          name="parentId"
+          required
+          aria-label="Veli"
+          className="panel-input mt-4"
+        >
           <option value="">Veli seçin</option>
           {parents.map((item) => (
             <option key={item.id} value={item.id}>
@@ -376,7 +404,12 @@ export function AdminLearningForms({
             </option>
           ))}
         </select>
-        <select name="studentId" required className="panel-input mt-2">
+        <select
+          name="studentId"
+          required
+          aria-label="Öğrenci"
+          className="panel-input mt-2"
+        >
           <option value="">Öğrenci seçin</option>
           {students.map((item) => (
             <option key={item.id} value={item.id}>
@@ -386,6 +419,7 @@ export function AdminLearningForms({
         </select>
         <select
           name="relationship"
+          aria-label="Yakınlık"
           className="panel-input mt-2"
           defaultValue="Anne"
         >
