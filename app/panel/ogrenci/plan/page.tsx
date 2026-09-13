@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan";
+import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan/index";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import { PanelPageHeader, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
