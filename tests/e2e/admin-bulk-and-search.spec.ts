@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const admin = {
@@ -20,7 +21,7 @@ async function login(page: Page) {
 }
 
 test.describe("admin bulk operation and entity search", () => {
-  test.skip(!admin.email || !admin.password, "Panel E2E admin hesabı tanımlı değil.");
+  test.skip(!hasE2EEnv("adminAccount"),"Panel E2E admin hesabı tanımlı değil.");
 
   test("kişiler ekranında toplu operasyon önizler ve komut aramasında entity endpointini çağırır", async ({
     page,
