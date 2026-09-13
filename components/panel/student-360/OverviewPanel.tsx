@@ -48,13 +48,15 @@ export function OverviewPanel(props: OverviewPanelProps) {
         <SectionTitle>Yaklaşan dersler</SectionTitle>
         <div className="mt-2.5 space-y-1">
           {data.upcomingLessons.length ? (
-            data.upcomingLessons.map((lesson) => (
-              <PanelTaskRow
-                key={lesson.id}
-                title={lesson.title}
-                meta={DATE.format(lesson.startsAt)}
-              />
-            ))
+            <ul className="space-y-1">
+              {data.upcomingLessons.map((lesson) => (
+                <PanelTaskRow
+                  key={lesson.id}
+                  title={lesson.title}
+                  meta={DATE.format(lesson.startsAt)}
+                />
+              ))}
+            </ul>
           ) : (
             <EmptyLine text="Yaklaşan ders yok." />
           )}

@@ -10,13 +10,15 @@ export function LessonsPanel(props: LessonsPanelProps) {
         <PanelCardTitle>Gelecek dersler</PanelCardTitle>
         <div className="mt-3 space-y-2">
           {data.upcoming.length ? (
-            data.upcoming.map((lesson) => (
-              <PanelTaskRow
-                key={lesson.id}
-                title={lesson.title}
-                meta={`${lesson.groupName} · ${DATE.format(lesson.startsAt)}`}
-              />
-            ))
+            <ul className="space-y-2">
+              {data.upcoming.map((lesson) => (
+                <PanelTaskRow
+                  key={lesson.id}
+                  title={lesson.title}
+                  meta={`${lesson.groupName} · ${DATE.format(lesson.startsAt)}`}
+                />
+              ))}
+            </ul>
           ) : (
             <EmptyLine text="Planlı ders yok." />
           )}

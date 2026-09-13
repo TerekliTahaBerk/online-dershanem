@@ -283,7 +283,12 @@ export default async function OperationsPage() {
             {readinessStatus}
           </span>
         </div>
-        <div className="overflow-x-auto p-5">
+        <div
+          className="overflow-x-auto p-5"
+          tabIndex={0}
+          role="region"
+          aria-label="İş durumu tablosu"
+        >
           <table className="min-w-[760px] w-full text-left text-[12.5px]">
             <thead>
               <tr className="border-b border-[var(--site-line)] text-[11px] uppercase tracking-[.06em] text-[var(--site-muted)]">

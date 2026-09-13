@@ -197,6 +197,26 @@ jobs:
     name: Playwright
     uses: ./.github/workflows/e2e.yml
 
+  # Storybook hikâyelerini derler ve her hikâyeyi E2E ile aynı WCAG etiket
+  # setiyle axe'tan geçirir (tests/storybook/a11y.spec.ts).
+  storybook-a11y:
+    name: Storybook a11y
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build Storybook
+        run: npm run storybook:build
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Axe scan all stories
+        run: npm run storybook:a11y
+
   quality-gate:
     name: Quality Gate
     if: ${{ always() }}
@@ -208,6 +228,7 @@ jobs:
       - production-build
       - fresh-database
       - playwright
+      - storybook-a11y
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -220,7 +241,8 @@ jobs:
           BUILD_RESULT: ${{ needs.production-build.result }}
           DATABASE_RESULT: ${{ needs.fresh-database.result }}
           PLAYWRIGHT_RESULT: ${{ needs.playwright.result }}
+          STORYBOOK_A11Y_RESULT: ${{ needs.storybook-a11y.result }}
         run: |
-          for result in "$LINT_RESULT" "$TYPECHECK_RESULT" "$UNIT_RESULT" "$INTEGRATION_RESULT" "$BUILD_RESULT" "$DATABASE_RESULT" "$PLAYWRIGHT_RESULT"; do
+          for result in "$LINT_RESULT" "$TYPECHECK_RESULT" "$UNIT_RESULT" "$INTEGRATION_RESULT" "$BUILD_RESULT" "$DATABASE_RESULT" "$PLAYWRIGHT_RESULT" "$STORYBOOK_A11Y_RESULT"; do
             test "$result" = "success"
           done

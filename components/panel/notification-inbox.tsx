@@ -114,6 +114,7 @@ export function NotificationInbox({
               {!item.read ? (
                 <span
                   className="absolute left-2 top-7 h-2 w-2 rounded-full bg-rose-500"
+                  role="img"
                   aria-label="Okunmamış"
                 />
               ) : null}

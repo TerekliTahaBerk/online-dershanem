@@ -29,5 +29,8 @@ tsconfig.tsbuildinfo
 # Unit test coverage (lcov)
 /coverage/
 
+# Storybook static build
+/storybook-static/
+
 # Lighthouse CI artifacts
 /.lighthouseci/

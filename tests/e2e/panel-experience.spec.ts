@@ -1,6 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { hasE2EEnv, panelAccountGroups } from "./env-requirements";
+import { accessibilityScan } from "./helpers/axe";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD;
@@ -36,7 +36,7 @@ test.describe("panel deneyimi", () => {
       await login(page, account);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(1);
-      const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      const result = await accessibilityScan(page).analyze();
       expect(result.violations).toEqual([]);
       await page.goto("/panel/bildirimler");
       await expect(page.getByRole("heading", { name: "Önemli gelişmeler tek yerde." })).toBeVisible();
@@ -141,7 +141,7 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByText(/uygun öğrenci/).first()).toBeVisible();
     await expect(page.getByText(/öğretmen sıralaması/i)).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const result = await accessibilityScan(page).analyze();
     expect(result.violations).toEqual([]);
   });
 
@@ -172,7 +172,7 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogretmen/ai-yardimci");
     await expect(page.getByRole("heading", { name: "Kaynağı görün, taslağı siz onaylayın." })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-    const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const accessibility = await accessibilityScan(page).analyze();
     expect(accessibility.violations).toEqual([]);
     const draftCards = page.getByRole("article").filter({ hasText: "Ödev taslağı" });
     const draftCountBefore = await draftCards.count();
@@ -620,7 +620,7 @@ test.describe("panel deneyimi", () => {
     await expect(page.locator("html")).toHaveAttribute("data-panel-text-scale", "large");
     await expect(page.locator("html")).toHaveAttribute("data-panel-spacing", "comfortable");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
-    const accessibility = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const accessibility = await accessibilityScan(page).analyze();
     expect(accessibility.violations).toEqual([]);
     const skipLink = page.getByRole("link", { name: "Ana içeriğe geç" });
     await skipLink.focus();
