@@ -629,8 +629,9 @@ model CurriculumVersion {
   id              String              @id @default(cuid())
   code            String              @unique
   title           String
-  exam            CurriculumExam
+  exam            CurriculumExam?
   examFamilyRefId String?             @map("exam_family_ref_id")
+  /// K-12 ürünlerinde eğitim-öğretim yılı, KPSS'de sınavın yapıldığı takvim yılıdır.
   academicYear    Int                 @map("academic_year")
   status          CurriculumStatus    @default(DRAFT)
   sourceUrl       String?             @map("source_url")
@@ -643,7 +644,7 @@ model CurriculumVersion {
   skills          CurriculumSkill[]
 
   @@index([exam, academicYear, status])
-  @@index([examFamilyRefId])
+  @@index([examFamilyRefId, status])
   @@map("curriculum_versions")
 }
 

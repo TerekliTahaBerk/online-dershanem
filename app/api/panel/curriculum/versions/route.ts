@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { revalidateCurriculumCatalog } from "@/lib/curriculum/catalog-cache";
+import { getCurriculumExamLabel } from "@/lib/panel/curriculum/curriculum-exam";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
 const code = z.string().trim().min(2).max(40).regex(/^[A-Za-z0-9._-]+$/);
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
   if (exists) return NextResponse.json({ error: "Bu sürüm kodu zaten kullanılıyor." }, { status: 409 });
   const version = await prisma.$transaction(async (tx) => {
     const created = await tx.curriculumVersion.create({ data: { ...parsed.data, code: normalizedCode, sourceUrl: parsed.data.sourceUrl || null, createdById: auth.session.userId } });
-    await tx.auditLog.create({ data: { actorUserId: auth.session.userId, actorType: "USER", entityType: "CurriculumVersion", entityId: created.id, action: "curriculum.version_created", summary: `${created.code} müfredat sürümü oluşturuldu`, payload: { exam: created.exam, academicYear: created.academicYear } } });
+    await tx.auditLog.create({ data: { actorUserId: auth.session.userId, actorType: "USER", entityType: "CurriculumVersion", entityId: created.id, action: "curriculum.version_created", summary: `${created.code} müfredat sürümü oluşturuldu`, payload: { exam: getCurriculumExamLabel(created), academicYear: created.academicYear } } });
     return created;
   });
   revalidateCurriculumCatalog();

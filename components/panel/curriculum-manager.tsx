@@ -8,14 +8,14 @@ type Version = {
   id: string;
   code: string;
   title: string;
-  exam: "LGS" | "TYT" | "AYT" | "YDT";
+  exam: string;
   academicYear: number;
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
   subjectCount: number;
   outcomeCount: number;
 };
 
-type CurriculumExam = Version["exam"];
+type CurriculumExam = "LGS" | "TYT" | "AYT" | "YDT";
 
 async function mutate(url: string, method: "POST" | "PATCH", body: unknown) {
   const response = await fetch(url, {

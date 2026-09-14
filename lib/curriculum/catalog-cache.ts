@@ -1,9 +1,10 @@
 import "server-only";
 
-import type { CurriculumExam, CurriculumStatus, OdkExamFamily } from "@prisma/client";
+import type { CurriculumStatus, OdkExamFamily } from "@prisma/client";
 import { revalidateTag, unstable_cache } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
+import { getCurriculumExamLabel } from "@/lib/panel/curriculum/curriculum-exam";
 
 /**
  * Müfredat referans verisi için paylaşılan önbellek.
@@ -27,7 +28,7 @@ export type CurriculumVersionSummary = {
   id: string;
   code: string;
   title: string;
-  exam: CurriculumExam;
+  exam: string;
   academicYear: number;
   status: CurriculumStatus;
   subjectCount: number;
@@ -43,6 +44,7 @@ export const getCurriculumVersionSummaries = unstable_cache(
         code: true,
         title: true,
         exam: true,
+        examFamilyRef: { select: { code: true } },
         academicYear: true,
         status: true,
         subjects: {
@@ -54,7 +56,7 @@ export const getCurriculumVersionSummaries = unstable_cache(
       id: version.id,
       code: version.code,
       title: version.title,
-      exam: version.exam,
+      exam: getCurriculumExamLabel(version),
       academicYear: version.academicYear,
       status: version.status,
       subjectCount: version.subjects.length,
