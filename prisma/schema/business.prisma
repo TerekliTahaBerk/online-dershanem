@@ -181,6 +181,7 @@ model BusinessUnit {
   code                  String                   @unique
   name                  String
   product               ProductCode              @unique
+  productRefId          String?                  @map("product_ref_id")
   isActive              Boolean                  @default(true) @map("is_active")
   retentionDays         Int                      @default(730) @map("retention_days")
   settings              Json?
@@ -201,7 +202,9 @@ model BusinessUnit {
   reconciliationRecords ReconciliationRecord[]
   backgroundJobs        BackgroundJob[]
   aiPromptVersions      AIPromptVersion[]
+  productRef            Product?                 @relation(fields: [productRefId], references: [id], onDelete: Restrict)
 
+  @@index([productRefId])
   @@map("business_units")
 }
 
@@ -809,6 +812,7 @@ model ProductMembership {
   id              String              @id @default(cuid())
   userId          String              @map("user_id")
   product         ProductCode
+  productRefId    String?             @map("product_ref_id")
   source          ProductAccessSource @default(MANUAL)
   grantedById     String?             @map("granted_by_id")
   sourceOdOrderId String?             @map("source_od_order_id")
@@ -820,10 +824,12 @@ model ProductMembership {
   user            User                @relation("ProductMembershipOwner", fields: [userId], references: [id], onDelete: Cascade)
   grantedBy       User?               @relation("ProductMembershipGranter", fields: [grantedById], references: [id], onDelete: SetNull)
   sourceOdOrder   OdOrder?            @relation(fields: [sourceOdOrderId], references: [id], onDelete: SetNull)
+  productRef      Product?            @relation(fields: [productRefId], references: [id], onDelete: Restrict)
 
   @@unique([userId, product])
   @@index([product, revokedAt, expiresAt])
   @@index([grantedById, createdAt])
   @@index([sourceOdOrderId])
+  @@index([productRefId])
   @@map("product_memberships")
 }

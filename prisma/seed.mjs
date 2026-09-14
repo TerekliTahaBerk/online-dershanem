@@ -9,6 +9,36 @@ const contractPolicy = {
 };
 
 async function main() {
+  const productRegistry = new Map();
+  for (const product of [
+    { code: "OD", name: "Online Dershanem", targetAudience: "k12" },
+    { code: "OK", name: "Online Koçum", targetAudience: "k12" },
+    { code: "ODK", name: "Online Deneme Kulübü", targetAudience: "k12" },
+    { code: "KPSS", name: "KPSS", targetAudience: "adult" },
+  ]) {
+    const row = await prisma.product.upsert({
+      where: { code: product.code },
+      update: { name: product.name, targetAudience: product.targetAudience, isActive: true },
+      create: product,
+    });
+    productRegistry.set(product.code, row);
+  }
+  for (const family of [
+    { code: "LGS", name: "LGS", productCode: "ODK" },
+    { code: "TYT", name: "TYT", productCode: "ODK" },
+    { code: "AYT", name: "AYT", productCode: "ODK" },
+    { code: "YDT", name: "YDT", productCode: "OD" },
+    { code: "KPSS_EGITIM_BILIMLERI", name: "KPSS Eğitim Bilimleri", productCode: "KPSS" },
+  ]) {
+    const product = productRegistry.get(family.productCode);
+    await prisma.examFamily.upsert({
+      where: { code: family.code },
+      update: { name: family.name, productId: product.id, isActive: true },
+      create: { code: family.code, name: family.name, productId: product.id },
+    });
+  }
+  console.log("Ürün ve sınav ailesi kayıtları hazırlandı.");
+
   await prisma.odkPackage.upsert({
     where: { slug: "tyt-deneme-kulubu" },
     update: { title: "TYT Deneme Kulübü", priceCents: 149900, isActive: true, contractPolicy },
@@ -21,8 +51,8 @@ async function main() {
   });
   console.log("Public ürün kataloğu hazırlandı.");
 
-  const od = await prisma.businessUnit.upsert({ where: { product: "OD" }, update: { name: "OnlineDershanem", isActive: true }, create: { code: "OD", name: "OnlineDershanem", product: "OD" } });
-  const odk = await prisma.businessUnit.upsert({ where: { product: "ODK" }, update: { name: "OnlineDenemeKulübü", isActive: true }, create: { code: "ODK", name: "OnlineDenemeKulübü", product: "ODK" } });
+  const od = await prisma.businessUnit.upsert({ where: { product: "OD" }, update: { name: "OnlineDershanem", isActive: true, productRefId: productRegistry.get("OD").id }, create: { code: "OD", name: "OnlineDershanem", product: "OD", productRefId: productRegistry.get("OD").id } });
+  const odk = await prisma.businessUnit.upsert({ where: { product: "ODK" }, update: { name: "OnlineDenemeKulübü", isActive: true, productRefId: productRegistry.get("ODK").id }, create: { code: "ODK", name: "OnlineDenemeKulübü", product: "ODK", productRefId: productRegistry.get("ODK").id } });
   await Promise.all([
     prisma.expenseCategory.upsert({ where: { businessUnitId_code: { businessUnitId: od.id, code: "ADVERTISING" } }, update: {}, create: { businessUnitId: od.id, code: "ADVERTISING", name: "Reklam" } }),
     prisma.expenseCategory.upsert({ where: { businessUnitId_code: { businessUnitId: od.id, code: "SOFTWARE" } }, update: {}, create: { businessUnitId: od.id, code: "SOFTWARE", name: "Yazılım" } }),

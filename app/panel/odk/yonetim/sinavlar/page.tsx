@@ -8,9 +8,12 @@ import { PanelPageHeader } from "@/components/panel/panel-page-header";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { AdminExamCreate } from "@/components/odk/admin-exam-create";
 import { examStatusPresentation } from "@/lib/odk/presentation";
+import {
+  LEGACY_ODK_EXAM_FAMILY_CODES,
+  listActiveExamFamilies,
+} from "@/lib/products/registry";
 
 export const dynamic = "force-dynamic";
-const families: OdkExamFamily[] = ["LGS", "TYT", "AYT"];
 const statuses: OdkExamStatus[] = [
   "DRAFT",
   "READY",
@@ -34,6 +37,12 @@ export default async function OdkAdminExamsPage({
 }) {
   const session = await requireProductRole("ODK", "ADMIN");
   const params = await searchParams;
+  const families = (
+    await listActiveExamFamilies({
+      productCode: "ODK",
+      codes: LEGACY_ODK_EXAM_FAMILY_CODES,
+    })
+  ).map((item) => item.code) as OdkExamFamily[];
   const family = families.includes(params.aile as OdkExamFamily)
     ? (params.aile as OdkExamFamily)
     : undefined;
@@ -89,7 +98,7 @@ export default async function OdkAdminExamsPage({
       />
 
       <section id="yeni-deneme" className="mt-7 scroll-mt-28">
-        <AdminExamCreate series={series} />
+        <AdminExamCreate series={series} families={families} />
       </section>
 
       <section className="mt-9">

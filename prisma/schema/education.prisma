@@ -626,21 +626,24 @@ model RecoveryPackageItem {
 }
 
 model CurriculumVersion {
-  id           String              @id @default(cuid())
-  code         String              @unique
-  title        String
-  exam         CurriculumExam
-  academicYear Int                 @map("academic_year")
-  status       CurriculumStatus    @default(DRAFT)
-  sourceUrl    String?             @map("source_url")
-  createdById  String              @map("created_by_id")
-  createdAt    DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
-  createdBy    User                @relation("CurriculumCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  subjects     CurriculumSubject[]
-  skills       CurriculumSkill[]
+  id              String              @id @default(cuid())
+  code            String              @unique
+  title           String
+  exam            CurriculumExam
+  examFamilyRefId String?             @map("exam_family_ref_id")
+  academicYear    Int                 @map("academic_year")
+  status          CurriculumStatus    @default(DRAFT)
+  sourceUrl       String?             @map("source_url")
+  createdById     String              @map("created_by_id")
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy       User                @relation("CurriculumCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  examFamilyRef   ExamFamily?         @relation(fields: [examFamilyRefId], references: [id], onDelete: Restrict)
+  subjects        CurriculumSubject[]
+  skills          CurriculumSkill[]
 
   @@index([exam, academicYear, status])
+  @@index([examFamilyRefId])
   @@map("curriculum_versions")
 }
 

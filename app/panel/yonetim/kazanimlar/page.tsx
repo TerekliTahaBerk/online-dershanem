@@ -5,6 +5,10 @@ import { getCurriculumVersionSummaries } from "@/lib/curriculum/catalog-cache";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { CurriculumManager } from "@/components/panel/curriculum-manager";
+import {
+  LEGACY_CURRICULUM_EXAM_CODES,
+  listActiveExamFamilies,
+} from "@/lib/products/registry";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +21,7 @@ export default async function CurriculumAdminPage() {
     taggedLessons,
     assignments,
     taggedAssignments,
+    examFamilies,
   ] = await Promise.all([
     getCurriculumVersionSummaries(),
     prisma.lesson.count({
@@ -33,6 +38,7 @@ export default async function CurriculumAdminPage() {
     prisma.assignment.count({
       where: { createdAt: { gte: since }, outcomeLinks: { some: {} } },
     }),
+    listActiveExamFamilies({ codes: LEGACY_CURRICULUM_EXAM_CODES }),
   ]);
   const lessonCoverage = completedLessons
     ? Math.round((taggedLessons / completedLessons) * 100)
@@ -68,7 +74,10 @@ export default async function CurriculumAdminPage() {
           </p>
         </article>
       </section>
-      <CurriculumManager versions={versions} />
+      <CurriculumManager
+        versions={versions}
+        examFamilies={examFamilies.map((item) => item.code) as (typeof LEGACY_CURRICULUM_EXAM_CODES)[number][]}
+      />
     </PanelShell>
   );
 }

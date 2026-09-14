@@ -285,6 +285,7 @@ model MockExam {
   id                   String            @id @default(cuid())
   studentId            String            @map("student_id")
   exam                 CurriculumExam
+  examFamilyRefId      String?           @map("exam_family_ref_id")
   title                String?
   publisher            String?
   takenAt              DateTime          @map("taken_at") @db.Timestamptz(3)
@@ -298,10 +299,12 @@ model MockExam {
   student              StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
   createdBy            User              @relation("MockExamCreator", fields: [createdById], references: [id], onDelete: Restrict)
   reviewedBy           User?             @relation("MockExamReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  examFamilyRef        ExamFamily?       @relation(fields: [examFamilyRefId], references: [id], onDelete: Restrict)
   sections             MockExamSection[]
 
   @@index([studentId, takenAt])
   @@index([exam, takenAt])
+  @@index([examFamilyRefId])
   @@map("mock_exams")
 }
 
@@ -412,21 +415,24 @@ model OdkPackage {
 
 /// Aynı sınav ailesinde tekrar eden matematik denemelerini gruplar.
 model OdkExamSeries {
-  id           String        @id @default(cuid())
-  title        String
-  slug         String        @unique
-  family       OdkExamFamily
-  academicYear Int           @map("academic_year")
-  classLevel   String?       @map("class_level")
-  isActive     Boolean       @default(true) @map("is_active")
-  createdById  String        @map("created_by_id")
-  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
-  createdBy    User          @relation("OdkExamSeriesCreator", fields: [createdById], references: [id], onDelete: Restrict)
-  exams        OdkExam[]
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  family          OdkExamFamily
+  examFamilyRefId String?       @map("exam_family_ref_id")
+  academicYear    Int           @map("academic_year")
+  classLevel      String?       @map("class_level")
+  isActive        Boolean       @default(true) @map("is_active")
+  createdById     String        @map("created_by_id")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy       User          @relation("OdkExamSeriesCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  examFamilyRef   ExamFamily?   @relation(fields: [examFamilyRefId], references: [id], onDelete: Restrict)
+  exams           OdkExam[]
 
   @@index([family, academicYear, isActive])
   @@index([createdById, createdAt])
+  @@index([examFamilyRefId])
   @@map("odk_exam_series")
 }
 
@@ -438,6 +444,7 @@ model OdkExam {
   title               String
   slug                String               @unique
   family              OdkExamFamily
+  examFamilyRefId     String?              @map("exam_family_ref_id")
   status              OdkExamStatus        @default(DRAFT)
   structureMode       OdkExamStructureMode @default(MATH_ONLY) @map("structure_mode")
   templateCode        String?              @map("template_code")
@@ -462,6 +469,7 @@ model OdkExam {
   updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
   series              OdkExamSeries?       @relation(fields: [seriesId], references: [id], onDelete: SetNull)
   createdBy           User                 @relation("OdkExamCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  examFamilyRef       ExamFamily?          @relation(fields: [examFamilyRefId], references: [id], onDelete: Restrict)
   currentVersion      OdkExamVersion?      @relation("OdkCurrentExamVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
   versions            OdkExamVersion[]     @relation("OdkExamVersions")
   packageLinks        OdkPackageExam[]
@@ -473,6 +481,7 @@ model OdkExam {
   @@index([seriesId, startsAt])
   @@index([status, startsAt, endsAt])
   @@index([internalCode])
+  @@index([examFamilyRefId])
   @@map("odk_exams")
 }
 

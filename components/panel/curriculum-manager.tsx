@@ -15,6 +15,8 @@ type Version = {
   outcomeCount: number;
 };
 
+type CurriculumExam = Version["exam"];
+
 async function mutate(url: string, method: "POST" | "PATCH", body: unknown) {
   const response = await fetch(url, {
     method,
@@ -25,7 +27,13 @@ async function mutate(url: string, method: "POST" | "PATCH", body: unknown) {
   if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
 }
 
-export function CurriculumManager({ versions }: { versions: Version[] }) {
+export function CurriculumManager({
+  versions,
+  examFamilies,
+}: {
+  versions: Version[];
+  examFamilies: CurriculumExam[];
+}) {
   const router = useRouter();
   const [versionId, setVersionId] = useState(
     versions.find((item) => item.status !== "ARCHIVED")?.id || "",
@@ -92,10 +100,9 @@ export function CurriculumManager({ versions }: { versions: Version[] }) {
           />
           <div className="mt-2 grid grid-cols-2 gap-2">
             <select name="exam" aria-label="Sınav" className="panel-input">
-              <option>LGS</option>
-              <option>TYT</option>
-              <option>AYT</option>
-              <option>YDT</option>
+              {examFamilies.map((item) => (
+                <option key={item}>{item}</option>
+              ))}
             </select>
             <input
               name="academicYear"

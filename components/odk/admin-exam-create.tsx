@@ -33,14 +33,22 @@ function autoSlug(event: React.FocusEvent<HTMLInputElement>) {
   if (slug && !slug.value) slug.value = slugify(event.currentTarget.value);
 }
 
-export function AdminExamCreate({ series }: { series: Series[] }) {
+export function AdminExamCreate({
+  series,
+  families,
+}: {
+  series: Series[];
+  families: OdkExamFamily[];
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState<"series" | "exam" | null>(null);
   const [message, setMessage] = useState<{
     text: string;
     error: boolean;
   } | null>(null);
-  const [family, setFamily] = useState<OdkExamFamily>("TYT");
+  const [family, setFamily] = useState<OdkExamFamily>(
+    families.includes("TYT") ? "TYT" : families[0] ?? "TYT",
+  );
   const [structureMode, setStructureMode] = useState<
     "FULL_TEMPLATE" | "MATH_ONLY"
   >("FULL_TEMPLATE");
@@ -168,9 +176,9 @@ export function AdminExamCreate({ series }: { series: Series[] }) {
                 setFamily(event.target.value as OdkExamFamily)
               }
             >
-              <option>LGS</option>
-              <option>TYT</option>
-              <option>AYT</option>
+              {families.map((item) => (
+                <option key={item}>{item}</option>
+              ))}
             </select>
           </label>
           <label className="panel-field">
@@ -302,9 +310,9 @@ export function AdminExamCreate({ series }: { series: Series[] }) {
             <label className="panel-field">
               Sınav ailesi
               <select name="family">
-                <option>LGS</option>
-                <option>TYT</option>
-                <option>AYT</option>
+                {families.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
               </select>
             </label>
             <label className="panel-field">

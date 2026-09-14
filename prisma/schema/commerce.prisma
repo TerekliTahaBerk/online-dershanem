@@ -333,6 +333,7 @@ model CommerceOrderLine {
   odkOrderId               String?                    @map("odk_order_id")
   position                 Int
   product                  CommerceProduct
+  productRefId             String?                    @map("product_ref_id")
   productId                String?                    @map("product_id")
   sku                      String
   productName              String                     @map("product_name")
@@ -357,12 +358,14 @@ model CommerceOrderLine {
   updatedAt                DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
   odOrder                  OdOrder?                   @relation(fields: [odOrderId], references: [id], onDelete: Cascade)
   odkOrder                 OdkOrder?                  @relation(fields: [odkOrderId], references: [id], onDelete: Cascade)
+  productRef               Product?                   @relation(fields: [productRefId], references: [id], onDelete: Restrict)
   odkEntitlement           OdkEntitlement?
 
   @@unique([odOrderId, position])
   @@unique([odkOrderId, position])
   @@index([fulfillmentStatus, updatedAt])
   @@index([fulfillmentOwnerKey, product])
+  @@index([productRefId])
   @@map("commerce_order_lines")
 }
 

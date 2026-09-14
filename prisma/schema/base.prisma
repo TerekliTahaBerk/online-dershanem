@@ -39,6 +39,43 @@ enum CurriculumExam {
   YDT
 }
 
+/// Veri odaklı ürün kataloğu. Legacy ProductCode ve CommerceProduct alanları
+/// kademeli geçiş tamamlanana kadar kaynak modellerde paralel tutulur.
+model Product {
+  id                 String                    @id @default(cuid())
+  code               String                    @unique
+  name               String
+  targetAudience     String?                   @map("target_audience")
+  isActive           Boolean                   @default(true) @map("is_active")
+  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
+  examFamilies       ExamFamily[]
+  businessUnits      BusinessUnit[]
+  memberships        ProductMembership[]
+  progressEvidence   StudentProgressEvidence[]
+  commerceOrderLines CommerceOrderLine[]
+
+  @@map("products")
+}
+
+/// Ürüne bağlı, migration gerektirmeden genişletilebilen sınav ailesi kataloğu.
+/// Legacy CurriculumExam ve OdkExamFamily alanları geçiş boyunca korunur.
+model ExamFamily {
+  id                 String              @id @default(cuid())
+  code               String              @unique
+  name               String
+  productId          String              @map("product_id")
+  isActive           Boolean             @default(true) @map("is_active")
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  product            Product             @relation(fields: [productId], references: [id], onDelete: Restrict)
+  curriculumVersions CurriculumVersion[]
+  mockExams          MockExam[]
+  odkExamSeries      OdkExamSeries[]
+  odkExams           OdkExam[]
+
+  @@index([productId, isActive])
+  @@map("exam_families")
+}
+
 enum AiDraftProvider {
   OPENAI
   GEMINI

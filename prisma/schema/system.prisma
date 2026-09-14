@@ -262,22 +262,25 @@ model CrossProductEventConsumer {
 }
 
 model StudentProgressEvidence {
-  id          String                 @id @default(cuid())
-  studentId   String                 @map("student_id")
-  outcomeId   String                 @map("outcome_id")
-  sourceType  ProgressEvidenceSource @map("source_type")
-  sourceId    String                 @map("source_id")
-  productCode ProductCode            @map("product_code")
-  summary     String
-  metrics     Json
-  occurredAt  DateTime               @map("occurred_at") @db.Timestamptz(3)
-  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
-  student     StudentProfile         @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  outcome     LearningOutcome        @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+  id           String                 @id @default(cuid())
+  studentId    String                 @map("student_id")
+  outcomeId    String                 @map("outcome_id")
+  sourceType   ProgressEvidenceSource @map("source_type")
+  sourceId     String                 @map("source_id")
+  productCode  ProductCode            @map("product_code")
+  productRefId String?                @map("product_ref_id")
+  summary      String
+  metrics      Json
+  occurredAt   DateTime               @map("occurred_at") @db.Timestamptz(3)
+  createdAt    DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  student      StudentProfile         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  outcome      LearningOutcome        @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+  productRef   Product?               @relation(fields: [productRefId], references: [id], onDelete: Restrict)
 
   @@unique([studentId, outcomeId, sourceType, sourceId])
   @@index([studentId, outcomeId, occurredAt])
   @@index([studentId, sourceType, occurredAt])
+  @@index([productRefId])
   @@map("student_progress_evidence")
 }
 
