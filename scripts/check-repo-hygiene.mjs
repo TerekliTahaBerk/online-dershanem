@@ -220,6 +220,48 @@ if (sensitiveLogOffenders.length > 0) {
   process.exit(1);
 }
 
+/**
+ * README'deki sürüm iddiaları gerçek bağımlılıklarla aynı majörü göstermeli.
+ *
+ * README uzun süre "React 18" dedi; paket React 19'du. Doküman sürümü elle
+ * yazıldığı için bağımlılık yükseltmesinde sessizce geride kalıyor. Kontrol
+ * hem düz metni ("Next.js 16") hem shields rozetini ("Next.js-16") yakalar.
+ */
+const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
+const dependencyVersions = { ...packageJson.dependencies, ...packageJson.devDependencies };
+const majorOf = (range) => range?.match(/\d+/)?.[0] ?? null;
+const DOC_VERSION_CLAIMS = [
+  { label: "Next.js", expected: majorOf(dependencyVersions.next) },
+  { label: "React", expected: majorOf(dependencyVersions.react) },
+  { label: "TypeScript", expected: majorOf(dependencyVersions.typescript) },
+  { label: "Prisma", expected: majorOf(dependencyVersions.prisma) },
+  { label: "Tailwind CSS", expected: majorOf(dependencyVersions.tailwindcss) },
+  { label: "Node.js", expected: majorOf(packageJson.engines?.node) },
+  { label: "npm", expected: majorOf(packageJson.engines?.npm) },
+];
+const readme = readFileSync("README.md", "utf8");
+const docsDriftOffenders = [];
+
+for (const { label, expected } of DOC_VERSION_CLAIMS) {
+  if (!expected) continue;
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Kelime sınırı: "React" `react-dom` içinde, "npm" `npm run` içinde eşleşmesin.
+  const claim = new RegExp(`(?<![\\w.-])${escaped}[ -](\\d+)(?=[\\s+.,)-]|$)`, "g");
+  for (const match of readme.matchAll(claim)) {
+    if (match[1] !== expected) {
+      const line = readme.slice(0, match.index).split("\n").length;
+      docsDriftOffenders.push(`README.md:${line}: "${match[0]}" — package.json majör sürümü ${expected}`);
+    }
+  }
+}
+
+if (docsDriftOffenders.length > 0) {
+  cliLog.error("README sürüm iddiası package.json ile uyuşmuyor:\n");
+  for (const offender of docsDriftOffenders) cliLog.error(`  ${offender}`);
+  cliLog.error("\nREADME'yi gerçek majör sürüme güncelleyin.");
+  process.exit(1);
+}
+
 cliLog.info(
   `Repo hygiene: temiz (${files.length} takip edilen dosya, ${clientFiles.length} istemci bileşeni, ` +
     `${files.filter((file) => SOURCE_FILE.test(file)).length} kaynak dosyada ESLint istisnaları, panel bağlantıları ve script log redaction kullanımı kontrol edildi).`,
