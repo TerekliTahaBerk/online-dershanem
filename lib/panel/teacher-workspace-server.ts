@@ -322,6 +322,7 @@ export async function getTeacherWorkspace(teacherId: string, now = new Date()): 
             title: true,
             startsAt: true,
             family: true,
+            examFamilyRef: { select: { code: true } },
           },
         })
       : Promise.resolve([]),
@@ -508,7 +509,7 @@ export async function getTeacherWorkspace(teacherId: string, now = new Date()): 
       kind: "EXAM",
       id: exam.id,
       title: exam.title,
-      detail: exam.family,
+      detail: exam.examFamilyRef?.code ?? exam.family ?? "Sınav",
       at: exam.startsAt,
       href: "/panel/ogretmen/denemeler",
     });
