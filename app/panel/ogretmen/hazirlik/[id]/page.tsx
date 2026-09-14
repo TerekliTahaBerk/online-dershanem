@@ -173,7 +173,7 @@ export default async function CoachPrepPage({
                     <p>Tamamlanan: {done.map((t) => t.title).join(", ")}</p>
                   ) : null}
                   {pending.length ? (
-                    <p className="text-[#A5764A]">
+                    <p className="text-[#8A5F37]">
                       Yapılmayan: {pending.map((t) => t.title).join(", ")}
                     </p>
                   ) : null}

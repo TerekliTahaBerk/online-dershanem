@@ -239,7 +239,7 @@ export default async function AdminReportsPage() {
           </p>
         </article>
         <article className="panel-metric-card">
-          <UserRoundX size={18} className="text-[#A5764A]" />
+          <UserRoundX size={18} className="text-[#8A5F37]" />
           <p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">
             {groups.filter((group) => !group.enrollments.length).length}
           </p>

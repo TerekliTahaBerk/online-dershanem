@@ -41,7 +41,7 @@ const PAYMENT_STATUS: Record<
   { label: string; tone: string }
 > = {
   SUCCEEDED: { label: "Alındı", tone: "text-dc-brand-hover" },
-  PENDING: { label: "Bekliyor", tone: "text-[#A5764A]" },
+  PENDING: { label: "Bekliyor", tone: "text-[#8A5F37]" },
   FAILED: { label: "Başarısız", tone: "text-[#C2493D]" },
   REFUNDED: { label: "İade edildi", tone: "text-dc-ink-muted" },
 };
@@ -51,9 +51,9 @@ const FULFILLMENT: Record<
   { label: string; tone: string }
 > = {
   SUCCEEDED: { label: "Açıldı", tone: "text-dc-brand-hover" },
-  PENDING: { label: "Bekliyor", tone: "text-[#A5764A]" },
-  RUNNING: { label: "Açılıyor", tone: "text-[#A5764A]" },
-  RETRY_PENDING: { label: "Yeniden denenecek", tone: "text-[#A5764A]" },
+  PENDING: { label: "Bekliyor", tone: "text-[#8A5F37]" },
+  RUNNING: { label: "Açılıyor", tone: "text-[#8A5F37]" },
+  RETRY_PENDING: { label: "Yeniden denenecek", tone: "text-[#8A5F37]" },
   MANUAL_REVIEW: { label: "Elle inceleme gerekiyor", tone: "text-[#C2493D]" },
   REVOKED: { label: "Geri alındı", tone: "text-dc-ink-muted" },
 };

@@ -36,7 +36,7 @@ const LIRA = new Intl.NumberFormat("tr-TR", {
 /* Enum ile yazıldı: şemaya yeni bir durum eklenirse burası derleme hatası verir. */
 const ORDER_STATUS: Record<OdkOrderStatus, { label: string; tone: string }> = {
   PAID: { label: "Ödendi", tone: "text-dc-brand-hover" },
-  PENDING: { label: "Ödeme bekleniyor", tone: "text-[#A5764A]" },
+  PENDING: { label: "Ödeme bekleniyor", tone: "text-[#8A5F37]" },
   REFUNDED: { label: "İade edildi", tone: "text-dc-ink-muted" },
   CANCELLED: { label: "İptal", tone: "text-dc-ink-muted" },
 };

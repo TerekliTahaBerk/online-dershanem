@@ -414,7 +414,7 @@ export default async function UserDetailPage({
                         : "Grup ataması yok"
                     }
                     tone={
-                      student.enrollments.length ? undefined : "text-[#A5764A]"
+                      student.enrollments.length ? undefined : "text-[#8A5F37]"
                     }
                   />
                   <Row
@@ -426,7 +426,7 @@ export default async function UserDetailPage({
                             .join(", ")
                         : "Bağlı veli yok"
                     }
-                    tone={student.parents.length ? undefined : "text-[#A5764A]"}
+                    tone={student.parents.length ? undefined : "text-[#8A5F37]"}
                   />
                   <Row
                     label="Koç"
@@ -439,7 +439,7 @@ export default async function UserDetailPage({
                           }`
                         : "Koç atanmadı"
                     }
-                    tone={coach ? undefined : "text-[#A5764A]"}
+                    tone={coach ? undefined : "text-[#8A5F37]"}
                   />
                   <Row
                     label="Son ders katılımı"

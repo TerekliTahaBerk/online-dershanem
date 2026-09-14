@@ -24,7 +24,7 @@ export function LessonsPanel(props: LessonsPanelProps) {
           )}
         </div>
         {data.recoveryOpenCount > 0 ? (
-          <p className="mt-4 text-[13px] font-semibold text-[#A5764A]">
+          <p className="mt-4 text-[13px] font-semibold text-[#8A5F37]">
             {data.recoveryOpenCount} açık telafi paketi var.
           </p>
         ) : null}
