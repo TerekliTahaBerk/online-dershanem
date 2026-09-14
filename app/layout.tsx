@@ -103,6 +103,8 @@ export const metadata: Metadata = {
       { url: "/favicon.png?v=2", type: "image/png" },
       { url: "/favicon-48x48.png?v=2", sizes: "48x48", type: "image/png" },
       { url: "/favicon-96x96.png?v=2", sizes: "96x96", type: "image/png" },
+      // Google arama sonucu ikonu 48'in katlarını tercih eder; yüksek çözünürlük için.
+      { url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" },
     ],
     shortcut: ["/favicon.ico?v=2"],
     apple: [
@@ -132,10 +134,6 @@ export default async function RootLayout({
     >
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
-        <link rel="icon" href="/favicon.png?v=2" type="image/png" />
-        <link rel="shortcut icon" href="/favicon.ico?v=2" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
       </head>
       <body>
         <ThemeProvider>
