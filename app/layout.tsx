@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og.png",
+        url: "/og.png?v=2",
         width: 1200,
         height: 630,
         alt: "Online Dershanem ders, koçluk ve deneme ürünleri",
@@ -95,18 +95,18 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Ders, Koçluk ve Deneme Ürünleri | Online Dershanem",
     description: "LGS ve YKS öğrencileri için üç açık eğitim ürünü.",
-    images: ["/og.png"],
+    images: ["/og.png?v=2"],
   },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon.png", type: "image/png" },
-      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.ico?v=2", sizes: "any" },
+      { url: "/favicon.png?v=2", type: "image/png" },
+      { url: "/favicon-48x48.png?v=2", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-96x96.png?v=2", sizes: "96x96", type: "image/png" },
     ],
-    shortcut: ["/favicon.ico"],
+    shortcut: ["/favicon.ico?v=2"],
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
     ],
   },
   robots: {
@@ -132,10 +132,10 @@ export default async function RootLayout({
     >
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.png" type="image/png" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/favicon.ico?v=2" sizes="any" />
+        <link rel="icon" href="/favicon.png?v=2" type="image/png" />
+        <link rel="shortcut icon" href="/favicon.ico?v=2" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
       </head>
       <body>
         <ThemeProvider>
