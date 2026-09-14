@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { dinoQuestionsFor } from "@/lib/dino";
+import { dinoQuestionsForProducts } from "@/lib/dino";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
@@ -19,6 +19,10 @@ export const dynamic = "force-dynamic";
  *
  * Seçili öğrenci `resolveParentScope` ile doğrulanır; sunucu tarafı da aynı
  * doğrulamayı bağımsız olarak tekrar yapar.
+ *
+ * ÜRÜN BAĞLAMI: menü seçili çocuğun VELİ-GÖRÜNÜR ürünlerinden türetilir.
+ * KPSS veli-free olduğu için o liste KPSS içermez; yalnız KPSS öğrencisi zaten
+ * `resolveParentScope` kapsamına hiç girmez (`parent-product-policy`).
  */
 export default async function ParentDinoPage({
   searchParams,
@@ -58,7 +62,7 @@ export default async function ParentDinoPage({
           <div className="mt-6">
             <DinoChat
               audience="PARENT"
-              questions={[...dinoQuestionsFor("PARENT")]}
+              questions={dinoQuestionsForProducts("PARENT", selected.products)}
               studentId={selected.id}
             />
             <p className="mt-5 text-[12.5px] text-dc-ink-faint">
