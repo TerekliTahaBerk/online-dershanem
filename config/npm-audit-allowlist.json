@@ -1,0 +1,16 @@
+{
+  "acceptedAdvisories": [
+    {
+      "id": 1139346,
+      "ghsa": "GHSA-jmr9-qjv8-65gv",
+      "expires": "2026-10-14",
+      "reason": "@lhci/cli 0.15.1 pins Lighthouse 12.6.1; see docs/known-dependency-risks.md"
+    },
+    {
+      "id": 1193685,
+      "ghsa": "GHSA-7pqw-9j4j-h8q3",
+      "expires": "2026-10-14",
+      "reason": "@lhci/cli 0.15.1 pins Lighthouse 12.6.1; see docs/known-dependency-risks.md"
+    }
+  ]
+}

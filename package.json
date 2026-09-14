@@ -24,6 +24,7 @@
     "build:nomigrate": "npm run validate:deploy-env && prisma generate && next build",
     "build:analyze": "prisma generate && next build && node scripts/report-route-bundles.mjs --top 10",
     "analyze:bundle": "next experimental-analyze",
+    "audit:ci": "node scripts/check-npm-audit.mjs",
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build",
