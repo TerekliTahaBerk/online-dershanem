@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { siteUrl } from "@/lib/content";
 
 const SITE_NAME = "Online Dershanem";
-const DEFAULT_IMAGE_PATH = "/og.png";
+const DEFAULT_IMAGE_PATH = "/og.png?v=2";
 const DEFAULT_IMAGE_ALT = "Online Dershanem — LGS ve YKS için ders, koçluk ve deneme ürünleri";
 
 type MarketingOpenGraphType = "website" | "article";
