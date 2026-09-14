@@ -5,10 +5,12 @@ const prisma = new PrismaClient();
 const VERSION_CODE = "KPSS-EGITIM-BILIMLERI-2026-TASLAK";
 const EXPERT_REVIEW_NOTICE =
   "Bu taslak, yayına alınmadan önce bir eğitim bilimleri alan uzmanı tarafından ÖSYM'nin güncel konu ağırlıklarına göre doğrulanmalı ve düzenlenmelidir.";
+const PLACEHOLDER_OUTCOME_CODE = "PLACEHOLDER-GENEL";
+const PLACEHOLDER_OUTCOME_TITLE = "Genel — içerik ekibi tarafından detaylandırılacak";
 
 // DİKKAT: Aşağıdaki başlıklar doğrulanmış/resmî bir KPSS müfredatı değildir.
 // Yayından önce alan uzmanı bunları ÖSYM'nin güncel konu ağırlıklarına göre
-// doğrulamalı ve düzenlemelidir; kazanımlar özellikle boş bırakılmıştır.
+// doğrulamalı ve düzenlemelidir; eklenen kazanımlar yalnızca yapısal placeholder'dır.
 const subjects = [
   ["GELISIM-PSIKOLOJISI", "Gelişim Psikolojisi"],
   ["OGRENME-PSIKOLOJISI", "Öğrenme Psikolojisi"],
@@ -93,6 +95,36 @@ async function main() {
         position: 0,
       },
     });
+
+    const existingPlaceholder = await prisma.learningOutcome.findFirst({
+      where: { unitId: unit.id, title: PLACEHOLDER_OUTCOME_TITLE },
+      select: { id: true },
+    });
+    if (existingPlaceholder) {
+      await prisma.learningOutcome.update({
+        where: { id: existingPlaceholder.id },
+        data: { description: null, isActive: true },
+      });
+    } else {
+      await prisma.learningOutcome.upsert({
+        where: {
+          unitId_code: { unitId: unit.id, code: PLACEHOLDER_OUTCOME_CODE },
+        },
+        update: {
+          title: PLACEHOLDER_OUTCOME_TITLE,
+          description: null,
+          isActive: true,
+        },
+        create: {
+          id: stableId("learning_outcome_kpss_2026", code),
+          unitId: unit.id,
+          code: PLACEHOLDER_OUTCOME_CODE,
+          title: PLACEHOLDER_OUTCOME_TITLE,
+          description: null,
+          isActive: true,
+        },
+      });
+    }
     units.push({ id: unit.id, subjectCode: code, unitCode: unit.code });
   }
 

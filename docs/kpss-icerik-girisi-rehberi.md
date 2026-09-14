@@ -1,6 +1,8 @@
 # KPSS Eğitim Bilimleri içerik girişi
 
-> Bu taslak, yayına alınmadan önce bir eğitim bilimleri alan uzmanı tarafından ÖSYM'nin güncel konu ağırlıklarına göre doğrulanmalı ve düzenlenmelidir. Seed yalnızca `subject → unit` iskeleti kurar; doğrulanmış müfredat veya kazanım üretmez.
+> Bu taslak, yayına alınmadan önce bir eğitim bilimleri alan uzmanı tarafından ÖSYM'nin güncel konu ağırlıklarına göre doğrulanmalı ve düzenlenmelidir. Seed yalnızca `subject → unit → placeholder outcome` iskeleti kurar; doğrulanmış müfredat veya kazanım üretmez.
+
+Placeholder LearningOutcome kayıtları yapısal doğrulama içindir, gerçek kazanım metinleri içerik ekibi tarafından bu kayıtların ÜZERİNE YAZILARAK girilmelidir, yeni kayıt olarak değil.
 
 ## Taslak iskeleti hazırlama
 
@@ -10,7 +12,7 @@ Aktif bir yönetici bulunan ve migration'ları uygulanmış veritabanında:
 KPSS_CURRICULUM_CREATED_BY_ID="<aktif-admin-id>" node scripts/seed-kpss-curriculum-draft.mjs
 ```
 
-Script idempotenttir: sürümü, 10 dersi ve her dersin `GENEL` ünitesini upsert eder. Sürümü her çalıştırmada `DRAFT` durumunda tutar ve gerçek kazanımlara dokunmaz. Çıktıdaki `units` dizisi o veritabanındaki güncel ünite kimliklerini verir.
+Script idempotenttir: sürümü, 10 dersi, her dersin `GENEL` ünitesini ve ünite başına tek bir yapısal placeholder kazanımı upsert eder. Sürümü her çalıştırmada `DRAFT` durumunda tutar ve gerçek kazanım metni üretmez. Çıktıdaki `units` dizisi o veritabanındaki güncel ünite kimliklerini verir.
 
 Varsayılan ilk kurulumda örnek kimlikler:
 
