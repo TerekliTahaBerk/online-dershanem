@@ -43,6 +43,24 @@ export type PlannedTask = Omit<PlanCandidate, "priority" | "dueAt"> & {
   scoreBreakdown?: CandidateScoreBreakdown;
 };
 
+/**
+ * Planlanan görevi `WeeklyPlanTask` satırına indirger. `score`, `scoreBreakdown`
+ * ve `signalMeta` açıklama içindir, kolonu yoktur; görev nesnesini doğrudan
+ * yaymak `createMany`'yi Prisma doğrulamasıyla düşürüyor ve plan hiç oluşmuyordu.
+ */
+export function plannedTaskRows(planId: string, tasks: PlannedTask[]) {
+  return tasks.map((task) => ({
+    planId,
+    sourceType: task.sourceType,
+    sourceReferenceId: task.sourceReferenceId ?? null,
+    title: task.title,
+    durationMinutes: task.durationMinutes,
+    reasonCode: task.reasonCode,
+    scheduledFor: task.scheduledFor,
+    position: task.position,
+  }));
+}
+
 export type AdaptivePlanConfig = {
   urgency: Record<PlanCandidate["reasonCode"], number>;
   learningImpact: Record<PlanCandidate["reasonCode"], number>;

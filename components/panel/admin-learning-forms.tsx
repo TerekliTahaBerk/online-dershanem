@@ -429,14 +429,14 @@ export function AdminLearningForms({
           <option value="Diğer">Diğer</option>
         </select>
         <label className="mt-2 flex items-center gap-2 text-xs font-semibold">
-          <input type="checkbox" name="primaryContact" /> Birincil iletişim
+          <input type="checkbox" name="primaryContact" className="h-6 w-6 shrink-0" /> Birincil iletişim
         </label>
         <label className="mt-1 flex items-center gap-2 text-xs font-semibold">
-          <input type="checkbox" name="canViewAcademic" defaultChecked />{" "}
+          <input type="checkbox" name="canViewAcademic" className="h-6 w-6 shrink-0" defaultChecked />{" "}
           Akademik görünüm
         </label>
         <label className="mt-1 flex items-center gap-2 text-xs font-semibold">
-          <input type="checkbox" name="canViewPayments" /> Ödeme görünümü
+          <input type="checkbox" name="canViewPayments" className="h-6 w-6 shrink-0" /> Ödeme görünümü
         </label>
         <button
           disabled={busy}

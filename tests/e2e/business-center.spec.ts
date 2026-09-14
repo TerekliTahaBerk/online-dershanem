@@ -44,10 +44,9 @@ test.describe("Instagram CRM ve finans merkezi", () => {
     await expect(page.getByText("E2E manuel yanıt", { exact: true }).last()).toBeVisible();
 
     await page.goto("/panel/yonetim/isletme/satis-hunisi");
-    const leadCard = page.locator("form").filter({ hasText: "E2E Aday" }).first();
-    await leadCard.getByLabel("Aday aşaması").selectOption("QUALIFIED");
-    await leadCard.getByRole("button", { name: "Aşamayı kaydet" }).click();
-    await expect(page.getByText(/QUALIFIED ·/)).toBeVisible();
+    // Pano kartı aşamayı seçim anında kaydeder; ayrı kaydet düğmesi yoktur.
+    await page.getByRole("combobox", { name: "E2E Aday aşaması", exact: true }).selectOption("QUALIFIED");
+    await expect(page.getByRole("heading", { name: /^Nitelikli · [1-9]/ })).toBeVisible();
 
     for (const [section, kind, description] of [["gelirler", "MANUAL_INCOME", "E2E manuel gelir"], ["giderler", "EXPENSE", "E2E manuel gider"]] as const) {
       await page.goto(`/panel/yonetim/isletme/${section}`);

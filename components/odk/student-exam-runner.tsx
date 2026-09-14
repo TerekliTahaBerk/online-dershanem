@@ -605,11 +605,12 @@ export function StudentExamRunner({
                 const answer = answers[question.id];
                 const selected = index === currentIndex;
                 const symbol = navSymbol(answer, Boolean(visited[question.id]));
+                // Liste öğesi sarmalayıcıdır; `role="listitem"` düğmenin kendisinde
+                // olunca ekran okuyucu ve klavye kullanıcısı onu düğme olarak duymuyordu.
                 return (
+                  <div role="listitem" key={question.id} className="shrink-0">
                   <button
                     type="button"
-                    key={question.id}
-                    role="listitem"
                     onClick={() => {
                       setCurrentIndex(index);
                       setMobileView("answers");
@@ -645,6 +646,7 @@ export function StudentExamRunner({
                       {symbol}
                     </span>
                   </button>
+                  </div>
                 );
               })}
             </div>

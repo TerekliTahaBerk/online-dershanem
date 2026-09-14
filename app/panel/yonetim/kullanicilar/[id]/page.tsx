@@ -259,7 +259,7 @@ export default async function UserDetailPage({
                 {blocked ? (
                   <Link
                     href={`/panel/yonetim/siparisler/${blocked.id}`}
-                    className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+                    className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
                   >
                     Erişim sorununu çöz
                   </Link>
@@ -414,7 +414,7 @@ export default async function UserDetailPage({
                         : "Grup ataması yok"
                     }
                     tone={
-                      student.enrollments.length ? undefined : "text-[#A5764A]"
+                      student.enrollments.length ? undefined : "text-[#8A5F37]"
                     }
                   />
                   <Row
@@ -426,7 +426,7 @@ export default async function UserDetailPage({
                             .join(", ")
                         : "Bağlı veli yok"
                     }
-                    tone={student.parents.length ? undefined : "text-[#A5764A]"}
+                    tone={student.parents.length ? undefined : "text-[#8A5F37]"}
                   />
                   <Row
                     label="Koç"
@@ -439,7 +439,7 @@ export default async function UserDetailPage({
                           }`
                         : "Koç atanmadı"
                     }
-                    tone={coach ? undefined : "text-[#A5764A]"}
+                    tone={coach ? undefined : "text-[#8A5F37]"}
                   />
                   <Row
                     label="Son ders katılımı"
@@ -613,7 +613,7 @@ export default async function UserDetailPage({
                           {group.subject}
                         </span>
                       </span>
-                      <span className="text-[13px] font-bold text-dc-brand">
+                      <span className="text-[13px] font-bold text-dc-brand-strong">
                         {group.enrollments.length}/{group.capacity}
                       </span>
                     </Link>

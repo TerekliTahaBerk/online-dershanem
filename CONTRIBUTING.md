@@ -9,6 +9,7 @@ Online Dershanem is a proprietary product. Contributions are accepted only from 
 3. Keep changes focused and cover behavior changes with tests.
 4. Update the relevant documentation and the `Unreleased` section in `CHANGELOG.md`.
 5. Complete the validation checklist in the pull request template.
+6. When a change introduces or reverses a significant architecture, security, or data-model decision, add an ADR under `docs/adr/` from [`docs/adr/template.md`](docs/adr/template.md) and list it in [`docs/adr/README.md`](docs/adr/README.md).
 
 ## Required checks
 

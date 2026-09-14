@@ -78,6 +78,8 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
           where: { id: existing.id },
           data: {
             status: existing.status === "FALSE_POSITIVE" ? "OPEN" : existing.status,
+            // Etiket açıklamayla aynı sinyalden gelmeli; epizot içinde birincil sinyal değişebilir.
+            reasonCode: activeSignal.reasonCode,
             dueAt: new Date(now.getTime() + DAY),
             evidenceCount: episode.signals.reduce((sum, signal) => sum + signal.evidenceCount, 0),
             explanation: episode.signals.map((signal) => signal.explanation).join(" · "),
@@ -95,7 +97,7 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
         data: {
           studentId: episode.studentId,
           ruleVersion: INTERVENTION_RULE_VERSION,
-          reasonCode: "ATTENDANCE_PATTERN",
+          reasonCode: primarySignal.reasonCode,
           fingerprint: episode.fingerprint,
           explanation: episode.signals.map((signal) => signal.explanation).join(" · "),
           suggestedAction: episode.signals.map((signal) => signal.suggestedAction).join(" · "),

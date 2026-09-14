@@ -155,7 +155,8 @@ test.describe("İşletme Paneli RBAC", () => {
 
   test("iş birimi izolasyonu: ODK birimi kullanıcısı OD verisini göremez", async ({ page }) => {
     await login(page, accounts.odkOnly);
-    await page.goto("/panel/yonetim/isletme/adaylar");
+    // Varsayılan odak "bugün ilgilenilecekler"; izolasyon tüm adaylar üzerinde doğrulanır.
+    await page.goto("/panel/yonetim/isletme/adaylar?focus=all");
     // Yalnız kendi biriminin adayı görünür.
     await expect(page.getByText("ODK Birimi Adayı").first()).toBeVisible();
     // OD birimindeki aday hiç görünmemeli — sorgu kapsamı iş birimine bağlı.

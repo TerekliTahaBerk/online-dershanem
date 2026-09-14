@@ -46,11 +46,13 @@ async function login(page: Page, email = account.email) {
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);
   await page.getByLabel("Şifre").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
-  await page.waitForURL(/\/panel\//);
-  if (new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: "Online Deneme Kulübü paneline git" }).click();
-  }
-  await page.waitForURL(/\/panel\/odk\/ogrenci/);
+  // Tek panel: ürün seçici kaldırıldı, öğrenci her zaman rol köküne düşer.
+  // ODK sınav motoruna paneldeki "Denemeler" bağlantısıyla geçilir.
+  await page.waitForURL(/\/panel\/ogrenci$/);
+  await expect(page.getByRole("link", { name: "Denemeler", exact: true })).toHaveAttribute(
+    "href",
+    "/panel/odk/ogrenci/denemeler",
+  );
 }
 
 async function apiLogin(page: Page, email: string) {
@@ -71,8 +73,8 @@ async function openRunnerFromPanel(page: Page) {
   await expect(examsLink).toBeFocused();
   await page.keyboard.press("Enter");
   await page.waitForURL(/\/panel\/odk\/ogrenci\/denemeler$/);
+  // Devam eden denemenin kartı doğrudan sınav ekranına bağlanır; ara başlatma adımı yoktur.
   await page.getByRole("link", { name: /E2E Canlı Matematik Denemesi/ }).click();
-  await page.getByRole("button", { name: "Denemeye Devam Et" }).click();
   await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}/coz$`));
   if (await page.getByRole("button", { name: /Cevaplar/ }).isVisible()) {
     await page.getByRole("button", { name: /Cevaplar/ }).click();
@@ -145,7 +147,8 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     if (await page.getByRole("button", { name: /Cevaplar/ }).isVisible()) await page.getByRole("button", { name: /Cevaplar/ }).click();
     await page.getByRole("button", { name: /Soru 2, cevaplandı/ }).click();
     await expect(page.getByRole("button", { name: "B", exact: true })).toHaveAttribute("aria-pressed", "true");
-    await page.getByRole("button", { name: /Soru 1, cevaplandı, işaretli/ }).click();
+    // Gezgin tek durum söyler; işaret, cevaplı olmaktan önceliklidir.
+    await page.getByRole("button", { name: /Soru 1, işaretli/ }).click();
     await expect(page.getByRole("button", { name: "A", exact: true })).toHaveAttribute("aria-pressed", "true");
     await page.getByRole("button", { name: "Cevabı temizle" }).click();
     await expect(page.getByRole("button", { name: "A", exact: true })).toHaveAttribute("aria-pressed", "false");

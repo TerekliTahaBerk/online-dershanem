@@ -196,7 +196,7 @@ export default async function StudentsPage({
           actions={
             <Link
               href="/panel/yonetim/kullanicilar#yeni-hesap"
-              className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Öğrenci hesabı aç
             </Link>
@@ -230,7 +230,7 @@ export default async function StudentsPage({
           {q || urun || durum ? (
             <Link
               href="/panel/yonetim/ogrenciler"
-              className="text-[13.5px] font-semibold text-dc-brand hover:underline"
+              className="text-[13.5px] font-semibold text-dc-brand-strong hover:underline"
             >
               Filtreleri temizle
             </Link>

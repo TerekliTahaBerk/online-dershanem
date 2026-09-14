@@ -54,7 +54,7 @@ export function CommercePanel(props: CommercePanelProps) {
                 </div>
                 <Link
                   href={`/panel/yonetim/siparisler/${order.id}`}
-                  className="text-[12.5px] font-semibold text-dc-brand hover:underline"
+                  className="text-[12.5px] font-semibold text-dc-brand-strong hover:underline"
                 >
                   Siparişi aç
                 </Link>

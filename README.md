@@ -33,7 +33,7 @@ Administrator, teacher, student, and parent experiences have separate navigation
 
 ## Technology
 
-- Next.js 16 App Router, React 18, and TypeScript 5
+- Next.js 16 App Router, React 19, and TypeScript 5
 - PostgreSQL and Prisma 6
 - Tailwind CSS 3
 - Playwright, Node.js test runner, and Lighthouse CI
@@ -89,7 +89,7 @@ node --import tsx scripts/check-e2e-env.ts   # confirms nothing will be skipped
 
 The server also needs the rest of that workflow's `env:` block (for example `PANEL_ENABLED` and the `PANEL_FEATURE_*` flags), otherwise panel specs fail rather than skip.
 
-To run the Chromium, Firefox, and WebKit acceptance suite:
+To run the Chromium, Firefox, and WebKit panel acceptance suite (`tests/e2e/panel-cross-browser.spec.ts`; the `Cross-browser Panel` workflow runs it weekly and on demand, on Linux with `--with-deps`):
 
 ```bash
 npx playwright install chromium firefox webkit
@@ -114,7 +114,7 @@ Bootstrap a completely empty database safely with:
 ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
 ```
 
-The bootstrap command applies every versioned migration as SQL, including partial indexes and CHECK constraints that Prisma's schema language cannot represent. It refuses non-empty databases without Prisma migration history and is idempotent for a database it already bootstrapped. Run `npm run db:verify:fresh` after bootstrap to verify the critical projection indexes. The Prisma data model is split by domain under `prisma/schema/`; see the [data-model ownership guide](docs/data-model-ownership.md). See the [panel operations guide](docs/panel-operations.md) and [deployment checklist](docs/deployment-checklist.md) for environment variables, email policy, backup restoration, and production acceptance.
+The bootstrap command applies every versioned migration as SQL, including partial indexes and CHECK constraints that Prisma's schema language cannot represent. It refuses non-empty databases without Prisma migration history and is idempotent for a database it already bootstrapped. Run `npm run db:verify:fresh` after bootstrap to verify the critical unique indexes ([`scripts/verify-fresh-db-integrity.mjs`](scripts/verify-fresh-db-integrity.mjs)). The `Fresh database bootstrap` CI job runs this on every pull request to `main` or `test` against an empty PostgreSQL 16 database, together with `prisma migrate status`, core table and business-unit seed checks, and a second bootstrap for idempotency. It checks named critical indexes, not every CHECK constraint. The Prisma data model is split by domain under `prisma/schema/`; see the [data-model ownership guide](docs/data-model-ownership.md). See the [panel operations guide](docs/panel-operations.md) and [deployment checklist](docs/deployment-checklist.md) for environment variables, email policy, backup restoration, and production acceptance.
 
 Releases use `v*.*.*` tags. A tag push runs the release quality gate, publishes a GitHub Release, and builds a versioned container. Notable changes are maintained in [CHANGELOG.md](CHANGELOG.md).
 
@@ -123,8 +123,8 @@ Releases use `v*.*.*` tags. A tag push runs the release quality gate, publishes 
 Every semantic version is published to GitHub Container Registry with version, major-minor, and `latest` tags. Package access follows the repository owner's GitHub Packages visibility settings.
 
 ```bash
-docker pull ghcr.io/tereclitahaberk/online-dershanem:latest
-docker run --env-file .env.local -p 3000:3000 ghcr.io/tereclitahaberk/online-dershanem:latest
+docker pull ghcr.io/tereklitahaberk/online-dershanem:latest
+docker run --env-file .env.local -p 3000:3000 ghcr.io/tereklitahaberk/online-dershanem:latest
 ```
 
 Database migrations do not run automatically when the container starts. Run `npm run release:migrate` before a production deployment.
@@ -134,6 +134,7 @@ Database migrations do not run automatically when the container starts. Run `npm
 - [Panel operations](docs/panel-operations.md)
 - [Security and KVKK](docs/security-and-kvkk.md)
 - [Business RBAC model](docs/business-rbac.md)
+- [Architecture decision records](docs/adr/README.md)
 - [Meta and Instagram setup](docs/meta-instagram-setup.md)
 - [OpenAI-assisted drafting setup](docs/openai-assistant-setup.md)
 - [ODK pilot acceptance checklist](docs/odk-pilot-acceptance-checklist.md)

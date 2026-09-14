@@ -206,7 +206,7 @@ export default async function ParentsPage({
           actions={
             <Link
               href="/panel/yonetim/kullanicilar#yeni-hesap"
-              className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Veli hesabı aç
             </Link>
@@ -239,7 +239,7 @@ export default async function ParentsPage({
           {q || durum ? (
             <Link
               href="/panel/yonetim/veliler"
-              className="text-[13.5px] font-semibold text-dc-brand hover:underline"
+              className="text-[13.5px] font-semibold text-dc-brand-strong hover:underline"
             >
               Filtreleri temizle
             </Link>

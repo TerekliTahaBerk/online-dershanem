@@ -154,7 +154,7 @@ export default async function PanelFeatureInventoryPage() {
           Erişim ve atama değişiklikleri her zaman kayıt altına alınır.{" "}
           <Link
             href="/panel/yonetim/kayitlar"
-            className="font-semibold text-dc-brand hover:underline"
+            className="font-semibold text-dc-brand-strong hover:underline"
           >
             Tüm işlem geçmişi
           </Link>

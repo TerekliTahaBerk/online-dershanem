@@ -503,7 +503,7 @@ export default async function AdminCoachingPage() {
                   </span>
                   <Link
                     href={`/panel/yonetim/ogrenciler/${row.student.id}`}
-                    className="text-[12.5px] font-semibold text-dc-brand hover:underline"
+                    className="text-[12.5px] font-semibold text-dc-brand-strong hover:underline"
                   >
                     Öğrenciyi aç
                   </Link>
@@ -534,7 +534,7 @@ export default async function AdminCoachingPage() {
                   </span>
                   <Link
                     href={`/panel/yonetim/ogrenciler/${row.student.id}`}
-                    className="text-[12.5px] font-semibold text-dc-brand hover:underline"
+                    className="text-[12.5px] font-semibold text-dc-brand-strong hover:underline"
                   >
                     Öğrenciyi aç
                   </Link>
@@ -548,7 +548,7 @@ export default async function AdminCoachingPage() {
           Koçluk görüşmelerinin kendisi öğretmen panelinden kaydedilir.{" "}
           <Link
             href="/panel/yonetim/egitmenler"
-            className="font-semibold text-dc-brand hover:underline"
+            className="font-semibold text-dc-brand-strong hover:underline"
           >
             Öğretmenleri aç
           </Link>

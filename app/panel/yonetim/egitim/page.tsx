@@ -207,7 +207,7 @@ export default async function EducationAdminPage() {
                     <PanelTableCell>
                       <Link
                         href={`/panel/yonetim/gruplar/${group.id}`}
-                        className="text-[13px] font-semibold text-dc-brand hover:underline"
+                        className="text-[13px] font-semibold text-dc-brand-strong hover:underline"
                       >
                         Grubu Gör
                       </Link>
