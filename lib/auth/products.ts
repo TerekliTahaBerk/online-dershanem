@@ -4,7 +4,7 @@ import type { Prisma, ProductCode, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
 import { hasProductEntitlement } from "@/lib/auth/product-entitlements";
-import { asLegacyProductCode, isLegacyProductCode, membershipProductCode, sortProductCodes } from "@/lib/products/codes";
+import { LEGACY_PRODUCT_ORDER, asLegacyProductCode, isLegacyProductCode, membershipProductCode, sortProductCodes } from "@/lib/products/codes";
 
 const STAFF_PRODUCTS: ProductCode[] = ["OD", "OK", "ODK"];
 
@@ -19,7 +19,9 @@ function activeMembershipWhere(userId: string, now: Date): Prisma.ProductMembers
 
 /**
  * Legacy (OD/OK/ODK) ürün erişimi. Davranışı registry köprüsünden ÖNCEKİYLE
- * birebir aynıdır; registry-only üyelikler (KPSS, `product` NULL) burada görünmez.
+ * birebir aynıdır; registry ürünleri (KPSS) burada görünmez. KPSS Görev 5'ten
+ * sonra KPSS satırlarında `product` dolu olduğu için süzgeç `not null` değil,
+ * açıkça legacy üçlüdür — aksi halde KPSS registry `is_active` kapısını atlardı.
  */
 export async function getAccessibleProducts(userId: string, role: UserRole, now = new Date()): Promise<ProductCode[]> {
   // Personel görev gereği üç üründe de çalışır. DB satırları kaynak/audit için
@@ -27,7 +29,7 @@ export async function getAccessibleProducts(userId: string, role: UserRole, now 
   if (role === "ADMIN" || role === "TEACHER") return STAFF_PRODUCTS;
 
   const memberships = await prisma.productMembership.findMany({
-    where: { ...activeMembershipWhere(userId, now), product: { not: null } },
+    where: { ...activeMembershipWhere(userId, now), product: { in: [...LEGACY_PRODUCT_ORDER] } },
     select: { product: true },
     orderBy: { product: "asc" },
   });

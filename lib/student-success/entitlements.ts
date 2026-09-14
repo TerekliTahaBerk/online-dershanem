@@ -35,6 +35,7 @@ export type ProductEntitlementSummary = {
   missing: ProductCode[];
 };
 
+/** K-12 paketinin tamamı; KPSS bu pakete dahil değildir, "eksik" sayılmaz. */
 const ALL_PRODUCTS: ProductCode[] = ["OD", "OK", "ODK"];
 
 export function summarizeEntitlements(products: readonly ProductCode[]): ProductEntitlementSummary {
@@ -42,7 +43,7 @@ export function summarizeEntitlements(products: readonly ProductCode[]): Product
   const missing = ALL_PRODUCTS.filter((p) => !set.has(p));
   return {
     products: [...products],
-    labels: products.map((p) => ({ OD: "Dershanem", OK: "Koçum", ODK: "Deneme Kulübü" }[p])),
+    labels: products.map((p) => ({ OD: "Dershanem", OK: "Koçum", ODK: "Deneme Kulübü", KPSS: "KPSS" }[p])),
     hasAll: missing.length === 0,
     missing,
   };

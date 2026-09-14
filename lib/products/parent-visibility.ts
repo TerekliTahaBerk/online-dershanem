@@ -20,6 +20,7 @@ const PARENT_VISIBLE_LEGACY_PRODUCTS: Record<ProductCode, boolean> = {
   OD: true,
   OK: true,
   ODK: true,
+  KPSS: false,
 };
 
 export function isParentVisibleProduct(code: string): boolean {

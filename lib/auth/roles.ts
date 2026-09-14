@@ -74,6 +74,8 @@ export function productRolePath(product: ProductCode, role: UserRole): string {
     OD: rolePath(role),
     OK: rolePath(role),
     ODK: ODK_ROLE_HOME[role],
+    // KPSS'nin ayrı route ağacı yok; tek panelin kökünde açılır.
+    KPSS: rolePath(role),
   };
   return byProduct[product];
 }
@@ -82,6 +84,7 @@ const PRODUCT_LABEL: Record<ProductCode, string> = {
   OD: "Online Dershanem",
   OK: "Online Koçum",
   ODK: "Online Deneme Kulübüm",
+  KPSS: "KPSS",
 };
 
 export function productLabel(product: ProductCode): string {

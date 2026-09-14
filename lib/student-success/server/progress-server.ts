@@ -217,7 +217,7 @@ export async function getUnifiedActivityTimeline(
     summary: e.entityType,
     product: productMap[e.eventType] ?? null,
     productLabel: productMap[e.eventType]
-      ? { OD: "Dershanem", OK: "Koçum", ODK: "Deneme Kulübü" }[productMap[e.eventType]!]
+      ? { OD: "Dershanem", OK: "Koçum", ODK: "Deneme Kulübü", KPSS: "KPSS" }[productMap[e.eventType]!]
       : null,
     kind: e.eventType,
   }));
