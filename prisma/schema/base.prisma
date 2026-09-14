@@ -30,6 +30,12 @@ enum ProductCode {
    */
   OK
   ODK
+  /**
+   * KPSS Görev 5: ticari akış `Record<ProductCode, …>` tamlığı için enum'a alındı.
+   * Erişim/görünürlük hâlâ registry'nin `products.is_active` bayrağına bağlıdır;
+   * bkz. `lib/products/codes.ts` (KPSS "legacy" sayılmaz).
+   */
+  KPSS
 }
 
 enum CurriculumExam {

@@ -7,7 +7,9 @@ import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
 import { dueAtForOdOnboardingState } from "@/lib/od/onboarding-state";
 import { prisma } from "@/lib/prisma";
 import { contractAccessWindow, parseOdkProductContract } from "@/lib/odk/product-contract";
-import { COMMERCE_TO_PRODUCT_CODE, MEMBERSHIP_BACKED_PRODUCTS } from "@/lib/commerce/product-mapping";
+import { COMMERCE_FULFILLMENT, COMMERCE_TO_PRODUCT_CODE, orderGrantsBuyerOdMembership } from "@/lib/commerce/product-mapping";
+import { mergeAccessWindow, parseExamAccessWindow } from "@/lib/commerce/kpss-access-window";
+import { grantProductMembership } from "@/lib/products/membership-server";
 import { log } from "@/lib/logger";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
@@ -71,17 +73,29 @@ async function provisionRemainingOdLines(orderId: string) {
          * ÜRÜN AYRIMI AÇIK OLMALI. Burası eskiden `if (OD) … else { ODK }`
          * idi; üçüncü ürün (Koçum) eklendiğinde OK satırı sessizce ODK
          * dalına düşüp ya hata veriyor ya da yanlış yetki açıyordu.
-         * Artık üyelik temelli ürünler (OD, OK) ortak dalda, ODK kendi
-         * sözleşme/pencere mantığında.
+         * Artık strateji `COMMERCE_FULFILLMENT` Record'undan gelir: yeni ürün
+         * eklendiğinde derleyici burayı da açık karara zorlar; bilinmeyen
+         * strateji `never` kontrolüyle hata verir, ODK dalına düşmez.
          */
-        if (MEMBERSHIP_BACKED_PRODUCTS[line.product]) {
+        const fulfillment = COMMERCE_FULFILLMENT[line.product];
+        if (fulfillment === "open_membership") {
           const productCode = COMMERCE_TO_PRODUCT_CODE[line.product];
           await tx.productMembership.upsert({
             where: { userId_product: { userId: user.id, product: productCode } },
             create: { userId: user.id, product: productCode, source: "PURCHASE", sourceOdOrderId: orderId },
             update: { source: "PURCHASE", sourceOdOrderId: orderId, revokedAt: null, expiresAt: null },
           });
-        } else {
+        } else if (fulfillment === "exam_window_membership") {
+          // KPSS: sınav tarihine kadar pencereli üyelik. Registry pasifse
+          // `grantProductMembership` PRODUCT_INACTIVE fırlatır — satış kilidi.
+          const productCode = COMMERCE_TO_PRODUCT_CODE[line.product];
+          const paid = await tx.odPayment.findFirst({ where: { orderId, status: "SUCCEEDED" }, orderBy: { paidAt: "asc" }, select: { paidAt: true } });
+          const parsed = parseExamAccessWindow(line.productSnapshot, paid?.paidAt ?? new Date());
+          if (!parsed.ok) throw new OdProvisioningError(`${line.product} satır erişim penceresi geçersiz: ${parsed.reason}`, "EXAM_WINDOW_INVALID");
+          const existing = await tx.productMembership.findFirst({ where: { userId: user.id, productRef: { code: productCode } }, select: { startsAt: true, expiresAt: true } });
+          const window = mergeAccessWindow(existing, parsed.window);
+          await grantProductMembership({ userId: user.id, productCode, source: "PURCHASE", startsAt: window.startsAt, expiresAt: window.expiresAt, sourceOdOrderId: orderId }, tx);
+        } else if (fulfillment === "odk_contract") {
           if (!line.productId) throw new OdProvisioningError("ODK satırında ürün kimliği eksik.", "ODK_LINE_PRODUCT_MISSING");
           const contract = parseOdkProductContract(line.productSnapshot);
           if (!contract.success) throw new OdProvisioningError("ODK satır sözleşmesi geçersiz.", "ODK_LINE_CONTRACT_INVALID");
@@ -102,6 +116,9 @@ async function provisionRemainingOdLines(orderId: string) {
             create: { orderLineId: line.id, userId: user.id, packageId: line.productId, startsAt, expiresAt, contractSnapshot: contract.data as unknown as Prisma.InputJsonValue },
             update: { userId: user.id, packageId: line.productId, revokedAt: null, startsAt, expiresAt },
           });
+        } else {
+          const unsupported: never = fulfillment;
+          throw new OdProvisioningError(`Desteklenmeyen satır stratejisi: ${String(unsupported)}`, "LINE_FULFILLMENT_UNSUPPORTED");
         }
         await tx.commerceOrderLine.update({ where: { id: line.id }, data: { fulfillmentOwnerUserId: user.id, fulfillmentStatus: "SUCCEEDED", fulfillmentError: null, fulfilledAt: new Date() } });
       });
@@ -268,13 +285,22 @@ export async function provisionOdOrder(
       });
       injected(options.failurePoint, "AFTER_PROFILE");
 
-      const existingMembership = await tx.productMembership.findUnique({ where: { userId_product: { userId: student.id, product: "OD" } }, select: { id: true } });
-      const membership = await tx.productMembership.upsert({
-        where: { userId_product: { userId: student.id, product: "OD" } },
-        create: { userId: student.id, product: "OD", source: "PURCHASE", sourceOdOrderId: orderId },
-        update: { source: "PURCHASE", sourceOdOrderId: orderId, revokedAt: null, expiresAt: null },
-        select: { id: true },
-      });
+      // Alıcıya OD üyeliği yalnız satırları bunu gerektiriyorsa açılır
+      // (`ORDER_GRANTS_BUYER_OD_MEMBERSHIP`). OD/OK/ODK satırlarında ve satırsız
+      // eski siparişlerde davranış aynıdır; KPSS-only sipariş K-12 erişimi açmaz.
+      const orderLineProducts = await tx.commerceOrderLine.findMany({ where: { odOrderId: orderId }, select: { product: true } });
+      const grantsOdMembership = orderGrantsBuyerOdMembership(orderLineProducts.map((line) => line.product));
+      const existingMembership = grantsOdMembership
+        ? await tx.productMembership.findUnique({ where: { userId_product: { userId: student.id, product: "OD" } }, select: { id: true } })
+        : null;
+      const membership = grantsOdMembership
+        ? await tx.productMembership.upsert({
+            where: { userId_product: { userId: student.id, product: "OD" } },
+            create: { userId: student.id, product: "OD", source: "PURCHASE", sourceOdOrderId: orderId },
+            update: { source: "PURCHASE", sourceOdOrderId: orderId, revokedAt: null, expiresAt: null },
+            select: { id: true },
+          })
+        : null;
       injected(options.failurePoint, "AFTER_MEMBERSHIP");
 
       const parentFullName = textField(buyer, "parentFullName");
@@ -330,16 +356,16 @@ export async function provisionOdOrder(
       const onboarding = await tx.odOnboarding.findUniqueOrThrow({ where: { orderId } });
       const now = new Date();
       if (onboarding.state !== targetState) {
-        await tx.odOnboardingTransition.create({ data: { onboardingId: onboarding.id, fromState: onboarding.state, toState: targetState, actorType: "SYSTEM", note: "Ödeme sonrası hesap ve ürün erişimi otomatik hazırlandı.", metadata: { studentUserId: student.id, parentUserId: parentUserId ?? null, membershipId: membership.id }, occurredAt: now } });
+        await tx.odOnboardingTransition.create({ data: { onboardingId: onboarding.id, fromState: onboarding.state, toState: targetState, actorType: "SYSTEM", note: "Ödeme sonrası hesap ve ürün erişimi otomatik hazırlandı.", metadata: { studentUserId: student.id, parentUserId: parentUserId ?? null, membershipId: membership?.id ?? null }, occurredAt: now } });
       }
       await tx.odOnboarding.update({
         where: { id: onboarding.id },
         data: { state: targetState, flowType: existingStudent ? "EXISTING_STUDENT" : "NEW_STUDENT", dueAt: dueAtForOdOnboardingState(targetState, now), blockerReason: null, blockedFromState: null, stateEnteredAt: now, version: { increment: 1 } },
       });
       await tx.auditLog.createMany({ data: [
-        { actorType: "SYSTEM", entityType: "ProductMembership", entityId: membership.id, action: existingMembership ? "product_membership.purchase_refreshed" : "product_membership.purchase_granted", summary: "OD satın alma erişimi açıldı", payload: { orderId, userId: student.id, product: "OD", source: "PURCHASE" } },
+        ...(membership ? [{ actorType: "SYSTEM" as const, entityType: "ProductMembership", entityId: membership.id, action: existingMembership ? "product_membership.purchase_refreshed" : "product_membership.purchase_granted", summary: "OD satın alma erişimi açıldı", payload: { orderId, userId: student.id, product: "OD", source: "PURCHASE" } }] : []),
         ...(parentUserId ? [{ actorType: "SYSTEM" as const, entityType: "ParentStudent", entityId: `${parentUserId}:${profile.id}`, action: parentLinkCreated ? "parent_student.auto_linked" : "parent_student.link_confirmed", summary: "Veli öğrenci bağlantısı doğrulandı", payload: { orderId, parentUserId, studentProfileId: profile.id } }] : []),
-        { actorType: "SYSTEM", entityType: "OdOrder", entityId: orderId, action: "od.provisioning.succeeded", summary: `Hesap ve OD erişimi hazırlandı; onboarding ${targetState}`, payload: { userId: student.id, parentUserId: parentUserId ?? null, flowType: existingStudent ? "EXISTING_STUDENT" : "NEW_STUDENT", onboardingState: targetState } },
+        { actorType: "SYSTEM", entityType: "OdOrder", entityId: orderId, action: "od.provisioning.succeeded", summary: `${membership ? "Hesap ve OD erişimi" : "Hesap"} hazırlandı; onboarding ${targetState}`, payload: { userId: student.id, parentUserId: parentUserId ?? null, flowType: existingStudent ? "EXISTING_STUDENT" : "NEW_STUDENT", onboardingState: targetState } },
       ] });
       return { status: "SUCCEEDED" as const, userId: student.id, parentUserId };
     }, { isolationLevel: "Serializable" });

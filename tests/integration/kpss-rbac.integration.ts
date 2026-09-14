@@ -119,7 +119,7 @@ async function withFixture(fn: (fixture: Fixture) => Promise<void>) {
   }
 }
 
-integration("Adım 2 köprü: legacy yazım registry'ye bağlanır, KPSS product=NULL ile tekil kalır", async () => {
+integration("Adım 2 köprü: legacy yazım registry'ye bağlanır, KPSS product+productRefId birlikte dolu ve tekil kalır", async () => {
   await withFixture(async (f) => {
     const legacy = await db.productMembership.findUniqueOrThrow({ where: { id: f.legacyRow.id } });
     assert.equal(legacy.productRefId, f.odRegistry.id, "0106 trigger'ı enum ile yazılan satıra product_ref_id yazmalı");
@@ -127,7 +127,9 @@ integration("Adım 2 köprü: legacy yazım registry'ye bağlanır, KPSS product
     const kpssRow = await db.productMembership.findUniqueOrThrow({
       where: { userId_productRefId: { userId: f.kpssOnlyUser.id, productRefId: f.kpss.id } },
     });
-    assert.equal(kpssRow.product, null);
+    // KPSS Görev 5: KPSS enum üyesi oldu; iki alan aynı kaydı gösterir (önceden product NULL'dı).
+    assert.equal(kpssRow.product, "KPSS");
+    assert.equal(kpssRow.productRefId, f.kpss.id);
 
     const again = await grantProductMembership({ userId: f.kpssOnlyUser.id, productCode: "KPSS", source: "MANUAL" });
     assert.equal(again.id, kpssRow.id, "adapter idempotent upsert yapmalı");

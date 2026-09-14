@@ -8,6 +8,7 @@ import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { findCoachAssignmentForCoach, getStudentCoaching } from "@/lib/panel/coaching";
 import { getStudentGoals } from "@/lib/panel/goals";
 import { listStudentExams } from "@/lib/odk/student-exam-server";
+import { isLegacyProductCode } from "@/lib/products/codes";
 import { canViewStudent360Commerce, type Student360Tab } from "@/lib/panel/student-360";
 import type { Student360Access, Student360AccessMode } from "./dto";
 import { asViewerRole, deriveStudent360QueryRequirements } from "./policy";
@@ -173,7 +174,7 @@ export async function loadStudent360QueryData(input: {
   if (!student) notFound();
 
   // Legacy ürünler (OD/OK/ODK); registry-only üyelikler (KPSS) bu ekranda henüz etiketlenmez.
-  const products = student.user.productMemberships.flatMap((row) => (row.product ? [row.product] : []));
+  const products = student.user.productMemberships.flatMap((row) => (row.product && isLegacyProductCode(row.product) ? [row.product] : []));
   const orders = access.canViewCommerce ? (student.user.odOrders ?? []) : [];
   const blockedOrders = orders.filter(
     (order) => order.status === "PAID" && order.provisioningStatus !== "SUCCEEDED",

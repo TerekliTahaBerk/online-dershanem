@@ -91,11 +91,14 @@ enum OdProvisioningStatus {
  * OK (Online Koçum) siparişleri `OdOrder` üzerinden yürür — aylık faturalama
  * ve aynı PayTR prefix'i. Eşleme `lib/commerce/product-mapping.ts` içindedir;
  * bu enum'a yeni değer eklenirse orası derleme hatası verir.
+ * KPSS siparişi de `OdOrder` (birleşik sepet) üzerinden yürür ama erişimi
+ * sınav tarihine kadar pencereli üyelikle açılır.
  */
 enum CommerceProduct {
   OD
   OK
   ODK
+  KPSS
 }
 
 enum OrderLineFulfillmentStatus {

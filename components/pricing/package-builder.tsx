@@ -21,6 +21,7 @@ import {
   type LessonFormat,
   type ProductKey,
 } from "@/lib/commerce/package-builder-pricing";
+import { builderProductKeys } from "@/lib/commerce/builder-products";
 
 const billingCopy: Record<
   BillingPeriod,
@@ -274,7 +275,8 @@ export function PackageBuilder() {
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1fr_380px]">
         <div className="flex flex-col gap-4">
-          {(Object.keys(productCopy) as ProductKey[]).map((key) => {
+          {/* Görünürlük registry kapısından geçer; registry ürünleri aktif liste verilmeden kapalıdır. */}
+          {builderProductKeys().map((key) => {
             const copy = productCopy[key];
             const line = quote.lines.find((l) => l.product === key)!;
             const active = selection[key];

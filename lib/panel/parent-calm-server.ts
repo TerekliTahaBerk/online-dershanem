@@ -1,6 +1,8 @@
 import "server-only";
 
 import { productLabel } from "@/lib/auth/roles";
+import { LEGACY_PRODUCT_ORDER } from "@/lib/products/codes";
+import { isParentVisibleProduct } from "@/lib/products/parent-visibility";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { listStudentExams } from "@/lib/odk/student-exam-server";
@@ -152,7 +154,8 @@ export async function loadParentCalmHome(input: {
       where: {
         userId: selected.userId,
         // Veli-free ürünlerin (KPSS) paket süresi veli ekranına yansımaz.
-        product: { not: null },
+        // KPSS artık enum üyesi (`product` dolu); süzgeç açıkça veli-görünür ürünlerdir.
+        product: { in: [...LEGACY_PRODUCT_ORDER].filter(isParentVisibleProduct) },
         revokedAt: null,
         expiresAt: { not: null, gt: now, lte: addIstanbulCalendarDays(now, PACKAGE_WARN_DAYS) },
       },

@@ -1,8 +1,10 @@
 import "server-only";
 
 import { notFound } from "next/navigation";
+import type { ProductCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { productLabel } from "@/lib/auth/roles";
+import { isLegacyProductCode } from "@/lib/products/codes";
 import {
   GROUP_360_TABS,
   attendanceRate,
@@ -465,7 +467,7 @@ async function loadStudentsTab(
         fullName: string | null;
         email: string;
         lastLoginAt: Date | null;
-        productMemberships: Array<{ product: "OD" | "OK" | "ODK" | null }>;
+        productMemberships: Array<{ product: ProductCode | null }>;
       };
     };
   }>,
@@ -526,8 +528,9 @@ async function loadStudentsTab(
         userId: enrollment.student.userId,
         name: displayName(enrollment.student.user),
         email: enrollment.student.user.email,
+        // Öğretmen ekranı: registry ürünleri (KPSS) Görev 4'teki gibi etiketlenmez.
         packages: enrollment.student.user.productMemberships.flatMap((row) =>
-          row.product ? [productLabel(row.product)] : [],
+          row.product && isLegacyProductCode(row.product) ? [productLabel(row.product)] : [],
         ),
         attendanceRate: attendanceRate(att.present, att.total),
         risk: risk.level,

@@ -9,15 +9,16 @@ const matrix: Array<{
   products: ProductCode[];
   expected: Record<ProductCode, boolean>;
 }> = [
-  { name: "OD-only", products: ["OD"], expected: { OD: true, OK: false, ODK: false } },
-  { name: "OK-only", products: ["OK"], expected: { OD: false, OK: true, ODK: false } },
-  { name: "ODK-only", products: ["ODK"], expected: { OD: false, OK: false, ODK: true } },
-  { name: "bundle", products: ["OD", "OK", "ODK"], expected: { OD: true, OK: true, ODK: true } },
+  { name: "OD-only", products: ["OD"], expected: { OD: true, OK: false, ODK: false, KPSS: false } },
+  { name: "OK-only", products: ["OK"], expected: { OD: false, OK: true, ODK: false, KPSS: false } },
+  { name: "ODK-only", products: ["ODK"], expected: { OD: false, OK: false, ODK: true, KPSS: false } },
+  { name: "bundle", products: ["OD", "OK", "ODK"], expected: { OD: true, OK: true, ODK: true, KPSS: false } },
+  { name: "KPSS-only", products: ["KPSS"], expected: { OD: false, OK: false, ODK: false, KPSS: true } },
 ];
 
 for (const row of matrix) {
   test(`product entitlement matrix: ${row.name}`, () => {
-    for (const product of ["OD", "OK", "ODK"] as const) {
+    for (const product of ["OD", "OK", "ODK", "KPSS"] as const) {
       assert.equal(hasProductEntitlement(row.products, product), row.expected[product]);
     }
   });

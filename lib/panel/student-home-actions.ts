@@ -10,7 +10,8 @@ const TR_TIME = new Intl.DateTimeFormat("tr-TR", {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export type StudentHomeActionProduct = ProductCode | "SHARED";
+/** Öğrenci ana sayfası yalnız K-12 ürünleri için aksiyon üretir; KPSS olay şemasında yoktur. */
+export type StudentHomeActionProduct = Exclude<ProductCode, "KPSS"> | "SHARED";
 export type StudentHomeActionKind =
   | "OPEN_LESSON"
   | "OPEN_RECOVERY"

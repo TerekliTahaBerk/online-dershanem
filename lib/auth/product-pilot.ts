@@ -10,15 +10,18 @@ import type { ProductCode } from "@prisma/client";
  */
 export type PilotProgram = "od" | "odk";
 
-export const PRODUCT_PILOT_PROGRAM: Record<ProductCode, PilotProgram> = {
+/** KPSS'nin pilot programı yok (`null`): OD pilotuna düşürmek yerine hata verir. */
+export const PRODUCT_PILOT_PROGRAM: Record<ProductCode, PilotProgram | null> = {
   OD: "od",
   OK: "od",
   ODK: "odk",
+  KPSS: null,
 };
 
 export function pilotProgramForProduct(product: string): PilotProgram {
-  if (!Object.hasOwn(PRODUCT_PILOT_PROGRAM, product)) {
+  const program = Object.hasOwn(PRODUCT_PILOT_PROGRAM, product) ? PRODUCT_PILOT_PROGRAM[product as ProductCode] : null;
+  if (!program) {
     throw new Error(`UNSUPPORTED_PILOT_PRODUCT:${product}`);
   }
-  return PRODUCT_PILOT_PROGRAM[product as ProductCode];
+  return program;
 }
