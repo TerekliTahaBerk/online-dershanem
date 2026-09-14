@@ -4,6 +4,7 @@ import { cliLog } from "./lib/cli-logger.mjs";
 const expectedIndexes = [
   "weekly_plan_tasks_one_per_assignment_ref",
   "weekly_plan_tasks_one_per_suggestion_ref",
+  "PurchaseEvent_providerReference_key",
 ];
 
 const prisma = new PrismaClient();
@@ -15,7 +16,8 @@ try {
     WHERE schemaname = 'public'
       AND indexname IN (
         'weekly_plan_tasks_one_per_assignment_ref',
-        'weekly_plan_tasks_one_per_suggestion_ref'
+        'weekly_plan_tasks_one_per_suggestion_ref',
+        'PurchaseEvent_providerReference_key'
       )
   `;
 
@@ -27,7 +29,10 @@ try {
 
   for (const name of expectedIndexes) {
     const definition = byName.get(name);
-    if (!/CREATE UNIQUE INDEX/i.test(definition) || !/\sWHERE\s/i.test(definition)) {
+    if (!/CREATE UNIQUE INDEX/i.test(definition)) {
+      throw new Error(`${name} mevcut fakat unique index değil: ${definition}`);
+    }
+    if (name.startsWith("weekly_plan_tasks_") && !/\sWHERE\s/i.test(definition)) {
       throw new Error(`${name} mevcut fakat unique partial index değil: ${definition}`);
     }
   }

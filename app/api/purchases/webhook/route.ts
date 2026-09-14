@@ -53,19 +53,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Geçersiz webhook verisi." }, { status: 400 });
     }
 
-    const existingEvent = parsed.data.providerReference
-      ? await prisma.purchaseEvent.findFirst({
-          where: { providerReference: parsed.data.providerReference },
-          orderBy: { createdAt: "desc" }
-        })
-      : null;
-
-    // P0: idempotency guard — PayTR re-delivers the same notification 2-3 times.
-    if (existingEvent) {
-      log.debug("webhook.purchase.duplicate_ignored", { providerReference: parsed.data.providerReference });
-      return NextResponse.json({ ok: true });
-    }
-
     const purchase = parsed.data.purchaseId
       ? await prisma.purchaseIntent.findUnique({
           where: { id: parsed.data.purchaseId }
@@ -77,27 +64,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Satın alma kaydı bulunamadı." }, { status: 404 });
     }
 
-    await prisma.$transaction([
-      prisma.purchaseIntent.update({
-        where: { id: purchase.id },
-        data: {
-          status: parsed.data.status
+    try {
+      await prisma.$transaction([
+        prisma.purchaseIntent.update({
+          where: { id: purchase.id },
+          data: {
+            status: parsed.data.status
+          }
+        }),
+        prisma.purchaseEvent.create({
+          data: {
+            purchaseIntentId: purchase.id,
+            eventType: parsed.data.eventType,
+            status: parsed.data.status,
+            source: purchase.source,
+            packageName: purchase.packageName,
+            paymentLink: purchase.paymentLink,
+            provider: parsed.data.provider,
+            providerReference: parsed.data.providerReference,
+            payload: parsed.data.payload as Prisma.InputJsonValue | undefined
+          }
+        })
+      ]);
+    } catch (error) {
+      if (
+        parsed.data.providerReference &&
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        const existingEvent = await prisma.purchaseEvent.findUnique({
+          where: { providerReference: parsed.data.providerReference },
+          select: { id: true },
+        });
+        if (existingEvent) {
+          log.debug("webhook.purchase.duplicate_ignored", {
+            providerReference: parsed.data.providerReference,
+          });
+          return NextResponse.json({ ok: true });
         }
-      }),
-      prisma.purchaseEvent.create({
-        data: {
-          purchaseIntentId: purchase.id,
-          eventType: parsed.data.eventType,
-          status: parsed.data.status,
-          source: purchase.source,
-          packageName: purchase.packageName,
-          paymentLink: purchase.paymentLink,
-          provider: parsed.data.provider,
-          providerReference: parsed.data.providerReference,
-          payload: parsed.data.payload as Prisma.InputJsonValue | undefined
-        }
-      })
-    ]);
+      }
+      throw error;
+    }
 
     log.info("webhook.purchase.processed", {
       purchaseId: purchase.id,

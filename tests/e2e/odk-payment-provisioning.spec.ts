@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { postPaytrCallback } from "./helpers/paytr-callback";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 import { defaultOdkPackagePolicy } from "../../lib/odk/product-contract";
+import { findStuckPayments } from "../../lib/commerce/stuck-payments";
 
 const prisma = new PrismaClient();
 const amountCents = 12_900;
@@ -84,11 +85,13 @@ test.describe("ODK ödeme → provisioning bütünlüğü", () => {
     expect(state.user?.studentProfile).not.toBeNull();
     expect(state.user?.productMemberships).toHaveLength(1);
     expect(state.order.entitlement).toBeNull();
+    expect((await findStuckPayments({ olderThanMinutes: 0 })).some((payment) => payment.orderId === order.id)).toBe(true);
 
     expect((await postPaytrCallback(request, { merchantOid, amountCents })).status()).toBe(200);
     state = await chain(order.id, email);
     expect(state.order.provisioningStatus).toBe("SUCCEEDED");
     expect(state.order.provisioningAttempts).toBe(2);
+    expect((await findStuckPayments({ olderThanMinutes: 0 })).some((payment) => payment.orderId === order.id)).toBe(false);
     expect(await prisma.productMembership.count({ where: { userId: state.user!.id, product: "ODK" } })).toBe(1);
     expect(await prisma.odkEntitlement.count({ where: { orderId: order.id } })).toBe(1);
   });

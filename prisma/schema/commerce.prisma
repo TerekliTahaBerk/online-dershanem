@@ -197,7 +197,7 @@ model PurchaseEvent {
   packageName       String
   paymentLink       String?
   provider          String?
-  providerReference String?
+  providerReference String?           @unique
   payload           Json?
   createdAt         DateTime          @default(now()) @db.Timestamptz(3)
   purchaseIntent    PurchaseIntent    @relation(fields: [purchaseIntentId], references: [id], onDelete: Cascade)

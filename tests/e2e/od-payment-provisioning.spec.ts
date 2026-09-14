@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { postPaytrCallback } from "./helpers/paytr-callback";
+import { findStuckPayments } from "../../lib/commerce/stuck-payments";
 
 const prisma = new PrismaClient();
 const amountCents = 24_900;
@@ -92,10 +93,12 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
     let stored = await prisma.odOrder.findUniqueOrThrow({ where: { id: order.id }, include: { payments: true } });
     expect(stored).toMatchObject({ status: "PAID", provisioningStatus: "RETRY_PENDING" });
     expect(stored.payments[0].status).toBe("SUCCEEDED");
+    expect((await findStuckPayments({ olderThanMinutes: 0 })).some((payment) => payment.orderId === order.id)).toBe(true);
     expect((await postPaytrCallback(request, { merchantOid, amountCents })).status()).toBe(200);
     stored = await prisma.odOrder.findUniqueOrThrow({ where: { id: order.id }, include: { payments: true } });
     expect(stored.provisioningStatus).toBe("SUCCEEDED");
     expect(stored.provisioningAttempts).toBe(2);
+    expect((await findStuckPayments({ olderThanMinutes: 0 })).some((payment) => payment.orderId === order.id)).toBe(false);
     expect(await prisma.user.count({ where: { email } })).toBe(1);
     expect(await prisma.productMembership.count({ where: { user: { email }, product: "OD" } })).toBe(1);
   });

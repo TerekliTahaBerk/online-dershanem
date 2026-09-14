@@ -44,6 +44,7 @@
     "prisma:deploy:ci": "node scripts/prisma-migrate-deploy-ci.mjs",
     "release:migrate": "prisma migrate deploy",
     "inspect:odk-pilot": "node scripts/check-odk-pilot-config.mjs",
+    "payments:reconcile:report": "node --conditions react-server --import tsx scripts/find-stuck-payments.mjs",
     "validate:deploy-env": "node --import tsx scripts/validate-deploy-env.ts",
     "backfill:student-success": "node --import tsx scripts/backfill-student-success.ts",
     "db:push": "prisma db push",
