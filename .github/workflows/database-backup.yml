@@ -38,6 +38,24 @@ jobs:
           test -n "$DATABASE_DIRECT_URL"
           test -n "$BACKUP_PASSWORD"
 
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Tombstone defteri dump'tan AYRI saklanır: eski bir yedek restore
+      # edildiğinde sonraki silme kararlarını bu defter taşır.
+      - name: Export encrypted tombstone ledger
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.PRODUCTION_DATABASE_DIRECT_URL }}
+        run: |
+          npm run data:tombstones -- export --out tombstone-ledger.json
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -in tombstone-ledger.json -out tombstone-ledger.json.enc -pass env:BACKUP_PASSWORD
+          rm tombstone-ledger.json
+
       - name: Create encrypted dump
         run: |
           docker run --rm --network host -v "$PWD:/backup" postgres:17-alpine \
@@ -56,6 +74,16 @@ jobs:
             psql "$RESTORE_DATABASE_URL" --file=/workspace/scripts/verify-restore-readiness.sql
           rm database.verify.dump database.restore.list database.portable.list
 
+      # Restore runbook'unun ikinci yarısı: restore edilen DB'ye defter uygulanır.
+      - name: Reapply tombstone ledger to restored database
+        env:
+          DATABASE_URL: ${{ env.RESTORE_DATABASE_URL }}
+          DIRECT_URL: ${{ env.RESTORE_DATABASE_URL }}
+        run: |
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in tombstone-ledger.json.enc -out tombstone-ledger.json -pass env:BACKUP_PASSWORD
+          npm run data:tombstones -- reapply --ledger tombstone-ledger.json
+          rm tombstone-ledger.json
+
       - name: Upload encrypted backup
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -63,3 +91,51 @@ jobs:
           path: database.dump.enc
           retention-days: 14
           if-no-files-found: error
+
+      - name: Upload encrypted tombstone ledger
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tombstone-ledger-${{ github.run_id }}
+          path: tombstone-ledger.json.enc
+          retention-days: 90
+          if-no-files-found: error
+
+  # Sentetik veriyle uçtan uca: eski yedek restore → silinen öğrenci geri gelir →
+  # defter uygulanır → öğrenci yine yok. Canlı secret kullanmaz.
+  tombstone-restore-drill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tombstone_drill
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tombstone_drill?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/tombstone_drill?schema=public
+      DRILL_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tombstone_drill?schema=public
+      ALLOW_FRESH_DB_BOOTSTRAP: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install PostgreSQL 16 client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16
+          echo "PG_BIN_DIR=/usr/lib/postgresql/16/bin" >> "$GITHUB_ENV"
+      - run: npm run db:bootstrap:fresh
+      - name: Restore + tombstone drill
+        run: npm run data:tombstones:drill

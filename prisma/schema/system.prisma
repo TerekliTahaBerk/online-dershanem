@@ -321,3 +321,69 @@ model CrossProductRecommendation {
   @@index([sourceType, sourceId])
   @@map("cross_product_recommendations")
 }
+
+// ============================================================
+// Veri yönetişimi — KVKK veri sahibi talebi ve saklama motoru
+// ============================================================
+
+enum DataSubjectRequestAction {
+  ANONYMIZE
+  DELETE
+}
+
+enum DataSubjectRequestStatus {
+  /// Hesap askıda; bekleme süresi dolmadan `cancel` ile geri alınabilir.
+  PENDING_GRACE
+  APPLIED
+  CANCELLED
+  /// Silme engelleyici kayıtlar yüzünden uygulanmadı; insan kararı bekliyor.
+  BLOCKED
+}
+
+/// Veri sahibi talebinin kalıcı defteri (tombstone). Kullanıcıya FK YOKTUR:
+/// kullanıcı silindikten sonra da kanıt ayakta kalmalı. Yedekten bağımsız
+/// kopyası `scripts/export-tombstone-ledger.mjs` ile ayrıca saklanır ve her
+/// restore sonrası `scripts/reapply-tombstones.mjs` ile yeniden uygulanır.
+model DataSubjectTombstone {
+  id                 String                   @id @default(cuid())
+  subjectUserId      String                   @map("subject_user_id")
+  action             DataSubjectRequestAction
+  status             DataSubjectRequestStatus @default(PENDING_GRACE)
+  /// Süreç dışındaki kimlik doğrulama/onay kaydının referansı (ticket no).
+  ticketRef          String                   @map("ticket_ref")
+  approvedByUserId   String                   @map("approved_by_user_id")
+  appliedByUserId    String?                  @map("applied_by_user_id")
+  cancelledByUserId  String?                  @map("cancelled_by_user_id")
+  /// Askıya almadan önceki hesap durumu; iptal bunu geri yükler.
+  previousStatus     UserStatus               @map("previous_status")
+  previousArchivedAt DateTime?                @map("previous_archived_at") @db.Timestamptz(3)
+  graceUntil         DateTime                 @map("grace_until") @db.Timestamptz(3)
+  appliedAt          DateTime?                @map("applied_at") @db.Timestamptz(3)
+  cancelledAt        DateTime?                @map("cancelled_at") @db.Timestamptz(3)
+  /// BLOCKED durumunda engelleyici kod listesi; PII içermez.
+  blockers           Json?
+  createdAt          DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([subjectUserId])
+  @@index([status, graceUntil])
+  @@map("data_subject_tombstones")
+}
+
+/// Saklama motorunun yumuşak silme işareti. Kayıt önce işaretlenir, bekleme
+/// süresi dolunca kalıcı silinir; bekleme içinde işaret `releasedAt` ile
+/// kaldırılarak silme durdurulabilir.
+model RetentionMark {
+  id         String    @id @default(cuid())
+  category   String
+  model      String
+  recordId   String    @map("record_id")
+  markedAt   DateTime  @default(now()) @map("marked_at") @db.Timestamptz(3)
+  purgeAfter DateTime  @map("purge_after") @db.Timestamptz(3)
+  purgedAt   DateTime? @map("purged_at") @db.Timestamptz(3)
+  releasedAt DateTime? @map("released_at") @db.Timestamptz(3)
+
+  @@unique([model, recordId])
+  @@index([category, purgeAfter])
+  @@map("retention_marks")
+}

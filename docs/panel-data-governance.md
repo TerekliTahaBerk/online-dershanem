@@ -53,17 +53,74 @@ Kurallar:
 | Finansal kayıt | Muhasebe/yasal yükümlülük | İlgili mevzuatın zorunlu süresi | Hukuk/mali müşavir onayıyla sil | Panel retention cron'u dışında |
 | Yedek | Felaket kurtarma | Mevcut döngü ve restore hedefi | Döngüsel sil; silme talebi tombstone'u restore sonrası yeniden uygula | Operasyon prosedürüne bağlı |
 
+## Saklama motoru
+
+Tablodaki süreler tek kaynaktan okunur: `lib/data-governance/retention-policy.ts`. Hukuki onay gelmeyen her kategori `PENDING_LEGAL_APPROVAL` değerindedir ve motor o kategoride hiçbir kayda dokunmaz, yalnız "N kayıt onay bekliyor, silinmedi" diye raporlar. Sayısal süre `approvedBy` + `approvedAt` olmadan geçersizdir.
+
+- **Onay gelince:** ilgili kategoride `retentionDays`, `approvedBy`, `approvedAt` doldurulur. `retention-policy.test.ts` içindeki "hiçbir kategori sayısal süre taşımaz" testi bilerek kırılır; aynı PR onay kaydıyla birlikte günceller.
+- **İki faz:** süresi dolan kayıt önce `retention_marks` ile işaretlenir (kayıt yerinde kalır), 30 günlük teknik bekleme (`RETENTION_GRACE_PERIOD_DAYS`, hukuki süre değil) sonunda tekrar doğrulanıp silinir. Bekleme içinde `released_at` doldurulursa silme durur. Arşivli materyalde Blob önce silinir.
+- **Çalıştırma:** `.github/workflows/data-retention.yml` her gün `DRY_RUN=true` ile koşar ve raporu iş özetine yazar. Zamanlanmış koşu hiçbir zaman gerçek silme yapmaz. Gerçek silme yalnız elle tetiklemede `dry_run=false` + aktif admin e-postası + ticket ile açılır; silmeden önce `retention.enforcement_approved` audit kaydı yazılır.
+- **Gerçek silmeyi etkinleştirmeden önce dry-run raporlarını hukuk/veri sorumlusuyla birlikte gözden geçirin.**
+- Oturum ve ürün event'i temizliği mevcut `panel-session-retention` cron'unda kalır (30/90 gün teknik değerler; hukuki onay kaydı yok). İşletme CRM'i `BusinessUnit.retentionDays` (varsayılan 730) ile ayrı anonimleştirilir; bu varsayılan da hukuk onayına sunulmalıdır.
+
 ## Veri sahibi talebi ve silme iş akışı
 
-1. Talep sahibinin kimliği ve çocuk adına işlem yetkisi ikinci bir kanaldan doğrulanır.
-2. Talep bir audit kaydıyla açılır; kapsam, teslim tarihi ve işlem sahibi belirlenir.
-3. Aktif hukuki saklama yükümlülüğü ve başka kişilerin verileri ayrıştırılır. Silme mümkün değilse kısıtlama/anonymize gerekçesi kaydedilir.
-4. Erişim dökümü hazırlanır; serbest metin notları başka çocuklara ait veri açısından incelenir.
-5. Onaylı hedeflerde silme/anonymize uygulanır. Blob, cache ve türetilmiş raporlar ayrıca kontrol edilir.
-6. Yedekler doğrudan değiştirilmez; kimlik bir tombstone listesine alınır ve her restore sonrasında yeniden uygulanır.
-7. Sonuç ve istisnalar sade dille bildirilir; işlem audit kaydı kapatılır.
+**Komuttan önce, insan tarafından (otomatikleştirilmez):**
 
-Bu fazda akademik veya finansal veriyi otomatik silen bir cron özellikle eklenmemiştir. Kesin süre ve hukuki dayanak onaylanmadan geri döndürülemez toplu silme yapılmamalıdır.
+1. Talep sahibinin kimliği ve çocuk adına işlem yetkisi ikinci bir kanaldan doğrulanır; sonuç bir ticket'a kaydedilir (ticket'a ad/e-posta yazılmaz).
+2. Aktif hukuki saklama yükümlülüğü ve üçüncü kişi verisi değerlendirilir; silme mi anonimleştirme mi uygulanacağına karar verilir.
+
+**Tek komut** (`npm run data:dsr -- …`, onaylayan aktif bir ADMIN hesabı olmalı):
+
+| Aksiyon | Komut | Etki |
+|---|---|---|
+| Döküm | `--action export --user-id <id> [--ticket <ref>] [--out f.json]` | İlişki grafiğindeki tüm tablolar JSON; kimlik doğrulama sırları hariç. `thirdPartyReviewRows > 0` tablolar teslimden önce elle ayıklanır. |
+| Talep | `--action anonymize\|delete --user-id <id> --approved-by <admin> --ticket <ref>` | Tombstone `PENDING_GRACE`, hesap askıya, oturumlar iptal, audit. Geri alınabilir. |
+| İptal | `--action cancel --request-id <id> --approved-by … --ticket …` | Bekleme içinde hesap durumu geri yüklenir. |
+| Uygula | `--action apply --request-id <id> --approved-by … --ticket …` | 7 günlük teknik bekleme (`DSR_GRACE_PERIOD_DAYS`) sonrası geri alınamaz adım. Önce onay audit'i yazılır. |
+
+`--approved-by` veya `--ticket` eksikse komut veritabanına bağlanmadan çıkış kodu 2 ile reddeder. `delete` silme engelleyici kayıt (ders, ödev, ODK denemesi vb.) bulursa `BLOCKED` olur ve sessizce anonimleştirmeye geçmez; karar yeniden verilir.
+
+**Komuttan sonra, insan tarafından:** sonuç ve istisnalar sade dille bildirilir.
+
+### Eski 7 adımın karşılığı
+
+| Eski adım | Yeni karşılık | Kapsanan tablo/sistem |
+|---|---|---|
+| 1. Kimlik doğrulama | İnsan adımı (ticket) | — |
+| 2. Audit ile talep açma | `anonymize/delete` | `data_subject_tombstones`, `AuditLog` (`dsr.erasure_requested`) |
+| 3. Saklama yükümlülüğü/üçüncü kişi ayrıştırma | İnsan kararı + `BLOCKED` engelleyici kontrolü | `USER_DELETE_COUNT_SELECT` sayımları, FK `Restrict` |
+| 4. Erişim dökümü | `export` | `users`, `student_profiles` ve User/StudentProfile'a FK taşıyan tüm modeller (şema ilişkilerinden otomatik; Cascade alt kayıtlarına 3 seviye), `AuditLog`, `business_leads` + konuşma/mesaj, tombstone |
+| 5. Silme/anonymize; Blob, cache, raporlar | `apply` | Kimlik alanları, oturum/MFA/parola sıfırlama/bildirim silme, sahip olunan kayıtlarda serbest metin temizliği, CRM lead anonimleştirme; `delete` ile Cascade tüm öğrenci verisi |
+| 6. Yedek tombstone | `npm run data:tombstones -- export/reapply` | Aşağıdaki restore bölümü |
+| 7. Bildirim ve kapanış | İnsan adımı; `dsr.erasure_applied` audit | — |
+
+**Kapsanmayanlar (sonraki adım):**
+
+- Cache (Upstash) ve türetilmiş raporlar: TTL ile düşer ama talep bazlı temizlik yok.
+- Private Blob: öğrenciye bağlı dosya yok (materyal grup/öğretmen kaydı). Öğrenci dosya yüklemesi eklenirse DSR'a eklenmeli.
+- `AuditLog` satırları silinmez (payload'lar zaten redakte); audit'in DSR kapsamındaki durumu hukuk kararıdır.
+- Finansal kayıtlar (`od_orders`, `odk_orders`, ödemeler): `delete` sonrası `SetNull` ile kişiden kopar ama satır kalır (yasal saklama). Sipariş üzerindeki fatura/iletişim alanları hukuk kararı olmadan anonimleştirilmez.
+- CRM eşleşmesi yalnız `relatedOdUserId` ve normalize e-posta ile yapılır; yalnız telefonla eşleşen lead'ler kaçabilir.
+- E-posta sağlayıcısı (Resend) ve WhatsApp gibi dış sistemlerdeki kopyalar.
+
+## Yedek restore sonrası tombstone
+
+Yedekler doğrudan değiştirilmez. Tombstone defteri dump'tan ayrı saklanır (`database-backup.yml` her gece şifreli `tombstone-ledger-*` artefaktı, 90 gün).
+
+Restore runbook'u: restore bitince, restore anından **sonraki** en güncel defterle:
+
+```bash
+npm run data:tombstones -- reapply --ledger tombstone-ledger.json
+```
+
+Komut idempotenttir: uygulanmış talepleri yeniden uygular, bekleyen talepleri tekrar askıya alır, eksik tombstone satırlarını geri yazar. Saklama motorunun sildiği kayıtlar restore ile geri gelirse bir sonraki koşuda yeniden işaretlenir ve bekleme süresi yeniden başlar.
+
+`database-backup.yml` içindeki `tombstone-restore-drill` işi her gece sentetik veriyle tatbikatı koşar: silmeden önce alınan yedek restore edilince öğrencinin geri geldiğini, defter uygulanınca yine silindiğini doğrular.
+
+**Açık risk:** GitHub artefakt saklaması en çok 90 gündür. Daha eski bir yedek restore edilirse defter canlı veritabanından alınmalıdır. Canlı veritabanı da kayıpsa kalıcı, yedekten bağımsız bir defter deposu gerekir; bu bir karar bekliyor.
+
+Kesin süre ve hukuki dayanak onaylanmadan geri döndürülemez toplu silme yapılmamalıdır.
 
 ## Hesap yaşam döngüsü operasyon notu
 
