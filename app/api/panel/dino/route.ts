@@ -6,9 +6,11 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import {
   DINO_PROMPT_VERSION,
+  dinoQuestionAppliesToProducts,
   dinoQuestionRequiresStudent,
   findDinoQuestion,
 } from "@/lib/dino";
+import { getAccessibleProductCodes } from "@/lib/auth/products";
 import { prepareDinoSource } from "@/lib/panel/dino-source";
 import { generateDinoAnswer } from "@/lib/dino-gateway";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
@@ -25,6 +27,11 @@ import { boundedInteger, dinoLatencyBand, dinoRedactionBand, dinoRequestSchema }
  * Hangi öğrencinin verisi toplanacağı istekten DEĞİL, çağıranın yetkisinden
  * türetilir. Öğretmen roster soruları (bugün / grup özeti) öğrenci kimliği
  * istemez; tek-öğrenci soruları aktif grup kaydı ister.
+ *
+ * ÜRÜN KAPSAMI: soru kataloğu ürün-bazlıdır (`applicableProducts`). Bağlam yine
+ * istekten değil ÜYELİKLERDEN türetilir: öğrenci/öğretmen kendi aktif ürün
+ * kodlarından, veli SEÇİLİ ÇOCUĞUN veli-görünür ürünlerinden. Menüyü UI'da
+ * daraltmak güvenlik sınırı değildir; kapı burasıdır.
  */
 
 export async function POST(request: Request) {
@@ -66,6 +73,11 @@ export async function POST(request: Request) {
   let teacherUserId: string | undefined;
   const needsStudent = dinoQuestionRequiresStudent(question);
 
+  // Sorunun tanımlı olduğu ürün bağlamı. Veli dalında bağlam velinin kendi
+  // üyelikleri değil, seçili çocuğun VELİ-GÖRÜNÜR ürünleridir: KPSS o listeye
+  // hiç girmez, dolayısıyla veli soruları KPSS bağlamında çözülemez.
+  let productCodes: string[] = [];
+
   if (auth.session.role === "STUDENT") {
     const profile = await prisma.studentProfile.findUnique({
       where: { userId: auth.session.userId },
@@ -73,12 +85,15 @@ export async function POST(request: Request) {
     });
     studentProfileId = profile?.id ?? null;
     knownNames = profile?.user.fullName ? [profile.user.fullName] : [];
+    productCodes = await getAccessibleProductCodes(auth.session.userId, auth.session.role);
   } else if (auth.session.role === "PARENT") {
     const { selected } = await resolveParentScope(auth.session.userId, parsed.data.studentId);
     studentProfileId = selected?.id ?? null;
     knownNames = selected ? [selected.name] : [];
+    productCodes = selected ? selected.products : [];
   } else {
     teacherUserId = auth.session.userId;
+    productCodes = await getAccessibleProductCodes(auth.session.userId, auth.session.role);
     if (needsStudent) {
       if (!parsed.data.studentId) {
         return NextResponse.json({ error: "Öğrenci seçilmedi." }, { status: 400 });
@@ -114,6 +129,13 @@ export async function POST(request: Request) {
 
   if (needsStudent && !studentProfileId) {
     return NextResponse.json({ error: "Öğrenci kaydı bulunamadı." }, { status: 404 });
+  }
+
+  // ÜRÜN KAPSAMI KAPISI: yalnız KPSS bağlamındaki bir kullanıcı, K-12'ye özgü
+  // (yoklama / koç / grup / görüşme / veli) bir soruyu anahtarını bilse de
+  // çözemez. Menü filtresi yalnız görünürlüktür; reddi burası yapar.
+  if (!dinoQuestionAppliesToProducts(question, productCodes)) {
+    return NextResponse.json({ error: "Bu soru bu ürün için tanımlı değil." }, { status: 403 });
   }
 
   const prepared = await prepareDinoSource({

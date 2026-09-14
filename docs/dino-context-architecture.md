@@ -24,7 +24,7 @@ davranmaz.
 
 | Katman | Dosya | Görev |
 | --- | --- | --- |
-| Soru kataloğu | `lib/dino.ts` | Allowlist sorular · scope · çıktı şeması · fallback |
+| Soru kataloğu | `lib/dino.ts` | Allowlist sorular · scope · **ürün kapsamı** · çıktı şeması · fallback |
 | Rol allowlist | `lib/panel/dino-allowlist.ts` | Kaynak türü izin / deny |
 | Context builder | `lib/panel/dino-source.ts` | Deterministik satırlar · redaksiyon · hash |
 | Deterministik UX | `lib/panel/dino-explanations.ts` | AI öncesi gerekçe cümleleri |
@@ -36,6 +36,7 @@ davranmaz.
 Kullanıcı seçili soru (serbest metin yok)
   → rol + feature flag + rate limit
   → kapsam doğrulama (oturumdan student/roster)
+  → ÜRÜN KAPSAMI (üyelikten; `applicableProducts`)
   → prepareDinoSource (scope collectors)
   → audience allowlist + max sources
   → redaksiyon / injection tarama
@@ -63,6 +64,44 @@ Her `DinoScope` ham DB dump göndermez; Türkçe yapılandırılmış satırlar 
 | `MEETING_DRAFT` | hafta + coaching + kendi ders notu + açık müdahale |
 
 Contextual UI önce `dino-explanations` cümlesini gösterir; Dino isteğe bağlıdır.
+
+## Ürün kapsamı (KPSS Görev 7)
+
+Katalog rol-bazlı olduğu kadar ÜRÜN-bazlıdır. Her `DinoQuestion`
+`applicableProducts: readonly string[]` alanıyla hangi `Product.code`
+bağlamlarında var olabileceğini **açıkça** yazar — varsayılan KAPALI: registry'ye
+yeni bir ürün eklendiğinde hiçbir soru kendiliğinden açılmaz.
+
+| Ürün ailesi | Kodlar | Dino'da ne var |
+| --- | --- | --- |
+| Öğretmen yürütümlü K-12 | `OD`, `OK`, `ODK` | Katalogun tamamı (değişmedi) |
+| Otonom yetişkin | `KPSS` | Yalnız sınav · kazanım · plan soruları |
+
+KPSS'de tanımlı kapsamlar: `PLAN`, `LAST_EXAM`, `SUBJECT_TREND`, `REVIEW`
+(+ `OUTCOMES`). Tanımlı OLMAYANLAR ve nedenleri:
+
+| Kapsam | KPSS'de neden yok |
+| --- | --- |
+| `WEEK` | Dayanağı yoklama (canlı ders) + öğretmen ödevi; KPSS'de bu kavramlar yok |
+| `COACHING` | Koç görüşmesi/paylaşılan not kavramı yok |
+| `TEACHER_ATTENTION`, `GROUP_WEEK` | Roster/grup yok (`requires_plan_approval = false`) |
+| `MEETING_DRAFT` | Veli/öğretmen görüşmesi yok |
+| `PARENT` audience (tamamı) | KPSS veli-free (`lib/products/parent-visibility.ts`) |
+
+Ürün bağlamı İSTEKTEN DEĞİL üyelikten türetilir:
+
+- Öğrenci / öğretmen → `getAccessibleProductCodes(userId, role)`
+- Veli → seçili çocuğun **veli-görünür** ürünleri (`ParentChild.products`); KPSS
+  bu listeye hiç girmez, dolayısıyla veli soruları KPSS bağlamında çözülemez ve
+  sakin veli paneli (`lib/panel/parent-calm.ts`) KPSS'de hiç tetiklenemez.
+
+Menüyü UI'da daraltmak görünürlüktür; reddi `app/api/panel/dino/route.ts`
+içindeki `dinoQuestionAppliesToProducts` kapısı yapar (403).
+
+Yeni bir kaynak türü GEREKMEDİ: hedef sınav tarihi baskısı plan gerekçesi olarak
+`PLAN_REASONS` içinde (`EXAM_APPROACHING` → "yaklaşan sınav") zaten taşınıyor.
+Çıktı dili veri-güdümlüdür (`subjectName`, `outcome.code/title`); K-12'ye özgü
+sabit metin kalıbı yoktur.
 
 ## Rol soruları
 
@@ -144,6 +183,7 @@ Chip tabanlı `/panel/*/dino` sayfaları isteğe bağlı katalog yüzeyi olarak 
 ## Testler
 
 - `lib/dino.test.ts` — rol soru izolasyonu, citation, unsafe dil, fallback
+- `lib/dino-products.test.ts` — ürün kapsamı, KPSS menüsü, mevcut ürün regresyonu, `parent-calm` erişilemezliği
 - `lib/panel/dino-allowlist.test.ts` — parent privacy, teacher-only süzme, empty context, unsupported claim, roster requiresStudent
 - `lib/dino-explanations.test.ts` — deterministic-before-AI
 
