@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createExamSchema, createSeriesSchema, updateQuestionsSchema } from "./admin-schemas";
 
-test("ODK yalnız LGS, TYT ve AYT matematik serisi kabul eder", () => {
+test("ODK legacy veya katalog tabanlı sınav serisi kabul eder", () => {
   const base = { title: "Haftalık Matematik", slug: "haftalik-matematik", academicYear: 2026, classLevel: "8" };
   assert.equal(createSeriesSchema.safeParse({ ...base, family: "LGS" }).success, true);
   assert.equal(createSeriesSchema.safeParse({ ...base, family: "KPSS" }).success, false);
+  assert.equal(createSeriesSchema.safeParse({ ...base, family: null, examFamilyCode: "KPSS_EGITIM_BILIMLERI" }).success, true);
 });
 
 test("deneme taslağı güvenli slug kabul eder; questionCount verilirse MATH_ONLY varsayılır", () => {

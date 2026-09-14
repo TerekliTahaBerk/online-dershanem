@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { OdkExamFamily } from "@prisma/client";
 import { FolderPlus, Loader2, Plus } from "lucide-react";
 import {
   ODK_EXAM_TEMPLATES,
   templateTotalQuestions,
 } from "@/lib/odk/exam-templates";
 
-type Series = { id: string; title: string; family: OdkExamFamily };
+type Series = { id: string; title: string; familyCode: string };
+type Family = { code: string; name: string; legacy: boolean };
 
 function slugify(value: string) {
   return value
@@ -38,7 +38,7 @@ export function AdminExamCreate({
   families,
 }: {
   series: Series[];
-  families: OdkExamFamily[];
+  families: Family[];
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"series" | "exam" | null>(null);
@@ -46,15 +46,25 @@ export function AdminExamCreate({
     text: string;
     error: boolean;
   } | null>(null);
-  const [family, setFamily] = useState<OdkExamFamily>(
-    families.includes("TYT") ? "TYT" : families[0] ?? "TYT",
+  const [family, setFamily] = useState<string>(
+    families.some((item) => item.code === "TYT")
+      ? "TYT"
+      : families[0]?.code ?? "TYT",
   );
   const [structureMode, setStructureMode] = useState<
     "FULL_TEMPLATE" | "MATH_ONLY"
   >("FULL_TEMPLATE");
 
-  const templateCode =
-    structureMode === "MATH_ONLY" ? `${family}_MATH` : `${family}_FULL`;
+  const selectedFamily = families.find((item) => item.code === family);
+  const isLegacyFamily = selectedFamily?.legacy ?? false;
+  const effectiveStructureMode = isLegacyFamily
+    ? structureMode
+    : "FULL_TEMPLATE";
+  const templateCode = isLegacyFamily
+    ? effectiveStructureMode === "MATH_ONLY"
+      ? `${family}_MATH`
+      : `${family}_FULL`
+    : "";
   const template = ODK_EXAM_TEMPLATES[templateCode];
   const sectionPreview = useMemo(
     () =>
@@ -72,28 +82,35 @@ export function AdminExamCreate({
     setBusy(kind);
     setMessage(null);
     const data = new FormData(event.currentTarget);
-    const selectedFamily = String(data.get("family")) as OdkExamFamily;
+    const selectedFamilyCode = String(data.get("family"));
+    const legacyFamily = families.find(
+      (item) => item.code === selectedFamilyCode,
+    )?.legacy
+      ? selectedFamilyCode
+      : null;
     const body =
       kind === "series"
         ? {
             title: data.get("title"),
             slug: data.get("slug"),
-            family: selectedFamily,
+            family: legacyFamily,
+            examFamilyCode: selectedFamilyCode,
             academicYear: Number(data.get("academicYear")),
             classLevel: data.get("classLevel"),
           }
         : {
             title: data.get("title"),
             slug: data.get("slug"),
-            family: selectedFamily,
+            family: legacyFamily,
+            examFamilyCode: selectedFamilyCode,
             seriesId: data.get("seriesId") || null,
             durationMinutes: Number(data.get("durationMinutes")),
             questionCount:
-              structureMode === "MATH_ONLY"
+              effectiveStructureMode === "MATH_ONLY"
                 ? Number(data.get("questionCount"))
                 : undefined,
-            structureMode: String(data.get("structureMode") || "FULL_TEMPLATE"),
-            templateCode: String(data.get("templateCode") || templateCode),
+            structureMode: effectiveStructureMode,
+            templateCode: templateCode || null,
             description: data.get("description") || null,
             internalCode: data.get("internalCode") || null,
             academicYear: data.get("academicYear")
@@ -147,8 +164,8 @@ export function AdminExamCreate({
           <div>
             <h2 className="text-sm font-extrabold">Yeni deneme</h2>
             <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
-              TYT / AYT / LGS şablonundan yapı oluşturulur. Cevap anahtarı ve
-              kazanımlar sonraki adımlarda JSON veya form ile eklenir.
+              Legacy ailelerde sabit şablon, katalog ailelerinde müfredat
+              bölümleri kullanılır. İçerik ve kazanımlar sonraki adımda eklenir.
             </p>
           </div>
         </div>
@@ -172,12 +189,12 @@ export function AdminExamCreate({
             <select
               name="family"
               value={family}
-              onChange={(event) =>
-                setFamily(event.target.value as OdkExamFamily)
-              }
+              onChange={(event) => setFamily(event.target.value)}
             >
               {families.map((item) => (
-                <option key={item}>{item}</option>
+                <option key={item.code} value={item.code}>
+                  {item.name}
+                </option>
               ))}
             </select>
           </label>
@@ -185,7 +202,8 @@ export function AdminExamCreate({
             Yapı
             <select
               name="structureMode"
-              value={structureMode}
+              value={effectiveStructureMode}
+              disabled={!isLegacyFamily}
               onChange={(event) =>
                 setStructureMode(
                   event.target.value as "FULL_TEMPLATE" | "MATH_ONLY",
@@ -203,7 +221,7 @@ export function AdminExamCreate({
               <option value="">Serisiz</option>
               {series.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.family} · {item.title}
+                  {item.familyCode} · {item.title}
                 </option>
               ))}
             </select>
@@ -219,7 +237,7 @@ export function AdminExamCreate({
               key={`${templateCode}-duration`}
             />
           </label>
-          {structureMode === "MATH_ONLY" ? (
+          {effectiveStructureMode === "MATH_ONLY" ? (
             <label className="panel-field">
               Soru sayısı
               <input
@@ -311,7 +329,9 @@ export function AdminExamCreate({
               Sınav ailesi
               <select name="family">
                 {families.map((item) => (
-                  <option key={item}>{item}</option>
+                  <option key={item.code} value={item.code}>
+                    {item.name}
+                  </option>
                 ))}
               </select>
             </label>

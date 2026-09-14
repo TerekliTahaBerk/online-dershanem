@@ -4,7 +4,8 @@ import { getExamTemplate, type ExamTemplate } from "@/lib/odk/exam-templates";
 export type ReadinessIssue = { level: "error" | "warning"; code: string; message: string; sectionCode?: string; questionNumber?: number };
 
 export type VersionReadinessInput = {
-  family: OdkExamFamily;
+  family: OdkExamFamily | null;
+  familyCode: string;
   durationMinutes: number;
   scoringPolicyCode: string;
   files: OdkExamFileType[];
@@ -70,6 +71,7 @@ export function isCriticalFieldLocked(status: OdkExamStatus): boolean {
 
 function resolveExpectedTemplate(input: VersionReadinessInput): ExamTemplate | null {
   if (input.templateCode) return getExamTemplate(input.templateCode);
+  if (!input.family) return null;
   const mode = input.structureMode || "MATH_ONLY";
   return getExamTemplate(mode === "MATH_ONLY" ? `${input.family}_MATH` : `${input.family}_FULL`);
 }

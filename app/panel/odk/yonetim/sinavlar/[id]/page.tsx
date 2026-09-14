@@ -13,6 +13,7 @@ import { AdminAssignmentPanel } from "@/components/odk/admin-assignment-panel";
 import { AdminPreviewPanel } from "@/components/odk/admin-preview-panel";
 import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-review-panel";
 import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const dynamic = "force-dynamic";
 function localInput(value: Date | null) {
@@ -39,8 +40,9 @@ export default async function OdkAdminExamDetailPage({
   const { id } = await params;
   const { exam, issues } = await getOdkExamReadiness(id);
   if (!exam?.currentVersion) notFound();
+  const familyCode = getOdkExamFamilyCode(exam);
   const [outcomes, attempts] = await Promise.all([
-    getActiveOutcomeOptions(exam.family, exam.structureMode === "MATH_ONLY"),
+    getActiveOutcomeOptions(familyCode, exam.structureMode === "MATH_ONLY"),
     prisma.odkExamAttempt.findMany({
       where: { examId: id, status: { not: "VOID" } },
       select: {
@@ -60,6 +62,9 @@ export default async function OdkAdminExamDetailPage({
       correctOption: question.correctOption,
       difficulty: question.difficulty,
       bookletPage: question.bookletPage,
+      contentType: question.contentType,
+      contentText: question.contentText,
+      assetUrl: question.assetUrl,
       outcomeIds: question.outcomes.map((outcome) => outcome.outcomeId),
       primaryOutcomeId:
         question.outcomes.find((outcome) => outcome.isPrimary)?.outcomeId ||
@@ -82,7 +87,7 @@ export default async function OdkAdminExamDetailPage({
       </Link>
       <header className="mt-5">
         <p className="text-xs font-extrabold uppercase text-[var(--brand-olive)]">
-          {exam.family} ·{" "}
+          {familyCode} ·{" "}
           {exam.structureMode === "FULL_TEMPLATE" ? "Tam deneme" : "Matematik"}{" "}
           · sürüm {exam.currentVersion.versionNumber}
         </p>
@@ -104,7 +109,7 @@ export default async function OdkAdminExamDetailPage({
           exam={{
             id: exam.id,
             title: exam.title,
-            family: exam.family,
+            family: familyCode,
             status: exam.status,
             startsAt: localInput(exam.startsAt),
             endsAt: localInput(exam.endsAt),

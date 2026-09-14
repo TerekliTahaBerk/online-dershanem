@@ -2,20 +2,31 @@ import { z } from "zod";
 
 export const odkSlug = z.string().trim().toLowerCase().min(3).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Yalnız küçük harf, rakam ve tire kullanın.");
 export const odkFamily = z.enum(["LGS", "TYT", "AYT"]);
+export const examFamilyCode = z.string().trim().min(2).max(80).regex(/^[A-Z0-9_]+$/);
 export const odkStructureMode = z.enum(["MATH_ONLY", "FULL_TEMPLATE"]);
 
-export const createSeriesSchema = z.object({
-  title: z.string().trim().min(3).max(140),
-  slug: odkSlug,
-  family: odkFamily,
-  academicYear: z.number().int().min(2020).max(2100),
-  classLevel: z.string().trim().max(40).optional().or(z.literal("")),
+const familyIdentity = z.object({
+  family: odkFamily.optional().nullable(),
+  examFamilyCode: examFamilyCode.optional(),
+}).superRefine((value, context) => {
+  if (!value.family && !value.examFamilyCode) {
+    context.addIssue({ code: "custom", message: "Sınav ailesi seçilmelidir." });
+  }
+  if (value.family && value.examFamilyCode && value.family !== value.examFamilyCode) {
+    context.addIssue({ code: "custom", message: "Legacy ve katalog sınav ailesi eşleşmiyor." });
+  }
 });
 
-export const createExamSchema = z.object({
+export const createSeriesSchema = familyIdentity.and(z.object({
+  title: z.string().trim().min(3).max(140),
+  slug: odkSlug,
+  academicYear: z.number().int().min(2020).max(2100),
+  classLevel: z.string().trim().max(40).optional().or(z.literal("")),
+}));
+
+export const createExamSchema = familyIdentity.and(z.object({
   title: z.string().trim().min(3).max(180),
   slug: odkSlug,
-  family: odkFamily,
   seriesId: z.string().min(1).optional().nullable(),
   durationMinutes: z.number().int().min(5).max(360).optional(),
   questionCount: z.number().int().min(1).max(200).optional(),
@@ -25,7 +36,7 @@ export const createExamSchema = z.object({
   internalCode: z.string().trim().max(64).optional().nullable(),
   academicYear: z.number().int().min(2020).max(2100).optional().nullable(),
   publisher: z.string().trim().max(120).optional().nullable(),
-}).transform((value) => ({
+})).transform((value) => ({
   ...value,
   structureMode: value.structureMode
     ?? (value.templateCode?.endsWith("_MATH") ? "MATH_ONLY" as const : value.templateCode?.endsWith("_FULL") ? "FULL_TEMPLATE" as const : value.questionCount != null ? "MATH_ONLY" as const : "FULL_TEMPLATE" as const),
@@ -58,6 +69,8 @@ const question = z.object({
   correctOption: z.enum(["A", "B", "C", "D", "E"]).nullable(),
   difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
   bookletPage: z.number().int().min(1).max(1000).nullable(),
+  contentType: z.enum(["BOOKLET_PDF", "IMAGE_URL", "RICH_CONTENT"]).optional(),
+  contentText: z.string().trim().max(10000).nullable().optional(),
   assetUrl: z.string().url().nullable().optional(),
   outcomeIds: z.array(z.string().min(1)).max(3),
   primaryOutcomeId: z.string().min(1).nullable(),

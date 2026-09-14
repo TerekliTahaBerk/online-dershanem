@@ -10,6 +10,7 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
 import { contractExamSchedule } from "@/lib/odk/product-contract";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 const schema = z.object({ meetAcknowledged: z.boolean().default(false) });
 
@@ -24,10 +25,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!grant) {
     return NextResponse.json({ error: "Bu deneme için aktif paket erişiminiz yok." }, { status: 403 });
   }
-  const exam = await prisma.odkExam.findFirst({ where: { id, publishedAt: { not: null } }, select: { id: true, family: true, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, attemptLimit: true, meetRequired: true, currentVersion: { select: { id: true, status: true, durationMinutes: true } } } });
+  const exam = await prisma.odkExam.findFirst({ where: { id, publishedAt: { not: null } }, select: { id: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, attemptLimit: true, meetRequired: true, currentVersion: { select: { id: true, status: true, durationMinutes: true } } } });
   if (!exam?.currentVersion || exam.currentVersion.status !== "LOCKED") return NextResponse.json({ error: "Sınav sürümü kullanıma hazır değil." }, { status: 409 });
+  const familyCode = getOdkExamFamilyCode(exam);
   const existing = await prisma.odkExamAttempt.findFirst({ where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS" }, orderBy: { attemptNumber: "desc" } });
-  if (existing && existing.deadlineAt > new Date()) { await recordPanelProductEvent({ name: "odk_attempt_started", properties: { family: exam.family, resumed: true, lateEntryBand: odkLateEntryBand(exam.startsAt, existing.startedAt) } }, "STUDENT"); return NextResponse.json({ attemptId: existing.id, resumed: true }); }
+  if (existing && existing.deadlineAt > new Date()) { await recordPanelProductEvent({ name: "odk_attempt_started", properties: { family: familyCode, resumed: true, lateEntryBand: odkLateEntryBand(exam.startsAt, existing.startedAt) } }, "STUDENT"); return NextResponse.json({ attemptId: existing.id, resumed: true }); }
   if (existing) await prisma.odkExamAttempt.update({ where: { id: existing.id }, data: { status: "AUTO_SUBMITTED", submittedAt: new Date() } });
   const meetRequired = grant.exam.liveServiceRequired && grant.contract.policy.rights.liveService;
   if (meetRequired && !parsed.data.meetAcknowledged) return NextResponse.json({ error: "Sınava başlamadan önce Meet katılımınızı onaylayın." }, { status: 400 });
@@ -46,6 +48,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ attemptId: concurrent.id, resumed: true });
   }
   await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExamAttempt", entityId: attempt.id, action: "odk.attempt_started", summary: "Öğrenci deneme oturumunu başlattı", payload: { examId: id, attemptNumber: attempt.attemptNumber } });
-  await recordPanelProductEvent({ name: "odk_attempt_started", properties: { family: exam.family, resumed: false, lateEntryBand: odkLateEntryBand(exam.startsAt, now) } }, "STUDENT");
+  await recordPanelProductEvent({ name: "odk_attempt_started", properties: { family: familyCode, resumed: false, lateEntryBand: odkLateEntryBand(exam.startsAt, now) } }, "STUDENT");
   return NextResponse.json({ attemptId: attempt.id, resumed: false });
 }

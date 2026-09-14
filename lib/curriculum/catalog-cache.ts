@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { CurriculumStatus, OdkExamFamily } from "@prisma/client";
+import type { CurriculumStatus } from "@prisma/client";
 import { revalidateTag, unstable_cache } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
@@ -74,13 +74,13 @@ export type CurriculumOutcomeOption = { id: string; label: string };
 
 /** ODK sınav editörünün kazanım seçicisi: aktif sürümdeki kazanımlar. */
 export const getActiveOutcomeOptions = unstable_cache(
-  async (family: OdkExamFamily, mathOnly: boolean): Promise<CurriculumOutcomeOption[]> => {
+  async (familyCode: string, mathOnly: boolean): Promise<CurriculumOutcomeOption[]> => {
     const outcomes = await prisma.learningOutcome.findMany({
       where: {
         isActive: true,
         unit: {
           subject: {
-            version: { exam: family, status: "ACTIVE" },
+            version: { examFamilyRef: { code: familyCode }, status: { in: ["DRAFT", "ACTIVE"] } },
             ...(mathOnly
               ? {
                   OR: [

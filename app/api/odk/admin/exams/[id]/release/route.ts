@@ -9,6 +9,7 @@ import { createCoachSuggestionsFromReleasedExam } from "@/lib/odk/coach-bridge";
 import { odkAttemptBand } from "@/lib/odk/telemetry";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { afterResponse } from "@/lib/after-response";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
@@ -23,6 +24,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     where: { id },
     select: {
       family: true,
+      examFamilyRef: { select: { code: true } },
       status: true,
       attempts: {
         where: { status: { in: ["SUBMITTED", "AUTO_SUBMITTED", "REVIEW_REQUIRED"] } },
@@ -101,6 +103,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     summary: "Deneme sonuçları öğrencilere açıklandı",
     payload: { attemptCount: publishAttemptIds.length, excluded: preview.excludedAttemptIds.length, coachSuggestions: coach.created },
   });
-  await recordPanelProductEvent({ name: "odk_results_released", properties: { family: exam.family, attemptBand: odkAttemptBand(publishAttemptIds.length) } }, "ADMIN");
+  await recordPanelProductEvent({ name: "odk_results_released", properties: { family: getOdkExamFamilyCode(exam), attemptBand: odkAttemptBand(publishAttemptIds.length) } }, "ADMIN");
   return NextResponse.json({ status: "RELEASED", resultsReleasedAt: now, published: publishAttemptIds.length, excluded: preview.excludedAttemptIds.length, coach });
 }

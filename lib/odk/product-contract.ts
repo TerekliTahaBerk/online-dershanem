@@ -36,7 +36,7 @@ export const odkContractExamSchema = z.object({
   seriesTitle: z.string().nullable().optional(),
   title: z.string().min(1),
   slug: z.string().min(1),
-  family: z.enum(["LGS", "TYT", "AYT"]),
+  family: z.string().min(2).max(80),
   startsAt: nullableIsoDate,
   endsAt: nullableIsoDate,
   lateEntryMinutes: z.number().int().nonnegative(),

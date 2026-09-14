@@ -6,6 +6,7 @@ import { buildOutcomeTrends } from "@/lib/odk/reporting";
 import { integrityTeacherSafeLabel } from "@/lib/odk/integrity";
 import { contractAllowsReport, contractResultAvailable, type OdkContractExam } from "@/lib/odk/product-contract";
 import { listActiveOdkContracts } from "@/lib/odk/product-contract-server";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 type ReportViewer = { userId: string; role: Extract<UserRole, "ADMIN" | "TEACHER" | "PARENT"> };
 
@@ -59,7 +60,7 @@ export async function getOdkAudienceStudentReport(viewer: ReportViewer, studentU
     orderBy: { exam: { startsAt: "asc" } },
     select: {
       id: true, submittedAt: true, integrityLevel: true,
-      exam: { select: { id: true, title: true, family: true, startsAt: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true } },
+      exam: { select: { id: true, title: true, family: true, examFamilyRef: { select: { code: true } }, startsAt: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true } },
       score: { select: { correctCount: true, wrongCount: true, blankCount: true, totalNet: true, publicationStatus: true, outcomeScores: { select: { outcomeId: true, questionCount: true, accuracyRate: true, outcome: { select: { code: true, title: true, unit: { select: { name: true } } } } } } } },
     },
   });
@@ -69,7 +70,7 @@ export async function getOdkAudienceStudentReport(viewer: ReportViewer, studentU
       return contractExams.get(attempt.exam.id)?.some((contractExam) => contractResultAvailable(contractExam, attempt.exam)) ?? false;
     })();
     const integrityNotice = viewer.role === "TEACHER" ? integrityTeacherSafeLabel(attempt.integrityLevel) : null;
-    return attempt.score && release ? [{ id: attempt.exam.id, title: attempt.exam.title, family: attempt.exam.family, takenAt: attempt.exam.startsAt || attempt.submittedAt || new Date(0), correctCount: attempt.score.correctCount, wrongCount: attempt.score.wrongCount, blankCount: attempt.score.blankCount, totalNet: Number(attempt.score.totalNet), integrityNotice, outcomes: attempt.score.outcomeScores.map((item) => ({ outcomeId: item.outcomeId, code: item.outcome.code, title: item.outcome.title, unitName: item.outcome.unit.name, questionCount: item.questionCount, accuracyRate: Number(item.accuracyRate) })) }] : [];
+    return attempt.score && release ? [{ id: attempt.exam.id, title: attempt.exam.title, family: getOdkExamFamilyCode(attempt.exam), takenAt: attempt.exam.startsAt || attempt.submittedAt || new Date(0), correctCount: attempt.score.correctCount, wrongCount: attempt.score.wrongCount, blankCount: attempt.score.blankCount, totalNet: Number(attempt.score.totalNet), integrityNotice, outcomes: attempt.score.outcomeScores.map((item) => ({ outcomeId: item.outcomeId, code: item.outcome.code, title: item.outcome.title, unitName: item.outcome.unit.name, questionCount: item.questionCount, accuracyRate: Number(item.accuracyRate) })) }] : [];
   });
   const trends = buildOutcomeTrends(exams.flatMap((exam) => exam.outcomes.map((outcome) => ({ examId: exam.id, takenAt: exam.takenAt, ...outcome }))));
   return { student: { userId: studentUserId, name: user.fullName || user.email }, exams, trends };

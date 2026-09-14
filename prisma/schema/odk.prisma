@@ -418,7 +418,7 @@ model OdkExamSeries {
   id              String        @id @default(cuid())
   title           String
   slug            String        @unique
-  family          OdkExamFamily
+  family          OdkExamFamily?
   examFamilyRefId String?       @map("exam_family_ref_id")
   academicYear    Int           @map("academic_year")
   classLevel      String?       @map("class_level")
@@ -431,6 +431,7 @@ model OdkExamSeries {
   exams           OdkExam[]
 
   @@index([family, academicYear, isActive])
+  @@index([examFamilyRefId, academicYear, isActive])
   @@index([createdById, createdAt])
   @@index([examFamilyRefId])
   @@map("odk_exam_series")
@@ -443,7 +444,7 @@ model OdkExam {
   seriesId            String?              @map("series_id")
   title               String
   slug                String               @unique
-  family              OdkExamFamily
+  family              OdkExamFamily?
   examFamilyRefId     String?              @map("exam_family_ref_id")
   status              OdkExamStatus        @default(DRAFT)
   structureMode       OdkExamStructureMode @default(MATH_ONLY) @map("structure_mode")
@@ -478,6 +479,7 @@ model OdkExam {
   importAudits        OdkImportAudit[]
 
   @@index([family, status, startsAt])
+  @@index([examFamilyRefId, status, startsAt])
   @@index([seriesId, startsAt])
   @@index([status, startsAt, endsAt])
   @@index([internalCode])
@@ -560,6 +562,7 @@ model OdkExamQuestion {
   bookletQuestionNumber   Int?                       @map("booklet_question_number")
   canonicalQuestionNumber Int?                       @map("canonical_question_number")
   contentType             OdkQuestionContentType     @default(BOOKLET_PDF) @map("content_type")
+  contentText             String?                    @map("content_text")
   assetUrl                String?                    @map("asset_url")
   correctOption           OdkAnswerOption?           @map("correct_option")
   difficulty              OdkQuestionDifficulty      @default(MEDIUM)

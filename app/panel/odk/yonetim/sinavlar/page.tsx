@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { OdkExamFamily, OdkExamStatus, Prisma } from "@prisma/client";
+import type { OdkExamStatus, Prisma } from "@prisma/client";
 import { ClipboardCheck, Plus, Search } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
@@ -8,10 +8,8 @@ import { PanelPageHeader } from "@/components/panel/panel-page-header";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { AdminExamCreate } from "@/components/odk/admin-exam-create";
 import { examStatusPresentation } from "@/lib/odk/presentation";
-import {
-  LEGACY_ODK_EXAM_FAMILY_CODES,
-  listActiveExamFamilies,
-} from "@/lib/products/registry";
+import { listActiveExamFamilies } from "@/lib/products/registry";
+import { asLegacyOdkExamFamily, getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const dynamic = "force-dynamic";
 const statuses: OdkExamStatus[] = [
@@ -37,29 +35,23 @@ export default async function OdkAdminExamsPage({
 }) {
   const session = await requireProductRole("ODK", "ADMIN");
   const params = await searchParams;
-  const families = (
-    await listActiveExamFamilies({
-      productCode: "ODK",
-      codes: LEGACY_ODK_EXAM_FAMILY_CODES,
-    })
-  ).map((item) => item.code) as OdkExamFamily[];
-  const family = families.includes(params.aile as OdkExamFamily)
-    ? (params.aile as OdkExamFamily)
-    : undefined;
+  const familyRecords = await listActiveExamFamilies();
+  const familyRecord = familyRecords.find((item) => item.code === params.aile);
+  const family = familyRecord?.code;
   const status = statuses.includes(params.durum as OdkExamStatus)
     ? (params.durum as OdkExamStatus)
     : undefined;
   const query = params.q?.trim().slice(0, 80) || "";
   const where: Prisma.OdkExamWhereInput = {
-    ...(family ? { family } : {}),
+    ...(familyRecord ? { examFamilyRefId: familyRecord.id } : {}),
     ...(status ? { status } : {}),
     ...(query ? { title: { contains: query, mode: "insensitive" } } : {}),
   };
   const [series, exams] = await Promise.all([
     prisma.odkExamSeries.findMany({
       where: { isActive: true },
-      orderBy: [{ family: "asc" }, { title: "asc" }],
-      select: { id: true, title: true, family: true },
+      orderBy: [{ title: "asc" }],
+      select: { id: true, title: true, family: true, examFamilyRef: { select: { code: true } } },
     }),
     prisma.odkExam.findMany({
       where,
@@ -69,6 +61,7 @@ export default async function OdkAdminExamsPage({
           select: { versionNumber: true, durationMinutes: true },
         },
         series: { select: { title: true } },
+        examFamilyRef: { select: { code: true } },
         _count: { select: { attempts: true, assignments: true } },
         attempts: { select: { status: true, submittedAt: true } },
       },
@@ -98,7 +91,10 @@ export default async function OdkAdminExamsPage({
       />
 
       <section id="yeni-deneme" className="mt-7 scroll-mt-28">
-        <AdminExamCreate series={series} families={families} />
+        <AdminExamCreate
+          series={series.map((item) => ({ id: item.id, title: item.title, familyCode: getOdkExamFamilyCode(item) }))}
+          families={familyRecords.map((item) => ({ code: item.code, name: item.name, legacy: Boolean(asLegacyOdkExamFamily(item.code)) }))}
+        />
       </section>
 
       <section className="mt-9">
@@ -134,8 +130,8 @@ export default async function OdkAdminExamsPage({
               <span className="sr-only">Sınav ailesi</span>
               <select name="aile" defaultValue={family || ""}>
                 <option value="">Tüm aileler</option>
-                {families.map((item) => (
-                  <option key={item}>{item}</option>
+                {familyRecords.map((item) => (
+                  <option key={item.id} value={item.code}>{item.name}</option>
                 ))}
               </select>
             </label>
@@ -204,7 +200,7 @@ export default async function OdkAdminExamsPage({
                       </p>
                     </td>
                     <td className="px-3 py-3 font-extrabold text-[var(--brand-olive)]">
-                      {exam.family}
+                      {getOdkExamFamilyCode(exam)}
                     </td>
                     <td className="px-3 py-3">
                       {exam.startsAt ? date.format(exam.startsAt) : "—"}

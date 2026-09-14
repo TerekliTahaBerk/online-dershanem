@@ -36,6 +36,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!parsed.success) return NextResponse.json({ error: "JSON gövdesi gerekli." }, { status: 400 });
   const loaded = await loadExamQuestions(id);
   if (!loaded) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!loaded.exam.family) return NextResponse.json({ error: "Katalog tabanlı sınavlarda doğrudan soru düzenleme API'sini kullanın." }, { status: 400 });
   if (isCriticalFieldLocked(loaded.exam.status) && loaded.exam.status !== "DRAFT" && loaded.exam.status !== "READY") {
     // LIVE sonrası preview serbest; commit ayrı gate
   }

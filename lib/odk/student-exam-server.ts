@@ -5,8 +5,10 @@ import { attemptHasExpired, decideAttemptStart } from "@/lib/odk/attempt-domain"
 import { getActiveOdkExamGrant, listActiveOdkContracts } from "@/lib/odk/product-contract-server";
 import { contractAnswerKeyAvailable, contractExamSchedule, contractResultAvailable } from "@/lib/odk/product-contract";
 import { buildOutcomeTrends, buildWeakOutcomeSignals } from "@/lib/odk/reporting";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const studentExamInclude = {
+  examFamilyRef: { select: { code: true } },
   currentVersion: {
     include: {
       sections: { orderBy: { position: "asc" as const }, include: { questions: { where: { isActive: true }, orderBy: { position: "asc" as const }, select: { id: true, questionNumber: true, position: true } } } },
@@ -28,7 +30,7 @@ export async function listStudentExams(studentUserId: string) {
     orderBy: [{ startsAt: "desc" }],
     take: 50,
     select: {
-      id: true, title: true, family: true, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true, resultsReleasedAt: true,
+      id: true, title: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true, resultsReleasedAt: true,
       currentVersion: { select: { durationMinutes: true } },
       attempts: { where: { studentUserId }, orderBy: { attemptNumber: "desc" }, take: 1, select: { id: true, status: true, deadlineAt: true, submittedAt: true } },
     },
@@ -45,6 +47,7 @@ export async function listStudentExams(studentUserId: string) {
     const resultAvailable = grant ? contractResultAvailable(grant.exam, exam) : false;
     return {
       ...exam,
+      family: getOdkExamFamilyCode(exam),
       ...(schedule || {}),
       meetRequired: Boolean(grant?.exam.liveServiceRequired && grant.liveService),
       serverNow: now,
@@ -83,7 +86,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
   const exam = await prisma.odkExam.findFirst({
     where: { id: examId, status: "RELEASED" },
     select: {
-      id: true, title: true, family: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
+      id: true, title: true, family: true, examFamilyRefId: true, examFamilyRef: { select: { code: true } }, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
       currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, take: 1, select: { id: true } } } },
       attempts: {
         where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { is: { publicationStatus: "PUBLISHED" } } }, orderBy: { attemptNumber: "desc" }, take: 1,
@@ -118,13 +121,13 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
   const attempt = exam?.attempts[0];
   if (!attempt?.score) return null;
   const attempts = await prisma.odkExamAttempt.findMany({
-    where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED", family: exam.family }, score: { is: { publicationStatus: "PUBLISHED" } } },
+    where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED", examFamilyRefId: exam.examFamilyRefId }, score: { is: { publicationStatus: "PUBLISHED" } } },
     orderBy: [{ exam: { startsAt: "desc" } }, { submittedAt: "desc" }, { attemptNumber: "desc" }],
     take: 30,
     select: {
       examId: true,
       submittedAt: true,
-      exam: { select: { id: true, title: true, startsAt: true, family: true } },
+      exam: { select: { id: true, title: true, startsAt: true, family: true, examFamilyRef: { select: { code: true } } } },
       score: {
         select: {
           totalNet: true,
@@ -173,7 +176,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
     .map((row) => ({
       examId: row.examId,
       title: row.exam.title,
-      family: row.exam.family,
+      family: getOdkExamFamilyCode(row.exam),
       takenAt: row.exam.startsAt || row.submittedAt || new Date(0),
       totalNet: Number(row.score!.totalNet),
     }))

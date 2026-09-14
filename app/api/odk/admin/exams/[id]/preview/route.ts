@@ -5,6 +5,7 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { buildAdminPreview, type AdminPreviewKind } from "@/lib/odk/admin-preview";
 import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 const previewQuerySchema = z.object({ kind: z.enum(["STUDENT_EXAM", "TEACHER_REPORT", "PARENT_REPORT"]).default("STUDENT_EXAM") });
 
@@ -22,6 +23,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       id: true,
       title: true,
       family: true,
+      examFamilyRef: { select: { code: true } },
       currentVersion: {
         select: {
           durationMinutes: true,
@@ -37,7 +39,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     kind: kindParam,
     examId: exam.id,
     title: exam.title,
-    family: exam.family,
+    family: getOdkExamFamilyCode(exam),
     durationMinutes: exam.currentVersion.durationMinutes,
     sections: exam.currentVersion.sections,
     security: parseExamSecurityPolicy(exam.currentVersion.settings),

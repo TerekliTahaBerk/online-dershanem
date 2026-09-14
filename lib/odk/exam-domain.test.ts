@@ -5,6 +5,7 @@ import { assertExplicitTransition, canTransitionExam, validateSchedule, validate
 function readyMathVersion(patch: Partial<VersionReadinessInput> = {}): VersionReadinessInput {
   return {
     family: "LGS",
+    familyCode: "LGS",
     durationMinutes: 40,
     scoringPolicyCode: "LGS_MATH_V1",
     structureMode: "MATH_ONLY",
@@ -32,6 +33,7 @@ function readyTytFull(patch: Partial<VersionReadinessInput> = {}): VersionReadin
   }));
   return {
     family: "TYT",
+    familyCode: "TYT",
     durationMinutes: 165,
     scoringPolicyCode: "TYT_FULL_V1",
     structureMode: "FULL_TEMPLATE",

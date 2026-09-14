@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { buildExamResultsSummary } from "@/lib/odk/results-ops";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
@@ -15,6 +16,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       id: true,
       title: true,
       family: true,
+      examFamilyRef: { select: { code: true } },
       status: true,
       resultsReleasedAt: true,
       _count: { select: { assignments: { where: { isActive: true } } } },
@@ -72,7 +74,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   });
 
   return NextResponse.json({
-    exam: { id: exam.id, title: exam.title, family: exam.family, status: exam.status, resultsReleasedAt: exam.resultsReleasedAt },
+    exam: { id: exam.id, title: exam.title, family: getOdkExamFamilyCode(exam), status: exam.status, resultsReleasedAt: exam.resultsReleasedAt },
     summary,
     attempts: exam.attempts.map((attempt) => ({
       id: attempt.id,

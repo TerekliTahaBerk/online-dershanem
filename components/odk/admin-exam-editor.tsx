@@ -21,6 +21,9 @@ type Question = {
   correctOption: "A" | "B" | "C" | "D" | "E" | null;
   difficulty: "EASY" | "MEDIUM" | "HARD";
   bookletPage: number | null;
+  contentType: "BOOKLET_PDF" | "IMAGE_URL" | "RICH_CONTENT";
+  contentText: string | null;
+  assetUrl: string | null;
   outcomeIds: string[];
   primaryOutcomeId: string | null;
 };
@@ -169,6 +172,33 @@ export function AdminExamEditor({
   ) {
     return (
       <>
+        <label className={compact ? "panel-field sm:col-span-3" : "contents"}>
+          {compact ? "İçerik türü" : <span className="sr-only">Soru {question.questionNumber} içerik türü</span>}
+          <select
+            aria-label={`Soru ${question.questionNumber} içerik türü`}
+            disabled={!editable}
+            className="panel-input py-2"
+            value={question.contentType}
+            onChange={(event) => patchQuestion(index, { contentType: event.target.value as Question["contentType"] })}
+          >
+            <option value="RICH_CONTENT">Dijital metin</option>
+            <option value="IMAGE_URL">Görsel URL</option>
+            <option value="BOOKLET_PDF">Kitapçık PDF</option>
+          </select>
+        </label>
+        {question.contentType === "RICH_CONTENT" ? (
+          <label className={compact ? "panel-field sm:col-span-3" : "contents"}>
+            {compact ? "Soru metni" : <span className="sr-only">Soru {question.questionNumber} metni</span>}
+            <textarea
+              aria-label={`Soru ${question.questionNumber} metni`}
+              disabled={!editable}
+              className="panel-input min-w-80 py-2"
+              rows={2}
+              value={question.contentText || ""}
+              onChange={(event) => patchQuestion(index, { contentText: event.target.value || null })}
+            />
+          </label>
+        ) : null}
         <label className={compact ? "panel-field" : "contents"}>
           {compact ? (
             "Doğru cevap"
@@ -616,7 +646,7 @@ export function AdminExamEditor({
               3. Cevaplar ve kazanımlar
             </h2>
             <p className="mt-1 text-xs text-[var(--site-muted)]">
-              Her soruya doğru cevap ve ana kazanım girin.
+              Dijital soru metnini, doğru cevabı ve ana kazanımı girin.
             </p>
           </div>
           {editable ? (
@@ -646,10 +676,12 @@ export function AdminExamEditor({
           ))}
         </div>
         <div className="mt-4 hidden overflow-x-auto md:block">
-          <table className="w-full min-w-[860px] text-xs">
+          <table className="w-full min-w-[1180px] text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
                 <th className="pb-2">Soru</th>
+                <th>İçerik türü</th>
+                <th>Soru metni</th>
                 <th>Cevap</th>
                 <th>Zorluk</th>
                 <th>PDF sayfa</th>
@@ -665,6 +697,29 @@ export function AdminExamEditor({
                   <th className="py-2 pr-3 text-left">
                     {question.questionNumber}
                   </th>
+                  <td className="w-36 pr-2">
+                    <select
+                      aria-label={`Soru ${question.questionNumber} içerik türü`}
+                      disabled={!editable}
+                      className="panel-input py-2"
+                      value={question.contentType}
+                      onChange={(event) => patchQuestion(index, { contentType: event.target.value as Question["contentType"] })}
+                    >
+                      <option value="RICH_CONTENT">Dijital metin</option>
+                      <option value="IMAGE_URL">Görsel URL</option>
+                      <option value="BOOKLET_PDF">Kitapçık PDF</option>
+                    </select>
+                  </td>
+                  <td className="min-w-80 pr-2">
+                    <textarea
+                      aria-label={`Soru ${question.questionNumber} metni`}
+                      disabled={!editable || question.contentType !== "RICH_CONTENT"}
+                      className="panel-input py-2"
+                      rows={2}
+                      value={question.contentText || ""}
+                      onChange={(event) => patchQuestion(index, { contentText: event.target.value || null })}
+                    />
+                  </td>
                   <td className="w-28 pr-2">
                     <select
                       aria-label={`Soru ${question.questionNumber} doğru cevap`}

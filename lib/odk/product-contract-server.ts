@@ -11,9 +11,10 @@ import {
   parseOdkProductContract,
   type OdkProductContract,
 } from "@/lib/odk/product-contract";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export async function buildOdkCatalogContract(packageId: string, capturedAt = new Date()): Promise<OdkProductContract> {
-  const pkg = await prisma.odkPackage.findUnique({ where: { id: packageId }, include: { examLinks: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }], include: { exam: { include: { series: { select: { title: true } } } } } } } });
+  const pkg = await prisma.odkPackage.findUnique({ where: { id: packageId }, include: { examLinks: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }], include: { exam: { include: { series: { select: { title: true } }, examFamilyRef: { select: { code: true } } } } } } } });
   if (!pkg) throw new Error("ODK_PACKAGE_NOT_FOUND");
   const policy = parseOdkPackagePolicy(pkg.contractPolicy);
   if (!policy.success) throw new Error("ODK_PACKAGE_CONTRACT_INVALID");
@@ -36,7 +37,7 @@ export async function buildOdkCatalogContract(packageId: string, capturedAt = ne
       seriesTitle: exam.series?.title ?? null,
       title: exam.title,
       slug: exam.slug,
-      family: exam.family,
+      family: getOdkExamFamilyCode(exam),
       startsAt: exam.startsAt?.toISOString() ?? null,
       endsAt: exam.endsAt?.toISOString() ?? null,
       lateEntryMinutes: exam.lateEntryMinutes,

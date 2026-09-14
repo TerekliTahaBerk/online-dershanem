@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import type { OdkAnswerOption, OdkQuestionResult } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { aggregateOutcomeScores, scoreAttempt } from "@/lib/odk/scoring";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const ODK_SCORING_VERSION = "odk-exam-v2";
 
@@ -12,6 +13,7 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
   const exam = await prisma.odkExam.findUnique({
     where: { id: examId },
     include: {
+      examFamilyRef: { select: { code: true } },
       currentVersion: { include: { scoringPolicy: true, sections: { orderBy: { position: "asc" }, include: { questions: { where: { isActive: true }, orderBy: { position: "asc" }, include: { outcomes: true } } } } } },
       attempts: { where: { status: { not: "VOID" } }, include: { answers: true, score: { select: { attemptId: true, publicationStatus: true } }, timings: true } },
     },
@@ -63,5 +65,5 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
     if (exam.status !== "RELEASED") await tx.odkExam.update({ where: { id: examId }, data: { status: "SCORED" } });
   });
   const scoredCount = await prisma.odkAttemptScore.count({ where: { attempt: { examId } } });
-  return { ok: true as const, scoredCount, answerKeyHash, family: exam.family };
+  return { ok: true as const, scoredCount, answerKeyHash, family: getOdkExamFamilyCode(exam) };
 }
