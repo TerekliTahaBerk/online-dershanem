@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { buildRecoveryDraft } from "@/lib/recovery-package";
-import { buildAdaptiveWeek } from "@/lib/adaptive-plan";
+import { buildAdaptiveWeek, plannedTaskRows } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
 import { activePlanSourceKeys, planSourceKey } from "@/lib/kocum";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
@@ -113,7 +113,7 @@ export async function rebalanceApprovedPlanForRecovery(studentId: string, approv
   await prisma.$transaction(async (tx) => {
     await tx.weeklyPlan.update({ where: { id: plan.id }, data: { ruleVersion: "adaptive-v1", approvedById, approvedAt: new Date(), generatedAt: new Date(), version: { increment: 1 } } });
     await tx.weeklyPlanTask.updateMany({ where: { planId: plan.id, status: "PLANNED" }, data: { status: "SKIPPED" } });
-    if (tasks.length) await tx.weeklyPlanTask.createMany({ data: tasks.map((task) => ({ planId: plan.id, ...task })) });
+    if (tasks.length) await tx.weeklyPlanTask.createMany({ data: plannedTaskRows(plan.id, tasks) });
   });
   return true;
 }

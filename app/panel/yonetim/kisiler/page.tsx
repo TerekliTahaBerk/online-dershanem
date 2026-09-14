@@ -13,6 +13,7 @@ import {
   PanelTableRow,
 } from "@/components/panel/ui";
 import { CreateUserForm } from "@/components/panel/create-user-form";
+import { UserBulkOperations } from "@/components/panel/user-bulk-operations";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 
 export const dynamic = "force-dynamic";
@@ -69,7 +70,7 @@ export default async function PeopleHubPage({
     durum: "",
   });
 
-  const [total, users] = await Promise.all([
+  const [total, users, activeGroups, activeTeachers, interventionOwners] = await Promise.all([
     prisma.user.count({ where }),
     prisma.user.findMany({
       where,
@@ -159,6 +160,36 @@ export default async function PeopleHubPage({
         },
       },
     }),
+    // Toplu operasyon seçenekleri: `/panel/yonetim/kullanicilar` bu merkeze
+    // yönlendirildiğinden toplu işlem yüzeyi burada yaşar.
+    prisma.group.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      take: 200,
+      select: {
+        id: true,
+        name: true,
+        subject: true,
+        teacher: { select: { fullName: true, email: true } },
+      },
+    }),
+    prisma.user.findMany({
+      where: { role: "TEACHER", status: "ACTIVE" },
+      orderBy: { fullName: "asc" },
+      take: 200,
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        teacherProfile: { select: { isCoach: true } },
+      },
+    }),
+    prisma.user.findMany({
+      where: { role: { in: ["ADMIN", "TEACHER"] }, status: "ACTIVE" },
+      orderBy: [{ role: "asc" }, { fullName: "asc" }],
+      take: 200,
+      select: { id: true, fullName: true, email: true, role: true },
+    }),
   ]);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -219,6 +250,30 @@ export default async function PeopleHubPage({
             Ara
           </button>
         </form>
+      </div>
+
+      <div className="mt-4">
+        <UserBulkOperations
+          filters={{ q, rol: tab, urun: "", durum: "" }}
+          total={total}
+          groups={activeGroups.map((group) => ({
+            id: group.id,
+            name: `${group.name} · ${group.subject}`,
+            teacherName: group.teacher.fullName || group.teacher.email,
+          }))}
+          teachers={activeTeachers.map((teacher) => ({
+            id: teacher.id,
+            name: teacher.fullName || teacher.email,
+            email: teacher.email,
+            isCoach: teacher.teacherProfile?.isCoach ?? false,
+          }))}
+          interventionOwners={interventionOwners.map((owner) => ({
+            id: owner.id,
+            role: owner.role,
+            name: owner.fullName || owner.email,
+            email: owner.email,
+          }))}
+        />
       </div>
 
       <PanelCard className="mt-4 overflow-x-auto">

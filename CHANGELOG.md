@@ -33,6 +33,11 @@ All notable changes to this project are documented here. The format follows [Kee
 - Parent notifications 404'd for a parent whose child holds only Online Koçum or only Deneme Kulübü, because the redirect guard demanded OD product membership the destination page never required
 - Four dead spacing classes (`mt-4.5`, `px-4.5`, `my-4.5` — outside Tailwind's default fractional scale) rendered no margin or padding at all; two were visibly broken, a filter-chip row with no horizontal padding and a divider line touching its surrounding content
 - A pre-existing WCAG AA contrast failure in the business panel's active nav link (4.42:1, under the 4.5:1 minimum)
+- Intervention inbox actions (claim, start review, resolve) always failed with 404 because each row sent a `student:reason` composite key instead of the case id, and every generated case was labelled "Katılım örüntüsü" regardless of its signal
+- Students could not generate a weekly plan, and recovery rebalancing could not rebuild an approved plan, because planner-only score fields were written to `WeeklyPlanTask`
+- The admin bulk-operations panel was unreachable after `/panel/yonetim/kullanicilar` started redirecting to the people hub; it now lives on `/panel/yonetim/kisiler`
+- ODK exam question navigator items were exposed as list items instead of buttons to assistive technology
+- Brand-green text and white-on-brand buttons (3.7:1), amber pending-status text (3.97:1) and 13px parent-link checkboxes failed WCAG AA contrast and target-size checks
 
 ## [0.1.1] - 2026-08-11
 

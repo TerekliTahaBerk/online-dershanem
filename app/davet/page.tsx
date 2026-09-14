@@ -43,7 +43,7 @@ export default async function InvitePage({
         </p>
         <Link
           href="/giris"
-          className="mt-4 block text-center text-[13px] font-semibold text-dc-brand hover:underline"
+          className="mt-4 block text-center text-[13px] font-semibold text-dc-brand-strong hover:underline"
         >
           Giriş sayfasına dön
         </Link>

@@ -89,7 +89,7 @@ function ActionQueue({
         </p>
         <Link
           href="/panel/yonetim/isler"
-          className="mt-3 inline-block text-[13px] font-semibold text-dc-brand hover:underline"
+          className="mt-3 inline-block text-[13px] font-semibold text-dc-brand-strong hover:underline"
         >
           Provisioning ve işleri incele
         </Link>
@@ -260,7 +260,7 @@ export function AdminOperationsCenterView({
           )}
           <Link
             href="/panel/yonetim/kayitlar"
-            className="mt-3 inline-block text-[13px] font-semibold text-dc-brand hover:underline"
+            className="mt-3 inline-block text-[13px] font-semibold text-dc-brand-strong hover:underline"
           >
             İşlem geçmişini aç
           </Link>

@@ -31,7 +31,9 @@ export async function getInterventionInbox(input: { role: Extract<UserRole, "ADM
   return Array.from(grouped.values()).map((rows) => {
     const head = rows[0];
     return {
-      id: `${head.studentId}:${head.reasonCode}`,
+      // Eylemler `/api/panel/interventions/:id` ile `head` kaydına uygulanır; kimlik
+      // gerçek kayıt kimliği olmalı (öğrenci:neden bileşik anahtarı her işlemde 404 veriyordu).
+      id: head.id,
       studentName: head.student.user.fullName || head.student.user.email,
       reasonCode: head.reasonCode,
       explanation: rows.map((row) => row.explanation).join(" · "),
@@ -44,7 +46,8 @@ export async function getInterventionInbox(input: { role: Extract<UserRole, "ADM
       firstActionAt: head.firstActionAt?.toISOString() || null,
       snoozedUntil: head.snoozedUntil?.toISOString() || null,
       outcomeCode: head.outcomeCode,
-      version: Math.max(...rows.map((row) => row.version)),
+      // API `expectedVersion`'ı `head` kaydıyla karşılaştırır.
+      version: head.version,
       activities: rows.flatMap((row) => row.activities).map((activity) => ({ id: activity.id, type: activity.type, note: activity.note, outcomeCode: activity.outcomeCode, falsePositiveReason: activity.falsePositiveReason, actorName: activity.actor ? activity.actor.fullName || activity.actor.email : "Sistem", createdAt: activity.createdAt.toISOString() })),
     };
   });

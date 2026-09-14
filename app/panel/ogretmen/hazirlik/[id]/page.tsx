@@ -295,7 +295,7 @@ export default async function CoachPrepPage({
 
               <button
                 type="submit"
-                className="w-fit rounded-[10px] bg-dc-brand px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+                className="w-fit rounded-[10px] bg-dc-brand-strong px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
               >
                 Görüşmeyi tamamlandı işaretle
               </button>
@@ -412,7 +412,7 @@ export default async function CoachPrepPage({
           </p>
           <Link
             href="/panel/ogretmen/plan"
-            className="mt-3.5 inline-block rounded-[10px] bg-dc-brand px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+            className="mt-3.5 inline-block rounded-[10px] bg-dc-brand-strong px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
           >
             Plan ekranını aç
           </Link>

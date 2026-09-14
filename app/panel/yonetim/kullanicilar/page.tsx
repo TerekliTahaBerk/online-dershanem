@@ -260,7 +260,7 @@ export default async function UsersPage({
           actions={
             <Link
               href="#yeni-hesap"
-              className="rounded-[10px] bg-dc-brand px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Hesap ekle
             </Link>
@@ -280,7 +280,7 @@ export default async function UsersPage({
                   •{" "}
                   <Link
                     href="/panel/yonetim/kullanicilar?durum=profil&rol=STUDENT"
-                    className="font-semibold text-dc-brand hover:underline"
+                    className="font-semibold text-dc-brand-strong hover:underline"
                   >
                     Profili olmayan öğrenci
                   </Link>
@@ -292,7 +292,7 @@ export default async function UsersPage({
                   •{" "}
                   <Link
                     href="/panel/yonetim/kullanicilar?durum=profil&rol=TEACHER"
-                    className="font-semibold text-dc-brand hover:underline"
+                    className="font-semibold text-dc-brand-strong hover:underline"
                   >
                     Profili olmayan öğretmen
                   </Link>
@@ -304,7 +304,7 @@ export default async function UsersPage({
                   •{" "}
                   <Link
                     href="/panel/yonetim/kullanicilar?durum=erisim-yok"
-                    className="font-semibold text-dc-brand hover:underline"
+                    className="font-semibold text-dc-brand-strong hover:underline"
                   >
                     Aktif ürün erişimi olmayan öğrenci
                   </Link>
@@ -344,7 +344,7 @@ export default async function UsersPage({
           {q || rol || urun || durum ? (
             <Link
               href="/panel/yonetim/kullanicilar"
-              className="text-[13.5px] font-semibold text-dc-brand hover:underline"
+              className="text-[13.5px] font-semibold text-dc-brand-strong hover:underline"
             >
               Filtreleri temizle
             </Link>
@@ -595,7 +595,7 @@ export default async function UsersPage({
             </p>
             <Link
               href="/panel/yonetim/veliler"
-              className="rounded-[10px] bg-dc-brand px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-[10px] bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Veliler ekranını aç
             </Link>

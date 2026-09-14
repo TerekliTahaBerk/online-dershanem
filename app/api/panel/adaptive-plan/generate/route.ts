@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { ADAPTIVE_PLAN_RULE_VERSION, buildAdaptiveWeek, planningWeekStart } from "@/lib/adaptive-plan";
+import { ADAPTIVE_PLAN_RULE_VERSION, buildAdaptiveWeek, plannedTaskRows, planningWeekStart } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const plan = await prisma.$transaction(async (tx) => {
     const row = existing ? await tx.weeklyPlan.update({ where: { id: existing.id }, data: { status: "DRAFT", ruleVersion: ADAPTIVE_PLAN_RULE_VERSION, capacityMinutes: availableDays.length * preference.minutesPerDay, createdById: auth.session.userId, approvedById: null, approvedAt: null, changeRequestCategory: null, version: { increment: 1 }, generatedAt: new Date() } }) : await tx.weeklyPlan.create({ data: { studentId: profile.id, weekStart, ruleVersion: ADAPTIVE_PLAN_RULE_VERSION, capacityMinutes: availableDays.length * preference.minutesPerDay, createdById: auth.session.userId } });
     if (existing) await tx.weeklyPlanTask.updateMany({ where: { planId: row.id, status: "PLANNED" }, data: { status: "SKIPPED" } });
-    if (tasks.length) await tx.weeklyPlanTask.createMany({ data: tasks.map((task) => ({ planId: row.id, ...task })) });
+    if (tasks.length) await tx.weeklyPlanTask.createMany({ data: plannedTaskRows(row.id, tasks) });
     return row;
   });
   await recordPanelProductEvent({ name: "plan_generated", properties: { ruleVersion: ADAPTIVE_PLAN_RULE_VERSION, taskCount: tasks.length, capacityMinutes: plan.capacityMinutes, reasonCount: new Set(tasks.map((task) => task.reasonCode)).size, rebalanced: Boolean(existing) } }, auth.session.role);

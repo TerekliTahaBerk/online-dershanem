@@ -194,7 +194,7 @@ export function AdminPreviewPicker({
                       aria-pressed={role === option.role}
                       className={`rounded-full px-3 py-1.5 text-[12.5px] font-bold ${
                         role === option.role
-                          ? "bg-dc-brand text-white"
+                          ? "bg-dc-brand-strong text-white"
                           : "border border-dc-line bg-white text-dc-ink"
                       }`}
                     >
@@ -291,7 +291,7 @@ export function AdminPreviewPicker({
                 type="button"
                 disabled={!selected || pending}
                 onClick={startPreview}
-                className="rounded-[10px] bg-dc-brand px-3 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-[10px] bg-dc-brand-strong px-3 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {pending ? "Açılıyor…" : cta}
               </button>

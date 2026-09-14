@@ -297,7 +297,7 @@ export default async function AdminOrderDetailPage({
                 <p>
                   Siparişi bir öğrenci hesabına bağlayın.{" "}
                   <Link
-                    className="font-semibold text-dc-brand hover:underline"
+                    className="font-semibold text-dc-brand-strong hover:underline"
                     href="/panel/yonetim/isler"
                   >
                     İşler ekranına git
@@ -309,7 +309,7 @@ export default async function AdminOrderDetailPage({
                   <input type="hidden" name="orderId" value={order.id} />
                   <button
                     type="submit"
-                    className="rounded-[10px] bg-dc-brand px-[14px] py-[9px] text-[13px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+                    className="rounded-[10px] bg-dc-brand-strong px-[14px] py-[9px] text-[13px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
                   >
                     Erişim açmayı yeniden dene
                   </button>
@@ -332,7 +332,7 @@ export default async function AdminOrderDetailPage({
                           ? `/panel/yonetim/ogrenciler/${order.user.studentProfile.id}`
                           : `/panel/yonetim/kullanicilar/${order.user.id}`
                       }
-                      className="font-semibold text-dc-brand hover:underline"
+                      className="font-semibold text-dc-brand-strong hover:underline"
                     >
                       Hesabı aç
                     </Link>
@@ -368,7 +368,7 @@ export default async function AdminOrderDetailPage({
         <PanelCard className="mt-5">
           <PanelCardTitle>Teknik ayrıntılar</PanelCardTitle>
           <details className="mt-2">
-            <summary className="cursor-pointer text-[13px] font-semibold text-dc-brand hover:underline">
+            <summary className="cursor-pointer text-[13px] font-semibold text-dc-brand-strong hover:underline">
               Provisioning denemeleri, hata nedenleri ve satır bazlı durumlar
             </summary>
             <div className="mt-3 space-y-3">

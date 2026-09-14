@@ -4,10 +4,12 @@ export const INTERVENTION_RULE_VERSION = "intervention-v1";
 
 export const interventionReasonCodes = ["ATTENDANCE_PATTERN", "OVERDUE_WORK", "REPEATED_REVIEW_DIFFICULTY", "PLAN_STALLED", "RECENT_EXAM_DROP", "TEACHER_OBSERVED"] as const;
 export type InterventionReasonCode = (typeof interventionReasonCodes)[number];
+/** Otomatik kuralların üretebildiği kodlar; hepsi `InterventionReason` enum'unda saklanabilir. */
+export type GeneratedInterventionReasonCode = Exclude<InterventionReasonCode, "RECENT_EXAM_DROP" | "TEACHER_OBSERVED">;
 
 export type InterventionSignal = {
   type: string;
-  reasonCode: InterventionReasonCode;
+  reasonCode: GeneratedInterventionReasonCode;
   evidenceCount: number;
   explanation: string;
   suggestedAction: string;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildAdaptiveWeek, planningWeekStart } from "./adaptive-plan";
+import { buildAdaptiveWeek, plannedTaskRows, planningWeekStart } from "./adaptive-plan";
 
 const candidates = Array.from({ length: 10 }, (_, index) => ({ sourceType: "ASSIGNMENT" as const, sourceReferenceId: `a${index}`, title: `Görev ${index}`, durationMinutes: 20, reasonCode: "DUE_SOON" as const, priority: 100 - index, dueAt: new Date(`2026-07-${20 + index}T00:00:00Z`) }));
 
@@ -36,4 +36,13 @@ test("kaçan günleri geçmişe veya borç yığınına dönüştürmez", () => 
 test("yüksek öncelikli ve yakın tarihli işi önce seçer", () => {
   const tasks = buildAdaptiveWeek({ now: new Date("2026-07-20T10:00:00Z"), availableDays: [1], minutesPerDay: 20, maxTasksPerDay: 1, candidates: [{ ...candidates[0], title: "Düşük", priority: 10 }, { ...candidates[1], title: "Yüksek", priority: 90 }] });
   assert.equal(tasks[0]?.title, "Yüksek");
+});
+
+test("kalıcı görev satırı yalnız WeeklyPlanTask kolonlarını taşır", () => {
+  const signalMeta = { source: "ODK_RESULT" as const, confidence: 0.8, evidenceCount: 3, questionCount: 12, latestAccuracy: 0.4, previousAccuracy: null };
+  const tasks = buildAdaptiveWeek({ now: new Date("2026-07-20T10:00:00Z"), availableDays: [1], minutesPerDay: 20, maxTasksPerDay: 1, candidates: [{ ...candidates[0], signalMeta }] });
+  assert.ok(tasks[0]?.score !== undefined, "çözücü açıklayıcı puan üretir");
+  const [row] = plannedTaskRows("plan-1", tasks);
+  assert.deepEqual(Object.keys(row).sort(), ["durationMinutes", "planId", "position", "reasonCode", "scheduledFor", "sourceReferenceId", "sourceType", "title"]);
+  assert.equal(row.planId, "plan-1");
 });

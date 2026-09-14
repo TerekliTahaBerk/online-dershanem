@@ -267,7 +267,7 @@ export function UserBulkOperations({
           type="button"
           disabled={!preview || preview.matched < 1 || busy !== null}
           onClick={() => void call("EXECUTE")}
-          className="rounded-[10px] bg-dc-brand px-3.5 py-2 text-[12.5px] font-bold text-white hover:bg-dc-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-[10px] bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white hover:bg-dc-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy === "execute" ? (
             <span className="inline-flex items-center gap-1.5">

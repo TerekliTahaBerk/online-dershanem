@@ -41,6 +41,7 @@ const ids = {
   group: "e2e-group",
   foreignGroup: "e2e-group-foreign",
   lesson: "e2e-lesson",
+  absenceLesson: "e2e-lesson-absence",
   previousLesson: "e2e-lesson-previous",
   recoveryLesson: "e2e-lesson-recovery",
   foreignLesson: "e2e-lesson-foreign",
@@ -236,6 +237,11 @@ async function main() {
   const previousStartsAt = new Date(Date.now() - 3 * 86400000);
   const recoveryStartsAt = new Date(Date.now() - 24 * 60 * 60 * 1000);
   await prisma.lesson.upsert({ where: { id: ids.lesson }, create: { id: ids.lesson, groupId: ids.group, teacherId: ids.teacher, title: "E2E Hızlı Ders Özeti", startsAt, endsAt: new Date(startsAt.getTime() + 3600000), meetingUrl: "https://example.com/e2e-class" }, update: { startsAt, endsAt: new Date(startsAt.getTime() + 3600000), meetingUrl: "https://example.com/e2e-class", status: "PLANNED", closeVersion: 0, closeIdempotencyKey: null, closeRequestHash: null, completedAt: null } });
+  // Devamsızlık → telafi akışı kendi dersini kapatır; hızlı kapanış testi `ids.lesson`'ı
+  // önceden kapattığı için aynı dersi paylaşamazlar. Gelecekte başlar ki müdahale
+  // kuralının saydığı tamamlanmış derslere karışmasın.
+  const absenceStartsAt = new Date(startsAt.getTime() + 60 * 60 * 1000);
+  await prisma.lesson.upsert({ where: { id: ids.absenceLesson }, create: { id: ids.absenceLesson, groupId: ids.group, teacherId: ids.teacher, title: "E2E Devamsızlık Dersi", startsAt: absenceStartsAt, endsAt: new Date(absenceStartsAt.getTime() + 3600000) }, update: { startsAt: absenceStartsAt, endsAt: new Date(absenceStartsAt.getTime() + 3600000), status: "PLANNED", closeVersion: 0, closeIdempotencyKey: null, closeRequestHash: null, completedAt: null } });
   await prisma.lesson.upsert({ where: { id: ids.previousLesson }, create: { id: ids.previousLesson, groupId: ids.group, teacherId: ids.teacher, title: "Önceki Ders", startsAt: previousStartsAt, endsAt: new Date(previousStartsAt.getTime() + 3600000), status: "COMPLETED" }, update: { startsAt: previousStartsAt, status: "COMPLETED" } });
   await prisma.lesson.upsert({ where: { id: ids.recoveryLesson }, create: { id: ids.recoveryLesson, groupId: ids.group, teacherId: ids.teacher, title: "E2E Kaçırılan Köklü İfadeler Dersi", startsAt: recoveryStartsAt, endsAt: new Date(recoveryStartsAt.getTime() + 3600000), status: "COMPLETED" }, update: { startsAt: recoveryStartsAt, endsAt: new Date(recoveryStartsAt.getTime() + 3600000), teacherId: ids.teacher, status: "COMPLETED" } });
   await prisma.lesson.upsert({ where: { id: ids.foreignLesson }, create: { id: ids.foreignLesson, groupId: ids.foreignGroup, teacherId: ids.otherTeacher, title: "Yabancı Ders", startsAt: recoveryStartsAt, endsAt: new Date(recoveryStartsAt.getTime() + 3600000), status: "COMPLETED" }, update: { startsAt: recoveryStartsAt, endsAt: new Date(recoveryStartsAt.getTime() + 3600000), teacherId: ids.otherTeacher, status: "COMPLETED" } });
@@ -255,12 +261,12 @@ async function main() {
       ],
     },
   });
-  await prisma.attendance.deleteMany({ where: { lessonId: ids.lesson } });
+  await prisma.attendance.deleteMany({ where: { lessonId: { in: [ids.lesson, ids.absenceLesson] } } });
   await prisma.attendance.deleteMany({ where: { lessonId: { in: [ids.recoveryLesson, ids.foreignLesson] } } });
-  await prisma.lessonNote.deleteMany({ where: { lessonId: ids.lesson } });
+  await prisma.lessonNote.deleteMany({ where: { lessonId: { in: [ids.lesson, ids.absenceLesson] } } });
   await prisma.lessonNote.deleteMany({ where: { lessonId: ids.recoveryLesson } });
-  await prisma.assignment.deleteMany({ where: { lessonId: ids.lesson } });
-  await prisma.lessonOutcome.deleteMany({ where: { lessonId: ids.lesson } });
+  await prisma.assignment.deleteMany({ where: { lessonId: { in: [ids.lesson, ids.absenceLesson] } } });
+  await prisma.lessonOutcome.deleteMany({ where: { lessonId: { in: [ids.lesson, ids.absenceLesson] } } });
   await prisma.weeklyPlan.deleteMany({ where: { studentId: ids.studentProfile } });
   await prisma.weeklyPlan.deleteMany({ where: { id: ids.foreignWeeklyPlan } });
   await prisma.studentPlanPreference.deleteMany({ where: { studentId: ids.studentProfile } });

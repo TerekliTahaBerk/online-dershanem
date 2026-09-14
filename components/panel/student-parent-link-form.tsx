@@ -106,15 +106,15 @@ export function StudentParentLinkForm({
         </select>
       </div>
       <label className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line px-2.5 py-2 text-[11.5px] font-semibold text-dc-ink">
-        <input type="checkbox" name="primaryContact" />
+        <input type="checkbox" name="primaryContact" className="h-6 w-6 shrink-0" />
         Birincil iletişim
       </label>
       <label className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line px-2.5 py-2 text-[11.5px] font-semibold text-dc-ink">
-        <input type="checkbox" name="canViewAcademic" defaultChecked />
+        <input type="checkbox" name="canViewAcademic" className="h-6 w-6 shrink-0" defaultChecked />
         Akademik görünüm
       </label>
       <label className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line px-2.5 py-2 text-[11.5px] font-semibold text-dc-ink">
-        <input type="checkbox" name="canViewPayments" />
+        <input type="checkbox" name="canViewPayments" className="h-6 w-6 shrink-0" />
         Ödeme görünümü
       </label>
       <button
@@ -124,7 +124,7 @@ export function StudentParentLinkForm({
           parents.length === 0 ||
           (!studentId && (students || []).length === 0)
         }
-        className="rounded-[10px] bg-dc-brand px-3.5 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-[10px] bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {busy ? "Bağlanıyor..." : "Veli bağla"}
       </button>
