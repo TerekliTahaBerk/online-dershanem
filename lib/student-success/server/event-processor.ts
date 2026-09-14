@@ -211,7 +211,7 @@ export async function getStudentProducts(userId: string, now = new Date()): Prom
     },
     select: { product: true },
   });
-  const products = memberships.map((m) => m.product);
+  const products = memberships.flatMap((m) => (m.product ? [m.product] : []));
   const odk = await prisma.odkEntitlement.findFirst({
     where: {
       userId,

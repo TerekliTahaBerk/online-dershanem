@@ -450,11 +450,11 @@ export async function loadStudent360Bundle(input: {
 
   const commerceTab: Student360CommerceTab | null = needsCommerce
     ? {
-        memberships: student.user.productMemberships.map((row) => ({
-          product: row.product,
-          label: productLabel(row.product),
-          expiresAt: row.expiresAt,
-        })),
+        memberships: student.user.productMemberships.flatMap((row) =>
+          row.product
+            ? [{ product: row.product, label: productLabel(row.product), expiresAt: row.expiresAt }]
+            : [],
+        ),
         orders: orders.map((order) => ({
           id: order.id,
           packageName: order.packageName,

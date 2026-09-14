@@ -8,6 +8,7 @@ import { LOGIN_PATH, PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
 import { hasProductAccess } from "@/lib/auth/products";
+import { pilotProgramForProduct } from "@/lib/auth/product-pilot";
 import { MFA_PATH, STEP_UP_PATH, hasFreshStepUp } from "@/lib/auth/mfa-policy";
 import {
   getResolvedAdminPreview,
@@ -94,7 +95,8 @@ export async function requireRecentAdminStepUp(): Promise<SessionUser> {
 }
 
 async function requireProductPilot(session: SessionUser, product: ProductCode) {
-  const pilot = product === "ODK" ? await checkOdkPilotAccess(session.userId, session.role) : await checkPilotAccess(session.userId, session.role);
+  const program = pilotProgramForProduct(product);
+  const pilot = program === "odk" ? await checkOdkPilotAccess(session.userId, session.role) : await checkPilotAccess(session.userId, session.role);
   if (!pilot.allowed) notFound();
 }
 

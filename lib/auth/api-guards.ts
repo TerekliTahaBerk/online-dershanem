@@ -7,6 +7,7 @@ import { getSession, SESSION_COOKIE_NAME, type SessionUser } from "@/lib/auth/se
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
 import { hasProductAccess } from "@/lib/auth/products";
+import { pilotProgramForProduct } from "@/lib/auth/product-pilot";
 import { hasFreshStepUp } from "@/lib/auth/mfa-policy";
 import {
   getResolvedAdminPreview,
@@ -128,7 +129,8 @@ export async function requireApiRecentAdminStepUp(): Promise<ApiAuth> {
 }
 
 async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, product: ProductCode): Promise<ApiAuth> {
-  const pilot = product === "ODK" ? await checkOdkPilotAccess(auth.session.userId, auth.session.role) : await checkPilotAccess(auth.session.userId, auth.session.role);
+  const program = pilotProgramForProduct(product);
+  const pilot = program === "odk" ? await checkOdkPilotAccess(auth.session.userId, auth.session.role) : await checkPilotAccess(auth.session.userId, auth.session.role);
   if (pilot.allowed) return auth;
   return { ok: false, response: NextResponse.json({ error: pilot.reason === "KILL_SWITCH" ? "Pilot geçici olarak durduruldu." : "Bu pilot erişimi etkin değil." }, { status: pilot.reason === "KILL_SWITCH" ? 503 : 404 }) };
 }

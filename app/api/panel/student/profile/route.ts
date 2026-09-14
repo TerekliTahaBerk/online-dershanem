@@ -41,6 +41,6 @@ export async function GET() {
     targetGoal: profile?.targetGoal ?? null,
     classLevel: profile?.classLevel ?? null,
     parents: (profile?.parents ?? []).map((p) => p.parent.fullName || p.parent.email),
-    activeProducts: active.map((m) => ({ label: productLabel(m.product), expiresAt: m.expiresAt })),
+    activeProducts: active.flatMap((m) => (m.product ? [{ label: productLabel(m.product), expiresAt: m.expiresAt }] : [])),
   });
 }

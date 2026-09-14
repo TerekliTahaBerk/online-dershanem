@@ -336,7 +336,7 @@ export default async function UserDetailPage({
         <AdminProductAccessForm
           userId={user.id}
           role={user.role}
-          initialProducts={user.productMemberships.map((m) => m.product)}
+          initialProducts={user.productMemberships.flatMap((m) => (m.product ? [m.product] : []))}
         />
 
         {/* Yönetici MFA kurtarma — cihaz kaybında tek çıkış yolu. Kendi hesabınız

@@ -811,7 +811,9 @@ model TeacherHomeSnapshot {
 model ProductMembership {
   id              String              @id @default(cuid())
   userId          String              @map("user_id")
-  product         ProductCode
+  /// Legacy yetki enum'u. Registry'den gelen ürünlerde (KPSS) NULL'dır.
+  /// Migration 0106 trigger'ı iki alanı senkron tutar ve `product_ref_id`'yi zorunlu kılar.
+  product         ProductCode?
   productRefId    String?             @map("product_ref_id")
   source          ProductAccessSource @default(MANUAL)
   grantedById     String?             @map("granted_by_id")
@@ -827,6 +829,7 @@ model ProductMembership {
   productRef      Product?            @relation(fields: [productRefId], references: [id], onDelete: Restrict)
 
   @@unique([userId, product])
+  @@unique([userId, productRefId])
   @@index([product, revokedAt, expiresAt])
   @@index([grantedById, createdAt])
   @@index([sourceOdOrderId])

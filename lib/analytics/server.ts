@@ -30,6 +30,7 @@ import {
   type AnalyticsCohortFilters,
 } from "@/lib/analytics/filters";
 import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
+import { orderScopeForProductFilter } from "@/lib/commerce/product-mapping";
 import { prisma } from "@/lib/prisma";
 import type { CohortExamObservation } from "@/lib/cohort-quality";
 
@@ -86,6 +87,8 @@ async function loadCommercialCounts(
   };
 
   const renewalEnd = addIstanbulCalendarDays(now, PACKAGE_RENEWAL_WINDOW_DAYS);
+  // Ürün filtresi OK/OD/ODK ile sipariş tarafını daraltır; tanımsız filtre hata verir.
+  const orderScope = orderScopeForProductFilter(filters.product);
 
   const [
     leadCount,
@@ -158,7 +161,7 @@ async function loadCommercialCounts(
         ...(filters.product !== "ALL" ? { product: filters.product } : {}),
       },
     }),
-    filters.product === "ODK"
+    !orderScope.od
       ? Promise.resolve([] as Array<{ packageName: string; _count: { _all: number }; _sum: { totalCents: number | null } }>)
       : prisma.odOrder.groupBy({
           by: ["packageName"],
@@ -166,7 +169,7 @@ async function loadCommercialCounts(
           _count: { _all: true },
           _sum: { totalCents: true },
         }),
-    filters.product === "OD" || filters.product === "OK"
+    !orderScope.odk
       ? Promise.resolve(
           [] as Array<{
             packageId: string;
@@ -206,25 +209,9 @@ async function loadCommercialCounts(
     })),
   ];
 
-  // Ürün filtresi OK/OD/ODK ile sipariş tarafını daralt
-  const paidOrderCount =
-    filters.product === "ODK"
-      ? odkPaid
-      : filters.product === "OD" || filters.product === "OK"
-        ? odPaid
-        : odPaid + odkPaid;
-  const provisionedOrderCount =
-    filters.product === "ODK"
-      ? odkProvisioned
-      : filters.product === "OD" || filters.product === "OK"
-        ? odProvisioned
-        : odProvisioned + odkProvisioned;
-  const refundedOrderCount =
-    filters.product === "ODK"
-      ? odkRefunded
-      : filters.product === "OD" || filters.product === "OK"
-        ? odRefunded
-        : odRefunded + odkRefunded;
+  const paidOrderCount = (orderScope.od ? odPaid : 0) + (orderScope.odk ? odkPaid : 0);
+  const provisionedOrderCount = (orderScope.od ? odProvisioned : 0) + (orderScope.odk ? odkProvisioned : 0);
+  const refundedOrderCount = (orderScope.od ? odRefunded : 0) + (orderScope.odk ? odkRefunded : 0);
 
   return {
     leadCount,

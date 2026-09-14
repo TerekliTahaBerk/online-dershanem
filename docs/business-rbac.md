@@ -134,3 +134,66 @@ süper yöneticiliğini kaldırarak paneli kilitleyemez.
 
 E2E fixture'larının **tamamı platformda ADMIN'dir**; aralarındaki tek fark
 atama satırlarıdır. Böylece testler gerçekten işletme rolünü ölçer.
+
+## Eğitim içeriği yetkisi (ürün başına) — `kpss:content:write`
+
+İşletme RBAC'ı (finans/CRM) ile eğitim rolleri ayrı tutulur; eğitim **içeriği**
+(müfredat kazanımı, soru) yazma yetkisi de ikisinden ayrı, ürün başına bir
+izindir. Kod tarafındaki kaynaklar:
+
+- `lib/products/content-permission-matrix.ts` — rol → izin matrisi ve karar (saf, unit test edilir)
+- `lib/products/content-permissions.ts` — kullanıcı → aktif atama → karar; kazanım API kararı
+- `ProductContentRoleAssignment` (`product_content_role_assignments`, migration 0106)
+
+```
+Oturum kullanıcısı (rol ve durum DB'den; önizleme/öğretmen modu overlay'i etkilemez)
+  → ProductContentRoleAssignment (userId + productId + role, revokedAt null, ürün aktif)
+  → ProductContentRole (CONTENT_EDITOR → content:read, content:write)
+  → `<ürün>:content:<eylem>` (ör. kpss:content:write)
+```
+
+| Kullanıcı | Legacy ürün içeriği (OD/OK/ODK) | Registry ürün içeriği (KPSS) |
+|---|---|---|
+| ADMIN | ✓ (mevcut davranış) | ✓ |
+| TEACHER, atama yok | — | — |
+| TEACHER, KPSS `CONTENT_EDITOR` | — | ✓ yalnız KPSS |
+| TEACHER + KPSS `ProductMembership` | — | — |
+| STUDENT / PARENT / pasif kullanıcı | — | — |
+
+Tasarım kararları:
+
+- **`TEACHER` + KPSS üyeliği yeterli DEĞİL.** `ProductMembership` bir tüketim
+  hakkıdır (satın alma, promosyon); KPSS'ye hazırlanan bir öğretmen üyelik
+  alabilir ve bu ona içerik yazdırmamalıdır. Ayrıca `TEACHER` rolü OD/OK/ODK'ya
+  koşulsuz erişir — içerik yetkisini role bağlamak her OD öğretmenini otomatik
+  KPSS editörü yapardı.
+- **Legacy ürünlerde atama yetki açmaz.** OD/ODK içerik yazımı ADMIN'e özel
+  kalır; yeni tablo mevcut içerik uçlarına yeni bir yazma yolu açmaz.
+- **ADMIN platform içerik sahibidir.** İşletme RBAC'ının aksine burada ADMIN
+  izin alır: mevcut KPSS içerik akışı (`docs/kpss-icerik-girisi-rehberi.md`) ADMIN
+  ile yürüyor ve kilitlenmemeli.
+- **Yetkisiz = bulunamadı (404).** `POST /api/panel/curriculum/outcomes` bulunamayan
+  sürümle yetkisiz sürümü ayırt ettirmez.
+
+Bugün izni uygulayan uç: `POST /api/panel/curriculum/outcomes` (registry ürün
+sürümleri için). ODK sınav/soru yönetim uçları KPSS aileleri için hâlâ
+`requireApiProductRole("ODK", "ADMIN")` ile ADMIN'e özeldir. Atama satırlarını
+yönetecek bir UI/API henüz yoktur; satırlar şimdilik yönetici tarafından
+veritabanında açılır.
+
+## Veli-free ürünler (KPSS)
+
+`lib/products/parent-visibility.ts` veli akışlarının açık olduğu ürünleri tanımlar:
+OD, OK, ODK açık; registry'den gelen her yeni ürün (KPSS) **varsayılan kapalı**.
+Kural kullanıcı tipi değil **ürün bağlamıdır**:
+
+- Aktif ürünlerinin tamamı veli-free olan öğrenci (yalnızca KPSS) veli
+  kapsamına girmez: `resolveParentScope` (veli sayfaları, URL ile istenirse 404),
+  `resolveStudentScopeForViewer` (student-success API'leri), veli–öğrenci bağlantısı
+  oluşturma (`POST /api/panel/relationships` → 404) ve veli takvim akışı.
+- KPSS + OD öğrencisinin velisi OD bağlamında görmeye devam eder; KPSS kodu
+  `ParentChild.products` listesine ve veli paket süresi uyarısına yansımaz.
+- Hiç aktif ürünü olmayan öğrencide mevcut davranış korunur.
+
+Bu kısıt UI'da gizleyerek değil, yukarıdaki sunucu kapılarında uygulanır.
+Test: `tests/integration/kpss-rbac.integration.ts`.
