@@ -1,0 +1,51 @@
+name: Data Retention
+
+# Saklama motoru (lib/data-governance). Varsayılan DRY_RUN=true: yalnız raporlar.
+# Gerçek silmeyi açmadan önce dry-run raporlarını hukuk/veri sorumlusuyla
+# birlikte gözden geçirin. `PENDING_LEGAL_APPROVAL` kategoriler hiçbir modda silinmez.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Yalnız raporla (false = onaylı kategorilerde gerçek işaretle/sil)"
+        required: true
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+      approved_by:
+        description: "Gerçek çalıştırmada zorunlu: onaylayan aktif admin e-postası"
+        required: false
+      ticket:
+        description: "Gerçek çalıştırmada zorunlu: onay kaydı referansı"
+        required: false
+  schedule:
+    - cron: "50 2 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-retention
+  cancel-in-progress: false
+
+jobs:
+  retention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_DIRECT_URL }}
+      DIRECT_URL: ${{ secrets.PRODUCTION_DATABASE_DIRECT_URL }}
+      # Zamanlanmış koşu her zaman dry-run'dır; gerçek silme yalnız elle tetiklenir.
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'true' }}
+      RETENTION_APPROVED_BY: ${{ inputs.approved_by }}
+      RETENTION_TICKET: ${{ inputs.ticket }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Enforce retention policy
+        run: npm run data:retention:enforce
