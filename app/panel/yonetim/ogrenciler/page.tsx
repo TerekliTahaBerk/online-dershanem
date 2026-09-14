@@ -264,8 +264,8 @@ export default async function StudentsPage({
               columns={["Öğrenci", "Hedef", "Ürünler", "Grup", "Durum", ""]}
             >
               {students.map((student) => {
-                const products = student.productMemberships.map((m) =>
-                  productLabel(m.product),
+                const products = student.productMemberships.flatMap((m) =>
+                  m.product ? [productLabel(m.product)] : [],
                 );
                 const enrollment = student.studentProfile?.enrollments[0];
                 const status = student.odOrders.length

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
+import { isStudentUserVisibleToParents } from "@/lib/panel/parent-product-policy";
 
 const schema = z.object({
   parentId: z.string().min(1),
@@ -22,9 +23,12 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Veli ve öğrenci seçin." }, { status: 400 });
   const [parent, student] = await Promise.all([
     prisma.user.findFirst({ where: { id: parsed.data.parentId, role: "PARENT", status: "ACTIVE" }, select: { id: true } }),
-    prisma.studentProfile.findFirst({ where: { id: parsed.data.studentId, user: { status: "ACTIVE" } }, select: { id: true } }),
+    prisma.studentProfile.findFirst({ where: { id: parsed.data.studentId, user: { status: "ACTIVE" } }, select: { id: true, userId: true } }),
   ]);
   if (!parent || !student) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
+  // Veli-free ürün politikası: yalnızca KPSS üyeliği olan öğrenciye veli bağlanamaz.
+  // Bulunamayanla aynı 404 — UI'da seçeneği gizlemek güvenlik sınırı değildir.
+  if (!(await isStudentUserVisibleToParents(student.userId))) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
   const existing = await prisma.parentStudent.findUnique({
     where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
     select: { id: true, relationship: true },

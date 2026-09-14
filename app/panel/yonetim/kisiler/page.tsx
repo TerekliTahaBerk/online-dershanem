@@ -331,7 +331,7 @@ export default async function PeopleHubPage({
                   <PanelTableCell>{profile?.examType || "—"}</PanelTableCell>
                   <PanelTableCell>
                     {user.productMemberships
-                      .map((m) => productLabel(m.product))
+                      .flatMap((m) => (m.product ? [productLabel(m.product)] : []))
                       .join(", ") || "—"}
                   </PanelTableCell>
                   <PanelTableCell>{group?.name || "—"}</PanelTableCell>

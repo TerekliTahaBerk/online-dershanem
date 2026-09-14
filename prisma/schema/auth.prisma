@@ -127,6 +127,8 @@ model User {
   odOnboardingTransitions            OdOnboardingTransition[]     @relation("OdOnboardingTransitionActor")
   productMemberships                 ProductMembership[]          @relation("ProductMembershipOwner")
   grantedProductMemberships          ProductMembership[]          @relation("ProductMembershipGranter")
+  productContentRoles                ProductContentRoleAssignment[] @relation("ProductContentRoleOwner")
+  grantedProductContentRoles         ProductContentRoleAssignment[] @relation("ProductContentRoleGranter")
   odkOrders                          OdkOrder[]                   @relation("OdkOrderStudent")
   odkEntitlements                    OdkEntitlement[]
   createdOdkExamSeries               OdkExamSeries[]              @relation("OdkExamSeriesCreator")

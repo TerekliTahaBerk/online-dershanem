@@ -172,7 +172,8 @@ export async function loadStudent360QueryData(input: {
   });
   if (!student) notFound();
 
-  const products = student.user.productMemberships.map((row) => row.product);
+  // Legacy ürünler (OD/OK/ODK); registry-only üyelikler (KPSS) bu ekranda henüz etiketlenmez.
+  const products = student.user.productMemberships.flatMap((row) => (row.product ? [row.product] : []));
   const orders = access.canViewCommerce ? (student.user.odOrders ?? []) : [];
   const blockedOrders = orders.filter(
     (order) => order.status === "PAID" && order.provisioningStatus !== "SUCCEEDED",

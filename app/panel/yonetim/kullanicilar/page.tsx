@@ -426,8 +426,8 @@ export default async function UsersPage({
               ]}
             >
               {users.map((user) => {
-                const products = user.productMemberships.map((m) =>
-                  productLabel(m.product),
+                const products = user.productMemberships.flatMap((m) =>
+                  m.product ? [productLabel(m.product)] : [],
                 );
                 const enrollment = user.studentProfile?.enrollments[0];
                 const status = user.odOrders.length

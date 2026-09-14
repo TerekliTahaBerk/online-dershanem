@@ -61,7 +61,9 @@ export default async function StudentProfilePage() {
 
   const now = new Date();
   /* Süresi geçmiş üyelik "aktif" yazmamalı — durum tarihten türetilir. */
-  const active = memberships.filter((m) => !m.expiresAt || m.expiresAt > now);
+  const active = memberships.flatMap((m) =>
+    m.product && (!m.expiresAt || m.expiresAt > now) ? [{ ...m, product: m.product }] : [],
+  );
 
   return (
     <PanelShell

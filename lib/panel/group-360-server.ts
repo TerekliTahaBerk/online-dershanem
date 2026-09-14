@@ -465,7 +465,7 @@ async function loadStudentsTab(
         fullName: string | null;
         email: string;
         lastLoginAt: Date | null;
-        productMemberships: Array<{ product: "OD" | "OK" | "ODK" }>;
+        productMemberships: Array<{ product: "OD" | "OK" | "ODK" | null }>;
       };
     };
   }>,
@@ -526,8 +526,8 @@ async function loadStudentsTab(
         userId: enrollment.student.userId,
         name: displayName(enrollment.student.user),
         email: enrollment.student.user.email,
-        packages: enrollment.student.user.productMemberships.map((row) =>
-          productLabel(row.product),
+        packages: enrollment.student.user.productMemberships.flatMap((row) =>
+          row.product ? [productLabel(row.product)] : [],
         ),
         attendanceRate: attendanceRate(att.present, att.total),
         risk: risk.level,

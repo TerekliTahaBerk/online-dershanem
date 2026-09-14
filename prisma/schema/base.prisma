@@ -53,8 +53,33 @@ model Product {
   memberships        ProductMembership[]
   progressEvidence   StudentProgressEvidence[]
   commerceOrderLines CommerceOrderLine[]
+  contentRoles       ProductContentRoleAssignment[]
 
   @@map("products")
+}
+
+enum ProductContentRole {
+  CONTENT_EDITOR
+}
+
+/// Ürün başına eğitim içeriği yetkisi (`<ürün>:content:write`, ör. `kpss:content:write`).
+/// Ürün üyeliğinden (tüketim hakkı) ve işletme RBAC'ından ayrıdır; bkz. docs/business-rbac.md.
+/// Karar mantığı: lib/products/content-permission-matrix.ts
+model ProductContentRoleAssignment {
+  id          String             @id @default(cuid())
+  userId      String             @map("user_id")
+  productId   String             @map("product_id")
+  role        ProductContentRole
+  grantedById String?            @map("granted_by_id")
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  revokedAt   DateTime?          @map("revoked_at") @db.Timestamptz(3)
+  user        User               @relation("ProductContentRoleOwner", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy   User?              @relation("ProductContentRoleGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+  product     Product            @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, productId, role])
+  @@index([productId, revokedAt])
+  @@map("product_content_role_assignments")
 }
 
 /// Ürüne bağlı, migration gerektirmeden genişletilebilen sınav ailesi kataloğu.

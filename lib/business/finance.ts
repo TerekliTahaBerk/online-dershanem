@@ -1,7 +1,7 @@
 import type { FinancialSource, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
-import { COMMERCE_ORDER_TABLE } from "@/lib/commerce/product-mapping";
+import { COMMERCE_ORDER_TABLE, orderLedgerUnitForSource } from "@/lib/commerce/product-mapping";
 
 export function calculateTax(grossCents: number, vatRate: number) {
   const vatCents = Math.round(grossCents * vatRate / (100 + vatRate));
@@ -26,10 +26,12 @@ export function calculateAdMetrics(input: { spentCents: number; impressions: num
 }
 
 export async function upsertOrderLedger(tx: Prisma.TransactionClient, input: { source: Extract<FinancialSource, "ONLINE_DERSHANEM" | "ONLINE_DENEME_KULUBU">; orderId: string; totalCents: number; discountCents: number; description: string; paidAt: Date; paymentMethod?: string | null; buyerInfo?: unknown }) {
-  const product = input.source === "ONLINE_DERSHANEM" ? "OD" : "ODK";
+  // İkili `source === "ONLINE_DERSHANEM" ? "OD" : "ODK"` dalı tanımsız kaynağı
+  // sessizce ODK defterine yazardı; eşleme artık açık ve tanımsızda hata verir.
+  const { product, unitName } = orderLedgerUnitForSource(input.source);
   const unit = await tx.businessUnit.upsert({
-    where: { code: product }, update: { name: input.source === "ONLINE_DERSHANEM" ? "OnlineDershanem" : "OnlineDenemeKulübü", isActive: true },
-    create: { code: product, product, name: input.source === "ONLINE_DERSHANEM" ? "OnlineDershanem" : "OnlineDenemeKulübü" },
+    where: { code: product }, update: { name: unitName, isActive: true },
+    create: { code: product, product, name: unitName },
   });
   const idempotencyKey = `order:${product}:${input.orderId}:sale`;
   const buyer = input.buyerInfo && typeof input.buyerInfo === "object" ? input.buyerInfo as Record<string, unknown> : {};

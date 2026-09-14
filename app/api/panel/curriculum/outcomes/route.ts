@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { requireApiActorSession, requireApiOdRole } from "@/lib/auth/api-guards";
+import { authorizeCurriculumOutcomeWrite } from "@/lib/products/content-permissions";
 import { revalidateCurriculumCatalog } from "@/lib/curriculum/catalog-cache";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
@@ -22,14 +23,23 @@ function normalizedCode(value: string) { return value.toUpperCase(); }
 function skillCode(value: string) { return value.toLocaleLowerCase("tr-TR").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "beceri"; }
 
 export async function POST(request: Request) {
-  const auth = await requireApiOdRole("ADMIN");
+  // ADMIN: legacy + registry sürümleri. TEACHER: yalnız `<ürün>:content:write`
+  // atamasının olduğu registry ürünü (ör. KPSS). Karar: authorizeCurriculumOutcomeWrite.
+  const auth = await requireApiActorSession("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.curriculum.outcome.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:curriculum:${auth.session.userId}`, rateLimit: { max: 160, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Kazanım alanlarını kontrol edin." }, { status: 400 });
-  const version = await prisma.curriculumVersion.findFirst({ where: { id: parsed.data.versionId, status: { not: "ARCHIVED" } }, select: { id: true } });
-  if (!version) return NextResponse.json({ error: "Düzenlenebilir müfredat sürümü bulunamadı." }, { status: 404 });
+  const decision = await authorizeCurriculumOutcomeWrite({ versionId: parsed.data.versionId, userId: auth.session.userId, role: auth.session.role });
+  // Bulunamayan ve yetkisiz sürüm aynı 404: öğretmen başka ürünün sürüm kimliğini yoklayamaz.
+  if (!decision.ok) return NextResponse.json({ error: "Düzenlenebilir müfredat sürümü bulunamadı." }, { status: 404 });
+  if (decision.legacy) {
+    // Legacy (OD/ODK) sürümlerde önceki kapı aynen korunur: ADMIN + OD pilot/ürün erişimi.
+    const legacyAuth = await requireApiOdRole("ADMIN");
+    if (!legacyAuth.ok) return legacyAuth.response;
+  }
+  const version = { id: decision.versionId };
   try {
     const outcome = await prisma.$transaction(async (tx) => {
       const subject = await tx.curriculumSubject.upsert({ where: { versionId_code: { versionId: version.id, code: normalizedCode(parsed.data.subjectCode) } }, create: { versionId: version.id, code: normalizedCode(parsed.data.subjectCode), name: parsed.data.subjectName }, update: { name: parsed.data.subjectName } });
@@ -39,7 +49,7 @@ export async function POST(request: Request) {
         const skill = await tx.curriculumSkill.upsert({ where: { versionId_code: { versionId: version.id, code: skillCode(skillName) } }, create: { versionId: version.id, code: skillCode(skillName), name: skillName }, update: { name: skillName } });
         await tx.outcomeSkill.create({ data: { outcomeId: created.id, skillId: skill.id } });
       }
-      await tx.auditLog.create({ data: { actorUserId: auth.session.userId, actorType: "USER", entityType: "LearningOutcome", entityId: created.id, action: "curriculum.outcome_created", summary: `${created.code} kazanımı oluşturuldu`, payload: { versionId: version.id, subjectCode: subject.code, unitCode: unit.code, skillCount: parsed.data.skills.length } } });
+      await tx.auditLog.create({ data: { actorUserId: auth.session.userId, actorType: "USER", entityType: "LearningOutcome", entityId: created.id, action: "curriculum.outcome_created", summary: `${created.code} kazanımı oluşturuldu`, payload: { versionId: version.id, productCode: decision.productCode, subjectCode: subject.code, unitCode: unit.code, skillCount: parsed.data.skills.length } } });
       return created;
     });
     revalidateCurriculumCatalog();

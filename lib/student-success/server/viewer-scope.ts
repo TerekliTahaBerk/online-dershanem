@@ -2,6 +2,7 @@ import "server-only";
 
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { isStudentUserVisibleToParents } from "@/lib/panel/parent-product-policy";
 
 export type ScopedStudent = { id: string; userId: string };
 
@@ -45,7 +46,8 @@ export async function resolveStudentScopeForViewer(
       where: { parentId: viewerUserId, studentId, active: true, endedAt: null },
       select: { id: true },
     });
-    return link ? profile : null;
+    // Veli-free ürün politikası: yalnızca KPSS üyeliği olan öğrenci veliye kapalı.
+    return link && (await isStudentUserVisibleToParents(profile.userId)) ? profile : null;
   }
 
   if (role === "TEACHER") {

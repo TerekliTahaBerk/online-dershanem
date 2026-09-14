@@ -151,6 +151,8 @@ export async function loadParentCalmHome(input: {
     prisma.productMembership.findMany({
       where: {
         userId: selected.userId,
+        // Veli-free ürünlerin (KPSS) paket süresi veli ekranına yansımaz.
+        product: { not: null },
         revokedAt: null,
         expiresAt: { not: null, gt: now, lte: addIstanbulCalendarDays(now, PACKAGE_WARN_DAYS) },
       },
@@ -287,7 +289,7 @@ export async function loadParentCalmHome(input: {
   }
 
   const expiring = memberships[0];
-  const packageExpiring = expiring?.expiresAt
+  const packageExpiring = expiring?.expiresAt && expiring.product
     ? {
         productLabel: productLabel(expiring.product),
         daysLeft: Math.max(
