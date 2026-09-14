@@ -96,9 +96,14 @@ async function createFixture(options: { withOk: boolean } = { withOk: true }) {
     data: { assignmentId: assignment.id, studentId: student.id, status: "TODO" },
   });
 
+  const okProduct = await db.product.findUniqueOrThrow({
+    where: { code: "OK" },
+    select: { id: true },
+  });
   const plan = await db.weeklyPlan.create({
     data: {
       studentId: student.id,
+      productRefId: okProduct.id,
       weekStart,
       status: "APPROVED",
       capacityMinutes: 300,

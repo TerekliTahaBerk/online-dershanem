@@ -53,6 +53,12 @@ model Product {
   name               String
   targetAudience     String?                   @map("target_audience")
   isActive           Boolean                   @default(true) @map("is_active")
+  /// Haftalık planın aktif olabilmesi için insan (koç/öğretmen) onayı gerekiyor mu?
+  /// `true` (varsayılan) = Online Koçum davranışı: plan DRAFT doğar, onaysız
+  /// görev tamamlanamaz. `false` = öğretmensiz/otonom ürün (KPSS): plan üretildiği
+  /// anda `autoApproved` işaretiyle APPROVED doğar ve onay ucuna hiç uğramaz.
+  /// Yeni bir otonom ürün eklendiğinde kod değil, bu satır değişir.
+  requiresPlanApproval Boolean                 @default(true) @map("requires_plan_approval")
   createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
   examFamilies       ExamFamily[]
   businessUnits      BusinessUnit[]
@@ -60,6 +66,7 @@ model Product {
   progressEvidence   StudentProgressEvidence[]
   commerceOrderLines CommerceOrderLine[]
   contentRoles       ProductContentRoleAssignment[]
+  weeklyPlans        WeeklyPlan[]
 
   @@map("products")
 }

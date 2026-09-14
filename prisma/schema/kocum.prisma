@@ -238,9 +238,16 @@ model StudentPlanPreference {
   @@map("student_plan_preferences")
 }
 
+/// Haftalık plan. `productRefId` planın HANGİ ürüne ait olduğunu taşır —
+/// eskiden bu bilgi yalnız API katmanındaki sabit `"OK"` kontrollerinde vardı,
+/// bu yüzden bir plana bakıp ürününü söylemek mümkün değildi. Onay akışı
+/// artık `Product.requiresPlanApproval` üzerinden dallanır (bkz. migration 0109).
 model WeeklyPlan {
   id                    String               @id @default(cuid())
   studentId             String               @map("student_id")
+  /// Zorunlu: yeni her plan bir registry ürününe bağlanır. Migration 0109
+  /// mevcut satırların tümünü "OK" (Online Koçum) ürününe backfill eder.
+  productRefId          String               @map("product_ref_id")
   weekStart             DateTime             @map("week_start") @db.Timestamptz(3)
   status                WeeklyPlanStatus     @default(DRAFT)
   ruleVersion           String               @default("adaptive-v1") @map("rule_version")
@@ -248,17 +255,23 @@ model WeeklyPlan {
   createdById           String               @map("created_by_id")
   approvedById          String?              @map("approved_by_id")
   approvedAt            DateTime?            @map("approved_at") @db.Timestamptz(3)
+  /// Plan bir İNSAN tarafından değil, ürün politikası gereği sistemce onaylandı.
+  /// `approvedById` bu durumda NULL kalır: sahte bir kullanıcı kimliği yazılmaz,
+  /// böylece "kim onayladı?" sorusu denetimde yanlış bir isme bağlanmaz.
+  autoApproved          Boolean              @default(false) @map("auto_approved")
   changeRequestCategory String?              @map("change_request_category")
   version               Int                  @default(1)
   generatedAt           DateTime             @default(now()) @map("generated_at") @db.Timestamptz(3)
   createdAt             DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt             DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
   student               StudentProfile       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  productRef            Product              @relation(fields: [productRefId], references: [id], onDelete: Restrict)
   tasks                 WeeklyPlanTask[]
   revisions             WeeklyPlanRevision[]
 
   @@unique([studentId, weekStart])
   @@index([status, weekStart])
+  @@index([productRefId, weekStart])
   @@map("weekly_plans")
 }
 

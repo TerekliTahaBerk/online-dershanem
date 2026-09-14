@@ -31,6 +31,11 @@ test("API guard names encode product scope and shared routes stay account-scoped
   const expectedGuards = {
     "app/api/panel/adaptive-plan/generate/route.ts": 'requireApiProductRole("OK", "STUDENT")',
     "app/api/panel/adaptive-plan/preferences/route.ts": 'requireApiProductRole("OK", "STUDENT")',
+    // Plan üretimi KPSS'ye açıldı: OK kapısı ÖNCE denenir (üstteki satır), yalnız
+    // oradan geçemeyen istek registry kapısına düşer.
+    "app/api/panel/adaptive-plan/generate/route.ts#kpss": 'requireApiProductCodeRole("KPSS", "STUDENT")',
+    // Onay ucu artık planın ürününden türer; sabit "OK" kapısı KALDIRILDI.
+    "app/api/panel/adaptive-plan/[id]/approve/route.ts": "requireApiProductCodeRole(planProduct.productRef.code",
     "app/api/panel/adaptive-plan/tasks/[id]/complete/route.ts": 'requireApiProductRole("OK", "STUDENT")',
     "app/api/panel/kocum/tasks/[id]/complete/route.ts": 'requireApiProductRole("OK", "STUDENT")',
     "app/api/panel/kocum/tasks/[id]/reschedule/route.ts": 'requireApiProductRole("OK", "ADMIN", "TEACHER")',
@@ -44,9 +49,17 @@ test("API guard names encode product scope and shared routes stay account-scoped
     "app/api/panel/events/route.ts": 'requireApiAccountRole("ADMIN", "TEACHER", "STUDENT", "PARENT")',
   } as const;
 
-  for (const [path, guardCall] of Object.entries(expectedGuards)) {
-    assert.match(readFileSync(path, "utf8"), new RegExp(guardCall.replace(/[()[\]]/g, "\\$&")));
+  for (const [key, guardCall] of Object.entries(expectedGuards)) {
+    // "#" sonrası aynı dosyada ikinci bir kapıyı ayırt etmek için (bkz. generate route).
+    const path = key.split("#")[0];
+    assert.match(readFileSync(path, "utf8"), new RegExp(guardCall.replace(/[()[\].]/g, "\\$&")));
   }
+
+  // Onay ucunda sabit OK kapısı kalmamalı: ürün-bazlı onay bunun üzerine kurulu.
+  assert.doesNotMatch(
+    readFileSync("app/api/panel/adaptive-plan/[id]/approve/route.ts", "utf8"),
+    /requireApiProductRole\("OK", "TEACHER"\)/,
+  );
 });
 
 test("kocum mutation routes enforce horizontal access helpers", () => {

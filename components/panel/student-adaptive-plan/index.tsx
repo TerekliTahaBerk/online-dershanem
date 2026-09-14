@@ -33,7 +33,12 @@ import {
   isOverloadOption,
   overloadOptionLabels,
 } from "./constants";
-import type { CompletionDraft, StudentAdaptivePlanProps, Task } from "./types";
+import type {
+  CompletionDraft,
+  ExamCountdownView,
+  StudentAdaptivePlanProps,
+  Task,
+} from "./types";
 
 /**
  * ÖĞRENCİ · TEK DOMİNANT PLAN DENEYİMİ.
@@ -51,6 +56,23 @@ import type { CompletionDraft, StudentAdaptivePlanProps, Task } from "./types";
  * tercihler (varsayılan kapalı, plan yokken birincil konu).
  */
 
+/** Geri sayım başlığı: kalan tam hafta yoksa "bu hafta" denir, "0 hafta" değil. */
+function examCountdownHeadline(countdown: ExamCountdownView): string {
+  const label = countdown.examLabel || "Sınav";
+  if (countdown.weeksRemaining < 1) return `${label} bu hafta`;
+  return `${label}'a ${countdown.weeksRemaining} hafta`;
+}
+
+/** Plan yoğunluğunun neden değiştiğini açıklar — kapasite artışı sürpriz olmamalı. */
+function examCountdownNote(tier: ExamCountdownView["tier"]): string {
+  return {
+    FAR: "Planın normal temposunda ilerliyor.",
+    APPROACHING: "Planın biraz yoğunlaştı.",
+    NEAR: "Son haftalar: planın günlük biraz daha yoğun.",
+    FINAL_WEEK: "Son hafta: planın en yoğun temposunda.",
+  }[tier];
+}
+
 export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
   const {
     initialPreference,
@@ -59,6 +81,10 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     initialCoachSummary,
     upcomingExams,
     today,
+    // Varsayılan `true` = mevcut Online Koçum davranışı. KPSS gibi onay
+    // gerektirmeyen ürünlerde onay/koç arayüzü hiç render edilmez.
+    requiresApproval = true,
+    examCountdown = null,
   } = props;
   const [preference, setPreference] = useState(initialPreference);
   const [plan, setPlan] = useState(initialPlan);
@@ -275,6 +301,13 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     splitPlanTasks(tasks, today);
   const firstOpenTodayTask = todayPending[0] ?? null;
   const canComplete = plan?.status === "APPROVED";
+  /*
+   * Koç onaylı plan kilitlidir (mevcut OK davranışı); otomatik onaylı planda
+   * kilitleyen bir insan kararı yoktur — aksi halde KPSS öğrencisi ilk plandan
+   * sonra haftasını bir daha dengeleyemezdi. Sunucu tarafı aynı kuralı
+   * `canRegeneratePlan` ile uygular.
+   */
+  const canRegenerate = !plan || plan.status !== "APPROVED" || plan.autoApproved;
   const weekProgress = buildWeeklyProgress(tasks, today);
   const todayFocus = buildTodayFocus(todayPending);
   const weeklyGroups = remainingWeek.reduce(
@@ -361,6 +394,27 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
         </section>
       ) : null}
 
+      {examCountdown ? (
+        <section
+          aria-labelledby="exam-countdown-heading"
+          className="panel-surface border-l-4 border-l-[var(--brand-olive)] p-4 sm:p-5"
+        >
+          <h2
+            id="exam-countdown-heading"
+            className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]"
+          >
+            Sınava kalan
+          </h2>
+          <p className="mt-1 text-lg font-semibold">
+            {examCountdownHeadline(examCountdown)}
+          </p>
+          <p className="mt-1 text-xs text-[var(--site-muted)]">
+            {dateTime.format(new Date(examCountdown.examAt))} ·{" "}
+            {examCountdownNote(examCountdown.tier)}
+          </p>
+        </section>
+      ) : null}
+
       {plan ? (
         <section
           aria-labelledby="today-focus-heading"
@@ -383,7 +437,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                 </p>
               ) : null}
               <p className="mt-2 text-xs font-bold text-[var(--site-muted)]">
-                {planStatusLabel(plan.status)}
+                {planStatusLabel(plan.status, { autoApproved: plan.autoApproved })}
               </p>
             </div>
             <button
@@ -548,6 +602,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
         </section>
       ) : null}
 
+      {requiresApproval ? (
       <section
         aria-labelledby="coach-section-heading"
         className="panel-surface p-5 sm:p-6"
@@ -606,6 +661,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           </p>
         )}
       </section>
+      ) : null}
 
       {plan ? (
         <section
@@ -621,11 +677,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             </h2>
             <button
               type="button"
-              disabled={
-                busy ||
-                !preference.planningEnabled ||
-                plan.status === "APPROVED"
-              }
+              disabled={busy || !preference.planningEnabled || !canRegenerate}
               onClick={() => void generate()}
               className="panel-quick-action"
             >
@@ -687,7 +739,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
         </section>
       ) : null}
 
-      {plan ? (
+      {plan && requiresApproval ? (
         <section
           aria-labelledby="change-request-heading"
           className="panel-surface p-5 sm:p-6"

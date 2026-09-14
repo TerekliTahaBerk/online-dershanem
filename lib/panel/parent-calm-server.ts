@@ -90,7 +90,10 @@ export async function loadParentCalmHome(input: {
       : Promise.resolve([]),
     hasOK
       ? prisma.weeklyPlan.findFirst({
-          where: { studentId: selected.id },
+          // Yalnız Online Koçum planı. Bu ekran VELİYE açıktır; KPSS veli-free
+          // bir üründür (KPSS Görev 4) ve planı burada görünmemelidir. Ürün
+          // süzgeci olmadan "en son plan" sorgusu bir KPSS planına düşebilirdi.
+          where: { studentId: selected.id, productRef: { code: "OK" } },
           orderBy: { weekStart: "desc" },
           include: { tasks: { select: { status: true } } },
         })

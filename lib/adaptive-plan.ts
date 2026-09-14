@@ -81,6 +81,84 @@ export const ADAPTIVE_PLAN_CONFIG: AdaptivePlanConfig = {
   examProximityBoostDays: 14,
 };
 
+/**
+ * SINAV GERİ SAYIMI — plan yoğunluğu çarpanı (saf fonksiyon).
+ *
+ * Yalnız sınav tarihi BİLİNEN ve geri sayımı olan ürünlerde (KPSS) devreye alınır;
+ * çağıran taraf bunu ürün kimliğine göre seçer. Online Koçum planları bu
+ * fonksiyona hiç uğramaz, kapasiteleri değişmez.
+ *
+ * Neden `EXAM_APPROACHING` aday puanı yetmiyor: o puan bir görevin SIRASINI
+ * değiştirir, günün TOPLAM kapasitesini değil. Sınava 3 hafta kalan adayın
+ * sorunu görev sıralaması değil, gereken çalışma hacmidir.
+ */
+export type ExamCountdownTier = "NONE" | "FAR" | "APPROACHING" | "NEAR" | "FINAL_WEEK";
+
+export type ExamCountdownCapacity = {
+  tier: ExamCountdownTier;
+  /** Sınava kalan tam hafta; sınav yoksa veya geçmişse `null`. */
+  weeksRemaining: number | null;
+  minutesPerDay: number;
+  maxTasksPerDay: number;
+};
+
+/**
+ * Üst sınırlar. Çarpan ne olursa olsun plan insanüstü bir güne dönüşmemeli:
+ * geri sayım paniği öğrenciyi hiç açmayacağı bir listeyle baş başa bırakmaz.
+ */
+export const EXAM_COUNTDOWN_MAX_MINUTES_PER_DAY = 180;
+export const EXAM_COUNTDOWN_MAX_TASKS_PER_DAY = 5;
+
+/** Sınava kalan tam hafta sayısı. Sınav yoksa veya geçmişse `null`. */
+export function examCountdownWeeks(now: Date, examAt: Date | null | undefined): number | null {
+  if (!examAt) return null;
+  const remainingMs = examAt.getTime() - now.getTime();
+  if (remainingMs <= 0) return null;
+  return Math.floor(remainingMs / (7 * 86_400_000));
+}
+
+/**
+ * Sınav yaklaştıkça günlük dakika ve görev kapasitesini kademeli artırır.
+ * Sınav yoksa/geçmişse taban kapasite aynen döner — yani bu fonksiyon
+ * kapasiteyi ASLA düşürmez.
+ */
+export function examCountdownCapacity(input: {
+  now: Date;
+  examAt: Date | null | undefined;
+  minutesPerDay: number;
+  maxTasksPerDay: number;
+}): ExamCountdownCapacity {
+  const weeksRemaining = examCountdownWeeks(input.now, input.examAt);
+  const base = {
+    weeksRemaining,
+    minutesPerDay: input.minutesPerDay,
+    maxTasksPerDay: input.maxTasksPerDay,
+  };
+  if (weeksRemaining === null) return { ...base, tier: "NONE" };
+
+  const { tier, minutesMultiplier, extraTasks } =
+    weeksRemaining < 1
+      ? { tier: "FINAL_WEEK" as const, minutesMultiplier: 1.5, extraTasks: 1 }
+      : weeksRemaining < 4
+        ? { tier: "NEAR" as const, minutesMultiplier: 1.3, extraTasks: 1 }
+        : weeksRemaining < 8
+          ? { tier: "APPROACHING" as const, minutesMultiplier: 1.15, extraTasks: 0 }
+          : { tier: "FAR" as const, minutesMultiplier: 1, extraTasks: 0 };
+
+  return {
+    tier,
+    weeksRemaining,
+    minutesPerDay: Math.min(
+      EXAM_COUNTDOWN_MAX_MINUTES_PER_DAY,
+      Math.round(input.minutesPerDay * minutesMultiplier),
+    ),
+    maxTasksPerDay: Math.min(
+      EXAM_COUNTDOWN_MAX_TASKS_PER_DAY,
+      input.maxTasksPerDay + extraTasks,
+    ),
+  };
+}
+
 export function planningWeekStart(now = new Date()): Date {
   return istanbulWeekStart(now, istanbulIsoWeekday(now) === 7 ? 1 : 0);
 }

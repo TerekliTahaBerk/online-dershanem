@@ -151,7 +151,10 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   }),
   z.object({
     name: z.literal("plan_generated"),
-    properties: z.object({ ruleVersion: z.literal("adaptive-v1"), taskCount: z.number().int().min(0).max(21), capacityMinutes: z.number().int().min(0).max(7 * 180), reasonCount: z.number().int().min(0).max(5), rebalanced: z.boolean() }).strict(),
+    // taskCount tavanı 7 gün × 5 görev: KPSS sınav geri sayımı günlük görev
+    // sayısını artırabiliyor (bkz. `examCountdownCapacity`). Eski 7 × 3 tavanı
+    // tam da izlemek istediğimiz yoğun haftaların telemetrisini sessizce düşürürdü.
+    properties: z.object({ ruleVersion: z.literal("adaptive-v1"), taskCount: z.number().int().min(0).max(7 * 5), capacityMinutes: z.number().int().min(0).max(7 * 180), reasonCount: z.number().int().min(0).max(5), rebalanced: z.boolean() }).strict(),
   }),
   z.object({
     name: z.literal("plan_review_completed"),

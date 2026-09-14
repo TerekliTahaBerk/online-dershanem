@@ -7,7 +7,8 @@ import { getSession, type SessionUser } from "@/lib/auth/session";
 import { LOGIN_PATH, PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
-import { hasProductAccess } from "@/lib/auth/products";
+import { hasProductAccess, hasProductCodeAccess } from "@/lib/auth/products";
+import { asLegacyProductCode } from "@/lib/products/codes";
 import { pilotProgramForProduct } from "@/lib/auth/product-pilot";
 import { MFA_PATH, STEP_UP_PATH, hasFreshStepUp } from "@/lib/auth/mfa-policy";
 import {
@@ -138,4 +139,33 @@ export async function requireProductRole(product: ProductCode, ...roles: UserRol
   await requireProductPilot(session, product);
   if (!(await hasProductAccess(session.userId, session.role, product))) notFound();
   return session;
+}
+
+/**
+ * Birden çok ürüne açık sayfalar için: kullanıcının SAHİP OLDUĞU ilk ürün kodu.
+ *
+ * Sıra anlamlıdır — çağıran taraf öncelikli ürünü başa koyar. Hiçbirine erişim
+ * yoksa `notFound()`, yani tek ürünlü guard ile aynı sonuç. Legacy kodlar
+ * (OD/OK/ODK) pilot kapısından da geçer; registry ürünlerinde (KPSS) pilot
+ * programı yoktur, kapı `Product.isActive` + aktif üyeliktir.
+ */
+export async function requireFirstAccessibleProductRole(
+  productCodes: readonly string[],
+  ...roles: UserRole[]
+): Promise<{ session: SessionUser; productCode: string }> {
+  const session = await requireAuthorizedRole(...roles);
+  for (const code of productCodes) {
+    const legacy = asLegacyProductCode(code);
+    if (legacy) {
+      // Pilot kapısı `notFound()`/`redirect()` atabilir; bu yüzden erişim
+      // kontrolü ÖNCE yapılır: sahip olunmayan bir ürünün pilotu sorulmaz.
+      if (!(await hasProductAccess(session.userId, session.role, legacy))) continue;
+      await requireProductPilot(session, legacy);
+      return { session, productCode: code };
+    }
+    if (await hasProductCodeAccess(session.userId, session.role, code)) {
+      return { session, productCode: code };
+    }
+  }
+  notFound();
 }

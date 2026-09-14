@@ -9,6 +9,7 @@ import { assertCoachOrTeacherAccess } from "@/lib/kocum/access-server";
 import { appendTimelineEvent, recordPlanRevision } from "@/lib/kocum/server";
 import { buildRevisionChangeSummary } from "@/lib/kocum";
 import { istanbulDayStart, istanbulWeekStart } from "@/lib/istanbul-time";
+import { getOkPlanProductId } from "@/lib/kocum/plan-product";
 
 const createSchema = z.object({
   studentId: z.string().min(1),
@@ -97,6 +98,7 @@ export async function POST(request: Request) {
   const scheduledFor = istanbulDayStart(new Date(parsed.data.scheduledFor));
   const weekStart = istanbulWeekStart(parsed.data.weekStart ? new Date(parsed.data.weekStart) : scheduledFor);
 
+  const okProductId = await getOkPlanProductId();
   const result = await prisma.$transaction(async (tx) => {
     let plan = await tx.weeklyPlan.findUnique({
       where: { studentId_weekStart: { studentId: parsed.data.studentId, weekStart } },
@@ -105,6 +107,8 @@ export async function POST(request: Request) {
       plan = await tx.weeklyPlan.create({
         data: {
           studentId: parsed.data.studentId,
+          // Koç eliyle görev eklemek tanımı gereği bir Online Koçum planı açar.
+          productRefId: okProductId,
           weekStart,
           status: "DRAFT",
           capacityMinutes: parsed.data.durationMinutes,

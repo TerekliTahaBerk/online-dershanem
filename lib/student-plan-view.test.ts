@@ -59,6 +59,9 @@ test("bugünkü odak süreyi yalnız tüm görevlerde varsa gösterir", () => {
 
 test("öğrenciye görünen durum metinleri doğal Türkçedir", () => {
   assert.equal(planStatusLabel("APPROVED"), "Koçun tarafından onaylandı");
+  // Otomatik onaylı planda olmayan bir koçun onayından söz edilmez.
+  assert.equal(planStatusLabel("APPROVED", { autoApproved: true }), "Planın hazır");
+  assert.equal(planStatusLabel("DRAFT", { autoApproved: false }), "Plan hazırlanıyor");
   assert.equal(taskStatusLabel("PLANNED"), "Başlamadım");
   assert.equal(taskStatusLabel("DONE"), "Tamamladım");
   assert.equal(taskStatusLabel("SKIPPED"), "Yeniden planlanacak");

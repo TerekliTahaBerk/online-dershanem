@@ -9,6 +9,7 @@ import { assertCoachOrTeacherAccess } from "@/lib/kocum/access-server";
 import { recordPlanRevision } from "@/lib/kocum/server";
 import { buildRevisionChangeSummary, isDateWithinPlanWeek } from "@/lib/kocum";
 import { istanbulDayStart, istanbulWeekStart } from "@/lib/istanbul-time";
+import { getOkPlanProductId } from "@/lib/kocum/plan-product";
 
 /** Öneriden doğan görevin varsayılan süresi. */
 const SUGGESTION_TASK_MINUTES = 40;
@@ -108,6 +109,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         ? today
         : weekStart;
 
+      const okProductId = await getOkPlanProductId();
       const result = await prisma.$transaction(async (tx) => {
         let plan = await tx.weeklyPlan.findUnique({
           where: { studentId_weekStart: { studentId: suggestion.studentId, weekStart } },
@@ -116,6 +118,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           plan = await tx.weeklyPlan.create({
             data: {
               studentId: suggestion.studentId,
+              // Koçluk önerisinin onaylanması bir Online Koçum planı üretir.
+              productRefId: okProductId,
               weekStart,
               status: "DRAFT",
               capacityMinutes: SUGGESTION_TASK_MINUTES,

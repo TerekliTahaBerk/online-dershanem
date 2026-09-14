@@ -139,6 +139,8 @@ export async function getTeacherRoster(input: {
             studentId: { in: studentIds },
             weekStart: { gte: weekStart, lt: weekEnd },
             status: { in: ["DRAFT", "CHANGE_REQUESTED", "APPROVED"] },
+            // Koçluk listesi: yalnız insan onayı akışındaki ürünlerin planları.
+            productRef: { requiresPlanApproval: true },
           },
           select: {
             studentId: true,

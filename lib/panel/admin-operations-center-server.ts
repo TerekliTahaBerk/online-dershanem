@@ -339,7 +339,9 @@ export async function getAdminOperationsCenterSnapshot(options?: {
     prisma.lesson.count({
       where: { startsAt: { lt: now, gte: weekAgo }, notes: { none: { studentId: null } } },
     }),
-    prisma.weeklyPlan.count({ where: { status: "DRAFT", weekStart: { lt: weekAgo } } }),
+    // "Bekleyen taslak plan" bir OPERASYON uyarısıdır: onay bekleyen iş.
+    // Otomatik onaylı ürünlerde böyle bir bekleyen iş kavramı yoktur.
+    prisma.weeklyPlan.count({ where: { status: "DRAFT", weekStart: { lt: weekAgo }, productRef: { requiresPlanApproval: true } } }),
     prisma.cronHeartbeat.findMany(),
     prisma.emailOutbox.count({ where: { status: { in: ["FAILED", "ABANDONED"] } } }),
     prisma.auditLog.findMany({

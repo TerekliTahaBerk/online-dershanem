@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiAccountRole, requireApiProductCodeRole } from "@/lib/auth/api-guards";
+import { planAcceptsManualApproval } from "@/lib/kocum/plan-approval";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { appendTimelineEvent, recordPlanRevision } from "@/lib/kocum/server";
@@ -11,9 +12,26 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
 const schema = z.object({ expectedVersion: z.number().int().min(1) });
 
+/**
+ * PLAN ONAYI — ürün-bazlı.
+ *
+ * Ürün kapısı eskiden OK ürününe sabit kodlanmış bir `requireApiProductRole`
+ * çağrısıydı:
+ * onay akışı koda gömülüydü ve her plan bir koç onayı beklemek zorundaydı.
+ * Artık kapı planın KENDİ ürününden türetilir:
+ *   - `requiresPlanApproval = true`  (OK): davranış birebir aynı — TEACHER
+ *     rolü + o ürüne erişim + koç/öğretmen ilişkisi aranır.
+ *   - `requiresPlanApproval = false` (KPSS): onaylanacak bir şey yoktur; plan
+ *     zaten üretildiği anda onaylı doğar. Uç 409 ile açıkça reddeder.
+ *
+ * Sıra neden değişti: planın ürününü bilmeden hangi ürün kapısının
+ * uygulanacağı bilinemez. Rol kapısı (TEACHER) ve mutation guard eskisi gibi
+ * ÖNCE çalışır; plan yalnız kimliği doğrulanmış bir öğretmene açılır ve ürün
+ * erişimi reddedildiğinde dönen yanıt eskisiyle aynıdır.
+ */
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("OK", "TEACHER");
-  if (!auth.ok) return auth.response;
+  const actor = await requireApiAccountRole("TEACHER");
+  if (!actor.ok) return actor.response;
   if (!getPanelFeatureFlags().adaptivePlan) {
     return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
   }
@@ -21,7 +39,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     action: "panel.adaptive_plan.approve",
     requireSameOrigin: true,
     headers: request.headers,
-    rateLimitKey: `panel:plan-approve:${auth.session.userId}`,
+    rateLimitKey: `panel:plan-approve:${actor.session.userId}`,
     rateLimit: { max: 80, windowMs: 15 * 60 * 1000 },
   });
   if (!guard.ok) {
@@ -32,6 +50,24 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: "Plan sürümü geçersiz." }, { status: 400 });
   }
   const { id } = await context.params;
+
+  // Planın ürünü, uygulanacak ürün kapısını ve onay politikasını belirler.
+  const planProduct = await prisma.weeklyPlan.findUnique({
+    where: { id },
+    select: { productRef: { select: { code: true, requiresPlanApproval: true } } },
+  });
+  if (!planProduct) return NextResponse.json({ error: "Plan bulunamadı." }, { status: 404 });
+
+  const auth = await requireApiProductCodeRole(planProduct.productRef.code, "TEACHER");
+  if (!auth.ok) return auth.response;
+
+  if (!planAcceptsManualApproval(planProduct.productRef)) {
+    return NextResponse.json(
+      { error: "Bu ürünün planları onay gerektirmiyor; plan zaten aktif." },
+      { status: 409 },
+    );
+  }
+
   const plan = await prisma.weeklyPlan.findFirst({
     where: {
       id,

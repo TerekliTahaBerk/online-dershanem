@@ -89,6 +89,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const created = await tx.weeklyPlan.create({
       data: {
         studentId: source.studentId,
+        // Kopya, kaynak planın ürününde kalır — kopyalarken ürün değiştirmek
+        // sessizce başka bir onay politikasına geçmek olurdu.
+        productRefId: source.productRefId,
         weekStart: targetWeekStart,
         status: "DRAFT",
         capacityMinutes: tasksToCopy.reduce((sum, t) => sum + t.durationMinutes, 0) || source.capacityMinutes,

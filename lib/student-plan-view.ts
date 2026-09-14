@@ -28,7 +28,18 @@ export function taskDateKey(scheduledFor: string): string {
   return formatIstanbulDateInput(new Date(scheduledFor));
 }
 
-export function planStatusLabel(status: StudentPlanStatus): string {
+/**
+ * Plan durumunun öğrenciye gösterilen karşılığı.
+ *
+ * `autoApproved` planlarda "Koçun tarafından onaylandı" demek YANLIŞ olurdu:
+ * onay gerektirmeyen bir üründe (KPSS) planı onaylayan bir koç yoktur ve
+ * öğrenciye olmayan birinin onayından söz edilmez.
+ */
+export function planStatusLabel(
+  status: StudentPlanStatus,
+  options: { autoApproved?: boolean } = {},
+): string {
+  if (status === "APPROVED" && options.autoApproved) return "Planın hazır";
   return {
     APPROVED: "Koçun tarafından onaylandı",
     CHANGE_REQUESTED: "Değişiklik talebin koçuna iletildi",

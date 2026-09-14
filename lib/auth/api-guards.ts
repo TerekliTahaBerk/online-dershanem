@@ -6,7 +6,8 @@ import { PANEL_ENABLED } from "@/lib/panel-config";
 import { getSession, SESSION_COOKIE_NAME, type SessionUser } from "@/lib/auth/session";
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
-import { hasProductAccess } from "@/lib/auth/products";
+import { hasProductAccess, hasProductCodeAccess } from "@/lib/auth/products";
+import { asLegacyProductCode } from "@/lib/products/codes";
 import { pilotProgramForProduct } from "@/lib/auth/product-pilot";
 import { hasFreshStepUp } from "@/lib/auth/mfa-policy";
 import {
@@ -156,6 +157,28 @@ export async function requireApiProductRole(product: ProductCode, ...roles: User
   auth = await requireApiProductPilot(auth, product);
   if (!auth.ok) return auth;
   if (!(await hasProductAccess(auth.session.userId, auth.session.role, product))) {
+    return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
+  }
+  return auth;
+}
+
+/**
+ * Registry farkında ürün kapısı: ürün kodu ENUM değil, `products.code` string'i.
+ *
+ * Pilot programı olan legacy kodlarda (OD/OK/ODK) doğrudan
+ * `requireApiProductRole`'a devreder — o yolun davranışı birebir korunur.
+ * Pilot programı olmayan registry ürünlerinde (KPSS) pilot kapısı YOKTUR;
+ * `pilotProgramForProduct` böyle bir ürün için bilerek hata fırlatır. Kapı
+ * `hasProductCodeAccess`tir: aktif üyelik + `Product.isActive`. Yani KPSS
+ * satış kilidi (`is_active = false`) bu uçlarda da geçerlidir.
+ */
+export async function requireApiProductCodeRole(code: string, ...roles: UserRole[]): Promise<ApiAuth> {
+  const legacy = asLegacyProductCode(code);
+  if (legacy) return requireApiProductRole(legacy, ...roles);
+
+  const auth = await requireApiAuthorizedRole(roles);
+  if (!auth.ok) return auth;
+  if (!(await hasProductCodeAccess(auth.session.userId, auth.session.role, code))) {
     return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
   }
   return auth;

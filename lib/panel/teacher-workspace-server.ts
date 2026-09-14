@@ -224,6 +224,9 @@ export async function getTeacherWorkspace(teacherId: string, now = new Date()): 
           where: {
             weekStart: { gte: weekStart, lt: weekEnd },
             status: { in: ["DRAFT", "CHANGE_REQUESTED"] },
+            // Bu bir koç/öğretmen ONAY KUYRUĞUDUR: otomatik onaylı ürünlerin
+            // (KPSS) planları buraya düşmemeli — onaylayacak kimse yok.
+            productRef: { requiresPlanApproval: true },
             student: {
               enrollments: { some: { endedAt: null, group: { isActive: true, teacherId } } },
             },

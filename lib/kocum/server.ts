@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getOkPlanProductId } from "./plan-product";
 import {
   addIstanbulCalendarDays,
   formatIstanbulDateInput,
@@ -136,6 +137,7 @@ export async function applyTemplateToStudentWeek(input: {
     return { ok: false as const, error: "Yayınlanmış plan üzerine şablon uygulanamaz. Önce taslak oluşturun." };
   }
 
+  const okProductId = await getOkPlanProductId();
   const plan = await prisma.$transaction(async (tx) => {
     const upserted = existing
       ? await tx.weeklyPlan.update({
@@ -151,6 +153,8 @@ export async function applyTemplateToStudentWeek(input: {
       : await tx.weeklyPlan.create({
           data: {
             studentId: input.studentId,
+            // Koçluk şablonu uygulamak bir Online Koçum planı üretir.
+            productRefId: okProductId,
             weekStart,
             status: "DRAFT",
             capacityMinutes: applied.reduce((sum, t) => sum + t.durationMinutes, 0),

@@ -67,7 +67,28 @@ export type Plan = {
   version: number;
   capacityMinutes: number;
   changeRequestCategory: string | null;
+  /**
+   * Plan bir insan tarafından değil, ürün politikası gereği sistemce onaylandı.
+   * Onaylı ama otomatik onaylı bir planı kilitleyen bir koç kararı yoktur.
+   */
+  autoApproved: boolean;
   tasks: Task[];
+};
+
+/**
+ * Planın ürününden gelen onay politikası. `false` olduğunda öğrenciye onay
+ * bekleme / koça gönderme arayüzü HİÇ gösterilmez: bekleyeceği bir onay yoktur.
+ */
+export type PlanApprovalPolicyView = {
+  requiresApproval: boolean;
+};
+
+/** Sınav geri sayımı — yalnız hedef sınav tarihi olan ürünlerde (KPSS) dolu gelir. */
+export type ExamCountdownView = {
+  tier: "FAR" | "APPROACHING" | "NEAR" | "FINAL_WEEK";
+  weeksRemaining: number;
+  examLabel: string | null;
+  examAt: string;
 };
 
 export type CoachingSnapshot = {
@@ -78,6 +99,19 @@ export type CoachingSnapshot = {
   overdue: boolean;
 };
 
-export type StudentAdaptivePlanProps = { initialPreference: Preference; initialPlan: Plan | null; initialCoaching: CoachingSnapshot | null; initialCoachSummary?: CoachSummarySnippet | null; upcomingExams?: UpcomingExam[]; today: string };
+export type StudentAdaptivePlanProps = {
+  initialPreference: Preference;
+  initialPlan: Plan | null;
+  initialCoaching: CoachingSnapshot | null;
+  initialCoachSummary?: CoachSummarySnippet | null;
+  upcomingExams?: UpcomingExam[];
+  today: string;
+  /**
+   * Varsayılan `true`: çağıran taraf bu bilgiyi vermezse davranış mevcut
+   * Online Koçum akışıdır (onay bekleyen plan, koç bölümü görünür).
+   */
+  requiresApproval?: boolean;
+  examCountdown?: ExamCountdownView | null;
+};
 export type TaskCardProps = { task: Task; canComplete: boolean; highlighted: boolean; onStart: (task: Task) => void; onOpenComplete: (task: Task, status: CompletionDraft["status"]) => void; draft: CompletionDraft | null; onDraftChange: (next: CompletionDraft) => void; onSubmitComplete: (task: Task) => void; onCancelComplete: () => void; busy: boolean };
 export type PreferenceFieldsProps = { preference: Preference; setPreference: Dispatch<SetStateAction<Preference>> };

@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireFirstAccessibleProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan/index";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import { PanelPageHeader, PanelEmpty } from "@/components/panel/ui";
 import { getStudentCoaching } from "@/lib/panel/coaching";
+import { examCountdownCapacity } from "@/lib/adaptive-plan";
+import { KPSS_PRODUCT_CODE, getPlanProductByCode } from "@/lib/kocum/plan-product";
 import { buildPlanDeterministicReason } from "@/lib/panel/dino-explanations";
 import {
   addIstanbulCalendarDays,
@@ -36,7 +38,16 @@ const RANGE = new Intl.DateTimeFormat("tr-TR", {
 });
 
 export default async function StudentPlanPage() {
-  const session = await requireProductRole("OK", "STUDENT");
+  /*
+   * Sayfa iki ürüne açık. Sıra anlamlı: Online Koçum erişimi olan öğrenci
+   * bugünkü deneyimini aynen görür; KPSS yalnız OK erişimi OLMAYAN öğrenci
+   * için devreye girer. KPSS satış kilidi (`Product.isActive = false`) bu
+   * kapıda da geçerlidir — kilit açılmadan hiçbir KPSS öğrencisi giremez.
+   */
+  const { session, productCode } = await requireFirstAccessibleProductRole(
+    ["OK", "KPSS"],
+    "STUDENT",
+  );
   if (!getPanelFeatureFlags().adaptivePlan) notFound();
 
   const profile = await prisma.studentProfile.findUnique({
@@ -72,6 +83,7 @@ export default async function StudentPlanPage() {
     orderBy: { weekStart: "desc" },
     include: {
       tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] },
+      productRef: { select: { code: true } },
     },
   });
 
@@ -139,6 +151,38 @@ export default async function StudentPlanPage() {
     version: plan?.version || 1,
   });
 
+  /*
+   * Onay politikası PLANIN ürününden okunur; plan henüz yoksa sayfanın
+   * girildiği ürün kodundan. Böylece öğrenciye "koç onayı bekleniyor" arayüzü
+   * yalnız gerçekten bir onay bekleyen üründe gösterilir.
+   */
+  const planProduct = await getPlanProductByCode(plan ? plan.productRef.code : productCode);
+  const requiresApproval = planProduct.requiresPlanApproval;
+
+  /*
+   * Geri sayım YALNIZ KPSS bağlamında ve hedef sınav tarihi bildirilmişse.
+   * Online Koçum öğrencisinde bu blok hiç render edilmez.
+   */
+  const targetExamAt = profile.planPreference?.nextExamAt ?? null;
+  const countdown =
+    planProduct.code === KPSS_PRODUCT_CODE
+      ? examCountdownCapacity({
+          now: new Date(),
+          examAt: targetExamAt,
+          minutesPerDay: profile.planPreference?.minutesPerDay || 45,
+          maxTasksPerDay: profile.planPreference?.maxTasksPerDay || 3,
+        })
+      : null;
+  const examCountdown =
+    countdown && countdown.tier !== "NONE" && countdown.weeksRemaining !== null && targetExamAt
+      ? {
+          tier: countdown.tier,
+          weeksRemaining: countdown.weeksRemaining,
+          examLabel: profile.planPreference?.examLabel || null,
+          examAt: targetExamAt.toISOString(),
+        }
+      : null;
+
   return shell(
     <>
       <PanelPageHeader
@@ -185,6 +229,7 @@ export default async function StudentPlanPage() {
                   version: plan.version,
                   capacityMinutes: plan.capacityMinutes,
                   changeRequestCategory: plan.changeRequestCategory,
+                  autoApproved: plan.autoApproved,
                   tasks: plan.tasks.map((task) => ({
                     id: task.id,
                     title: task.title,
@@ -236,6 +281,8 @@ export default async function StudentPlanPage() {
               title: exam.title,
               startsAt: exam.startsAt.toISOString(),
             }))}
+          requiresApproval={requiresApproval}
+          examCountdown={examCountdown}
         />
       </div>
     </>,

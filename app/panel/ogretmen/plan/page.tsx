@@ -32,6 +32,10 @@ export default async function TeacherPlanPage() {
     where: {
       weekStart: { gte: weekStart, lt: weekEnd },
       status: { in: ["DRAFT", "CHANGE_REQUESTED", "APPROVED"] },
+      // Koçluk çalışma alanı: yalnız insan onayı akışındaki ürünlerin planları.
+      // Otomatik onaylı bir plan burada "onayla" düğmesiyle gösterilseydi,
+      // düğme uçta 409 ile reddedilirdi.
+      productRef: { requiresPlanApproval: true },
       OR: [
         {
           student: {
