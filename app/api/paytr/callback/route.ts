@@ -32,6 +32,7 @@ import { validatePaytrPaymentInvariant } from "@/lib/odk/paytr-callback-validati
 import { upsertOrderLedger } from "@/lib/business/finance";
 import { provisionOdkOrder, type OdkProvisioningFailurePoint } from "@/lib/odk/provisioning";
 import { assertOrderLineReconciliation, isOrderCallbackComplete } from "@/lib/commerce/order-lines";
+import { parsePaytrCallbackPayload, resolveOdTestFailurePoint, resolveOdkTestFailurePoint } from "@/lib/commerce/paytr-callback-request";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -57,21 +58,7 @@ async function logPaytrAudit(payload: PaytrCallbackPayload, input: LogAuditInput
 export async function POST(req: Request) {
   let payload: PaytrCallbackPayload;
   try {
-    const text = await req.text();
-    const params = new URLSearchParams(text);
-    payload = {
-      merchant_oid: params.get("merchant_oid") ?? "",
-      status: (params.get("status") as "success" | "failed") ?? "failed",
-      total_amount: params.get("total_amount") ?? "0",
-      hash: params.get("hash") ?? "",
-      failed_reason_code: params.get("failed_reason_code") ?? undefined,
-      failed_reason_msg: params.get("failed_reason_msg") ?? undefined,
-      payment_type: params.get("payment_type") ?? undefined,
-      payment_amount: params.get("payment_amount") ?? undefined,
-      currency: params.get("currency") ?? undefined,
-      installment_count: params.get("installment_count") ?? undefined,
-      test_mode: params.get("test_mode") ?? undefined,
-    };
+    payload = parsePaytrCallbackPayload(await req.text());
   } catch (err) {
     log.error("paytr.callback.parse_error", err);
     return plain("OK");
@@ -100,23 +87,11 @@ export async function POST(req: Request) {
   const service = detectPaytrService(payload.merchant_oid);
 
   if (service === "ODK") {
-    const requestedFailure = req.headers.get("x-odk-test-failure") as OdkProvisioningFailurePoint | null;
-    const failurePoint = process.env.ODK_PROVISIONING_TEST_MODE === "true"
-      && process.env.VERCEL_ENV !== "production"
-      && requestedFailure
-      && ["AFTER_USER", "AFTER_PROFILE", "AFTER_MEMBERSHIP"].includes(requestedFailure)
-      ? requestedFailure
-      : undefined;
+    const failurePoint = resolveOdkTestFailurePoint(req.headers.get("x-odk-test-failure"));
     return handleOdk(payload, failurePoint);
   }
   if (service === "OD") {
-    const requestedFailure = req.headers.get("x-od-test-failure") as OdProvisioningFailurePoint | null;
-    const failurePoint = process.env.OD_PROVISIONING_TEST_MODE === "true"
-      && process.env.VERCEL_ENV !== "production"
-      && requestedFailure
-      && ["AFTER_USER", "AFTER_PROFILE", "AFTER_MEMBERSHIP"].includes(requestedFailure)
-      ? requestedFailure
-      : undefined;
+    const failurePoint = resolveOdTestFailurePoint(req.headers.get("x-od-test-failure"));
     return handleOd(payload, failurePoint);
   }
 

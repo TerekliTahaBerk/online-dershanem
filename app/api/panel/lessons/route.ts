@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
@@ -7,12 +6,10 @@ import { logAudit } from "@/lib/audit";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import { assertLessonNoConflict, LessonLifecycleError } from "@/lib/panel/lesson-lifecycle";
 import {
-  lessonSeriesRequestSchema,
-  previewLessonSeries,
-  resolveLessonSeriesInput,
   LessonSeriesScheduleError,
 } from "@/lib/panel/lesson-series-schedule";
 import { resolveLessonTargetGroup } from "@/lib/panel/lesson-target";
+import { lessonCreationSchema, resolveLessonCreationOccurrences } from "@/lib/panel/lesson-creation";
 
 /**
  * Seri alanları önizleme ucuyla ORTAK şemadan gelir (`seriesEndsOn` dahil).
@@ -20,34 +17,6 @@ import { resolveLessonTargetGroup } from "@/lib/panel/lesson-target";
  * varsayılanı önizlemedekinden farklı davranıyordu; aynı gövde iki uçta farklı
  * sayıda ders üretebiliyordu.
  */
-const schema = lessonSeriesRequestSchema
-  .extend({
-    targetType: z.enum(["GROUP", "STUDENT"]).default("GROUP"),
-    groupId: z.string().min(1).optional(),
-    studentId: z.string().min(1).optional(),
-    teacherId: z.string().min(1).optional(),
-    title: z.string().trim().min(2).max(120),
-    startsAt: z.string().datetime(),
-    endsAt: z.string().datetime().optional(),
-    meetingUrl: z.string().url().max(500).optional().or(z.literal("")),
-    description: z.string().trim().max(2000).optional().or(z.literal("")),
-  })
-  .superRefine((value, ctx) => {
-    if (value.targetType === "GROUP" && !value.groupId) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Grup seçin.", path: ["groupId"] });
-    }
-    if (value.targetType === "STUDENT" && !value.studentId) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Öğrenci seçin.", path: ["studentId"] });
-    }
-    if (value.mode === "SERIES" && !value.weekdays?.length && (value.repeatWeeks ?? 1) < 2 && !value.totalOccurrences) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Ders serisi için en az 2 hafta veya haftanın günlerini seçin.",
-        path: ["repeatWeeks"],
-      });
-    }
-  });
-
 export async function POST(request: Request) {
   const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
@@ -60,7 +29,7 @@ export async function POST(request: Request) {
   });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
 
-  const parsed = schema.safeParse(await request.json().catch(() => null));
+  const parsed = lessonCreationSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Ders bilgilerini kontrol edin." }, { status: 400 });
   }
@@ -92,23 +61,13 @@ export async function POST(request: Request) {
   // `totalOccurrences` boşsa naif bir "+7 gün" döngüsüne düşülüyordu; o döngü
   // ne bitiş tarihini ne de Istanbul takvim normalizasyonunu biliyordu, yani
   // önizlemeyle aynı sonucu üretmesi tesadüfe kalıyordu.
-  const useWeekdaySeries = parsed.data.mode === "SERIES" || (parsed.data.repeatWeeks ?? 1) > 1;
-
   let occurrenceStarts: Date[] = [];
   let occurrenceEnds: Date[] = [];
 
   try {
-    if (useWeekdaySeries) {
-      const preview = previewLessonSeries(
-        resolveLessonSeriesInput({ ...parsed.data, durationMinutes }),
-      );
-      occurrenceStarts = preview.occurrences.map((o) => o.startsAt);
-      occurrenceEnds = preview.occurrences.map((o) => o.endsAt);
-    } else {
-      // Tek ders: verilen an aynen kullanılır, üretici devreye girmez.
-      occurrenceStarts.push(startsAt);
-      occurrenceEnds.push(new Date(startsAt.getTime() + durationMinutes * 60_000));
-    }
+    const occurrences = resolveLessonCreationOccurrences(parsed.data, durationMinutes);
+    occurrenceStarts = occurrences.starts;
+    occurrenceEnds = occurrences.ends;
   } catch (error) {
     if (error instanceof LessonSeriesScheduleError) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: 400 });

@@ -1,25 +1,8 @@
-const REDACTED = "[REDACTED]";
-
-const SENSITIVE_KEY_PARTS = [
-  "password", "secret", "token", "authorization", "cookie", "hash", "email", "phone",
-];
-
-function isSensitiveKey(key: string): boolean {
-  const normalized = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
-  return SENSITIVE_KEY_PARTS.some((part) => normalized.includes(part));
-}
+import { redactSensitiveValue } from "@/lib/security/redaction.mjs";
 
 /** Audit payload'larında PII ve secret alanlarını merkezi olarak ayıklar. */
 export function sanitizeAuditPayload(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sanitizeAuditPayload);
-  if (!value || typeof value !== "object") return value;
-
-  return Object.fromEntries(
-    Object.entries(value as Record<string, unknown>).map(([key, child]) => [
-      key,
-      isSensitiveKey(key) ? REDACTED : sanitizeAuditPayload(child),
-    ]),
-  );
+  return redactSensitiveValue(value);
 }
 
 export function paytrAuditIdempotencyKey(action: string, merchantOid: string): string {

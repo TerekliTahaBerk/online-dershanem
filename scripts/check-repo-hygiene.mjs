@@ -188,7 +188,39 @@ if (eslintDisableOffenders.length > 0) {
   process.exit(1);
 }
 
+/**
+ * CLI loglarına bariz PII/secret değişkenlerinin ham geçirilmesini yakala.
+ * Yapılandırılmış nesneler `cliLog` içindeki merkezi redaction'dan geçtiği
+ * için kabul edilir; template interpolation ve doğrudan değişken geçişi
+ * güvenli alan adını kaybettiğinden yasaktır.
+ */
+const SENSITIVE_LOG_NAME = "(?:e?mail|ePosta|phone|telefon|password|parola|tempPassword|token|accessToken|refreshToken|secret|tcKimlik|tcNo|fullName|studentName|parentName)";
+const CLI_INTERPOLATED_SENSITIVE = new RegExp(
+  `\\bcliLog\\.(?:info|warn|error)\\([^\\n]*\\$\\{[^}]*\\b${SENSITIVE_LOG_NAME}\\b[^}]*\\}`,
+  "i",
+);
+const DIRECT_SENSITIVE_ARGUMENT = new RegExp(
+  `\\b(?:cliLog\\.(?:info|warn|error)|console\\.(?:log|info|warn|error))\\(\\s*${SENSITIVE_LOG_NAME}\\b`,
+  "i",
+);
+const sensitiveLogOffenders = [];
+
+for (const file of files.filter((file) => file.startsWith("scripts/") && SOURCE_FILE.test(file))) {
+  if (file === "scripts/check-repo-hygiene.mjs" || file === "scripts/lib/cli-logger.mjs") continue;
+  readFileSync(file, "utf8").split(/\r?\n/).forEach((line, index) => {
+    if (CLI_INTERPOLATED_SENSITIVE.test(line) || DIRECT_SENSITIVE_ARGUMENT.test(line)) {
+      sensitiveLogOffenders.push(`${file}:${index + 1}`);
+    }
+  });
+}
+
+if (sensitiveLogOffenders.length > 0) {
+  cliLog.error("Script loguna ham hassas değişken geçiriliyor:", { offenders: sensitiveLogOffenders });
+  cliLog.error("Değeri alan adını koruyan yapılandırılmış context ile cliLog'a verin; merkezi redaction uygulansın.");
+  process.exit(1);
+}
+
 cliLog.info(
   `Repo hygiene: temiz (${files.length} takip edilen dosya, ${clientFiles.length} istemci bileşeni, ` +
-    `${files.filter((file) => SOURCE_FILE.test(file)).length} kaynak dosyada ESLint istisnaları ve panel bağlantıları kontrol edildi).`,
+    `${files.filter((file) => SOURCE_FILE.test(file)).length} kaynak dosyada ESLint istisnaları, panel bağlantıları ve script log redaction kullanımı kontrol edildi).`,
 );

@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import {
   GROUP_MUTATION_ISOLATION,
-  GroupLifecycleError,
   addStudentToGroup,
   ensureActiveGroup,
   ensureActiveStudent,
@@ -15,91 +12,13 @@ import {
   transferStudentsBetweenGroups,
 } from "@/lib/panel/group-lifecycle";
 import { logAudit } from "@/lib/audit";
-import {
-  LessonLifecycleError,
-  assertLessonNoConflict,
-} from "@/lib/panel/lesson-lifecycle";
-
-const actionSchema = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("UPDATE_META"),
-    name: z.string().trim().min(2).max(80),
-    subject: z.string().trim().min(2).max(80),
-    level: z.string().trim().max(40).optional(),
-  }),
-  z.object({
-    action: z.literal("CHANGE_TEACHER"),
-    teacherId: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal("SET_ACTIVE"),
-    isActive: z.boolean(),
-  }),
-  z.object({
-    action: z.literal("ADD_STUDENT"),
-    studentId: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal("REMOVE_STUDENT"),
-    studentId: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal("PREVIEW_TRANSFER"),
-    studentId: z.string().min(1),
-    targetGroupId: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal("TRANSFER_STUDENT"),
-    studentId: z.string().min(1),
-    targetGroupId: z.string().min(1),
-    /** Preview → confirm sonrası true olmalı; tek tık mutation engellenir. */
-    confirmed: z.literal(true),
-  }),
-]);
-
-const legacySchema = z.object({
-  name: z.string().trim().min(2).max(80),
-  subject: z.string().trim().min(2).max(80),
-  level: z.string().trim().max(40).optional(),
-  teacherId: z.string().min(1),
-  isActive: z.boolean(),
-});
-
-async function notifyGroupAudience(
-  rows: Array<{ userId: string; title: string; body: string; href?: string }>,
-) {
-  if (!rows.length) return;
-  const raw = rows.map((row) => ({ ...row, type: "SYSTEM" as const }));
-  const notificationRows = await filterNotificationRows(raw);
-  if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
-  await queuePanelNotificationEmails(raw);
-}
+import { assertLessonNoConflict } from "@/lib/panel/lesson-lifecycle";
+import { groupActionSchema, groupLifecycleHttpError, legacyGroupSchema } from "@/lib/panel/group-route-contract";
+import { notifyGroupAudience } from "@/lib/panel/group-notifications";
 
 function lifecycleError(error: unknown) {
-  if (error instanceof LessonLifecycleError) {
-    if (error.code === "SCHEDULE_CONFLICT") {
-      return NextResponse.json({ error: error.message, code: error.code }, { status: 409 });
-    }
-    return NextResponse.json({ error: error.message, code: error.code }, { status: 400 });
-  }
-  if (!(error instanceof GroupLifecycleError)) return null;
-  if (error.code === "GROUP_NOT_FOUND") {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: 404 });
-  }
-  if (error.code === "STUDENT_NOT_FOUND") {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: 400 });
-  }
-  if (
-    error.code === "GROUP_INACTIVE" ||
-    error.code === "GROUP_CAPACITY_FULL" ||
-    error.code === "ALREADY_ENROLLED" ||
-    error.code === "NOT_ENROLLED" ||
-    error.code === "TRANSFER_BLOCKED" ||
-    error.code === "SCHEDULE_CONFLICT"
-  ) {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: 409 });
-  }
-  return NextResponse.json({ error: "İşlem tamamlanamadı.", code: error.code }, { status: 400 });
+  const mapped = groupLifecycleHttpError(error);
+  return mapped ? NextResponse.json({ error: mapped.message, code: mapped.code }, { status: mapped.status }) : null;
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -116,8 +35,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   const { id } = await context.params;
   const payload = await request.json().catch(() => null);
-  const parsedAction = actionSchema.safeParse(payload);
-  const parsedLegacy = parsedAction.success ? null : legacySchema.safeParse(payload);
+  const parsedAction = groupActionSchema.safeParse(payload);
+  const parsedLegacy = parsedAction.success ? null : legacyGroupSchema.safeParse(payload);
   if (!parsedAction.success && !parsedLegacy?.success) {
     return NextResponse.json({ error: "Grup bilgilerini kontrol edin." }, { status: 400 });
   }

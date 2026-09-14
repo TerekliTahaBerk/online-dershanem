@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
@@ -21,70 +20,12 @@ import {
   transferStudentBetweenGroups,
 } from "@/lib/panel/group-lifecycle";
 import { buildUserWhere, parseUserListFilters } from "@/lib/panel/user-filters";
+import { bulkUserOperationSchema, loadBulkTeacherSnapshot } from "@/lib/panel/teacher-offboarding";
 
 const BULK_LIMIT = 500;
 
-const bodySchema = z.object({
-  mode: z.enum(["PREVIEW", "EXECUTE"]),
-  action: z.enum(["RESEND_INVITE", "TRANSFER_STUDENTS_TO_GROUP", "OFFBOARD_TEACHERS"]),
-  filters: z
-    .object({
-      q: z.string().optional(),
-      rol: z.string().optional(),
-      urun: z.string().optional(),
-      durum: z.string().optional(),
-    })
-    .optional(),
-  options: z
-    .object({
-      targetGroupId: z.string().min(1).optional(),
-      transferTeacherId: z.string().min(1).optional(),
-      transferCoachTeacherId: z.string().min(1).optional(),
-      transferInterventionOwnerId: z.string().min(1).optional(),
-    })
-    .optional(),
-});
-
-type TeacherSnapshot = {
-  id: string;
-  email: string;
-  status: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
-  profileId: string | null;
-  isCoach: boolean;
-  counts: { coachAssignments: number; openInterventions: number };
-};
-
-async function loadTeacherSnapshot(teacherId: string): Promise<TeacherSnapshot | null> {
-  const teacher = await prisma.user.findFirst({
-    where: { id: teacherId, role: "TEACHER" },
-    select: {
-      id: true,
-      email: true,
-      status: true,
-      teacherProfile: { select: { id: true, isCoach: true } },
-    },
-  });
-  if (!teacher) return null;
-  const [coachAssignments, openInterventions] = await Promise.all([
-    teacher.teacherProfile?.isCoach
-      ? prisma.coachAssignment.count({ where: { coachId: teacher.teacherProfile.id, endedAt: null } })
-      : Promise.resolve(0),
-    prisma.interventionCase.count({
-      where: { ownerId: teacher.id, status: { in: ["OPEN", "IN_PROGRESS", "SNOOZED"] } },
-    }),
-  ]);
-  return {
-    id: teacher.id,
-    email: teacher.email,
-    status: teacher.status,
-    profileId: teacher.teacherProfile?.id ?? null,
-    isCoach: teacher.teacherProfile?.isCoach ?? false,
-    counts: { coachAssignments, openInterventions },
-  };
-}
-
 export async function POST(request: Request) {
-  const payload = bodySchema.safeParse(await request.json().catch(() => null));
+  const payload = bulkUserOperationSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success) {
     return NextResponse.json({ error: "Toplu işlem isteğini kontrol edin." }, { status: 400 });
   }
@@ -275,7 +216,7 @@ export async function POST(request: Request) {
         continue;
       }
 
-      const teacher = await loadTeacherSnapshot(user.id);
+      const teacher = await loadBulkTeacherSnapshot(user.id);
       if (!teacher) {
         errors.push({ id: user.id, email: user.email, reason: "Öğretmen bulunamadı." });
         continue;

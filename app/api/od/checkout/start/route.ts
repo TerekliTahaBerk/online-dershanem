@@ -14,7 +14,6 @@
  * callback'i ödeme onayını /api/paytr/callback'e gönderir → markOdOrderPaid().
  */
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { log } from "@/lib/logger";
@@ -27,76 +26,13 @@ import {
   RateLimitError,
 } from "@/lib/security/rate-limit";
 import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
-import { OD_NO_SLOT_VALUES, OD_TIME_RANGE_VALUES } from "@/lib/od/placement";
 import { getOdPlacementExpectation } from "@/lib/od/placement-server";
 import { allocateOrderDiscount, assertOrderLineReconciliation } from "@/lib/commerce/order-lines";
 import { getPublicOdkPackage } from "@/lib/odk/public-commerce-server";
+import { consentValue, odCheckoutInputSchema, OD_PENDING_ORDER_REUSE_MS, orderLinesMatch } from "@/lib/od/checkout-request";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const CartItemSchema = z.object({
-  service: z.enum(["OD", "ODK"]).default("OD"),
-  id: z.string().min(1).max(120),
-  name: z.string().min(1).max(160),
-  category: z.string().min(1).max(40),
-  subject: z.string().min(1).max(80),
-  priceCents: z.number().int().positive().max(100_000_000), // <=1.000.000 TL
-  priceLabel: z.string().max(60).optional().nullable(),
-  qty: z.number().int().min(1).max(99),
-  owner: z.object({
-    fullName: z.string().min(2).max(120),
-    email: z.string().email().max(254),
-    phone: z.string().max(20).optional().nullable(),
-  }).optional(),
-});
-
-const InputSchema = z.object({
-  // Single-item path (legacy)
-  category: z.string().max(40).optional().nullable(),
-  subject: z.string().max(80).optional().nullable(),
-  packageName: z.string().max(160).optional().nullable(),
-  paymentLink: z.string().max(500).optional().nullable(),
-  priceLabel: z.string().max(60).optional().nullable(),
-  // Single-package cart path
-  items: z.array(CartItemSchema).max(20).optional(),
-  // Buyer info
-  fullName: z.string().min(2).max(120),
-  email: z.string().email(),
-  phone: z.string().min(10).max(20),
-  tcKimlik: z.string().optional().nullable(),
-  city: z.string().min(1).max(80),
-  district: z.string().min(1).max(80),
-  address: z.string().max(500).optional().nullable(),
-  schoolName: z.string().max(160).optional().nullable(),
-  classLevel: z.string().min(1).max(20),
-  department: z.string().max(60).optional().nullable(),
-  examType: z.string().max(40).optional().nullable(),
-  targetSchool: z.string().max(160).optional().nullable(),
-  parentFullName: z.string().max(120).optional().nullable(),
-  parentPhone: z.string().max(20).optional().nullable(),
-  parentEmail: z.string().email().max(254).optional().nullable().or(z.literal("")),
-  notes: z.string().max(1000).optional().nullable(),
-  availabilityTimeRanges: z.array(z.enum(OD_TIME_RANGE_VALUES)).min(1).max(4),
-  // Boş `<input type="date">` FormData'ya "" olarak girer. `z.iso.date()` boş
-  // string'i reddettiği için bu alan opsiyonel etiketli olmasına rağmen tüm
-  // checkout'u 400'lüyordu; `parentEmail` ile aynı kalıp burada da gerekli.
-  earliestStartDate: z.iso.date().optional().nullable().or(z.literal("")),
-  noSlotPreference: z.enum(OD_NO_SLOT_VALUES),
-  placementConsent: z.union([z.string(), z.boolean()]).optional(),
-  couponCode: z.string().max(60).optional().nullable(),
-  kvkkConsent: z.union([z.string(), z.boolean()]).optional(),
-  marketingConsent: z.union([z.string(), z.boolean()]).optional(),
-  paymentConsent: z.union([z.string(), z.boolean()]).optional(),
-});
-
-function asBool(v: unknown): boolean {
-  if (typeof v === "boolean") return v;
-  if (typeof v === "string") return v === "1" || v.toLowerCase() === "true" || v === "on";
-  return false;
-}
-
-const PENDING_REUSE_MS = 30 * 60_000;
 
 export async function POST(req: Request) {
   const policy = RATE_LIMIT_POLICIES.odCheckout;
@@ -125,7 +61,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const parsed = InputSchema.safeParse(body);
+  const parsed = odCheckoutInputSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       {
@@ -139,7 +75,7 @@ export async function POST(req: Request) {
   }
   const d = parsed.data;
 
-  if (!asBool(d.kvkkConsent) || !asBool(d.paymentConsent) || !asBool(d.placementConsent)) {
+  if (!consentValue(d.kvkkConsent) || !consentValue(d.paymentConsent) || !consentValue(d.placementConsent)) {
     return NextResponse.json(
       { ok: false, error: "KVKK ve ön bilgilendirme onaylarını işaretleyin." },
       { status: 400 },
@@ -318,7 +254,7 @@ export async function POST(req: Request) {
       expectationShown: placementExpectation,
     },
     kvkkConsent: true,
-    marketingConsent: asBool(d.marketingConsent),
+    marketingConsent: consentValue(d.marketingConsent),
     paymentConsent: true,
     capturedAt: new Date().toISOString(),
     cart: cartSnapshot ?? null,
@@ -349,7 +285,7 @@ export async function POST(req: Request) {
   });
 
   // Idempotency: yalnız aynı immutable line fingerprint'ine sahip son siparişi kullan.
-  const cutoff = new Date(Date.now() - PENDING_REUSE_MS);
+  const cutoff = new Date(Date.now() - OD_PENDING_ORDER_REUSE_MS);
   let order = await prisma.odOrder.findFirst({
     where: {
       packageName, totalCents, status: "PENDING", createdAt: { gt: cutoff },
@@ -359,10 +295,7 @@ export async function POST(req: Request) {
     select: { id: true, lines: { orderBy: { position: "asc" }, select: { sku: true, quantity: true, unitPriceCents: true, discountCents: true, totalCents: true, fulfillmentOwnerKey: true } } },
   });
 
-  if (order && (order.lines.length !== lineInputs.length || order.lines.some((line, index) => {
-    const expected = lineInputs[index];
-    return line.sku !== expected.sku || line.quantity !== expected.quantity || line.unitPriceCents !== expected.unitPriceCents || line.discountCents !== expected.discountCents || line.totalCents !== expected.totalCents || line.fulfillmentOwnerKey !== expected.fulfillmentOwnerKey;
-  }))) order = null;
+  if (order && !orderLinesMatch(order.lines, lineInputs)) order = null;
 
   if (order) {
     await prisma.odOrder.update({

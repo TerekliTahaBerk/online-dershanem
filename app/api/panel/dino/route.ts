@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiAccountRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import {
   DINO_PROMPT_VERSION,
-  dinoAudienceSchema,
   dinoQuestionRequiresStudent,
   findDinoQuestion,
 } from "@/lib/dino";
@@ -16,6 +14,7 @@ import { generateDinoAnswer } from "@/lib/dino-gateway";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { logAudit } from "@/lib/audit";
 import { istanbulDayStart } from "@/lib/istanbul-time";
+import { boundedInteger, dinoLatencyBand, dinoRedactionBand, dinoRequestSchema } from "@/lib/panel/dino-request";
 
 /**
  * DINO AI — yanıt üretimi.
@@ -27,25 +26,6 @@ import { istanbulDayStart } from "@/lib/istanbul-time";
  * türetilir. Öğretmen roster soruları (bugün / grup özeti) öğrenci kimliği
  * istemez; tek-öğrenci soruları aktif grup kaydı ister.
  */
-
-const schema = z
-  .object({
-    audience: dinoAudienceSchema,
-    questionKey: z.string().min(1).max(60),
-    /** Veli ve eğitmen için hangi öğrenci; öğrenci kendisi sorduğunda yok sayılır. */
-    studentId: z.string().min(1).max(80).optional(),
-    requestKey: z.string().uuid(),
-  })
-  .strict();
-
-const redactionBand = (count: number) => (count === 0 ? "0" : count <= 2 ? "1-2" : "3+");
-const latencyBand = (ms: number) => (ms <= 2_000 ? "0-2S" : ms <= 8_000 ? "2-8S" : "8S+");
-
-function boundedInteger(value: string | undefined, fallback: number, min: number, max: number) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.max(min, Math.min(max, Math.floor(parsed)));
-}
 
 export async function POST(request: Request) {
   const auth = await requireApiAccountRole("STUDENT", "PARENT", "TEACHER");
@@ -66,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   }
 
-  const parsed = schema.safeParse(await request.json().catch(() => null));
+  const parsed = dinoRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Soru seçimini kontrol edin." }, { status: 400 });
 
   if (parsed.data.audience !== auth.session.role) {
@@ -206,8 +186,8 @@ export async function POST(request: Request) {
         provider: generated.provider,
         promptVersion: DINO_PROMPT_VERSION,
         sourceCount: prepared.safe.sources.length,
-        redactionBand: redactionBand(prepared.redactionCount),
-        latencyBand: latencyBand(generated.latencyMs),
+        redactionBand: dinoRedactionBand(prepared.redactionCount),
+        latencyBand: dinoLatencyBand(generated.latencyMs),
         fallbackReason: generated.fallbackReason,
       },
     });

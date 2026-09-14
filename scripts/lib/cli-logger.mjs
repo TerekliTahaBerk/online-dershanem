@@ -1,10 +1,12 @@
-/** Bağımsız CLI logger: zaman damgası ve seviye etiketiyle tutarlı çıktı üretir. */
+import { redactSensitiveValue } from "../../lib/security/redaction.mjs";
+
+/** Bağımsız CLI logger: tüm değerleri merkezi redaction'dan sonra yazar. */
 function write(level, stream, values) {
   const timestamp = new Date().toISOString();
   const rendered = values.map((value) => {
-    if (value instanceof Error) return value.stack || value.message;
-    if (typeof value === "string") return value;
-    try { return JSON.stringify(value); } catch { return String(value); }
+    const safe = redactSensitiveValue(value);
+    if (typeof safe === "string") return safe;
+    try { return JSON.stringify(safe); } catch { return "[UNSERIALIZABLE]"; }
   }).join(" ");
   stream.write(`[${timestamp}] ${level} ${rendered}\n`);
 }

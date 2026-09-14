@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
@@ -10,62 +9,12 @@ import {
   assertLessonNoConflict,
   assertTeacherActive,
   resolveScopedLessons,
-  type LessonScope,
 } from "@/lib/panel/lesson-lifecycle";
-
-const scope = z.enum(["ONE", "FOLLOWING"]).default("ONE");
-
-const updateSchema = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("UPDATE"),
-    scope,
-    title: z.string().trim().min(2).max(120).optional(),
-    startsAt: z.string().datetime().optional(),
-    status: z.enum(["PLANNED", "COMPLETED", "CANCELLED"]).optional(),
-    meetingUrl: z.string().url().max(500).optional().or(z.literal("")),
-  }),
-  z.object({
-    action: z.literal("RESCHEDULE"),
-    scope,
-    startsAt: z.string().datetime(),
-    keepDurationMinutes: z.number().int().min(15).max(240).optional(),
-  }),
-  z.object({
-    action: z.literal("CANCEL"),
-    scope,
-  }),
-  z.object({
-    action: z.literal("SUBSTITUTE"),
-    scope,
-    teacherId: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal("MAKE_UP"),
-    startsAt: z.string().datetime(),
-    teacherId: z.string().min(1).optional(),
-    title: z.string().trim().min(2).max(120).optional(),
-    meetingUrl: z.string().url().max(500).optional().or(z.literal("")),
-  }),
-]);
-
-const legacySchema = z.object({
-  title: z.string().trim().min(2).max(120),
-  startsAt: z.string().datetime(),
-  status: z.enum(["PLANNED", "COMPLETED", "CANCELLED"]),
-  meetingUrl: z.string().url().max(500).optional().or(z.literal("")),
-});
-
-function scopeLabel(value: LessonScope) {
-  return value === "FOLLOWING" ? "bu ve sonraki dersler" : "sadece bu ders";
-}
+import { legacyLessonUpdateSchema, lessonLifecycleHttpError, lessonScopeLabel, lessonUpdateSchema } from "@/lib/panel/lesson-route-contract";
 
 function lifecycleError(error: unknown) {
-  if (!(error instanceof LessonLifecycleError)) return null;
-  if (error.code === "LESSON_NOT_FOUND") return NextResponse.json({ error: error.message }, { status: 404 });
-  if (error.code === "TEACHER_NOT_FOUND") return NextResponse.json({ error: error.message }, { status: 400 });
-  if (error.code === "SCOPE_NOT_AVAILABLE") return NextResponse.json({ error: error.message }, { status: 409 });
-  if (error.code === "SCHEDULE_CONFLICT") return NextResponse.json({ error: error.message }, { status: 409 });
-  return NextResponse.json({ error: "Ders işlemi tamamlanamadı." }, { status: 400 });
+  const mapped = lessonLifecycleHttpError(error);
+  return mapped ? NextResponse.json({ error: mapped.message }, { status: mapped.status }) : null;
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -82,8 +31,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   const { id } = await context.params;
   const payload = await request.json().catch(() => null);
-  const parsed = updateSchema.safeParse(payload);
-  const legacy = parsed.success ? null : legacySchema.safeParse(payload);
+  const parsed = lessonUpdateSchema.safeParse(payload);
+  const legacy = parsed.success ? null : legacyLessonUpdateSchema.safeParse(payload);
   if (!parsed.success && !legacy?.success) return NextResponse.json({ error: "Ders bilgilerini kontrol edin." }, { status: 400 });
   const legacyData = legacy && legacy.success ? legacy.data : null;
   const action = parsed.success
@@ -276,7 +225,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       const title = action.action === "CANCEL" ? "Ders iptal edildi" : action.action === "SUBSTITUTE" ? "Ders öğretmeni güncellendi" : action.action === "RESCHEDULE" ? "Ders saati güncellendi" : "Ders planı güncellendi";
       return {
         updatedIds: targetIds,
-        summary: `${anchor.title} (${scopeLabel(action.scope)}) güncellendi`,
+        summary: `${anchor.title} (${lessonScopeLabel(action.scope)}) güncellendi`,
         notificationTitle: title,
         notificationBody: `${first.title} · ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" }).format(first.startsAt)}${targetIds.length > 1 ? ` · ${targetIds.length} ders` : ""}`,
         auditAction:

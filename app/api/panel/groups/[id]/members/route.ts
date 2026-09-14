@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireApiAccountRole, requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 import {
   GROUP_MUTATION_ISOLATION,
-  GroupLifecycleError,
   ensureActiveGroup,
   ensureActiveStudent,
   previewStudentTransfer,
@@ -15,50 +12,16 @@ import {
   transferStudentsBetweenGroups,
 } from "@/lib/panel/group-lifecycle";
 
-const bodySchema = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("TRANSFER"),
-    mode: z.enum(["PREVIEW", "EXECUTE"]),
-    studentIds: z.array(z.string().min(1)).min(1).max(20),
-    targetGroupId: z.string().min(1),
-  }),
-  z.object({
-    action: z.literal("REMOVE"),
-    mode: z.enum(["PREVIEW", "EXECUTE"]),
-    studentIds: z.array(z.string().min(1)).min(1).max(20),
-  }),
-  z.object({
-    action: z.literal("NOTIFY"),
-    mode: z.enum(["PREVIEW", "EXECUTE"]),
-    studentIds: z.array(z.string().min(1)).min(1).max(20),
-    title: z.string().trim().min(2).max(120).optional(),
-    body: z.string().trim().min(2).max(500).optional(),
-  }),
-]);
+import { groupLifecycleHttpError, groupMembersActionSchema } from "@/lib/panel/group-route-contract";
+import { notifyGroupAudience } from "@/lib/panel/group-notifications";
 
 function lifecycleError(error: unknown) {
-  if (!(error instanceof GroupLifecycleError)) return null;
-  if (error.code === "GROUP_NOT_FOUND") {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: 404 });
-  }
-  if (error.code === "STUDENT_NOT_FOUND") {
-    return NextResponse.json({ error: error.message, code: error.code }, { status: 400 });
-  }
-  return NextResponse.json({ error: error.message, code: error.code }, { status: 409 });
-}
-
-async function notifyRows(
-  rows: Array<{ userId: string; title: string; body: string; href?: string }>,
-) {
-  if (!rows.length) return;
-  const raw = rows.map((row) => ({ ...row, type: "SYSTEM" as const }));
-  const filtered = await filterNotificationRows(raw);
-  if (filtered.length) await prisma.notification.createMany({ data: filtered });
-  await queuePanelNotificationEmails(raw);
+  const mapped = groupLifecycleHttpError(error);
+  return mapped ? NextResponse.json({ error: mapped.message, code: mapped.code }, { status: mapped.status }) : null;
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const payload = bodySchema.safeParse(await request.json().catch(() => null));
+  const payload = groupMembersActionSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success) {
     return NextResponse.json({ error: "Üye işlemi isteğini kontrol edin." }, { status: 400 });
   }
@@ -169,7 +132,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           href: "/panel/ogretmen/ogrenci",
         });
       }
-      await notifyRows(notify);
+      await notifyGroupAudience(notify);
       await logAudit({
         actorUserId: auth.session.userId,
         entityType: "Group",
@@ -247,7 +210,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           parents: { select: { parentId: true } },
         },
       });
-      await notifyRows(
+      await notifyGroupAudience(
         students.flatMap((student) => [
           {
             userId: student.userId,
@@ -343,7 +306,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       );
     }
 
-    await notifyRows(
+    await notifyGroupAudience(
       members.flatMap((row) => [
         {
           userId: row.student.userId,

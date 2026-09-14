@@ -1,116 +1,11 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { requireApiRecentAdminStepUp } from "@/lib/auth/api-guards";
 import { revokeAllUserSessions } from "@/lib/auth/session";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
-
-const offboardingSchema = z.object({
-  transferTeacherId: z.string().min(1),
-  transferCoachTeacherId: z.string().min(1).optional(),
-  transferInterventionOwnerId: z.string().min(1).optional(),
-});
-
-type OffboardingSnapshot = {
-  teacher: {
-    id: string;
-    email: string;
-    fullName: string | null;
-    status: "ACTIVE" | "SUSPENDED" | "ARCHIVED";
-    profile: { id: string; isCoach: boolean; subjects: string[]; coachCapacity: number | null } | null;
-  };
-  counts: {
-    activeGroups: number;
-    upcomingLessons: number;
-    pendingLessonClosures: number;
-    openHelpRequests: number;
-    coachAssignments: number;
-    openInterventions: number;
-  };
-};
-
-async function loadOffboardingSnapshot(teacherId: string, now: Date): Promise<OffboardingSnapshot | null> {
-  const teacher = await prisma.user.findFirst({
-    where: { id: teacherId, role: "TEACHER" },
-    select: {
-      id: true,
-      email: true,
-      fullName: true,
-      status: true,
-      teacherProfile: {
-        select: { id: true, isCoach: true, subjects: true, coachCapacity: true },
-      },
-    },
-  });
-  if (!teacher) return null;
-
-  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-  const [activeGroups, upcomingLessons, pendingLessonClosures, openHelpRequests, openInterventions, coachAssignments] =
-    await Promise.all([
-      prisma.group.count({ where: { teacherId, isActive: true } }),
-      prisma.lesson.count({
-        where: { teacherId, status: "PLANNED", startsAt: { gte: now } },
-      }),
-      prisma.lesson.count({
-        where: {
-          teacherId,
-          startsAt: { lt: now, gte: twoWeeksAgo },
-          status: { in: ["PLANNED", "COMPLETED"] },
-          notes: { none: { studentId: null } },
-        },
-      }),
-      prisma.studentHelpRequest.count({
-        where: { status: "OPEN", group: { teacherId, isActive: true } },
-      }),
-      prisma.interventionCase.count({
-        where: { ownerId: teacherId, status: { in: ["OPEN", "IN_PROGRESS", "SNOOZED"] } },
-      }),
-      teacher.teacherProfile?.isCoach
-        ? prisma.coachAssignment.count({
-            where: { coachId: teacher.teacherProfile.id, endedAt: null },
-          })
-        : Promise.resolve(0),
-    ]);
-
-  return {
-    teacher: {
-      id: teacher.id,
-      email: teacher.email,
-      fullName: teacher.fullName,
-      status: teacher.status,
-      profile: teacher.teacherProfile,
-    },
-    counts: {
-      activeGroups,
-      upcomingLessons,
-      pendingLessonClosures,
-      openHelpRequests,
-      coachAssignments,
-      openInterventions,
-    },
-  };
-}
-
-function buildOffboardingBlockers(snapshot: OffboardingSnapshot) {
-  const blockers: Array<{ code: string; label: string; count: number }> = [];
-  if (snapshot.counts.coachAssignments > 0) {
-    blockers.push({
-      code: "coach_assignments",
-      label: "Aktif koç atamaları devredilmeli",
-      count: snapshot.counts.coachAssignments,
-    });
-  }
-  if (snapshot.counts.openInterventions > 0) {
-    blockers.push({
-      code: "open_interventions",
-      label: "Açık müdahale sahiplikleri devredilmeli",
-      count: snapshot.counts.openInterventions,
-    });
-  }
-  return blockers;
-}
+import { buildOffboardingBlockers, loadOffboardingSnapshot, offboardingSchema } from "@/lib/panel/teacher-offboarding";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentAdminStepUp();
