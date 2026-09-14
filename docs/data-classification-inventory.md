@@ -12,9 +12,9 @@ Sütunlar:
 
 ## Özet
 
-- Taranan model: 146
-- Taranan scalar/enum alan: 1637
-- Olası kişisel veri alanı: 273
+- Taranan model: 149
+- Taranan scalar/enum alan: 1665
+- Olası kişisel veri alanı: 276
 - Çocuk verisi `evet`: 53; `olası`: 77
 
 | Kategori | Alan sayısı |
@@ -22,9 +22,9 @@ Sütunlar:
 | akademik | 28 |
 | finansal | 39 |
 | iletişim | 12 |
-| kimlik | 53 |
+| kimlik | 55 |
 | kimlik doğrulama sırrı | 10 |
-| serbest metin | 81 |
+| serbest metin | 82 |
 | yapılandırılmamış (Json) | 50 |
 
 ## Alanlar
@@ -113,6 +113,7 @@ Sütunlar:
 | DinoAnswer | sourceRefs | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
 | DinoAnswer | answer | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
 | DinoAnswer | fallbackReason | serbest metin | orta | evet | yok (DB'de düz) |
+| ExamFamily | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | ExpenseCategory | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | FinancialTransaction | description | serbest metin | orta | hayır | yok (DB'de düz) |
 | FinancialTransaction | grossCents | finansal | orta | hayır | yok (DB'de düz) |
@@ -190,6 +191,7 @@ Sütunlar:
 | OdkExamQuestion | questionNumber | serbest metin | orta | hayır | yok (DB'de düz) |
 | OdkExamQuestion | bookletQuestionNumber | serbest metin | orta | hayır | yok (DB'de düz) |
 | OdkExamQuestion | canonicalQuestionNumber | serbest metin | orta | hayır | yok (DB'de düz) |
+| OdkExamQuestion | contentText | serbest metin | orta | hayır | yok (DB'de düz) |
 | OdkExamQuestion | correctOption | akademik | orta | hayır | yok (DB'de düz) |
 | OdkExamSection | questionCount | serbest metin | orta | hayır | yok (DB'de düz) |
 | OdkExamSection | questionStart | serbest metin | orta | hayır | yok (DB'de düz) |
@@ -231,6 +233,7 @@ Sütunlar:
 | PasskeyCredential | publicKey | kimlik doğrulama sırrı | yüksek | olası (tüm roller) | yok (DB'de düz) |
 | PasskeyCredential | name | kimlik | düşük | olası (tüm roller) | yok (DB'de düz) |
 | PasswordResetToken | tokenHash | kimlik doğrulama sırrı | yüksek | olası (tüm roller) | tek yönlü hash |
+| Product | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | ProductEvent | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | ProductEvent | properties | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |
 | PurchaseEvent | packageName | kimlik | düşük | hayır | yok (DB'de düz) |
