@@ -31,7 +31,7 @@ jobs:
       BACKUP_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
       RESTORE_DATABASE_URL: postgresql://restore:restore@localhost:5432/restore_drill
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Require backup secrets
         run: |
@@ -57,7 +57,7 @@ jobs:
           rm database.verify.dump database.restore.list database.portable.list
 
       - name: Upload encrypted backup
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: production-db-${{ github.run_id }}
           path: database.dump.enc

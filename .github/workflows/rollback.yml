@@ -1,0 +1,72 @@
+name: Production Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment:
+        description: "Previously successful Vercel production deployment URL or ID"
+        required: true
+        type: string
+      reason:
+        description: "Incident or reason for the rollback"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-rollback
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    name: Roll back production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    env:
+      TARGET_DEPLOYMENT: ${{ inputs.deployment }}
+      ROLLBACK_REASON: ${{ inputs.reason }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Require deployment credentials
+        run: |
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+
+      - name: Validate target deployment
+        run: |
+          npx --yes vercel@59.16.0 inspect "$TARGET_DEPLOYMENT" \
+            --token="$VERCEL_TOKEN"
+
+      - name: Roll back production alias
+        run: |
+          npx --yes vercel@59.16.0 rollback "$TARGET_DEPLOYMENT" \
+            --token="$VERCEL_TOKEN" \
+            --yes
+
+      - name: Verify production health
+        id: health
+        run: |
+          response="$(curl --fail --silent --show-error --retry 2 --max-time 20 https://www.onlinedershanem.com/api/health)"
+          echo "$response" | jq -e '.status == "ok" or .status == "degraded"' >/dev/null
+          echo "$response" | jq -e '.db.ok == true' >/dev/null
+
+      - name: Write rollback summary
+        if: ${{ always() }}
+        env:
+          HEALTH_OUTCOME: ${{ steps.health.outcome }}
+        run: |
+          {
+            echo "## Production rollback"
+            echo
+            echo "- Target deployment: \`$TARGET_DEPLOYMENT\`"
+            echo "- Requested by: \`$GITHUB_ACTOR\`"
+            echo "- Reason: $ROLLBACK_REASON"
+            echo "- Production health check: \`$HEALTH_OUTCOME\`"
+            echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } >> "$GITHUB_STEP_SUMMARY"
