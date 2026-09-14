@@ -36,3 +36,10 @@ export function visibleBuilderProducts<K extends string>(
 export function builderProductKeys(activeRegistryCodes: Iterable<string> = []): ProductKey[] {
   return visibleBuilderProducts(BUILDER_PRODUCT_REGISTRY_CODE, activeRegistryCodes);
 }
+
+/** KPSS fiyat/SKU kararı beklerken kurucuda yalnız keşif kartı olarak görünür. */
+export function isKpssBuilderVisible(
+  activeRegistryCodes: Iterable<string>,
+): boolean {
+  return new Set(activeRegistryCodes).has("KPSS");
+}

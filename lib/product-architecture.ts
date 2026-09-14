@@ -1,5 +1,6 @@
 export type PublicProduct = {
-  slug: "online-dershanem" | "online-kocum" | "online-deneme-kulubum";
+  slug: "online-dershanem" | "online-kocum" | "online-deneme-kulubum" | "kpss";
+  registryCode: "OD" | "OK" | "ODK" | "KPSS";
   name: string;
   label: string;
   href: string;
@@ -7,7 +8,7 @@ export type PublicProduct = {
   eyebrow: string;
   description: string;
   audiences: readonly string[];
-  accent: "olive" | "yellow" | "sky";
+  accent: "olive" | "yellow" | "sky" | "amber";
 };
 
 /**
@@ -17,6 +18,7 @@ export type PublicProduct = {
 export const publicProducts = [
   {
     slug: "online-dershanem",
+    registryCode: "OD",
     name: "Online Dershanem",
     label: "Dershanem",
     href: "/urunler/online-dershanem",
@@ -29,6 +31,7 @@ export const publicProducts = [
   },
   {
     slug: "online-kocum",
+    registryCode: "OK",
     name: "Online Koçum",
     label: "Koçum",
     href: "/urunler/online-kocum",
@@ -41,6 +44,7 @@ export const publicProducts = [
   },
   {
     slug: "online-deneme-kulubum",
+    registryCode: "ODK",
     name: "Online Deneme Kulübüm",
     label: "Deneme Kulübüm",
     href: "/urunler/online-deneme-kulubum",
@@ -50,6 +54,19 @@ export const publicProducts = [
       "LGS, TYT ve AYT için planlı online denemeler, kazanım analizi ve gelişimi takip etmeye yardımcı raporlar.",
     audiences: ["LGS", "TYT", "AYT"],
     accent: "sky",
+  },
+  {
+    slug: "kpss",
+    registryCode: "KPSS",
+    name: "KPSS",
+    label: "KPSS",
+    href: "/urunler/kpss",
+    role: "Sınav gününe kadar kişisel çalışma planı",
+    eyebrow: "Planlı hazırlan",
+    description:
+      "Öğretmen adayları için sınav tarihine, çalışma kapasitesine ve konu ilerlemesine göre şekillenen kişisel hazırlık düzeni.",
+    audiences: ["KPSS"],
+    accent: "amber",
   },
 ] as const satisfies readonly PublicProduct[];
 

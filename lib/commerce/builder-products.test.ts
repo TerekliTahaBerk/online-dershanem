@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { BUILDER_PRODUCT_REGISTRY_CODE, builderProductKeys, visibleBuilderProducts } from "./builder-products";
+import { BUILDER_PRODUCT_REGISTRY_CODE, builderProductKeys, isKpssBuilderVisible, visibleBuilderProducts } from "./builder-products";
 
 /** Kurucuya KPSS kartı eklenmiş olsaydı: görünürlük yalnız registry bayrağına bağlı olmalı. */
 const withKpssCard = { ...BUILDER_PRODUCT_REGISTRY_CODE, kpss: "KPSS" };
@@ -27,4 +27,9 @@ test("gerçek kurucu konfigürasyonunda KPSS kartı yok: fiyat onayı gelmeden a
   assert.equal(Object.values(BUILDER_PRODUCT_REGISTRY_CODE).includes("KPSS"), false);
   assert.deepEqual(builderProductKeys(["OD", "OK", "ODK", "KPSS"]), ["dershanem", "kocum", "denemeKulubum"]);
   assert.deepEqual(builderProductKeys(), ["dershanem", "kocum", "denemeKulubum"]);
+});
+
+test("KPSS keşif kartı registry kilidini iki yönde izler", () => {
+  assert.equal(isKpssBuilderVisible(["OD", "OK", "ODK"]), false);
+  assert.equal(isKpssBuilderVisible(["OD", "OK", "ODK", "KPSS"]), true);
 });

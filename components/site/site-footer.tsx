@@ -3,10 +3,11 @@ import Link from "next/link";
 import { MessageCircle, Mail, ChevronDown } from "lucide-react";
 import { contact } from "@/lib/content";
 import {
-  footerColumns,
+  footerColumnsForProducts,
   footerTagline,
   footerLegalLinks,
 } from "@/lib/site-content";
+import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
 
 const socials = [
   {
@@ -42,7 +43,9 @@ const socials = [
  * altta telif ve yasal şerit. Mobilde kolonlar akordeona dönüşür
  * (handoff: "footer akordeon").
  */
-export function SiteFooter() {
+export async function SiteFooter() {
+  const products = await listActivePublicProducts();
+  const visibleFooterColumns = footerColumnsForProducts(products);
   return (
     <footer id="site-footer" className="site-scope dc-surface-deep">
       <div className="site-container py-14 sm:py-16">
@@ -87,7 +90,7 @@ export function SiteFooter() {
           </div>
 
           {/* Kolonlar — mobilde <details> akordeon, lg'den itibaren düz liste */}
-          {footerColumns.map((col) => (
+          {visibleFooterColumns.map((col) => (
             <details
               key={col.title}
               className="dc-footer-col group border-b border-[var(--dc-on-deep-line)] lg:border-0"

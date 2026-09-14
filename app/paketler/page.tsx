@@ -7,6 +7,7 @@ import {
   ProductClosingCta,
 } from "@/components/product/product-sections";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
+import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
 
 export const metadata = buildMarketingMetadata({
   title: "Paketler | Kendi paketini oluştur",
@@ -15,7 +16,8 @@ export const metadata = buildMarketingMetadata({
   canonical: "/paketler",
 });
 
-export default function PackagesPage() {
+export default async function PackagesPage() {
+  const activeRegistryCodes = await listActivePublicProductCodes();
   return (
     <div className="site-scope">
       <SiteHeader />
@@ -35,7 +37,7 @@ export default function PackagesPage() {
         </section>
 
         <section className="pt-11">
-          <PackageBuilder />
+          <PackageBuilder activeRegistryCodes={activeRegistryCodes} />
         </section>
 
         <section

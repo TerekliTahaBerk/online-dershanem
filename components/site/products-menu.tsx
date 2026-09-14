@@ -4,9 +4,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { productsMenu } from "@/lib/site-content";
+import type { PublicProduct } from "@/lib/product-architecture";
 
 type ProductsMenuProps = {
   isActive: (href: string) => boolean;
+  products: readonly PublicProduct[];
 };
 
 /**
@@ -18,13 +20,18 @@ type ProductsMenuProps = {
  * odağı butona döndürür, dışarı tıklama ve odak kaybı menüyü kapatır.
  * (§38 — görsel niyet korunur, erişilebilirlik düzeltilir.)
  */
-export function ProductsMenu({ isActive }: ProductsMenuProps) {
+export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
 
-  const anyProductActive = productsMenu.items.some((item) =>
+  const items = products.map(({ name, href, role }) => ({
+    label: name,
+    href,
+    summary: role,
+  }));
+  const anyProductActive = items.some((item) =>
     isActive(item.href),
   );
 
@@ -91,7 +98,7 @@ export function ProductsMenu({ isActive }: ProductsMenuProps) {
             Ekran okuyucuda ürün adı tek başına tanınabilir kalmalı.
           */}
           <ul className="flex flex-col">
-            {productsMenu.items.map((item) => (
+            {items.map((item) => (
               <li
                 key={item.href}
                 className="rounded-[10px] px-3 py-2.5 hover:bg-[var(--dc-surface-muted)]"

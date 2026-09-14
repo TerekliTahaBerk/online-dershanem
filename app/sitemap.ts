@@ -3,11 +3,16 @@ import { blogPosts } from "@/lib/blog-content";
 import { blogPublishedAt } from "@/lib/blog-meta";
 import { siteUrl } from "@/lib/content";
 import { listPublicOdkPackages } from "@/lib/odk/public-commerce-server";
+import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
+import { kpssSitemapRoutes } from "@/lib/seo/product-sitemap";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const odkPackages = await listPublicOdkPackages();
+  const [odkPackages, activeProductCodes] = await Promise.all([
+    listPublicOdkPackages(),
+    listActivePublicProductCodes(),
+  ]);
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/urunler`, changeFrequency: "weekly", priority: 0.95 },
@@ -48,5 +53,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...odkRoutes, ...blogRoutes];
+  return [
+    ...staticRoutes,
+    ...kpssSitemapRoutes(siteUrl, activeProductCodes),
+    ...odkRoutes,
+    ...blogRoutes,
+  ];
 }

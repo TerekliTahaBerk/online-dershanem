@@ -13,12 +13,14 @@ import {
   telHref,
 } from "@/lib/site-content";
 import { contact } from "@/lib/content";
+import type { PublicProduct } from "@/lib/product-architecture";
 
 type MobileMenuProps = {
   open: boolean;
   onClose: () => void;
   isActive: (href: string) => boolean;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
+  products: readonly PublicProduct[];
 };
 
 /**
@@ -30,6 +32,7 @@ export function MobileMenu({
   onClose,
   isActive,
   triggerRef,
+  products,
 }: MobileMenuProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -120,22 +123,22 @@ export function MobileMenu({
         <div className="border-b border-[var(--site-line)] py-5">
           <h2 className="dc-eyebrow">{productsMenu.label}</h2>
           <ul className="mt-4 flex flex-col gap-4">
-            {productsMenu.items.map((item) => (
-              <li key={item.href}>
+            {products.map((product) => (
+              <li key={product.href}>
                 <Link
-                  href={item.href}
+                  href={product.href}
                   onClick={onClose}
-                  aria-current={isActive(item.href) ? "page" : undefined}
+                  aria-current={isActive(product.href) ? "page" : undefined}
                   className={`block break-words font-display text-[clamp(1.2rem,5vw,1.45rem)] leading-tight ${
-                    isActive(item.href)
+                    isActive(product.href)
                       ? "text-[var(--brand-orange-ink)]"
                       : "text-[var(--site-ink)]"
                   }`}
                 >
-                  {item.label}
+                  {product.name}
                 </Link>
                 <span className="mt-0.5 block text-[13.5px] text-[var(--site-muted)]">
-                  {item.summary}
+                  {product.role}
                 </span>
               </li>
             ))}

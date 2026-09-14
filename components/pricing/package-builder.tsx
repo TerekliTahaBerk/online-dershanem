@@ -21,7 +21,10 @@ import {
   type LessonFormat,
   type ProductKey,
 } from "@/lib/commerce/package-builder-pricing";
-import { builderProductKeys } from "@/lib/commerce/builder-products";
+import {
+  builderProductKeys,
+  isKpssBuilderVisible,
+} from "@/lib/commerce/builder-products";
 
 const billingCopy: Record<
   BillingPeriod,
@@ -122,7 +125,11 @@ function hintText(count: number, hasDirectCheckout: boolean): string {
   return "Üç ürünü birlikte seçtiğinde net tutar ve ödeme planı ön görüşmede paylaşılır.";
 }
 
-export function PackageBuilder() {
+export function PackageBuilder({
+  activeRegistryCodes = [],
+}: {
+  activeRegistryCodes?: readonly string[];
+}) {
   const [selection, setSelection] = useState<BuilderSelection>({
     exam: null,
     dershanem: false,
@@ -502,6 +509,42 @@ export function PackageBuilder() {
               </div>
             );
           })}
+
+          {isKpssBuilderVisible(activeRegistryCodes) ? (
+            <div className="rounded-dc-card border border-dc-line bg-white p-5 sm:p-6">
+              <div className="flex flex-wrap items-start gap-4 sm:flex-nowrap sm:gap-[18px]">
+                <span
+                  aria-hidden="true"
+                  className="grid h-[52px] w-[52px] flex-none place-items-center rounded-[14px] bg-dc-brand-soft text-[20px]"
+                >
+                  ◎
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-[21px] font-extrabold text-dc-ink">
+                    KPSS
+                  </h3>
+                  <p className="mt-1 text-[15px] leading-[1.55] text-dc-ink-muted">
+                    Sınav tarihine kadar kişisel çalışma planı ve ilerleme
+                    takibi.
+                  </p>
+                  <span className="mt-2.5 inline-flex rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11.5px] font-semibold text-dc-brand-hover">
+                    KPSS
+                  </span>
+                </div>
+                <div className="w-full border-t border-dc-line-soft pt-3.5 sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
+                  <p className="text-[12.5px] font-medium text-dc-ink-faint">
+                    Paket ayrıntıları hazırlanıyor
+                  </p>
+                  <Link
+                    href="/urunler/kpss"
+                    className="mt-2 inline-flex text-[14px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
+                  >
+                    Ürünü incele →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {/* Seçim kapsamı — fiyat vaadi değil, ürün sayısını gösterir. */}
           <div className="grid gap-5 px-1 pt-1 sm:grid-cols-3 sm:gap-6">

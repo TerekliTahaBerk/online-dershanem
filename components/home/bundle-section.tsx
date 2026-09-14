@@ -1,11 +1,13 @@
 import { PackageBuilder } from "@/components/pricing/package-builder";
+import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
 
 /**
  * 08 PAKET KURUCU — onaylı tasarım (Web.dc.html).
  * #F4F8F6 zemin; ana sayfadaki kurucu, /paketler sayfasındakiyle AYNI
  * bileşendir (tasarımda da aynı kurgu tekrarlanır) — ikinci bir kopya yazılmaz.
  */
-export function BundleSection() {
+export async function BundleSection() {
+  const activeRegistryCodes = await listActivePublicProductCodes();
   return (
     <section
       id="paket-kurucu"
@@ -25,7 +27,7 @@ export function BundleSection() {
       </div>
 
       <div className="mt-9">
-        <PackageBuilder />
+        <PackageBuilder activeRegistryCodes={activeRegistryCodes} />
       </div>
     </section>
   );

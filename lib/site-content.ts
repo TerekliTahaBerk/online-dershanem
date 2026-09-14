@@ -117,6 +117,22 @@ export const footerColumns = [
   },
 ] as const;
 
+export function footerColumnsForProducts(
+  products: readonly { name: string; href: string }[],
+) {
+  return footerColumns.map((column) =>
+    column.title === "Ürünler"
+      ? {
+          ...column,
+          links: [
+            ...products.map(({ name, href }) => ({ label: name, href })),
+            { label: "Paketini Oluştur", href: "/paketler" },
+          ],
+        }
+      : column,
+  );
+}
+
 /** Alt şerit — yalnızca depoda gerçekten var olan yasal sayfalar. */
 export const footerLegalLinks = [
   { label: "Gizlilik", href: "/gizlilik" },
