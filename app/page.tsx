@@ -9,7 +9,7 @@ import { ParentVisibility } from "@/components/home/parent-visibility";
 import { HomeFaq } from "@/components/home/home-faq";
 import { ClosingCta } from "@/components/home/closing-cta";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { faqJsonLd } from "@/lib/seo/jsonld";
+import { faqJsonLd, organizationJsonLd } from "@/lib/seo/jsonld";
 import { homeFaqs } from "@/lib/site-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
@@ -24,7 +24,7 @@ export const metadata = buildMarketingMetadata({
 export default function HomePage() {
   return (
     <div className="site-scope">
-      <SchemaJsonLd schema={faqJsonLd(homeFaqs)} />
+      <SchemaJsonLd schema={[...organizationJsonLd(), faqJsonLd(homeFaqs)]} />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <HomeHero />

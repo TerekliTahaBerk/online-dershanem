@@ -117,6 +117,37 @@ export function articleJsonLd(input: ArticleInput) {
   };
 }
 
+/**
+ * Ana sayfa marka şeması: Google'ın site adı ve logo sinyali buradan okunur.
+ * Logo en az 112x112, kare ve taranabilir olmalı.
+ */
+export function organizationJsonLd() {
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Online Dershanem",
+      url: `${siteUrl}/`,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.png`,
+        width: 512,
+        height: 512,
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      name: "Online Dershanem",
+      url: `${siteUrl}/`,
+      inLanguage: "tr-TR",
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+  ];
+}
+
 export type FaqItem = { q: string; a: string };
 
 export function faqJsonLd(items: FaqItem[]) {
