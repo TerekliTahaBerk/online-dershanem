@@ -52,6 +52,7 @@
     "data:pii-inventory": "node scripts/generate-pii-inventory.mjs",
     "data:pii-inventory:check": "node scripts/generate-pii-inventory.mjs --check",
     "validate:deploy-env": "node --import tsx scripts/validate-deploy-env.ts",
+    "verify:production-version": "node scripts/check-production-version.mjs",
     "backfill:student-success": "node --import tsx scripts/backfill-student-success.ts",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",

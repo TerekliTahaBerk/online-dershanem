@@ -14,9 +14,20 @@ COPY prisma/schema ./prisma/schema
 RUN npm ci
 
 FROM base AS builder
+# Build kimliği: CI bunları `--build-arg` ile geçer, `next.config.ts` artefaktın
+# içine gömer. Geçilmezse imaj "bilinmiyor" der — sessizce yanlış SHA raporlamaz.
+ARG BUILD_SHA=""
+ARG BUILD_REF=""
+ARG BUILD_RELEASE=""
+ARG BUILD_VERSION=""
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-RUN ODK_LAST_RESTORE_DRILL_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+RUN APP_BUILD_SHA="$BUILD_SHA" \
+    APP_BUILD_REF="$BUILD_REF" \
+    APP_BUILD_RELEASE="$BUILD_RELEASE" \
+    APP_BUILD_VERSION="${BUILD_VERSION:-$(node -p "require('./package.json').version")}" \
+    APP_BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    ODK_LAST_RESTORE_DRILL_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     VERCEL_ENV=production \
     DATABASE_URL="postgresql://user:pass@localhost:5432/build?schema=public" \
     DIRECT_URL="postgresql://user:pass@localhost:5432/build?schema=public" \
@@ -35,9 +46,20 @@ RUN ODK_LAST_RESTORE_DRILL_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     npm run build
 
 FROM base AS runner
+ARG BUILD_SHA=""
+ARG BUILD_REF=""
+ARG BUILD_RELEASE=""
+ARG BUILD_VERSION=""
 ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0 \
     PORT=3000
+# Gömülü değerlerle aynı; `docker inspect` ve runtime `process.env` de görsün.
+ENV APP_BUILD_SHA=$BUILD_SHA \
+    APP_BUILD_REF=$BUILD_REF \
+    APP_BUILD_RELEASE=$BUILD_RELEASE \
+    APP_BUILD_VERSION=$BUILD_VERSION
+LABEL org.opencontainers.image.revision=$BUILD_SHA \
+      org.opencontainers.image.version=$BUILD_VERSION
 
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs

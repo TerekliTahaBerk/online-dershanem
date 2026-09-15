@@ -129,6 +129,18 @@ docker run --env-file .env.local -p 3000:3000 ghcr.io/tereklitahaberk/online-der
 
 Database migrations do not run automatically when the container starts. Run `npm run release:migrate` before a production deployment.
 
+### Which build is live
+
+Every deployed artifact reports its own identity, so production can be matched against `main` without guessing:
+
+```bash
+curl -sI https://www.onlinedershanem.com/ | grep x-build   # response headers
+curl -s  https://www.onlinedershanem.com/api/version       # full build identity
+npm run verify:production-version                          # compare against main's tip
+```
+
+The same version and short SHA are stamped in the site footer. See [build provenance](docs/build-provenance.md).
+
 ## Documentation
 
 - [Panel operations](docs/panel-operations.md)
@@ -138,6 +150,7 @@ Database migrations do not run automatically when the container starts. Run `npm
 - [Meta and Instagram setup](docs/meta-instagram-setup.md)
 - [OpenAI-assisted drafting setup](docs/openai-assistant-setup.md)
 - [ODK pilot acceptance checklist](docs/odk-pilot-acceptance-checklist.md)
+- [Build provenance and version matching](docs/build-provenance.md)
 
 ## Contributing and security
 

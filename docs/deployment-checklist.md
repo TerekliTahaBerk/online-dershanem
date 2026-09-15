@@ -8,5 +8,6 @@
 - Ledger toplamını OD/ODK ödenmiş siparişlerle karşılaştırın; farkı mutabakata alın.
 - AI’ı `SUGGESTION`, ölçüm sonrası `AUTO_SAFE` yapın. `AUTO` ayrıca operasyon onayı ister.
 - Deploy sonrası `/api/health`, Instagram health, son başarılı cron, `DEAD` job, webhook/AI/send hata kayıtları ve son bir saat production error logları kontrol edilir.
+- Deploy sonrası sürüm eşleşmesi doğrulanır: `npm run verify:production-version` yayındaki commit'i `main`'in ucuyla karşılaştırır. Sağlıklı ama eski bir deploy da yeşil görünür; eşleşme ayrı bir kontroldür ([build provenance](build-provenance.md)).
 
 Migration öncesi salt-okunur kontroller: `SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 5;`, OD/ODK ödenmiş sipariş adet/toplamları ve mevcut ledger adet/toplamları kaydedilir. Migration sonrası yeni kolonlar `information_schema.columns` üzerinden, foreign key `pg_constraint` üzerinden ve aynı adet/toplam sorgularıyla doğrulanır. Backfill öncesi/sonrası fark yalnız eksik ödenmiş sipariş sayısı kadar olmalıdır; fark açıklanamıyorsa deploy promote edilmez.
