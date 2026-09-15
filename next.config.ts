@@ -1,4 +1,49 @@
+import { readFileSync } from "node:fs";
 import type { NextConfig } from "next";
+import { resolveBuildInfo } from "./lib/build-info";
+
+/**
+ * Build kimliği burada bir kez çözülür ve üç yere birden gider:
+ *  1. `env` — artefaktın içine gömülür, runtime'da `lib/build-info` okur.
+ *  2. `headers()` — her yanıtta `x-build-*` olarak görünür; production'ın hangi
+ *     commit'te olduğunu tek `curl -I` ile doğrulamayı mümkün kılar.
+ *  3. `/api/version` ve footer damgası aynı gömülü değerleri kullanır.
+ */
+const packageVersion = (
+  JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version?: string }
+).version;
+
+/**
+ * `APP_BUILD_TIME` bilerek burada üretilmez: Next bu dosyayı build sırasında
+ * birden çok süreçte değerlendirir, `new Date()` her seferinde başka bir değer
+ * verir ve aynı build `x-build-time` başlığında bir, `/api/version` gövdesinde
+ * başka bir zaman bildirir. Tek doğru zaman damgasını build hattı verir
+ * (`vercel.json` buildCommand ve `Dockerfile`); verilmezse alan `null` kalır.
+ */
+const build = resolveBuildInfo({
+  ...process.env,
+  APP_BUILD_VERSION: process.env.APP_BUILD_VERSION ?? packageVersion,
+});
+
+/** Değeri olmayan anahtarı gömmeyiz: boş string "bilinmiyor"dan daha yanıltıcı. */
+const buildEnv = Object.fromEntries(
+  Object.entries({
+    APP_BUILD_SHA: build.commitSha,
+    APP_BUILD_REF: build.commitRef,
+    APP_BUILD_VERSION: build.version,
+    APP_BUILD_RELEASE: build.releaseTag,
+    APP_BUILD_TIME: build.builtAt,
+  }).filter((entry): entry is [string, string] => Boolean(entry[1])),
+);
+
+const buildHeaders = Object.entries({
+  "x-build-version": build.version,
+  "x-build-sha": build.commitSha,
+  "x-build-ref": build.commitRef,
+  "x-build-time": build.builtAt,
+})
+  .filter((entry): entry is [string, string] => Boolean(entry[1]))
+  .map(([key, value]) => ({ key, value }));
 
 const secureDeployment = process.env.VERCEL_ENV === "production" || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://");
 const isVercelBuild = process.env.VERCEL === "1";
@@ -16,6 +61,8 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
   // Cross-Origin Opener Policy — Spectre koruması (OAuth popup'larda gevşetilebilir)
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+  // Çalışan artefaktın kimliği — `curl -I` ile production/main karşılaştırması.
+  ...buildHeaders,
 ];
 
 const nextConfig: NextConfig = {
@@ -24,6 +71,7 @@ const nextConfig: NextConfig = {
   // may already have moved into the standalone bundle. Docker still consumes
   // `.next/standalone` and therefore keeps the self-hosted output mode.
   ...(isVercelBuild ? {} : { output: "standalone" as const }),
+  env: buildEnv,
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,

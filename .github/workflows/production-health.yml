@@ -13,8 +13,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+
       - name: Check application and database health
         run: |
           response="$(curl --fail --silent --show-error --retry 2 --max-time 20 https://www.onlinedershanem.com/api/health)"
           echo "$response" | jq -e '.status == "ok" or .status == "degraded"' >/dev/null
           echo "$response" | jq -e '.db.ok == true' >/dev/null
+
+      # Sağlıklı ama eski bir deploy da "yeşil" görünür. Yayındaki commit'i
+      # `main`'in ucuyla karşılaştırıp sapmayı iş özetine yazar. Bir merge'ün
+      # deploy'u uçuşta olabilir; ilk sapmada 90 sn bekleyip bir kez tekrar
+      # bakıyoruz, ikinci sapma gerçek sapmadır.
+      - name: Compare production build with main
+        run: |
+          EXPECTED_SHA="$(git rev-parse HEAD)"
+          export EXPECTED_SHA
+          npm run verify:production-version && exit 0
+          echo "::notice::Sürüm sapması görüldü; deploy uçuşta olabilir, 90 sn sonra tekrar bakılıyor."
+          sleep 90
+          npm run verify:production-version

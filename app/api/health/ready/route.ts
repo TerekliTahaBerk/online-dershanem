@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { buildInfo } from "@/lib/build-info";
 import { buildReadinessReport } from "@/lib/health/readiness";
 import { notifyCronIncident } from "@/lib/jobs/heartbeat";
 import { cacheHealth } from "@/lib/cache";
@@ -57,7 +58,7 @@ export async function GET() {
   }
   const { unhealthyCronNames, ...publicReport } = report;
   void unhealthyCronNames;
-  return NextResponse.json({ ...publicReport, totalLatencyMs: Date.now() - startedAt }, {
+  return NextResponse.json({ ...publicReport, build: buildInfo, totalLatencyMs: Date.now() - startedAt }, {
     status: report.ready ? 200 : 503,
     headers: { "Cache-Control": "no-store, max-age=0" },
   });

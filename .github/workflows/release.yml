@@ -88,6 +88,8 @@ jobs:
             org.opencontainers.image.title=Online Dershanem
             org.opencontainers.image.description=Online Dershanem production application
             org.opencontainers.image.licenses=LicenseRef-Proprietary
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ github.ref_name }}
       - id: build
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
@@ -96,6 +98,13 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Build kimliği artefaktın içine gömülür: çalışan imaj `/api/version`
+          # ve `x-build-sha` ile hangi commit olduğunu kendisi söyler.
+          build-args: |
+            BUILD_SHA=${{ github.sha }}
+            BUILD_REF=${{ github.ref_name }}
+            BUILD_RELEASE=${{ github.ref_name }}
+            BUILD_VERSION=${{ steps.meta.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - uses: actions/attest-build-provenance@8beda2b7ed98355c0e97c0a63bec38ae472e66c4 # v4
@@ -115,6 +124,16 @@ jobs:
         with:
           generate_release_notes: true
           body: |
+            ## Build
+
+            | | |
+            | --- | --- |
+            | Release | `${{ github.ref_name }}` |
+            | Commit | `${{ github.sha }}` |
+
+            Yayına alındıktan sonra `curl -s https://www.onlinedershanem.com/api/version`
+            bu commit'i döndürmelidir.
+
             ## Container
 
             ```bash

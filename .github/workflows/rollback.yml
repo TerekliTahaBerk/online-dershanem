@@ -56,6 +56,17 @@ jobs:
           echo "$response" | jq -e '.status == "ok" or .status == "degraded"' >/dev/null
           echo "$response" | jq -e '.db.ok == true' >/dev/null
 
+      # Alias'ın hangi commit'e döndüğü kayda geçmeli: rollback'ten sonra
+      # production artık `main`'in gerisindedir ve bu bilinçli bir durumdur.
+      - name: Record live build after rollback
+        id: version
+        if: ${{ always() }}
+        run: |
+          curl --fail --silent --show-error --retry 2 --max-time 20 \
+            https://www.onlinedershanem.com/api/version \
+            | jq -r '"live_sha=" + (.commitSha // "unknown"), "live_version=" + (.version // "unknown")' \
+            >> "$GITHUB_OUTPUT"
+
       - name: Write rollback summary
         if: ${{ always() }}
         env:
@@ -68,5 +79,7 @@ jobs:
             echo "- Requested by: \`$GITHUB_ACTOR\`"
             echo "- Reason: $ROLLBACK_REASON"
             echo "- Production health check: \`$HEALTH_OUTCOME\`"
+            echo "- Live build: \`${{ steps.version.outputs.live_version }}\` / \`${{ steps.version.outputs.live_sha }}\`"
+            echo "- \`main\` ile kasıtlı sapma: bu commit yeniden deploy edilene kadar Production Health sürüm kontrolü kırmızı kalır."
             echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           } >> "$GITHUB_STEP_SUMMARY"

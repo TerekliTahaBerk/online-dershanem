@@ -20,6 +20,7 @@ import { prisma } from "@/lib/prisma";
 import { CACHE_NAMESPACES, cacheGet, cacheSet, cacheInvalidate, cacheKey, cacheStatus } from "@/lib/cache";
 import { logAudit } from "@/lib/audit";
 import { validateEnvOnce } from "@/lib/env";
+import { buildInfo } from "@/lib/build-info";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -109,7 +110,8 @@ export async function GET(req: NextRequest) {
       at: new Date().toISOString(),
       checks,
       cache: cacheStatus(),
-      commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+      commit: buildInfo.commitShort,
+      build: buildInfo,
     },
     { status: allOk ? 200 : 500, headers: { "Cache-Control": "no-store" } },
   );

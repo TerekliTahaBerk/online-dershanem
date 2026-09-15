@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildInfo } from "@/lib/build-info";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,5 +14,6 @@ export async function GET() {
     bootAt: BOOT_AT,
     now: new Date().toISOString(),
     uptimeMs: Math.round(process.uptime() * 1000),
+    build: buildInfo,
   }, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }
