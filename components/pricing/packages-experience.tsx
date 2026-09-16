@@ -4,14 +4,21 @@ import { PricingCard } from "@/components/pricing/pricing-card";
 import { StickyCheckoutBar } from "@/components/pricing/sticky-checkout-bar";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { FooterCta } from "@/components/marketing/footer-cta";
-import { lessonPackages, includedFeatures } from "@/lib/pricing-content";
+import {
+  lessonPackages,
+  lessonPackagesByExam,
+  includedFeatures,
+} from "@/lib/pricing-content";
 import { homeFaqs } from "@/lib/site-content";
+
+/** Katalogdaki sınav hatları — kart listesi bu sırayla bölünür. */
+const examTracks = ["LGS", "YKS"] as const;
 
 const steps = [
   {
     icon: CreditCard,
     title: "Paketi seç",
-    body: "LGS veya YKS paketini PayTR üzerinden güvenle tamamlarsın.",
+    body: "Sınavını ve branşını seç, ödemeyi PayTR üzerinden güvenle tamamla.",
   },
   {
     icon: PhoneCall,
@@ -37,8 +44,8 @@ type PackagesExperienceProps = {
 };
 
 /**
- * Ders Paketleri deneyimi — LGS/YKS seçici, "Neler dahil?", iki fiyat kartı,
- * "nasıl başlar" adımları, FAQ, footer CTA ve sticky checkout bar.
+ * Ders Paketleri deneyimi — "Neler dahil?", sınav hattına göre branş fiyat
+ * kartları, "nasıl başlar" adımları, FAQ, footer CTA ve sticky checkout bar.
  *
  * Canonical `/ders-paketleri` deneyimi. FİYAT `lib/content.ts`'ten türetilir;
  * checkout akışı `PurchaseFunnelTrigger` (sepet → /sepet → PayTR) ile korunur.
@@ -64,27 +71,22 @@ export function PackagesExperience({
           </div>
         </section>
 
-        {/* Seçici + kart */}
+        {/* Neler dahil? */}
         <section className="bg-white">
-          <div className="site-container pb-16 pt-9 sm:pb-24 sm:pt-12">
-            <div className="grid items-start gap-12 lg:grid-cols-[.72fr_1.28fr] lg:gap-12">
+          <div className="site-container pb-12 pt-9 sm:pt-12">
+            <div className="grid items-start gap-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-14">
               <div>
                 <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">
                   Neler dahil?
                 </h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
-                  LGS ve YKS paketlerinde aynı küçük grup ders standardı vardır.
+                  LGS ve YKS paketlerinin hepsinde aynı küçük grup ders
+                  standardı vardır.
                 </p>
-                {/*
-                  Sayfa matematik paketini satıyor ama alttaki SSS "hangi dersi
-                  seçersen seç fiyat aynı" diyordu; ikisi birbiriyle
-                  çelişiyordu. Kapsam açıkça yazılır ve diğer dersler için
-                  kurucuya yönlendirilir.
-                */}
                 <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
-                  Buradaki iki paket <strong>matematik dersi</strong> içindir.
-                  Ders fiyatı derse göre değişmez; başka bir ders ya da birden
-                  fazla ders istiyorsan{" "}
+                  Ders fiyatı <strong>branşa göre değişmez</strong>: aşağıdaki
+                  paketlerin hepsi aynı aylık fiyattan satılır. Birden fazla
+                  ders ya da birebir özel ders istiyorsan{" "}
                   <Link
                     href="/paketler"
                     className="font-semibold text-[var(--dc-brand-strong)] underline-offset-2 hover:underline"
@@ -93,41 +95,64 @@ export function PackagesExperience({
                   </Link>{" "}
                   seçebilirsin.
                 </p>
-                <ul className="mt-9 grid gap-x-8 gap-y-5">
-                  {includedFeatures.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-3 text-[16px] leading-7 text-[var(--site-body)] sm:text-[18px]"
-                    >
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
-                        <Check size={12} strokeWidth={3} aria-hidden="true" />
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
               </div>
 
-              <div className="order-first grid gap-5 md:grid-cols-2 lg:order-none">
-                {lessonPackages.map((pkg) => (
-                  <PricingCard
-                    key={`${pkg.category}-${pkg.subject}`}
-                    source={`${primarySource}_${pkg.category.toLowerCase()}`}
-                    data={{
-                      name: pkg.name,
-                      category: pkg.category,
-                      subject: pkg.subject,
-                      tagline: pkg.tagline,
-                      priceLabel: pkg.priceLabel,
-                      oldPriceLabel: pkg.oldPriceLabel,
-                      discountLabel: pkg.discountLabel,
-                      highlightsTitle: `${pkg.category} odağı`,
-                      highlights: pkg.examFocus,
-                    }}
-                  />
+              <ul className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                {includedFeatures.map((f) => (
+                  <li
+                    key={f}
+                    className="flex items-start gap-3 text-[15.5px] leading-7 text-[var(--site-body)]"
+                  >
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                      <Check size={12} strokeWidth={3} aria-hidden="true" />
+                    </span>
+                    {f}
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
+          </div>
+        </section>
+
+        {/* Branş paketleri — sınav hattına göre */}
+        <section id="paketler" className="scroll-mt-24 bg-white">
+          <div className="site-container pb-16 sm:pb-24">
+            {examTracks.map((exam) => {
+              const packages = lessonPackagesByExam(exam);
+              if (packages.length === 0) return null;
+              return (
+                <div key={exam} className="mt-14 first:mt-0">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b border-[var(--site-line)] pb-4">
+                    <h2 className="font-display text-[clamp(1.7rem,2.6vw,2.4rem)] text-[var(--site-ink)]">
+                      {exam} ders paketleri
+                    </h2>
+                    <p className="text-[14px] text-[var(--site-muted)]">
+                      {packages.length} branş · hepsi {packages[0].priceLabel}
+                    </p>
+                  </div>
+                  <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {packages.map((pkg) => (
+                      <PricingCard
+                        key={`${pkg.category}-${pkg.subject}`}
+                        source={`${primarySource}_${pkg.category.toLowerCase()}`}
+                        data={{
+                          name: pkg.name,
+                          category: pkg.category,
+                          subject: pkg.subject,
+                          tagline: pkg.tagline,
+                          priceLabel: pkg.priceLabel,
+                          oldPriceLabel: pkg.oldPriceLabel,
+                          discountLabel: pkg.discountLabel,
+                          highlightsTitle: `${pkg.category} odağı`,
+                          highlights: pkg.examFocus,
+                          ctaLabel: "Satın al",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -176,7 +201,7 @@ export function PackagesExperience({
                 {[
                   "Kalabalık sınıfta soru soramayanlar",
                   "Ders sonrası ne çalışacağını bilmek isteyenler",
-                  "LGS veya YKS matematiğinde düzen arayanlar",
+                  "LGS veya YKS hazırlığında düzen arayanlar",
                 ].map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <Check
@@ -215,7 +240,17 @@ export function PackagesExperience({
         />
       </main>
 
-      <StickyCheckoutBar packages={lessonPackages} note="taahhütsüz" />
+      {/*
+        Katalogda her branş ayrı paket olduğu için sticky bar her paketi
+        buton yapamaz; tek CTA ile kart listesine götürür.
+      */}
+      <StickyCheckoutBar
+        title="LGS ve YKS branş paketleri"
+        priceLabel={lessonPackages[0]?.priceLabel}
+        ctaHref="#paketler"
+        ctaLabel="Paketleri gör"
+        note="taahhütsüz"
+      />
     </>
   );
 }

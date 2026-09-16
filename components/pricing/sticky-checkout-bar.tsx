@@ -15,6 +15,14 @@ type StickyCheckoutBarProps = {
     priceLabel: string;
   }>;
   note?: string;
+  /**
+   * Bağlantı modu — katalogda çok sayıda paket olduğunda bar her paketi buton
+   * yapmaz; tek CTA ile paket listesine götürür. `ctaHref` verildiğinde
+   * `title` + `priceLabel` yeterlidir, `packages` beklenmez.
+   */
+  ctaHref?: string;
+  ctaLabel?: string;
+  title?: string;
 };
 
 /**
@@ -28,6 +36,9 @@ export function StickyCheckoutBar({
   priceLabel,
   packages,
   note,
+  ctaHref,
+  ctaLabel,
+  title,
 }: StickyCheckoutBarProps) {
   const [visible, setVisible] = useState(false);
   const items =
@@ -66,10 +77,17 @@ export function StickyCheckoutBar({
     };
   }, []);
 
-  if (!items.length) return null;
+  const linkMode = Boolean(ctaHref);
+  if (!linkMode && !items.length) return null;
   if (!visible) return null;
 
   const hasMultiple = items.length > 1;
+  const barTitle =
+    title ??
+    (hasMultiple
+      ? "LGS veya YKS paketini seç"
+      : (items[0]?.name ?? "Ders paketleri"));
+  const barPrice = priceLabel ?? items[0]?.priceLabel ?? "";
 
   return (
     <div
@@ -84,28 +102,38 @@ export function StickyCheckoutBar({
           </div>
           <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between sm:gap-8">
             <div className="text-[13.5px] font-semibold text-[var(--site-ink)] sm:text-[15px]">
-              {hasMultiple ? "LGS veya YKS paketini seç" : items[0].name}
+              {barTitle}
             </div>
             <div className="text-[12px] leading-5 text-[var(--site-muted)] sm:text-[13px]">
-              {items[0].priceLabel}
+              {barPrice}
               {note ? ` · ${note}` : ""}
             </div>
           </div>
           <div className="grid w-full shrink-0 gap-2 sm:flex sm:w-auto">
-            {items.map((item) => (
-              <PurchaseFunnelTrigger
-                key={`${item.category}-${item.subject}`}
-                source={`pricing_sticky_bar_${item.category.toLowerCase()}`}
-                packageName={item.name}
-                category={item.category}
-                subject={item.subject}
-                priceLabel={item.priceLabel}
-                paymentLink=""
+            {linkMode ? (
+              <a
+                href={ctaHref}
                 className="site-btn site-btn-primary w-full px-4 py-3 text-[13px] sm:w-auto sm:px-6 sm:text-[14px]"
               >
-                {hasMultiple ? item.category : "Satın al"}
-              </PurchaseFunnelTrigger>
-            ))}
+                {ctaLabel ?? "Paketleri gör"}
+              </a>
+            ) : null}
+            {linkMode
+              ? null
+              : items.map((item) => (
+                  <PurchaseFunnelTrigger
+                    key={`${item.category}-${item.subject}`}
+                    source={`pricing_sticky_bar_${item.category.toLowerCase()}`}
+                    packageName={item.name}
+                    category={item.category}
+                    subject={item.subject}
+                    priceLabel={item.priceLabel}
+                    paymentLink=""
+                    className="site-btn site-btn-primary w-full px-4 py-3 text-[13px] sm:w-auto sm:px-6 sm:text-[14px]"
+                  >
+                    {hasMultiple ? item.category : "Satın al"}
+                  </PurchaseFunnelTrigger>
+                ))}
           </div>
         </div>
       </div>

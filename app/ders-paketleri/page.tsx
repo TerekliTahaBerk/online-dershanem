@@ -8,9 +8,9 @@ import { lessonPackages } from "@/lib/pricing-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "LGS ve YKS Matematik Ders Paketleri | Online Dershanem",
+  title: "LGS ve YKS Ders Paketleri | Online Dershanem",
   description:
-    "LGS ve YKS online matematik ders paketleri: ayda 4 × 90 dakika canlı ders, en fazla 4 öğrenci, ₺3.000/ay ve taahhütsüz ödeme.",
+    "LGS ve YKS online ders paketleri: her branşta ayda 4 × 90 dakika canlı ders, en fazla 4 öğrenci, ₺2.000/ay ve taahhütsüz ödeme.",
   canonical: "/ders-paketleri",
 });
 
@@ -27,15 +27,14 @@ export default function LessonPackagesPage() {
           ...lessonPackages.map((pkg) =>
             productJsonLd({
               name: pkg.name,
-              description:
-                "En fazla 4 öğrencilik canlı matematik dersi, ders sonrası çalışma yönü ve öğretmen notu.",
+              description: pkg.tagline,
               url: "/ders-paketleri/",
               image: "/logo.png",
               priceCents: pkg.priceCents,
               originalPriceCents: pkg.oldPriceLabel
                 ? parsePriceToCents(pkg.oldPriceLabel)
                 : null,
-              sku: `${pkg.category.toLowerCase()}-matematik-ders-paketi`,
+              sku: pkg.id,
             }),
           ),
         ]}
@@ -49,7 +48,7 @@ export default function LessonPackagesPage() {
             <span className="site-hl">Online Dershanem kapsamında.</span>
           </>
         }
-        subtitle="Bu sayfa Online Dershanem içindeki doğrudan satın alınabilir LGS ve YKS matematik ders seçeneklerini gösterir."
+        subtitle="Bu sayfa Online Dershanem içindeki doğrudan satın alınabilir LGS ve YKS branş paketlerini gösterir. Fiyat branşa göre değişmez."
       />
       <SiteFooter />
     </div>

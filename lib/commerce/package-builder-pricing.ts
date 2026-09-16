@@ -32,7 +32,11 @@
  * fiyat doğrulaması da aynı kaynağı kullanır. Diğer kalemlerin henüz bir
  * checkout SKU'su olmadığı için değerleri burada durur.
  */
-import { getPackageListPriceCents, getPackagePriceCents } from "@/lib/content";
+import {
+  getPackageListPriceCents,
+  getPackagePriceCents,
+  lessonSubjects as catalogLessonSubjects,
+} from "@/lib/content";
 
 /** Kuruş cinsinden fiyat; `null` ise henüz belirlenmemiştir. */
 export type PriceCents = number | null;
@@ -54,30 +58,43 @@ export type BillingPeriod = "monthly" | "period" | "oneTime";
 
 /**
  * Online Dershanem grup dersinin fiyatı ödeme-kritik katalogdan okunur.
- * Katalog LGS ve YKS için ayrı kayıt tutar; ikisi de aynı `subject` anahtarını
- * kullanır. Katalog değişirse burası kendiliğinden takip eder.
+ * Katalog her sınav hattındaki her branş için ayrı kayıt tutar; hepsi aynı
+ * fiyattan satılır. Katalog değişirse burası kendiliğinden takip eder.
  *
- * `subject` anahtarı tarihsel olarak "Matematik Ders Paketi"dir ve sepet
- * kimliğidir — DEĞİŞTİRME (bkz. `lib/od/checkout.ts`). Ders fiyatı derse göre
- * değişmediği için bu tek anahtar tüm dersleri fiyatlar.
+ * Sepet kimliği `<sınav>` + `<branş> Ders Paketi` çiftidir — DEĞİŞTİRME
+ * (bkz. `lib/od/checkout.ts`). Branş seçilmemişken fiyat sorgusu temsilci
+ * branştan yapılır; fiyat branşa göre değişmediği için sonuç aynıdır.
  */
-const GROUP_LESSON_CATALOG_SUBJECT = "Matematik Ders Paketi";
+const PACKAGE_SUFFIX = "Ders Paketi";
+const REPRESENTATIVE_SUBJECT = "Matematik";
+
+/** Branş adını katalogdaki checkout `subject` anahtarına çevirir. */
+function catalogSubjectKey(subject: string | null): string {
+  return `${subject ?? REPRESENTATIVE_SUBJECT} ${PACKAGE_SUFFIX}`;
+}
 
 /**
  * Grup dersi fiyatı. `exam` verilmezse LGS ve YKS aynı fiyattaysa o ortak fiyat
  * döner; ayrışmışlarsa `null` döner ve arayüz sınav seçilene kadar rakam basmaz.
  */
-function groupLessonPrice(exam: ExamTrack | null): PricePair {
+function groupLessonPrice(
+  exam: ExamTrack | null,
+  subject: string | null = null,
+): PricePair {
   if (exam === null) {
-    const lgs = groupLessonPrice("LGS");
-    const yks = groupLessonPrice("YKS");
+    const lgs = groupLessonPrice("LGS", subject);
+    const yks = groupLessonPrice("YKS", subject);
     return lgs.campaignCents !== null && lgs.campaignCents === yks.campaignCents
-      ? { ...lgs, listCents: lgs.listCents === yks.listCents ? lgs.listCents : null }
+      ? {
+          ...lgs,
+          listCents: lgs.listCents === yks.listCents ? lgs.listCents : null,
+        }
       : { listCents: null, campaignCents: null };
   }
 
-  const campaign = getPackagePriceCents(exam, GROUP_LESSON_CATALOG_SUBJECT);
-  const list = getPackageListPriceCents(exam, GROUP_LESSON_CATALOG_SUBJECT);
+  const key = catalogSubjectKey(subject);
+  const campaign = getPackagePriceCents(exam, key);
+  const list = getPackageListPriceCents(exam, key);
   return {
     campaignCents: campaign > 0 ? campaign : null,
     listCents: list > campaign ? list : null,
@@ -91,8 +108,8 @@ function groupLessonPrice(exam: ExamTrack | null): PricePair {
  * tek öğrenciye ayrılmasıdır.
  */
 const ONE_TO_ONE_LESSON: PricePair = {
-  listCents: 650_000, // ₺6.500/ay
-  campaignCents: 450_000, // ₺4.500/ay
+  listCents: null, // üstü çizili fiyat yok — tek net fiyat
+  campaignCents: 400_000, // ₺4.000/ay
 };
 
 /**
@@ -102,7 +119,7 @@ const ONE_TO_ONE_LESSON: PricePair = {
  * kalemdir, bu yüzden ders sayısıyla çarpılmaz.
  */
 const COACHING: PricePair = {
-  listCents: 350_000, // ₺3.500/ay
+  listCents: null, // üstü çizili fiyat yok — tek net fiyat
   campaignCents: 250_000, // ₺2.500/ay
 };
 
@@ -112,7 +129,7 @@ const COACHING: PricePair = {
  * Aylık değil dönemsel faturalanır; özet ekranı bu farkı ayrıca yazar.
  */
 const EXAM_CLUB: PricePair = {
-  listCents: 150_000, // ₺1.500/dönem
+  listCents: null, // üstü çizili fiyat yok — tek net fiyat
   campaignCents: 100_000, // ₺1.000/dönem
 };
 
@@ -141,32 +158,12 @@ const BUNDLE_DISCOUNT_CENTS: Record<
  * besler.
  *
  * Ders fiyatı DERSE GÖRE DEĞİŞMEZ: hangi ders seçilirse seçilsin grup dersi
- * aynı, birebir ders aynı fiyattır. Bu yüzden burada fiyat yoktur; liste
- * yalnızca kapsamı anlatır.
+ * aynı, birebir ders aynı fiyattır. Bu yüzden burada fiyat yoktur ve liste
+ * satılabilir branş kataloğundan (`lib/content.ts` → `lessonSubjects`)
+ * okunur — kurucuda görünen her branşın bir checkout karşılığı vardır.
  */
-export const lessonSubjects: Record<ExamTrack, readonly string[]> = {
-  LGS: [
-    "Matematik",
-    "Fen Bilimleri",
-    "Türkçe",
-    "T.C. İnkılap Tarihi ve Atatürkçülük",
-    "İngilizce",
-    "Din Kültürü ve Ahlak Bilgisi",
-  ],
-  YKS: [
-    "Matematik",
-    "Türkçe",
-    "Türk Dili ve Edebiyatı",
-    "Fizik",
-    "Kimya",
-    "Biyoloji",
-    "Tarih",
-    "Coğrafya",
-    "Felsefe",
-    "İngilizce",
-    "Din Kültürü ve Ahlak Bilgisi",
-  ],
-};
+export const lessonSubjects: Record<ExamTrack, readonly string[]> =
+  catalogLessonSubjects;
 
 export const billingPeriods: Record<ProductKey, BillingPeriod> = {
   dershanem: "monthly",
@@ -244,7 +241,9 @@ const productLabels: Record<ProductKey, string> = {
  */
 function dershanemLinePrice(selection: BuilderSelection): PricePair {
   const base =
-    selection.format === "grup" ? groupLessonPrice(selection.exam) : ONE_TO_ONE_LESSON;
+    selection.format === "grup"
+      ? groupLessonPrice(selection.exam, selection.subject)
+      : ONE_TO_ONE_LESSON;
 
   const lessonCount = 1 + selection.extraSubjects.length;
 
@@ -255,7 +254,9 @@ function dershanemLinePrice(selection: BuilderSelection): PricePair {
   };
 }
 
-function bundleKey(selection: BuilderSelection): keyof typeof BUNDLE_DISCOUNT_CENTS | null {
+function bundleKey(
+  selection: BuilderSelection,
+): keyof typeof BUNDLE_DISCOUNT_CENTS | null {
   const { dershanem: d, kocum: k, denemeKulubum: n } = selection;
   if (d && k && n) return "dkn";
   if (d && k) return "dk";
@@ -297,7 +298,10 @@ function resolveBillingTotal(
   }
 
   const campaignCents = lines.reduce((sum, line) => sum + (line.cents ?? 0), 0);
-  const listCents = lines.reduce((sum, line) => sum + (line.listCents ?? line.cents ?? 0), 0);
+  const listCents = lines.reduce(
+    (sum, line) => sum + (line.listCents ?? line.cents ?? 0),
+    0,
+  );
   if (bundleDiscountCents > campaignCents) {
     throw new Error(`Paket indirimi ${billing} kampanya tutarını aşamaz.`);
   }
@@ -357,9 +361,21 @@ export function resolvePackageQuote(selection: BuilderSelection): PackageQuote {
   const resolved = selectedCount > 0 && missingPriceFor.length === 0;
   const key = bundleKey(selection);
   const discounts = resolved && key ? BUNDLE_DISCOUNT_CENTS[key] : {};
-  const monthlyTotal = resolveBillingTotal("monthly", selectedLines, discounts.monthly ?? 0);
-  const periodTotal = resolveBillingTotal("period", selectedLines, discounts.period ?? 0);
-  const oneTimeTotal = resolveBillingTotal("oneTime", selectedLines, discounts.oneTime ?? 0);
+  const monthlyTotal = resolveBillingTotal(
+    "monthly",
+    selectedLines,
+    discounts.monthly ?? 0,
+  );
+  const periodTotal = resolveBillingTotal(
+    "period",
+    selectedLines,
+    discounts.period ?? 0,
+  );
+  const oneTimeTotal = resolveBillingTotal(
+    "oneTime",
+    selectedLines,
+    discounts.oneTime ?? 0,
+  );
 
   return {
     selectedCount,
@@ -375,11 +391,10 @@ export function resolvePackageQuote(selection: BuilderSelection): PackageQuote {
 /**
  * Kurucudaki seçim doğrudan satın alınabiliyor mu?
  *
- * Sitede checkout SKU'su OLAN tek yapılandırma, katalogdaki grup ders paketidir
- * (`<exam>` + "Matematik Ders Paketi"). Koçum ve Deneme Kulübü'nün, birebir
- * formatın ve ek derslerin karşılığı bir SKU yok — onlar ön görüşmeden
- * ilerler. Bu fonksiyon o sınırı TEK yerde tutar; arayüz kendi başına
- * "satın alınabilir" kararı vermez.
+ * Katalogdaki her `<sınav>` + `<branş> Ders Paketi` çiftinin checkout SKU'su
+ * vardır; Koçum, Deneme Kulübü, birebir format ve ek dersler için yoktur —
+ * onlar ön görüşmeden ilerler. Bu fonksiyon o sınırı TEK yerde tutar; arayüz
+ * kendi başına "satın alınabilir" kararı vermez.
  *
  * Dönen `id`/`category`/`subject` sepet kimliğidir ve sunucudaki
  * `priceCatalogItems` ile birebir aynı anahtarları kullanır.
@@ -393,18 +408,22 @@ export function resolveBuilderCheckout(selection: BuilderSelection): {
   priceLabel: string;
 } | null {
   if (selection.exam === null) return null;
-  if (!selection.dershanem || selection.kocum || selection.denemeKulubum) return null;
+  if (!selection.dershanem || selection.kocum || selection.denemeKulubum)
+    return null;
   if (selection.format !== "grup") return null;
   if (selection.extraSubjects.length > 0) return null;
+  if (selection.subject === null) return null;
+  if (!lessonSubjects[selection.exam].includes(selection.subject)) return null;
 
-  const priceCents = getPackagePriceCents(selection.exam, GROUP_LESSON_CATALOG_SUBJECT);
+  const subject = catalogSubjectKey(selection.subject);
+  const priceCents = getPackagePriceCents(selection.exam, subject);
   if (priceCents <= 0) return null;
 
   return {
-    id: `${selection.exam}__${GROUP_LESSON_CATALOG_SUBJECT}`,
-    name: `${selection.exam} ${GROUP_LESSON_CATALOG_SUBJECT}`,
+    id: `${selection.exam}__${subject}`,
+    name: `${selection.exam} ${subject}`,
     category: selection.exam,
-    subject: GROUP_LESSON_CATALOG_SUBJECT,
+    subject,
     priceCents,
     priceLabel: `${formatCents(priceCents)}/ay`,
   };
@@ -447,7 +466,11 @@ export function builderContactQuery(selection: BuilderSelection): string {
     : "";
   const summary = [
     products.join(" + "),
-    selection.dershanem ? (selection.format === "birebir" ? "birebir özel ders" : "maks. 4 kişilik grup") : null,
+    selection.dershanem
+      ? selection.format === "birebir"
+        ? "birebir özel ders"
+        : "maks. 4 kişilik grup"
+      : null,
     lessons ? `dersler: ${lessons}` : null,
   ]
     .filter(Boolean)
@@ -479,7 +502,10 @@ export function formatCents(cents: number): string {
  * Bu bir TÜRETİLMİŞ GÖSTERİM değeridir: iki gerçek fiyattan hesaplanır,
  * uydurulmaz.
  */
-export function discountPercent(listCents: PriceCents, campaignCents: PriceCents): number | null {
+export function discountPercent(
+  listCents: PriceCents,
+  campaignCents: PriceCents,
+): number | null {
   if (listCents === null || campaignCents === null) return null;
   if (listCents <= campaignCents) return null;
   return Math.round(((listCents - campaignCents) / listCents) * 100);

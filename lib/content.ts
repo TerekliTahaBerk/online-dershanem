@@ -1,101 +1,185 @@
 export const siteUrl = "https://www.onlinedershanem.com";
 
+/** Sınav hattı — katalog ve paket kurucu aynı iki hattı kullanır. */
+export type ExamTrack = "LGS" | "YKS";
+
 /**
- * Matematik paket kataloğu — sitenin TEK fiyat/ürün kaynağı.
+ * SATIŞA AÇIK BRANŞLAR — sitenin TEK branş kaynağı.
+ *
+ * Ders fiyatı branşa göre DEĞİŞMEZ; bu liste yalnız kapsamı belirler.
+ * Paket kurucudaki ders seçimi de (`lib/commerce/package-builder-pricing`)
+ * buradan okur, böylece "satılabilir branş" ile "kurucuda seçilebilen branş"
+ * birbirinden ayrışamaz.
+ */
+export const lessonSubjects = {
+  LGS: [
+    "Matematik",
+    "Fen Bilimleri",
+    "Türkçe",
+    "T.C. İnkılap Tarihi ve Atatürkçülük",
+    "İngilizce",
+    "Din Kültürü ve Ahlak Bilgisi",
+  ],
+  YKS: [
+    "Matematik",
+    "Türkçe",
+    "Türk Dili ve Edebiyatı",
+    "Fizik",
+    "Kimya",
+    "Biyoloji",
+    "Tarih",
+    "Coğrafya",
+    "Felsefe",
+    "İngilizce",
+    "Din Kültürü ve Ahlak Bilgisi",
+  ],
+} as const satisfies Record<ExamTrack, readonly string[]>;
+
+/**
+ * Grup dersinin aylık fiyatı (kuruş). Branş fark etmeksizin AYNIDIR —
+ * katalogdaki her paket bu tek değerden fiyatlanır.
+ */
+export const GROUP_LESSON_PRICE_CENTS = 200_000;
+
+/** Katalog fiyat etiketi — `parsePriceToCents` ile aynı değere çözülür. */
+const GROUP_LESSON_PRICE_LABEL = "₺2.000/ay";
+
+/** Checkout kimliğindeki `subject` soneki — sepet anahtarının parçasıdır. */
+const PACKAGE_SUFFIX = "Ders Paketi";
+
+const examCopy: Record<
+  ExamTrack,
+  { tagline: (s: string) => string; audience: (s: string) => string; examFocus: readonly string[] }
+> = {
+  LGS: {
+    tagline: (subject) =>
+      `8. sınıf LGS ${subject.toLocaleLowerCase("tr-TR")} konularında küçük grupta canlı ders, yeni nesil soru pratiği ve düzenli takip.`,
+    audience: (subject) =>
+      `LGS ${subject} dersinde çözümünü gösterebilmeye, soru sorabilmeye ve hafta içinde ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.`,
+    examFocus: ["Yeni nesil soru pratiği", "8. sınıf müfredat takibi"],
+  },
+  YKS: {
+    tagline: (subject) =>
+      `YKS ${subject.toLocaleLowerCase("tr-TR")} dersini küçük grupta canlı işleyen, deneme analizine göre ilerleyen paket.`,
+    audience: (subject) =>
+      `YKS ${subject} dersinde eksiklerini kapatmak ve deneme sonuçlarına göre daha bilinçli ilerlemek isteyen öğrenciler için.`,
+    examFocus: ["TYT ve AYT kapsamına göre planlama", "Deneme analizine göre takip"],
+  },
+};
+
+const TR_SLUG_MAP: Record<string, string> = {
+  ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u", â: "a", î: "i", û: "u",
+};
+
+/** Türkçe karakterleri sadeleştirip URL/SKU dostu bir kimliğe çevirir. */
+function toSlug(value: string): string {
+  return value
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[^a-z0-9\s.]/g, (char) => TR_SLUG_MAP[char] ?? "")
+    .replace(/[\s.]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** Katalogdaki tek paket kaydı — hem pazarlama hem checkout bu şekli okur. */
+export type SubjectPackage = {
+  id: string;
+  name: string;
+  accent: string;
+  /** Checkout kimliğinin yarısı — DEĞİŞTİRME (bkz. `lib/od/checkout.ts`). */
+  subject: string;
+  /** Checkout kimliğinin diğer yarısı. */
+  category: ExamTrack;
+  badge: string;
+  tagline: string;
+  audience: string;
+  quota: string;
+  lessonDurationMinutes: number;
+  lessonsPerMonth: number;
+  billingPeriod: string;
+  commitment: string;
+  /** Kampanya öncesi liste fiyatı; boşsa üstü çizili fiyat GÖSTERİLMEZ. */
+  oldPrice: string;
+  /** İndirim rozeti; boşsa rozet basılmaz. */
+  discountLabel: string;
+  discountedPrice: string;
+  priceCents: number;
+  perLessonPrice: string;
+  examFocus: readonly string[];
+  features: readonly string[];
+  cta: string;
+};
+
+/** Her pakette ortak olan standart — branşa göre değişmez. */
+const PACKAGE_FEATURES: readonly string[] = [
+  "Canlı ders",
+  "En fazla 4 öğrencilik grup",
+  "Derste soru-cevap ve birlikte çözüm",
+  "Ders sonrası çalışma yönü",
+  "Ödevlendirme ve öğretmen notu",
+  "Sade gelişim özeti",
+  "Seviye ve hedefe göre grup planlaması",
+  "PayTR ile güvenli ödeme",
+];
+
+function buildPackage(category: ExamTrack, subject: string): SubjectPackage {
+  const copy = examCopy[category];
+  return {
+    id: `${toSlug(category)}-${toSlug(subject)}-ders-paketi`,
+    name: `${category} ${subject} ${PACKAGE_SUFFIX}`,
+    accent: "live",
+    subject: `${subject} ${PACKAGE_SUFFIX}`,
+    category,
+    badge: "",
+    tagline: copy.tagline(subject),
+    audience: copy.audience(subject),
+    quota: "En fazla 4 öğrenci",
+    lessonDurationMinutes: 90,
+    lessonsPerMonth: 4,
+    billingPeriod: "Aylık paket",
+    commitment: "Taahhüt yok",
+    oldPrice: "",
+    discountLabel: "",
+    discountedPrice: GROUP_LESSON_PRICE_LABEL,
+    priceCents: GROUP_LESSON_PRICE_CENTS,
+    perLessonPrice: "",
+    examFocus: copy.examFocus,
+    features: PACKAGE_FEATURES,
+    cta: `${subject} Paketini Satın Al`,
+  };
+}
+
+/**
+ * Ders paketi kataloğu — sitenin TEK fiyat/ürün kaynağı.
  *
  * ÖNEMLİ (ödeme kritik): `category` + `subject` çifti sepet kimliği ve
  * checkout fiyat doğrulamasının anahtarıdır (`getPackagePriceCents`). Bu
  * çiftleri değiştirmeden önce `lib/od/checkout.ts` ve cart akışını gözden geçir.
  * `discountedPrice` Türkçe formatı `parsePriceToCents` ile kuruşa çevrilir.
  *
- * Ürün modeli: iki public satış ürünü — LGS ve YKS Matematik Ders Paketi.
- * Mevcut OD sepeti → /sepet/satin-al → dinamik PayTR iframe akışından
- * satılır; ayrı PayTR linki gerekmez.
+ * Ürün modeli: LGS ve YKS hatlarındaki HER branş ayrı bir satış paketidir ve
+ * hepsi aynı aylık fiyattan satılır. Paketler mevcut OD sepeti →
+ * /sepet/satin-al → dinamik PayTR iframe akışından satılır; ayrı PayTR linki
+ * gerekmez. Matematik paketinin checkout kimliği ("<sınav>" + "Matematik Ders
+ * Paketi") tarihsel olarak korunur.
  */
-export const subjectPackageGroups = [
+export const subjectPackageGroups: readonly {
+  key: string;
+  title: string;
+  subtitle: string;
+  packages: readonly SubjectPackage[];
+}[] = [
   {
-    key: "Matematik",
-    title: "Matematik Ders Paketleri",
+    key: "ders-paketleri",
+    title: "Ders Paketleri",
     subtitle:
-      "LGS ve YKS için iki ayrı paket. Her pakette en fazla dört öğrenci, canlı ders ve ders sonrası net çalışma yönü.",
+      "LGS ve YKS için her branşta ayrı paket. Hepsinde en fazla dört öğrenci, canlı ders ve ders sonrası net çalışma yönü; fiyat branşa göre değişmez.",
     packages: [
-      {
-        id: "lgs-matematik-ders-paketi",
-        name: "LGS Matematik Ders Paketi",
-        accent: "live",
-        subject: "Matematik Ders Paketi",
-        category: "LGS",
-        badge: "",
-        tagline: "8. sınıf LGS matematiği için küçük grupta canlı ders, yeni nesil soru pratiği ve düzenli takip.",
-        audience:
-          "LGS matematiğinde çözümünü gösterebilmeye, soru sorabilmeye ve hafta içinde ne çalışacağını bilmeye ihtiyaç duyan öğrenciler için.",
-        quota: "En fazla 4 öğrenci",
-        lessonDurationMinutes: 90,
-        lessonsPerMonth: 4,
-        billingPeriod: "Aylık paket",
-        commitment: "Taahhüt yok",
-        oldPrice: "₺5.000/ay",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺3.000/ay",
-        priceCents: 300000,
-        perLessonPrice: "",
-        /** Bu pakete özgü sınav odağı — LGS/YKS arasındaki TEK gerçek fark. */
-        examFocus: [
-          "Yeni nesil soru pratiği",
-          "8. sınıf müfredat takibi"
-        ],
-        features: [
-          "Canlı matematik dersi",
-          "En fazla 4 öğrencilik grup",
-          "Derste soru-cevap ve birlikte çözüm",
-          "Ders sonrası çalışma yönü",
-          "Ödevlendirme ve öğretmen notu",
-          "Sade gelişim özeti",
-          "Seviye ve hedefe göre grup planlaması",
-          "PayTR ile güvenli ödeme"
-        ],
-        cta: "LGS Paketini Satın Al"
-      },
-      {
-        id: "yks-matematik-ders-paketi",
-        name: "YKS Matematik Ders Paketi",
-        accent: "live",
-        subject: "Matematik Ders Paketi",
-        category: "YKS",
-        badge: "",
-        tagline: "TYT ve AYT matematiğini aynı takip düzeninde götüren küçük grup canlı matematik dersi.",
-        audience:
-          "TYT temelini ve AYT derinliğini birlikte planlamak, deneme analizine göre daha bilinçli ilerlemek isteyen YKS öğrencileri için.",
-        quota: "En fazla 4 öğrenci",
-        lessonDurationMinutes: 90,
-        lessonsPerMonth: 4,
-        billingPeriod: "Aylık paket",
-        commitment: "Taahhüt yok",
-        oldPrice: "₺5.000/ay",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺3.000/ay",
-        priceCents: 300000,
-        perLessonPrice: "",
-        /** Bu pakete özgü sınav odağı — LGS/YKS arasındaki TEK gerçek fark. */
-        examFocus: [
-          "TYT + AYT bütünlüğünde planlama",
-          "Deneme analizine göre takip"
-        ],
-        features: [
-          "Canlı matematik dersi",
-          "En fazla 4 öğrencilik grup",
-          "Derste soru-cevap ve birlikte çözüm",
-          "Ders sonrası çalışma yönü",
-          "Ödevlendirme ve öğretmen notu",
-          "Sade gelişim özeti",
-          "Seviye ve hedefe göre grup planlaması",
-          "PayTR ile güvenli ödeme"
-        ],
-        cta: "YKS Paketini Satın Al"
-      }
-    ]
-  }
-] as const;
+      ...lessonSubjects.LGS.map((subject) => buildPackage("LGS", subject)),
+      ...lessonSubjects.YKS.map((subject) => buildPackage("YKS", subject)),
+    ],
+  },
+];
 
 /**
  * Eski per-branş PayTR direct-link haritası kaldırıldı. Yeni matematik
@@ -697,7 +781,7 @@ export const faq = [
   },
   {
     q: "Satışta hangi paket var?",
-    a: "Satışta iki paket var: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. İki paket de aylık ₺3.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
+    a: "LGS ve YKS hattındaki her branş ayrı bir ders paketi olarak satışta. Hepsi aylık ₺2.000 ve en fazla 4 öğrencilik canlı ders üzerine kurulu; fiyat branşa göre değişmez."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
@@ -722,11 +806,11 @@ export const faqCategories = [
     items: [
       {
         q: "Online Dershanem sadece matematik mi?",
-        a: "Evet. Online Dershanem'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
+        a: "Hayır. LGS ve YKS hattındaki tüm branşlarda paket satışta ve fiyat branşa göre değişmez. Dersi, ödevi ve veli bilgilendirmesini her branşta aynı çizgide tutuyoruz.",
       },
       {
         q: "Dersler LGS ve YKS odaklı mı?",
-        a: "Evet. LGS paketi 8. sınıf matematiğine, YKS paketi TYT ve AYT matematiğine göre kurgulanır. Konu anlatımı ve soru çözümü birlikte ilerler.",
+        a: "Evet. LGS paketleri 8. sınıf müfredatına, YKS paketleri TYT ve AYT kapsamına göre kurgulanır. Konu anlatımı ve soru çözümü birlikte ilerler.",
       },
       {
         q: "Dersler canlı mı yoksa kayıt mı?",
@@ -742,7 +826,7 @@ export const faqCategories = [
       },
       {
         q: "Dersler kaç dakika ve haftada kaç ders var?",
-        a: "Her matematik dersi 90 dakikadır. Aylık ₺3.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
+        a: "Her ders 90 dakikadır. Aylık ₺2.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
       },
       {
         q: "Ödev veriliyor ve kontrol ediliyor mu?",

@@ -7,7 +7,8 @@ import { PurchaseFunnelTrigger } from "@/components/ui/purchase-funnel-trigger";
 import { getPackagePaymentLink, subjectPackageGroups } from "@/lib/content";
 
 type ExamSalesLandingData = {
-  // Yalnızca analitik/source etiketi için; ürün kataloğu tek matematik grubudur.
+  // Hem analitik/source etiketi hem de katalog filtresi: bu sınav hattının
+  // branş paketleri listelenir.
   examKey: string;
   heroBadge: string;
   heroTitle: string;
@@ -247,7 +248,13 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
             </div>
 
             <div
-              className={`mt-10 grid gap-5 ${packages.length > 1 ? "sm:grid-cols-2" : "mx-auto max-w-md"}`}
+              className={`mt-10 grid gap-5 ${
+                packages.length > 2
+                  ? "sm:grid-cols-2 lg:grid-cols-3"
+                  : packages.length > 1
+                    ? "sm:grid-cols-2"
+                    : "mx-auto max-w-md"
+              }`}
             >
               {packages.map((pkg) => (
                 <article
@@ -260,7 +267,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                         {pkg.category}
                       </p>
                       <h3 className="mt-1 font-display text-[24px] text-[var(--site-ink)]">
-                        {pkg.name}
+                        {pkg.subject}
                       </h3>
                     </div>
                     {pkg.badge ? (
