@@ -34,10 +34,10 @@ export const subjectPackageGroups = [
         lessonsPerMonth: 4,
         billingPeriod: "Aylık paket",
         commitment: "Taahhüt yok",
-        oldPrice: "₺5.000/ay",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺3.000/ay",
-        priceCents: 300000,
+        oldPrice: "",
+        discountLabel: "",
+        discountedPrice: "₺2.000/ay",
+        priceCents: 200000,
         perLessonPrice: "",
         /** Bu pakete özgü sınav odağı — LGS/YKS arasındaki TEK gerçek fark. */
         examFocus: [
@@ -71,10 +71,10 @@ export const subjectPackageGroups = [
         lessonsPerMonth: 4,
         billingPeriod: "Aylık paket",
         commitment: "Taahhüt yok",
-        oldPrice: "₺5.000/ay",
-        discountLabel: "İNDİRİMLİ",
-        discountedPrice: "₺3.000/ay",
-        priceCents: 300000,
+        oldPrice: "",
+        discountLabel: "",
+        discountedPrice: "₺2.000/ay",
+        priceCents: 200000,
         perLessonPrice: "",
         /** Bu pakete özgü sınav odağı — LGS/YKS arasındaki TEK gerçek fark. */
         examFocus: [
@@ -697,7 +697,7 @@ export const faq = [
   },
   {
     q: "Satışta hangi paket var?",
-    a: "Satışta iki paket var: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. İki paket de aylık ₺3.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
+    a: "Satışta iki paket var: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. İki paket de aylık ₺2.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
@@ -742,7 +742,7 @@ export const faqCategories = [
       },
       {
         q: "Dersler kaç dakika ve haftada kaç ders var?",
-        a: "Her matematik dersi 90 dakikadır. Aylık ₺3.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
+        a: "Her matematik dersi 90 dakikadır. Aylık ₺2.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
       },
       {
         q: "Ödev veriliyor ve kontrol ediliyor mu?",

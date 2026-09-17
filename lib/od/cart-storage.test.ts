@@ -7,8 +7,8 @@ const validItem = {
   name: "Matematik Ders Paketi",
   category: "TYT-AYT",
   subject: "Ders Paketi",
-  priceCents: 300000,
-  priceLabel: "₺3.000 / ay",
+  priceCents: 200000,
+  priceLabel: "₺2.000 / ay",
   qty: 1,
 };
 

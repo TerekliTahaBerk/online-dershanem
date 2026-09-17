@@ -61,7 +61,7 @@ test.describe("Sepet satın alma akışı @smoke", () => {
       await cta.click();
       await page.waitForURL(/\/sepet/);
       const item = await page.evaluate(() => JSON.parse(localStorage.getItem("od_cart_v1") || "[]")[0]);
-      expect(item).toMatchObject({ category, subject: "Matematik Ders Paketi", priceCents: 300000, qty: 1 });
+      expect(item).toMatchObject({ category, subject: "Matematik Ders Paketi", priceCents: 200000, qty: 1 });
     });
   }
 });
