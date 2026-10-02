@@ -1,3 +1,4 @@
+import { CoachingSessions } from "@/components/panel/coaching-sessions";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
@@ -149,16 +150,12 @@ export default async function ParentCoachingPage({
         <div className="flex justify-between gap-3">
           <dt>Sonraki görüşme</dt>
           <dd
-            className={
-              coaching.overdue ? "text-[#C2493D]" : "text-dc-ink-muted"
-            }
+            className="text-dc-ink-muted"
           >
-            {coaching.nextScheduledAt
+            {coaching.overdue ? "Yeni saat bekleniyor" : coaching.nextScheduledAt
               ? RANGE.format(coaching.nextScheduledAt)
               : "Planlanmadı"}
-            {coaching.overdue && coaching.overdueDays !== null
-              ? ` · ${coaching.overdueDays} gün gecikti`
-              : ""}
+
           </dd>
         </div>
         {coaching.focus ? (
@@ -181,6 +178,7 @@ export default async function ParentCoachingPage({
       <>
         <PanelHeading title="Koçluk" description={selected.name} />
         {coachCard}
+        <CoachingSessions actor={{ userId: session.userId, role: "PARENT" }} studentId={selected.id} />
         <PanelEmpty
           title="Bu hafta için plan yayınlanmadı."
           body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünür."
@@ -234,6 +232,7 @@ export default async function ParentCoachingPage({
       />
 
       {coachCard}
+      <CoachingSessions actor={{ userId: session.userId, role: "PARENT" }} studentId={selected.id} />
 
       <PanelCard className="mt-5">
         <PanelCardTitle>Bu hafta</PanelCardTitle>

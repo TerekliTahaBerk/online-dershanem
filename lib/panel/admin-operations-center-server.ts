@@ -778,13 +778,13 @@ export async function getAdminOperationsCenterSnapshot(options?: {
               ? "toplantı linki yok"
               : "plan eksik",
       })),
-      helpRequests: helpRequests.map((row) => ({
+      helpRequests: helpRequests.filter((row) => row.group !== null).map((row) => ({
         id: row.id,
         studentLabel: row.student.user.fullName || row.student.user.email,
-        groupName: row.group.name,
+        groupName: row.group!.name,
         createdAt: row.createdAt,
         dueAt: row.dueAt,
-        ownerLabel: row.group.teacher.fullName || row.group.teacher.email,
+        ownerLabel: row.group!.teacher.fullName || row.group!.teacher.email,
       })),
       interventions: interventionSamples,
       paidNoAccount: paidNoAccountOrders,

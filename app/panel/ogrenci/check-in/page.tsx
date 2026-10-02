@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { HandHeart } from "lucide-react";
-import { requireRole } from "@/lib/auth/guards";
+import { requireFirstAccessibleProductRole } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import {
@@ -13,7 +13,7 @@ import { StudentCheckInForm } from "@/components/panel/student-check-in-form";
 
 export const dynamic = "force-dynamic";
 export default async function StudentCheckInPage() {
-  const session = await requireRole("STUDENT");
+  const { session } = await requireFirstAccessibleProductRole(["OD", "OK"], "STUDENT");
   if (!getPanelFeatureFlags().studentCheckIn) notFound();
   const profile = await prisma.studentProfile.findUnique({
     where: { userId: session.userId },
@@ -22,6 +22,7 @@ export default async function StudentCheckInPage() {
         where: { endedAt: null, group: { isActive: true } },
         include: { group: { select: { id: true, name: true, subject: true } } },
       },
+      coachAssignments: { where: { endedAt: null }, select: { id: true } },
       checkIns: {
         orderBy: { createdAt: "desc" },
         take: 8,
@@ -52,7 +53,7 @@ export default async function StudentCheckInPage() {
   });
   const history = profile.checkIns.map((item) => ({
     id: item.id,
-    groupName: item.group.name,
+    groupName: item.group?.name ?? "Koçum",
     energy: item.energy,
     confidence: item.confidence,
     barrier: item.barrier,
@@ -88,7 +89,7 @@ export default async function StudentCheckInPage() {
       </header>
       <div className="mt-7">
         <StudentCheckInForm
-          groups={profile.enrollments.map((item) => item.group)}
+          groups={profile.enrollments.length ? profile.enrollments.map((item) => item.group) : profile.coachAssignments.map((item) => ({ id: `coach:${item.id}`, name: "Koçum", subject: "Koçunla takip" }))}
           history={history}
           remaining={Math.max(0, STUDENT_CHECK_IN_WEEKLY_LIMIT - weeklyCount)}
         />

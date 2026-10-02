@@ -79,3 +79,13 @@ Mikro görev dashboard’a doldurulmaz. Admin `/panel/yonetim/kocluk` operasyon 
 ## Test
 
 Unit: `lib/kocum/index.test.ts`, `lib/student-plan-view.test.ts`, product entitlement matrix (OK guard’ları).
+
+## Görüşme saati ve haftalık kararlar
+
+`0110_coaching_experience` görüşmeye isteğe bağlı HTTPS katılım linki, kontrollü saat değişikliği nedeni, önerilen saat/link ve sürüm ekler. Koç kendi aktif atamasındaki görüşmeyi planlar/düzenler. Öğrenci veya aktif akademik ilişkili veli saat değişikliği ister; koç yeni saati önerir; yalnız öğrenci öneriyi onaylar. Eski saat, öğrenci onayından önce değiştirilmez. Her mutasyon sürüm karşılaştırması, seri transaction ve aynı işlem anahtarına bağlı tek audit ile çalışır; tekrar gönderim ikinci bildirim/karar üretmez. Özel koç notu istemci okuma modeline girmez.
+
+Görüşme tamamlanırken koç gün ve süreleri kendisi belirlenen en fazla üç kararı mevcut `WeeklyPlanTask` modeline ekler. Bu haftanın planı taslağa döner ve mevcut koç onayından geçer; öğrenci ana sayfası/Koçluk hub'ı taslak kararları göstermez. Görüşme sıklığı için yeni varsayılan konmaz; atamadaki mevcut `cadenceDays` iş kararı korunur.
+
+Ders hatırlatma işi 15 dakikada bir planlı koç görüşmelerinin 24 saatlik penceresini de işler. Aktif atama ve veli ilişkileri, ders kategorisi/kanal tercihi ve kalıcı olay kimliği uygulanır. `coach-plan-approvals` pazartesi 07.00 UTC (İstanbul 10.00) çalışır; haftanın onaylanmamış/eksik planları için atanmış koça tek hatırlatma verir. Uyarlanabilir plan özelliği kullanılmıyorsa plan hatırlatması ve karar üretimi durur.
+
+Geri almada önce `PANEL_FEATURE_STUDENT_CHECK_IN=false` ile yeni grup dışı yardım kayıtlarının eski arayüzde okunmasını durdurun. Uygulama commit'i geri alınabilir; migration'daki ek sütunları/enum'u ve kayıtları koruyun. Eski sürümde nullable grup kayıtlarını tekrar açmayın; koç ataması desteği bulunan sürüme dönün. Saklama/silme ve yetki guard'ları bu değişiklikte yeniden tanımlanmaz.

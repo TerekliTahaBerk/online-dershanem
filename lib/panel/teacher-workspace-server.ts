@@ -337,7 +337,7 @@ export async function getTeacherWorkspace(teacherId: string, now = new Date()): 
       kind: "HELP_REQUEST",
       id: request.id,
       title: name,
-      detail: `${request.group.name} · ${checkInLabels.barrier[request.checkIn.barrier]}`,
+      detail: `${request.group?.name ?? "Koçum"} · ${checkInLabels.barrier[request.checkIn.barrier]}`,
       href: `/panel/ogretmen/yardim#yardim-${request.id}`,
       ctaLabel: "Yanıtla",
       dueAt: request.dueAt,
@@ -346,7 +346,7 @@ export async function getTeacherWorkspace(teacherId: string, now = new Date()): 
     riskyCandidates.push({
       studentId: request.studentId,
       studentName: name,
-      groupName: request.group.name,
+      groupName: request.group?.name ?? "Koçum",
       whyRisky: `Yardım istedi: ${checkInLabels.barrier[request.checkIn.barrier]}`,
       lastSignalAt: request.createdAt,
       lastSignalLabel: formatAttentionAge(request.createdAt, now),

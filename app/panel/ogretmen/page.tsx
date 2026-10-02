@@ -1,3 +1,4 @@
+import { CoachAttention } from "@/components/panel/coach-attention";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/ui";
@@ -31,6 +32,7 @@ export default async function TeacherHomePage() {
           title="Bugün ne yapmam gerekiyor?"
           description={workspace.summary}
         />
+        <CoachAttention userId={session.userId} />
         <TeacherWorkspaceHome
           workspace={workspace}
           dinoEnabled={getPanelFeatureFlags().dinoAi}

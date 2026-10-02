@@ -1,3 +1,4 @@
+import { teacherHelpScope } from "@/lib/student-help-target";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/guards";
 import { prisma } from "@/lib/prisma";
@@ -21,16 +22,7 @@ export default async function TeacherHelpPage() {
   const requests = await prisma.studentHelpRequest.findMany({
     where: {
       status: { in: ["OPEN", "RESPONDED"] },
-      group: { teacherId: session.userId, isActive: true },
-      checkIn: { shareWithTeacher: true },
-      student: {
-        enrollments: {
-          some: {
-            endedAt: null,
-            group: { teacherId: session.userId, isActive: true },
-          },
-        },
-      },
+      ...teacherHelpScope(session.userId),
     },
     orderBy: [{ status: "asc" }, { dueAt: "asc" }, { id: "asc" }],
     include: {
@@ -50,11 +42,11 @@ export default async function TeacherHelpPage() {
   const visible = await Promise.all(
     requests.map(async (item) => ({
       item,
-      active: Boolean(
+      active: !item.groupId || Boolean(
         await prisma.enrollment.findFirst({
           where: {
             studentId: item.studentId,
-            groupId: item.groupId,
+            groupId: item.groupId!,
             endedAt: null,
           },
           select: { id: true },
@@ -68,7 +60,7 @@ export default async function TeacherHelpPage() {
     .map(({ item }) => ({
       id: item.id,
       studentName: item.student.user.fullName || item.student.user.email,
-      groupName: item.group.name,
+      groupName: item.group?.name ?? "Koçum",
       energy: item.checkIn.energy,
       confidence: item.checkIn.confidence,
       barrier: item.checkIn.barrier,

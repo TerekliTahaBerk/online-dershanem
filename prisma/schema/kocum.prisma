@@ -495,6 +495,8 @@ model CoachAssignment {
   coach      TeacherProfile    @relation(fields: [coachId], references: [id], onDelete: Restrict)
   assignedBy User?             @relation("CoachAssignmentAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
   sessions   CoachingSession[]
+  checkIns   StudentCheckIn[]
+  helpRequests StudentHelpRequest[]
 
   @@index([studentId, endedAt])
   @@index([coachId, endedAt])
@@ -577,12 +579,24 @@ enum CoachingSessionStatus {
   CANCELLED
 }
 
+enum CoachingRescheduleReason {
+  SCHOOL_SCHEDULE
+  FAMILY_SCHEDULE
+  TECH_ACCESS
+}
+
 model CoachingSession {
   id           String                @id @default(cuid())
   assignmentId String                @map("assignment_id")
   scheduledAt  DateTime              @map("scheduled_at") @db.Timestamptz(3)
   status       CoachingSessionStatus @default(PLANNED)
   completedAt  DateTime?             @map("completed_at") @db.Timestamptz(3)
+  meetingUrl String? @map("meeting_url")
+  rescheduleRequestedAt DateTime? @map("reschedule_requested_at") @db.Timestamptz(3)
+  rescheduleReason CoachingRescheduleReason? @map("reschedule_reason")
+  proposedAt DateTime? @map("proposed_at") @db.Timestamptz(3)
+  proposedMeetingUrl String? @map("proposed_meeting_url")
+  version Int @default(1)
 
   /// Görüşmede belirlenen haftanın odağı — öğrenciye görünür.
   focus String?
@@ -653,7 +667,7 @@ enum StudentHelpResponseAction {
 model StudentCheckIn {
   id               String                   @id @default(cuid())
   studentId        String                   @map("student_id")
-  groupId          String                   @map("group_id")
+  groupId          String?                   @map("group_id")
   energy           StudentCheckInEnergy
   confidence       StudentCheckInConfidence
   barrier          StudentCheckInBarrier
@@ -662,9 +676,13 @@ model StudentCheckIn {
   shareWithTeacher Boolean                  @default(false) @map("share_with_teacher")
   createdAt        DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
   student          StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  group            Group                    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group            Group?                   @relation(fields: [groupId], references: [id], onDelete: Cascade)
   helpRequest      StudentHelpRequest?
 
+  coachAssignmentId String? @map("coach_assignment_id")
+  coachAssignment CoachAssignment? @relation(fields: [coachAssignmentId], references: [id], onDelete: Cascade)
+
+  @@index([coachAssignmentId])
   @@index([studentId, createdAt])
   @@index([groupId, shareWithTeacher, createdAt])
   @@map("student_check_ins")
@@ -674,7 +692,7 @@ model StudentHelpRequest {
   id              String                   @id @default(cuid())
   checkInId       String                   @unique @map("check_in_id")
   studentId       String                   @map("student_id")
-  groupId         String                   @map("group_id")
+  groupId         String?                   @map("group_id")
   status          StudentHelpRequestStatus @default(OPEN)
   dueAt           DateTime                 @map("due_at") @db.Timestamptz(3)
   firstResponseAt DateTime?                @map("first_response_at") @db.Timestamptz(3)
@@ -684,10 +702,14 @@ model StudentHelpRequest {
   updatedAt       DateTime                 @updatedAt @map("updated_at") @db.Timestamptz(3)
   checkIn         StudentCheckIn           @relation(fields: [checkInId], references: [id], onDelete: Cascade)
   student         StudentProfile           @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  group           Group                    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group           Group?                   @relation(fields: [groupId], references: [id], onDelete: Cascade)
   responses       StudentHelpResponse[]
 
   @@index([groupId, status, dueAt])
+  coachAssignmentId String? @map("coach_assignment_id")
+  coachAssignment CoachAssignment? @relation(fields: [coachAssignmentId], references: [id], onDelete: Cascade)
+
+  @@index([coachAssignmentId])
   @@index([studentId, status, createdAt])
   @@map("student_help_requests")
 }

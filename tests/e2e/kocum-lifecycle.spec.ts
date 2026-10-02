@@ -165,8 +165,8 @@ test.describe("Online Koçum yaşam döngüsü", () => {
     await loginAs(page, accounts.parent);
     await page.goto("/panel/veli/kocluk");
 
-    await expect(page.getByText("Bu hafta planın büyük kısmı tamamlandı.")).toBeVisible();
-    await expect(page.getByText("Köklü ifadelerde işaret hataları.")).toBeVisible();
+    await expect(page.getByRole("main").getByText("Bu hafta planın büyük kısmı tamamlandı.")).toBeVisible();
+    await expect(page.getByRole("main").getByText("Köklü ifadelerde işaret hataları.")).toBeVisible();
 
     // Veli operasyonel görev listesini GÖRMEMELİ.
     const parentBody = (await page.locator("body").innerText()).toLowerCase();

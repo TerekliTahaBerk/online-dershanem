@@ -1,4 +1,5 @@
 export const CRITICAL_CRON_DEFINITIONS = [
+  { name: "coach-plan-approvals", label: "Koç plan onay hatırlatması", cadenceMinutes: 7 * 24 * 60, staleAfterMinutes: 8 * 24 * 60, alertCooldownMinutes: 24 * 60 },
   { name: "lesson-reminders", label: "Ders hatırlatmaları", cadenceMinutes: 15, staleAfterMinutes: 30, alertCooldownMinutes: 60 },
   { name: "odk-exam-lifecycle", label: "ODK sınav yaşam döngüsü", cadenceMinutes: 5, staleAfterMinutes: 8, alertCooldownMinutes: 10 },
   { name: "business-jobs", label: "İşletme işleri", cadenceMinutes: 5, staleAfterMinutes: 10, alertCooldownMinutes: 30 },
