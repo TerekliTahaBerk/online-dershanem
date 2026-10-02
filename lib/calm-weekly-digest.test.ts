@@ -16,3 +16,9 @@ test("veri azlığını kesin yargı yerine tazelik uyarısıyla gösterir", () 
   assert.equal(digest.trendBand, "LIMITED_DATA");
   assert.match(digest.goodThingOne, /verisi henüz sınırlı/);
 });
+
+test("geciken çalışmalar veliye tek ve sakin haftalık destek alanında gelir", () => {
+  const digest = buildCalmWeeklyDigest({ currentAttendance: { attended: 1, total: 1 }, previousAttendance: { attended: 1, total: 1 }, completedTaskCount: 0, overdueAssignmentCount: 2, evidenceTitles: [], dataThrough: new Date() });
+  assert.match(digest.supportArea, /Bekleyen 2 çalışma/);
+  assert.doesNotMatch(digest.supportArea, /süresi geçti|başarısız|ödev/i);
+});

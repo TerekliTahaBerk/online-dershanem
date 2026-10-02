@@ -69,7 +69,7 @@ test("erişilebilir fakat geride kalmış veritabanı şeması readiness'i kapat
 });
 
 test("stale cron readiness'i düşürürken secret değerleri çıktıya girmez", () => {
-  const stale = heartbeats.map((item, index) => index ? item : { ...item, lastSucceededAt: new Date(now.getTime() - 20 * 60_000) });
+  const stale = heartbeats.map((item) => item.name !== "odk-exam-lifecycle" ? item : { ...item, lastSucceededAt: new Date(now.getTime() - 20 * 60_000) });
   const report = buildReadinessReport({ db: { ok: true, latencyMs: 2 }, heartbeats: stale, now, env: { ...env, PAYTR_MERCHANT_KEY: "super-secret-value" } });
   assert.equal(report.ready, false);
   assert.equal(JSON.stringify(report).includes("super-secret-value"), false);
