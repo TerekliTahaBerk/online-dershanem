@@ -24,7 +24,13 @@ test.describe.serial("Koçum görüşme ve yardım deneyimi", () => {
     const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message));
     await loginAs(page, teacher);
     const createData = { studentId, scheduledAt: new Date(Date.now() + 23.9 * 3_600_000).toISOString(), meetingUrl: "https://example.com/ok-meeting", idempotencyKey: crypto.randomUUID() };
+    const invalidCreate = await page.request.post("/api/panel/coaching-sessions", { data: { ...createData, unexpectedField: "invalid" }, headers: origin });
+    expect(invalidCreate.status()).toBe(400);
+    expect(await db.coachingSession.count({ where: { assignmentId } })).toBe(0);
     const created = await page.request.post("/api/panel/coaching-sessions", { data: createData, headers: origin }); expect(created.status(), await created.text()).toBe(201); sessionId = (await created.json()).id;
+    const invalidMutation = await page.request.post(`/api/panel/coaching-sessions/${sessionId}`, { data: { action: "REQUEST", reason: "FREE_TEXT", expectedVersion: 1, idempotencyKey: crypto.randomUUID() }, headers: origin });
+    expect(invalidMutation.status()).toBe(400);
+    expect((await db.coachingSession.findUniqueOrThrow({ where: { id: sessionId } })).version).toBe(1);
     expect((await (await page.request.post("/api/panel/coaching-sessions", { data: createData, headers: origin })).json()).id).toBe(sessionId);
     await page.goto(`/panel/ogretmen/hazirlik/${studentId}`); await expect(page.getByRole("link", { name: "Görüşmeye katıl" })).toHaveAttribute("href", createData.meetingUrl);
     await loginAs(page, parent); await page.goto(`/panel/veli/kocluk?studentId=${studentId}`);
