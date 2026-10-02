@@ -26,6 +26,7 @@ import {
   OD_TIME_RANGE_OPTIONS,
 } from "@/lib/od/placement";
 import { deriveUnifiedOperationItems } from "@/lib/panel/operations-inbox";
+import { loadFirstLessonMetrics } from "@/lib/business/first-lesson-metrics-server";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export default async function OperationsPage() {
   const now = new Date();
   const dayStart = istanbulDayStart(now);
   const dayEnd = istanbulNextDayStart(now);
+  const firstLessonMetrics = await loadFirstLessonMetrics(now);
   const [
     orders,
     onboardingQueue,
@@ -261,6 +263,15 @@ export default async function OperationsPage() {
         icon={CreditCard}
         meta={`${openUnifiedOperations.length} açık operasyon istisnası`}
       />
+
+      <section className="panel-surface mt-7 p-5" aria-label="İlk ders göstergeleri">
+        <h2 className="text-sm font-extrabold">İlk ders göstergeleri · son 90 günde ödeme yapan yeni öğrenciler</h2>
+        <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div><dt>Ödemeden ilk derse geçen süre</dt><dd className="mt-1 text-xl font-bold">{firstLessonMetrics.duration.value === null ? "Yetersiz veri" : `${(firstLessonMetrics.duration.value / 3_600_000).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} saat · ortanca`}</dd><p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.duration.sampleSize} tamamlanmış ilk ders</p></div>
+          <div><dt>İlk derse katılım</dt><dd className="mt-1 text-xl font-bold">{firstLessonMetrics.participation.value === null ? "Yetersiz veri" : `%${firstLessonMetrics.participation.value.toLocaleString("tr-TR")}`}</dd><p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.participation.sampleSize} kayıtlı katılım sonucu · zamanında veya geç katılım</p></div>
+        </dl>
+        <p className="mt-3 text-xs leading-5 text-[var(--site-muted)]">En az beş örnek gerekir. İptal edilen dersler ve yenilemeler hariçtir. {firstLessonMetrics.waitingCount} ilk ders bekliyor; {firstLessonMetrics.missingAttendanceCount} katılım sonucu bekliyor. {firstLessonMetrics.paidCount} ödenmiş başlangıcın {firstLessonMetrics.linkedLeadCount} tanesinde kayıtlı lead bağlantısı var; kimlik bilgisiyle tahmini eşleştirme yapılmaz.</p>
+      </section>
 
       <section className="panel-surface mt-7">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--site-line)] p-5">

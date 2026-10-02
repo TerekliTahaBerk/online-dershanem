@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Bildirim bilgisi geçersiz." }, { status: 400 });
   const result = await prisma.notification.updateMany({
-    where: { userId: auth.session.userId, readAt: null, ...(parsed.data.id ? { id: parsed.data.id } : {}) },
+    where: { userId: auth.session.userId, readAt: null, inAppVisible: true, ...(parsed.data.id ? { id: parsed.data.id } : {}) },
     data: { readAt: new Date() },
   });
   return NextResponse.json({ ok: true, count: result.count });

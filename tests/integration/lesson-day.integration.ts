@@ -25,7 +25,7 @@ integration("hatırlatmalar tercihe/ilişkiye uyar; 250 sınırı, soğuma ve va
     await db.notificationPreference.update({ where: { userId: parent.id }, data: { lessonSummary: true } });
     await runLessonReminders(now);
     await runLessonReminders(now);
-    assert.equal(await db.notification.count({ where: { userId: parent.id } }), 0);
+    assert.equal(await db.notification.count({ where: { userId: parent.id, inAppVisible: true } }), 0);
     assert.equal(await db.emailOutbox.count({ where: { id: `reminder-email:${parent.id}:LESSON:${lesson.id}:T24` } }), 1);
     await db.parentStudent.update({ where: { id: link.id }, data: { active: false } });
     const blocked = await db.lesson.create({ data: { groupId: group.id, teacherId: teacher.id, title: "Bitmiş veli ilişkisi", startsAt, endsAt: lesson.endsAt } });

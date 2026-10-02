@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
@@ -24,15 +25,20 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.task_complete", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-task:${auth.session.userId}`, rateLimit: { max: 120, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
+  const input = z.object({ entryPoint: z.literal("HOME").optional() }).strict().safeParse(await request.json().catch(() => ({})));
+  if (!input.success) return invalidApiInput();
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   const task = await prisma.weeklyPlanTask.findFirst({ where: { id, status: "PLANNED", plan: { status: "APPROVED", student: { userId: auth.session.userId } } }, select: { id: true, sourceType: true, sourceReferenceId: true, reasonCode: true, plan: { select: { studentId: true } } } });
   if (!task) return NextResponse.json({ error: "Plan görevi bulunamadı." }, { status: 404 });
-  await prisma.$transaction(async (tx) => {
-    await tx.weeklyPlanTask.update({ where: { id: task.id }, data: { status: "DONE", completedAt: new Date() } });
+  const completed = await prisma.$transaction(async (tx) => {
+    const changed = await tx.weeklyPlanTask.updateMany({ where: { id: task.id, status: "PLANNED", plan: { status: "APPROVED", student: { userId: auth.session.userId } } }, data: { status: "DONE", completedAt: new Date() } });
+    if (!changed.count) return false;
     if (task.sourceType === "ASSIGNMENT" && task.sourceReferenceId) await tx.assignmentProgress.updateMany({ where: { assignmentId: task.sourceReferenceId, studentId: task.plan.studentId }, data: { status: "DONE", completedAt: new Date() } });
+    return true;
   });
+  if (!completed) return NextResponse.json({ error: "Plan görevi bulunamadı." }, { status: 404 });
   await appendTimelineEvent({
     studentId: task.plan.studentId,
     kind: "PLAN_COMPLETION",
@@ -45,6 +51,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   await recordPanelProductEvent({
     name: "student_next_action_completed",
     properties: {
+      entryPoint: input.data.entryPoint ?? "WORKSPACE",
       product: "OK",
       actionKind: "COMPLETE_PLAN_TASK",
       reasonCode: task.reasonCode,

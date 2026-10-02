@@ -54,9 +54,19 @@ model Notification {
   href      String?
   readAt    DateTime?        @map("read_at") @db.Timestamptz(3)
   createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  inAppVisible Boolean      @default(true) @map("in_app_visible")
+  deliveryPending Boolean   @default(false) @map("delivery_pending")
+  availableAt DateTime?      @map("available_at") @db.Timestamptz(3)
+  sourceType String?         @map("source_type")
+  sourceId String?           @map("source_id")
+  sourceVersion String?      @map("source_version")
+  category String?
+  preferenceKey String?      @map("preference_key")
+  digestMode Boolean         @default(false) @map("digest_mode")
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt, createdAt])
+  @@index([deliveryPending, availableAt])
   @@map("notifications")
 }
 
@@ -70,6 +80,10 @@ model NotificationPreference {
   absence         Boolean  @default(true)
   assignment      Boolean  @default(true)
   payment         Boolean  @default(true)
+  quietStartMinute Int?     @map("quiet_start_minute")
+  quietEndMinute Int?       @map("quiet_end_minute")
+  dailyDigest Boolean      @default(false) @map("daily_digest")
+  dailyDigestMinute Int?    @map("daily_digest_minute")
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

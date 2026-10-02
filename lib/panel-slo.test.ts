@@ -50,7 +50,7 @@ test("SLO raporu p90 ve başarı oranlarını hesaplar", () => {
   assert.equal(report.find((metric) => metric.key === "student_help_helpful_rate")?.value, 100);
   assert.equal(report.find((metric) => metric.key === "offline_sync_success")?.value, 100);
   assert.equal(report.find((metric) => metric.key === "offline_conflict_rate")?.value, 0);
-  assert.equal(report.every((metric) => metric.status === "healthy"), true);
+  assert.equal(report.filter((metric) => metric.key !== "student_next_action_completion_count").every((metric) => metric.status === "healthy"), true);
 });
 
 test("az örneklem yanlış güven üretmez", () => {
@@ -66,3 +66,10 @@ test("bozuk veya eski event satırları hesaplamaya girmez", () => {
   assert.equal(metric?.sampleSize, 0);
   assert.equal(metric?.status, "insufficient_data");
 });
+
+ test("ana sayfa tamamlanması gerçek işlem eventlerinden ölçülür; uydurma hedef yoktur", () => {
+ const events = Array.from({ length: 5 }, () => row("student_next_action_completed", { entryPoint: "HOME", product: "OK", actionKind: "COMPLETE_PLAN_TASK", reasonCode: "DUE_SOON", ageBand: "NA", evidenceBand: "NA", role: "STUDENT" }));
+ const metric = calculatePanelSloReport(events).find((item) => item.key === "student_next_action_completion_count")!;
+ assert.equal(metric.value, 5); assert.equal(metric.target, null); assert.equal(metric.status, "observing");
+ assert.equal(calculatePanelSloReport(events.slice(0, 4)).find((item) => item.key === metric.key)?.value, null);
+ });

@@ -1,18 +1,15 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
-import type { NotificationPreferenceKey, NotificationRow } from "@/lib/panel-notifications";
-import { queueCustomerInformationEmail } from "@/lib/email";
+import type { NotificationPreferenceKey, NotificationRow } from "./panel-notifications";
+import { produceNotification } from "./notification-producer";
 
-/** Panel ve e-posta kanalları ayrı tercihlere, aynı kalıcı olay kimliğine uyar. */
-export async function queueReminderNotification(tx: Prisma.TransactionClient, row: NotificationRow & { id: string }, category: NotificationPreferenceKey) {
-  const user = await tx.user.findFirst({ where: { id: row.userId, status: "ACTIVE" }, select: { email: true, notificationPrefs: true } });
-  if (!user) return 0;
-  const preference = user.notificationPrefs;
-  if (preference && !preference[category]) return 0;
-  const result = !preference || preference.inAppEnabled
-    ? await tx.notification.createMany({ data: [row], skipDuplicates: true }) : { count: 0 };
-  if (preference?.emailEnabled) {
-    await queueCustomerInformationEmail({ id: `reminder-email:${row.id}`, to: user.email, title: row.title, body: row.body }, tx);
-  }
-  return result.count;
+/** Faz 3/4 çağrıları aynı kalıcı anahtarla merkezi üreticiye geçer. */
+export async function queueReminderNotification(tx: Prisma.TransactionClient, row: NotificationRow & { id: string }, preferenceKey: NotificationPreferenceKey) {
+  const prefix = `${row.userId}:`;
+  if (!row.id.startsWith(prefix)) throw new Error("Notification recipient/key mismatch");
+  const [sourceType, sourceId, ...category] = row.id.slice(prefix.length).split(":");
+  if (!["LESSON", "COACHING", "PLAN"].includes(sourceType) || !sourceId || !category.length) throw new Error("Unsupported notification source");
+  const { id: _id, ...content } = row;
+  void _id;
+  return produceNotification(tx, { ...content, sourceType: sourceType as "LESSON" | "COACHING" | "PLAN", sourceId, category: category.join(":") }, preferenceKey);
 }

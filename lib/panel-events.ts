@@ -224,6 +224,7 @@ export const panelEventSchema = z.discriminatedUnion("name", [
   z.object({
     name: z.literal("student_next_action_completed"),
     properties: z.object({
+      entryPoint: z.enum(["HOME", "WORKSPACE"]).optional(),
       product: z.enum(["OD", "OK"]),
       actionKind: z.enum(["COMPLETE_PLAN_TASK", "COMPLETE_RECOVERY"]),
       reasonCode: z.enum(["MISSED_LESSON", "DUE_SOON", "REVIEW_DUE", "NEEDS_REVIEW", "EXAM_APPROACHING", "CAPACITY_BALANCE"]),

@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Check, Mail, MessageCircle } from "lucide-react";
+
+const subscribe = () => () => {};
+const clientReady = () => true;
+const serverReady = () => false;
 
 type Prefs = {
   inAppEnabled: boolean;
@@ -13,6 +17,10 @@ type Prefs = {
   absence: boolean;
   assignment: boolean;
   payment: boolean;
+  quietStartMinute: number | null;
+  quietEndMinute: number | null;
+  dailyDigest: boolean;
+  dailyDigestMinute: number | null;
 };
 
 export function NotificationPreferences({
@@ -23,11 +31,12 @@ export function NotificationPreferences({
   unread: number;
 }) {
   const router = useRouter();
+  const ready = useSyncExternalStore(subscribe, clientReady, serverReady);
   const [prefs, setPrefs] = useState(initial);
   const [unread, setUnread] = useState(initialUnread);
   const [busy, setBusy] = useState<"save" | "read" | null>(null);
   const [message, setMessage] = useState("");
-  const toggle = (key: keyof Prefs) => {
+  const toggle = (key: Exclude<keyof Prefs, "quietStartMinute" | "quietEndMinute" | "dailyDigestMinute">) => {
     if (!busy) setPrefs((current) => ({ ...current, [key]: !current[key] }));
   };
   async function markAllRead() {
@@ -80,7 +89,7 @@ export function NotificationPreferences({
           <button
             key={key}
             type="button"
-            disabled={busy !== null}
+            disabled={!ready || busy !== null}
             aria-pressed={prefs[key]}
             onClick={() => toggle(key)}
             className={`flex w-full items-center justify-between rounded-2xl border p-3 text-xs font-bold ${prefs[key] ? "border-[var(--brand-olive)] bg-[var(--brand-olive-soft)]" : "border-[var(--site-line)]"}`}
@@ -93,6 +102,18 @@ export function NotificationPreferences({
           </button>
         ))}
       </div>
+      <fieldset className="mt-4 space-y-3 border-t border-[var(--site-line)] pt-4" disabled={!ready || busy !== null}>
+        <legend className="text-xs font-bold">Sessiz saatler · İstanbul saati</legend>
+        <p className="text-xs leading-5 text-[var(--site-muted)]">Ders ve koçluk hatırlatmaları bu saatler bittikten sonra iletilir. Bu tercih yeni hatırlatmalarda kullanılır; hesap ve ödeme e-postaları kendi akışını izler.</p>
+        <div className="grid grid-cols-2 gap-3">
+          {([{ key: "quietStartMinute", label: "Başlangıç saati" }, { key: "quietEndMinute", label: "Bitiş saati" }] as const).map(({ key, label }) => (
+            <label key={key} className="text-xs font-bold">{label}<input type="time" className="mt-1 block w-full rounded-lg border p-2" value={toTime(prefs[key])} onChange={(event) => setPrefs((current) => ({ ...current, [key]: toMinute(event.target.value) }))} /></label>
+          ))}
+        </div>
+        <button type="button" className="text-xs underline" onClick={() => setPrefs((current) => ({ ...current, quietStartMinute: null, quietEndMinute: null }))}>Sessiz saatleri kaldır</button>
+        <label className="flex items-center gap-2 text-xs font-bold"><input type="checkbox" checked={prefs.dailyDigest} onChange={() => toggle("dailyDigest")} />Günde tek özet al</label>
+        {prefs.dailyDigest && <label className="block text-xs font-bold">Günlük özet saati<input type="time" required className="mt-1 block w-full rounded-lg border p-2" value={toTime(prefs.dailyDigestMinute)} onChange={(event) => setPrefs((current) => ({ ...current, dailyDigestMinute: toMinute(event.target.value) }))} /></label>}
+      </fieldset>
       <div className="mt-4 grid grid-cols-2 gap-2">
         {(
           [
@@ -109,7 +130,7 @@ export function NotificationPreferences({
           >
             <input
               type="checkbox"
-              disabled={busy !== null}
+              disabled={!ready || busy !== null}
               checked={prefs[key]}
               onChange={() => toggle(key)}
             />
@@ -128,7 +149,7 @@ export function NotificationPreferences({
           {unread ? (
             <button
               type="button"
-              disabled={busy !== null}
+              disabled={!ready || busy !== null}
               onClick={() => void markAllRead()}
               className="panel-quick-action"
             >
@@ -139,7 +160,7 @@ export function NotificationPreferences({
           ) : null}
           <button
             type="button"
-            disabled={busy !== null}
+            disabled={!ready || busy !== null}
             onClick={() => void save()}
             className="panel-quick-action panel-quick-action-primary"
           >
@@ -150,3 +171,6 @@ export function NotificationPreferences({
     </section>
   );
 }
+
+function toTime(minute: number | null) { return minute === null ? "" : `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`; }
+function toMinute(value: string) { if (!value) return null; const [hour, minute] = value.split(":").map(Number); return hour * 60 + minute; }

@@ -103,7 +103,7 @@ export async function PanelShell({
         preview
           ? Promise.resolve(0)
           : prisma.notification.count({
-              where: { userId: session.userId, readAt: null },
+              where: { userId: session.userId, readAt: null, inAppVisible: true },
             }),
         accessibilityEnabled
           ? prisma.accessibilityPreference.findUnique({

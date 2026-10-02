@@ -37,6 +37,7 @@ export default async function NotificationsPage({
     session.role === "PARENT" || session.role === "STUDENT";
   const where: Prisma.NotificationWhereInput = {
     userId: session.userId,
+    inAppVisible: true,
     ...(selectedType !== "ALL" ? { type: selectedType } : {}),
     ...(selectedStatus === "unread" ? { readAt: null } : {}),
   };
@@ -49,7 +50,7 @@ export default async function NotificationsPage({
     }),
     prisma.notification.count({ where }),
     prisma.notification.count({
-      where: { userId: session.userId, readAt: null },
+      where: { userId: session.userId, readAt: null, inAppVisible: true },
     }),
     canChoosePreferences
       ? prisma.notificationPreference.findUnique({
@@ -57,15 +58,19 @@ export default async function NotificationsPage({
         })
       : null,
   ]);
-  const initial = preferences || {
-    inAppEnabled: true,
-    emailEnabled: false,
-    whatsappEnabled: false,
-    lessonSummary: true,
-    weeklyDigest: true,
-    absence: true,
-    assignment: true,
-    payment: true,
+  const initial = {
+    inAppEnabled: preferences?.inAppEnabled ?? true,
+    emailEnabled: preferences?.emailEnabled ?? false,
+    whatsappEnabled: preferences?.whatsappEnabled ?? false,
+    lessonSummary: preferences?.lessonSummary ?? true,
+    weeklyDigest: preferences?.weeklyDigest ?? true,
+    absence: preferences?.absence ?? true,
+    assignment: preferences?.assignment ?? true,
+    payment: preferences?.payment ?? true,
+    quietStartMinute: preferences?.quietStartMinute ?? null,
+    quietEndMinute: preferences?.quietEndMinute ?? null,
+    dailyDigest: preferences?.dailyDigest ?? false,
+    dailyDigestMinute: preferences?.dailyDigestMinute ?? null,
   };
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const href = (next: { page?: number; type?: string; status?: string }) => {
