@@ -83,11 +83,7 @@ function LessonRow({ lesson }: { lesson: TeacherWorkspaceLesson }) {
       <div className="mt-3 flex flex-wrap gap-2 sm:pl-[65px]">
         <Link
           href={primaryLessonHref(lesson)}
-          className={`panel-quick-action inline-flex ${
-            lesson.prepStatus === "needs_close"
-              ? "panel-quick-action-primary"
-              : ""
-          }`}
+          className="panel-quick-action panel-quick-action-primary inline-flex"
           {...(lesson.meetingUrl && lesson.prepStatus !== "needs_close"
             ? { target: "_blank", rel: "noreferrer" }
             : {})}
@@ -115,7 +111,8 @@ function LessonRow({ lesson }: { lesson: TeacherWorkspaceLesson }) {
         >
           Materyaller
         </Link>
-        {lesson.prepStatus !== "closed" ? (
+        {lesson.prepStatus !== "closed" &&
+        lesson.prepStatus !== "needs_close" ? (
           <Link
             href={`/panel/ogretmen/ders/${lesson.id}`}
             className="panel-quick-action inline-flex"
@@ -199,7 +196,7 @@ function RiskSection({ items }: { items: TeacherWorkspaceRiskStudent[] }) {
                   href={item.href}
                   className="panel-quick-action inline-flex"
                 >
-                  Öğrenci 360
+                  Öğrenci profili
                 </Link>
               }
               last={index === items.length - 1}

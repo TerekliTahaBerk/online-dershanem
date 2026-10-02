@@ -139,7 +139,7 @@ export default async function AdminStudent360Page({
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Öğrenci 360"
+      pageTitle="Öğrenci profili"
     >
       <Student360View
         bundle={bundle}

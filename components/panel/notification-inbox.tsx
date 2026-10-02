@@ -155,7 +155,7 @@ export function NotificationInbox({
                     event.stopPropagation();
                     void markRead(item.id);
                   }}
-                  className="self-start rounded-lg px-2 py-1 text-[10px] font-bold text-[var(--brand-olive)] hover:bg-white"
+                  className="self-start inline-flex min-h-11 items-center rounded-lg px-3 text-xs font-bold text-[var(--brand-olive)] hover:bg-white"
                   aria-label={`${item.title} bildirimini okundu yap`}
                 >
                   {busy === item.id ? (

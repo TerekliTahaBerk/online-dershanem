@@ -169,7 +169,7 @@ export default async function TeacherStudentsPage({
                     href={`/panel/ogretmen/ogrenci/${row.studentId}`}
                     className="panel-quick-action inline-flex"
                   >
-                    Öğrenci 360
+                    Öğrenci profili
                   </Link>
                   {roster.flags.studentCheckIn && row.tags.includes("help") ? (
                     <Link

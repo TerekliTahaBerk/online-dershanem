@@ -64,6 +64,15 @@ export function CoachWeekCalendar({
   );
 
   async function reschedule(taskId: string, scheduledFor: Date) {
+    try {
+      await rescheduleRequest(taskId, scheduledFor);
+    } catch {
+      setBusyId(null);
+      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+    }
+  }
+
+  async function rescheduleRequest(taskId: string, scheduledFor: Date) {
     setBusyId(taskId);
     const response = await fetch(
       `/api/panel/kocum/tasks/${taskId}/reschedule`,
@@ -124,7 +133,7 @@ export function CoachWeekCalendar({
           className="panel-quick-action"
           href={`/panel/ogretmen/ogrenci/${studentId}?tab=kocluk`}
         >
-          Öğrenci 360
+          Öğrenci profili
         </a>
       </div>
 

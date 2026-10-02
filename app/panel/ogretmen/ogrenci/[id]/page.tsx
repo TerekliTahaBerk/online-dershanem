@@ -7,7 +7,7 @@ import { Student360View } from "@/components/panel/student-360/index";
 export const dynamic = "force-dynamic";
 
 /**
- * Öğretmen / koç Öğrenci 360.
+ * Öğretmen / koç Öğrenci profili.
  *
  * Erişim `resolveStudent360Access` ile kurulur: aktif grup kaydı veya koç
  * ataması gerekir. Ticari sekme asla yüklenmez.
@@ -34,7 +34,7 @@ export default async function TeacherStudent360Page({
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Öğrenci 360"
+      pageTitle="Öğrenci profili"
     >
       <Student360View
         bundle={bundle}

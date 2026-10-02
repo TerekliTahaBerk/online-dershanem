@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { authInputClass, authSubmitClass } from "@/components/auth/auth-card";
 
@@ -22,6 +22,7 @@ export function LoginForm({
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -87,18 +88,33 @@ export function LoginForm({
       <label htmlFor="password" className="sr-only">
         Şifre
       </label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        placeholder="Şifre"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        disabled={pending}
-        className={authInputClass}
-      />
+      <div className="relative">
+        <input
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          placeholder="Şifre"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={pending}
+          className={`${authInputClass} pr-12`}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((current) => !current)}
+          aria-label={showPassword ? "Parolayı gizle" : "Parolayı göster"}
+          aria-pressed={showPassword}
+          className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-xl text-dc-ink-muted hover:text-dc-ink"
+        >
+          {showPassword ? (
+            <EyeOff size={18} aria-hidden="true" />
+          ) : (
+            <Eye size={18} aria-hidden="true" />
+          )}
+        </button>
+      </div>
 
       {registered ? (
         <p
@@ -150,7 +166,7 @@ export function LoginForm({
 
       <Link
         href="/parolami-unuttum"
-        className="mt-3 text-center text-[13px] text-dc-ink-faint hover:text-dc-ink"
+        className="mt-1 inline-flex min-h-11 items-center justify-center text-[14px] text-dc-ink-muted hover:text-dc-ink"
       >
         Şifremi unuttum
       </Link>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CompleteHomeAction } from "@/components/panel/complete-home-action";
 import { requirePanelRole } from "@/lib/auth/guards";
+import { productLabel } from "@/lib/auth/roles";
 import { getStudentHomeData } from "@/lib/panel/student-home-server";
 import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { buildStudentHomeActionPlan } from "@/lib/panel/student-home-actions";
@@ -241,7 +242,7 @@ export default async function StudentHomePage() {
               description={action.reason}
               status={
                 <span className="text-xs text-dc-ink-faint">
-                  {action.product}
+                  {action.product === "SHARED" ? "Genel" : productLabel(action.product)}
                 </span>
               }
               cta={
@@ -273,7 +274,7 @@ export default async function StudentHomePage() {
         <PanelCard className="mt-5" padded={false}>
           <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
             <h2 className="text-sm font-bold text-dc-ink">
-              Bugün — tüm ürünler
+              Bugünün tamamı
             </h2>
             <p className="mt-0.5 text-[12.5px] text-dc-ink-faint">
               Dersler, ödevler, plan görevleri ve denemeler tek listede.

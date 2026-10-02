@@ -564,13 +564,14 @@ function StudentsPanel({
                   <input
                     type="checkbox"
                     checked={checked}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      setPreview(null);
                       setSelected((current) =>
                         event.target.checked
                           ? [...current, member.studentId]
                           : current.filter((id) => id !== member.studentId),
-                      )
-                    }
+                      );
+                    }}
                     aria-label={`${member.name} seç`}
                   />
                 </PanelTableCell>

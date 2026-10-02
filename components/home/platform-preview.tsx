@@ -10,7 +10,7 @@ import Link from "next/link";
 export function PlatformPreview() {
   return (
     <section className="site-container py-[var(--dc-section)]">
-      <div className="relative grid overflow-hidden rounded-dc-banner bg-dc-brand-deep px-8 pt-12 sm:px-14 sm:pt-14 lg:grid-cols-[1fr_420px] lg:gap-8">
+      <div className="relative grid overflow-hidden rounded-dc-banner dc-surface-deep bg-dc-brand-deep px-8 pt-12 sm:px-14 sm:pt-14 lg:grid-cols-[1fr_420px] lg:gap-8">
         <div className="pb-12 sm:pb-14">
           <p className="inline-flex flex-wrap items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7FD3AF]">
             Platform ön izlemesi
@@ -42,7 +42,7 @@ export function PlatformPreview() {
               href="/urunler"
               className="rounded-full bg-white px-[26px] py-[15px] text-[15px] font-bold text-dc-brand-deep transition-opacity hover:opacity-90"
             >
-              Platformu İncele
+              Ürünleri incele
             </Link>
             <span className="max-w-[280px] text-[13px] font-medium text-[var(--dc-on-deep-faint)]">
               Panel bugün tarayıcıda açık.

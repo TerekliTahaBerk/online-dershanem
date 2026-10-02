@@ -79,6 +79,15 @@ export function StudentAssignmentList({
   }, [router]);
 
   async function submitEvidence(id: string) {
+    try {
+      await submitEvidenceRequest(id);
+    } catch {
+      setBusy(null);
+      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+    }
+  }
+
+  async function submitEvidenceRequest(id: string) {
     setBusy(id);
     setMessage("");
     const idempotencyKey =
@@ -280,9 +289,11 @@ export function StudentAssignmentList({
                       >
                         {latest ? "Yeni denemeyi gönder" : "Kanıtı gönder"}
                       </button>
-                      <p className="mt-2 text-[10px] text-[var(--site-muted)]">
-                        Fotoğraf/PDF, güvenli tarama ve metadata temizleme
-                        servisi açılana kadar kabul edilmez.
+                      <p className="mt-2 text-xs text-[var(--site-muted)]">
+                        En az 20 karakter yaz (
+                        {evidence[assignment.id]?.trim().length || 0}/20).
+                        Şimdilik yalnızca yazılı açıklama kabul ediliyor;
+                        fotoğraf ve dosya desteği sonra eklenecek.
                       </p>
                     </div>
                   ) : null}
@@ -297,7 +308,7 @@ export function StudentAssignmentList({
                         disabled={busy === assignment.id}
                         aria-pressed={assignment.status === status}
                         onClick={() => void setStatus(assignment.id, status)}
-                        className={`flex min-h-10 items-center justify-center gap-1 rounded-xl px-2 text-[10px] font-bold transition ${assignment.status === status ? "bg-[var(--brand-olive)] text-white shadow-sm" : "text-[var(--site-muted)] hover:bg-white"}`}
+                        className={`flex min-h-10 items-center justify-center gap-1 rounded-xl px-2 text-xs font-bold transition ${assignment.status === status ? "bg-[var(--brand-olive)] text-white shadow-sm" : "text-[var(--site-muted)] hover:bg-white"}`}
                       >
                         {busy === assignment.id &&
                         assignment.status !== status ? (

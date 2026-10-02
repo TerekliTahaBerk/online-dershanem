@@ -120,7 +120,7 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
           <Link
             href={productsMenu.href}
             onClick={() => setOpen(false)}
-            className="mt-1 block border-t border-[var(--dc-line-soft)] px-3 pb-1 pt-3 text-[13.5px] font-semibold text-[var(--dc-brand)] hover:text-[var(--dc-brand-hover)]"
+            className="mt-1 block border-t border-[var(--dc-line-soft)] px-3 pb-1 pt-3 text-[13.5px] font-semibold text-[var(--dc-brand-strong)] hover:text-[var(--dc-brand-hover)]"
           >
             Tüm ürünleri karşılaştır →
           </Link>

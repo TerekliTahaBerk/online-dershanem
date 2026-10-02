@@ -665,7 +665,7 @@ export function BuyerInfoForm({
               placeholder="ÖRN. HOSGELDIN"
               aria-invalid={!!couponError}
               aria-describedby={couponError ? "couponCode-error" : undefined}
-              className="min-h-12 flex-1 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-3 text-[15px] uppercase text-[var(--site-ink)] outline-none transition-[border-color,box-shadow] duration-150 placeholder:normal-case placeholder:text-[var(--site-muted)] focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/15 disabled:opacity-60"
+              className="min-h-12 flex-1 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-3 text-[15px] uppercase text-[var(--site-ink)] outline-none transition-[border-color,box-shadow] duration-150 placeholder:normal-case placeholder:text-[var(--site-muted)] focus:border-[var(--brand-orange)] focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)] disabled:opacity-60"
             />
             {appliedCoupon ? (
               <button
@@ -908,7 +908,7 @@ function Field({
       .join(" ") || undefined;
   const fieldClass = `min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:text-[var(--site-muted)] ${
     error
-      ? "border-rose-400 bg-rose-50 focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20"
+      ? "border-rose-400 bg-rose-50 focus:border-rose-400 focus-visible:ring-2 focus-visible:ring-rose-500"
       : "border-[var(--site-line)] bg-[var(--site-bg-warm)] focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/15"
   }`;
   return (

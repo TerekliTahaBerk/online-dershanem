@@ -122,16 +122,21 @@ export default async function ParentLessonsPage({
           >
             {lessons.map((lesson) => {
               const status = lesson.attendances[0]?.status;
+              const upcoming = lesson.startsAt.getTime() > Date.now();
               const label =
-                status === "ABSENT"
-                  ? "Katılmadı"
-                  : status === "LATE"
-                    ? "Geç katıldı"
-                    : status === "PRESENT"
-                      ? "Katıldı"
-                      : status === "EXCUSED"
-                        ? "Mazeretli"
-                        : "İşlenmedi";
+                lesson.status === "CANCELLED"
+                  ? "İptal edildi"
+                  : status === "ABSENT"
+                    ? "Katılmadı"
+                    : status === "LATE"
+                      ? "Geç katıldı"
+                      : status === "PRESENT"
+                        ? "Katıldı"
+                        : status === "EXCUSED"
+                          ? "Mazeretli"
+                          : upcoming
+                            ? "Planlandı"
+                            : "Henüz işlenmedi";
               return (
                 <PanelTableRow key={lesson.id}>
                   <PanelTableCell>{DAY.format(lesson.startsAt)}</PanelTableCell>
@@ -144,7 +149,15 @@ export default async function ParentLessonsPage({
                   <PanelTableCell>
                     {lesson.teacher.fullName || "—"}
                   </PanelTableCell>
-                  <PanelTableCell tone={status === "ABSENT" ? "warn" : "ok"}>
+                  <PanelTableCell
+                    tone={
+                      status === "ABSENT"
+                        ? "warn"
+                        : status === "PRESENT" || status === "EXCUSED"
+                          ? "ok"
+                          : "default"
+                    }
+                  >
                     {label}
                   </PanelTableCell>
                 </PanelTableRow>

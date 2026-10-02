@@ -196,7 +196,6 @@ export function PackagesExperience({
               <ul className="mt-6 space-y-3 text-[14.5px] leading-6 text-[var(--site-body)]">
                 {[
                   "Yalnızca kayıtlı video arayanlar",
-                  "Birebir özel ders formatı isteyenler",
                   "Derse ve verilen çalışmalara düzenli katılamayacak olanlar",
                 ].map((item) => (
                   <li key={item}>{item}</li>

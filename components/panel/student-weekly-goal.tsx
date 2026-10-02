@@ -22,10 +22,10 @@ export function StudentWeeklyGoal({ initial }: { initial: string }) {
             setEditing(!editing);
             setMessage("");
           }}
-          className="rounded-full bg-white p-2 text-amber-800"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white text-amber-800"
           aria-label="Haftalık hedefi düzenle"
         >
-          <Pencil size={14} />
+          <Pencil size={14} aria-hidden="true" />
         </button>
       </div>
       {editing ? (

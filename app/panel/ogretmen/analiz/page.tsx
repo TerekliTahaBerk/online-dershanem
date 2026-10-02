@@ -132,7 +132,7 @@ export default async function TeacherAnalizPage() {
                             href={row.href}
                             className="text-[13px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
                           >
-                            Öğrenci 360 →
+                            Öğrenci profili →
                           </Link>
                         </div>
                       </PanelCard>

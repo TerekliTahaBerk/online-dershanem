@@ -273,7 +273,7 @@ export function PackageBuilder({
           2. Ürünlerini seç
         </h2>
         <a
-          href="#kapsam"
+          href="/paketler#kapsam"
           className="text-[14.5px] font-semibold text-dc-brand-strong hover:text-dc-brand-hover"
         >
           Paketlerin tüm kapsamı ↓
@@ -653,22 +653,29 @@ export function PackageBuilder({
           </div>
 
           {quote.priceResolved ? (
-            <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-dc-ink">
-              {activeTotals.map((total, index) => (
-                <span key={total.billing} className="contents">
-                  {index > 0 ? (
-                    <span className="text-[24px] font-semibold">+</span>
-                  ) : null}
-                  <span className="inline-flex flex-wrap items-baseline gap-x-1">
-                    <span className="text-[15px] font-bold">
-                      {billingCopy[total.billing].label}
-                    </span>{" "}
-                    <span className="text-[30px] font-extrabold tracking-[-0.025em]">
-                      {formatCents(total.payableCents ?? 0)}
-                    </span>
+            <div
+              aria-live="polite"
+              aria-atomic="true"
+              className="mt-1 flex flex-col gap-1 text-dc-ink"
+            >
+              {activeTotals.map((total) => (
+                <div
+                  key={total.billing}
+                  className="flex flex-wrap items-baseline gap-x-2"
+                >
+                  <span className="text-[15px] font-bold">
+                    {billingCopy[total.billing].label}
                   </span>
-                </span>
+                  <span className="text-[30px] font-extrabold tracking-[-0.025em]">
+                    {formatCents(total.payableCents ?? 0)}
+                  </span>
+                </div>
               ))}
+              {activeTotals.length > 1 ? (
+                <p className="text-[12.5px] leading-[1.5] text-dc-ink-faint">
+                  Her dönemin tutarı ayrı gösterilir; tek bir toplam değildir.
+                </p>
+              ) : null}
             </div>
           ) : (
             <div className="mt-1 text-[15px] font-semibold leading-[1.5] text-dc-ink">
@@ -799,6 +806,44 @@ export function PackageBuilder({
           ) : null}
         </aside>
       </div>
+
+      {count > 0 ? (
+        <div className="sticky bottom-0 z-30 -mx-[var(--dc-gutter)] mt-6 border-t border-dc-line bg-white px-[var(--dc-gutter)] pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-dc-sticky lg:hidden">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-[12.5px] text-dc-ink-muted">
+                {count} ürün seçili
+              </div>
+              <div className="truncate text-[15px] font-extrabold text-dc-ink">
+                {quote.priceResolved
+                  ? activeTotals
+                      .map(
+                        (total) =>
+                          `${billingCopy[total.billing].label} ${formatCents(total.payableCents ?? 0)}`,
+                      )
+                      .join(" · ")
+                  : "Fiyat teklifle netleşir"}
+              </div>
+            </div>
+            {checkoutItem ? (
+              <button
+                type="button"
+                onClick={startCheckout}
+                className="site-btn site-btn-primary shrink-0"
+              >
+                Bu Paketle Başla
+              </button>
+            ) : (
+              <Link
+                href={`/iletisim/${builderContactQuery(selection)}`}
+                className="site-btn site-btn-primary shrink-0"
+              >
+                {quote.priceResolved ? "Başlangıcı Planla" : "Ön Görüşme Talep Et"}
+              </Link>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
