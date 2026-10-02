@@ -12,7 +12,7 @@ export function PlatformPreview() {
     <section className="site-container py-[var(--dc-section)]">
       <div className="relative grid overflow-hidden rounded-dc-banner dc-surface-deep bg-dc-brand-deep px-8 pt-12 sm:px-14 sm:pt-14 lg:grid-cols-[1fr_420px] lg:gap-8">
         <div className="pb-12 sm:pb-14">
-          <p className="inline-flex flex-wrap items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7FD3AF]">
+          <p className="inline-flex flex-wrap items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-[#7FD3AF]">
             Platform ön izlemesi
             <span className="rounded-full border border-[rgba(127,211,175,.3)] bg-[rgba(127,211,175,.16)] px-2.5 py-1 text-[#B7E8D2]">
               Ana ekrana ekle

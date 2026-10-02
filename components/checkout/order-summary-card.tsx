@@ -92,7 +92,7 @@ export function OrderSummaryCard({
               </div>
               <div className="flex-1 min-w-0">
                 {it.category && (
-                  <div className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--brand-orange-ink)]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--brand-orange-ink)]">
                     {it.category}
                   </div>
                 )}
@@ -100,7 +100,7 @@ export function OrderSummaryCard({
                   {it.name}
                 </div>
                 {(it.subtitle || (it.qty && it.qty > 1)) && (
-                  <div className="mt-0.5 text-[11.5px] text-[var(--site-body)]">
+                  <div className="mt-0.5 text-xs text-[var(--site-body)]">
                     {it.subtitle}
                     {it.subtitle && it.qty && it.qty > 1 ? " · " : ""}
                     {it.qty && it.qty > 1 ? `${it.qty} adet` : ""}
@@ -119,7 +119,7 @@ export function OrderSummaryCard({
             <span className="font-medium text-[var(--brand-orange-ink)]">
               Kupon: <strong>{couponCode}</strong>
             </span>
-            <span className="text-[11.5px] text-[var(--brand-orange-ink)]">
+            <span className="text-xs text-[var(--brand-orange-ink)]">
               Ödeme adımında uygulanır
             </span>
           </div>
@@ -140,7 +140,7 @@ export function OrderSummaryCard({
           </div>
         </div>
 
-        <div className="mt-5 flex items-start gap-2 rounded-[16px] bg-[var(--site-bg-warm)] p-3.5 text-[11.5px] text-[var(--site-body)]">
+        <div className="mt-5 flex items-start gap-2 rounded-[16px] bg-[var(--site-bg-warm)] p-3.5 text-xs text-[var(--site-body)]">
           <ShieldCheck
             size={16}
             className="mt-0.5 flex-shrink-0 text-[var(--brand-orange-ink)]"

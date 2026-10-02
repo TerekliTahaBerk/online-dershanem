@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { AuthCard } from "@/components/auth/auth-card";
 import { RegisterForm } from "@/components/auth/register-form";
 import { PUBLIC_REGISTER_ENABLED } from "@/lib/panel-config";
@@ -14,7 +14,7 @@ import { postAuthenticationPath } from "@/lib/auth/products";
 export async function generateMetadata(): Promise<Metadata> {
   if (!PUBLIC_REGISTER_ENABLED) {
     return {
-      title: "Sayfa bulunamadı",
+      title: "Giriş",
       robots: { index: false, follow: false },
     };
   }
@@ -36,7 +36,9 @@ export async function generateMetadata(): Promise<Metadata> {
  * açtırmanın anlamı yok.
  */
 export default async function RegisterPage() {
-  if (!PUBLIC_REGISTER_ENABLED) notFound();
+  // notFound() kök loading sınırı yüzünden 200 + 404 gövdesi (soft 404) döndürüyordu;
+  // kayıt kapalıyken giriş ekranına yönlendirmek hem doğru durum kodu hem net yoldur.
+  if (!PUBLIC_REGISTER_ENABLED) redirect("/giris");
 
   const session = await getSession();
   if (session) redirect(await postAuthenticationPath(session));

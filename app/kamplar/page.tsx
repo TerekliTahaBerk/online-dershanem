@@ -147,7 +147,7 @@ export default function CampsPage() {
                       {camp.levelTag}
                     </span>
                     <span
-                      className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
                         camp.featured
                           ? "bg-[var(--brand-orange)] text-white"
                           : "border border-[var(--site-line)] bg-[var(--site-bg-warm)] text-[var(--site-muted)]"
@@ -203,7 +203,7 @@ export default function CampsPage() {
 
                   <dl className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-[var(--site-bg-warm)] p-3.5">
                     <div>
-                      <dt className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
                         Başlangıç
                       </dt>
                       <dd className="mt-1 text-[12.5px] font-semibold text-[var(--site-ink)]">
@@ -211,7 +211,7 @@ export default function CampsPage() {
                       </dd>
                     </div>
                     <div className="border-l border-[var(--site-line)] pl-3">
-                      <dt className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
                         Ücret
                       </dt>
                       <dd className="mt-1 text-[12.5px] font-semibold text-[var(--site-ink)]">

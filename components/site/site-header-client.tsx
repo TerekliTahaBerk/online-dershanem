@@ -88,7 +88,7 @@ export function SiteHeaderClient({
             <Link
               href="/"
               aria-label="Online Dershanem ana sayfa"
-              className="flex shrink-0 items-center lg:order-2 lg:justify-self-center"
+              className="flex min-h-11 min-w-11 shrink-0 items-center justify-center lg:order-2 lg:justify-self-center"
             >
               {/* Handoff: 38×38, radius 10, object-fit cover */}
               <Image
@@ -114,7 +114,7 @@ export function SiteHeaderClient({
 
               <Link
                 href={navCta.href}
-                className="site-btn site-btn-primary site-btn-sm !hidden lg:!inline-flex"
+                className="site-btn site-btn-primary site-btn-sm min-h-11 whitespace-nowrap !px-3.5 max-lg:!text-[13px]"
               >
                 {navCta.label}
               </Link>

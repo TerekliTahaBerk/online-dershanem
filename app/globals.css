@@ -520,7 +520,7 @@ a {
     --public-space-section: 3.5rem;
     --public-space-compact: 3rem;
     --public-space-hero: 4rem;
-    --public-display: clamp(2.5rem, 12vw, 3.25rem);
+    --public-display: clamp(1.875rem, 8.5vw, 2.5rem);
     --public-title: clamp(2.1rem, 10vw, 2.75rem);
   }
   .public-heading { letter-spacing: -.045em; }

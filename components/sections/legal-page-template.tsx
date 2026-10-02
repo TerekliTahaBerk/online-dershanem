@@ -92,7 +92,7 @@ export function LegalPageTemplate({
                     href={`#${sectionId(section.title)}`}
                     className="flex min-h-12 items-center gap-3 border-b border-[var(--site-line)] py-3 text-[13.5px] leading-5 text-[var(--site-body)] last:border-b-0 hover:text-[var(--brand-olive)]"
                   >
-                    <span className="text-[11px] font-bold text-[var(--site-muted)]">
+                    <span className="text-xs font-bold text-[var(--site-muted)]">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     {section.title.replace(/^\d+\.\s*/, "")}
@@ -125,7 +125,7 @@ export function LegalPageTemplate({
                   className="scroll-mt-28 border-b border-[var(--site-line)] py-8 last:border-b-0 sm:py-10"
                 >
                   <div className="flex items-start gap-4">
-                    <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-olive-soft)] text-[11px] font-bold text-[var(--brand-olive)]">
+                    <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-olive-soft)] text-xs font-bold text-[var(--brand-olive)]">
                       {String(idx + 1).padStart(2, "0")}
                     </span>
                     <h2 className="font-display text-[22px] font-normal leading-tight tracking-[-0.01em] text-[var(--site-ink)] sm:text-[27px]">

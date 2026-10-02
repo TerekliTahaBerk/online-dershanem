@@ -81,7 +81,7 @@ export function PaytrIframeShell({
         className="mb-6 rounded-[24px] border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-8"
       >
         {eyebrow && (
-          <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--brand-orange-ink)] font-semibold mb-2">
+          <p className="text-xs uppercase tracking-[0.22em] text-[var(--brand-orange-ink)] font-semibold mb-2">
             {eyebrow}
           </p>
         )}

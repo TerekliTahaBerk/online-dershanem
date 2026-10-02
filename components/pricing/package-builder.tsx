@@ -210,7 +210,7 @@ export function PackageBuilder({
               Ders listesi, plan ve deneme içerikleri bu seçime göre gelir.
             </p>
           </div>
-          <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.08em] text-dc-ink-faint">
+          <span className="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-dc-ink-faint">
             {selection.exam
               ? `${selection.exam} hedefine göre uyarlanıyor`
               : "Önce hedef sınavını seç"}
@@ -245,7 +245,7 @@ export function PackageBuilder({
               >
                 <span
                   aria-hidden="true"
-                  className={`mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full border text-[11px] ${
+                  className={`mt-0.5 grid h-5 w-5 flex-none place-items-center rounded-full border text-xs ${
                     active
                       ? "border-dc-brand bg-dc-brand-strong text-white"
                       : "border-dc-line text-transparent"
@@ -323,7 +323,7 @@ export function PackageBuilder({
                       {copy.tracks.map((t) => (
                         <span
                           key={t}
-                          className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11.5px] font-semibold text-dc-brand-hover"
+                          className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-xs font-semibold text-dc-brand-hover"
                         >
                           {t}
                         </span>
@@ -352,7 +352,7 @@ export function PackageBuilder({
                               <span className="text-[13px] font-semibold text-dc-ink-faint line-through">
                                 {formatCents(line.listCents)}
                               </span>
-                              <span className="rounded-full bg-dc-brand-soft px-2 py-0.5 text-[10.5px] font-bold text-dc-brand-hover">
+                              <span className="rounded-full bg-dc-brand-soft px-2 py-0.5 text-xs font-bold text-dc-brand-hover">
                                 %{discountPercent(line.listCents, line.cents)}{" "}
                                 indirim
                               </span>
@@ -364,7 +364,7 @@ export function PackageBuilder({
                           <span className="block text-[12.5px] font-medium text-dc-ink-faint">
                             {billingSuffix(line.billing)}
                           </span>
-                          <span className="mt-0.5 block text-[10.5px] font-semibold text-dc-brand-hover">
+                          <span className="mt-0.5 block text-xs font-semibold text-dc-brand-hover">
                             {productCheckout ? "Tek başına online alınabilir" : "Başlangıcını birlikte planlayalım"}
                           </span>
                         </>
@@ -434,7 +434,7 @@ export function PackageBuilder({
                         <fieldset className="mt-5">
                           <legend className="flex flex-wrap items-center gap-2.5 text-[14.5px] font-bold text-dc-ink">
                             Dersini seç
-                            <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11.5px] font-semibold text-dc-brand-hover">
+                            <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-xs font-semibold text-dc-brand-hover">
                               Paket fiyatına 1 ders dahil
                             </span>
                           </legend>
@@ -450,7 +450,7 @@ export function PackageBuilder({
                                   }))
                                 }
                                 aria-pressed={selection.subject === s}
-                                className={`rounded-full border px-3.5 py-2 text-[13.5px] font-semibold transition-colors ${
+                                className={`min-h-11 rounded-full border px-3.5 py-2 text-[13.5px] font-semibold transition-colors ${
                                   selection.subject === s
                                     ? "border-dc-brand bg-dc-brand-strong text-white"
                                     : "border-dc-line text-dc-ink hover:border-dc-brand"
@@ -482,7 +482,7 @@ export function PackageBuilder({
                                     aria-pressed={selection.extraSubjects.includes(
                                       s,
                                     )}
-                                    className={`rounded-full border px-3.5 py-2 text-[13.5px] font-semibold transition-colors ${
+                                    className={`min-h-11 rounded-full border px-3.5 py-2 text-[13.5px] font-semibold transition-colors ${
                                       selection.extraSubjects.includes(s)
                                         ? "border-dc-brand bg-dc-brand-strong text-white"
                                         : "border-dc-line text-dc-ink hover:border-dc-brand"
@@ -527,7 +527,7 @@ export function PackageBuilder({
                     Sınav tarihine kadar kişisel çalışma planı ve ilerleme
                     takibi.
                   </p>
-                  <span className="mt-2.5 inline-flex rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11.5px] font-semibold text-dc-brand-hover">
+                  <span className="mt-2.5 inline-flex rounded-full bg-dc-brand-soft px-2.5 py-1 text-xs font-semibold text-dc-brand-hover">
                     KPSS
                   </span>
                 </div>
@@ -573,7 +573,7 @@ export function PackageBuilder({
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-dc-ink-faint">
+              <div className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-dc-ink-faint">
                 Paketin
               </div>
               <div className="mt-1 text-[13px] font-bold text-dc-brand-hover">
@@ -595,7 +595,7 @@ export function PackageBuilder({
                 <div className="flex items-center gap-2.5">
                   <span
                     aria-hidden="true"
-                    className={`grid h-5 w-5 flex-none place-items-center rounded-full text-[11px] ${
+                    className={`grid h-5 w-5 flex-none place-items-center rounded-full text-xs ${
                       line.selected
                         ? "bg-dc-brand-strong text-white"
                         : "border border-dc-line text-transparent"

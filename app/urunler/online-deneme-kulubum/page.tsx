@@ -45,10 +45,10 @@ export default function OnlineDenemeKulubumPage() {
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-[11px] font-semibold text-[var(--dc-ink-faint)]">
+                <p className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
                   DENEME SONUÇ EKRANI
                 </p>
-                <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11px] font-semibold text-dc-brand-hover">
+                <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-xs font-semibold text-dc-brand-hover">
                   Örnek görünüm
                 </span>
               </div>
@@ -65,7 +65,7 @@ export default function OnlineDenemeKulubumPage() {
 
               <div className="mt-4 flex gap-2.5">
                 <div className="flex-1 rounded-xl bg-dc-brand-soft p-3">
-                  <p className="font-mono text-[10.5px] font-semibold text-dc-brand-hover">
+                  <p className="font-mono text-xs font-semibold text-dc-brand-hover">
                     GÜÇLÜ ALAN
                   </p>
                   <p className="mt-1 text-[14.5px] font-bold text-dc-brand-deep">
@@ -73,7 +73,7 @@ export default function OnlineDenemeKulubumPage() {
                   </p>
                 </div>
                 <div className="flex-1 rounded-xl bg-[#FCF6F0] p-3">
-                  <p className="font-mono text-[10.5px] font-semibold text-[#8A5F37]">
+                  <p className="font-mono text-xs font-semibold text-[#8A5F37]">
                     GELİŞTİRİLECEK
                   </p>
                   <p className="mt-1 text-[14.5px] font-bold text-[#6B4A2C]">

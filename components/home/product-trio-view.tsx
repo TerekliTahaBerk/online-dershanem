@@ -56,10 +56,10 @@ function PlanPreview() {
   return (
     <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
       <div className="flex h-full flex-col gap-2 rounded-xl border border-dc-line bg-white p-3">
-        <div className="font-mono text-[10px] font-semibold text-[var(--dc-ink-faint)]">
+        <div className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
           haftalık plan
         </div>
-        <div className="grid grid-cols-7 gap-[5px] text-center text-[9px] font-semibold text-[var(--dc-ink-faint)]">
+        <div className="grid grid-cols-7 gap-[5px] text-center text-xs font-semibold text-[var(--dc-ink-faint)]">
           {["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"].map((d) => (
             <span key={d}>{d}</span>
           ))}
@@ -124,7 +124,7 @@ function KpssPreview() {
   return (
     <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
       <div className="flex h-full flex-col rounded-xl border border-dc-line bg-white p-3">
-        <div className="flex items-center justify-between font-mono text-[10px] font-semibold text-[var(--dc-ink-faint)]">
+        <div className="flex items-center justify-between font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
           <span>HAFTALIK ODAK</span>
           <span>12 HAFTA</span>
         </div>
@@ -135,7 +135,7 @@ function KpssPreview() {
             ["Program Geliştirme", "38%"],
           ].map(([label, width]) => (
             <div key={label}>
-              <div className="mb-1 flex justify-between text-[9.5px] font-semibold text-dc-ink-muted">
+              <div className="mb-1 flex justify-between text-xs font-semibold text-dc-ink-muted">
                 <span>{label}</span>
               </div>
               <span className="block h-1.5 rounded-full bg-[#E4EBE7]">
@@ -254,7 +254,7 @@ export function ProductTrioView({
                   </div>
                   <Link
                     href={href}
-                    className="mt-auto self-start pt-2 text-[14.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
+                    className="mt-auto inline-flex min-h-11 items-center self-start text-[14.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
                   >
                     {cta} →
                   </Link>

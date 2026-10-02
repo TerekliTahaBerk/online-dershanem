@@ -171,7 +171,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                   <span className="text-[15px] font-semibold text-[var(--site-ink)]">
                     {data.sampleSummary.heading}
                   </span>
-                  <span className="rounded-full bg-[var(--brand-orange-soft)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--brand-orange-ink)]">
+                  <span className="rounded-full bg-[var(--brand-orange-soft)] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand-orange-ink)]">
                     Örnek
                   </span>
                 </figcaption>
@@ -181,7 +181,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                       key={row.label}
                       className="rounded-[16px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
                     >
-                      <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
                         {row.label}
                       </dt>
                       <dd className="mt-1 text-[13.5px] leading-6 text-[var(--site-ink)]">
@@ -264,7 +264,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                       </h3>
                     </div>
                     {pkg.badge ? (
-                      <span className="shrink-0 rounded-full bg-[var(--brand-orange-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--brand-orange-ink)]">
+                      <span className="shrink-0 rounded-full bg-[var(--brand-orange-soft)] px-3 py-1 text-xs font-semibold text-[var(--brand-orange-ink)]">
                         {pkg.badge}
                       </span>
                     ) : null}
@@ -274,7 +274,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
                   </p>
 
                   <div className="mt-5 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-                    <p className="inline-flex rounded-full border border-[var(--site-line)] bg-white px-2.5 py-1 text-[11px] font-semibold text-[var(--brand-orange-ink)]">
+                    <p className="inline-flex rounded-full border border-[var(--site-line)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--brand-orange-ink)]">
                       {pkg.quota}
                     </p>
                     {pkg.oldPrice ? (

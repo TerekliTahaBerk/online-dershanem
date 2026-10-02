@@ -56,7 +56,7 @@ export async function SiteFooter() {
             <Link
               href="/"
               aria-label="Online Dershanem ana sayfa"
-              className="inline-flex"
+              className="inline-flex min-h-11 min-w-11 items-center"
             >
               {/* Handoff: 36×36, radius 10. Renkli marka işareti — koyu zeminde
                   ters çevrilmez. */}
@@ -82,7 +82,7 @@ export async function SiteFooter() {
                   rel={
                     href.startsWith("http") ? "noopener noreferrer" : undefined
                   }
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--dc-on-deep-line)] text-[var(--dc-on-deep-body)] transition-colors hover:border-white/40 hover:text-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--dc-on-deep-line)] text-[var(--dc-on-deep-body)] transition-colors hover:border-white/40 hover:text-white"
                 >
                   <Icon size={16} />
                 </a>
@@ -107,12 +107,12 @@ export async function SiteFooter() {
                   className="text-[var(--dc-on-deep-label)] transition-transform group-open:rotate-180 lg:hidden"
                 />
               </summary>
-              <ul className="flex flex-col gap-2.5 pb-4 pt-2 lg:pb-0 lg:pt-4">
+              <ul className="flex flex-col pb-4 pt-1 lg:pb-0 lg:pt-3">
                 {col.links.map((l) => (
                   <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
                       href={l.href}
-                      className="text-[14.5px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
+                      className="inline-flex min-h-11 items-center text-[14.5px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
                     >
                       {l.label}
                     </Link>
@@ -133,7 +133,7 @@ export async function SiteFooter() {
                 {i > 0 ? <span aria-hidden="true">·</span> : null}
                 <Link
                   href={l.href}
-                  className="transition-colors hover:text-white"
+                  className="inline-flex min-h-11 items-center transition-colors hover:text-white"
                 >
                   {l.label}
                 </Link>

@@ -45,7 +45,7 @@ export function HowItWorks() {
               }`}
             >
               <span
-                className={`font-mono text-[11px] font-semibold ${
+                className={`font-mono text-xs font-semibold ${
                   i === 0
                     ? "text-dc-brand-strong"
                     : "text-[var(--dc-ink-faint)]"
