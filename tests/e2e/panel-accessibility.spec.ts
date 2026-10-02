@@ -170,7 +170,7 @@ const sweeps: RoleSweep[] = [
     // iş biriminde SUPER_ADMIN olduğu için tüm bölümleri görebilir.
     key: "işletme yöneticisi",
     account: panelE2EAccounts.admin,
-    home: "/panel/yonetim/isletme",
+    home: "/panel/yonetim/isletme/genel-bakis",
     routes: [
       "/panel/yonetim/isletme",
       ...[
@@ -224,6 +224,9 @@ test.describe("panel erişilebilirlik taraması", () => {
       for (const route of sweep.routes) {
         await test.step(route, async () => {
           await page.goto(route, { waitUntil: "domcontentloaded" });
+          if (route === "/panel/yonetim/isletme") {
+            await page.waitForURL("**/panel/yonetim/isletme/genel-bakis", { waitUntil: "domcontentloaded" });
+          }
           await expect(page.getByRole("main")).toBeVisible();
           await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
           const notFound = await page.getByRole("heading", { name: "Sayfa bulunamadı" }).count();

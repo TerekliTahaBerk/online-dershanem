@@ -118,6 +118,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/integration_test?schema=public
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/integration_test?schema=public
       BUSINESS_INTEGRATION_TEST: "true"
+      NEXTAUTH_SECRET: ci-only-nextauth-secret-0123456789abcdef0123456789abcdef
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -129,6 +130,7 @@ jobs:
         run: |
           ALLOW_FRESH_DB_BOOTSTRAP=true npm run db:bootstrap:fresh
           npm run db:seed
+      # Files share one database; individual tests still exercise concurrent callbacks.
       - run: npm run test:integration
 
   production-build:
