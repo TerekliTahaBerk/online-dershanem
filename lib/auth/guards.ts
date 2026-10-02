@@ -7,7 +7,8 @@ import { getSession, type SessionUser } from "@/lib/auth/session";
 import { LOGIN_PATH, PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
 import { checkPilotAccess } from "@/lib/pilot-access";
 import { checkOdkPilotAccess } from "@/lib/odk/pilot-access";
-import { hasProductAccess, hasProductCodeAccess } from "@/lib/auth/products";
+import { getAccessibleProducts, hasProductAccess, hasProductCodeAccess } from "@/lib/auth/products";
+import { anyPilotGateActive, filterPilotAllowedProducts } from "@/lib/auth/pilot-products";
 import { asLegacyProductCode } from "@/lib/products/codes";
 import { pilotProgramForProduct } from "@/lib/auth/product-pilot";
 import { MFA_PATH, STEP_UP_PATH, hasFreshStepUp } from "@/lib/auth/mfa-policy";
@@ -114,7 +115,17 @@ async function requireProductPilot(session: SessionUser, product: ProductCode) {
  * demektir, "o ürünün verisini görebilir" demek DEĞİLDİR.
  */
 export async function requirePanelRole(...roles: UserRole[]): Promise<SessionUser> {
-  return requireAuthorizedRole(...roles);
+  const session = await requireAuthorizedRole(...roles);
+  // Ürünü olup hepsinin pilotu kapalı olan (ör. duraklatılan kohortun üyesi)
+  // öğrenci/veli ürün bağımsız sayfalardan da panele giremez. Ürünü hiç
+  // olmayan kullanıcı ise NoProductAccess ekranını görmeye devam eder.
+  if ((session.role === "STUDENT" || session.role === "PARENT") && anyPilotGateActive()) {
+    const products = await getAccessibleProducts(session.userId, session.role);
+    if (products.length > 0 && (await filterPilotAllowedProducts(session.userId, session.role, products)).length === 0) {
+      notFound();
+    }
+  }
+  return session;
 }
 
 /**

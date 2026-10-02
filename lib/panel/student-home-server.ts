@@ -3,6 +3,7 @@ import "server-only";
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAccessibleProducts } from "@/lib/auth/products";
+import { filterPilotAllowedProducts } from "@/lib/auth/pilot-products";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { listStudentExams } from "@/lib/odk/student-exam-server";
 import {
@@ -33,7 +34,11 @@ export async function getStudentHomeData(input: {
   now?: Date;
 }): Promise<StudentHomeData> {
   const flags = getPanelFeatureFlags();
-  const products = await getAccessibleProducts(input.userId, input.role);
+  const products = await filterPilotAllowedProducts(
+    input.userId,
+    input.role,
+    await getAccessibleProducts(input.userId, input.role),
+  );
   if (products.length === 0) return { products, profile: null, productData: emptyProductData, unifiedToday: null };
 
   const profile = await prisma.studentProfile.findUnique({
