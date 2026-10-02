@@ -1,3 +1,5 @@
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
@@ -20,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   if (!activeProductCodes.includes("KPSS")) notFound();
 
   return buildMarketingMetadata({
-    title: "KPSS Hazırlık | Sınav gününe kadar net çalışma planı",
+    title: "KPSS Hazırlık | Net çalışma planı",
     description:
       "Öğretmen adayları için sınav tarihine, çalışma kapasitesine ve konu ilerlemesine göre şekillenen KPSS hazırlık planı.",
     canonical: "/urunler/kpss",
@@ -36,6 +38,7 @@ export default async function KpssProductPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "KPSS Hazırlık", url: "/urunler/kpss" }])} />
       <main id="main-content" tabIndex={-1}>
         <div className="site-container pt-5">
           <p className="rounded-dc-card-sm border border-amber-300 bg-amber-50 px-4 py-3 text-[13px] font-semibold text-amber-900">

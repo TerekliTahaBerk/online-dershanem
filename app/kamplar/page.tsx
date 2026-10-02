@@ -21,12 +21,16 @@ import { mathCamps, CAMP_MAX_STUDENTS } from "@/lib/content";
 import { waHref } from "@/lib/site-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata = buildMarketingMetadata({
-  title: "Matematik Kampları",
-  description:
-    "LGS ve YKS matematiğinde belirli bir hedefe odaklanan online kamplar için ön kayıt bilgisi. Tarih ve ücretler program netleştiğinde açıklanır.",
-  canonical: "/kamplar",
-});
+export const metadata = {
+  ...buildMarketingMetadata({
+    title: "Matematik Kampları",
+    description:
+      "LGS ve YKS matematiğinde belirli bir hedefe odaklanan online kamplar için ön kayıt bilgisi. Tarih ve ücretler program netleştiğinde açıklanır.",
+    canonical: "/kamplar",
+  }),
+  // Tarih ve ücret henüz yok; site haritasında da değil — arama sonuçlarına girmesin.
+  robots: { index: false, follow: true },
+};
 
 const howItWorks = [
   {

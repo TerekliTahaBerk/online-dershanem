@@ -1,3 +1,5 @@
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import Image from "next/image";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -7,7 +9,7 @@ import { getDinoMarketingCopy } from "@/lib/dino-marketing";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export const metadata = buildMarketingMetadata({
-  title: "Dino AI | Ders, plan ve deneme arasındaki bağ",
+  title: "Dino AI | Ders, plan ve deneme bağı",
   description:
     "Dino AI pilot hazırlıkları: ders, plan ve deneme desteği için öğretmen ve koçun kararını destekleyen örnekler. Ayrı satılan bir ürün değildir.",
   canonical: "/dino-ai",
@@ -37,6 +39,7 @@ export default function DinoAiPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Dino AI", url: "/dino-ai" }])} />
       <main id="main-content" tabIndex={-1}>
         <section className="site-container pt-14 sm:pt-[72px]">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">

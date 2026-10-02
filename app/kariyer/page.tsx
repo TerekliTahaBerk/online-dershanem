@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     description:
       "Online Dershanem ekibine katılmak ister misin? Açık pozisyonlara göz at.",
     url: `${siteUrl}/kariyer`,
+    images: [{ url: `${siteUrl}/og.png?v=2`, width: 1200, height: 630 }],
   },
 };
 

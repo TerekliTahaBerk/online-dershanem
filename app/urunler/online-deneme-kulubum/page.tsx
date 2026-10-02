@@ -1,3 +1,5 @@
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
@@ -12,7 +14,7 @@ import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing"
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Deneme Kulübüm | Sonucun net sayısı olarak kalmasın",
+  title: "Online Deneme Kulübüm | Deneme ve analiz",
   description:
     "LGS, TYT ve AYT denemeleri; konu ve soru tipine göre kayıp analizi, denemeler arası gelişim takibi ve Dino AI deneme yorumu.",
   canonical: "/urunler/online-deneme-kulubum",
@@ -32,6 +34,7 @@ export default function OnlineDenemeKulubumPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "Online Deneme Kulübüm", url: "/urunler/online-deneme-kulubum" }])} />
       <main id="main-content" tabIndex={-1}>
         <ProductHero
           eyebrow="Ürün · Online Deneme Kulübüm"

@@ -1,3 +1,5 @@
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PackageBuilder } from "@/components/pricing/package-builder";
@@ -23,6 +25,7 @@ export default async function PackagesPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Paketler", url: "/paketler" }])} />
       <main id="main-content" tabIndex={-1}>
         <section className="site-container pt-16 text-center sm:pt-[72px]">
           <p className="dc-eyebrow">Paketler</p>
