@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { blogPosts } from "@/lib/blog-content";
 import { blogPublishedAt } from "@/lib/blog-meta";
 import { siteUrl } from "@/lib/content";
+import { log } from "@/lib/logger";
 import { listPublicOdkPackages } from "@/lib/odk/public-commerce-server";
 import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
 import { kpssSitemapRoutes } from "@/lib/seo/product-sitemap";
@@ -10,7 +11,11 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [odkPackages, activeProductCodes] = await Promise.all([
-    listPublicOdkPackages(),
+    // Sitemap DB kesintisinde 500 vermemeli; statik rotalar yine yayınlanır.
+    listPublicOdkPackages().catch((error: unknown) => {
+      log.warn("sitemap.odk_packages_unavailable", undefined, error);
+      return [];
+    }),
     listActivePublicProductCodes(),
   ]);
   const staticRoutes: MetadataRoute.Sitemap = [

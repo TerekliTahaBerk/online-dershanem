@@ -119,6 +119,7 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
+    "basic-ftp": "6.2.1",
     "chrome-launcher": "1.2.1",
     "deepmerge-ts": "8.0.2",
     "esbuild": "0.28.1",

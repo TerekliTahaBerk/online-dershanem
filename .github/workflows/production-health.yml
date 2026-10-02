@@ -23,10 +23,21 @@ jobs:
           node-version: 22
 
       - name: Check application and database health
+        # /api/health readiness sözleşmesini döner: { ready, status, checks }.
+        # 503 gövdesi hangi kontrolün kapattığını söyler; --fail onu yuttuğu
+        # için gövde dosyaya alınır ve check özetleri iş loguna yazılır.
         run: |
-          response="$(curl --fail --silent --show-error --retry 2 --max-time 20 https://www.onlinedershanem.com/api/health)"
-          echo "$response" | jq -e '.status == "ok" or .status == "degraded"' >/dev/null
-          echo "$response" | jq -e '.db.ok == true' >/dev/null
+          http_code="$(curl --silent --show-error --retry 2 --retry-all-errors --max-time 20 \
+            --output health.json --write-out '%{http_code}' https://www.onlinedershanem.com/api/health || true)"
+          echo "HTTP $http_code"
+          if jq -e '.checks' health.json >/dev/null 2>&1; then
+            jq -r '.checks | to_entries[] | "\(.key): \(.value.status)\(if .value.code then " (" + .value.code + ")" else "" end)"' health.json
+            jq -r '.checks.cron.jobs[]? | select(.status != "healthy") | "::warning::cron \(.name): \(.status)"' health.json
+          else
+            echo "::error::Health yanıtı readiness JSON'u değil."
+          fi
+          jq -e '.checks.database.status == "ok"' health.json >/dev/null || { echo "::error::Veritabanı erişilemiyor."; exit 1; }
+          test "$http_code" = "200" && jq -e '.ready == true' health.json >/dev/null
 
       # Sağlıklı ama eski bir deploy da "yeşil" görünür. Yayındaki commit'i
       # `main`'in ucuyla karşılaştırıp sapmayı iş özetine yazar. Bir merge'ün

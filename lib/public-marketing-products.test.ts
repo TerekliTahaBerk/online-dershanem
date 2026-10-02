@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { ProductTrioView } from "@/components/home/product-trio-view";
 import {
+  FALLBACK_PUBLIC_PRODUCT_CODES,
   isPublicProductVisible,
   visiblePublicProducts,
 } from "./public-marketing-products";
@@ -49,4 +50,12 @@ test("ana sayfa ürün DOM'u KPSS kilidini false/true durumlarında izler", () =
 
 test("aktif kod listesi verilmezse tüm registry ürünleri kapalı kalır", () => {
   assert.deepEqual(visiblePublicProducts([]), []);
+});
+
+test("registry okunamazsa fallback yalnız çekirdek ürünleri gösterir", () => {
+  const products = visiblePublicProducts(FALLBACK_PUBLIC_PRODUCT_CODES);
+  assert.deepEqual(
+    products.map((product) => product.registryCode),
+    legacyCodes,
+  );
 });

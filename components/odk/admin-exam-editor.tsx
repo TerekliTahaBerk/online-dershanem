@@ -675,7 +675,12 @@ export function AdminExamEditor({
             </article>
           ))}
         </div>
-        <div className="mt-4 hidden overflow-x-auto md:block">
+        <div
+          className="mt-4 hidden overflow-x-auto md:block"
+          tabIndex={0}
+          role="region"
+          aria-label="Soru düzenleme tablosu"
+        >
           <table className="w-full min-w-[1180px] text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]">

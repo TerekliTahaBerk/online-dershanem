@@ -53,8 +53,8 @@ jobs:
         id: health
         run: |
           response="$(curl --fail --silent --show-error --retry 2 --max-time 20 https://www.onlinedershanem.com/api/health)"
-          echo "$response" | jq -e '.status == "ok" or .status == "degraded"' >/dev/null
-          echo "$response" | jq -e '.db.ok == true' >/dev/null
+          echo "$response" | jq -e '.ready == true' >/dev/null
+          echo "$response" | jq -e '.checks.database.status == "ok"' >/dev/null
 
       # Alias'ın hangi commit'e döndüğü kayda geçmeli: rollback'ten sonra
       # production artık `main`'in gerisindedir ve bu bilinçli bir durumdur.
