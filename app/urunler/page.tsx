@@ -7,7 +7,7 @@ import { ClosingCta } from "@/components/home/closing-cta";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Ürünler | Online Dershanem, Online Koçum ve Deneme Kulübüm",
+  title: "Ürünler | Online Dershanem, Online Koçum ve Online Deneme Kulübüm",
   description:
     "LGS ve YKS için canlı ders, haftalık koçluk ve deneme analizi. Üç ürünü tek tek ya da birlikte alabilirsin.",
   canonical: "/urunler",

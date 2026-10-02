@@ -1,4 +1,4 @@
-import { blogPosts as existingBlogPosts } from "@/lib/content";
+import { blogPosts as existingBlogPosts, subjectPackageGroups } from "@/lib/content";
 
 export type BlogSection = {
   h2: string;
@@ -528,7 +528,7 @@ const newBlogPosts: BlogPost[] = [
     ],
     cta: {
       title: "Ders modelini ve fiyatı şeffaf biçimde inceleyin",
-      text: "LGS ve YKS matematik paketleri ayda dört canlı 90 dakikalık ders içerir ve aylık ₺2.000'dir.",
+      text: `${subjectPackageGroups[0].packages.map((pkg) => `${pkg.name}: ${pkg.discountedPrice}`).join(". ")}. Ayda ${subjectPackageGroups[0].packages[0].lessonsPerMonth} canlı, ${subjectPackageGroups[0].packages[0].lessonDurationMinutes} dakikalık ders içerir.`,
       buttonLabel: "Paketleri Karşılaştır",
       href: "/ders-paketleri"
     },

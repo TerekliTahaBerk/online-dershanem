@@ -46,7 +46,7 @@ export const publicProducts = [
     slug: "online-deneme-kulubum",
     registryCode: "ODK",
     name: "Online Deneme Kulübüm",
-    label: "Deneme Kulübüm",
+    label: "Online Deneme Kulübüm",
     href: "/urunler/online-deneme-kulubum",
     role: "Ölçme, analiz ve sonraki adım",
     eyebrow: "Nerede olduğunu gör",

@@ -3,42 +3,46 @@
  * 340px başlık kolonu + esnek liste; details/summary, "+" ikonu açıkken "×"e döner.
  */
 
-const faqs = [
-  {
-    q: "Hangi ürünle başlamalıyım?",
-    a: "Konuyu öğrenme tarafında zorlanıyorsan Online Dershanem ile, planı uygulamada zorlanıyorsan Online Koçum ile, seviyeni ölçmek istiyorsan Online Deneme Kulübüm ile başlayabilirsin.",
-  },
-  {
-    q: "Ürünleri ayrı ayrı alabilir miyim?",
-    a: "Evet. Üç ürün de tek başına seçilebilir. Online ödeme akışı şu an ders paketinde açıktır; koçluk ve deneme için süreç ön görüşmeyle netleşir.",
-  },
-  {
-    q: "Dino AI nedir?",
-    a: "Dino AI, ders, plan ve deneme verisini açıklamaya yardımcı olan ortak katmandır. Ayrı satılan bir ürün değildir; öğretmen ve koçun kararını destekler.",
-  },
-  {
-    q: "Online satın alma nasıl oluyor?",
-    a: "Checkout adımında online satın alma açık olan yapılandırmayı doğrudan tamamlayabilirsin. Uygun olmayan kombinasyonlarda ön görüşme ile net teklif paylaşılır.",
-  },
-  {
-    q: "Paketimi sonradan değiştirebilir miyim?",
-    a: "Evet. İhtiyacın değiştiğinde tek ürünle devam edebilir, yeni ürün ekleyebilir veya kapsamı ön görüşmede güncelleyebilirsin.",
-  },
-  {
-    q: "Canlı ders formatı nasıl?",
-    a: "Online Dershanem canlı derslerinde birebir veya en fazla 4 kişilik küçük grup seçenekleri bulunur.",
-  },
-  {
-    q: "Veli neleri görür?",
-    a: "Veli görünümünde katılım, plan ilerlemesi ve gelişim özeti yer alır. Öğrencinin ekranı birebir yansıtılmaz.",
-  },
-  {
-    q: "Mobil uygulama mevcut mu?",
-    a: "Şu an mobil uygulama yayında değil. Platform mobil tarayıcıdan kullanılabilir; uygulama planlandığında burada duyurulur.",
-  },
-];
+import { getPublicPricingCopy } from "@/lib/commerce/public-pricing-copy";
+import { getDinoMarketingCopy } from "@/lib/dino-marketing";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export function HomeFaq() {
+  const faqs = [
+    {
+      q: "Hangi ürünle başlamalıyım?",
+      a: "Konuyu öğrenme tarafında zorlanıyorsan Online Dershanem ile, planı uygulamada zorlanıyorsan Online Koçum ile, seviyeni ölçmek istiyorsan Online Deneme Kulübüm ile başlayabilirsin.",
+    },
+    {
+      q: "Ürünleri ayrı ayrı alabilir miyim?",
+      a: `Evet. ${getPublicPricingCopy().standalone} Online satın alma ders paketinde kullanılabilir; diğer seçimlerin başlangıcını ekibimizle planlayabilirsin.`,
+    },
+    {
+      q: "Dino AI nedir?",
+      a: getDinoMarketingCopy(getPanelFeatureFlags().dinoAi).description,
+    },
+    {
+      q: "Online satın alma nasıl oluyor?",
+      a: "Online satın alınabilir ders paketini ödeme adımında tamamlayabilirsin. Diğer seçimlerde fiyatını paket özetinde görüp başlangıcını ekibimizle planlayabilirsin. Fiyatı hesaplanamayan özel kapsamlar için ön görüşmede yazılı teklif paylaşılır.",
+    },
+    {
+      q: "Paketimi sonradan değiştirebilir miyim?",
+      a: "Evet. İhtiyacın değiştiğinde tek ürünle devam edebilir veya yeni ürün ekleyebilirsin. Yeni seçimin tutarını paket kurucuda görüp başlangıcını ekibimizle planlayabilirsin.",
+    },
+    {
+      q: "Canlı ders formatı nasıl?",
+      a: "Online Dershanem canlı derslerinde birebir veya en fazla 4 kişilik küçük grup seçenekleri bulunur.",
+    },
+    {
+      q: "Veli neleri görür?",
+      a: "Veli görünümünde katılım, plan ilerlemesi ve gelişim özeti yer alır. Öğrencinin ekranı birebir yansıtılmaz.",
+    },
+    {
+      q: "Telefondan nasıl kolayca erişebilirim?",
+      a: "Platformu mobil tarayıcıdan açıp ana ekranına ekleyebilirsin. iPhone'da Safari'nin Paylaş menüsünden, Android'de tarayıcı menüsünden Ana ekrana ekle seçeneğini kullan.",
+    },
+  ];
+
   return (
     <section className="border-t border-dc-line-soft bg-white">
       <div className="site-container grid gap-10 py-[var(--dc-section-tight)] lg:grid-cols-[340px_1fr] lg:gap-12">

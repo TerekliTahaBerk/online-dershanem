@@ -8,7 +8,7 @@ import {
   footerLegalLinks,
 } from "@/lib/site-content";
 import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
-import { buildInfo, formatBuildStamp } from "@/lib/build-info";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 const socials = [
   {
@@ -46,7 +46,7 @@ const socials = [
  */
 export async function SiteFooter() {
   const products = await listActivePublicProducts();
-  const visibleFooterColumns = footerColumnsForProducts(products);
+  const visibleFooterColumns = footerColumnsForProducts(products, getPanelFeatureFlags().dinoAi);
   return (
     <footer id="site-footer" className="site-scope dc-surface-deep">
       <div className="site-container py-14 sm:py-16">
@@ -126,18 +126,6 @@ export async function SiteFooter() {
         <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-[var(--dc-on-deep-line)] pt-5 text-[13px] text-[var(--dc-on-deep-faint)] sm:mt-13 sm:flex-row sm:items-center">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>© {new Date().getFullYear()} Onlinedershanem</span>
-            {/* Yayındaki sürüm damgası: destek kaydında "hangi build?" sorusunu
-                ekran görüntüsüyle cevaplar, `/api/version` ile aynı kaynaktan
-                gelir. Yalnız sürüm ve kısa SHA — ikisi de yanıt başlıklarında
-                zaten görünüyor. */}
-            <span aria-hidden="true">·</span>
-            <span
-              data-testid="build-stamp"
-              title={`Build ${buildInfo.commitSha ?? "bilinmiyor"}${buildInfo.builtAt ? ` — ${buildInfo.builtAt}` : ""}`}
-              className="font-mono tabular-nums"
-            >
-              {formatBuildStamp(buildInfo)}
-            </span>
           </span>
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {footerLegalLinks.map((l, i) => (

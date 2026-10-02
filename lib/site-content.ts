@@ -10,6 +10,8 @@
  */
 import { contact } from "@/lib/content";
 import { publicProducts, sharedIntelligenceLayer } from "@/lib/product-architecture";
+import { getDinoMarketingCopy } from "@/lib/dino-marketing";
+import { getPublicPricingCopy } from "@/lib/commerce/public-pricing-copy";
 
 export const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 export const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
@@ -42,6 +44,13 @@ export const primaryNav = [
   { label: "Blog", accessibleLabel: "Blog", href: "/blog" },
 ] as const;
 
+export function primaryNavForDino(dinoAiEnabled: boolean) {
+  const label = getDinoMarketingCopy(dinoAiEnabled).navLabel;
+  return primaryNav.map((link) => link.href === sharedIntelligenceLayer.href
+    ? { ...link, label, accessibleLabel: label }
+    : link);
+}
+
 /** Sağ üst birincil CTA — paket kurucuya götürür (self-register yok). */
 export const navCta = { label: "Paketini Oluştur", href: "/paketler" } as const;
 /** Öğrenci paneli girişi. Panel sıfırdan yazılana kadar `/giris` "yenileniyor" mesajı + destek kanallarını gösterir. */
@@ -58,7 +67,7 @@ export const homeFaqs: Faq[] = [
   },
   {
     q: "Üçünü birden almak zorunda mıyım?",
-    a: "Hayır. Tek ürünle başlayabilirsin. Online ödeme akışı şu an ders paketinde açıktır; koçluk veya deneme eklemek istersen süreç ön görüşmede netleşir.",
+    a: `Hayır. Tek ürünle başlayabilirsin. ${getPublicPricingCopy().standalone} Online satın alma ders paketinde kullanılabilir; diğer seçimlerin başlangıcını ekibimizle planlayabilirsin.`,
   },
   {
     q: "Hangisiyle başlamalıyım?",
@@ -119,6 +128,7 @@ export const footerColumns = [
 
 export function footerColumnsForProducts(
   products: readonly { name: string; href: string }[],
+  dinoAiEnabled = false,
 ) {
   return footerColumns.map((column) =>
     column.title === "Ürünler"
@@ -129,7 +139,9 @@ export function footerColumnsForProducts(
             { label: "Paketini Oluştur", href: "/paketler" },
           ],
         }
-      : column,
+      : { ...column, links: column.links.map((link) => link.href === sharedIntelligenceLayer.href
+          ? { ...link, label: getDinoMarketingCopy(dinoAiEnabled).navLabel }
+          : link) },
   );
 }
 

@@ -15,8 +15,8 @@ function toLessonPackage(source: (typeof sources)[number]) {
     name: source.name,
     category: source.category, // "LGS" veya "YKS"
     subject: source.subject, // "Matematik Ders Paketi" — checkout kimliği
-    priceLabel: source.discountedPrice, // ör. "₺3.000/ay"
-    oldPriceLabel: source.oldPrice || undefined, // ör. "₺5.000/ay"
+    priceLabel: source.discountedPrice, // Güncel katalog: "₺2.000/ay".
+    oldPriceLabel: source.oldPrice || undefined, // Güncel katalogda eski fiyat yok.
     discountLabel: source.discountLabel || undefined,
     priceCents: source.priceCents, // ödeme-kritik kaynak değeri
     tagline: source.tagline,
@@ -49,4 +49,3 @@ export const includedFeatures: string[] = [
   "Seviye ve hedefe göre grup planlaması",
   "PayTR ile güvenli ödeme",
 ];
-

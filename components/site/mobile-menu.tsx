@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { X, Phone, MessageCircle } from "lucide-react";
 import {
-  primaryNav,
+  primaryNavForDino,
   productsMenu,
   navCta,
   navLogin,
@@ -21,6 +21,7 @@ type MobileMenuProps = {
   isActive: (href: string) => boolean;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   products: readonly PublicProduct[];
+  dinoAiEnabled: boolean;
 };
 
 /**
@@ -33,7 +34,9 @@ export function MobileMenu({
   isActive,
   triggerRef,
   products,
+  dinoAiEnabled,
 }: MobileMenuProps) {
+  const primaryNav = primaryNavForDino(dinoAiEnabled);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 

@@ -14,7 +14,7 @@ import { Fragment } from "react";
 const products = [
   "Online Dershanem",
   "Online Koçum",
-  "Deneme Kulübüm",
+  "Online Deneme Kulübüm",
 ] as const;
 
 type Row =

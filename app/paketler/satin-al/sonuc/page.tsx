@@ -85,7 +85,7 @@ export default async function OdCheckoutThankYouPage({
               <ClearCartOnPaymentSuccess />
               <CheckoutResultCard
                 status="success"
-                eyebrow="Online Matematik Dershanesi"
+                eyebrow="Online Dershanem"
                 description="Ödemeniz alındı. Ekibimiz sizinle iletişime geçip ilk ders planlamasını yapacak."
                 nextStepNote={
                   <>
@@ -110,7 +110,7 @@ export default async function OdCheckoutThankYouPage({
           {order && normalizedStatus === "pending" && (
             <CheckoutResultCard
               status="pending"
-              eyebrow="Online Matematik Dershanesi"
+              eyebrow="Online Dershanem"
               title="Ödeme onayı bekleniyor"
               description="Bankanızdan gelen ödeme onayı kontrol ediliyor. Başarı ekranı yalnızca siparişiniz PayTR bildirimiyle doğrulandıktan sonra gösterilir."
               primaryAction={{
@@ -125,7 +125,7 @@ export default async function OdCheckoutThankYouPage({
           {order && normalizedStatus === "failed" && (
             <CheckoutResultCard
               status="failed"
-              eyebrow="Online Matematik Dershanesi"
+              eyebrow="Online Dershanem"
               primaryAction={{
                 href: `/paketler/satin-al/odeme?orderId=${encodeURIComponent(order.id)}`,
                 label: "Ödemeyi Tekrar Dene",

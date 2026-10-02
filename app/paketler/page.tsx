@@ -8,16 +8,18 @@ import {
 } from "@/components/product/product-sections";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
+import { getPublicPricingCopy } from "@/lib/commerce/public-pricing-copy";
 
 export const metadata = buildMarketingMetadata({
   title: "Paketler | Kendi paketini oluştur",
   description:
-    "Online Dershanem, Online Koçum ve Online Deneme Kulübüm'ü tek tek ya da birlikte seç; online alınabilir ürünü doğrudan satın al, diğer seçimler için ön görüşme talep et.",
+    "Online Dershanem, Online Koçum ve Online Deneme Kulübüm'ü tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
   canonical: "/paketler",
 });
 
 export default async function PackagesPage() {
   const activeRegistryCodes = await listActivePublicProductCodes();
+  const pricing = getPublicPricingCopy();
   return (
     <div className="site-scope">
       <SiteHeader />
@@ -30,9 +32,9 @@ export default async function PackagesPage() {
             Birlikte kullan.
           </h1>
           <p className="mx-auto mt-4 max-w-[640px] text-[18px] leading-[1.65] text-dc-ink-body">
-            Satın alınabilir ders paketinin fiyatını doğrudan görürsün. Koçluk,
-            deneme, birebir ve birleşik seçimlerin net tutarı ön görüşmede
-            paylaşılır.
+            Ders, koçluk ve denemenin güncel fiyatlarını doğrudan görürsün.
+            Birlikte alım avantajı paket özetinde, aylık ve dönemlik tutarlar
+            ayrı ayrı gösterilir.
           </p>
         </section>
 
@@ -64,11 +66,11 @@ export default async function PackagesPage() {
           items={[
             {
               q: "Ürünleri ayrı ayrı alabilir miyim?",
-              a: "Evet. Üç ürün de tek başına seçilebilir. Online ödeme akışı şu an ders paketinde açıktır; diğer tek ürün seçimlerinde net fiyat ve başlangıç planı ön görüşmede paylaşılır.",
+              a: `Evet. ${pricing.standalone} Online satın alma ders paketinde kullanılabilir; diğer seçimlerin başlangıcını ekibimizle planlayabilirsin.`,
             },
             {
               q: "Birden fazla ürün aldığımda fiyat nasıl değişiyor?",
-              a: "İki ya da üç ürünü birlikte seçtiğinde toplam tutar düşer. Bu birleşik seçenekler online ödeme adımına açık olmadığı için net rakam ön görüşmede yazılı olarak paylaşılır.",
+              a: pricing.bundles,
             },
             {
               q: "Ders fiyatı derse göre değişiyor mu?",
@@ -76,11 +78,11 @@ export default async function PackagesPage() {
             },
             {
               q: "Faturalama nasıl işliyor?",
-              a: "Online satın alınabilir ders paketi aylıktır. Koçluk, deneme kulübü ve birleşik seçimlerin faturalama dönemleri kesin teklifte ayrı ayrı belirtilir.",
+              a: "Ders ve Online Koçum aylık, Online Deneme Kulübüm dönemliktir. Birlikte seçtiğinde aylık ve dönemlik tutarlar paket özetinde ayrı ayrı görünür.",
             },
             {
               q: "Paket fiyatımı sonradan değiştirebilir miyim?",
-              a: "Online satın alınabilir ürünün fiyatı ödeme adımında güncel tutarla doğrulanır. Ön görüşmeli seçimlerde ise kabul ettiğin yazılı teklif esas alınır.",
+              a: "Seçimini paket kurucuda güncel fiyatlarla yeniden hesaplayabilirsin. Online satın alma tutarı ödeme adımında da doğrulanır. Fiyatı hesaplanamayan özel bir kapsam için ön görüşmede yazılı teklif paylaşılır.",
             },
           ]}
         />

@@ -4,13 +4,13 @@ import { PackagesExperience } from "@/components/pricing/packages-experience";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd, productJsonLd } from "@/lib/seo/jsonld";
 import { parsePriceToCents } from "@/lib/content";
-import { lessonPackages } from "@/lib/pricing-content";
+import { lessonPackage, lessonPackages } from "@/lib/pricing-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
   title: "LGS ve YKS Matematik Ders Paketleri | Online Dershanem",
   description:
-    "LGS ve YKS online matematik ders paketleri: ayda 4 × 90 dakika canlı ders, en fazla 4 öğrenci, ₺2.000/ay ve taahhütsüz ödeme.",
+    `LGS ve YKS online matematik ders paketleri: ayda ${lessonPackage.lessonsPerMonth} × ${lessonPackage.lessonDurationMinutes} dakika canlı ders, en fazla 4 öğrenci, ${lessonPackage.priceLabel} ve taahhütsüz ödeme.`,
   canonical: "/ders-paketleri",
 });
 

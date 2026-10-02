@@ -1,7 +1,8 @@
 import { SiteHeaderClient } from "@/components/site/site-header-client";
 import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export async function SiteHeader() {
   const products = await listActivePublicProducts();
-  return <SiteHeaderClient products={products} />;
+  return <SiteHeaderClient products={products} dinoAiEnabled={getPanelFeatureFlags().dinoAi} />;
 }

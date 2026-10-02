@@ -13,6 +13,7 @@ import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
 import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 import { siteUrl } from "@/lib/content";
+import { lessonPackage, lessonPackages } from "@/lib/pricing-content";
 
 export const metadata = buildMarketingMetadata({
   title: "Online Matematik Dersi | LGS ve YKS",
@@ -37,7 +38,7 @@ const mathFaqs = [
   },
   {
     q: "Online matematik dersi fiyatı ne kadar?",
-    a: "LGS ve YKS Matematik Ders Paketlerinin her biri aylık ₺2.000'dir. Paket ayda 4 canlı, 90 dakikalık ders içerir ve taahhütsüzdür.",
+    a: `${lessonPackages.map((pkg) => `${pkg.name}: ${pkg.priceLabel}`).join(". ")}. Paket ayda ${lessonPackage.lessonsPerMonth} canlı, ${lessonPackage.lessonDurationMinutes} dakikalık ders içerir ve taahhütsüzdür.`,
   },
 ];
 
@@ -171,7 +172,7 @@ export default function MathematicsHubPage() {
                 </LeadFunnelTrigger>
               </div>
               <p className="mt-5 text-[13px] font-semibold text-[var(--site-muted)]">
-                Ayda 4 × 90 dakika · En fazla 4 öğrenci · ₺2.000/ay · Taahhütsüz
+                Ayda {lessonPackage.lessonsPerMonth} × {lessonPackage.lessonDurationMinutes} dakika · {lessonPackage.quota} · {lessonPackage.priceLabel} · Taahhütsüz
               </p>
             </div>
 

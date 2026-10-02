@@ -10,7 +10,7 @@ import type { ProductCode } from "@prisma/client";
 export const STUDENT_SUCCESS_PRODUCT_LABELS: Record<ProductCode, string> = {
   OD: "Dershanem",
   OK: "Koçum",
-  ODK: "Deneme Kulübü",
+  ODK: "Online Deneme Kulübüm",
   KPSS: "KPSS",
 };
 

@@ -249,7 +249,7 @@ test("SKU'su olmayan yapılandırmalar ön görüşmeye kalır", () => {
   assert.equal(resolveBuilderCheckout({ ...base, exam: "YKS", kocum: true }), null);
 });
 
-test("ürün kartında kesin fiyat yalnız checkout SKU'su olan grup dersi için açılır", () => {
+test("ürün kartının online satın alma durumu fiyat görünürlüğünden bağımsızdır", () => {
   const selection = { ...base, exam: "YKS" as const };
   const dershanem = resolveBuilderProductCheckout(selection, "dershanem");
   assert.ok(dershanem);
@@ -260,10 +260,10 @@ test("ürün kartında kesin fiyat yalnız checkout SKU'su olan grup dersi için
   assert.equal(resolveBuilderProductCheckout({ ...selection, extraSubjects: ["Fizik"] }, "dershanem"), null);
 });
 
-test("ön görüşme seçimi fiyatın kilitlenmediğini iletişim akışına taşır", () => {
+test("fiyatı hesaplanan seçim, online satın alma olmasa da belirsiz fiyat diye taşınmaz", () => {
   const query = builderContactQuery({ ...base, kocum: true });
   const params = new URLSearchParams(query.slice(1));
-  assert.equal(params.get("fiyat"), "on_gorusme");
+  assert.equal(params.get("fiyat"), null);
   assert.match(params.get("paket") ?? "", /Online Koçum/);
 
   const checkoutBacked = builderContactQuery({ ...base, dershanem: true });

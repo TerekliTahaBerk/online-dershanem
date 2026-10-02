@@ -359,7 +359,7 @@ export default async function StudentHomePage() {
 
       {odk && !latest ? (
         <p className="mt-5 text-[14px] text-dc-ink-muted">
-          Deneme Kulübü sonuçların girildiğinde net gelişimin ve analiz burada
+          Online Deneme Kulübüm sonuçların girildiğinde net gelişimin ve analiz burada
           açılır.
         </p>
       ) : null}
