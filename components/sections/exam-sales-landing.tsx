@@ -45,10 +45,10 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
       <main id="main-content" tabIndex={-1}>
         {/* HERO */}
         <section className="border-b border-[var(--site-line)] bg-[var(--site-bg-warm)]">
-          <div className="site-container grid gap-10 py-16 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="site-container grid gap-10 py-16 sm:py-20 lg:grid-cols-[1.3fr_0.7fr] lg:items-center lg:gap-14">
             <div>
               <span className="site-eyebrow">{data.heroBadge}</span>
-              <h1 className="mt-4 font-display text-[clamp(2.3rem,5vw,3.6rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
+              <h1 className="mt-4 max-w-[17ch] font-display text-[clamp(2.1rem,4.2vw,3.25rem)] leading-[1.08] tracking-[-0.02em] text-[var(--site-ink)] [text-wrap:balance]">
                 {data.heroTitle}
               </h1>
               <p className="mt-5 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">
@@ -197,7 +197,7 @@ export function ExamSalesLanding({ data }: { data: ExamSalesLandingData }) {
 
         {data.resources?.length ? (
           <section className="border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
-            <div className="site-container py-14 sm:py-18">
+            <div className="site-container py-14 sm:py-[72px]">
               <div className="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-start">
                 <div>
                   <p className="site-kicker">Matematik rehberleri</p>

@@ -39,15 +39,28 @@ export function Ecosystem({
         </p>
       </div>
 
-      <ol className="mt-13 grid gap-11 md:grid-cols-3">
-        {steps.map(({ title, body, product }) => (
+      <ol className="mt-12 grid gap-9 md:grid-cols-3 md:gap-8">
+        {steps.map(({ title, body, product }, i) => (
           <li key={title}>
-            <span className="inline-flex rounded-full bg-dc-brand-soft px-3 py-1 text-[12px] font-bold tracking-[0.08em] text-dc-brand-strong">
-              {title}
-            </span>
-            <span className="my-4 block h-px bg-[#DDE4E0]" />
-            <h3 className="text-[20px] font-bold text-dc-ink">{product}</h3>
-            <p className="mt-2 text-[15px] leading-[1.65] text-dc-ink-muted">
+            <div className="flex items-center gap-3">
+              <span
+                aria-hidden="true"
+                className="grid h-9 w-9 flex-none place-items-center rounded-full bg-dc-brand-soft text-[15px] font-bold text-dc-brand-strong"
+              >
+                {i + 1}
+              </span>
+              <span className="text-[15px] font-bold text-dc-brand-strong">
+                {title}
+              </span>
+              {i < steps.length - 1 ? (
+                <span
+                  aria-hidden="true"
+                  className="hidden h-px flex-1 bg-dc-brand-soft-line md:block"
+                />
+              ) : null}
+            </div>
+            <h3 className="mt-4 text-[20px] font-bold text-dc-ink">{product}</h3>
+            <p className="mt-2 max-w-[34ch] text-[15.5px] leading-[1.65] text-dc-ink-muted">
               {body}
             </p>
           </li>
@@ -63,7 +76,7 @@ export function Ecosystem({
             width={1319}
             height={1193}
             sizes="96px"
-            className="w-[72px] flex-none sm:w-24"
+            className="w-14 flex-none sm:w-24"
           />
           <div className="max-w-[760px]">
             <h3 className="text-[20px] font-bold text-dc-ink">

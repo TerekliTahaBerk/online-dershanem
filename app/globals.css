@@ -334,22 +334,11 @@ a {
   outline-offset: 3px;
 }
 
-/* Footer kolonları: mobilde akordeon, lg'den itibaren her zaman açık düz liste.
-   Masaüstünde <summary> tıklamayla kapanmasın diye etkileşim kapatılır. */
-@media (min-width: 1024px) {
-  .dc-footer-col > summary {
-    pointer-events: none;
-    cursor: default;
-  }
-  .dc-footer-col > ul {
-    display: flex !important;
-  }
-}
 
 /* Handoff: eyebrow / etiket — JetBrains Mono 10–11, ls .14em */
 .dc-eyebrow {
   font-family: var(--dc-font-mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.14em;
@@ -773,18 +762,6 @@ html {
   .panel-metric-card:hover { transform: none; }
 }
 /* Highlight kelime — yumuşak adaçayı pill zemin (referans: "tek yerden") */
-.site-hl {
-  background: var(--brand-orange-soft);
-  color: var(--brand-orange-ink);
-  border-radius: 10px;
-  padding: 0 0.28em 0.04em;
-  line-height: 1.08;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-}
-.site-scope :where(h1, h2, h3).font-display:has(.site-hl) {
-  line-height: 1.14 !important;
-}
 /* Pill / eyebrow etiketi */
 .site-eyebrow {
   display: inline-flex;

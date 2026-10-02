@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Check } from "lucide-react";
 
 /**
  * ÜRÜN SAYFASI ORTAK BÖLÜMLERİ — onaylı tasarım (Web.dc.html → isOD / isOK / isDK).
@@ -307,7 +308,15 @@ export function CrossSellWithPrice({
 
         <ul className="flex flex-col gap-2 text-[14.5px] font-medium text-[var(--pd-ink-3)]">
           {features.map((f) => (
-            <li key={f}>✓ {f}</li>
+            <li key={f} className="flex items-start gap-2">
+              <Check
+                size={16}
+                strokeWidth={2.4}
+                aria-hidden="true"
+                className="mt-[3px] flex-none text-dc-brand"
+              />
+              {f}
+            </li>
           ))}
         </ul>
 

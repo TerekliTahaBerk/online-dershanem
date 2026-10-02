@@ -52,7 +52,7 @@ export default function SssPage() {
           eyebrow="Yardım Merkezi"
           title={
             <>
-              Sık sorulan <span className="site-hl">sorular</span>
+              Sık sorulan sorular
             </>
           }
           subtitle={

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Home, Search } from "lucide-react";
+import { ArrowRight, Home } from "lucide-react";
+import { SiteHeader } from "@/components/site/site-header";
+import { SiteFooter } from "@/components/site/site-footer";
 import { BackButton } from "@/components/site/back-button";
 
 export const metadata: Metadata = {
@@ -9,65 +11,72 @@ export const metadata: Metadata = {
 };
 
 const POPULAR_LINKS = [
-  { href: "/paketler", label: "Paketini Oluştur" },
-  { href: "/ders-paketleri", label: "Canlı Ders Seçenekleri" },
-  { href: "/yks", label: "YKS Matematik Canlı Ders" },
-  { href: "/lgs", label: "LGS Matematik Canlı Ders" },
-  { href: "/misyonumuz", label: "Misyonumuz" },
-  { href: "/iletisim", label: "İletişim" },
-  { href: "/sss", label: "Sıkça Sorulan Sorular" },
+  { href: "/paketler", label: "Paketini oluştur", note: "Ders, koçluk ve deneme" },
+  { href: "/urunler", label: "Ürünler", note: "Üç ürünü karşılaştır" },
+  { href: "/lgs", label: "LGS matematik", note: "Küçük grup canlı ders" },
+  { href: "/yks", label: "YKS matematik", note: "TYT ve AYT için canlı ders" },
+  { href: "/sss", label: "Sıkça sorulan sorular", note: "Fiyat, ders ve ödeme" },
+  { href: "/iletisim", label: "İletişim", note: "WhatsApp, telefon, form" },
 ];
 
+/**
+ * 404 — sitenin üst menüsü ve alt bilgisiyle birlikte: kullanıcı yolunu
+ * kaybettiği anda gezinmeyi de kaybetmesin.
+ */
 export default function NotFound() {
   return (
-    <main className="site-scope flex min-h-screen items-center justify-center bg-[var(--site-bg-warm)] px-5 py-16">
-      <div className="text-center max-w-2xl">
-        <p
-          className="select-none font-display text-7xl font-medium text-[var(--site-muted)]"
-          aria-hidden="true"
-        >
-          404
-        </p>
-        <h1 className="mt-4 font-display text-[34px] text-[var(--site-ink)]">
-          Sayfa bulunamadı
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-[var(--site-body)]">
-          Aradığın sayfa taşınmış, silinmiş ya da hiç var olmamış olabilir.
-        </p>
-
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/"
-            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[var(--brand-orange)] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-[var(--brand-orange-hover)]"
-          >
-            <Home className="h-4 w-4" />
-            Ana Sayfa
-          </Link>
-          <BackButton />
-        </div>
-
-        {/* Popüler sayfalar — kullanıcıyı kaybetmemek için */}
-        <div className="mt-12 rounded-[24px] border border-[var(--site-line)] bg-white p-6 text-left shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
-          <div className="flex items-center gap-2 mb-4">
-            <Search className="h-4 w-4 text-[var(--brand-orange-ink)]" />
-            <h2 className="font-display text-[20px] text-[var(--site-ink)]">
-              Popüler Sayfalar
-            </h2>
+    <div className="site-scope">
+      <SiteHeader />
+      <main id="main-content" tabIndex={-1} className="bg-dc-canvas">
+        <div className="site-container py-16 sm:py-24">
+          <div className="max-w-[640px]">
+            <p className="dc-eyebrow">Hata 404</p>
+            <h1 className="mt-4 font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
+              Sayfa bulunamadı
+            </h1>
+            <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
+              Bağlantı eskimiş ya da adres yanlış yazılmış olabilir. Aşağıdaki
+              sayfalardan devam edebilirsin.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/" className="site-btn site-btn-primary site-btn-lg">
+                <Home size={17} aria-hidden="true" />
+                Ana sayfa
+              </Link>
+              <BackButton />
+            </div>
           </div>
-          <ul className="grid sm:grid-cols-2 gap-2">
+
+          <h2 className="mt-14 text-[17px] font-extrabold text-dc-ink">
+            Sık ziyaret edilenler
+          </h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {POPULAR_LINKS.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="block rounded-[12px] px-3 py-2 text-sm text-[var(--site-body)] transition-colors hover:bg-[var(--site-bg-warm)] hover:text-[var(--brand-orange-ink)]"
+                  className="group flex min-h-[72px] items-center justify-between gap-4 rounded-dc-card-sm border border-dc-line bg-white px-5 py-4 transition-colors hover:border-dc-brand"
                 >
-                  → {link.label}
+                  <span>
+                    <span className="block text-[15.5px] font-bold text-dc-ink">
+                      {link.label}
+                    </span>
+                    <span className="mt-0.5 block text-[13.5px] text-dc-ink-muted">
+                      {link.note}
+                    </span>
+                  </span>
+                  <ArrowRight
+                    size={18}
+                    aria-hidden="true"
+                    className="flex-none text-dc-ink-faint transition-colors group-hover:text-dc-brand-strong"
+                  />
                 </Link>
               </li>
             ))}
           </ul>
         </div>
-      </div>
-    </main>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

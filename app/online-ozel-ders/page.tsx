@@ -31,7 +31,7 @@ export default function OnlineOzelDersPage() {
           align="left"
           title={
             <>
-              Özel derse yakın <span className="site-hl">ilgi</span>, küçük
+              Özel derse yakın ilgi, küçük
               grubun temposuyla.
             </>
           }
