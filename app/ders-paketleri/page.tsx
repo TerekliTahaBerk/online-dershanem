@@ -10,7 +10,7 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "LGS ve YKS Matematik Ders Paketleri | Online Dershanem",
   description:
-    "LGS ve YKS online matematik ders paketleri: ayda 4 × 90 dakika canlı ders, en fazla 4 öğrenci, ₺3.000/ay ve taahhütsüz ödeme.",
+    "LGS ve YKS online matematik ders paketleri: ayda 4 × 90 dakika canlı ders, en fazla 4 öğrenci, ₺2.000/ay ve taahhütsüz ödeme.",
   canonical: "/ders-paketleri",
 });
 

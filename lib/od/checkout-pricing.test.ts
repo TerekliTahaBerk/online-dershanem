@@ -23,7 +23,7 @@ test("catalog checkout supports multiple server-priced lines and quantities", ()
     qty: 1,
   };
 
-  assert.equal(priceCatalogItems([{ ...lgs, qty: 2 }])?.[0].priceCents, 300000);
+  assert.equal(priceCatalogItems([{ ...lgs, qty: 2 }])?.[0].priceCents, 200000);
   assert.equal(priceCatalogItems([lgs, { ...lgs, id: "sibling" }])?.length, 2);
   assert.equal(priceCatalogItems([{ ...lgs, qty: 100 }]), null);
 });

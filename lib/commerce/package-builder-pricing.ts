@@ -25,12 +25,22 @@
  * ele alınmalıdır; kampanya bittiğinde ürünün bu fiyattan satılabiliyor olması
  * gerekir. Rakamlar ticari karardır, kod tarafında serbestçe değiştirilebilir.
  *
- * ── DURUM (2026-08-15) ────────────────────────────────────────────────────
+ * ── DURUM (2026-09-17) ────────────────────────────────────────────────────
  * Tüm fiyatlar tanımlı. Online Dershanem'in grup ders fiyatı burada
  * KOPYALANMAZ: ödeme-kritik katalogdan (`lib/content.ts` →
  * `subjectPackageGroups` → "Matematik Ders Paketi") okunur, çünkü checkout
  * fiyat doğrulaması da aynı kaynağı kullanır. Diğer kalemlerin henüz bir
  * checkout SKU'su olmadığı için değerleri burada durur.
+ *
+ * Güncel ticari karar — TEK FİYAT, KALEM BAZINDA KAMPANYA YOK:
+ *   - Grup dersi        ₺2.000/ay  (indirim/kampanya farketmeksizin)
+ *   - Birebir özel ders ₺4.000/ay
+ *   - Online Koçum      ₺3.000/ay
+ *   - Deneme Kulübüm    ₺1.000/dönem (LGS ve YKS aynı)
+ * DERSE ASLA İNDİRİM UYGULANMAZ. Tek avantaj birlikte alımdaki paket
+ * indirimidir: ders alana koçluk ₺2.500 ve deneme ₺500; koçluk alana
+ * deneme ₺750. Bu yüzden ders/koçluk/deneme kalemlerinin `listCents`
+ * değeri `null`'dır — üstü çizili fiyat basılmaz.
  */
 import { getPackageListPriceCents, getPackagePriceCents } from "@/lib/content";
 
@@ -91,8 +101,8 @@ function groupLessonPrice(exam: ExamTrack | null): PricePair {
  * tek öğrenciye ayrılmasıdır.
  */
 const ONE_TO_ONE_LESSON: PricePair = {
-  listCents: 650_000, // ₺6.500/ay
-  campaignCents: 450_000, // ₺4.500/ay
+  listCents: null, // Derste indirim yok — üstü çizili fiyat gösterilmez.
+  campaignCents: 400_000, // ₺4.000/ay
 };
 
 /**
@@ -102,8 +112,8 @@ const ONE_TO_ONE_LESSON: PricePair = {
  * kalemdir, bu yüzden ders sayısıyla çarpılmaz.
  */
 const COACHING: PricePair = {
-  listCents: 350_000, // ₺3.500/ay
-  campaignCents: 250_000, // ₺2.500/ay
+  listCents: null, // Tek başına alındığında indirim yok.
+  campaignCents: 300_000, // ₺3.000/ay
 };
 
 /**
@@ -112,8 +122,8 @@ const COACHING: PricePair = {
  * Aylık değil dönemsel faturalanır; özet ekranı bu farkı ayrıca yazar.
  */
 const EXAM_CLUB: PricePair = {
-  listCents: 150_000, // ₺1.500/dönem
-  campaignCents: 100_000, // ₺1.000/dönem
+  listCents: null, // Tek başına alındığında indirim yok.
+  campaignCents: 100_000, // ₺1.000/dönem — LGS ve YKS aynı.
 };
 
 /**
@@ -130,10 +140,10 @@ const BUNDLE_DISCOUNT_CENTS: Record<
   "dk" | "dn" | "kn" | "dkn",
   Readonly<Partial<Record<BillingPeriod, number>>>
 > = {
-  dk: { monthly: 50_000 },
-  dn: { period: 25_000 },
-  kn: { period: 25_000 },
-  dkn: { monthly: 50_000, period: 25_000 },
+  dk: { monthly: 50_000 }, // Koçluk ₺3.000 → ₺2.500
+  dn: { period: 50_000 }, // Deneme Kulübü ₺1.000 → ₺500
+  kn: { period: 25_000 }, // Koçluk alana Deneme Kulübü ₺1.000 → ₺750
+  dkn: { monthly: 50_000, period: 50_000 }, // Ders alana koçluk ₺2.500, deneme ₺500
 };
 
 /**

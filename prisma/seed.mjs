@@ -41,11 +41,12 @@ async function main() {
 
   await prisma.odkPackage.upsert({
     where: { slug: "tyt-deneme-kulubu" },
-    update: { title: "TYT Deneme Kulübü", priceCents: 149900, isActive: true, contractPolicy },
+    // Deneme Kulübü LGS/YKS farketmeksizin ₺1.000/dönem; kalem bazında indirim yok.
+    update: { title: "TYT Deneme Kulübü", priceCents: 100000, originalPriceCents: null, isActive: true, contractPolicy },
     create: {
       title: "TYT Deneme Kulübü", slug: "tyt-deneme-kulubu",
-      description: "Online deneme paketi", priceCents: 149900,
-      originalPriceCents: 199900, durationDays: 90, isActive: true, isFeatured: true,
+      description: "Online deneme paketi", priceCents: 100000,
+      originalPriceCents: null, durationDays: 90, isActive: true, isFeatured: true,
       contractPolicy,
     },
   });

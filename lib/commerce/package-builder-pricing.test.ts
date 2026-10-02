@@ -33,44 +33,40 @@ const base: BuilderSelection = {
   extraSubjects: [],
 };
 
-test("tek tek ürün fiyatları tanımlı ve liste fiyatı kampanyanın üstünde", () => {
+test("tek tek ürün fiyatları tanımlı ve kalem bazında indirim yok", () => {
   for (const product of ["dershanem", "kocum", "denemeKulubum"] as const) {
     const pair = singleProductPrice(product);
     assert.ok(pair, `${product} fiyatı tanımsız`);
-    assert.ok(pair.campaignCents, `${product} kampanya fiyatı yok`);
-    assert.ok(pair.listCents, `${product} liste fiyatı yok`);
-    assert.ok(
-      pair.listCents > pair.campaignCents,
-      `${product} liste fiyatı kampanya fiyatının üstünde değil`,
-    );
+    assert.ok(pair.campaignCents, `${product} fiyatı yok`);
+    assert.equal(pair.listCents, null, `${product} için üstü çizili fiyat basılmamalı`);
   }
 });
 
-test("grup dersi ₺3.000, birebir ₺4.500, koçluk ₺2.500, deneme ₺1.000", () => {
-  assert.equal(singleProductPrice("dershanem")?.campaignCents, 300_000);
-  assert.equal(singleProductPrice("kocum")?.campaignCents, 250_000);
+test("grup dersi ₺2.000, birebir ₺4.000, koçluk ₺3.000, deneme ₺1.000", () => {
+  assert.equal(singleProductPrice("dershanem")?.campaignCents, 200_000);
+  assert.equal(singleProductPrice("kocum")?.campaignCents, 300_000);
   assert.equal(singleProductPrice("denemeKulubum")?.campaignCents, 100_000);
 
   const birebir = resolvePackageQuote({ ...base, dershanem: true, format: "birebir" });
-  assert.equal(birebir.monthlyTotal.payableCents, 450_000);
+  assert.equal(birebir.monthlyTotal.payableCents, 400_000);
 });
 
-test("deneme kulübü ₺1.500 liste fiyatından ₺1.000'e", () => {
-  const quote = resolvePackageQuote({ ...base, denemeKulubum: true });
-  assert.equal(quote.periodTotal.listCents, 150_000);
-  assert.equal(quote.periodTotal.payableCents, 100_000);
-  assert.equal(quote.periodTotal.savingsCents, 50_000);
-  assert.equal(quote.monthlyTotal.selectedLineCount, 0);
-  assert.equal(discountPercent(150_000, 100_000), 33);
+test("deneme kulübü tek başına ₺1.000, LGS ve YKS aynı", () => {
+  for (const exam of ["LGS", "YKS"] as const) {
+    const quote = resolvePackageQuote({ ...base, exam, denemeKulubum: true });
+    assert.equal(quote.periodTotal.payableCents, 100_000);
+    assert.equal(quote.periodTotal.savingsCents, 0);
+    assert.equal(quote.monthlyTotal.selectedLineCount, 0);
+  }
 });
 
 test("ders fiyatı derse göre değişmez, ders SAYISINA göre çarpılır", () => {
   const tek = resolvePackageQuote({ ...base, dershanem: true });
-  assert.equal(tek.monthlyTotal.payableCents, 300_000);
+  assert.equal(tek.monthlyTotal.payableCents, 200_000);
 
   // Farklı ders seçmek fiyatı değiştirmemeli.
   const baskaDers = resolvePackageQuote({ ...base, dershanem: true, subject: "Fizik" });
-  assert.equal(baskaDers.monthlyTotal.payableCents, 300_000);
+  assert.equal(baskaDers.monthlyTotal.payableCents, 200_000);
 
   // İki ek ders → toplam 3 ders.
   const ucDers = resolvePackageQuote({
@@ -78,25 +74,34 @@ test("ders fiyatı derse göre değişmez, ders SAYISINA göre çarpılır", () 
     dershanem: true,
     extraSubjects: ["Fizik", "Kimya"],
   });
-  assert.equal(ucDers.monthlyTotal.payableCents, 900_000);
-  assert.equal(ucDers.monthlyTotal.listCents, 1_500_000);
+  assert.equal(ucDers.monthlyTotal.payableCents, 600_000);
+  assert.equal(ucDers.monthlyTotal.listCents, 600_000);
 });
 
-test("tek üründe paket indirimi yok, kampanya indirimi var", () => {
+test("tek üründe hiç indirim yok", () => {
   const quote = resolvePackageQuote({ ...base, kocum: true });
   assert.equal(quote.monthlyTotal.bundleDiscountCents, 0);
-  assert.equal(quote.monthlyTotal.campaignSavingsCents, 100_000); // 3.500 → 2.500
-  assert.equal(quote.monthlyTotal.savingsCents, 100_000);
-  assert.equal(quote.monthlyTotal.payableCents, 250_000);
+  assert.equal(quote.monthlyTotal.campaignSavingsCents, 0);
+  assert.equal(quote.monthlyTotal.savingsCents, 0);
+  assert.equal(quote.monthlyTotal.payableCents, 300_000);
 });
 
-test("iki ürün birlikte alınınca paket indirimi uygulanır", () => {
+test("ders alana koçluk ₺2.500'e iner", () => {
   const quote = resolvePackageQuote({ ...base, dershanem: true, kocum: true });
-  assert.equal(quote.monthlyTotal.campaignCents, 550_000); // 3.000 + 2.500
-  assert.equal(quote.monthlyTotal.bundleDiscountCents, 50_000); // ₺500/ay
-  assert.equal(quote.monthlyTotal.payableCents, 500_000);
-  assert.equal(quote.monthlyTotal.listCents, 850_000); // 5.000 + 3.500
-  assert.equal(quote.monthlyTotal.savingsCents, 350_000);
+  assert.equal(quote.monthlyTotal.campaignCents, 500_000); // 2.000 + 3.000
+  assert.equal(quote.monthlyTotal.bundleDiscountCents, 50_000); // koçluk ₺500 iner
+  assert.equal(quote.monthlyTotal.payableCents, 450_000); // 2.000 + 2.500
+  assert.equal(quote.monthlyTotal.savingsCents, 50_000);
+});
+
+test("ders alana deneme kulübü ₺500, koçluk alana ₺750", () => {
+  const dersle = resolvePackageQuote({ ...base, dershanem: true, denemeKulubum: true });
+  assert.equal(dersle.monthlyTotal.payableCents, 200_000); // derste indirim yok
+  assert.equal(dersle.periodTotal.payableCents, 50_000);
+
+  const koclukla = resolvePackageQuote({ ...base, kocum: true, denemeKulubum: true });
+  assert.equal(koclukla.monthlyTotal.payableCents, 300_000); // koçluk tek başına ₺3.000
+  assert.equal(koclukla.periodTotal.payableCents, 75_000);
 });
 
 test("üç ürün indirimi aylık ve dönemlik bucket'lara ayrılır", () => {
@@ -106,12 +111,12 @@ test("üç ürün indirimi aylık ve dönemlik bucket'lara ayrılır", () => {
     kocum: true,
     denemeKulubum: true,
   });
-  assert.equal(ucu.monthlyTotal.campaignCents, 550_000);
+  assert.equal(ucu.monthlyTotal.campaignCents, 500_000);
   assert.equal(ucu.monthlyTotal.bundleDiscountCents, 50_000);
-  assert.equal(ucu.monthlyTotal.payableCents, 500_000);
+  assert.equal(ucu.monthlyTotal.payableCents, 450_000);
   assert.equal(ucu.periodTotal.campaignCents, 100_000);
-  assert.equal(ucu.periodTotal.bundleDiscountCents, 25_000);
-  assert.equal(ucu.periodTotal.payableCents, 75_000);
+  assert.equal(ucu.periodTotal.bundleDiscountCents, 50_000);
+  assert.equal(ucu.periodTotal.payableCents, 50_000);
   assert.equal(ucu.oneTimeTotal.selectedLineCount, 0);
 });
 
@@ -164,7 +169,7 @@ test("ders fiyatı sınav seçilmeden de gösterilir", () => {
   const grup = resolvePackageQuote({ ...base, exam: null, dershanem: true });
   assert.equal(grup.priceResolved, true);
   assert.deepEqual(grup.missingPriceFor, []);
-  assert.equal(grup.monthlyTotal.payableCents, 300_000);
+  assert.equal(grup.monthlyTotal.payableCents, 200_000);
 
   const birebir = resolvePackageQuote({
     ...base,
@@ -172,19 +177,16 @@ test("ders fiyatı sınav seçilmeden de gösterilir", () => {
     dershanem: true,
     format: "birebir",
   });
-  assert.equal(birebir.monthlyTotal.payableCents, 450_000);
+  assert.equal(birebir.monthlyTotal.payableCents, 400_000);
 });
 
-test("her iki ders formatının da fiyatı tanımlı", () => {
+test("her iki ders formatının da fiyatı tanımlı ve indirimsiz", () => {
   const formats = lessonFormatPrices();
-  assert.equal(formats.grup.campaignCents, 300_000);
-  assert.equal(formats.birebir.campaignCents, 450_000);
+  assert.equal(formats.grup.campaignCents, 200_000);
+  assert.equal(formats.birebir.campaignCents, 400_000);
   for (const [name, pair] of Object.entries(formats)) {
-    assert.ok(pair.listCents, `${name} liste fiyatı yok`);
-    assert.ok(
-      pair.listCents > (pair.campaignCents ?? 0),
-      `${name} liste fiyatı kampanyanın üstünde değil`,
-    );
+    // Derse asla indirim uygulanmaz: üstü çizili fiyat yok.
+    assert.equal(pair.listCents, null, `${name} için liste fiyatı basılmamalı`);
   }
 });
 
