@@ -42,19 +42,24 @@ export default function ContactPage() {
           align="left"
           title={
             <>
-              Aklınızdakileri <span className="site-hl">konuşalım.</span>
+              Aklınızdakileri konuşalım.
             </>
           }
           subtitle="WhatsApp veya telefonla doğrudan ulaşabilirsiniz. Formu tercih ederseniz yaklaşık bir dakikada iletişim, sınıf ve hedef bilgilerini paylaşabilirsiniz."
         />
 
         <section className="site-container pb-20 pt-10 sm:pb-28 sm:pt-14">
-          <div className="grid items-start gap-6 lg:grid-cols-2">
+          {/* Mobilde önce hızlı kanallar (WhatsApp/telefon), sonra form;
+              masaüstünde form solda, kanallar sağda. min-w-0: uzun seçenek
+              metinleri grid kolonunu viewport dışına itmesin. */}
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
             {/* Sol: çalışan lead formu */}
-            <ContactLeadForm />
+            <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
+              <ContactLeadForm />
+            </div>
 
             {/* Sağ: kanallar */}
-            <div className="flex flex-col gap-3.5">
+            <div className="order-first flex flex-col gap-3.5 lg:order-none lg:col-start-2 lg:row-start-1">
               <a
                 href={waHref}
                 className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-[var(--brand-orange-soft)] px-6 py-5 transition-colors hover:border-[var(--brand-orange)]"
@@ -142,8 +147,11 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Cross-sell */}
-              <div className="mt-1.5 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-6 py-6">
+            </div>
+
+            {/* Cross-sell */}
+            <div className="lg:col-start-2 lg:row-start-2">
+              <div className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-6 py-6">
                 <div className="mb-1.5 text-[15.5px] font-semibold text-[var(--site-ink)]">
                   Önce paketi incelemek ister misiniz?
                 </div>

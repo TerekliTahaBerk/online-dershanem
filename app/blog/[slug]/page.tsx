@@ -98,21 +98,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="bg-[var(--site-bg-warm)] py-14 sm:py-20"
+        className="bg-[var(--site-bg-warm)] py-10 sm:py-20"
       >
         <Container>
-          <article className="mx-auto max-w-4xl rounded-3xl border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-10">
+          <article className="mx-auto max-w-3xl sm:rounded-3xl sm:border sm:border-[var(--site-line)] sm:bg-white sm:p-10 sm:shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--brand-orange-ink)]">
               {post.category}
             </p>
-            <p className="mt-3 text-[12.5px] text-[var(--site-muted)]">
+            <p className="mt-3 text-[13.5px] text-[var(--site-muted)]">
               {getBlogAuthor(post.category)} · {formatBlogDate(publishedAt)} ·{" "}
               {estimateBlogReadingMinutes(post)} dk okuma
             </p>
             <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
               {post.title}
             </h1>
-            <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">
+            <p className="mt-4 text-[17px] leading-[1.75] text-[var(--site-body)]">
               {post.excerpt}
             </p>
 
@@ -188,14 +188,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   {section.paragraphs?.map((paragraph) => (
                     <p
                       key={paragraph}
-                      className="text-[15px] leading-7 text-[var(--site-body)]"
+                      className="text-[17px] leading-[1.75] text-[var(--site-body)]"
                     >
                       {paragraph}
                     </p>
                   ))}
 
                   {section.bullets?.length ? (
-                    <ul className="list-disc space-y-2 pl-5 text-[15px] leading-7 text-[var(--site-body)]">
+                    <ul className="list-disc space-y-2 pl-5 text-[17px] leading-[1.75] text-[var(--site-body)]">
                       {section.bullets.map((bullet) => (
                         <li key={bullet}>{bullet}</li>
                       ))}
@@ -259,7 +259,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <h2 className="font-display text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
                 {post.cta.title}
               </h2>
-              <p className="mt-2 text-[15px] leading-7 text-[var(--site-body)]">
+              <p className="mt-2 text-[17px] leading-[1.75] text-[var(--site-body)]">
                 {post.cta.text}
               </p>
               <LeadFunnelTrigger
@@ -296,7 +296,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </section>
           </article>
 
-          <section className="mx-auto mt-6 grid max-w-4xl gap-4 rounded-3xl border border-[var(--site-line)] bg-white p-6 sm:grid-cols-2">
+          <section className="mx-auto mt-6 grid max-w-3xl gap-4 rounded-3xl border border-[var(--site-line)] bg-white p-6 sm:grid-cols-2">
             <Link
               href="/online-dershane"
               className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"

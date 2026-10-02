@@ -53,7 +53,7 @@ export default function CareersPage() {
             <Boxes size={27} strokeWidth={1.6} aria-hidden="true" />
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.05] tracking-[-0.02em] text-[var(--site-ink)]">
-            Küçük bir ekipte, <span className="site-hl">öğrenciye dokunan</span>{" "}
+            Küçük bir ekipte, öğrenciye dokunan{" "}
             iş yap.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-[var(--site-body)]">

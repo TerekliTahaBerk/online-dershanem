@@ -90,40 +90,63 @@ export async function SiteFooter() {
             </div>
           </div>
 
-          {/* Kolonlar — mobilde <details> akordeon, lg'den itibaren düz liste */}
+          {/* Kolonlar — masaüstünde düz liste, mobilde kapalı akordeon.
+              Tek <details> ile ikisini birden yapmak, kapalı details içeriğini
+              masaüstünde göstermek için ::details-content desteği ister;
+              bu yüzden iki görünüm ayrı render edilir. */}
           {visibleFooterColumns.map((col) => (
-            <details
-              key={col.title}
-              className="dc-footer-col group border-b border-[var(--dc-on-deep-line)] lg:border-0"
-              open
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between py-3 lg:py-0">
-                <h2 className="font-mono text-[12.5px] font-semibold uppercase tracking-[0.06em] text-[var(--dc-on-deep-label)]">
-                  {col.title}
-                </h2>
-                <ChevronDown
-                  size={16}
-                  aria-hidden="true"
-                  className="text-[var(--dc-on-deep-label)] transition-transform group-open:rotate-180 lg:hidden"
-                />
-              </summary>
-              <ul className="flex flex-col pb-4 pt-1 lg:pb-0 lg:pt-3">
+            <div key={col.title} className="hidden lg:block">
+              <h2 className="text-[13px] font-semibold text-[var(--dc-on-deep-label)]">
+                {col.title}
+              </h2>
+              <ul className="mt-3 flex flex-col">
                 {col.links.map((l) => (
                   <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
                       href={l.href}
-                      className="inline-flex min-h-11 items-center text-[14.5px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
+                      className="inline-flex min-h-10 items-center text-[14.5px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
                     >
                       {l.label}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </details>
+            </div>
           ))}
+          <div className="lg:hidden">
+            {visibleFooterColumns.map((col) => (
+              <details
+                key={col.title}
+                className="group border-b border-[var(--dc-on-deep-line)] first:border-t"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between py-4 [&::-webkit-details-marker]:hidden">
+                  <h2 className="text-[15px] font-semibold text-white">
+                    {col.title}
+                  </h2>
+                  <ChevronDown
+                    size={18}
+                    aria-hidden="true"
+                    className="text-[var(--dc-on-deep-label)] transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                  />
+                </summary>
+                <ul className="flex flex-col pb-3">
+                  {col.links.map((l) => (
+                    <li key={`${col.title}-${l.label}-${l.href}`}>
+                      <Link
+                        href={l.href}
+                        className="inline-flex min-h-11 items-center text-[15px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
+                      >
+                        {l.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-[var(--dc-on-deep-line)] pt-5 text-[13px] text-[var(--dc-on-deep-faint)] sm:mt-13 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-[var(--dc-on-deep-line)] pt-5 text-[13px] text-[var(--dc-on-deep-faint)] sm:mt-12 sm:flex-row sm:items-center">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>© {new Date().getFullYear()} Onlinedershanem</span>
           </span>

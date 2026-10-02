@@ -16,23 +16,24 @@ export function EmptyCart() {
       <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[20px] border border-[var(--site-line)] bg-white">
         <ShoppingBag
           size={36}
+          aria-hidden="true"
           className="text-[var(--brand-orange-ink)]"
           strokeWidth={1.6}
         />
       </div>
       <h1 className="mt-6 font-display text-[clamp(2rem,4vw,2.4rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
-        Sepetiniz boş.
+        Sepetin boş.
       </h1>
-      <p className="mt-3 text-[15px] text-[var(--site-body)]">
-        Matematik Ders Paketini inceleyerek başlayabilirsiniz.
+      <p className="mx-auto mt-3 max-w-[420px] text-[16px] leading-[1.6] text-[var(--site-body)]">
+        Ders, koçluk ve denemeden ihtiyacın olanı seçerek paketini oluşturabilirsin.
       </p>
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
         <Link
-          href="/ders-paketleri"
+          href="/paketler"
           className="site-btn site-btn-primary site-btn-lg"
         >
-          Paketleri İncele
-          <ArrowRight size={16} />
+          Paketini Oluştur
+          <ArrowRight size={16} aria-hidden="true" />
         </Link>
         <a
           href={whatsappHref}
@@ -41,7 +42,7 @@ export function EmptyCart() {
           className="site-btn site-btn-secondary site-btn-lg"
         >
           <MessageCircle size={16} aria-hidden="true" />
-          WhatsApp&apos;tan sorun
+          WhatsApp&apos;tan sor
         </a>
       </div>
     </div>

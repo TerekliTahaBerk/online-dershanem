@@ -48,7 +48,7 @@ export default function MissionPage() {
           align="left"
           title={
             <>
-              Matematiği, bir çocuğun <span className="site-hl">korktuğu</span>{" "}
+              Matematiği, bir çocuğun korktuğu{" "}
               ders olmaktan çıkarmak istedik.
             </>
           }

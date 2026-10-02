@@ -1,5 +1,6 @@
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { ClipboardCheck, MessagesSquare, Users } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
@@ -61,17 +62,17 @@ export default function OnlineDershanemPage() {
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 {
-                  glyph: "◍",
+                  Icon: Users,
                   title: "Küçük grup",
                   body: "Maks. 4 öğrenci; öğretmen her öğrenciye dönebiliyor.",
                 },
                 {
-                  glyph: "✎",
+                  Icon: MessagesSquare,
                   title: "Öğretmen etkileşimi",
                   body: "Soru çözümü ders içinde, anlık geri bildirimle ilerliyor.",
                 },
                 {
-                  glyph: "☑",
+                  Icon: ClipboardCheck,
                   title: "Ders takibi",
                   body: "Ders sonrası özet; katılım ve konu ilerlemesi kayıtlı.",
                 },
@@ -82,9 +83,9 @@ export default function OnlineDershanemPage() {
                 >
                   <span
                     aria-hidden="true"
-                    className="grid h-[42px] w-[42px] place-items-center rounded-xl bg-dc-brand-soft text-[17px]"
+                    className="grid h-[42px] w-[42px] place-items-center rounded-xl bg-dc-brand-soft text-dc-brand-strong"
                   >
-                    {c.glyph}
+                    <c.Icon size={20} strokeWidth={1.9} />
                   </span>
                   <h3 className="mt-4 text-[19px] font-bold text-dc-ink">
                     {c.title}

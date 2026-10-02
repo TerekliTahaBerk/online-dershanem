@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { BarChart3, CalendarCheck, Check, Video, type LucideIcon } from "lucide-react";
 import { useCart } from "@/components/cart/cart-provider";
 import { trackConversionEvent } from "@/lib/tracking";
 import {
@@ -53,7 +53,7 @@ const billingCopy: Record<
 
 const productCopy = {
   dershanem: {
-    glyph: "▶",
+    Icon: Video,
     title: "Online Dershanem",
     summary: "Canlı derste öğrenme eksiğini kapatırsın.",
     tracks: ["LGS", "YKS"],
@@ -63,14 +63,14 @@ const productCopy = {
     ],
   },
   kocum: {
-    glyph: "▦",
+    Icon: CalendarCheck,
     title: "Online Koçum",
     summary: "Haftalık planı kurar ve düzeni korursun.",
     tracks: ["LGS", "YKS"],
     points: ["Haftalık çalışma planı", "Koç görüşmeleriyle uygulama takibi"],
   },
   denemeKulubum: {
-    glyph: "◔",
+    Icon: BarChart3,
     title: "Online Deneme Kulübüm",
     summary: "Denemeyle seviyeni ölçer, eksiği görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
@@ -83,7 +83,7 @@ const productCopy = {
 } as const satisfies Record<
   ProductKey,
   {
-    glyph: string;
+    Icon: LucideIcon;
     title: string;
     summary: string;
     tracks: readonly string[];
@@ -210,10 +210,20 @@ export function PackageBuilder({
               Ders listesi, plan ve deneme içerikleri bu seçime göre gelir.
             </p>
           </div>
-          <span className="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-dc-ink-faint">
-            {selection.exam
-              ? `${selection.exam} hedefine göre uyarlanıyor`
-              : "Önce hedef sınavını seç"}
+          <span
+            aria-live="polite"
+            className={`inline-flex items-center gap-1.5 text-[13.5px] font-semibold ${
+              selection.exam ? "text-dc-brand-strong" : "text-dc-ink-faint"
+            }`}
+          >
+            {selection.exam ? (
+              <>
+                <Check size={16} strokeWidth={2.4} aria-hidden="true" />
+                {selection.exam} hedefine göre uyarlanıyor
+              </>
+            ) : (
+              "Önce hedef sınavını seç"
+            )}
           </span>
         </div>
 
@@ -307,9 +317,9 @@ export function PackageBuilder({
                 >
                   <span
                     aria-hidden="true"
-                    className="grid h-[52px] w-[52px] flex-none place-items-center rounded-[14px] bg-dc-brand-soft text-[20px]"
+                    className="grid h-[52px] w-[52px] flex-none place-items-center rounded-[14px] bg-dc-brand-soft text-dc-brand-strong"
                   >
-                    {copy.glyph}
+                    <copy.Icon size={24} strokeWidth={1.9} />
                   </span>
 
                   <span className="min-w-0 flex-1">
@@ -329,9 +339,15 @@ export function PackageBuilder({
                         </span>
                       ))}
                     </span>
-                    <span className="mt-3 block text-[14.5px] font-medium leading-[1.85] text-[var(--pd-ink-3)]">
+                    <span className="mt-3 flex flex-col gap-1.5 text-[14.5px] font-medium leading-[1.5] text-[var(--pd-ink-3)]">
                       {copy.points.map((p) => (
-                        <span key={p} className="block">
+                        <span key={p} className="flex items-start gap-2">
+                          <Check
+                            size={16}
+                            strokeWidth={2.4}
+                            aria-hidden="true"
+                            className="mt-[3px] flex-none text-dc-brand"
+                          />
                           {p}
                         </span>
                       ))}
@@ -364,9 +380,11 @@ export function PackageBuilder({
                           <span className="block text-[12.5px] font-medium text-dc-ink-faint">
                             {billingSuffix(line.billing)}
                           </span>
-                          <span className="mt-0.5 block text-xs font-semibold text-dc-brand-hover">
-                            {productCheckout ? "Tek başına online alınabilir" : "Başlangıcını birlikte planlayalım"}
-                          </span>
+                          {productCheckout ? (
+                            <span className="mt-0.5 block text-xs font-semibold text-dc-brand-hover">
+                              Tek başına online alınabilir
+                            </span>
+                          ) : null}
                         </>
                       ) : (
                         <span className="block text-[12.5px] font-medium leading-[1.5] text-dc-ink-faint sm:max-w-[110px]">
@@ -547,23 +565,40 @@ export function PackageBuilder({
           ) : null}
 
           {/* Seçim kapsamı — fiyat vaadi değil, ürün sayısını gösterir. */}
-          <div className="grid gap-5 px-1 pt-1 sm:grid-cols-3 sm:gap-6">
+          <ol className="grid grid-cols-3 gap-2 sm:gap-2.5" aria-label="Paket kapsamı">
             {[
-              { tier: 1, label: "1 ürün — Tek ihtiyaca odaklan" },
-              { tier: 2, label: "2 ürün — Birbirini tamamlayan iki ürün" },
-              { tier: 3, label: "3 ürün — Ders + plan + deneme" },
-            ].map(({ tier, label }) => (
-              <div key={tier}>
-                <div
-                  aria-hidden="true"
-                  className={`h-1.5 rounded-full ${count >= tier ? "bg-dc-brand" : "bg-dc-line"}`}
-                />
-                <p className="mt-2.5 text-[13px] font-medium text-dc-ink-muted">
-                  {label}
-                </p>
-              </div>
-            ))}
-          </div>
+              { tier: 1, title: "1 ürün", label: "Tek ihtiyaca odaklan" },
+              { tier: 2, title: "2 ürün", label: "Birbirini tamamlayan iki ürün" },
+              { tier: 3, title: "3 ürün", label: "Ders, plan ve deneme birlikte" },
+            ].map(({ tier, title, label }) => {
+              const current = count === tier;
+              return (
+                <li
+                  key={tier}
+                  aria-current={current ? "step" : undefined}
+                  className={`rounded-dc-card-sm border px-3 py-2.5 transition-colors sm:px-4 sm:py-3 motion-reduce:transition-none ${
+                    current
+                      ? "border-dc-brand bg-dc-brand-soft"
+                      : "border-dc-line bg-white"
+                  }`}
+                >
+                  <span
+                    className={`flex items-center gap-1.5 text-[14px] font-bold ${
+                      current ? "text-dc-brand-strong" : "text-dc-ink"
+                    }`}
+                  >
+                    {current ? (
+                      <Check size={15} strokeWidth={2.6} aria-hidden="true" />
+                    ) : null}
+                    {title}
+                  </span>
+                  <span className="mt-0.5 block text-xs leading-[1.4] text-dc-ink-muted sm:text-[13px]">
+                    {label}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
         </div>
 
         {/* Sticky özet */}
@@ -573,9 +608,9 @@ export function PackageBuilder({
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-dc-ink-faint">
+              <h3 className="text-[17px] font-extrabold text-dc-ink">
                 Paketin
-              </div>
+              </h3>
               <div className="mt-1 text-[13px] font-bold text-dc-brand-hover">
                 {selection.exam
                   ? `${selection.exam} hedefi`

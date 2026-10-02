@@ -148,7 +148,7 @@ export default function MathematicsHubPage() {
               <span className="site-eyebrow">LGS · TYT · AYT matematik</span>
               <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.5rem,5.6vw,4.5rem)] leading-[1.02] tracking-[-0.035em] text-[var(--site-ink)]">
                 Online matematik dersinde öğrenci{" "}
-                <span className="site-hl">çözümünü göstermeli</span>, sadece
+                çözümünü göstermeli, sadece
                 dinlememeli.
               </h1>
               <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[var(--site-body)]">

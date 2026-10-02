@@ -46,7 +46,7 @@ export default function LessonPackagesPage() {
         title={
           <>
             Canlı ders seçenekleri,{" "}
-            <span className="site-hl">Online Dershanem kapsamında.</span>
+            Online Dershanem kapsamında.
           </>
         }
         subtitle="Bu sayfa Online Dershanem içindeki doğrudan satın alınabilir LGS ve YKS matematik ders seçeneklerini gösterir."

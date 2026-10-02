@@ -6,6 +6,7 @@ import { ProductTrio } from "@/components/home/product-trio";
 import { Ecosystem } from "@/components/home/ecosystem";
 import { DinoLayer } from "@/components/home/dino-layer";
 import { ClosingCta } from "@/components/home/closing-cta";
+import { ProductCompare } from "@/components/home/product-compare";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
@@ -45,6 +46,7 @@ export default function ProductsPage() {
           title="Üç ürün, üç ayrı iş"
           lede="Aşağıda her birinin ne yaptığı ve kimin için olduğu yazıyor."
         />
+        <ProductCompare />
         <Ecosystem showDinoLayer={false} />
         <DinoLayer />
         <ClosingCta />
