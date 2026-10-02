@@ -28,13 +28,14 @@ export async function GET(request: Request) {
     const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true, userId: true } });
     studentProfileId = profile?.id ?? null;
     studentUserId = profile?.userId ?? null;
-    where = profile ? { startsAt: range, group: { enrollments: { some: { studentId: profile.id, endedAt: null } } } } : { id: "__missing_student_profile__" };
+    if (parsed.data.studentId && parsed.data.studentId !== studentProfileId) return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+    where = profile ? { startsAt: range, group: { isActive: true, enrollments: { some: { studentId: profile.id, endedAt: null } } } } : { id: "__missing_student_profile__" };
   }
   if (auth.session.role === "PARENT") {
     // Bağlantı kaldırıldıktan (`active:false` / `endedAt`) sonra takvim akışı
     // çalışmaya devam ediyordu: abone olunan .ics adresi sessizce veri akıtmayı
     // sürdürüyordu. Kapsam `parent-scope` ile aynı koşulu kullanmalı.
-    const linkRows = await prisma.parentStudent.findMany({ where: { parentId: auth.session.userId, active: true, endedAt: null }, orderBy: { createdAt: "asc" }, select: { studentId: true, student: { select: { userId: true } } } });
+    const linkRows = await prisma.parentStudent.findMany({ where: { parentId: auth.session.userId, active: true, endedAt: null, canViewAcademic: true }, orderBy: { createdAt: "asc" }, select: { studentId: true, student: { select: { userId: true } } } });
     // Veli-free ürün politikası: yalnızca KPSS üyeliği olan öğrenci takvim akışına girmez.
     const visibility = await Promise.all(linkRows.map((item) => isStudentUserVisibleToParents(item.student.userId)));
     const links = linkRows.filter((_, index) => visibility[index]);
@@ -43,11 +44,11 @@ export async function GET(request: Request) {
     if (!selected) return NextResponse.json({ error: "Bağlı öğrenci bulunamadı." }, { status: 404 });
     studentProfileId = selected.studentId;
     studentUserId = selected.student.userId;
-    where = { startsAt: range, group: { enrollments: { some: { studentId: selected.studentId, endedAt: null } } } };
+    where = { startsAt: range, group: { isActive: true, enrollments: { some: { studentId: selected.studentId, endedAt: null } } } };
   }
 
   const lessons = await prisma.lesson.findMany({ where, orderBy: { startsAt: "asc" }, include: { group: { select: { name: true, subject: true } }, teacher: { select: { fullName: true, email: true } } } });
-  const includeMeetingUrl = auth.session.role === "ADMIN" || auth.session.role === "TEACHER";
+  const includeMeetingUrl = auth.session.role === "ADMIN" || auth.session.role === "TEACHER" || Boolean(studentProfileId);
   const lessonEvents = lessons.map((lesson) => ({
     id: lesson.id,
     title: lesson.title,
@@ -55,7 +56,7 @@ export async function GET(request: Request) {
     startsAt: lesson.startsAt,
     endsAt: lesson.endsAt,
     cancelled: lesson.status === "CANCELLED",
-    url: includeMeetingUrl ? lesson.meetingUrl : null,
+    url: includeMeetingUrl && lesson.status !== "CANCELLED" ? lesson.meetingUrl : null,
   }));
 
   let unifiedEvents: ReturnType<typeof unifiedEventsToIcal> = [];

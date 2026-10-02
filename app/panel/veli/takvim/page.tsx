@@ -107,7 +107,7 @@ export default async function ParentLessonsPage({
 
   return shell(
     <>
-      <PanelHeading title="Dersler" description={selected.name} />
+      <PanelHeading title="Dersler" description={selected.name} actions={<a href={`/api/panel/calendar/export?studentId=${encodeURIComponent(selected.id)}`} className="site-btn site-btn-secondary">Takvime ekle (.ics)</a>} />
 
       {lessons.length === 0 ? (
         <PanelEmpty

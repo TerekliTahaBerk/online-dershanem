@@ -758,13 +758,13 @@ test.describe("panel deneyimi", () => {
     const studentCalendar = await page.evaluate(async () => { const response = await fetch("/api/panel/calendar/export"); return { status: response.status, text: await response.text() }; });
     expect(studentCalendar.status).toBe(200);
     expect(studentCalendar.text).toContain("E2E Hızlı Ders Özeti");
-    expect(studentCalendar.text).not.toContain("https://example.com/e2e-class");
+    expect(studentCalendar.text).toContain("https://example.com/e2e-class");
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
     const parentResults = await page.evaluate(async (foreignId) => { const own = await fetch("/api/panel/calendar/export?studentId=e2e-student-profile"); const foreign = await fetch(`/api/panel/calendar/export?studentId=${foreignId}`); return { ownStatus: own.status, ownText: await own.text(), foreignStatus: foreign.status }; }, process.env.PANEL_E2E_FOREIGN_STUDENT_ID!);
     expect(parentResults.ownStatus).toBe(200);
-    expect(parentResults.ownText).not.toContain("https://example.com/e2e-class");
+    expect(parentResults.ownText).toContain("https://example.com/e2e-class");
     expect(parentResults.foreignStatus).toBe(404);
   });
 

@@ -22,8 +22,13 @@ test("ODK heartbeat sekiz dakikalık sıkı eşikte stale olur", () => {
 test("son başarının ardından gelen hata sağlıklı heartbeat'i geçersiz kılar", () => {
   const heartbeat = { ...row("odk-exam-lifecycle", 1), lastFailedAt: new Date(now.getTime() - 30_000), lastErrorCode: "ERROR" };
   const report = evaluateCronHeartbeats([heartbeat], now);
-  assert.equal(report.jobs[0].status, "failed");
+  assert.equal(report.jobs.find((job) => job.name === "odk-exam-lifecycle")?.status, "failed");
   assert.equal(report.ok, false);
+});
+
+test("ders hatırlatma işi cron aralığına göre stale raporlanır", () => {
+  const report = evaluateCronHeartbeats([row("lesson-reminders", 31)], now);
+  assert.equal(report.jobs.find((job) => job.name === "lesson-reminders")?.status, "stale");
 });
 
 test("eksik kritik işler ayrı ayrı missing raporlanır", () => {

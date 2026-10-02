@@ -3,6 +3,7 @@ import { runJob } from "@/lib/jobs/runner";
 import { filterNotificationRows, queuePanelNotificationEmails, type NotificationRow } from "@/lib/panel-notifications";
 import { addIstanbulCalendarDays, formatIstanbulDateInput, istanbulDayStart, ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { listRecentOverdueAssignments, OVERDUE_COOLDOWN_DAYS, OVERDUE_GIVE_UP_DAYS } from "@/lib/panel-reminders-server";
 import { isOpenTaskStatus } from "@/lib/kocum";
 
 export const runtime = "nodejs";
@@ -22,7 +23,8 @@ const PLAN_OVERDUE_TITLE = "Geciken plan görevi";
  * görevi her gün hatırlatmak öğrenciyi bildirime karşı körleştirir; bu
  * noktadan sonrası koçun yeniden planlama işidir.
  */
-const PLAN_OVERDUE_GIVE_UP_DAYS = 14;
+const PLAN_OVERDUE_GIVE_UP_DAYS = OVERDUE_GIVE_UP_DAYS;
+const ASSIGNMENT_OVERDUE_TITLE = "Geciken çalışma hatırlatması";
 
 export async function GET(request: Request) {
   return runJob("panel-reminders", request, async () => {
@@ -38,30 +40,14 @@ export async function GET(request: Request) {
      * `PLAN_OVERDUE_GIVE_UP_DAYS` sonrasında tamamen susar — o noktada
      * yapılacak iş bildirim değil, koçun görevi yeniden planlamasıdır.
      */
-    const planOverdueSince = new Date(now.getTime() - 72 * 60 * 60 * 1000);
-    const overdue = await prisma.assignmentProgress.findMany({
-      where: { status: { not: "DONE" }, assignment: { isActive: true, dueAt: { lt: now } } },
-      take: 250,
-      orderBy: { assignment: { dueAt: "asc" } },
-      include: {
-        assignment: { select: { title: true, dueAt: true } },
-        student: { select: { id: true, userId: true, parents: { select: { parentId: true } } } },
-      },
-    });
-
-    const rawRows: NotificationRow[] = overdue.flatMap((item) => {
-      const body = `${item.assignment.title} · son tarih ${DATE.format(item.assignment.dueAt)}`;
-      return [
-        { userId: item.student.userId, type: "ASSIGNMENT", title: "Geciken çalışma hatırlatması", body, href: "/panel/ogrenci/odevler" },
-        ...item.student.parents.map((link) => ({
-          userId: link.parentId,
-          type: "ASSIGNMENT" as const,
-          title: "Ödev süresi geçti",
-          body,
-          href: `/panel/veli/takip?studentId=${item.student.id}`,
-        })),
-      ];
-    });
+    const planOverdueSince = new Date(now.getTime() - OVERDUE_COOLDOWN_DAYS * 86_400_000);
+    const overdue = await listRecentOverdueAssignments(now);
+    // Veli gecikmeleri yalnız mevcut, onaylanıp yayımlanan haftalık özette görür.
+    const rawRows: NotificationRow[] = overdue.map((item) => ({
+      userId: item.student.userId, type: "ASSIGNMENT", title: ASSIGNMENT_OVERDUE_TITLE,
+      body: `${item.assignment.title} · son tarih ${DATE.format(item.assignment.dueAt)}. Uygun bir küçük adımla devam edebilirsin.`,
+      href: "/panel/ogrenci/odevler",
+    }));
 
     let planOverdueCount = 0;
     let upcomingCount = 0;
@@ -133,7 +119,7 @@ export async function GET(request: Request) {
     // En uzun soğuma süresi kadar geriye bakılır; her satır kendi penceresine
     // göre ayrıca süzülür.
     const cooldownFor = (row: { title: string }) =>
-      row.title === PLAN_OVERDUE_TITLE ? planOverdueSince : since;
+      (row.title === PLAN_OVERDUE_TITLE || row.title === ASSIGNMENT_OVERDUE_TITLE) ? planOverdueSince : since;
     const lookbackFrom = planOverdueSince < since ? planOverdueSince : since;
     const recent = deduped.length
       ? await prisma.notification.findMany({

@@ -110,6 +110,7 @@ export default async function StudentLessonsPage({
         description={groupNames || undefined}
         actions={
           <>
+            <a href="/api/panel/calendar/export" className="site-btn site-btn-secondary">Takvime ekle (.ics)</a>
             <PanelFilterLink
               href="/panel/ogrenci/takvim"
               active={filter === "yaklasan"}

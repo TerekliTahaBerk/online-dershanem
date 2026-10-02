@@ -2,6 +2,7 @@
   "buildCommand": "export APP_BUILD_TIME=\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\" && npm run validate:deploy-env && npm run prisma:deploy:ci && prisma generate && next build",
   "crons": [
     { "path": "/api/cron/email-retry", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/lesson-reminders", "schedule": "*/15 * * * *" },
     { "path": "/api/cron/panel-reminders", "schedule": "30 6 * * *" },
     { "path": "/api/cron/kocum-suggestions", "schedule": "0 18 * * 0" },
     { "path": "/api/cron/teacher-home-refresh", "schedule": "*/10 * * * *" },
