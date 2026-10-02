@@ -421,9 +421,8 @@ export function resolveBuilderCheckout(selection: BuilderSelection): {
 }
 
 /**
- * Ürün kartında kesin fiyat ancak tek başına satın alınabilir bir SKU'ya
- * bağlanabiliyorsa gösterilebilir. Koçum, Deneme Kulübü, birebir ve ek ders
- * için checkout SKU'su oluşana kadar bu fonksiyon `null` döner.
+ * Ürün kartının online satın alma durumunu çözer. Fiyat görünürlüğü ayrıca
+ * `resolvePackageQuote` ile belirlenir; fiyatı olan ürünün SKU'su olmayabilir.
  */
 export function resolveBuilderProductCheckout(
   selection: BuilderSelection,
@@ -466,7 +465,7 @@ export function builderContactQuery(selection: BuilderSelection): string {
   const params = new URLSearchParams();
   if (selection.exam) params.set("sinav", selection.exam);
   if (summary) params.set("paket", summary);
-  if (products.length > 0 && resolveBuilderCheckout(selection) === null) {
+  if (products.length > 0 && !resolvePackageQuote(selection).priceResolved) {
     params.set("fiyat", "on_gorusme");
   }
   return params.toString() ? `?${params.toString()}` : "";

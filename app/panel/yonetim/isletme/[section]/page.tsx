@@ -1187,7 +1187,7 @@ export default async function BusinessSectionPage({
                 >
                   <option value="UNKNOWN">Ürün bilinmiyor</option>
                   <option value="ONLINE_DERSHANEM">OnlineDershanem</option>
-                  <option value="ONLINE_DENEME_KULUBU">Deneme Kulübü</option>
+                  <option value="ONLINE_DENEME_KULUBU">Online Deneme Kulübüm</option>
                 </select>
                 <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-sm font-bold text-white">
                   Aday ekle

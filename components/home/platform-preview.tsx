@@ -5,9 +5,7 @@ import Link from "next/link";
  * 09 PLATFORM ÖN İZLEMESİ — onaylı tasarım (Web.dc.html).
  * Koyu yeşil banner + telefon mockup'ı.
  *
- * DOĞRULUK: handoff açıkça "Yakında · mağaza rozeti yok" diyor. App Store /
- * Google Play rozeti YOKTUR ve telefon uygulamasının yayında olmadığı ekranda
- * yazılıdır (§55). Panelin kendisi tarayıcıda AÇIK — metin bunu doğru anlatmalı.
+ * Mobil tarayıcı erişimi ve mevcut manifest için ana ekrana ekleme yönergesi.
  */
 export function PlatformPreview() {
   return (
@@ -17,7 +15,7 @@ export function PlatformPreview() {
           <p className="inline-flex flex-wrap items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7FD3AF]">
             Platform ön izlemesi
             <span className="rounded-full border border-[rgba(127,211,175,.3)] bg-[rgba(127,211,175,.16)] px-2.5 py-1 text-[#B7E8D2]">
-              Mobil uygulama yakında
+              Ana ekrana ekle
             </span>
           </p>
 
@@ -28,8 +26,9 @@ export function PlatformPreview() {
           </h2>
           <p className="mt-4 max-w-[420px] text-[16.5px] leading-[1.65] text-[#B6CEC4]">
             Öğrenci panelini bugün telefondan veya bilgisayardan tarayıcıda
-            kullanabilirsin. Mobil uygulama yayına açıldığında ayrıca
-            duyurulacak.
+            kullanabilirsin. Hızlı erişim için ana ekranına ekle:
+            iPhone&apos;da Safari&apos;nin Paylaş menüsünden, Android&apos;de
+            tarayıcı menüsünden Ana ekrana ekle seçeneğini kullan.
           </p>
 
           <ul className="mt-6 max-w-[460px] border-t border-[rgba(255,255,255,.14)] pt-5 text-[15px] font-medium leading-[1.9] text-[#CFE3DA]">

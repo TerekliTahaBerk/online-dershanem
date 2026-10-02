@@ -59,7 +59,7 @@ test.describe("masaüstü navigasyon", () => {
     const header = page.locator("header");
     const nav = page.getByRole("navigation", { name: "Ana menü" });
 
-    await expect(nav.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /^Dino AI · (Yakında|Pilot)$/ })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
@@ -85,7 +85,7 @@ test.describe("mobil navigasyon", () => {
     for (const product of PRODUCTS) {
       await expect(menu.getByRole("link", { name: product.name, exact: true })).toBeVisible();
     }
-    await expect(menu.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
+    await expect(menu.getByRole("link", { name: /^Dino AI · (Yakında|Pilot)$/ })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
@@ -132,26 +132,30 @@ test.describe("ürün sayfaları ve footer", () => {
     for (const product of PRODUCTS) {
       await expect(footer.getByRole("link", { name: product.name, exact: true })).toBeVisible();
     }
-    await expect(footer.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
+    await expect(footer.getByRole("link", { name: /^Dino AI · (Yakında|Pilot)$/ })).toBeVisible();
+    await expect(footer.getByTestId("build-stamp")).toHaveCount(0);
+    await expect(footer.locator('[title^="Build "]')).toHaveCount(0);
     await expect(footer.getByRole("link", { name: "KVKK" })).toBeVisible();
     await expect(footer.getByRole("link", { name: "Gizlilik", exact: true })).toBeVisible();
   });
 
   test("Dino AI yayında olmayan bir yeteneği çalışıyormuş gibi anlatmaz", async ({ page }) => {
     await page.goto("/dino-ai", { waitUntil: "domcontentloaded" });
-    // H1 metni onaylı tasarımla değişti; doğruluk iddiaları AYNEN korunuyor.
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Dino AI");
-    await expect(page.getByText("ayrı satılan bir ürün değildir", { exact: false })).toBeVisible();
-    await expect(page.getByText("Geliştirme aşamasında")).toBeVisible();
-    // Sayfa, canlı Dino çıktısının HENÜZ OLMADIĞINI açıkça söylemek zorunda.
-    // Önceden burada "Planlanıyor" durum sözcüğü aranıyordu; metin cümleye
-    // çevrildi, iddia aynı kaldı — zayıflatılmadı, açıkça yazıldı.
-    await expect(page.getByText("henüz yayında değil", { exact: false })).toBeVisible();
+    await expect(page.getByText("Dino AI ayrı satılan bir ürün değildir.", { exact: true })).toBeVisible();
+    const navLink = page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: /^Dino AI ·/ });
+    if ((await navLink.textContent())?.includes("Yakında")) {
+      await expect(page.locator("main")).toContainText("henüz yayında değil");
+      await expect(page.getByRole("heading", { level: 1 })).toContainText("hazırlanıyor");
+    } else {
+      await expect(page.locator("main")).toContainText("Sınırlı pilot");
+    }
+    await expect(page.locator("main")).not.toContainText("Aldığın her ürünün içinde çalışır");
   });
 
   test("Online Koçum kayıt durumunu açıkça söyler", async ({ page }) => {
     await page.goto("/urunler/online-kocum", { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Online Koçum için kayıtlar hazırlanıyor.")).toBeVisible();
+    await expect(page.getByText("Online Koçum için kayıtlar hazırlanıyor.", { exact: false })).toBeVisible();
   });
 });
 

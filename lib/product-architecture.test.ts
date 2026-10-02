@@ -14,6 +14,7 @@ test("public architecture exposes four unique first-class product definitions", 
 });
 
 test("exam positioning is explicit for each product", () => {
+  assert.equal(publicProductBySlug["online-deneme-kulubum"].name, "Online Deneme Kulübüm");
   assert.deepEqual(publicProductBySlug["online-dershanem"].audiences, ["LGS", "YKS"]);
   assert.deepEqual(publicProductBySlug["online-kocum"].audiences, ["LGS", "YKS"]);
   assert.deepEqual(publicProductBySlug["online-deneme-kulubum"].audiences, ["LGS", "TYT", "AYT"]);

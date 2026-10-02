@@ -137,7 +137,7 @@ export default function OnlineDershanemPage() {
               body: "Derste öğrendiğini hangi gün, ne kadar çalışacağın netleşir.",
             },
             {
-              eyebrow: "+ Deneme Kulübüm",
+              eyebrow: "+ Online Deneme Kulübüm",
               title: "Ölçme ve analiz",
               body: "Öğrendiğin konunun sınavda karşılığını görürsün.",
             },

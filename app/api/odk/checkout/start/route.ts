@@ -44,7 +44,7 @@ function unavailable(error: string, status = 409) {
 export async function POST(req: Request) {
   const rollout = odkPublicAccessDecision();
   if (!rollout.allowed) {
-    return unavailable("Deneme Kulübü yeni satın alımlara açık değil.", rollout.reason === "KILL_SWITCH" ? 503 : 410);
+    return unavailable("Online Deneme Kulübüm yeni satın alımlara açık değil.", rollout.reason === "KILL_SWITCH" ? 503 : 410);
   }
 
   const policy = RATE_LIMIT_POLICIES.odkCheckout;

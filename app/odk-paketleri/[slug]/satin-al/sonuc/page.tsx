@@ -44,11 +44,11 @@ export default async function OdkCheckoutResultPage({
           {isSuccess ? (
             <CheckoutResultCard
               status="success"
-              eyebrow="Deneme Kulübü"
+              eyebrow="Online Deneme Kulübüm"
               title="Ödemeniz alındı"
               description={
                 order.provisioningStatus === "SUCCEEDED"
-                  ? "Ödemeniz kaydedildi ve Deneme Kulübü erişiminiz hazırlandı."
+                  ? "Ödemeniz kaydedildi ve Online Deneme Kulübüm erişiminiz hazırlandı."
                   : "Ödemeniz kaydedildi. Erişiminiz hazırlanıyor; tamamlandığında hesabınızdan giriş yapabilirsiniz."
               }
               nextStepNote={
@@ -71,7 +71,7 @@ export default async function OdkCheckoutResultPage({
           ) : isPending ? (
             <CheckoutResultCard
               status="pending"
-              eyebrow="Deneme Kulübü"
+              eyebrow="Online Deneme Kulübüm"
               title="Ödeme doğrulanıyor"
               description="Banka bildirimi henüz ulaşmadı. Bu sayfayı kısa süre sonra yenileyin; doğrulama tamamlanmadan erişim açılmaz."
               primaryAction={{
@@ -84,7 +84,7 @@ export default async function OdkCheckoutResultPage({
           ) : (
             <CheckoutResultCard
               status="failed"
-              eyebrow="Deneme Kulübü"
+              eyebrow="Online Deneme Kulübüm"
               description="İşleminiz banka tarafından onaylanmadı ya da yarıda kaldı. Hesabınızdan herhangi bir tutar çekilmediyse tekrar deneyebilirsiniz."
               primaryAction={{
                 href: `/odk-paketleri/${slug}/satin-al`,

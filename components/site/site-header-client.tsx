@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { primaryNav, navCta, navLogin } from "@/lib/site-content";
+import { primaryNavForDino, navCta, navLogin } from "@/lib/site-content";
 import type { PublicProduct } from "@/lib/product-architecture";
 import { MobileMenu } from "@/components/site/mobile-menu";
 import { ProductsMenu } from "@/components/site/products-menu";
@@ -17,9 +17,12 @@ import { CartHeaderLink } from "@/components/cart/cart-header-link";
  */
 export function SiteHeaderClient({
   products,
+  dinoAiEnabled,
 }: {
   products: readonly PublicProduct[];
+  dinoAiEnabled: boolean;
 }) {
+  const primaryNav = primaryNavForDino(dinoAiEnabled);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
@@ -137,6 +140,7 @@ export function SiteHeaderClient({
       </header>
 
       <MobileMenu
+        dinoAiEnabled={dinoAiEnabled}
         open={open}
         onClose={() => setOpen(false)}
         isActive={isActive}

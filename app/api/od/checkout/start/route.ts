@@ -112,7 +112,7 @@ export async function POST(req: Request) {
       if (item.service === "ODK") {
         const odk = await getPublicOdkPackage(item.id);
         if (!odk?.availability.allowed) {
-          return NextResponse.json({ ok: false, error: "Sepetinizde artık satışta olmayan bir Deneme Kulübü paketi var." }, { status: 400 });
+          return NextResponse.json({ ok: false, error: "Sepetinizde artık satışta olmayan bir Online Deneme Kulübüm paketi var." }, { status: 400 });
         }
         validated.push({
           service: "ODK", id: odk.contract.package.slug, name: odk.contract.package.title,

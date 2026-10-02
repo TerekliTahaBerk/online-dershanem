@@ -105,7 +105,7 @@ function crossSellText(
   }
   if (count === 2) {
     if (!selection.denemeKulubum)
-      return "Deneme Kulübü'nü eklediğinde ölçme ve analiz de aynı pakete eklenir.";
+      return "Online Deneme Kulübüm'ü eklediğinde ölçme ve analiz de aynı pakete eklenir.";
     if (!selection.kocum)
       return "Koçluğu eklediğinde haftalık plan da aynı pakete eklenir.";
     return "Canlı dersi eklediğinde konu anlatımı da aynı pakete eklenir.";
@@ -117,12 +117,12 @@ function hintText(count: number, hasDirectCheckout: boolean): string {
   if (count === 0) return "Nereden başlamak istiyorsun?";
   if (count === 1) {
     return hasDirectCheckout
-      ? "Seçimini doğrudan online satın alabilir veya ön görüşmede netleştirebilirsin."
-      : "Bu seçim için net fiyat ve başlangıç planı ön görüşmede paylaşılır.";
+      ? "Seçimini doğrudan online satın alabilirsin."
+      : "Güncel fiyatını görüp başlangıcını ekibimizle planlayabilirsin.";
   }
   if (count === 2)
-    return "Birlikte seçtiğin ürünlerin net tutarını ön görüşmede yazılı alırsın.";
-  return "Üç ürünü birlikte seçtiğinde net tutar ve ödeme planı ön görüşmede paylaşılır.";
+    return "Birlikte alım avantajı paket özetine yansır.";
+  return "Üç ürünün birlikte alım avantajını aylık ve dönemlik olarak ayrı görürsün.";
 }
 
 export function PackageBuilder({
@@ -342,7 +342,7 @@ export function PackageBuilder({
                       tasarımdaki gibi sağ sütun. */}
                   <span className="flex w-full flex-none items-center justify-between gap-3 border-t border-dc-line-soft pt-3.5 sm:block sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
                     <span className="block">
-                      {productCheckout && line.cents !== null ? (
+                      {line.cents !== null ? (
                         <>
                           {/* Kampanya öncesi liste fiyatı — yalnızca gerçekten
                               yüksekse basılır. */}
@@ -365,7 +365,7 @@ export function PackageBuilder({
                             {billingSuffix(line.billing)}
                           </span>
                           <span className="mt-0.5 block text-[10.5px] font-semibold text-dc-brand-hover">
-                            Tek başına online alınabilir
+                            {productCheckout ? "Tek başına online alınabilir" : "Başlangıcını birlikte planlayalım"}
                           </span>
                         </>
                       ) : (
@@ -613,7 +613,7 @@ export function PackageBuilder({
                     {line.label}
                   </span>
                   <span className="ml-auto text-[13.5px] font-semibold text-dc-ink-faint">
-                    {checkoutItem && line.selected && line.cents !== null
+                    {line.selected && line.cents !== null
                       ? `${formatCents(line.cents)} ${billingSuffix(line.billing)}`
                       : "—"}
                   </span>
@@ -652,7 +652,7 @@ export function PackageBuilder({
             Ödeme özeti
           </div>
 
-          {checkoutItem && quote.priceResolved ? (
+          {quote.priceResolved ? (
             <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-dc-ink">
               {activeTotals.map((total, index) => (
                 <span key={total.billing} className="contents">
@@ -682,12 +682,14 @@ export function PackageBuilder({
             {checkoutItem
               ? "Bu tutar ödeme sayfasında çıkacak güncel fiyatla aynıdır."
               : count > 0
-                ? "Bu seçim için online satış açık değil; net fiyat ve ödeme planı ön görüşmede paylaşılır."
-                : "Satın almak veya ön görüşmeye geçmek için ürün seç."}
+                ? quote.priceResolved
+                  ? "Güncel fiyatın burada. Bu seçimin başlangıcını ekibimizle planlayabilirsin."
+                  : "Bu özel seçimin fiyatı için ön görüşmede yazılı teklif paylaşılır."
+                : "Paketini oluşturmak için ürün seç."}
           </p>
 
           {/* Her dönem kendi liste, indirim ve ödenecek tutarıyla uzlaşır. */}
-          {checkoutItem && quote.priceResolved
+          {quote.priceResolved
             ? activeTotals.map((total) => (
                 <div
                   key={total.billing}
@@ -772,7 +774,7 @@ export function PackageBuilder({
               href={`/iletisim/${builderContactQuery(selection)}`}
               className="site-btn site-btn-primary mt-5 w-full"
             >
-              Ön Görüşme Talep Et
+              {quote.priceResolved ? "Başlangıcı Planla" : "Ön Görüşme Talep Et"}
             </Link>
           )}
 
@@ -780,8 +782,9 @@ export function PackageBuilder({
               CTA'nın neden değiştiğini görebilsin. */}
           {count > 0 && !checkoutItem ? (
             <p className="mt-2.5 text-center text-[12px] leading-[1.5] text-dc-ink-faint">
-              Gösterilen seçim kapsamdır; kesin teklif satış ekibinin
-              oluşturduğu yazılı fiyatla korunur.
+              {quote.priceResolved
+                ? "Başlangıç ve kayıt bilgilerini ekibimiz seninle paylaşır."
+                : "Özel kapsamın için hazırlanan yazılı teklifi birlikte değerlendiririz."}
             </p>
           ) : null}
 

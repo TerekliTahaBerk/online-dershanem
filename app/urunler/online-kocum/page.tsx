@@ -163,7 +163,7 @@ export default function OnlineKocumPage() {
               body: "Plan hazır ama konu eksikse, canlı ders bu boşluğu kapatır.",
             },
             {
-              eyebrow: "+ Deneme Kulübüm",
+              eyebrow: "+ Online Deneme Kulübüm",
               title: "Planın işe yaradığını gör",
               body: "Deneme sonuçları planın bir sonraki haftasını besler.",
             },
@@ -184,7 +184,7 @@ export default function OnlineKocumPage() {
         <section className="site-container pt-6">
           <p className="rounded-dc-card-sm border border-dc-line bg-white px-5 py-4 text-[14.5px] leading-[1.6] text-dc-ink-muted">
             Online Koçum için kayıtlar hazırlanıyor. Koçluk kontenjanı ve
-            başlangıç tarihi ön görüşmede netleşir; online kayıt akışı yayına
+            başlangıç tarihini ekibimizle planlayabilirsin; online kayıt akışı yayına
             alınmadan ödeme almıyoruz.
           </p>
         </section>
@@ -201,7 +201,7 @@ export default function OnlineKocumPage() {
             },
             {
               q: "Ders almadan koçluk alabilir miyim?",
-              a: "Evet, Online Koçum tek başına planlanabilir. Koçluk kontenjanı ve başlangıç tarihi ön görüşmede netleşir; online kayıt akışı açılmadan ödeme alınmaz.",
+              a: "Evet, Online Koçum tek başına planlanabilir. Güncel fiyatı bu sayfada ve paket kurucuda görebilirsin. Kontenjan ve başlangıç tarihini ekibimizle planlayabilirsin; online kayıt akışı açılmadan ödeme alınmaz.",
             },
           ]}
         />

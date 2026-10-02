@@ -697,7 +697,7 @@ export const faq = [
   },
   {
     q: "Satışta hangi paket var?",
-    a: "Satışta iki paket var: LGS Matematik Ders Paketi ve YKS Matematik Ders Paketi. İki paket de aylık ₺2.000 ve en fazla 4 öğrencilik canlı matematik dersi üzerine kurulu."
+    a: `Online satın alınabilen seçenekler: ${subjectPackageGroups[0].packages.map((pkg) => `${pkg.name} (${pkg.discountedPrice})`).join(" ve ")}. En fazla 4 öğrencilik canlı matematik dersi üzerine kurulu.`
   },
   {
     q: "Dersler sınav odaklı mı ilerliyor?",
@@ -742,7 +742,7 @@ export const faqCategories = [
       },
       {
         q: "Dersler kaç dakika ve haftada kaç ders var?",
-        a: "Her matematik dersi 90 dakikadır. Aylık ₺2.000 paket haftada 1 canlı ders içerir; ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.",
+        a: `Her matematik dersi ${subjectPackageGroups[0].packages[0].lessonDurationMinutes} dakikadır. ${subjectPackageGroups[0].packages.map((pkg) => `${pkg.category} paketi ${pkg.discountedPrice}`).join(", ")}; ayda ${subjectPackageGroups[0].packages[0].lessonsPerMonth} canlı ders içerir. Ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.`,
       },
       {
         q: "Ödev veriliyor ve kontrol ediliyor mu?",

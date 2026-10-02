@@ -43,7 +43,7 @@ export function summarizeEntitlements(products: readonly ProductCode[]): Product
   const missing = ALL_PRODUCTS.filter((p) => !set.has(p));
   return {
     products: [...products],
-    labels: products.map((p) => ({ OD: "Dershanem", OK: "Koçum", ODK: "Deneme Kulübü", KPSS: "KPSS" }[p])),
+    labels: products.map((p) => ({ OD: "Dershanem", OK: "Koçum", ODK: "Online Deneme Kulübüm", KPSS: "KPSS" }[p])),
     hasAll: missing.length === 0,
     missing,
   };

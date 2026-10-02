@@ -100,7 +100,7 @@ export function ContactLeadForm() {
       ...prev,
       goal: exam === "LGS" ? goals[0] : exam === "YKS" ? goals[1] : prev.goal,
       topic: pack
-        ? `Paket kurucudaki seçimim: ${pack}${pricing === "on_gorusme" ? " · Kesin fiyat ön görüşmede oluşturulacak." : ""}`
+        ? `Paket kurucudaki seçimim: ${pack}${pricing === "on_gorusme" ? " · Özel kapsam için yazılı teklif istiyorum." : " · Başlangıcı planlamak istiyorum."}`
         : prev.topic,
     }));
   }, []);

@@ -13,7 +13,7 @@ import {
 type Params = Promise<{ slug: string }>;
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Satın Alma Bilgileri · Deneme Kulübü",
+  title: "Satın Alma Bilgileri · Online Deneme Kulübüm",
   robots: { index: false, follow: false },
 };
 
