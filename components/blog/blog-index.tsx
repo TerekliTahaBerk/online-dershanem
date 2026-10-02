@@ -91,7 +91,7 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
           <article className="grid overflow-hidden rounded-dc-card border border-dc-line bg-white lg:grid-cols-2">
             <ArticleThumb className="min-h-[220px] lg:min-h-[300px]" />
             <div className="p-7 sm:p-9">
-              <span className="rounded-full bg-dc-brand-soft px-[11px] py-[5px] text-[11.5px] font-bold uppercase text-dc-brand-hover">
+              <span className="rounded-full bg-dc-brand-soft px-[11px] py-[5px] text-xs font-bold uppercase text-dc-brand-hover">
                 {featured.category}
               </span>
               <h2 className="mt-4 font-display text-[24px] leading-[1.2] tracking-[-0.02em] text-dc-ink sm:text-[30px]">
@@ -123,7 +123,7 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
             >
               <ArticleThumb className="h-[170px]" />
               <div className="p-5">
-                <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11px] font-bold uppercase text-dc-brand-hover">
+                <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-xs font-bold uppercase text-dc-brand-hover">
                   {post.category}
                 </span>
                 <h3 className="mt-3 text-[19px] font-bold leading-[1.3] text-dc-ink">

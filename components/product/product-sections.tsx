@@ -104,7 +104,7 @@ export function StepCards({
             className="rounded-[18px] border border-dc-line bg-white p-5 sm:p-[22px]"
           >
             <span
-              className={`font-mono text-[11px] font-semibold ${
+              className={`font-mono text-xs font-semibold ${
                 i === 0 ? "text-dc-brand-strong" : "text-[var(--dc-ink-faint)]"
               }`}
             >
@@ -228,7 +228,7 @@ export function CrossSellWithPrice({
               key={c.eyebrow}
               className="rounded-[18px] border border-dc-line bg-white p-5 sm:p-[22px]"
             >
-              <p className="font-mono text-[11px] font-semibold uppercase text-dc-brand-strong">
+              <p className="font-mono text-xs font-semibold uppercase text-dc-brand-strong">
                 {c.eyebrow}
               </p>
               <h3 className="mt-2.5 text-[19px] font-bold text-dc-ink">
@@ -246,7 +246,7 @@ export function CrossSellWithPrice({
       </div>
 
       <aside className="rounded-dc-card border-2 border-dc-brand bg-white p-6 shadow-[0_12px_30px_rgba(20,151,107,.10)]">
-        <p className="font-mono text-[11px] font-semibold uppercase text-[var(--dc-ink-faint)]">
+        <p className="font-mono text-xs font-semibold uppercase text-[var(--dc-ink-faint)]">
           Tek ürün fiyatı
         </p>
 
@@ -257,7 +257,7 @@ export function CrossSellWithPrice({
                 <span className="text-[15px] font-semibold text-dc-ink-faint line-through">
                   {price.listPrice}
                 </span>
-                <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-dc-brand-hover">
+                <span className="rounded-full bg-dc-brand-soft px-2.5 py-1 text-xs font-bold uppercase tracking-[0.06em] text-dc-brand-hover">
                   İndirimli
                 </span>
               </p>

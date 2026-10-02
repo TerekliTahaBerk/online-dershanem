@@ -11,7 +11,7 @@ import { postAuthenticationPath } from "@/lib/auth/products";
 
 export const metadata: Metadata = {
   ...buildMarketingMetadata({
-    title: "Öğrenci Girişi",
+    title: "Giriş",
     description: "Online Dershanem öğrenci, veli ve öğretmen paneli girişi.",
     canonical: "/giris",
   }),

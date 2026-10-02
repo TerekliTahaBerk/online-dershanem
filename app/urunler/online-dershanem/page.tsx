@@ -1,3 +1,5 @@
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
@@ -34,6 +36,7 @@ export default function OnlineDershanemPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "Online Dershanem", url: "/urunler/online-dershanem" }])} />
       <main id="main-content" tabIndex={-1}>
         <ProductHero
           eyebrow="Ürün · Online Dershanem"

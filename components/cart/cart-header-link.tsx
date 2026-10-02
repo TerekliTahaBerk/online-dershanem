@@ -30,7 +30,7 @@ export function CartHeaderLink({ className = "" }: { className?: string }) {
       <ShoppingBag size={19} strokeWidth={1.7} aria-hidden="true" />
       <span
         aria-hidden="true"
-        className="absolute -right-0.5 -top-0.5 grid h-[19px] min-w-[19px] place-items-center rounded-full bg-[var(--dc-brand-strong)] px-1 text-[11px] font-bold leading-none text-white"
+        className="absolute -right-0.5 -top-0.5 grid h-[19px] min-w-[19px] place-items-center rounded-full bg-[var(--dc-brand-strong)] px-1 text-xs font-bold leading-none text-white"
       >
         {count > 99 ? "99+" : count}
       </span>

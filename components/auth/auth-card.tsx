@@ -23,7 +23,11 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <div className="site-scope grid min-h-dvh place-items-center bg-dc-canvas px-6 py-12">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="site-scope grid min-h-dvh place-items-center bg-dc-canvas px-6 py-12"
+    >
       <div className="w-full max-w-[380px]">
         <Link
           href="/"
@@ -58,7 +62,7 @@ export function AuthCard({
             G
           </span>
           {googleLabel}
-          <span className="rounded-full bg-dc-surface-muted px-2 py-0.5 text-[11px] font-semibold text-dc-ink-faint">
+          <span className="rounded-full bg-dc-surface-muted px-2 py-0.5 text-xs font-semibold text-dc-ink-faint">
             yakında
           </span>
         </button>
@@ -73,7 +77,7 @@ export function AuthCard({
 
         {footer ? <div className="mt-4">{footer}</div> : null}
       </div>
-    </div>
+    </main>
   );
 }
 

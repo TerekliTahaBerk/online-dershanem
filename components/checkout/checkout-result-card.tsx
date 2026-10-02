@@ -109,7 +109,7 @@ export function CheckoutResultCard({
       )}
 
       {status === "success" && (
-        <div className="mt-4 flex items-center justify-center gap-1.5 text-[11.5px] text-[var(--site-body)]">
+        <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-[var(--site-body)]">
           <ShieldCheck size={12} className="text-[var(--brand-orange-ink)]" />
           PayTR üzerinden güvenli ödeme tamamlandı.
         </div>

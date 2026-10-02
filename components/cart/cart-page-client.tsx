@@ -111,7 +111,7 @@ export function CartPageClient() {
               <ArrowRight size={16} />
             </button>
 
-            <div className="mt-3 text-[11.5px] text-center text-[var(--site-muted)]">
+            <div className="mt-3 text-xs text-center text-[var(--site-muted)]">
               Bilgi formunun ardından PayTR güvenli ödeme sayfası açılır.
             </div>
 
@@ -130,7 +130,7 @@ export function CartPageClient() {
                 Dershanem tarafından saklanmaz. Hesap açmadan ödeme
                 yapabilirsiniz; sonrasında ekibimiz sizinle iletişime geçer.
               </p>
-              <ul className="mt-3 space-y-1.5 text-[11.5px] text-[var(--site-body)]">
+              <ul className="mt-3 space-y-1.5 text-xs text-[var(--site-body)]">
                 <li>· 256-bit SSL korumalı ödeme</li>
                 <li>
                   · Taksit seçenekleri kartınıza ve bankanıza göre ödeme
@@ -151,7 +151,7 @@ export function CartPageClient() {
               Ödeme öncesi sorularınız için WhatsApp
             </a>
 
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--site-line)] pt-3 text-[11.5px] text-[var(--site-muted)]">
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--site-line)] pt-3 text-xs text-[var(--site-muted)]">
               <Link
                 href="/iade"
                 className="underline-offset-2 transition-colors hover:text-[var(--site-ink)] hover:underline"
@@ -196,7 +196,7 @@ function CartItemRow({
   return (
     <article className="flex flex-col gap-4 rounded-[24px] border border-[var(--site-line)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:flex-row sm:items-center">
       <div className="flex-1 min-w-0">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--brand-orange-ink)]">
+        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--brand-orange-ink)]">
           {item.category}
         </div>
         <div className="mt-1 font-display text-[22px] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">

@@ -382,7 +382,7 @@ export function BuyerInfoForm({
           <ShoppingBag size={18} strokeWidth={1.7} />
         </div>
         <div className="flex-1">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--brand-orange-ink)] font-semibold mb-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[var(--brand-orange-ink)] font-semibold mb-1">
             Sepetiniz
           </div>
           <div className="text-[var(--site-ink)] font-display text-[22px] leading-tight">
@@ -954,7 +954,7 @@ function Field({
       {help && (
         <span
           id={`${name}-help`}
-          className="block text-[11.5px] text-[var(--site-body)] mt-1"
+          className="block text-xs text-[var(--site-body)] mt-1"
         >
           {help}
         </span>

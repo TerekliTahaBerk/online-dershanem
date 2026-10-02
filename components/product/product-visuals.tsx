@@ -23,7 +23,7 @@ function Frame({
     <div
       className={`flex flex-col gap-2.5 rounded-xl bg-dc-surface-muted p-3.5 ${height}`}
     >
-      <p className="font-mono text-[10px] font-semibold tracking-[0.06em] text-[var(--dc-ink-faint)]">
+      <p className="font-mono text-xs font-semibold tracking-[0.06em] text-[var(--dc-ink-faint)]">
         {label}
       </p>
       <div className="flex flex-1 flex-col gap-2 rounded-lg border border-dc-line bg-white p-3">
@@ -137,7 +137,7 @@ export function CoachSessionVisual({
         <span className="h-2 w-[74%] rounded-full bg-[#CDE2D8]" />
         <span className="h-2 w-[52%] rounded-full bg-[#DCEAE3]" />
       </div>
-      <div className="grid grid-cols-7 gap-[5px] text-center font-mono text-[9px] font-semibold text-[var(--dc-ink-faint)]">
+      <div className="grid grid-cols-7 gap-[5px] text-center font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
         {["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"].map((d) => (
           <span key={d}>{d}</span>
         ))}

@@ -36,7 +36,7 @@ export function PricingCard({
           {data.category} paketi
         </span>
         {data.discountLabel ? (
-          <PublicBadge tone="olive" className="min-h-0 text-[10px]">
+          <PublicBadge tone="olive" className="min-h-0 text-xs">
             {data.discountLabel}
           </PublicBadge>
         ) : null}
@@ -64,7 +64,7 @@ export function PricingCard({
       />
       <div className="mt-8 flex-1 border-t border-[var(--site-line)] pt-7">
         {data.highlightsTitle ? (
-          <p className="mb-4 text-[11px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
             {data.highlightsTitle}
           </p>
         ) : null}
@@ -95,7 +95,7 @@ export function PricingCard({
       >
         {data.ctaLabel ?? `${data.category} Paketini Satın Al`}
       </PurchaseFunnelTrigger>
-      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11.5px] text-[var(--site-muted)]">
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-[var(--site-muted)]">
         <Lock size={12} aria-hidden="true" />
         {data.note ?? "PayTR güvenli ödeme · Hesap gerekmez"}
       </p>

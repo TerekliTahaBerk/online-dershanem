@@ -1,3 +1,5 @@
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
@@ -33,6 +35,7 @@ export default function OnlineKocumPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "Online Koçum", url: "/urunler/online-kocum" }])} />
       <main id="main-content" tabIndex={-1}>
         <ProductHero
           eyebrow="Ürün · Online Koçum"
@@ -42,14 +45,14 @@ export default function OnlineKocumPage() {
           note="Planı koç kurar, tüm dersleri kapsar"
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
-              <p className="font-mono text-[11px] font-semibold text-[var(--dc-ink-faint)]">
+              <p className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
                 HAFTALIK PLAN
               </p>
               <div className="mt-3 grid grid-cols-7 gap-1.5">
                 {planDays.map((d) => (
                   <span
                     key={d}
-                    className="text-center text-[10.5px] font-semibold text-dc-ink-faint"
+                    className="text-center text-xs font-semibold text-dc-ink-faint"
                   >
                     {d}
                   </span>
@@ -126,7 +129,7 @@ export default function OnlineKocumPage() {
             </div>
 
             <div className="rounded-[20px] border border-dc-line bg-[#FCFDFC] p-5 sm:p-[22px]">
-              <p className="font-mono text-[11px] font-semibold text-[var(--dc-ink-faint)]">
+              <p className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
                 ÖNERİLEN ODAK
               </p>
               <ul className="mt-3.5 flex flex-col gap-2.5">

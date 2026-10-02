@@ -1,10 +1,15 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Home, ArrowLeft, Search } from "lucide-react";
+import { Home, Search } from "lucide-react";
+import { BackButton } from "@/components/site/back-button";
+
+export const metadata: Metadata = {
+  title: "Sayfa bulunamadı",
+  robots: { index: false, follow: false },
+};
 
 const POPULAR_LINKS = [
+  { href: "/paketler", label: "Paketini Oluştur" },
   { href: "/ders-paketleri", label: "Canlı Ders Seçenekleri" },
   { href: "/yks", label: "YKS Matematik Canlı Ders" },
   { href: "/lgs", label: "LGS Matematik Canlı Ders" },
@@ -14,8 +19,6 @@ const POPULAR_LINKS = [
 ];
 
 export default function NotFound() {
-  const router = useRouter();
-
   return (
     <main className="site-scope flex min-h-screen items-center justify-center bg-[var(--site-bg-warm)] px-5 py-16">
       <div className="text-center max-w-2xl">
@@ -40,14 +43,7 @@ export default function NotFound() {
             <Home className="h-4 w-4" />
             Ana Sayfa
           </Link>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[var(--site-line)] bg-white px-6 py-3 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:bg-[var(--site-bg-warm)]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Geri Dön
-          </button>
+          <BackButton />
         </div>
 
         {/* Popüler sayfalar — kullanıcıyı kaybetmemek için */}

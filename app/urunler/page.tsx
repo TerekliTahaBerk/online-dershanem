@@ -1,3 +1,5 @@
+import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
+import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { ProductTrio } from "@/components/home/product-trio";
@@ -7,7 +9,7 @@ import { ClosingCta } from "@/components/home/closing-cta";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Ürünler | Online Dershanem, Online Koçum ve Online Deneme Kulübüm",
+  title: "Ürünler | Online Dershanem, Koçum ve Deneme Kulübüm",
   description:
     "LGS ve YKS için canlı ders, haftalık koçluk ve deneme analizi. Üç ürünü tek tek ya da birlikte alabilirsin.",
   canonical: "/urunler",
@@ -26,6 +28,7 @@ export default function ProductsPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }])} />
       <main id="main-content" tabIndex={-1}>
         <section className="site-container pb-2 pt-14 text-center sm:pt-[72px]">
           <p className="dc-eyebrow">Ürünler</p>
