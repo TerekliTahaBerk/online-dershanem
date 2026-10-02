@@ -4,6 +4,7 @@ import { after } from "node:test";
 import { prisma as db } from "@/lib/prisma";
 import { createCoachingSession, mutateCoachingSession } from "@/lib/coaching-experience-server";
 import { runCoachingReminders, runCoachPlanApprovalReminders } from "@/lib/coaching-reminders-server";
+import { coachApprovalDeadline } from "@/lib/coach-approval-window";
 import { integration } from "./integration-utils";
 after(() => db.$disconnect());
 integration("koçluk saat talebi, öneri/onay ve kararlar atomik, tekil ve ilişki kapsamındadır", async () => {
@@ -45,7 +46,8 @@ integration("koçluk saat talebi, öneri/onay ve kararlar atomik, tekil ve iliş
     assert.equal(await db.auditLog.count({ where: { entityType: "CoachingSession", entityId: session.id } }), 5);
     assert.equal(await db.notification.count({ where: { id: { contains: `:COACHING:${session.id}:REQUEST:` } } }), 1);
     assert.equal(await db.notification.count({ where: { id: { contains: `:COACHING:${session.id}:SAVE:` } } }), 1);
-    await runCoachPlanApprovalReminders(now); await runCoachPlanApprovalReminders(now);
+    const approvalNow = new Date(Math.max(now.getTime(), coachApprovalDeadline(now).getTime()));
+    await runCoachPlanApprovalReminders(approvalNow); await runCoachPlanApprovalReminders(approvalNow);
     assert.equal(await db.notification.count({ where: { userId: coach.id, id: { contains: `:PLAN:${assignment.id}:APPROVAL:` } } }), 1);
     await db.parentStudent.update({ where: { id: link.id }, data: { active: false } });
     await assert.rejects(mutateCoachingSession(parentActor, session.id, request), { status: 404 });
