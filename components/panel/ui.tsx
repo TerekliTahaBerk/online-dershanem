@@ -300,13 +300,17 @@ export function PanelAttentionCard({
   tone = "warning",
   action,
   className,
+  headingLevel = 3,
 }: {
   title: string;
   body: string;
   tone?: "info" | "warning" | "critical" | "danger";
   action?: ReactNode;
   className?: string;
+  /** Sayfa başlığı hemen üstteyse 2 ver; başlık atlamasını önler. */
+  headingLevel?: 2 | 3;
 }) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const toneClasses: Record<"info" | "warning" | "critical", string> = {
     info: "border-[var(--pd-pastel-sky-ink)]/20 bg-[var(--pd-pastel-sky-soft)]",
     warning:
@@ -323,7 +327,7 @@ export function PanelAttentionCard({
         className,
       )}
     >
-      <h3 className="text-[15px] font-bold text-dc-ink">{title}</h3>
+      <Heading className="text-[15px] font-bold text-dc-ink">{title}</Heading>
       <p className="mt-1.5 text-sm leading-6 text-dc-ink-body">{body}</p>
       {action ? <div className="mt-3">{action}</div> : null}
     </PanelCard>
@@ -481,6 +485,7 @@ export function PanelTaskRow({
             done ? "line-through" : "text-dc-ink"
           }`}
         >
+          {done ? <span className="sr-only">Tamamlandı: </span> : null}
           {title}
         </span>
         {meta ? (

@@ -409,7 +409,7 @@ export async function PanelShell({
                         ? `${unread} okunmamış bildirimi aç`
                         : "Bildirimleri aç"
                     }
-                    className="relative text-dc-ink-muted transition-colors hover:text-dc-ink"
+                    className="relative inline-flex min-h-11 min-w-11 items-center justify-center text-dc-ink-muted transition-colors hover:text-dc-ink"
                   >
                     <Bell size={17} aria-hidden="true" />
                     {unread ? (

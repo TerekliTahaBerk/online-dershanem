@@ -77,7 +77,7 @@ export default async function PanelFeatureInventoryPage() {
       <AdminPageHeader
         eyebrow="Canlı deployment snapshot"
         title="Özellik yayını tek yerde görünür."
-        description="Menü, sayfa ve API aynı sunucu flag snapshot'ını kullanır. Statü ürün olgunluğunu; Açık/Kapalı ise bu deployment'ın gerçek davranışını gösterir."
+        description="Menü, sayfa ve API aynı sunucu özellik durumunu kullanır. Statü ürün olgunluğunu; Açık/Kapalı ise bu deployment'ın gerçek davranışını gösterir."
         icon={Flag}
         meta={`${enabled}/${snapshot.length} açık`}
       />

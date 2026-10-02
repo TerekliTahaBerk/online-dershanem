@@ -407,7 +407,7 @@ export function TeacherAssignmentManager({
                 {criteria.map((criterion, index) => (
                   <input
                     key={index}
-                    aria-label={`Rubric ölçütü ${index + 1}`}
+                    aria-label={`Değerlendirme ölçütü ${index + 1}`}
                     value={criterion}
                     maxLength={120}
                     onChange={(event) =>

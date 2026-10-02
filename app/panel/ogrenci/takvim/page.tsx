@@ -153,23 +153,28 @@ export default async function StudentLessonsPage({
               formatIstanbulDateInput(now);
             const completed = lesson.status === "COMPLETED";
 
+            const cancelled = lesson.status === "CANCELLED";
+            const ended = lesson.endsAt.getTime() < now.getTime();
+
             const statusLabel = missed
-              ? "Katılmadın"
-              : completed
-                ? "Tamamlandı"
-                : isToday
-                  ? "Bugün"
-                  : lesson.status === "CANCELLED"
-                    ? "İptal edildi"
+              ? "Telafi bekliyor"
+              : cancelled
+                ? "İptal edildi"
+                : completed
+                  ? "Tamamlandı"
+                  : isToday
+                    ? "Bugün"
                     : "Yaklaşıyor";
 
             const actionLabel = missed
               ? "Telafi et"
-              : completed
-                ? "Notları gör"
-                : isToday
-                  ? "Derse katıl"
-                  : "Detay";
+              : cancelled
+                ? "Detay"
+                : completed
+                  ? "Notları gör"
+                  : isToday && !ended
+                    ? "Derse katıl"
+                    : "Detay";
             const actionHref = missed
               ? `/panel/ogrenci/telafi?lessonId=${lesson.id}`
               : `/panel/ogrenci/takvim/${lesson.id}`;

@@ -5,19 +5,10 @@ import {
   PanelCard,
   PanelCardTitle,
   PanelPageHeader,
-  PanelStatusBadge,
 } from "@/components/panel/ui";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import type { ParentCalmHome } from "@/lib/panel/parent-calm";
 import { withParentStudentContext } from "@/lib/panel/parent-calm";
-
-function statusTone(
-  code: ParentCalmHome["statusCode"],
-): "success" | "warning" | "info" {
-  if (code === "NEEDS_SUPPORT") return "warning";
-  if (code === "LIMITED_DATA") return "info";
-  return "success";
-}
 
 export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
   const progressHref = withParentStudentContext(
@@ -34,27 +25,55 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
       />
 
       <PanelAttentionCard
+        headingLevel={2}
         className="mt-6 max-w-[720px]"
         tone={home.statusCode === "NEEDS_SUPPORT" ? "warning" : "info"}
         title={`Genel durum · ${home.statusLabel}`}
         body={home.statusSentence}
-        action={
-          <PanelStatusBadge
-            label={home.statusLabel}
-            tone={statusTone(home.statusCode)}
-          />
-        }
       />
 
       {/* Dikkat kartı yalnız öğretmenin bu hafta yayınladığı özetten beslenir. */}
       {home.digest.supportArea ? (
         <PanelAttentionCard
+          headingLevel={2}
           className="mt-4 max-w-[720px]"
           tone="warning"
           title="Dikkat edilmesi gereken"
           body={home.digest.supportArea}
         />
       ) : null}
+
+      {home.actions.length ? (
+        <PanelCard className="mt-5 max-w-[720px] py-5">
+          <PanelCardTitle>Gereken aksiyon</PanelCardTitle>
+          <div className="mt-3 rounded-[10px] border border-dc-line-soft">
+            {home.actions.map((action, index) => (
+              <PanelActionRow
+                key={action.id}
+                title={action.title}
+                description={action.body}
+                cta={
+                  <Link
+                    href={action.href}
+                    className="panel-quick-action panel-quick-action-primary inline-flex"
+                  >
+                    {action.ctaLabel}
+                  </Link>
+                }
+                last={index === home.actions.length - 1}
+              />
+            ))}
+          </div>
+        </PanelCard>
+      ) : (
+        <PanelCard className="mt-5 max-w-[720px] py-5" variant="subtle">
+          <PanelCardTitle>Gereken aksiyon</PanelCardTitle>
+          <p className="mt-2 text-[14px] leading-[1.65] text-dc-ink-muted">
+            Şu an sizden beklenen bir işlem yok. Düzenli takibe devam etmeniz
+            yeterli.
+          </p>
+        </PanelCard>
+      )}
 
       <PanelCard className="mt-4 max-w-[720px] py-5">
         <PanelCardTitle>Bu haftanın özeti</PanelCardTitle>
@@ -246,38 +265,6 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
           )}
         </PanelCard>
       ) : null}
-
-      {home.actions.length ? (
-        <PanelCard className="mt-5 max-w-[720px] py-5">
-          <PanelCardTitle>Gereken aksiyon</PanelCardTitle>
-          <div className="mt-3 rounded-[10px] border border-dc-line-soft">
-            {home.actions.map((action, index) => (
-              <PanelActionRow
-                key={action.id}
-                title={action.title}
-                description={action.body}
-                cta={
-                  <Link
-                    href={action.href}
-                    className="panel-quick-action panel-quick-action-primary inline-flex"
-                  >
-                    {action.ctaLabel}
-                  </Link>
-                }
-                last={index === home.actions.length - 1}
-              />
-            ))}
-          </div>
-        </PanelCard>
-      ) : (
-        <PanelCard className="mt-5 max-w-[720px] py-5" variant="subtle">
-          <PanelCardTitle>Gereken aksiyon</PanelCardTitle>
-          <p className="mt-2 text-[14px] leading-[1.65] text-dc-ink-muted">
-            Şu an sizden beklenen bir işlem yok. Düzenli takibe devam etmeniz
-            yeterli.
-          </p>
-        </PanelCard>
-      )}
 
       {home.digest.available ? (
         <p className="mt-5 max-w-[720px] text-[13px] text-dc-ink-faint">

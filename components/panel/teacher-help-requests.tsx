@@ -30,15 +30,22 @@ export function TeacherHelpRequests({ rows }: { rows: Row[] }) {
     setBusy(row.id);
     setMessage("");
 
-    const response = await fetch(
-      `/api/panel/student-help-requests/${row.id}/respond`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ expectedVersion: row.version, action }),
-      },
-    );
-    const data = await response.json().catch(() => ({}));
+    let response: Response;
+    let data: { error?: string } = {};
+    try {
+      response = await fetch(
+        `/api/panel/student-help-requests/${row.id}/respond`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ expectedVersion: row.version, action }),
+        },
+      );
+      data = await response.json().catch(() => ({}));
+    } catch {
+      setBusy(null);
+      return setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+    }
     if (!response.ok) {
       setBusy(null);
       return setMessage(data.error || "Yanıt kaydedilemedi.");

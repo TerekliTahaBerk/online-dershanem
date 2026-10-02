@@ -79,7 +79,7 @@ export function AuthCard({
 
 /** Tasarımdaki input kutusu — 12px radius, 14px iç boşluk. */
 export const authInputClass =
-  "w-full rounded-xl border border-[#DDE4E0] bg-white p-3.5 text-[15px] text-dc-ink outline-none transition-colors placeholder:text-dc-ink-ghost focus-visible:border-dc-brand";
+  "w-full rounded-xl border border-[#DDE4E0] bg-white p-3.5 text-[15px] text-dc-ink outline-none transition-colors placeholder:text-dc-ink-ghost focus-visible:border-dc-brand-strong focus-visible:ring-2 focus-visible:ring-dc-brand-strong";
 
 /** Tasarımdaki birincil buton — dolu yeşil, 12px radius. */
 export const authSubmitClass =

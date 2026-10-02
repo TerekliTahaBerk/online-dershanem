@@ -368,8 +368,12 @@ export default async function AdminCoachingPage() {
                           id={`coach-${row.key}`}
                           name="coachId"
                           required
+                          defaultValue=""
                           className="rounded-lg border border-[#DDE4E0] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold text-dc-ink"
                         >
+                          <option value="" disabled>
+                            Koç seçin
+                          </option>
                           {coachOptions.map((c) => (
                             <option key={c.id} value={c.id}>
                               {c.name}

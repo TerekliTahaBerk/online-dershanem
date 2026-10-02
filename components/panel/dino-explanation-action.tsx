@@ -110,7 +110,7 @@ export function DinoExplanationAction({
         >
           <p className="text-[13px] text-dc-ink-body">{deterministicReason}</p>
           <p className="mt-1 text-[12px] text-dc-ink-faint">
-            Ana bilgi kaynağı yukarıdaki özetdir. Dino isteğe bağlı bir açıklama
+            Ana bilgi kaynağı yukarıdaki özettir. Dino isteğe bağlı bir açıklama
             katmanıdır.
           </p>
           <button

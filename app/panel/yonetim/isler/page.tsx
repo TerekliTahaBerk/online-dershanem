@@ -190,7 +190,7 @@ export default async function OperationsPage() {
     },
     {
       task: "paid-order → active aktivasyon",
-      coverage: "İşler / Activation Desk",
+      coverage: "İşler / Aktivasyon masası",
       status: "GO" as const,
       note: "Onboarding akışı panelde tamamlanır; dışarıdan SQL müdahalesi beklenmez.",
     },
@@ -257,7 +257,7 @@ export default async function OperationsPage() {
       email={session.email}
     >
       <AdminPageHeader
-        eyebrow="İşler / Activation Desk"
+        eyebrow="İşler / Aktivasyon masası"
         title="Yeni öğrenciyi aktif et"
         description="Ödeme sonrası hesap, veli, grup ve ilk ders adımlarını tek operasyon masasında yönetin."
         icon={CreditCard}
@@ -289,7 +289,7 @@ export default async function OperationsPage() {
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--site-line)] p-5">
           <div>
             <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
-              Operational readiness gate
+              Operasyon hazırlık kontrolü
             </h2>
             <p className="mt-1 text-xs text-[var(--site-muted)]">
               Kritik günlük işler panel içinde tamamlanabiliyor mu, yoksa
@@ -358,7 +358,7 @@ export default async function OperationsPage() {
         <div className="flex flex-col gap-3 border-b border-[var(--site-line)] p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
-              Unified operations inbox
+              Birleşik iş kutusu
             </h2>
             <p className="mt-1 text-xs text-[var(--site-muted)]">
               Sahip, son tarih, sıradaki işlem ve çözülme durumuyla gerçek

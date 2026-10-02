@@ -982,7 +982,7 @@ export function TeacherLessonWorkspace({
                     onClick={() =>
                       patchStudent(student.id, { attendance: option.value })
                     }
-                    className={`rounded-lg px-1 py-2 text-[10px] font-bold transition ${student.attendance === option.value ? option.active : "text-[var(--site-muted)] hover:bg-white"}`}
+                    className={`min-h-11 rounded-lg px-1 text-xs font-bold transition ${student.attendance === option.value ? option.active : "text-[var(--site-muted)] hover:bg-white"}`}
                   >
                     {option.label}
                   </button>

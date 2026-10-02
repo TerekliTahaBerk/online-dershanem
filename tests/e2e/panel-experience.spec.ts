@@ -155,7 +155,7 @@ test.describe("panel deneyimi", () => {
     await expect(firstStudentLink).toBeVisible();
     await firstStudentLink.click();
     const student360 = page.getByRole("main");
-    await expect(student360.getByText("Öğrenci 360", { exact: true })).toBeVisible();
+    await expect(student360.getByText("Öğrenci profili", { exact: true })).toBeVisible();
     await expect(student360.getByRole("heading", { name: "Bu haftanın durumu" })).toBeVisible();
     await expect(student360.getByRole("heading", { name: "Son denemeler" })).toBeVisible();
     await expect(student360.getByRole("heading", { name: "Açık görev / müdahale" })).toBeVisible();

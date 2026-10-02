@@ -28,7 +28,27 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
   const [plans, setPlans] = useState(initial);
   const [message, setMessage] = useState("");
   const openedAt = useRef(performance.now());
+  const [busyId, setBusyId] = useState<string | null>(null);
   async function approve(plan: Plan) {
+    if (busyId) return;
+    if (
+      !window.confirm(
+        `${plan.studentName} için plan onaylanıp kilitlenecek. Devam edilsin mi?`,
+      )
+    ) {
+      return;
+    }
+    setBusyId(plan.id);
+    setMessage("");
+    try {
+      await approveRequest(plan);
+    } catch {
+      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+  async function approveRequest(plan: Plan) {
     const response = await fetch(
       `/api/panel/adaptive-plan/${plan.id}/approve`,
       {
@@ -123,9 +143,11 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
               <button
                 type="button"
                 onClick={() => void approve(plan)}
+                disabled={busyId !== null}
                 className="panel-quick-action panel-quick-action-primary"
               >
-                <CheckCircle2 size={14} /> Onayla ve kilitle
+                <CheckCircle2 size={14} aria-hidden="true" />{" "}
+                {busyId === plan.id ? "Onaylanıyor…" : "Onayla ve kilitle"}
               </button>
             </div>
           ) : null}

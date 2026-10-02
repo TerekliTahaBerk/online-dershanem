@@ -81,7 +81,7 @@ export function Student360View({
 
       <div className="mt-2">
         <PanelHeading
-          eyebrow="Öğrenci 360"
+          eyebrow="Öğrenci profili"
           title={summary.fullName}
           description={`${summary.email}${summary.classLevel ? ` · ${summary.classLevel}` : ""}${
             summary.targetGoal ? ` · ${summary.targetGoal}` : ""
@@ -174,7 +174,7 @@ export function Student360View({
 
       <nav
         className="mt-6 flex flex-wrap gap-2"
-        aria-label="Öğrenci 360 sekmeleri"
+        aria-label="Öğrenci profili sekmeleri"
       >
         {tabs.map((item) => (
           <PanelFilterLink

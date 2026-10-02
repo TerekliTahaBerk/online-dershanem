@@ -30,7 +30,7 @@ export function ChildSwitcher({
               key={child.id}
               href={`${basePath}?studentId=${encodeURIComponent(child.id)}`}
               aria-current={active ? "page" : undefined}
-              className={`inline-flex min-h-9 max-w-[18rem] shrink-0 items-center rounded-lg px-3 py-1.5 text-left text-[13px] font-semibold leading-tight transition-colors ${
+              className={`inline-flex min-h-11 max-w-[18rem] shrink-0 items-center rounded-lg px-3 py-1.5 text-left text-[13px] font-semibold leading-tight transition-colors ${
                 active
                   ? "bg-dc-brand-soft text-dc-brand-deep"
                   : "text-dc-ink-muted hover:bg-dc-surface-muted"
