@@ -8,6 +8,7 @@ import {
   validateOdOnboardingPrerequisite,
   type OdOnboardingStateValue,
 } from "@/lib/od/onboarding-state";
+import { queueOdOnboardingUpdate } from "@/lib/od/onboarding-communication";
 
 type DbClient = Prisma.TransactionClient;
 
@@ -23,7 +24,7 @@ export async function ensurePaidOdOnboarding(tx: DbClient, orderId: string) {
   if (!order) throw new OdOnboardingError("Sipariş bulunamadı.", "NOT_FOUND");
   if (order.status !== "PAID") throw new OdOnboardingError("Onboarding yalnızca ödenmiş sipariş için oluşturulabilir.", "PAYMENT_CONFLICT");
   const now = new Date();
-  return tx.odOnboarding.upsert({
+  const onboarding = await tx.odOnboarding.upsert({
     where: { orderId },
     update: {},
     create: {
@@ -41,6 +42,8 @@ export async function ensurePaidOdOnboarding(tx: DbClient, orderId: string) {
       } },
     },
   });
+  // İlk PAID bilgilendirmesi mevcut ödeme makbuzudur; aynı olay için ikinci mail yok.
+  return onboarding;
 }
 
 export async function transitionOdOnboarding(input: {
@@ -122,7 +125,7 @@ export async function transitionOdOnboarding(input: {
     });
     if (update.count !== 1) throw new OdOnboardingError("Onboarding başka bir kullanıcı tarafından güncellendi. Sayfayı yenileyin.", "CONFLICT");
 
-    await tx.odOnboardingTransition.create({
+    const transition = await tx.odOnboardingTransition.create({
       data: {
         onboardingId: onboarding.id,
         fromState: onboarding.state,
@@ -134,6 +137,7 @@ export async function transitionOdOnboarding(input: {
         occurredAt: now,
       },
     });
+    await queueOdOnboardingUpdate(tx, { orderId: input.orderId, transitionId: transition.id, state: input.toState });
     await tx.auditLog.create({
       data: {
         actorUserId: input.actorUserId,

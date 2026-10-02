@@ -6,9 +6,10 @@ import { buildStudentHomeActionPlan } from "@/lib/panel/student-home-actions";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { NoProductAccess } from "@/components/panel/no-product-access";
+import { OdStartCard } from "@/components/panel/od-start-card";
+import { getCustomerOdStart } from "@/lib/od/onboarding-customer-server";
 import {
   PanelPageHeader,
-  PanelEmpty,
   PanelCard,
   PanelAttentionCard,
   PanelActionRow,
@@ -59,11 +60,11 @@ function greeting(now: Date): string {
 export default async function StudentHomePage() {
   const session = await requirePanelRole("STUDENT");
   const now = new Date();
-  const data = await getStudentHomeData({
+  const [data, start] = await Promise.all([getStudentHomeData({
     userId: session.userId,
     role: session.role,
     now,
-  });
+  }), getCustomerOdStart({ userId: session.userId, role: "STUDENT", now })]);
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -77,14 +78,10 @@ export default async function StudentHomePage() {
   );
 
   if (data.products.length === 0)
-    return shell(<NoProductAccess role="STUDENT" />);
+    return shell(<NoProductAccess role="STUDENT" start={start} />);
   if (!data.profile) {
     return shell(
-      <PanelEmpty
-        title="Profiliniz hazırlanıyor."
-        body="Yönetim ekibi öğrenci profilinizi tamamladığında dersleriniz burada görünecek."
-        className="mt-0 border-dashed px-6 py-14 text-center"
-      />,
+      <OdStartCard start={start} />,
     );
   }
 
@@ -150,6 +147,7 @@ export default async function StudentHomePage() {
 
   return shell(
     <div className="max-w-[1040px]">
+      {start && <OdStartCard start={start} />}
       <PanelPageHeader
         title={`${greeting(now)}, ${session.fullName?.split(" ")[0] || "hoş geldin"}.`}
         description={

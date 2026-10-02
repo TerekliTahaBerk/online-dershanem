@@ -105,21 +105,39 @@ export async function sendPanelNotificationEmail(input: {
  * Resend, so database/outbox dumps never contain a usable reset token.
  */
 export async function queuePasswordResetEmail(input: {
+  id?: string;
   to: string;
   name?: string | null;
   tokenId: string;
   expiresInMinutes: number;
+  purpose?: "RESET" | "ACCOUNT_SETUP";
 }, db: Pick<Prisma.TransactionClient, "emailOutbox"> = prisma): Promise<void> {
   const resetUrl = passwordResetUrlMarker(input.tokenId);
+  const setup = input.purpose === "ACCOUNT_SETUP";
+  const title = setup ? "Parolanızı belirleyin" : "Parolanızı yenileyin";
   const html = template(
-    "Parolanızı yenileyin",
-    `<p>Merhaba ${escapeHtml(input.name || "")},</p><p>Online Dershanem hesabınız için parola yenileme isteği aldık.</p><p style="margin-top:24px"><a href="${resetUrl}" style="display:inline-block;background:#3a4a2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Yeni parola belirle</a></p><p style="line-height:1.6">Bu bağlantı ${input.expiresInMinutes} dakika geçerlidir ve yalnızca bir kez kullanılabilir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.</p>`,
+    title,
+    `<p>Merhaba ${escapeHtml(input.name || "")},</p><p>${setup ? "Online Dershanem panel hesabınız hazır. Kendi parolanızı belirleyerek giriş yapabilirsiniz." : "Online Dershanem hesabınız için parola yenileme isteği aldık."}</p><p style="margin-top:24px"><a href="${resetUrl}" style="display:inline-block;background:#3a4a2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Yeni parola belirle</a></p><p style="line-height:1.6">Bu bağlantı ${input.expiresInMinutes} dakika geçerlidir ve yalnızca bir kez kullanılabilir. ${setup ? "Bağlantının süresi dolduysa giriş sayfasındaki Parolamı unuttum bağlantısından yenisini isteyebilirsiniz." : "Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz."}</p>`,
   );
   await db.emailOutbox.create({
     data: {
+      id: input.id,
       recipients: JSON.stringify([input.to]),
-      subject: "Parolanızı yenileyin – Online Dershanem",
+      subject: `${title} – Online Dershanem`,
       html,
     },
   });
+}
+
+/** Mevcut retry worker'ın göndereceği işlem bilgilendirmesini atomik kuyruğa yazar. */
+export async function queueCustomerInformationEmail(input: {
+  id: string;
+  to: string;
+  title: string;
+  body: string;
+}, db: Pick<Prisma.TransactionClient, "emailOutbox">): Promise<void> {
+  await db.emailOutbox.createMany({ data: [{
+    id: input.id, recipients: JSON.stringify([input.to]), subject: `${input.title} – Online Dershanem`,
+    html: template(escapeHtml(input.title), `<p>Merhaba,</p><p style="line-height:1.6">${escapeHtml(input.body)}</p>`),
+  }], skipDuplicates: true });
 }

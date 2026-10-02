@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { postPaytrCallback } from "./helpers/paytr-callback";
 import { findStuckPayments } from "../../lib/commerce/stuck-payments";
+import { materializePasswordResetEmailHtml } from "../../lib/auth/password-reset";
 
 const prisma = new PrismaClient();
 const amountCents = 24_900;
@@ -35,7 +36,7 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
       schoolName: "E2E Okulu",
       tcKimlik: `1${Date.now().toString().slice(-10)}`,
       parentFullName: "Yeni OD Velisi",
-      parentPhone: "05551000002",
+      parentPhone: `05${Date.now().toString().slice(-9)}`,
       parentEmail,
     });
     expect((await postPaytrCallback(request, { merchantOid, amountCents })).status()).toBe(200);
@@ -53,6 +54,26 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
     expect(await prisma.parentStudent.count({ where: { parentId: parent.id, studentId: student.studentProfile!.id } })).toBe(1);
     expect(await prisma.auditLog.count({ where: { entityType: "OdOrder", entityId: order.id, action: "od.provisioning.succeeded" } })).toBe(1);
     expect(await prisma.auditLog.count({ where: { entityType: "OdOrder", entityId: order.id, action: "PAYTR_PAYMENT_SUCCESS" } })).toBe(1);
+    for (const user of [student, parent]) {
+      const messages = await prisma.emailOutbox.findMany({ where: { id: `od-account-setup:${user.id}` } });
+      expect(messages).toHaveLength(1);
+      expect(messages[0]).toMatchObject({ status: "PENDING", recipients: JSON.stringify([user.email]) });
+      expect(messages[0].subject).toContain("Parolanızı belirleyin");
+      expect(messages[0].html).toContain("{{PASSWORD_RESET_URL:");
+      expect(await prisma.passwordResetToken.count({ where: { userId: user.id } })).toBe(1);
+      const delivered = materializePasswordResetEmailHtml(messages[0].html);
+      const encoded = delivered.match(/\/parola-sifirla#token=([^"<]+)/)?.[1];
+      expect(encoded).toBeTruthy();
+      const resetToken = decodeURIComponent(encoded!);
+      expect(messages[0].html).not.toContain(resetToken);
+      const response = await request.post("/api/auth/reset-password", { data: { token: resetToken, newPassword: "Setup-Password-E2E-42" }, headers: { origin: "http://localhost:3000" } });
+      expect(response.status()).toBe(200);
+      expect((await prisma.user.findUniqueOrThrow({ where: { id: user.id } })).mustChangePassword).toBe(false);
+      const replay = await request.post("/api/auth/reset-password", { data: { token: resetToken, newPassword: "Setup-Password-E2E-42" }, headers: { origin: "http://localhost:3000" } });
+      expect(replay.status()).toBe(400);
+    }
+    const transition = await prisma.odOnboardingTransition.findFirstOrThrow({ where: { onboardingId: stored.onboarding!.id, toState: "PARENT_LINKED" } });
+    expect(await prisma.emailOutbox.count({ where: { id: { startsWith: `od-start:${transition.id}:` } } })).toBe(2);
   });
 
   test("mevcut öğrenciyi e-postayla yeniden kullanır ve duplicate user/membership açmaz", async ({ request }) => {
@@ -70,6 +91,7 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
     expect(stored.onboarding?.flowType).toBe("EXISTING_STUDENT");
     expect(await prisma.user.count({ where: { email } })).toBe(1);
     expect(await prisma.productMembership.count({ where: { userId: existing.id, product: "OD" } })).toBe(1);
+    expect(await prisma.emailOutbox.count({ where: { id: `od-account-setup:${existing.id}` } })).toBe(0);
   });
 
   test("rol çakışmasını merge etmeden MANUAL_REVIEW durumuna düşürür", async ({ request }) => {
@@ -90,6 +112,7 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
     const { order, merchantOid } = await fixture("retry", { email, fullName: "Retry OD Öğrencisi", phone: "05554000001" });
     const failed = await postPaytrCallback(request, { merchantOid, amountCents }, "AFTER_MEMBERSHIP", "OD");
     expect(failed.status()).toBe(500);
+    expect(await prisma.emailOutbox.count({ where: { subject: { startsWith: "Parolanızı belirleyin" }, recipients: JSON.stringify([email]) } })).toBe(0);
     let stored = await prisma.odOrder.findUniqueOrThrow({ where: { id: order.id }, include: { payments: true } });
     expect(stored).toMatchObject({ status: "PAID", provisioningStatus: "RETRY_PENDING" });
     expect(stored.payments[0].status).toBe("SUCCEEDED");
@@ -101,6 +124,7 @@ test.describe("OD ödeme → onboarding provisioning bütünlüğü", () => {
     expect((await findStuckPayments({ olderThanMinutes: 0 })).some((payment) => payment.orderId === order.id)).toBe(false);
     expect(await prisma.user.count({ where: { email } })).toBe(1);
     expect(await prisma.productMembership.count({ where: { user: { email }, product: "OD" } })).toBe(1);
+    expect(await prisma.emailOutbox.count({ where: { subject: { startsWith: "Parolanızı belirleyin" }, recipients: JSON.stringify([email]) } })).toBe(1);
   });
 });
 

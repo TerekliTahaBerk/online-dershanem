@@ -5,7 +5,9 @@ import { loadParentCalmHome } from "@/lib/panel/parent-calm-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import { ParentCalmHomeView } from "@/components/panel/parent-calm-home";
-import { PanelEmpty, PanelPageHeader } from "@/components/panel/ui";
+import { PanelPageHeader } from "@/components/panel/ui";
+import { OdStartCard } from "@/components/panel/od-start-card";
+import { getCustomerOdStart } from "@/lib/od/onboarding-customer-server";
 
 export const dynamic = "force-dynamic";
 
@@ -49,11 +51,8 @@ export default async function ParentHomePage({
   if (!selected) {
     return shell(
       <>
-        <PanelPageHeader title="Öğrenci bağlantınız hazırlanıyor." />
-        <PanelEmpty
-          title="Henüz bağlı öğrenci yok."
-          body="Yönetim ekibi hesabınızı öğrencinizle eşleştirdiğinde sakin özet burada açılır. Eşleştirme geciktiyse destek ekibine ulaşabilirsiniz."
-        />
+        <PanelPageHeader title="Hoş geldiniz" />
+        <OdStartCard start={null} />
         <div className="mt-4 flex flex-wrap gap-3">
           <Link href="/panel/veli/hesap" className="site-btn site-btn-primary">
             Hesap durumunu kontrol et
@@ -66,10 +65,10 @@ export default async function ParentHomePage({
     );
   }
 
-  const home = await loadParentCalmHome({
+  const [home, start] = await Promise.all([loadParentCalmHome({
     parentUserId: session.userId,
     selected,
-  });
+  }), getCustomerOdStart({ userId: session.userId, role: "PARENT", studentId: selected.id })]);
 
-  return shell(<ParentCalmHomeView home={home} />);
+  return shell(<>{start && <OdStartCard start={start} />}<ParentCalmHomeView home={home} /></>);
 }
