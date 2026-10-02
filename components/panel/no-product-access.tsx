@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { UserRole } from "@prisma/client";
+import { OdStartCard } from "@/components/panel/od-start-card";
+import type { OdCustomerStart } from "@/lib/od/onboarding-customer";
 
 /**
  * AKTİF ÜRÜN YOK durumu.
@@ -12,8 +14,13 @@ import type { UserRole } from "@prisma/client";
  *
  * Sunum katmanıdır — asıl erişim kontrolü sunucu guard'larındadır.
  */
-export function NoProductAccess({ role }: { role: UserRole }) {
+export function NoProductAccess({ role, start = null }: { role: UserRole; start?: OdCustomerStart | null }) {
   const isStaff = role === "ADMIN" || role === "TEACHER";
+  if (!isStaff) return <div className="max-w-[640px]">
+    <h1 className="mb-5 text-2xl font-bold text-dc-ink">Hoş geldiniz</h1>
+    <OdStartCard start={start} />
+    {!start && <Link href="/paketler" className="site-btn site-btn-primary">Paketini Oluştur</Link>}
+  </div>;
 
   return (
     <div className="max-w-[640px]">

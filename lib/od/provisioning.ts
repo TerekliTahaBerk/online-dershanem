@@ -11,6 +11,7 @@ import { COMMERCE_FULFILLMENT, COMMERCE_TO_PRODUCT_CODE, orderGrantsBuyerOdMembe
 import { mergeAccessWindow, parseExamAccessWindow } from "@/lib/commerce/kpss-access-window";
 import { grantProductMembership } from "@/lib/products/membership-server";
 import { log } from "@/lib/logger";
+import { queueOdAccountSetup, queueOdOnboardingUpdate } from "@/lib/od/onboarding-communication";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -69,6 +70,7 @@ async function provisionRemainingOdLines(orderId: string) {
       if (conflict) throw new OdProvisioningError(conflict, "LINE_OWNER_CONFLICT");
       await prisma.$transaction(async (tx) => {
         await tx.studentProfile.upsert({ where: { userId: user.id }, create: { userId: user.id }, update: {} });
+        await queueOdAccountSetup(tx, user.id);
         /*
          * ÜRÜN AYRIMI AÇIK OLMALI. Burası eskiden `if (OD) … else { ODK }`
          * idi; üçüncü ürün (Koçum) eklendiğinde OK satırı sessizce ODK
@@ -151,7 +153,7 @@ async function putOnboardingInManualReview(tx: DbClient, orderId: string, reason
   const onboarding = await tx.odOnboarding.findUniqueOrThrow({ where: { orderId } });
   const now = new Date();
   if (onboarding.state !== "MANUAL_REVIEW") {
-    await tx.odOnboardingTransition.create({
+    const transition = await tx.odOnboardingTransition.create({
       data: {
         onboardingId: onboarding.id,
         fromState: onboarding.state,
@@ -162,6 +164,7 @@ async function putOnboardingInManualReview(tx: DbClient, orderId: string, reason
         occurredAt: now,
       },
     });
+    await queueOdOnboardingUpdate(tx, { orderId, transitionId: transition.id, state: "MANUAL_REVIEW" });
   }
   await tx.odOnboarding.update({
     where: { id: onboarding.id },
@@ -355,8 +358,11 @@ export async function provisionOdOrder(
       const targetState = hasParentLink ? "PARENT_LINKED" as const : "ACCOUNT_READY" as const;
       const onboarding = await tx.odOnboarding.findUniqueOrThrow({ where: { orderId } });
       const now = new Date();
+      await queueOdAccountSetup(tx, student.id);
+      if (parentUserId) await queueOdAccountSetup(tx, parentUserId);
       if (onboarding.state !== targetState) {
-        await tx.odOnboardingTransition.create({ data: { onboardingId: onboarding.id, fromState: onboarding.state, toState: targetState, actorType: "SYSTEM", note: "Ödeme sonrası hesap ve ürün erişimi otomatik hazırlandı.", metadata: { studentUserId: student.id, parentUserId: parentUserId ?? null, membershipId: membership?.id ?? null }, occurredAt: now } });
+        const transition = await tx.odOnboardingTransition.create({ data: { onboardingId: onboarding.id, fromState: onboarding.state, toState: targetState, actorType: "SYSTEM", note: "Ödeme sonrası hesap ve ürün erişimi otomatik hazırlandı.", metadata: { studentUserId: student.id, parentUserId: parentUserId ?? null, membershipId: membership?.id ?? null }, occurredAt: now } });
+        await queueOdOnboardingUpdate(tx, { orderId, transitionId: transition.id, state: targetState });
       }
       await tx.odOnboarding.update({
         where: { id: onboarding.id },

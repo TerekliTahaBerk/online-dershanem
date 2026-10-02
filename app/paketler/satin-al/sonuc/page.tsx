@@ -6,6 +6,7 @@ import { ClearCartOnPaymentSuccess } from "@/components/cart/clear-cart-on-payme
 import { prisma } from "@/lib/prisma";
 import { resolveOdCheckoutResultStatus } from "@/lib/od/payment-result";
 import { log } from "@/lib/logger";
+import { OdStartTimeline } from "@/components/checkout/od-start-timeline";
 
 type Search = Promise<{ status?: string; orderId?: string }>;
 
@@ -33,6 +34,7 @@ export default async function OdCheckoutThankYouPage({
           select: {
             id: true,
             status: true,
+            buyerInfo: true,
             payments: {
               orderBy: { updatedAt: "desc" },
               take: 1,
@@ -87,16 +89,7 @@ export default async function OdCheckoutThankYouPage({
                 status="success"
                 eyebrow="Online Dershanem"
                 description="Ödemeniz alındı. Ekibimiz sizinle iletişime geçip ilk ders planlamasını yapacak."
-                nextStepNote={
-                  <>
-                    <strong>Sıradaki adım:</strong> Satın alma için ayrıca hesap
-                    açmanıza gerek yok. Ekibimiz <strong>24 saat içinde</strong>{" "}
-                    sizinle iletişime geçerek öğrencinin seviyesini
-                    değerlendirecek, uygun grubu belirleyecek ve ilk canlı dersi
-                    birlikte planlayacak. Bilgilendirme telefon veya e-posta
-                    üzerinden yapılacaktır.
-                  </>
-                }
+                nextStepNote={<OdStartTimeline buyerInfo={order.buyerInfo} />}
                 primaryAction={{
                   href: "/",
                   label: "Ana Sayfa",
