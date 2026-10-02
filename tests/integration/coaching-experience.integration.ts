@@ -1,0 +1,58 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { after } from "node:test";
+import { prisma as db } from "@/lib/prisma";
+import { createCoachingSession, mutateCoachingSession } from "@/lib/coaching-experience-server";
+import { runCoachingReminders, runCoachPlanApprovalReminders } from "@/lib/coaching-reminders-server";
+import { coachApprovalDeadline } from "@/lib/coach-approval-window";
+import { integration } from "./integration-utils";
+after(() => db.$disconnect());
+integration("koçluk saat talebi, öneri/onay ve kararlar atomik, tekil ve ilişki kapsamındadır", async () => {
+  const run = randomUUID();
+  const student = await db.user.create({ data: { email: `coach-student-${run}@example.com`, role: "STUDENT", passwordHash: "unused", studentProfile: { create: {} }, productMemberships: { create: { product: "OK" } } }, include: { studentProfile: true } });
+  const parent = await db.user.create({ data: { email: `coach-parent-${run}@example.com`, role: "PARENT", passwordHash: "unused" } });
+  const coach = await db.user.create({ data: { email: `coach-owner-${run}@example.com`, role: "TEACHER", passwordHash: "unused", teacherProfile: { create: { isCoach: true } } }, include: { teacherProfile: true } });
+  const assignment = await db.coachAssignment.create({ data: { studentId: student.studentProfile!.id, coachId: coach.teacherProfile!.id } });
+  const link = await db.parentStudent.create({ data: { parentId: parent.id, studentId: student.studentProfile!.id } });
+  const coachActor = { userId: coach.id, role: "TEACHER" as const }; const studentActor = { userId: student.id, role: "STUDENT" as const }; const parentActor = { userId: parent.id, role: "PARENT" as const };
+  try {
+    const now = new Date();
+    const input = { studentId: student.studentProfile!.id, scheduledAt: new Date(now.getTime() + 23.9 * 3_600_000).toISOString(), meetingUrl: "https://example.com/first", idempotencyKey: randomUUID() };
+    const session = await createCoachingSession(coachActor, input);
+    assert.deepEqual(await createCoachingSession(coachActor, input), session);
+    await db.productMembership.updateMany({ where: { userId: student.id, product: "OK" }, data: { revokedAt: now } });
+    await runCoachingReminders(now);
+    assert.equal(await db.notification.count({ where: { id: { contains: `:COACHING:${session.id}:T24` } } }), 0);
+    await db.productMembership.updateMany({ where: { userId: student.id, product: "OK" }, data: { revokedAt: null } });
+    await runCoachingReminders(now); await runCoachingReminders(now);
+    assert.equal(await db.notification.count({ where: { id: { contains: `:COACHING:${session.id}:T24` } } }), 2);
+    const request = { action: "REQUEST", reason: "SCHOOL_SCHEDULE", expectedVersion: 1, idempotencyKey: randomUUID() };
+    const requested = await mutateCoachingSession(parentActor, session.id, request);
+    assert.equal(requested.version, 2);
+    assert.deepEqual(await mutateCoachingSession(parentActor, session.id, request), requested);
+    await assert.rejects(mutateCoachingSession({ ...parentActor, userId: coach.id }, session.id, request), { status: 404 });
+    await assert.rejects(mutateCoachingSession(studentActor, session.id, { ...request, idempotencyKey: randomUUID() }), { status: 409 });
+    const proposal = { action: "SAVE", expectedVersion: 2, idempotencyKey: randomUUID(), scheduledAt: new Date(now.getTime() + 2 * 86_400_000).toISOString(), meetingUrl: "https://example.com/new" };
+    await mutateCoachingSession(coachActor, session.id, proposal);
+    await assert.rejects(mutateCoachingSession(parentActor, session.id, { action: "ACCEPT", expectedVersion: 3, idempotencyKey: randomUUID() }), { status: 404 });
+    const accept = { action: "ACCEPT", expectedVersion: 3, idempotencyKey: randomUUID() };
+    await mutateCoachingSession(studentActor, session.id, accept); await mutateCoachingSession(studentActor, session.id, accept);
+    const stored = await db.coachingSession.findUniqueOrThrow({ where: { id: session.id } });
+    assert.equal(stored.version, 4); assert.equal(stored.meetingUrl, proposal.meetingUrl); assert.equal(stored.rescheduleRequestedAt, null);
+    const complete = { action: "COMPLETE", expectedVersion: 4, idempotencyKey: randomUUID(), focus: "Test odağı", sharedNote: "Ortak not", privateNote: "PRIVATE_COACH_NOTE", decisions: [{ title: "Karar çalışması", scheduledFor: now.toISOString(), durationMinutes: 20 }] };
+    await mutateCoachingSession(coachActor, session.id, complete); await mutateCoachingSession(coachActor, session.id, complete);
+    const plan = await db.weeklyPlan.findFirstOrThrow({ where: { studentId: student.studentProfile!.id }, include: { tasks: true, revisions: true } });
+    assert.equal(plan.status, "DRAFT"); assert.equal(plan.tasks.length, 1); assert.equal(plan.revisions.length, 1); assert.equal(plan.tasks[0].sourceType, "MANUAL_COACH");
+    assert.equal(await db.auditLog.count({ where: { entityType: "CoachingSession", entityId: session.id } }), 5);
+    assert.equal(await db.notification.count({ where: { id: { contains: `:COACHING:${session.id}:REQUEST:` } } }), 1);
+    assert.equal(await db.notification.count({ where: { id: { contains: `:COACHING:${session.id}:SAVE:` } } }), 1);
+    const approvalNow = new Date(Math.max(now.getTime(), coachApprovalDeadline(now).getTime()));
+    await runCoachPlanApprovalReminders(approvalNow); await runCoachPlanApprovalReminders(approvalNow);
+    assert.equal(await db.notification.count({ where: { userId: coach.id, id: { contains: `:PLAN:${assignment.id}:APPROVAL:` } } }), 1);
+    await db.parentStudent.update({ where: { id: link.id }, data: { active: false } });
+    await assert.rejects(mutateCoachingSession(parentActor, session.id, request), { status: 404 });
+  } finally {
+    await db.weeklyPlan.deleteMany({ where: { studentId: student.studentProfile!.id } });
+    await db.user.delete({ where: { id: student.id } }); await db.user.delete({ where: { id: parent.id } }); await db.user.delete({ where: { id: coach.id } });
+  }
+});

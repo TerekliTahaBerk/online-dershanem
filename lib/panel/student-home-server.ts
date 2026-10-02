@@ -90,7 +90,7 @@ export async function getStudentHomeData(input: {
       },
       getWeeklyPlan(studentId) {
         return prisma.weeklyPlan.findFirst({
-          where: { studentId },
+          where: { studentId, status: "APPROVED" },
           orderBy: { weekStart: "desc" },
           include: {
             tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] },

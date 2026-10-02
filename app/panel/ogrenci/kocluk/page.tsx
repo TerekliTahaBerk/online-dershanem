@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CoachingSessions } from "@/components/panel/coaching-sessions";
 import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
@@ -70,7 +71,7 @@ export default async function StudentCoachingHubPage() {
     getStudentCoaching(profile.id),
     getStudentGoals(profile.id),
     prisma.weeklyPlan.findFirst({
-      where: { studentId: profile.id },
+      where: { studentId: profile.id, status: "APPROVED" },
       orderBy: { weekStart: "desc" },
       include: {
         tasks: {
@@ -102,7 +103,7 @@ export default async function StudentCoachingHubPage() {
         description={
           adaptivePlanEnabled
             ? "Koçun, haftalık planın ve hedeflerin tek ekranda."
-            : "Uyarlanabilir plan şu anda kapalı; koçluk durumu ve hedeflerini buradan takip edebilirsin."
+            : "Koçluk görüşmeni ve hedeflerini buradan takip edebilirsin."
         }
       />
 
@@ -117,14 +118,12 @@ export default async function StudentCoachingHubPage() {
             <div>
               <dt className="text-dc-ink-faint">Sonraki görüşme</dt>
               <dd
-                className={`mt-0.5 font-semibold ${coaching.overdue ? "text-[#C2493D]" : ""}`}
+                className="mt-0.5 font-semibold"
               >
-                {coaching.nextScheduledAt
+                {coaching.overdue ? "Yeni saat bekleniyor" : coaching.nextScheduledAt
                   ? DATE_TIME.format(coaching.nextScheduledAt)
                   : "Planlanmadı"}
-                {coaching.overdue && coaching.overdueDays !== null
-                  ? ` · ${coaching.overdueDays} gün gecikti`
-                  : ""}
+
               </dd>
             </div>
           </dl>
@@ -151,12 +150,13 @@ export default async function StudentCoachingHubPage() {
         />
       )}
 
+      <CoachingSessions actor={{ userId: session.userId, role: "STUDENT" }} studentId={profile.id} />
+
       <PanelCard className="mt-5">
         <PanelCardTitle>Yapılacaklar</PanelCardTitle>
         {!adaptivePlanEnabled ? (
           <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-            Uyarlanabilir haftalık plan kapalı olduğu için koçluk görev listesi
-            şu an üretilmiyor.
+            Koçunla belirlediğiniz çalışmalar hazır olduğunda burada görünecek.
           </p>
         ) : !plan ? (
           <p className="mt-3 text-[13.5px] text-dc-ink-muted">

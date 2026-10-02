@@ -52,7 +52,7 @@ export function StudentCheckInForm({
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        groupId,
+        ...(groupId.startsWith("coach:") ? { coachAssignmentId: groupId.slice(6) } : { groupId }),
         energy,
         confidence,
         barrier,
@@ -139,7 +139,7 @@ export function StudentCheckInForm({
         </p>
         <div className="mt-5 space-y-5">
           <label className="block text-xs font-extrabold">
-            Hangi grup?
+            Hangi destek alanı?
             <select
               aria-label="Check-in grubu"
               className="panel-input mt-2"

@@ -1,3 +1,4 @@
+import { teacherHelpScope } from "@/lib/student-help-target";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -18,10 +19,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Yanıt seçimini kontrol edin." }, { status: 400 });
   const { id } = await context.params;
-  const item = await prisma.studentHelpRequest.findFirst({ where: { id, status: "OPEN", group: { teacherId: auth.session.userId, isActive: true }, checkIn: { shareWithTeacher: true } }, include: { student: { include: { user: { select: { id: true } } } }, responses: { select: { id: true } } } });
+  const item = await prisma.studentHelpRequest.findFirst({ where: { id, status: "OPEN", ...teacherHelpScope(auth.session.userId) }, include: { student: { include: { user: { select: { id: true } } } }, responses: { select: { id: true } } } });
   if (!item) return NextResponse.json({ error: "Yardım isteği bulunamadı." }, { status: 404 });
-  const enrollment = await prisma.enrollment.findFirst({ where: { studentId: item.studentId, groupId: item.groupId, endedAt: null }, select: { id: true } });
-  if (!enrollment) return NextResponse.json({ error: "Yardım isteği bulunamadı." }, { status: 404 });
+  const enrollment = item.groupId ? await prisma.enrollment.findFirst({ where: { studentId: item.studentId, groupId: item.groupId, endedAt: null }, select: { id: true } }) : null;
+  if (item.groupId && !enrollment) return NextResponse.json({ error: "Yardım isteği bulunamadı." }, { status: 404 });
   const now = new Date();
   const firstResponse = !item.firstResponseAt;
   const changed = await prisma.$transaction(async (tx) => {

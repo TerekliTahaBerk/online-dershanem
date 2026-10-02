@@ -30,3 +30,9 @@ Yardım istenirse paylaşım zorunlu olur ve istek yalnız seçilen aktif grubun
 ## Veri minimizasyonu ve saklama
 
 Ürün eventleri kullanıcı/grup/check-in kimliği veya içerik taşımaz; yalnız kontrollü enum ve toplu sayaçlar kaydedilir. Audit kaydı paylaşım ve yardım seçimini içerir, enerji/güven/engel içeriğini kopyalamaz. Pilot sonunda check-in içerikleri için 90 günlük saklama ve ardından silme/anonymizasyon işi ayrıca devreye alınmadan geniş rollout yapılmaz.
+
+## Koçum ürünüyle, grubu olmayan öğrenci
+
+`0110_coaching_experience` sonrasında aktif grup kaydı bulunmayan, aktif OK erişimi olan öğrenci mevcut check-in ekranından aktif koç atamasını destek alanı olarak seçebilir. Sahte grup oluşturulmaz: kayıt yalnız gerçek `CoachAssignment` ilişkisine bağlanır. Paylaşılmamış içerik yine yalnız öğrenciye görünür; yardım isteği paylaşımı zorunlu kılar ve yalnız atanmış koçun yardım kutusuna gider. Koç değişmiş veya atama sona ermişse eski koç okuyamaz/yanıtlayamaz. Öğrenci geri bildirimi de aktif OK ürün kapısından geçer.
+
+Grup yolunda mevcut OD kapısı ve aktif grup kaydı devam eder. İki destek hedefi aynı istekte seçilemez. Haftada iki check-in sınırı iki yolu birlikte sayar; bir koç atamasında tek açık yardım isteği vardır. Veli/admin ham içerik uçları eklenmez; saklama ve kriz sınırları değişmez. Koçluk ataması hedefi veritabanında FK ve tek hedef CHECK kısıtıyla doğrulanır.
