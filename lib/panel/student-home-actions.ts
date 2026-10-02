@@ -43,6 +43,7 @@ export type StudentHomeAction = {
   ctaLabel: string;
   reason: string;
   ageBand: "NA" | "0-24H" | "25H-7D" | "8D+";
+  completionTaskId?: string;
   priority: number;
   sortTime: number;
 };
@@ -156,6 +157,7 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
     for (const task of productData.OK.overdueTasks) {
       addCandidate(candidates, {
         id: `task-overdue-${task.id}`,
+        completionTaskId: task.id,
         entityKey: task.sourceType === "ASSIGNMENT" && task.sourceReferenceId
           ? `assignment:${task.sourceReferenceId}`
           : `task:${task.id}`,
@@ -174,6 +176,7 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
     for (const task of productData.OK.todayTasks) {
       addCandidate(candidates, {
         id: `task-today-${task.id}`,
+        completionTaskId: task.id,
         entityKey: task.sourceType === "ASSIGNMENT" && task.sourceReferenceId
           ? `assignment:${task.sourceReferenceId}`
           : `task:${task.id}`,

@@ -5,8 +5,9 @@ import { requireApiAccountRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { notificationTimingSchema } from "@/lib/notification-delivery";
 
-const schema = z.object({ inAppEnabled: z.boolean(), emailEnabled: z.boolean(), whatsappEnabled: z.boolean(), lessonSummary: z.boolean(), weeklyDigest: z.boolean(), absence: z.boolean(), assignment: z.boolean(), payment: z.boolean() });
+const schema = notificationTimingSchema.safeExtend({ inAppEnabled: z.boolean(), emailEnabled: z.boolean(), whatsappEnabled: z.boolean(), lessonSummary: z.boolean(), weeklyDigest: z.boolean(), absence: z.boolean(), assignment: z.boolean(), payment: z.boolean() }).strict();
 
 export async function PATCH(request: Request) {
   const auth = await requireApiAccountRole("PARENT", "STUDENT"); if (!auth.ok) return auth.response;

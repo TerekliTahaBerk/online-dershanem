@@ -34,6 +34,7 @@ export async function GET(request: Request) {
 
   const where: Prisma.NotificationWhereInput = {
     userId: auth.session.userId,
+    inAppVisible: true,
     ...(selectedType ? { type: selectedType } : {}),
     ...(selectedStatus === "unread" ? { readAt: null } : {}),
   };
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
   const [notifications, total, unreadTotal] = await Promise.all([
     prisma.notification.findMany({ where, orderBy: { createdAt: "desc" }, skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
     prisma.notification.count({ where }),
-    prisma.notification.count({ where: { userId: auth.session.userId, readAt: null } }),
+    prisma.notification.count({ where: { userId: auth.session.userId, readAt: null, inAppVisible: true } }),
   ]);
 
   return NextResponse.json({

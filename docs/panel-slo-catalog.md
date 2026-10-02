@@ -93,3 +93,27 @@ Başarı oranı bütün kimliği doğrulanmış operasyon sonuçları üzerinden
 ## Kademeli yayın kapısı
 
 Yeni ürün fazında ilgili kritik yol için en az 30 başarılı pilot örneği, `system_error=0` ve tanımlı SLO'nun hedefte olması beklenir. Hedef dışındaysa feature flag büyütülmez; kök neden, düzeltme ve tekrar ölçüm kayda alınır.
+
+## Ana sayfadan sonraki eylem tamamlama
+
+Öğrenci ana sayfası onaylı plan görevi için mevcut tamamlama API'sini kullanır.
+`student_next_action_completed` yalnız başarılı sunucu mutation'ından sonra
+üretilir; tekrar tamamlama yeni event üretmez. Mevcut tipli sözleşmeye opsiyonel
+`entryPoint: HOME | WORKSPACE` alanı eklenmiştir. Kimlik, görev ID'si, ad veya
+serbest metin event'e girmez. View/click tamamlama sayılmaz.
+
+`student_next_action_completion_count` son 30 günün HOME tamamlanma sayısını
+SLO raporunda gösterir; beşten az event'te değer gizlenir. Bu bir anonim baz
+çizgisidir. Kişi veya görev kimliği bulunmadığından tekil kullanıcı dönüşümü
+hesaplanmaz; tekrar görüntülenmeleri payda yapıp başarı oranı üretilmez.
+Sayısal hedef ve alarm iş kararı bekler; hedef onaylanana kadar yeşil/kırmızı
+başarı hükmü verilmez.
+
+İşler ekranındaki ilk ders göstergeleri event tahmini değildir: son 90 günde
+ödeme yapan yeni öğrencinin ilk doğrulanmış ödeme kaydı, onboarding'i ve ders
+zamanında geçerli grup ilişkisi okunur. İptal/yenileme hariçtir. Süre ortancası
+tamamlanmış ilk derslere; katılım oranı PRESENT/LATE/ABSENT kaydı olan bu
+derslere dayanır. EXCUSED veya eksik kayıt başarı/başarısızlık diye varsayılmaz.
+Her gösterge kendi beş örnek eşiğini uygular. Lead bağlantısı yalnız mevcut
+finansal kaydın açık lead ilişkisiyle sayılır; ad/telefon/e-posta eşleştirmesi
+yapılmaz. Bu sorgu mevcut ödeme/finans kaydını değiştirmez.

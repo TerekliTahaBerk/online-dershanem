@@ -7,14 +7,14 @@ export type ProductEventRow = {
 };
 
 export type PanelSloMetric = {
-  key: "teacher_close_time_p50" | "teacher_close_time" | "teacher_close_revision_rate" | "teacher_close_missing_rate" | "teacher_save_reliability" | "student_progress_reliability" | "admin_setup_reliability" | "parent_dashboard_speed" | "mock_exam_entry_time" | "mock_exam_reason_coverage" | "plan_acceptance" | "plan_review_time" | "plan_overwhelm_rate" | "digest_view_rate" | "digest_anxiety_rate" | "digest_optout_rate" | "intervention_first_action_time" | "intervention_false_positive_rate" | "intervention_closure_rate" | "recovery_publish_time" | "recovery_72h_completion" | "assignment_feedback_time" | "assignment_revision_approval" | "student_help_first_response_time" | "student_help_within_sla" | "student_help_helpful_rate" | "offline_sync_success" | "offline_conflict_rate" | "offline_expired_rate";
+  key: "student_next_action_completion_count" | "teacher_close_time_p50" | "teacher_close_time" | "teacher_close_revision_rate" | "teacher_close_missing_rate" | "teacher_save_reliability" | "student_progress_reliability" | "admin_setup_reliability" | "parent_dashboard_speed" | "mock_exam_entry_time" | "mock_exam_reason_coverage" | "plan_acceptance" | "plan_review_time" | "plan_overwhelm_rate" | "digest_view_rate" | "digest_anxiety_rate" | "digest_optout_rate" | "intervention_first_action_time" | "intervention_false_positive_rate" | "intervention_closure_rate" | "recovery_publish_time" | "recovery_72h_completion" | "assignment_feedback_time" | "assignment_revision_approval" | "student_help_first_response_time" | "student_help_within_sla" | "student_help_helpful_rate" | "offline_sync_success" | "offline_conflict_rate" | "offline_expired_rate";
   label: string;
   sampleSize: number;
   value: number | null;
-  unit: "ms" | "percent";
-  target: number;
+  unit: "ms" | "percent" | "count";
+  target: number | null;
   comparison: "lte" | "gte";
-  status: "healthy" | "breached" | "insufficient_data";
+  status: "healthy" | "breached" | "insufficient_data" | "observing";
 };
 
 const MIN_SAMPLE_SIZE = 5;
@@ -105,7 +105,9 @@ export function calculatePanelSloReport(rows: ProductEventRow[]): PanelSloMetric
   const offlineConflictRate = offlineQueued.length ? Math.min(100, Math.round((offlineConflicts.length / offlineQueued.length) * 10_000) / 100) : null;
   const offlineExpiredRate = offlineQueued.length ? Math.min(100, Math.round((offlineConflicts.filter((event) => event.properties.conflictType === "EXPIRED").length / offlineQueued.length) * 10_000) / 100) : null;
 
+  const homeCompleted = events.filter((event) => event.name === "student_next_action_completed" && event.properties.entryPoint === "HOME");
   return [
+    { key: "student_next_action_completion_count", label: "Ana sayfadan tamamlanan sonraki eylem", sampleSize: homeCompleted.length, value: homeCompleted.length >= MIN_SAMPLE_SIZE ? homeCompleted.length : null, unit: "count", target: null, comparison: "gte", status: homeCompleted.length >= MIN_SAMPLE_SIZE ? "observing" : "insufficient_data" },
     { key: "teacher_close_time_p50", label: "Ders kapanışı p50", sampleSize: closeDurations.length, value: closeP50, unit: "ms", target: 120_000, comparison: "lte", status: status(closeDurations.length, closeP50, 120_000, "lte") },
     { key: "teacher_close_time", label: "Ders kapanışı p90", sampleSize: closeDurations.length, value: closeP90, unit: "ms", target: 240_000, comparison: "lte", status: status(closeDurations.length, closeP90, 240_000, "lte") },
     { key: "teacher_close_revision_rate", label: "24 saatte düzeltme", sampleSize: closeQuality.length, value: revisionRate, unit: "percent", target: 10, comparison: "lte", status: status(closeQuality.length, revisionRate, 10, "lte") },

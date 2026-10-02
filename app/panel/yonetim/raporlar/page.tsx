@@ -21,7 +21,8 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export const dynamic = "force-dynamic";
 
-function formatSloValue(value: number | null, unit: "ms" | "percent") {
+function formatSloValue(value: number | null, unit: "ms" | "percent" | "count") {
+  if (unit === "count" && value !== null) return value.toLocaleString("tr-TR");
   if (value === null) return "—";
   if (unit === "percent")
     return `%${value.toLocaleString("tr-TR", { maximumFractionDigits: 2 })}`;
@@ -362,7 +363,7 @@ export default async function AdminReportsPage() {
                   ? "Hedefte"
                   : metric.status === "breached"
                     ? "Hedef dışı"
-                    : "Veri bekleniyor"}
+                    : metric.status === "observing" ? "Baz çizgisi" : "Veri bekleniyor"}
               </div>
               <p className="mt-4 text-2xl font-extrabold tracking-[-.04em] text-[var(--site-ink)]">
                 {formatSloValue(metric.value, metric.unit)}
@@ -371,9 +372,7 @@ export default async function AdminReportsPage() {
                 {metric.label}
               </p>
               <p className="mt-2 text-[11px] text-[var(--site-muted)]">
-                {metric.sampleSize} örnek · hedef{" "}
-                {metric.comparison === "gte" ? "≥" : "≤"}
-                {formatSloValue(metric.target, metric.unit)}
+                {metric.sampleSize} örnek · {metric.target === null ? "Hedef iş kararı bekliyor" : <>{metric.comparison === "gte" ? "≥" : "≤"}{formatSloValue(metric.target, metric.unit)}</>}
               </p>
             </article>
           ))}

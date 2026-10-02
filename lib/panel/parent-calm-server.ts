@@ -175,6 +175,7 @@ export async function loadParentCalmHome(input: {
         userId: input.parentUserId,
         readAt: null,
         type: "PAYMENT",
+        inAppVisible: true,
       },
       orderBy: { createdAt: "desc" },
       select: { title: true, href: true },

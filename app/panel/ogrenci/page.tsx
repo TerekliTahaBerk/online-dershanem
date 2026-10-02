@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CompleteHomeAction } from "@/components/panel/complete-home-action";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { getStudentHomeData } from "@/lib/panel/student-home-server";
 import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
@@ -162,23 +163,28 @@ export default async function StudentHomePage() {
           title={`Şimdi · ${primaryAction.title}`}
           body={`${primaryAction.description ? `${primaryAction.description} ` : ""}${primaryAction.reason}`}
           action={
-            <TrackedPanelLink
-              href={primaryAction.href}
-              className="panel-quick-action panel-quick-action-primary inline-flex"
-              event={{
-                name: "student_next_action_clicked",
-                properties: {
-                  product: primaryAction.product,
-                  actionKind: primaryAction.actionKind,
-                  reasonCode: primaryAction.reasonCode,
-                  ageBand: primaryAction.ageBand,
-                  evidenceBand: "NA",
-                  role: "STUDENT",
-                },
-              }}
-            >
-              {primaryAction.ctaLabel}
-            </TrackedPanelLink>
+            <span className="flex flex-wrap items-start gap-2">
+              <TrackedPanelLink
+                href={primaryAction.href}
+                className="panel-quick-action panel-quick-action-primary inline-flex"
+                event={{
+                  name: "student_next_action_clicked",
+                  properties: {
+                    product: primaryAction.product,
+                    actionKind: primaryAction.actionKind,
+                    reasonCode: primaryAction.reasonCode,
+                    ageBand: primaryAction.ageBand,
+                    evidenceBand: "NA",
+                    role: "STUDENT",
+                  },
+                }}
+              >
+                {primaryAction.ctaLabel}
+              </TrackedPanelLink>
+              {primaryAction.completionTaskId && (
+                <CompleteHomeAction taskId={primaryAction.completionTaskId} />
+              )}
+            </span>
           }
         />
       ) : (
