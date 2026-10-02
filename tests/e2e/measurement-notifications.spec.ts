@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 import { loginAs } from "./helpers/panel-login";
+import { accessibilityScan } from "./helpers/axe";
 import { istanbulDayStart, istanbulWeekStart } from "@/lib/istanbul-time";
 const db = new PrismaClient();
 const run = crypto.randomUUID();
@@ -55,6 +56,7 @@ test.describe.serial("Ölçüm ve bildirim tercihleri", () => {
     await loginAs(page, { email: process.env.PANEL_E2E_ADMIN_EMAIL!, password: process.env.PANEL_E2E_ADMIN_PASSWORD!, failureLabel: "metrics-admin" });
     await page.goto("/panel/yonetim/isler");
     const metrics = page.getByRole("region", { name: "İlk ders göstergeleri" }); await expect(metrics.getByText("Ödemeden ilk derse geçen süre", { exact: true })).toBeVisible(); await expect(metrics.getByText("İlk derse katılım", { exact: true })).toBeVisible(); await expect(metrics.getByText("Yetersiz veri", { exact: true })).toHaveCount(2);
+    expect((await accessibilityScan(page).include('section[aria-label="İlk ders göstergeleri"]').analyze()).violations).toEqual([]);
     await page.setViewportSize({ width: 1440, height: 900 }); await page.screenshot({ path: "/tmp/od-ok-phase5-desktop-metrics.png", fullPage: true });
   });
 });

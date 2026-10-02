@@ -267,8 +267,20 @@ export default async function OperationsPage() {
       <section className="panel-surface mt-7 p-5" aria-label="İlk ders göstergeleri">
         <h2 className="text-sm font-extrabold">İlk ders göstergeleri · son 90 günde ödeme yapan yeni öğrenciler</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div><dt>Ödemeden ilk derse geçen süre</dt><dd className="mt-1 text-xl font-bold">{firstLessonMetrics.duration.value === null ? "Yetersiz veri" : `${(firstLessonMetrics.duration.value / 3_600_000).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} saat · ortanca`}</dd><p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.duration.sampleSize} tamamlanmış ilk ders</p></div>
-          <div><dt>İlk derse katılım</dt><dd className="mt-1 text-xl font-bold">{firstLessonMetrics.participation.value === null ? "Yetersiz veri" : `%${firstLessonMetrics.participation.value.toLocaleString("tr-TR")}`}</dd><p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.participation.sampleSize} kayıtlı katılım sonucu · zamanında veya geç katılım</p></div>
+          <div>
+            <dt>Ödemeden ilk derse geçen süre</dt>
+            <dd className="mt-1">
+              <span className="text-xl font-bold">{firstLessonMetrics.duration.value === null ? "Yetersiz veri" : `${(firstLessonMetrics.duration.value / 3_600_000).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} saat · ortanca`}</span>
+              <p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.duration.sampleSize} tamamlanmış ilk ders</p>
+            </dd>
+          </div>
+          <div>
+            <dt>İlk derse katılım</dt>
+            <dd className="mt-1">
+              <span className="text-xl font-bold">{firstLessonMetrics.participation.value === null ? "Yetersiz veri" : `%${firstLessonMetrics.participation.value.toLocaleString("tr-TR")}`}</span>
+              <p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.participation.sampleSize} kayıtlı katılım sonucu · zamanında veya geç katılım</p>
+            </dd>
+          </div>
         </dl>
         <p className="mt-3 text-xs leading-5 text-[var(--site-muted)]">En az beş örnek gerekir. İptal edilen dersler ve yenilemeler hariçtir. {firstLessonMetrics.waitingCount} ilk ders bekliyor; {firstLessonMetrics.missingAttendanceCount} katılım sonucu bekliyor. {firstLessonMetrics.paidCount} ödenmiş başlangıcın {firstLessonMetrics.linkedLeadCount} tanesinde kayıtlı lead bağlantısı var; kimlik bilgisiyle tahmini eşleştirme yapılmaz.</p>
       </section>
