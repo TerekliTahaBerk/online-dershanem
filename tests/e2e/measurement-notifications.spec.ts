@@ -39,12 +39,14 @@ test.describe.serial("Ölçüm ve bildirim tercihleri", () => {
   test("sessiz saat ve günlük özet kaydedilir; bekleyen bildirim menü/API ve okundu işlemiyle açılmaz", async ({ page }) => {
     await loginAs(page, { email, password: process.env.PANEL_E2E_STUDENT_PASSWORD!, failureLabel: "notification-prefs" });
     await page.goto("/panel/bildirimler");
-    await page.getByLabel("Başlangıç saati", { exact: true }).fill("22:00"); await page.getByLabel("Bitiş saati", { exact: true }).fill("08:00");
-    await page.getByLabel("Günde tek özet al").check(); await page.getByLabel("Günlük özet saati").fill("18:00");
+    const quietHours = page.getByRole("group", { name: "Sessiz saatler · İstanbul saati", exact: true });
+    await expect(quietHours).toBeVisible();
+    await quietHours.getByLabel("Başlangıç saati", { exact: true }).fill("22:00"); await quietHours.getByLabel("Bitiş saati", { exact: true }).fill("08:00");
+    await quietHours.getByLabel("Günde tek özet al").check(); await quietHours.getByLabel("Günlük özet saati").fill("18:00");
     const saved = page.waitForResponse((response) => response.url().endsWith("/notifications/preferences")); await page.getByRole("button", { name: "Kaydet", exact: true }).click(); const savedResponse = await saved; expect(savedResponse.status(), `${savedResponse.request().postData()} ${await savedResponse.text()}`).toBe(200); await expect(page.getByText("Tercihler kaydedildi.")).toBeVisible();
     const preference = await db.notificationPreference.findUniqueOrThrow({ where: { userId } }); expect(preference.quietStartMinute).toBe(1320); expect(preference.quietEndMinute).toBe(480); expect(preference.dailyDigestMinute).toBe(1080); expect(preference.dailyDigest).toBe(true);
     expect((await page.request.patch("/api/panel/notifications/preferences", { headers: origin, data: { inAppEnabled: true, emailEnabled: false, whatsappEnabled: false, lessonSummary: true, weeklyDigest: true, absence: true, assignment: true, payment: true, quietStartMinute: 1320 } })).status()).toBe(400);
-    await page.reload(); await page.getByLabel("Bitiş saati", { exact: true }).fill("09:00");
+    await page.reload(); await quietHours.getByLabel("Bitiş saati", { exact: true }).fill("09:00");
     const resaved = page.waitForResponse((response) => response.url().endsWith("/notifications/preferences")); await page.getByRole("button", { name: "Kaydet", exact: true }).click(); expect((await resaved).status()).toBe(200);
     expect((await db.notificationPreference.findUniqueOrThrow({ where: { userId } })).quietEndMinute).toBe(540);
     const pending = await db.notification.create({ data: { userId, type: "SYSTEM", title: `Sessiz bekleyen ${run}`, body: "Bekleyen hatırlatma", inAppVisible: false, deliveryPending: true, availableAt: new Date(Date.now() + 86_400_000) } });
